@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b05c83971e3dca94f9fa460d396385e5, type: 3}
+  m_Name: BuildinCatalog
+  m_EditorClassIdentifier: 
+  PackageName: DefaultPackage
+  PackageVersion: 20250522003457
+  Wrappers:
+  - BundleGUID: 0a7005eaf5c3011bbe0374c4b256e246
+    FileName: 0a7005eaf5c3011bbe0374c4b256e246.bundle
+  - BundleGUID: 0b90229e7307e2cef2fed8a38977991c
+    FileName: 0b90229e7307e2cef2fed8a38977991c.bundle
+  - BundleGUID: 487be0c39de065ebc5ed61d1afcb865e
+    FileName: 487be0c39de065ebc5ed61d1afcb865e.bundle
+  - BundleGUID: 4aaa70535bad3af5e155ca206e765ec7
+    FileName: 4aaa70535bad3af5e155ca206e765ec7.bundle
+  - BundleGUID: 5513ffd40489f7ea9fd61b9dca2846a7
+    FileName: 5513ffd40489f7ea9fd61b9dca2846a7.bundle
+  - BundleGUID: 5c44dc0d5d1ffe149b976d3c33ee98b4
+    FileName: 5c44dc0d5d1ffe149b976d3c33ee98b4.bundle
+  - BundleGUID: 6cc70bd7a81fd1af70a09714b273d8aa
+    FileName: 6cc70bd7a81fd1af70a09714b273d8aa.bundle
+  - BundleGUID: 7fd6be18d1b9cc1b21aa1f35c87d3eb1
+    FileName: 7fd6be18d1b9cc1b21aa1f35c87d3eb1.bundle
+  - BundleGUID: af15f7cc23502dd48fdf8482636eca83
+    FileName: af15f7cc23502dd48fdf8482636eca83.bundle
+  - BundleGUID: b0952e158977d02a5192368ff8fc2d46
+    FileName: b0952e158977d02a5192368ff8fc2d46.bundle
+  - BundleGUID: b88a43073e0819083cc8225cb2579adc
+    FileName: b88a43073e0819083cc8225cb2579adc.bundle
+  - BundleGUID: c1b135a87d31a9f8a15a60d0f5df6915
+    FileName: c1b135a87d31a9f8a15a60d0f5df6915.bundle
+  - BundleGUID: d274e393f5fc9924fd9fadecf8d4c0da
+    FileName: d274e393f5fc9924fd9fadecf8d4c0da.bundle
+  - BundleGUID: d50b88b35d461aa7cbe4734aa4323d7d
+    FileName: d50b88b35d461aa7cbe4734aa4323d7d.bundle
+  - BundleGUID: e8108a0d20b01109ee83d11d57230c62
+    FileName: e8108a0d20b01109ee83d11d57230c62.bundle

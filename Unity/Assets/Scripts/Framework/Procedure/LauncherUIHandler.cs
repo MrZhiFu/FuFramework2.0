@@ -1,0 +1,69 @@
+﻿using GameFrameX.Asset.Runtime;
+using GameFrameX.Event.Runtime;
+using GameFrameX.Runtime;
+using GameFrameX.UI.Runtime;
+
+namespace Unity.Startup.Procedure
+{
+    /// <summary>
+    /// 热更进度显示UI处理类
+    /// </summary>
+    public static class LauncherUIHandler
+    {
+        /// <summary>
+        /// 热更进度显示UI界面
+        /// </summary>
+        private static UILauncher _ui;
+
+        /// <summary>
+        /// 开启热更进度显示UI
+        /// </summary>
+        public static async void Start()
+        {
+            _ui = await GameApp.UI.OpenFullScreenAsync<UILauncher>("UI/UILauncher", UIGroupConstants.Loading);
+            GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetProgressUpdate);
+        }
+
+        /// <summary>
+        /// 关闭并释放热更进度显示UI
+        /// </summary>
+        public static void Dispose()
+        {
+            GameApp.UI.CloseUIForm<UILauncher>();
+            _ui = null;
+        }
+
+        /// <summary>
+        /// 设置下载时的提示文本
+        /// </summary>
+        /// <param name="text"></param>
+        public static void SetTipText(string text)
+        {
+            _ui.m_TipText.text = text;
+        }
+
+        /// <summary>
+        /// 设置下载进度条完成
+        /// </summary>
+        public static void SetProgressUpdateFinish()
+        {
+            _ui.m_IsDownload.SetSelectedIndex(0);
+        }
+
+        /// <summary>
+        /// 处理Asset下载进度更新事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="gameEventArgs"></param>
+        public static void SetProgressUpdate(object sender, GameEventArgs gameEventArgs)
+        {
+            _ui.m_IsDownload.SetSelectedIndex(1);
+            var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
+            var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
+            var currentSizeMb = Utility.File.GetBytesSize(message.CurrentDownloadSizeBytes);
+            var totalSizeMb   = Utility.File.GetBytesSize(message.TotalDownloadSizeBytes);
+            _ui.m_ProgressBar.value = progress * 100;
+            _ui.m_TipText.text      = $"Downloading {currentSizeMb}/{totalSizeMb}";
+        }
+    }
+}
