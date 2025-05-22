@@ -1,5 +1,6 @@
 {
     "name": "Unity.Startup",
+    "rootNamespace": "",
     "references": [
         "GameFrameX.Runtime",
         "GameFrameX.Entry.Runtime",
@@ -13,7 +14,6 @@
         "HybridCLR.Runtime",
         "GameFrameX.Procedure.Runtime",
         "GameFrameX.FSM.Runtime",
-        "GameFrameX.FairyGUI.Runtime",
         "GameFrameX.Entity.Runtime",
         "GameFrameX.Event.Runtime",
         "GameFrameX.Asset.Runtime",
