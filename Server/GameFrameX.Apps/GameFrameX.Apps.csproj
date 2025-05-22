@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GameFrameX.Proto\GameFrameX.Proto.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Account\" />
+      <Folder Include="Player\" />
+      <Folder Include="Server\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mapster" Version="7.4.0" />
+      <PackageReference Include="GameFrameX.Core" Version="1.5.1-dev25" />
+      <PackageReference Include="GameFrameX.Monitor" Version="1.5.1-dev25" />
+    </ItemGroup>
+</Project>

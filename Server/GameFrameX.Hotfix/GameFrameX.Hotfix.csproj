@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <ApplicationIcon />
+        <StartupObject />
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <OutputPath>..\bin\app_debug\hotfix</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <OutputPath>..\bin\app\hotfix</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFrameX.Apps\GameFrameX.Apps.csproj" />
+        <ProjectReference Include="..\GameFrameX.Launcher\GameFrameX.Launcher.csproj" />
+        <ProjectReference Include="..\GameFrameX.CodeGenerator\GameFrameX.CodeGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GameFrameX.Core" Version="1.5.1-dev25" />
+      <PackageReference Include="GameFrameX.SuperSocket.ClientEngine" Version="1.1.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Logic\" />
+    </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--如需磁盘上生成文件打开以下注释-->
+    <!--<PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>-->
+
+    <Target Name="CleanSourceGeneratedFiles" AfterTargets="Clean">
+        <RemoveDir Directories="$(BaseIntermediateOutputPath)\GeneratedFiles" />
+    </Target>
+
+</Project>
