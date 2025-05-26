@@ -7,14 +7,17 @@ using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
 using GameFrameX.Web.Runtime;
-using UnityEngine;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 获取默认资源版本信息
+    /// 获取默认资源版本信息流程。
+    /// 主要作用是：
+    /// 1. 获取默认资源包的版本信息。
+    /// 2. 若获取成功，则将版本信息保存到流程管理器的Data变量中，并进入资源更新流程流程。
+    /// 3. 若获取失败，则等待一段时间后重新获取。
     /// </summary>
-    public sealed class ProcedureGetGameAssetPackageVersionInfoByDefaultPackageState : ProcedureBase
+    public class ProcedureGetAssetVersionInfo : ProcedureBase
     {
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
@@ -23,6 +26,10 @@ namespace Unity.Startup.Procedure
             GetGameAssetPackageVersionInfo(procedureOwner);
         }
 
+        /// <summary>
+        /// 获取默认资源包的版本信息。
+        /// </summary>
+        /// <param name="procedureOwner"></param>
         private async void GetGameAssetPackageVersionInfo(IFsm<IProcedureManager> procedureOwner)
         {
             var jsonParams = HttpHelper.GetBaseParams();
@@ -30,18 +37,19 @@ namespace Unity.Startup.Procedure
             {
                 jsonParams["AssetPackageName"] = AssetComponent.BuildInPackageName;
                 var json = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckResourceVersionUrl, jsonParams);
-                Debug.Log(json);
+                 Log.Info(json);
 
-                HttpJsonResult httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
+                var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
                 if (httpJsonResult.Code > 0)
                 {
-                    LauncherUIHandler.SetTipText("获取资源版本信息异常, 正在重试...");
-                    Debug.LogError($"获取资源版本信息异常=> Req:{Utility.Json.ToJson(jsonParams)} Resp:{json}");
+                    LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
+                    Log.Error($"获取资源版本信息异常=> Req:{Utility.Json.ToJson(jsonParams)} Resp:{json}");
                     await UniTask.Delay(3000);
                     GetGameAssetPackageVersionInfo(procedureOwner);
                 }
                 else
                 {
+                    // 将版本信息保存到流程管理器的Data变量中，并进入资源更新流程。
                     var gameAssetPackageVersion = Utility.Json.ToObject<ResponseGameAssetPackageVersion>(httpJsonResult.Data);
 
                     var gameAppVersionPath = Path.Combine(gameAssetPackageVersion.RootPath, gameAssetPackageVersion.PackageName, gameAssetPackageVersion.Platform, gameAssetPackageVersion.AppVersion, gameAssetPackageVersion.Channel, gameAssetPackageVersion.AssetPackageName, gameAssetPackageVersion.Version) + Path.DirectorySeparatorChar;
@@ -52,14 +60,13 @@ namespace Unity.Startup.Procedure
                     var varStringVersion = ReferencePool.Acquire<VarString>();
                     varStringVersion.SetValue(gameAssetPackageVersion.Version);
                     procedureOwner.SetData(AssetComponent.BuildInPackageName + "Version", varStringVersion);
-                    ChangeState<ProcedurePatchInit>(procedureOwner);
+                    ChangeState<ProcedureUpdateInit>(procedureOwner);
                 }
             }
             catch (Exception e)
             {
-                Log.Error(e);
-                LauncherUIHandler.SetTipText("获取资源版本信息异常, 正在重试...");
-                Debug.LogError($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
+                Log.Error($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
+                LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
                 await UniTask.Delay(3000);
                 GetGameAssetPackageVersionInfo(procedureOwner);
             }

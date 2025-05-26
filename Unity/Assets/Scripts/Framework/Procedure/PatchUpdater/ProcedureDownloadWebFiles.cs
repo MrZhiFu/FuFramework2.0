@@ -28,7 +28,7 @@ namespace Unity.Startup.Procedure
             void DownloaderOnDownloadErrorCallback(string packageName, string name, string error)
             {
                 GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(packageName, name, error));
-                ChangeState<ProcedureCreateDownloader>(procedureOwner);
+                ChangeState<ProcedureUpdateCreateDownloader>(procedureOwner);
             }
 
             downloader.OnDownloadErrorCallback    = DownloaderOnDownloadErrorCallback;

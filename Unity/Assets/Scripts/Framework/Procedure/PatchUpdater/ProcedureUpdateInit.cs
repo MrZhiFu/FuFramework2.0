@@ -7,40 +7,44 @@ using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
-    internal sealed class ProcedurePatchInit : ProcedureBase
+    /// <summary>
+    /// 资源更新初始化流程。
+    /// 主要作用是：
+    /// 1. 初始化Asset资源包相关信息，包括：包名称、下载地址、版本号等
+    /// 2. 进入更新资源版本号流程
+    /// </summary>
+    public class ProcedureUpdateInit : ProcedureBase
     {
         protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+
+            // 编辑器模拟模式下，直接进入 更新资源版本号流程
             if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
             {
+                Log.Info("当前为编辑器模拟模式，直接进入 更新资源版本号流程");
                 await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, string.Empty, string.Empty, true);
-                ChangeState<ProcedureUpdateStaticVersion>(procedureOwner);
+                ChangeState<ProcedureUpdateVersion>(procedureOwner);
                 return;
             }
 
+            // 离线模式下，直接进入 更新资源版本号流程
             if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
             {
-                Log.Info("当前为离线模式，直接启动 ProcedureUpdateStaticVersion");
+                Log.Info("当前为离线模式，直接进入 更新资源版本号流程");
                 await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, string.Empty, string.Empty, true);
-                ChangeState<ProcedureUpdateStaticVersion>(procedureOwner);
+                ChangeState<ProcedureUpdateVersion>(procedureOwner);
                 return;
             }
 
-            // Game.EventSystem.Run(EventIdType.UILoadingMainSetText, "Loading...");
-            // 加载更新面板
-            Start(procedureOwner);
-        }
-
-        async void Start(IFsm<IProcedureManager> procedureOwner)
-        {
+            // 网络模式下，获取资源包的下载地址，并将下载地址初始化到Asset资源包相关信息中，然后进入 更新资源版本号流程
             var buildInPackageNameURL = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName);
-            Log.Debug("下载资源的路径：" + buildInPackageNameURL);
+            Log.Info("下载资源的路径：" + buildInPackageNameURL);
             await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, buildInPackageNameURL.Value, buildInPackageNameURL.Value, true);
             procedureOwner.RemoveData(AssetComponent.BuildInPackageName);
             await UniTask.DelayFrame();
-
-            ChangeState<ProcedureUpdateStaticVersion>(procedureOwner);
+            
+            ChangeState<ProcedureUpdateVersion>(procedureOwner); // 进入更新资源版本号流程
         }
     }
 }

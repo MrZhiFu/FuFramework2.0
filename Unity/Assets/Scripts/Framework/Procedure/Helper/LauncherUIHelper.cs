@@ -6,9 +6,9 @@ using GameFrameX.UI.Runtime;
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 热更进度显示UI处理类
+    /// 热更进度显示UI帮助类
     /// </summary>
-    public static class LauncherUIHandler
+    public static class LauncherUIHelper
     {
         /// <summary>
         /// 热更进度显示UI界面
@@ -21,7 +21,7 @@ namespace Unity.Startup.Procedure
         public static async void Start()
         {
             _ui = await GameApp.UI.OpenFullScreenAsync<UILauncher>("UI/UILauncher", UIGroupConstants.Loading);
-            GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetProgressUpdate);
+            GameApp.Event.CheckSubscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
         /// <summary>
@@ -51,11 +51,11 @@ namespace Unity.Startup.Procedure
         }
 
         /// <summary>
-        /// 处理Asset下载进度更新事件
+        /// 设置Asset下载进度更新事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="gameEventArgs"></param>
-        public static void SetProgressUpdate(object sender, GameEventArgs gameEventArgs)
+        private static void SetUpdateProgress(object sender, GameEventArgs gameEventArgs)
         {
             _ui.m_IsDownload.SetSelectedIndex(1);
             var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;

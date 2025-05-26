@@ -7,7 +7,10 @@ using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
-    internal sealed class ProcedureCreateDownloader : ProcedureBase
+    /// <summary>
+    /// 创建资源下载器流程
+    /// </summary>
+    public class ProcedureUpdateCreateDownloader : ProcedureBase
     {
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {

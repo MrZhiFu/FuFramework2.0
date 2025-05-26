@@ -20,7 +20,7 @@ namespace Unity.Startup.Procedure
         {
             await UniTask.DelayFrame();
             HotfixHelper.StartHotfix();
-            LauncherUIHandler.Dispose();
+            LauncherUIHelper.Dispose();
         }
     }
 }

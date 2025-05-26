@@ -12,8 +12,8 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
 
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.PatchDone));
-            LauncherUIHandler.SetProgressUpdateFinish();
-            LauncherUIHandler.SetTipText(string.Empty);
+            LauncherUIHelper.SetProgressUpdateFinish();
+            LauncherUIHelper.SetTipText(string.Empty);
             Debug.Log("补丁流程更新完毕！");
             ChangeState<ProcedureGameLauncherState>(procedureOwner);
         }

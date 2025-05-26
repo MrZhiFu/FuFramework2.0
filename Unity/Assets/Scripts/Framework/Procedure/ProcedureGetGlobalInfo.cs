@@ -1,0 +1,102 @@
+using System;
+using Cysharp.Threading.Tasks;
+using GameFrameX.Fsm.Runtime;
+using GameFrameX.GlobalConfig.Runtime;
+using GameFrameX.Procedure.Runtime;
+using GameFrameX.Runtime;
+using GameFrameX.Web.Runtime;
+using YooAsset;
+
+namespace Unity.Startup.Procedure
+{
+    /// <summary>
+    /// 获取全局信息流程。
+    /// 主要作用是：
+    /// 1. 获取全局信息，包括：服务器地址、资源版本地址、内容信息
+    /// 2. 获取成功，保存全局信息到globalConfigComponent组件中，并进入获取App版本号流程
+    /// 3. 若获取失败，则提示网络异常，并延迟3秒后重试。。 
+    ///  </summary>
+    public class ProcedureGetGlobalInfo : ProcedureBase
+    {
+        /// <summary>
+        /// 全局信息的服务器地址
+        /// </summary>
+        private const string GlobalInfoUrl = "http://127.0.0.1:20808/api/GameGlobalInfo/GetInfo";
+
+        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        {
+            base.OnEnter(procedureOwner);
+
+            // 编辑器下的模拟模式--直接进入获取App版本号流程
+            if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
+            {
+                Log.Info("当前为编辑器模式，直接启动 FsmGetGlobalInfoState");
+                ChangeState<ProcedureGetAppVersionInfo>(procedureOwner);
+                return;
+            }
+
+            // 离线模式--直接进入初始化YooAsset流程
+            if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
+            {
+                Log.Info("当前为离线模式，直接启动 ProcedurePatchInit");
+                ChangeState<ProcedureUpdateInit>(procedureOwner);
+                return;
+            }
+
+            // 热更模式
+            GetGlobalInfo(procedureOwner);
+        }
+
+        /// <summary>
+        /// 获取全局信息，包括：服务器地址、资源版本地址、内容信息s
+        /// </summary>
+        /// <param name="procedureOwner"></param>
+        private async void GetGlobalInfo(IFsm<IProcedureManager> procedureOwner)
+        {
+            // 获取后台全局信息的服务器地址
+
+            var reqBaseParams = HttpHelper.GetBaseParams();
+
+            try
+            {
+                var json = await GameApp.Web.PostToString(GlobalInfoUrl, reqBaseParams);
+                Log.Info(json);
+
+                var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
+                if (httpJsonResult.Code > 0)
+                {
+                    LauncherUIHelper.SetTipText("Server error, retrying...");
+                    Log.Error($"获取全局信息返回异常=> Req:{reqBaseParams} Resp:{json}");
+
+                    // 等待3秒后重新获取
+                    await UniTask.Delay(3000);
+                    GetGlobalInfo(procedureOwner);
+                }
+                else
+                {
+                    var repGlobalInfo = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
+
+                    // 保存全局信息到globalConfigComponent组件中
+                    var globalConfigComponent = GameApp.GlobalConfig;
+                    globalConfigComponent.CheckAppVersionUrl      = repGlobalInfo.CheckAppVersionUrl;
+                    globalConfigComponent.CheckResourceVersionUrl = repGlobalInfo.CheckResourceVersionUrl;
+                    globalConfigComponent.Content                 = repGlobalInfo.Content;
+                    LauncherUIHelper.SetTipText("Loading...");
+
+                    // 进入获取App版本号流程
+                    ChangeState<ProcedureGetAppVersionInfo>(procedureOwner);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                LauncherUIHelper.SetTipText("Network error, retrying...");
+                Log.Error($"获取全局信息异常=>Error:{e.Message}   Req:{reqBaseParams}");
+
+                // 等待3秒后重新获取
+                await UniTask.Delay(3000);
+                GetGlobalInfo(procedureOwner);
+            }
+        }
+    }
+}
