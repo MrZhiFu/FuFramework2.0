@@ -2,48 +2,57 @@
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
-using UnityEngine;
 using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 创建资源下载器流程
+    /// 热更流程--创建资源下载器流程。
+    /// 主要作用是：
+    /// 1. 创建资源下载器。
     /// </summary>
     public class ProcedureUpdateCreateDownloader : ProcedureBase
     {
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.CreateDownloader));
             CreateDownloader(procedureOwner);
         }
 
-
-        void CreateDownloader(IFsm<IProcedureManager> procedureOwner)
+        /// <summary>
+        /// 创建资源下载器
+        /// </summary>
+        /// <param name="procedureOwner"></param>
+        private void CreateDownloader(IFsm<IProcedureManager> procedureOwner)
         {
-            // Debug.Log("创建补丁下载器.");
-            int downloadingMaxNum = 10;
-            int failedTryAgain = 3;
-            ResourceDownloaderOperation downloader = YooAssets.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
-            var downloaderVarObject = new VarObject();
-            downloaderVarObject.SetValue(downloader);
-            procedureOwner.SetData<VarObject>("Downloader", downloaderVarObject);
+            Log.Info("创建资源下载器.");
+
+            const int downloadingMaxNum = 10;
+            const int failedTryAgain    = 3;
+
+            var downloader = YooAssets.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
+
+            // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
+            var downloaderObj = new VarObject();
+            downloaderObj.SetValue(downloader);
+            procedureOwner.SetData("Downloader", downloaderObj);
+
             if (downloader.TotalDownloadCount == 0)
             {
-                Debug.Log("没有发现需要下载的资源");
-                ChangeState<ProcedurePatchDone>(procedureOwner);
+                Log.Info("没有发现需要下载的资源");
+                ChangeState<ProcedureUpdateDone>(procedureOwner);
             }
             else
             {
-                Debug.Log($"一共发现了{downloader.TotalDownloadCount}个资源需要更新下载。");
+                Log.Info($"一共发现了{downloader.TotalDownloadCount}个资源需要更新下载。");
 
                 // 发现新更新文件后，挂起流程系统
-                int totalDownloadCount = downloader.TotalDownloadCount;
-                long totalDownloadBytes = downloader.TotalDownloadBytes;
+                var totalDownloadCount = downloader.TotalDownloadCount;
+                var totalDownloadBytes = downloader.TotalDownloadBytes;
+
                 GameApp.Event.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.GetPackageName(), totalDownloadCount, totalDownloadBytes));
-                ChangeState<ProcedureDownloadWebFiles>(procedureOwner);
+                ChangeState<ProcedureUpdateDownload>(procedureOwner);
             }
         }
     }

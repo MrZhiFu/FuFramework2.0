@@ -10,13 +10,13 @@ using YooAsset;
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 更新资源清单流程。
+    /// 热更流程--更新资源清单流程。
     /// 主要作用是：
     /// 1. 下载最新资源清单
     /// 2. 解析最新资源清单，并下载资源
     /// 3. 完成后创建资源下载器流程
     /// </summary>
-    internal sealed class ProcedureUpdateManifest : ProcedureBase
+    public class ProcedureUpdateManifest : ProcedureBase
     {
         protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
@@ -24,16 +24,16 @@ namespace Unity.Startup.Procedure
 
             if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
             {
-                // 离线单机模式下
-                var versionStr       = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName + "Version");
-                var buildInPackage   = GameApp.Asset.GetAssetsPackage(AssetComponent.BuildInPackageName);
-                var buildInOperation = buildInPackage.UpdatePackageManifestAsync(versionStr.Value);
-                await buildInOperation.ToUniTask();
-                ChangeState<ProcedurePatchDone>(procedureOwner);
+                // 离线单机模式下的更新资源清单
+                var versionStr = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName + "Version");
+                var package    = GameApp.Asset.GetAssetsPackage(AssetComponent.BuildInPackageName);
+                var operation  = package.UpdatePackageManifestAsync(versionStr.Value);
+                await operation.ToUniTask();
+                ChangeState<ProcedureUpdateDone>(procedureOwner);
                 return;
             }
 
-            // 联机模式下
+            // 联机模式下的更新资源清单流程
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.UpdateManifest));
             await UpdateManifest(procedureOwner).ToUniTask();
         }
@@ -49,25 +49,24 @@ namespace Unity.Startup.Procedure
             yield return new WaitForSecondsRealtime(0.1f);
 
             var buildInPackage = YooAssets.GetPackage(AssetComponent.BuildInPackageName);
-
-            UpdatePackageManifestOperation buildInOperation;
+            UpdatePackageManifestOperation operation;
 
             if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
             {
                 // 编辑器模拟模式下，强制使用Simulate版本
-                buildInOperation = buildInPackage.UpdatePackageManifestAsync("Simulate");
+                operation = buildInPackage.UpdatePackageManifestAsync("Simulate");
             }
             else
             {
-                // 联机模式下，获取流程中存储的版本号
+                // 联机模式下，获取流程中存储的版本数据
                 var versionStr = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName + "Version");
-                buildInOperation = buildInPackage.UpdatePackageManifestAsync(versionStr.Value);
+                operation = buildInPackage.UpdatePackageManifestAsync(versionStr.Value);
             }
 
-            yield return buildInOperation;
+            yield return operation;
 
 
-            if (buildInOperation.Status == EOperationStatus.Succeed)
+            if (operation.Status == EOperationStatus.Succeed)
             {
                 // 更新成功，进入创建资源下载器流程
                 ChangeState<ProcedureUpdateCreateDownloader>(procedureOwner);
@@ -76,8 +75,8 @@ namespace Unity.Startup.Procedure
             else
             {
                 // 更新失败，重新尝试更新资源清单流程
-                Debug.LogError(buildInOperation.Error);
-                GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetComponent.BuildInPackageName, buildInOperation.Error));
+                Debug.LogError(operation.Error);
+                GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetComponent.BuildInPackageName, operation.Error));
                 ChangeState<ProcedureUpdateManifest>(procedureOwner);
             }
         }

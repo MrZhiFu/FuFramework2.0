@@ -34,7 +34,7 @@ namespace Unity.Startup.Procedure
         private async void Start(IFsm<IProcedureManager> procedureOwner)
         {
             await UniTask.NextFrame();
-            ChangeState<ProcedureGetGlobalInfo>(procedureOwner);
+            ChangeState<ProcedureGetGlobalInfoFromGmServer>(procedureOwner);
         }
     }
 }

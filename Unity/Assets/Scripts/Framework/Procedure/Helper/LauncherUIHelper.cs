@@ -43,7 +43,7 @@ namespace Unity.Startup.Procedure
         }
 
         /// <summary>
-        /// 设置下载进度条完成
+        /// 设置为更新完成状态
         /// </summary>
         public static void SetProgressUpdateFinish()
         {

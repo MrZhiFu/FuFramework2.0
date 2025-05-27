@@ -122,37 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &163294451
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 163294452}
-  m_Layer: 0
-  m_Name: XLUA
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &163294452
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 163294451}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &295159297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -752,17 +721,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   componentType: GameFrameX.Procedure.Runtime.ProcedureManager
   m_AvailableProcedureTypeNames:
-  - Unity.Startup.Procedure.ProcedureDownloadWebFiles
-  - Unity.Startup.Procedure.ProcedureGameLauncherState
-  - Unity.Startup.Procedure.ProcedureGetAppVersionInfo
-  - Unity.Startup.Procedure.ProcedureGetAssetVersionInfo
-  - Unity.Startup.Procedure.ProcedureGetGlobalInfo
+  - Unity.Startup.Procedure.ProcedureGetAppVersionInfoFromGmServer
+  - Unity.Startup.Procedure.ProcedureGetAssetPkgVersionInfoFromGmServer
+  - Unity.Startup.Procedure.ProcedureGetGlobalInfoFromGmServer
+  - Unity.Startup.Procedure.ProcedureHotfix
   - Unity.Startup.Procedure.ProcedureLauncher
-  - Unity.Startup.Procedure.ProcedurePatchDone
   - Unity.Startup.Procedure.ProcedureUpdateCreateDownloader
+  - Unity.Startup.Procedure.ProcedureUpdateDone
+  - Unity.Startup.Procedure.ProcedureUpdateDownload
+  - Unity.Startup.Procedure.ProcedureUpdateGetAssetPkgVersion
   - Unity.Startup.Procedure.ProcedureUpdateInit
   - Unity.Startup.Procedure.ProcedureUpdateManifest
-  - Unity.Startup.Procedure.ProcedureUpdateVersion
   m_EntranceProcedureTypeName: Unity.Startup.Procedure.ProcedureLauncher
 --- !u!114 &1917164023
 MonoBehaviour:
@@ -1416,7 +1385,6 @@ Transform:
   - {fileID: 8347106624226656712}
   - {fileID: 787015720}
   - {fileID: 394025181}
-  - {fileID: 163294452}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7149020525938990140
