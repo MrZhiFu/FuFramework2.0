@@ -46,18 +46,16 @@ namespace Hotfix.UI
                 return;
             }
 
-
-            #region 账号登录
-
+            // 请求登录
             var req = new ReqLogin
             {
-                SdkType = 0,
+                SdkType  = 0,
                 SdkToken = "",
                 UserName = m_UserName.text,
                 Password = m_Password.text,
-                Device = SystemInfo.deviceUniqueIdentifier
+                Device   = SystemInfo.deviceUniqueIdentifier,
+                Platform = PathHelper.GetPlatformName
             };
-            req.Platform = PathHelper.GetPlatformName;
 
             var respLogin = await GameApp.Web.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
             if (respLogin.ErrorCode > 0)
@@ -66,13 +64,9 @@ namespace Hotfix.UI
                 return;
             }
 
-            #endregion
 
-            #region 获取角色列表
-
-            ReqPlayerList reqPlayerList = new ReqPlayerList();
-
-            reqPlayerList.Id = respLogin.Id;
+            // 获取角色列表
+            var reqPlayerList = new ReqPlayerList { Id = respLogin.Id };
             var respPlayerList = await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
@@ -80,19 +74,22 @@ namespace Hotfix.UI
                 return;
             }
 
+            // 将角色列表保存到Manager中
             AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
 
-            #endregion
 
             if (respPlayerList.PlayerList.Count > 0)
             {
+                // 有角色，打开角色列表界面
                 await GameApp.UI.OpenFullScreenAsync<UIPlayerList>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), respLogin);
             }
             else
             {
+                // 无角色，打开角色创建界面
                 await GameApp.UI.OpenFullScreenAsync<UIPlayerCreate>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), respLogin);
             }
 
+            // 关闭登录界面
             GameApp.UI.CloseUIForm(this);
         }
     }

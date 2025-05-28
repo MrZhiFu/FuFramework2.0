@@ -10,9 +10,6 @@ namespace Hotfix.Proto
         /// <summary>
         /// 当前程序集
         /// </summary>
-        public static Assembly CurrentAssembly
-        {
-            get { return typeof(HotfixProtoHandler).Assembly; }
-        }
+        public static Assembly CurrentAssembly => typeof(HotfixProtoHandler).Assembly;
     }
 }

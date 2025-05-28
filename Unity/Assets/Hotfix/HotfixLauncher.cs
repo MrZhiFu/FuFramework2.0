@@ -30,22 +30,20 @@ namespace Hotfix
         public static void Main()
         {
             Log.Info("进入热更代码逻辑入口");
+            
+            // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
+            
+            // 加载配置表
             LoadConfig();
+            
+            // 加载初始UI
             LoadUI();
         }
 
-        private static async void LoadUI()
-        {
-#if ENABLE_UI_FAIRYGUI
-            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon));
-            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
-#endif
-            await GameApp.UI.OpenAsync<UILogin>();
-            var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
-            Log.Info(item);
-        }
-
+        /// <summary>
+        /// 加载配置表
+        /// </summary>
         static async void LoadConfig()
         {
             var tablesComponent = new TablesComponent();
@@ -57,6 +55,21 @@ namespace Hotfix
             // 使用JSON配置表
             await tablesComponent.LoadAsync(ConfigLoader);
 #endif
+        }
+
+        /// <summary>
+        /// 加载UI
+        /// </summary>
+        private static async void LoadUI()
+        {
+            // 添加通用UI资源包
+            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon));
+            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
+            
+            // 打开登录界面
+            await GameApp.UI.OpenAsync<UILogin>();
+            var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
+            Log.Info(item);
         }
 
 #if ENABLE_BINARY_CONFIG
