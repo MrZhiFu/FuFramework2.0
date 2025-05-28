@@ -4,30 +4,45 @@ using UnityEngine;
 
 namespace Unity.Editor
 {
+    /// <summary>
+    /// 项目ProjectSettingEditor，用于启动时自动设置项目相关设置
+    /// </summary>
     internal static class ProjectSettingEditor
     {
+        /// <summary>
+        /// 编辑器启动时自动执行
+        /// </summary>
         [InitializeOnLoadMethod]
-        static void Start()
+        private static void Start()
         {
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.blank.gfx");
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.blank.gfx");
-            PlayerSettings.SplashScreen.show = false;
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS,     "com.blank.gfx");
+
+            PlayerSettings.SplashScreen.show          = false;
             PlayerSettings.SplashScreen.showUnityLogo = false;
+
             PlayerSettings.productName = "GFX";
             PlayerSettings.companyName = "ALianBlank";
+
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
+
+            PlayerSettings.allowedAutorotateToLandscapeLeft  = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = false;
+
             // 禁用其他应用的声音
             PlayerSettings.muteOtherAudioSources = false;
+
             // 隐藏状态条
             PlayerSettings.statusBarHidden = true;
-            PlayerSettings.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+            PlayerSettings.fullScreenMode  = FullScreenMode.ExclusiveFullScreen;
+
             // 取消多线程渲染
             PlayerSettings.MTRendering = false;
+
             // 取消骨骼加速.目前是负优化
-            PlayerSettings.gpuSkinning = false;
+            PlayerSettings.gpuSkinning               = false;
             PlayerSettings.assemblyVersionValidation = false;
+
 #if UNITY_ANDROID
             PlayerSettings.Android.renderOutsideSafeArea = true;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
@@ -46,6 +61,7 @@ namespace Unity.Editor
             // PlayerSettings.Android.chromeosInputEmulation = false;
             // PlayerSettings.bundleVersion = "1.0.0";
 #endif
+
 #if UNITY_IOS
             PlayerSettings.iOS.appleDeveloperTeamID = "XXXXXX";
             PlayerSettings.iOS.appleEnableAutomaticSigning = true;
@@ -53,7 +69,11 @@ namespace Unity.Editor
             PlayerSettings.SetArchitecture(BuildTargetGroup.iOS, 1);
 #endif
 
-            var folderList = new string[] { "Assets/StreamingAssets", "Assets/Bundles/AOTCode", "Assets/Bundles/Code", "Assets/Bundles/Shader", "Assets/Bundles/Textures", "Assets/Bundles/Sprites", "Assets/Bundles/Config", "Assets/Bundles/Sound", "Assets/Bundles/UI" };
+            var folderList = new string[]
+            {
+                "Assets/StreamingAssets", "Assets/Bundles/AOTCode", "Assets/Bundles/Code", "Assets/Bundles/Shader", "Assets/Bundles/Textures", "Assets/Bundles/Sprites", "Assets/Bundles/Config",
+                "Assets/Bundles/Sound", "Assets/Bundles/UI"
+            };
             foreach (var folder in folderList)
             {
                 // 本地文件夹是否存在()
