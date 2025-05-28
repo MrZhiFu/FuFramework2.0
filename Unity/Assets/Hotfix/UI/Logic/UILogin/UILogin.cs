@@ -1,19 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using GameFrameX;
-using GameFrameX.Event.Runtime;
-using GameFrameX.GlobalConfig.Runtime;
-#if ENABLE_UI_FAIRYGUI
-using GameFrameX.UI.FairyGUI.Runtime;
-#endif
-using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
+﻿using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-#if ENABLE_UI_UGUI
-using GameFrameX.UI.UGUI.Runtime;
-#endif
 using Hotfix.Manager;
-using Hotfix.Network;
 using Hotfix.Proto;
 using UnityEngine;
 
@@ -38,6 +25,9 @@ namespace Hotfix.UI
             Login();
         }
 
+        /// <summary>
+        /// 执行登录
+        /// </summary>
         private async void Login()
         {
             if (m_UserName.text.IsNullOrWhiteSpace() || m_Password.text.IsNullOrWhiteSpace())
@@ -89,7 +79,7 @@ namespace Hotfix.UI
                 await GameApp.UI.OpenFullScreenAsync<UIPlayerCreate>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), respLogin);
             }
 
-            // 关闭登录界面
+            // 关闭当前界面
             GameApp.UI.CloseUIForm(this);
         }
     }

@@ -1,72 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using FairyGUI;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Network.Runtime;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-#if ENABLE_UI_FAIRYGUI
-using GameFrameX.UI.FairyGUI.Runtime;
-#endif
-#if ENABLE_UI_UGUI
-using GameFrameX.UI.UGUI.Runtime;
-#endif
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;
-using UnityEngine;
 
 namespace Hotfix.UI
 {
     public partial class UIPlayerList
     {
+        private List<PlayerInfo> playerList = new();
+        private PlayerInfo       m_SelectedPlayerInfo;
+
+        private static INetworkChannel networkChannel; // 网络频道
+
+        public static string serverIp   = "127.0.0.1"; // 服务器IP
+        public static int    serverPort = 29100;       // 服务器端口
+
         public override void OnAwake()
         {
             UIGroup = GameApp.UI.GetUIGroup(UIGroupConstants.Normal.Name);
             base.OnAwake();
+
+            // 订阅网络连接成功和关闭事件
+            GameApp.Event.CheckSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
+            GameApp.Event.CheckSubscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
         }
-
-        List<PlayerInfo> playerList = new List<PlayerInfo>();
-
-        private static INetworkChannel networkChannel;
-        public static string serverIp = "127.0.0.1";
-        public static int serverPort = 29100;
 
         public override async void OnOpen(object userData)
         {
             base.OnOpen(userData);
-#if ENABLE_UI_FAIRYGUI
-            this.m_login_button.onClick.Set(OnLoginButtonClick);
-            this.m_player_list.itemRenderer = ItemRenderer;
-            this.m_player_list.onClickItem.Set(OnPlayerListItemClick);
-#elif ENABLE_UI_UGUI
-            m_right_Panel.gameObject.SetActive(false);
-            m_right_Panel__login_button.onClick.Set(OnLoginButtonClick);
-#endif
+
             playerList = AccountManager.Instance.PlayerList;
-#if ENABLE_UI_UGUI
-            var uiPlayerListItemAssetHandle = await GameApp.Asset.LoadAssetAsync<GameObject>(Utility.Asset.Path.GetUIPath($"{nameof(UILogin)}/{nameof(UIPlayerListItem)}"));
-            foreach (var playerInfo in playerList)
-            {
-                var item = uiPlayerListItemAssetHandle.InstantiateSync(m_left_Panel__ScrollView__Viewport__Content);
-                var uiPlayerListItem = item.GetComponent<UIPlayerListItem>();
-                uiPlayerListItem.m_level_text.text = "当前等级:" + playerInfo.Level.ToString();
-                uiPlayerListItem.m_name_text.text = playerInfo.Name;
-                uiPlayerListItem.m_click_Button.onClick.Set(OnPlayerListItemClick, playerInfo);
-                var assetHandle = await GameApp.Asset.LoadAssetAsync<Sprite>(Utility.Asset.Path.GetCategoryFilePath("Sprites", $"avatar/{PlayerManager.Instance.PlayerInfo.Avatar}"));
-                uiPlayerListItem.m_icon.sprite = assetHandle.GetAssetObject<Sprite>();
-            }
-#endif
-#if ENABLE_UI_FAIRYGUI
-            this.m_player_list.DataList = new List<object>(playerList);
-            this.m_player_list.numItems = playerList.Count;
-#endif
+
+            m_login_button.onClick.Set(OnLoginButtonClick);
+
+            m_player_list.itemRenderer = ItemRenderer;
+            m_player_list.onClickItem.Set(OnPlayerListItemClick);
+            m_player_list.DataList = new List<object>(playerList);
+            m_player_list.numItems = playerList.Count;
         }
 
+        /// <summary>
+        /// 登录按钮点击事件
+        /// </summary>
         private void OnLoginButtonClick()
         {
-            if (networkChannel != null && networkChannel.Connected)
+            if (networkChannel is { Connected: true })
             {
                 Login();
                 return;
@@ -78,69 +62,77 @@ namespace Hotfix.UI
             }
 
             networkChannel = GameApp.Network.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
+
             // 注册心跳消息
-            DefaultPacketHeartBeatHandler packetSendHeaderHandler = new DefaultPacketHeartBeatHandler();
+            var packetSendHeaderHandler = new DefaultPacketHeartBeatHandler();
             networkChannel.RegisterHeartBeatHandler(packetSendHeaderHandler);
             networkChannel.Connect(new Uri($"tcp://{serverIp}:{serverPort}"));
-            GameApp.Event.CheckSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
-            GameApp.Event.CheckSubscribe(NetworkClosedEventArgs.EventId, OnNetworkClosed);
         }
 
+        /// <summary>
+        /// 执行登录
+        /// </summary>
         private async void Login()
         {
-            ReqPlayerLogin reqPlayerLogin = new ReqPlayerLogin();
-            reqPlayerLogin.Id = m_SelectedPlayerInfo.Id;
+            // 请求玩家登录
+            var reqPlayerLogin  = new ReqPlayerLogin { Id = m_SelectedPlayerInfo.Id };
             var respPlayerLogin = await GameApp.Network.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
             PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
+
+            // 打开主界面
             await GameApp.UI.OpenFullScreenAsync<UIMain>(Utility.Asset.Path.GetUIPath(nameof(UIMain)), UIGroupConstants.Floor);
+
+            // 关闭当前界面
             GameApp.UI.CloseUIForm(this);
-            await BagManager.Instance.RequestGetBagInfo();
         }
 
-        PlayerInfo m_SelectedPlayerInfo;
-#if ENABLE_UI_FAIRYGUI
-        private void OnPlayerListItemClick(EventContext context)
-        {
-            if ((context.data as GComponent).dataSource is PlayerInfo playerInfo)
-            {
-                m_SelectedPlayerInfo = playerInfo;
-
-                this.m_selected_icon.icon = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
-                this.m_selected_name.text = playerInfo.Name;
-                this.m_selected_level.text = "当前等级:" + playerInfo.Level;
-                this.m_IsSelected.SetSelectedIndex(1);
-            }
-        }
-#elif ENABLE_UI_UGUI
-        private async void OnPlayerListItemClick(object userData)
-        {
-            m_SelectedPlayerInfo = (PlayerInfo)userData;
-            var assetHandle = await GameApp.Asset.LoadAssetAsync<Sprite>(Utility.Asset.Path.GetCategoryFilePath("Sprites", $"avatar/{PlayerManager.Instance.PlayerInfo.Avatar}"));
-
-            m_right_Panel__selected_icon.sprite = assetHandle.GetAssetObject<Sprite>();
-            m_right_Panel__selected_name.text = m_SelectedPlayerInfo.Name;
-            m_right_Panel__selected_level.text = "当前等级:" + m_SelectedPlayerInfo.Level;
-            m_right_Panel.gameObject.SetActive(true);
-        }
-#endif
+        /// <summary>
+        /// 玩家角色列表项渲染器
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="item"></param>
         private void ItemRenderer(int index, GObject item)
         {
-            var playerInfo = playerList[index];
-#if ENABLE_UI_FAIRYGUI
+            var playerInfo       = playerList[index];
             var uiPlayerListItem = UIPlayerListItem.GetFormPool(item);
-            uiPlayerListItem.m_level_text.text = "当前等级:" + playerInfo.Level.ToString();
-            uiPlayerListItem.m_name_text.text = playerInfo.Name;
-            uiPlayerListItem.m_icon.icon = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
-#endif
+
+            uiPlayerListItem.m_level_text.text = "当前等级:" + playerInfo.Level;
+            uiPlayerListItem.m_name_text.text  = playerInfo.Name;
+            uiPlayerListItem.m_icon.icon       = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
 
             item.data = playerInfo;
         }
 
+        /// <summary>
+        /// 玩家角色列表项点击事件
+        /// </summary>
+        /// <param name="context"></param>
+        private void OnPlayerListItemClick(EventContext context)
+        {
+            if ((context.data as GComponent)?.dataSource is not PlayerInfo playerInfo) return;
+
+            m_SelectedPlayerInfo  = playerInfo;
+            m_selected_icon.icon  = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
+            m_selected_name.text  = playerInfo.Name;
+            m_selected_level.text = "当前等级:" + playerInfo.Level;
+            m_IsSelected.SetSelectedIndex(1);
+        }
+
+        /// <summary>
+        /// 网络连接关闭事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void OnNetworkClosed(object sender, GameEventArgs e)
         {
             Log.Info(nameof(OnNetworkClosed));
         }
 
+        /// <summary>
+        /// 网络连接成功事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnNetworkConnected(object sender, GameEventArgs e)
         {
             Login();

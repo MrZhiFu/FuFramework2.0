@@ -1,15 +1,6 @@
-using System.Collections.Generic;
-using GameFrameX;
-using GameFrameX.GlobalConfig.Runtime;
-#if ENABLE_UI_FAIRYGUI
-using GameFrameX.UI.FairyGUI.Runtime;
-#endif
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
 using Hotfix.Manager;
-#if ENABLE_UI_UGUI
-using GameFrameX.UI.UGUI.Runtime;
-#endif
 using Hotfix.Proto;
 
 namespace Hotfix.UI
@@ -29,11 +20,14 @@ namespace Hotfix.UI
             req = new ReqPlayerCreate();
             base.OnOpen(userData);
 
-            RespLogin respLogin = userData as RespLogin;
-            this.m_enter.onClick.Set(OnCreateButtonClick);
+            var respLogin = userData as RespLogin;
+            m_enter.onClick.Set(OnCreateButtonClick);
             req.Id = respLogin.Id;
         }
 
+        /// <summary>
+        /// 创建角色按钮点击事件
+        /// </summary>
         private async void OnCreateButtonClick()
         {
             if (m_UserName.text.IsNullOrWhiteSpace())
@@ -44,10 +38,8 @@ namespace Hotfix.UI
 
             req.Name = m_UserName.text;
 
-            #region 创建角色
-
+            // 创建角色
             var respPlayerCreate = await GameApp.Web.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", req);
-
             if (respPlayerCreate.ErrorCode > 0)
             {
                 Log.Error("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -59,26 +51,22 @@ namespace Hotfix.UI
                 Log.Info("创建角色成功");
             }
 
-            #endregion
-
-            #region 获取角色列表
-
-            ReqPlayerList reqPlayerList = new ReqPlayerList();
-
-            reqPlayerList.Id = req.Id;
+            // 获取角色列表
+            var reqPlayerList  = new ReqPlayerList { Id = req.Id };
             var respPlayerList = await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
-
             if (respPlayerList.ErrorCode > 0)
             {
                 Log.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);
                 return;
             }
 
+            // 将角色列表保存到Manager中
             AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
 
-            #endregion
-
+            // 打开角色列表界面
             await GameApp.UI.OpenFullScreenAsync<UIPlayerList>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), UserData);
+
+            // 关闭当前界面
             GameApp.UI.CloseUIForm(this);
         }
     }
