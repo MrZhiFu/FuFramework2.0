@@ -19,11 +19,17 @@ using LuBan.Runtime;
 
 namespace Hotfix
 {
+    /// <summary>
+    /// 代码热更入口
+    /// </summary>
     public static class HotfixLauncher
     {
+        /// <summary>
+        /// 启动入口
+        /// </summary>
         public static void Main()
         {
-            Log.Info("Hello World HybridCLR");
+            Log.Info("进入热更代码逻辑入口");
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
             LoadConfig();
             LoadUI();

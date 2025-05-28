@@ -18,7 +18,7 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
             
             // 设置FairyGUI的Loader加载器为自定义加载器
-            FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(FuiCostumeLoader));
+            FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(FuiCustomLoader));
             
             // 启动UI
             LauncherUIHelper.Start();

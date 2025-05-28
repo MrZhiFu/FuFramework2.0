@@ -1,5 +1,4 @@
-﻿#if ENABLE_UI_FAIRYGUI
-using System.IO;
+﻿using System.IO;
 using FairyGUI;
 using GameFrameX.Runtime;
 
@@ -139,7 +138,7 @@ namespace Unity.Startup
     /// 1.实现了网络资源和AB包内资源的加载
     /// 2.实现了LRU缓存机制，避免重复加载资源
     /// </summary>
-    public sealed class FuiCostumeLoader : GLoader
+    public sealed class FuiCustomLoader : GLoader
     {
         /// <summary>
         /// Loader 纹理LRU缓存
@@ -151,7 +150,7 @@ namespace Unity.Startup
         /// </summary>
         private static string _cachePath;
 
-        public FuiCostumeLoader()
+        public FuiCustomLoader()
         {
             _cachePath = PathHelper.AppHotfixResPath + "/cache/images/";
             if (!Directory.Exists(_cachePath))
@@ -250,4 +249,3 @@ namespace Unity.Startup
         }
     }
 }
-#endif
