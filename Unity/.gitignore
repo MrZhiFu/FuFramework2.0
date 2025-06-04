@@ -15,6 +15,5 @@ Logs
 Android_Symbols
 Assets/StreamingAssets/build_info
 Assets/StreamingAssets/build_info.meta
-HybridCLRData/
 .DS_Store
 Assets/Bundles/AOTCode/*
