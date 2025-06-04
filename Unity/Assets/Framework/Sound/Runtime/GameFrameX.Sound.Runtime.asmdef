@@ -1,0 +1,22 @@
+{
+    "name": "GameFrameX.Sound.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Event.Runtime",
+        "GameFrameX.Asset.Runtime",
+        "GameFrameX.Entity.Runtime",
+        "UniTask.Runtime",
+        "YooAsset.Runtime",
+        "GameFrameX.Scene.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Sound.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

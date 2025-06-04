@@ -1,0 +1,16 @@
+{
+    "name": "GameFrameX.Timer.Runtime",
+    "references": [
+        "GameFrameX.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Timer.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

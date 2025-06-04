@@ -1,0 +1,16 @@
+{
+    "name": "GameFrameX.Coroutine.Runtime",
+    "references": [
+        "GameFrameX.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Coroutine.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

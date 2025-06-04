@@ -1,0 +1,161 @@
+{
+    "name": "GameFrameX.Entry.Runtime",
+    "rootNamespace": "GameFrameX.Entry.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Web.Runtime",
+        "GameFrameX.GlobalConfig.Runtime",
+        "GameFrameX.Timer.Runtime",
+        "GameFrameX.FSM.Runtime",
+        "GameFrameX.Procedure.Runtime",
+        "GameFrameX.Setting.Runtime",
+        "GameFrameX.Mono.Runtime",
+        "GameFrameX.Coroutine.Runtime",
+        "GameFrameX.Download.Runtime",
+        "GameFrameX.Scene.Runtime",
+        "GameFrameX.Sound.Runtime",
+        "GameFrameX.Event.Runtime",
+        "GameFrameX.UI.Runtime",
+        "GameFrameX.Asset.Runtime",
+        "GameFrameX.Entity.Runtime",
+        "GameFrameX.Localization.Runtime",
+        "GameFrameX.Config.Runtime",
+        "GameFrameX.Network.Runtime",
+        "GameFrameX.UI.FairyGUI.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.gameframex.unity.guide",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_GUIDE"
+        },
+        {
+            "name": "com.gameframex.unity.reddot",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_RED_DOT"
+        },
+        {
+            "name": "com.gameframex.unity.web",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_WEB"
+        },
+        {
+            "name": "com.gameframex.unity.timer",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_TIMER"
+        },
+        {
+            "name": "com.gameframex.unity.globalconfig",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_GLOBAL_CONFIG"
+        },
+        {
+            "name": "com.gameframex.unity.fsm",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_FSM"
+        },
+        {
+            "name": "com.gameframex.unity.procedure",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_PROCEDURE"
+        },
+        {
+            "name": "com.gameframex.unity.setting",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_SETTING"
+        },
+        {
+            "name": "com.gameframex.unity.mono",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_MONO"
+        },
+        {
+            "name": "com.gameframex.unity.coroutine",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_COROUTINE"
+        },
+        {
+            "name": "com.gameframex.unity.download",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_DOWNLOAD"
+        },
+        {
+            "name": "com.gameframex.unity.scene",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_SCENE"
+        },
+        {
+            "name": "com.gameframex.unity.sound",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_SOUND"
+        },
+        {
+            "name": "com.gameframex.unity.event",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_EVENT"
+        },
+        {
+            "name": "com.gameframex.unity.fairygui",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_FAIYGUI"
+        },
+        {
+            "name": "com.gameframex.unity.ui.fairygui",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_UI_FAIYGUI"
+        },
+        {
+            "name": "com.gameframex.unity.ui",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_UI"
+        },
+        {
+            "name": "com.gameframex.unity.asset",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_ASSET"
+        },
+        {
+            "name": "com.gameframex.unity.entity",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_ENTITY"
+        },
+        {
+            "name": "com.gameframex.unity.localization",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_LOCALIZATION"
+        },
+        {
+            "name": "com.gameframex.unity.config",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_CONFIG"
+        },
+        {
+            "name": "com.gameframex.unity.network",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_NETWORK"
+        },
+        {
+            "name": "com.gameframex.unity.xlua",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_X_LUA"
+        },
+        {
+            "name": "com.gameframex.unity.advertisement",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_ADVERTISEMENT"
+        },
+        {
+            "name": "com.gameframex.unity.gameanalytics",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_GAME_ANALYTICS"
+        }
+    ],
+    "noEngineReferences": false
+}

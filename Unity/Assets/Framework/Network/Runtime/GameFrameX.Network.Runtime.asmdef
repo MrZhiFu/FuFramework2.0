@@ -1,0 +1,35 @@
+{
+    "name": "GameFrameX.Network.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Event.Runtime",
+        "UnityWebSocket.Runtime",
+        "ProtoBuffer.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Network.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.gameframex.unity.psygames.unitywebsocket",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_WEB_SOCKET"
+        },
+        {
+            "name": "com.gameframex.unity.google.protobuf",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_PROTOBUF"
+        },
+        {
+            "name": "com.gameframex.unity.neuecc.messagepack",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_MESSAGEPACK"
+        }
+    ],
+    "noEngineReferences": false
+}

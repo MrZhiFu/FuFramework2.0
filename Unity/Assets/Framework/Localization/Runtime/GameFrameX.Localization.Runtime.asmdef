@@ -1,0 +1,19 @@
+{
+    "name": "GameFrameX.Localization.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Event.Runtime",
+        "GameFrameX.Asset.Runtime",
+        "GameFrameX.Setting.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Localization.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

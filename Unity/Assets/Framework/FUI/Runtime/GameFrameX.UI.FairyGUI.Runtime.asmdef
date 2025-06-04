@@ -1,0 +1,22 @@
+{
+    "name": "GameFrameX.UI.FairyGUI.Runtime",
+    "rootNamespace": "GameFrameX.UI.FairyGUI.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Asset.Runtime",
+        "GameFrameX.Event.Runtime",
+        "GameFrameX.UI.Runtime",
+        "FairyGUI.Runtime",
+        "UniTask.Runtime",
+        "YooAsset.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

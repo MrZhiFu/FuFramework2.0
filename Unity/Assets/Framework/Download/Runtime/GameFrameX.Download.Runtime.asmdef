@@ -1,0 +1,17 @@
+{
+    "name": "GameFrameX.Download.Runtime",
+    "references": [
+        "GameFrameX.Runtime",
+        "GameFrameX.Event.Runtime"
+    ],
+    "rootNamespace": "GameFrameX.Download.Runtime",
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

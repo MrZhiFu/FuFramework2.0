@@ -1,0 +1,19 @@
+{
+    "name": "GameFrameX.FSM.Editor",
+    "references": [
+        "GameFrameX.FSM.Runtime",
+        "GameFrameX.Editor",
+        "GameFrameX.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
