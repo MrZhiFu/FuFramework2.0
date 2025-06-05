@@ -24,20 +24,21 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     internal sealed partial class UIManager
     {
-        private readonly Dictionary<int, string> m_UIFormsBeingLoaded;
-        private readonly HashSet<int> m_UIFormsToReleaseOnLoad;
-
-        private readonly Queue<IUIForm> m_RecycleQueue;
+        private readonly Dictionary<int, string> m_LoadingDict; // 正在加载的界面集合, key为界面Id, value为界面名称
+        private readonly HashSet<int> m_WaitReleaseSet; // 待释放的界面集合，int为界面Id
+        private readonly Queue<IUIForm> m_WaitRecycleQueue; // 待回收的界面集合
 
         // private readonly LoadAssetCallbacks m_LoadAssetCallbacks;
-        private IObjectPoolManager m_ObjectPoolManager;
-        private IAssetManager m_AssetManager;
+
+        private IAssetManager m_AssetManager; // 资源管理器
+        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
         private FairyGUIPackageComponent FairyGuiPackage { get; set; }
         private IObjectPool<UIFormInstanceObject> m_InstancePool;
         private IUIFormHelper m_UIFormHelper;
         private int m_Serial;
 
         private bool m_IsShutdown;
+
         // private EventHandler<OpenUIFormUpdateEventArgs> m_OpenUIFormUpdateEventHandler;
         // private EventHandler<OpenUIFormDependencyAssetEventArgs> m_OpenUIFormDependencyAssetEventHandler;
 
@@ -47,10 +48,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public UIManager()
         {
-            m_UIGroups = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
-            m_UIFormsBeingLoaded = new Dictionary<int, string>();
-            m_UIFormsToReleaseOnLoad = new HashSet<int>();
-            m_RecycleQueue = new Queue<IUIForm>();
+            m_UIGroupDict = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
+            m_LoadingDict = new Dictionary<int, string>();
+            m_WaitReleaseSet = new HashSet<int>();
+            m_WaitRecycleQueue = new Queue<IUIForm>();
+
             // m_LoadAssetCallbacks = new LoadAssetCallbacks(LoadAssetSuccessCallback, LoadAssetFailureCallback, LoadAssetUpdateCallback, LoadAssetDependencyAssetCallback);
             m_ObjectPoolManager = null;
             m_AssetManager = null;
@@ -58,6 +60,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_UIFormHelper = null;
             m_Serial = 0;
             m_IsShutdown = false;
+
             m_OpenUIFormSuccessEventHandler = null;
             m_OpenUIFormFailureEventHandler = null;
             // m_OpenUIFormUpdateEventHandler = null;
@@ -70,8 +73,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public float InstanceAutoReleaseInterval
         {
-            get { return m_InstancePool.AutoReleaseInterval; }
-            set { m_InstancePool.AutoReleaseInterval = value; }
+            get => m_InstancePool.AutoReleaseInterval;
+            set => m_InstancePool.AutoReleaseInterval = value;
         }
 
         /// <summary>
@@ -79,8 +82,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public int InstanceCapacity
         {
-            get { return m_InstancePool.Capacity; }
-            set { m_InstancePool.Capacity = value; }
+            get => m_InstancePool.Capacity;
+            set => m_InstancePool.Capacity = value;
         }
 
         /// <summary>
@@ -88,8 +91,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public float InstanceExpireTime
         {
-            get { return m_InstancePool.ExpireTime; }
-            set { m_InstancePool.ExpireTime = value; }
+            get => m_InstancePool.ExpireTime;
+            set => m_InstancePool.ExpireTime = value;
         }
 
         /*/// <summary>
@@ -100,7 +103,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             get { return m_InstancePool.Priority; }
             set { m_InstancePool.Priority = value; }
         }*/
-
 
         /*
         /// <summary>
@@ -120,6 +122,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             add { m_OpenUIFormDependencyAssetEventHandler += value; }
             remove { m_OpenUIFormDependencyAssetEventHandler -= value; }
         }*/
+
         /// <summary>
         /// 界面管理器轮询。
         /// </summary>
@@ -127,16 +130,15 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         protected override void Update(float elapseSeconds, float realElapseSeconds)
         {
-            while (m_RecycleQueue.Count > 0)
+            while (m_WaitRecycleQueue.Count > 0)
             {
-                IUIForm uiForm = m_RecycleQueue.Dequeue();
-
+                var uiForm = m_WaitRecycleQueue.Dequeue();
                 RecycleUIForm(uiForm);
             }
 
-            foreach (KeyValuePair<string, UIGroup> uiGroup in m_UIGroups)
+            foreach (var (_, group) in m_UIGroupDict)
             {
-                uiGroup.Value.Update(elapseSeconds, realElapseSeconds);
+                group.Update(elapseSeconds, realElapseSeconds);
             }
         }
 
@@ -147,10 +149,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             m_IsShutdown = true;
             CloseAllLoadedUIForms();
-            m_UIGroups.Clear();
-            m_UIFormsBeingLoaded.Clear();
-            m_UIFormsToReleaseOnLoad.Clear();
-            m_RecycleQueue.Clear();
+            m_UIGroupDict.Clear();
+            m_LoadingDict.Clear();
+            m_WaitReleaseSet.Clear();
+            m_WaitRecycleQueue.Clear();
         }
 
         /// <summary>
@@ -160,7 +162,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void SetObjectPoolManager(IObjectPoolManager objectPoolManager)
         {
             GameFrameworkGuard.NotNull(objectPoolManager, nameof(objectPoolManager));
-
             m_ObjectPoolManager = objectPoolManager;
             m_InstancePool = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIFormInstanceObject>("UI Instance Pool");
         }
@@ -172,7 +173,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void SetResourceManager(IAssetManager assetManager)
         {
             GameFrameworkGuard.NotNull(assetManager, nameof(assetManager));
-
             m_AssetManager = assetManager;
             FairyGuiPackage = GameEntry.GetComponent<FairyGUIPackageComponent>();
             GameFrameworkGuard.NotNull(FairyGuiPackage, nameof(FairyGuiPackage));
@@ -186,7 +186,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void SetUIFormHelper(IUIFormHelper uiFormHelper)
         {
             GameFrameworkGuard.NotNull(uiFormHelper, nameof(uiFormHelper));
-
             m_UIFormHelper = uiFormHelper;
         }
     }

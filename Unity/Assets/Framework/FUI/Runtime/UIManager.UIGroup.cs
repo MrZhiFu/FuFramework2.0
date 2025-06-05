@@ -5,34 +5,26 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using FairyGUI;
-using GameFrameX.Asset.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
-    /// 界面管理器。
+    /// 界面管理器.UI分组管理器
     /// </summary>
     internal sealed partial class UIManager : GameFrameworkModule, IUIManager
     {
-        private readonly Dictionary<string, UIGroup> m_UIGroups;
+        /// <summary>
+        /// 界面组字典。key为组名称，value为组对象。
+        /// </summary>
+        private readonly Dictionary<string, UIGroup> m_UIGroupDict;
 
         /// <summary>
         /// 获取界面组数量。
         /// </summary>
-        public int UIGroupCount
-        {
-            get { return m_UIGroups.Count; }
-        }
+        public int UIGroupCount => m_UIGroupDict.Count;
 
         /// <summary>
         /// 是否存在界面组。
@@ -42,7 +34,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public bool HasUIGroup(string uiGroupName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
-            return m_UIGroups.ContainsKey(uiGroupName);
+            return m_UIGroupDict.ContainsKey(uiGroupName);
         }
 
         /// <summary>
@@ -53,13 +45,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public IUIGroup GetUIGroup(string uiGroupName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
-
-            if (m_UIGroups.TryGetValue(uiGroupName, out var uiGroup))
-            {
-                return uiGroup;
-            }
-
-            return null;
+            return m_UIGroupDict.TryGetValue(uiGroupName, out var uiGroup) ? uiGroup : null;
         }
 
         /// <summary>
@@ -68,11 +54,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns>所有界面组。</returns>
         public IUIGroup[] GetAllUIGroups()
         {
-            int index = 0;
-            IUIGroup[] results = new IUIGroup[m_UIGroups.Count];
-            foreach (KeyValuePair<string, UIGroup> uiGroup in m_UIGroups)
+            var index = 0;
+            var results = new IUIGroup[m_UIGroupDict.Count];
+            foreach (var (_, group) in m_UIGroupDict)
             {
-                results[index++] = uiGroup.Value;
+                results[index++] = group;
             }
 
             return results;
@@ -87,9 +73,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             GameFrameworkGuard.NotNull(results, nameof(results));
 
             results.Clear();
-            foreach (KeyValuePair<string, UIGroup> uiGroup in m_UIGroups)
+            foreach (var (_, group) in m_UIGroupDict)
             {
-                results.Add(uiGroup.Value);
+                results.Add(group);
             }
         }
 
@@ -115,13 +101,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
             GameFrameworkGuard.NotNull(uiGroupHelper, nameof(uiGroupHelper));
-            if (HasUIGroup(uiGroupName))
-            {
-                return false;
-            }
+            if (HasUIGroup(uiGroupName)) return false;
 
-            m_UIGroups.Add(uiGroupName, new UIGroup(uiGroupName, uiGroupDepth, uiGroupHelper));
-
+            m_UIGroupDict.Add(uiGroupName, new UIGroup(uiGroupName, uiGroupDepth, uiGroupHelper));
             return true;
         }
     }

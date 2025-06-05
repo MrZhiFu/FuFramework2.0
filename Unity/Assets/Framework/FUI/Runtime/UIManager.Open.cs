@@ -20,7 +20,7 @@ using UnityEngine;
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
-    /// 界面管理器。
+    /// 界面管理器.打开界面
     /// </summary>
     internal sealed partial class UIManager
     {
@@ -36,8 +36,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public event EventHandler<OpenUIFormSuccessEventArgs> OpenUIFormSuccess
         {
-            add { m_OpenUIFormSuccessEventHandler += value; }
-            remove { m_OpenUIFormSuccessEventHandler -= value; }
+            add => m_OpenUIFormSuccessEventHandler += value;
+            remove => m_OpenUIFormSuccessEventHandler -= value;
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public event EventHandler<OpenUIFormFailureEventArgs> OpenUIFormFailure
         {
-            add { m_OpenUIFormFailureEventHandler += value; }
-            remove { m_OpenUIFormFailureEventHandler -= value; }
+            add => m_OpenUIFormFailureEventHandler += value;
+            remove => m_OpenUIFormFailureEventHandler -= value;
         }
 
         /*
@@ -116,25 +116,25 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return InternalOpenUIForm(-1, uiFormAssetName, uiFormType, uiFormInstanceObject.Target, pauseCoveredUIForm, false, 0f, userData, isFullScreen);
             }
 
-            int serialId = ++m_Serial;
-            m_UIFormsBeingLoaded.Add(serialId, uiFormAssetName);
-            string assetPath = PathHelper.Combine(uiFormAssetPath, uiFormAssetName);
+            var serialId = ++m_Serial;
+            m_LoadingDict.Add(serialId, uiFormAssetName);
+            var assetPath = PathHelper.Combine(uiFormAssetPath, uiFormAssetName);
 
             var lastIndexOfStart = uiFormAssetPath.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
             var packageName = uiFormAssetPath.Substring(lastIndexOfStart + 1);
+            
             // 检查UI包是否已经加载过
             var hasUIPackage = FairyGuiPackage.Has(packageName);
 
             OpenUIFormInfoData openUIFormInfoData = OpenUIFormInfoData.Create(serialId, packageName, uiFormAssetName, uiFormType, pauseCoveredUIForm, userData);
             OpenUIFormInfo openUIFormInfo = OpenUIFormInfo.Create(serialId, uiFormType, pauseCoveredUIForm, userData, isFullScreen);
+            
+            // 检查路径中是否包含Bundle目录，如果不包含则从Resources中加载
             if (assetPath.IndexOf(Utility.Asset.Path.BundlesDirectoryName, StringComparison.OrdinalIgnoreCase) < 0)
             {
-                // 从Resources 中加载
-                if (!hasUIPackage)
-                {
+                // 从Resources中加载
+                if (!hasUIPackage) 
                     FairyGuiPackage.AddPackageSync(assetPath);
-                }
-
                 return LoadAssetSuccessCallback(uiFormAssetName, openUIFormInfoData, 0, openUIFormInfo);
             }
 
@@ -292,15 +292,15 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
 
-            if (m_UIFormsToReleaseOnLoad.Contains(openUIFormInfo.SerialId))
+            if (m_WaitReleaseSet.Contains(openUIFormInfo.SerialId))
             {
-                m_UIFormsToReleaseOnLoad.Remove(openUIFormInfo.SerialId);
+                m_WaitReleaseSet.Remove(openUIFormInfo.SerialId);
                 ReferencePool.Release(openUIFormInfo);
                 m_UIFormHelper.ReleaseUIForm(uiFormAsset, null);
                 return GetUIForm(openUIFormInfo.SerialId);
             }
 
-            m_UIFormsBeingLoaded.Remove(openUIFormInfo.SerialId);
+            m_LoadingDict.Remove(openUIFormInfo.SerialId);
             UIFormInstanceObject uiFormInstanceObject = UIFormInstanceObject.Create(uiFormAssetName, uiFormAsset, m_UIFormHelper.InstantiateUIForm(uiFormAsset), m_UIFormHelper);
             m_InstancePool.Register(uiFormInstanceObject, true);
 
@@ -318,13 +318,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 throw new GameFrameworkException("Open UI form info is invalid.");
             }
 
-            if (m_UIFormsToReleaseOnLoad.Contains(openUIFormInfo.SerialId))
+            if (m_WaitReleaseSet.Contains(openUIFormInfo.SerialId))
             {
-                m_UIFormsToReleaseOnLoad.Remove(openUIFormInfo.SerialId);
+                m_WaitReleaseSet.Remove(openUIFormInfo.SerialId);
                 return GetUIForm(openUIFormInfo.SerialId);
             }
 
-            m_UIFormsBeingLoaded.Remove(openUIFormInfo.SerialId);
+            m_LoadingDict.Remove(openUIFormInfo.SerialId);
             string appendErrorMessage = Utility.Text.Format("Load UI form failure, asset name '{0}', error message '{2}'.", uiFormAssetName, errorMessage);
             if (m_OpenUIFormFailureEventHandler != null)
             {

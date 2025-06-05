@@ -19,7 +19,9 @@ namespace GameFrameX.Mono.Runtime
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IMonoManager);
+            
             base.Awake();
+            
             _monoManager = GameFrameworkEntry.GetModule<IMonoManager>();
             if (_monoManager == null)
             {
@@ -31,7 +33,6 @@ namespace GameFrameX.Mono.Runtime
             if (m_EventComponent == null)
             {
                 Log.Fatal("Event manager is invalid.");
-                return;
             }
         }
 

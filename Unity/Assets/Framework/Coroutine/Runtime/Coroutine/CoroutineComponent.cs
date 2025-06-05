@@ -13,20 +13,30 @@ namespace GameFrameX.Coroutine.Runtime
     public class CoroutineComponent : GameFrameworkComponent
     {
         /// <summary>
+        /// 等待帧结束
+        /// </summary>
+        private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+
+        /// <summary>
         /// 执行过的迭代器
         /// </summary>
-        private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineMap = new ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine>();
+        private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineMap = new();
+
+        protected override void Awake()
+        {
+            IsAutoRegister = false;
+            base.Awake();
+        }
 
         /// <summary>
         /// 开启一个协程
         /// </summary>
         /// <param name="enumerator"></param>
         /// <returns></returns>
-        public new UnityEngine.Coroutine StartCoroutine(IEnumerator enumerator)
+        public new void StartCoroutine(IEnumerator enumerator)
         {
             var ret = base.StartCoroutine(enumerator);
             m_CoroutineMap[enumerator] = ret;
-            return ret;
         }
 
         /// <summary>
@@ -75,8 +85,6 @@ namespace GameFrameX.Coroutine.Runtime
             base.StopAllCoroutines();
         }
 
-        private readonly WaitForEndOfFrame _waitForEndOfFrame = new WaitForEndOfFrame();
-
         /// <summary>
         /// 等待当前帧结束
         /// </summary>
@@ -94,12 +102,6 @@ namespace GameFrameX.Coroutine.Runtime
         public void WaitForEndOfFrameFinish(System.Action callback)
         {
             StartCoroutine(_WaitForEndOfFrameFinish(callback));
-        }
-
-        protected override void Awake()
-        {
-            IsAutoRegister = false;
-            base.Awake();
         }
     }
 }

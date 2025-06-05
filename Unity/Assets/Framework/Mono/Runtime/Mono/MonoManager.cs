@@ -7,25 +7,25 @@ namespace GameFrameX.Mono.Runtime
     [UnityEngine.Scripting.Preserve]
     public sealed class MonoManager : GameFrameworkModule, IMonoManager
     {
-        private static readonly object Lock = new object();
+        private static readonly object Lock = new();
 
-        private List<Action> _updateQueue = new List<Action>();
-        private List<Action> _invokeUpdateQueue = new List<Action>();
+        private readonly List<Action> _updateQueue = new();
+        private readonly List<Action> _invokeUpdateQueue = new();
 
-        private List<Action> _fixedUpdate = new List<Action>();
-        private List<Action> _invokeFixedUpdate = new List<Action>();
+        private readonly List<Action> _fixedUpdate = new();
+        private readonly List<Action> _invokeFixedUpdate = new();
 
-        private List<Action> _lateUpdate = new List<Action>();
-        private List<Action> _invokeLateUpdate = new List<Action>();
+        private readonly List<Action> _lateUpdate = new();
+        private readonly List<Action> _invokeLateUpdate = new();
 
-        private List<Action> _destroy = new List<Action>();
-        private List<Action> _invokeDestroy = new List<Action>();
+        private readonly List<Action> _destroy = new();
+        private readonly List<Action> _invokeDestroy = new();
 
-        private List<Action<bool>> _onApplicationPause = new List<Action<bool>>();
-        private List<Action<bool>> _invokeOnApplicationPause = new List<Action<bool>>();
+        private List<Action<bool>> _onApplicationPause = new();
+        private List<Action<bool>> _invokeOnApplicationPause = new();
 
-        private List<Action<bool>> _onApplicationFocus = new List<Action<bool>>();
-        private List<Action<bool>> _invokeOnApplicationFocus = new List<Action<bool>>();
+        private List<Action<bool>> _onApplicationFocus = new();
+        private List<Action<bool>> _invokeOnApplicationFocus = new();
 
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace GameFrameX.Mono.Runtime
         /// </summary>
         public void FixedUpdate()
         {
-            QueueInvoking(this._invokeFixedUpdate, this._fixedUpdate);
+            QueueInvoking(_invokeFixedUpdate, _fixedUpdate);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace GameFrameX.Mono.Runtime
         /// </summary>
         public void LateUpdate()
         {
-            QueueInvoking(this._invokeLateUpdate, this._lateUpdate);
+            QueueInvoking(_invokeLateUpdate, _lateUpdate);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace GameFrameX.Mono.Runtime
         /// </summary>
         public void OnDestroy()
         {
-            QueueInvoking(this._invokeDestroy, this._destroy);
+            QueueInvoking(_invokeDestroy, _destroy);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="focusStatus">应用程序的焦点状态</param>
         public void OnApplicationFocus(bool focusStatus)
         {
-            QueueInvoking(ref this._invokeOnApplicationFocus, ref this._onApplicationFocus, focusStatus);
+            QueueInvoking(ref _invokeOnApplicationFocus, ref _onApplicationFocus, focusStatus);
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="pauseStatus">应用程序的暂停状态</param>
         public void OnApplicationPause(bool pauseStatus)
         {
-            QueueInvoking(ref this._invokeOnApplicationPause, ref this._onApplicationPause, pauseStatus);
+            QueueInvoking(ref _invokeOnApplicationPause, ref _onApplicationPause, pauseStatus);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace GameFrameX.Mono.Runtime
 
             lock (Lock)
             {
-                this._fixedUpdate.Remove(action);
+                _fixedUpdate.Remove(action);
             }
         }
 
@@ -276,12 +276,12 @@ namespace GameFrameX.Mono.Runtime
 
         public void Release()
         {
-            this._updateQueue.Clear();
-            this._destroy.Clear();
-            this._fixedUpdate.Clear();
-            this._lateUpdate.Clear();
-            this._onApplicationFocus.Clear();
-            this._onApplicationPause.Clear();
+            _updateQueue.Clear();
+            _destroy.Clear();
+            _fixedUpdate.Clear();
+            _lateUpdate.Clear();
+            _onApplicationFocus.Clear();
+            _onApplicationPause.Clear();
         }
 
 
@@ -327,17 +327,17 @@ namespace GameFrameX.Mono.Runtime
 
         protected override void Update(float elapseSeconds, float realElapseSeconds)
         {
-            QueueInvoking(this._invokeUpdateQueue, this._updateQueue);
+            QueueInvoking(_invokeUpdateQueue, _updateQueue);
         }
 
         protected override void Shutdown()
         {
-            this._updateQueue.Clear();
-            this._fixedUpdate.Clear();
-            this._lateUpdate.Clear();
-            this._onApplicationFocus.Clear();
-            this._onApplicationPause.Clear();
-            this._destroy.Clear();
+            _updateQueue.Clear();
+            _fixedUpdate.Clear();
+            _lateUpdate.Clear();
+            _onApplicationFocus.Clear();
+            _onApplicationPause.Clear();
+            _destroy.Clear();
         }
     }
 }

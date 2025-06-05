@@ -96,8 +96,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (IsLoadingUIForm(serialId))
             {
-                m_UIFormsToReleaseOnLoad.Add(serialId);
-                m_UIFormsBeingLoaded.Remove(serialId);
+                m_WaitReleaseSet.Add(serialId);
+                m_LoadingDict.Remove(serialId);
                 return;
             }
 
@@ -167,7 +167,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 // ReferencePool.Release(closeUIFormCompleteEventArgs);
             }
 
-            m_RecycleQueue.Enqueue(uiForm);
+            m_WaitRecycleQueue.Enqueue(uiForm);
         }
 
 
@@ -189,8 +189,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (IsLoadingUIForm(serialId))
             {
-                m_UIFormsToReleaseOnLoad.Add(serialId);
-                m_UIFormsBeingLoaded.Remove(serialId);
+                m_WaitReleaseSet.Add(serialId);
+                m_LoadingDict.Remove(serialId);
                 return;
             }
 
@@ -294,12 +294,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public void CloseAllLoadingUIForms()
         {
-            foreach (KeyValuePair<int, string> uiFormBeingLoaded in m_UIFormsBeingLoaded)
+            foreach (KeyValuePair<int, string> uiFormBeingLoaded in m_LoadingDict)
             {
-                m_UIFormsToReleaseOnLoad.Add(uiFormBeingLoaded.Key);
+                m_WaitReleaseSet.Add(uiFormBeingLoaded.Key);
             }
 
-            m_UIFormsBeingLoaded.Clear();
+            m_LoadingDict.Clear();
         }
     }
 }

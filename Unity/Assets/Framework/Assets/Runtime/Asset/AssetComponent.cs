@@ -26,8 +26,8 @@ namespace GameFrameX.Asset.Runtime
         /// </summary>
         public EPlayMode GamePlayMode
         {
-            get { return m_GamePlayMode; }
-            set { m_GamePlayMode = value; }
+            get => m_GamePlayMode;
+            set => m_GamePlayMode = value;
         }
 #if UNITY_EDITOR
         [SerializeField] private List<AssetResourcePackageInfo> m_assetResourcePackages = new List<AssetResourcePackageInfo>();
