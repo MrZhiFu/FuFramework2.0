@@ -18,7 +18,7 @@ namespace GameFrameX.Runtime
         {
             if (string.IsNullOrEmpty(value))
             {
-                throw new ArgumentNullException(name, " can not be null.");
+                throw new ArgumentNullException(name, "不能为空.");
             }
         }
 
@@ -35,7 +35,7 @@ namespace GameFrameX.Runtime
         {
             if (value == null)
             {
-                throw new ArgumentNullException(name, " can not be null.");
+                throw new ArgumentNullException(name, "不能为空.");
             }
         }
 
@@ -52,7 +52,7 @@ namespace GameFrameX.Runtime
         {
             if (value > max || value < min)
             {
-                throw new ArgumentOutOfRangeException(name, "value must between " + min + " and " + max);
+                throw new ArgumentOutOfRangeException(name, "值必须在" + min + " 到 " + max + "之间.");
             }
         }
     }

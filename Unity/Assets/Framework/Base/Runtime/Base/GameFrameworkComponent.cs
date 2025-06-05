@@ -46,6 +46,7 @@ namespace GameFrameX.Runtime
             {
                 GameFrameworkGuard.NotNull(ImplementationComponentType, nameof(ImplementationComponentType));
                 GameFrameworkGuard.NotNull(InterfaceComponentType, nameof(InterfaceComponentType));
+                
                 GameFrameworkEntry.RegisterModule(InterfaceComponentType, ImplementationComponentType);
             }
         }

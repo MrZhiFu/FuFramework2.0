@@ -122,13 +122,3 @@ GetComponent<TimerComponent>().Remove(MyMethod);
 
 - 在使用定时器前，请确保`TimerManager`已正确初始化并且已正确注入到`GameFrameworkEntry`模块中。
 - 尽量避免使用过小的间隔时间（例如小于帧时间），这可能会导致性能问题。
-
-# 使用方式(任选其一)
-
-1. 直接在 `manifest.json` 的文件中的 `dependencies` 节点下添加以下内容
-   ```json
-      {"com.gameframex.unity.timer": "https://github.com/AlianBlank/com.gameframex.unity.timer.git"}
-    ```
-2. 在Unity 的`Packages Manager` 中使用`Git URL` 的方式添加库,地址为：https://github.com/AlianBlank/com.gameframex.unity.timer.git
-
-3. 直接下载仓库放置到Unity 项目的`Packages` 目录下。会自动加载识别

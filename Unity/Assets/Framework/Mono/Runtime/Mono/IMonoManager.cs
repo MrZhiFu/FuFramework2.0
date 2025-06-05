@@ -34,6 +34,7 @@ namespace GameFrameX.Mono.Runtime
         /// </summary>
         /// <param name="pauseStatus">应用程序的暂停状态</param>
         void OnApplicationPause(bool pauseStatus);
+        
 
         /// <summary>
         /// 添加一个在 LateUpdate 期间调用的监听器。

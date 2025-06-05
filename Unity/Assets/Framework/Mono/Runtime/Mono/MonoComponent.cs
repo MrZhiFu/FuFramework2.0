@@ -12,7 +12,7 @@ namespace GameFrameX.Mono.Runtime
     [AddComponentMenu("Game Framework/Mono")]
     public class MonoComponent : GameFrameworkComponent
     {
-        private IMonoManager _monoManager;
+        private IMonoManager m_MonoManager;
         private EventComponent m_EventComponent;
 
         protected override void Awake()
@@ -22,43 +22,35 @@ namespace GameFrameX.Mono.Runtime
             
             base.Awake();
             
-            _monoManager = GameFrameworkEntry.GetModule<IMonoManager>();
-            if (_monoManager == null)
+            m_MonoManager = GameFrameworkEntry.GetModule<IMonoManager>();
+            if (m_MonoManager == null)
             {
-                Log.Fatal("Mono manager is invalid.");
+                Log.Fatal("Mono管理器为空.");
                 return;
             }
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             if (m_EventComponent == null)
             {
-                Log.Fatal("Event manager is invalid.");
+                Log.Fatal("事件管理器为空.");
             }
         }
 
         /// <summary>
         /// 在固定的帧率下调用。
         /// </summary>
-        private void FixedUpdate()
-        {
-            _monoManager.FixedUpdate();
-        }
+        private void FixedUpdate() => m_MonoManager.FixedUpdate();
 
         /// <summary>
         /// 在所有 Update 函数调用后每帧调用。
         /// </summary>
-        private void LateUpdate()
-        {
-            _monoManager.LateUpdate();
-        }
+        private void LateUpdate() => m_MonoManager.LateUpdate();
 
         /// <summary>
         /// 当 MonoBehaviour 将被销毁时调用。
         /// </summary>
-        private void OnDestroy()
-        {
-            _monoManager.OnDestroy();
-        }
+        private void OnDestroy() => m_MonoManager.OnDestroy();
+        
 
         /// <summary>
         /// 当应用程序失去或获得焦点时调用。
@@ -66,7 +58,7 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="focusStatus">应用程序的焦点状态</param>
         private void OnApplicationFocus(bool focusStatus)
         {
-            _monoManager.OnApplicationFocus(focusStatus);
+            m_MonoManager.OnApplicationFocus(focusStatus);
             if (m_EventComponent != null)
             {
                 m_EventComponent.Fire(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
@@ -79,7 +71,7 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="pauseStatus">应用程序的暂停状态</param>
         private void OnApplicationPause(bool pauseStatus)
         {
-            _monoManager.OnApplicationPause(pauseStatus);
+            m_MonoManager.OnApplicationPause(pauseStatus);
             if (m_EventComponent != null)
             {
                 m_EventComponent.Fire(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
@@ -94,11 +86,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddLateUpdateListener(fun);
+            m_MonoManager.AddLateUpdateListener(fun);
         }
 
         /// <summary>
@@ -109,11 +101,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveLateUpdateListener(fun);
+            m_MonoManager.RemoveLateUpdateListener(fun);
         }
 
         /// <summary>
@@ -124,11 +116,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddFixedUpdateListener(fun);
+            m_MonoManager.AddFixedUpdateListener(fun);
         }
 
         /// <summary>
@@ -139,11 +131,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveFixedUpdateListener(fun);
+            m_MonoManager.RemoveFixedUpdateListener(fun);
         }
 
         /// <summary>
@@ -154,11 +146,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddUpdateListener(fun);
+            m_MonoManager.AddUpdateListener(fun);
         }
 
         /// <summary>
@@ -169,11 +161,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveUpdateListener(fun);
+            m_MonoManager.RemoveUpdateListener(fun);
         }
 
         /// <summary>
@@ -184,11 +176,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddDestroyListener(fun);
+            m_MonoManager.AddDestroyListener(fun);
         }
 
         /// <summary>
@@ -199,11 +191,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveDestroyListener(fun);
+            m_MonoManager.RemoveDestroyListener(fun);
         }
 
         /// <summary>
@@ -214,11 +206,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddOnApplicationPauseListener(fun);
+            m_MonoManager.AddOnApplicationPauseListener(fun);
         }
 
         /// <summary>
@@ -229,11 +221,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveOnApplicationPauseListener(fun);
+            m_MonoManager.RemoveOnApplicationPauseListener(fun);
         }
 
         /// <summary>
@@ -244,11 +236,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.AddOnApplicationFocusListener(fun);
+            m_MonoManager.AddOnApplicationFocusListener(fun);
         }
 
         /// <summary>
@@ -259,11 +251,11 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "is invalid.");
+                Log.Fatal(nameof(fun) + "无效.");
                 return;
             }
 
-            _monoManager.RemoveOnApplicationFocusListener(fun);
+            m_MonoManager.RemoveOnApplicationFocusListener(fun);
         }
     }
 }
