@@ -537,9 +537,9 @@ MonoBehaviour:
   m_InstanceExpireTime: 60
   m_InstanceUGUIRoot: {fileID: 0}
   m_InstanceFairyGUIRoot: {fileID: 1565570508885128524}
-  m_UIFormHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FairyGUIFormHelper
+  m_UIFormHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiFormHelper
   m_CustomUIFormHelper: {fileID: 0}
-  m_UIGroupHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FairyGUIUIGroupHelper
+  m_UIGroupHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiGroupHelper
   m_CustomUIGroupHelper: {fileID: 0}
   m_UIGroups:
   - m_Name: Hidden

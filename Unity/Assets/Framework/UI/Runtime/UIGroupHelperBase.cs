@@ -24,10 +24,10 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 创建界面组。
         /// </summary>
-        /// <param name="root">根节点。</param>
+        /// <param name="root">界面组根节点。</param>
         /// <param name="groupName">界面组名称。</param>
         /// <param name="uiGroupHelperTypeName">界面组辅助器类型名。</param>
         /// <param name="customUIGroupHelper">自定义的界面组辅助器.</param>
-        public abstract IUIGroupHelper Handler(Transform root, string groupName, string uiGroupHelperTypeName, IUIGroupHelper customUIGroupHelper);
+        public abstract IUIGroupHelper CreateGroup(Transform root, string groupName, string uiGroupHelperTypeName, IUIGroupHelper customUIGroupHelper);
     }
 }

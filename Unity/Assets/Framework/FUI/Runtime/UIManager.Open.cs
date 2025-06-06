@@ -124,7 +124,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var packageName = uiFormAssetPath.Substring(lastIndexOfStart + 1);
             
             // 检查UI包是否已经加载过
-            var hasUIPackage = FairyGuiPackage.Has(packageName);
+            var hasUIPackage = FuiPackage.HasPackage(packageName);
 
             OpenUIFormInfoData openUIFormInfoData = OpenUIFormInfoData.Create(serialId, packageName, uiFormAssetName, uiFormType, pauseCoveredUIForm, userData);
             OpenUIFormInfo openUIFormInfo = OpenUIFormInfo.Create(serialId, uiFormType, pauseCoveredUIForm, userData, isFullScreen);
@@ -134,7 +134,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             {
                 // 从Resources中加载
                 if (!hasUIPackage) 
-                    FairyGuiPackage.AddPackageSync(assetPath);
+                    FuiPackage.AddPackageSync(assetPath);
                 return LoadAssetSuccessCallback(uiFormAssetName, openUIFormInfoData, 0, openUIFormInfo);
             }
 
@@ -148,13 +148,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (packageName == uiFormAssetName)
             {
                 // 如果UI资源名字和包名一致则直接加载
-                await FairyGuiPackage.AddPackageAsync(assetPath);
+                await FuiPackage.AddPackageAsync(assetPath);
             }
             else
             {
                 // 不一致则重新拼接路径
                 string newPackagePath = PathHelper.Combine(uiFormAssetPath, packageName);
-                await FairyGuiPackage.AddPackageAsync(newPackagePath);
+                await FuiPackage.AddPackageAsync(newPackagePath);
             }
 
             string newAssetPackagePath = assetPath;

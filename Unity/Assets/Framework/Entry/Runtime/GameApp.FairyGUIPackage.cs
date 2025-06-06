@@ -6,18 +6,18 @@ public static partial class GameApp
     /// <summary>
     /// 获取UI包管理组件。
     /// </summary>
-    public static FairyGUIPackageComponent FUIPackage
+    public static FuiPackageComponent FUIPackage
     {
         get
         {
             if (_fUIPackage == null)
             {
-                _fUIPackage = GameEntry.GetComponent<FairyGUIPackageComponent>();
+                _fUIPackage = GameEntry.GetComponent<FuiPackageComponent>();
             }
 
             return _fUIPackage;
         }
     }
 
-    private static FairyGUIPackageComponent _fUIPackage;
+    private static FuiPackageComponent _fUIPackage;
 }

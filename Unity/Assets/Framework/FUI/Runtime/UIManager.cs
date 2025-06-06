@@ -7,15 +7,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using FairyGUI;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -28,17 +24,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private readonly HashSet<int> m_WaitReleaseSet; // 待释放的界面集合，int为界面Id
         private readonly Queue<IUIForm> m_WaitRecycleQueue; // 待回收的界面集合
 
-        // private readonly LoadAssetCallbacks m_LoadAssetCallbacks;
-
         private IAssetManager m_AssetManager; // 资源管理器
         private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private FairyGUIPackageComponent FairyGuiPackage { get; set; }
-        private IObjectPool<UIFormInstanceObject> m_InstancePool;
-        private IUIFormHelper m_UIFormHelper;
-        private int m_Serial;
+        private FuiPackageComponent FuiPackage { get; set; } // fairyGUI包组件
+        private IObjectPool<UIFormInstanceObject> m_InstancePool; // 界面实例对象池
+        private IUIFormHelper m_UIFormHelper; // 界面辅助器
 
-        private bool m_IsShutdown;
+        private int m_Serial; // 界面序列号，没打开一个界面就加1
+        private bool m_IsShutdown; // 是否是关机
 
+        // private readonly LoadAssetCallbacks m_LoadAssetCallbacks;
         // private EventHandler<OpenUIFormUpdateEventArgs> m_OpenUIFormUpdateEventHandler;
         // private EventHandler<OpenUIFormDependencyAssetEventArgs> m_OpenUIFormDependencyAssetEventHandler;
 
@@ -174,8 +169,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             GameFrameworkGuard.NotNull(assetManager, nameof(assetManager));
             m_AssetManager = assetManager;
-            FairyGuiPackage = GameEntry.GetComponent<FairyGUIPackageComponent>();
-            GameFrameworkGuard.NotNull(FairyGuiPackage, nameof(FairyGuiPackage));
+            FuiPackage = GameEntry.GetComponent<FuiPackageComponent>();
+            GameFrameworkGuard.NotNull(FuiPackage, nameof(FuiPackage));
         }
 
 

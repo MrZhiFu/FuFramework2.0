@@ -3,31 +3,33 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Runtime
 {
+    /// <summary>
+    /// 可绑定属性，值变化时自动触发绑定事件
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Preserve]
     public sealed class BindableProperty<T>
     {
-        private T _value;
-        private Action<T> _onValueChanged;
+        private T m_value;
+        private Action<T> m_onValueChanged;
 
         /// <summary>
         /// 值
         /// </summary>
         public T Value
         {
-            get { return _value; }
+            get => m_value;
             set
             {
-                if (!Equals(_value, value))
-                {
-                    _value = value;
-                    _onValueChanged?.Invoke(_value);
-                }
+                if (Equals(m_value, value)) return;
+                m_value = value;
+                m_onValueChanged?.Invoke(m_value);
             }
         }
 
         private BindableProperty()
         {
-            _onValueChanged = null;
+            m_onValueChanged = null;
         }
 
         /// <summary>
@@ -37,7 +39,7 @@ namespace GameFrameX.Runtime
         [Preserve]
         public BindableProperty(T defaultValue = default) : this()
         {
-            _value = defaultValue;
+            m_value = defaultValue;
         }
 
 
@@ -47,15 +49,15 @@ namespace GameFrameX.Runtime
         /// <param name="callback"></param>
         /// <returns></returns>
         [Preserve]
-        public BindableProperty<T> Add(Action<T> callback)
+        public BindableProperty<T> Register(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
-            _onValueChanged += callback;
+            m_onValueChanged += callback;
             return this;
         }
 
         /// <summary>
-        /// 注册事件
+        /// 注册值变化事件，并触发一次初始值变化事件
         /// </summary>
         /// <param name="callback"></param>
         /// <returns></returns>
@@ -63,8 +65,8 @@ namespace GameFrameX.Runtime
         public BindableProperty<T> RegisterWithInitValue(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
-            callback?.Invoke(_value);
-            return Add(callback);
+            callback?.Invoke(m_value);
+            return Register(callback);
         }
 
         /// <summary>
@@ -72,10 +74,10 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="callback">事件</param>
         [Preserve]
-        public void Remove(Action<T> callback)
+        public void UnRegister(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
-            _onValueChanged -= callback;
+            m_onValueChanged -= callback;
         }
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace GameFrameX.Runtime
         [Preserve]
         public void Clear()
         {
-            _onValueChanged = null;
+            m_onValueChanged = null;
         }
     }
 }

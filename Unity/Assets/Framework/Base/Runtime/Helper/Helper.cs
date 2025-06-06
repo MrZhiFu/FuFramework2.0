@@ -5,7 +5,6 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX;
 using UnityEngine;
 
 namespace GameFrameX.Runtime
@@ -36,91 +35,49 @@ namespace GameFrameX.Runtime
         /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
         /// <param name="customHelper">若要创建的辅助器类型为空时，使用的自定义辅助器类型。</param>
         /// <param name="index">要创建的辅助器索引。</param>
+        /// <param name="target">辅助器挂载的对象。</param>
         /// <returns>创建的辅助器。</returns>
         [UnityEngine.Scripting.Preserve]
-        public static T CreateHelper<T>(string helperTypeName, T customHelper, int index) where T : MonoBehaviour
+        public static T CreateHelper<T>(string helperTypeName, T customHelper, int index, GameObject target = null) where T : MonoBehaviour
         {
-            T helper = null;
+            // 辅助器挂载的对象为空时，创建一个新的GameObject
+            if (target == null)
+                target = new GameObject { name = helperTypeName };
+
+            // 使用名称创建
             if (!string.IsNullOrEmpty(helperTypeName))
             {
-                System.Type helperType = Utility.Assembly.GetType(helperTypeName);
+                var helperType = Utility.Assembly.GetType(helperTypeName);
                 if (helperType == null)
                 {
-                    Log.Warning("Can not find helper type '{0}'.", helperTypeName);
+                    Log.Warning("当前域中不存在类型 '{0}'.", helperTypeName);
                     return null;
                 }
 
                 if (!typeof(T).IsAssignableFrom(helperType))
                 {
-                    Log.Warning("Type '{0}' is not assignable from '{1}'.", typeof(T).FullName, helperType.FullName);
+                    Log.Warning("类型 '{0}' 不能赋值给 '{1}'.", typeof(T).FullName, helperType.FullName);
                     return null;
                 }
 
-                helper = (T)new GameObject().AddComponent(helperType);
+                return (T)target.AddComponent(helperType);
             }
-            else if (customHelper == null)
+
+            // 使用组件类型创建
+            if (customHelper == null)
             {
-                Log.Warning("You must set custom helper with '{0}' type first.", typeof(T).FullName);
+                Log.Warning("你必须设置自定义辅助器 '{0}' 类型.", typeof(T).FullName);
                 return null;
             }
-            else if (customHelper.gameObject.InScene())
+
+            if (customHelper.gameObject.InScene())
             {
-                helper = index > 0 ? Object.Instantiate(customHelper) : customHelper;
-            }
-            else
-            {
-                helper = Object.Instantiate(customHelper);
+                var helper = index > 0 ? Object.Instantiate(customHelper) : customHelper;
+                helper.transform.SetParent(target.transform, false);
+                return helper;
             }
 
-            return helper;
-        }
-
-        /// <summary>
-        /// 创建辅助器。
-        /// </summary>
-        /// <typeparam name="T">要创建的辅助器类型。</typeparam>
-        /// <param name="target"></param>
-        /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
-        /// <param name="customHelper">若要创建的辅助器类型为空时，使用的自定义辅助器类型。</param>
-        /// <param name="index">要创建的辅助器索引。</param>
-        /// <returns>创建的辅助器。</returns>
-        [UnityEngine.Scripting.Preserve]
-        public static T CreateHelper<T>(GameObject target, string helperTypeName, T customHelper, int index) where T : MonoBehaviour
-        {
-            GameFrameworkGuard.NotNull(target, nameof(target));
-            T helper = null;
-            if (!string.IsNullOrEmpty(helperTypeName))
-            {
-                System.Type helperType = Utility.Assembly.GetType(helperTypeName);
-                if (helperType == null)
-                {
-                    Log.Warning("Can not find helper type '{0}'.", helperTypeName);
-                    return null;
-                }
-
-                if (!typeof(T).IsAssignableFrom(helperType))
-                {
-                    Log.Warning("Type '{0}' is not assignable from '{1}'.", typeof(T).FullName, helperType.FullName);
-                    return null;
-                }
-
-                helper = (T)target.AddComponent(helperType);
-            }
-            else if (customHelper == null)
-            {
-                Log.Warning("You must set custom helper with '{0}' type first.", typeof(T).FullName);
-                return null;
-            }
-            else if (customHelper.gameObject.InScene())
-            {
-                helper = index > 0 ? Object.Instantiate(customHelper) : customHelper;
-            }
-            else
-            {
-                helper = Object.Instantiate(customHelper);
-            }
-
-            return helper;
+            return Object.Instantiate(customHelper, target.transform, false);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using FairyGUI;
 using GameFrameX.Runtime;
 
@@ -164,88 +165,96 @@ namespace Unity.Startup
         /// </summary>
         protected override async void LoadExternal()
         {
-            if (url.IsNullOrWhiteSpace())
+            try
             {
-                onExternalLoadFailed();
-                return;
-            }
-
-            NTexture tempTexture = null;
-            if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
-            {
-                // 1.先看缓存中是否有，如果没有则从网络资源获取
-                var nTexture = s_Cache.Get(url);
-                if (!nTexture.IsNull())
+                if (url.IsNullOrWhiteSpace())
                 {
-                    tempTexture = nTexture;
+                    onExternalLoadFailed();
+                    return;
                 }
-                else
-                {
-                    var hash = Utility.Hash.MD5.Hash(url);
 
-                    var path      = $"{_cachePath}{hash}.png";
-                    var isExists  = FileHelper.IsExists(path);
-                    var texture2D = Texture2D.whiteTexture;
-                    if (isExists)
+                NTexture tempTexture = null;
+                if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
+                {
+                    // 1.先看缓存中是否有，如果没有则从网络资源获取
+                    var nTexture = s_Cache.Get(url);
+                    if (!nTexture.IsNull())
                     {
-                        var buffer = FileHelper.ReadAllBytes(path);
-                        texture2D.LoadImage(buffer);
+                        tempTexture = nTexture;
                     }
                     else
                     {
-                        var webBufferResult = await GameApp.Web.GetToBytes(url, null);
-                        FileHelper.WriteAllBytes(path, webBufferResult.Result);
-                        texture2D.LoadImage(webBufferResult.Result);
-                    }
+                        var hash = Utility.Hash.MD5.Hash(url);
 
-                    tempTexture = new NTexture(texture2D);
-                    s_Cache.Put(url, tempTexture);
-                }
-            }
-            else if (url.StartsWithFast("ui://"))
-            {
-                // 2.从FairyGUI的Package包内获取
-                LoadContent();
-            }
-            else
-            {
-                // 1.先看缓存中是否有，没有则从资源管理器中获取
-                var nTexture = s_Cache.Get(url);
-                if (nTexture.IsNotNull())
-                {
-                    tempTexture = nTexture;
-                }
-                else
-                {
-                    var assetInfo = GameApp.Asset.GetAssetInfo(url);
-                    if (assetInfo.IsInvalid == false)
-                    {
-                        var assetHandle = await GameApp.Asset.LoadAssetAsync<Texture2D>(url);
-                        if (assetHandle.IsSucceed)
+                        var path      = $"{_cachePath}{hash}.png";
+                        var isExists  = FileHelper.IsExists(path);
+                        var texture2D = Texture2D.whiteTexture;
+                        if (isExists)
                         {
-                            tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
-                            s_Cache.Put(url, tempTexture);
-                        }
-                    }
-                    else
-                    {
-                        if (FileHelper.IsExists(url))
-                        {
-                            var buffer = FileHelper.ReadAllBytes(url);
-
-                            var texture2D = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false, false);
+                            var buffer = FileHelper.ReadAllBytes(path);
                             texture2D.LoadImage(buffer);
-                            tempTexture = new NTexture(texture2D);
-                            s_Cache.Put(url, tempTexture);
+                        }
+                        else
+                        {
+                            var webBufferResult = await GameApp.Web.GetToBytes(url, null);
+                            FileHelper.WriteAllBytes(path, webBufferResult.Result);
+                            texture2D.LoadImage(webBufferResult.Result);
+                        }
+
+                        tempTexture = new NTexture(texture2D);
+                        s_Cache.Put(url, tempTexture);
+                    }
+                }
+                else if (url.StartsWithFast("ui://"))
+                {
+                    // 2.从FairyGUI的Package包内获取
+                    LoadContent();
+                }
+                else
+                {
+                    // 1.先看缓存中是否有，没有则从资源管理器中获取
+                    var nTexture = s_Cache.Get(url);
+                    if (nTexture.IsNotNull())
+                    {
+                        tempTexture = nTexture;
+                    }
+                    else
+                    {
+                        var assetInfo = GameApp.Asset.GetAssetInfo(url);
+                        if (assetInfo.IsInvalid == false)
+                        {
+                            var assetHandle = await GameApp.Asset.LoadAssetAsync<Texture2D>(url);
+                            if (assetHandle.IsSucceed)
+                            {
+                                tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
+                                s_Cache.Put(url, tempTexture);
+                            }
+                        }
+                        else
+                        {
+                            if (FileHelper.IsExists(url))
+                            {
+                                var buffer = FileHelper.ReadAllBytes(url);
+
+                                var texture2D = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false, false);
+                                texture2D.LoadImage(buffer);
+                                tempTexture = new NTexture(texture2D);
+                                s_Cache.Put(url, tempTexture);
+                            }
                         }
                     }
                 }
-            }
 
-            if (tempTexture.IsNotNull())
-                onExternalLoadSuccess(tempTexture);
-            else
+                if (tempTexture.IsNotNull())
+                    onExternalLoadSuccess(tempTexture);
+                else
+                    onExternalLoadFailed();
+            }
+            catch (Exception e)
+            {
                 onExternalLoadFailed();
+                Log.Error(e);
+            }
         }
     }
 }

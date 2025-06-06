@@ -27,6 +27,6 @@ namespace GameFrameX.UI.Runtime
         /// <param name="groupName">界面组名称。</param>
         /// <param name="uiGroupHelperTypeName">界面组辅助器类型名。</param>
         /// <param name="customUIGroupHelper">自定义的界面组辅助器.</param>
-        IUIGroupHelper Handler(Transform root, string groupName, string uiGroupHelperTypeName, IUIGroupHelper customUIGroupHelper);
+        IUIGroupHelper CreateGroup(Transform root, string groupName, string uiGroupHelperTypeName, IUIGroupHelper customUIGroupHelper);
     }
 }

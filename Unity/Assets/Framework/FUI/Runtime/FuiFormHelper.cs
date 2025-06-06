@@ -1,11 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using FairyGUI;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Runtime;
@@ -18,7 +11,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 默认界面辅助器。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public class FairyGUIFormHelper : UIFormHelperBase
+    public class FuiFormHelper : UIFormHelperBase
     {
         private AssetComponent m_AssetComponent = null;
 

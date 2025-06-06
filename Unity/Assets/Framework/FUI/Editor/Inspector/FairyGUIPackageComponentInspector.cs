@@ -11,7 +11,7 @@ using UnityEditor;
 
 namespace GameFrameX.UI.FairyGUI.Editor
 {
-    [CustomEditor(typeof(FairyGUIPackageComponent))]
+    [CustomEditor(typeof(FuiPackageComponent))]
     internal sealed class UIFairyGUIPackageComponentInspector : GameFrameworkInspector
     {
         public override void OnInspectorGUI()

@@ -9,7 +9,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     [UnityEngine.Scripting.Preserve]
     public static class GObjectHelper
     {
-        private static readonly Dictionary<GObject, FUI> KeyValuePairs = new Dictionary<GObject, FUI>();
+        private static readonly Dictionary<GObject, FUI> KeyValuePairs = new();
 
         /// <summary>
         /// 从组件池中获取UI对象

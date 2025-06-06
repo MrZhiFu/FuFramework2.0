@@ -15,11 +15,22 @@ namespace GameFrameX.Runtime
     {
         /// <summary>
         /// 程序集相关的实用函数。
+        /// 1.获取已加载的程序集。
+        /// 2.获取已加载的程序集中的所有类型。
+        /// 3.获取已加载的程序集中的指定类型。
+        /// 4.获取已加载的程序集中的指定类型的子类列表。
         /// </summary>
         public static class Assembly
         {
-            private static readonly System.Reflection.Assembly[] s_Assemblies = null;
-            private static readonly Dictionary<string, Type> s_CachedTypes = new Dictionary<string, Type>(StringComparer.Ordinal);
+            /// <summary>
+            /// 当前域中已加载的所有程序集
+            /// </summary>
+            private static readonly System.Reflection.Assembly[] s_Assemblies;
+
+            /// <summary>
+            /// 缓存类型的字典，key为类型名，value为类型
+            /// </summary>
+            private static readonly Dictionary<string, Type> s_CachedDict = new(StringComparer.Ordinal);
 
             static Assembly()
             {
@@ -31,10 +42,7 @@ namespace GameFrameX.Runtime
             /// </summary>
             /// <returns>已加载的程序集。</returns>
             [Preserve]
-            public static System.Reflection.Assembly[] GetAssemblies()
-            {
-                return s_Assemblies;
-            }
+            public static System.Reflection.Assembly[] GetAssemblies() => s_Assemblies;
 
             /// <summary>
             /// 获取已加载的程序集中的所有类型。
@@ -43,8 +51,8 @@ namespace GameFrameX.Runtime
             [Preserve]
             public static Type[] GetTypes()
             {
-                List<Type> results = new List<Type>();
-                foreach (System.Reflection.Assembly assembly in s_Assemblies)
+                var results = new List<Type>();
+                foreach (var assembly in s_Assemblies)
                 {
                     results.AddRange(assembly.GetTypes());
                 }
@@ -60,12 +68,10 @@ namespace GameFrameX.Runtime
             public static void GetTypes(List<Type> results)
             {
                 if (results == null)
-                {
-                    throw new GameFrameworkException("Results is invalid.");
-                }
+                    throw new GameFrameworkException("传入的结果列表为空，请检查参数是否正确.");
 
                 results.Clear();
-                foreach (System.Reflection.Assembly assembly in s_Assemblies)
+                foreach (var assembly in s_Assemblies)
                 {
                     results.AddRange(assembly.GetTypes());
                 }
@@ -80,31 +86,23 @@ namespace GameFrameX.Runtime
             public static Type GetType(string typeName)
             {
                 if (string.IsNullOrEmpty(typeName))
-                {
-                    throw new GameFrameworkException("Type name is invalid.");
-                }
+                    throw new GameFrameworkException("传入的类型名为空，请检查参数是否正确.");
 
-                Type type = null;
-                if (s_CachedTypes.TryGetValue(typeName, out type))
-                {
-                    return type;
-                }
+                if (s_CachedDict.TryGetValue(typeName, out var type)) return type;
 
                 type = Type.GetType(typeName);
                 if (type != null)
                 {
-                    s_CachedTypes.Add(typeName, type);
+                    s_CachedDict.Add(typeName, type);
                     return type;
                 }
 
-                foreach (System.Reflection.Assembly assembly in s_Assemblies)
+                foreach (var assembly in s_Assemblies)
                 {
                     type = Type.GetType(Text.Format("{0}, {1}", typeName, assembly.FullName));
-                    if (type != null)
-                    {
-                        s_CachedTypes.Add(typeName, type);
-                        return type;
-                    }
+                    if (type == null) continue;
+                    s_CachedDict.Add(typeName, type);
+                    return type;
                 }
 
                 return null;
@@ -119,14 +117,10 @@ namespace GameFrameX.Runtime
             public static List<string> GetRuntimeTypeNames(Type type)
             {
                 var types = GetTypes();
-                List<string> results = new List<string>();
+                var results = new List<string>();
                 foreach (var t in types)
                 {
-                    if (t.IsAbstract || !t.IsClass)
-                    {
-                        continue;
-                    }
-
+                    if (t.IsAbstract || !t.IsClass) continue;
                     if (t.IsSubclassOf(type) || t.IsImplWithInterface(type))
                     {
                         results.Add(t.FullName);

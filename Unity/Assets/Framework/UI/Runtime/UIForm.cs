@@ -30,6 +30,7 @@ namespace GameFrameX.UI.Runtime
         [SerializeField] private int m_DepthInUIGroup;
         [SerializeField] private bool m_PauseCoveredUIForm;
         [SerializeField] private string m_FullName;
+        
         private IUIGroup m_UIGroup;
         private UIEventSubscriber m_EventSubscriber = null;
         private object m_UserData = null;
@@ -37,18 +38,12 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
-        public object UserData
-        {
-            get { return m_UserData; }
-        }
+        public object UserData => m_UserData;
 
         /// <summary>
         /// 获取界面事件订阅器。
         /// </summary>
-        public UIEventSubscriber EventSubscriber
-        {
-            get { return m_EventSubscriber; }
-        }
+        public UIEventSubscriber EventSubscriber => m_EventSubscriber;
 
         /// <summary>
         /// 获取界面是否来自对象池。
@@ -63,42 +58,33 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面序列编号。
         /// </summary>
-        public int SerialId
-        {
-            get { return m_SerialId; }
-        }
+        public int SerialId => m_SerialId;
 
         /// <summary>
         /// 获取界面完整名称。
         /// </summary>
-        public string FullName
-        {
-            get { return m_FullName; }
-        }
+        public string FullName => m_FullName;
 
         /// <summary>
         /// 获取或设置界面名称。
         /// </summary>
         public string Name
         {
-            get { return gameObject.name; }
-            set { gameObject.name = value; }
+            get => gameObject.name;
+            set => gameObject.name = value;
         }
 
         /// <summary>
         /// 获取界面是否可用。
         /// </summary>
-        public bool Available
-        {
-            get { return m_Available; }
-        }
+        public bool Available => m_Available;
 
         /// <summary>
         /// 获取或设置界面是否可见。
         /// </summary>
         public virtual bool Visible
         {
-            get { return m_Available && m_Visible; }
+            get => m_Available && m_Visible;
             protected set
             {
                 if (!m_Available)
@@ -120,52 +106,40 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIFormAssetName
-        {
-            get { return m_UIFormAssetName; }
-        }
+        public string UIFormAssetName => m_UIFormAssetName;
 
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
         public string AssetPath
         {
-            get { return m_AssetPath; }
-            protected set { m_AssetPath = value; }
+            get => m_AssetPath;
+            protected set => m_AssetPath = value;
         }
 
         /// <summary>
         /// 获取界面实例。
         /// </summary>
-        public object Handle
-        {
-            get { return gameObject; }
-        }
+        public object Handle => gameObject;
 
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
         public virtual IUIGroup UIGroup
         {
-            get { return m_UIGroup; }
-            protected set { m_UIGroup = value; }
+            get => m_UIGroup;
+            protected set => m_UIGroup = value;
         }
 
         /// <summary>
         /// 获取界面深度。
         /// </summary>
-        public int DepthInUIGroup
-        {
-            get { return m_DepthInUIGroup; }
-        }
+        public int DepthInUIGroup => m_DepthInUIGroup;
 
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUIForm
-        {
-            get { return m_PauseCoveredUIForm; }
-        }
+        public bool PauseCoveredUIForm => m_PauseCoveredUIForm;
 
         public bool IsAwake { get; private set; }
 
@@ -357,11 +331,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void Dispose()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
-
+            if (IsDisposed) return;
             m_EventSubscriber.UnSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
             IsDisposed = true;
         }
