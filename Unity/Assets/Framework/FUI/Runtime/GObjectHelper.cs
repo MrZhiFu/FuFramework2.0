@@ -24,7 +24,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return pair as T;
             }
 
-            return default(T);
+            return default;
         }
 
         /// <summary>
@@ -47,11 +47,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns>UI对象</returns>
         public static FUI Remove(this GObject self)
         {
-            if (self != null && KeyValuePairs.TryGetValue(self, out var value))
-            {
-                KeyValuePairs.Remove(self);
+            if (self != null && KeyValuePairs.Remove(self, out var value))
                 return value;
-            }
 
             return default;
         }

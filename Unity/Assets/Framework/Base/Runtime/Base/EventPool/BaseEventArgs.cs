@@ -17,10 +17,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 获取事件ID。
         /// </summary>
-        [Preserve] // 添加 Preserve 标签
-        public abstract string Id
-        {
-            get;
-        }
+        [Preserve]
+        public abstract string Id { get; }
     }
 }

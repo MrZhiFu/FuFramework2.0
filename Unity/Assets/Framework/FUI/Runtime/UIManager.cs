@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using FairyGUI;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
@@ -20,22 +19,19 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     internal sealed partial class UIManager
     {
-        private readonly Dictionary<int, string> m_LoadingDict; // 正在加载的界面集合, key为界面Id, value为界面名称
-        private readonly HashSet<int> m_WaitReleaseSet; // 待释放的界面集合，int为界面Id
-        private readonly Queue<IUIForm> m_WaitRecycleQueue; // 待回收的界面集合
+        private readonly Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
+        private readonly HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
+        private readonly Queue<IUIForm>          m_WaitRecycleQueue; // 待回收的界面集合
 
-        private IAssetManager m_AssetManager; // 资源管理器
-        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private FuiPackageComponent FuiPackage { get; set; } // fairyGUI包组件
-        private IObjectPool<UIFormInstanceObject> m_InstancePool; // 界面实例对象池
-        private IUIFormHelper m_UIFormHelper; // 界面辅助器
+        private IAssetManager      m_AssetManager;      // 资源管理器
+        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器\
 
-        private int m_Serial; // 界面序列号，没打开一个界面就加1
+        private FuiPackageComponent               FuiPackage { get; set; } // FGUI包管理组件
+        private IObjectPool<UIFormInstanceObject> m_InstancePool;          // 界面实例对象池
+        private IUIFormHelper                     m_UIFormHelper;          // 界面辅助器
+
+        private int  m_Serial;     // 界面序列号，每打开一个界面就加1
         private bool m_IsShutdown; // 是否是关机
-
-        // private readonly LoadAssetCallbacks m_LoadAssetCallbacks;
-        // private EventHandler<OpenUIFormUpdateEventArgs> m_OpenUIFormUpdateEventHandler;
-        // private EventHandler<OpenUIFormDependencyAssetEventArgs> m_OpenUIFormDependencyAssetEventHandler;
 
 
         /// <summary>
@@ -43,23 +39,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public UIManager()
         {
-            m_UIGroupDict = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
-            m_LoadingDict = new Dictionary<int, string>();
-            m_WaitReleaseSet = new HashSet<int>();
+            m_UIGroupDict      = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
+            m_LoadingDict      = new Dictionary<int, string>();
+            m_WaitReleaseSet   = new HashSet<int>();
             m_WaitRecycleQueue = new Queue<IUIForm>();
 
-            // m_LoadAssetCallbacks = new LoadAssetCallbacks(LoadAssetSuccessCallback, LoadAssetFailureCallback, LoadAssetUpdateCallback, LoadAssetDependencyAssetCallback);
             m_ObjectPoolManager = null;
-            m_AssetManager = null;
-            m_InstancePool = null;
-            m_UIFormHelper = null;
-            m_Serial = 0;
-            m_IsShutdown = false;
+            m_AssetManager      = null;
+            m_InstancePool      = null;
+            m_UIFormHelper      = null;
+            m_Serial            = 0;
+            m_IsShutdown        = false;
 
-            m_OpenUIFormSuccessEventHandler = null;
-            m_OpenUIFormFailureEventHandler = null;
-            // m_OpenUIFormUpdateEventHandler = null;
-            // m_OpenUIFormDependencyAssetEventHandler = null;
+            m_OpenUIFormSuccessEventHandler   = null;
+            m_OpenUIFormFailureEventHandler   = null;
             m_CloseUIFormCompleteEventHandler = null;
         }
 
@@ -89,34 +82,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             get => m_InstancePool.ExpireTime;
             set => m_InstancePool.ExpireTime = value;
         }
-
-        /*/// <summary>
-        /// 获取或设置界面实例对象池的优先级。
-        /// </summary>
-        public int InstancePriority
-        {
-            get { return m_InstancePool.Priority; }
-            set { m_InstancePool.Priority = value; }
-        }*/
-
-        /*
-        /// <summary>
-        /// 打开界面更新事件。
-        /// </summary>
-        public event EventHandler<OpenUIFormUpdateEventArgs> OpenUIFormUpdate
-        {
-            add { m_OpenUIFormUpdateEventHandler += value; }
-            remove { m_OpenUIFormUpdateEventHandler -= value; }
-        }
-
-        /// <summary>
-        /// 打开界面时加载依赖资源事件。
-        /// </summary>
-        public event EventHandler<OpenUIFormDependencyAssetEventArgs> OpenUIFormDependencyAsset
-        {
-            add { m_OpenUIFormDependencyAssetEventHandler += value; }
-            remove { m_OpenUIFormDependencyAssetEventHandler -= value; }
-        }*/
 
         /// <summary>
         /// 界面管理器轮询。
@@ -158,7 +123,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             GameFrameworkGuard.NotNull(objectPoolManager, nameof(objectPoolManager));
             m_ObjectPoolManager = objectPoolManager;
-            m_InstancePool = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIFormInstanceObject>("UI Instance Pool");
+            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIFormInstanceObject>("UI Instance Pool");
         }
 
         /// <summary>
@@ -169,7 +134,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             GameFrameworkGuard.NotNull(assetManager, nameof(assetManager));
             m_AssetManager = assetManager;
-            FuiPackage = GameEntry.GetComponent<FuiPackageComponent>();
+            FuiPackage     = GameEntry.GetComponent<FuiPackageComponent>();
             GameFrameworkGuard.NotNull(FuiPackage, nameof(FuiPackage));
         }
 

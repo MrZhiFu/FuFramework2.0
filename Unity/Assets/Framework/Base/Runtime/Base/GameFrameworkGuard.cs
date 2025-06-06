@@ -16,10 +16,8 @@ namespace GameFrameX.Runtime
         [UnityEngine.Scripting.Preserve]
         public static void NotNullOrEmpty(string value, string name)
         {
-            if (string.IsNullOrEmpty(value))
-            {
+            if (string.IsNullOrEmpty(value)) 
                 throw new ArgumentNullException(name, "不能为空.");
-            }
         }
 
 
@@ -33,10 +31,8 @@ namespace GameFrameX.Runtime
         [UnityEngine.Scripting.Preserve]
         public static void NotNull<T>(T value, string name) where T : class
         {
-            if (value == null)
-            {
+            if (value == null) 
                 throw new ArgumentNullException(name, "不能为空.");
-            }
         }
 
         /// <summary>
@@ -51,9 +47,7 @@ namespace GameFrameX.Runtime
         public static void NotRange(int value, int min, int max, string name)
         {
             if (value > max || value < min)
-            {
                 throw new ArgumentOutOfRangeException(name, "值必须在" + min + " 到 " + max + "之间.");
-            }
         }
     }
 }

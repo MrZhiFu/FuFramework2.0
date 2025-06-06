@@ -4,6 +4,9 @@ using GameFrameX.UI.Runtime;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
+    /// <summary>
+    /// FUI界面基类
+    /// </summary>
     [UnityEngine.Scripting.Preserve]
     public class FUI : UIForm
     {
@@ -23,13 +26,18 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public override bool Visible
         {
             get => GObject is { visible: true };
+            
             protected set
             {
+                base.Visible = value;
                 if (GObject == null) return;
                 if (GObject.visible == value) return;
+                
                 GObject.visible = value;
                 OnVisibleChanged?.Invoke(value);
-                EventSubscriber.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
+                
+                // 触发UI显示状态变化事件
+                EventRegister.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
             }
         }
 
@@ -59,7 +67,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (GObject.visible == value) return;
             GObject.visible = value;
             OnVisibleChanged?.Invoke(value);
-            EventSubscriber.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
+            
+            // 派发UI显示状态变化事件
+            EventRegister.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
         }
 
         /// <summary>

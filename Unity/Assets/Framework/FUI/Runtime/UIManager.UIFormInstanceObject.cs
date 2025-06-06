@@ -18,24 +18,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         private sealed class UIFormInstanceObject : ObjectBase
         {
+            /// 界面资源对象
             private object m_UIFormAsset = null;
+
+            /// 界面辅助器
             private IUIFormHelper m_UIFormHelper = null;
 
             public static UIFormInstanceObject Create(string name, object uiFormAsset, object uiFormInstance, IUIFormHelper uiFormHelper)
             {
-                if (uiFormAsset == null)
-                {
-                    throw new GameFrameworkException("UI form asset is invalid.");
-                }
-
-                if (uiFormHelper == null)
-                {
-                    throw new GameFrameworkException("UI form helper is invalid.");
-                }
+                if (uiFormAsset  == null) throw new GameFrameworkException("传入的界面资源对象为空.");
+                if (uiFormHelper == null) throw new GameFrameworkException("传入的界面辅助器为空.");
 
                 UIFormInstanceObject uiFormInstanceObject = ReferencePool.Acquire<UIFormInstanceObject>();
                 uiFormInstanceObject.Initialize(name, uiFormInstance);
-                uiFormInstanceObject.m_UIFormAsset = uiFormAsset;
+                uiFormInstanceObject.m_UIFormAsset  = uiFormAsset;
                 uiFormInstanceObject.m_UIFormHelper = uiFormHelper;
                 return uiFormInstanceObject;
             }
@@ -43,13 +39,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             public override void Clear()
             {
                 base.Clear();
-                m_UIFormAsset = null;
+                m_UIFormAsset  = null;
                 m_UIFormHelper = null;
             }
 
             protected override void Release(bool isShutdown)
             {
-                m_UIFormHelper.ReleaseUIForm(m_UIFormAsset, Target);
+                m_UIFormHelper.ReleaseUIForm(Target);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.UI.Runtime
@@ -7,13 +8,24 @@ namespace GameFrameX.UI.Runtime
     /// 界面组。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed partial class UIGroup : IUIGroup
+    public sealed class UIGroup : IUIGroup
     {
-        private readonly string m_Name;
+        /// 获取界面组名称。
+        public string Name { get; }
+
+        /// 界面组深度
         private int m_Depth;
+
+        /// 界面组是否暂停
         private bool m_Pause;
+
+        /// 界面组辅助器。
         private readonly IUIGroupHelper m_UIGroupHelper;
+
+        /// 界面组内的界面列表
         private readonly GameFrameworkLinkedList<UIFormInfo> m_UIFormInfos;
+
+        /// 临时缓存界面节点
         private LinkedListNode<UIFormInfo> m_CachedNode;
 
         /// <summary>
@@ -24,30 +36,14 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiGroupHelper">界面组辅助器。</param>
         public UIGroup(string name, int depth, IUIGroupHelper uiGroupHelper)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new GameFrameworkException("UI group name is invalid.");
-            }
+            if (string.IsNullOrEmpty(name)) throw new GameFrameworkException("传入的UI组名称为空.");
 
-            if (uiGroupHelper == null)
-            {
-                throw new GameFrameworkException("UI group helper is invalid.");
-            }
-
-            m_Name = name;
-            m_Pause = false;
-            m_UIGroupHelper = uiGroupHelper;
-            m_UIFormInfos = new GameFrameworkLinkedList<UIFormInfo>();
-            m_CachedNode = null;
-            Depth = depth;
-        }
-
-        /// <summary>
-        /// 获取界面组名称。
-        /// </summary>
-        public string Name
-        {
-            get { return m_Name; }
+            Name            = name;
+            m_Pause         = false;
+            m_UIGroupHelper = uiGroupHelper ?? throw new GameFrameworkException("传入的界面组辅助器为空.");
+            m_UIFormInfos   = new GameFrameworkLinkedList<UIFormInfo>();
+            m_CachedNode    = null;
+            Depth           = depth;
         }
 
         /// <summary>
@@ -55,14 +51,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public int Depth
         {
-            get { return m_Depth; }
+            get => m_Depth;
             set
             {
-                if (m_Depth == value)
-                {
-                    return;
-                }
-
+                if (m_Depth == value) return;
                 m_Depth = value;
                 m_UIGroupHelper.SetDepth(m_Depth);
                 Refresh();
@@ -74,14 +66,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public bool Pause
         {
-            get { return m_Pause; }
+            get => m_Pause;
             set
             {
-                if (m_Pause == value)
-                {
-                    return;
-                }
-
+                if (m_Pause == value) return;
                 m_Pause = value;
                 Refresh();
             }
@@ -90,45 +78,34 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面组中界面数量。
         /// </summary>
-        public int UIFormCount
-        {
-            get { return m_UIFormInfos.Count; }
-        }
+        public int UIFormCount => m_UIFormInfos.Count;
 
         /// <summary>
         /// 获取当前界面。
         /// </summary>
-        public IUIForm CurrentUIForm
-        {
-            get { return m_UIFormInfos.First?.Value.UIForm; }
-        }
+        public IUIForm CurrentUIForm => m_UIFormInfos.First?.Value.UIForm;
 
         /// <summary>
         /// 获取界面组辅助器。
         /// </summary>
-        public IUIGroupHelper Helper
-        {
-            get { return m_UIGroupHelper; }
-        }
+        public IUIGroupHelper Helper => m_UIGroupHelper;
 
         /// <summary>
         /// 界面组轮询。
+        /// 遍历界面组中所有界面，驱动每个界面Update。
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         public void Update(float elapseSeconds, float realElapseSeconds)
         {
-            LinkedListNode<UIFormInfo> current = m_UIFormInfos.First;
+            var current = m_UIFormInfos.First;
             while (current != null)
             {
-                if (current.Value.Paused)
-                {
-                    break;
-                }
+                if (current.Value.Paused) break;
 
                 m_CachedNode = current.Next;
                 current.Value.UIForm.OnUpdate(elapseSeconds, realElapseSeconds);
-                current = m_CachedNode;
+                current      = m_CachedNode;
                 m_CachedNode = null;
             }
         }
@@ -140,15 +117,7 @@ namespace GameFrameX.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUIForm(int serialId)
         {
-            foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
-            {
-                if (uiFormInfo.UIForm.SerialId == serialId)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return m_UIFormInfos.Any(uiFormInfo => uiFormInfo.UIForm.SerialId == serialId);
         }
 
         /// <summary>
@@ -158,20 +127,8 @@ namespace GameFrameX.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUIFormFullName(string fullName)
         {
-            if (string.IsNullOrEmpty(fullName))
-            {
-                throw new GameFrameworkException("UI form asset name is invalid.");
-            }
-
-            foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
-            {
-                if (uiFormInfo.UIForm.FullName == fullName)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            if (string.IsNullOrEmpty(fullName)) throw new GameFrameworkException("传入的UI界面完整名称为空.");
+            return m_UIFormInfos.Any(uiFormInfo => uiFormInfo.UIForm.FullName == fullName);
         }
 
         /// <summary>
@@ -181,20 +138,8 @@ namespace GameFrameX.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUIForm(string uiFormAssetName)
         {
-            if (string.IsNullOrEmpty(uiFormAssetName))
-            {
-                throw new GameFrameworkException("UI form asset name is invalid.");
-            }
-
-            foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
-            {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            return m_UIFormInfos.Any(uiFormInfo => uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName);
         }
 
         /// <summary>
@@ -206,10 +151,8 @@ namespace GameFrameX.UI.Runtime
         {
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm.SerialId == serialId)
-                {
-                    return uiFormInfo.UIForm;
-                }
+                if (uiFormInfo.UIForm.SerialId != serialId) continue;
+                return uiFormInfo.UIForm;
             }
 
             return null;
@@ -223,16 +166,12 @@ namespace GameFrameX.UI.Runtime
         public IUIForm GetUIForm(string uiFormAssetName)
         {
             if (string.IsNullOrEmpty(uiFormAssetName))
-            {
-                throw new GameFrameworkException("UI form asset name is invalid.");
-            }
+                throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName)
-                {
-                    return uiFormInfo.UIForm;
-                }
+                if (uiFormInfo.UIForm.UIFormAssetName != uiFormAssetName) continue;
+                return uiFormInfo.UIForm;
             }
 
             return null;
@@ -245,18 +184,13 @@ namespace GameFrameX.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public IUIForm[] GetUIForms(string uiFormAssetName)
         {
-            if (string.IsNullOrEmpty(uiFormAssetName))
-            {
-                throw new GameFrameworkException("UI form asset name is invalid.");
-            }
+            if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
-            List<IUIForm> results = new List<IUIForm>();
+            var results = new List<IUIForm>();
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName)
-                {
-                    results.Add(uiFormInfo.UIForm);
-                }
+                if (uiFormInfo.UIForm.UIFormAssetName != uiFormAssetName) continue;
+                results.Add(uiFormInfo.UIForm);
             }
 
             return results.ToArray();
@@ -269,23 +203,14 @@ namespace GameFrameX.UI.Runtime
         /// <param name="results">要获取的界面。</param>
         public void GetUIForms(string uiFormAssetName, List<IUIForm> results)
         {
-            if (string.IsNullOrEmpty(uiFormAssetName))
-            {
-                throw new GameFrameworkException("UI form asset name is invalid.");
-            }
-
-            if (results == null)
-            {
-                throw new GameFrameworkException("Results is invalid.");
-            }
+            if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
 
             results.Clear();
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName)
-                {
-                    results.Add(uiFormInfo.UIForm);
-                }
+                if (uiFormInfo.UIForm.UIFormAssetName != uiFormAssetName) continue;
+                results.Add(uiFormInfo.UIForm);
             }
         }
 
@@ -295,7 +220,7 @@ namespace GameFrameX.UI.Runtime
         /// <returns>界面组中的所有界面。</returns>
         public IUIForm[] GetAllUIForms()
         {
-            List<IUIForm> results = new List<IUIForm>();
+            var results = new List<IUIForm>();
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
                 results.Add(uiFormInfo.UIForm);
@@ -310,10 +235,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="results">界面组中的所有界面。</param>
         public void GetAllUIForms(List<IUIForm> results)
         {
-            if (results == null)
-            {
-                throw new GameFrameworkException("Results is invalid.");
-            }
+            if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
 
             results.Clear();
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
@@ -346,7 +268,7 @@ namespace GameFrameX.UI.Runtime
             if (!uiFormInfo.Covered)
             {
                 uiFormInfo.Covered = true;
-                uiForm.OnCover();
+                uiForm.OnBeCover();
             }
 
             if (!uiFormInfo.Paused)
@@ -362,7 +284,7 @@ namespace GameFrameX.UI.Runtime
 
             if (!m_UIFormInfos.Remove(uiFormInfo))
             {
-                throw new GameFrameworkException(Utility.Text.Format("UI group '{0}' not exists specified UI form '[{1}]{2}'.", m_Name, uiForm.SerialId, uiForm.UIFormAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("UI group '{0}' not exists specified UI form '[{1}]{2}'.", Name, uiForm.SerialId, uiForm.UIFormAssetName));
             }
 
             ReferencePool.Release(uiFormInfo);
@@ -391,68 +313,66 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Refresh()
         {
-            LinkedListNode<UIFormInfo> current = m_UIFormInfos.First;
-            bool pause = m_Pause;
-            bool cover = false;
-            int depth = UIFormCount;
-            while (current != null && current.Value != null)
-            {
-                LinkedListNode<UIFormInfo> next = current.Next;
-                current.Value.UIForm.OnDepthChanged(Depth, depth--);
-                if (current.Value == null)
-                {
-                    return;
-                }
+            // 从链表头部开始遍历
+            var current = m_UIFormInfos.First;
+           
+            var isCover = false;       // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
+            var isPause = m_Pause;     // 是否暂停的标志(来自成员变量)
+            var depth   = UIFormCount; //初始深度值(从界面数量开始递减)
 
-                if (pause)
+            while (current is { Value: not null })
+            {
+                // 预先获取下一个节点（因为当前节点可能在处理过程中被移除）
+                var next = current.Next;
+                
+                // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
+                current.Value.UIForm.OnDepthChanged(Depth, depth--);
+                
+                if (current.Value == null) return; // 可能在回调中被销毁，所有这里判断下
+
+                // 暂停状态下的处理逻辑，第一个界面不会走到这里，只有第二个及以后的界面才会被暂停
+                if (isPause)
                 {
                     if (!current.Value.Covered)
                     {
                         current.Value.Covered = true;
-                        current.Value.UIForm.OnCover();
-                        if (current.Value == null)
-                        {
-                            return;
-                        }
+                        current.Value.UIForm.OnBeCover();// 触发被覆盖回调
+                        if (current.Value == null) return;
                     }
 
                     if (!current.Value.Paused)
                     {
                         current.Value.Paused = true;
-                        current.Value.UIForm.OnPause();
+                        current.Value.UIForm.OnPause();// 触发暂停回调
                         if (current.Value == null)
                         {
                             return;
                         }
                     }
                 }
+                
+                // 正常状态下的处理逻辑
                 else
                 {
                     if (current.Value.Paused)
                     {
                         current.Value.Paused = false;
-                        current.Value.UIForm.OnResume();
-                        if (current.Value == null)
-                        {
-                            return;
-                        }
+                        current.Value.UIForm.OnResume();// 触发恢复回调
+                        if (current.Value == null) return;
                     }
 
-                    if (current.Value.UIForm.PauseCoveredUIForm)
-                    {
-                        pause = true;
-                    }
+                    // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
+                    if (current.Value.UIForm.PauseCoveredUIForm) 
+                        isPause = true;
 
-                    if (cover)
+                    if (isCover)
                     {
+                        // 需要覆盖后续界面，第一个界面不会走到这里，只有第二个及以后的界面才会被暂停
                         if (!current.Value.Covered)
                         {
                             current.Value.Covered = true;
-                            current.Value.UIForm.OnCover();
-                            if (current.Value == null)
-                            {
-                                return;
-                            }
+                            current.Value.UIForm.OnBeCover(); // 触发被覆盖回调
+                            if (current.Value == null) return;
                         }
                     }
                     else
@@ -460,33 +380,15 @@ namespace GameFrameX.UI.Runtime
                         if (current.Value.Covered)
                         {
                             current.Value.Covered = false;
-                            current.Value.UIForm.OnReveal();
-                            if (current.Value == null)
-                            {
-                                return;
-                            }
+                            current.Value.UIForm.OnReveal(); // 触发重新显示回调
+                            if (current.Value == null) return;
                         }
 
-                        cover = true;
+                        isCover = true; // 后续界面需要被覆盖
                     }
                 }
 
-                current = next;
-            }
-        }
-        /// <summary>
-        /// 获取界面组中指定资源名称的所有界面。
-        /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
-        /// <param name="results">要获取的界面列表。</param>
-        public void InternalGetUIForms(string uiFormAssetName, List<IUIForm> results)
-        {
-            foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
-            {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName)
-                {
-                    results.Add(uiFormInfo.UIForm);
-                }
+                current = next; // 移动到下一个节点
             }
         }
 
@@ -510,30 +412,18 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 获取界面组中的所有界面。
+        /// 获取UI界面的界面信息。
         /// </summary>
-        /// <param name="results">要获取的界面列表。</param>
-        public void InternalGetAllUIForms(List<IUIForm> results)
-        {
-            foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
-            {
-                results.Add(uiFormInfo.UIForm);
-            }
-        }
-
+        /// <param name="uiForm"></param>
+        /// <returns></returns>
+        /// <exception cref="GameFrameworkException"></exception>
         private UIFormInfo GetUIFormInfo(IUIForm uiForm)
         {
-            if (uiForm == null)
-            {
-                throw new GameFrameworkException("UI form is invalid.");
-            }
-
+            if (uiForm == null) throw new GameFrameworkException("传入的UI界面为空.");
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm == uiForm)
-                {
-                    return uiFormInfo;
-                }
+                if (uiFormInfo.UIForm != uiForm) continue;
+                return uiFormInfo;
             }
 
             return null;

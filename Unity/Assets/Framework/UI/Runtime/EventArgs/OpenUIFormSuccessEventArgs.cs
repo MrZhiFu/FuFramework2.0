@@ -22,22 +22,9 @@ namespace GameFrameX.UI.Runtime
         public static readonly string EventId = typeof(OpenUIFormSuccessEventArgs).FullName;
 
         /// <summary>
-        /// 初始化打开界面成功事件的新实例。
-        /// </summary>
-        public OpenUIFormSuccessEventArgs()
-        {
-            UIForm = null;
-            Duration = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 获取打开界面成功事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取打开成功的界面。
@@ -55,6 +42,16 @@ namespace GameFrameX.UI.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化打开界面成功事件的新实例。
+        /// </summary>
+        public OpenUIFormSuccessEventArgs()
+        {
+            UIForm   = null;
+            Duration = 0f;
+            UserData = null;
+        }
+
+        /// <summary>
         /// 创建打开界面成功事件。
         /// </summary>
         /// <param name="uiForm">打开成功的界面。</param>
@@ -63,8 +60,8 @@ namespace GameFrameX.UI.Runtime
         /// <returns>创建的打开界面成功事件。</returns>
         public static OpenUIFormSuccessEventArgs Create(IUIForm uiForm, float duration, object userData)
         {
-            OpenUIFormSuccessEventArgs openUIFormSuccessEventArgs = ReferencePool.Acquire<OpenUIFormSuccessEventArgs>();
-            openUIFormSuccessEventArgs.UIForm = (UIForm)uiForm;
+            var openUIFormSuccessEventArgs = ReferencePool.Acquire<OpenUIFormSuccessEventArgs>();
+            openUIFormSuccessEventArgs.UIForm   = (UIForm)uiForm;
             openUIFormSuccessEventArgs.Duration = duration;
             openUIFormSuccessEventArgs.UserData = userData;
             return openUIFormSuccessEventArgs;
@@ -75,7 +72,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            UIForm = null;
+            UIForm   = null;
             Duration = 0f;
             UserData = null;
         }

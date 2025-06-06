@@ -493,6 +493,8 @@ GameObject:
   m_Component:
   - component: {fileID: 755918134}
   - component: {fileID: 755918135}
+  - component: {fileID: 755918137}
+  - component: {fileID: 755918136}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -512,8 +514,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1565570508885128524}
+  m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &755918135
@@ -535,8 +536,6 @@ MonoBehaviour:
   m_InstanceAutoReleaseInterval: 60
   m_InstanceCapacity: 16
   m_InstanceExpireTime: 60
-  m_InstanceUGUIRoot: {fileID: 0}
-  m_InstanceFairyGUIRoot: {fileID: 1565570508885128524}
   m_UIFormHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiFormHelper
   m_CustomUIFormHelper: {fileID: 0}
   m_UIGroupHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiGroupHelper
@@ -566,6 +565,39 @@ MonoBehaviour:
     m_Depth: -30
   - m_Name: System
     m_Depth: -35
+--- !u!114 &755918136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755918133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd5013ee152b62a45a23497e29726edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  componentType: 
+--- !u!114 &755918137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755918133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a723f7fd716aac049aa24e9186f18685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleMode: 1
+  screenMatchMode: 0
+  designResolutionX: 1920
+  designResolutionY: 1080
+  fallbackScreenDPI: 96
+  defaultSpriteDPI: 96
+  constantScaleFactor: 1
+  ignoreOrientation: 0
 --- !u!4 &787015720
 Transform:
   m_ObjectHideFlags: 0
@@ -1381,21 +1413,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1565570508885128524
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8927415738368895147}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 755918134}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1708891510959030576
 Transform:
   m_ObjectHideFlags: 0
@@ -1909,37 +1926,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8927415738368895147
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1565570508885128524}
-  - component: {fileID: 9154040612976744224}
-  - component: {fileID: 8927415738368895148}
-  m_Layer: 5
-  m_Name: FairyGUI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &8927415738368895148
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8927415738368895147}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd5013ee152b62a45a23497e29726edd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  componentType: 
 --- !u!114 &9043005308408896577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1953,26 +1939,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   componentType: GameFrameX.ObjectPool.ObjectPoolManager
---- !u!114 &9154040612976744224
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8927415738368895147}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a723f7fd716aac049aa24e9186f18685, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scaleMode: 1
-  screenMatchMode: 0
-  designResolutionX: 1920
-  designResolutionY: 1080
-  fallbackScreenDPI: 96
-  defaultSpriteDPI: 96
-  constantScaleFactor: 1
-  ignoreOrientation: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

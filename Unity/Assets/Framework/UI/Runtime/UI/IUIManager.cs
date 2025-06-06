@@ -38,11 +38,6 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         float InstanceExpireTime { get; set; }
 
-        /*/// <summary>
-        /// 获取或设置界面实例对象池的优先级。
-        /// </summary>
-        int InstancePriority { get; set; }*/
-
         /// <summary>
         /// 打开界面成功事件。
         /// </summary>
@@ -52,17 +47,6 @@ namespace GameFrameX.UI.Runtime
         /// 打开界面失败事件。
         /// </summary>
         event EventHandler<OpenUIFormFailureEventArgs> OpenUIFormFailure;
-
-        /*
-        /// <summary>
-        /// 打开界面更新事件。
-        /// </summary>
-        event EventHandler<OpenUIFormUpdateEventArgs> OpenUIFormUpdate;
-
-        /// <summary>
-        /// 打开界面时加载依赖资源事件。
-        /// </summary>
-        event EventHandler<OpenUIFormDependencyAssetEventArgs> OpenUIFormDependencyAsset;*/
 
         /// <summary>
         /// 关闭界面完成事件。

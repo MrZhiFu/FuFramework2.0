@@ -10,23 +10,18 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(int serialId)
-        {
-            return m_UIManager.GetUIForm(serialId);
-        }
+        public IUIForm GetUIForm(int serialId) => m_UIManager.GetUIForm(serialId);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(string uiFormAssetName)
-        {
-            return m_UIManager.GetUIForm(uiFormAssetName);
-        }
+        public IUIForm GetUIForm(string uiFormAssetName) => m_UIManager.GetUIForm(uiFormAssetName);
 
         /// <summary>
-        /// 获取界面。
+        /// 获取界面名称对应的界面。
+        /// (注意：一般为一个，如果有多个同名界面，则会返回所有同名界面)
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
@@ -34,7 +29,7 @@ namespace GameFrameX.UI.Runtime
         {
             var uiForms = m_UIManager.GetUIForms(uiFormAssetName);
             var uiFormImpls = new IUIForm[uiForms.Length];
-            for (int i = 0; i < uiForms.Length; i++)
+            for (var i = 0; i < uiForms.Length; i++)
             {
                 uiFormImpls[i] = uiForms[i];
             }
@@ -43,7 +38,8 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 获取界面。
+        /// 获取界面名称对应的界面。
+        /// (注意：一般为一个，如果有多个同名界面，则会返回所有同名界面)
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
@@ -51,16 +47,13 @@ namespace GameFrameX.UI.Runtime
         {
             if (results == null)
             {
-                Log.Error("Results is invalid.");
+                Log.Error("传入的结果列表为空.");
                 return;
             }
 
             results.Clear();
             m_UIManager.GetUIForms(uiFormAssetName, m_InternalUIFormResults);
-            foreach (var uiForm in m_InternalUIFormResults)
-            {
-                results.Add(uiForm);
-            }
+            results.AddRange(m_InternalUIFormResults);
         }
 
         /// <summary>
@@ -75,16 +68,13 @@ namespace GameFrameX.UI.Runtime
             var results = new List<T>();
             foreach (var uiForm in uiForms)
             {
-                if (uiForm.FullName == fullName)
-                {
-                    results.Add(uiForm as T);
-                }
+                if (uiForm.FullName != fullName) continue;
+                results.Add(uiForm as T);
             }
 
             return results;
         }
-
-
+        
         /// <summary>
         /// 获取已加载且正在显示的UI。
         /// </summary>
@@ -96,16 +86,13 @@ namespace GameFrameX.UI.Runtime
             var uiForms = m_UIManager.GetAllLoadedUIForms();
             foreach (var uiForm in uiForms)
             {
-                if (uiForm.FullName == fullName && uiForm.Visible && uiForm.Available)
-                {
-                    return uiForm as T;
-                }
+                if (uiForm.FullName != fullName || !uiForm.Visible) continue;
+                return uiForm as T;
             }
 
             return null;
         }
-
-
+        
         /// <summary>
         /// 根据界面逻辑类型获取界面。只要找到任意的一个即返回
         /// </summary>
@@ -117,10 +104,8 @@ namespace GameFrameX.UI.Runtime
             var uiForms = m_UIManager.GetAllLoadedUIForms();
             foreach (var uiForm in uiForms)
             {
-                if (uiForm.FullName == fullName)
-                {
-                    return uiForm as T;
-                }
+                if (uiForm.FullName != fullName) continue;
+                return uiForm as T;
             }
 
             return null;
@@ -134,7 +119,7 @@ namespace GameFrameX.UI.Runtime
         {
             var uiForms = m_UIManager.GetAllLoadedUIForms();
             var uiFormImpls = new IUIForm[uiForms.Length];
-            for (int i = 0; i < uiForms.Length; i++)
+            for (var i = 0; i < uiForms.Length; i++)
             {
                 uiFormImpls[i] = uiForms[i];
             }
@@ -150,34 +135,25 @@ namespace GameFrameX.UI.Runtime
         {
             if (results == null)
             {
-                Log.Error("Results is invalid.");
+                Log.Error("传入的结果列表为空.");
                 return;
             }
 
             results.Clear();
             m_UIManager.GetAllLoadedUIForms(m_InternalUIFormResults);
-            foreach (var uiForm in m_InternalUIFormResults)
-            {
-                results.Add(uiForm);
-            }
+            results.AddRange(m_InternalUIFormResults);
         }
 
         /// <summary>
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <returns>所有正在加载界面的序列编号。</returns>
-        public int[] GetAllLoadingUIFormSerialIds()
-        {
-            return m_UIManager.GetAllLoadingUIFormSerialIds();
-        }
+        public int[] GetAllLoadingUIFormSerialIds() => m_UIManager.GetAllLoadingUIFormSerialIds();
 
         /// <summary>
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <param name="results">所有正在加载界面的序列编号。</param>
-        public void GetAllLoadingUIFormSerialIds(List<int> results)
-        {
-            m_UIManager.GetAllLoadingUIFormSerialIds(results);
-        }
+        public void GetAllLoadingUIFormSerialIds(List<int> results) => m_UIManager.GetAllLoadingUIFormSerialIds(results);
     }
 }

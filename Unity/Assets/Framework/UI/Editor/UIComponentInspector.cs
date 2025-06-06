@@ -27,12 +27,10 @@ namespace GameFrameX.UI.Editor
         private SerializedProperty m_InstanceExpireTime = null;
 
         // private SerializedProperty m_InstancePriority = null;
-        private SerializedProperty m_InstanceUGUIRoot = null;
-        private SerializedProperty m_InstanceFairyGUIRoot = null;
         private SerializedProperty m_UIGroups = null;
 
-        private HelperInfo<UIFormHelperBase> m_UIFormHelperInfo = new HelperInfo<UIFormHelperBase>("UIForm");
-        private HelperInfo<UIGroupHelperBase> m_UIGroupHelperInfo = new HelperInfo<UIGroupHelperBase>("UIGroup");
+        private readonly HelperInfo<UIFormHelperBase>  m_UIFormHelperInfo  = new("UIForm");
+        private readonly HelperInfo<UIGroupHelperBase> m_UIGroupHelperInfo = new("UIGroup");
 
         public override void OnInspectorGUI()
         {
@@ -112,11 +110,6 @@ namespace GameFrameX.UI.Editor
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
-                EditorGUILayout.HelpBox("设置为UGUI的根节点", MessageType.Info);
-                EditorGUILayout.PropertyField(m_InstanceUGUIRoot);
-                EditorGUILayout.HelpBox("设置为FairyGUI的根节点", MessageType.Info);
-                EditorGUILayout.PropertyField(m_InstanceFairyGUIRoot);
-
                 if (m_UIGroups.arraySize <= 0)
                 {
                     EditorGUILayout.HelpBox("必须要设置至少一个UIGroup", MessageType.Error);
@@ -155,8 +148,7 @@ namespace GameFrameX.UI.Editor
             m_InstanceCapacity = serializedObject.FindProperty("m_InstanceCapacity");
             m_InstanceExpireTime = serializedObject.FindProperty("m_InstanceExpireTime");
             // m_InstancePriority = serializedObject.FindProperty("m_InstancePriority");
-            m_InstanceUGUIRoot = serializedObject.FindProperty("m_InstanceUGUIRoot");
-            m_InstanceFairyGUIRoot = serializedObject.FindProperty("m_InstanceFairyGUIRoot");
+            serializedObject.FindProperty("m_InstanceUGUIRoot");
             m_UIGroups = serializedObject.FindProperty("m_UIGroups");
 
             m_UIFormHelperInfo.Init(serializedObject);

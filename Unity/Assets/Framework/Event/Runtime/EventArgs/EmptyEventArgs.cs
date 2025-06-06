@@ -15,14 +15,9 @@ namespace GameFrameX.Event.Runtime
     {
         private static string _eventId = typeof(EmptyEventArgs).FullName;
 
-        public override void Clear()
-        {
-        }
+        public override void Clear() { }
 
-        public override string Id
-        {
-            get { return _eventId; }
-        }
+        public override string Id => _eventId;
 
         /// <summary>
         /// 创建空事件

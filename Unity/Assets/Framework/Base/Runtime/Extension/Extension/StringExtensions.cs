@@ -18,20 +18,9 @@ public static class StringExtension
     [UnityEngine.Scripting.Preserve]
     public static bool EqualsFast(this string self, string target)
     {
-        if (self == null)
-        {
-            return target == null;
-        }
-
-        if (target == null)
-        {
-            return false;
-        }
-
-        if (self.Length != target.Length)
-        {
-            return false;
-        }
+        if (self == null) return target == null;
+        if (target == null) return false;
+        if (self.Length != target.Length) return false;
 
         int ap = self.Length - 1;
         int bp = target.Length - 1;
@@ -87,7 +76,7 @@ public static class StringExtension
             bp++;
         }
 
-        return (bp == bLen);
+        return bp == bLen;
     }
 
     /// <summary>
@@ -242,7 +231,7 @@ public static class StringExtension
     /// <summary>
     /// 匹配中文正则表达式
     /// </summary>
-    private static readonly Regex CnReg = new Regex(@"[\u4e00-\u9fa5]");
+    private static readonly Regex CnReg = new(@"[\u4e00-\u9fa5]");
 
     /// <summary>
     /// 替换中文为空字符串
@@ -255,6 +244,13 @@ public static class StringExtension
         self = CnReg.Replace(self, string.Empty);
         return self;
     }
+    
+    /// <summary>
+    /// 将字符串转换为整数数组,分隔符默认为+
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="sep"></param>
+    /// <returns></returns>
 
     [UnityEngine.Scripting.Preserve]
     public static int[] SplitToIntArray(this string str, char sep = '+')
@@ -273,6 +269,13 @@ public static class StringExtension
         return ret;
     }
 
+    /// <summary>
+    /// 将字符串转换为二维整数数组,分隔符默认为 ; 与 +
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="sep1"></param>
+    /// <param name="sep2"></param>
+    /// <returns></returns>
     [UnityEngine.Scripting.Preserve]
     public static int[][] SplitTo2IntArray(this string str, char sep1 = ';', char sep2 = '+')
     {

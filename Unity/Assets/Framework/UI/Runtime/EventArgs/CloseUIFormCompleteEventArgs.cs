@@ -23,23 +23,9 @@ namespace GameFrameX.UI.Runtime
         public static readonly string EventId = typeof(CloseUIFormCompleteEventArgs).FullName;
 
         /// <summary>
-        /// 初始化关闭界面完成事件的新实例。
-        /// </summary>
-        public CloseUIFormCompleteEventArgs()
-        {
-            SerialId = 0;
-            UIFormAssetName = null;
-            UIGroup = null;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 获取关闭界面完成事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取界面序列编号。
@@ -62,6 +48,17 @@ namespace GameFrameX.UI.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化关闭界面完成事件的新实例。
+        /// </summary>
+        public CloseUIFormCompleteEventArgs()
+        {
+            SerialId        = 0;
+            UIFormAssetName = null;
+            UIGroup         = null;
+            UserData        = null;
+        }
+
+        /// <summary>
         /// 创建关闭界面完成事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
@@ -71,11 +68,11 @@ namespace GameFrameX.UI.Runtime
         /// <returns>创建的关闭界面完成事件。</returns>
         public static CloseUIFormCompleteEventArgs Create(int serialId, string uiFormAssetName, IUIGroup uiGroup, object userData)
         {
-            CloseUIFormCompleteEventArgs closeUIFormCompleteEventArgs = ReferencePool.Acquire<CloseUIFormCompleteEventArgs>();
-            closeUIFormCompleteEventArgs.SerialId = serialId;
+            var closeUIFormCompleteEventArgs = ReferencePool.Acquire<CloseUIFormCompleteEventArgs>();
+            closeUIFormCompleteEventArgs.SerialId        = serialId;
             closeUIFormCompleteEventArgs.UIFormAssetName = uiFormAssetName;
-            closeUIFormCompleteEventArgs.UIGroup = uiGroup;
-            closeUIFormCompleteEventArgs.UserData = userData;
+            closeUIFormCompleteEventArgs.UIGroup         = uiGroup;
+            closeUIFormCompleteEventArgs.UserData        = userData;
             return closeUIFormCompleteEventArgs;
         }
 
@@ -84,10 +81,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId = 0;
+            SerialId        = 0;
             UIFormAssetName = null;
-            UIGroup = null;
-            UserData = null;
+            UIGroup         = null;
+            UserData        = null;
         }
     }
 }

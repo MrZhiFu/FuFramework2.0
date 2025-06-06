@@ -1,26 +1,18 @@
 ﻿using FairyGUI;
+using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
-    /// FairyGUI界面组辅助器。
-    /// 1.设置界面深度。
-    /// 2.创建界面组。
+    /// FairyGUI界面组辅助器。每个界面组都会被挂载一个该组件
+    /// 1.创建界面组。
+    /// 2.设置界面深度。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
     public sealed class FuiGroupHelper : UIGroupHelperBase
     {
-        /// <summary>
-        /// 设置界面组深度。
-        /// </summary>
-        /// <param name="depth">界面组深度。</param>
-        public override void SetDepth(int depth)
-        {
-            transform.localPosition = new Vector3(0, 0, depth * 100);
-        }
-
         /// <summary>
         /// 创建界面组。
         /// </summary>
@@ -47,8 +39,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             component.AddRelation(GRoot.inst, RelationType.Height);
             component.MakeFullScreen();
 
-            return GameFrameX.Runtime.Helper.CreateHelper(uiGroupHelperTypeName, (UIGroupHelperBase)customUIGroupHelper, 0,
-                component.displayObject.gameObject);
+            return Helper.CreateHelper(uiGroupHelperTypeName, (UIGroupHelperBase)customUIGroupHelper, 0, component.displayObject.gameObject);
+        }
+
+        /// <summary>
+        /// 设置界面组深度。
+        /// </summary>
+        /// <param name="depth">界面组深度。</param>
+        public override void SetDepth(int depth)
+        {
+            transform.localPosition = new Vector3(0, 0, depth * 100);
         }
     }
 }

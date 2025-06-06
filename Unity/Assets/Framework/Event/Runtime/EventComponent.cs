@@ -19,23 +19,20 @@ namespace GameFrameX.Event.Runtime
     [UnityEngine.Scripting.Preserve]
     public sealed class EventComponent : GameFrameworkComponent
     {
+        /// <summary>
+        /// 事件管理器。
+        /// </summary>
         private IEventManager m_EventManager = null;
 
         /// <summary>
         /// 获取事件处理函数的数量。
         /// </summary>
-        public int EventHandlerCount
-        {
-            get { return m_EventManager.EventHandlerCount; }
-        }
+        public int EventHandlerCount => m_EventManager.EventHandlerCount;
 
         /// <summary>
         /// 获取事件数量。
         /// </summary>
-        public int EventCount
-        {
-            get { return m_EventManager.EventCount; }
-        }
+        public int EventCount => m_EventManager.EventCount;
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -44,12 +41,13 @@ namespace GameFrameX.Event.Runtime
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IEventManager);
+            
             base.Awake();
+            
             m_EventManager = GameFrameworkEntry.GetModule<IEventManager>();
             if (m_EventManager == null)
             {
-                Log.Fatal("Event manager is invalid.");
-                return;
+                Log.Fatal("事件管理器不存在.");
             }
         }
 
@@ -58,10 +56,7 @@ namespace GameFrameX.Event.Runtime
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <returns>事件处理函数的数量。</returns>
-        public int Count(string id)
-        {
-            return m_EventManager.Count(id);
-        }
+        public int Count(string id) => m_EventManager.Count(id);
 
         /// <summary>
         /// 检查是否存在事件处理函数。

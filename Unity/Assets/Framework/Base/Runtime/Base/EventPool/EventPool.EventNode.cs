@@ -16,26 +16,17 @@ namespace GameFrameX.Runtime
         /// </summary>
         private sealed class EventNode : IReference
         {
-            private object _sender = null;
-            private T _eventArgs = null;
-
             /// <summary>
             /// 发送者
             /// </summary>
-            [Preserve] // 添加 Preserve 标签
-            public object Sender
-            {
-                get { return _sender; }
-            }
+            [Preserve]
+            public object Sender { get; private set; } = null;
 
             /// <summary>
             /// 事件参数
             /// </summary>
-            [Preserve] // 添加 Preserve 标签
-            public T EventArgs
-            {
-                get { return _eventArgs; }
-            }
+            [Preserve]
+            public T EventArgs { get; private set; } = null;
 
             /// <summary>
             /// 创建事件节点
@@ -43,19 +34,22 @@ namespace GameFrameX.Runtime
             /// <param name="sender"></param>
             /// <param name="eventArgs"></param>
             /// <returns></returns>
-            [Preserve] // 添加 Preserve 标签
+            [Preserve]
             public static EventNode Create(object sender, T eventArgs)
             {
-                EventNode eventNodeNode = ReferencePool.Acquire<EventNode>();
-                eventNodeNode._sender = sender;
-                eventNodeNode._eventArgs = eventArgs;
+                var eventNodeNode = ReferencePool.Acquire<EventNode>();
+                eventNodeNode.Sender    = sender;
+                eventNodeNode.EventArgs = eventArgs;
                 return eventNodeNode;
             }
 
+            /// <summary>
+            /// 释放事件节点
+            /// </summary>
             public void Clear()
             {
-                _sender = null;
-                _eventArgs = null;
+                Sender    = null;
+                EventArgs = null;
             }
         }
     }

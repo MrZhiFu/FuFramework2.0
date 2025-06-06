@@ -30,19 +30,9 @@ namespace GameFrameX.UI.Runtime
         string UIFormAssetName { get; }
 
         /// <summary>
-        /// 获取界面资源名称。
-        /// </summary>
-        string AssetPath { get; }
-
-        /// <summary>
         /// 获取界面实例。
         /// </summary>
         object Handle { get; }
-
-        /// <summary>
-        /// 获取界面是否可用。
-        /// </summary>
-        bool Available { get; }
 
         /// <summary>
         /// 获取界面是否可见。
@@ -126,9 +116,9 @@ namespace GameFrameX.UI.Runtime
         void OnResume();
 
         /// <summary>
-        /// 界面遮挡。
+        /// 界面被遮挡。
         /// </summary>
-        void OnCover();
+        void OnBeCover();
 
         /// <summary>
         /// 界面遮挡恢复。

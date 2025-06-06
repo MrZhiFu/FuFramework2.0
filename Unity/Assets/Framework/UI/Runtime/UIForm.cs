@@ -20,20 +20,40 @@ namespace GameFrameX.UI.Runtime
     [Serializable]
     public abstract class UIForm : MonoBehaviour, IUIForm
     {
-        [SerializeField] private bool m_Available = false;
-        [SerializeField] private bool m_Visible = false;
-        [SerializeField] private bool m_IsInit = false;
+        [Header("界面序列编号")]
         [SerializeField] private int m_SerialId;
+
+        [Header("界面是否可见")]
+        [SerializeField] private bool m_Visible = false;
+
+        [Header("界面是否已初始化")]
+        [SerializeField] private bool m_IsInit = false;
+
+        [Header("界面原始层级")]
         [SerializeField] private int m_OriginalLayer = 0;
-        [SerializeField] private string m_UIFormAssetName;
-        [SerializeField] private string m_AssetPath;
-        [SerializeField] private int m_DepthInUIGroup;
-        [SerializeField] private bool m_PauseCoveredUIForm;
+
+        [Header("界面完整名称")]
         [SerializeField] private string m_FullName;
-        
+
+        [Header("界面资源名称")]
+        [SerializeField] private string m_UIFormAssetName;
+
+        [Header("界面在界面组中的深度")]
+        [SerializeField] private int m_DepthInUIGroup;
+
+        [Header("界面是否暂停被覆盖的界面")]
+        [SerializeField] private bool m_PauseCoveredUIForm;
+
+
+        /// 界面所属的界面组。
         private IUIGroup m_UIGroup;
-        private UIEventSubscriber m_EventSubscriber = null;
-        private object m_UserData = null;
+
+        /// 界面用户自定义数据，可在界面初始化时传入
+        private object m_UserData;
+
+        /// 界面事件注册器
+        private EventRegister _eventRegister;
+
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -43,7 +63,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面事件订阅器。
         /// </summary>
-        public UIEventSubscriber EventSubscriber => m_EventSubscriber;
+        public EventRegister EventRegister => _eventRegister;
 
         /// <summary>
         /// 获取界面是否来自对象池。
@@ -66,6 +86,11 @@ namespace GameFrameX.UI.Runtime
         public string FullName => m_FullName;
 
         /// <summary>
+        /// 获取界面资源名称。
+        /// </summary>
+        public string UIFormAssetName => m_UIFormAssetName;
+
+        /// <summary>
         /// 获取或设置界面名称。
         /// </summary>
         public string Name
@@ -75,46 +100,18 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 获取界面是否可用。
-        /// </summary>
-        public bool Available => m_Available;
-
-        /// <summary>
         /// 获取或设置界面是否可见。
         /// </summary>
         public virtual bool Visible
         {
-            get => m_Available && m_Visible;
+            get => m_Visible;
+
             protected set
             {
-                if (!m_Available)
-                {
-                    Log.Warning("UI form '{0}' is not available.", Name);
-                    return;
-                }
-
-                if (m_Visible == value)
-                {
-                    return;
-                }
-
+                if (m_Visible == value) return;
                 m_Visible = value;
                 InternalSetVisible(value);
             }
-        }
-
-        /// <summary>
-        /// 获取界面资源名称。
-        /// </summary>
-        public string UIFormAssetName => m_UIFormAssetName;
-
-        /// <summary>
-        /// 获取界面资源名称。
-        /// </summary>
-        public string AssetPath
-        {
-            get => m_AssetPath;
-            protected set => m_AssetPath = value;
         }
 
         /// <summary>
@@ -141,22 +138,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public bool PauseCoveredUIForm => m_PauseCoveredUIForm;
 
+        /// <summary>
+        /// 获取界面是否已唤醒。
+        /// </summary>
         public bool IsAwake { get; private set; }
-
-        /// <summary>
-        /// 界面初始化前执行
-        /// </summary>
-        public virtual void OnAwake()
-        {
-            IsAwake = true;
-        }
-
-        /// <summary>
-        /// 界面初始化。
-        /// </summary>
-        protected virtual void InitView()
-        {
-        }
 
         /// <summary>
         /// 初始化界面。
@@ -173,67 +158,68 @@ namespace GameFrameX.UI.Runtime
         {
             m_UserData = userData;
             if (serialId >= 0)
-            {
                 m_SerialId = serialId;
-            }
 
+            m_UIGroup            = uiGroup;
             m_PauseCoveredUIForm = pauseCoveredUIForm;
-            m_UIGroup = uiGroup;
-            if (m_IsInit)
-            {
-                return;
-            }
 
+            // 如果已经初始化过，则不再初始化
+            if (m_IsInit) return;
+
+            m_FullName        = GetType().FullName;
             m_UIFormAssetName = uiFormAssetName;
-            m_FullName = GetType().FullName;
-            m_DepthInUIGroup = 0;
-            m_OriginalLayer = gameObject.layer;
-            if (!isNewInstance)
-            {
-                return;
-            }
+            m_DepthInUIGroup  = 0;
+            m_OriginalLayer   = gameObject.layer;
 
-            m_EventSubscriber = UIEventSubscriber.Create(this);
+            if (!isNewInstance) return;
+
+            _eventRegister = EventRegister.Create(this);
 
             try
             {
                 onInitAction?.Invoke(this);
                 InitView();
-                if (isFullScreen)
-                {
-                    MakeFullScreen();
-                }
+
+                if (isFullScreen) MakeFullScreen();
 
                 OnInit();
-                m_EventSubscriber.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
+
+                // 注册本地化语言改变事件
+                _eventRegister.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
             }
             catch (Exception exception)
             {
-                Log.Error("UI form '[{0}]{1}' OnInit with exception '{2}'.", m_SerialId, m_UIFormAssetName, exception);
+                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", m_SerialId, m_UIFormAssetName, exception);
             }
 
             m_IsInit = true;
         }
 
         /// <summary>
-        /// 初始化界面。
+        /// 界面初始化前执行
         /// </summary>
-        public virtual void OnInit()
+        public virtual void OnAwake()
         {
+            IsAwake = true;
         }
 
-        private void OnLocalizationLanguageChanged(object sender, GameEventArgs e)
-        {
-            UpdateLocalization();
-        }
+        /// <summary>
+        /// 界面初始化。
+        /// </summary>
+        protected virtual void InitView() { }
+
+        /// <summary>
+        /// 初始化界面。
+        /// </summary>
+        public virtual void OnInit() { }
 
         /// <summary>
         /// 界面回收。
         /// </summary>
         public virtual void OnRecycle()
         {
-            m_SerialId = 0;
-            m_DepthInUIGroup = 0;
+            m_SerialId           = 0;
+            m_DepthInUIGroup     = 0;
             m_PauseCoveredUIForm = true;
         }
 
@@ -243,17 +229,16 @@ namespace GameFrameX.UI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public virtual void OnOpen(object userData)
         {
-            m_Available = true;
-            Visible = true;
+            Visible    = true;
             m_UserData = userData;
         }
 
         /// <summary>
-        /// 界面更新本地化。
+        /// 界面轮询。
         /// </summary>
-        public virtual void UpdateLocalization()
-        {
-        }
+        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
+        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        public virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
 
         /// <summary>
         /// 界面关闭。
@@ -263,7 +248,6 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnClose(bool isShutdown, object userData)
         {
             gameObject.SetLayerRecursively(m_OriginalLayer);
-            m_Available = false;
             Visible = false;
         }
 
@@ -272,7 +256,6 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnPause()
         {
-            m_Available = false;
             Visible = false;
         }
 
@@ -281,40 +264,24 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnResume()
         {
-            m_Available = true;
             Visible = true;
         }
 
         /// <summary>
         /// 界面遮挡。
         /// </summary>
-        public virtual void OnCover()
-        {
-        }
+        public virtual void OnBeCover() { }
 
         /// <summary>
         /// 界面遮挡恢复。
         /// </summary>
-        public virtual void OnReveal()
-        {
-        }
+        public virtual void OnReveal() { }
 
         /// <summary>
         /// 界面激活。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnRefocus(object userData)
-        {
-        }
-
-        /// <summary>
-        /// 界面轮询。
-        /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        public virtual void OnUpdate(float elapseSeconds, float realElapseSeconds)
-        {
-        }
+        public virtual void OnRefocus(object userData) { }
 
         /// <summary>
         /// 界面深度改变。
@@ -332,9 +299,24 @@ namespace GameFrameX.UI.Runtime
         public virtual void Dispose()
         {
             if (IsDisposed) return;
-            m_EventSubscriber.UnSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
+            _eventRegister.UnSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
             IsDisposed = true;
         }
+
+        /// <summary>
+        /// 本地化语言改变事件处理函数。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnLocalizationLanguageChanged(object sender, GameEventArgs e)
+        {
+            UpdateLocalization();
+        }
+
+        /// <summary>
+        /// 界面更新本地化。
+        /// </summary>
+        public virtual void UpdateLocalization() { }
 
         /// <summary>
         /// 设置界面的可见性。

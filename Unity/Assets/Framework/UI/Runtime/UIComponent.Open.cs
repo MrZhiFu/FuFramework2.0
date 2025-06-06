@@ -7,6 +7,19 @@ namespace GameFrameX.UI.Runtime
     public partial class UIComponent
     {
         /// <summary>
+        /// 重新激活界面。
+        /// </summary>
+        /// <param name="uiForm">要激活的界面。</param>
+        public void RefocusUIForm(UIForm uiForm) => m_UIManager.RefocusUIForm(uiForm);
+
+        /// <summary>
+        /// 重新激活界面。
+        /// </summary>
+        /// <param name="uiForm">要激活的界面。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void RefocusUIForm(UIForm uiForm, object userData) => m_UIManager.RefocusUIForm(uiForm, userData);
+        
+        /// <summary>
         /// 异步打开全屏UI。
         /// </summary>
         /// <param name="uiFormAssetPath">界面所在路径</param>

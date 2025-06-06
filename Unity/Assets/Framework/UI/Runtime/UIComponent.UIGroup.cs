@@ -13,35 +13,26 @@ namespace GameFrameX.UI.Runtime
 {
     public partial class UIComponent : GameFrameworkComponent
     {
+        /// <summary>
+        /// UI组。
+        /// </summary>
         [Serializable]
         private sealed class UIGroup
         {
-            [SerializeField]
-            private string m_Name = null;
+            [Header("组名")]
+            [SerializeField] private string m_Name  = null;
+            
+            [Header("组深度")]
+            [SerializeField] private int    m_Depth = 0;
 
-            [SerializeField]
-            private int m_Depth = 0;
+            public string Name => m_Name;
 
-            public string Name
-            {
-                get
-                {
-                    return m_Name;
-                }
-            }
-
-            public int Depth
-            {
-                get
-                {
-                    return m_Depth;
-                }
-            }
+            public int Depth => m_Depth;
 
             public UIGroup(int depth, string name)
             {
-                this.m_Depth = depth;
-                this.m_Name = name;
+                m_Depth = depth;
+                m_Name  = name;
             }
         }
     }

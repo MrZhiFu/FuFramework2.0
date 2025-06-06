@@ -6,22 +6,23 @@ using UnityEngine;
 namespace GameFrameX.Mono.Runtime
 {
     /// <summary>
-    /// Mono 组件
+    /// Mono 组件。
+    /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了添加和移除这些事件的监听。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Mono")]
     public class MonoComponent : GameFrameworkComponent
     {
-        private IMonoManager m_MonoManager;
+        private IMonoManager   m_MonoManager;
         private EventComponent m_EventComponent;
 
         protected override void Awake()
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IMonoManager);
-            
+            InterfaceComponentType      = typeof(IMonoManager);
+
             base.Awake();
-            
+
             m_MonoManager = GameFrameworkEntry.GetModule<IMonoManager>();
             if (m_MonoManager == null)
             {
@@ -50,7 +51,7 @@ namespace GameFrameX.Mono.Runtime
         /// 当 MonoBehaviour 将被销毁时调用。
         /// </summary>
         private void OnDestroy() => m_MonoManager.OnDestroy();
-        
+
 
         /// <summary>
         /// 当应用程序失去或获得焦点时调用。
@@ -86,7 +87,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -101,7 +102,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -116,7 +117,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -131,7 +132,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -146,7 +147,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -161,7 +162,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -176,7 +177,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -191,7 +192,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -206,7 +207,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -221,7 +222,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -236,7 +237,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 
@@ -251,7 +252,7 @@ namespace GameFrameX.Mono.Runtime
         {
             if (fun == null)
             {
-                Log.Fatal(nameof(fun) + "无效.");
+                Log.Fatal(nameof(fun) + "回调函数无效.");
                 return;
             }
 

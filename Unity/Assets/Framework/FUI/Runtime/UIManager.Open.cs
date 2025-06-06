@@ -6,16 +6,10 @@
 //------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using FairyGUI;
-using GameFrameX.Asset.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -25,11 +19,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     internal sealed partial class UIManager
     {
         private EventHandler<OpenUIFormSuccessEventArgs> m_OpenUIFormSuccessEventHandler;
-
         private EventHandler<OpenUIFormFailureEventArgs> m_OpenUIFormFailureEventHandler;
-
-        // private EventHandler<OpenUIFormUpdateEventArgs> m_OpenUIFormUpdateEventHandler;
-        // private EventHandler<OpenUIFormDependencyAssetEventArgs> m_OpenUIFormDependencyAssetEventHandler;
 
         /// <summary>
         /// 打开界面成功事件。
@@ -48,25 +38,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             add => m_OpenUIFormFailureEventHandler += value;
             remove => m_OpenUIFormFailureEventHandler -= value;
         }
-
-        /*
-        /// <summary>
-        /// 打开界面更新事件。
-        /// </summary>
-        public event EventHandler<OpenUIFormUpdateEventArgs> OpenUIFormUpdate
-        {
-            add { m_OpenUIFormUpdateEventHandler += value; }
-            remove { m_OpenUIFormUpdateEventHandler -= value; }
-        }
-
-        /// <summary>
-        /// 打开界面时加载依赖资源事件。
-        /// </summary>
-        public event EventHandler<OpenUIFormDependencyAssetEventArgs> OpenUIFormDependencyAsset
-        {
-            add { m_OpenUIFormDependencyAssetEventHandler += value; }
-            remove { m_OpenUIFormDependencyAssetEventHandler -= value; }
-        }*/
 
         /// <summary>
         /// 打开界面。
@@ -100,11 +71,31 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             return InnerOpenUIFormAsync(uiFormAssetPath, typeof(T), pauseCoveredUIForm, userData, isFullScreen, isMultiple);
         }
 
+        /// <summary>
+        /// 打开界面。
+        /// </summary>
+        /// <param name="uiFormAssetPath">界面所在路径</param>
+        /// <param name="uiFormType">界面逻辑类型。</param>
+        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        /// <param name="isFullScreen">是否全屏</param>
+        /// <param name="isMultiple">是否创建新界面</param>
+        /// <returns></returns>
         public async Task<IUIForm> OpenUIFormAsync(string uiFormAssetPath, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false)
         {
             return await InnerOpenUIFormAsync(uiFormAssetPath, uiFormType, pauseCoveredUIForm, userData, isFullScreen, isMultiple);
         }
 
+        /// <summary>
+        /// 打开界面。
+        /// </summary>
+        /// <param name="uiFormAssetPath">界面所在路径</param>
+        /// <param name="uiFormType">界面逻辑类型。</param>
+        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        /// <param name="isFullScreen">是否全屏</param>
+        /// <param name="isMultiple">是否创建新界面</param>
+        /// <returns></returns>
         private async Task<IUIForm> InnerOpenUIFormAsync(string uiFormAssetPath, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false)
         {
             var uiFormAssetName = uiFormType.Name;
@@ -181,7 +172,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             try
             {
-                IUIForm uiForm = m_UIFormHelper.CreateUIForm(uiFormInstance, uiFormType, userData);
+                IUIForm uiForm = m_UIFormHelper.CreateUIForm(uiFormInstance, uiFormType);
                 if (uiForm == null)
                 {
                     throw new GameFrameworkException("Can not create UI form in UI form helper.");
@@ -261,7 +252,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void SetUIFormInstanceLocked(object uiFormInstance, bool locked)
         {
             GameFrameworkGuard.NotNull(uiFormInstance, nameof(uiFormInstance));
-
             m_InstancePool.SetLocked(uiFormInstance, locked);
         }
 
@@ -273,7 +263,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void SetUIFormInstancePriority(object uiFormInstance, int priority)
         {
             GameFrameworkGuard.NotNull(uiFormInstance, nameof(uiFormInstance));
-
             m_InstancePool.SetPriority(uiFormInstance, priority);
         }
 
@@ -296,7 +285,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             {
                 m_WaitReleaseSet.Remove(openUIFormInfo.SerialId);
                 ReferencePool.Release(openUIFormInfo);
-                m_UIFormHelper.ReleaseUIForm(uiFormAsset, null);
+                m_UIFormHelper.ReleaseUIForm(null);
                 return GetUIForm(openUIFormInfo.SerialId);
             }
 

@@ -22,22 +22,9 @@ namespace GameFrameX.UI.Runtime
         public static readonly string EventId = typeof(UIFormVisibleChangedEventArgs).FullName;
 
         /// <summary>
-        /// 初始化打开界面成功事件的新实例。
-        /// </summary>
-        public UIFormVisibleChangedEventArgs()
-        {
-            UIForm = null;
-            Visible = false;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 获取打开界面成功事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取打开成功的界面。
@@ -53,6 +40,16 @@ namespace GameFrameX.UI.Runtime
         /// 获取用户自定义数据。
         /// </summary>
         public object UserData { get; private set; }
+        
+        /// <summary>
+        /// 初始化打开界面成功事件的新实例。
+        /// </summary>
+        public UIFormVisibleChangedEventArgs()
+        {
+            UIForm   = null;
+            Visible  = false;
+            UserData = null;
+        }
 
         /// <summary>
         /// 创建打开界面成功事件。
@@ -63,7 +60,7 @@ namespace GameFrameX.UI.Runtime
         /// <returns>创建的打开界面成功事件。</returns>
         public static UIFormVisibleChangedEventArgs Create(IUIForm uiForm, bool visible, object userData)
         {
-            UIFormVisibleChangedEventArgs uiFormSuccessEventArgs = ReferencePool.Acquire<UIFormVisibleChangedEventArgs>();
+            var uiFormSuccessEventArgs = ReferencePool.Acquire<UIFormVisibleChangedEventArgs>();
             uiFormSuccessEventArgs.UIForm = (UIForm)uiForm;
             uiFormSuccessEventArgs.Visible = visible;
             uiFormSuccessEventArgs.UserData = userData;
