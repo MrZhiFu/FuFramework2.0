@@ -52,7 +52,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        bool PauseCoveredUIForm { get; }
+        bool PauseCoveredUI { get; }
 
         /// <summary>
         /// 获取是否唤醒过
@@ -68,14 +68,14 @@ namespace GameFrameX.UI.Runtime
         /// 初始化界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <param name="uiGroup">界面所属的界面组。</param>
         /// <param name="onInitAction">初始化界面前的委托。</param>
-        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        void Init(int serialId, string uiFormAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUIForm, bool isNewInstance, object userData, bool isFullScreen = false);
+        void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUI, bool isNewInstance, object userData, bool isFullScreen = false);
 
         /// <summary>
         /// 界面初始化。

@@ -21,7 +21,7 @@ namespace GameFrameX.UI.Runtime
                 typeof(UIForm),
                 typeof(UIGroup),
                 typeof(UIFormInfo),
-                typeof(OpenUIFormInfo),
+                typeof(OpenUIInfo),
                 typeof(UIGroupDefine),
                 typeof(UIGroupConstants),
                 typeof(EventRegister),

@@ -19,7 +19,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiFormAsset">要实例化的界面资源。</param>
         /// <returns>实例化后的界面。</returns>
-        object InstantiateUIForm(object uiFormAsset);
+        object InstantiateUI(object uiFormAsset);
 
         /// <summary>
         /// 创建界面。
@@ -27,12 +27,12 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiFormInstance">界面实例。</param>
         /// <param name="uiFormLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        IUIForm CreateUIForm(object uiFormInstance, Type uiFormLogicType);
+        IUIForm CreateUI(object uiFormInstance, Type uiFormLogicType);
 
         /// <summary>
         /// 释放界面。
         /// </summary>
         /// <param name="uiFormInstance">要释放的界面实例。</param>
-        void ReleaseUIForm(object uiFormInstance);
+        void ReleaseUI(object uiFormInstance);
     }
 }

@@ -15,37 +15,47 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     {
         /// <summary>
         /// 界面实例对象。
+        /// 用来将界面资源对象Target和界面实例对象绑定在一起，并提供界面实例对象回收的功能。
         /// </summary>
-        private sealed class UIFormInstanceObject : ObjectBase
+        private sealed class UIInstanceObject : ObjectBase
         {
-            /// 界面资源对象
-            private object m_UIFormAsset = null;
-
             /// 界面辅助器
             private IUIFormHelper m_UIFormHelper = null;
 
-            public static UIFormInstanceObject Create(string name, object uiFormAsset, object uiFormInstance, IUIFormHelper uiFormHelper)
+            /// <summary>
+            /// 创建界面实例对象。
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="uiFormInstance"></param>
+            /// <param name="uiFormHelper"></param>
+            /// <returns></returns>
+            /// <exception cref="GameFrameworkException"></exception>
+            public static UIInstanceObject Create(string name, object uiFormInstance, IUIFormHelper uiFormHelper)
             {
-                if (uiFormAsset  == null) throw new GameFrameworkException("传入的界面资源对象为空.");
                 if (uiFormHelper == null) throw new GameFrameworkException("传入的界面辅助器为空.");
 
-                UIFormInstanceObject uiFormInstanceObject = ReferencePool.Acquire<UIFormInstanceObject>();
+                var uiFormInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
                 uiFormInstanceObject.Initialize(name, uiFormInstance);
-                uiFormInstanceObject.m_UIFormAsset  = uiFormAsset;
                 uiFormInstanceObject.m_UIFormHelper = uiFormHelper;
                 return uiFormInstanceObject;
             }
 
+            /// <summary>
+            /// 清理
+            /// </summary>
             public override void Clear()
             {
                 base.Clear();
-                m_UIFormAsset  = null;
                 m_UIFormHelper = null;
             }
 
+            /// <summary>
+            /// 回收
+            /// </summary>
+            /// <param name="isShutdown"></param>
             protected override void Release(bool isShutdown)
             {
-                m_UIFormHelper.ReleaseUIForm(Target);
+                m_UIFormHelper.ReleaseUI(Target);
             }
         }
     }

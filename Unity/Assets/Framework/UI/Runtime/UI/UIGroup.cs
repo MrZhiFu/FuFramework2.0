@@ -335,7 +335,7 @@ namespace GameFrameX.UI.Runtime
                     }
 
                     // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
-                    if (current.Value.UIForm.PauseCoveredUIForm) 
+                    if (current.Value.UIForm.PauseCoveredUI) 
                         isPause = true;
 
                     if (isCover)

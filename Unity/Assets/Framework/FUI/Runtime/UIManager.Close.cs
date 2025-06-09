@@ -35,36 +35,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             add => m_CloseUICompleteEventHandler += value;
             remove => m_CloseUICompleteEventHandler -= value;
         }
-
-        /// <summary>
-        /// 回收界面实例对象。
-        /// </summary>
-        /// <param name="uiForm"></param>
-        private void RecycleUIForm(IUIForm uiForm)
-        {
-            uiForm.OnRecycle();
-            var formHandle = uiForm.Handle as GameObject;
-            if (!formHandle) return;
-            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
-            if (!displayObjectInfo) return;
-            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
-            m_InstancePool.Unspawn(component);
-        }
-
-        /// <summary>
-        /// 回收界面实例对象。
-        /// </summary>
-        /// <param name="uiForm"></param>
-        private void RecycleUIFormNow(IUIForm uiForm)
-        {
-            uiForm.OnRecycle();
-            var formHandle = uiForm.Handle as GameObject;
-            if (!formHandle) return;
-            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
-            if (!displayObjectInfo) return;
-            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
-            component.Dispose();
-        }
+        
 
         /// <summary>
         /// 关闭界面。
@@ -224,8 +195,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 // ReferencePool.Release(closeUIFormCompleteEventArgs);
             }
 
-            RecycleUIFormNow(uiForm);
+            // 回收界面实例对象
+            RecycleUINow(uiForm);
         }
+        
 
         /// <summary>
         /// 关闭所有已加载的界面。
@@ -242,13 +215,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void CloseAllLoadedUIs(object userData)
         {
             IUIForm[] uiForms = GetAllLoadedUIs();
-            foreach (IUIForm uiForm in uiForms)
+            foreach (var uiForm in uiForms)
             {
-                if (!HasUI(uiForm.SerialId))
-                {
-                    continue;
-                }
-
+                if (!HasUI(uiForm.SerialId)) continue;
                 CloseUI(uiForm, userData);
             }
         }
@@ -258,12 +227,43 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public void CloseAllLoadingUIs()
         {
-            foreach (KeyValuePair<int, string> uiFormBeingLoaded in m_LoadingDict)
+            foreach (var (serialId, _) in m_LoadingDict)
             {
-                m_WaitReleaseSet.Add(uiFormBeingLoaded.Key);
+                m_WaitReleaseSet.Add(serialId);
             }
 
             m_LoadingDict.Clear();
+        }
+        
+        
+        /// <summary>
+        /// 回收界面实例对象。
+        /// </summary>
+        /// <param name="uiForm"></param>
+        private void RecycleUI(IUIForm uiForm)
+        {
+            uiForm.OnRecycle();
+            var formHandle = uiForm.Handle as GameObject;
+            if (!formHandle) return;
+            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
+            if (!displayObjectInfo) return;
+            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
+            m_InstancePool.Unspawn(component);
+        }
+
+        /// <summary>
+        /// 回收界面实例对象。
+        /// </summary>
+        /// <param name="uiForm"></param>
+        private void RecycleUINow(IUIForm uiForm)
+        {
+            uiForm.OnRecycle();
+            var formHandle = uiForm.Handle as GameObject;
+            if (!formHandle) return;
+            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
+            if (!displayObjectInfo) return;
+            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
+            component.Dispose();
         }
     }
 }

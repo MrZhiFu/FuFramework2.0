@@ -22,12 +22,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiFormAsset">要实例化的界面资源。</param>
         /// <returns>实例化后的界面。</returns>
-        public override object InstantiateUIForm(object uiFormAsset)
+        public override object InstantiateUI(object uiFormAsset)
         {
-            var openUIFormInfoData = (OpenUIFormInfoData)uiFormAsset;
+            var openUIFormInfoData = (OpenUIPackageInfo)uiFormAsset;
             GameFrameworkGuard.NotNull(openUIFormInfoData, nameof(uiFormAsset));
 
-            return UIPackage.CreateObject(openUIFormInfoData.PackageName, openUIFormInfoData.UIName);
+            return UIPackage.CreateObject(openUIFormInfoData.PackageName, openUIFormInfoData.Name);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiFormInstance">界面实例。</param>
         /// <param name="uiFormLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public override IUIForm CreateUIForm(object uiFormInstance, Type uiFormLogicType)
+        public override IUIForm CreateUI(object uiFormInstance, Type uiFormLogicType)
         {
             if (uiFormInstance is not GComponent gComponent)
             {
@@ -87,7 +87,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 释放界面实例。
         /// </summary>
         /// <param name="uiFormInstance">要释放的界面实例。</param>
-        public override void ReleaseUIForm(object uiFormInstance)
+        public override void ReleaseUI(object uiFormInstance)
         {
             if (uiFormInstance is not GComponent component) return;
             component.Dispose();

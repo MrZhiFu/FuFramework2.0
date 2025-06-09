@@ -27,7 +27,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器\
 
         private FuiPackageComponent               FuiPackage { get; set; } // FGUI包管理组件
-        private IObjectPool<UIFormInstanceObject> m_InstancePool;          // 界面实例对象池
+        private IObjectPool<UIInstanceObject> m_InstancePool;          // 界面实例对象池
         private IUIFormHelper                     m_UIFormHelper;          // 界面辅助器
 
         private int  m_Serial;     // 界面序列号，每打开一个界面就加1
@@ -51,8 +51,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_Serial            = 0;
             m_IsShutdown        = false;
 
-            m_OpenUIFormSuccessEventHandler   = null;
-            m_OpenUIFormFailureEventHandler   = null;
+            m_OpenUISuccessEventHandler   = null;
+            m_OpenUIFailureEventHandler   = null;
             m_CloseUICompleteEventHandler = null;
         }
 
@@ -93,7 +93,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var uiForm = m_WaitRecycleQueue.Dequeue();
-                RecycleUIForm(uiForm);
+                RecycleUI(uiForm);
             }
 
             foreach (var (_, group) in m_UIGroupDict)
@@ -123,7 +123,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             GameFrameworkGuard.NotNull(objectPoolManager, nameof(objectPoolManager));
             m_ObjectPoolManager = objectPoolManager;
-            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIFormInstanceObject>("UI Instance Pool");
+            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UI Instance Pool");
         }
 
         /// <summary>
@@ -137,8 +137,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             FuiPackage     = GameEntry.GetComponent<FuiPackageComponent>();
             GameFrameworkGuard.NotNull(FuiPackage, nameof(FuiPackage));
         }
-
-
+        
         /// <summary>
         /// 设置界面辅助器。
         /// </summary>
