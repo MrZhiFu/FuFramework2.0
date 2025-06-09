@@ -80,7 +80,7 @@ namespace Hotfix.UI
             }
 
             // 关闭当前界面
-            GameApp.UI.CloseUIForm(this);
+            GameApp.UI.CloseUI(this);
         }
     }
 }

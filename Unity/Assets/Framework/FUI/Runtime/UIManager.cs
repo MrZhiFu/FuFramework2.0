@@ -53,7 +53,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             m_OpenUIFormSuccessEventHandler   = null;
             m_OpenUIFormFailureEventHandler   = null;
-            m_CloseUIFormCompleteEventHandler = null;
+            m_CloseUICompleteEventHandler = null;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         protected override void Shutdown()
         {
             m_IsShutdown = true;
-            CloseAllLoadedUIForms();
+            CloseAllLoadedUIs();
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
             m_WaitReleaseSet.Clear();

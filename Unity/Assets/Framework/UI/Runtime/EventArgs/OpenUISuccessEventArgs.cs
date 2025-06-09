@@ -14,12 +14,12 @@ namespace GameFrameX.UI.Runtime
     /// 打开界面成功事件。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed class OpenUIFormSuccessEventArgs : GameEventArgs
+    public sealed class OpenUISuccessEventArgs : GameEventArgs
     {
         /// <summary>
         /// 打开界面成功事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(OpenUIFormSuccessEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenUISuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取打开界面成功事件编号。
@@ -44,7 +44,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public OpenUIFormSuccessEventArgs()
+        public OpenUISuccessEventArgs()
         {
             UIForm   = null;
             Duration = 0f;
@@ -58,9 +58,9 @@ namespace GameFrameX.UI.Runtime
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static OpenUIFormSuccessEventArgs Create(IUIForm uiForm, float duration, object userData)
+        public static OpenUISuccessEventArgs Create(IUIForm uiForm, float duration, object userData)
         {
-            var openUIFormSuccessEventArgs = ReferencePool.Acquire<OpenUIFormSuccessEventArgs>();
+            var openUIFormSuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
             openUIFormSuccessEventArgs.UIForm   = (UIForm)uiForm;
             openUIFormSuccessEventArgs.Duration = duration;
             openUIFormSuccessEventArgs.UserData = userData;

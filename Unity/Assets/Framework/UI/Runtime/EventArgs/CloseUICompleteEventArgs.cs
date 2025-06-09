@@ -15,12 +15,12 @@ namespace GameFrameX.UI.Runtime
     /// 关闭界面完成事件。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed class CloseUIFormCompleteEventArgs : GameEventArgs
+    public sealed class CloseUICompleteEventArgs : GameEventArgs
     {
         /// <summary>
         /// 关闭界面完成事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(CloseUIFormCompleteEventArgs).FullName;
+        public static readonly string EventId = typeof(CloseUICompleteEventArgs).FullName;
 
         /// <summary>
         /// 获取关闭界面完成事件编号。
@@ -50,7 +50,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化关闭界面完成事件的新实例。
         /// </summary>
-        public CloseUIFormCompleteEventArgs()
+        public CloseUICompleteEventArgs()
         {
             SerialId        = 0;
             UIFormAssetName = null;
@@ -66,9 +66,9 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiGroup">界面所属的界面组。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUIFormCompleteEventArgs Create(int serialId, string uiFormAssetName, IUIGroup uiGroup, object userData)
+        public static CloseUICompleteEventArgs Create(int serialId, string uiFormAssetName, IUIGroup uiGroup, object userData)
         {
-            var closeUIFormCompleteEventArgs = ReferencePool.Acquire<CloseUIFormCompleteEventArgs>();
+            var closeUIFormCompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUIFormCompleteEventArgs.SerialId        = serialId;
             closeUIFormCompleteEventArgs.UIFormAssetName = uiFormAssetName;
             closeUIFormCompleteEventArgs.UIGroup         = uiGroup;

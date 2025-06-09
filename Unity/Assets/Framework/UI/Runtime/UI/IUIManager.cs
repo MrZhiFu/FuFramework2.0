@@ -41,17 +41,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 打开界面成功事件。
         /// </summary>
-        event EventHandler<OpenUIFormSuccessEventArgs> OpenUIFormSuccess;
+        event EventHandler<OpenUISuccessEventArgs> OpenUIFormSuccess;
 
         /// <summary>
         /// 打开界面失败事件。
         /// </summary>
-        event EventHandler<OpenUIFormFailureEventArgs> OpenUIFormFailure;
+        event EventHandler<OpenUIFailureEventArgs> OpenUIFormFailure;
 
         /// <summary>
         /// 关闭界面完成事件。
         /// </summary>
-        event EventHandler<CloseUIFormCompleteEventArgs> CloseUIFormComplete;
+        event EventHandler<CloseUICompleteEventArgs> CloseUIFormComplete;
 
         /// <summary>
         /// 设置对象池管理器。
@@ -119,87 +119,87 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否存在界面。</returns>
-        bool HasUIForm(int serialId);
+        bool HasUI(int serialId);
 
         /// <summary>
         /// 是否存在界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        bool HasUIForm(string uiFormAssetName);
+        bool HasUI(string uiFormAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUIForm(int serialId);
+        IUIForm GetUI(int serialId);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUIForm(string uiFormAssetName);
+        IUIForm GetUI(string uiFormAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm[] GetUIForms(string uiFormAssetName);
+        IUIForm[] GetUIs(string uiFormAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        void GetUIForms(string uiFormAssetName, List<IUIForm> results);
+        void GetUIs(string uiFormAssetName, List<IUIForm> results);
 
         /// <summary>
         /// 获取所有已加载的界面。
         /// </summary>
         /// <returns>所有已加载的界面。</returns>
-        IUIForm[] GetAllLoadedUIForms();
+        IUIForm[] GetAllLoadedUIs();
 
         /// <summary>
         /// 获取所有已加载的界面。
         /// </summary>
         /// <param name="results">所有已加载的界面。</param>
-        void GetAllLoadedUIForms(List<IUIForm> results);
+        void GetAllLoadedUIs(List<IUIForm> results);
 
         /// <summary>
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <returns>所有正在加载界面的序列编号。</returns>
-        int[] GetAllLoadingUIFormSerialIds();
+        int[] GetAllLoadingUISerialIds();
 
         /// <summary>
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <param name="results">所有正在加载界面的序列编号。</param>
-        void GetAllLoadingUIFormSerialIds(List<int> results);
+        void GetAllLoadingUISerialIds(List<int> results);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否正在加载界面。</returns>
-        bool IsLoadingUIForm(int serialId);
+        bool IsLoadingUI(int serialId);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        bool IsLoadingUIForm(string uiFormAssetName);
+        bool IsLoadingUI(string uiFormAssetName);
 
         /// <summary>
         /// 是否是合法的界面。
         /// </summary>
         /// <param name="uiForm">界面。</param>
         /// <returns>界面是否合法。</returns>
-        bool IsValidUIForm(IUIForm uiForm);
+        bool IsValidUI(IUIForm uiForm);
 
         /// <summary>
         /// 打开界面。
@@ -210,7 +210,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isFullScreen">是否全屏</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        Task<IUIForm> OpenUIFormAsync<T>(string uiFormAssetPath, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false) where T : class, IUIForm;
+        Task<IUIForm> OpenUIAsync<T>(string uiFormAssetPath, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false) where T : class, IUIForm;
 
         /// <summary>
         /// 打开界面。
@@ -222,108 +222,95 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isFullScreen">是否全屏</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        Task<IUIForm> OpenUIFormAsync(string uiFormAssetPath, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false);
+        Task<IUIForm> OpenUIAsync(string uiFormAssetPath, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        void CloseUIForm(int serialId);
+        void CloseUI(int serialId);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        void CloseUIFormNow(int serialId);
+        void CloseUINow(int serialId);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUIForm(int serialId, object userData);
+        void CloseUI(int serialId, object userData);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUIFormNow(int serialId, object userData);
+        void CloseUINow(int serialId, object userData);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
-        void CloseUIForm(IUIForm uiForm);
+        void CloseUI(IUIForm uiForm);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
-        void CloseUIFormNow(IUIForm uiForm);
+        void CloseUINow(IUIForm uiForm);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        void CloseUIForm<T>(object userData) where T : IUIForm;
+        void CloseUI<T>(object userData) where T : IUIForm;
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        void CloseUIFormNow<T>(object userData) where T : IUIForm;
+        void CloseUINow<T>(object userData) where T : IUIForm;
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUIForm(IUIForm uiForm, object userData);
+        void CloseUI(IUIForm uiForm, object userData);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUIFormNow(IUIForm uiForm, object userData);
+        void CloseUINow(IUIForm uiForm, object userData);
 
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
-        void CloseAllLoadedUIForms();
+        void CloseAllLoadedUIs();
 
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseAllLoadedUIForms(object userData);
+        void CloseAllLoadedUIs(object userData);
 
         /// <summary>
         /// 关闭所有正在加载的界面。
         /// </summary>
-        void CloseAllLoadingUIForms();
-
-        /// <summary>
-        /// 激活界面。
-        /// </summary>
-        /// <param name="uiForm">要激活的界面。</param>
-        void RefocusUIForm(IUIForm uiForm);
-
-        /// <summary>
-        /// 激活界面。
-        /// </summary>
-        /// <param name="uiForm">要激活的界面。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        void RefocusUIForm(IUIForm uiForm, object userData);
+        void CloseAllLoadingUIs();
 
         /// <summary>
         /// 设置界面实例是否被加锁。
         /// </summary>
         /// <param name="uiFormInstance">要设置是否被加锁的界面实例。</param>
         /// <param name="locked">界面实例是否被加锁。</param>
-        void SetUIFormInstanceLocked(object uiFormInstance, bool locked);
+        void SetUIInstanceLocked(object uiFormInstance, bool locked);
     }
 }

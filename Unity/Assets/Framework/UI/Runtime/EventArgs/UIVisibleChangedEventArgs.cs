@@ -11,15 +11,15 @@ using GameFrameX.Runtime;
 namespace GameFrameX.UI.Runtime
 {
     /// <summary>
-    /// 界面激活状态变化事件。
+    /// 界面可见状态变化事件。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed class UIFormVisibleChangedEventArgs : GameEventArgs
+    public sealed class UIVisibleChangedEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 界面激活状态变化事件编号。
+        /// 界面可见状态变化事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(UIFormVisibleChangedEventArgs).FullName;
+        public static readonly string EventId = typeof(UIVisibleChangedEventArgs).FullName;
 
         /// <summary>
         /// 获取打开界面成功事件编号。
@@ -44,7 +44,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public UIFormVisibleChangedEventArgs()
+        public UIVisibleChangedEventArgs()
         {
             UIForm   = null;
             Visible  = false;
@@ -58,9 +58,9 @@ namespace GameFrameX.UI.Runtime
         /// <param name="visible">显示状态。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static UIFormVisibleChangedEventArgs Create(IUIForm uiForm, bool visible, object userData)
+        public static UIVisibleChangedEventArgs Create(IUIForm uiForm, bool visible, object userData)
         {
-            var uiFormSuccessEventArgs = ReferencePool.Acquire<UIFormVisibleChangedEventArgs>();
+            var uiFormSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
             uiFormSuccessEventArgs.UIForm = (UIForm)uiForm;
             uiFormSuccessEventArgs.Visible = visible;
             uiFormSuccessEventArgs.UserData = userData;

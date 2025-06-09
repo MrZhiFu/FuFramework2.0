@@ -37,7 +37,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 OnVisibleChanged?.Invoke(value);
                 
                 // 触发UI显示状态变化事件
-                EventRegister.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
+                EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
         }
 
@@ -69,7 +69,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             OnVisibleChanged?.Invoke(value);
             
             // 派发UI显示状态变化事件
-            EventRegister.Fire(UIFormVisibleChangedEventArgs.EventId, UIFormVisibleChangedEventArgs.Create(this, value, null));
+            EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
         }
 
         /// <summary>

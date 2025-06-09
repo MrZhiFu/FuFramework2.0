@@ -83,7 +83,7 @@ namespace Hotfix.UI
             await GameApp.UI.OpenFullScreenAsync<UIMain>(Utility.Asset.Path.GetUIPath(nameof(UIMain)), UIGroupConstants.Floor);
 
             // 关闭当前界面
-            GameApp.UI.CloseUIForm(this);
+            GameApp.UI.CloseUI(this);
         }
 
         /// <summary>

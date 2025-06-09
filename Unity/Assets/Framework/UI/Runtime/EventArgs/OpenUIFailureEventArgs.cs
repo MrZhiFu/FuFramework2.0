@@ -14,12 +14,12 @@ namespace GameFrameX.UI.Runtime
     /// 打开界面失败事件。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed class OpenUIFormFailureEventArgs : GameEventArgs
+    public sealed class OpenUIFailureEventArgs : GameEventArgs
     {
         /// <summary>
         /// 打开界面失败事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(OpenUIFormFailureEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenUIFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取打开界面失败事件编号。
@@ -55,7 +55,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化打开界面失败事件的新实例。
         /// </summary>
-        public OpenUIFormFailureEventArgs()
+        public OpenUIFailureEventArgs()
         {
             SerialId           = 0;
             UIFormAssetName    = null;
@@ -73,9 +73,9 @@ namespace GameFrameX.UI.Runtime
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面失败事件。</returns>
-        public static OpenUIFormFailureEventArgs Create(int serialId, string uiFormAssetName, bool pauseCoveredUIForm, string errorMessage, object userData)
+        public static OpenUIFailureEventArgs Create(int serialId, string uiFormAssetName, bool pauseCoveredUIForm, string errorMessage, object userData)
         {
-            var openUIFormFailureEventArgs = ReferencePool.Acquire<OpenUIFormFailureEventArgs>();
+            var openUIFormFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
             openUIFormFailureEventArgs.SerialId           = serialId;
             openUIFormFailureEventArgs.UIFormAssetName    = uiFormAssetName;
             openUIFormFailureEventArgs.PauseCoveredUIForm = pauseCoveredUIForm;

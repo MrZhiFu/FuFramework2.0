@@ -15,13 +15,13 @@ namespace Hotfix.UI
 
             m_enter_button.onClick.Set(() =>
             {
-                GameApp.UI.CloseUIForm<UIDialogMessageBox>();
+                GameApp.UI.CloseUI<UIDialogMessageBox>();
                 data.OnEnter?.Invoke();
             });
 
             m_cancel_button.onClick.Set(() =>
             {
-                GameApp.UI.CloseUIForm<UIDialogMessageBox>();
+                GameApp.UI.CloseUI<UIDialogMessageBox>();
                 data.OnCancel?.Invoke();
             });
         }

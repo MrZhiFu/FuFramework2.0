@@ -170,7 +170,7 @@ namespace Hotfix.UI
         /// </summary>
         private void OnCloseClick()
         {
-            GameApp.UI.CloseUIForm<UIBag>();
+            GameApp.UI.CloseUI<UIBag>();
         }
     }
 }

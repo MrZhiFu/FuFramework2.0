@@ -25,9 +25,9 @@ namespace GameFrameX.UI.Runtime
                 typeof(UIGroupDefine),
                 typeof(UIGroupConstants),
                 typeof(EventRegister),
-                typeof(CloseUIFormCompleteEventArgs),
-                typeof(OpenUIFormFailureEventArgs),
-                typeof(OpenUIFormSuccessEventArgs),
+                typeof(CloseUICompleteEventArgs),
+                typeof(OpenUIFailureEventArgs),
+                typeof(OpenUISuccessEventArgs),
             };
         }
     }

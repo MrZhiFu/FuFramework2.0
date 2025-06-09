@@ -49,54 +49,54 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        bool HasUIForm(int serialId);
+        bool HasUI(int serialId);
 
         /// <summary>
         /// 界面组中是否存在界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        bool HasUIForm(string uiFormAssetName);
+        bool HasUI(string uiFormAssetName);
 
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUIForm(int serialId);
+        IUIForm GetUI(int serialId);
 
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUIForm(string uiFormAssetName);
+        IUIForm GetUI(string uiFormAssetName);
 
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm[] GetUIForms(string uiFormAssetName);
+        IUIForm[] GetUIs(string uiFormAssetName);
 
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        void GetUIForms(string uiFormAssetName, List<IUIForm> results);
+        void GetUIs(string uiFormAssetName, List<IUIForm> results);
 
         /// <summary>
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <returns>界面组中的所有界面。</returns>
-        IUIForm[] GetAllUIForms();
+        IUIForm[] GetAllUIs();
 
         /// <summary>
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <param name="results">界面组中的所有界面。</param>
-        void GetAllUIForms(List<IUIForm> results);
+        void GetAllUIs(List<IUIForm> results);
 
         /// <summary>
         /// 检查界面组中是否存在指定界面。
@@ -104,13 +104,13 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="uiForm">要检查的界面。</param>
         /// <returns>是否存在指定界面。</returns>
-        bool InternalHasInstanceUIForm(string uiFormAssetName, IUIForm uiForm);
+        bool InternalHasInstanceUI(string uiFormAssetName, IUIForm uiForm);
 
         /// <summary>
         /// 往界面组增加界面。
         /// </summary>
         /// <param name="uiForm">要增加的界面。</param>
-        void AddUIForm(IUIForm uiForm);
+        void AddUI(IUIForm uiForm);
 
         /// <summary>
         /// 刷新界面组。

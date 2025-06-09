@@ -11,7 +11,6 @@ using GameFrameX.Event.Runtime;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace GameFrameX.UI.Runtime
 {
@@ -34,7 +33,7 @@ namespace GameFrameX.UI.Runtime
         private EventComponent m_EventComponent = null;
 
         /// <summary>
-        /// 内部的界面实例列表。缓存作用，避免频繁创建创建查找结果列表。
+        /// 内部的界面实例列表。缓存作用，避免频繁创建查找结果列表。
         /// 1.当获取所有已加载的界面时，此列表就是所有已加载的界面实例。
         /// 2.当获取界面名称对应的界面，此列表是名称对应的界面
         /// </summary>
@@ -212,35 +211,35 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(int serialId) => m_UIManager.HasUIForm(serialId);
+        public bool HasUIForm(int serialId) => m_UIManager.HasUI(serialId);
 
         /// <summary>
         /// 是否存在界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(string uiFormAssetName) => m_UIManager.HasUIForm(uiFormAssetName);
+        public bool HasUIForm(string uiFormAssetName) => m_UIManager.HasUI(uiFormAssetName);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(int serialId) => m_UIManager.IsLoadingUIForm(serialId);
+        public bool IsLoadingUIForm(int serialId) => m_UIManager.IsLoadingUI(serialId);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(string uiFormAssetName) => m_UIManager.IsLoadingUIForm(uiFormAssetName);
+        public bool IsLoadingUIForm(string uiFormAssetName) => m_UIManager.IsLoadingUI(uiFormAssetName);
 
         /// <summary>
         /// 是否是合法的界面。
         /// </summary>
         /// <param name="uiForm">界面。</param>
         /// <returns>界面是否合法。</returns>
-        public bool IsValidUIForm(IUIForm uiForm) => m_UIManager.IsValidUIForm(uiForm);
+        public bool IsValidUIForm(IUIForm uiForm) => m_UIManager.IsValidUI(uiForm);
 
         /// <summary>
         /// 设置界面是否被加锁。
@@ -255,7 +254,7 @@ namespace GameFrameX.UI.Runtime
                 return;
             }
 
-            m_UIManager.SetUIFormInstanceLocked(uiForm.gameObject, locked);
+            m_UIManager.SetUIInstanceLocked(uiForm.gameObject, locked);
         }
         
 
@@ -264,7 +263,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnOpenUIFormSuccess(object sender, OpenUIFormSuccessEventArgs e)
+        private void OnOpenUIFormSuccess(object sender, OpenUISuccessEventArgs e)
         {
             if (m_EnableOpenUIFormSuccessEvent)
                 m_EventComponent.Fire(this, e);
@@ -275,7 +274,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnOpenUIFormFailure(object sender, OpenUIFormFailureEventArgs e)
+        private void OnOpenUIFormFailure(object sender, OpenUIFailureEventArgs e)
         {
             Log.Warning($"Open UI form failure, asset name '{e.UIFormAssetName}',  pause covered UI form '{e.PauseCoveredUIForm}', error message '{e.ErrorMessage}'.");
             if (m_EnableOpenUIFormFailureEvent)
@@ -287,7 +286,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnCloseUIFormComplete(object sender, CloseUIFormCompleteEventArgs e)
+        private void OnCloseUIFormComplete(object sender, CloseUICompleteEventArgs e)
         {
             if (m_EnableCloseUIFormCompleteEvent)
                 m_EventComponent.Fire(this, e);

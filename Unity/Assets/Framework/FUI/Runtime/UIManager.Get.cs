@@ -30,11 +30,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(int serialId)
+        public bool HasUI(int serialId)
         {
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.HasUIForm(serialId)) continue;
+                if (!group.HasUI(serialId)) continue;
                 return true;
             }
 
@@ -46,13 +46,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(string uiFormAssetName)
+        public bool HasUI(string uiFormAssetName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiFormAssetName, nameof(uiFormAssetName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.HasUIForm(uiFormAssetName)) continue;
+                if (!group.HasUI(uiFormAssetName)) continue;
                 return true;
             }
 
@@ -64,11 +64,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(int serialId)
+        public IUIForm GetUI(int serialId)
         {
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var uiForm = group.GetUIForm(serialId);
+                var uiForm = group.GetUI(serialId);
                 if (uiForm == null) continue;
                 return uiForm;
             }
@@ -81,13 +81,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(string uiFormAssetName)
+        public IUIForm GetUI(string uiFormAssetName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiFormAssetName, nameof(uiFormAssetName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var uiForm = group.GetUIForm(uiFormAssetName);
+                var uiForm = group.GetUI(uiFormAssetName);
                 if (uiForm == null) continue;
                 return uiForm;
             }
@@ -100,14 +100,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm[] GetUIForms(string uiFormAssetName)
+        public IUIForm[] GetUIs(string uiFormAssetName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiFormAssetName, nameof(uiFormAssetName));
 
             var results = new List<IUIForm>();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetUIForms(uiFormAssetName));
+                results.AddRange(group.GetUIs(uiFormAssetName));
             }
 
             return results.ToArray();
@@ -118,7 +118,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        public void GetUIForms(string uiFormAssetName, List<IUIForm> results)
+        public void GetUIs(string uiFormAssetName, List<IUIForm> results)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiFormAssetName, nameof(uiFormAssetName));
             GameFrameworkGuard.NotNull(results, nameof(results));
@@ -126,7 +126,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetAllUIForms());
+                results.AddRange(group.GetAllUIs());
             }
         }
 
@@ -134,12 +134,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 获取所有已加载的界面。
         /// </summary>
         /// <returns>所有已加载的界面。</returns>
-        public IUIForm[] GetAllLoadedUIForms()
+        public IUIForm[] GetAllLoadedUIs()
         {
             var results = new List<IUIForm>();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetAllUIForms());
+                results.AddRange(group.GetAllUIs());
             }
 
             return results.ToArray();
@@ -149,14 +149,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 获取所有已加载的界面。
         /// </summary>
         /// <param name="results">所有已加载的界面。</param>
-        public void GetAllLoadedUIForms(List<IUIForm> results)
+        public void GetAllLoadedUIs(List<IUIForm> results)
         {
             GameFrameworkGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetAllUIForms());
+                results.AddRange(group.GetAllUIs());
             }
         }
 
@@ -164,7 +164,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <returns>所有正在加载界面的序列编号。</returns>
-        public int[] GetAllLoadingUIFormSerialIds()
+        public int[] GetAllLoadingUISerialIds()
         {
             var index = 0;
             var results = new int[m_LoadingDict.Count];
@@ -180,7 +180,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <param name="results">所有正在加载界面的序列编号。</param>
-        public void GetAllLoadingUIFormSerialIds(List<int> results)
+        public void GetAllLoadingUISerialIds(List<int> results)
         {
             GameFrameworkGuard.NotNull(results, nameof(results));
 
@@ -196,14 +196,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(int serialId) => m_LoadingDict.ContainsKey(serialId);
+        public bool IsLoadingUI(int serialId) => m_LoadingDict.ContainsKey(serialId);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(string uiFormAssetName)
+        public bool IsLoadingUI(string uiFormAssetName)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiFormAssetName, nameof(uiFormAssetName));
             return m_LoadingDict.ContainsValue(uiFormAssetName);
@@ -214,9 +214,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiForm">界面。</param>
         /// <returns>界面是否合法。</returns>
-        public bool IsValidUIForm(IUIForm uiForm)
+        public bool IsValidUI(IUIForm uiForm)
         {
-            return uiForm != null && HasUIForm(uiForm.SerialId);
+            return uiForm != null && HasUI(uiForm.SerialId);
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="fullName">完整界面名称</param>
         /// <returns></returns>
-        public bool HasUIFormFullName(string fullName)
+        public bool HasUIFullName(string fullName)
         {
             GameFrameworkGuard.NotNullOrEmpty(fullName, nameof(fullName));
 

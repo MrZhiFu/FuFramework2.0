@@ -67,7 +67,7 @@ namespace Hotfix.UI
             await GameApp.UI.OpenFullScreenAsync<UIPlayerList>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), UserData);
 
             // 关闭当前界面
-            GameApp.UI.CloseUIForm(this);
+            GameApp.UI.CloseUI(this);
         }
     }
 }

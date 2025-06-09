@@ -24,15 +24,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     internal sealed partial class UIManager
     {
-        private EventHandler<CloseUIFormCompleteEventArgs> m_CloseUIFormCompleteEventHandler;
+        /// 关闭界面完成事件。
+        private EventHandler<CloseUICompleteEventArgs> m_CloseUICompleteEventHandler;
 
         /// <summary>
         /// 关闭界面完成事件。
         /// </summary>
-        public event EventHandler<CloseUIFormCompleteEventArgs> CloseUIFormComplete
+        public event EventHandler<CloseUICompleteEventArgs> CloseUIFormComplete
         {
-            add { m_CloseUIFormCompleteEventHandler += value; }
-            remove { m_CloseUIFormCompleteEventHandler -= value; }
+            add => m_CloseUICompleteEventHandler += value;
+            remove => m_CloseUICompleteEventHandler -= value;
         }
 
         /// <summary>
@@ -43,17 +44,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             uiForm.OnRecycle();
             var formHandle = uiForm.Handle as GameObject;
-            if (formHandle)
-            {
-                var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
-                if (displayObjectInfo)
-                {
-                    if (displayObjectInfo.displayObject.gOwner is GComponent component)
-                    {
-                        m_InstancePool.Unspawn(component);
-                    }
-                }
-            }
+            if (!formHandle) return;
+            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
+            if (!displayObjectInfo) return;
+            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
+            m_InstancePool.Unspawn(component);
         }
 
         /// <summary>
@@ -64,27 +59,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             uiForm.OnRecycle();
             var formHandle = uiForm.Handle as GameObject;
-            if (formHandle)
-            {
-                var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
-                if (displayObjectInfo)
-                {
-                    if (displayObjectInfo.displayObject.gOwner is GComponent component)
-                    {
-                        component.Dispose();
-                        // m_InstancePool.Unspawn(component);
-                    }
-                }
-            }
+            if (!formHandle) return;
+            var displayObjectInfo = formHandle.GetComponent<DisplayObjectInfo>();
+            if (!displayObjectInfo) return;
+            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
+            component.Dispose();
         }
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        public void CloseUIForm(int serialId)
+        public void CloseUI(int serialId)
         {
-            CloseUIForm(serialId, null);
+            CloseUI(serialId, null);
         }
 
         /// <summary>
@@ -92,31 +80,27 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUIForm(int serialId, object userData)
+        public void CloseUI(int serialId, object userData)
         {
-            if (IsLoadingUIForm(serialId))
+            if (IsLoadingUI(serialId))
             {
                 m_WaitReleaseSet.Add(serialId);
                 m_LoadingDict.Remove(serialId);
                 return;
             }
 
-            IUIForm uiForm = GetUIForm(serialId);
-            if (uiForm == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find UI form '{0}'.", serialId));
-            }
-
-            CloseUIForm(uiForm, userData);
+            IUIForm uiForm = GetUI(serialId);
+            if (uiForm == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
+            CloseUI(uiForm, userData);
         }
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
-        public void CloseUIForm(IUIForm uiForm)
+        public void CloseUI(IUIForm uiForm)
         {
-            CloseUIForm(uiForm, null);
+            CloseUI(uiForm, null);
         }
 
         /// <summary>
@@ -124,23 +108,15 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUIForm<T>(object userData) where T : IUIForm
+        public void CloseUI<T>(object userData) where T : IUIForm
         {
             var fullName = typeof(T).FullName;
-            IUIForm[] uiForms = GetAllLoadedUIForms();
+            IUIForm[] uiForms = GetAllLoadedUIs();
             foreach (IUIForm uiForm in uiForms)
             {
-                if (uiForm.FullName != fullName)
-                {
-                    continue;
-                }
-
-                if (!HasUIFormFullName(uiForm.FullName))
-                {
-                    continue;
-                }
-
-                CloseUIForm(uiForm, userData);
+                if (uiForm.FullName != fullName) continue;
+                if (!HasUIFullName(uiForm.FullName)) continue;
+                CloseUI(uiForm, userData);
                 break;
             }
         }
@@ -150,21 +126,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUIForm(IUIForm uiForm, object userData)
+        public void CloseUI(IUIForm uiForm, object userData)
         {
             GameFrameworkGuard.NotNull(uiForm, nameof(uiForm));
             GameFrameworkGuard.NotNull(uiForm.UIGroup, nameof(uiForm.UIGroup));
             UIGroup uiGroup = (UIGroup)uiForm.UIGroup;
 
-            uiGroup.RemoveUIForm(uiForm);
+            uiGroup.RemoveUI(uiForm);
             uiForm.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            if (m_CloseUIFormCompleteEventHandler != null)
+            if (m_CloseUICompleteEventHandler != null)
             {
-                CloseUIFormCompleteEventArgs closeUIFormCompleteEventArgs = CloseUIFormCompleteEventArgs.Create(uiForm.SerialId, uiForm.UIFormAssetName, uiGroup, userData);
-                m_CloseUIFormCompleteEventHandler(this, closeUIFormCompleteEventArgs);
-                // ReferencePool.Release(closeUIFormCompleteEventArgs);
+                var closeUIFormCompleteEventArgs = CloseUICompleteEventArgs.Create(uiForm.SerialId, uiForm.UIFormAssetName, uiGroup, userData);
+                m_CloseUICompleteEventHandler(this, closeUIFormCompleteEventArgs);
             }
 
             m_WaitRecycleQueue.Enqueue(uiForm);
@@ -175,9 +150,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 关闭界面。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        public void CloseUIFormNow(int serialId)
+        public void CloseUINow(int serialId)
         {
-            CloseUIFormNow(serialId, null);
+            CloseUINow(serialId, null);
         }
 
         /// <summary>
@@ -185,31 +160,28 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUIFormNow(int serialId, object userData)
+        public void CloseUINow(int serialId, object userData)
         {
-            if (IsLoadingUIForm(serialId))
+            if (IsLoadingUI(serialId))
             {
                 m_WaitReleaseSet.Add(serialId);
                 m_LoadingDict.Remove(serialId);
                 return;
             }
 
-            IUIForm uiForm = GetUIForm(serialId);
-            if (uiForm == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find UI form '{0}'.", serialId));
-            }
+            IUIForm uiForm = GetUI(serialId);
+            if (uiForm == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
 
-            CloseUIFormNow(uiForm, userData);
+            CloseUINow(uiForm, userData);
         }
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
-        public void CloseUIFormNow(IUIForm uiForm)
+        public void CloseUINow(IUIForm uiForm)
         {
-            CloseUIFormNow(uiForm, null);
+            CloseUINow(uiForm, null);
         }
 
         /// <summary>
@@ -217,23 +189,15 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUIFormNow<T>(object userData) where T : IUIForm
+        public void CloseUINow<T>(object userData) where T : IUIForm
         {
             var fullName = typeof(T).FullName;
-            IUIForm[] uiForms = GetAllLoadedUIForms();
+            IUIForm[] uiForms = GetAllLoadedUIs();
             foreach (IUIForm uiForm in uiForms)
             {
-                if (uiForm.FullName != fullName)
-                {
-                    continue;
-                }
-
-                if (!HasUIFormFullName(uiForm.FullName))
-                {
-                    continue;
-                }
-
-                CloseUIFormNow(uiForm, userData);
+                if (uiForm.FullName != fullName) continue;
+                if (!HasUIFullName(uiForm.FullName)) continue;
+                CloseUINow(uiForm, userData);
                 break;
             }
         }
@@ -243,20 +207,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiForm">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUIFormNow(IUIForm uiForm, object userData)
+        public void CloseUINow(IUIForm uiForm, object userData)
         {
             GameFrameworkGuard.NotNull(uiForm, nameof(uiForm));
             GameFrameworkGuard.NotNull(uiForm.UIGroup, nameof(uiForm.UIGroup));
             UIGroup uiGroup = (UIGroup)uiForm.UIGroup;
 
-            uiGroup.RemoveUIForm(uiForm);
+            uiGroup.RemoveUI(uiForm);
             uiForm.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            if (m_CloseUIFormCompleteEventHandler != null)
+            if (m_CloseUICompleteEventHandler != null)
             {
-                CloseUIFormCompleteEventArgs closeUIFormCompleteEventArgs = CloseUIFormCompleteEventArgs.Create(uiForm.SerialId, uiForm.UIFormAssetName, uiGroup, userData);
-                m_CloseUIFormCompleteEventHandler(this, closeUIFormCompleteEventArgs);
+                CloseUICompleteEventArgs closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(uiForm.SerialId, uiForm.UIFormAssetName, uiGroup, userData);
+                m_CloseUICompleteEventHandler(this, closeUICompleteEventArgs);
                 // ReferencePool.Release(closeUIFormCompleteEventArgs);
             }
 
@@ -266,33 +230,33 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
-        public void CloseAllLoadedUIForms()
+        public void CloseAllLoadedUIs()
         {
-            CloseAllLoadedUIForms(null);
+            CloseAllLoadedUIs(null);
         }
 
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseAllLoadedUIForms(object userData)
+        public void CloseAllLoadedUIs(object userData)
         {
-            IUIForm[] uiForms = GetAllLoadedUIForms();
+            IUIForm[] uiForms = GetAllLoadedUIs();
             foreach (IUIForm uiForm in uiForms)
             {
-                if (!HasUIForm(uiForm.SerialId))
+                if (!HasUI(uiForm.SerialId))
                 {
                     continue;
                 }
 
-                CloseUIForm(uiForm, userData);
+                CloseUI(uiForm, userData);
             }
         }
 
         /// <summary>
         /// 关闭所有正在加载的界面。
         /// </summary>
-        public void CloseAllLoadingUIForms()
+        public void CloseAllLoadingUIs()
         {
             foreach (KeyValuePair<int, string> uiFormBeingLoaded in m_LoadingDict)
             {

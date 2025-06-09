@@ -115,7 +115,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUIForm(int serialId)
+        public bool HasUI(int serialId)
         {
             return m_UIFormInfos.Any(uiFormInfo => uiFormInfo.UIForm.SerialId == serialId);
         }
@@ -136,7 +136,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUIForm(string uiFormAssetName)
+        public bool HasUI(string uiFormAssetName)
         {
             if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
             return m_UIFormInfos.Any(uiFormInfo => uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName);
@@ -147,7 +147,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(int serialId)
+        public IUIForm GetUI(int serialId)
         {
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
@@ -163,7 +163,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm GetUIForm(string uiFormAssetName)
+        public IUIForm GetUI(string uiFormAssetName)
         {
             if (string.IsNullOrEmpty(uiFormAssetName))
                 throw new GameFrameworkException("传入的UI界面资源名称为空.");
@@ -182,7 +182,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public IUIForm[] GetUIForms(string uiFormAssetName)
+        public IUIForm[] GetUIs(string uiFormAssetName)
         {
             if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
@@ -201,7 +201,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        public void GetUIForms(string uiFormAssetName, List<IUIForm> results)
+        public void GetUIs(string uiFormAssetName, List<IUIForm> results)
         {
             if (string.IsNullOrEmpty(uiFormAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
             if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
@@ -218,7 +218,7 @@ namespace GameFrameX.UI.Runtime
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <returns>界面组中的所有界面。</returns>
-        public IUIForm[] GetAllUIForms()
+        public IUIForm[] GetAllUIs()
         {
             var results = new List<IUIForm>();
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
@@ -233,7 +233,7 @@ namespace GameFrameX.UI.Runtime
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <param name="results">界面组中的所有界面。</param>
-        public void GetAllUIForms(List<IUIForm> results)
+        public void GetAllUIs(List<IUIForm> results)
         {
             if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
 
@@ -248,7 +248,7 @@ namespace GameFrameX.UI.Runtime
         /// 往界面组增加界面。
         /// </summary>
         /// <param name="uiForm">要增加的界面。</param>
-        public void AddUIForm(IUIForm uiForm)
+        public void AddUI(IUIForm uiForm)
         {
             m_UIFormInfos.AddFirst(UIFormInfo.Create(uiForm));
         }
@@ -257,13 +257,11 @@ namespace GameFrameX.UI.Runtime
         /// 从界面组移除界面。
         /// </summary>
         /// <param name="uiForm">要移除的界面。</param>
-        public void RemoveUIForm(IUIForm uiForm)
+        public void RemoveUI(IUIForm uiForm)
         {
             UIFormInfo uiFormInfo = GetUIFormInfo(uiForm);
             if (uiFormInfo == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find UI form info for serial id '{0}', UI form asset name is '{1}'.", uiForm.SerialId, uiForm.UIFormAssetName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", uiForm.SerialId, uiForm.UIFormAssetName));
 
             if (!uiFormInfo.Covered)
             {
@@ -277,35 +275,13 @@ namespace GameFrameX.UI.Runtime
                 uiForm.OnPause();
             }
 
-            if (m_CachedNode != null && m_CachedNode.Value.UIForm == uiForm)
-            {
+            if (m_CachedNode != null && m_CachedNode.Value.UIForm == uiForm) 
                 m_CachedNode = m_CachedNode.Next;
-            }
 
             if (!m_UIFormInfos.Remove(uiFormInfo))
-            {
-                throw new GameFrameworkException(Utility.Text.Format("UI group '{0}' not exists specified UI form '[{1}]{2}'.", Name, uiForm.SerialId, uiForm.UIFormAssetName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Name, uiForm.SerialId, uiForm.UIFormAssetName));
 
             ReferencePool.Release(uiFormInfo);
-        }
-
-        /// <summary>
-        /// 激活界面。
-        /// </summary>
-        /// <param name="uiForm">要激活的界面。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void RefocusUIForm(IUIForm uiForm, object userData)
-        {
-            UIFormInfo uiFormInfo = GetUIFormInfo(uiForm);
-            if (uiFormInfo == null)
-            {
-                throw new GameFrameworkException("Can not find UI form info.");
-            }
-
-            m_UIFormInfos.Remove(uiFormInfo);
-            m_UIFormInfos.AddFirst(uiFormInfo);
-            uiFormInfo.UIForm.OnRefocus(userData);
         }
 
         /// <summary>
@@ -398,14 +374,12 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiFormAssetName">界面资源名称。</param>
         /// <param name="uiForm">要检查的界面。</param>
         /// <returns>是否存在指定界面。</returns>
-        public bool InternalHasInstanceUIForm(string uiFormAssetName, IUIForm uiForm)
+        public bool InternalHasInstanceUI(string uiFormAssetName, IUIForm uiForm)
         {
             foreach (UIFormInfo uiFormInfo in m_UIFormInfos)
             {
-                if (uiFormInfo.UIForm.UIFormAssetName == uiFormAssetName && uiFormInfo.UIForm == uiForm)
-                {
-                    return true;
-                }
+                if (uiFormInfo.UIForm.UIFormAssetName != uiFormAssetName || uiFormInfo.UIForm != uiForm) continue;
+                return true;
             }
 
             return false;
