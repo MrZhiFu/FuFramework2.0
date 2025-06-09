@@ -15,18 +15,12 @@ namespace GameFrameX.UI.Editor
     internal sealed class UIComponentInspector : ComponentTypeComponentInspector
     {
         private SerializedProperty m_EnableOpenUIFormSuccessEvent = null;
-
         private SerializedProperty m_EnableOpenUIFormFailureEvent = null;
-
-        // private SerializedProperty m_EnableOpenUIFormUpdateEvent = null;
-        // private SerializedProperty m_EnableOpenUIFormDependencyAssetEvent = null;
         private SerializedProperty m_EnableCloseUIFormCompleteEvent = null;
+        
         private SerializedProperty m_InstanceAutoReleaseInterval = null;
         private SerializedProperty m_InstanceCapacity = null;
-
         private SerializedProperty m_InstanceExpireTime = null;
-
-        // private SerializedProperty m_InstancePriority = null;
         private SerializedProperty m_UIGroups = null;
 
         private readonly HelperInfo<UIFormHelperBase>  m_UIFormHelperInfo  = new("UIForm");
@@ -38,7 +32,7 @@ namespace GameFrameX.UI.Editor
 
             serializedObject.Update();
 
-            UIComponent t = (UIComponent)target;
+            var t = (UIComponent)target;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -49,8 +43,6 @@ namespace GameFrameX.UI.Editor
 
                 EditorGUILayout.PropertyField(m_EnableOpenUIFormSuccessEvent);
                 EditorGUILayout.PropertyField(m_EnableOpenUIFormFailureEvent);
-                // EditorGUILayout.PropertyField(m_EnableOpenUIFormUpdateEvent);
-                // EditorGUILayout.PropertyField(m_EnableOpenUIFormDependencyAssetEvent);
                 EditorGUILayout.PropertyField(m_EnableCloseUIFormCompleteEvent);
             }
             EditorGUI.EndDisabledGroup();
@@ -94,20 +86,6 @@ namespace GameFrameX.UI.Editor
                 }
             }
 
-            /*
-            int instancePriority = EditorGUILayout.DelayedIntField("Instance Priority", m_InstancePriority.intValue);
-            if (instancePriority != m_InstancePriority.intValue)
-            {
-                if (EditorApplication.isPlaying)
-                {
-                    t.InstancePriority = instancePriority;
-                }
-                else
-                {
-                    m_InstancePriority.intValue = instancePriority;
-                }
-            }*/
-
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
                 if (m_UIGroups.arraySize <= 0)
@@ -141,13 +119,10 @@ namespace GameFrameX.UI.Editor
         {
             m_EnableOpenUIFormSuccessEvent = serializedObject.FindProperty("m_EnableOpenUIFormSuccessEvent");
             m_EnableOpenUIFormFailureEvent = serializedObject.FindProperty("m_EnableOpenUIFormFailureEvent");
-            // m_EnableOpenUIFormUpdateEvent = serializedObject.FindProperty("m_EnableOpenUIFormUpdateEvent");
-            // m_EnableOpenUIFormDependencyAssetEvent = serializedObject.FindProperty("m_EnableOpenUIFormDependencyAssetEvent");
             m_EnableCloseUIFormCompleteEvent = serializedObject.FindProperty("m_EnableCloseUIFormCompleteEvent");
             m_InstanceAutoReleaseInterval = serializedObject.FindProperty("m_InstanceAutoReleaseInterval");
             m_InstanceCapacity = serializedObject.FindProperty("m_InstanceCapacity");
             m_InstanceExpireTime = serializedObject.FindProperty("m_InstanceExpireTime");
-            // m_InstancePriority = serializedObject.FindProperty("m_InstancePriority");
             serializedObject.FindProperty("m_InstanceUGUIRoot");
             m_UIGroups = serializedObject.FindProperty("m_UIGroups");
 

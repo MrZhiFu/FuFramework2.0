@@ -17,10 +17,7 @@ namespace GameFrameX.Runtime
             /// <summary>
             /// 获取游戏版本号。
             /// </summary>
-            string GameVersion
-            {
-                get;
-            }
+            string GameVersion { get; }
         }
     }
 }

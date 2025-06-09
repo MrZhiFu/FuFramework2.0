@@ -14,22 +14,27 @@ namespace GameFrameX.Editor
     [InitializeOnLoad]
     public static class BuildHotfixHelper
     {
-        //Unity代码生成dll位置
-        private const string HotFixAssembliesDir = "Library/ScriptAssemblies";
+        // Unity代码生成dll位置
+        private const           string HotFixAssembliesDir = "Library/ScriptAssemblies";
         private static readonly string ScriptAssembliesDir = $"HybridCLRData/HotUpdateDlls/{EditorUserBuildSettings.activeBuildTarget}";
 
-        private static readonly string[] HotfixDlls = new string[] { "Unity.Hotfix.dll" };
+        // 热更DLL名称
+        private static readonly string[] HotfixDlls = { "Unity.Hotfix.dll" };
 
-        //热更代码存放位置
-        private const string CodeDir = "Assets/Bundles/Code/";
+        // 热更代码存放位置
+        private const string CodeDir    = "Assets/Bundles/Code/";
+        private const string AOTCodeDir = "Assets/Bundles/AOTCode/";
 
+
+        /// <summary>
+        /// 每次Unity编译完毕后，等待一秒后执行热更新代码拷贝
+        /// </summary>
         static BuildHotfixHelper()
         {
             async Task WaitExecute()
             {
                 await Task.Delay(TimeSpan.FromSeconds(1));
-                //拷贝热更代码
-                CopyHotfixCode();
+                CopyHotfixCode();// 拷贝热更代码到Assets/Bundles/Code目录
             }
 
             _ = WaitExecute();
@@ -49,15 +54,12 @@ namespace GameFrameX.Editor
             foreach (var hotfix in HotfixDlls)
             {
                 var srcPath = Path.Combine(HotFixAssembliesDir, hotfix);
-
                 File.Copy(srcPath, Path.Combine(CodeDir, hotfix + Utility.Const.FileNameSuffix.Binary), true);
             }
 
             Debug.Log($"复制Hotfix DLL到{CodeDir}完成");
             AssetDatabase.Refresh();
         }
-
-        public const string AOTCodeDir = "Assets/Bundles/AOTCode/";
 
         /// <summary>
         /// 复制AOT代码
@@ -70,19 +72,23 @@ namespace GameFrameX.Editor
                 Directory.CreateDirectory(AOTCodeDir);
             }
 
-            DirectoryInfo directoryInfo = new DirectoryInfo(Application.dataPath);
-            string path = Path.Combine(directoryInfo.Parent.FullName, "HybridCLRData", "AssembliesPostIl2CppStrip", EditorUserBuildSettings.activeBuildTarget.ToString());
-
-            DirectoryInfo aotCodeDir = new DirectoryInfo(path);
-            var files = aotCodeDir.GetFiles("*.dll");
-            var stringBuilder = new StringBuilder();
-            foreach (var fileInfo in files)
+            var directoryInfo = new DirectoryInfo(Application.dataPath);
+            if (directoryInfo.Parent != null)
             {
-                stringBuilder.AppendLine(fileInfo.Name);
-                fileInfo.CopyTo(AOTCodeDir + "/" + fileInfo.Name + Utility.Const.FileNameSuffix.Binary, true);
+                var path = Path.Combine(directoryInfo.Parent.FullName, "HybridCLRData", "AssembliesPostIl2CppStrip", EditorUserBuildSettings.activeBuildTarget.ToString());
+
+                var aotCodeDir    = new DirectoryInfo(path);
+                var files         = aotCodeDir.GetFiles("*.dll");
+                var stringBuilder = new StringBuilder();
+                foreach (var fileInfo in files)
+                {
+                    stringBuilder.AppendLine(fileInfo.Name);
+                    fileInfo.CopyTo(AOTCodeDir + "/" + fileInfo.Name + Utility.Const.FileNameSuffix.Binary, true);
+                }
+
+                Debug.Log(stringBuilder);
             }
 
-            Debug.Log(stringBuilder);
             Debug.Log($"复制AOT DLL到{CodeDir}完成");
             AssetDatabase.Refresh();
         }

@@ -72,29 +72,36 @@ namespace GameFrameX.Editor
         }
 
 
+        /// <summary>
+        /// 为指定路径的程序集定义文件添加Editor平台
+        /// </summary>
+        /// <param name="path"></param>
         internal static void AddEditor(string path)
         {
-            AssemblyDefinitionAsset assemblyDefinitionAsset = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
-            AssemblyDefinitionInfo  info                    = JsonConvert.DeserializeObject<AssemblyDefinitionInfo>(assemblyDefinitionAsset.text);
-            bool                    isEditor                = info.excludePlatforms.Any(m => m == "Editor");
-            if (!isEditor)
-            {
-                info.excludePlatforms.Add("Editor");
-                System.IO.File.WriteAllText(path, JsonConvert.SerializeObject(info, Formatting.Indented));
-                AssetDatabase.ImportAsset(path);
-            }
+            var assemblyDefinitionAsset = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
+
+            var info     = JsonConvert.DeserializeObject<AssemblyDefinitionInfo>(assemblyDefinitionAsset.text);
+            var isEditor = info.excludePlatforms.Any(m => m == "Editor");
+
+            if (isEditor) return;
+            info.excludePlatforms.Add("Editor");
+            System.IO.File.WriteAllText(path, JsonConvert.SerializeObject(info, Formatting.Indented));
+            AssetDatabase.ImportAsset(path);
         }
 
-
+        /// <summary>
+        /// 从指定路径的程序集定义文件移除Editor平台
+        /// </summary>
+        /// <param name="path"></param>
         internal static void RemoveEditor(string path)
         {
-            AssemblyDefinitionAsset assemblyDefinitionAsset = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
-            AssemblyDefinitionInfo  info                    = JsonConvert.DeserializeObject<AssemblyDefinitionInfo>(assemblyDefinitionAsset.text);
-            bool                    isEditor                = info.excludePlatforms.Any(m => m == "Editor");
+            var assemblyDefinitionAsset = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
+
+            var info     = JsonConvert.DeserializeObject<AssemblyDefinitionInfo>(assemblyDefinitionAsset.text);
+            var isEditor = info.excludePlatforms.Any(m => m == "Editor");
+
             if (isEditor)
-            {
                 info.excludePlatforms.Remove("Editor");
-            }
 
             System.IO.File.WriteAllText(path, JsonConvert.SerializeObject(info, Formatting.Indented));
             AssetDatabase.ImportAsset(path);

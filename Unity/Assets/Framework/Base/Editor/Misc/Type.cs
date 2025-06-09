@@ -17,9 +17,11 @@ namespace GameFrameX.Editor
     /// </summary>
     public static class Type
     {
-        private static readonly string[] RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
-
-        private static readonly string[] RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
+        /// 运行时程序集名称列表
+        private static readonly string[] s_RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
+        
+        /// 运行时或编辑器程序集名称列表
+        private static readonly string[] s_RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
 
         /// <summary>
         /// 在运行时程序集中获取指定基类的所有子类的名称。
@@ -28,7 +30,7 @@ namespace GameFrameX.Editor
         /// <returns>指定基类的所有子类的名称。</returns>
         public static string[] GetRuntimeTypeNames(System.Type typeBase)
         {
-            return GetTypeNames(typeBase, RuntimeAssemblyNames);
+            return GetTypeNames(typeBase, s_RuntimeAssemblyNames);
         }
 
         /// <summary>
@@ -38,15 +40,21 @@ namespace GameFrameX.Editor
         /// <returns>指定基类的所有子类的名称。</returns>
         internal static string[] GetRuntimeOrEditorTypeNames(System.Type typeBase)
         {
-            return GetTypeNames(typeBase, RuntimeOrEditorAssemblyNames);
+            return GetTypeNames(typeBase, s_RuntimeOrEditorAssemblyNames);
         }
 
+        /// <summary>
+        /// 获取指定基类的所有子类的名称。
+        /// </summary>
+        /// <param name="typeBase"></param>
+        /// <param name="assemblyNames"></param>
+        /// <returns></returns>
         private static string[] GetTypeNames(System.Type typeBase, string[] assemblyNames)
         {
             var typeNames = new List<string>();
             foreach (var assemblyName in assemblyNames)
             {
-                Assembly assembly = null;
+                Assembly assembly;
                 try
                 {
                     assembly = Assembly.Load(assemblyName);
@@ -56,18 +64,13 @@ namespace GameFrameX.Editor
                     continue;
                 }
 
-                if (assembly == null)
-                {
-                    continue;
-                }
+                if (assembly == null) continue;
 
                 var types = assembly.GetTypes();
                 foreach (var type in types)
                 {
-                    if (type.IsClass && !type.IsAbstract && typeBase.IsAssignableFrom(type))
-                    {
-                        typeNames.Add(type.FullName);
-                    }
+                    if (!type.IsClass || type.IsAbstract || !typeBase.IsAssignableFrom(type)) continue;
+                    typeNames.Add(type.FullName);
                 }
             }
 

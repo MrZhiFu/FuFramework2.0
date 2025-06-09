@@ -10,20 +10,20 @@ namespace GameFrameX.Editor
         /// <summary>
         /// 移除热更新程序集的编辑器编译指令
         /// </summary>
-        [MenuItem("GameFrameX/Build/HotFix Editor Compiler Remove(移除热更新程序集的编辑器编译指令)", false, 15)]
+        [MenuItem("GameFrameX/Build/HotFix Editor Compiler Remove(移除热更新程序集的目标平台下的Editor平台)", false, 15)]
         public static void RemoveEditor()
         {
-            var path = "Assets/Hotfix/Unity.HotFix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Unity.HotFix.asmdef";
             HotFixAssemblyDefinitionHelper.RemoveEditor(path);
         }
 
         /// <summary>
         /// 增加热更新程序集的编辑器编译指令
         /// </summary>
-        [MenuItem("GameFrameX/Build/HotFix Editor Compiler Add(增加热更新程序集的编辑器编译指令)", false, 16)]
+        [MenuItem("GameFrameX/Build/HotFix Editor Compiler Add(增加热更新程序集的目标平台下的Editor平台)", false, 16)]
         public static void AddEditor()
         {
-            var path = "Assets/Hotfix/Unity.HotFix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Unity.HotFix.asmdef";
             HotFixAssemblyDefinitionHelper.AddEditor(path);
         }
     }

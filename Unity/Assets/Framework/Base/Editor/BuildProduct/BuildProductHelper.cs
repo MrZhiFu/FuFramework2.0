@@ -39,6 +39,7 @@ namespace GameFrameX.Editor
                 Debug.LogError("Build Output Path:" + BuildOutputPath());
             }
         }*/
+        
         [MenuItem("GameFrameX/Build/Windows X64", false, 100)]
         public static void BuildPlayerToWindows64BuildTarget()
         {
@@ -600,10 +601,7 @@ namespace GameFrameX.Editor
         /// <summary>
         /// 构建导出根目录
         /// </summary>
-        private static string GetBuildRootPath
-        {
-            get { return $"{GetProjectPath()}/Builds"; }
-        }
+        private static string GetBuildRootPath => $"{GetProjectPath()}/Builds";
 
         private static string _buildTime;
 
@@ -616,10 +614,7 @@ namespace GameFrameX.Editor
         /// <summary>
         /// 更新时间命名
         /// </summary>
-        private static void UpdateBuildTime()
-        {
-            _buildTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-        }
+        private static void UpdateBuildTime() => _buildTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
         /// <summary>
         /// 获取发布导出路径
@@ -627,7 +622,7 @@ namespace GameFrameX.Editor
         /// <returns></returns>
         private static string BuildOutputPath()
         {
-            string pathName = $"{Application.identifier}_{_buildTime}_v_{PlayerSettings.bundleVersion}";
+            var pathName = $"{Application.identifier}_{_buildTime}_v_{PlayerSettings.bundleVersion}";
             if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
             {
                 pathName = $"{_buildTime}_v_{PlayerSettings.bundleVersion}_code_{PlayerSettings.Android.bundleVersionCode}";

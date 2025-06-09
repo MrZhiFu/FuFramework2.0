@@ -1,11 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using UnityEditor;
+﻿using UnityEditor;
 
 namespace GameFrameX.Editor
 {
@@ -14,19 +7,24 @@ namespace GameFrameX.Editor
     /// </summary>
     public static class LogScriptingDefineSymbols
     {
-        private const string EnableLogScriptingDefineSymbol = "ENABLE_LOG";
-        private const string EnableDebugAndAboveLogScriptingDefineSymbol = "ENABLE_DEBUG_AND_ABOVE_LOG";
-        private const string EnableInfoAndAboveLogScriptingDefineSymbol = "ENABLE_INFO_AND_ABOVE_LOG";
+        private const string EnableLogScriptingDefineSymbol                = "ENABLE_LOG";
+        
+        private const string EnableDebugAndAboveLogScriptingDefineSymbol   = "ENABLE_DEBUG_AND_ABOVE_LOG";
+        private const string EnableInfoAndAboveLogScriptingDefineSymbol    = "ENABLE_INFO_AND_ABOVE_LOG";
         private const string EnableWarningAndAboveLogScriptingDefineSymbol = "ENABLE_WARNING_AND_ABOVE_LOG";
-        private const string EnableErrorAndAboveLogScriptingDefineSymbol = "ENABLE_ERROR_AND_ABOVE_LOG";
-        private const string EnableFatalAndAboveLogScriptingDefineSymbol = "ENABLE_FATAL_AND_ABOVE_LOG";
-        private const string EnableDebugLogScriptingDefineSymbol = "ENABLE_DEBUG_LOG";
-        private const string EnableInfoLogScriptingDefineSymbol = "ENABLE_INFO_LOG";
-        private const string EnableWarningLogScriptingDefineSymbol = "ENABLE_WARNING_LOG";
-        private const string EnableErrorLogScriptingDefineSymbol = "ENABLE_ERROR_LOG";
-        private const string EnableFatalLogScriptingDefineSymbol = "ENABLE_FATAL_LOG";
+        private const string EnableErrorAndAboveLogScriptingDefineSymbol   = "ENABLE_ERROR_AND_ABOVE_LOG";
+        private const string EnableFatalAndAboveLogScriptingDefineSymbol   = "ENABLE_FATAL_AND_ABOVE_LOG";
+        
+        private const string EnableDebugLogScriptingDefineSymbol           = "ENABLE_DEBUG_LOG";
+        private const string EnableInfoLogScriptingDefineSymbol            = "ENABLE_INFO_LOG";
+        private const string EnableWarningLogScriptingDefineSymbol         = "ENABLE_WARNING_LOG";
+        private const string EnableErrorLogScriptingDefineSymbol           = "ENABLE_ERROR_LOG";
+        private const string EnableFatalLogScriptingDefineSymbol           = "ENABLE_FATAL_LOG";
 
-        private static readonly string[] AboveLogScriptingDefineSymbols = new string[]
+        /// <summary>
+        /// Log 及以上级别的日志脚本宏定义。
+        /// </summary>
+        private static readonly string[] AboveLogScriptingDefineSymbols =
         {
             EnableDebugAndAboveLogScriptingDefineSymbol,
             EnableInfoAndAboveLogScriptingDefineSymbol,
@@ -35,7 +33,10 @@ namespace GameFrameX.Editor
             EnableFatalAndAboveLogScriptingDefineSymbol
         };
 
-        private static readonly string[] SpecifyLogScriptingDefineSymbols = new string[]
+        /// <summary>
+        /// 特殊指定的级别的日志脚本宏定义。
+        /// </summary>
+        private static readonly string[] SpecifyLogScriptingDefineSymbols =
         {
             EnableDebugLogScriptingDefineSymbol,
             EnableInfoLogScriptingDefineSymbol,
@@ -52,12 +53,12 @@ namespace GameFrameX.Editor
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogScriptingDefineSymbol);
 
-            foreach (string specifyLogScriptingDefineSymbol in SpecifyLogScriptingDefineSymbols)
+            foreach (var specifyLogScriptingDefineSymbol in SpecifyLogScriptingDefineSymbols)
             {
                 ScriptingDefineSymbols.RemoveScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
             }
 
-            foreach (string aboveLogScriptingDefineSymbol in AboveLogScriptingDefineSymbols)
+            foreach (var aboveLogScriptingDefineSymbol in AboveLogScriptingDefineSymbols)
             {
                 ScriptingDefineSymbols.RemoveScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
             }
@@ -124,54 +125,41 @@ namespace GameFrameX.Editor
         /// <param name="aboveLogScriptingDefineSymbol">要设置的日志脚本宏定义。</param>
         public static void SetAboveLogScriptingDefineSymbol(string aboveLogScriptingDefineSymbol)
         {
-            if (string.IsNullOrEmpty(aboveLogScriptingDefineSymbol))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(aboveLogScriptingDefineSymbol)) return;
 
-            foreach (string i in AboveLogScriptingDefineSymbols)
+            foreach (var i in AboveLogScriptingDefineSymbols)
             {
-                if (i == aboveLogScriptingDefineSymbol)
-                {
-                    DisableAllLogs();
-                    ScriptingDefineSymbols.AddScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
-                    return;
-                }
+                if (i != aboveLogScriptingDefineSymbol) continue;
+                DisableAllLogs();
+                ScriptingDefineSymbols.AddScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
+                return;
             }
         }
 
         /// <summary>
-        /// 设置日志脚本宏定义。
+        /// 设置特殊指定的日志脚本宏定义。
         /// </summary>
         /// <param name="specifyLogScriptingDefineSymbols">要设置的日志脚本宏定义。</param>
         public static void SetSpecifyLogScriptingDefineSymbols(string[] specifyLogScriptingDefineSymbols)
         {
-            if (specifyLogScriptingDefineSymbols == null || specifyLogScriptingDefineSymbols.Length <= 0)
-            {
-                return;
-            }
+            if (specifyLogScriptingDefineSymbols == null || specifyLogScriptingDefineSymbols.Length <= 0) return;
 
-            bool removed = false;
-            foreach (string specifyLogScriptingDefineSymbol in specifyLogScriptingDefineSymbols)
+            var removed = false;
+            foreach (var specifyLogScriptingDefineSymbol in specifyLogScriptingDefineSymbols)
             {
-                if (string.IsNullOrEmpty(specifyLogScriptingDefineSymbol))
-                {
-                    continue;
-                }
+                if (string.IsNullOrEmpty(specifyLogScriptingDefineSymbol)) continue;
 
-                foreach (string i in SpecifyLogScriptingDefineSymbols)
+                foreach (var i in SpecifyLogScriptingDefineSymbols)
                 {
-                    if (i == specifyLogScriptingDefineSymbol)
+                    if (i != specifyLogScriptingDefineSymbol) continue;
+                    if (!removed)
                     {
-                        if (!removed)
-                        {
-                            removed = true;
-                            DisableAllLogs();
-                        }
-
-                        ScriptingDefineSymbols.AddScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
-                        break;
+                        removed = true;
+                        DisableAllLogs();
                     }
+
+                    ScriptingDefineSymbols.AddScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
+                    break;
                 }
             }
         }

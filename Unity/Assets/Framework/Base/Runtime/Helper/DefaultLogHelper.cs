@@ -31,19 +31,15 @@ namespace GameFrameX.Runtime
                 case GameFrameworkLogLevel.Debug:
                     Debug.Log($"{time}{message}");
                     break;
-
                 case GameFrameworkLogLevel.Info:
                     Debug.Log($"{time}{message}");
                     break;
-
                 case GameFrameworkLogLevel.Warning:
                     Debug.LogWarning($"{time}{message}");
                     break;
-
                 case GameFrameworkLogLevel.Error:
                     Debug.LogError($"{time}{message}");
                     break;
-
                 case GameFrameworkLogLevel.Fatal:
                     Debug.LogError($"{time}{message}");
                     break;
