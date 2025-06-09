@@ -17,20 +17,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     public class FuiFormHelper : UIFormHelperBase
     {
         /// <summary>
-        /// 资源组件。
-        /// </summary>
-        private AssetComponent m_AssetComponent;
-
-        private void Start()
-        {
-            m_AssetComponent = GameEntry.GetComponent<AssetComponent>();
-            if (m_AssetComponent == null)
-            {
-                Log.Fatal("资源组件为空.");
-            }
-        }
-
-        /// <summary>
         /// 实例化界面。
         /// 此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
         /// </summary>

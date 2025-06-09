@@ -17,7 +17,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    internal sealed partial class UIManager
+    internal sealed partial class UIManager : GameFrameworkModule, IUIManager
     {
         private readonly Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
         private readonly HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id

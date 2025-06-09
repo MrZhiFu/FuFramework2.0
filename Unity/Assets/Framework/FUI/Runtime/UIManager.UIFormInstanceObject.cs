@@ -11,7 +11,7 @@ using GameFrameX.UI.Runtime;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
-    internal sealed partial class UIManager : GameFrameworkModule, IUIManager
+    internal sealed partial class UIManager
     {
         /// <summary>
         /// 界面实例对象。

@@ -20,30 +20,16 @@ namespace GameFrameX.UI.Runtime
     [Serializable]
     public abstract class UIForm : MonoBehaviour, IUIForm
     {
-        [Header("界面序列编号")]
-        [SerializeField] private int m_SerialId;
-
-        [Header("界面是否可见")]
-        [SerializeField] private bool m_Visible = false;
-
-        [Header("界面是否已初始化")]
-        [SerializeField] private bool m_IsInit = false;
-
-        [Header("界面原始层级")]
-        [SerializeField] private int m_OriginalLayer = 0;
-
-        [Header("界面完整名称")]
-        [SerializeField] private string m_FullName;
-
-        [Header("界面资源名称")]
-        [SerializeField] private string m_UIFormAssetName;
-
-        [Header("界面在界面组中的深度")]
-        [SerializeField] private int m_DepthInUIGroup;
-
-        [Header("界面是否暂停被覆盖的界面")]
-        [SerializeField] private bool m_PauseCoveredUIForm;
-
+        //@formatter:off
+        [Header("界面序列编号")][SerializeField]           private int m_SerialId;
+        [Header("界面是否可见")][SerializeField]           private bool m_Visible = false;
+        [Header("界面是否已初始化")][SerializeField]        private bool m_IsInit = false;
+        [Header("界面原始层级")][SerializeField]           private int m_OriginalLayer = 0;
+        [Header("界面完整名称")][SerializeField]           private string m_FullName;
+        [Header("界面资源名称")][SerializeField]           private string m_UIFormAssetName;
+        [Header("界面在界面组中的深度")][SerializeField]    private int m_DepthInUIGroup;
+        [Header("界面是否暂停被覆盖的界面")][SerializeField] private bool m_PauseCoveredUIForm;
+        //@formatter:on
 
         /// 界面所属的界面组。
         private IUIGroup m_UIGroup;
@@ -154,22 +140,23 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiFormAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUIForm, bool isNewInstance, object userData, bool isFullScreen = false)
+        public void Init(int serialId, string uiFormAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUIForm,
+            bool isNewInstance, object userData, bool isFullScreen = false)
         {
             m_UserData = userData;
             if (serialId >= 0)
                 m_SerialId = serialId;
 
-            m_UIGroup            = uiGroup;
+            m_UIGroup = uiGroup;
             m_PauseCoveredUIForm = pauseCoveredUIForm;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_FullName        = GetType().FullName;
+            m_FullName = GetType().FullName;
             m_UIFormAssetName = uiFormAssetName;
-            m_DepthInUIGroup  = 0;
-            m_OriginalLayer   = gameObject.layer;
+            m_DepthInUIGroup = 0;
+            m_OriginalLayer = gameObject.layer;
 
             if (!isNewInstance) return;
 
@@ -198,10 +185,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 界面初始化前执行
         /// </summary>
-        public virtual void OnAwake()
-        {
-            IsAwake = true;
-        }
+        public virtual void OnAwake() => IsAwake = true;
 
         /// <summary>
         /// 界面初始化。
@@ -218,8 +202,8 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnRecycle()
         {
-            m_SerialId           = 0;
-            m_DepthInUIGroup     = 0;
+            m_SerialId = 0;
+            m_DepthInUIGroup = 0;
             m_PauseCoveredUIForm = true;
         }
 
@@ -229,7 +213,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public virtual void OnOpen(object userData)
         {
-            Visible    = true;
+            Visible = true;
             m_UserData = userData;
         }
 
@@ -254,18 +238,12 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 界面暂停。
         /// </summary>
-        public virtual void OnPause()
-        {
-            Visible = false;
-        }
+        public virtual void OnPause() => Visible = false;
 
         /// <summary>
         /// 界面暂停恢复。
         /// </summary>
-        public virtual void OnResume()
-        {
-            Visible = true;
-        }
+        public virtual void OnResume() => Visible = true;
 
         /// <summary>
         /// 界面遮挡。
@@ -288,10 +266,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiGroupDepth">界面组深度。</param>
         /// <param name="depthInUIGroup">界面在界面组中的深度。</param>
-        public void OnDepthChanged(int uiGroupDepth, int depthInUIGroup)
-        {
-            m_DepthInUIGroup = depthInUIGroup;
-        }
+        public void OnDepthChanged(int uiGroupDepth, int depthInUIGroup) => m_DepthInUIGroup = depthInUIGroup;
 
         /// <summary>
         /// 销毁界面.
@@ -308,10 +283,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnLocalizationLanguageChanged(object sender, GameEventArgs e)
-        {
-            UpdateLocalization();
-        }
+        private void OnLocalizationLanguageChanged(object sender, GameEventArgs e) => UpdateLocalization();
 
         /// <summary>
         /// 界面更新本地化。

@@ -14,7 +14,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// 界面管理器.UI分组管理器
     /// </summary>
-    internal sealed partial class UIManager : GameFrameworkModule, IUIManager
+    internal sealed partial class UIManager
     {
         /// <summary>
         /// 界面组字典。key为组名称，value为组对象。

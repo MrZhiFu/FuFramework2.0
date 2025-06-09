@@ -5,17 +5,9 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using FairyGUI;
-using GameFrameX.Asset.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -23,7 +15,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 界面管理器。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    internal sealed partial class UIManager : GameFrameworkModule, IUIManager
+    internal sealed partial class UIManager
     {
         /// <summary>
         /// 是否存在界面。
