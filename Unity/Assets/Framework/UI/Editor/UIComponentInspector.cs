@@ -14,16 +14,16 @@ namespace GameFrameX.UI.Editor
     [CustomEditor(typeof(UIComponent))]
     internal sealed class UIComponentInspector : ComponentTypeComponentInspector
     {
-        private SerializedProperty m_EnableOpenUIFormSuccessEvent = null;
-        private SerializedProperty m_EnableOpenUIFormFailureEvent = null;
-        private SerializedProperty m_EnableCloseUIFormCompleteEvent = null;
-        
-        private SerializedProperty m_InstanceAutoReleaseInterval = null;
-        private SerializedProperty m_InstanceCapacity = null;
-        private SerializedProperty m_InstanceExpireTime = null;
-        private SerializedProperty m_UIGroups = null;
+        private SerializedProperty m_EnableOpenUISuccessEvent   = null;
+        private SerializedProperty m_EnableOpenUIFailureEvent   = null;
+        private SerializedProperty m_EnableCloseUICompleteEvent = null;
 
-        private readonly HelperInfo<UIFormHelperBase>  m_UIFormHelperInfo  = new("UIForm");
+        private SerializedProperty m_InstanceAutoReleaseInterval = null;
+        private SerializedProperty m_InstanceCapacity            = null;
+        private SerializedProperty m_InstanceExpireTime          = null;
+        private SerializedProperty m_UIGroups                    = null;
+
+        private readonly HelperInfo<UIHelperBase>      m_UIHelperInfo      = new("UI");
         private readonly HelperInfo<UIGroupHelperBase> m_UIGroupHelperInfo = new("UIGroup");
 
         public override void OnInspectorGUI()
@@ -36,14 +36,14 @@ namespace GameFrameX.UI.Editor
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
-                m_UIFormHelperInfo.Draw();
+                m_UIHelperInfo.Draw();
                 m_UIGroupHelperInfo.Draw();
 
                 EditorGUILayout.HelpBox("以上的组件前缀的命名空间必须设置为一致，否则将会初始化失败", MessageType.Warning);
 
-                EditorGUILayout.PropertyField(m_EnableOpenUIFormSuccessEvent);
-                EditorGUILayout.PropertyField(m_EnableOpenUIFormFailureEvent);
-                EditorGUILayout.PropertyField(m_EnableCloseUIFormCompleteEvent);
+                EditorGUILayout.PropertyField(m_EnableOpenUISuccessEvent);
+                EditorGUILayout.PropertyField(m_EnableOpenUIFailureEvent);
+                EditorGUILayout.PropertyField(m_EnableCloseUICompleteEvent);
             }
             EditorGUI.EndDisabledGroup();
 
@@ -117,16 +117,16 @@ namespace GameFrameX.UI.Editor
 
         protected override void Enable()
         {
-            m_EnableOpenUIFormSuccessEvent = serializedObject.FindProperty("m_EnableOpenUIFormSuccessEvent");
-            m_EnableOpenUIFormFailureEvent = serializedObject.FindProperty("m_EnableOpenUIFormFailureEvent");
-            m_EnableCloseUIFormCompleteEvent = serializedObject.FindProperty("m_EnableCloseUIFormCompleteEvent");
+            m_EnableOpenUISuccessEvent    = serializedObject.FindProperty("m_EnableOpenUISuccessEvent");
+            m_EnableOpenUIFailureEvent    = serializedObject.FindProperty("m_EnableOpenUIFailureEvent");
+            m_EnableCloseUICompleteEvent  = serializedObject.FindProperty("m_EnableCloseUICompleteEvent");
             m_InstanceAutoReleaseInterval = serializedObject.FindProperty("m_InstanceAutoReleaseInterval");
-            m_InstanceCapacity = serializedObject.FindProperty("m_InstanceCapacity");
-            m_InstanceExpireTime = serializedObject.FindProperty("m_InstanceExpireTime");
+            m_InstanceCapacity            = serializedObject.FindProperty("m_InstanceCapacity");
+            m_InstanceExpireTime          = serializedObject.FindProperty("m_InstanceExpireTime");
             serializedObject.FindProperty("m_InstanceUGUIRoot");
             m_UIGroups = serializedObject.FindProperty("m_UIGroups");
 
-            m_UIFormHelperInfo.Init(serializedObject);
+            m_UIHelperInfo.Init(serializedObject);
             m_UIGroupHelperInfo.Init(serializedObject);
 
             RefreshTypeNames();
@@ -135,7 +135,7 @@ namespace GameFrameX.UI.Editor
         protected override void RefreshTypeNames()
         {
             RefreshComponentTypeNames(typeof(IUIManager));
-            m_UIFormHelperInfo.Refresh();
+            m_UIHelperInfo.Refresh();
             m_UIGroupHelperInfo.Refresh();
             serializedObject.ApplyModifiedProperties();
         }

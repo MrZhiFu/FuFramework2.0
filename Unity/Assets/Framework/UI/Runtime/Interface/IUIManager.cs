@@ -41,17 +41,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 打开界面成功事件。
         /// </summary>
-        event EventHandler<OpenUISuccessEventArgs> OpenUIFormSuccess;
+        event EventHandler<OpenUISuccessEventArgs> OpenUISuccess;
 
         /// <summary>
         /// 打开界面失败事件。
         /// </summary>
-        event EventHandler<OpenUIFailureEventArgs> OpenUIFormFailure;
+        event EventHandler<OpenUIFailureEventArgs> OpenUIFailure;
 
         /// <summary>
         /// 关闭界面完成事件。
         /// </summary>
-        event EventHandler<CloseUICompleteEventArgs> CloseUIFormComplete;
+        event EventHandler<CloseUICompleteEventArgs> CloseUIComplete;
 
         /// <summary>
         /// 设置对象池管理器。
@@ -68,8 +68,8 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 设置界面辅助器。
         /// </summary>
-        /// <param name="uiFormHelper">界面辅助器。</param>
-        void SetUIFormHelper(IUIFormHelper uiFormHelper);
+        /// <param name="iUiHelper">界面辅助器。</param>
+        void SetUIHelper(IUIHelper iUiHelper);
 
         /// <summary>
         /// 是否存在界面组。
@@ -124,49 +124,49 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 是否存在界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        bool HasUI(string uiFormAssetName);
+        bool HasUI(string uiAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUI(int serialId);
+        IUIBase GetUI(int serialId);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm GetUI(string uiFormAssetName);
+        IUIBase GetUI(string uiAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        IUIForm[] GetUIs(string uiFormAssetName);
+        IUIBase[] GetUIs(string uiAssetName);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        void GetUIs(string uiFormAssetName, List<IUIForm> results);
+        void GetUIs(string uiAssetName, List<IUIBase> results);
 
         /// <summary>
         /// 获取所有已加载的界面。
         /// </summary>
         /// <returns>所有已加载的界面。</returns>
-        IUIForm[] GetAllLoadedUIs();
+        IUIBase[] GetAllLoadedUIs();
 
         /// <summary>
         /// 获取所有已加载的界面。
         /// </summary>
         /// <param name="results">所有已加载的界面。</param>
-        void GetAllLoadedUIs(List<IUIForm> results);
+        void GetAllLoadedUIs(List<IUIBase> results);
 
         /// <summary>
         /// 获取所有正在加载界面的序列编号。
@@ -190,39 +190,39 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        bool IsLoadingUI(string uiFormAssetName);
+        bool IsLoadingUI(string uiAssetName);
 
         /// <summary>
         /// 是否是合法的界面。
         /// </summary>
-        /// <param name="uiForm">界面。</param>
+        /// <param name="iuiBase">界面。</param>
         /// <returns>界面是否合法。</returns>
-        bool IsValidUI(IUIForm uiForm);
+        bool IsValidUI(IUIBase iuiBase);
 
         /// <summary>
         /// 打开界面。
         /// </summary>
-        /// <param name="uiFormAssetPath">界面所在路径</param>
-        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="uiAssetPath">界面所在路径</param>
+        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        Task<IUIForm> OpenUIAsync<T>(string uiFormAssetPath, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false) where T : class, IUIForm;
+        Task<IUIBase> OpenUIAsync<T>(string uiAssetPath, bool pauseCoveredUI, object userData, bool isFullScreen = false, bool isMultiple = false) where T : class, IUIBase;
 
         /// <summary>
         /// 打开界面。
         /// </summary>
-        /// <param name="uiFormAssetPath">界面所在路径</param>
-        /// <param name="uiFormType">界面逻辑类型。</param>
-        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="uiAssetPath">界面所在路径</param>
+        /// <param name="uiType">界面逻辑类型。</param>
+        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        Task<IUIForm> OpenUIAsync(string uiFormAssetPath, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen = false, bool isMultiple = false);
+        Task<IUIBase> OpenUIAsync(string uiAssetPath, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen = false, bool isMultiple = false);
 
         /// <summary>
         /// 关闭界面。
@@ -253,42 +253,42 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
-        void CloseUI(IUIForm uiForm);
+        /// <param name="iuiBase">要关闭的界面。</param>
+        void CloseUI(IUIBase iuiBase);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
-        void CloseUINow(IUIForm uiForm);
+        /// <param name="iuiBase">要关闭的界面。</param>
+        void CloseUINow(IUIBase iuiBase);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        void CloseUI<T>(object userData) where T : IUIForm;
+        void CloseUI<T>(object userData) where T : IUIBase;
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        void CloseUINow<T>(object userData) where T : IUIForm;
+        void CloseUINow<T>(object userData) where T : IUIBase;
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
+        /// <param name="iuiBase">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUI(IUIForm uiForm, object userData);
+        void CloseUI(IUIBase iuiBase, object userData);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
+        /// <param name="iuiBase">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        void CloseUINow(IUIForm uiForm, object userData);
+        void CloseUINow(IUIBase iuiBase, object userData);
 
         /// <summary>
         /// 关闭所有已加载的界面。
@@ -309,8 +309,8 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 设置界面实例是否被加锁。
         /// </summary>
-        /// <param name="uiFormInstance">要设置是否被加锁的界面实例。</param>
+        /// <param name="uiInstance">要设置是否被加锁的界面实例。</param>
         /// <param name="locked">界面实例是否被加锁。</param>
-        void SetUIInstanceLocked(object uiFormInstance, bool locked);
+        void SetUIInstanceLocked(object uiInstance, bool locked);
     }
 }

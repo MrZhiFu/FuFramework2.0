@@ -21,14 +21,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     {
         private readonly Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
         private readonly HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
-        private readonly Queue<IUIForm>          m_WaitRecycleQueue; // 待回收的界面集合
+        private readonly Queue<IUIBase>          m_WaitRecycleQueue; // 待回收的界面集合
 
         private IAssetManager      m_AssetManager;      // 资源管理器
         private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器\
 
         private FuiPackageComponent               FuiPackage { get; set; } // FGUI包管理组件
         private IObjectPool<UIInstanceObject> m_InstancePool;          // 界面实例对象池
-        private IUIFormHelper                     m_UIFormHelper;          // 界面辅助器
+        private IUIHelper                     _iuiHelper;          // 界面辅助器
 
         private int  m_Serial;     // 界面序列号，每打开一个界面就加1
         private bool m_IsShutdown; // 是否是关机
@@ -42,12 +42,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_UIGroupDict      = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
             m_LoadingDict      = new Dictionary<int, string>();
             m_WaitReleaseSet   = new HashSet<int>();
-            m_WaitRecycleQueue = new Queue<IUIForm>();
+            m_WaitRecycleQueue = new Queue<IUIBase>();
 
             m_ObjectPoolManager = null;
             m_AssetManager      = null;
             m_InstancePool      = null;
-            m_UIFormHelper      = null;
+            _iuiHelper      = null;
             m_Serial            = 0;
             m_IsShutdown        = false;
 
@@ -92,8 +92,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             while (m_WaitRecycleQueue.Count > 0)
             {
-                var uiForm = m_WaitRecycleQueue.Dequeue();
-                RecycleUI(uiForm);
+                var ui = m_WaitRecycleQueue.Dequeue();
+                RecycleUI(ui);
             }
 
             foreach (var (_, group) in m_UIGroupDict)
@@ -141,11 +141,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 设置界面辅助器。
         /// </summary>
-        /// <param name="uiFormHelper">界面辅助器。</param>
-        public void SetUIFormHelper(IUIFormHelper uiFormHelper)
+        /// <param name="iUiHelper">界面辅助器。</param>
+        public void SetUIHelper(IUIHelper iUiHelper)
         {
-            GameFrameworkGuard.NotNull(uiFormHelper, nameof(uiFormHelper));
-            m_UIFormHelper = uiFormHelper;
+            GameFrameworkGuard.NotNull(iUiHelper, nameof(iUiHelper));
+            _iuiHelper = iUiHelper;
         }
     }
 }

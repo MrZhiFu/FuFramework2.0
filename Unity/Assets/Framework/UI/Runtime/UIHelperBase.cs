@@ -14,27 +14,27 @@ namespace GameFrameX.UI.Runtime
     /// 界面辅助器基类。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public abstract class UIFormHelperBase : MonoBehaviour, IUIFormHelper
+    public abstract class UIHelperBase : MonoBehaviour, IUIHelper
     {
         /// <summary>
         /// 实例化界面。
         /// </summary>
-        /// <param name="uiFormAsset">要实例化的界面资源。</param>
+        /// <param name="uiAsset">要实例化的界面资源。</param>
         /// <returns>实例化后的界面。</returns>
-        public abstract object InstantiateUI(object uiFormAsset);
+        public abstract object InstantiateUI(object uiAsset);
 
         /// <summary>
         /// 创建界面。
         /// </summary>
-        /// <param name="uiFormInstance">界面实例。</param>
-        /// <param name="uiFormLogicType">界面逻辑类型</param>
+        /// <param name="uiInstance">界面实例。</param>
+        /// <param name="uiLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public abstract IUIForm CreateUI(object uiFormInstance, Type uiFormLogicType);
+        public abstract IUIBase CreateUI(object uiInstance, Type uiLogicType);
 
         /// <summary>
         /// 释放界面。
         /// </summary>
-        /// <param name="uiFormInstance">要释放的界面实例。</param>
-        public abstract void ReleaseUI(object uiFormInstance);
+        /// <param name="uiInstance">要释放的界面实例。</param>
+        public abstract void ReleaseUI(object uiInstance);
     }
 }

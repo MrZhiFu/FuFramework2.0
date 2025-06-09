@@ -18,17 +18,17 @@ namespace GameFrameX.UI.Runtime
     /// </summary>
     [UnityEngine.Scripting.Preserve]
     [Serializable]
-    public abstract class UIForm : MonoBehaviour, IUIForm
+    public abstract class UIBase : MonoBehaviour, IUIBase
     {
         //@formatter:off
-        [Header("界面序列编号")][SerializeField]           private int m_SerialId;
-        [Header("界面是否可见")][SerializeField]           private bool m_Visible = false;
-        [Header("界面是否已初始化")][SerializeField]       private bool m_IsInit = false;
-        [Header("界面原始层级")][SerializeField]           private int m_OriginalLayer = 0;
-        [Header("界面完整名称")][SerializeField]           private string m_FullName;
-        [Header("界面资源名称")][SerializeField]           private string m_UIFormAssetName;
-        [Header("界面在界面组中的深度")][SerializeField]    private int m_DepthInUIGroup;
-        [Header("界面是否暂停被覆盖的界面")][SerializeField] private bool m_PauseCoveredUIForm;
+        [Header("界面序列编号")][SerializeField]            private int m_SerialId;
+        [Header("界面是否可见")][SerializeField]            private bool m_Visible = false;
+        [Header("界面是否已初始化")][SerializeField]        private bool m_IsInit = false;
+        [Header("界面原始层级")][SerializeField]            private int m_OriginalLayer = 0;
+        [Header("界面完整名称")][SerializeField]            private string m_FullName;
+        [Header("界面资源名称")][SerializeField]            private string m_UIAssetName;
+        [Header("界面在界面组中的深度")][SerializeField]     private int m_DepthInUIGroup;
+        [Header("界面是否暂停被覆盖的界面")] [SerializeField] private bool m_PauseCoveredUI;
         //@formatter:on
 
         /// 界面所属的界面组。
@@ -74,7 +74,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIFormAssetName => m_UIFormAssetName;
+        public string UIAssetName => m_UIAssetName;
 
         /// <summary>
         /// 获取或设置界面名称。
@@ -122,7 +122,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUI => m_PauseCoveredUIForm;
+        public bool PauseCoveredUI => m_PauseCoveredUI;
 
         /// <summary>
         /// 获取界面是否已唤醒。
@@ -140,23 +140,23 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUI,
+        public void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIBase> onInitAction, bool pauseCoveredUI,
                          bool isNewInstance, object userData, bool isFullScreen = false)
         {
             m_UserData = userData;
             if (serialId >= 0)
                 m_SerialId = serialId;
 
-            m_UIGroup            = uiGroup;
-            m_PauseCoveredUIForm = pauseCoveredUI;
+            m_UIGroup        = uiGroup;
+            m_PauseCoveredUI = pauseCoveredUI;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_FullName        = GetType().FullName;
-            m_UIFormAssetName = uiAssetName;
-            m_DepthInUIGroup  = 0;
-            m_OriginalLayer   = gameObject.layer;
+            m_FullName       = GetType().FullName;
+            m_UIAssetName    = uiAssetName;
+            m_DepthInUIGroup = 0;
+            m_OriginalLayer  = gameObject.layer;
 
             if (!isNewInstance) return;
 
@@ -176,7 +176,7 @@ namespace GameFrameX.UI.Runtime
             }
             catch (Exception exception)
             {
-                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", m_SerialId, m_UIFormAssetName, exception);
+                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", m_SerialId, m_UIAssetName, exception);
             }
 
             m_IsInit = true;
@@ -202,9 +202,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnRecycle()
         {
-            m_SerialId           = 0;
-            m_DepthInUIGroup     = 0;
-            m_PauseCoveredUIForm = true;
+            m_SerialId       = 0;
+            m_DepthInUIGroup = 0;
+            m_PauseCoveredUI = true;
         }
 
         /// <summary>

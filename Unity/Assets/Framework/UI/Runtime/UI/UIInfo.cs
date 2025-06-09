@@ -3,15 +3,15 @@
 namespace GameFrameX.UI.Runtime
 {
     /// <summary>
-    /// 界面组界面信息。
+    /// 界面组中的界面信息。
     /// </summary>
     [UnityEngine.Scripting.Preserve]
-    public sealed class UIFormInfo : IReference
+    public sealed class UIInfo : IReference
     {
         /// <summary>
         /// 获取界面。
         /// </summary>
-        public IUIForm UIForm { get; private set; }
+        public IUIBase UI { get; private set; }
 
         /// <summary>
         /// 界面是否暂停(初始化时默认为false,即界面没有暂停)
@@ -26,17 +26,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 创建界面组界面信息。
         /// </summary>
-        /// <param name="uiForm">界面。</param>
+        /// <param name="iuiBase">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="GameFrameworkException">界面为空时抛出。</exception>
-        public static UIFormInfo Create(IUIForm uiForm)
+        public static UIInfo Create(IUIBase iuiBase)
         {
-            if (uiForm == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
-            var uiFormInfo = ReferencePool.Acquire<UIFormInfo>();
-            uiFormInfo.UIForm = uiForm;
-            uiFormInfo.Paused = true;
-            uiFormInfo.Covered = true;
-            return uiFormInfo;
+            if (iuiBase == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
+            var uiInfo = ReferencePool.Acquire<UIInfo>();
+            uiInfo.UI      = iuiBase;
+            uiInfo.Paused  = true;
+            uiInfo.Covered = true;
+            return uiInfo;
         }
 
         /// <summary>
@@ -44,8 +44,8 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            UIForm = null;
-            Paused = false;
+            UI      = null;
+            Paused  = false;
             Covered = false;
         }
     }

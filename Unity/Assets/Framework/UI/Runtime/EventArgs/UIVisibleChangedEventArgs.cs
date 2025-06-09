@@ -29,7 +29,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public UIForm UIForm { get; private set; }
+        public UIBase Base { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -40,13 +40,13 @@ namespace GameFrameX.UI.Runtime
         /// 获取用户自定义数据。
         /// </summary>
         public object UserData { get; private set; }
-        
+
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
         public UIVisibleChangedEventArgs()
         {
-            UIForm   = null;
+            Base     = null;
             Visible  = false;
             UserData = null;
         }
@@ -54,17 +54,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 创建打开界面成功事件。
         /// </summary>
-        /// <param name="uiForm">打开成功的界面。</param>
+        /// <param name="iuiBase">打开成功的界面。</param>
         /// <param name="visible">显示状态。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static UIVisibleChangedEventArgs Create(IUIForm uiForm, bool visible, object userData)
+        public static UIVisibleChangedEventArgs Create(IUIBase iuiBase, bool visible, object userData)
         {
-            var uiFormSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
-            uiFormSuccessEventArgs.UIForm = (UIForm)uiForm;
-            uiFormSuccessEventArgs.Visible = visible;
-            uiFormSuccessEventArgs.UserData = userData;
-            return uiFormSuccessEventArgs;
+            var uiSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
+            uiSuccessEventArgs.Base     = (UIBase)iuiBase;
+            uiSuccessEventArgs.Visible  = visible;
+            uiSuccessEventArgs.UserData = userData;
+            return uiSuccessEventArgs;
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            UIForm = null;
-            Visible = false;
+            Base     = null;
+            Visible  = false;
             UserData = null;
         }
     }

@@ -530,14 +530,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   componentType: GameFrameX.UI.FairyGUI.Runtime.UIManager
-  m_EnableOpenUIFormSuccessEvent: 1
-  m_EnableOpenUIFormFailureEvent: 1
-  m_EnableCloseUIFormCompleteEvent: 1
+  m_EnableOpenUISuccessEvent: 1
+  m_EnableOpenUIFailureEvent: 1
+  m_EnableCloseUICompleteEvent: 1
   m_InstanceAutoReleaseInterval: 60
   m_InstanceCapacity: 16
   m_InstanceExpireTime: 60
-  m_UIFormHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiFormHelper
-  m_CustomUIFormHelper: {fileID: 0}
+  m_UIHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiHelper
+  m_CustomUIHelper: {fileID: 0}
   m_UIGroupHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiGroupHelper
   m_CustomUIGroupHelper: {fileID: 0}
   m_UIGroups:

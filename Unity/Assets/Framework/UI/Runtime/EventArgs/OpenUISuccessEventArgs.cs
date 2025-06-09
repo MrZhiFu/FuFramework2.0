@@ -29,7 +29,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public UIForm UIForm { get; private set; }
+        public UIBase Base { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -46,7 +46,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public OpenUISuccessEventArgs()
         {
-            UIForm   = null;
+            Base     = null;
             Duration = 0f;
             UserData = null;
         }
@@ -54,17 +54,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 创建打开界面成功事件。
         /// </summary>
-        /// <param name="uiForm">打开成功的界面。</param>
+        /// <param name="iuiBase">打开成功的界面。</param>
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static OpenUISuccessEventArgs Create(IUIForm uiForm, float duration, object userData)
+        public static OpenUISuccessEventArgs Create(IUIBase iuiBase, float duration, object userData)
         {
-            var openUIFormSuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
-            openUIFormSuccessEventArgs.UIForm   = (UIForm)uiForm;
-            openUIFormSuccessEventArgs.Duration = duration;
-            openUIFormSuccessEventArgs.UserData = userData;
-            return openUIFormSuccessEventArgs;
+            var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
+            openUISuccessEventArgs.Base     = (UIBase)iuiBase;
+            openUISuccessEventArgs.Duration = duration;
+            openUISuccessEventArgs.UserData = userData;
+            return openUISuccessEventArgs;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            UIForm   = null;
+            Base     = null;
             Duration = 0f;
             UserData = null;
         }

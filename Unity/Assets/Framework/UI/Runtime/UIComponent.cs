@@ -37,17 +37,17 @@ namespace GameFrameX.UI.Runtime
         /// 1.当获取所有已加载的界面时，此列表就是所有已加载的界面实例。
         /// 2.当获取界面名称对应的界面，此列表是名称对应的界面
         /// </summary>
-        private readonly List<IUIForm> m_InternalUIFormResults = new();
+        private readonly List<IUIBase> m_InternalUIResults = new();
 
 
         [Header("是否激活打开界面成功事件")]
-        [SerializeField] private bool m_EnableOpenUIFormSuccessEvent = true;
+        [SerializeField] private bool m_EnableOpenUISuccessEvent = true;
 
         [Header("是否激活打开界面失败事件")]
-        [SerializeField] private bool m_EnableOpenUIFormFailureEvent = true;
+        [SerializeField] private bool m_EnableOpenUIFailureEvent = true;
 
         [Header("是否激活打开界面成功事件")]
-        [SerializeField] private bool m_EnableCloseUIFormCompleteEvent = true;
+        [SerializeField] private bool m_EnableCloseUICompleteEvent = true;
 
         [Header("界面实例对象池自动释放可释放对象的间隔秒数")]
         [SerializeField] private float m_InstanceAutoReleaseInterval = 60f;
@@ -59,10 +59,10 @@ namespace GameFrameX.UI.Runtime
         [SerializeField] private float m_InstanceExpireTime = 60f;
 
         [Header("界面辅助器类名")]
-        [SerializeField] private string m_UIFormHelperTypeName = "GameFrameX.UI.FairyGUI.Runtime.FairyGUIFormHelper";
+        [SerializeField] private string m_UIHelperTypeName = "GameFrameX.UI.FairyGUI.Runtime.FairyGUIUIHelper";
 
         [Header("界面辅助器")]
-        [SerializeField] private UIFormHelperBase m_CustomUIFormHelper = null;
+        [SerializeField] private UIHelperBase m_CustomUIHelper = null;
 
         [Header("界面组辅助器类名")]
         [SerializeField] private string m_UIGroupHelperTypeName = "GameFrameX.UI.FairyGUI.Runtime.FairyGUIUIGroupHelper";
@@ -121,7 +121,7 @@ namespace GameFrameX.UI.Runtime
             set => m_UIManager.InstanceExpireTime = m_InstanceExpireTime = value;
         }
 
-        
+
         /// <summary>
         /// 游戏框架组件初始化。
         /// </summary>
@@ -135,17 +135,15 @@ namespace GameFrameX.UI.Runtime
             m_UIManager = GameFrameworkEntry.GetModule<IUIManager>();
             if (m_UIManager == null)
             {
-                Debug.LogError("UI manager is invalid.");
+                Debug.LogError("UI管理器为空.");
                 return;
             }
 
-            m_UIManager.OpenUIFormSuccess += OnOpenUIFormSuccess;
-            m_UIManager.OpenUIFormFailure += OnOpenUIFormFailure;
+            m_UIManager.OpenUISuccess += OnOpenUISuccess;
+            m_UIManager.OpenUIFailure += OnOpenUIFailure;
 
-            if (m_EnableCloseUIFormCompleteEvent)
-            {
-                m_UIManager.CloseUIFormComplete += OnCloseUIFormComplete;
-            }
+            if (m_EnableCloseUICompleteEvent) 
+                m_UIManager.CloseUIComplete += OnCloseUIComplete;
         }
 
         private void Start()
@@ -184,18 +182,18 @@ namespace GameFrameX.UI.Runtime
             groupTrs.localScale = Vector3.one;
 
             // 创建UI界面辅助器，并设置到UI管理器中
-            var uiFormHelper = Helper.CreateHelper(m_UIFormHelperTypeName, m_CustomUIFormHelper);
-            if (uiFormHelper == null)
+            var uiHelper = Helper.CreateHelper(m_UIHelperTypeName, m_CustomUIHelper);
+            if (uiHelper == null)
             {
                 Log.Error("找不到UI界面辅助器类.");
                 return;
             }
 
-            uiFormHelper.name = "UI Form Helper";
-            groupTrs          = uiFormHelper.transform;
+            uiHelper.name = "UI Helper";
+            groupTrs      = uiHelper.transform;
             groupTrs.SetParent(transform);
             groupTrs.localScale = Vector3.one;
-            m_UIManager.SetUIFormHelper(uiFormHelper);
+            m_UIManager.SetUIHelper(uiHelper);
 
             // 遍历所有UI组，并添加UI组
             foreach (var group in m_UIGroups)
@@ -204,68 +202,68 @@ namespace GameFrameX.UI.Runtime
                 Log.Warning("添加UI组 '{0}' 失败 .", group.Name);
             }
         }
-        
+
 
         /// <summary>
         /// 是否存在界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(int serialId) => m_UIManager.HasUI(serialId);
+        public bool HasUI(int serialId) => m_UIManager.HasUI(serialId);
 
         /// <summary>
         /// 是否存在界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUIForm(string uiFormAssetName) => m_UIManager.HasUI(uiFormAssetName);
+        public bool HasUI(string uiAssetName) => m_UIManager.HasUI(uiAssetName);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(int serialId) => m_UIManager.IsLoadingUI(serialId);
+        public bool IsLoadingUI(int serialId) => m_UIManager.IsLoadingUI(serialId);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUIForm(string uiFormAssetName) => m_UIManager.IsLoadingUI(uiFormAssetName);
+        public bool IsLoadingUI(string uiAssetName) => m_UIManager.IsLoadingUI(uiAssetName);
 
         /// <summary>
         /// 是否是合法的界面。
         /// </summary>
-        /// <param name="uiForm">界面。</param>
+        /// <param name="iuiBase">界面。</param>
         /// <returns>界面是否合法。</returns>
-        public bool IsValidUIForm(IUIForm uiForm) => m_UIManager.IsValidUI(uiForm);
+        public bool IsValidUI(IUIBase iuiBase) => m_UIManager.IsValidUI(iuiBase);
 
         /// <summary>
         /// 设置界面是否被加锁。
         /// </summary>
-        /// <param name="uiForm">要设置是否被加锁的界面。</param>
+        /// <param name="uiBase">要设置是否被加锁的界面。</param>
         /// <param name="locked">界面是否被加锁。</param>
-        public void SetUIFormInstanceLocked(UIForm uiForm, bool locked)
+        public void SetUIInstanceLocked(UIBase uiBase, bool locked)
         {
-            if (uiForm == null)
+            if (uiBase == null)
             {
                 Log.Warning("UI界面为空.");
                 return;
             }
 
-            m_UIManager.SetUIInstanceLocked(uiForm.gameObject, locked);
+            m_UIManager.SetUIInstanceLocked(uiBase.gameObject, locked);
         }
-        
+
 
         /// <summary>
         /// 界面打开成功事件。
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnOpenUIFormSuccess(object sender, OpenUISuccessEventArgs e)
+        private void OnOpenUISuccess(object sender, OpenUISuccessEventArgs e)
         {
-            if (m_EnableOpenUIFormSuccessEvent)
+            if (m_EnableOpenUISuccessEvent)
                 m_EventComponent.Fire(this, e);
         }
 
@@ -274,10 +272,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnOpenUIFormFailure(object sender, OpenUIFailureEventArgs e)
+        private void OnOpenUIFailure(object sender, OpenUIFailureEventArgs e)
         {
-            Log.Warning($"Open UI form failure, asset name '{e.UIFormAssetName}',  pause covered UI form '{e.PauseCoveredUIForm}', error message '{e.ErrorMessage}'.");
-            if (m_EnableOpenUIFormFailureEvent)
+            Log.Warning($"打开UI界面失败, 资源名称 '{e.UIAssetName}',  是否暂停被覆盖的界面 '{e.PauseCoveredUI}', error message '{e.ErrorMessage}'.");
+            if (m_EnableOpenUIFailureEvent)
                 m_EventComponent.Fire(this, e);
         }
 
@@ -286,9 +284,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnCloseUIFormComplete(object sender, CloseUICompleteEventArgs e)
+        private void OnCloseUIComplete(object sender, CloseUICompleteEventArgs e)
         {
-            if (m_EnableCloseUIFormCompleteEvent)
+            if (m_EnableCloseUICompleteEvent)
                 m_EventComponent.Fire(this, e);
         }
     }

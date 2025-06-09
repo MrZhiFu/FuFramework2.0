@@ -12,7 +12,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面接口。
     /// </summary>
-    public interface IUIForm
+    public interface IUIBase
     {
         /// <summary>
         /// 获取界面序列编号。
@@ -27,7 +27,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        string UIFormAssetName { get; }
+        string UIAssetName { get; }
 
         /// <summary>
         /// 获取界面实例。
@@ -75,7 +75,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIForm> onInitAction, bool pauseCoveredUI, bool isNewInstance, object userData, bool isFullScreen = false);
+        void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIBase> onInitAction, bool pauseCoveredUI, bool isNewInstance, object userData, bool isFullScreen = false);
 
         /// <summary>
         /// 界面初始化。

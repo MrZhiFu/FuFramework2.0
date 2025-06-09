@@ -18,22 +18,22 @@
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
-        public void CloseUI(IUIForm uiForm) => m_UIManager.CloseUI(uiForm);
+        /// <param name="iuiBase">要关闭的界面。</param>
+        public void CloseUI(IUIBase iuiBase) => m_UIManager.CloseUI(iuiBase);
 
         /// <summary>
         /// 关闭界面。
         /// 该函数只适用于界面只有一个的情况.因为当找到一个目标对象之后就会立即终止
         /// </summary>
         /// <typeparam name="T">关闭界面的类型</typeparam>
-        public void CloseUI<T>(object userData = null) where T : IUIForm => m_UIManager.CloseUI<T>(userData);
+        public void CloseUI<T>(object userData = null) where T : IUIBase => m_UIManager.CloseUI<T>(userData);
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
+        /// <param name="iuiBase">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUI(IUIForm uiForm, object userData) => m_UIManager.CloseUI(uiForm, userData);
+        public void CloseUI(IUIBase iuiBase, object userData) => m_UIManager.CloseUI(iuiBase, userData);
 
         /// <summary>
         /// 立即关闭界面。
@@ -51,22 +51,22 @@
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
-        public void CloseUINow(IUIForm uiForm) => m_UIManager.CloseUINow(uiForm);
+        /// <param name="iuiBase">要关闭的界面。</param>
+        public void CloseUINow(IUIBase iuiBase) => m_UIManager.CloseUINow(iuiBase);
 
         /// <summary>
         /// 立即关闭界面。
         /// 该函数只适用于界面只有一个的情况.因为当找到一个目标对象之后就会立即终止
         /// </summary>
         /// <typeparam name="T">关闭界面的类型</typeparam>
-        public void CloseUINow<T>(object userData = null) where T : IUIForm => m_UIManager.CloseUINow<T>(userData);
+        public void CloseUINow<T>(object userData = null) where T : IUIBase => m_UIManager.CloseUINow<T>(userData);
 
         /// <summary>
         /// 立即关闭界面。
         /// </summary>
-        /// <param name="uiForm">要关闭的界面。</param>
+        /// <param name="iuiBase">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUINow(IUIForm uiForm, object userData) => m_UIManager.CloseUINow(uiForm, userData);
+        public void CloseUINow(IUIBase iuiBase, object userData) => m_UIManager.CloseUINow(iuiBase, userData);
 
         /// <summary>
         /// 关闭所有已加载的界面。
@@ -82,6 +82,6 @@
         /// <summary>
         /// 关闭所有正在加载的界面。
         /// </summary>
-        public void CloseAllLoadingUIForms() => m_UIManager.CloseAllLoadingUIs();
+        public void CloseAllLoadingUIs() => m_UIManager.CloseAllLoadingUIs();
     }
 }

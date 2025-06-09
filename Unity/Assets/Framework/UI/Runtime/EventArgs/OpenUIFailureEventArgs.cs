@@ -34,13 +34,13 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIFormAssetName { get; private set; }
+        public string UIAssetName { get; private set; }
 
 
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUIForm { get; private set; }
+        public bool PauseCoveredUI { get; private set; }
 
         /// <summary>
         /// 获取错误信息。
@@ -57,31 +57,31 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public OpenUIFailureEventArgs()
         {
-            SerialId           = 0;
-            UIFormAssetName    = null;
-            PauseCoveredUIForm = false;
-            ErrorMessage       = null;
-            UserData           = null;
+            SerialId       = 0;
+            UIAssetName    = null;
+            PauseCoveredUI = false;
+            ErrorMessage   = null;
+            UserData       = null;
         }
 
         /// <summary>
         /// 创建打开界面失败事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiFormAssetName">界面资源名称。</param>
-        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面失败事件。</returns>
-        public static OpenUIFailureEventArgs Create(int serialId, string uiFormAssetName, bool pauseCoveredUIForm, string errorMessage, object userData)
+        public static OpenUIFailureEventArgs Create(int serialId, string uiAssetName, bool pauseCoveredUI, string errorMessage, object userData)
         {
-            var openUIFormFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
-            openUIFormFailureEventArgs.SerialId           = serialId;
-            openUIFormFailureEventArgs.UIFormAssetName    = uiFormAssetName;
-            openUIFormFailureEventArgs.PauseCoveredUIForm = pauseCoveredUIForm;
-            openUIFormFailureEventArgs.ErrorMessage       = errorMessage;
-            openUIFormFailureEventArgs.UserData           = userData;
-            return openUIFormFailureEventArgs;
+            var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
+            openUIFailureEventArgs.SerialId       = serialId;
+            openUIFailureEventArgs.UIAssetName    = uiAssetName;
+            openUIFailureEventArgs.PauseCoveredUI = pauseCoveredUI;
+            openUIFailureEventArgs.ErrorMessage   = errorMessage;
+            openUIFailureEventArgs.UserData       = userData;
+            return openUIFailureEventArgs;
         }
 
         /// <summary>
@@ -89,11 +89,11 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId           = 0;
-            UIFormAssetName    = null;
-            PauseCoveredUIForm = false;
-            ErrorMessage       = null;
-            UserData           = null;
+            SerialId       = 0;
+            UIAssetName    = null;
+            PauseCoveredUI = false;
+            ErrorMessage   = null;
+            UserData       = null;
         }
     }
 }

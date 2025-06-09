@@ -20,17 +20,17 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
 
         /// <summary>
-        /// 创建OpenUIFormInfoData实例
+        /// 创建OpenUIPackageInfo实例
         /// </summary>
         /// <param name="packageName"></param>
         /// <param name="uiName"></param>
         /// <returns></returns>
         public static OpenUIPackageInfo Create(string packageName, string uiName)
         {
-            var openUIFormInfo = ReferencePool.Acquire<OpenUIPackageInfo>();
-            openUIFormInfo.PackageName = packageName;
-            openUIFormInfo.Name        = uiName;
-            return openUIFormInfo;
+            var uiPackageInfo = ReferencePool.Acquire<OpenUIPackageInfo>();
+            uiPackageInfo.PackageName = packageName;
+            uiPackageInfo.Name        = uiName;
+            return uiPackageInfo;
         }
 
         /// <summary>

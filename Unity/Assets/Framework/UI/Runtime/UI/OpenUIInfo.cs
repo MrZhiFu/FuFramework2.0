@@ -38,20 +38,20 @@ namespace GameFrameX.UI.Runtime
         /// 创建打开界面的信息。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiFormType">界面类型。</param>
-        /// <param name="pauseCoveredUIForm">是否暂停被覆盖的界面。</param>
+        /// <param name="uiType">界面类型。</param>
+        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">界面是否全屏。</param>
         /// <returns>创建的打开界面的信息。</returns>
-        public static OpenUIInfo Create(int serialId, Type uiFormType, bool pauseCoveredUIForm, object userData, bool isFullScreen)
+        public static OpenUIInfo Create(int serialId, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen)
         {
-            var openUIFormInfo = ReferencePool.Acquire<OpenUIInfo>();
-            openUIFormInfo.SerialId           = serialId;
-            openUIFormInfo.PauseCoveredUI = pauseCoveredUIForm;
-            openUIFormInfo.UserData           = userData;
-            openUIFormInfo.UIType           = uiFormType;
-            openUIFormInfo.IsFullScreen       = isFullScreen;
-            return openUIFormInfo;
+            var openUIInfo = ReferencePool.Acquire<OpenUIInfo>();
+            openUIInfo.SerialId       = serialId;
+            openUIInfo.PauseCoveredUI = pauseCoveredUI;
+            openUIInfo.UserData       = userData;
+            openUIInfo.UIType         = uiType;
+            openUIInfo.IsFullScreen   = isFullScreen;
+            return openUIInfo;
         }
 
         /// <summary>
@@ -59,9 +59,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            SerialId           = 0;
+            SerialId       = 0;
             PauseCoveredUI = false;
-            UserData           = null;
+            UserData       = null;
         }
     }
 }
