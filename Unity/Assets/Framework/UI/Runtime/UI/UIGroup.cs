@@ -320,10 +320,7 @@ namespace GameFrameX.UI.Runtime
                     {
                         current.Value.Paused = true;
                         current.Value.UIForm.OnPause();// 触发暂停回调
-                        if (current.Value == null)
-                        {
-                            return;
-                        }
+                        if (current.Value == null) return;
                     }
                 }
                 

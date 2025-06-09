@@ -71,13 +71,13 @@
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
-        public void CloseAllLoadedUIForms() => m_UIManager.CloseAllLoadedUIs();
+        public void CloseAllLoadedUIs() => m_UIManager.CloseAllLoadedUIs();
 
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseAllLoadedUIForms(object userData) => m_UIManager.CloseAllLoadedUIs(userData);
+        public void CloseAllLoadedUIs(object userData) => m_UIManager.CloseAllLoadedUIs(userData);
 
         /// <summary>
         /// 关闭所有正在加载的界面。
