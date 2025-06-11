@@ -15,109 +15,95 @@ namespace GameFrameX.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Base")]
-    [UnityEngine.Scripting.Preserve]
     [DefaultExecutionOrder(-500)]
     public sealed class BaseComponent : GameFrameworkComponent
     {
-        private const int DefaultDpi = 96; // default windows dpi
+        /// 屏幕每英寸点数 默认为windows dpi
+        private const int DefaultDpi = 96;
 
+        /// 游戏暂停之前的速度
         private float m_GameSpeedBeforePause = 1f;
 
-        // [SerializeField] private bool m_EditorResourceMode = true;
 
+        /// 默认文本辅助器全名称
         [SerializeField] private string m_TextHelperTypeName = "UnityGameFramework.Runtime.DefaultTextHelper";
 
+        /// 默认版本号辅助器全名称
         [SerializeField] private string m_VersionHelperTypeName = "UnityGameFramework.Runtime.DefaultVersionHelper";
 
+        /// 默认日志辅助器全名称
         [SerializeField] private string m_LogHelperTypeName = "UnityGameFramework.Runtime.DefaultLogHelper";
 
+        /// 默认压缩辅助器全名称
         [SerializeField] private string m_CompressionHelperTypeName = "UnityGameFramework.Runtime.DefaultCompressionHelper";
 
+        /// 默认Json辅助器全名称
         [SerializeField] private string m_JsonHelperTypeName = "UnityGameFramework.Runtime.DefaultJsonHelper";
 
+
+        /// 游戏帧率
         [SerializeField] private int m_FrameRate = 30;
 
+        /// 游戏速度。
         [SerializeField] private float m_GameSpeed = 1f;
 
+        /// 是否允许后台运行。
         [SerializeField] private bool m_RunInBackground = true;
 
+        /// 是否禁止休眠。
         [SerializeField] private bool m_NeverSleep = true;
 
-        /// <summary>
-        /// 获取或设置是否使用编辑器资源模式（仅编辑器内有效）。
-        /// </summary>
-        // public bool EditorResourceMode
-        // {
-        //     get { return m_EditorResourceMode; }
-        //     set { m_EditorResourceMode = value; }
-        // }
-
-        /*/// <summary>
-        /// 获取或设置编辑器资源辅助器。
-        /// </summary>
-        public IResourceManager EditorResourceHelper { get; set; }*/
 
         /// <summary>
         /// 获取或设置游戏帧率。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public int FrameRate
         {
-            get { return m_FrameRate; }
-            set { Application.targetFrameRate = m_FrameRate = value; }
+            get => m_FrameRate;
+            set => Application.targetFrameRate = m_FrameRate = value;
         }
 
         /// <summary>
         /// 获取或设置游戏速度。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public float GameSpeed
         {
-            get { return m_GameSpeed; }
-            set { Time.timeScale = m_GameSpeed = value >= 0f ? value : 0f; }
+            get => m_GameSpeed;
+            set => Time.timeScale = m_GameSpeed = value >= 0f ? value : 0f;
         }
 
         /// <summary>
         /// 获取游戏是否暂停。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
-        public bool IsGamePaused
-        {
-            get { return m_GameSpeed <= 0f; }
-        }
+        public bool IsGamePaused => m_GameSpeed <= 0f;
 
         /// <summary>
         /// 获取是否正常游戏速度。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
-        public bool IsNormalGameSpeed
-        {
-            get { return m_GameSpeed == 1f; }
-        }
+        public bool IsNormalGameSpeed => Mathf.Approximately(m_GameSpeed, 1f);
 
         /// <summary>
         /// 获取或设置是否允许后台运行。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public bool RunInBackground
         {
-            get { return m_RunInBackground; }
-            set { Application.runInBackground = m_RunInBackground = value; }
+            get => m_RunInBackground;
+            set => Application.runInBackground = m_RunInBackground = value;
         }
 
         /// <summary>
         /// 获取或设置是否禁止休眠。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public bool NeverSleep
         {
-            get { return m_NeverSleep; }
+            get => m_NeverSleep;
             set
             {
-                m_NeverSleep = value;
+                m_NeverSleep        = value;
                 Screen.sleepTimeout = value ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             }
         }
+        
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -128,126 +114,114 @@ namespace GameFrameX.Runtime
             base.Awake();
 
             DontDestroyOnLoad(this);
+
+            // 初始化相关辅助器
             InitTextHelper();
             InitVersionHelper();
             InitLogHelper();
-            // Log.Info("Game Framework Version: {0}", GameFramework.Version.GameFrameworkVersion);
-            Log.Info("Game Version: {0}, Unity Version: {1}", Version.GameVersion, Application.unityVersion);
-#if UNITY_5_3_OR_NEWER || UNITY_5_3
             InitCompressionHelper();
             InitJsonHelper();
 
+            Log.Info("游戏版本号: {0}, Unity版本号: {1}", Version.GameVersion, Application.unityVersion);
+
+            // 设置工具类Converter的屏幕dpi, 方便进行屏幕像素和厘米与英寸的转换方法实现
             Utility.Converter.ScreenDpi = Screen.dpi;
             if (Utility.Converter.ScreenDpi <= 0)
-            {
                 Utility.Converter.ScreenDpi = DefaultDpi;
-            }
 
-            // m_EditorResourceMode &= Application.isEditor;
-            // if (m_EditorResourceMode)
-            // {
-            //     Log.Info(
-            //         "During this run, Game Framework will use editor resource files, which you should validate first.");
-            // }
-
-            Application.targetFrameRate = m_FrameRate;
-            Time.timeScale = m_GameSpeed;
-            Application.runInBackground = m_RunInBackground;
-            Screen.sleepTimeout = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
-#else
-            Log.Error("Game Framework only applies with Unity 5.3 and above, but current Unity version is {0}.", Application.unityVersion);
-            GameEntry.Shutdown(ShutdownType.Quit);
-#endif
-#if UNITY_5_6_OR_NEWER
-            Application.lowMemory += OnLowMemory;
-#endif
+            // 设置游戏速度，屏幕休眠，帧率，后台运行等
+            Time.timeScale              =  m_GameSpeed;
+            Screen.sleepTimeout         =  m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
+            Application.targetFrameRate =  m_FrameRate;
+            Application.runInBackground =  m_RunInBackground;
+            Application.lowMemory       += OnLowMemory;
         }
 
-        private void Start()
-        {
-        }
-
+        /// <summary>
+        /// 帧更新，驱动框架入口GFGameEntry更新
+        /// </summary>
         private void Update()
         {
             GameFrameworkEntry.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
 
+        /// <summary>
+        /// 退出游戏。
+        /// </summary>
         private void OnApplicationQuit()
         {
-#if UNITY_5_6_OR_NEWER
             Application.lowMemory -= OnLowMemory;
-#endif
             StopAllCoroutines();
         }
 
-        private void OnDestroy()
+        /// <summary>
+        /// 销毁。
+        /// </summary>
+        private void OnDestroy() => GameFrameworkEntry.Shutdown();
+
+        /// <summary>
+        /// 低内存回调
+        /// </summary>
+        private void OnLowMemory()
         {
-            GameFrameworkEntry.Shutdown();
+            Log.Info("低内存警告, 释放对象池资源...");
+
+            // 释放对象池中所有未使用的资源
+            var objectPoolComponent = GameEntry.GetComponent<ObjectPoolComponent>();
+            if (objectPoolComponent != null)
+                objectPoolComponent.ReleaseAllUnused();
         }
+        
 
         /// <summary>
         /// 暂停游戏。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public void PauseGame()
         {
-            if (IsGamePaused)
-            {
-                return;
-            }
-
+            if (IsGamePaused) return;
             m_GameSpeedBeforePause = GameSpeed;
-            GameSpeed = 0f;
+            GameSpeed              = 0f;
         }
 
         /// <summary>
         /// 恢复游戏。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public void ResumeGame()
         {
-            if (!IsGamePaused)
-            {
-                return;
-            }
-
+            if (!IsGamePaused) return;
             GameSpeed = m_GameSpeedBeforePause;
         }
 
         /// <summary>
         /// 重置为正常游戏速度。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public void ResetNormalGameSpeed()
         {
-            if (IsNormalGameSpeed)
-            {
-                return;
-            }
-
+            if (IsNormalGameSpeed) return;
             GameSpeed = 1f;
         }
 
-        internal void Shutdown()
-        {
-            Destroy(gameObject);
-        }
+        /// <summary>
+        /// 关闭游戏框架组件。
+        /// </summary>
+        internal void Shutdown() => Destroy(gameObject);
+        
 
+        /// <summary>
+        /// 初始化文本辅助器
+        /// </summary>
         private void InitTextHelper()
         {
-            if (string.IsNullOrEmpty(m_TextHelperTypeName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(m_TextHelperTypeName)) return;
 
-            Type textHelperType = Utility.Assembly.GetType(m_TextHelperTypeName);
+            var textHelperType = Utility.Assembly.GetType(m_TextHelperTypeName);
             if (textHelperType == null)
             {
                 Log.Error("Can not find text helper type '{0}'.", m_TextHelperTypeName);
                 return;
             }
 
-            Utility.Text.ITextHelper textHelper = (Utility.Text.ITextHelper)Activator.CreateInstance(textHelperType);
+            var textHelper = (Utility.Text.ITextHelper)Activator.CreateInstance(textHelperType);
             if (textHelper == null)
             {
                 Log.Error("Can not create text helper instance '{0}'.", m_TextHelperTypeName);
@@ -257,72 +231,57 @@ namespace GameFrameX.Runtime
             Utility.Text.SetTextHelper(textHelper);
         }
 
+        /// <summary>
+        /// 初始化版本辅助器
+        /// </summary>
         private void InitVersionHelper()
         {
-            if (string.IsNullOrEmpty(m_VersionHelperTypeName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(m_VersionHelperTypeName)) return;
 
-            Type versionHelperType = Utility.Assembly.GetType(m_VersionHelperTypeName);
+            var versionHelperType = Utility.Assembly.GetType(m_VersionHelperTypeName);
             if (versionHelperType == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find version helper type '{0}'.",
-                                                                     m_VersionHelperTypeName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("Can not find version helper type '{0}'.", m_VersionHelperTypeName));
 
-            Version.IVersionHelper versionHelper =
-                (Version.IVersionHelper)Activator.CreateInstance(versionHelperType);
+            var versionHelper = (Version.IVersionHelper)Activator.CreateInstance(versionHelperType);
             if (versionHelper == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not create version helper instance '{0}'.",
-                                                                     m_VersionHelperTypeName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("Can not create version helper instance '{0}'.", m_VersionHelperTypeName));
 
             Version.SetVersionHelper(versionHelper);
         }
 
+        /// <summary>
+        /// 初始化日志辅助器
+        /// </summary>
         private void InitLogHelper()
         {
-            if (string.IsNullOrEmpty(m_LogHelperTypeName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(m_LogHelperTypeName)) return;
 
-            Type logHelperType = Utility.Assembly.GetType(m_LogHelperTypeName);
+            var logHelperType = Utility.Assembly.GetType(m_LogHelperTypeName);
             if (logHelperType == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find log helper type '{0}'.",
-                                                                     m_LogHelperTypeName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("Can not find log helper type '{0}'.", m_LogHelperTypeName));
 
-            GameFrameworkLog.ILogHelper logHelper =
-                (GameFrameworkLog.ILogHelper)Activator.CreateInstance(logHelperType);
+            var logHelper = (GameFrameworkLog.ILogHelper)Activator.CreateInstance(logHelperType);
             if (logHelper == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not create log helper instance '{0}'.",
-                                                                     m_LogHelperTypeName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("Can not create log helper instance '{0}'.", m_LogHelperTypeName));
 
             GameFrameworkLog.SetLogHelper(logHelper);
         }
 
+        /// <summary>
+        /// 初始化压缩辅助器
+        /// </summary>
         private void InitCompressionHelper()
         {
-            if (string.IsNullOrEmpty(m_CompressionHelperTypeName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(m_CompressionHelperTypeName)) return;
 
-            Type compressionHelperType = Utility.Assembly.GetType(m_CompressionHelperTypeName);
+            var compressionHelperType = Utility.Assembly.GetType(m_CompressionHelperTypeName);
             if (compressionHelperType == null)
             {
                 Log.Error("Can not find compression helper type '{0}'.", m_CompressionHelperTypeName);
                 return;
             }
 
-            Utility.Compression.ICompressionHelper compressionHelper =
-                (Utility.Compression.ICompressionHelper)Activator.CreateInstance(compressionHelperType);
+            var compressionHelper = (Utility.Compression.ICompressionHelper)Activator.CreateInstance(compressionHelperType);
             if (compressionHelper == null)
             {
                 Log.Error("Can not create compression helper instance '{0}'.", m_CompressionHelperTypeName);
@@ -332,21 +291,21 @@ namespace GameFrameX.Runtime
             Utility.Compression.SetCompressionHelper(compressionHelper);
         }
 
+        /// <summary>
+        /// 初始化Json辅助器
+        /// </summary>
         private void InitJsonHelper()
         {
-            if (string.IsNullOrEmpty(m_JsonHelperTypeName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(m_JsonHelperTypeName)) return;
 
-            Type jsonHelperType = Utility.Assembly.GetType(m_JsonHelperTypeName);
+            var jsonHelperType = Utility.Assembly.GetType(m_JsonHelperTypeName);
             if (jsonHelperType == null)
             {
                 Log.Error("Can not find JSON helper type '{0}'.", m_JsonHelperTypeName);
                 return;
             }
 
-            Utility.Json.IJsonHelper jsonHelper = (Utility.Json.IJsonHelper)Activator.CreateInstance(jsonHelperType);
+            var jsonHelper = (Utility.Json.IJsonHelper)Activator.CreateInstance(jsonHelperType);
             if (jsonHelper == null)
             {
                 Log.Error("Can not create JSON helper instance '{0}'.", m_JsonHelperTypeName);
@@ -355,22 +314,6 @@ namespace GameFrameX.Runtime
 
             Utility.Json.SetJsonHelper(jsonHelper);
         }
-
-        private void OnLowMemory()
-        {
-            Log.Info("Low memory reported...");
-
-            ObjectPoolComponent objectPoolComponent = GameEntry.GetComponent<ObjectPoolComponent>();
-            if (objectPoolComponent != null)
-            {
-                objectPoolComponent.ReleaseAllUnused();
-            }
-
-            /*AssetComponent resourceComponent = GameEntry.GetComponent<AssetComponent>();
-            if (resourceComponent != null)
-            {
-                // resourceComponent.ForceUnloadUnusedAssets(true);
-            }*/
-        }
+        
     }
 }

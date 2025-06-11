@@ -56,7 +56,7 @@ namespace GameFrameX.UI.Runtime
         public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
             if (!m_DicEventHandlerDict.Remove(id, handler))
-                throw new Exception(Utility.Text.Format($"事件订阅器中不存在指定消息ID '{id}' 的处理对象."));
+                throw new Exception(Utility.Text.Format("事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
 
             GameEntry.GetComponent<EventComponent>().Unsubscribe(id, handler);
         }

@@ -11,26 +11,22 @@ namespace GameFrameX.Runtime
 {
     /// <summary>
     /// UnityEngine.Vector2 变量类。
+    /// 优点：可以像正常 Vector2 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
     public sealed class VarVector2 : Variable<Vector2>
     {
         /// <summary>
         /// 初始化 UnityEngine.Vector2 变量类的新实例。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
-        public VarVector2()
-        {
-        }
+        public VarVector2() { }
 
         /// <summary>
         /// 从 UnityEngine.Vector2 到 UnityEngine.Vector2 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
-        [UnityEngine.Scripting.Preserve]
         public static implicit operator VarVector2(Vector2 value)
         {
-            VarVector2 varValue = ReferencePool.Acquire<VarVector2>();
+            var varValue = ReferencePool.Acquire<VarVector2>();
             varValue.Value = value;
             return varValue;
         }
@@ -39,10 +35,6 @@ namespace GameFrameX.Runtime
         /// 从 UnityEngine.Vector2 变量类到 UnityEngine.Vector2 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
-        [UnityEngine.Scripting.Preserve]
-        public static implicit operator Vector2(VarVector2 value)
-        {
-            return value.Value;
-        }
+        public static implicit operator Vector2(VarVector2 value) => value.Value;
     }
 }

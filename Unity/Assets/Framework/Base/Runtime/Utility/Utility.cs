@@ -8,9 +8,7 @@
 namespace GameFrameX.Runtime
 {
     /// <summary>
-    /// 实用函数集。
+    /// 实用工具函数集
     /// </summary>
-    public static partial class Utility
-    {
-    }
+    public static partial class Utility { }
 }

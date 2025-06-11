@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -10,7 +9,8 @@ namespace GameFrameX.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 网络相关的对象工具类
+        /// 网络相关的对象工具类。
+        /// 提供了获取网络相关信息的方法，如获取本机IP地址、获取域名的IP地址、获取第一个可用的端口号等。
         /// </summary>
         [Preserve]
         public static class Net
@@ -21,10 +21,9 @@ namespace GameFrameX.Runtime
             /// <param name="startPort">起始端口号</param>
             /// <param name="maxPort">结束端口号</param>
             /// <returns>返回第一个可用的端口号，如果没有可用端口则返回-1</returns>
-            [Preserve]
             public static int GetFirstAvailablePort(int startPort = 667, int maxPort = 65535)
             {
-                for (int i = startPort; i < maxPort; i++)
+                for (var i = startPort; i < maxPort; i++)
                 {
                     if (PortIsAvailable(i)) return i;
                 }
@@ -36,7 +35,6 @@ namespace GameFrameX.Runtime
             /// 获取操作系统已用的端口号
             /// </summary>
             /// <returns>返回一个包含所有已用端口号的列表</returns>
-            [Preserve]
             public static List<int> PortIsUsed()
             {
                 //获取本地计算机的网络连接和通信统计数据的信息
@@ -75,23 +73,16 @@ namespace GameFrameX.Runtime
             /// </summary>
             /// <param name="port">要检查的端口号</param>
             /// <returns>如果端口可用则返回true，否则返回false</returns>
-            [Preserve]
             public static bool PortIsAvailable(int port)
             {
-                var isAvailable = true;
-
-                var portUsed = PortIsUsed();
-
-                foreach (int p in portUsed)
+                var portUsed    = PortIsUsed();
+                foreach (var p in portUsed)
                 {
-                    if (p == port)
-                    {
-                        isAvailable = false;
-                        break;
-                    }
+                    if (p != port) continue;
+                    return false;
                 }
 
-                return isAvailable;
+                return true;
             }
 
             /// <summary>
@@ -99,7 +90,6 @@ namespace GameFrameX.Runtime
             /// </summary>
             /// <param name="domainName">域名</param>
             /// <returns>返回域名的IPv4地址，如果没有则返回空字符串</returns>
-            [Preserve]
             public static string GetHostIPv4(string domainName)
             {
                 var iPHostEntry = Dns.GetHostEntry(domainName);
@@ -119,7 +109,6 @@ namespace GameFrameX.Runtime
             /// </summary>
             /// <param name="domainName">域名</param>
             /// <returns>返回域名的IPv4地址，如果没有则返回空字符串</returns>
-            [Preserve]
             public static string GetHostIPv6(string domainName)
             {
                 var iPHostEntry = Dns.GetHostEntry(domainName);
@@ -135,13 +124,12 @@ namespace GameFrameX.Runtime
             }
 
             /// <summary>
-            /// 获取本机ip地址
+            /// 获取本机ipv4地址
             /// </summary>
             /// <returns>返回本机的IPv4地址，如果没有则返回空字符串</returns>
-            [Preserve]
             public static string GetIP()
             {
-                var hostName = Dns.GetHostName();
+                var hostName    = Dns.GetHostName();
                 var iPHostEntry = Dns.GetHostEntry(hostName);
                 foreach (var address in iPHostEntry.AddressList)
                 {
@@ -154,7 +142,11 @@ namespace GameFrameX.Runtime
                 return string.Empty;
             }
 
-            [Preserve]
+            /// <summary>
+            /// 获取本机IPv6地址
+            /// </summary>
+            /// <param name="host"></param>
+            /// <returns></returns>
             public static (AddressFamily, string) GetIPv6Address(string host)
             {
                 var addresses = Dns.GetHostAddresses(host);

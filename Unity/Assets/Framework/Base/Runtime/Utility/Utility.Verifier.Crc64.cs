@@ -41,7 +41,7 @@ namespace GameFrameX.Runtime
             public sealed partial class Crc64 : NonCryptographicHashAlgorithm
             {
                 private const ulong InitialState = 0UL;
-                private const int Size = sizeof(ulong);
+                private const int   Size         = sizeof(ulong);
 
                 private ulong _crc = InitialState;
 
@@ -49,10 +49,7 @@ namespace GameFrameX.Runtime
                 ///   初始化 <see cref="Crc64"/> 类的新实例。
                 /// </summary>
                 [UnityEngine.Scripting.Preserve]
-                public Crc64()
-                    : base(Size)
-                {
-                }
+                public Crc64() : base(Size) { }
 
                 /// <summary>
                 ///   将 <paramref name="source"/> 的内容附加到当前哈希计算中已处理的数据。
@@ -129,8 +126,8 @@ namespace GameFrameX.Runtime
                 [UnityEngine.Scripting.Preserve]
                 public static byte[] Hash(ReadOnlySpan<byte> source)
                 {
-                    byte[] ret = new byte[Size];
-                    ulong hash = HashToUInt64(source);
+                    byte[] ret  = new byte[Size];
+                    ulong  hash = HashToUInt64(source);
                     BinaryPrimitives.WriteUInt64BigEndian(ret, hash);
                     return ret;
                 }
@@ -197,7 +194,7 @@ namespace GameFrameX.Runtime
                     {
                         ulong idx = (crc >> 56);
                         idx ^= source[i];
-                        crc = crcLookup[(int) idx] ^ (crc << 8);
+                        crc =  crcLookup[(int)idx] ^ (crc << 8);
                     }
 
                     return crc;

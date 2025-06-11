@@ -6,9 +6,6 @@
 //------------------------------------------------------------
 
 using System;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace GameFrameX.Runtime
 {
@@ -16,11 +13,13 @@ namespace GameFrameX.Runtime
     {
         /// <summary>
         /// 加密解密相关的实用函数。
+        /// 1. 使用 code密钥 做异或运算的快速加密解密。
+        /// 2. 使用 code密钥 做异或运算的加密解密。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public static partial class Encryption
         {
-            internal const int QuickEncryptLength = 220;
+            /// 快速加密的长度
+            private const int QuickEncryptLength = 220;
 
             /// <summary>
             /// 将 bytes 使用 code 做异或运算的快速版本。
@@ -28,22 +27,14 @@ namespace GameFrameX.Runtime
             /// <param name="bytes">原始二进制流。</param>
             /// <param name="code">异或二进制流。</param>
             /// <returns>异或后的二进制流。</returns>
-            [UnityEngine.Scripting.Preserve]
-            public static byte[] GetQuickXorBytes(byte[] bytes, byte[] code)
-            {
-                return GetXorBytes(bytes, 0, QuickEncryptLength, code);
-            }
+            public static byte[] GetQuickXorBytes(byte[] bytes, byte[] code) => GetXorBytes(bytes, 0, QuickEncryptLength, code);
 
             /// <summary>
             /// 将 bytes 使用 code 做异或运算的快速版本。此方法将复用并改写传入的 bytes 作为返回值，而不额外分配内存空间。
             /// </summary>
             /// <param name="bytes">原始及异或后的二进制流。</param>
             /// <param name="code">异或二进制流。</param>
-            [UnityEngine.Scripting.Preserve]
-            public static void GetQuickSelfXorBytes(byte[] bytes, byte[] code)
-            {
-                GetSelfXorBytes(bytes, 0, QuickEncryptLength, code);
-            }
+            public static void GetQuickSelfXorBytes(byte[] bytes, byte[] code) => GetSelfXorBytes(bytes, 0, QuickEncryptLength, code);
 
             /// <summary>
             /// 将 bytes 使用 code 做异或运算。
@@ -51,15 +42,9 @@ namespace GameFrameX.Runtime
             /// <param name="bytes">原始二进制流。</param>
             /// <param name="code">异或二进制流。</param>
             /// <returns>异或后的二进制流。</returns>
-            [UnityEngine.Scripting.Preserve]
             public static byte[] GetXorBytes(byte[] bytes, byte[] code)
             {
-                if (bytes == null)
-                {
-                    return null;
-                }
-
-                return GetXorBytes(bytes, 0, bytes.Length, code);
+                return bytes == null ? null : GetXorBytes(bytes, 0, bytes.Length, code);
             }
 
             /// <summary>
@@ -67,14 +52,9 @@ namespace GameFrameX.Runtime
             /// </summary>
             /// <param name="bytes">原始及异或后的二进制流。</param>
             /// <param name="code">异或二进制流。</param>
-            [UnityEngine.Scripting.Preserve]
             public static void GetSelfXorBytes(byte[] bytes, byte[] code)
             {
-                if (bytes == null)
-                {
-                    return;
-                }
-
+                if (bytes == null) return;
                 GetSelfXorBytes(bytes, 0, bytes.Length, code);
             }
 
@@ -86,16 +66,12 @@ namespace GameFrameX.Runtime
             /// <param name="length">异或计算长度，若小于 0，则计算整个二进制流。</param>
             /// <param name="code">异或二进制流。</param>
             /// <returns>异或后的二进制流。</returns>
-            [UnityEngine.Scripting.Preserve]
             public static byte[] GetXorBytes(byte[] bytes, int startIndex, int length, byte[] code)
             {
-                if (bytes == null)
-                {
-                    return null;
-                }
+                if (bytes == null) return null;
 
-                int bytesLength = bytes.Length;
-                byte[] results = new byte[bytesLength];
+                var bytesLength = bytes.Length;
+                var results     = new byte[bytesLength];
                 Array.Copy(bytes, 0, results, 0, bytesLength);
                 GetSelfXorBytes(results, startIndex, length, code);
                 return results;
@@ -108,34 +84,25 @@ namespace GameFrameX.Runtime
             /// <param name="startIndex">异或计算的开始位置。</param>
             /// <param name="length">异或计算长度。</param>
             /// <param name="code">异或二进制流。</param>
-            [UnityEngine.Scripting.Preserve]
             public static void GetSelfXorBytes(byte[] bytes, int startIndex, int length, byte[] code)
             {
-                if (bytes == null)
-                {
-                    return;
-                }
+                if (bytes == null) return;
+                
+                if (code  == null) throw 
+                    new GameFrameworkException("传入的 code密钥 为空.");
 
-                if (code == null)
-                {
-                    throw new GameFrameworkException("Code is invalid.");
-                }
+                var codeLength = code.Length;
 
-                int codeLength = code.Length;
-                if (codeLength <= 0)
-                {
-                    throw new GameFrameworkException("Code length is invalid.");
-                }
+                if (codeLength <= 0) 
+                    throw new GameFrameworkException("传入的 code密钥 长度不正确.");
+                
+                if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length) 
+                    throw new GameFrameworkException("传入的开始位置或长度不正确.");
 
-                if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length)
+                var codeIndex = startIndex % codeLength;
+                for (var i = startIndex; i < length; i++)
                 {
-                    throw new GameFrameworkException("Start index or length is invalid.");
-                }
-
-                int codeIndex = startIndex % codeLength;
-                for (int i = startIndex; i < length; i++)
-                {
-                    bytes[i] ^= code[codeIndex++];
+                    bytes[i]  ^= code[codeIndex++];
                     codeIndex %= codeLength;
                 }
             }

@@ -106,7 +106,6 @@ namespace GameFrameX.Runtime
             _ = typeof(GameFrameX.Runtime.Utility.IdGenerator);
             _ = typeof(GameFrameX.Runtime.Utility.Json);
             _ = typeof(GameFrameX.Runtime.Utility.Json.IJsonHelper);
-            _ = typeof(GameFrameX.Runtime.Utility.Marshal);
             _ = typeof(GameFrameX.Runtime.Utility.Net);
             _ = typeof(GameFrameX.Runtime.Utility.Object);
             _ = typeof(GameFrameX.Runtime.Utility.Path);
@@ -137,7 +136,7 @@ namespace GameFrameX.Runtime
             _ = typeof(GameFrameX.Runtime.VarQuaternion);
             _ = typeof(GameFrameX.Runtime.VarRect);
             _ = typeof(GameFrameX.Runtime.VarSByte);
-            _ = typeof(GameFrameX.Runtime.VarSingle);
+            _ = typeof(GameFrameX.Runtime.VarFloat);
             _ = typeof(GameFrameX.Runtime.VarString);
             _ = typeof(GameFrameX.Runtime.VarTexture);
             _ = typeof(GameFrameX.Runtime.VarTransform);

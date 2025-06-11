@@ -14,109 +14,71 @@ namespace GameFrameX.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 压缩解压缩相关的实用函数。
+        /// 压缩与解压缩相关的实用函数。
+        /// 功能：
+        /// 1. 使用压缩辅助器压缩二进制数据为字节流，或压缩字节流为二进制数据。
+        /// 2. 使用压缩辅助器解压二进制数据为字节流，或解压字节流为二进制数据。
         /// </summary>
-        [Preserve]
         public static partial class Compression
         {
-            private static ICompressionHelper s_CompressionHelper = null;
+            /// 解压缩辅助器
+            private static ICompressionHelper s_CompressionHelper;
 
             /// <summary>
-            /// 设置压缩解压缩辅助器。
+            /// 设置解压缩辅助器。
             /// </summary>
             /// <param name="compressionHelper">要设置的压缩解压缩辅助器。</param>
-            [Preserve]
             public static void SetCompressionHelper(ICompressionHelper compressionHelper)
-            {
-                s_CompressionHelper = compressionHelper;
-            }
+                => s_CompressionHelper = compressionHelper;
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩二进制数据。
             /// </summary>
-            /// <param name="bytes">要压缩的数据的二进制流。</param>
-            /// <returns>压缩后的数据的二进制流。</returns>
-            [Preserve]
+            /// <param name="bytes">要压缩的二进制数据。</param>
+            /// <returns>压缩后数据的字节流。</returns>
             public static byte[] Compress(byte[] bytes)
-            {
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
-
-                return Compress(bytes, 0, bytes.Length);
-            }
+                => bytes != null ? Compress(bytes, 0, bytes.Length) : throw new GameFrameworkException("要压缩的二进制数据为空.");
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩二进制数据。
             /// </summary>
-            /// <param name="bytes">要压缩的数据的二进制流。</param>
-            /// <param name="compressedStream">压缩后的数据的二进制流。</param>
-            /// <returns>是否压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="bytes">要压缩的二进制数据。</param>
+            /// <param name="compressedStream">压缩后数据的字节流。</param>
+            /// <returns>是否压缩成功。</returns>
             public static bool Compress(byte[] bytes, Stream compressedStream)
-            {
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
-
-                return Compress(bytes, 0, bytes.Length, compressedStream);
-            }
+                => bytes != null ? Compress(bytes, 0, bytes.Length, compressedStream) : throw new GameFrameworkException("要压缩的二进制数据为空.");
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩二进制数据。
             /// </summary>
-            /// <param name="bytes">要压缩的数据的二进制流。</param>
-            /// <param name="offset">要压缩的数据的二进制流的偏移。</param>
-            /// <param name="length">要压缩的数据的二进制流的长度。</param>
-            /// <returns>压缩后的数据的二进制流。</returns>
-            [Preserve]
+            /// <param name="bytes">要压缩的二进制数据。</param>
+            /// <param name="offset">要压缩的二进制的偏移。</param>
+            /// <param name="length">要压缩的二进制的长度。</param>
+            /// <returns>压缩后数据的字节流。</returns>
             public static byte[] Compress(byte[] bytes, int offset, int length)
             {
-                using (MemoryStream compressedStream = new MemoryStream())
-                {
-                    if (Compress(bytes, offset, length, compressedStream))
-                    {
-                        return compressedStream.ToArray();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                using var compressedStream = new MemoryStream();
+                return Compress(bytes, offset, length, compressedStream) ? compressedStream.ToArray() : null;
             }
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩二进制数据。
             /// </summary>
-            /// <param name="bytes">要压缩的数据的二进制流。</param>
-            /// <param name="offset">要压缩的数据的二进制流的偏移。</param>
-            /// <param name="length">要压缩的数据的二进制流的长度。</param>
-            /// <param name="compressedStream">压缩后的数据的二进制流。</param>
-            /// <returns>是否压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="bytes">要压缩的二进制数据。</param>
+            /// <param name="offset">要压缩的二进制的偏移。</param>
+            /// <param name="length">要压缩的二进制的长度。</param>
+            /// <param name="compressedStream">压缩后数据的字节流。</param>
+            /// <returns>是否压缩成功。</returns>
             public static bool Compress(byte[] bytes, int offset, int length, Stream compressedStream)
             {
-                if (s_CompressionHelper == null)
-                {
-                    throw new GameFrameworkException("Compressed helper is invalid.");
-                }
-
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
+                if (s_CompressionHelper == null) throw new GameFrameworkException("压缩辅助器为空.");
+                if (bytes               == null) throw new GameFrameworkException("要压缩的二进制数据为空.");
 
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
-                {
-                    throw new GameFrameworkException("Offset or length is invalid.");
-                }
+                    throw new GameFrameworkException("偏移或长度超出范围.");
 
                 if (compressedStream == null)
-                {
-                    throw new GameFrameworkException("Compressed stream is invalid.");
-                }
+                    throw new GameFrameworkException("压缩后数据的字节流为空.");
 
                 try
                 {
@@ -124,59 +86,33 @@ namespace GameFrameX.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException)
-                    {
-                        throw;
-                    }
-
-                    throw new GameFrameworkException(Text.Format("Can not compress with exception '{0}'.", exception), exception);
+                    if (exception is GameFrameworkException) throw;
+                    throw new GameFrameworkException(Text.Format("无法压缩，出现异常 '{0}'.", exception), exception);
                 }
             }
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩字节流数据。
             /// </summary>
-            /// <param name="stream">要压缩的数据的二进制流。</param>
-            /// <returns>压缩后的数据的二进制流。</returns>
-            [Preserve]
+            /// <param name="stream">要压缩的字节流。</param>
+            /// <returns>压缩后的字节流。</returns>
             public static byte[] Compress(Stream stream)
             {
-                using (MemoryStream compressedStream = new MemoryStream())
-                {
-                    if (Compress(stream, compressedStream))
-                    {
-                        return compressedStream.ToArray();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                using var compressedStream = new MemoryStream();
+                return Compress(stream, compressedStream) ? compressedStream.ToArray() : null;
             }
 
             /// <summary>
-            /// 压缩数据。
+            /// 压缩字节流数据。
             /// </summary>
-            /// <param name="stream">要压缩的数据的二进制流。</param>
-            /// <param name="compressedStream">压缩后的数据的二进制流。</param>
-            /// <returns>是否压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="stream">要压缩的字节流。</param>
+            /// <param name="compressedStream">压缩后的字节流。</param>
+            /// <returns>是否压缩成功。</returns>
             public static bool Compress(Stream stream, Stream compressedStream)
             {
-                if (s_CompressionHelper == null)
-                {
-                    throw new GameFrameworkException("Compressed helper is invalid.");
-                }
-
-                if (stream == null)
-                {
-                    throw new GameFrameworkException("Stream is invalid.");
-                }
-
-                if (compressedStream == null)
-                {
-                    throw new GameFrameworkException("Compressed stream is invalid.");
-                }
+                if (s_CompressionHelper == null) throw new GameFrameworkException("压缩辅助器为空.");
+                if (stream              == null) throw new GameFrameworkException("要压缩的字节流为空.");
+                if (compressedStream    == null) throw new GameFrameworkException("压缩后的字节流为空.");
 
                 try
                 {
@@ -184,101 +120,59 @@ namespace GameFrameX.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException)
-                    {
-                        throw;
-                    }
-
-                    throw new GameFrameworkException(Text.Format("Can not compress with exception '{0}'.", exception), exception);
+                    if (exception is GameFrameworkException) throw;
+                    throw new GameFrameworkException(Text.Format("无法压缩，出现异常 '{0}'.", exception), exception);
                 }
             }
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压二进制数据。
             /// </summary>
-            /// <param name="bytes">要解压缩的数据的二进制流。</param>
-            /// <returns>解压缩后的数据的二进制流。</returns>
-            [Preserve]
+            /// <param name="bytes">要解压的二进制数据。</param>
+            /// <returns>解压后的二进制数据。</returns>
             public static byte[] Decompress(byte[] bytes)
-            {
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
-
-                return Decompress(bytes, 0, bytes.Length);
-            }
+                => bytes != null ? Decompress(bytes, 0, bytes.Length) : throw new GameFrameworkException("要压缩的二进制数据为空.");
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压二进制数据。
             /// </summary>
-            /// <param name="bytes">要解压缩的数据的二进制流。</param>
-            /// <param name="decompressedStream">解压缩后的数据的二进制流。</param>
-            /// <returns>是否解压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="bytes">要解压的二进制数据。</param>
+            /// <param name="decompressedStream">解压后的字节流。</param>
+            /// <returns>是否解压成功。</returns>
             public static bool Decompress(byte[] bytes, Stream decompressedStream)
-            {
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
-
-                return Decompress(bytes, 0, bytes.Length, decompressedStream);
-            }
+                => bytes != null ? Decompress(bytes, 0, bytes.Length, decompressedStream) : throw new GameFrameworkException("要压缩的二进制数据为空.");
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压二进制数据。
             /// </summary>
-            /// <param name="bytes">要解压缩的数据的二进制流。</param>
-            /// <param name="offset">要解压缩的数据的二进制流的偏移。</param>
-            /// <param name="length">要解压缩的数据的二进制流的长度。</param>
-            /// <returns>解压缩后的数据的二进制流。</returns>
-            [Preserve]
+            /// <param name="bytes">要解压的二进制数据。</param>
+            /// <param name="offset">要解压缩的二进制数据的偏移。</param>
+            /// <param name="length">要解压缩的二进制数据的长度。</param>
+            /// <returns>解压后的二进制数据。</returns>
             public static byte[] Decompress(byte[] bytes, int offset, int length)
             {
-                using (MemoryStream decompressedStream = new MemoryStream())
-                {
-                    if (Decompress(bytes, offset, length, decompressedStream))
-                    {
-                        return decompressedStream.ToArray();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                using var decompressedStream = new MemoryStream();
+                return Decompress(bytes, offset, length, decompressedStream) ? decompressedStream.ToArray() : null;
             }
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压二进制数据。
             /// </summary>
-            /// <param name="bytes">要解压缩的数据的二进制流。</param>
-            /// <param name="offset">要解压缩的数据的二进制流的偏移。</param>
-            /// <param name="length">要解压缩的数据的二进制流的长度。</param>
-            /// <param name="decompressedStream">解压缩后的数据的二进制流。</param>
-            /// <returns>是否解压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="bytes">要解压的二进制数据。</param>
+            /// <param name="offset">要解压缩的二进制数据的偏移。</param>
+            /// <param name="length">要解压缩的二进制数据的长度。</param>
+            /// <param name="decompressedStream">解压后的字节流。</param>
+            /// <returns>是否解压成功。</returns>
             public static bool Decompress(byte[] bytes, int offset, int length, Stream decompressedStream)
             {
-                if (s_CompressionHelper == null)
-                {
-                    throw new GameFrameworkException("Compressed helper is invalid.");
-                }
-
-                if (bytes == null)
-                {
-                    throw new GameFrameworkException("Bytes is invalid.");
-                }
+                if (s_CompressionHelper == null) throw new GameFrameworkException("压缩辅助器为空.");
+                if (bytes               == null) throw new GameFrameworkException("要压缩的二进制数据为空.");
 
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
-                {
-                    throw new GameFrameworkException("Offset or length is invalid.");
-                }
+                    throw new GameFrameworkException("偏移或长度超出范围.");
 
                 if (decompressedStream == null)
-                {
-                    throw new GameFrameworkException("Decompressed stream is invalid.");
-                }
+                    throw new GameFrameworkException("解压缩后数据的字节流为空.");
 
                 try
                 {
@@ -286,59 +180,33 @@ namespace GameFrameX.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException)
-                    {
-                        throw;
-                    }
-
-                    throw new GameFrameworkException(Text.Format("Can not decompress with exception '{0}'.", exception), exception);
+                    if (exception is GameFrameworkException) throw;
+                    throw new GameFrameworkException(Text.Format("无法解压，出现异常 '{0}'.", exception), exception);
                 }
             }
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压字节流数据。
             /// </summary>
-            /// <param name="stream">要解压缩的数据的二进制流。</param>
-            /// <returns>是否解压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="stream">要解压的字节流。</param>
+            /// <returns>是否解压成功。</returns>
             public static byte[] Decompress(Stream stream)
             {
-                using (MemoryStream decompressedStream = new MemoryStream())
-                {
-                    if (Decompress(stream, decompressedStream))
-                    {
-                        return decompressedStream.ToArray();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                using var decompressedStream = new MemoryStream();
+                return Decompress(stream, decompressedStream) ? decompressedStream.ToArray() : null;
             }
 
             /// <summary>
-            /// 解压缩数据。
+            /// 解压字节流数据。
             /// </summary>
-            /// <param name="stream">要解压缩的数据的二进制流。</param>
-            /// <param name="decompressedStream">解压缩后的数据的二进制流。</param>
-            /// <returns>是否解压缩数据成功。</returns>
-            [Preserve]
+            /// <param name="stream">要解压的字节流。</param>
+            /// <param name="decompressedStream">解压后的字节流。</param>
+            /// <returns>是否解压成功。</returns>
             public static bool Decompress(Stream stream, Stream decompressedStream)
             {
-                if (s_CompressionHelper == null)
-                {
-                    throw new GameFrameworkException("Compressed helper is invalid.");
-                }
-
-                if (stream == null)
-                {
-                    throw new GameFrameworkException("Stream is invalid.");
-                }
-
-                if (decompressedStream == null)
-                {
-                    throw new GameFrameworkException("Decompressed stream is invalid.");
-                }
+                if (s_CompressionHelper == null) throw new GameFrameworkException("压缩辅助器为空.");
+                if (stream              == null) throw new GameFrameworkException("要解压的字节流为空.");
+                if (decompressedStream  == null) throw new GameFrameworkException("解压后的字节流为空.");
 
                 try
                 {
@@ -346,12 +214,8 @@ namespace GameFrameX.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException)
-                    {
-                        throw;
-                    }
-
-                    throw new GameFrameworkException(Text.Format("Can not decompress with exception '{0}'.", exception), exception);
+                    if (exception is GameFrameworkException) throw;
+                    throw new GameFrameworkException(Text.Format("无法解压，出现异常 '{0}'.", exception), exception);
                 }
             }
         }

@@ -16,6 +16,7 @@ namespace GameFrameX.Runtime
         {
             /// <summary>
             /// 文件名后缀
+            /// 定义了常用的文件名后缀，方便使用。
             /// </summary>
             public static partial class FileNameSuffix
             {

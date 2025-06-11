@@ -11,23 +11,19 @@ namespace GameFrameX.Runtime
 {
     /// <summary>
     /// 变量。
+    /// 实现了使用引用池来优化变量的内存分配和释放，并提供统一的接口来获取变量类型、值、值类型等。
     /// </summary>
     public abstract class Variable : IReference
     {
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        public Variable()
-        {
-        }
+        public Variable() { }
 
         /// <summary>
         /// 获取变量类型。
         /// </summary>
-        public abstract Type Type
-        {
-            get;
-        }
+        public abstract Type Type { get; }
 
         /// <summary>
         /// 获取变量值。

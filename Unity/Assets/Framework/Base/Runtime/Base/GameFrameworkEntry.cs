@@ -13,12 +13,17 @@ namespace GameFrameX.Runtime
     /// <summary>
     /// 游戏框架入口。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
     public static class GameFrameworkEntry
     {
-        private static readonly GameFrameworkLinkedList<GameFrameworkModule> s_GameFrameworkModules = new GameFrameworkLinkedList<GameFrameworkModule>();
+        /// <summary>
+        /// 所有游戏框架模块。
+        /// </summary>
+        private static readonly GameFrameworkLinkedList<GameFrameworkModule> s_AllModuleList = new();
 
-        private static readonly Dictionary<Type, Type> s_ModuleTypeMap = new Dictionary<Type, Type>();
+        /// <summary>
+        /// 所有游戏框架模块类型映射字典，key：为游戏框架模块接口类型如各个IxxxManager，value：为游戏框架模块具体类型，如xxxManager。
+        /// </summary>
+        private static readonly Dictionary<Type, Type> s_ModuleTypeDict = new();
 
         /// <summary>
         /// 所有游戏框架模块轮询。
@@ -27,7 +32,7 @@ namespace GameFrameX.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         public static void Update(float elapseSeconds, float realElapseSeconds)
         {
-            foreach (var module in s_GameFrameworkModules)
+            foreach (var module in s_AllModuleList)
             {
                 module.Update(elapseSeconds, realElapseSeconds);
             }
@@ -36,17 +41,15 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 关闭并清理所有游戏框架模块。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
         public static void Shutdown()
         {
-            for (var current = s_GameFrameworkModules.Last; current != null; current = current.Previous)
+            for (var current = s_AllModuleList.Last; current != null; current = current.Previous)
             {
                 current.Value.Shutdown();
             }
 
-            s_GameFrameworkModules.Clear();
+            s_AllModuleList.Clear();
             ReferencePool.ClearAll();
-            Utility.Marshal.FreeCachedHGlobal();
             GameFrameworkLog.SetLogHelper(null);
         }
 
@@ -56,30 +59,25 @@ namespace GameFrameX.Runtime
         /// <typeparam name="T">要获取的游戏框架模块类型。</typeparam>
         /// <returns>要获取的游戏框架模块。</returns>
         /// <remarks>如果要获取的游戏框架模块不存在，则自动创建该游戏框架模块。</remarks>
-        [UnityEngine.Scripting.Preserve]
         public static T GetModule<T>() where T : class
         {
             var interfaceType = typeof(T);
 
             if (!interfaceType.IsInterface)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("You must get module by interface, but '{0}' is not.", interfaceType.FullName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("要获取框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
-            if (!interfaceType.FullName.StartsWith("GameFrameX.", StringComparison.Ordinal))
-            {
-                throw new GameFrameworkException(Utility.Text.Format("You must get a Game Framework module, but '{0}' is not.", interfaceType.FullName));
-            }
+            if (interfaceType.FullName != null && !interfaceType.FullName.StartsWith("GameFrameX.", StringComparison.Ordinal))
+                throw new GameFrameworkException(Utility.Text.Format("要获取的框架模块必须是命名空间为GameFramework的模块, 但是 '{0}' 不是GameFramework模块.", interfaceType.FullName));
 
-            if (!s_ModuleTypeMap.TryGetValue(interfaceType, out Type moduleType))
-            {
-                string moduleName = Utility.Text.Format("{0}.{1}", interfaceType.Namespace, interfaceType.Name.Substring(1));
-                moduleType = s_ModuleTypeMap.TryGetValue(interfaceType, out moduleType) ? moduleType : Type.GetType(moduleName);
-                if (moduleType == null)
-                {
-                    throw new GameFrameworkException(Utility.Text.Format("Can not find Game Framework module type '{0}'.", moduleName));
-                }
-            }
+            // 如GameFramework.Resource.IResourceManager => GameFramework.Resource.ResourceManager
+            if (s_ModuleTypeDict.TryGetValue(interfaceType, out var moduleType))
+                return GetModule(moduleType) as T;
+
+            var moduleName = Utility.Text.Format("{0}.{1}", interfaceType.Namespace, interfaceType.Name.Substring(1));
+            moduleType = s_ModuleTypeDict.TryGetValue(interfaceType, out moduleType) ? moduleType : Type.GetType(moduleName);
+
+            if (moduleType == null)
+                throw new GameFrameworkException(Utility.Text.Format("在GameFramework中找不到模块 '{0}''.", moduleName));
 
             return GetModule(moduleType) as T;
         }
@@ -90,15 +88,12 @@ namespace GameFrameX.Runtime
         /// <param name="moduleType">要获取的游戏框架模块类型。</param>
         /// <returns>要获取的游戏框架模块。</returns>
         /// <remarks>如果要获取的游戏框架模块不存在，则自动创建该游戏框架模块。</remarks>
-        [UnityEngine.Scripting.Preserve]
         public static GameFrameworkModule GetModule(Type moduleType)
         {
-            foreach (var module in s_GameFrameworkModules)
+            foreach (var module in s_AllModuleList)
             {
-                if (module.GetType() == moduleType)
-                {
-                    return module;
-                }
+                if (module.GetType() != moduleType) continue;
+                return module;
             }
 
             return CreateModule(moduleType);
@@ -110,22 +105,17 @@ namespace GameFrameX.Runtime
         /// <param name="interfaceType"> 要注册的游戏框架模块接口类型。</param>
         /// <param name="implType"> 要注册的游戏框架模块类型。</param>
         /// <returns>要创建的游戏框架模块。</returns>
-        [UnityEngine.Scripting.Preserve]
         public static void RegisterModule(Type interfaceType, Type implType)
         {
             if (!interfaceType.IsInterface)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("You must register module by interface, but '{0}' is not.", interfaceType.FullName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("要注册的框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
             if (!implType.IsClass || implType.IsInterface || implType.IsAbstract)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("You must register module by Class and not Interface and Abstract, but '{0}' is not.", implType.FullName));
-            }
+                throw new GameFrameworkException(Utility.Text.Format("要注册的框架模块必须为非抽象类, 但是 '{0}' 不是非抽象类.", implType.FullName));
 
-            if (!s_ModuleTypeMap.TryGetValue(interfaceType, out _))
+            if (!s_ModuleTypeDict.TryGetValue(interfaceType, out _))
             {
-                s_ModuleTypeMap[interfaceType] = implType;
+                s_ModuleTypeDict[interfaceType] = implType;
             }
         }
 
@@ -137,30 +127,19 @@ namespace GameFrameX.Runtime
         private static GameFrameworkModule CreateModule(Type moduleType)
         {
             var module = (GameFrameworkModule)Activator.CreateInstance(moduleType);
-            if (module == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("Can not create module '{0}'.", moduleType.FullName));
-            }
+            if (module == null) throw new GameFrameworkException(Utility.Text.Format("创建模块失败, 模块类型 '{0}'.", moduleType.FullName));
 
-            var current = s_GameFrameworkModules.First;
+            var current = s_AllModuleList.First;
             while (current != null)
             {
-                if (module.Priority > current.Value.Priority)
-                {
-                    break;
-                }
-
+                if (module.Priority > current.Value.Priority) break;
                 current = current.Next;
             }
 
             if (current != null)
-            {
-                s_GameFrameworkModules.AddBefore(current, module);
-            }
+                s_AllModuleList.AddBefore(current, module);
             else
-            {
-                s_GameFrameworkModules.AddLast(module);
-            }
+                s_AllModuleList.AddLast(module);
 
             return module;
         }

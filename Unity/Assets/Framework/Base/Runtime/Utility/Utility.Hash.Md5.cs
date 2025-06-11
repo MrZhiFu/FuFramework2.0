@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using UnityEngine.Scripting;
 
 namespace GameFrameX.Runtime
 {
@@ -13,22 +12,23 @@ namespace GameFrameX.Runtime
         public static partial class Hash
         {
             /// <summary>
-            /// Md5
+            /// Md5哈希编码
             /// </summary>
-            [Preserve]
             public static class MD5
             {
-                private static readonly System.Security.Cryptography.MD5 MD5Cryptography = System.Security.Cryptography.MD5.Create();
+                /// <summary>
+                /// Md5加密算法
+                /// </summary>
+                private static readonly System.Security.Cryptography.MD5 s_MD5Cryptography = System.Security.Cryptography.MD5.Create();
 
                 /// <summary>
                 /// 获取字符串的Md5值
                 /// </summary>
                 /// <param name="input"></param>
                 /// <returns></returns>
-                [Preserve]
                 public static string Hash(string input)
                 {
-                    var data = MD5Cryptography.ComputeHash(Encoding.UTF8.GetBytes(input));
+                    var data = s_MD5Cryptography.ComputeHash(Encoding.UTF8.GetBytes(input));
                     return ToHash(data);
                 }
 
@@ -37,10 +37,9 @@ namespace GameFrameX.Runtime
                 /// </summary>
                 /// <param name="input"></param>
                 /// <returns></returns>
-                [Preserve]
                 public static string Hash(Stream input)
                 {
-                    var data = MD5Cryptography.ComputeHash(input);
+                    var data = s_MD5Cryptography.ComputeHash(input);
                     return ToHash(data);
                 }
 
@@ -50,14 +49,29 @@ namespace GameFrameX.Runtime
                 /// <param name="input"></param>
                 /// <param name="hash"></param>
                 /// <returns></returns>
-                [Preserve]
                 public static bool IsVerify(string input, string hash)
                 {
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     return 0 == comparer.Compare(input, hash);
                 }
 
-                static string ToHash(byte[] data)
+                /// <summary>
+                /// 获取指定文件路径的Md5值
+                /// </summary>
+                /// <param name="filePath"></param>
+                /// <returns></returns>
+                public static string FileHash(string filePath)
+                {
+                    using var file = new FileStream(filePath, FileMode.Open);
+                    return Hash(file);
+                }
+
+                /// <summary>
+                /// 将字节数组转换为16进制字符串
+                /// </summary>
+                /// <param name="data"></param>
+                /// <returns></returns>
+                private static string ToHash(byte[] data)
                 {
                     var sb = new StringBuilder();
                     foreach (var t in data)
@@ -66,20 +80,6 @@ namespace GameFrameX.Runtime
                     }
 
                     return sb.ToString();
-                }
-
-                /// <summary>
-                /// 获取指定文件路径的Md5值
-                /// </summary>
-                /// <param name="filePath"></param>
-                /// <returns></returns>
-                [Preserve]
-                public static string FileHash(string filePath)
-                {
-                    using (FileStream file = new FileStream(filePath, FileMode.Open))
-                    {
-                        return Hash(file);
-                    }
                 }
             }
         }

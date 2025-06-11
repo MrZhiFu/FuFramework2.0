@@ -14,7 +14,6 @@ namespace GameFrameX.Runtime
             /// <summary>
             /// xxHash
             /// </summary>
-            [UnityEngine.Scripting.Preserve]
             public static class XXHash
             {
                 /// <summary>
@@ -22,97 +21,65 @@ namespace GameFrameX.Runtime
                 /// </summary>
                 /// <param name="buffer">要计算哈希值的字节数组。</param>
                 /// <returns>返回计算得到的32位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static uint Hash32(byte[] buffer)
-                {
-                    return XXHashHelper.Hash32(buffer);
-                }
+                public static uint Hash32(byte[] buffer) => XXHashHelper.Hash32(buffer);
 
                 /// <summary>
                 /// 计算给定字符串的32位哈希值。
                 /// </summary>
                 /// <param name="text">要计算哈希值的字符串。</param>
                 /// <returns>返回计算得到的32位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static uint Hash32(string text)
-                {
-                    return XXHashHelper.Hash32(text);
-                }
+                public static uint Hash32(string text) => XXHashHelper.Hash32(text);
 
                 /// <summary>
                 /// 计算给定类型的32位哈希值。
                 /// </summary>
                 /// <param name="type">要计算哈希值的类型。</param>
                 /// <returns>返回计算得到的32位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static uint Hash32(Type type)
-                {
-                    return XXHashHelper.Hash32(type);
-                }
+                public static uint Hash32(Type type) => XXHashHelper.Hash32(type);
 
                 /// <summary>
                 /// 计算给定泛型类型的32位哈希值。
                 /// </summary>
                 /// <typeparam name="T">要计算哈希值的泛型类型。</typeparam>
                 /// <returns>返回计算得到的32位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static uint Hash32<T>()
-                {
-                    return XXHashHelper.Hash32<T>();
-                }
+                public static uint Hash32<T>() => XXHashHelper.Hash32<T>();
 
                 /// <summary>
                 /// 计算给定字节数组的64位哈希值。
                 /// </summary>
                 /// <param name="buffer">要计算哈希值的字节数组。</param>
                 /// <returns>返回计算得到的64位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static ulong Hash64(byte[] buffer)
-                {
-                    return XXHashHelper.Hash64(buffer);
-                }
+                public static ulong Hash64(byte[] buffer) => XXHashHelper.Hash64(buffer);
 
                 /// <summary>
                 /// 计算给定字符串的64位哈希值。
                 /// </summary>
                 /// <param name="text">要计算哈希值的字符串。</param>
                 /// <returns>返回计算得到的64位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static ulong Hash64(string text)
-                {
-                    return XXHashHelper.Hash64(text);
-                }
+                public static ulong Hash64(string text) => XXHashHelper.Hash64(text);
 
                 /// <summary>
                 /// 计算给定类型的64位哈希值。
                 /// </summary>
                 /// <param name="type">要计算哈希值的类型。</param>
                 /// <returns>返回计算得到的64位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static ulong Hash64(Type type)
-                {
-                    return XXHashHelper.Hash64(type);
-                }
+                public static ulong Hash64(Type type) => XXHashHelper.Hash64(type);
 
                 /// <summary>
                 /// 计算给定泛型类型的64位哈希值。
                 /// </summary>
                 /// <typeparam name="T">要计算哈希值的泛型类型。</typeparam>
                 /// <returns>返回计算得到的64位哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
-                public static ulong Hash64<T>()
-                {
-                    return XXHashHelper.Hash64<T>();
-                }
+                public static ulong Hash64<T>() => XXHashHelper.Hash64<T>();
             }
 
             /// <summary>
             /// XX Hash 计算帮助类
             /// </summary>
-            static class XXHashHelper
+            private static class XXHashHelper
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                static unsafe uint Hash32(byte* input, int length, uint seed = 0)
+                private static unsafe uint Hash32(byte* input, int length, uint seed = 0)
                 {
                     unchecked
                     {
@@ -194,7 +161,7 @@ namespace GameFrameX.Runtime
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                static unsafe ulong Hash64(byte* input, int length, uint seed = 0)
+                private static unsafe ulong Hash64(byte* input, int length, uint seed = 0)
                 {
                     unchecked
                     {

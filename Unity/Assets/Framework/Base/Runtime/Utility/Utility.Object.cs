@@ -15,10 +15,7 @@ namespace GameFrameX.Runtime
             /// <param name="t2">第二个对象的引用。</param>
             /// <typeparam name="T">对象的类型。</typeparam>
             [UnityEngine.Scripting.Preserve]
-            public static void Swap<T>(ref T t1, ref T t2)
-            {
-                (t1, t2) = (t2, t1);
-            }
+            public static void Swap<T>(ref T t1, ref T t2) => (t1, t2) = (t2, t1);
         }
     }
 }
