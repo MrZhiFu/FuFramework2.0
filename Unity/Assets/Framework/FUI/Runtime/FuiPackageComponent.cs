@@ -14,7 +14,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/FuiPackage")]
-    
     public sealed class FuiPackageComponent : GameFrameworkComponent
     {
         /// <summary>
@@ -26,12 +25,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// <summary>
             /// UI包的名称。
             /// </summary>
-            public string Name { get; private set; }
+            public string Name { get; }
 
             /// <summary>
             /// UI包实例。
             /// </summary>
-            public UIPackage Package { private set; get; }
+            public UIPackage Package { get; }
 
             /// <summary>
             /// 描述文件路径。
@@ -44,25 +43,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             public bool IsLoadAsset { get; }
 
             /// <summary>
-            /// 设置UI包实例。
-            /// </summary>
-            /// <param name="package">UI包实例。</param>
-            public void SetPackage(UIPackage package)
-            {
-                Package = package;
-            }
-
-            /// <summary>
             /// 初始化UI包数据结构。
             /// </summary>
             /// <param name="descFilePath">描述文件路径</param>
-            /// <param name="name">UI包的名称</param>
             /// <param name="isLoadAsset">是否加载资源</param>
-            public UIPackageData(string descFilePath, string name, bool isLoadAsset)
+            public UIPackageData(string descFilePath, bool isLoadAsset)
             {
                 DescFilePath = descFilePath;
-                IsLoadAsset = isLoadAsset;
-                Name = name;
+                Package      = UIPackage.AddPackage(descFilePath);
+                IsLoadAsset  = isLoadAsset;
+                Name         = Package.name;
             }
         }
 
@@ -82,7 +72,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         private readonly Dictionary<string, UniTaskCompletionSource<UIPackage>> m_UIPackageLoading = new(32);
 
-        
+
         protected override void Awake()
         {
             IsAutoRegister = false;
@@ -116,12 +106,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             void Complete(UIPackage uiPackage)
             {
                 m_UIPackageLoading.Remove(descFilePath);
-                packageData = new UIPackageData(descFilePath, uiPackage.name, isLoadAsset);
-                packageData.SetPackage(uiPackage);
+                packageData = new UIPackageData(descFilePath, isLoadAsset);
+
                 if (isLoadAsset)
-                {
                     packageData.Package.LoadAllAssets();
-                }
 
                 m_UILoadedPkgDict[descFilePath] = packageData;
                 task.TrySetResult(packageData.Package);
@@ -137,10 +125,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (m_UILoadedPkgDict.TryGetValue(descFilePath, out var packageData)) return;
 
-            var package = UIPackage.AddPackage(descFilePath);
-            packageData = new UIPackageData(descFilePath, package.name, isLoadAsset);
-            packageData.SetPackage(package);
+            packageData = new UIPackageData(descFilePath, isLoadAsset);
+
             m_UILoadedPkgDict[descFilePath] = packageData;
+
             if (isLoadAsset)
                 packageData.Package.LoadAllAssets();
         }
@@ -151,14 +139,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="packageName">UI包的名称。</param>
         public void RemovePackage(string packageName)
         {
-            string descPath = null;
+            string        descPath      = null;
             UIPackageData uiPackageData = null;
 
             // 找到指定名称的UI包
             foreach (var (path, packageData) in m_UILoadedPkgDict)
             {
                 if (!packageData.Name.EqualsFast(packageName)) continue;
-                descPath = path;
+                descPath      = path;
                 uiPackageData = packageData;
                 break;
             }
@@ -202,11 +190,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns>返回UI包实例，如果不存在则返回null。</returns>
         public UIPackage GetPackage(string uiPackageName)
         {
-            foreach (var packageData in m_UILoadedPkgDict)
+            foreach (var (_, uiPackageData) in m_UILoadedPkgDict)
             {
-                if (packageData.Value.Name.EqualsFast(uiPackageName))
+                if (uiPackageData.Name.EqualsFast(uiPackageName))
                 {
-                    return packageData.Value.Package;
+                    return uiPackageData.Package;
                 }
             }
 

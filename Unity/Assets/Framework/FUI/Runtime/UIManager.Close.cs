@@ -87,7 +87,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void CloseUI(UIBase ui, object userData)
         {
             GameFrameworkGuard.NotNull(ui, nameof(ui));
-            UIGroup uiGroup = (UIGroup)ui.UIGroup;
+            UIGroup uiGroup = ui.UIGroup;
 
             uiGroup.RemoveUI(ui);
             ui.OnClose(m_IsShutdown, userData);

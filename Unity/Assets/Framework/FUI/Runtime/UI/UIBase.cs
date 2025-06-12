@@ -266,7 +266,7 @@ namespace GameFrameX.UI.Runtime
         public virtual void Dispose()
         {
             if (IsDisposed) return;
-            _eventRegister.UnSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
+            _eventRegister.UnSubscribeAll();
             IsDisposed = true;
         }
 
