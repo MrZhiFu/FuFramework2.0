@@ -14,7 +14,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     internal sealed partial class UIManager
     {
         /// <summary>

@@ -19,7 +19,7 @@ namespace GameFrameX.Entity.Runtime
     /// <summary>
     /// 实体管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
     {
         private readonly Dictionary<int, EntityInfo> m_EntityInfos;

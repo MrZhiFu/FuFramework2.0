@@ -5,7 +5,6 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面组中的界面信息。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
     public sealed class UIInfo : IReference
     {
         /// <summary>

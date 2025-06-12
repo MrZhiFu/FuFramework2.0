@@ -7,7 +7,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// FUI界面基类
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
     public class FUI : UIBase
     {
         /// <summary>

@@ -12,7 +12,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面组辅助器基类。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public abstract class UIGroupHelperBase : MonoBehaviour, IUIGroupHelper
     {
         /// <summary>

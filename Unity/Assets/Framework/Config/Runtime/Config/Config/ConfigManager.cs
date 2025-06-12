@@ -16,7 +16,7 @@ namespace GameFrameX.Config.Runtime
     /// <summary>
     /// 全局配置管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed partial class ConfigManager : GameFrameworkModule, IConfigManager
     {
         private readonly ConcurrentDictionary<string, IDataTable> m_ConfigDatas;
@@ -24,7 +24,7 @@ namespace GameFrameX.Config.Runtime
         /// <summary>
         /// 初始化全局配置管理器的新实例。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
+        
         public ConfigManager()
         {
             m_ConfigDatas = new ConcurrentDictionary<string, IDataTable>(StringComparer.Ordinal);
@@ -62,7 +62,7 @@ namespace GameFrameX.Config.Runtime
         /// </summary>
         /// <param name="configName">要检查全局配置项的名称。</param>
         /// <returns>指定的全局配置项是否存在。</returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public bool HasConfig(string configName)
         {
             return m_ConfigDatas.TryGetValue(configName, out _);
@@ -75,7 +75,7 @@ namespace GameFrameX.Config.Runtime
         /// <param name="configName">要增加全局配置项的名称。</param>
         /// <param name="configValue">全局配置项的值。</param>
         /// <returns>是否增加全局配置项成功。</returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public void AddConfig(string configName, IDataTable configValue)
         {
             bool isExist = m_ConfigDatas.TryGetValue(configName, out var value);
@@ -91,7 +91,7 @@ namespace GameFrameX.Config.Runtime
         /// 移除指定全局配置项。
         /// </summary>
         /// <param name="configName">要移除全局配置项的名称。</param>
-        [UnityEngine.Scripting.Preserve]
+        
         public bool RemoveConfig(string configName)
         {
             if (!HasConfig(configName))
@@ -107,7 +107,7 @@ namespace GameFrameX.Config.Runtime
         /// </summary>
         /// <param name="configName">要获取全局配置项的名称。</param>
         /// <returns>要获取全局配置项的全局配置项。</returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public IDataTable GetConfig(string configName)
         {
             return m_ConfigDatas.TryGetValue(configName, out var value) ? value : null; //GetConfig()
@@ -116,7 +116,7 @@ namespace GameFrameX.Config.Runtime
         /// <summary>
         /// 清空所有全局配置项。
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
+        
         public void RemoveAllConfigs()
         {
             m_ConfigDatas.Clear();

@@ -14,7 +14,7 @@ namespace GameFrameX.Procedure.Runtime
     /// <summary>
     /// 流程管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class ProcedureManager : GameFrameworkModule, IProcedureManager
     {
         private IFsmManager m_FsmManager;

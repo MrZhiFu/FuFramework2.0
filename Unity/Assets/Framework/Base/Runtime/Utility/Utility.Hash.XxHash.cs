@@ -277,7 +277,7 @@ namespace GameFrameX.Runtime
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static uint Hash32(byte[] buffer)
                 {
                     int length = buffer.Length;
@@ -291,19 +291,19 @@ namespace GameFrameX.Runtime
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static uint Hash32(string text) => Hash32(Encoding.UTF8.GetBytes(text));
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static uint Hash32(Type type) => Hash32(type.FullName);
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static uint Hash32<T>() => Hash32(typeof(T));
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static ulong Hash64(byte[] buffer)
                 {
                     int length = buffer.Length;
@@ -317,15 +317,15 @@ namespace GameFrameX.Runtime
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static ulong Hash64(string text) => Hash64(Encoding.UTF8.GetBytes(text));
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static ulong Hash64(Type type) => Hash64(type.FullName);
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                [UnityEngine.Scripting.Preserve]
+                
                 public static ulong Hash64<T>() => Hash64(typeof(T));
             }
         }

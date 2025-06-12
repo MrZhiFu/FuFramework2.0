@@ -8,7 +8,7 @@ namespace GameFrameX.Mono.Runtime
     /// Mono管理器。
     /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class MonoManager : GameFrameworkModule, IMonoManager
     {
         private readonly List<Action> m_WaitUpdateList     = new(); // 等待调用的 Update 回调列表

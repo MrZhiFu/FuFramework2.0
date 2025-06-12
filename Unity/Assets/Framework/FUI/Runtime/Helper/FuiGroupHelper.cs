@@ -10,7 +10,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 1.创建界面组。
     /// 2.设置界面深度。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
     public sealed class FuiGroupHelper : UIGroupHelperBase
     {
         /// <summary>

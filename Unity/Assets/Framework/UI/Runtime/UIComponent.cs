@@ -19,7 +19,7 @@ namespace GameFrameX.UI.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/UI")]
-    [UnityEngine.Scripting.Preserve]
+    
     public partial class UIComponent : GameFrameworkComponent
     {
         /// <summary>

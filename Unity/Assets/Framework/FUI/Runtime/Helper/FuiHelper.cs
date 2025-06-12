@@ -12,7 +12,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 2.创建界面->将传入的UI界面实例uiInstance加上UI界面逻辑组件uiType，并将uiInstance作为一个子节点添加到UI界面组的显示对象下。
     /// 3.释放界面。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public class FuiHelper : UIHelperBase
     {
         /// <summary>

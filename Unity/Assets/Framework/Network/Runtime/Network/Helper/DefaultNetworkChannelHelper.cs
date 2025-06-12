@@ -9,7 +9,7 @@ namespace GameFrameX.Network.Runtime
     /// <summary>
     /// 默认网络通道帮助
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public class DefaultNetworkChannelHelper : INetworkChannelHelper, IReference
     {
         private INetworkChannel m_NetworkChannel;

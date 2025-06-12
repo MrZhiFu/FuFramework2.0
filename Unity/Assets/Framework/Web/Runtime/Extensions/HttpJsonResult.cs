@@ -5,7 +5,7 @@ namespace GameFrameX.Web.Runtime
     /// <summary>
     /// HTTP网页请求的消息响应结构
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class HttpJsonResult
     {
         /// <summary>

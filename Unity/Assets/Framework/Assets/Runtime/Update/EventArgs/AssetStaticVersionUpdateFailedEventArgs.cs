@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 资源版本号更新失败
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetStaticVersionUpdateFailedEventArgs : GameEventArgs
     {
         public override void Clear()

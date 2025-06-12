@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 网络文件下载失败
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetWebFileDownloadFailedEventArgs : GameEventArgs
     {
         /// <summary>

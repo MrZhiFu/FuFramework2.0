@@ -3,7 +3,7 @@
     /// <summary>
     /// Web字符串请求结果类，用于封装HTTP请求返回的字符串数据
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class WebStringResult
     {
         /// <summary>
@@ -11,7 +11,7 @@
         /// </summary>
         /// <param name="userData">用户自定义数据</param>
         /// <param name="result">请求返回的字符串结果</param>
-        [UnityEngine.Scripting.Preserve]
+        
         public WebStringResult(object userData, string result)
         {
             UserData = userData;

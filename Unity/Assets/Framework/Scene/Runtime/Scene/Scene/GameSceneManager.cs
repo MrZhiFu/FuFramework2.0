@@ -19,7 +19,7 @@ namespace GameFrameX.Scene.Runtime
     /// <summary>
     /// 场景管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class GameSceneManager : GameFrameworkModule, IGameSceneManager
     {
         private sealed class SceneHandleData

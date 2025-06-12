@@ -13,7 +13,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面可见状态变化事件。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class UIVisibleChangedEventArgs : GameEventArgs
     {
         /// <summary>

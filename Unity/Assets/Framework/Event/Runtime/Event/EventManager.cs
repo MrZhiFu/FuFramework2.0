@@ -13,7 +13,7 @@ namespace GameFrameX.Event.Runtime
     /// <summary>
     /// 事件管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class EventManager : GameFrameworkModule, IEventManager
     {
         private readonly EventPool<GameEventArgs> m_EventPool;

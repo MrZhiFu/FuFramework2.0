@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 发现更新文件
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetFoundUpdateFilesEventArgs : GameEventArgs
     {
         /// <summary>

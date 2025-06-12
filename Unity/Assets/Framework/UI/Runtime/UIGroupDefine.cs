@@ -3,7 +3,7 @@
     /// <summary>
     /// 界面组定义：名称和深度
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class UIGroupDefine
     {
         /// <summary>

@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-[UnityEngine.Scripting.Preserve]
+
 public static class StringExtension
 {
     /// <summary>
@@ -15,7 +15,7 @@ public static class StringExtension
     /// <param name="target">对比的目标字符串</param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">当前对象为空</exception>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool EqualsFast(this string self, string target)
     {
         if (self == null) return target == null;
@@ -40,7 +40,7 @@ public static class StringExtension
     /// <param name="self"></param>
     /// <param name="target">目标字符串</param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool EndsWithFast(this string self, string target)
     {
         int ap = self.Length - 1;
@@ -61,7 +61,7 @@ public static class StringExtension
     /// <param name="self"></param>
     /// <param name="target">目标字符串</param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool StartsWithFast(this string self, string target)
     {
         int aLen = self.Length;
@@ -84,7 +84,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static IEnumerable<byte> ToBytes(this string self)
     {
         byte[] byteArray = Encoding.Default.GetBytes(self);
@@ -96,7 +96,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static byte[] ToByteArray(this string self)
     {
         byte[] byteArray = Encoding.Default.GetBytes(self);
@@ -108,7 +108,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static byte[] ToUtf8(this string self)
     {
         byte[] byteArray = Encoding.UTF8.GetBytes(self);
@@ -121,7 +121,7 @@ public static class StringExtension
     /// <param name="hexString">字符串</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException">字符串字符数不是偶数引发异常</exception>
-    [UnityEngine.Scripting.Preserve]
+    
     public static byte[] HexToBytes(this string hexString)
     {
         if (hexString.Length % 2 != 0)
@@ -147,7 +147,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool IsNullOrWhiteSpace(this string self)
     {
         const string nullString = "null";
@@ -159,7 +159,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool IsNullOrEmpty(this string self)
     {
         return string.IsNullOrEmpty(self);
@@ -170,7 +170,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool IsNotNullOrWhiteSpace(this string self)
     {
         return !self.IsNullOrWhiteSpace();
@@ -181,7 +181,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static bool IsNotNullOrEmpty(this string self)
     {
         return !self.IsNullOrEmpty();
@@ -193,7 +193,7 @@ public static class StringExtension
     /// <param name="text"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static string Format(this string text, params object[] args)
     {
         return string.Format(text, args);
@@ -204,7 +204,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self">原始字符串</param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static string TrimEmpty(this string self)
     {
         self = self.Replace("\n", string.Empty).Replace(" ", string.Empty).Replace("\t", string.Empty).Replace("\r", string.Empty);
@@ -216,7 +216,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="input">要转换的字符串。</param>
     /// <returns>转换后的蛇形命名字符串。如果输入为null或空，则返回原字符串。</returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static string ConvertToSnakeCase(this string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -238,7 +238,7 @@ public static class StringExtension
     /// </summary>
     /// <param name="self">原始字符串</param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static string TrimZhCn(this string self)
     {
         self = CnReg.Replace(self, string.Empty);
@@ -252,7 +252,7 @@ public static class StringExtension
     /// <param name="sep"></param>
     /// <returns></returns>
 
-    [UnityEngine.Scripting.Preserve]
+    
     public static int[] SplitToIntArray(this string str, char sep = '+')
     {
         if (string.IsNullOrEmpty(str))
@@ -276,7 +276,7 @@ public static class StringExtension
     /// <param name="sep1"></param>
     /// <param name="sep2"></param>
     /// <returns></returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static int[][] SplitTo2IntArray(this string str, char sep1 = ';', char sep2 = '+')
     {
         if (string.IsNullOrEmpty(str))
@@ -296,7 +296,7 @@ public static class StringExtension
     /// <summary>
     /// 根据字符串创建目录,递归
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public static void CreateAsDirectory(this string path, bool isFile = false)
     {
         if (isFile)
@@ -317,7 +317,7 @@ public static class StringExtension
     /// <param name="rawString">指定的字符串。</param>
     /// <param name="position">从指定位置处开始读取一行，读取后将返回下一行开始的位置。</param>
     /// <returns>读取的一行字符串。</returns>
-    [UnityEngine.Scripting.Preserve]
+    
     public static string ReadLine(this string rawString, ref int position)
     {
         if (position < 0)

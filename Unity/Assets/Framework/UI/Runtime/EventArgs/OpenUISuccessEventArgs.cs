@@ -13,7 +13,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 打开界面成功事件。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class OpenUISuccessEventArgs : GameEventArgs
     {
         /// <summary>

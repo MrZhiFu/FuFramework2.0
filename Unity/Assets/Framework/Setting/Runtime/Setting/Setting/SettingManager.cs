@@ -14,7 +14,7 @@ namespace GameFrameX.Setting.Runtime
     /// <summary>
     /// 游戏配置管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class SettingManager : GameFrameworkModule, ISettingManager
     {
         private ISettingHelper m_SettingHelper;

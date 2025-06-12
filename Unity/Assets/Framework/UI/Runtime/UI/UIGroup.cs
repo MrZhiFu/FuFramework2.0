@@ -7,7 +7,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面组。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class UIGroup : IUIGroup
     {
         /// 获取界面组名称。

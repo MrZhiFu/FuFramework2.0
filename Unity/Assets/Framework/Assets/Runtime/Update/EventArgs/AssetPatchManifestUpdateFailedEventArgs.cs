@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 补丁清单更新失败
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetPatchManifestUpdateFailedEventArgs : GameEventArgs
     {
         public override void Clear()

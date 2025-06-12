@@ -13,7 +13,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// FUI异步加载资源辅助器。
     /// 1.实现FairyGUI的异步加载资源接口，使用YooAsset异步加载FUI中各种类型的资源
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     internal sealed class FuiLoadAsyncResourceHelper : IAsyncResource
     {
         /// <summary>

@@ -37,7 +37,7 @@ namespace GameFrameX.Runtime
             ///     ISO 3309 中描述的循环冗余检查不兼容。
             ///   </para>
             /// </remarks>
-            [UnityEngine.Scripting.Preserve]
+            
             public sealed partial class Crc64 : NonCryptographicHashAlgorithm
             {
                 private const ulong InitialState = 0UL;
@@ -48,14 +48,14 @@ namespace GameFrameX.Runtime
                 /// <summary>
                 ///   初始化 <see cref="Crc64"/> 类的新实例。
                 /// </summary>
-                [UnityEngine.Scripting.Preserve]
+                
                 public Crc64() : base(Size) { }
 
                 /// <summary>
                 ///   将 <paramref name="source"/> 的内容附加到当前哈希计算中已处理的数据。
                 /// </summary>
                 /// <param name="source">要处理的数据。</param>
-                [UnityEngine.Scripting.Preserve]
+                
                 public override void Append(ReadOnlySpan<byte> source)
                 {
                     _crc = Update(_crc, source);
@@ -64,7 +64,7 @@ namespace GameFrameX.Runtime
                 /// <summary>
                 ///   将哈希计算重置为初始状态。
                 /// </summary>
-                [UnityEngine.Scripting.Preserve]
+                
                 public override void Reset()
                 {
                     _crc = InitialState;
@@ -75,7 +75,7 @@ namespace GameFrameX.Runtime
                 ///   而不修改累积状态。
                 /// </summary>
                 /// <param name="destination">接收计算哈希值的缓冲区。</param>
-                [UnityEngine.Scripting.Preserve]
+                
                 protected override void GetCurrentHashCore(Span<byte> destination)
                 {
                     BinaryPrimitives.WriteUInt64BigEndian(destination, _crc);
@@ -85,7 +85,7 @@ namespace GameFrameX.Runtime
                 ///   将计算出的哈希值写入 <paramref name="destination"/>
                 ///   然后清除累积状态。
                 /// </summary>
-                [UnityEngine.Scripting.Preserve]
+                
                 protected override void GetHashAndResetCore(Span<byte> destination)
                 {
                     BinaryPrimitives.WriteUInt64BigEndian(destination, _crc);
@@ -96,7 +96,7 @@ namespace GameFrameX.Runtime
                 /// 获取当前计算的哈希值而不修改累积状态。
                 /// </summary>
                 /// <returns>已提供数据的哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public ulong GetCurrentHashAsUInt64() => _crc;
 
                 /// <summary>
@@ -107,7 +107,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentNullException">
                 ///   <paramref name="source"/> 为 <see langword="null"/>。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 public static byte[] Hash(byte[] source)
                 {
                     if (source is null)
@@ -123,7 +123,7 @@ namespace GameFrameX.Runtime
                 /// </summary>
                 /// <param name="source">要哈希的数据。</param>
                 /// <returns>提供数据的 CRC-64 哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public static byte[] Hash(ReadOnlySpan<byte> source)
                 {
                     byte[] ret  = new byte[Size];
@@ -144,7 +144,7 @@ namespace GameFrameX.Runtime
                 ///   <see langword="true"/> 如果 <paramref name="destination"/> 足够长以接收
                 ///   计算的哈希值（8 字节）；否则 <see langword="false"/>。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public static bool TryHash(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
                 {
                     if (destination.Length < Size)
@@ -167,7 +167,7 @@ namespace GameFrameX.Runtime
                 /// <returns>
                 ///   写入 <paramref name="destination"/> 的字节数。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public static int Hash(ReadOnlySpan<byte> source, Span<byte> destination)
                 {
                     if (destination.Length < Size)
@@ -183,7 +183,7 @@ namespace GameFrameX.Runtime
                 /// <summary>计算提供数据的 CRC-64 哈希值。</summary>
                 /// <param name="source">要哈希的数据。</param>
                 /// <returns>计算的 CRC-64 哈希值。</returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public static ulong HashToUInt64(ReadOnlySpan<byte> source) =>
                     Update(InitialState, source);
 
@@ -265,14 +265,14 @@ namespace GameFrameX.Runtime
             /// <summary>
             ///   表示一种非加密哈希算法。
             /// </summary>
-            [UnityEngine.Scripting.Preserve]
+            
             public abstract class NonCryptographicHashAlgorithm
             {
                 /// <summary>
                 ///   获取此哈希算法生成的字节数。
                 /// </summary>
                 /// <value>此哈希算法生成的字节数。</value>
-                [UnityEngine.Scripting.Preserve]
+                
                 public int HashLengthInBytes { get; }
 
                 /// <summary>
@@ -285,7 +285,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentOutOfRangeException">
                 ///   <paramref name="hashLengthInBytes"/> 小于 1。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 protected NonCryptographicHashAlgorithm(int hashLengthInBytes)
                 {
                     if (hashLengthInBytes < 1)
@@ -299,14 +299,14 @@ namespace GameFrameX.Runtime
                 ///   将 <paramref name="source"/> 的内容附加到当前哈希计算中已处理的数据。
                 /// </summary>
                 /// <param name="source">要处理的数据。</param>
-                [UnityEngine.Scripting.Preserve]
+                
                 public abstract void Append(ReadOnlySpan<byte> source);
 
                 /// <summary>
                 ///   当在派生类中重写时，
                 ///   将哈希计算重置为初始状态。
                 /// </summary>
-                [UnityEngine.Scripting.Preserve]
+                
                 public abstract void Reset();
 
                 /// <summary>
@@ -327,7 +327,7 @@ namespace GameFrameX.Runtime
                 ///     降至正好 <see cref="HashLengthInBytes"/> 的长度。
                 ///   </para>
                 /// </remarks>
-                [UnityEngine.Scripting.Preserve]
+                
                 protected abstract void GetCurrentHashCore(Span<byte> destination);
 
                 /// <summary>
@@ -337,7 +337,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentNullException">
                 ///   <paramref name="source"/> 为 <see langword="null"/>。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 public void Append(byte[] source)
                 {
                     if (source is null)
@@ -356,7 +356,7 @@ namespace GameFrameX.Runtime
                 ///   <paramref name="stream"/> 为 <see langword="null"/>。
                 /// </exception>
                 /// <seealso cref="AppendAsync(Stream, CancellationToken)"/>
-                [UnityEngine.Scripting.Preserve]
+                
                 public void Append(Stream stream)
                 {
                     if (stream is null)
@@ -396,7 +396,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentNullException">
                 ///   <paramref name="stream"/> 为 <see langword="null"/>。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 public Task AppendAsync(Stream stream, CancellationToken cancellationToken = default)
                 {
                     if (stream is null)
@@ -436,7 +436,7 @@ namespace GameFrameX.Runtime
                 /// <returns>
                 ///   已提供数据的哈希值。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public byte[] GetCurrentHash()
                 {
                     byte[] ret = new byte[HashLengthInBytes];
@@ -456,7 +456,7 @@ namespace GameFrameX.Runtime
                 ///   <see langword="true"/> 如果 <paramref name="destination"/> 足够长以接收
                 ///   计算的哈希值；否则 <see langword="false"/>。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public bool TryGetCurrentHash(Span<byte> destination, out int bytesWritten)
                 {
                     if (destination.Length < HashLengthInBytes)
@@ -482,7 +482,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentException">
                 ///   <paramref name="destination"/> 短于 <see cref="HashLengthInBytes"/>。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 public int GetCurrentHash(Span<byte> destination)
                 {
                     if (destination.Length < HashLengthInBytes)
@@ -500,7 +500,7 @@ namespace GameFrameX.Runtime
                 /// <returns>
                 ///   已提供数据的哈希值。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public byte[] GetHashAndReset()
                 {
                     byte[] ret = new byte[HashLengthInBytes];
@@ -521,7 +521,7 @@ namespace GameFrameX.Runtime
                 ///   如果 <paramref name="destination"/> 足够长以接收
                 ///   计算的哈希值；否则 <see langword="false"/>。
                 /// </returns>
-                [UnityEngine.Scripting.Preserve]
+                
                 public bool TryGetHashAndReset(Span<byte> destination, out int bytesWritten)
                 {
                     if (destination.Length < HashLengthInBytes)
@@ -547,7 +547,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="ArgumentException">
                 ///   <paramref name="destination"/> 短于 <see cref="HashLengthInBytes"/>。
                 /// </exception>
-                [UnityEngine.Scripting.Preserve]
+                
                 public int GetHashAndReset(Span<byte> destination)
                 {
                     if (destination.Length < HashLengthInBytes)
@@ -582,7 +582,7 @@ namespace GameFrameX.Runtime
                 ///     但必须确保调用者无法观察到行为的差异。
                 ///   </para>
                 /// </remarks>
-                [UnityEngine.Scripting.Preserve]
+                
                 protected virtual void GetHashAndResetCore(Span<byte> destination)
                 {
                     Debug.Assert(destination.Length == HashLengthInBytes);
@@ -600,7 +600,7 @@ namespace GameFrameX.Runtime
                 /// <exception cref="NotSupportedException">在所有情况下。</exception>
                 [EditorBrowsable(EditorBrowsableState.Never)]
                 [Obsolete("Use GetCurrentHash() to retrieve the computed hash code.", true)]
-                [UnityEngine.Scripting.Preserve]
+                
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
                 public override int GetHashCode()
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member

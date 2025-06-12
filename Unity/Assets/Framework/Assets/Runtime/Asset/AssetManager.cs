@@ -10,7 +10,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 资源组件。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public partial class AssetManager : GameFrameworkModule, IAssetManager
     {
         public string DefaultPackageName { get; set; } = "DefaultPackage";

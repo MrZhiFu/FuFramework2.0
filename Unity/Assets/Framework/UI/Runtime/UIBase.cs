@@ -16,7 +16,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     [Serializable]
     public abstract class UIBase : MonoBehaviour, IUIBase
     {

@@ -3,7 +3,7 @@ namespace GameFrameX.Network.Runtime
     /// <summary>
     /// 默认消息接收头处理器
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class DefaultPacketReceiveHeaderHandler : IPacketReceiveHeaderHandler, IPacketHandler
     {
         /// <summary>

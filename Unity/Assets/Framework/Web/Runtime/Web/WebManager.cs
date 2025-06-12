@@ -16,7 +16,7 @@ namespace GameFrameX.Web.Runtime
     /// <summary>
     /// Web请求管理器,实现HTTP GET和POST请求功能
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public partial class WebManager : GameFrameworkModule, IWebManager
     {
         // 用于构建URL的StringBuilder
@@ -40,7 +40,7 @@ namespace GameFrameX.Web.Runtime
         /// <summary>
         /// 构造函数
         /// </summary>
-        [UnityEngine.Scripting.Preserve]
+        
         public WebManager()
         {
             MaxConnectionPerServer = 8;
@@ -133,7 +133,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> GetToString(string url, object userData = null)
         {
             return GetToString(url, null, null, userData);
@@ -145,7 +145,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> GetToBytes(string url, object userData = null)
         {
             return GetToBytes(url, null, null, userData);
@@ -158,7 +158,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="queryString">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
         {
             return GetToString(url, queryString, null, userData);
@@ -171,7 +171,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="queryString">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
         {
             return GetToBytes(url, queryString, null, userData);
@@ -185,7 +185,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
             var uniTaskCompletionSource = new TaskCompletionSource<WebStringResult>();
@@ -462,7 +462,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
             var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();
@@ -480,7 +480,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
         {
             return PostToString(url, from, null, null, userData);
@@ -493,7 +493,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
         {
             return PostToBytes(url, from, null, null, userData);
@@ -507,7 +507,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
         {
             return PostToString(url, from, queryString, null, userData);
@@ -521,7 +521,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
         {
             return PostToBytes(url, from, queryString, null, userData);
@@ -536,7 +536,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
             var uniTaskCompletionSource = new TaskCompletionSource<WebStringResult>();
@@ -556,7 +556,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        [UnityEngine.Scripting.Preserve]
+        
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
             var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();

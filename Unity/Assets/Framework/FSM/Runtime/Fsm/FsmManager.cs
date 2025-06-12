@@ -14,7 +14,7 @@ namespace GameFrameX.Fsm.Runtime
     /// <summary>
     /// 有限状态机管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class FsmManager : GameFrameworkModule, IFsmManager
     {
         private readonly Dictionary<TypeNamePair, FsmBase> m_Fsms;

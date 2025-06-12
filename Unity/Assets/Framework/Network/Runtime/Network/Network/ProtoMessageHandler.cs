@@ -10,7 +10,7 @@ namespace GameFrameX.Network.Runtime
     /// <summary>
     /// 协议消息处理帮助类
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public static class ProtoMessageHandler
     {
         private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new ConcurrentDictionary<Type, List<MessageHandlerAttribute>>();
@@ -20,7 +20,7 @@ namespace GameFrameX.Network.Runtime
         /// 初始化消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
-        [UnityEngine.Scripting.Preserve]
+        
         [Obsolete("请使用Add方法")]
         public static void Init(IMessageHandler messageHandler)
         {
@@ -31,7 +31,7 @@ namespace GameFrameX.Network.Runtime
         /// 增加消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
-        [UnityEngine.Scripting.Preserve]
+        
         public static void Add(IMessageHandler messageHandler)
         {
             GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));
@@ -76,7 +76,7 @@ namespace GameFrameX.Network.Runtime
         /// 移除消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
-        [UnityEngine.Scripting.Preserve]
+        
         public static void Remove(IMessageHandler messageHandler)
         {
             GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));

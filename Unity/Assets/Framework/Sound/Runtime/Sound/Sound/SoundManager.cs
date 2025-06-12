@@ -18,7 +18,7 @@ namespace GameFrameX.Sound.Runtime
     /// <summary>
     /// 声音管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed partial class SoundManager : GameFrameworkModule, ISoundManager
     {
         private readonly Dictionary<string, SoundGroup> m_SoundGroups;

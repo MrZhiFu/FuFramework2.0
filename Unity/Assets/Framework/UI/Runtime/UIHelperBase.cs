@@ -13,7 +13,7 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面辅助器基类。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public abstract class UIHelperBase : MonoBehaviour, IUIHelper
     {
         /// <summary>

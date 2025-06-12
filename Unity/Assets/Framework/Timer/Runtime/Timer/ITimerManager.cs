@@ -5,7 +5,7 @@ namespace GameFrameX.Timer.Runtime
     /// <summary>
     /// 定时器接口
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public interface ITimerManager
     {
         /// <summary>

@@ -8,7 +8,7 @@ namespace GameFrameX.UI.Runtime
     /// 事件注册器。
     /// 可用于单独管理属于自己模块的相关事件，如每个UI界面都可以单独管理自己的事件。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class EventRegister : IReference
     {
         /// <summary>

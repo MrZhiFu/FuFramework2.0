@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 补丁流程步骤改变
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetPatchStatesChangeEventArgs : GameEventArgs
     {
         public override void Clear()

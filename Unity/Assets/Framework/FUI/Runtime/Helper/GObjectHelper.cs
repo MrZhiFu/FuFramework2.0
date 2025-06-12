@@ -6,7 +6,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// GObject 帮助类
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public static class GObjectHelper
     {
         /// <summary>

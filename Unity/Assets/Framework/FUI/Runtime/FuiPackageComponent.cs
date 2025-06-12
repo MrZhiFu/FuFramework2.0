@@ -14,7 +14,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/FuiPackage")]
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class FuiPackageComponent : GameFrameworkComponent
     {
         /// <summary>

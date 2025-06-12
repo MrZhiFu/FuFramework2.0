@@ -14,7 +14,7 @@ namespace GameFrameX.Download.Runtime
     /// <summary>
     /// 下载管理器。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
     {
         private const int OneMegaBytes = 1024 * 1024;

@@ -13,7 +13,7 @@ namespace GameFrameX.Network.Runtime
     /// <summary>
     /// 网络连接关闭事件。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class NetworkClosedEventArgs : GameEventArgs
     {
         /// <summary>

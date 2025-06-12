@@ -8,7 +8,7 @@ namespace GameFrameX.Timer.Runtime
     /// 定时器管理器。
     /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class TimerManager : GameFrameworkModule, ITimerManager
     {
         /// <summary>

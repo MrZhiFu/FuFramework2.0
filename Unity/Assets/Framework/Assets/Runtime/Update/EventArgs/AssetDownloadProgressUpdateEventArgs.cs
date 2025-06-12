@@ -6,7 +6,7 @@ namespace GameFrameX.Asset.Runtime
     /// <summary>
     /// 下载进度更新
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public sealed class AssetDownloadProgressUpdateEventArgs : GameEventArgs
     {
         /// <summary>

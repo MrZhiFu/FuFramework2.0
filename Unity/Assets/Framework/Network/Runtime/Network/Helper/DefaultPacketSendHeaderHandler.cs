@@ -6,7 +6,7 @@ namespace GameFrameX.Network.Runtime
     /// <summary>
     /// 默认消息发送头部处理器
     /// </summary>
-    [UnityEngine.Scripting.Preserve]
+    
     public class DefaultPacketSendHeaderHandler : IPacketSendHeaderHandler, IPacketHandler
     {
         /// <summary>
