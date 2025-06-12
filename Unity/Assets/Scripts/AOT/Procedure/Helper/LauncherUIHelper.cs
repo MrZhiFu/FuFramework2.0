@@ -1,7 +1,7 @@
 ﻿using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
-using GameFrameX.UI.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 
 namespace Unity.Startup.Procedure
 {
@@ -20,7 +20,7 @@ namespace Unity.Startup.Procedure
         /// </summary>
         public static async void Start()
         {
-            _ui = await GameApp.UI.OpenFullScreenAsync<UILauncher>("UI/UILauncher", UIGroupConstants.Loading);
+            _ui = await UIManager.Instance.OpenUIAsync<UILauncher>("UI/UILauncher", true, null) as UILauncher;
             GameApp.Event.CheckSubscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
@@ -29,7 +29,7 @@ namespace Unity.Startup.Procedure
         /// </summary>
         public static void Dispose()
         {
-            GameApp.UI.CloseUI<UILauncher>();
+            UIManager.Instance.CloseUI<UILauncher>();
             _ui = null;
         }
 

@@ -15,7 +15,6 @@
         "LitJSON.Runtime",
         "SimpleJSON.Runtime",
         "GameFrameX.Network.Runtime",
-        "GameFrameX.UI.Runtime",
         "GameFrameX.UI.FairyGUI.Runtime",
         "GameFrameX.Web.Runtime",
         "GameFrameX.GlobalConfig.Runtime",

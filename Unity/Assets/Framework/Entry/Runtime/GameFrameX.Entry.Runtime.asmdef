@@ -15,7 +15,6 @@
         "GameFrameX.Scene.Runtime",
         "GameFrameX.Sound.Runtime",
         "GameFrameX.Event.Runtime",
-        "GameFrameX.UI.Runtime",
         "GameFrameX.Asset.Runtime",
         "GameFrameX.Entity.Runtime",
         "GameFrameX.Localization.Runtime",

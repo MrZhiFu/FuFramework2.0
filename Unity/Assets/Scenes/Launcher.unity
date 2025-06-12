@@ -492,7 +492,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 755918134}
-  - component: {fileID: 755918135}
   - component: {fileID: 755918137}
   - component: {fileID: 755918136}
   m_Layer: 5
@@ -517,54 +516,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &755918135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755918133}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f027666a7033282459d176e6ca628d1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  componentType: GameFrameX.UI.FairyGUI.Runtime.UIManager
-  m_EnableOpenUISuccessEvent: 1
-  m_EnableOpenUIFailureEvent: 1
-  m_EnableCloseUICompleteEvent: 1
-  m_InstanceAutoReleaseInterval: 60
-  m_InstanceCapacity: 16
-  m_InstanceExpireTime: 60
-  m_UIHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiHelper
-  m_CustomUIHelper: {fileID: 0}
-  m_UIGroupHelperTypeName: GameFrameX.UI.FairyGUI.Runtime.FuiGroupHelper
-  m_CustomUIGroupHelper: {fileID: 0}
-  m_UIGroups:
-  - m_Name: Hidden
-    m_Depth: 20
-  - m_Name: Floor
-    m_Depth: 15
-  - m_Name: Normal
-    m_Depth: 10
-  - m_Name: Fixed
-    m_Depth: 0
-  - m_Name: Window
-    m_Depth: -10
-  - m_Name: Tip
-    m_Depth: -15
-  - m_Name: Guide
-    m_Depth: -20
-  - m_Name: BlackBoard
-    m_Depth: -22
-  - m_Name: Dialogue
-    m_Depth: -23
-  - m_Name: Loading
-    m_Depth: -25
-  - m_Name: Notify
-    m_Depth: -30
-  - m_Name: System
-    m_Depth: -35
 --- !u!114 &755918136
 MonoBehaviour:
   m_ObjectHideFlags: 0

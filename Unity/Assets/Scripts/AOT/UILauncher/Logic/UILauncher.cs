@@ -1,4 +1,5 @@
-﻿using GameFrameX.UI.Runtime;
+﻿using GameFrameX.UI.FairyGUI.Runtime;
+using GameFrameX.UI.Runtime;
 
 namespace Unity.Startup
 {
@@ -6,7 +7,7 @@ namespace Unity.Startup
     {
         public override void OnAwake()
         {
-            UIGroup = GameApp.UI.GetUIGroup(UIGroupConstants.Normal.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Normal.Name);
             base.OnAwake();
         }
     }

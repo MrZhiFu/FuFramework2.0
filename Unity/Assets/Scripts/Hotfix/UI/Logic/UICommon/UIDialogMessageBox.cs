@@ -1,4 +1,5 @@
 ﻿using System;
+using GameFrameX.UI.FairyGUI.Runtime;
 
 namespace Hotfix.UI
 {
@@ -15,13 +16,13 @@ namespace Hotfix.UI
 
             m_enter_button.onClick.Set(() =>
             {
-                GameApp.UI.CloseUI<UIDialogMessageBox>();
+                UIManager.Instance.CloseUI<UIDialogMessageBox>();
                 data.OnEnter?.Invoke();
             });
 
             m_cancel_button.onClick.Set(() =>
             {
-                GameApp.UI.CloseUI<UIDialogMessageBox>();
+                UIManager.Instance.CloseUI<UIDialogMessageBox>();
                 data.OnCancel?.Invoke();
             });
         }

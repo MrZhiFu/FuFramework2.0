@@ -5,6 +5,7 @@ using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.Web.Runtime;
 using UnityEngine;
 using YooAsset;
@@ -69,10 +70,12 @@ namespace Unity.Startup.Procedure
                     if (gameAppVersion.IsUpgrade)
                     {
                         // 需要更新，显示更新提示框
-                        var uiLauncher = GameApp.UI.GetLoadedUI<UILauncher>();
+                        var uiLauncher = UIManager.Instance.GetUI("UI/UILauncher")as UILauncher;
+                        if (uiLauncher == null) return;
                         uiLauncher.m_IsUpgrade.SetSelectedIndex(1);
 
-                        var isChinese = GameApp.Localization.SystemLanguage == Language.ChineseSimplified || GameApp.Localization.SystemLanguage == Language.ChineseTraditional;
+                        var isChinese = GameApp.Localization.SystemLanguage == Language.ChineseSimplified ||
+                                        GameApp.Localization.SystemLanguage == Language.ChineseTraditional;
 
                         uiLauncher.m_upgrade.m_EnterButton.title = isChinese ? "确认" : "Enter";
                         uiLauncher.m_upgrade.m_TextContent.title = gameAppVersion.UpdateAnnouncement;

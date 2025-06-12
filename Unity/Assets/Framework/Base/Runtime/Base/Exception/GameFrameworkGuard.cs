@@ -18,8 +18,7 @@ namespace GameFrameX.Runtime
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentNullException(name, "不能为空.");
         }
-
-
+        
         /// <summary>
         /// 确保指定的值不为null。
         /// </summary>

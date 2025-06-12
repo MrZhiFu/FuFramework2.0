@@ -1,5 +1,7 @@
 using GameFrameX.UI.Runtime;
 using FairyGUI;
+using GameFrameX.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using Hotfix.Manager;
 
 namespace Hotfix.UI
@@ -8,7 +10,7 @@ namespace Hotfix.UI
     {
         public override void OnAwake()
         {
-            UIGroup = GameApp.UI.GetUIGroup(UIGroupConstants.Normal.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Normal.Name);
             base.OnAwake();
         }
 
@@ -28,7 +30,7 @@ namespace Hotfix.UI
         {
             // 请求背包信息
             await BagManager.Instance.RequestGetBagInfo();
-            await GameApp.UI.OpenAsync<UIBag>(UIGroupConstants.Window);
+            await UIManager.Instance.OpenUIAsync<UIBag>(Utility.Asset.Path.GetUIPath(nameof(UIBag)), false, null);
         }
     }
 }

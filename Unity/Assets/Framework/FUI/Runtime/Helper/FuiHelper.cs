@@ -12,8 +12,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 2.创建界面->将传入的UI界面实例uiInstance加上UI界面逻辑组件uiType，并将uiInstance作为一个子节点添加到UI界面组的显示对象下。
     /// 3.释放界面。
     /// </summary>
-    
-    public class FuiHelper : UIHelperBase
+    public static class FuiHelper
     {
         /// <summary>
         /// 实例化界面。
@@ -21,7 +20,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="uiAsset">要实例化的界面资源。</param>
         /// <returns>实例化后的界面。</returns>
-        public override object InstantiateUI(object uiAsset)
+        public static object InstantiateUI(object uiAsset)
         {
             var openUIPackageInfo = (OpenUIPackageInfo)uiAsset;
             GameFrameworkGuard.NotNull(openUIPackageInfo, nameof(uiAsset));
@@ -37,7 +36,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiInstance">界面实例。</param>
         /// <param name="uiLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public override IUIBase CreateUI(object uiInstance, Type uiLogicType)
+        public static UIBase CreateUI(object uiInstance, Type uiLogicType)
         {
             if (uiInstance is not GComponent gComponent)
             {
@@ -46,7 +45,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             var logicComp = gComponent.displayObject.gameObject.GetOrAddComponent(uiLogicType);
-            if (logicComp is not IUIBase ui)
+            if (logicComp is not UIBase ui)
             {
                 Log.Error("UI界面逻辑组件不是IUI.");
                 return null;
@@ -64,14 +63,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return null;
             }
 
-            var groupDisplayObjInfo = ((MonoBehaviour)uiGroup.Helper).gameObject.GetComponent<DisplayObjectInfo>();
-            if (groupDisplayObjInfo == null)
+            if (uiGroup.displayObject == null)
             {
                 Log.Error("UI界面组的显示对象信息为空.");
                 return null;
             }
 
-            if (groupDisplayObjInfo.displayObject.gOwner is not GComponent uiGroupComponent)
+            if (uiGroup.displayObject.gOwner is not GComponent uiGroupComponent)
             {
                 Log.Error("UI界面组的显示对象不是GComponent.");
                 return null;
@@ -86,7 +84,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 释放界面实例。
         /// </summary>
         /// <param name="uiInstance">要释放的界面实例。</param>
-        public override void ReleaseUI(object uiInstance)
+        public static void ReleaseUI(object uiInstance)
         {
             if (uiInstance is not GComponent component) return;
             component.Dispose();

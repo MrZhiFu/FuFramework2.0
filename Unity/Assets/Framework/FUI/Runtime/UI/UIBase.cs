@@ -16,9 +16,8 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面。
     /// </summary>
-    
     [Serializable]
-    public abstract class UIBase : MonoBehaviour, IUIBase
+    public abstract class UIBase : MonoBehaviour
     {
         //@formatter:off
         [Header("界面序列编号")][SerializeField]            private int m_SerialId;
@@ -32,7 +31,7 @@ namespace GameFrameX.UI.Runtime
         //@formatter:on
 
         /// 界面所属的界面组。
-        private IUIGroup m_UIGroup;
+        private UIGroup m_UIGroup;
 
         /// 界面用户自定义数据，可在界面初始化时传入
         private object m_UserData;
@@ -108,7 +107,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public virtual IUIGroup UIGroup
+        public virtual UIGroup UIGroup
         {
             get => m_UIGroup;
             protected set => m_UIGroup = value;
@@ -140,23 +139,23 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiAssetName, IUIGroup uiGroup, Action<IUIBase> onInitAction, bool pauseCoveredUI,
-                         bool isNewInstance, object userData, bool isFullScreen = false)
+        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, Action<UIBase> onInitAction, bool pauseCoveredUI,
+            bool isNewInstance, object userData, bool isFullScreen = false)
         {
             m_UserData = userData;
             if (serialId >= 0)
                 m_SerialId = serialId;
 
-            m_UIGroup        = uiGroup;
+            m_UIGroup = uiGroup;
             m_PauseCoveredUI = pauseCoveredUI;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_FullName       = GetType().FullName;
-            m_UIAssetName    = uiAssetName;
+            m_FullName = GetType().FullName;
+            m_UIAssetName = uiAssetName;
             m_DepthInUIGroup = 0;
-            m_OriginalLayer  = gameObject.layer;
+            m_OriginalLayer = gameObject.layer;
 
             if (!isNewInstance) return;
 
@@ -202,7 +201,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnRecycle()
         {
-            m_SerialId       = 0;
+            m_SerialId = 0;
             m_DepthInUIGroup = 0;
             m_PauseCoveredUI = true;
         }
@@ -213,7 +212,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public virtual void OnOpen(object userData)
         {
-            Visible    = true;
+            Visible = true;
             m_UserData = userData;
         }
 
@@ -299,6 +298,6 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 设置界面为全屏
         /// </summary>
-        protected internal abstract void MakeFullScreen();
+        protected abstract void MakeFullScreen();
     }
 }

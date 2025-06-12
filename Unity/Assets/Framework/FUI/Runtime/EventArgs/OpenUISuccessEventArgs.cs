@@ -11,15 +11,15 @@ using GameFrameX.Runtime;
 namespace GameFrameX.UI.Runtime
 {
     /// <summary>
-    /// 界面可见状态变化事件。
+    /// 打开界面成功事件。
     /// </summary>
     
-    public sealed class UIVisibleChangedEventArgs : GameEventArgs
+    public sealed class OpenUISuccessEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 界面可见状态变化事件编号。
+        /// 打开界面成功事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(UIVisibleChangedEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenUISuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取打开界面成功事件编号。
@@ -34,7 +34,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取加载持续时间。
         /// </summary>
-        public bool Visible { get; private set; }
+        public float Duration { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -44,10 +44,10 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public UIVisibleChangedEventArgs()
+        public OpenUISuccessEventArgs()
         {
             Base     = null;
-            Visible  = false;
+            Duration = 0f;
             UserData = null;
         }
 
@@ -55,16 +55,16 @@ namespace GameFrameX.UI.Runtime
         /// 创建打开界面成功事件。
         /// </summary>
         /// <param name="iuiBase">打开成功的界面。</param>
-        /// <param name="visible">显示状态。</param>
+        /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static UIVisibleChangedEventArgs Create(IUIBase iuiBase, bool visible, object userData)
+        public static OpenUISuccessEventArgs Create(UIBase iuiBase, float duration, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
-            uiSuccessEventArgs.Base     = (UIBase)iuiBase;
-            uiSuccessEventArgs.Visible  = visible;
-            uiSuccessEventArgs.UserData = userData;
-            return uiSuccessEventArgs;
+            var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
+            openUISuccessEventArgs.Base     = iuiBase;
+            openUISuccessEventArgs.Duration = duration;
+            openUISuccessEventArgs.UserData = userData;
+            return openUISuccessEventArgs;
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace GameFrameX.UI.Runtime
         public override void Clear()
         {
             Base     = null;
-            Visible  = false;
+            Duration = 0f;
             UserData = null;
         }
     }

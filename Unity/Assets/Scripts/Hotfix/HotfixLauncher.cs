@@ -4,6 +4,7 @@ using Hotfix.Proto;
 using SimpleJSON;
 using UnityEngine;
 using GameFrameX.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.UI;
@@ -61,7 +62,7 @@ namespace Hotfix
             GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
             
             // 打开登录界面
-            await GameApp.UI.OpenAsync<UILogin>();
+            await UIManager.Instance.OpenUIAsync<UILogin>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), false, null);
             var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }

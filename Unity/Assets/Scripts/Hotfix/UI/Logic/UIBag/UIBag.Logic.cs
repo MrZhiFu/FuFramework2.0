@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FairyGUI;
 using GameFrameX.Event.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.UI.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
@@ -37,7 +38,7 @@ namespace Hotfix.UI
 
         public override void OnAwake()
         {
-            UIGroup = GameApp.UI.GetUIGroup(UIGroupConstants.Window.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Window.Name);
             base.OnAwake();
             GameApp.Event.CheckSubscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
         }
@@ -170,7 +171,7 @@ namespace Hotfix.UI
         /// </summary>
         private void OnCloseClick()
         {
-            GameApp.UI.CloseUI<UIBag>();
+            UIManager.Instance.CloseUI<UIBag>();
         }
     }
 }

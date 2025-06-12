@@ -22,21 +22,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    internal sealed partial class UIManager
+    public sealed partial class UIManager
     {
-        /// 关闭界面完成事件。
-        private EventHandler<CloseUICompleteEventArgs> m_CloseUICompleteEventHandler;
-
-        /// <summary>
-        /// 关闭界面完成事件。
-        /// </summary>
-        public event EventHandler<CloseUICompleteEventArgs> CloseUIComplete
-        {
-            add => m_CloseUICompleteEventHandler += value;
-            remove => m_CloseUICompleteEventHandler -= value;
-        }
-
-
         /// <summary>
         /// 关闭界面。
         /// </summary>
@@ -60,18 +47,18 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return;
             }
 
-            IUIBase iuiBase = GetUI(serialId);
-            if (iuiBase == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
-            CloseUI(iuiBase, userData);
+            UIBase ui = GetUI(serialId);
+            if (ui == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
+            CloseUI(ui, userData);
         }
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="iuiBase">要关闭的界面。</param>
-        public void CloseUI(IUIBase iuiBase)
+        /// <param name="ui">要关闭的界面。</param>
+        public void CloseUI(UIBase ui)
         {
-            CloseUI(iuiBase, null);
+            CloseUI(ui, null);
         }
 
         /// <summary>
@@ -79,10 +66,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUI<T>(object userData) where T : IUIBase
+        public void CloseUI<T>(object userData = null) where T : UIBase
         {
-            var       fullName = typeof(T).FullName;
-            IUIBase[] uis      = GetAllLoadedUIs();
+            var fullName = typeof(T).FullName;
+            UIBase[] uis = GetAllLoadedUIs();
             foreach (var ui in uis)
             {
                 if (ui.FullName != fullName) continue;
@@ -95,25 +82,21 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="iuiBase">要关闭的界面。</param>
+        /// <param name="ui">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUI(IUIBase iuiBase, object userData)
+        public void CloseUI(UIBase ui, object userData)
         {
-            GameFrameworkGuard.NotNull(iuiBase,         nameof(iuiBase));
-            GameFrameworkGuard.NotNull(iuiBase.UIGroup, nameof(iuiBase.UIGroup));
-            UIGroup uiGroup = (UIGroup)iuiBase.UIGroup;
+            GameFrameworkGuard.NotNull(ui, nameof(ui));
+            UIGroup uiGroup = (UIGroup)ui.UIGroup;
 
-            uiGroup.RemoveUI(iuiBase);
-            iuiBase.OnClose(m_IsShutdown, userData);
+            uiGroup.RemoveUI(ui);
+            ui.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            if (m_CloseUICompleteEventHandler != null)
-            {
-                var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(iuiBase.SerialId, iuiBase.UIAssetName, uiGroup, userData);
-                m_CloseUICompleteEventHandler(this, closeUICompleteEventArgs);
-            }
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(ui.SerialId, ui.UIAssetName, uiGroup, userData);
+            m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
-            m_WaitRecycleQueue.Enqueue(iuiBase);
+            m_WaitRecycleQueue.Enqueue(ui);
         }
 
 
@@ -140,19 +123,19 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return;
             }
 
-            IUIBase iuiBase = GetUI(serialId);
-            if (iuiBase == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
+            UIBase ui = GetUI(serialId);
+            if (ui == null) throw new GameFrameworkException(Utility.Text.Format("找不到界面 '{0}'.", serialId));
 
-            CloseUINow(iuiBase, userData);
+            CloseUINow(ui, userData);
         }
 
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="iuiBase">要关闭的界面。</param>
-        public void CloseUINow(IUIBase iuiBase)
+        /// <param name="ui">要关闭的界面。</param>
+        public void CloseUINow(UIBase ui)
         {
-            CloseUINow(iuiBase, null);
+            CloseUINow(ui, null);
         }
 
         /// <summary>
@@ -160,11 +143,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUINow<T>(object userData) where T : IUIBase
+        public void CloseUINow<T>(object userData) where T : UIBase
         {
-            var       fullName = typeof(T).FullName;
-            IUIBase[] uis      = GetAllLoadedUIs();
-            foreach (IUIBase ui in uis)
+            var fullName = typeof(T).FullName;
+            UIBase[] uis = GetAllLoadedUIs();
+            foreach (UIBase ui in uis)
             {
                 if (ui.FullName != fullName) continue;
                 if (!HasUIFullName(ui.FullName)) continue;
@@ -176,27 +159,23 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 关闭界面。
         /// </summary>
-        /// <param name="iuiBase">要关闭的界面。</param>
+        /// <param name="ui">要关闭的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void CloseUINow(IUIBase iuiBase, object userData)
+        public void CloseUINow(UIBase ui, object userData)
         {
-            GameFrameworkGuard.NotNull(iuiBase,         nameof(iuiBase));
-            GameFrameworkGuard.NotNull(iuiBase.UIGroup, nameof(iuiBase.UIGroup));
+            if (ui == null) Log.Error("ui is null");
+            if (ui.UIGroup == null) Log.Error("UIGroup is null");
 
-            var uiGroup = (UIGroup)iuiBase.UIGroup;
-            uiGroup.RemoveUI(iuiBase);
-            iuiBase.OnClose(m_IsShutdown, userData);
+            var uiGroup = (UIGroup)ui.UIGroup;
+            uiGroup.RemoveUI(ui);
+            ui.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            if (m_CloseUICompleteEventHandler != null)
-            {
-                var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(iuiBase.SerialId, iuiBase.UIAssetName, uiGroup, userData);
-                m_CloseUICompleteEventHandler(this, closeUICompleteEventArgs);
-                // ReferencePool.Release(closeUICompleteEventArgs);
-            }
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(ui.SerialId, ui.UIAssetName, uiGroup, userData);
+            m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
             // 回收界面实例对象
-            RecycleUINow(iuiBase);
+            RecycleUINow(ui);
         }
 
 
@@ -214,7 +193,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void CloseAllLoadedUIs(object userData)
         {
-            IUIBase[] uis = GetAllLoadedUIs();
+            UIBase[] uis = GetAllLoadedUIs();
             foreach (var ui in uis)
             {
                 if (!HasUI(ui.SerialId)) continue;
@@ -239,11 +218,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 回收界面实例对象。
         /// </summary>
-        /// <param name="iuiBase"></param>
-        private void RecycleUI(IUIBase iuiBase)
+        /// <param name="ui"></param>
+        private void RecycleUI(UIBase ui)
         {
-            iuiBase.OnRecycle();
-            var uiHandle = iuiBase.Handle as GameObject;
+            ui.OnRecycle();
+            var uiHandle = ui.Handle as GameObject;
             if (!uiHandle) return;
             var displayObjectInfo = uiHandle.GetComponent<DisplayObjectInfo>();
             if (!displayObjectInfo) return;
@@ -254,11 +233,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 回收界面实例对象。
         /// </summary>
-        /// <param name="iuiBase"></param>
-        private void RecycleUINow(IUIBase iuiBase)
+        /// <param name="ui"></param>
+        private void RecycleUINow(UIBase ui)
         {
-            iuiBase.OnRecycle();
-            var uiHandle = iuiBase.Handle as GameObject;
+            ui.OnRecycle();
+            var uiHandle = ui.Handle as GameObject;
             if (!uiHandle) return;
             var displayObjectInfo = uiHandle.GetComponent<DisplayObjectInfo>();
             if (!displayObjectInfo) return;

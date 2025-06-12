@@ -1,4 +1,5 @@
 ﻿using GameFrameX.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.UI.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
@@ -10,7 +11,7 @@ namespace Hotfix.UI
     {
         public override void OnAwake()
         {
-            UIGroup = GameApp.UI.GetUIGroup(UIGroupConstants.Normal.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Normal.Name);
             base.OnAwake();
         }
 
@@ -71,16 +72,16 @@ namespace Hotfix.UI
             if (respPlayerList.PlayerList.Count > 0)
             {
                 // 有角色，打开角色列表界面
-                await GameApp.UI.OpenFullScreenAsync<UIPlayerList>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), respLogin);
+                await UIManager.Instance.OpenUIAsync<UIPlayerList>(Utility.Asset.Path.GetUIPath(nameof(UIPlayerList)), false, respLogin);
             }
             else
             {
                 // 无角色，打开角色创建界面
-                await GameApp.UI.OpenFullScreenAsync<UIPlayerCreate>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), respLogin);
+                await UIManager.Instance.OpenUIAsync<UIPlayerCreate>(Utility.Asset.Path.GetUIPath(nameof(UIPlayerCreate)),false, respLogin);
             }
 
             // 关闭当前界面
-            GameApp.UI.CloseUI(this);
+            UIManager.Instance.CloseUI(this);
         }
     }
 }

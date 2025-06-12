@@ -5,10 +5,10 @@
         "GameFrameX.Runtime",
         "GameFrameX.Asset.Runtime",
         "GameFrameX.Event.Runtime",
-        "GameFrameX.UI.Runtime",
         "FairyGUI.Runtime",
         "UniTask.Runtime",
-        "YooAsset.Runtime"
+        "YooAsset.Runtime",
+        "GameFrameX.Localization.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

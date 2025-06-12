@@ -7,53 +7,95 @@
 
 using System;
 using System.Collections.Generic;
+using FairyGUI;
 using GameFrameX.Asset.Runtime;
+using GameFrameX.Event.Runtime;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
+using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    internal sealed partial class UIManager : GameFrameworkModule, IUIManager
+    public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager> 
     {
-        private readonly Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
-        private readonly HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
-        private readonly Queue<IUIBase>          m_WaitRecycleQueue; // 待回收的界面集合
+        private Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
+        private HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
+        private Queue<UIBase>          m_WaitRecycleQueue; // 待回收的界面集合
 
-        private IAssetManager      m_AssetManager;      // 资源管理器
-        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器\
-
-        private FuiPackageComponent               FuiPackage { get; set; } // FGUI包管理组件
+        private AssetComponent    m_AssetManager;      // 资源管理器
+        private ObjectPoolComponent m_ObjectPoolManager; // 对象池管理器
+        private EventComponent m_EventComponent = null;// 事件组件
+        private FuiPackageComponent           FuiPackage { get; set; } // FGUI包管理组件
         private IObjectPool<UIInstanceObject> m_InstancePool;          // 界面实例对象池
-        private IUIHelper                     _iuiHelper;          // 界面辅助器
 
         private int  m_Serial;     // 界面序列号，每打开一个界面就加1
         private bool m_IsShutdown; // 是否是关机
 
+        [Header("界面实例对象池自动释放可释放对象的间隔秒数")]
+        [SerializeField] private float m_InstanceAutoReleaseInterval = 60f;
 
+        [Header("界面实例对象池的容量")]
+        [SerializeField] private int m_InstanceCapacity = 16;
+
+        [Header("界面实例对象池对象过期秒数")]
+        [SerializeField] private float m_InstanceExpireTime = 60f;
+
+        [Header("界面组定义")]
+        [SerializeField] private UIGroupDefine[] m_UIGroups =
+        {
+            //@formatter:off
+            new(UIGroupConstants.Hidden.Name,     UIGroupConstants.Hidden.Depth),
+            new(UIGroupConstants.Floor.Name,      UIGroupConstants.Floor.Depth),
+            new(UIGroupConstants.Normal.Name,     UIGroupConstants.Normal.Depth),
+            new(UIGroupConstants.Fixed.Name,      UIGroupConstants.Fixed.Depth),
+            new(UIGroupConstants.Window.Name,     UIGroupConstants.Window.Depth),
+            new(UIGroupConstants.Tip.Name,        UIGroupConstants.Tip.Depth),
+            new(UIGroupConstants.Guide.Name,      UIGroupConstants.Guide.Depth),
+            new(UIGroupConstants.BlackBoard.Name, UIGroupConstants.BlackBoard.Depth),
+            new(UIGroupConstants.Dialogue.Name,   UIGroupConstants.Dialogue.Depth),
+            new(UIGroupConstants.Loading.Name,    UIGroupConstants.Loading.Depth),
+            new(UIGroupConstants.Notify.Name,     UIGroupConstants.Notify.Depth),
+            new(UIGroupConstants.System.Name,     UIGroupConstants.System.Depth),
+            //@formatter:on
+        };
+        
         /// <summary>
         /// 初始化界面管理器的新实例。
         /// </summary>
-        public UIManager()
+        protected override void Init()
         {
             m_UIGroupDict      = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
             m_LoadingDict      = new Dictionary<int, string>();
             m_WaitReleaseSet   = new HashSet<int>();
-            m_WaitRecycleQueue = new Queue<IUIBase>();
+            m_WaitRecycleQueue = new Queue<UIBase>();
 
-            m_ObjectPoolManager = null;
-            m_AssetManager      = null;
-            m_InstancePool      = null;
-            _iuiHelper      = null;
-            m_Serial            = 0;
-            m_IsShutdown        = false;
+            m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
+            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UIInstanceObjectPool");
+            
+            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_AssetManager   = GameEntry.GetComponent<AssetComponent>();
+            FuiPackage       = GameEntry.GetComponent<FuiPackageComponent>();
 
-            m_OpenUISuccessEventHandler   = null;
-            m_OpenUIFailureEventHandler   = null;
-            m_CloseUICompleteEventHandler = null;
+            m_Serial     = 0;
+            m_IsShutdown = false;
+
+            InstanceAutoReleaseInterval = m_InstanceAutoReleaseInterval;
+            InstanceCapacity            = m_InstanceCapacity;
+            InstanceExpireTime          = m_InstanceExpireTime;
+            
+            // 设置GRoot根节点
+            GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
+            
+            // 遍历所有UI组，并添加UI组
+            foreach (var group in m_UIGroups)
+            {
+                if (AddUIGroup(group.Name, group.Depth)) continue;
+                Log.Warning("添加UI组 '{0}' 失败 .", group.Name);
+            }
         }
 
         /// <summary>
@@ -86,9 +128,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 界面管理器轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        protected void Update()
         {
             while (m_WaitRecycleQueue.Count > 0)
             {
@@ -98,14 +138,24 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                group.Update(elapseSeconds, realElapseSeconds);
+                group.OnUpdate(Time.deltaTime, Time.unscaledDeltaTime);
             }
         }
 
+        
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>
-        protected override void Shutdown()
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            Shutdown();
+        }
+        
+        /// <summary>
+        /// 关闭并清理界面管理器。
+        /// </summary>
+        private void Shutdown()
         {
             m_IsShutdown = true;
             CloseAllLoadedUIs();
@@ -113,39 +163,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_LoadingDict.Clear();
             m_WaitReleaseSet.Clear();
             m_WaitRecycleQueue.Clear();
-        }
-
-        /// <summary>
-        /// 设置对象池管理器。
-        /// </summary>
-        /// <param name="objectPoolManager">对象池管理器。</param>
-        public void SetObjectPoolManager(IObjectPoolManager objectPoolManager)
-        {
-            GameFrameworkGuard.NotNull(objectPoolManager, nameof(objectPoolManager));
-            m_ObjectPoolManager = objectPoolManager;
-            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UI Instance Pool");
-        }
-
-        /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager">资源管理器。</param>
-        public void SetResourceManager(IAssetManager assetManager)
-        {
-            GameFrameworkGuard.NotNull(assetManager, nameof(assetManager));
-            m_AssetManager = assetManager;
-            FuiPackage     = GameEntry.GetComponent<FuiPackageComponent>();
-            GameFrameworkGuard.NotNull(FuiPackage, nameof(FuiPackage));
-        }
-        
-        /// <summary>
-        /// 设置界面辅助器。
-        /// </summary>
-        /// <param name="iUiHelper">界面辅助器。</param>
-        public void SetUIHelper(IUIHelper iUiHelper)
-        {
-            GameFrameworkGuard.NotNull(iUiHelper, nameof(iUiHelper));
-            _iuiHelper = iUiHelper;
         }
     }
 }

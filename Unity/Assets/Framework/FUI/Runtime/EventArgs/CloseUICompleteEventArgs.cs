@@ -40,7 +40,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public IUIGroup UIGroup { get; private set; }
+        public UIGroup UIGroup { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -66,7 +66,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiGroup">界面所属的界面组。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUICompleteEventArgs Create(int serialId, string uiAssetName, IUIGroup uiGroup, object userData)
+        public static CloseUICompleteEventArgs Create(int serialId, string uiAssetName, UIGroup uiGroup, object userData)
         {
             var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId    = serialId;
