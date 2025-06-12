@@ -11,11 +11,8 @@ namespace GameFrameX.UI.Runtime
     /// </summary>
     public sealed class UIGroup : GComponent
     {
-        /// 获取界面组名称。
-        public string Name { get; private set; }
-
-        /// 界面组深度
-        private int m_Depth;
+        /// 获取或设置界面组所在的层级。
+        public UILayer Layer { get; private set; }
 
         /// 界面组是否暂停
         private bool m_Pause;
@@ -29,34 +26,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 初始化界面组的新实例。
         /// </summary>
-        /// <param name="groupName">界面组名称。</param>
-        /// <param name="groupDepth">界面组深度。</param>
-        public void Init(string groupName, int groupDepth)
+        /// <param name="layer">界面组层级。</param>
+        public void Init(UILayer layer)
         {
-            if (string.IsNullOrEmpty(groupName)) throw new GameFrameworkException("传入的UI组名称为空.");
-
-            Name = groupName;
+            Layer   = layer;
             m_Pause = false;
             m_UIInfos.Clear();
             m_CachedNode = null;
-            Depth = groupDepth;
+
+            displayObject.gameObject.transform.localPosition = new Vector3(0, 0, (int)layer * 100);
         }
 
-        /// <summary>
-        /// 获取或设置界面组深度。
-        /// </summary>
-        public int Depth
-        {
-            get => m_Depth;
-            set
-            {
-                if (m_Depth == value) return;
-                m_Depth = value;
-                displayObject.gameObject.transform.localPosition = new Vector3(0, 0, m_Depth * 100);
-                
-                Refresh();
-            }
-        }
         /// <summary>
         /// 获取或设置界面组是否暂停。
         /// </summary>
@@ -96,7 +76,7 @@ namespace GameFrameX.UI.Runtime
 
                 m_CachedNode = current.Next;
                 current.Value.UI.OnUpdate(elapseSeconds, realElapseSeconds);
-                current = m_CachedNode;
+                current      = m_CachedNode;
                 m_CachedNode = null;
             }
         }
@@ -270,7 +250,7 @@ namespace GameFrameX.UI.Runtime
                 m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfos.Remove(uiInfo))
-                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Name, ui.SerialId, ui.UIAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), ui.SerialId, ui.UIAssetName));
 
             ReferencePool.Release(uiInfo);
         }
@@ -283,9 +263,9 @@ namespace GameFrameX.UI.Runtime
             // 从链表头部开始遍历
             var current = m_UIInfos.First;
 
-            var isCover = false; // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
+            var isCover = false;   // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
             var isPause = m_Pause; // 是否暂停的标志(来自成员变量)
-            var depth = UICount; //初始深度值(从界面数量开始递减)
+            var depth   = UICount; //初始深度值(从界面数量开始递减)
 
             while (current is { Value: not null })
             {
@@ -293,7 +273,7 @@ namespace GameFrameX.UI.Runtime
                 var next = current.Next;
 
                 // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
-                current.Value.UI.OnDepthChanged(Depth, depth--);
+                current.Value.UI.OnDepthChanged(depth--);
 
                 if (current.Value == null) return; // 可能在回调中被销毁，所有这里判断下
 

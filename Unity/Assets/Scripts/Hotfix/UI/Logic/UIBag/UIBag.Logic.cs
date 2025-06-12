@@ -38,7 +38,7 @@ namespace Hotfix.UI
 
         public override void OnAwake()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Window.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
             base.OnAwake();
             GameApp.Event.CheckSubscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
         }

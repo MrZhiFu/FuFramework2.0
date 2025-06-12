@@ -255,17 +255,10 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnReveal() { }
 
         /// <summary>
-        /// 界面激活。
-        /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnRefocus(object userData) { }
-
-        /// <summary>
         /// 界面深度改变。
         /// </summary>
-        /// <param name="uiGroupDepth">界面组深度。</param>
         /// <param name="depthInUIGroup">界面在界面组中的深度。</param>
-        public void OnDepthChanged(int uiGroupDepth, int depthInUIGroup) => m_DepthInUIGroup = depthInUIGroup;
+        public void OnDepthChanged(int depthInUIGroup) => m_DepthInUIGroup = depthInUIGroup;
 
         /// <summary>
         /// 销毁界面.

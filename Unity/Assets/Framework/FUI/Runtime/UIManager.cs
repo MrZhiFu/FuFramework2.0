@@ -43,32 +43,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
         [Header("界面实例对象池对象过期秒数")]
         [SerializeField] private float m_InstanceExpireTime = 60f;
-
-        [Header("界面组定义")]
-        [SerializeField] private UIGroupDefine[] m_UIGroups =
-        {
-            //@formatter:off
-            new(UIGroupConstants.Hidden.Name,     UIGroupConstants.Hidden.Depth),
-            new(UIGroupConstants.Floor.Name,      UIGroupConstants.Floor.Depth),
-            new(UIGroupConstants.Normal.Name,     UIGroupConstants.Normal.Depth),
-            new(UIGroupConstants.Fixed.Name,      UIGroupConstants.Fixed.Depth),
-            new(UIGroupConstants.Window.Name,     UIGroupConstants.Window.Depth),
-            new(UIGroupConstants.Tip.Name,        UIGroupConstants.Tip.Depth),
-            new(UIGroupConstants.Guide.Name,      UIGroupConstants.Guide.Depth),
-            new(UIGroupConstants.BlackBoard.Name, UIGroupConstants.BlackBoard.Depth),
-            new(UIGroupConstants.Dialogue.Name,   UIGroupConstants.Dialogue.Depth),
-            new(UIGroupConstants.Loading.Name,    UIGroupConstants.Loading.Depth),
-            new(UIGroupConstants.Notify.Name,     UIGroupConstants.Notify.Depth),
-            new(UIGroupConstants.System.Name,     UIGroupConstants.System.Depth),
-            //@formatter:on
-        };
+        
         
         /// <summary>
         /// 初始化界面管理器的新实例。
         /// </summary>
         protected override void Init()
         {
-            m_UIGroupDict      = new Dictionary<string, UIGroup>(StringComparer.Ordinal);
+            m_UIGroupDict      = new Dictionary<UILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
             m_WaitReleaseSet   = new HashSet<int>();
             m_WaitRecycleQueue = new Queue<UIBase>();
@@ -90,11 +72,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             // 设置GRoot根节点
             GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
             
-            // 遍历所有UI组，并添加UI组
-            foreach (var group in m_UIGroups)
+            // 遍历所有UI层级，并添加UI组
+            foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
-                if (AddUIGroup(group.Name, group.Depth)) continue;
-                Log.Warning("添加UI组 '{0}' 失败 .", group.Name);
+                if (AddUIGroup(layer)) continue;
+                Log.Warning("添加UI组 '{0}' 失败 .", layer.ToString());
             }
         }
 

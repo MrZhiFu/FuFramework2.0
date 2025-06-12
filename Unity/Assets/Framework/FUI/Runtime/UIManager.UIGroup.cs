@@ -20,7 +20,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 界面组字典。key为组名称，value为组对象。
         /// </summary>
-        private Dictionary<string, UIGroup> m_UIGroupDict;
+        private Dictionary<UILayer, UIGroup> m_UIGroupDict;
 
         /// <summary>
         /// 获取界面组数量。
@@ -30,23 +30,18 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 是否存在界面组。
         /// </summary>
-        /// <param name="uiGroupName">界面组名称。</param>
+        /// <param name="layer">界面组层级。</param>
         /// <returns>是否存在界面组。</returns>
-        public bool HasUIGroup(string uiGroupName)
-        {
-            GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
-            return m_UIGroupDict.ContainsKey(uiGroupName);
-        }
+        public bool HasUIGroup(UILayer layer) => m_UIGroupDict.ContainsKey(layer);
 
         /// <summary>
         /// 获取界面组。
         /// </summary>
-        /// <param name="uiGroupName">界面组名称。</param>
+        /// <param name="layer">界面组层级。</param>
         /// <returns>要获取的界面组。</returns>
-        public UIGroup GetUIGroup(string uiGroupName)
+        public UIGroup GetUIGroup(UILayer layer)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
-            return m_UIGroupDict.TryGetValue(uiGroupName, out var uiGroup) ? uiGroup : null;
+            return m_UIGroupDict.TryGetValue(layer, out var uiGroup) ? uiGroup : null;
         }
 
         /// <summary>
@@ -83,26 +78,24 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 增加界面组。
         /// </summary>
-        /// <param name="uiGroupName">界面组名称。</param>
-        /// <param name="uiGroupDepth">界面组深度。</param>
+        /// <param name="layer">界面组层级。</param>
         /// <returns>是否增加界面组成功。</returns>
-        public bool AddUIGroup(string uiGroupName, int uiGroupDepth = 0)
+        public bool AddUIGroup(UILayer layer)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiGroupName, nameof(uiGroupName));
-            if (HasUIGroup(uiGroupName)) return false;
+            if (HasUIGroup(layer)) return false;
 
             var component = new UIGroup();
             GRoot.inst.AddChild(component);
-            component.displayObject.name = uiGroupName;
-            component.gameObjectName = uiGroupName;
-            component.name = uiGroupName;
-            component.opaque = false;
+            component.displayObject.name = layer.ToString();
+            component.gameObjectName     = layer.ToString();
+            component.name               = layer.ToString();
+            component.opaque             = false;
 
             component.AddRelation(GRoot.inst, RelationType.Width);
             component.AddRelation(GRoot.inst, RelationType.Height);
             component.MakeFullScreen();
-            component.Init(uiGroupName, uiGroupDepth);
-            m_UIGroupDict.Add(uiGroupName, component);
+            component.Init(layer);
+            m_UIGroupDict.Add(layer, component);
             return true;
         }
     }

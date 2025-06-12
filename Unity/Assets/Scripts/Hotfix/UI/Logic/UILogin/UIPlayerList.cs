@@ -24,7 +24,7 @@ namespace Hotfix.UI
 
         public override void OnAwake()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UIGroupConstants.Normal.Name);
+            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
             base.OnAwake();
 
             // 订阅网络连接成功和关闭事件
@@ -81,7 +81,7 @@ namespace Hotfix.UI
             PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
             // 打开主界面
-            await UIManager.Instance.OpenUIAsync<UIMain>(Utility.Asset.Path.GetUIPath(nameof(UIMain)),false, UIGroupConstants.Floor);
+            await UIManager.Instance.OpenUIAsync<UIMain>(Utility.Asset.Path.GetUIPath(nameof(UIMain)),false, UILayer.Floor);
 
             // 关闭当前界面
             UIManager.Instance.CloseUI(this);
