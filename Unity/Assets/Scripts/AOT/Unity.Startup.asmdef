@@ -19,7 +19,6 @@
         "GameFrameX.Asset.Runtime",
         "GameFrameX.Localization.Runtime",
         "HybridCLRData",
-        "GameFrameX.UI.Runtime",
         "GameFrameX.UI.FairyGUI.Runtime",
         "GameFrameX.Mono.Runtime",
         "GameFrameX.Timer.Runtime"
