@@ -22,7 +22,7 @@ namespace GameFrameX.Runtime
 
                 var insObj = new GameObject();
                 _instance      = insObj.AddComponent<T>();
-                _instance.name = "[Singleton]" + typeof(T).Name;
+                _instance.name = "[Singleton]" + typeof(T);
 
                 if (Application.isPlaying)
                     DontDestroyOnLoad(insObj);
