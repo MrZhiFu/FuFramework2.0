@@ -36,10 +36,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// 回收
             /// </summary>
             /// <param name="isShutdown"></param>
-            protected override void Release(bool isShutdown)
-            {
-                FuiHelper.ReleaseUI(Target);
-            }
+            protected override void Release(bool isShutdown) => FuiHelper.ReleaseUI(Target);
         }
     }
 }

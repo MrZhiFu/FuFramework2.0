@@ -5,7 +5,6 @@ namespace System
     /// <summary>
     /// 线程私有random对象
     /// </summary>
-    
     public static class ThreadLocalRandom
     {
         private static int _seed = Environment.TickCount;
@@ -15,9 +14,6 @@ namespace System
         /// <summary>
         /// The current random number seed available to this thread
         /// </summary>
-        public static Random Current
-        {
-            get { return _rng.Value; }
-        }
+        public static Random Current => _rng.Value;
     }
 }
