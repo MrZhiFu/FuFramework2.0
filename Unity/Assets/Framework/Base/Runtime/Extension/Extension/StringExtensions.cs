@@ -15,7 +15,6 @@ public static class StringExtension
     /// <param name="target">对比的目标字符串</param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">当前对象为空</exception>
-    
     public static bool EqualsFast(this string self, string target)
     {
         if (self == null) return target == null;
@@ -40,7 +39,6 @@ public static class StringExtension
     /// <param name="self"></param>
     /// <param name="target">目标字符串</param>
     /// <returns></returns>
-    
     public static bool EndsWithFast(this string self, string target)
     {
         int ap = self.Length - 1;
@@ -61,7 +59,6 @@ public static class StringExtension
     /// <param name="self"></param>
     /// <param name="target">目标字符串</param>
     /// <returns></returns>
-    
     public static bool StartsWithFast(this string self, string target)
     {
         int aLen = self.Length;
@@ -84,7 +81,6 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
     public static IEnumerable<byte> ToBytes(this string self)
     {
         byte[] byteArray = Encoding.Default.GetBytes(self);
@@ -96,7 +92,6 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
     public static byte[] ToByteArray(this string self)
     {
         byte[] byteArray = Encoding.Default.GetBytes(self);
@@ -108,7 +103,6 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
     public static byte[] ToUtf8(this string self)
     {
         byte[] byteArray = Encoding.UTF8.GetBytes(self);
@@ -121,13 +115,12 @@ public static class StringExtension
     /// <param name="hexString">字符串</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException">字符串字符数不是偶数引发异常</exception>
-    
     public static byte[] HexToBytes(this string hexString)
     {
         if (hexString.Length % 2 != 0)
         {
             throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}",
-                                                      hexString));
+                hexString));
         }
 
         var hexAsBytes = new byte[hexString.Length / 2];
@@ -147,7 +140,6 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
     public static bool IsNullOrWhiteSpace(this string self)
     {
         const string nullString = "null";
@@ -159,33 +151,21 @@ public static class StringExtension
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
-    public static bool IsNullOrEmpty(this string self)
-    {
-        return string.IsNullOrEmpty(self);
-    }
+    public static bool IsNullOrEmpty(this string self) => string.IsNullOrEmpty(self);
 
     /// <summary>
     /// 指定的字符串[不]是 null、空还是仅由空白字符组成。
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
-    public static bool IsNotNullOrWhiteSpace(this string self)
-    {
-        return !self.IsNullOrWhiteSpace();
-    }
+    public static bool IsNotNullOrWhiteSpace(this string self) => !self.IsNullOrWhiteSpace();
 
     /// <summary>
     /// 指定的字符串[不]是 null 还是 Empty 字符串。
     /// </summary>
     /// <param name="self"></param>
     /// <returns></returns>
-    
-    public static bool IsNotNullOrEmpty(this string self)
-    {
-        return !self.IsNullOrEmpty();
-    }
+    public static bool IsNotNullOrEmpty(this string self) => !self.IsNullOrEmpty();
 
     /// <summary>
     /// 格式化
@@ -193,18 +173,13 @@ public static class StringExtension
     /// <param name="text"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    
-    public static string Format(this string text, params object[] args)
-    {
-        return string.Format(text, args);
-    }
+    public static string Format(this string text, params object[] args) => string.Format(text, args);
 
     /// <summary>
     /// 将[\n、\t、\r、空格]替换为空,并返回
     /// </summary>
     /// <param name="self">原始字符串</param>
     /// <returns></returns>
-    
     public static string TrimEmpty(this string self)
     {
         self = self.Replace("\n", string.Empty).Replace(" ", string.Empty).Replace("\t", string.Empty).Replace("\r", string.Empty);
@@ -216,14 +191,9 @@ public static class StringExtension
     /// </summary>
     /// <param name="input">要转换的字符串。</param>
     /// <returns>转换后的蛇形命名字符串。如果输入为null或空，则返回原字符串。</returns>
-    
     public static string ConvertToSnakeCase(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-        {
-            return input;
-        }
-
+        if (string.IsNullOrEmpty(input)) return input;
         var startUnderscores = Regex.Match(input, @"^_+");
         return startUnderscores + Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1_$2").ToLower();
     }
@@ -238,21 +208,18 @@ public static class StringExtension
     /// </summary>
     /// <param name="self">原始字符串</param>
     /// <returns></returns>
-    
     public static string TrimZhCn(this string self)
     {
         self = CnReg.Replace(self, string.Empty);
         return self;
     }
-    
+
     /// <summary>
     /// 将字符串转换为整数数组,分隔符默认为+
     /// </summary>
     /// <param name="str"></param>
     /// <param name="sep"></param>
     /// <returns></returns>
-
-    
     public static int[] SplitToIntArray(this string str, char sep = '+')
     {
         if (string.IsNullOrEmpty(str))
@@ -276,7 +243,6 @@ public static class StringExtension
     /// <param name="sep1"></param>
     /// <param name="sep2"></param>
     /// <returns></returns>
-    
     public static int[][] SplitTo2IntArray(this string str, char sep1 = ';', char sep2 = '+')
     {
         if (string.IsNullOrEmpty(str))
@@ -296,19 +262,16 @@ public static class StringExtension
     /// <summary>
     /// 根据字符串创建目录,递归
     /// </summary>
-    
     public static void CreateAsDirectory(this string path, bool isFile = false)
     {
-        if (isFile)
-        {
+        if (isFile) 
             path = Path.GetDirectoryName(path);
-        }
 
-        if (!Directory.Exists(path))
-        {
-            CreateAsDirectory(path, true);
-            Directory.CreateDirectory(path);
-        }
+        if (Directory.Exists(path)) return;
+        CreateAsDirectory(path, true);
+        
+        if (path == null)  return;
+        Directory.CreateDirectory(path);
     }
 
     /// <summary>
@@ -317,16 +280,13 @@ public static class StringExtension
     /// <param name="rawString">指定的字符串。</param>
     /// <param name="position">从指定位置处开始读取一行，读取后将返回下一行开始的位置。</param>
     /// <returns>读取的一行字符串。</returns>
-    
     public static string ReadLine(this string rawString, ref int position)
     {
-        if (position < 0)
-        {
-            return null;
-        }
-
-        int length = rawString.Length;
-        int offset = position;
+        if (position < 0) return null;
+        
+        var length = rawString.Length;
+        var offset = position;
+        
         while (offset < length)
         {
             char ch = rawString[offset];

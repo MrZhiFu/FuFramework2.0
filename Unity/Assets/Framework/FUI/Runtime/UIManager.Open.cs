@@ -28,7 +28,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
         public Task<UIBase> OpenUIAsync<T>(string uiAssetPath, bool pauseCoveredUI, object userData, bool isFullScreen = false,
-                                            bool isMultiple = false) where T : UIBase
+            bool isMultiple = false) where T : UIBase
         {
             return InnerOpenUIAsync(uiAssetPath, typeof(T), pauseCoveredUI, userData, isFullScreen, isMultiple);
         }
@@ -44,7 +44,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
         public async Task<UIBase> OpenUIAsync(string uiAssetPath, Type uiType, bool pauseCoveredUI, object userData,
-                                               bool isFullScreen = false, bool isMultiple = false)
+            bool isFullScreen = false, bool isMultiple = false)
         {
             return await InnerOpenUIAsync(uiAssetPath, uiType, pauseCoveredUI, userData, isFullScreen, isMultiple);
         }
@@ -60,30 +60,30 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
         private async Task<UIBase> InnerOpenUIAsync(string uiAssetPath, Type uiType, bool pauseCoveredUI, object userData,
-                                                     bool isFullScreen = false, bool isMultiple = false)
+            bool isFullScreen = false, bool isMultiple = false)
         {
-            var uiAssetName = uiType.Name;
+            var uiName = uiType.Name;
 
-            UIInstanceObject uiInstanceObject = m_InstancePool.Spawn(uiAssetName);
+            // 获取界面实例对象，如果对象池中存在并且不允许使用多个实例，则直接使用对象池中的对象
+            UIInstanceObject uiInstanceObject = m_InstancePool.Spawn(uiName);
             if (uiInstanceObject != null && isMultiple == false)
             {
-                // 如果对象池存在
-                return InternalOpenUI(-1, uiAssetName, uiType, uiInstanceObject.Target, pauseCoveredUI, false, 0f, userData,
-                                      isFullScreen);
+                return InternalOpenUI(-1, uiName, uiType, uiInstanceObject.Target, pauseCoveredUI, false, 0f, userData,
+                    isFullScreen);
             }
 
             var serialId = ++m_Serial;
-            m_LoadingDict.Add(serialId, uiAssetName);
-            var assetPath = PathHelper.Combine(uiAssetPath, uiAssetName);
+            m_LoadingDict.Add(serialId, uiName);
+            var assetPath = PathHelper.Combine(uiAssetPath, uiName);
 
             var lastIndexOfStart = uiAssetPath.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
-            var packageName      = uiAssetPath.Substring(lastIndexOfStart + 1);
+            var packageName = uiAssetPath.Substring(lastIndexOfStart + 1);
 
             // 检查UI包是否已经加载过
             var hasUIPackage = FuiPackage.HasPackage(packageName);
 
-            var packageInfo = OpenUIPackageInfo.Create(packageName, uiAssetName);
-            var openUIInfo  = OpenUIInfo.Create(serialId, uiType, pauseCoveredUI, userData, isFullScreen);
+            var packageInfo = OpenUIPackageInfo.Create(packageName, uiName);
+            var openUIInfo = OpenUIInfo.Create(serialId, uiType, pauseCoveredUI, userData, isFullScreen);
 
             // 检查路径中是否包含Bundle目录，如果不包含则从Resources中加载
             if (assetPath.IndexOf(Utility.Asset.Path.BundlesDirectoryName, StringComparison.OrdinalIgnoreCase) < 0)
@@ -91,17 +91,17 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 // 从Resources中加载
                 if (!hasUIPackage)
                     FuiPackage.AddPackageSync(assetPath);
-                return LoadAssetSuccessCallback(uiAssetName, packageInfo, 0, openUIInfo);
+                return LoadAssetSuccessCallback(uiName, packageInfo, 0, openUIInfo);
             }
 
             // 检查UI包是否已经加载过
             if (hasUIPackage)
             {
                 // 如果UI 包存在则创建界面
-                return LoadAssetSuccessCallback(uiAssetName, packageInfo, 1, openUIInfo);
+                return LoadAssetSuccessCallback(uiName, packageInfo, 1, openUIInfo);
             }
 
-            if (packageName == uiAssetName)
+            if (packageName == uiName)
             {
                 // 如果UI资源名字和包名一致则直接加载
                 await FuiPackage.AddPackageAsync(assetPath);
@@ -114,7 +114,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             string newAssetPackagePath = assetPath;
-            if (packageName != uiAssetName)
+            if (packageName != uiName)
             {
                 newAssetPackagePath = PathHelper.Combine(uiAssetPath, packageName);
             }
@@ -126,11 +126,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (assetHandle.IsSucceed)
             {
                 // 加载成功
-                return LoadAssetSuccessCallback(uiAssetName, packageInfo, assetHandle.Progress, openUIInfo);
+                return LoadAssetSuccessCallback(uiName, packageInfo, assetHandle.Progress, openUIInfo);
             }
 
             // UI包不存在
-            return LoadAssetFailureCallback(uiAssetName, assetHandle.LastError, openUIInfo);
+            return LoadAssetFailureCallback(uiName, assetHandle.LastError, openUIInfo);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns></returns>
         /// <exception cref="GameFrameworkException"></exception>
         private UIBase InternalOpenUI(int serialId, string uiAssetName, Type uiType, object uiInstance, bool pauseCoveredUI,
-                                       bool isNewInstance, float duration, object userData, bool isFullScreen)
+            bool isNewInstance, float duration, object userData, bool isFullScreen)
         {
             try
             {
@@ -175,11 +175,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                     uiGroup.AddUI(uiBase);
                 }
 
-                uiBase.OnOpen(userData);     // 界面打开回调
+                uiBase.OnOpen(userData); // 界面打开回调
                 uiBase.UpdateLocalization(); // 更新本地化文本
-                uiGroup.Refresh();            // 刷新界面组
-                
-                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(uiBase, duration, userData); 
+                uiGroup.Refresh(); // 刷新界面组
+
+                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(uiBase, duration, userData);
                 m_EventComponent.Fire(this, openUISuccessEventArgs);
 
                 return uiBase;
@@ -187,7 +187,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             catch (Exception exception)
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, uiAssetName, pauseCoveredUI, exception.ToString(), userData);
-                Log.Warning($"打开UI界面失败, 资源名称 '{openUIFailureEventArgs.UIAssetName}',  是否暂停被覆盖的界面 '{openUIFailureEventArgs.PauseCoveredUI}', error message '{openUIFailureEventArgs.ErrorMessage}'.");
+                Log.Warning(
+                    $"打开UI界面失败, 资源名称 '{openUIFailureEventArgs.UIAssetName}',  是否暂停被覆盖的界面 '{openUIFailureEventArgs.PauseCoveredUI}', error message '{openUIFailureEventArgs.ErrorMessage}'.");
                 m_EventComponent.Fire(this, openUIFailureEventArgs);
                 return GetUI(openUIFailureEventArgs.SerialId);
             }
@@ -245,14 +246,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_LoadingDict.Remove(openUIInfo.SerialId);
 
             // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
-            var uiInstance       = FuiHelper.InstantiateUI(uiPackageInfo);
+            var uiInstance = FuiHelper.InstantiateUI(uiPackageInfo);
             var uiInstanceObject = UIInstanceObject.Create(uiAssetName, uiInstance);
             m_InstancePool.Register(uiInstanceObject, true);
 
             // 打开界面
-            var ui = InternalOpenUI(openUIInfo.SerialId,     uiAssetName,               openUIInfo.UIType,
-                                    uiInstanceObject.Target, openUIInfo.PauseCoveredUI, true,
-                                    duration,                openUIInfo.UserData,       openUIInfo.IsFullScreen);
+            var ui = InternalOpenUI(openUIInfo.SerialId, uiAssetName, openUIInfo.UIType,
+                uiInstanceObject.Target, openUIInfo.PauseCoveredUI, true,
+                duration, openUIInfo.UserData, openUIInfo.IsFullScreen);
 
             // 释放资源
             ReferencePool.Release(openUIInfo);
@@ -280,7 +281,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             m_LoadingDict.Remove(openUIInfo.SerialId);
             var appendErrorMessage = Utility.Text.Format("加载界面资源失败, 界面资源名 '{0}', 错误信息 '{1}'.", uiAssetName, errorMessage);
-            var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, uiAssetName, openUIInfo.PauseCoveredUI, appendErrorMessage, openUIInfo.UserData);
+            var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, uiAssetName, openUIInfo.PauseCoveredUI,
+                appendErrorMessage, openUIInfo.UserData);
             m_EventComponent.Fire(this, openUIFailureEventArgs);
             return GetUI(openUIInfo.SerialId);
         }
