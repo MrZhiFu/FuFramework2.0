@@ -35,15 +35,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 是否存在界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUI(string uiAssetName)
+        public bool HasUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiAssetName, nameof(uiAssetName));
-
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.HasUI(uiAssetName)) continue;
+                if (!group.HasUI(uiName)) continue;
                 return true;
             }
 
@@ -70,15 +68,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public UIBase GetUI(string uiAssetName)
+        public UIBase GetUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiAssetName, nameof(uiAssetName));
-
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var ui = group.GetUI(uiAssetName);
+                var ui = group.GetUI(uiName);
                 if (ui == null) continue;
                 return ui;
             }
@@ -89,16 +85,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public UIBase[] GetUIs(string uiAssetName)
+        public UIBase[] GetUIs(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiAssetName, nameof(uiAssetName));
-
             var results = new List<UIBase>();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetUIs(uiAssetName));
+                results.AddRange(group.GetUIs(uiName));
             }
 
             return results.ToArray();
@@ -107,13 +101,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 获取所有界面组下的界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        public void GetUIs(string uiAssetName, List<UIBase> results)
+        public void GetUIs(string uiName, List<UIBase> results)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiAssetName, nameof(uiAssetName));
             GameFrameworkGuard.NotNull(results, nameof(results));
-            
+
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -157,7 +150,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns>所有正在加载界面的序列编号。</returns>
         public int[] GetAllLoadingUISerialIds()
         {
-            var index = 0;
+            var index   = 0;
             var results = new int[m_LoadingDict.Count];
             foreach (var (id, _) in m_LoadingDict)
             {
@@ -192,12 +185,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUI(string uiAssetName)
+        public bool IsLoadingUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiAssetName, nameof(uiAssetName));
-            return m_LoadingDict.ContainsValue(uiAssetName);
+            return m_LoadingDict.ContainsValue(uiName);
         }
 
         /// <summary>
