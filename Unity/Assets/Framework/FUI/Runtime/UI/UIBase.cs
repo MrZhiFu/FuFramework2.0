@@ -1,11 +1,5 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
+using FairyGUI;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Runtime;
@@ -16,40 +10,30 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面。
     /// </summary>
-    [Serializable]
     public abstract class UIBase : MonoBehaviour
     {
-        //@formatter:off
-        [Header("界面序列编号")][SerializeField]            private int m_SerialId;
-        [Header("界面是否可见")][SerializeField]            private bool m_Visible = false;
-        [Header("界面是否已初始化")][SerializeField]        private bool m_IsInit = false;
-        [Header("界面原始层级")][SerializeField]            private int m_OriginalLayer = 0;
-        [Header("界面完整名称")][SerializeField]            private string m_FullName;
-        [Header("界面资源名称")][SerializeField]            private string m_UIAssetName;
-        [Header("界面在界面组中的深度")][SerializeField]     private int m_DepthInUIGroup;
-        [Header("界面是否暂停被覆盖的界面")] [SerializeField] private bool m_PauseCoveredUI;
-        //@formatter:on
+        private bool m_IsInit = false; //界面是否已初始化
+        private int m_OriginalLayer = 0; //界面原始层级
+        private int m_DepthInUIGroup; //界面在界面组中的深度
 
         /// 界面所属的界面组。
         private UIGroup m_UIGroup;
-
-        /// 界面用户自定义数据，可在界面初始化时传入
-        private object m_UserData;
-
-        /// 界面事件注册器
-        private EventRegister _eventRegister;
-
-
+        
         /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
-        public object UserData => m_UserData;
+        public object UserData { get; private set; }
 
         /// <summary>
         /// 获取界面事件订阅器。
         /// </summary>
-        public EventRegister EventRegister => _eventRegister;
+        public EventRegister EventRegister { get; private set; }
 
+        /// <summary>
+        /// UI 对象
+        /// </summary>
+        public GObject GObject { get; set; }
+        
         /// <summary>
         /// 获取界面是否来自对象池。
         /// </summary>
@@ -63,39 +47,32 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面序列编号。
         /// </summary>
-        public int SerialId => m_SerialId;
+        public int SerialId { get; private set; }
 
         /// <summary>
         /// 获取界面完整名称。
         /// </summary>
-        public string FullName => m_FullName;
+        public string FullName { get; private set; }
 
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIAssetName => m_UIAssetName;
-
-        /// <summary>
-        /// 获取或设置界面名称。
-        /// </summary>
-        public string Name
-        {
-            get => gameObject.name;
-            set => gameObject.name = value;
-        }
+        public string UIAssetName { get; private set; }
 
         /// <summary>
         /// 获取或设置界面是否可见。
         /// </summary>
-        public virtual bool Visible
+        public bool Visible
         {
-            get => m_Visible;
-
-            protected set
+            get => GObject.visible;
+            private set
             {
-                if (m_Visible == value) return;
-                m_Visible = value;
-                InternalSetVisible(value);
+                if (GObject == null) return;
+                if (GObject.visible == value) return;
+                GObject.visible = value;
+                
+                // 触发UI显示状态变化事件
+                EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
         }
 
@@ -121,7 +98,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUI => m_PauseCoveredUI;
+        public bool PauseCoveredUI { get; private set; }
 
         /// <summary>
         /// 获取界面是否已唤醒。
@@ -142,24 +119,22 @@ namespace GameFrameX.UI.Runtime
         public void Init(int serialId, string uiAssetName, UIGroup uiGroup, Action<UIBase> onInitAction, bool pauseCoveredUI,
             bool isNewInstance, object userData, bool isFullScreen = false)
         {
-            m_UserData = userData;
-            if (serialId >= 0)
-                m_SerialId = serialId;
-
+            SerialId = serialId;
+            UserData = userData;
             m_UIGroup = uiGroup;
-            m_PauseCoveredUI = pauseCoveredUI;
+            PauseCoveredUI = pauseCoveredUI;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_FullName = GetType().FullName;
-            m_UIAssetName = uiAssetName;
+            FullName = GetType().FullName;
+            UIAssetName = uiAssetName;
             m_DepthInUIGroup = 0;
             m_OriginalLayer = gameObject.layer;
 
             if (!isNewInstance) return;
 
-            _eventRegister = EventRegister.Create(this);
+            EventRegister = EventRegister.Create(this);
 
             try
             {
@@ -171,11 +146,11 @@ namespace GameFrameX.UI.Runtime
                 OnInit();
 
                 // 注册本地化语言改变事件
-                _eventRegister.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
+                EventRegister.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
             }
             catch (Exception exception)
             {
-                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", m_SerialId, m_UIAssetName, exception);
+                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", SerialId, UIAssetName, exception);
             }
 
             m_IsInit = true;
@@ -201,9 +176,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public virtual void OnRecycle()
         {
-            m_SerialId = 0;
+            SerialId = 0;
             m_DepthInUIGroup = 0;
-            m_PauseCoveredUI = true;
+            PauseCoveredUI = true;
         }
 
         /// <summary>
@@ -213,7 +188,7 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnOpen(object userData)
         {
             Visible = true;
-            m_UserData = userData;
+            UserData = userData;
         }
 
         /// <summary>
@@ -266,7 +241,7 @@ namespace GameFrameX.UI.Runtime
         public virtual void Dispose()
         {
             if (IsDisposed) return;
-            _eventRegister.UnSubscribeAll();
+            EventRegister.UnSubscribeAll();
             IsDisposed = true;
         }
 
@@ -283,14 +258,14 @@ namespace GameFrameX.UI.Runtime
         public virtual void UpdateLocalization() { }
 
         /// <summary>
-        /// 设置界面的可见性。
+        /// 设置UI对象
         /// </summary>
-        /// <param name="visible">界面的可见性。</param>
-        protected abstract void InternalSetVisible(bool visible);
-
+        /// <param name="gObject"></param>
+        public void SetGObject(GObject gObject) => GObject = gObject;
+        
         /// <summary>
         /// 设置界面为全屏
         /// </summary>
-        protected abstract void MakeFullScreen();
+        protected void MakeFullScreen()=> GObject?.asCom?.MakeFullScreen();
     }
 }
