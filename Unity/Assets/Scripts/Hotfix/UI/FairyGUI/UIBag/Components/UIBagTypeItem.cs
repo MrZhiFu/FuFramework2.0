@@ -81,11 +81,6 @@ namespace Hotfix.UI
 			m_select = null;
             self = null;            
         }
-
-        private UIBagTypeItem(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
-        }
     }
 }
 #endif

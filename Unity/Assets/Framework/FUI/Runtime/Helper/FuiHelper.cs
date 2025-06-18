@@ -43,7 +43,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var logicComp = gComponent.displayObject.gameObject.GetOrAddComponent(uiLogicType);
             if (logicComp is not ViewBase ui)
             {
-                Log.Error("UI界面逻辑组件不是IUI.");
+                Log.Error("UI界面逻辑组件不是ViewBase.");
                 return null;
             }
 

@@ -111,11 +111,6 @@ namespace Hotfix.UI
 			m_login_button = null;
             self = null;            
         }
-
-        private UIPlayerListItem(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
-        }
     }
 }
 #endif

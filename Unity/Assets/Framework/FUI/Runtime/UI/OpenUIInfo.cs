@@ -47,6 +47,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">界面是否全屏。</param>
+        /// <param name="packageName">界面资源包名。</param>
         /// <returns>创建的打开界面的信息。</returns>
         public static OpenUIInfo Create(int serialId, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen, string packageName)
         {

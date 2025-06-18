@@ -37,21 +37,6 @@ namespace Hotfix.UI
             return fui;
         }
 
-        /// <summary>
-        /// 通过此方法获取的FUI，在Dispose时不会释放GObject，需要自行管理（一般在配合FGUI的Pool机制时使用）。
-        /// </summary>
-        public static UIBagContent GetFormPool(GObject go)
-        {
-            var fui = go.Get<UIBagContent>();
-            if (fui == null)
-            {
-                fui = Create(go);
-            }
-
-            fui.IsFromPool = true;
-            return fui;
-        }
-
         protected override void InitView()
         {
             if(GObject == null)
@@ -86,11 +71,6 @@ namespace Hotfix.UI
 			m_info = null;
 			m_type_list = null;
             self = null;            
-        }
-
-        private UIBagContent(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
         }
     }
 }

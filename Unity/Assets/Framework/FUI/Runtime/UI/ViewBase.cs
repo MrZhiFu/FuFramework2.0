@@ -111,13 +111,12 @@ namespace GameFrameX.UI.Runtime
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiAssetName">界面资源名称。</param>
         /// <param name="uiGroup">界面所处的界面组。</param>
-        /// <param name="onInitAction">初始化界面前的委托。</param>
+        /// <param name="uiInstance">界面实例。</param>
         /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, Action<ViewBase> onInitAction, bool pauseCoveredUI,
-            bool isNewInstance, object userData, bool isFullScreen = false)
+        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, GObject uiInstance, bool pauseCoveredUI, bool isNewInstance, object userData, bool isFullScreen = false)
         {
             SerialId = serialId;
             UserData = userData;
@@ -126,6 +125,7 @@ namespace GameFrameX.UI.Runtime
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
+            m_IsInit = true;
 
             FullName = GetType().FullName;
             UIAssetName = uiAssetName;
@@ -138,7 +138,7 @@ namespace GameFrameX.UI.Runtime
 
             try
             {
-                onInitAction?.Invoke(this);
+                GObject = uiInstance;
                 InitView();
 
                 if (isFullScreen) MakeFullScreen();
@@ -152,8 +152,6 @@ namespace GameFrameX.UI.Runtime
             {
                 Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", SerialId, UIAssetName, exception);
             }
-
-            m_IsInit = true;
         }
 
         /// <summary>

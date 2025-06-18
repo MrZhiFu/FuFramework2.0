@@ -58,8 +58,8 @@ namespace Hotfix
         private static async void LoadUI()
         {
             // 添加通用UI资源包
-            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon));
-            GameApp.FUIPackage.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
+            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon));
+            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
             
             // 打开登录界面
             await UIManager.Instance.OpenUIAsync<UILogin>(Utility.Asset.Path.GetUIPath(nameof(UILogin)), false, null);

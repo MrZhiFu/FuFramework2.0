@@ -2,9 +2,7 @@
 
 #if ENABLE_UI_FAIRYGUI
 using FairyGUI;
-using Cysharp.Threading.Tasks;
 using FairyGUI.Utils;
-using GameFrameX.Entity.Runtime;
 using GameFrameX.UI.Runtime;
 using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.Runtime;
@@ -24,31 +22,6 @@ namespace Hotfix.UI
         public GButton self { get; private set; }
 
 		public GButton m_good_item { get; private set; }
-
-        private static GObject CreateGObject()
-        {
-            return UIPackage.CreateObject(UIPackageName, UIResName);
-        }
-
-        private static void CreateGObjectAsync(UIPackage.CreateObjectCallback result)
-        {
-            UIPackage.CreateObjectAsync(UIPackageName, UIResName, result);
-        }
-
-        public static UIBagItem CreateInstance()
-        {
-            return Create(CreateGObject());
-        }
-
-        public static UniTask<UIBagItem> CreateInstanceAsync(Entity domain)
-        {
-            UniTaskCompletionSource<UIBagItem> tcs = new UniTaskCompletionSource<UIBagItem>();
-            CreateGObjectAsync((go) =>
-            {
-                tcs.TrySetResult(Create(go));
-            });
-            return tcs.Task;
-        }
 
         public static UIBagItem Create(GObject go)
         {
@@ -101,11 +74,6 @@ namespace Hotfix.UI
             self.Remove();
 			m_good_item = null;
             self = null;            
-        }
-
-        private UIBagItem(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
         }
     }
 }

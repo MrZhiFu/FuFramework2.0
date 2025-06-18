@@ -12,14 +12,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// 1. 管理所有UI包的加载、卸载等操作。
     /// 2. 提供异步加载UI包的接口。
     /// </summary>
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/FuiPackage")]
-    public sealed class FuiPackageComponent : GameFrameworkComponent
+    public sealed class FuiPackageManager : GameFrameworkMonoSingleton<FuiPackageManager>
     {
         /// <summary>
         /// 表示UI包的数据结构。
         /// </summary>
-        [Serializable]
         public sealed class UIPackageData
         {
             /// <summary>
@@ -73,16 +70,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private readonly Dictionary<string, UniTaskCompletionSource<UIPackage>> m_UIPackageLoading = new(32);
 
 
-        protected override void Awake()
+        private void Awake()
         {
-            IsAutoRegister = false;
-            base.Awake();
             m_ResourceHelper = new FuiLoadAsyncResourceHelper();
             UIPackage.SetAsyncLoadResource(m_ResourceHelper);
         }
 
         /// <summary>
-        /// 异步添加UI包。
+        /// 异步添加UI包(一般用于加载AssetBundle目录下的UI包)
         /// </summary>
         /// <param name="descFilePath">描述文件路径。</param>
         /// <param name="isLoadAsset">是否加载资源，默认为true。</param>
@@ -115,7 +110,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 同步添加UI包。
+        /// 同步添加UI包(一般用于加载Resource目录下的UI包)
         /// </summary>
         /// <param name="descFilePath">描述文件路径。</param>
         /// <param name="isLoadAsset">是否加载资源，默认为true。</param>

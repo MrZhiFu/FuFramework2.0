@@ -34,21 +34,6 @@ namespace Hotfix.UI
             return fui;
         }
 
-        /// <summary>
-        /// 通过此方法获取的FUI，在Dispose时不会释放GObject，需要自行管理（一般在配合FGUI的Pool机制时使用）。
-        /// </summary>
-        public static UIPlayerListItemLoginButton GetFormPool(GObject go)
-        {
-            var fui = go.Get<UIPlayerListItemLoginButton>();
-            if (fui == null)
-            {
-                fui = Create(go);
-            }
-
-            fui.IsFromPool = true;
-            return fui;
-        }
-
         protected override void InitView()
         {
             if(GObject == null)
@@ -77,11 +62,6 @@ namespace Hotfix.UI
             self.Remove();
 			m_title = null;
             self = null;            
-        }
-
-        private UIPlayerListItemLoginButton(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
         }
     }
 }

@@ -20,17 +20,17 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager> 
+    public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager>
     {
         private Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
         private HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
-        private Queue<ViewBase>          m_WaitRecycleQueue; // 待回收的界面集合
+        private Queue<ViewBase>         m_WaitRecycleQueue; // 待回收的界面集合
 
-        private AssetComponent    m_AssetManager;      // 资源管理器
-        private ObjectPoolComponent m_ObjectPoolManager; // 对象池管理器
-        private EventComponent m_EventComponent = null;// 事件组件
-        private FuiPackageComponent           FuiPackage { get; set; } // FGUI包管理组件
-        private IObjectPool<UIInstanceObject> m_InstancePool;          // 界面实例对象池
+        private AssetComponent      m_AssetManager;          // 资源管理器
+        private ObjectPoolComponent m_ObjectPoolManager;     // 对象池管理器
+        private EventComponent      m_EventComponent = null; // 事件组件
+
+        private IObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
 
         private int  m_Serial;     // 界面序列号，每打开一个界面就加1
         private bool m_IsShutdown; // 是否是关机
@@ -43,8 +43,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
         [Header("界面实例对象池对象过期秒数")]
         [SerializeField] private float m_InstanceExpireTime = 60f;
-        
-        
+
+
         /// <summary>
         /// 初始化界面管理器的新实例。
         /// </summary>
@@ -57,10 +57,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
             m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UIInstanceObjectPool");
-            
+
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             m_AssetManager   = GameEntry.GetComponent<AssetComponent>();
-            FuiPackage       = GameEntry.GetComponent<FuiPackageComponent>();
 
             m_Serial     = 0;
             m_IsShutdown = false;
@@ -68,10 +67,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             InstanceAutoReleaseInterval = m_InstanceAutoReleaseInterval;
             InstanceCapacity            = m_InstanceCapacity;
             InstanceExpireTime          = m_InstanceExpireTime;
-            
+
             // 设置GRoot根节点
             GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
-            
+
             // 遍历所有UI层级，并添加UI组
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
@@ -124,7 +123,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
         }
 
-        
+
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>
@@ -133,7 +132,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             base.OnDestroy();
             Shutdown();
         }
-        
+
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>

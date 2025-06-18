@@ -2,9 +2,7 @@
 
 #if ENABLE_UI_FAIRYGUI
 using FairyGUI;
-using Cysharp.Threading.Tasks;
 using FairyGUI.Utils;
-using GameFrameX.Entity.Runtime;
 using GameFrameX.UI.Runtime;
 using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.Runtime;
@@ -26,31 +24,6 @@ namespace Hotfix.UI
 		public GLoader m_bg { get; private set; }
 		public GLoader m_gift { get; private set; }
 		public GTextField m_number { get; private set; }
-
-        private static GObject CreateGObject()
-        {
-            return UIPackage.CreateObject(UIPackageName, UIResName);
-        }
-
-        private static void CreateGObjectAsync(UIPackage.CreateObjectCallback result)
-        {
-            UIPackage.CreateObjectAsync(UIPackageName, UIResName, result);
-        }
-
-        public static UIGoodItem CreateInstance()
-        {
-            return Create(CreateGObject());
-        }
-
-        public static UniTask<UIGoodItem> CreateInstanceAsync(Entity domain)
-        {
-            UniTaskCompletionSource<UIGoodItem> tcs = new UniTaskCompletionSource<UIGoodItem>();
-            CreateGObjectAsync((go) =>
-            {
-                tcs.TrySetResult(Create(go));
-            });
-            return tcs.Task;
-        }
 
         public static UIGoodItem Create(GObject go)
         {
@@ -107,11 +80,6 @@ namespace Hotfix.UI
 			m_gift = null;
 			m_number = null;
             self = null;            
-        }
-
-        private UIGoodItem(GObject gObject) : base(gObject)
-        {
-            // Awake(gObject);
         }
     }
 }
