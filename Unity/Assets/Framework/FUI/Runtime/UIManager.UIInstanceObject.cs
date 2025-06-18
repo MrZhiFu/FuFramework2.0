@@ -33,7 +33,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             /// <summary>
-            /// 回收
+            /// 释放界面实例对象。
             /// </summary>
             /// <param name="isShutdown"></param>
             protected override void Release(bool isShutdown) => FuiHelper.ReleaseUI(Target);
