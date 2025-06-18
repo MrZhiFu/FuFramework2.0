@@ -90,9 +90,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public UniTask<UIPackage> AddPackageAsync(string descFilePath, bool isLoadAsset = true)
         {
             if (m_UIPackageLoading.TryGetValue(descFilePath, out var tcsLoading))
-            {
                 return tcsLoading.Task;
-            }
 
             if (m_UILoadedPkgDict.TryGetValue(descFilePath, out var packageData))
                 return UniTask.FromResult(packageData.Package);

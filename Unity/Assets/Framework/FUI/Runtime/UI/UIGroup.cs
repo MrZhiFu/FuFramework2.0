@@ -59,7 +59,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取当前界面。
         /// </summary>
-        public UIBase CurrentUIBase => m_UIInfos.First?.Value.UI;
+        public ViewBase CurrentViewBase => m_UIInfos.First?.Value.View;
 
         /// <summary>
         /// 界面组轮询。
@@ -75,7 +75,7 @@ namespace GameFrameX.UI.Runtime
                 if (current.Value.Paused) break;
 
                 m_CachedNode = current.Next;
-                current.Value.UI.OnUpdate(elapseSeconds, realElapseSeconds);
+                current.Value.View.OnUpdate(elapseSeconds, realElapseSeconds);
                 current      = m_CachedNode;
                 m_CachedNode = null;
             }
@@ -88,7 +88,7 @@ namespace GameFrameX.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUI(int serialId)
         {
-            return m_UIInfos.Any(uiInfo => uiInfo.UI.SerialId == serialId);
+            return m_UIInfos.Any(uiInfo => uiInfo.View.SerialId == serialId);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace GameFrameX.UI.Runtime
         public bool HasUIFullName(string fullName)
         {
             if (string.IsNullOrEmpty(fullName)) throw new GameFrameworkException("传入的UI界面完整名称为空.");
-            return m_UIInfos.Any(uiInfo => uiInfo.UI.FullName == fullName);
+            return m_UIInfos.Any(uiInfo => uiInfo.View.FullName == fullName);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace GameFrameX.UI.Runtime
         public bool HasUI(string uiAssetName)
         {
             if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
-            return m_UIInfos.Any(uiInfo => uiInfo.UI.UIAssetName == uiAssetName);
+            return m_UIInfos.Any(uiInfo => uiInfo.View.UIAssetName == uiAssetName);
         }
 
         /// <summary>
@@ -118,12 +118,12 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public UIBase GetUI(int serialId)
+        public ViewBase GetUI(int serialId)
         {
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI.SerialId != serialId) continue;
-                return uiInfo.UI;
+                if (uiInfo.View.SerialId != serialId) continue;
+                return uiInfo.View;
             }
 
             return null;
@@ -134,15 +134,15 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public UIBase GetUI(string uiAssetName)
+        public ViewBase GetUI(string uiAssetName)
         {
             if (string.IsNullOrEmpty(uiAssetName))
                 throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI.UIAssetName != uiAssetName) continue;
-                return uiInfo.UI;
+                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                return uiInfo.View;
             }
 
             return null;
@@ -153,15 +153,15 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiAssetName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public UIBase[] GetUIs(string uiAssetName)
+        public ViewBase[] GetUIs(string uiAssetName)
         {
             if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
-            var results = new List<UIBase>();
+            var results = new List<ViewBase>();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI.UIAssetName != uiAssetName) continue;
-                results.Add(uiInfo.UI);
+                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                results.Add(uiInfo.View);
             }
 
             return results.ToArray();
@@ -172,7 +172,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="uiAssetName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        public void GetUIs(string uiAssetName, List<UIBase> results)
+        public void GetUIs(string uiAssetName, List<ViewBase> results)
         {
             if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
             if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
@@ -180,8 +180,8 @@ namespace GameFrameX.UI.Runtime
             results.Clear();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI.UIAssetName != uiAssetName) continue;
-                results.Add(uiInfo.UI);
+                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                results.Add(uiInfo.View);
             }
         }
 
@@ -189,12 +189,12 @@ namespace GameFrameX.UI.Runtime
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <returns>界面组中的所有界面。</returns>
-        public UIBase[] GetAllUIs()
+        public ViewBase[] GetAllUIs()
         {
-            var results = new List<UIBase>();
+            var results = new List<ViewBase>();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                results.Add(uiInfo.UI);
+                results.Add(uiInfo.View);
             }
 
             return results.ToArray();
@@ -204,53 +204,53 @@ namespace GameFrameX.UI.Runtime
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <param name="results">界面组中的所有界面。</param>
-        public void GetAllUIs(List<UIBase> results)
+        public void GetAllUIs(List<ViewBase> results)
         {
             if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
 
             results.Clear();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                results.Add(uiInfo.UI);
+                results.Add(uiInfo.View);
             }
         }
 
         /// <summary>
         /// 往界面组增加界面。
         /// </summary>
-        /// <param name="ui">要增加的界面。</param>
-        public void AddUI(UIBase ui)
+        /// <param name="view">要增加的界面。</param>
+        public void AddUI(ViewBase view)
         {
-            m_UIInfos.AddFirst(UIInfo.Create(ui));
+            m_UIInfos.AddFirst(UIInfo.Create(view));
         }
 
         /// <summary>
         /// 从界面组移除界面。
         /// </summary>
-        /// <param name="ui">要移除的界面。</param>
-        public void RemoveUI(UIBase ui)
+        /// <param name="view">要移除的界面。</param>
+        public void RemoveUI(ViewBase view)
         {
-            UIInfo uiInfo = GetUIInfo(ui);
+            UIInfo uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", ui.SerialId, ui.UIAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIAssetName));
 
             if (!uiInfo.Covered)
             {
                 uiInfo.Covered = true;
-                ui.OnBeCover();
+                view.OnBeCover();
             }
 
             if (!uiInfo.Paused)
             {
                 uiInfo.Paused = true;
-                ui.OnPause();
+                view.OnPause();
             }
 
-            if (m_CachedNode != null && m_CachedNode.Value.UI == ui)
+            if (m_CachedNode != null && m_CachedNode.Value.View == view)
                 m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfos.Remove(uiInfo))
-                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), ui.SerialId, ui.UIAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIAssetName));
 
             ReferencePool.Release(uiInfo);
         }
@@ -273,7 +273,7 @@ namespace GameFrameX.UI.Runtime
                 var next = current.Next;
 
                 // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
-                current.Value.UI.OnDepthChanged(depth--);
+                current.Value.View.OnDepthChanged(depth--);
 
                 if (current.Value == null) return; // 可能在回调中被销毁，所有这里判断下
 
@@ -283,14 +283,14 @@ namespace GameFrameX.UI.Runtime
                     if (!current.Value.Covered)
                     {
                         current.Value.Covered = true;
-                        current.Value.UI.OnBeCover(); // 触发被覆盖回调
+                        current.Value.View.OnBeCover(); // 触发被覆盖回调
                         if (current.Value == null) return;
                     }
 
                     if (!current.Value.Paused)
                     {
                         current.Value.Paused = true;
-                        current.Value.UI.OnPause(); // 触发暂停回调
+                        current.Value.View.OnPause(); // 触发暂停回调
                         if (current.Value == null) return;
                     }
                 }
@@ -301,12 +301,12 @@ namespace GameFrameX.UI.Runtime
                     if (current.Value.Paused)
                     {
                         current.Value.Paused = false;
-                        current.Value.UI.OnResume(); // 触发恢复回调
+                        current.Value.View.OnResume(); // 触发恢复回调
                         if (current.Value == null) return;
                     }
 
                     // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
-                    if (current.Value.UI.PauseCoveredUI)
+                    if (current.Value.View.PauseCoveredUI)
                         isPause = true;
 
                     if (isCover)
@@ -315,7 +315,7 @@ namespace GameFrameX.UI.Runtime
                         if (!current.Value.Covered)
                         {
                             current.Value.Covered = true;
-                            current.Value.UI.OnBeCover(); // 触发被覆盖回调
+                            current.Value.View.OnBeCover(); // 触发被覆盖回调
                             if (current.Value == null) return;
                         }
                     }
@@ -324,7 +324,7 @@ namespace GameFrameX.UI.Runtime
                         if (current.Value.Covered)
                         {
                             current.Value.Covered = false;
-                            current.Value.UI.OnReveal(); // 触发重新显示回调
+                            current.Value.View.OnReveal(); // 触发重新显示回调
                             if (current.Value == null) return;
                         }
 
@@ -340,13 +340,13 @@ namespace GameFrameX.UI.Runtime
         /// 检查界面组中是否存在指定界面。
         /// </summary>
         /// <param name="uiAssetName">界面资源名称。</param>
-        /// <param name="ui">要检查的界面。</param>
+        /// <param name="view">要检查的界面。</param>
         /// <returns>是否存在指定界面。</returns>
-        public bool InternalHasInstanceUI(string uiAssetName, UIBase ui)
+        public bool InternalHasInstanceUI(string uiAssetName, ViewBase view)
         {
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI.UIAssetName != uiAssetName || uiInfo.UI != ui) continue;
+                if (uiInfo.View.UIAssetName != uiAssetName || uiInfo.View != view) continue;
                 return true;
             }
 
@@ -356,15 +356,15 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取UI界面的界面信息。
         /// </summary>
-        /// <param name="ui"></param>
+        /// <param name="view"></param>
         /// <returns></returns>
         /// <exception cref="GameFrameworkException"></exception>
-        private UIInfo GetUIInfo(UIBase ui)
+        private UIInfo GetUIInfo(ViewBase view)
         {
-            if (ui == null) throw new GameFrameworkException("传入的UI界面为空.");
+            if (view == null) throw new GameFrameworkException("传入的UI界面为空.");
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.UI != ui) continue;
+                if (uiInfo.View != view) continue;
                 return uiInfo;
             }
 

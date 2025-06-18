@@ -13,7 +13,6 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 打开界面成功事件。
     /// </summary>
-    
     public sealed class OpenUISuccessEventArgs : GameEventArgs
     {
         /// <summary>
@@ -29,7 +28,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public UIBase Base { get; private set; }
+        public ViewBase ViewBase { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -46,7 +45,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public OpenUISuccessEventArgs()
         {
-            Base     = null;
+            ViewBase = null;
             Duration = 0f;
             UserData = null;
         }
@@ -58,10 +57,10 @@ namespace GameFrameX.UI.Runtime
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static OpenUISuccessEventArgs Create(UIBase iuiBase, float duration, object userData)
+        public static OpenUISuccessEventArgs Create(ViewBase iuiBase, float duration, object userData)
         {
             var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
-            openUISuccessEventArgs.Base     = iuiBase;
+            openUISuccessEventArgs.ViewBase = iuiBase;
             openUISuccessEventArgs.Duration = duration;
             openUISuccessEventArgs.UserData = userData;
             return openUISuccessEventArgs;
@@ -72,7 +71,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            Base     = null;
+            ViewBase = null;
             Duration = 0f;
             UserData = null;
         }

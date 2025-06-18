@@ -18,14 +18,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 实例化界面。
         /// 此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
         /// </summary>
-        /// <param name="uiAsset">要实例化的界面资源。</param>
         /// <returns>实例化后的界面。</returns>
-        public static object InstantiateUI(object uiAsset)
+        public static GObject InstantiateUI(string packageName, string uiName)
         {
-            var openUIPackageInfo = (OpenUIPackageInfo)uiAsset;
-            GameFrameworkGuard.NotNull(openUIPackageInfo, nameof(uiAsset));
-
-            return UIPackage.CreateObject(openUIPackageInfo.PackageName, openUIPackageInfo.Name);
+            return UIPackage.CreateObject(packageName, uiName);
         }
 
         /// <summary>
@@ -36,7 +32,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiInstance">界面实例。</param>
         /// <param name="uiLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public static UIBase CreateUI(object uiInstance, Type uiLogicType)
+        public static ViewBase CreateUI(object uiInstance, Type uiLogicType)
         {
             if (uiInstance is not GComponent gComponent)
             {
@@ -45,7 +41,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             var logicComp = gComponent.displayObject.gameObject.GetOrAddComponent(uiLogicType);
-            if (logicComp is not UIBase ui)
+            if (logicComp is not ViewBase ui)
             {
                 Log.Error("UI界面逻辑组件不是IUI.");
                 return null;

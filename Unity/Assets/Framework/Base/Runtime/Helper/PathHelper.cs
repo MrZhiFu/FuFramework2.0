@@ -66,7 +66,7 @@ namespace GameFrameX.Runtime
         private static readonly StringBuilder CombinePathSb = new();
 
         /// <summary>
-        /// 拼接路径，如："Assets/Resources/","test.txt" => Assets/Resources/test.txt
+        /// 拼接路径，如："Assets/Resources/", "test.txt" => Assets/Resources/test.txt
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>

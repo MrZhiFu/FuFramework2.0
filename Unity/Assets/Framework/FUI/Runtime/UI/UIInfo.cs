@@ -10,7 +10,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 界面。
         /// </summary>
-        public UIBase UI { get; private set; }
+        public ViewBase View { get; private set; }
 
         /// <summary>
         /// 界面是否暂停(初始化时默认为false,即界面没有暂停)
@@ -28,11 +28,11 @@ namespace GameFrameX.UI.Runtime
         /// <param name="iuiBase">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="GameFrameworkException">界面为空时抛出。</exception>
-        public static UIInfo Create(UIBase iuiBase)
+        public static UIInfo Create(ViewBase iuiBase)
         {
             if (iuiBase == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<UIInfo>();
-            uiInfo.UI      = iuiBase;
+            uiInfo.View      = iuiBase;
             uiInfo.Paused  = true;
             uiInfo.Covered = true;
             return uiInfo;
@@ -43,7 +43,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            UI      = null;
+            View      = null;
             Paused  = false;
             Covered = false;
         }

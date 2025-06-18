@@ -8,9 +8,9 @@ using UnityEngine;
 namespace GameFrameX.UI.Runtime
 {
     /// <summary>
-    /// 界面。
+    /// 界面基类。
     /// </summary>
-    public abstract class UIBase : MonoBehaviour
+    public abstract class ViewBase : MonoBehaviour
     {
         private bool m_IsInit = false; //界面是否已初始化
         private int m_OriginalLayer = 0; //界面原始层级
@@ -116,7 +116,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, Action<UIBase> onInitAction, bool pauseCoveredUI,
+        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, Action<ViewBase> onInitAction, bool pauseCoveredUI,
             bool isNewInstance, object userData, bool isFullScreen = false)
         {
             SerialId = serialId;

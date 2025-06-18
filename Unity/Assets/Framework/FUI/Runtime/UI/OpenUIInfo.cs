@@ -20,6 +20,11 @@ namespace GameFrameX.UI.Runtime
         public Type UIType { get; private set; }
 
         /// <summary>
+        /// 界面资源包名
+        /// </summary>
+        public string PackageName { get; private set; }
+        
+        /// <summary>
         /// 获取界面是否全屏。
         /// </summary>
         public bool IsFullScreen { get; private set; } = false;
@@ -27,7 +32,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUI { get; private set; } = false;
+        public bool IsPauseBeCoveredUI { get; private set; } = false;
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -43,14 +48,15 @@ namespace GameFrameX.UI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFullScreen">界面是否全屏。</param>
         /// <returns>创建的打开界面的信息。</returns>
-        public static OpenUIInfo Create(int serialId, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen)
+        public static OpenUIInfo Create(int serialId, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen, string packageName)
         {
             var openUIInfo = ReferencePool.Acquire<OpenUIInfo>();
             openUIInfo.SerialId       = serialId;
-            openUIInfo.PauseCoveredUI = pauseCoveredUI;
+            openUIInfo.IsPauseBeCoveredUI = pauseCoveredUI;
             openUIInfo.UserData       = userData;
             openUIInfo.UIType         = uiType;
             openUIInfo.IsFullScreen   = isFullScreen;
+            openUIInfo.PackageName = packageName;
             return openUIInfo;
         }
 
@@ -59,9 +65,12 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            SerialId       = 0;
-            PauseCoveredUI = false;
-            UserData       = null;
+            SerialId           = 0;
+            UIType             = null;
+            PackageName        = null;
+            IsFullScreen       = false;
+            IsPauseBeCoveredUI = false;
+            UserData           = null;
         }
     }
 }

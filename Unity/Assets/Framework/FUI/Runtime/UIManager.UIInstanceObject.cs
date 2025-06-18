@@ -5,9 +5,9 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using FairyGUI;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
-using GameFrameX.UI.Runtime;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -25,7 +25,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// <param name="name"></param>
             /// <param name="uiInstance"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, object uiInstance)
+            public static UIInstanceObject Create(string name, GObject uiInstance)
             {
                 var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
                 uiInstanceObject.Initialize(name, uiInstance);

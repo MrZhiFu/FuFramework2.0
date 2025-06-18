@@ -6,7 +6,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// FUI界面基类
     /// </summary>
-    public class FUI : UIBase
+    public class FUI : ViewBase
     {
         /// <summary>
         /// 初始化UI

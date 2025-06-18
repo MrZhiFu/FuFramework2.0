@@ -24,7 +24,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     {
         private Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
         private HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
-        private Queue<UIBase>          m_WaitRecycleQueue; // 待回收的界面集合
+        private Queue<ViewBase>          m_WaitRecycleQueue; // 待回收的界面集合
 
         private AssetComponent    m_AssetManager;      // 资源管理器
         private ObjectPoolComponent m_ObjectPoolManager; // 对象池管理器
@@ -53,7 +53,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_UIGroupDict      = new Dictionary<UILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
             m_WaitReleaseSet   = new HashSet<int>();
-            m_WaitRecycleQueue = new Queue<UIBase>();
+            m_WaitRecycleQueue = new Queue<ViewBase>();
 
             m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
             m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UIInstanceObjectPool");
