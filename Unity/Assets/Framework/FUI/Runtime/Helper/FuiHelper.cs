@@ -32,7 +32,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiInstance">界面实例。</param>
         /// <param name="uiLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public static ViewBase CreateUI(object uiInstance, Type uiLogicType)
+        public static ViewBase CreateUI(GObject uiInstance, Type uiLogicType)
         {
             if (uiInstance is not GComponent gComponent)
             {

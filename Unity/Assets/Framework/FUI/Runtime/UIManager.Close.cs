@@ -93,7 +93,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             view.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIAssetName, uiGroup, userData);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup, userData);
             m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
             m_WaitRecycleQueue.Enqueue(view);
@@ -171,7 +171,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             view.OnClose(m_IsShutdown, userData);
             uiGroup.Refresh();
 
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIAssetName, uiGroup, userData);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup, userData);
             m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
             // 回收界面实例对象

@@ -57,7 +57,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIAssetName { get; private set; }
+        public string UIName { get; private set; }
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -96,10 +96,15 @@ namespace GameFrameX.UI.Runtime
         public int DepthInUIGroup => m_DepthInUIGroup;
 
         /// <summary>
-        /// 获取是否暂停被覆盖的界面。
+        /// 显示时是否暂停被覆盖的界面。
         /// </summary>
-        public bool PauseCoveredUI { get; private set; }
+        public virtual bool PauseCoveredUI { get; protected set; } = false;
 
+        /// <summary>
+        /// 是否是全屏界面。
+        /// </summary>
+        public virtual bool IsFullScreen { get; protected set; } = true;
+        
         /// <summary>
         /// 获取界面是否已唤醒。
         /// </summary>
@@ -109,26 +114,23 @@ namespace GameFrameX.UI.Runtime
         /// 初始化界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="uiGroup">界面所处的界面组。</param>
         /// <param name="uiInstance">界面实例。</param>
-        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isFullScreen">是否全屏</param>
-        public void Init(int serialId, string uiAssetName, UIGroup uiGroup, GObject uiInstance, bool pauseCoveredUI, bool isNewInstance, object userData, bool isFullScreen = false)
+        public void Init(int serialId, string uiName, UIGroup uiGroup, GObject uiInstance, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
             m_UIGroup = uiGroup;
-            PauseCoveredUI = pauseCoveredUI;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
             m_IsInit = true;
 
             FullName = GetType().FullName;
-            UIAssetName = uiAssetName;
+            UIName = uiName;
             m_DepthInUIGroup = 0;
             m_OriginalLayer = gameObject.layer;
 
@@ -141,7 +143,7 @@ namespace GameFrameX.UI.Runtime
                 GObject = uiInstance;
                 InitView();
 
-                if (isFullScreen) MakeFullScreen();
+                if (IsFullScreen) MakeFullScreen();
 
                 OnInit();
 
@@ -150,7 +152,7 @@ namespace GameFrameX.UI.Runtime
             }
             catch (Exception exception)
             {
-                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", SerialId, UIAssetName, exception);
+                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", SerialId, UIName, exception);
             }
         }
 

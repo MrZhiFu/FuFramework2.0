@@ -25,16 +25,6 @@ namespace GameFrameX.UI.Runtime
         public string PackageName { get; private set; }
         
         /// <summary>
-        /// 获取界面是否全屏。
-        /// </summary>
-        public bool IsFullScreen { get; private set; } = false;
-
-        /// <summary>
-        /// 获取是否暂停被覆盖的界面。
-        /// </summary>
-        public bool IsPauseBeCoveredUI { get; private set; } = false;
-
-        /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
         public object UserData { get; private set; } = null;
@@ -44,19 +34,15 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiType">界面类型。</param>
-        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isFullScreen">界面是否全屏。</param>
         /// <param name="packageName">界面资源包名。</param>
         /// <returns>创建的打开界面的信息。</returns>
-        public static OpenUIInfo Create(int serialId, Type uiType, bool pauseCoveredUI, object userData, bool isFullScreen, string packageName)
+        public static OpenUIInfo Create(int serialId, Type uiType, object userData, string packageName)
         {
             var openUIInfo = ReferencePool.Acquire<OpenUIInfo>();
             openUIInfo.SerialId       = serialId;
-            openUIInfo.IsPauseBeCoveredUI = pauseCoveredUI;
             openUIInfo.UserData       = userData;
             openUIInfo.UIType         = uiType;
-            openUIInfo.IsFullScreen   = isFullScreen;
             openUIInfo.PackageName = packageName;
             return openUIInfo;
         }
@@ -69,8 +55,6 @@ namespace GameFrameX.UI.Runtime
             SerialId           = 0;
             UIType             = null;
             PackageName        = null;
-            IsFullScreen       = false;
-            IsPauseBeCoveredUI = false;
             UserData           = null;
         }
     }

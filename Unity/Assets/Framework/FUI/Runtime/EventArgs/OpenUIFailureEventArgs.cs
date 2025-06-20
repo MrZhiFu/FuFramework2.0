@@ -34,18 +34,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIAssetName { get; private set; }
-
-
-        /// <summary>
-        /// 获取是否暂停被覆盖的界面。
-        /// </summary>
-        public bool PauseCoveredUI { get; private set; }
-
-        /// <summary>
-        /// 获取错误信息。
-        /// </summary>
-        public string ErrorMessage { get; private set; }
+        public string UIName { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -58,9 +47,7 @@ namespace GameFrameX.UI.Runtime
         public OpenUIFailureEventArgs()
         {
             SerialId       = 0;
-            UIAssetName    = null;
-            PauseCoveredUI = false;
-            ErrorMessage   = null;
+            UIName    = null;
             UserData       = null;
         }
 
@@ -68,19 +55,15 @@ namespace GameFrameX.UI.Runtime
         /// 创建打开界面失败事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiAssetName">界面资源名称。</param>
-        /// <param name="pauseCoveredUI">是否暂停被覆盖的界面。</param>
-        /// <param name="errorMessage">错误信息。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面失败事件。</returns>
-        public static OpenUIFailureEventArgs Create(int serialId, string uiAssetName, bool pauseCoveredUI, string errorMessage, object userData)
+        public static OpenUIFailureEventArgs Create(int serialId, string uiName, object userData)
         {
             var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
-            openUIFailureEventArgs.SerialId       = serialId;
-            openUIFailureEventArgs.UIAssetName    = uiAssetName;
-            openUIFailureEventArgs.PauseCoveredUI = pauseCoveredUI;
-            openUIFailureEventArgs.ErrorMessage   = errorMessage;
-            openUIFailureEventArgs.UserData       = userData;
+            openUIFailureEventArgs.SerialId     = serialId;
+            openUIFailureEventArgs.UIName       = uiName;
+            openUIFailureEventArgs.UserData     = userData;
             return openUIFailureEventArgs;
         }
 
@@ -90,9 +73,7 @@ namespace GameFrameX.UI.Runtime
         public override void Clear()
         {
             SerialId       = 0;
-            UIAssetName    = null;
-            PauseCoveredUI = false;
-            ErrorMessage   = null;
+            UIName    = null;
             UserData       = null;
         }
     }

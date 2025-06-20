@@ -110,7 +110,7 @@ namespace GameFrameX.UI.Runtime
         public bool HasUI(string uiAssetName)
         {
             if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
-            return m_UIInfos.Any(uiInfo => uiInfo.View.UIAssetName == uiAssetName);
+            return m_UIInfos.Any(uiInfo => uiInfo.View.UIName == uiAssetName);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace GameFrameX.UI.Runtime
 
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiAssetName) continue;
                 return uiInfo.View;
             }
 
@@ -160,7 +160,7 @@ namespace GameFrameX.UI.Runtime
             var results = new List<ViewBase>();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiAssetName) continue;
                 results.Add(uiInfo.View);
             }
 
@@ -180,7 +180,7 @@ namespace GameFrameX.UI.Runtime
             results.Clear();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIAssetName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiAssetName) continue;
                 results.Add(uiInfo.View);
             }
         }
@@ -232,7 +232,7 @@ namespace GameFrameX.UI.Runtime
         {
             UIInfo uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIName));
 
             if (!uiInfo.Covered)
             {
@@ -250,7 +250,7 @@ namespace GameFrameX.UI.Runtime
                 m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfos.Remove(uiInfo))
-                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIAssetName));
+                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIName));
 
             ReferencePool.Release(uiInfo);
         }
@@ -346,7 +346,7 @@ namespace GameFrameX.UI.Runtime
         {
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIAssetName != uiAssetName || uiInfo.View != view) continue;
+                if (uiInfo.View.UIName != uiAssetName || uiInfo.View != view) continue;
                 return true;
             }
 

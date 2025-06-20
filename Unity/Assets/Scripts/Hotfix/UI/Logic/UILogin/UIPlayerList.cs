@@ -81,7 +81,7 @@ namespace Hotfix.UI
             PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
             // 打开主界面
-            await UIManager.Instance.OpenUIAsync<UIMain>(Utility.Asset.Path.GetUIPath(nameof(UIMain)),false, UILayer.Floor);
+            await UIManager.Instance.OpenUIAsync<UIMain>();
 
             // 关闭当前界面
             UIManager.Instance.CloseUI(this);

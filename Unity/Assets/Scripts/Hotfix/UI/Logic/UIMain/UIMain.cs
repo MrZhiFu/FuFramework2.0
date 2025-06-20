@@ -30,7 +30,7 @@ namespace Hotfix.UI
         {
             // 请求背包信息
             await BagManager.Instance.RequestGetBagInfo();
-            await UIManager.Instance.OpenUIAsync<UIBag>(Utility.Asset.Path.GetUIPath(nameof(UIBag)), false, null);
+            await UIManager.Instance.OpenUIAsync<UIBag>();
         }
     }
 }
