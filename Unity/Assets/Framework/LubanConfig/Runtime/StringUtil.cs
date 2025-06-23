@@ -4,7 +4,7 @@ using UnityEngine.Scripting;
 
 namespace LuBan.Runtime
 {
-    [Preserve]
+   
     public static class StringUtil
     {
         public static string ToStr(object o)

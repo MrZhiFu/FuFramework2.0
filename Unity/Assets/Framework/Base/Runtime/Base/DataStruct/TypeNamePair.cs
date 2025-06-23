@@ -27,7 +27,7 @@ namespace GameFrameX.Runtime
         /// 初始化类型和名称的组合值的新实例。
         /// </summary>
         /// <param name="type">类型。</param>
-        [Preserve]
+       
         public TypeNamePair(Type type) : this(type, string.Empty) { }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="type">类型。</param>
         /// <param name="name">名称。</param>
-        [Preserve]
+       
         public TypeNamePair(Type type, string name)
         {
             m_Type = type ?? throw new GameFrameworkException("Type is invalid.");
@@ -45,13 +45,13 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 获取类型。
         /// </summary>
-        [Preserve]
+       
         public Type Type => m_Type;
 
         /// <summary>
         /// 获取名称。
         /// </summary>
-        [Preserve]
+       
         public string Name => m_Name;
 
         /// <summary>

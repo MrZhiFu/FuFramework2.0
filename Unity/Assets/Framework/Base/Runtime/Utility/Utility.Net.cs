@@ -12,7 +12,7 @@ namespace GameFrameX.Runtime
         /// 网络相关的对象工具类。
         /// 提供了获取网络相关信息的方法，如获取本机IP地址、获取域名的IP地址、获取第一个可用的端口号等。
         /// </summary>
-        [Preserve]
+       
         public static class Net
         {
             /// <summary>

@@ -15,7 +15,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     {
         /// <summary>
         /// 界面实例对象。
-        /// 用来将界面资源对象Target和界面实例对象绑定在一起，并提供界面实例对象回收的功能。
+        /// 用来将界面FUI对象和界面实例对象绑定在一起，并提供界面实例对象回收的功能。
         /// </summary>
         private sealed class UIInstanceObject : ObjectBase
         {

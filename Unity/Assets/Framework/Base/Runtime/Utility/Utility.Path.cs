@@ -46,7 +46,7 @@ namespace GameFrameX.Runtime
             /// <returns>是否移除空文件夹成功。</returns>
             public static bool RemoveEmptyDirectory(string directoryName)
             {
-                if (string.IsNullOrEmpty(directoryName)) throw new GameFrameworkException("Directory name is invalid.");
+                if (string.IsNullOrEmpty(directoryName)) throw new GameFrameworkException("要处理的文件夹名称不能为空.");
                 try
                 {
                     if (!Directory.Exists(directoryName)) return false;

@@ -24,7 +24,7 @@ namespace GameFrameX.Config.Runtime
     /// <summary>
     /// 数据表基础接口
     /// </summary>
-    [Preserve]
+   
     public interface IDataTable<T> : IDataTable where T : class
     {
         /// <summary>

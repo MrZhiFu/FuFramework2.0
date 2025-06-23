@@ -52,10 +52,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            SerialId           = 0;
-            UIType             = null;
-            PackageName        = null;
-            UserData           = null;
+            SerialId    = 0;
+            UIType      = null;
+            PackageName = null;
+            UserData    = null;
         }
     }
 }

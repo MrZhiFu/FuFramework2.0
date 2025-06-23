@@ -138,7 +138,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
                 // 初始化界面
                 var uiGroup = viewBase.UIGroup;
-                viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiGroup, uiInstance, isNewInstance, openUIInfo.UserData);
+                viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiInstance, isNewInstance, openUIInfo.UserData);
 
                 // 界面组中是否存在该界面，不存在则添加
                 if (!uiGroup.InternalHasInstanceUI(openUIInfo.UIType.Name, viewBase))
@@ -182,8 +182,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 加载界面资源成功回调。
         /// </summary>
-        /// <param name="duration"></param>
-        /// <param name="openUIInfo"></param>
+        /// <param name="openUIInfo">打开时的界面参数封装</param>
+        /// <param name="duration">打开的持续进度</param>
         /// <returns></returns>
         private ViewBase LoadAssetSuccessCallback(OpenUIInfo openUIInfo, float duration)
         {
@@ -206,11 +206,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
             var uiInstance = FuiHelper.InstantiateUI(packageName, uiName);
+            
+            // 创建界面实例对象并注册界面实例对象到对象池中
             var uiInstanceObject = UIInstanceObject.Create(uiName, uiInstance);
             m_InstancePool.Register(uiInstanceObject, true);
 
             // 打开界面
-            var ui = InternalOpenUI(openUIInfo, (GObject)uiInstanceObject.Target, true, duration);
+            var ui = InternalOpenUI(openUIInfo, uiInstance, true, duration);
 
             // 释放资源
             ReferencePool.Release(openUIInfo);

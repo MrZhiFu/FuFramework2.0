@@ -3,10 +3,10 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Download.Runtime
 {
-    [Preserve]
+   
     public class GameFrameXDownloadCroppingHelper : MonoBehaviour
     {
-        [Preserve]
+       
         private void Start()
         {
             _ = typeof(UnityWebRequestDownloadAgentHelper);

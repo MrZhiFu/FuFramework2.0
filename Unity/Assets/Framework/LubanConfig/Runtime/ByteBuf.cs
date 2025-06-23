@@ -6,7 +6,7 @@ using UnityEngine.Scripting;
 
 namespace LuBan.Runtime
 {
-    [Preserve]
+   
     public enum EDeserializeError
     {
         OK,
@@ -15,7 +15,7 @@ namespace LuBan.Runtime
         // UNMARSHAL_ERR,
     }
 
-    [Preserve]
+   
     public class SerializationException : Exception
     {
         public SerializationException()
@@ -31,7 +31,7 @@ namespace LuBan.Runtime
         }
     }
 
-    [Preserve]
+   
     public readonly struct SegmentSaveState
     {
         public SegmentSaveState(int readerIndex, int writerIndex)
@@ -45,7 +45,7 @@ namespace LuBan.Runtime
         public int WriterIndex { get; }
     }
 
-    [Preserve]
+   
     public sealed class ByteBuf : ICloneable, IEquatable<ByteBuf>
     {
         public ByteBuf()

@@ -6,7 +6,7 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Config.Runtime
 {
-    [Preserve]
+   
     public abstract class BaseDataTable<T> : IDataTable<T> where T : class
     {
         protected readonly SortedDictionary<long, T> LongDataMaps = new SortedDictionary<long, T>();

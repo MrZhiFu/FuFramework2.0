@@ -105,12 +105,12 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 界面组中是否存在界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUI(string uiAssetName)
+        public bool HasUI(string uiName)
         {
-            if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
-            return m_UIInfos.Any(uiInfo => uiInfo.View.UIName == uiAssetName);
+            if (string.IsNullOrEmpty(uiName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            return m_UIInfos.Any(uiInfo => uiInfo.View.UIName == uiName);
         }
 
         /// <summary>

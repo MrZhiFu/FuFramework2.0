@@ -3,10 +3,10 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Config.Runtime
 {
-    [Preserve]
+   
     public class GameFrameXConfigCroppingHelper : MonoBehaviour
     {
-        [Preserve]
+       
         private void Start()
         {
             _ = typeof(ConfigManager);

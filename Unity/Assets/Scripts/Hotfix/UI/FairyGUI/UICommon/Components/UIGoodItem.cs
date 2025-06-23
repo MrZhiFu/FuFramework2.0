@@ -44,7 +44,6 @@ namespace Hotfix.UI
                 fui = Create(go);
             }
 
-            fui.IsFromPool = true;
             return fui;
         }
 

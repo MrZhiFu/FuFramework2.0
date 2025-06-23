@@ -19,13 +19,13 @@ namespace GameFrameX.Runtime
             /// <summary>
             /// 发送者
             /// </summary>
-            [Preserve]
+           
             public object Sender { get; private set; } = null;
 
             /// <summary>
             /// 事件参数
             /// </summary>
-            [Preserve]
+           
             public T EventArgs { get; private set; } = null;
 
             /// <summary>
@@ -34,7 +34,7 @@ namespace GameFrameX.Runtime
             /// <param name="sender"></param>
             /// <param name="eventArgs"></param>
             /// <returns></returns>
-            [Preserve]
+           
             public static EventNode Create(object sender, T eventArgs)
             {
                 var eventNodeNode = ReferencePool.Acquire<EventNode>();

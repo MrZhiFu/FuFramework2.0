@@ -3,10 +3,10 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Fsm.Runtime
 {
-    [Preserve]
+   
     public class GameFrameXFsmCroppingHelper : MonoBehaviour
     {
-        [Preserve]
+       
         private void Start()
         {
             _ = typeof(IFsmManager);

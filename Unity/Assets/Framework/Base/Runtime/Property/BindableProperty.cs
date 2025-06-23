@@ -7,7 +7,7 @@ namespace GameFrameX.Runtime
     /// 可绑定属性，值变化时自动触发绑定事件
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [Preserve]
+   
     public sealed class BindableProperty<T>
     {
         private T m_value;
@@ -36,7 +36,7 @@ namespace GameFrameX.Runtime
         /// 默认构造函数
         /// </summary>
         /// <param name="defaultValue">默认值</param>
-        [Preserve]
+       
         public BindableProperty(T defaultValue = default) : this()
         {
             m_value = defaultValue;
@@ -48,7 +48,7 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="callback"></param>
         /// <returns></returns>
-        [Preserve]
+       
         public BindableProperty<T> Register(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
@@ -61,7 +61,7 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="callback"></param>
         /// <returns></returns>
-        [Preserve]
+       
         public BindableProperty<T> RegisterWithInitValue(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
@@ -73,7 +73,7 @@ namespace GameFrameX.Runtime
         /// 移除事件
         /// </summary>
         /// <param name="callback">事件</param>
-        [Preserve]
+       
         public void UnRegister(Action<T> callback)
         {
             GameFrameworkGuard.NotNull(callback, nameof(callback));
@@ -83,7 +83,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 清除事件
         /// </summary>
-        [Preserve]
+       
         public void Clear()
         {
             m_onValueChanged = null;

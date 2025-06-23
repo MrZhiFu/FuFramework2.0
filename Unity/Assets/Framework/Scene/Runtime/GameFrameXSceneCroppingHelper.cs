@@ -3,10 +3,10 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Scene.Runtime
 {
-    [Preserve]
+   
     public class GameFrameXSceneCroppingHelper : MonoBehaviour
     {
-        [Preserve]
+       
         private void Start()
         {
             _ = typeof(SceneComponent);

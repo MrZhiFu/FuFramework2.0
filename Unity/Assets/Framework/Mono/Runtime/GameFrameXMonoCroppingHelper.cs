@@ -3,10 +3,10 @@ using UnityEngine.Scripting;
 
 namespace GameFrameX.Mono.Runtime
 {
-    [Preserve]
+   
     public class GameFrameXMonoCroppingHelper : MonoBehaviour
     {
-        [Preserve]
+       
         private void Start()
         {
             _ = typeof(IMonoManager);

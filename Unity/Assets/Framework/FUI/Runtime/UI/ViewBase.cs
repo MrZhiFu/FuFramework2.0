@@ -13,12 +13,8 @@ namespace GameFrameX.UI.Runtime
     public abstract class ViewBase : MonoBehaviour
     {
         private bool m_IsInit = false; //界面是否已初始化
-        private int m_OriginalLayer = 0; //界面原始层级
         private int m_DepthInUIGroup; //界面在界面组中的深度
 
-        /// 界面所属的界面组。
-        private UIGroup m_UIGroup;
-        
         /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
@@ -34,11 +30,6 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public GObject GObject { get; set; }
         
-        /// <summary>
-        /// 获取界面是否来自对象池。
-        /// </summary>
-        protected bool IsFromPool { get; set; }
-
         /// <summary>
         /// 获取界面是否已被销毁。
         /// </summary>
@@ -84,11 +75,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public virtual UIGroup UIGroup
-        {
-            get => m_UIGroup;
-            protected set => m_UIGroup = value;
-        }
+        public virtual UIGroup UIGroup { get; protected set; } 
 
         /// <summary>
         /// 获取界面深度。
@@ -115,24 +102,21 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiName">界面资源名称。</param>
-        /// <param name="uiGroup">界面所处的界面组。</param>
         /// <param name="uiInstance">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, string uiName, UIGroup uiGroup, GObject uiInstance, bool isNewInstance, object userData)
+        public void Init(int serialId, string uiName, GObject uiInstance, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
-            m_UIGroup = uiGroup;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
             m_IsInit = true;
 
-            FullName = GetType().FullName;
             UIName = uiName;
+            FullName = GetType().FullName;
             m_DepthInUIGroup = 0;
-            m_OriginalLayer = gameObject.layer;
 
             if (!isNewInstance) return;
 
@@ -203,11 +187,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="isShutdown">是否是关闭界面管理器时触发。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnClose(bool isShutdown, object userData)
-        {
-            gameObject.SetLayerRecursively(m_OriginalLayer);
-            Visible = false;
-        }
+        public virtual void OnClose(bool isShutdown, object userData) => Visible = false;
 
         /// <summary>
         /// 界面暂停。

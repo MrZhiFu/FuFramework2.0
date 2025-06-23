@@ -2,7 +2,7 @@
 
 namespace LuBan.Runtime
 {
-    [Preserve]
+   
     public interface ITypeId
     {
         int GetTypeId();

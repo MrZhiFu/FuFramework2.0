@@ -4,7 +4,6 @@ using UnityEngine.Scripting;
 
 namespace UnityEngine
 {
-    [Preserve]
     public static class UnityEngageGameObjectExtension
     {
         private static readonly List<Transform> s_CachedTransforms = new List<Transform>();
@@ -15,7 +14,6 @@ namespace UnityEngine
         /// <typeparam name="T">要获取或增加的组件。</typeparam>
         /// <param name="gameObject">目标对象。</param>
         /// <returns>获取或增加的组件。</returns>
-        [Preserve]
         public static void DestroyComponent<T>(this GameObject gameObject) where T : Component
         {
             T component = gameObject.GetComponent<T>();
@@ -33,7 +31,6 @@ namespace UnityEngine
         /// <typeparam name="T">要获取或增加的组件。</typeparam>
         /// <param name="gameObject">目标对象。</param>
         /// <returns>获取或增加的组件。</returns>
-        [Preserve]
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
         {
             T component = gameObject.GetComponent<T>();
@@ -51,7 +48,6 @@ namespace UnityEngine
         /// <param name="gameObject">目标对象。</param>
         /// <param name="type">要获取或增加的组件类型。</param>
         /// <returns>获取或增加的组件。</returns>
-        [Preserve]
         public static Component GetOrAddComponent(this GameObject gameObject, Type type)
         {
             Component component = gameObject.GetComponent(type);
@@ -69,7 +65,6 @@ namespace UnityEngine
         /// <param name="gameObject">目标对象。</param>
         /// <returns>GameObject 是否在场景中。</returns>
         /// <remarks>若返回 true，表明此 GameObject 是一个场景中的实例对象；若返回 false，表明此 GameObject 是一个 Prefab。</remarks>
-        [Preserve]
         public static bool InScene(this GameObject gameObject)
         {
             return gameObject.scene.name != null;
@@ -80,7 +75,6 @@ namespace UnityEngine
         /// </summary>
         /// <param name="gameObject"><see cref="GameObject" /> 对象。</param>
         /// <param name="layer">目标层次的编号。</param>
-        [Preserve]
         public static void SetLayerRecursively(this GameObject gameObject, int layer)
         {
             gameObject.GetComponentsInChildren(true, s_CachedTransforms);

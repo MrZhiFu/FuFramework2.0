@@ -12,7 +12,7 @@ namespace GameFrameX.Runtime
     /// <summary>
     /// 引用强制检查类型。
     /// </summary>
-    [Preserve]
+   
     public enum ReferenceStrictCheckType : byte
     {
         /// <summary>

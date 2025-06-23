@@ -24,7 +24,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryReader">要读取的二进制流。</param>
     /// <returns>读取的 32 位有符号整数。</returns>
-    [Preserve]
+   
     public static int Read7BitEncodedInt32(this BinaryReader binaryReader)
     {
         int value = 0;
@@ -50,7 +50,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryWriter">要写入的二进制流。</param>
     /// <param name="value">要写入的 32 位有符号整数。</param>
-    [Preserve]
+   
     public static void Write7BitEncodedInt32(this BinaryWriter binaryWriter, int value)
     {
         uint num = (uint)value;
@@ -68,7 +68,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryReader">要读取的二进制流。</param>
     /// <returns>读取的 32 位无符号整数。</returns>
-    [Preserve]
+   
     public static uint Read7BitEncodedUInt32(this BinaryReader binaryReader)
     {
         return (uint)Read7BitEncodedInt32(binaryReader);
@@ -79,7 +79,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryWriter">要写入的二进制流。</param>
     /// <param name="value">要写入的 32 位无符号整数。</param>
-    [Preserve]
+   
     public static void Write7BitEncodedUInt32(this BinaryWriter binaryWriter, uint value)
     {
         Write7BitEncodedInt32(binaryWriter, (int)value);
@@ -90,7 +90,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryReader">要读取的二进制流。</param>
     /// <returns>读取的 64 位有符号整数。</returns>
-    [Preserve]
+   
     public static long Read7BitEncodedInt64(this BinaryReader binaryReader)
     {
         long value = 0L;
@@ -116,7 +116,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryWriter">要写入的二进制流。</param>
     /// <param name="value">要写入的 64 位有符号整数。</param>
-    [Preserve]
+   
     public static void Write7BitEncodedInt64(this BinaryWriter binaryWriter, long value)
     {
         ulong num = (ulong)value;
@@ -134,7 +134,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryReader">要读取的二进制流。</param>
     /// <returns>读取的 64 位无符号整数。</returns>
-    [Preserve]
+   
     public static ulong Read7BitEncodedUInt64(this BinaryReader binaryReader)
     {
         return (ulong)Read7BitEncodedInt64(binaryReader);
@@ -145,7 +145,7 @@ public static class BinaryExtension
     /// </summary>
     /// <param name="binaryWriter">要写入的二进制流。</param>
     /// <param name="value">要写入的 64 位无符号整数。</param>
-    [Preserve]
+   
     public static void Write7BitEncodedUInt64(this BinaryWriter binaryWriter, ulong value)
     {
         Write7BitEncodedInt64(binaryWriter, (long)value);
@@ -157,7 +157,7 @@ public static class BinaryExtension
     /// <param name="binaryReader">要读取的二进制流。</param>
     /// <param name="encryptBytes">密钥数组。</param>
     /// <returns>读取的字符串。</returns>
-    [Preserve]
+   
     public static string ReadEncryptedString(this BinaryReader binaryReader, byte[] encryptBytes)
     {
         byte length = binaryReader.ReadByte();
@@ -188,7 +188,7 @@ public static class BinaryExtension
     /// <param name="binaryWriter">要写入的二进制流。</param>
     /// <param name="value">要写入的字符串。</param>
     /// <param name="encryptBytes">密钥数组。</param>
-    [Preserve]
+   
     public static void WriteEncryptedString(this BinaryWriter binaryWriter, string value, byte[] encryptBytes)
     {
         if (string.IsNullOrEmpty(value))

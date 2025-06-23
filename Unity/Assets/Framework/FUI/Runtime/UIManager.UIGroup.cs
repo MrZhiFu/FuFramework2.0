@@ -86,6 +86,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             var component = new UIGroup();
             GRoot.inst.AddChild(component);
+            
             component.displayObject.name = layer.ToString();
             component.gameObjectName     = layer.ToString();
             component.name               = layer.ToString();
@@ -93,8 +94,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             component.AddRelation(GRoot.inst, RelationType.Width);
             component.AddRelation(GRoot.inst, RelationType.Height);
+            
             component.MakeFullScreen();
             component.Init(layer);
+            
             m_UIGroupDict.Add(layer, component);
             return true;
         }
