@@ -1,0 +1,23 @@
+using FairyGUI;
+
+#region ReSharper disable
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable CheckNamespace
+#endregion 
+
+namespace Game.Runtime.Logics.UI.View
+{
+    /// <summary>
+    /// 自定义组件绑定器
+    /// </summary>
+    public class #PKGNAME#Binder
+    {
+        /// <summary>
+        /// 绑定所有自定义组件
+        /// </summary>
+        public static void BindAll()
+        {
+#BinderComps#
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="174,174" extention="Button">
+  <controller name="button" pages="2,up,3,down" selected="0"/>
+  <displayList>
+    <image id="n37_dsha" name="bodder" src="l50q8" fileName="Res/goods/图层1_2.png" pkg="ats3vms3" xy="2,0" size="172,174">
+      <gearDisplay controller="button" pages="3"/>
+      <relation target="" sidePair="width-width,height-height"/>
+    </image>
+    <component id="n36_dsha" name="_compGoodItem" src="72ce2u" fileName="Comps/Goods/CompGoodItem.xml" pkg="ats3vms3" xy="7,7"/>
+  </displayList>
+  <Button mode="Check"/>
+</component>

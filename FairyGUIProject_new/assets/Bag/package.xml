@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="a3awyna7">
+  <resources>
+    <image id="l50q0" name="bg.png" path="/"/>
+    <component id="l50q1" name="WinBag.xml" path="/" exported="true"/>
+    <component id="l50q2" name="CompBagContent.xml" path="/Comps/" exported="true"/>
+    <component id="l50q3" name="CompBagItemInfo.xml" path="/Comps/" exported="true"/>
+    <component id="l50q4" name="CompTypeItem.xml" path="/Comps/"/>
+    <component id="l50q5" name="CompBagItem.xml" path="/Comps/" exported="true"/>
+    <image id="l50q6" name="avatar.png" path="/Res/"/>
+    <image id="l50q7" name="bg.png" path="/Res/"/>
+  </resources>
+  <publish name="" genCode="true"/>
+</packageDescription>

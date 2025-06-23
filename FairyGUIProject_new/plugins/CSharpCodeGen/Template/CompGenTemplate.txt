@@ -1,0 +1,115 @@
+using System;
+using FairyGUI;
+
+#region ReSharper disable
+
+#pragma warning disable CS0108, CS0114
+// ReSharper disable CheckNamespace
+
+#endregion
+
+namespace Game.Runtime.Logics.UI.View
+{
+    public partial class #COMPNAME# : #COMPTYPE#
+    {
+        /// 组件所属界面
+        private ViewBase view;
+
+#CompDefine#
+        /// <summary>
+        /// UI组件初始化
+        /// </summary>
+        public void DoInitUIComp()
+        {
+#CompInit#
+        }
+        
+        /// <summary>
+        /// UI组件事件初始化
+        /// </summary>
+        public void DoInitUIEvent()
+        {
+#INITUIEVENT#
+        }
+
+        /// <summary>
+        /// 添加UI组件事件监听
+        /// </summary>
+        protected void AddListener(EventListener listener, EventCallback1 callback)
+        {
+            view.AddListener(listener, callback);
+        }
+
+        /// <summary>
+        /// 移除UI组件事件监听
+        /// </summary>
+        protected void RemoveListener(EventListener listener, EventCallback1 callback)
+        {
+            view.RemoveListener(listener, callback);
+        }
+
+        /// <summary>
+        /// 设置UI组件事件监听
+        /// </summary>
+        protected void SetListener(EventListener listener, EventCallback1 callback)
+        {
+            view.SetListener(listener, callback);
+        }
+
+        /// <summary>
+        /// 清除UI组件事件监听
+        /// </summary>
+        protected void ClearListener(EventListener listener)
+        {
+            view.ClearListener(listener);
+        }
+
+        /// <summary>
+        /// 清除所有UI组件事件监听
+        /// </summary>
+        protected void ClearAllListener()
+        {
+            view.ClearAllListener();
+        }
+
+        /// <summary>
+        /// 执行计时任务
+        /// </summary>
+        protected int Schedule(Action<TimerContext> cb, float interval, float delay, int limitNum)
+        {
+            return view.Schedule(cb, interval, delay, limitNum);
+        }
+
+        /// <summary>
+        /// 执行计时任务一次
+        /// </summary>
+        protected int ScheduleOnce(Action<TimerContext> cb, float delay)
+        {
+            return view.ScheduleOnce(cb, delay);
+        }
+
+        /// <summary>
+        /// 取消计时任务
+        /// </summary>
+        protected void UnSchedule(Action<TimerContext> cb)
+        {
+            view.UnSchedule(cb);
+        }
+
+        /// <summary>
+        /// 取消计时任务
+        /// </summary>
+        protected void UnSchedule(int timer)
+        {
+            view.UnSchedule(timer);
+        }
+
+        /// <summary>
+        /// 取消所有计时任务
+        /// </summary>
+        protected void UnScheduleAll()
+        {
+            view.UnScheduleAll();
+        }
+    }
+}

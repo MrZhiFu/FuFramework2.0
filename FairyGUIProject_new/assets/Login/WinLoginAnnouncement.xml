@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="2160,1080">
+  <displayList>
+    <text id="n30_ts7x" name="_txtTitle" xy="1080,173" pivot="0.5,0.5" anchor="true" size="104,66" font="ui://f59y7iy8ghno32" fontSize="50" color="#e1c399" align="center" text="公告">
+      <relation target="" sidePair="center-center"/>
+    </text>
+    <richtext id="n31_7m3k" name="_txtContent" xy="440,439" size="1280,202" font="ui://f59y7iy8udcb2" fontSize="30" color="#d1c7ba" letterSpacing="1" ubb="true" vars="true" autoSize="height" autoClearText="true" text="更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本"/>
+  </displayList>
+</component>

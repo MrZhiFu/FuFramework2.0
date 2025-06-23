@@ -1,0 +1,115 @@
+
+
+========== 2023-03-21 14:43:10 ==========
+
+[ not find item ]:
+CompItemLanguage D:/_WorkSpace/GP0102/assets/Setup/Comp/Item/CompItemLanguage.xml
+
+[ text not set autoClearText ]:
+path: Activity/WinScoreActivity	name: _personalRankValue
+path: Activity/WinScoreActivity	name: _personalScoreValue
+path: Activity/Comps/Item/CompScoreItem	name: _taskProgressValue
+path: Activity/Comps/Item/CompScoreItem	name: _claimed
+path: Activity/WinScoreRankActivity	name: _tips
+path: Activity/WinScoreRankActivity	name: _tipTitle
+path: Activity/Comps/Item/itemActivity	name: _txtResNum
+path: Activity/Comps/Item/CompWeekDay	name: _date
+path: Activity/Comps/Item/CompWeekDay	name: _weekData
+path: Activity/WinActivityShowInfo	name: _activityName
+path: Activity/WinActivityShowInfo	name: _activityTime
+path: Alliance/Comps/Setup/CompAllianceSetupNone	name: _txtWarning
+path: Alliance/Comps/Tech/ItemTechDonate	name: tip
+path: Alliance/Comps/Tech/ItemTechDonate	name: _value
+path: Alliance/WinAlliancePeakBattleDeclareWar	name: _txtLocal
+path: Alliance/Comps/Item/CompItemAllianceMain	name: _txtNum
+path: ArmyFactory/Comps/itemTrainArmy	name: _txt
+path: ArmyFactory/Comps/sliderNum	name: _txtNum
+path: ArmyFactory/Comps/itemBuildInfo	name: _armNum
+path: ArmyFactory/Comps/itemArmyAtt	name: _txtValue
+path: Backpack/Comps/Item/CompItemBackpack	name: _stateText
+path: Backpack/WinUseItemsPopup	name: _itemName
+path: Building/Comps/Item/CompItemBuilding	name: _txtDesc
+path: Building/Comps/Item/CompItemBuilding	name: _txtMax
+path: Building/Comps/Item/CompItemBuilding	name: _txtLocked
+path: Building/Comps/Item/CompItemBuilding	name: _txtNumTitle
+path: Building/Comps/Item/CompItemBuilding	name: _txtNum
+path: Building/Comps/Item/itemResource	name: title
+path: CarFactory/Comps/Button/CompBtnTroops	name: title
+path: CarFactory/WinResearchDetails	name: _txtComplete
+path: CityUI/Comps/Item/CompMainTop	name: _txtId
+path: CityUI/Comps/Item/CompMainTop	name: _txtName
+path: CityUI/Comps/Item/CompMainTop	name: _txtAccount
+path: CityUI/Comps/Item/CompResourceTitle	name: TextTimeDesc
+path: CityUI/Comps/Item/CompResourceTitle	name: _utcTime
+path: CommandCentre/WinRecruit	name: _txtOrdinary
+path: CommandCentre/WinRecruit	name: _txtSenior
+path: CommandCentre/WinAppointmentPopup	name: _txtMax
+path: CommandCentre/WinAppointmentPopup	name: _txtStar
+path: CommandCentre/WinAppointmentPopup	name: _txtSkillVal
+path: CommandCentre/Comps/Misc/CompItemAppointment	name: _txtValFrom
+path: CommandCentre/Comps/Misc/CompItemAppointment	name: _txtValTo
+path: CommandCentre/WinSkill	name: _txtEmpty
+path: CommandCentre/Comps/Item/CompItemSkill	name: _barProgress
+path: CommandCentre/Comps/Button/CompBtnSkill	name: _txtDesc
+path: CommandCentre/Comps/Button/CompBtnHero	name: _txtBottomMid
+path: CommandCentre/Comps/Button/CompBtnHero	name: _txtName
+path: CommandCentre/Comps/Button/CompBtnHero	name: _txtTag
+path: CommandCentre/Comps/Item/CompItemLine	name: title
+path: CommandCentre/WinAdjutant	name: _txtPreview
+path: CommandCentre/WinAdjutant	name: _txtMax
+path: CommandCentre/WinAdjutant	name: _txtStoryContent
+path: CommandCentre/WinAdjutant	name: _txtStoryTitle
+path: CommandCentre/Comps/Misc/CompItemValueChange	name: _txtValFrom
+path: CommandCentre/Comps/Misc/CompItemValueChange	name: _txtValTo
+path: Common/Comps/Titles/itemTitleGroup	name: title
+path: Common/Comps/Slider/sliderNormal	name: title
+path: Common/WinRewardsDisplay	name: _tips
+path: Common/WinCommonShowTips	name: _content
+path: Common/Comps/Item/CompItemTip	name: _tipName
+path: Common/Comps/Item/CompItemTip	name: _tipNDesc
+path: Common/Comps/Item/CompRankCell	name: _score
+path: Common/Comps/Item/CompRankCell	name: _canRank
+path: Common/Comps/Item/CompRankCell	name: _noData
+path: Common/WinRename	name: _txtDesc
+path: Common/Comps/Item/CompItemResource2	name: _txtUseName
+path: Common/Comps/Button/CompBtnBackCity	name: title
+path: Common/Comps/Button/btnMultiple	name: title
+path: GM/Comps/Misc/CompInputWithTitle	name: _input
+path: GM/Comps/Misc/CompInputWithTitle	name: _txtTitle
+path: GM/Comps/Misc/confCell	name: txtValue
+path: GM/WinGMList	name: _txtNum
+path: Mail/Comps/Misc/CompItemMailText	name: _txtContent
+path: Mail/Comps/Module/CompItemMailRewardWithTitle	name: _txtTips
+path: Mail/WinMailCommonDetail	name: _txtTips
+path: Mail/Comps/Misc/CompMonsterIcon	name: _txtLv
+path: Mail/Comps/Misc/CompMonsterIcon	name: _txtMonsterStrength
+path: Mail/Comps/Item/CompItemDetailInfo3CompareWin	name: _txtTitle
+path: RankingList/Comps/Items/CompRankMain	name: _noData
+path: RankingList/Comps/Items/itemRankMe	name: _score
+path: RankingList/Comps/Items/itemRankMe	name: _canRank
+path: Skin/WinSkin	name: _txtLevel
+path: Skin/Comps/Item/CompItemSkin	name: _txtTitle
+path: Skin/WinSkinTitle	name: _txtLevel
+path: Skin/Comps/Item/CompItemTitle	name: _txtLevel
+path: Tech/WinTechDetailPopup	name: _txtTechMax
+path: Tech/Comps/item/CompConditionItem	name: _descText
+path: Tech/Comps/item/CompTechItem	name: _timeValue
+path: Titan/Comps/Button/CompBtnTitanHead	name: _txtNoActive
+path: Titan/Comps/Misc/CompItemUpgrade	name: _txtName
+path: Titan/Comps/Misc/CompItemEvolution	name: _txtName
+path: Titan/Comps/Misc/CompItemRouse	name: _txtTimeDot1
+path: Titan/Comps/Misc/CompItemRouse	name: _txtTimeDot2
+path: Titan/Comps/Misc/CompItemEquipment	name: _txtName
+path: Titan/WinTitanRename	name: _txtName
+path: TowerDefense/WinScoreRanking	name: _txtRanking
+path: TowerDefense/WinScoreRanking	name: _txtCommander
+path: TowerDefense/WinScoreRanking	name: _txtNumber
+path: WorldUI/WinScoutPopup	name: _txtTime
+path: WorldUI/Comps/Button/CompFavoriteItem	name: _timeTip
+
+
+========== 2023-03-21 23:05:52 ==========
+
+[ text not set autoClearText ]:
+path: Game/Win/WinMain	name: txt_Tittle
+path: Game/Win/WinSun	name: txt_Tittle

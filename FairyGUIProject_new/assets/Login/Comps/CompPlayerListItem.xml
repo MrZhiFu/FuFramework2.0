@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="900,178">
+  <displayList>
+    <graph id="n6_i3db" name="Bg" xy="0,0" size="900,178" type="rect" lineSize="4" fillColor="#c1666666">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <loader id="n1_i3db" name="_imgIcon" xy="0,3" size="176,172" align="center" vAlign="middle"/>
+    <richtext id="n2_i3db" name="_txtName" xy="235,2" size="421,66" fontSize="30" vAlign="middle" autoSize="none" bold="true" singleLine="true" autoClearText="true" text="OnGetPlayerList"/>
+    <richtext id="n3_i3db" name="_txtLevel" xy="235,98" size="421,66" fontSize="31" vAlign="middle" autoSize="none" bold="true" singleLine="true" autoClearText="true" text="OnGetPlayerList"/>
+    <component id="n4_i3db" name="_btnLogin" src="i3dbs9o" fileName="Comp/BtnLoginPlayerListItem.xml" xy="699,5">
+      <relation target="" sidePair="right-right"/>
+    </component>
+  </displayList>
+</component>

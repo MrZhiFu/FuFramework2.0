@@ -1,0 +1,52 @@
+using FairyGUI;
+
+#region ReSharper disable
+// ReSharper disable CheckNamespace
+// ReSharper disable ClassNeverInstantiated.Global
+#endregion 
+
+namespace Game.Runtime.Logics.UI.View
+{
+    public partial class #WINNAME# : ViewBase
+    {
+        public #WINNAME#(string pkgName, string uiName, params object[] args) : base(pkgName, uiName, args)
+        {
+            SetLayer((int)ViewLayer.Normal);
+        }
+
+        public override void DoInit()
+        {
+            base.DoInit();
+            InitUIComp();
+            InitUIEvent();
+        }
+
+        public override void DoOpen(object[] args)
+        {
+            base.DoOpen(args);
+            Refresh();
+        }
+        
+        public override void DoClose()
+        {
+            base.DoClose();
+        }
+
+        public override void DoDispose()
+        {
+            base.DoDispose();
+        }
+
+        /// <summary>
+        /// 刷新界面
+        /// </summary>
+        public void Refresh()
+        {
+           // TODO：刷新逻辑
+        }
+
+        #region UI组件事件处理
+    #HANDLER#
+        #endregion
+    }
+}

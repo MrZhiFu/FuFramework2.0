@@ -1,0 +1,44 @@
+using System;
+using FairyGUI;
+
+#region ReSharper disable
+// ReSharper disable CheckNamespace
+// ReSharper disable MemberCanBePrivate.Global
+#endregion 
+
+namespace Game.Runtime.Logics.UI.View
+{
+    public partial class #COMPNAME# : IViewCompBase
+    {
+        /// <summary>
+        /// UI组件初始化
+        /// </summary>
+        protected override void Init()
+        {
+        
+        }
+
+        /// <summary>
+        /// UI组件初始化
+        /// </summary>
+        public void DoInit(ViewBase viewBase)
+        {
+            view = viewBase;
+            DoInitUIComp();
+            DoInitUIEvent();
+            DoRegisterEvents();
+        }
+
+        /// <summary>
+        /// 注册组件相关逻辑事件
+        /// </summary>
+        public void DoRegisterEvents()
+        {
+            
+        }
+        
+        #region UI组件事件处理
+    #HANDLER#
+        #endregion
+    }
+}

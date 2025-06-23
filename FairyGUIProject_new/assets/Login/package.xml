@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="f011l0h9">
+  <resources>
+    <component id="nmd0c" name="WinLogin.xml" path="/" exported="true"/>
+    <component id="aneks9g" name="WinLoginAnnouncement.xml" path="/" exported="true"/>
+    <component id="xsvis9l" name="BtnLogin.xml" path="/Comps/"/>
+    <component id="i3dbs9m" name="WinPlayerList.xml" path="/" exported="true"/>
+    <component id="i3dbs9n" name="CompPlayerListItem.xml" path="/Comps/" exported="true"/>
+    <component id="i3dbs9o" name="BtnLoginPlayerListItem.xml" path="/Comps/"/>
+    <component id="i3dbs9p" name="WinPlayerCreate.xml" path="/" exported="true"/>
+    <image id="i3dbs9q" name="Button BG.png" path="/Res/"/>
+    <image id="ob7as9r" name="Background.png" path="/Res/"/>
+  </resources>
+  <publish name="" genCode="true"/>
+</packageDescription>

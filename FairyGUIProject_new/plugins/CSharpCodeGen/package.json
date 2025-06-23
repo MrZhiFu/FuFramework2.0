@@ -1,0 +1,11 @@
+{
+  "name": "CSharpCodeGen",
+  "displayName": "",
+  "description": "Gen C# code, Include \"Win\", \"Comp\",  \"CompBinder\"",
+  "version": "1.0",
+  "author": {
+    "name": "MrFuge"
+  },
+  "icon": "",
+  "main": "main.lua"
+}

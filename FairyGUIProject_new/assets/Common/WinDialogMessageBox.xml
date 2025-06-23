@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="1080,2340">
+  <displayList>
+    <graph id="n8_iopl" name="Bg" xy="0,0" size="1080,2340" type="rect" lineSize="0" fillColor="#66000000">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <image id="n3_iopl" name="Bg1" src="flr49" fileName="Res/bg/dialog_bg.png" xy="119,988" size="842,532">
+      <relation target="" sidePair="center-center,middle-middle"/>
+    </image>
+    <richtext id="n6_iopl" name="_txtContent" xy="211,1134" size="657,239" fontSize="30" color="#333333" autoSize="none" autoClearText="true" text="较高冷淡开召开C型解开返矿三肯将发骚略开销解开装三开返矿隆基分开手打就劳烦开动捷富凯囧as开饭开市大吉开动副将扫街分开动静开饭闪刀姬分开冬季开发开解开反动开机费开始单开捷富凯动静劳烦董凯捷富凯三劳烦劳动节开发">
+      <relation target="n3_iopl" sidePair="center-center,middle-middle"/>
+    </richtext>
+    <component id="n1_iopl" name="_btnOk" src="flr41k" fileName="Comps/button/UIYellowCheckButton.xml" xy="285,1419" size="196,76">
+      <relation target="n3_iopl" sidePair="left-left%,bottom-bottom"/>
+      <Button title="确认"/>
+    </component>
+    <component id="n2_iopl" name="_btnNo" src="iopl2m" fileName="Comps/button/UIWhiteCheckButton.xml" xy="583,1419" size="196,76">
+      <relation target="n3_iopl" sidePair="right-right%,bottom-bottom"/>
+      <Button title="取消"/>
+    </component>
+  </displayList>
+</component>

@@ -1,0 +1,11 @@
+{
+	"name": "com.fairygui.plugin.resnameformatter",
+	"displayName": "ResNameFormatter",
+	"description": "Format Resources Name.",
+	"version": "0.0.1",
+	"author": {
+		"name": "starunion.com"
+	},
+	"icon": "",
+	"main": "main.lua"
+}
