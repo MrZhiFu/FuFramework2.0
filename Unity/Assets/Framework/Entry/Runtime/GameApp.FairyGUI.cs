@@ -6,7 +6,7 @@ public static partial class GameApp
     /// <summary>
     /// 获取UI组件。
     /// </summary>
-    public static FairyGUIComponent FUI
+    public static FairyGUIComponent ViewBase
     {
         get
         {

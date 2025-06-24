@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIGoodItem : FUI
+    public sealed partial class UIGoodItem : ViewBase
     {
         public const string UIPackageName = "UICommon";
         public const string UIResName = "UIGoodItem";

@@ -9,7 +9,7 @@ using GameFrameX.Runtime;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIAnnouncement : FUI
+    public sealed partial class UIAnnouncement : ViewBase
     {
         public const string UIPackageName = "UILogin";
         public const string UIResName = "UIAnnouncement";

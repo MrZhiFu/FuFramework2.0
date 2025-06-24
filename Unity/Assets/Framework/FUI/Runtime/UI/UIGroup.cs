@@ -132,16 +132,16 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public ViewBase GetUI(string uiAssetName)
+        public ViewBase GetUI(string uiName)
         {
-            if (string.IsNullOrEmpty(uiAssetName))
+            if (string.IsNullOrEmpty(uiName))
                 throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiName) continue;
                 return uiInfo.View;
             }
 
@@ -151,16 +151,16 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public ViewBase[] GetUIs(string uiAssetName)
+        public ViewBase[] GetUIs(string uiName)
         {
-            if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            if (string.IsNullOrEmpty(uiName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
 
             var results = new List<ViewBase>();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiName) continue;
                 results.Add(uiInfo.View);
             }
 
@@ -170,17 +170,17 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="results">要获取的界面。</param>
-        public void GetUIs(string uiAssetName, List<ViewBase> results)
+        public void GetUIs(string uiName, List<ViewBase> results)
         {
-            if (string.IsNullOrEmpty(uiAssetName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            if (string.IsNullOrEmpty(uiName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
             if (results == null) throw new GameFrameworkException("传入的结果列表为空.");
 
             results.Clear();
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIName != uiAssetName) continue;
+                if (uiInfo.View.UIName != uiName) continue;
                 results.Add(uiInfo.View);
             }
         }
@@ -339,14 +339,14 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 检查界面组中是否存在指定界面。
         /// </summary>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="view">要检查的界面。</param>
         /// <returns>是否存在指定界面。</returns>
-        public bool InternalHasInstanceUI(string uiAssetName, ViewBase view)
+        public bool InternalHasInstanceUI(string uiName, ViewBase view)
         {
             foreach (UIInfo uiInfo in m_UIInfos)
             {
-                if (uiInfo.View.UIName != uiAssetName || uiInfo.View != view) continue;
+                if (uiInfo.View.UIName != uiName || uiInfo.View != view) continue;
                 return true;
             }
 

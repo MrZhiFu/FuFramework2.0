@@ -30,11 +30,11 @@ namespace GameFrameX.UI.Runtime
         /// <exception cref="GameFrameworkException">界面为空时抛出。</exception>
         public static UIInfo Create(ViewBase iuiBase)
         {
-            if (iuiBase == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
+            if (!iuiBase) throw new GameFrameworkException("ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<UIInfo>();
-            uiInfo.View      = iuiBase;
-            uiInfo.Paused  = true;
-            uiInfo.Covered = true;
+            uiInfo.View    = iuiBase;
+            uiInfo.Paused  = false;
+            uiInfo.Covered = false;
             return uiInfo;
         }
 
@@ -43,7 +43,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            View      = null;
+            View    = null;
             Paused  = false;
             Covered = false;
         }

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using GameFrameX.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {

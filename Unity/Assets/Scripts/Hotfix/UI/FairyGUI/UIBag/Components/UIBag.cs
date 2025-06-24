@@ -9,7 +9,7 @@ using GameFrameX.Runtime;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIBag : FUI
+    public sealed partial class UIBag : ViewBase
     {
         public const string UIPackageName = "UIBag";
         public const string UIResName = "UIBag";

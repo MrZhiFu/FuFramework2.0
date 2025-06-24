@@ -1,6 +1,6 @@
 using System;
+using GameFrameX.UI.Runtime;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -15,7 +15,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_Types = new Type[]
             {
                 typeof(GObjectHelper),
-                typeof(FUI),
+                typeof(ViewBase),
                 typeof(UIManager),
                 typeof(FuiLoadAsyncResourceHelper),
                 typeof(FuiPackageManager),

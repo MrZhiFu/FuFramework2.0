@@ -9,7 +9,7 @@ using GameFrameX.Runtime;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIDialogWithoutButton : FUI
+    public sealed partial class UIDialogWithoutButton : ViewBase
     {
         public const string UIPackageName = "UICommon";
         public const string UIResName = "UIDialogWithoutButton";

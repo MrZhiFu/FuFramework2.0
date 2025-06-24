@@ -35,7 +35,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIAssetName { get; private set; }
+        public string UIName { get; private set; }
 
         /// <summary>
         /// 获取界面所属的界面组。
@@ -53,7 +53,7 @@ namespace GameFrameX.UI.Runtime
         public CloseUICompleteEventArgs()
         {
             SerialId    = 0;
-            UIAssetName = null;
+            UIName = null;
             UIGroup     = null;
             UserData    = null;
         }
@@ -62,15 +62,15 @@ namespace GameFrameX.UI.Runtime
         /// 创建关闭界面完成事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiAssetName">界面资源名称。</param>
+        /// <param name="uiName">界面资源名称。</param>
         /// <param name="uiGroup">界面所属的界面组。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUICompleteEventArgs Create(int serialId, string uiAssetName, UIGroup uiGroup, object userData)
+        public static CloseUICompleteEventArgs Create(int serialId, string uiName, UIGroup uiGroup, object userData)
         {
             var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId    = serialId;
-            closeUICompleteEventArgs.UIAssetName = uiAssetName;
+            closeUICompleteEventArgs.UIName = uiName;
             closeUICompleteEventArgs.UIGroup     = uiGroup;
             closeUICompleteEventArgs.UserData    = userData;
             return closeUICompleteEventArgs;
@@ -82,7 +82,7 @@ namespace GameFrameX.UI.Runtime
         public override void Clear()
         {
             SerialId    = 0;
-            UIAssetName = null;
+            UIName = null;
             UIGroup     = null;
             UserData    = null;
         }

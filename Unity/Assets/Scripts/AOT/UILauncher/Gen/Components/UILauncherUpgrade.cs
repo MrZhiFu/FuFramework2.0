@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Unity.Startup
 {
-    public sealed partial class UILauncherUpgrade : FUI
+    public sealed partial class UILauncherUpgrade : ViewBase
     {
         public const string UIPackageName = "UILauncher";
         public const string UIResName = "UILauncherUpgrade";

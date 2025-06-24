@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIBagItemInfo : FUI
+    public sealed partial class UIBagItemInfo : ViewBase
     {
         public const string UIPackageName = "UIBag";
         public const string UIResName = "UIBagItemInfo";

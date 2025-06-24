@@ -1,5 +1,6 @@
 ﻿using FairyGUI;
 using System.Collections.Generic;
+using GameFrameX.UI.Runtime;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -12,7 +13,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 界面组件池
         /// </summary>
-        private static readonly Dictionary<GObject, FUI> GObject2UIDict = new();
+        private static readonly Dictionary<GObject, ViewBase> GObject2UIDict = new();
 
         /// <summary>
         /// 从组件池中获取UI对象
@@ -20,7 +21,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="self"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns>UI对象</returns>
-        public static T Get<T>(this GObject self) where T : FUI
+        public static T Get<T>(this GObject self) where T : ViewBase
         {
             if (self != null && GObject2UIDict.TryGetValue(self, out var pair)) 
                 return pair as T;
@@ -33,7 +34,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="self"></param>
         /// <param name="fui">UI对象</param>
-        public static void Add(this GObject self, FUI fui)
+        public static void Add(this GObject self, ViewBase fui)
         {
             if (self == null || fui == null) return;
             GObject2UIDict[self] = fui;
@@ -44,7 +45,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="self"></param>
         /// <returns>UI对象</returns>
-        public static FUI Remove(this GObject self)
+        public static ViewBase Remove(this GObject self)
         {
             if (self != null && GObject2UIDict.Remove(self, out var value)) return value;
             return null;

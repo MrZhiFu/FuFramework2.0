@@ -1,6 +1,5 @@
 ﻿using System;
 using FairyGUI;
-using GameFrameX.Event.Runtime;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
@@ -10,30 +9,10 @@ namespace GameFrameX.UI.Runtime
     /// <summary>
     /// 界面基类。
     /// </summary>
-    public abstract class ViewBase : MonoBehaviour
+    public abstract partial class ViewBase : MonoBehaviour
     {
         private bool m_IsInit = false; //界面是否已初始化
         private int m_DepthInUIGroup; //界面在界面组中的深度
-
-        /// <summary>
-        /// 获取用户自定义数据。
-        /// </summary>
-        public object UserData { get; private set; }
-
-        /// <summary>
-        /// 获取界面事件订阅器。
-        /// </summary>
-        public EventRegister EventRegister { get; private set; }
-
-        /// <summary>
-        /// UI 对象
-        /// </summary>
-        public GObject GObject { get; set; }
-        
-        /// <summary>
-        /// 获取界面是否已被销毁。
-        /// </summary>
-        protected bool IsDisposed { get; set; }
 
         /// <summary>
         /// 获取界面序列编号。
@@ -41,14 +20,34 @@ namespace GameFrameX.UI.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
+        /// 获取界面资源名称。
+        /// </summary>
+        public string UIName { get; private set; }
+
+        /// <summary>
         /// 获取界面完整名称。
         /// </summary>
         public string FullName { get; private set; }
 
         /// <summary>
-        /// 获取界面资源名称。
+        /// UI 对象
         /// </summary>
-        public string UIName { get; private set; }
+        public GObject GObject { get; set; }
+
+        /// <summary>
+        /// 获取用户自定义数据。
+        /// </summary>
+        public object UserData { get; private set; }
+
+        /// <summary>
+        /// 获取界面是否已被销毁。
+        /// </summary>
+        protected bool IsDisposed { get; set; }
+
+        /// <summary>
+        /// 获取界面事件订阅器。
+        /// </summary>
+        public EventRegister EventRegister { get; private set; }
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -136,106 +135,9 @@ namespace GameFrameX.UI.Runtime
             }
             catch (Exception exception)
             {
-                Log.Error("UI界面'[{0}]{1}' 初始化发生异常：'{2}'.", SerialId, UIName, exception);
+                Log.Error($"UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
             }
         }
-
-        /// <summary>
-        /// 界面初始化前执行
-        /// </summary>
-        public virtual void OnAwake() => IsAwake = true;
-
-        /// <summary>
-        /// 界面初始化。
-        /// </summary>
-        protected virtual void InitView() { }
-
-        /// <summary>
-        /// 初始化界面。
-        /// </summary>
-        public virtual void OnInit() { }
-
-        /// <summary>
-        /// 界面回收。
-        /// </summary>
-        public virtual void OnRecycle()
-        {
-            SerialId = 0;
-            m_DepthInUIGroup = 0;
-            PauseCoveredUI = true;
-        }
-
-        /// <summary>
-        /// 界面打开。
-        /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnOpen(object userData)
-        {
-            Visible = true;
-            UserData = userData;
-        }
-
-        /// <summary>
-        /// 界面轮询。
-        /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        public virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
-
-        /// <summary>
-        /// 界面关闭。
-        /// </summary>
-        /// <param name="isShutdown">是否是关闭界面管理器时触发。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnClose(bool isShutdown, object userData) => Visible = false;
-
-        /// <summary>
-        /// 界面暂停。
-        /// </summary>
-        public virtual void OnPause() => Visible = false;
-
-        /// <summary>
-        /// 界面暂停恢复。
-        /// </summary>
-        public virtual void OnResume() => Visible = true;
-
-        /// <summary>
-        /// 界面遮挡。
-        /// </summary>
-        public virtual void OnBeCover() { }
-
-        /// <summary>
-        /// 界面遮挡恢复。
-        /// </summary>
-        public virtual void OnReveal() { }
-
-        /// <summary>
-        /// 界面深度改变。
-        /// </summary>
-        /// <param name="depthInUIGroup">界面在界面组中的深度。</param>
-        public void OnDepthChanged(int depthInUIGroup) => m_DepthInUIGroup = depthInUIGroup;
-
-        /// <summary>
-        /// 销毁界面.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            if (IsDisposed) return;
-            EventRegister.UnSubscribeAll();
-            IsDisposed = true;
-        }
-
-        /// <summary>
-        /// 本地化语言改变事件处理函数。
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnLocalizationLanguageChanged(object sender, GameEventArgs e) => UpdateLocalization();
-
-        /// <summary>
-        /// 界面更新本地化。
-        /// </summary>
-        public virtual void UpdateLocalization() { }
 
         /// <summary>
         /// 设置UI对象

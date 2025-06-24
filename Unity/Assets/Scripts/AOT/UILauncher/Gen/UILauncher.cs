@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Unity.Startup
 {
-    public sealed partial class UILauncher : FUI
+    public sealed partial class UILauncher : ViewBase
     {
         public const string UIPackageName = "UILauncher";
         public const string UIResName = "UILauncher";

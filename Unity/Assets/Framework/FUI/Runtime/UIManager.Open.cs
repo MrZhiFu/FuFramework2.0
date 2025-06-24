@@ -159,8 +159,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             catch (Exception exception)
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, openUIInfo.UIType.Name, openUIInfo.UserData);
-                Log.Error($"打开UI界面失败, 资源名称 '{openUIInfo.UIType.Name}', 错误信息 '{exception}'.");
                 m_EventComponent.Fire(this, openUIFailureEventArgs);
+                Log.Error($"打开UI界面失败, 资源名称 '{openUIInfo.UIType.Name}', 错误信息 '{exception}'.");
                 return GetUI(openUIFailureEventArgs.SerialId);
             }
         }
@@ -194,9 +194,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var packageName = openUIInfo.PackageName;
 
             // 检查是否是等待释放的界面，如果是，说明还没有被真正释放，则直接返回界面
-            if (m_WaitReleaseSet.Contains(serialId))
+            if (m_LoadingInCloseSet.Contains(serialId))
             {
-                m_WaitReleaseSet.Remove(serialId);
+                m_LoadingInCloseSet.Remove(serialId);
                 ReferencePool.Release(openUIInfo);
                 return GetUI(serialId);
             }
@@ -229,16 +229,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
 
-            if (m_WaitReleaseSet.Contains(openUIInfo.SerialId))
+            if (m_LoadingInCloseSet.Contains(openUIInfo.SerialId))
             {
-                m_WaitReleaseSet.Remove(openUIInfo.SerialId);
+                m_LoadingInCloseSet.Remove(openUIInfo.SerialId);
                 return GetUI(openUIInfo.SerialId);
             }
 
             m_LoadingDict.Remove(openUIInfo.SerialId);
-            var appendErrorMessage = Utility.Text.Format("加载界面资源失败, 界面资源名 '{0}', 错误信息 '{1}'.", openUIInfo.UIType.Name, errorMessage);
             var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, openUIInfo.UIType.Name, openUIInfo.UserData);
             m_EventComponent.Fire(this, openUIFailureEventArgs);
+            Log.Error("加载界面资源失败, 界面资源名 '{0}', 错误信息 '{1}'.", openUIInfo.UIType.Name, errorMessage);
             return GetUI(openUIInfo.SerialId);
         }
     }

@@ -22,9 +22,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// </summary>
     public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager>
     {
-        private Dictionary<int, string> m_LoadingDict;      // 正在加载的界面集合, key为界面Id, value为界面名称
-        private HashSet<int>            m_WaitReleaseSet;   // 待释放的界面集合，int为界面Id
-        private Queue<ViewBase>         m_WaitRecycleQueue; // 待回收的界面集合
+        private Dictionary<int, string> m_LoadingDict;       // 正在加载中的界面字典, key为界面Id, value为界面名称
+        private HashSet<int>            m_LoadingInCloseSet; // 正在加载中被关闭的界面集合，int为界面Id，防止在打开界面时重复创建界面实例对象
+        private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
 
         private AssetComponent      m_AssetManager;          // 资源管理器
         private ObjectPoolComponent m_ObjectPoolManager;     // 对象池管理器
@@ -50,10 +50,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         protected override void Init()
         {
-            m_UIGroupDict      = new Dictionary<UILayer, UIGroup>();
-            m_LoadingDict      = new Dictionary<int, string>();
-            m_WaitReleaseSet   = new HashSet<int>();
-            m_WaitRecycleQueue = new Queue<ViewBase>();
+            m_UIGroupDict       = new Dictionary<UILayer, UIGroup>();
+            m_LoadingDict       = new Dictionary<int, string>();
+            m_LoadingInCloseSet = new HashSet<int>();
+            m_WaitRecycleQueue  = new Queue<ViewBase>();
 
             m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
             m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UIInstanceObjectPool");
@@ -139,10 +139,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private void Shutdown()
         {
             m_IsShutdown = true;
-            CloseAllLoadedUIs();
+            CloseAllUIs();
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
-            m_WaitReleaseSet.Clear();
+            m_LoadingInCloseSet.Clear();
             m_WaitRecycleQueue.Clear();
         }
     }

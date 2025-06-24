@@ -10,7 +10,7 @@ namespace Hotfix.UI
     {
         public override void OnAwake()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
+            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Fixed);
             base.OnAwake();
         }
 

@@ -9,7 +9,7 @@ using GameFrameX.Runtime;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIDialogMessageBox : FUI
+    public sealed partial class UIDialogMessageBox : ViewBase
     {
         public const string UIPackageName = "UICommon";
         public const string UIResName = "UIDialogMessageBox";

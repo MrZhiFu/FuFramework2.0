@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIPlayerListItemLoginButton : FUI
+    public sealed partial class UIPlayerListItemLoginButton : ViewBase
     {
         public const string UIPackageName = "UILogin";
         public const string UIResName = "UIPlayerListItemLoginButton";

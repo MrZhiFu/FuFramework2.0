@@ -9,7 +9,7 @@ using GameFrameX.Runtime;
 
 namespace Hotfix.UI
 {
-    public sealed partial class UIPlayerList : FUI
+    public sealed partial class UIPlayerList : ViewBase
     {
         public const string UIPackageName = "UILogin";
         public const string UIResName = "UIPlayerList";
