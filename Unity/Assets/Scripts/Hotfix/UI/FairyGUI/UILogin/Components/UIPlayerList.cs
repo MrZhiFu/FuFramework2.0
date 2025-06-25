@@ -34,7 +34,7 @@ namespace Hotfix.UI
                 return;
             }
 
-            self = (GComponent)View;
+            self = View;
             self.Add(this);
             
             var com = View.asCom;
@@ -51,11 +51,6 @@ namespace Hotfix.UI
 
         public override void OnDispose()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
-
             base.OnDispose();
             self.Remove();
 			m_IsSelected = null;

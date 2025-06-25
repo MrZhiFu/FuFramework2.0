@@ -63,11 +63,6 @@ namespace Hotfix.UI
 
         public override void OnDispose()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
-
             base.OnDispose();
             self.Remove();
 			m_IsCanUse = null;

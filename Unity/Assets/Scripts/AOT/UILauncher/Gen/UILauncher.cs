@@ -54,11 +54,6 @@ namespace Unity.Startup
 
         public override void OnDispose()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
-
             base.OnDispose();
             self.Remove();
 			m_IsUpgrade = null;

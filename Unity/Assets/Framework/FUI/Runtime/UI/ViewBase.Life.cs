@@ -116,8 +116,6 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnDispose()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            if (IsDisposed) return;
-            IsDisposed = true;
         }
 
         /// <summary>
