@@ -26,15 +26,15 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GComponent)UIComp;
+            self = (GComponent)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_enter_button = (GButton)com.GetChild("enter_button");
@@ -43,14 +43,14 @@ namespace Hotfix.UI
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_enter_button = null;
 			m_cancel_button = null;

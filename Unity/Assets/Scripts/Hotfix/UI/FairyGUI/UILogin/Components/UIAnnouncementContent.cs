@@ -29,36 +29,36 @@ namespace Hotfix.UI
         public static UIAnnouncementContent Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIAnnouncementContent>();
-            fui?.SetUIComp(go);
+            fui?.SetUIView(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GComponent)UIComp;
+            self = (GComponent)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_LabelContent = (GRichTextField)com.GetChild("LabelContent");
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_LabelContent = null;
             self = null;            

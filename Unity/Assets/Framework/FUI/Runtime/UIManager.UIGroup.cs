@@ -82,7 +82,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns>是否增加界面组成功。</returns>
         public bool AddUIGroup(UILayer layer)
         {
-            if (HasUIGroup(layer)) return false;
+            if (HasUIGroup(layer))
+            {
+                Log.Warning($"UI界面组{layer}已存在!");
+                return false;
+            }
 
             var component = new UIGroup();
             GRoot.inst.AddChild(component);

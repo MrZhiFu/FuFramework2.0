@@ -209,23 +209,5 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             return iuiBase != null && HasUI(iuiBase.SerialId);
         }
-
-        /// <summary>
-        /// 是否存在界面。
-        /// </summary>
-        /// <param name="fullName">完整界面名称</param>
-        /// <returns></returns>
-        public bool HasUIFullName(string fullName)
-        {
-            GameFrameworkGuard.NotNullOrEmpty(fullName, nameof(fullName));
-
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                if (!group.HasUIFullName(fullName)) continue;
-                return true;
-            }
-
-            return false;
-        }
     }
 }

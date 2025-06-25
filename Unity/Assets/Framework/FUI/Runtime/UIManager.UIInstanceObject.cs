@@ -23,12 +23,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// 创建界面实例对象。
             /// </summary>
             /// <param name="name"></param>
-            /// <param name="uiInstance"></param>
+            /// <param name="uiView"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, GComponent uiInstance)
+            public static UIInstanceObject Create(string name, GComponent uiView)
             {
                 var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
-                uiInstanceObject.Initialize(name, uiInstance);
+                uiInstanceObject.Initialize(name, uiView);
                 return uiInstanceObject;
             }
 

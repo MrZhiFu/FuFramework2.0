@@ -11,11 +11,11 @@ namespace GameFrameX.UI.Runtime
     /// </summary>
     public sealed class UIGroup : GComponent
     {
-        /// 获取或设置界面组所在的层级。
-        public UILayer Layer { get; private set; }
-
         /// 界面组是否暂停
         private bool m_Pause;
+
+        /// 获取或设置界面组所在的层级。
+        public UILayer Layer { get; private set; }
 
         /// 界面组内的界面列表
         private readonly GameFrameworkLinkedList<UIInfo> m_UIInfos = new();
@@ -86,21 +86,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUI(int serialId)
-        {
-            return m_UIInfos.Any(uiInfo => uiInfo.View.SerialId == serialId);
-        }
-
-        /// <summary>
-        /// 界面组中是否存在界面。
-        /// </summary>
-        /// <param name="fullName">界面资源完整名称。</param>
-        /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUIFullName(string fullName)
-        {
-            if (string.IsNullOrEmpty(fullName)) throw new GameFrameworkException("传入的UI界面完整名称为空.");
-            return m_UIInfos.Any(uiInfo => uiInfo.View.FullName == fullName);
-        }
+        public bool HasUI(int serialId) => m_UIInfos.Any(uiInfo => uiInfo.View.SerialId == serialId);
 
         /// <summary>
         /// 界面组中是否存在界面。

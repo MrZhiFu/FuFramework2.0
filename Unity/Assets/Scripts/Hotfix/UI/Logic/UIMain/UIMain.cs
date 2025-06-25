@@ -1,6 +1,5 @@
 using GameFrameX.UI.Runtime;
 using FairyGUI;
-using GameFrameX.Runtime;
 using GameFrameX.UI.FairyGUI.Runtime;
 using Hotfix.Manager;
 
@@ -10,11 +9,11 @@ namespace Hotfix.UI
     {
         public override void OnAwake()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Fixed);
+            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
             base.OnAwake();
         }
 
-        public override async void OnOpen(object userData)
+        public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
             m_player_icon.icon  = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, PlayerManager.Instance.PlayerInfo.Avatar.ToString());

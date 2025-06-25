@@ -30,7 +30,7 @@ namespace Hotfix.UI
         public static UIBagTypeItem Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagTypeItem>();
-            fui?.SetUIComp(go);
+            fui?.SetUIView(go);
             fui?.InitView();
             return fui;
         }
@@ -51,15 +51,15 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GButton)UIComp;
+            self = (GButton)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_normal = (GImage)com.GetChild("normal");
@@ -67,14 +67,14 @@ namespace Hotfix.UI
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_normal = null;
 			m_select = null;

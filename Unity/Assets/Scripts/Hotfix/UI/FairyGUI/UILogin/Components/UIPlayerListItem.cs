@@ -56,7 +56,7 @@ namespace Hotfix.UI
         public static UIPlayerListItem Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIPlayerListItem>();
-            fui?.SetUIComp(go);
+            fui?.SetUIView(go);
             fui?.InitView();
             return fui;
         }
@@ -77,15 +77,15 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GComponent)UIComp;
+            self = (GComponent)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_icon = (GLoader)com.GetChild("icon");
@@ -95,14 +95,14 @@ namespace Hotfix.UI
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_icon = null;
 			m_name_text = null;

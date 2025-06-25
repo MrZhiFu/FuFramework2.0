@@ -32,7 +32,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
         private IObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
 
-        private int  m_Serial;     // 界面序列号，每打开一个界面就加1
+        private int  m_SerialId;   // 界面序列号，每打开一个界面就加1
         private bool m_IsShutdown; // 是否是关机
 
         [Header("界面实例对象池自动释放可释放对象的间隔秒数")]
@@ -61,7 +61,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             m_AssetManager   = GameEntry.GetComponent<AssetComponent>();
 
-            m_Serial     = 0;
+            m_SerialId   = 0;
             m_IsShutdown = false;
 
             InstanceAutoReleaseInterval = m_InstanceAutoReleaseInterval;

@@ -65,7 +65,7 @@ namespace Hotfix.UI
             AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
 
             // 打开角色列表界面
-            await UIManager.Instance.OpenUIAsync<UIPlayerList>();
+            UIManager.Instance.OpenUI<UIPlayerList>();
 
             // 关闭当前界面
             UIManager.Instance.CloseUI(this);

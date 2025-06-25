@@ -34,19 +34,6 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 界面回收。
-        /// </summary>
-        public virtual void OnRecycle()
-        {
-            Log.Info($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
-            
-            SerialId = 0;
-            m_DepthInUIGroup = 0;
-            PauseCoveredUI = true;
-            EventRegister.UnSubscribeAll();
-        }
-
-        /// <summary>
         /// 界面打开。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
@@ -63,16 +50,6 @@ namespace GameFrameX.UI.Runtime
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         public virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
-
-        /// <summary>
-        /// 界面关闭。
-        /// </summary>
-        /// <param name="isShutdown">是否是关闭界面管理器时触发。</param>
-        public virtual void OnClose(bool isShutdown)
-        {
-            Log.Info($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
-            Visible = false;
-        }
 
         /// <summary>
         /// 界面暂停。
@@ -98,6 +75,7 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnBeCover()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
+            if (IsFullScreen) Visible = false;
         }
 
         /// <summary>
@@ -106,6 +84,40 @@ namespace GameFrameX.UI.Runtime
         public virtual void OnReveal()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]被遮挡恢复-OnReveal().");
+            Visible = true;
+        }
+
+        /// <summary>
+        /// 界面关闭。
+        /// </summary>
+        /// <param name="isShutdown">是否是关闭界面管理器时触发。</param>
+        public virtual void OnClose(bool isShutdown)
+        {
+            Log.Info($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
+            Visible = false;
+        }
+
+        /// <summary>
+        /// 界面回收。
+        /// </summary>
+        public virtual void OnRecycle()
+        {
+            Log.Info($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
+            
+            SerialId         = 0;
+            m_DepthInUIGroup = 0;
+            PauseCoveredUI   = true;
+            EventRegister.UnSubscribeAll();
+        }
+
+        /// <summary>
+        /// 界面销毁.
+        /// </summary>
+        public virtual void OnDispose()
+        {
+            Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
+            if (IsDisposed) return;
+            IsDisposed = true;
         }
 
         /// <summary>
@@ -116,16 +128,6 @@ namespace GameFrameX.UI.Runtime
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]深度被改变为'{depthInUIGroup}'-OnDepthChanged().");
             m_DepthInUIGroup = depthInUIGroup;
-        }
-
-        /// <summary>
-        /// 销毁界面.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            if (IsDisposed) return;
-            IsDisposed = true;
         }
 
         /// <summary>

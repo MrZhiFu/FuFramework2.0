@@ -31,22 +31,22 @@ namespace Unity.Startup
         public static UILauncherUpgrade Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UILauncherUpgrade>();
-            fui?.SetUIComp(go);
+            fui?.SetUIView(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GComponent)UIComp;
+            self = (GComponent)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_bg = (GGraph)com.GetChild("bg");
@@ -55,14 +55,14 @@ namespace Unity.Startup
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_bg = null;
 			m_EnterButton = null;

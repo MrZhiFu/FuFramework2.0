@@ -2,6 +2,7 @@
 using FairyGUI;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Runtime;
+using GameFrameX.UI.FairyGUI.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.UI.Runtime
@@ -12,7 +13,7 @@ namespace GameFrameX.UI.Runtime
     public abstract partial class ViewBase : MonoBehaviour
     {
         private bool m_IsInit = false; //界面是否已初始化
-        private int m_DepthInUIGroup; //界面在界面组中的深度
+        private int  m_DepthInUIGroup; //界面在界面组中的深度
 
         /// <summary>
         /// 获取界面序列编号。
@@ -20,19 +21,14 @@ namespace GameFrameX.UI.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取界面资源名称。
+        /// 获取界面名称。
         /// </summary>
         public string UIName { get; private set; }
 
         /// <summary>
-        /// 获取界面完整名称。
+        /// UI显示对象
         /// </summary>
-        public string FullName { get; private set; }
-
-        /// <summary>
-        /// UI 对象
-        /// </summary>
-        public GComponent UIComp { get; private set; }
+        public GComponent View { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -54,13 +50,13 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public bool Visible
         {
-            get => UIComp.visible;
+            get => View.visible;
             private set
             {
-                if (UIComp == null) return;
-                if (UIComp.visible == value) return;
-                UIComp.visible = value;
-                
+                if (View         == null) return;
+                if (View.visible == value) return;
+                View.visible = value;
+
                 // 触发UI显示状态变化事件
                 EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
@@ -74,7 +70,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public virtual UIGroup UIGroup { get; protected set; } 
+        public virtual UIGroup UIGroup { get; protected set; }
 
         /// <summary>
         /// 获取界面深度。
@@ -90,7 +86,7 @@ namespace GameFrameX.UI.Runtime
         /// 是否是全屏界面。
         /// </summary>
         public virtual bool IsFullScreen { get; protected set; } = true;
-        
+
         /// <summary>
         /// 获取界面是否已唤醒。
         /// </summary>
@@ -101,10 +97,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiName">界面资源名称。</param>
-        /// <param name="uiComp">界面实例。</param>
+        /// <param name="view">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, string uiName, GComponent uiComp, bool isNewInstance, object userData)
+        public void Init(int serialId, string uiName, GComponent view, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
@@ -114,7 +110,7 @@ namespace GameFrameX.UI.Runtime
             m_IsInit = true;
 
             UIName = uiName;
-            FullName = GetType().FullName;
+            
             m_DepthInUIGroup = 0;
 
             if (!isNewInstance) return;
@@ -123,7 +119,7 @@ namespace GameFrameX.UI.Runtime
 
             try
             {
-                UIComp = uiComp;
+                View = view;
                 InitView();
 
                 if (IsFullScreen) MakeFullScreen();
@@ -142,12 +138,18 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 设置UI对象
         /// </summary>
-        /// <param name="comp"></param>
-        public void SetUIComp(GComponent comp) => UIComp = comp;
-        
+        /// <param name="view"></param>
+        public void SetUIView(GComponent view) => View = view;
+
         /// <summary>
         /// 设置界面为全屏
         /// </summary>
-        protected void MakeFullScreen()=> UIComp?.asCom?.MakeFullScreen();
+        protected void MakeFullScreen() => View?.MakeFullScreen();
+        
+        /// <summary>
+        /// 关闭自身。
+        /// </summary>
+        protected void CloseSelf() => UIManager.Instance.CloseUI(this);
+        
     }
 }

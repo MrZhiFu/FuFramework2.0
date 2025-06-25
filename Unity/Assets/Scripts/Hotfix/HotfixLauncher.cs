@@ -63,7 +63,7 @@ namespace Hotfix
             FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar)).Forget();
             
             // 打开登录界面
-            UIManager.Instance.OpenUIAsync<UILogin>();
+            UIManager.Instance.OpenUI<UILogin>();
             var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }

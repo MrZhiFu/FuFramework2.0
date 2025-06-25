@@ -29,15 +29,15 @@ namespace Hotfix.UI
 
 		protected override void InitView()
         {
-            if(UIComp == null)
+            if(View == null)
             {
                 return;
             }
 
-            self = (GComponent)UIComp;
+            self = (GComponent)View;
             self.Add(this);
             
-            var com = UIComp.asCom;
+            var com = View.asCom;
             if (com != null)
             {
 				m_IsSelected = com.GetController("IsSelected");
@@ -49,14 +49,14 @@ namespace Hotfix.UI
             }
         }
 
-        public override void Dispose()
+        public override void OnDispose()
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            base.Dispose();
+            base.OnDispose();
             self.Remove();
 			m_IsSelected = null;
 			m_player_list = null;

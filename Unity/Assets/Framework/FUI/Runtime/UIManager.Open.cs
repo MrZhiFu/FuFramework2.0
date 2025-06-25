@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using GameFrameX.Runtime;
@@ -9,7 +8,7 @@ using GameFrameX.UI.Runtime;
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
-    /// 界面管理器.打开界面
+    /// 界面管理器.打开界面(打开一个界面只支持异步方式)
     /// </summary>
     public sealed partial class UIManager
     {
@@ -24,7 +23,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             OpenUIAsync<T>(userData, isFromResources, isMultiple).Forget();
         }
-        
+
         /// <summary>
         /// 打开界面。
         /// </summary>
@@ -32,11 +31,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        public UniTask<ViewBase> OpenUIAsync<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
+        public async UniTask<T> OpenUIAsync<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
         {
             // 通过反射获取界面的包名
             string packageName;
-            var packageNameField = typeof(T).GetField("UIPackageName", BindingFlags.Public | BindingFlags.Static);
+            var    packageNameField = typeof(T).GetField("UIPackageName", BindingFlags.Public | BindingFlags.Static);
 
             if (packageNameField != null)
                 packageName = (string)packageNameField.GetValue(null);
@@ -47,11 +46,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // 获取界面所在包路径："Assets/Bundles/UI/Login"
             var packagePath = Utility.Asset.Path.GetUIPath(packageName);
-            
+
             // 如果是从Resources中加载，则修改路径中的Bundles目录为Resources, 如：Assets/Bundles/UI/Login -> Assets/Resources/UI/Login
             if (isFromResources)
                 packagePath = packagePath.Replace(Utility.Asset.Path.BundlesDirectoryName, "Resources");
-            return InnerOpenUIAsync(packagePath, typeof(T), userData, isMultiple);
+            return await InnerOpenUIAsync(packagePath, typeof(T), userData, isMultiple) as T;
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        public async Task<ViewBase> OpenUIAsync(string packagePath, Type uiType, object userData = null, bool isMultiple = false)
+        public async UniTask<ViewBase> OpenUIAsync(string packagePath, Type uiType, object userData = null, bool isMultiple = false)
         {
             return await InnerOpenUIAsync(packagePath, uiType, userData, isMultiple);
         }
@@ -81,7 +80,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // 如：packagePath = "Assets/Bundles/UI/Login"，则 packageName = "Login"
             var lastIndexOfStart = packagePath.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
-            var packageName = packagePath.Substring(lastIndexOfStart + 1);
+            var packageName      = packagePath.Substring(lastIndexOfStart + 1);
 
             OpenUIInfo openUIInfo;
 
@@ -89,15 +88,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             UIInstanceObject uiInstanceObject = m_InstancePool.Spawn(uiName);
             if (uiInstanceObject != null && isMultiple == false)
             {
-                openUIInfo = OpenUIInfo.Create(-1, uiType, userData, packageName);
+                openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
                 return InternalOpenUI(openUIInfo, uiInstanceObject.Target as GComponent, false, 0);
             }
 
-            var serialId = ++m_Serial;
-            m_LoadingDict.Add(serialId, uiName);
+            m_LoadingDict.Add(m_SerialId, uiName);
 
             // 创建一个打开界面界面时的信息对象，用于记录打开界面的信息
-            openUIInfo = OpenUIInfo.Create(serialId, uiType, userData, packageName);
+            openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
 
             // UI包是否已经加载过
             var hasUIPackage = FuiPackageManager.Instance.HasPackage(packageName);
@@ -108,7 +106,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // 如："Assets/Bundles/UI/Login/Login"，第一个Login是包名，第二个Login是界面描述文件资源名
             var descPath = PathHelper.Combine(packagePath, packageName);
-            
+
             // 检查路径中是否包含Bundle目录，不包含则从Resources中同步加载
             if (descPath.IndexOf(Utility.Asset.Path.BundlesDirectoryName, StringComparison.OrdinalIgnoreCase) < 0)
             {
@@ -135,23 +133,23 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 打开界面。(内部使用)
         /// </summary>
         /// <param name="openUIInfo"></param>
-        /// <param name="uiInstance"></param>
+        /// <param name="uiView"></param>
         /// <param name="isNewInstance"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, GComponent uiInstance, bool isNewInstance, float duration)
+        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, GComponent uiView, bool isNewInstance, float duration)
         {
             try
             {
                 // 使用界面辅助器创建界面实例
-                // 1.将传入的UI界面实例uiInstance加上UI界面逻辑组件uiType，
-                // 2.将uiInstance作为一个子节点添加到UI界面组的显示对象下。
-                ViewBase viewBase = FuiHelper.CreateUI(uiInstance, openUIInfo.UIType);
+                // 1.将传入的UI界面实例uiView加上UI界面逻辑组件uiType，
+                // 2.将uiView作为一个子节点添加到UI界面组的显示对象下。
+                ViewBase viewBase = FuiHelper.CreateUI(uiView, openUIInfo.UIType);
                 if (viewBase == null) throw new GameFrameworkException("不能从界面辅助器中创建界面实例.");
 
                 // 初始化界面
                 var uiGroup = viewBase.UIGroup;
-                viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiInstance, isNewInstance, openUIInfo.UserData);
+                viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
 
                 // 界面组中是否存在该界面，不存在则添加
                 if (!uiGroup.InternalHasInstanceUI(openUIInfo.UIType.Name, viewBase))
@@ -160,13 +158,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 }
 
                 viewBase.OnOpen(openUIInfo.UserData); // 界面打开回调
-                viewBase.UpdateLocalization(); // 更新本地化文本
-                uiGroup.Refresh(); // 刷新界面组
+                viewBase.UpdateLocalization();        // 更新本地化文本
+                uiGroup.Refresh();                    // 刷新界面组
 
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(viewBase, duration, openUIInfo.UserData);
                 m_EventComponent.Fire(this, openUISuccessEventArgs);
 
+                m_SerialId++;
                 return viewBase;
             }
             catch (Exception exception)
@@ -181,16 +180,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 设置界面实例是否被加锁。
         /// </summary>
-        /// <param name="uiInstance">要设置是否被加锁的界面实例。</param>
+        /// <param name="uiView">要设置是否被加锁的界面实例。</param>
         /// <param name="locked">界面实例是否被加锁。</param>
-        public void SetUIInstanceLocked(object uiInstance, bool locked) => m_InstancePool.SetLocked(uiInstance, locked);
+        public void SetUIInstanceLocked(object uiView, bool locked) => m_InstancePool.SetLocked(uiView, locked);
 
         /// <summary>
         /// 设置界面实例的优先级。
         /// </summary>
-        /// <param name="uiInstance">要设置优先级的界面实例。</param>
+        /// <param name="uiView">要设置优先级的界面实例。</param>
         /// <param name="priority">界面实例优先级。</param>
-        public void SetUIInstancePriority(object uiInstance, int priority) => m_InstancePool.SetPriority(uiInstance, priority);
+        public void SetUIInstancePriority(object uiView, int priority) => m_InstancePool.SetPriority(uiView, priority);
 
         /// <summary>
         /// 加载界面资源成功回调。
@@ -202,8 +201,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
 
-            var serialId = openUIInfo.SerialId;
-            var uiName = openUIInfo.UIType.Name;
+            var serialId    = openUIInfo.SerialId;
+            var uiName      = openUIInfo.UIType.Name;
             var packageName = openUIInfo.PackageName;
 
             // 检查是否是等待释放的界面，如果是，说明还没有被真正释放，则直接返回界面
@@ -218,14 +217,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_LoadingDict.Remove(serialId);
 
             // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
-            var uiInstance = UIPackage.CreateObject(packageName, uiName) as GComponent;
-            
+            var uiView = UIPackage.CreateObject(packageName, uiName) as GComponent;
+
             // 创建界面实例对象并注册到对象池中
-            var uiInstanceObject = UIInstanceObject.Create(uiName, uiInstance);
+            var uiInstanceObject = UIInstanceObject.Create(uiName, uiView);
             m_InstancePool.Register(uiInstanceObject, true);
 
             // 打开界面
-            var ui = InternalOpenUI(openUIInfo, uiInstance, true, duration);
+            var ui = InternalOpenUI(openUIInfo, uiView, true, duration);
 
             // 释放资源
             ReferencePool.Release(openUIInfo);
