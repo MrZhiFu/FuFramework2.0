@@ -31,25 +31,25 @@ namespace Hotfix.UI
 		public GButton m_get_source_button { get; private set; }
 
 
-        public static UIBagItemInfo Create(GObject go)
+        public static UIBagItemInfo Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagItemInfo>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_IsCanUse = com.GetController("IsCanUse");

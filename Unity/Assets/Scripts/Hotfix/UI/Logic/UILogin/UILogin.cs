@@ -72,12 +72,12 @@ namespace Hotfix.UI
             if (respPlayerList.PlayerList.Count > 0)
             {
                 // 有角色，打开角色列表界面
-                await UIManager.Instance.OpenUIAsync<UIPlayerList>();
+                UIManager.Instance.OpenUIAsync<UIPlayerList>();
             }
             else
             {
                 // 无角色，打开角色创建界面
-                await UIManager.Instance.OpenUIAsync<UIPlayerCreate>();
+                UIManager.Instance.OpenUIAsync<UIPlayerCreate>();
             }
 
             // 关闭当前界面

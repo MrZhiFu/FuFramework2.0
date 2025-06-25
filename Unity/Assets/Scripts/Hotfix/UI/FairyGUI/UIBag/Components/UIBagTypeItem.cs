@@ -27,10 +27,10 @@ namespace Hotfix.UI
 		public GImage m_select { get; private set; }
 
 
-        public static UIBagTypeItem Create(GObject go)
+        public static UIBagTypeItem Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagTypeItem>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
@@ -38,7 +38,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 通过此方法获取的FUI，在Dispose时不会释放GObject，需要自行管理（一般在配合FGUI的Pool机制时使用）。
         /// </summary>
-        public static UIBagTypeItem GetFormPool(GObject go)
+        public static UIBagTypeItem GetFormPool(GComponent go)
         {
             var fui = go.Get<UIBagTypeItem>();
             if (fui == null)
@@ -51,15 +51,15 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GButton)GObject;
+            self = (GButton)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_normal = (GImage)com.GetChild("normal");

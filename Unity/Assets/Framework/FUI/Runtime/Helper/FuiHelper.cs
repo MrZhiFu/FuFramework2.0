@@ -15,16 +15,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     public static class FuiHelper
     {
         /// <summary>
-        /// 实例化界面。
-        /// 此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
-        /// </summary>
-        /// <returns>实例化后的界面。</returns>
-        public static GObject InstantiateUI(string packageName, string uiName)
-        {
-            return UIPackage.CreateObject(packageName, uiName);
-        }
-
-        /// <summary>
         /// 创建界面。
         /// 1.将传入的UI界面实例uiInstance加上UI界面逻辑组件uiType，
         /// 2.将uiInstance作为一个子节点添加到UI界面组的显示对象下。
@@ -32,15 +22,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiInstance">界面实例。</param>
         /// <param name="uiLogicType">界面逻辑类型</param>
         /// <returns>界面。</returns>
-        public static ViewBase CreateUI(GObject uiInstance, Type uiLogicType)
+        public static ViewBase CreateUI(GComponent uiInstance, Type uiLogicType)
         {
-            if (uiInstance is not GComponent gComponent)
-            {
-                Log.Error("UI界面实例不是GComponent.");
-                return null;
-            }
-
-            var logicComp = gComponent.displayObject.gameObject.GetOrAddComponent(uiLogicType);
+            var logicComp = uiInstance.displayObject.gameObject.GetOrAddComponent(uiLogicType);
             if (logicComp is not ViewBase ui)
             {
                 Log.Error("UI界面逻辑组件不是ViewBase.");
@@ -72,7 +56,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             // 界面实例作为一个子节点加入到UI界面组的显示对象下
-            uiGroupComponent.AddChild(gComponent);
+            uiGroupComponent.AddChild(uiInstance);
             return ui;
         }
 

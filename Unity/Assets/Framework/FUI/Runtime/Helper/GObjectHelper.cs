@@ -13,7 +13,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 界面组件池
         /// </summary>
-        private static readonly Dictionary<GObject, ViewBase> GObject2UIDict = new();
+        private static readonly Dictionary<GComponent, ViewBase> GObject2UIDict = new();
 
         /// <summary>
         /// 从组件池中获取UI对象
@@ -21,7 +21,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="self"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns>UI对象</returns>
-        public static T Get<T>(this GObject self) where T : ViewBase
+        public static T Get<T>(this GComponent self) where T : ViewBase
         {
             if (self != null && GObject2UIDict.TryGetValue(self, out var pair)) 
                 return pair as T;
@@ -34,7 +34,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="self"></param>
         /// <param name="fui">UI对象</param>
-        public static void Add(this GObject self, ViewBase fui)
+        public static void Add(this GComponent self, ViewBase fui)
         {
             if (self == null || fui == null) return;
             GObject2UIDict[self] = fui;
@@ -45,7 +45,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <param name="self"></param>
         /// <returns>UI对象</returns>
-        public static ViewBase Remove(this GObject self)
+        public static ViewBase Remove(this GComponent self)
         {
             if (self != null && GObject2UIDict.Remove(self, out var value)) return value;
             return null;

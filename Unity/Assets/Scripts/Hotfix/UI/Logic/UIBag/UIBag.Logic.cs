@@ -95,7 +95,7 @@ namespace Hotfix.UI
         /// <param name="context"></param>
         private void OnBagItemClick(EventContext context)
         {
-            var data         = UIBagItem.GetFormPool((GObject)context.data);
+            var data         = UIBagItem.GetFormPool((GComponent)context.data);
             var itemTypeData = (BagItem)data.self.dataSource;
             UpdateSelectItem(itemTypeData);
         }
@@ -124,7 +124,7 @@ namespace Hotfix.UI
         private void BagItemRenderer(int index, GObject item)
         {
             var bagItemData = (BagItem)item.dataSource;
-            var uiBagItem   = UIBagItem.GetFormPool(item);
+            var uiBagItem   = UIBagItem.GetFormPool(item as GComponent);
             var uiGoodItem  = UIGoodItem.GetFormPool(uiBagItem.m_good_item);
             uiGoodItem.SetCount(bagItemData.Count);
             uiGoodItem.SetIcon(bagItemData.ItemId);

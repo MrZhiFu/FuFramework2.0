@@ -43,19 +43,13 @@ namespace GameFrameX.UI.Runtime
         public UIGroup UIGroup { get; private set; }
 
         /// <summary>
-        /// 获取用户自定义数据。
-        /// </summary>
-        public object UserData { get; private set; }
-
-        /// <summary>
         /// 初始化关闭界面完成事件的新实例。
         /// </summary>
         public CloseUICompleteEventArgs()
         {
-            SerialId    = 0;
-            UIName = null;
-            UIGroup     = null;
-            UserData    = null;
+            SerialId = 0;
+            UIName   = null;
+            UIGroup  = null;
         }
 
         /// <summary>
@@ -64,15 +58,13 @@ namespace GameFrameX.UI.Runtime
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiName">界面资源名称。</param>
         /// <param name="uiGroup">界面所属的界面组。</param>
-        /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUICompleteEventArgs Create(int serialId, string uiName, UIGroup uiGroup, object userData)
+        public static CloseUICompleteEventArgs Create(int serialId, string uiName, UIGroup uiGroup)
         {
             var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
-            closeUICompleteEventArgs.SerialId    = serialId;
-            closeUICompleteEventArgs.UIName = uiName;
-            closeUICompleteEventArgs.UIGroup     = uiGroup;
-            closeUICompleteEventArgs.UserData    = userData;
+            closeUICompleteEventArgs.SerialId = serialId;
+            closeUICompleteEventArgs.UIName   = uiName;
+            closeUICompleteEventArgs.UIGroup  = uiGroup;
             return closeUICompleteEventArgs;
         }
 
@@ -84,7 +76,6 @@ namespace GameFrameX.UI.Runtime
             SerialId    = 0;
             UIName = null;
             UIGroup     = null;
-            UserData    = null;
         }
     }
 }

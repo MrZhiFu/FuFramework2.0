@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using FairyGUI;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
@@ -15,11 +16,23 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 打开界面。
         /// </summary>
+        /// <param name="userData"></param>
+        /// <param name="isFromResources"></param>
+        /// <param name="isMultiple"></param>
+        /// <typeparam name="T"></typeparam>
+        public void OpenUI<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
+        {
+            OpenUIAsync<T>(userData, isFromResources, isMultiple).Forget();
+        }
+        
+        /// <summary>
+        /// 打开界面。
+        /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        public Task<ViewBase> OpenUIAsync<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
+        public UniTask<ViewBase> OpenUIAsync<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
         {
             // 通过反射获取界面的包名
             string packageName;
@@ -62,7 +75,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        private async Task<ViewBase> InnerOpenUIAsync(string packagePath, Type uiType, object userData, bool isMultiple = false)
+        private async UniTask<ViewBase> InnerOpenUIAsync(string packagePath, Type uiType, object userData, bool isMultiple = false)
         {
             var uiName = uiType.Name;
 
@@ -77,7 +90,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiInstanceObject != null && isMultiple == false)
             {
                 openUIInfo = OpenUIInfo.Create(-1, uiType, userData, packageName);
-                return InternalOpenUI(openUIInfo, (GObject)uiInstanceObject.Target, false, 0);
+                return InternalOpenUI(openUIInfo, uiInstanceObject.Target as GComponent, false, 0);
             }
 
             var serialId = ++m_Serial;
@@ -126,7 +139,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isNewInstance"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, GObject uiInstance, bool isNewInstance, float duration)
+        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, GComponent uiInstance, bool isNewInstance, float duration)
         {
             try
             {
@@ -205,9 +218,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_LoadingDict.Remove(serialId);
 
             // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
-            var uiInstance = FuiHelper.InstantiateUI(packageName, uiName);
+            var uiInstance = UIPackage.CreateObject(packageName, uiName) as GComponent;
             
-            // 创建界面实例对象并注册界面实例对象到对象池中
+            // 创建界面实例对象并注册到对象池中
             var uiInstanceObject = UIInstanceObject.Create(uiName, uiInstance);
             m_InstancePool.Register(uiInstanceObject, true);
 

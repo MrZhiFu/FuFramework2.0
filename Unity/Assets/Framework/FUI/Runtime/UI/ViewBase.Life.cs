@@ -68,8 +68,7 @@ namespace GameFrameX.UI.Runtime
         /// 界面关闭。
         /// </summary>
         /// <param name="isShutdown">是否是关闭界面管理器时触发。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public virtual void OnClose(bool isShutdown, object userData)
+        public virtual void OnClose(bool isShutdown)
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
             Visible = false;

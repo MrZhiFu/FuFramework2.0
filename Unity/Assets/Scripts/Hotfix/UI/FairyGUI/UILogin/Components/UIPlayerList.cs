@@ -29,15 +29,15 @@ namespace Hotfix.UI
 
 		protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_IsSelected = com.GetController("IsSelected");

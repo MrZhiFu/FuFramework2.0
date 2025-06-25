@@ -95,7 +95,7 @@ namespace Hotfix.UI
         private void ItemRenderer(int index, GObject item)
         {
             var playerInfo       = playerList[index];
-            var uiPlayerListItem = UIPlayerListItem.GetFormPool(item);
+            var uiPlayerListItem = UIPlayerListItem.GetFormPool(item as GComponent);
 
             uiPlayerListItem.m_level_text.text = "当前等级:" + playerInfo.Level;
             uiPlayerListItem.m_name_text.text  = playerInfo.Name;

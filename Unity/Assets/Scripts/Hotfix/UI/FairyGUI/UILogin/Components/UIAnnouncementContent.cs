@@ -26,25 +26,25 @@ namespace Hotfix.UI
 		public GRichTextField m_LabelContent { get; private set; }
 
 
-        public static UIAnnouncementContent Create(GObject go)
+        public static UIAnnouncementContent Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIAnnouncementContent>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_LabelContent = (GRichTextField)com.GetChild("LabelContent");

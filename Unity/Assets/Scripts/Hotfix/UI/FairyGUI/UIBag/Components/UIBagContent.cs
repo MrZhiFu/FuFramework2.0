@@ -29,30 +29,30 @@ namespace Hotfix.UI
 		public GList m_type_list { get; private set; }
 
 
-        public static UIBagContent Create(GObject go)
+        public static UIBagContent Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagContent>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_IsSelectedItem = com.GetController("IsSelectedItem");
 				m_list = (GList)com.GetChild("list");
-				m_info = UIBagItemInfo.Create(com.GetChild("info"));
+				m_info = UIBagItemInfo.Create(com.GetChild("info") as GComponent);
 				m_type_list = (GList)com.GetChild("type_list");
             }
         }

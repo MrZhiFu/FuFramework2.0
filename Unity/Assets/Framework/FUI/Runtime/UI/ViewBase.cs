@@ -32,7 +32,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// UI 对象
         /// </summary>
-        public GObject GObject { get; set; }
+        public GComponent UIComp { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -42,7 +42,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 获取界面是否已被销毁。
         /// </summary>
-        protected bool IsDisposed { get; set; }
+        protected bool IsDisposed { get; private set; }
 
         /// <summary>
         /// 获取界面事件订阅器。
@@ -54,12 +54,12 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public bool Visible
         {
-            get => GObject.visible;
+            get => UIComp.visible;
             private set
             {
-                if (GObject == null) return;
-                if (GObject.visible == value) return;
-                GObject.visible = value;
+                if (UIComp == null) return;
+                if (UIComp.visible == value) return;
+                UIComp.visible = value;
                 
                 // 触发UI显示状态变化事件
                 EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
@@ -101,10 +101,10 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiName">界面资源名称。</param>
-        /// <param name="uiInstance">界面实例。</param>
+        /// <param name="uiComp">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, string uiName, GObject uiInstance, bool isNewInstance, object userData)
+        public void Init(int serialId, string uiName, GComponent uiComp, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
@@ -123,7 +123,7 @@ namespace GameFrameX.UI.Runtime
 
             try
             {
-                GObject = uiInstance;
+                UIComp = uiComp;
                 InitView();
 
                 if (IsFullScreen) MakeFullScreen();
@@ -142,12 +142,12 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 设置UI对象
         /// </summary>
-        /// <param name="gObject"></param>
-        public void SetGObject(GObject gObject) => GObject = gObject;
+        /// <param name="comp"></param>
+        public void SetUIComp(GComponent comp) => UIComp = comp;
         
         /// <summary>
         /// 设置界面为全屏
         /// </summary>
-        protected void MakeFullScreen()=> GObject?.asCom?.MakeFullScreen();
+        protected void MakeFullScreen()=> UIComp?.asCom?.MakeFullScreen();
     }
 }

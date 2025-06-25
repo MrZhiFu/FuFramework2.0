@@ -26,19 +26,19 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_MaskLayer = (GGraph)com.GetChild("MaskLayer");
-				m_TextContent = UIAnnouncementContent.Create(com.GetChild("TextContent"));
+				m_TextContent = UIAnnouncementContent.Create(com.GetChild("TextContent") as GComponent);
 				m_TextTitle = (GTextField)com.GetChild("TextTitle");
             }
         }

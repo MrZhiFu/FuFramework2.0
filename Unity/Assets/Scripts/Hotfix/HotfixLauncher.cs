@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using GameFrameX.Network.Runtime;
 using Hotfix.Proto;
 using SimpleJSON;
@@ -55,14 +56,14 @@ namespace Hotfix
         /// <summary>
         /// 加载UI
         /// </summary>
-        private static async void LoadUI()
+        private static void LoadUI()
         {
             // 添加通用UI资源包
-            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon));
-            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar));
+            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommon)).Forget();
+            FuiPackageManager.Instance.AddPackageAsync(Utility.Asset.Path.GetUIPackagePath(FUIPackage.UICommonAvatar)).Forget();
             
             // 打开登录界面
-            await UIManager.Instance.OpenUIAsync<UILogin>();
+            UIManager.Instance.OpenUIAsync<UILogin>();
             var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }

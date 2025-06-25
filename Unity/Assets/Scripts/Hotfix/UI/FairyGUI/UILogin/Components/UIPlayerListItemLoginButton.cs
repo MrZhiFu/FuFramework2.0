@@ -26,25 +26,25 @@ namespace Hotfix.UI
 		public GRichTextField m_title { get; private set; }
 
 
-        public static UIPlayerListItemLoginButton Create(GObject go)
+        public static UIPlayerListItemLoginButton Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIPlayerListItemLoginButton>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_title = (GRichTextField)com.GetChild("title");

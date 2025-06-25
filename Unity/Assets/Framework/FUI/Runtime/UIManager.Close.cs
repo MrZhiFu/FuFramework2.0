@@ -21,25 +21,23 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 关闭界面(加入待回收队列，等待update轮询中回收)。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void CloseUI(int serialId, object userData = null)
+        public void CloseUI(int serialId)
         {
             var view = GetUI(serialId);
             if (!view) Log.Error($"找不到界面 '{serialId}'.");
-            CloseUI(view, userData);
+            CloseUI(view);
         }
 
         /// <summary>
         /// 关闭界面(加入待回收队列，等待update轮询中回收)。
         /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUI<T>(object userData = null) where T : ViewBase
+        public void CloseUI<T>() where T : ViewBase
         {
             var uis = GetUIs(typeof(T).Name);
             foreach (var ui in uis)
             {
-                CloseUI(ui, userData);
+                CloseUI(ui);
                 break;
             }
         }
@@ -48,8 +46,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 关闭界面(加入待回收队列，等待update轮询中回收)。
         /// </summary>
         /// <param name="view">要关闭的界面。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void CloseUI(ViewBase view, object userData = null)
+        public void CloseUI(ViewBase view)
         {
             if (!view) Log.Error("需要关闭的UI界面View为空");
             if (view.UIGroup == null) Log.Error("需要关闭的UI界面组为空");
@@ -65,10 +62,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiGroup == null) return;
 
             uiGroup.RemoveUI(view);
-            view.OnClose(m_IsShutdown, userData);
+            view.OnClose(m_IsShutdown);
             uiGroup.Refresh();
 
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup, userData);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
             m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
             m_WaitRecycleQueue.Enqueue(view);
@@ -79,26 +76,24 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 立即关闭界面(立即回收)。
         /// </summary>
         /// <param name="serialId">要关闭界面的序列编号。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void CloseUINow(int serialId, object userData = null)
+        public void CloseUINow(int serialId)
         {
             var view = GetUI(serialId);
             if (!view) Log.Error($"找不到界面 '{serialId}'");
 
-            CloseUINow(view, userData);
+            CloseUINow(view);
         }
 
         /// <summary>
         /// 立即关闭界面(立即回收)。
         /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T"></typeparam>
-        public void CloseUINow<T>(object userData = null) where T : ViewBase
+        public void CloseUINow<T>() where T : ViewBase
         {
             var uis = GetUIs(typeof(T).Name);
             foreach (var ui in uis)
             {
-                CloseUINow(ui, userData);
+                CloseUINow(ui);
                 break;
             }
         }
@@ -107,8 +102,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 立即关闭界面(立即回收)。
         /// </summary>
         /// <param name="view">要关闭的界面。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void CloseUINow(ViewBase view, object userData = null)
+        public void CloseUINow(ViewBase view)
         {
             if (!view) Log.Error("需要关闭的UI界面View为空");
             if (view.UIGroup == null) Log.Error("需要关闭的UI界面组为空");
@@ -124,10 +118,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiGroup == null) return;
             
             uiGroup.RemoveUI(view);
-            view.OnClose(m_IsShutdown, userData);
+            view.OnClose(m_IsShutdown);
             uiGroup.Refresh();
 
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup, userData);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
             m_EventComponent.Fire(this, closeUICompleteEventArgs);
 
             // 立即回收界面实例对象
@@ -137,25 +131,22 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 关闭所有界面(包括已加载和正在加载的界面)。
         /// </summary>
-        /// <param name="userData"></param>
-        public void CloseAllUIs(object userData = null)
+        public void CloseAllUIs()
         {
-            CloseAllLoadedUIs(userData);
+            CloseAllLoadedUIs();
             CloseAllLoadingUIs();
         }
-        
 
         /// <summary>
         /// 关闭所有已加载的界面。
         /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
-        public void CloseAllLoadedUIs(object userData = null)
+        public void CloseAllLoadedUIs()
         {
             ViewBase[] uis = GetAllLoadedUIs();
             foreach (var ui in uis)
             {
                 if (!HasUI(ui.SerialId)) continue;
-                CloseUI(ui, userData);
+                CloseUI(ui);
             }
         }
 

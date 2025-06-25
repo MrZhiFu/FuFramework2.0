@@ -28,25 +28,25 @@ namespace Unity.Startup
 		public GLabel m_TextContent { get; private set; }
 
 
-        public static UILauncherUpgrade Create(GObject go)
+        public static UILauncherUpgrade Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UILauncherUpgrade>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_bg = (GGraph)com.GetChild("bg");

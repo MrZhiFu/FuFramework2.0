@@ -32,15 +32,15 @@ namespace Unity.Startup
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_IsUpgrade = com.GetController("IsUpgrade");
@@ -48,7 +48,7 @@ namespace Unity.Startup
 				m_bg = (GLoader)com.GetChild("bg");
 				m_TipText = (GTextField)com.GetChild("TipText");
 				m_ProgressBar = (GProgressBar)com.GetChild("ProgressBar");
-				m_upgrade = UILauncherUpgrade.Create(com.GetChild("upgrade"));
+				m_upgrade = UILauncherUpgrade.Create(com.GetChild("upgrade") as GComponent);
             }
         }
 

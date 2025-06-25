@@ -25,7 +25,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// <param name="name"></param>
             /// <param name="uiInstance"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, GObject uiInstance)
+            public static UIInstanceObject Create(string name, GComponent uiInstance)
             {
                 var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
                 uiInstanceObject.Initialize(name, uiInstance);

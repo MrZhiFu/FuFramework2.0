@@ -28,9 +28,9 @@ namespace Hotfix.UI
 		public GRichTextField m_level_text { get; private set; }
 		public UIPlayerListItemLoginButton m_login_button { get; private set; }
 
-        private static GObject CreateGObject()
+        private static GComponent CreateGObject()
         {
-            return UIPackage.CreateObject(UIPackageName, UIResName);
+            return UIPackage.CreateObject(UIPackageName, UIResName) as GComponent;
         }
 
         private static void CreateGObjectAsync(UIPackage.CreateObjectCallback result)
@@ -48,15 +48,15 @@ namespace Hotfix.UI
             UniTaskCompletionSource<UIPlayerListItem> tcs = new UniTaskCompletionSource<UIPlayerListItem>();
             CreateGObjectAsync((go) =>
             {
-                tcs.TrySetResult(Create(go));
+                tcs.TrySetResult(Create(go as GComponent));
             });
             return tcs.Task;
         }
 
-        public static UIPlayerListItem Create(GObject go)
+        public static UIPlayerListItem Create(GComponent go)
         {
             var fui = go.displayObject.gameObject.GetOrAddComponent<UIPlayerListItem>();
-            fui?.SetGObject(go);
+            fui?.SetUIComp(go);
             fui?.InitView();
             return fui;
         }
@@ -64,7 +64,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 通过此方法获取的FUI，在Dispose时不会释放GObject，需要自行管理（一般在配合FGUI的Pool机制时使用）。
         /// </summary>
-        public static UIPlayerListItem GetFormPool(GObject go)
+        public static UIPlayerListItem GetFormPool(GComponent go)
         {
             var fui = go.Get<UIPlayerListItem>();
             if (fui == null)
@@ -77,21 +77,21 @@ namespace Hotfix.UI
 
         protected override void InitView()
         {
-            if(GObject == null)
+            if(UIComp == null)
             {
                 return;
             }
 
-            self = (GComponent)GObject;
+            self = (GComponent)UIComp;
             self.Add(this);
             
-            var com = GObject.asCom;
+            var com = UIComp.asCom;
             if (com != null)
             {
 				m_icon = (GLoader)com.GetChild("icon");
 				m_name_text = (GRichTextField)com.GetChild("name_text");
 				m_level_text = (GRichTextField)com.GetChild("level_text");
-				m_login_button = UIPlayerListItemLoginButton.Create(com.GetChild("login_button"));
+				m_login_button = UIPlayerListItemLoginButton.Create(com.GetChild("login_button") as GComponent);
             }
         }
 
