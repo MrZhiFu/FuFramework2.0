@@ -16,36 +16,26 @@ namespace GameFrameX.Runtime
     /// </summary>
     public static partial class ReferencePool
     {
-        private static readonly Dictionary<Type, ReferenceCollection> s_ReferenceCollections = new Dictionary<Type, ReferenceCollection>();
-        private static bool m_EnableStrictCheck = false;
+        private static readonly Dictionary<Type, ReferenceCollection> s_ReferenceCollections = new();
 
         /// <summary>
         /// 获取或设置是否开启强制检查。
         /// </summary>
-        
-        public static bool EnableStrictCheck
-        {
-            get { return m_EnableStrictCheck; }
-            set { m_EnableStrictCheck = value; }
-        }
+        public static bool EnableStrictCheck { get; set; } = false;
 
         /// <summary>
         /// 获取引用池的数量。
         /// </summary>
-        
-        public static int Count
-        {
-            get { return s_ReferenceCollections.Count; }
-        }
+        public static int Count => s_ReferenceCollections.Count;
 
         /// <summary>
         /// 获取所有引用池的信息。
         /// </summary>
         /// <returns>所有引用池的信息。</returns>
-        
         public static ReferencePoolInfo[] GetAllReferencePoolInfos()
         {
-            int index = 0;
+            var index = 0;
+
             ReferencePoolInfo[] results = null;
 
             lock (s_ReferenceCollections)
@@ -53,8 +43,9 @@ namespace GameFrameX.Runtime
                 results = new ReferencePoolInfo[s_ReferenceCollections.Count];
                 foreach (var referenceCollection in s_ReferenceCollections)
                 {
-                    results[index++] = new ReferencePoolInfo(referenceCollection.Key, referenceCollection.Value.UnusedReferenceCount, referenceCollection.Value.UsingReferenceCount, referenceCollection.Value.AcquireReferenceCount, referenceCollection.Value.ReleaseReferenceCount,
-                        referenceCollection.Value.AddReferenceCount, referenceCollection.Value.RemoveReferenceCount);
+                    results[index++] = new ReferencePoolInfo(referenceCollection.Key, referenceCollection.Value.UnusedReferenceCount, referenceCollection.Value.UsingReferenceCount,
+                                                             referenceCollection.Value.AcquireReferenceCount, referenceCollection.Value.ReleaseReferenceCount,
+                                                             referenceCollection.Value.AddReferenceCount, referenceCollection.Value.RemoveReferenceCount);
                 }
             }
 
@@ -64,7 +55,6 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 清除所有引用池。
         /// </summary>
-        
         public static void ClearAll()
         {
             lock (s_ReferenceCollections)
@@ -83,7 +73,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <returns>引用。</returns>
-        
         public static T Acquire<T>() where T : class, IReference, new()
         {
             return GetReferenceCollection(typeof(T)).Acquire<T>();
@@ -94,7 +83,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="referenceType">引用类型。</param>
         /// <returns>引用。</returns>
-        
         public static IReference Acquire(Type referenceType)
         {
             InternalCheckReferenceType(referenceType);
@@ -105,7 +93,6 @@ namespace GameFrameX.Runtime
         /// 将引用归还引用池。
         /// </summary>
         /// <param name="reference">引用。</param>
-        
         public static void Release(IReference reference)
         {
             if (reference == null)
@@ -123,7 +110,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <param name="count">追加数量。</param>
-        
         public static void Add<T>(int count) where T : class, IReference, new()
         {
             GetReferenceCollection(typeof(T)).Add<T>(count);
@@ -134,7 +120,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="referenceType">引用类型。</param>
         /// <param name="count">追加数量。</param>
-        
         public static void Add(Type referenceType, int count)
         {
             InternalCheckReferenceType(referenceType);
@@ -146,7 +131,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <param name="count">移除数量。</param>
-        
         public static void Remove<T>(int count) where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).Remove(count);
@@ -157,7 +141,6 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="referenceType">引用类型。</param>
         /// <param name="count">移除数量。</param>
-        
         public static void Remove(Type referenceType, int count)
         {
             InternalCheckReferenceType(referenceType);
@@ -168,7 +151,6 @@ namespace GameFrameX.Runtime
         /// 从引用池中移除所有的引用。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
-        
         public static void RemoveAll<T>() where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).RemoveAll();
@@ -178,7 +160,6 @@ namespace GameFrameX.Runtime
         /// 从引用池中移除所有的引用。
         /// </summary>
         /// <param name="referenceType">引用类型。</param>
-        
         public static void RemoveAll(Type referenceType)
         {
             InternalCheckReferenceType(referenceType);
@@ -187,7 +168,7 @@ namespace GameFrameX.Runtime
 
         private static void InternalCheckReferenceType(Type referenceType)
         {
-            if (!m_EnableStrictCheck)
+            if (!EnableStrictCheck)
             {
                 return;
             }
