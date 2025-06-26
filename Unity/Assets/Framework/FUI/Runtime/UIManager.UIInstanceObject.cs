@@ -8,6 +8,7 @@
 using FairyGUI;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
+using GameFrameX.UI.Runtime;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -19,16 +20,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         private sealed class UIInstanceObject : ObjectBase
         {
+            private ViewBase _viewBase;
+
             /// <summary>
             /// 创建界面实例对象。
             /// </summary>
             /// <param name="name"></param>
             /// <param name="uiView"></param>
+            /// <param name="viewBase"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, GComponent uiView)
+            public static UIInstanceObject Create(string name, GComponent uiView, ViewBase viewBase)
             {
                 var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
                 uiInstanceObject.Initialize(name, uiView);
+                uiInstanceObject._viewBase = viewBase;
                 return uiInstanceObject;
             }
 
@@ -36,7 +41,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// 释放界面实例对象。
             /// </summary>
             /// <param name="isShutdown"></param>
-            protected override void Release(bool isShutdown) => FuiHelper.ReleaseUI(Target);
+            protected override void Release(bool isShutdown)
+            {
+                _viewBase.OnDispose();
+                FuiHelper.ReleaseUI(Target);
+            }
         }
     }
 }

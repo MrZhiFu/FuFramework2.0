@@ -147,6 +147,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 ViewBase viewBase = FuiHelper.CreateUI(uiView, openUIInfo.UIType);
                 if (viewBase == null) throw new GameFrameworkException("不能从界面辅助器中创建界面实例.");
 
+                // 创建界面实例对象并注册到对象池中
+                var uiInstanceObject = UIInstanceObject.Create(openUIInfo.UIType.Name, uiView, viewBase);
+                m_InstancePool.Register(uiInstanceObject, true);
+                
                 // 初始化界面
                 var uiGroup = viewBase.UIGroup;
                 viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
@@ -218,10 +222,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
             var uiView = UIPackage.CreateObject(packageName, uiName) as GComponent;
-
-            // 创建界面实例对象并注册到对象池中
-            var uiInstanceObject = UIInstanceObject.Create(uiName, uiView);
-            m_InstancePool.Register(uiInstanceObject, true);
 
             // 打开界面
             var ui = InternalOpenUI(openUIInfo, uiView, true, duration);

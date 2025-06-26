@@ -146,9 +146,5 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         protected void CloseSelf() => UIManager.Instance.CloseUI(this);
         
-        /// <summary>
-        /// 界面销毁
-        /// </summary>
-        private void OnDestroy() => OnDispose();
     }
 }
