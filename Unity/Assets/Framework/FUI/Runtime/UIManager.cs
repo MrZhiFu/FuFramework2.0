@@ -123,7 +123,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
         }
 
-
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>

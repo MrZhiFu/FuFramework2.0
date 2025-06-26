@@ -41,46 +41,36 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 packageName = (string)packageNameField.GetValue(null);
             else
                 throw new GameFrameworkException($"界面类型 {typeof(T).Name} 中没有包含 UIPackageName 常量字段.");
-
-            Log.Info($"打开界面 {packageName}-{typeof(T).Name}.");
-
-            // 获取界面所在包路径："Assets/Bundles/UI/Login"
-            var packagePath = Utility.Asset.Path.GetUIPath(packageName);
-
-            // 如果是从Resources中加载，则修改路径中的Bundles目录为Resources, 如：Assets/Bundles/UI/Login -> Assets/Resources/UI/Login
-            if (isFromResources)
-                packagePath = packagePath.Replace(Utility.Asset.Path.BundlesDirectoryName, "Resources");
-            return await InnerOpenUIAsync(packagePath, typeof(T), userData, isMultiple) as T;
+            
+            return await InnerOpenUIAsync(packageName, typeof(T), userData, isFromResources, isMultiple) as T;
         }
 
         /// <summary>
         /// 打开界面。
         /// </summary>
-        /// <param name="packagePath">界面所在包路径，如：Assets/Bundles/UI/Login</param>
+        /// <param name="packageName">包名。</param>
         /// <param name="uiType">界面逻辑类型。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        public async UniTask<ViewBase> OpenUIAsync(string packagePath, Type uiType, object userData = null, bool isMultiple = false)
+        public async UniTask<ViewBase> OpenUIAsync(string packageName, Type uiType, object userData = null, bool isFromResources = false, bool isMultiple = false)
         {
-            return await InnerOpenUIAsync(packagePath, uiType, userData, isMultiple);
+            return await InnerOpenUIAsync(packageName, uiType, userData, isFromResources, isMultiple);
         }
 
         /// <summary>
         /// 打开界面。(内部使用)
         /// </summary>
-        /// <param name="packagePath">界面所在包路径，如：Assets/Bundles/UI/Login</param>
+        /// <param name="packageName">包名。</param>
         /// <param name="uiType">界面逻辑类型。如：Login</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        private async UniTask<ViewBase> InnerOpenUIAsync(string packagePath, Type uiType, object userData, bool isMultiple = false)
+        private async UniTask<ViewBase> InnerOpenUIAsync(string packageName, Type uiType, object userData, bool isFromResources = false, bool isMultiple = false)
         {
             var uiName = uiType.Name;
-
-            // 如：packagePath = "Assets/Bundles/UI/Login"，则 packageName = "Login"
-            var lastIndexOfStart = packagePath.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
-            var packageName      = packagePath.Substring(lastIndexOfStart + 1);
 
             OpenUIInfo openUIInfo;
 
@@ -97,36 +87,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             // 创建一个打开界面界面时的信息对象，用于记录打开界面的信息
             openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
 
-            // UI包是否已经加载过
-            var hasUIPackage = FuiPackageManager.Instance.HasPackage(packageName);
-
             // UI包已经加载过，则直接通过回调创建界面
-            if (hasUIPackage)
+            if (FUIPackageMgr.Instance.HasPackage(packageName))
                 return LoadAssetSuccessCallback(openUIInfo, 0);
 
-            // 如："Assets/Bundles/UI/Login/Login"，第一个Login是包名，第二个Login是界面描述文件资源名
-            var descPath = PathHelper.Combine(packagePath, packageName);
-
-            // 检查路径中是否包含Bundle目录，不包含则从Resources中同步加载
-            if (descPath.IndexOf(Utility.Asset.Path.BundlesDirectoryName, StringComparison.OrdinalIgnoreCase) < 0)
-            {
-                // 从Resources中直接使用包名加载
-                FuiPackageManager.Instance.AddPackageSync(descPath);
-                return LoadAssetSuccessCallback(openUIInfo, 0);
-            }
-
-            // 等待异步加载UI资源包完成 
-            await FuiPackageManager.Instance.AddPackageAsync(descPath);
-
-            // 等待异步加载完成加载描述文件完成, 如："Assets/Bundles/UI/Login/Login_fui"
-            var assetHandle = await m_AssetManager.LoadAssetAsync<UnityEngine.Object>($"{descPath}_fui");
-
-            // 加载成功
-            if (assetHandle.IsSucceed)
-                return LoadAssetSuccessCallback(openUIInfo, assetHandle.Progress);
-
-            // 加载失败
-            return LoadAssetFailureCallback(openUIInfo, assetHandle.LastError);
+            await FUIPackageMgr.Instance.AddPackageAsync(packageName, isFromResources);
+            return LoadAssetSuccessCallback(openUIInfo, 0);
         }
 
         /// <summary>
@@ -150,7 +116,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 // 创建界面实例对象并注册到对象池中
                 var uiInstanceObject = UIInstanceObject.Create(openUIInfo.UIType.Name, uiView, viewBase);
                 m_InstancePool.Register(uiInstanceObject, true);
-                
+
                 // 初始化界面
                 var uiGroup = viewBase.UIGroup;
                 viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);

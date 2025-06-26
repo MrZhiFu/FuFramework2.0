@@ -18,8 +18,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 typeof(ViewBase),
                 typeof(UIManager),
                 typeof(FuiLoadAsyncResourceHelper),
-                typeof(FuiPackageManager),
-                typeof(FuiPathFinderHelper),
+                // typeof(FuiPackageManager),
+                // typeof(FuiPathFinderHelper),
             };
         }
     }
