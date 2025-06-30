@@ -26,7 +26,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private HashSet<int>            m_LoadingInCloseSet; // 正在加载中被关闭的界面集合，int为界面Id，防止在打开界面时重复创建界面实例对象
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
 
-        private AssetComponent      m_AssetManager;          // 资源管理器
         private ObjectPoolComponent m_ObjectPoolManager;     // 对象池管理器
         private EventComponent      m_EventComponent = null; // 事件组件
 
@@ -59,7 +58,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
-            m_AssetManager   = GameEntry.GetComponent<AssetComponent>();
+            GameEntry.GetComponent<AssetComponent>();
 
             m_SerialId   = 0;
             m_IsShutdown = false;

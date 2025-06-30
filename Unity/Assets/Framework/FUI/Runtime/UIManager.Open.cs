@@ -41,7 +41,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 packageName = (string)packageNameField.GetValue(null);
             else
                 throw new GameFrameworkException($"界面类型 {typeof(T).Name} 中没有包含 UIPackageName 常量字段.");
-            
+
             return await InnerOpenUIAsync(packageName, typeof(T), userData, isFromResources, isMultiple) as T;
         }
 
@@ -82,7 +82,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return InternalOpenUI(openUIInfo, uiInstanceObject.Target as GComponent, false, 0);
             }
 
-            m_LoadingDict.Add(m_SerialId, uiName);
+            if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
+            {
+               Log.Warning($"已经有序号为 {m_SerialId} 的界面正在加载.");
+               return null;
+            }
 
             // 创建一个打开界面界面时的信息对象，用于记录打开界面的信息
             openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
@@ -91,6 +95,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (FUIPackageMgr.Instance.HasPackage(packageName))
                 return LoadAssetSuccessCallback(openUIInfo, 0);
 
+            // UI包没有加载过，则加载UI包
             await FUIPackageMgr.Instance.AddPackageAsync(packageName, isFromResources);
             return LoadAssetSuccessCallback(openUIInfo, 0);
         }
@@ -195,29 +200,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             // 释放资源
             ReferencePool.Release(openUIInfo);
             return ui;
-        }
-
-        /// <summary>
-        /// 加载界面资源失败回调。
-        /// </summary>
-        /// <param name="openUIInfo"></param>
-        /// <param name="errorMessage"></param>
-        /// <returns></returns>
-        private ViewBase LoadAssetFailureCallback(OpenUIInfo openUIInfo, string errorMessage)
-        {
-            if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
-
-            if (m_LoadingInCloseSet.Contains(openUIInfo.SerialId))
-            {
-                m_LoadingInCloseSet.Remove(openUIInfo.SerialId);
-                return GetUI(openUIInfo.SerialId);
-            }
-
-            m_LoadingDict.Remove(openUIInfo.SerialId);
-            var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, openUIInfo.UIType.Name, openUIInfo.UserData);
-            m_EventComponent.Fire(this, openUIFailureEventArgs);
-            Log.Error("加载界面资源失败, 界面资源名 '{0}', 错误信息 '{1}'.", openUIInfo.UIType.Name, errorMessage);
-            return GetUI(openUIInfo.SerialId);
         }
     }
 }

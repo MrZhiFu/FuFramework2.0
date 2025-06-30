@@ -49,7 +49,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public bool HasPackage(string packageName) => m_loadedPkgDic.ContainsKey(packageName);
 
         /// <summary>
-        /// 加载指定包和依赖
+        /// 异步加载指定包和依赖
         /// </summary>
         /// <param name="pkgName">包名</param>
         /// <param name="isFromResources">是否从Resources目录加载</param>
@@ -73,7 +73,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 compBinder?.BindComp();
 
             // 加载该包的依赖包
-            return await AddDependenciesPkgAsync(package);
+            return await AddPackageDependenciesAsync(package);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             // 加载完成后，添加到UIPackage中，并加载pkg中的资源
             loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
             {
-                LoadResAsync(assetName, extension, type, packageItem).Forget();
+               LoadResAsync(assetName, extension, type, packageItem).Forget();
             });
 
             return loadedPackage;
@@ -108,7 +108,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 加载指定包的依赖包
         /// </summary>
         /// <param name="package">包</param>
-        private async UniTask<UIPackage> AddDependenciesPkgAsync(UIPackage package)
+        private async UniTask<UIPackage> AddPackageDependenciesAsync(UIPackage package)
         {
             foreach (var depPkgDict in package.dependencies)
             {
@@ -190,7 +190,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private void RemovePackage(string pkgName)
         {
             if (!m_loadedPkgDic.Remove(pkgName, out _)) return;
-
+            
             UIPackage.RemovePackage(pkgName);
 
             var pkgPath = Utility.Asset.Path.GetUIPackagePath(pkgName);
