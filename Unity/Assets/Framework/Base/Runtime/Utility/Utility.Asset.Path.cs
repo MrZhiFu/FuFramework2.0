@@ -23,6 +23,11 @@
                 public const string BundlesDirectoryName = "Bundles";
 
                 /// <summary>
+                /// 打包资源文件夹UI名称
+                /// </summary>
+                public const string BundlesDirectoryUIName = "UI";
+
+                /// <summary>
                 /// 打包资源文件夹Scene名称
                 /// </summary>
                 public const string BundlesDirectorySceneName = "Scene";
@@ -66,11 +71,6 @@
                 /// 打包资源文件夹Image名称
                 /// </summary>
                 public const string BundlesDirectoryImageName = "Image";
-
-                /// <summary>
-                /// 打包资源文件夹UI名称
-                /// </summary>
-                public const string BundlesDirectoryUIName = "UI";
 
                 /// <summary>
                 /// 打包资源文件夹Sprite名称
@@ -153,14 +153,20 @@
                 /// 获取UI文件路径
                 /// </summary>
                 /// <param name="uiPackageName">UI包名</param>
-                /// <returns>返回拼接好的路径</returns>
+                /// <returns>返回拼接好的路径：Assets/Bundles/UI/{uiPackageName}/{uiPackageName}</returns>
                 public static string GetUIPackagePath(string uiPackageName) => GetCategoryFilePath(BundlesDirectoryUIName, $"{uiPackageName}/{uiPackageName}");
 
                 /// <summary>
                 /// 获取UI文件路径
                 /// </summary>
+                /// <returns>返回拼接好的路径: Assets/Bundles/UI/</returns>
+                public static string GetUIRootPath() => $"{BundlesPath}/{BundlesDirectoryUIName}/";
+
+                /// <summary>
+                /// 获取UI文件路径
+                /// </summary>
                 /// <param name="uiPath">UI路径</param>
-                /// <returns>返回拼接好的路径</returns>
+                /// <returns>返回拼接好的路径: Assets/Bundles/UI/{uiPath}</returns>
                 public static string GetUIPath(string uiPath) => GetCategoryFilePath(BundlesDirectoryUIName, uiPath);
 
                 /// <summary>

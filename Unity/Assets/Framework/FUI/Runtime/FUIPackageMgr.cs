@@ -14,13 +14,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     public class FUIPackageMgr : GameFrameworkMonoSingleton<FUIPackageMgr>
     {
         /// 缓存已加载的包的字典，key:包名，value：包
-        private readonly Dictionary<string, UIPackage> _loadedPkgDic = new();
+        private readonly Dictionary<string, UIPackage> m_loadedPkgDic = new();
 
         /// 缓存包的引用计数，key:包名，value：引用数量
-        private readonly Dictionary<string, int> _pkgRefCountDic = new();
-        
+        private readonly Dictionary<string, int> m_pkgRefCountDic = new();
+
         /// 资源管理器
-        private AssetComponent _assetManager;
+        private AssetComponent m_assetManager;
 
         /// <summary>
         /// 初始化
@@ -28,63 +28,25 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         protected override void Init()
         {
             base.Init();
-
-            _assetManager = GameEntry.GetComponent<AssetComponent>();
-            
-            //手动管理资源
-            UIPackage.unloadBundleByFGUI = false;
+            m_assetManager = GameEntry.GetComponent<AssetComponent>();
+            UIPackage.unloadBundleByFGUI = false; // 手动管理资源
         }
-        
+
         /// <summary>
         /// 清空所有包
         /// </summary>
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            foreach (var pkgName in _loadedPkgDic.Keys)
-            {
-                UIPackage.RemovePackage(pkgName);
-            }
-
-            _pkgRefCountDic.Clear();
-            _loadedPkgDic.Clear();
-
-            UIPackage.RemoveAllPackages();
+            ReleaseAll();
         }
-
 
         /// <summary>
         /// 是否存在指定包
         /// </summary>
         /// <param name="packageName"></param>
         /// <returns></returns>
-        public bool HasPackage(string packageName)
-        {
-            return _loadedPkgDic.ContainsKey(packageName);
-        }
-        
-        /// <summary>
-        /// 移除指定包
-        /// </summary>
-        /// <param name="pkgName">包名</param>
-        private void RemovePackage(string pkgName)
-        {
-            if (!_loadedPkgDic.Remove(pkgName, out var package)) return;
-
-            UIPackage.RemovePackage(pkgName);
-
-            var pkgPath = Utility.Asset.Path.GetUIPackagePath(pkgName);
-            var descPath = $"{pkgPath}_fui";
-            var resPath  = $"{pkgPath}_atlas";
-            _assetManager.UnloadAsset(descPath);
-            _assetManager.UnloadAsset(resPath);
-
-            // 绑定该包下绑定的所有自定义组件
-            if (!FUIConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder)) return;
-            {
-                compBinder?.RemoveBindComp();
-            }
-        }
+        public bool HasPackage(string packageName) => m_loadedPkgDic.ContainsKey(packageName);
 
         /// <summary>
         /// 加载指定包和依赖
@@ -94,24 +56,52 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public async UniTask<UIPackage> AddPackageAsync(string pkgName, bool isFromResources = false)
         {
             // 已经加载过的包直接返回
-            if (_loadedPkgDic.TryGetValue(pkgName, out var loadedPackage)) return loadedPackage;
+            if (m_loadedPkgDic.TryGetValue(pkgName, out var loadedPackage)) return loadedPackage;
 
-            Log.Info($"添加UI包: {pkgName}", pkgName);
+            Log.Info($"添加UIPackage包: {pkgName}");
 
             UIPackage package;
-
             if (isFromResources)
                 package = UIPackage.AddPackage($"Assets/Resources/UI/{pkgName}/{pkgName}");
             else
                 package = await LoadPackageAsync(pkgName);
-            
-            _loadedPkgDic.Add(pkgName, package);
-            
+
+            m_loadedPkgDic.Add(pkgName, package);
+
             // 绑定该包下的所有自定义组件
             if (FUIConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder))
                 compBinder?.BindComp();
 
+            // 加载该包的依赖包
             return await AddDependenciesPkgAsync(package);
+        }
+
+        /// <summary>
+        /// 异步加载UI包
+        /// </summary>
+        /// <param name="pkgName">包名</param>
+        /// <returns></returns>
+        private async UniTask<UIPackage> LoadPackageAsync(string pkgName)
+        {
+            if (m_loadedPkgDic.TryGetValue(pkgName, out var loadedPackage))
+            {
+                if (loadedPackage != null)
+                {
+                    loadedPackage.ReloadAssets();
+                    return loadedPackage;
+                }
+            }
+            
+            // 加载描述文件
+            var pkgDesc = await LoadDesc(pkgName);
+
+            // 加载完成后，添加到UIPackage中，并加载pkg中的资源
+            loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
+            {
+                LoadResAsync(assetName, extension, type, packageItem).Forget();
+            });
+
+            return loadedPackage;
         }
 
         /// <summary>
@@ -134,28 +124,100 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 添加依赖包引用
+        /// 加载UI包描述数据
         /// </summary>
-        /// <param name="pkgName">包名</param>
-        public void Retain(string pkgName)
+        /// <param name="pkgName"></param>
+        /// <returns></returns>
+        /// <exception cref="GameFrameworkException"></exception>
+        private async UniTask<TextAsset> LoadDesc(string pkgName)
         {
-            if (!_pkgRefCountDic.TryAdd(pkgName, 1))
-                _pkgRefCountDic[pkgName] += 1;
+            if (string.IsNullOrEmpty(pkgName)) throw new GameFrameworkException("资源包名不能为空.");
+
+            var rootPath = Utility.Asset.Path.GetUIRootPath(); //"Assets/Bundles/UI/";
+            var resPath = $"{rootPath}{pkgName}/{pkgName}_fui.bytes";
+
+            // 等待描述文件加载完成
+            var assetHandle = await m_assetManager.LoadAssetAsync(resPath);
+            var isSuccess = assetHandle != null && assetHandle.AssetObject != null;
+
+            if (!isSuccess)
+                throw new GameFrameworkException($"资源包{pkgName}描述文件加载失败.");
+
+            var pkgDesc = assetHandle.GetAssetObject<TextAsset>();
+
+            if (pkgDesc == null)
+                throw new GameFrameworkException($"资源包{pkgName}描述文件加载失败.");
+
+            return pkgDesc;
         }
 
         /// <summary>
-        /// 释放指定包
+        /// 加载UI包资源
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <param name="extension"></param>
+        /// <param name="type"></param>
+        /// <param name="packageItem"></param>
+        private async UniTaskVoid LoadResAsync(string assetName, string extension, System.Type type, PackageItem packageItem)
+        {
+            var rootPath = Utility.Asset.Path.GetUIRootPath(); //"Assets/Bundles/UI/";
+            var extPath = $"{rootPath}{packageItem.owner.name}/{packageItem.owner.name}_{assetName}{extension}";
+
+            // 等待资源文件加载完成
+            var assetHandle = await m_assetManager.LoadAssetAsync(extPath, type);
+            var isSuccess = assetHandle != null && assetHandle.AssetObject != null;
+
+            if (!isSuccess)
+                throw new GameFrameworkException($"资源包{assetName}描述文件加载失败.");
+
+            packageItem.owner.SetItemAsset(packageItem, assetHandle.AssetObject, DestroyMethod.Custom);
+        }
+
+        /// <summary>
+        /// 添加依赖包引用
+        /// </summary>
+        /// <param name="pkgName">包名</param>
+        private void Retain(string pkgName)
+        {
+            if (!m_pkgRefCountDic.TryAdd(pkgName, 1))
+                m_pkgRefCountDic[pkgName] += 1;
+        }
+        
+        /// <summary>
+        /// 移除指定包
+        /// </summary>
+        /// <param name="pkgName">包名</param>
+        private void RemovePackage(string pkgName)
+        {
+            if (!m_loadedPkgDic.Remove(pkgName, out _)) return;
+
+            UIPackage.RemovePackage(pkgName);
+
+            var pkgPath = Utility.Asset.Path.GetUIPackagePath(pkgName);
+            var descPath = $"{pkgPath}_fui";
+            var resPath = $"{pkgPath}_atlas";
+
+            m_assetManager.UnloadAsset(descPath);
+            m_assetManager.UnloadAsset(resPath);
+
+            // 移除该包下绑定的所有自定义组件
+            if (!FUIConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder)) return;
+            {
+                compBinder?.RemoveBindComp();
+            }
+        }
+
+        /// <summary>
+        /// 释放指定包，包括其依赖的包
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void Release(string pkgName)
         {
-            if (!_pkgRefCountDic.ContainsKey(pkgName)) return;
+            if (!m_pkgRefCountDic.ContainsKey(pkgName)) return;
+            m_pkgRefCountDic[pkgName] -= 1;
+            if (m_pkgRefCountDic[pkgName] > 0) return;
 
-            _pkgRefCountDic[pkgName] -= 1;
-
-            if (_pkgRefCountDic[pkgName] > 0) return;
-
-            if (!_loadedPkgDic.TryGetValue(pkgName, out var pkg)) return;
+            if (!m_loadedPkgDic.TryGetValue(pkgName, out var pkg)) return;
             foreach (var depPkgDict in pkg.dependencies)
             {
                 foreach (var (_, depPkgName) in depPkgDict)
@@ -167,86 +229,19 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             RemovePackage(pkgName);
         }
-
-
+        
         /// <summary>
-        /// 异步加载UI包
+        /// 释放所有包
         /// </summary>
-        /// <param name="pkgName">包名</param>
-        /// <returns></returns>
-        private async UniTask<UIPackage> LoadPackageAsync(string pkgName)
+        private void ReleaseAll()
         {
-            if (_loadedPkgDic.TryGetValue(pkgName, out var loadedPackage)) ;
+            foreach (var pkgName in m_loadedPkgDic.Keys)
             {
-                if (loadedPackage != null)
-                {
-                    loadedPackage.ReloadAssets();
-                    return loadedPackage;
-                }
+                RemovePackage(pkgName);
             }
 
-            const string rootPath = "Assets/Bundles/UI/";
-            
-            // 加载描述文件
-            var pkgDesc = await LoadDesc(pkgName);
-            
-            // 加载完成后，添加到UIPackage中
-            loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
-            {
-                LoadResAsync(rootPath, assetName, extension, type, packageItem).Forget();
-            });
-            
-            return loadedPackage;
-        }
-
-        /// <summary>
-        /// 加载UI包描述数据
-        /// </summary>
-        /// <param name="pkgName"></param>
-        /// <returns></returns>
-        /// <exception cref="GameFrameworkException"></exception>
-        private async UniTask<TextAsset> LoadDesc(string pkgName)
-        {
-            if (string.IsNullOrEmpty(pkgName)) throw new GameFrameworkException("Asset name is invalid.");
-
-            const string rootPath = "Assets/Bundles/UI/";
-            var       resPath  = Utility.Text.Format("{0}{1}/{2}_fui.bytes", rootPath, pkgName, pkgName);
-
-            // 等待描述文件加载完成
-            var assetHandle = await _assetManager.LoadAssetAsync(resPath);
-            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-
-            if (!isSuccess)
-                throw new GameFrameworkException(Utility.Text.Format("Asset name '{0}' is invalid.", pkgName));
-
-            var pkgDesc = assetHandle.GetAssetObject<TextAsset>();
-
-            if (pkgDesc == null)
-                throw new GameFrameworkException(Utility.Text.Format("Asset name '{0}' is invalid.", pkgName));
-
-            return pkgDesc;
-        }
-
-        /// <summary>
-        /// 加载UI包资源
-        /// </summary>
-        /// <param name="rootPath"></param>
-        /// <param name="assetName"></param>
-        /// <param name="extension"></param>
-        /// <param name="type"></param>
-        /// <param name="packageItem"></param>
-        private async UniTaskVoid LoadResAsync(string rootPath, string assetName, string extension, System.Type type, PackageItem packageItem)
-        {
-            var extPath = $"{rootPath}{packageItem.owner.name}/{packageItem.owner.name}_{assetName}{extension}";
-
-            // 等待资源文件加载完成
-            var assetHandle = await _assetManager.LoadAssetAsync(extPath, type);
-            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-            
-            if (!isSuccess)
-                throw new GameFrameworkException(Utility.Text.Format("Asset name '{0}' is invalid.", assetName));
-
-            packageItem.owner.SetItemAsset(packageItem, assetHandle.AssetObject, DestroyMethod.Custom);
+            m_pkgRefCountDic.Clear();
+            m_loadedPkgDic.Clear();
         }
     }
 }
