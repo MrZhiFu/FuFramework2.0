@@ -23,7 +23,7 @@ namespace GameFrameX.UI.Runtime
         /// 界面资源包名
         /// </summary>
         public string PackageName { get; private set; }
-        
+
         /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
@@ -33,17 +33,17 @@ namespace GameFrameX.UI.Runtime
         /// 创建打开界面的信息。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
+        /// <param name="packageName">界面资源包名。</param>
         /// <param name="uiType">界面类型。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="packageName">界面资源包名。</param>
         /// <returns>创建的打开界面的信息。</returns>
-        public static OpenUIInfo Create(int serialId, Type uiType, object userData, string packageName)
+        public static OpenUIInfo Create(int serialId, string packageName, Type uiType, object userData)
         {
             var openUIInfo = ReferencePool.Acquire<OpenUIInfo>();
-            openUIInfo.SerialId       = serialId;
-            openUIInfo.UserData       = userData;
-            openUIInfo.UIType         = uiType;
+            openUIInfo.SerialId    = serialId;
             openUIInfo.PackageName = packageName;
+            openUIInfo.UserData    = userData;
+            openUIInfo.UIType      = uiType;
             return openUIInfo;
         }
 

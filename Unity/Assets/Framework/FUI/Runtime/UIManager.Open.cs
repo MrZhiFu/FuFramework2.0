@@ -78,7 +78,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             UIInstanceObject uiInstanceObject = m_InstancePool.Spawn(uiName);
             if (uiInstanceObject != null && isMultiple == false)
             {
-                openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
+                openUIInfo = OpenUIInfo.Create(m_SerialId, packageName, uiType, userData);
                 return InternalOpenUI(openUIInfo, uiInstanceObject.Target as GComponent, false, 0);
             }
 
@@ -89,7 +89,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             // 创建一个打开界面界面时的信息对象，用于记录打开界面的信息
-            openUIInfo = OpenUIInfo.Create(m_SerialId, uiType, userData, packageName);
+            openUIInfo = OpenUIInfo.Create(m_SerialId, packageName, uiType, userData);
 
             // UI包已经加载过，则直接通过回调创建界面
             if (FUIPackageMgr.Instance.HasPackage(packageName))
