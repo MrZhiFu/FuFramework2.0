@@ -5,10 +5,8 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using FairyGUI;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.FairyGUI.Runtime
 {
@@ -24,7 +22,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void CloseUI(int serialId)
         {
             var view = GetUI(serialId);
-            if (!view) Log.Error($"找不到界面 '{serialId}'.");
+            if (view == null)
+            {
+                Log.Error($"找不到界面 '{serialId}'.");
+                return;
+            }
+
             CloseUI(view);
         }
 
@@ -48,8 +51,17 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="view">要关闭的界面。</param>
         public void CloseUI(ViewBase view)
         {
-            if (!view) Log.Error("需要关闭的UI界面View为空");
-            if (view.UIGroup == null) Log.Error("需要关闭的UI界面组为空");
+            if (view == null)
+            {
+                Log.Error("需要关闭的UI界面View为空");
+                return;
+            }
+
+            if (view.UIGroup == null)
+            {
+                Log.Error("需要关闭的UI界面组为空");
+                return;
+            }
 
             if (IsLoadingUI(view.SerialId))
             {
@@ -79,7 +91,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void CloseUINow(int serialId)
         {
             var view = GetUI(serialId);
-            if (!view) Log.Error($"找不到界面 '{serialId}'");
+            if (view == null)
+            {
+                Log.Error($"找不到界面 '{serialId}'");
+                return;
+            }
 
             CloseUINow(view);
         }
@@ -104,8 +120,17 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="view">要关闭的界面。</param>
         public void CloseUINow(ViewBase view)
         {
-            if (!view) Log.Error("需要关闭的UI界面View为空");
-            if (view.UIGroup == null) Log.Error("需要关闭的UI界面组为空");
+            if (view == null)
+            {
+                Log.Error("需要关闭的UI界面View为空");
+                return;
+            }
+
+            if (view.UIGroup == null)
+            {
+                Log.Error("需要关闭的UI界面组为空");
+                return;
+            }
 
             if (IsLoadingUI(view.SerialId))
             {
@@ -113,10 +138,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 m_LoadingDict.Remove(view.SerialId);
                 return;
             }
-            
+
             var uiGroup = view.UIGroup;
             if (uiGroup == null) return;
-            
+
             uiGroup.RemoveUI(view);
             view.OnClose(m_IsShutdown);
             uiGroup.Refresh();
@@ -169,13 +194,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="view"></param>
         private void RecycleUI(ViewBase view)
         {
+            m_InstancePool.Unspawn(view.UIView);
             view.OnRecycle();
-            var uiHandle = view.Handle as GameObject;
-            if (!uiHandle) return;
-            var displayObjectInfo = uiHandle.GetComponent<DisplayObjectInfo>();
-            if (!displayObjectInfo) return;
-            if (displayObjectInfo.displayObject.gOwner is not GComponent component) return;
-            m_InstancePool.Unspawn(component);
         }
     }
 }

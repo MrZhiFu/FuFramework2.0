@@ -127,8 +127,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         protected override void OnDestroy()
         {
-            base.OnDestroy();
             Shutdown();
+            base.OnDestroy();
         }
 
         /// <summary>

@@ -7,10 +7,10 @@ namespace Hotfix.UI
 {
     public partial class UIMain
     {
-        public override void OnAwake()
+        protected override void OnInit()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
-            base.OnAwake();
+            base.OnInit();
+            OnInitUI();
         }
 
         public override void OnOpen(object userData)

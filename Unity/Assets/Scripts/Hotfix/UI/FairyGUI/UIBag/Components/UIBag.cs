@@ -23,17 +23,17 @@ namespace Hotfix.UI
 		public GGraph m_bg { get; private set; }
 		public UIBagContent m_content { get; private set; }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_bg = (GGraph)com.GetChild("bg");

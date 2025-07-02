@@ -30,17 +30,17 @@ namespace Unity.Startup
 		public GProgressBar m_ProgressBar { get; private set; }
 		public UILauncherUpgrade m_upgrade { get; private set; }
 
-        protected override void InitView()
+		private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_IsUpgrade = com.GetController("IsUpgrade");

@@ -9,10 +9,10 @@ namespace Hotfix.UI
 {
     public partial class UILogin
     {
-        public override void OnAwake()
+        protected override void OnInit()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
-            base.OnAwake();
+            base.OnInit();
+            OnInitUI();
         }
 
         public override void OnOpen(object userData)
@@ -23,7 +23,8 @@ namespace Hotfix.UI
 
         private void OnLoginClick()
         {
-            Login();
+            // Login();
+            CloseSelf();
         }
 
         /// <summary>

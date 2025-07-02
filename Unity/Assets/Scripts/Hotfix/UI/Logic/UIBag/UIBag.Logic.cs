@@ -36,11 +36,12 @@ namespace Hotfix.UI
 
         private BagItem _selectBagItem = null; // 选中的背包道具
 
-        public override void OnAwake()
+        protected override void OnInit()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
-            base.OnAwake();
+            base.OnInit();
             GameApp.Event.CheckSubscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
+            
+            OnInitUI();
         }
 
         public override void OnOpen(object userData)

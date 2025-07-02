@@ -27,17 +27,17 @@ namespace Hotfix.UI
 		public GRichTextField m_selected_level { get; private set; }
 		public GButton m_login_button { get; private set; }
 
-		protected override void InitView()
+		private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = View;
+            self = UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_IsSelected = com.GetController("IsSelected");

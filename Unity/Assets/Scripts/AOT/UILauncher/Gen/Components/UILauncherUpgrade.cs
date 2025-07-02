@@ -15,43 +15,43 @@ namespace Unity.Startup
     public sealed partial class UILauncherUpgrade : ViewBase
     {
         public const string UIPackageName = "UILauncher";
-        public const string UIResName = "UILauncherUpgrade";
-        public const string URL = "ui://u7deosq0qew11e";
+        public const string UIResName     = "UILauncherUpgrade";
+        public const string URL           = "ui://u7deosq0qew11e";
 
         /// <summary>
         /// {uiResName}的组件类型(GComponent、GButton、GProcessBar等)，它们都是GObject的子类。
         /// </summary>
         public GComponent self { get; private set; }
 
-		public GGraph m_bg { get; private set; }
-		public GButton m_EnterButton { get; private set; }
-		public GLabel m_TextContent { get; private set; }
+        public GGraph  m_bg          { get; private set; }
+        public GButton m_EnterButton { get; private set; }
+        public GLabel  m_TextContent { get; private set; }
 
 
         public static UILauncherUpgrade Create(GComponent go)
         {
-            var fui = go.displayObject.gameObject.GetOrAddComponent<UILauncherUpgrade>();
-            fui?.SetUIView(go);
-            fui?.InitView();
+            var fui = new UILauncherUpgrade();
+            fui.SetUIView(go);
             return fui;
         }
 
-        protected override void InitView()
+        protected override void OnInit()
         {
-            if(View == null)
+            base.OnInit();
+            if (UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = UIView;
             self.Add(this);
-            
-            var com = View.asCom;
+
+            var com = UIView.asCom;
             if (com != null)
             {
-				m_bg = (GGraph)com.GetChild("bg");
-				m_EnterButton = (GButton)com.GetChild("EnterButton");
-				m_TextContent = (GLabel)com.GetChild("TextContent");
+                m_bg          = (GGraph)com.GetChild("bg");
+                m_EnterButton = (GButton)com.GetChild("EnterButton");
+                m_TextContent = (GLabel)com.GetChild("TextContent");
             }
         }
 
@@ -59,10 +59,10 @@ namespace Unity.Startup
         {
             base.OnDispose();
             self.Remove();
-			m_bg = null;
-			m_EnterButton = null;
-			m_TextContent = null;
-            self = null;            
+            m_bg          = null;
+            m_EnterButton = null;
+            m_TextContent = null;
+            self          = null;
         }
     }
 }

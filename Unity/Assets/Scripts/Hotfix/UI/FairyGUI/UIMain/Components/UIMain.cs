@@ -26,17 +26,17 @@ namespace Hotfix.UI
 		public GTextField m_player_name { get; private set; }
 		public GTextField m_player_level { get; private set; }
 
-		protected override void InitView()
+		private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_bg = (GLoader)com.GetChild("bg");

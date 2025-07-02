@@ -25,14 +25,14 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 创建界面组界面信息。
         /// </summary>
-        /// <param name="iuiBase">界面。</param>
+        /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="GameFrameworkException">界面为空时抛出。</exception>
-        public static UIInfo Create(ViewBase iuiBase)
+        public static UIInfo Create(ViewBase view)
         {
-            if (!iuiBase) throw new GameFrameworkException("ui界面逻辑实例为空.");
+            if (view == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<UIInfo>();
-            uiInfo.View    = iuiBase;
+            uiInfo.View    = view;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;
             return uiInfo;

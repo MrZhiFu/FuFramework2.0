@@ -16,22 +16,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 打开界面。
         /// </summary>
         /// <param name="userData"></param>
-        /// <param name="isFromResources"></param>
         /// <param name="isMultiple"></param>
         /// <typeparam name="T"></typeparam>
-        public void OpenUI<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
+        public void OpenUI<T>(object userData = null, bool isMultiple = false) where T : ViewBase
         {
-            OpenUIAsync<T>(userData, isFromResources, isMultiple).Forget();
+            OpenUIAsync<T>(userData, isMultiple).Forget();
         }
 
         /// <summary>
         /// 打开界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns>界面的序列编号。</returns>
-        public async UniTask<T> OpenUIAsync<T>(object userData = null, bool isFromResources = false, bool isMultiple = false) where T : ViewBase
+        public async UniTask<T> OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase
         {
             // 通过反射获取界面的包名
             string packageName;
@@ -42,7 +40,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             else
                 throw new GameFrameworkException($"界面类型 {typeof(T).Name} 中没有包含 UIPackageName 常量字段.");
 
-            return await InnerOpenUIAsync(packageName, typeof(T), userData, isFromResources, isMultiple) as T;
+            return await InnerOpenUIAsync(packageName, typeof(T), userData, isMultiple) as T;
         }
 
         /// <summary>
@@ -51,12 +49,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="packageName">包名。</param>
         /// <param name="uiType">界面逻辑类型。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        public async UniTask<ViewBase> OpenUIAsync(string packageName, Type uiType, object userData = null, bool isFromResources = false, bool isMultiple = false)
+        public async UniTask<ViewBase> OpenUIAsync(string packageName, Type uiType, object userData = null, bool isMultiple = false)
         {
-            return await InnerOpenUIAsync(packageName, uiType, userData, isFromResources, isMultiple);
+            return await InnerOpenUIAsync(packageName, uiType, userData, isMultiple);
         }
 
         /// <summary>
@@ -65,10 +62,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="packageName">包名。</param>
         /// <param name="uiType">界面逻辑类型。如：Login</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isFromResources">是否从Resources中加载。</param>
         /// <param name="isMultiple">是否创建新界面</param>
         /// <returns></returns>
-        private async UniTask<ViewBase> InnerOpenUIAsync(string packageName, Type uiType, object userData, bool isFromResources = false, bool isMultiple = false)
+        private async UniTask<ViewBase> InnerOpenUIAsync(string packageName, Type uiType, object userData, bool isMultiple = false)
         {
             var uiName = uiType.Name;
 
@@ -96,7 +92,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 return LoadAssetSuccessCallback(openUIInfo, 0);
 
             // UI包没有加载过，则加载UI包
-            await FUIPackageMgr.Instance.AddPackageAsync(packageName, isFromResources);
+            await FUIPackageMgr.Instance.AddPackageAsync(packageName);
             return LoadAssetSuccessCallback(openUIInfo, 0);
         }
 
@@ -115,16 +111,20 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 // 使用界面辅助器创建界面实例
                 // 1.将传入的UI界面实例uiView加上UI界面逻辑组件uiType，
                 // 2.将uiView作为一个子节点添加到UI界面组的显示对象下。
-                ViewBase viewBase = FuiHelper.CreateUI(uiView, openUIInfo.UIType);
+                ViewBase viewBase = Activator.CreateInstance(openUIInfo.UIType) as ViewBase;
                 if (viewBase == null) throw new GameFrameworkException("不能从界面辅助器中创建界面实例.");
 
                 // 创建界面实例对象并注册到对象池中
                 var uiInstanceObject = UIInstanceObject.Create(openUIInfo.UIType.Name, uiView, viewBase);
                 m_InstancePool.Register(uiInstanceObject, true);
 
-                // 初始化界面
                 var uiGroup = viewBase.UIGroup;
-                viewBase.Init(openUIInfo.SerialId, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
+                
+                // 界面实例作为一个子节点加入到UI界面组的显示对象下
+                uiGroup.AddChild(uiView);
+                
+                // 初始化界面
+                 viewBase.Init(openUIInfo.SerialId, openUIInfo.PackageName, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
 
                 // 界面组中是否存在该界面，不存在则添加
                 if (!uiGroup.InternalHasInstanceUI(openUIInfo.UIType.Name, viewBase))

@@ -28,23 +28,23 @@ namespace Hotfix.UI
 
         public static UIPlayerListItemLoginButton Create(GComponent go)
         {
-            var fui = go.displayObject.gameObject.GetOrAddComponent<UIPlayerListItemLoginButton>();
+            var fui = new UIPlayerListItemLoginButton();
             fui?.SetUIView(go);
-            fui?.InitView();
+            fui?.OnInitUI();
             return fui;
         }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_title = (GRichTextField)com.GetChild("title");

@@ -3,32 +3,36 @@ using FairyGUI;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Runtime;
 using GameFrameX.UI.FairyGUI.Runtime;
-using UnityEngine;
 
 namespace GameFrameX.UI.Runtime
 {
     /// <summary>
     /// 界面基类。
     /// </summary>
-    public abstract partial class ViewBase : MonoBehaviour
+    public abstract partial class ViewBase
     {
         private bool m_IsInit = false; //界面是否已初始化
         private int  m_DepthInUIGroup; //界面在界面组中的深度
 
         /// <summary>
-        /// 获取界面序列编号。
+        /// 界面序列编号。
         /// </summary>
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取界面名称。
+        /// 界面资源包名称。
+        /// </summary>
+        public string PackageName { get; private set; }
+        
+        /// <summary>
+        /// 界面名称。
         /// </summary>
         public string UIName { get; private set; }
 
         /// <summary>
         /// UI显示对象
         /// </summary>
-        public GComponent View { get; private set; }
+        public GComponent UIView { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -45,12 +49,12 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public bool Visible
         {
-            get => View.visible;
+            get => UIView.visible;
             private set
             {
-                if (View         == null) return;
-                if (View.visible == value) return;
-                View.visible = value;
+                if (UIView         == null) return;
+                if (UIView.visible == value) return;
+                UIView.visible = value;
 
                 // 触发UI显示状态变化事件
                 EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
@@ -58,19 +62,9 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 获取界面实例。
-        /// </summary>
-        public object Handle => gameObject;
-
-        /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public virtual UIGroup UIGroup { get; protected set; }
-
-        /// <summary>
-        /// 获取界面深度。
-        /// </summary>
-        public int DepthInUIGroup => m_DepthInUIGroup;
+        public virtual UIGroup UIGroup =>  UIManager.Instance.GetUIGroup(UILayer.Normal);
 
         /// <summary>
         /// 显示时是否暂停被覆盖的界面。
@@ -83,10 +77,11 @@ namespace GameFrameX.UI.Runtime
         public virtual bool IsFullScreen { get; protected set; } = true;
 
         /// <summary>
-        /// 获取界面是否已唤醒。
+        /// 获取界面深度。
         /// </summary>
-        public bool IsAwake { get; private set; }
+        public int DepthInUIGroup => m_DepthInUIGroup;
 
+        
         /// <summary>
         /// 初始化界面。
         /// </summary>
@@ -95,7 +90,8 @@ namespace GameFrameX.UI.Runtime
         /// <param name="view">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, string uiName, GComponent view, bool isNewInstance, object userData)
+        /// <param name="packageName"></param>
+        public void Init(int serialId, string packageName, string uiName, GComponent view, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
@@ -104,6 +100,7 @@ namespace GameFrameX.UI.Runtime
             if (m_IsInit) return;
             m_IsInit = true;
 
+            PackageName = packageName;
             UIName = uiName;
             
             m_DepthInUIGroup = 0;
@@ -114,15 +111,14 @@ namespace GameFrameX.UI.Runtime
 
             try
             {
-                View = view;
-                InitView();
-
+                UIView = view;
                 if (IsFullScreen) MakeFullScreen();
-
-                OnInit();
 
                 // 注册本地化语言改变事件
                 EventRegister.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
+                
+                // 初始化
+                OnInit();
             }
             catch (Exception exception)
             {
@@ -134,12 +130,12 @@ namespace GameFrameX.UI.Runtime
         /// 设置UI对象
         /// </summary>
         /// <param name="view"></param>
-        public void SetUIView(GComponent view) => View = view;
+        public void SetUIView(GComponent view) => UIView = view;
 
         /// <summary>
         /// 设置界面为全屏
         /// </summary>
-        protected void MakeFullScreen() => View?.MakeFullScreen();
+        protected void MakeFullScreen() => UIView?.MakeFullScreen();
         
         /// <summary>
         /// 关闭自身。

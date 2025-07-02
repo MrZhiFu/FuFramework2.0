@@ -25,9 +25,9 @@ namespace Hotfix.UI
 
         public static UIBagItem Create(GComponent go)
         {
-            var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagItem>();
+            var fui = new UIBagItem();
             fui?.SetUIView(go);
-            fui?.InitView();
+            fui?.OnInitUI();
             return fui;
         }
 
@@ -44,17 +44,17 @@ namespace Hotfix.UI
             return fui;
         }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GButton)View;
+            self = (GButton)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_good_item = (GButton)com.GetChild("good_item");

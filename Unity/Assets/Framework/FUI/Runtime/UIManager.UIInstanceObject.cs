@@ -44,7 +44,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             protected override void Release(bool isShutdown)
             {
                 _viewBase.OnDispose();
-                FuiHelper.ReleaseUI(Target);
+                _viewBase.UIView.Dispose();
+                FUIPackageMgr.Instance.TryRelease(_viewBase.PackageName);
             }
         }
     }

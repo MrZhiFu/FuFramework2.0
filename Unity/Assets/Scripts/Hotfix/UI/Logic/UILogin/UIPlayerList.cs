@@ -22,10 +22,10 @@ namespace Hotfix.UI
         public static string serverIp   = "127.0.0.1"; // 服务器IP
         public static int    serverPort = 29100;       // 服务器端口
 
-        public override void OnAwake()
+        protected override void OnInit()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
-            base.OnAwake();
+            base.OnInit();
+            OnInitUI();
 
             // 订阅网络连接成功和关闭事件
             GameApp.Event.CheckSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);

@@ -31,23 +31,23 @@ namespace Hotfix.UI
 
         public static UIBagContent Create(GComponent go)
         {
-            var fui = go.displayObject.gameObject.GetOrAddComponent<UIBagContent>();
+            var fui = new UIBagContent();
             fui?.SetUIView(go);
-            fui?.InitView();
+            fui?.OnInitUI();
             return fui;
         }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_IsSelectedItem = com.GetController("IsSelectedItem");

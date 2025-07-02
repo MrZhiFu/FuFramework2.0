@@ -9,26 +9,9 @@ namespace GameFrameX.UI.Runtime
     public abstract partial class ViewBase
     {
         /// <summary>
-        /// 界面初始化前执行
-        /// </summary>
-        public virtual void OnAwake()
-        {
-            Log.Info($"UI界面[{gameObject.name}]被唤醒-OnAwake().");
-            IsAwake = true;
-        }
-
-        /// <summary>
-        /// 界面初始化。
-        /// </summary>
-        protected virtual void InitView()
-        {
-            Log.Info($"UI界面[{SerialId}]{UIName}]界面初始化-InitView().");
-        }
-
-        /// <summary>
         /// 初始化界面。
         /// </summary>
-        public virtual void OnInit()
+        protected virtual void OnInit()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]初始化-OnInit().");
         }

@@ -23,17 +23,17 @@ namespace Hotfix.UI
 		public GTextInput m_UserName { get; private set; }
 		public GTextInput m_Password { get; private set; }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_ErrorText = (GTextField)com.GetChild("ErrorText");

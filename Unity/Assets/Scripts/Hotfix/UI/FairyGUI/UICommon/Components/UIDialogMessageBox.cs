@@ -24,17 +24,17 @@ namespace Hotfix.UI
 		public GButton m_cancel_button { get; private set; }
 		public GRichTextField m_content { get; private set; }
 
-        protected override void InitView()
+        private void OnInitUI()
         {
-            if(View == null)
+            if(UIView == null)
             {
                 return;
             }
 
-            self = (GComponent)View;
+            self = (GComponent)UIView;
             self.Add(this);
             
-            var com = View.asCom;
+            var com = UIView.asCom;
             if (com != null)
             {
 				m_enter_button = (GButton)com.GetChild("enter_button");

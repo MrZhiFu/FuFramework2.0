@@ -5,10 +5,10 @@ namespace Unity.Startup
 {
     public partial class UILauncher
     {
-        public override void OnAwake()
+        protected override void OnInit()
         {
-            UIGroup = UIManager.Instance.GetUIGroup(UILayer.Normal);
-            base.OnAwake();
+            base.OnInit();
+            OnInitUI();
         }
     }
 }
