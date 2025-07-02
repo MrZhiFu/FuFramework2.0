@@ -211,10 +211,12 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 释放指定包，包括其依赖的包
         /// </summary>
         /// <param name="pkgName">包名</param>
-        public void Release(string pkgName)
+        public void TryRelease(string pkgName)
         {
             if (!m_pkgRefCountDic.ContainsKey(pkgName)) return;
             m_pkgRefCountDic[pkgName] -= 1;
+            
+            // 引用计数大于0，不释放
             if (m_pkgRefCountDic[pkgName] > 0) return;
 
             if (!m_loadedPkgDic.TryGetValue(pkgName, out var pkg)) return;
@@ -223,10 +225,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 foreach (var (_, depPkgName) in depPkgDict)
                 {
                     if (depPkgName != "name") continue;
-                    Release(depPkgName);
+                    TryRelease(depPkgName);
                 }
             }
 
+            Log.Info($"释放UIPackage包: {pkgName}");
             RemovePackage(pkgName);
         }
         

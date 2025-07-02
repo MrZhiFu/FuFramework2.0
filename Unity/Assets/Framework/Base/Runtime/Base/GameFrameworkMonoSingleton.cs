@@ -42,9 +42,6 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 销毁
         /// </summary>
-        protected virtual void OnDestroy()
-        {
-            _instance = null;
-        }
+        protected virtual void OnDestroy() => _instance = null;
     }
 }
