@@ -23,8 +23,7 @@ namespace Hotfix.UI
 
         private void OnLoginClick()
         {
-            // Login();
-            CloseSelf();
+            Login();
         }
 
         /// <summary>
