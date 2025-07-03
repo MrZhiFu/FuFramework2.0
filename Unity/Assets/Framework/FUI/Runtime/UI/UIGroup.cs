@@ -328,7 +328,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="uiName">界面资源名称。</param>
         /// <param name="view">要检查的界面。</param>
         /// <returns>是否存在指定界面。</returns>
-        public bool InternalHasInstanceUI(string uiName, ViewBase view)
+        public bool InternalHasUI(string uiName, ViewBase view)
         {
             foreach (UIInfo uiInfo in m_UIInfos)
             {

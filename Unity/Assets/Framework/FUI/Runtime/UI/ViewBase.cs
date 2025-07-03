@@ -20,14 +20,14 @@ namespace GameFrameX.UI.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 界面资源包名称。
-        /// </summary>
-        public string PackageName { get; private set; }
-        
-        /// <summary>
         /// 界面名称。
         /// </summary>
         public string UIName { get; private set; }
+
+        /// <summary>
+        /// 界面资源包名称。
+        /// </summary>
+        public string PackageName { get; private set; }
 
         /// <summary>
         /// UI显示对象
@@ -43,6 +43,26 @@ namespace GameFrameX.UI.Runtime
         /// 获取界面事件订阅器。
         /// </summary>
         public EventRegister EventRegister { get; private set; }
+
+        /// <summary>
+        /// 显示时是否暂停被覆盖的界面。
+        /// </summary>
+        public virtual bool PauseCoveredUI { get; protected set; } = false;
+
+        /// <summary>
+        /// 是否是全屏界面。
+        /// </summary>
+        public virtual bool IsFullScreen { get; protected set; } = true;
+
+        /// <summary>
+        /// 获取界面所属的界面组。
+        /// </summary>
+        public virtual UIGroup UIGroup =>  UIManager.Instance.GetUIGroup(UILayer.Normal);
+
+        /// <summary>
+        /// 获取界面深度。
+        /// </summary>
+        public int DepthInUIGroup => m_DepthInUIGroup;
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -61,27 +81,7 @@ namespace GameFrameX.UI.Runtime
             }
         }
 
-        /// <summary>
-        /// 获取界面所属的界面组。
-        /// </summary>
-        public virtual UIGroup UIGroup =>  UIManager.Instance.GetUIGroup(UILayer.Normal);
 
-        /// <summary>
-        /// 显示时是否暂停被覆盖的界面。
-        /// </summary>
-        public virtual bool PauseCoveredUI { get; protected set; } = false;
-
-        /// <summary>
-        /// 是否是全屏界面。
-        /// </summary>
-        public virtual bool IsFullScreen { get; protected set; } = true;
-
-        /// <summary>
-        /// 获取界面深度。
-        /// </summary>
-        public int DepthInUIGroup => m_DepthInUIGroup;
-
-        
         /// <summary>
         /// 初始化界面。
         /// </summary>

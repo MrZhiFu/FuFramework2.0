@@ -75,13 +75,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiInstanceObject != null && isMultiple == false)
             {
                 openUIInfo = OpenUIInfo.Create(m_SerialId, packageName, uiType, userData);
-                return InternalOpenUI(openUIInfo, uiInstanceObject.Target as GComponent, false, 0);
+                return InternalOpenUI(openUIInfo, uiInstanceObject.Target as ViewBase);
             }
 
             if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
             {
-               Log.Warning($"已经有序号为 {m_SerialId} 的界面正在加载.");
-               return null;
+                Log.Warning($"已经有序号为 {m_SerialId} 的界面正在加载.");
+                return null;
             }
 
             // 创建一个打开界面界面时的信息对象，用于记录打开界面的信息
@@ -100,48 +100,50 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 打开界面。(内部使用)
         /// </summary>
         /// <param name="openUIInfo"></param>
-        /// <param name="uiView"></param>
-        /// <param name="isNewInstance"></param>
-        /// <param name="duration"></param>
+        /// <param name="view"></param>
         /// <returns></returns>
-        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, GComponent uiView, bool isNewInstance, float duration)
+        private ViewBase InternalOpenUI(OpenUIInfo openUIInfo, ViewBase view)
         {
             try
             {
-                // 使用界面辅助器创建界面实例
-                // 1.将传入的UI界面实例uiView加上UI界面逻辑组件uiType，
-                // 2.将uiView作为一个子节点添加到UI界面组的显示对象下。
-                ViewBase viewBase = Activator.CreateInstance(openUIInfo.UIType) as ViewBase;
-                if (viewBase == null) throw new GameFrameworkException("不能从界面辅助器中创建界面实例.");
+                var isNewInstance = view == null;
 
-                // 创建界面实例对象并注册到对象池中
-                var uiInstanceObject = UIInstanceObject.Create(openUIInfo.UIType.Name, uiView, viewBase);
-                m_InstancePool.Register(uiInstanceObject, true);
-
-                var uiGroup = viewBase.UIGroup;
-                
-                // 界面实例作为一个子节点加入到UI界面组的显示对象下
-                uiGroup.AddChild(uiView);
-                
-                // 初始化界面
-                 viewBase.Init(openUIInfo.SerialId, openUIInfo.PackageName, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
-
-                // 界面组中是否存在该界面，不存在则添加
-                if (!uiGroup.InternalHasInstanceUI(openUIInfo.UIType.Name, viewBase))
+                // 创建界面逻辑实例
+                if (view == null)
                 {
-                    uiGroup.AddUI(viewBase);
+                    view = Activator.CreateInstance(openUIInfo.UIType) as ViewBase;
+
+                    // 创建界面实例对象并注册到对象池中
+                    var uiInstanceObject = UIInstanceObject.Create(openUIInfo.UIType.Name, view);
+                    m_InstancePool.Register(uiInstanceObject, true);
                 }
 
-                viewBase.OnOpen(openUIInfo.UserData); // 界面打开回调
-                viewBase.UpdateLocalization();        // 更新本地化文本
-                uiGroup.Refresh();                    // 刷新界面组
+                if (view == null) throw new GameFrameworkException("创建界面实例失败.");
+
+                // 创建FUI界面。
+                var uiView = UIPackage.CreateObject(openUIInfo.PackageName, openUIInfo.UIType.Name) as GComponent;
+                
+                // 初始化界面
+                view.Init(openUIInfo.SerialId, openUIInfo.PackageName, openUIInfo.UIType.Name, uiView, isNewInstance, openUIInfo.UserData);
+                
+                // FUI界面加入界面组
+                var uiGroup = view.UIGroup;
+                uiGroup.AddChild(view.UIView);
+                if (!uiGroup.InternalHasUI(openUIInfo.UIType.Name, view))
+                {
+                    uiGroup.AddUI(view);
+                }
+                
+                view.OnOpen(openUIInfo.UserData); // 界面打开回调
+                view.UpdateLocalization();        // 更新本地化文本
+                uiGroup.Refresh();                // 刷新界面组
 
                 // 广播界面打开成功事件
-                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(viewBase, duration, openUIInfo.UserData);
+                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, openUIInfo.UserData);
                 m_EventComponent.Fire(this, openUISuccessEventArgs);
 
                 m_SerialId++;
-                return viewBase;
+                return view;
             }
             catch (Exception exception)
             {
@@ -150,6 +152,37 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 Log.Error($"打开UI界面失败, 资源名称 '{openUIInfo.UIType.Name}', 错误信息 '{exception}'.");
                 return GetUI(openUIFailureEventArgs.SerialId);
             }
+        }
+
+        /// <summary>
+        /// 加载界面资源成功回调。
+        /// </summary>
+        /// <param name="openUIInfo">打开时的界面参数封装</param>
+        /// <param name="duration">打开的持续进度</param>
+        /// <returns></returns>
+        private ViewBase LoadAssetSuccessCallback(OpenUIInfo openUIInfo, float duration)
+        {
+            if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
+
+            var serialId    = openUIInfo.SerialId;
+
+            // 检查是否是等待释放的界面，如果是，说明还没有被真正释放，则直接返回界面
+            if (m_LoadingInCloseSet.Contains(serialId))
+            {
+                m_LoadingInCloseSet.Remove(serialId);
+                ReferencePool.Release(openUIInfo);
+                return GetUI(serialId);
+            }
+
+            // 从正在加载的字典中移除
+            m_LoadingDict.Remove(serialId);
+
+            // 打开界面
+            var ui = InternalOpenUI(openUIInfo, null);
+
+            // 释放资源
+            ReferencePool.Release(openUIInfo);
+            return ui;
         }
 
         /// <summary>
@@ -165,41 +198,5 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="uiView">要设置优先级的界面实例。</param>
         /// <param name="priority">界面实例优先级。</param>
         public void SetUIInstancePriority(object uiView, int priority) => m_InstancePool.SetPriority(uiView, priority);
-
-        /// <summary>
-        /// 加载界面资源成功回调。
-        /// </summary>
-        /// <param name="openUIInfo">打开时的界面参数封装</param>
-        /// <param name="duration">打开的持续进度</param>
-        /// <returns></returns>
-        private ViewBase LoadAssetSuccessCallback(OpenUIInfo openUIInfo, float duration)
-        {
-            if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
-
-            var serialId    = openUIInfo.SerialId;
-            var uiName      = openUIInfo.UIType.Name;
-            var packageName = openUIInfo.PackageName;
-
-            // 检查是否是等待释放的界面，如果是，说明还没有被真正释放，则直接返回界面
-            if (m_LoadingInCloseSet.Contains(serialId))
-            {
-                m_LoadingInCloseSet.Remove(serialId);
-                ReferencePool.Release(openUIInfo);
-                return GetUI(serialId);
-            }
-
-            // 从正在加载的字典中移除
-            m_LoadingDict.Remove(serialId);
-
-            // 实例化界面，此时只是使用FUI创建了一个界面，并没有将其加入到UI界面组的显示对象下。
-            var uiView = UIPackage.CreateObject(packageName, uiName) as GComponent;
-
-            // 打开界面
-            var ui = InternalOpenUI(openUIInfo, uiView, true, duration);
-
-            // 释放资源
-            ReferencePool.Release(openUIInfo);
-            return ui;
-        }
     }
 }

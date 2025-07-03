@@ -194,7 +194,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="view"></param>
         private void RecycleUI(ViewBase view)
         {
-            m_InstancePool.Unspawn(view.UIView);
+            m_InstancePool.Unspawn(view);
             view.OnRecycle();
         }
     }

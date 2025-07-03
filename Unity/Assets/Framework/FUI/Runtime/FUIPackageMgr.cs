@@ -16,7 +16,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 缓存已加载的包的字典，key:包名，value：包
         private readonly Dictionary<string, UIPackage> m_loadedPkgDic = new();
 
-        /// 缓存包的引用计数，key:包名，value：引用数量
+        /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
         private readonly Dictionary<string, int> m_pkgRefCountDic = new();
 
         /// <summary>
@@ -33,7 +33,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         protected override void Init()
         {
             base.Init();
-            m_assetManager               = GameEntry.GetComponent<AssetComponent>();
+
+            m_assetManager = GameEntry.GetComponent<AssetComponent>();
             UIPackage.unloadBundleByFGUI = false; // 手动管理资源
         }
 
@@ -103,7 +104,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var pkgDesc = await LoadDesc(pkgName);
 
             // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-            loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
+            loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
+            {
+                LoadResAsync(assetName, extension, type, packageItem).Forget();
+            });
 
             return loadedPackage;
         }
@@ -120,7 +124,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 {
                     if (depPkgName != "name") continue;
                     await AddPackageAsync(depPkgName);
-                    Retain(depPkgName);
+                    AddRef(depPkgName);
                 }
             }
 
@@ -181,10 +185,36 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// 添加依赖包引用
         /// </summary>
         /// <param name="pkgName">包名</param>
-        private void Retain(string pkgName)
+        public void AddRef(string pkgName)
         {
             if (!m_pkgRefCountDic.TryAdd(pkgName, 1))
                 m_pkgRefCountDic[pkgName] += 1;
+        }
+
+        /// <summary>
+        /// 减少依赖包引用
+        /// </summary>
+        /// <param name="pkgName">包名</param>
+        public void SubRef(string pkgName)
+        {
+            if (m_pkgRefCountDic.ContainsKey(pkgName))
+            {
+                m_pkgRefCountDic[pkgName] -= 1;
+                if (m_pkgRefCountDic[pkgName] > 0) return; // 引用计数大于0，不释放
+            }
+
+            if (!m_loadedPkgDic.TryGetValue(pkgName, out var pkg)) return;
+            foreach (var depPkgDict in pkg.dependencies)
+            {
+                foreach (var (_, depPkgName) in depPkgDict)
+                {
+                    if (depPkgName != "name") continue;
+                    SubRef(depPkgName);
+                }
+            }
+
+            Log.Info($"释放UIPackage包资源: {pkgName}");
+            pkg.UnloadAssets();
         }
 
         /// <summary>
@@ -193,18 +223,23 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="pkgName">包名</param>
         private void RemovePackage(string pkgName)
         {
-            if (!m_loadedPkgDic.Remove(pkgName, out _)) return;
+            if (!m_loadedPkgDic.Remove(pkgName, out var pkg)) return;
 
-            UIPackage.RemovePackage(pkgName);
+            if (IsFromResources(pkgName))
+            {
+                UIPackage.RemovePackage(pkgName);
+                return;
+            }
 
-            if (IsFromResources(pkgName)) return;
+            var pkgPath = Utility.Asset.Path.GetUIPackagePath(pkgName);
+            foreach (var pkgItem in pkg.GetItems())
+            {
+                if (pkgItem.type == PackageItemType.Component) return;
+                Log.Error($"释放资源: {pkgItem.name}");
+                m_assetManager.UnloadAsset($"{pkgPath}/{pkgItem.name}");
+            }
 
-            var pkgPath  = Utility.Asset.Path.GetUIPackagePath(pkgName);
-            var descPath = $"{pkgPath}_fui";
-            var resPath  = $"{pkgPath}_atlas";
-
-            m_assetManager.UnloadAsset(descPath);
-            m_assetManager.UnloadAsset(resPath);
+            m_assetManager.ClearUnusedBundleFilesAsync(AssetComponent.BuildInPackageName);
 
             // 移除该包下绑定的所有自定义组件
             if (!FUIConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder)) return;
@@ -214,46 +249,26 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 释放指定包，包括其依赖的包
-        /// </summary>
-        /// <param name="pkgName">包名</param>
-        public void TryRelease(string pkgName)
-        {
-            if (m_pkgRefCountDic.ContainsKey(pkgName))
-            {
-                m_pkgRefCountDic[pkgName] -= 1;
-                if (m_pkgRefCountDic[pkgName] > 0) return; // 引用计数大于0，不释放
-            }
-            
-            if (!m_loadedPkgDic.TryGetValue(pkgName, out var pkg)) return;
-            foreach (var depPkgDict in pkg.dependencies)
-            {
-                foreach (var (_, depPkgName) in depPkgDict)
-                {
-                    if (depPkgName != "name") continue;
-                    TryRelease(depPkgName);
-                }
-            }
-
-            Log.Info($"释放UIPackage包: {pkgName}");
-            RemovePackage(pkgName);
-        }
-
-        /// <summary>
         /// 释放所有包
         /// </summary>
         private void ReleaseAll()
         {
-            foreach (var pkgName in m_loadedPkgDic.Keys)
+            foreach (var (pkgName, pkg) in m_loadedPkgDic)
             {
-                if (IsFromResources(pkgName)) continue;
+                if (IsFromResources(pkgName))
+                {
+                    UIPackage.RemovePackage(pkgName);
+                    continue;
+                }
 
-                var pkgPath  = Utility.Asset.Path.GetUIPackagePath(pkgName);
-                var descPath = $"{pkgPath}_fui";
-                var resPath  = $"{pkgPath}_atlas";
+                var pkgPath = Utility.Asset.Path.GetUIPackagePath(pkgName);
+                foreach (var pkgItem in pkg.GetItems())
+                {
+                    Log.Error($"释放资源: {pkgItem.name}");
+                    m_assetManager.UnloadAsset($"{pkgPath}/{pkgItem.name}");
+                }
 
-                m_assetManager.UnloadAsset(descPath);
-                m_assetManager.UnloadAsset(resPath);
+                m_assetManager.ClearUnusedBundleFilesAsync(AssetComponent.BuildInPackageName);
             }
 
             m_pkgRefCountDic.Clear();

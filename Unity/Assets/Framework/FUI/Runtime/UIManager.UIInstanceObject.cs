@@ -20,20 +20,16 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         private sealed class UIInstanceObject : ObjectBase
         {
-            private ViewBase _viewBase;
-
             /// <summary>
             /// 创建界面实例对象。
             /// </summary>
             /// <param name="name"></param>
-            /// <param name="uiView"></param>
             /// <param name="viewBase"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, GComponent uiView, ViewBase viewBase)
+            public static UIInstanceObject Create(string name, ViewBase viewBase)
             {
                 var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
-                uiInstanceObject.Initialize(name, uiView);
-                uiInstanceObject._viewBase = viewBase;
+                uiInstanceObject.Initialize(name, viewBase);
                 return uiInstanceObject;
             }
 
@@ -43,9 +39,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// <param name="isShutdown"></param>
             protected override void Release(bool isShutdown)
             {
-                _viewBase.OnDispose();
-                _viewBase.UIView.Dispose();
-                FUIPackageMgr.Instance.TryRelease(_viewBase.PackageName);
+                if (Target is not ViewBase viewBase) return;
+                viewBase.OnDispose();
+                viewBase.UIView.Dispose();
+                FUIPackageMgr.Instance.SubRef(viewBase.PackageName);
             }
         }
     }
