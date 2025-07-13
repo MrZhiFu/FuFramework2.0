@@ -35,13 +35,22 @@ namespace GameFrameX.Runtime
         }
 
         /// <summary>
+        /// 销毁
+        /// </summary>
+        private void OnDestroy()
+        {
+            Dispose();
+            _instance = null;
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected virtual void Init() { }
         
         /// <summary>
-        /// 销毁
+        /// 释放资源
         /// </summary>
-        protected virtual void OnDestroy() => _instance = null;
+        protected virtual void Dispose() { }
     }
 }
