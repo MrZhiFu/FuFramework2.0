@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using GameFrameX.Runtime;
+using Object = UnityEngine.Object;
+
+namespace GameFrameX.Asset.Runtime
+{
+    /// <summary>
+    /// 资源加载器。
+    /// 1.加载资源。
+    /// 2.记录加载过的资源路径，避免重复加载。
+    /// 3.卸载已经加载的资源。
+    /// </summary>
+    public class AssetLoader : IReference
+    {
+        /// 缓存已经加载的资源路径列表
+        private readonly Dictionary<string, Object> m_resDict = new();
+
+        /// 资源管理器
+        private AssetComponent m_assetManager;
+
+        public AssetLoader()
+        {
+            Log.Info("[AssetLoader]创建资源加载器.");
+            m_assetManager = GameEntry.GetComponent<AssetComponent>();
+            if (m_assetManager == null)
+            {
+                throw new GameFrameworkException("[AssetLoader]资源管理器为空.");
+            }
+        }
+
+        /// <summary>
+        /// 创建资源加载器
+        /// </summary>
+        /// <returns></returns>
+        public static AssetLoader Create() => ReferencePool.Acquire<AssetLoader>();
+
+        /// <summary>
+        /// 清理引用。
+        /// </summary>
+        public void Clear() => UnloadAll();
+
+        /// <summary>
+        /// 异步加载资源。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        public async UniTask<T> Load<T>(string path) where T : Object
+        {
+            if (m_resDict.TryGetValue(path, out var obj)) return (T)obj;
+
+            var assetHandle = await m_assetManager.LoadAssetAsync<T>(path);
+            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
+            if (!isSuccess) throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败.");
+
+            var assetObject = assetHandle.GetAssetObject<T>();
+            assetHandle.Release();
+
+            Log.Info($"[AssetLoader]加载{path}资源完成.");
+
+            m_resDict.Add(path, assetObject);
+            return assetObject;
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="type">资源类型</param>
+        /// <returns></returns>
+        public async UniTask<Object> Load(string path, Type type)
+        {
+            if (m_resDict.TryGetValue(path, out var obj)) return obj;
+
+            // 等待资源文件加载完成
+            var assetHandle = await m_assetManager.LoadAssetAsync(path, type);
+            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
+
+            if (!isSuccess)
+                throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败");
+
+            var assetObject = assetHandle.AssetObject;
+            assetHandle.Release();
+
+            Log.Info($"[AssetLoader]加载{path}资源完成.");
+
+            m_resDict.Add(path, assetObject);
+            return assetObject;
+        }
+
+        /// <summary>
+        /// 异步加载资源。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        public async UniTask<Object> Load(string path)
+        {
+            if (m_resDict.TryGetValue(path, out var obj)) return obj;
+
+            var assetHandle = await m_assetManager.LoadAssetAsync(path);
+            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
+            if (!isSuccess) throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败.");
+
+            var assetObject = assetHandle.AssetObject;
+            assetHandle.Release();
+
+            Log.Info($"[AssetLoader]加载{path}资源完成.");
+
+            m_resDict.Add(path, assetObject);
+            return assetObject;
+        }
+
+        /// <summary>
+        /// 卸载已经加载的资源。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        public void Unload(string path)
+        {
+            if (!m_resDict.ContainsKey(path)) return;
+            m_assetManager.UnloadAsset(path);
+            m_resDict.Remove(path);
+            Log.Info($"[AssetLoader]释放{path}资源完成.");
+        }
+
+        /// <summary>
+        /// 卸载所有已经加载的资源。
+        /// </summary>
+        private void UnloadAll()
+        {
+            foreach (var path in m_resDict.Keys)
+            {
+                m_assetManager.UnloadAsset(path);
+                Log.Info($"[AssetLoader]释放{path}资源完成.");
+            }
+
+            m_resDict.Clear();
+            m_assetManager = null;
+        }
+    }
+}
