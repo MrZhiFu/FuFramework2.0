@@ -5,7 +5,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     /// <summary>
     /// UI配置参数
     /// </summary>
-    public static class FUIConfig
+    public static class FuiConfig
     {
         /// 绑定所有自定义组件Comp的绑定器字典，key：包名，value：绑定器
         public static readonly Dictionary<string, IUICompBinder> CompBinderDic = new();

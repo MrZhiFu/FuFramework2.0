@@ -38,7 +38,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (packageNameField != null)
                 packageName = (string)packageNameField.GetValue(null);
             else
-                throw new GameFrameworkException($"界面类型 {typeof(T).Name} 中没有包含 UIPackageName 常量字段.");
+                throw new GameFrameworkException($"[UIManager]界面类型 {typeof(T).Name} 中没有包含 UIPackageName 常量字段.");
 
             return await InnerOpenUIAsync(packageName, typeof(T), userData, isMultiple) as T;
         }
@@ -80,7 +80,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
             {
-                Log.Warning($"已经有序号为 {m_SerialId} 的界面正在加载.");
+                Log.Warning($"[UIManager]已经有序号为 {m_SerialId} 的界面正在加载.");
                 return null;
             }
 
@@ -88,11 +88,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             openUIInfo = OpenUIInfo.Create(m_SerialId, packageName, uiType, userData);
 
             // UI包已经加载过，则直接通过回调创建界面
-            if (FUIPackageMgr.Instance.HasPackage(packageName))
+            if (FuiPackageMgr.Instance.HasPackage(packageName))
                 return LoadAssetSuccessCallback(openUIInfo, 0);
 
             // UI包没有加载过，则加载UI包
-            await FUIPackageMgr.Instance.AddPackageAsync(packageName);
+            await FuiPackageMgr.Instance.AddPackageAsync(packageName);
             return LoadAssetSuccessCallback(openUIInfo, 0);
         }
 
@@ -118,7 +118,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                     m_InstancePool.Register(uiInstanceObject, true);
                 }
 
-                if (view == null) throw new GameFrameworkException("创建界面实例失败.");
+                if (view == null) throw new GameFrameworkException($"[UIManager]创建界面实例{openUIInfo.UIType.Name}失败.");
 
                 // 创建FUI界面。
                 var uiView = UIPackage.CreateObject(openUIInfo.PackageName, openUIInfo.UIType.Name) as GComponent;
@@ -134,7 +134,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                     uiGroup.AddUI(view);
                 }
                 
-                view.OnOpen(openUIInfo.UserData); // 界面打开回调
+                view._OnOpen(openUIInfo.UserData); // 界面打开回调
                 view.UpdateLocalization();        // 更新本地化文本
                 uiGroup.Refresh();                // 刷新界面组
 
@@ -149,7 +149,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(openUIInfo.SerialId, openUIInfo.UIType.Name, openUIInfo.UserData);
                 m_EventComponent.Fire(this, openUIFailureEventArgs);
-                Log.Error($"打开UI界面失败, 资源名称 '{openUIInfo.UIType.Name}', 错误信息 '{exception}'.");
+                Log.Error($"[UIManager]打开UI界面失败, 资源名称 '{openUIInfo.UIType.Name}', 错误信息 '{exception}'.");
                 return GetUI(openUIFailureEventArgs.SerialId);
             }
         }
@@ -162,7 +162,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <returns></returns>
         private ViewBase LoadAssetSuccessCallback(OpenUIInfo openUIInfo, float duration)
         {
-            if (openUIInfo == null) throw new GameFrameworkException("打开的界面信息为空.");
+            if (openUIInfo == null) throw new GameFrameworkException("[UIManager]打开的界面信息为空.");
 
             var serialId    = openUIInfo.SerialId;
 

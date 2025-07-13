@@ -11,6 +11,7 @@ namespace Hotfix.UI
     {
         protected override void OnInit()
         {
+            Layer = UILayer.Normal;
             base.OnInit();
             OnInitUI();
         }

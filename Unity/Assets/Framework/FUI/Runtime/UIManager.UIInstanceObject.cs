@@ -1,12 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FairyGUI;
-using GameFrameX.ObjectPool;
+﻿using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using GameFrameX.UI.Runtime;
 
@@ -39,10 +31,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             /// <param name="isShutdown"></param>
             protected override void Release(bool isShutdown)
             {
-                if (Target is not ViewBase viewBase) return;
-                viewBase.OnDispose();
+                if (Target is not ViewBase viewBase)
+                    throw new GameFrameworkException("[UIInstanceObject]目标对象不是界面基类ViewBase");
+                
                 viewBase.UIView.Dispose();
-                FUIPackageMgr.Instance.SubRef(viewBase.PackageName);
+                viewBase._OnDispose();
             }
         }
     }

@@ -63,7 +63,7 @@ namespace Hotfix.UI
             m_content.m_list.itemRenderer      = BagItemRenderer;
             m_content.m_type_list.itemRenderer = TypeItemRenderer;
             m_content.m_type_list.onClickItem.Set(OnTabTypeClick);
-            m_content.m_type_list.DataList = new List<object>(_tabs);
+            // m_content.m_type_list.DataList = new List<object>(_tabs);
             m_content.m_type_list.GetChildAt(0).onClick.Call();
 
             m_content.m_info.m_use_button.onClick.Add(OnUseButtonClick);
@@ -96,9 +96,9 @@ namespace Hotfix.UI
         /// <param name="context"></param>
         private void OnBagItemClick(EventContext context)
         {
-            var data         = UIBagItem.GetFormPool((GComponent)context.data);
-            var itemTypeData = (BagItem)data.self.dataSource;
-            UpdateSelectItem(itemTypeData);
+            // var data         = UIBagItem.GetFormPool((GComponent)context.data);
+            // var itemTypeData = (BagItem)data.self.dataSource;
+            // UpdateSelectItem(itemTypeData);
         }
 
 
@@ -124,11 +124,11 @@ namespace Hotfix.UI
         /// <param name="item"></param>
         private void BagItemRenderer(int index, GObject item)
         {
-            var bagItemData = (BagItem)item.dataSource;
-            var uiBagItem   = UIBagItem.GetFormPool(item as GComponent);
-            var uiGoodItem  = UIGoodItem.GetFormPool(uiBagItem.m_good_item);
-            uiGoodItem.SetCount(bagItemData.Count);
-            uiGoodItem.SetIcon(bagItemData.ItemId);
+            // var bagItemData = (BagItem)item.dataSource;
+            // var uiBagItem   = UIBagItem.GetFormPool(item as GComponent);
+            // var uiGoodItem  = UIGoodItem.GetFormPool(uiBagItem.m_good_item);
+            // uiGoodItem.SetCount(bagItemData.Count);
+            // uiGoodItem.SetIcon(bagItemData.ItemId);
         }
 
         /// <summary>
@@ -137,23 +137,23 @@ namespace Hotfix.UI
         /// <param name="context"></param>
         private void OnTabTypeClick(EventContext context)
         {
-            var data         = UIBagTypeItem.GetFormPool((GButton)context.data);
-            var itemTypeData = (ItemTypeData)data.self.dataSource;
-            _bagItems.Clear();
-            _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
-            m_content.m_list.DataList = _bagItems;
-            if (_bagItems.Count > 0)
-            {
-                m_content.m_list.selectedIndex = 0;
-                m_content.m_IsSelectedItem.SetSelectedIndex(1);
-                var bagItem = (BagItem)_bagItems[0];
-                UpdateSelectItem(bagItem);
-            }
-            else
-            {
-                m_content.m_IsSelectedItem.SetSelectedIndex(0);
-                _selectBagItem = null;
-            }
+            // var data         = UIBagTypeItem.GetFormPool((GButton)context.data);
+            // var itemTypeData = (ItemTypeData)data.self.dataSource;
+            // _bagItems.Clear();
+            // _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
+            // m_content.m_list.DataList = _bagItems;
+            // if (_bagItems.Count > 0)
+            // {
+            //     m_content.m_list.selectedIndex = 0;
+            //     m_content.m_IsSelectedItem.SetSelectedIndex(1);
+            //     var bagItem = (BagItem)_bagItems[0];
+            //     UpdateSelectItem(bagItem);
+            // }
+            // else
+            // {
+            //     m_content.m_IsSelectedItem.SetSelectedIndex(0);
+            //     _selectBagItem = null;
+            // }
         }
 
         /// <summary>
@@ -163,8 +163,8 @@ namespace Hotfix.UI
         /// <param name="item"></param>
         private void TypeItemRenderer(int index, GObject item)
         {
-            var itemTypeData = (ItemTypeData)item.dataSource;
-            item.asButton.title = itemTypeData.Name;
+            // var itemTypeData = (ItemTypeData)item.dataSource;
+            // item.asButton.title = itemTypeData.Name;
         }
 
         /// <summary>

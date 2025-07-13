@@ -42,7 +42,7 @@ namespace Hotfix.UI
 
             m_player_list.itemRenderer = ItemRenderer;
             m_player_list.onClickItem.Set(OnPlayerListItemClick);
-            m_player_list.DataList = new List<object>(playerList);
+            // m_player_list.DataList = new List<object>(playerList);
             m_player_list.numItems = playerList.Count;
         }
 
@@ -110,13 +110,13 @@ namespace Hotfix.UI
         /// <param name="context"></param>
         private void OnPlayerListItemClick(EventContext context)
         {
-            if ((context.data as GComponent)?.dataSource is not PlayerInfo playerInfo) return;
-
-            m_SelectedPlayerInfo  = playerInfo;
-            m_selected_icon.icon  = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
-            m_selected_name.text  = playerInfo.Name;
-            m_selected_level.text = "当前等级:" + playerInfo.Level;
-            m_IsSelected.SetSelectedIndex(1);
+            // if ((context.data as GComponent)?.dataSource is not PlayerInfo playerInfo) return;
+            //
+            // m_SelectedPlayerInfo  = playerInfo;
+            // m_selected_icon.icon  = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, playerInfo.Avatar.ToString());
+            // m_selected_name.text  = playerInfo.Name;
+            // m_selected_level.text = "当前等级:" + playerInfo.Level;
+            // m_IsSelected.SetSelectedIndex(1);
         }
 
         /// <summary>

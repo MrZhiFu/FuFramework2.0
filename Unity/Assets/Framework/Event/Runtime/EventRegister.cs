@@ -8,7 +8,6 @@ namespace GameFrameX.UI.Runtime
     /// 事件注册器。
     /// 可用于单独管理属于自己模块的相关事件，如每个UI界面都可以单独管理自己的事件。
     /// </summary>
-    
     public sealed class EventRegister : IReference
     {
         /// <summary>
@@ -34,21 +33,21 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 检查订阅
+        /// 订阅事件
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="handler">处理对象</param>
         /// <exception cref="Exception"></exception>
-        public void CheckSubscribe(string id, EventHandler<GameEventArgs> handler)
+        public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            if (handler == null) throw new Exception("事件处理对象不能为空.");
+            if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
 
             m_DicEventHandlerDict.Add(id, handler);
             GameEntry.GetComponent<EventComponent>().CheckSubscribe(id, handler);
         }
 
         /// <summary>
-        /// 取消订阅
+        /// 取消订阅事件
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="handler">处理对象</param>
@@ -56,7 +55,7 @@ namespace GameFrameX.UI.Runtime
         public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
             if (!m_DicEventHandlerDict.Remove(id, handler))
-                throw new Exception(Utility.Text.Format("事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
+                throw new Exception(Utility.Text.Format("[EventRegister]事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
 
             GameEntry.GetComponent<EventComponent>().Unsubscribe(id, handler);
         }

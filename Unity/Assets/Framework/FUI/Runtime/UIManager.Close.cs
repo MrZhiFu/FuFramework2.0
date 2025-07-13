@@ -24,7 +24,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var view = GetUI(serialId);
             if (view == null)
             {
-                Log.Error($"找不到界面 '{serialId}'.");
+                Log.Error($"[UIManager]需要关闭的UI界面View为空 '{serialId}'.");
                 return;
             }
 
@@ -53,13 +53,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (view == null)
             {
-                Log.Error("需要关闭的UI界面View为空");
+                Log.Error("[UIManager]需要关闭的UI界面为空");
                 return;
             }
 
             if (view.UIGroup == null)
             {
-                Log.Error("需要关闭的UI界面组为空");
+                Log.Error("[UIManager]需要关闭的UI界面组为空");
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiGroup == null) return;
 
             uiGroup.RemoveUI(view);
-            view.OnClose(m_IsShutdown);
+            view._OnClose();
             uiGroup.Refresh();
 
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
@@ -93,7 +93,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             var view = GetUI(serialId);
             if (view == null)
             {
-                Log.Error($"找不到界面 '{serialId}'");
+                Log.Error($"[UIManager]找不到界面 '{serialId}'");
                 return;
             }
 
@@ -122,13 +122,13 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (view == null)
             {
-                Log.Error("需要关闭的UI界面View为空");
+                Log.Error("[UIManager]需要关闭的UI界面View为空");
                 return;
             }
 
             if (view.UIGroup == null)
             {
-                Log.Error("需要关闭的UI界面组为空");
+                Log.Error("[UIManager]需要关闭的UI界面组为空");
                 return;
             }
 
@@ -143,7 +143,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             if (uiGroup == null) return;
 
             uiGroup.RemoveUI(view);
-            view.OnClose(m_IsShutdown);
+            view._OnClose();
             uiGroup.Refresh();
 
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
@@ -195,7 +195,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private void RecycleUI(ViewBase view)
         {
             m_InstancePool.Unspawn(view);
-            view.OnRecycle();
+            view._OnRecycle();
         }
     }
 }

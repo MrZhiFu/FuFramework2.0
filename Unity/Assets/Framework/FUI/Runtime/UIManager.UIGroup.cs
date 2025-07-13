@@ -84,7 +84,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             if (HasUIGroup(layer))
             {
-                Log.Warning($"UI界面组{layer}已存在!");
+                Log.Warning($"[UIManager]UI界面组{layer}已存在!");
                 return false;
             }
 

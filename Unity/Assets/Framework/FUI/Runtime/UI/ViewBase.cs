@@ -11,8 +11,10 @@ namespace GameFrameX.UI.Runtime
     /// </summary>
     public abstract partial class ViewBase
     {
-        private bool m_IsInit = false; //界面是否已初始化
-        private int  m_DepthInUIGroup; //界面在界面组中的深度
+        /// <summary>
+        /// 界面是否已初始化。
+        /// </summary>
+        private bool m_IsInit = false;
 
         /// <summary>
         /// 界面序列编号。
@@ -40,9 +42,9 @@ namespace GameFrameX.UI.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 获取界面事件订阅器。
+        /// 获取界面深度。
         /// </summary>
-        public EventRegister EventRegister { get; private set; }
+        public int DepthInUIGroup { get; private set; }
 
         /// <summary>
         /// 显示时是否暂停被覆盖的界面。
@@ -52,17 +54,22 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 是否是全屏界面。
         /// </summary>
-        public virtual bool IsFullScreen { get; protected set; } = true;
+        protected virtual bool IsFullScreen { get; set; } = true;
+
+        /// <summary>
+        /// 获取界面所属的层级。
+        /// </summary>
+        protected UILayer Layer = UILayer.Normal;
 
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public virtual UIGroup UIGroup =>  UIManager.Instance.GetUIGroup(UILayer.Normal);
+        public UIGroup UIGroup => UIManager.Instance.GetUIGroup(Layer);
 
         /// <summary>
-        /// 获取界面深度。
+        /// 获取界面事件订阅器。
         /// </summary>
-        public int DepthInUIGroup => m_DepthInUIGroup;
+        private EventRegister EventRegister { get; set; }
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -86,24 +93,23 @@ namespace GameFrameX.UI.Runtime
         /// 初始化界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
+        /// <param name="packageName">界面资源包名称。</param>
         /// <param name="uiName">界面资源名称。</param>
-        /// <param name="view">界面实例。</param>
+        /// <param name="uiView">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="packageName"></param>
-        public void Init(int serialId, string packageName, string uiName, GComponent view, bool isNewInstance, object userData)
+        public void Init(int serialId, string packageName, string uiName, GComponent uiView, bool isNewInstance, object userData)
         {
             SerialId = serialId;
             UserData = userData;
 
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
-            m_IsInit = true;
 
-            PackageName = packageName;
-            UIName = uiName;
-            
-            m_DepthInUIGroup = 0;
+            m_IsInit       = true;
+            PackageName    = packageName;
+            UIName         = uiName;
+            DepthInUIGroup = 0;
 
             if (!isNewInstance) return;
 
@@ -111,14 +117,14 @@ namespace GameFrameX.UI.Runtime
 
             try
             {
-                UIView = view;
+                UIView = uiView;
                 if (IsFullScreen) MakeFullScreen();
 
                 // 注册本地化语言改变事件
-                EventRegister.CheckSubscribe(LocalizationLanguageChangeEventArgs.EventId, OnLocalizationLanguageChanged);
-                
+                EventRegister.Subscribe(LocalizationLanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
+
                 // 初始化
-                OnInit();
+                _OnInit();
             }
             catch (Exception exception)
             {
@@ -136,11 +142,10 @@ namespace GameFrameX.UI.Runtime
         /// 设置界面为全屏
         /// </summary>
         protected void MakeFullScreen() => UIView?.MakeFullScreen();
-        
+
         /// <summary>
         /// 关闭自身。
         /// </summary>
         protected void CloseSelf() => UIManager.Instance.CloseUI(this);
-        
     }
 }

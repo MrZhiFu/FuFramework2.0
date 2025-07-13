@@ -74,7 +74,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
                 if (AddUIGroup(layer)) continue;
-                Log.Warning("添加UI组 '{0}' 失败 .", layer.ToString());
+                Log.Warning("[UIManager]添加UI组 '{0}' 失败 .", layer.ToString());
             }
         }
 
@@ -125,10 +125,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>
-        protected override void OnDestroy()
+        protected override void Dispose()
         {
             Shutdown();
-            base.OnDestroy();
         }
 
         /// <summary>
@@ -137,7 +136,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private void Shutdown()
         {
             m_IsShutdown = true;
-            CloseAllUIs();
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
             m_LoadingInCloseSet.Clear();

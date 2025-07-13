@@ -75,7 +75,7 @@ namespace GameFrameX.UI.Runtime
                 if (current.Value.Paused) break;
 
                 m_CachedNode = current.Next;
-                current.Value.View.OnUpdate(elapseSeconds, realElapseSeconds);
+                current.Value.View._OnUpdate(elapseSeconds, realElapseSeconds);
                 current      = m_CachedNode;
                 m_CachedNode = null;
             }
@@ -220,18 +220,6 @@ namespace GameFrameX.UI.Runtime
             if (uiInfo == null)
                 throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIName));
 
-            if (!uiInfo.Covered)
-            {
-                uiInfo.Covered = true;
-                view.OnBeCover();
-            }
-
-            if (!uiInfo.Paused)
-            {
-                uiInfo.Paused = true;
-                view.OnPause();
-            }
-
             if (m_CachedNode != null && m_CachedNode.Value.View == view)
                 m_CachedNode = m_CachedNode.Next;
 
@@ -259,7 +247,7 @@ namespace GameFrameX.UI.Runtime
                 var next = current.Next;
 
                 // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
-                current.Value.View.OnDepthChanged(depth--);
+                current.Value.View._OnDepthChanged(depth--);
 
                 if (current.Value == null) return; // 可能在回调中被销毁，所有这里判断下
 
@@ -269,14 +257,14 @@ namespace GameFrameX.UI.Runtime
                     if (!current.Value.Covered)
                     {
                         current.Value.Covered = true;
-                        current.Value.View.OnBeCover(); // 触发被覆盖回调
+                        current.Value.View._OnBeCover(); // 触发被覆盖回调
                         if (current.Value == null) return;
                     }
 
                     if (!current.Value.Paused)
                     {
                         current.Value.Paused = true;
-                        current.Value.View.OnPause(); // 触发暂停回调
+                        current.Value.View._OnPause(); // 触发暂停回调
                         if (current.Value == null) return;
                     }
                 }
@@ -287,7 +275,7 @@ namespace GameFrameX.UI.Runtime
                     if (current.Value.Paused)
                     {
                         current.Value.Paused = false;
-                        current.Value.View.OnResume(); // 触发恢复回调
+                        current.Value.View._OnResume(); // 触发恢复回调
                         if (current.Value == null) return;
                     }
 
@@ -301,7 +289,7 @@ namespace GameFrameX.UI.Runtime
                         if (!current.Value.Covered)
                         {
                             current.Value.Covered = true;
-                            current.Value.View.OnBeCover(); // 触发被覆盖回调
+                            current.Value.View._OnBeCover(); // 触发被覆盖回调
                             if (current.Value == null) return;
                         }
                     }
@@ -310,7 +298,7 @@ namespace GameFrameX.UI.Runtime
                         if (current.Value.Covered)
                         {
                             current.Value.Covered = false;
-                            current.Value.View.OnReveal(); // 触发重新显示回调
+                            current.Value.View._OnReveal(); // 触发重新显示回调
                             if (current.Value == null) return;
                         }
 

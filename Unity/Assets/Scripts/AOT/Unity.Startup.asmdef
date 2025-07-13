@@ -21,7 +21,8 @@
         "HybridCLRData",
         "GameFrameX.UI.FairyGUI.Runtime",
         "GameFrameX.Mono.Runtime",
-        "GameFrameX.Timer.Runtime"
+        "GameFrameX.Timer.Runtime",
+        "FairyGUI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

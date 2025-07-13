@@ -5,7 +5,6 @@
         "GameFrameX.Runtime",
         "GameFrameX.Entry.Runtime",
         "BlankGetChannel.Runtime",
-        "FairyGUI.Runtime",
         "HybridCLR.Runtime",
         "UniTask.Runtime",
         "YooAsset.Runtime",
@@ -22,7 +21,8 @@
         "GameFrameX.Config.Runtime",
         "GameFrameX.Asset.Runtime",
         "GameFrameX.Sound.Runtime",
-        "GameFrameX.Entity.Runtime"
+        "GameFrameX.Entity.Runtime",
+        "FairyGUI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
