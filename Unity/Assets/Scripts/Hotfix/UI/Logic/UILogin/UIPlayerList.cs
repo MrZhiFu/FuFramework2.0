@@ -28,8 +28,8 @@ namespace Hotfix.UI
             OnInitUI();
 
             // 订阅网络连接成功和关闭事件
-            GameApp.Event.CheckSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
-            GameApp.Event.CheckSubscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
+            GameApp.Event.Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
+            GameApp.Event.Subscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
         }
 
         protected override void OnOpen()

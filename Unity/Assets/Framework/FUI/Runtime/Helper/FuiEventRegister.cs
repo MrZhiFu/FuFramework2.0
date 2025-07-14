@@ -18,11 +18,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         /// <returns></returns>
         public static FuiEventRegister Create() => ReferencePool.Acquire<FuiEventRegister>();
-        
-        /// <summary>
-        /// 清理所有注册的事件
-        /// </summary>
-        public void Clear() => m_UIEventListenerDic.Clear();
 
         /// <summary>
         /// 添加UI上指定组件的监听事件
@@ -130,12 +125,21 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
+        /// 清理所有注册的事件
+        /// </summary>
+        public void Clear()
+        {
+            foreach (var listener in m_UIEventListenerDic.Keys)
+            {
+                ClearUIListener(listener);
+            }
+            
+            m_UIEventListenerDic.Clear();
+        }
+
+        /// <summary>
         /// 释放资源
         /// </summary>
-        public void Dispose()
-        {
-            Clear();
-            ReferencePool.Release(this);
-        }
+        public void Release() => ReferencePool.Release(this);
     }
 }

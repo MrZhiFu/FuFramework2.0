@@ -15,6 +15,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public object Owner { get; private set; }
 
+        /// 事件管理器
+        private static EventComponent EventManager => GameEntry.GetComponent<EventComponent>();
+
         /// <summary>
         /// 事件处理字典，key为消息ID，value为处理对象
         /// </summary>
@@ -43,7 +46,7 @@ namespace GameFrameX.UI.Runtime
             if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
 
             m_DicEventHandlerDict.Add(id, handler);
-            GameEntry.GetComponent<EventComponent>().CheckSubscribe(id, handler);
+            EventManager.Subscribe(id, handler);
         }
 
         /// <summary>
@@ -57,18 +60,38 @@ namespace GameFrameX.UI.Runtime
             if (!m_DicEventHandlerDict.Remove(id, handler))
                 throw new Exception(Utility.Text.Format("[EventRegister]事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
 
-            GameEntry.GetComponent<EventComponent>().Unsubscribe(id, handler);
+            EventManager.Unsubscribe(id, handler);
         }
 
         /// <summary>
-        /// 触发事件
+        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="e">消息对象</param>
         public void Fire(string id, GameEventArgs e)
         {
             if (!m_DicEventHandlerDict.Contains(id)) return;
-            GameEntry.GetComponent<EventComponent>().Fire(this, e);
+            EventManager.Fire(this, e);
+        }
+
+        /// <summary>
+        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="eventId">事件编号。</param>
+        public void Fire(object sender, string eventId)
+        {
+            EventManager.Fire(sender, EmptyEventArgs.Create(eventId));
+        }
+
+        /// <summary>
+        /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">事件内容。</param>
+        public void FireNow(object sender, GameEventArgs e)
+        {
+            EventManager.FireNow(sender, e);
         }
 
         /// <summary>
@@ -82,7 +105,7 @@ namespace GameFrameX.UI.Runtime
             {
                 foreach (var eventHandler in eventHandlers)
                 {
-                    GameEntry.GetComponent<EventComponent>().Unsubscribe(id, eventHandler);
+                    EventManager.Unsubscribe(id, eventHandler);
                 }
             }
 
@@ -94,17 +117,13 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            m_DicEventHandlerDict.Clear();
+            UnSubscribeAll();
             Owner = null;
         }
-        
+
         /// <summary>
-        /// 释放资源
+        /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Dispose()
-        {
-            Clear();
-            ReferencePool.Release(this);
-        }
+        public void Release() => ReferencePool.Release(this);
     }
 }

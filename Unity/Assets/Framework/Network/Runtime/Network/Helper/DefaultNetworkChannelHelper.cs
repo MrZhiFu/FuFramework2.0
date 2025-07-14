@@ -100,10 +100,10 @@ namespace GameFrameX.Network.Runtime
                 }
             }
 
-            Event.CheckSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
-            Event.CheckSubscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);
-            Event.CheckSubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
-            Event.CheckSubscribe(NetworkErrorEventArgs.EventId, OnNetworkErrorEventArgs);
+            Event.Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
+            Event.Subscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);
+            Event.Subscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
+            Event.Subscribe(NetworkErrorEventArgs.EventId, OnNetworkErrorEventArgs);
         }
 
         public void Shutdown()

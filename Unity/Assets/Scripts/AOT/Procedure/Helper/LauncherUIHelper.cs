@@ -21,7 +21,7 @@ namespace Unity.Startup.Procedure
         public static async void Start()
         {
             _ui = await UIManager.Instance.OpenUIAsync<UILauncher>();
-            GameApp.Event.CheckSubscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
+            GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
         /// <summary>

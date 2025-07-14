@@ -47,7 +47,7 @@ namespace GameFrameX.UI.Runtime
         /// 清理UI上的所有组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
-        protected void ClearUIAllListener(EventListener listener)
+        protected void ClearUIListener(EventListener listener)
         {
             UIEventRegister.ClearUIListener(listener);
         }
@@ -57,7 +57,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         private void DisposeUIEventRegister()
         {
-            UIEventRegister.Dispose();
+            UIEventRegister.Release();
             UIEventRegister = null;
         }
     }

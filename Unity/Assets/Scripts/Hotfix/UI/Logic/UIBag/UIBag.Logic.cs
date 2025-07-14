@@ -39,7 +39,7 @@ namespace Hotfix.UI
         protected override void OnInit()
         {
             base.OnInit();
-            GameApp.Event.CheckSubscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
+            GameApp.Event.Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
             
             OnInitUI();
         }

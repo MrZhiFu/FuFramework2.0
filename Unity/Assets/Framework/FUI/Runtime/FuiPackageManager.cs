@@ -281,7 +281,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             // 6.释包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
             if (m_pkgAssetLoaderDict.TryGetValue(pkgName, out var assetLoader))
             {
-                assetLoader.Clear();
+                assetLoader.Release();
                 Log.Info($"[FuiPackageManager]释放UIPackage-{pkgName}内的资源完成.");
             }
 
