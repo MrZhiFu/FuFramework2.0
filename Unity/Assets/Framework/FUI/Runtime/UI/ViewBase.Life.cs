@@ -17,7 +17,7 @@ namespace GameFrameX.UI.Runtime
         private void _OnInit()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]初始化-OnInit().");
-            FuiPackageMgr.Instance.AddRef(PackageName);
+            FuiPackageManager.Instance.AddRef(PackageName);
             OnInit();
         }
 
@@ -110,7 +110,7 @@ namespace GameFrameX.UI.Runtime
         internal void _OnDispose()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            FuiPackageMgr.Instance.SubRef(PackageName);
+            FuiPackageManager.Instance.SubRef(PackageName);
 
             EventRegister.UnSubscribeAll();
             EventRegister = null;

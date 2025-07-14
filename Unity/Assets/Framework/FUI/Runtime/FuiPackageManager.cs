@@ -11,9 +11,9 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 {
     /// <summary>
     /// FGui的包管理器，
-    /// 主要处理包的资源加载
+    /// 主要处理包的资源加载，缓存，卸载等
     /// </summary>
-    public class FuiPackageMgr : GameFrameworkMonoSingleton<FuiPackageMgr>
+    public class FuiPackageManager : GameFrameworkMonoSingleton<FuiPackageManager>
     {
         /// 缓存已加载的包的字典，key:包名，value：包
         private readonly Dictionary<string, UIPackage> m_loadedPkgDict = new();

@@ -88,11 +88,11 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             openUIInfo = OpenUIInfo.Create(m_SerialId, packageName, uiType, userData);
 
             // UI包已经加载过，则直接通过回调创建界面
-            if (FuiPackageMgr.Instance.HasPackage(packageName))
+            if (FuiPackageManager.Instance.HasPackage(packageName))
                 return LoadAssetSuccessCallback(openUIInfo, 0);
 
             // UI包没有加载过，则加载UI包
-            await FuiPackageMgr.Instance.AddPackageAsync(packageName);
+            await FuiPackageManager.Instance.AddPackageAsync(packageName);
             return LoadAssetSuccessCallback(openUIInfo, 0);
         }
 
