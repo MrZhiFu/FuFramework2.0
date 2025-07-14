@@ -35,9 +35,9 @@ namespace Game.Runtime.Logics.UI.View
         /// <summary>
         /// 添加UI组件事件监听
         /// </summary>
-        protected void AddListener(EventListener listener, EventCallback1 callback)
+        protected void AddUIListener(EventListener listener, EventCallback1 callback)
         {
-            view.AddListener(listener, callback);
+            view.AddUIListener(listener, callback);
         }
 
         /// <summary>

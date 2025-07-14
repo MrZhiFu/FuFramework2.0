@@ -32,10 +32,8 @@ namespace Hotfix.UI
             GameApp.Event.CheckSubscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
         }
 
-        public override async void OnOpen(object userData)
+        protected override void OnOpen()
         {
-            base.OnOpen(userData);
-
             playerList = AccountManager.Instance.PlayerList;
 
             m_login_button.onClick.Set(OnLoginButtonClick);

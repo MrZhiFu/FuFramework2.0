@@ -16,10 +16,9 @@ namespace Hotfix.UI
             OnInitUI();
         }
 
-        public override void OnOpen(object userData)
+        protected override void OnOpen()
         {
             m_enter.onClick.Set(OnLoginClick);
-            base.OnOpen(userData);
         }
 
         private void OnLoginClick()
@@ -55,8 +54,7 @@ namespace Hotfix.UI
                 Log.Error("登录失败，错误信息:" + respLogin.ErrorCode);
                 return;
             }
-
-
+            
             // 获取角色列表
             var reqPlayerList = new ReqPlayerList { Id = respLogin.Id };
             var respPlayerList = await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);

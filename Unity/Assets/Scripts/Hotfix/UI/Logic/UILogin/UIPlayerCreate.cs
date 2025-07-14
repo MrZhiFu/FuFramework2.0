@@ -1,6 +1,5 @@
 using GameFrameX.Runtime;
 using GameFrameX.UI.FairyGUI.Runtime;
-using GameFrameX.UI.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
 
@@ -14,16 +13,15 @@ namespace Hotfix.UI
             OnInitUI();
         }
 
-        ReqPlayerCreate req;
+        ReqPlayerCreate _req;
 
-        public override void OnOpen(object userData)
+        protected override void OnOpen()
         {
-            req = new ReqPlayerCreate();
-            base.OnOpen(userData);
-
-            var respLogin = userData as RespLogin;
+            _req = new ReqPlayerCreate();
+            var respLogin = UserData as RespLogin;
             m_enter.onClick.Set(OnCreateButtonClick);
-            req.Id = respLogin.Id;
+            if (respLogin != null) 
+                _req.Id = respLogin.Id;
         }
 
         /// <summary>
@@ -37,10 +35,10 @@ namespace Hotfix.UI
                 return;
             }
 
-            req.Name = m_UserName.text;
+            _req.Name = m_UserName.text;
 
             // 创建角色
-            var respPlayerCreate = await GameApp.Web.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", req);
+            var respPlayerCreate = await GameApp.Web.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", _req);
             if (respPlayerCreate.ErrorCode > 0)
             {
                 Log.Error("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -53,7 +51,7 @@ namespace Hotfix.UI
             }
 
             // 获取角色列表
-            var reqPlayerList  = new ReqPlayerList { Id = req.Id };
+            var reqPlayerList  = new ReqPlayerList { Id = _req.Id };
             var respPlayerList = await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {

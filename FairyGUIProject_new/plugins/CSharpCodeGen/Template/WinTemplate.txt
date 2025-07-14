@@ -1,4 +1,5 @@
 using FairyGUI;
+using GameFrameX.UI.Runtime;
 
 #region ReSharper disable
 // ReSharper disable CheckNamespace
@@ -9,33 +10,39 @@ namespace Game.Runtime.Logics.UI.View
 {
     public partial class #WINNAME# : ViewBase
     {
-        public #WINNAME#(string pkgName, string uiName, params object[] args) : base(pkgName, uiName, args)
+        protected override void OnInit()
         {
-            SetLayer((int)ViewLayer.Normal);
-        }
-
-        public override void DoInit()
-        {
-            base.DoInit();
+            Layer = UILayer.Normal;
             InitUIComp();
             InitUIEvent();
+            InitEvent();
         }
 
-        public override void DoOpen(object[] args)
+        /// <summary>
+        /// 界面UI组件事件初始化
+        /// </summary>
+        private void InitEvent()
         {
-            base.DoOpen(args);
+            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+        }
+
+        /// <summary>
+        /// 界面打开
+        /// </summary>
+        protected override void OnOpen()
+        {
             Refresh();
         }
         
-        public override void DoClose()
-        {
-            base.DoClose();
-        }
+        /// <summary>
+        /// 界面关闭
+        /// </summary>
+        protected override void OnClose(){}
 
-        public override void DoDispose()
-        {
-            base.DoDispose();
-        }
+        /// <summary>
+        /// 界面销毁
+        /// </summary>
+        protected override void OnDispose(){}
 
         /// <summary>
         /// 刷新界面
@@ -45,7 +52,7 @@ namespace Game.Runtime.Logics.UI.View
            // TODO：刷新逻辑
         }
 
-        #region UI组件事件处理
+        #region UI交互事件处理
     #HANDLER#
         #endregion
     }

@@ -52,7 +52,7 @@ namespace Unity.Startup
             }
         }
 
-        public override void OnDispose()
+        protected override void OnDispose()
         {
             base.OnDispose();
             self.Remove();

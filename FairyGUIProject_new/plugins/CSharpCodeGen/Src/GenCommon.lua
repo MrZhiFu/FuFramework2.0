@@ -215,7 +215,7 @@ function GenCommon:GenCompOperationn(dataTable, compArray, AllClsMap)
     end
 end
 
---- 生成组件的交互事件监听代码:AddListener(btnEnter.onClick, OnBtnEnterClick);
+--- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
 function GenCommon:GenCompEvent(dataTable, compArray, AllClsMap)
     if #compArray > 0 then
         for _, comp in ipairs(compArray) do
@@ -223,7 +223,7 @@ function GenCommon:GenCompEvent(dataTable, compArray, AllClsMap)
             local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name,2,-1))
             for i, v in pairs(uiEventsNameArray) do
                 table.insert(dataTable, "\t\t\t")
-                table.insert(dataTable, "AddListener(")
+                table.insert(dataTable, "AddUIListener(")
                 table.insert(dataTable, Tool:FormatVarName(comp.comp.name))
                 table.insert(dataTable, ".")
                 table.insert(dataTable, v.eventName)

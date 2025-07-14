@@ -44,7 +44,7 @@ namespace Hotfix.UI
             OnInitUI();
         }
 
-        public override void OnOpen(object userData)
+        protected override void OnOpen()
         {
             _bagItems = new List<object>();
             _tabs = new List<ItemTypeData>
@@ -57,7 +57,7 @@ namespace Hotfix.UI
             };
 
 
-            base.OnOpen(userData);
+            base.OnOpen();
 
             m_content.m_list.onClickItem.Set(OnBagItemClick);
             m_content.m_list.itemRenderer      = BagItemRenderer;

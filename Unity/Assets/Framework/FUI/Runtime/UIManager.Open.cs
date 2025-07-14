@@ -134,7 +134,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                     uiGroup.AddUI(view);
                 }
                 
-                view._OnOpen(openUIInfo.UserData); // 界面打开回调
+                view._OnOpen(); // 界面打开回调
                 view.UpdateLocalization();        // 更新本地化文本
                 uiGroup.Refresh();                // 刷新界面组
 

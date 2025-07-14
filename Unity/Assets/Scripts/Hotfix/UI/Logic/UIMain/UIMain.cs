@@ -13,9 +13,8 @@ namespace Hotfix.UI
             OnInitUI();
         }
 
-        public override void OnOpen(object userData)
+        protected override void OnOpen()
         {
-            base.OnOpen(userData);
             m_player_icon.icon  = UIPackage.GetItemURL(FUIPackage.UICommonAvatar, PlayerManager.Instance.PlayerInfo.Avatar.ToString());
             m_player_name.text  = PlayerManager.Instance.PlayerInfo.Name;
             m_player_level.text = "当前等级:" + PlayerManager.Instance.PlayerInfo.Level;

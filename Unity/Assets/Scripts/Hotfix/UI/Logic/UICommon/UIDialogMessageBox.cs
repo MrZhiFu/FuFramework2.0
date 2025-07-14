@@ -5,11 +5,11 @@ namespace Hotfix.UI
 {
     public partial class UIDialogMessageBox
     {
-        public override void OnOpen(object userData)
+        protected override void OnOpen()
         {
-            base.OnOpen(userData);
+            base.OnOpen();
 
-            var data = (UIDialogMessageBoxData)userData;
+            var data = (UIDialogMessageBoxData)UserData;
             if (data == null) return;
 
             m_content.text = data.Message;

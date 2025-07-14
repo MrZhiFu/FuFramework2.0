@@ -67,11 +67,6 @@ namespace GameFrameX.UI.Runtime
         public UIGroup UIGroup => UIManager.Instance.GetUIGroup(Layer);
 
         /// <summary>
-        /// 获取界面事件订阅器。
-        /// </summary>
-        private EventRegister EventRegister { get; set; }
-
-        /// <summary>
         /// 获取或设置界面是否可见。
         /// </summary>
         public bool Visible
@@ -87,8 +82,7 @@ namespace GameFrameX.UI.Runtime
                 EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
         }
-
-
+        
         /// <summary>
         /// 初始化界面。
         /// </summary>
@@ -113,12 +107,13 @@ namespace GameFrameX.UI.Runtime
 
             if (!isNewInstance) return;
 
-            EventRegister = EventRegister.Create(this);
+            EventRegister   = EventRegister.Create(this);
+            UIEventRegister = FuiEventRegister.Create();
 
             try
             {
                 UIView = uiView;
-                if (IsFullScreen) MakeFullScreen();
+                if (IsFullScreen) UIView?.MakeFullScreen();
 
                 // 注册本地化语言改变事件
                 EventRegister.Subscribe(LocalizationLanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
@@ -136,12 +131,21 @@ namespace GameFrameX.UI.Runtime
         /// 设置UI对象
         /// </summary>
         /// <param name="view"></param>
-        public void SetUIView(GComponent view) => UIView = view;
+        protected void SetUIView(GComponent view) => UIView = view;
 
         /// <summary>
-        /// 设置界面为全屏
+        /// 获取界面子对象。
         /// </summary>
-        protected void MakeFullScreen() => UIView?.MakeFullScreen();
+        /// <param name="childName"></param>
+        /// <returns></returns>
+        protected GObject GetChild(string childName) => UIView.GetChild(childName);
+        
+        /// <summary>
+        /// 获取界面子对象。
+        /// </summary>
+        /// <param name="child"></param>
+        /// <returns></returns>
+        protected void AddChild(GObject child) => UIView.AddChild(child);
 
         /// <summary>
         /// 关闭自身。
