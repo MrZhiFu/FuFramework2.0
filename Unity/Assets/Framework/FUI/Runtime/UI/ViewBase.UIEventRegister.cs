@@ -9,12 +9,12 @@ namespace GameFrameX.UI.Runtime
     public abstract partial class ViewBase
     {
         /// <summary>
-        /// 负责该界面的响应UI管理
+        /// UI事件订阅器
         /// </summary>
         private FuiEventRegister UIEventRegister{ get; set; }
         
         /// <summary>
-        /// 添加FUI某个可响应UI上的监听事件
+        /// 添加UI上指定组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -24,7 +24,7 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 移除FUI某个可响应UI上的监听事件
+        /// 移除UI上指定组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -34,7 +34,7 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 设置FUI某个可响应UI上的监听事件(会删除以前添加的事件)
+        /// 设置UI上指定组件的监听事件(会删除以前添加的事件)
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -44,12 +44,21 @@ namespace GameFrameX.UI.Runtime
         }
 
         /// <summary>
-        /// 清理FUI某个可响应UI上的所有监听事件
+        /// 清理UI上的所有组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
-        protected void ClearUIListener(EventListener listener)
+        protected void ClearUIAllListener(EventListener listener)
         {
             UIEventRegister.ClearUIListener(listener);
+        }
+        
+        /// <summary>
+        /// 释放UI事件注册器
+        /// </summary>
+        private void DisposeUIEventRegister()
+        {
+            UIEventRegister.Dispose();
+            UIEventRegister = null;
         }
     }
 }

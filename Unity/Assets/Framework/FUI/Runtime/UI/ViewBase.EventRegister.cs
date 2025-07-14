@@ -38,5 +38,14 @@ namespace GameFrameX.UI.Runtime
         /// 取消所有订阅
         /// </summary>
         protected void UnSubscribeAll() => EventRegister.UnSubscribeAll();
+        
+        /// <summary>
+        /// 释放事件注册器
+        /// </summary>
+        private void DisposeEventRegister()
+        {
+            EventRegister.Dispose();
+            EventRegister = null;
+        }
     }
 }

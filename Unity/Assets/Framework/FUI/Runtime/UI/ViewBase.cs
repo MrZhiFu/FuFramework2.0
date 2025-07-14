@@ -79,7 +79,7 @@ namespace GameFrameX.UI.Runtime
                 UIView.visible = value;
 
                 // 触发UI显示状态变化事件
-                EventRegister.Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
+                Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
         }
         
@@ -116,7 +116,7 @@ namespace GameFrameX.UI.Runtime
                 if (IsFullScreen) UIView?.MakeFullScreen();
 
                 // 注册本地化语言改变事件
-                EventRegister.Subscribe(LocalizationLanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
+                Subscribe(LocalizationLanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
 
                 // 初始化
                 _OnInit();

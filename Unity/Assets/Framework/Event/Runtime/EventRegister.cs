@@ -97,5 +97,14 @@ namespace GameFrameX.UI.Runtime
             m_DicEventHandlerDict.Clear();
             Owner = null;
         }
+        
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            ReferencePool.Release(this);
+        }
     }
 }

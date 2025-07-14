@@ -14,7 +14,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private readonly Dictionary<EventListener, List<EventCallback1>> m_UIEventListenerDic = new();
 
         /// <summary>
-        /// 创建资源加载器
+        /// 创建FUI事件注册器
         /// </summary>
         /// <returns></returns>
         public static FuiEventRegister Create() => ReferencePool.Acquire<FuiEventRegister>();
@@ -25,7 +25,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         public void Clear() => m_UIEventListenerDic.Clear();
 
         /// <summary>
-        /// 添加FUI某个可响应UI上的监听事件
+        /// 添加UI上指定组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -47,7 +47,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 移除FUI某个可响应UI上的监听事件
+        /// 移除UI上指定组件的监听事件
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -69,7 +69,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 设置FUI某个可响应UI上的监听事件(会删除以前添加的事件)
+        /// 设置UI上指定组件的监听事件(会删除以前添加的事件)
         /// </summary>
         /// <param name="listener"></param>
         /// <param name="callback"></param>
@@ -104,7 +104,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 清理FUI某个可响应UI上的所有监听事件
+        /// 清理UI上指定组件的所有监听事件
         /// </summary>
         /// <param name="listener"></param>
         public void ClearUIListener(EventListener listener)
@@ -127,6 +127,15 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
 
             m_UIEventListenerDic[listener].Clear();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            ReferencePool.Release(this);
         }
     }
 }
