@@ -7,12 +7,12 @@ using Object = UnityEngine.Object;
 namespace GameFrameX.Asset.Runtime
 {
     /// <summary>
-    /// 资源加载器。
+    /// 资源加载注册器。
     /// 1.加载资源。
     /// 2.记录加载过的资源路径，避免重复加载。
     /// 3.卸载已经加载的资源。
     /// </summary>
-    public class AssetLoader : IReference
+    public class AssetLoadRegister : IReference
     {
         /// 资源管理器
         private static AssetComponent AssetManager => GameEntry.GetComponent<AssetComponent>();
@@ -24,9 +24,9 @@ namespace GameFrameX.Asset.Runtime
         /// 创建资源加载器
         /// </summary>
         /// <returns></returns>
-        public static AssetLoader Create()
+        public static AssetLoadRegister Create()
         {
-            return ReferencePool.Acquire<AssetLoader>();
+            return ReferencePool.Acquire<AssetLoadRegister>();
         }
 
         /// <summary>
