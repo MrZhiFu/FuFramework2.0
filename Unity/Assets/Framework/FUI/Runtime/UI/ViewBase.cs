@@ -112,6 +112,14 @@ namespace GameFrameX.UI.Runtime
             EventRegister   = Event.Runtime.EventRegister.Create(this);
             TimerRegister   = Timer.Runtime.TimerRegister.Create();
 
+            // 初始化自定义组件
+            var customGComps = uiView.GetChildren();
+            foreach (var customGComp in customGComps)
+            {
+                if (customGComp is not IViewCompBase viewComp) continue;
+                viewComp.Init(this);
+            }
+            
             try
             {
                 UIView = uiView;

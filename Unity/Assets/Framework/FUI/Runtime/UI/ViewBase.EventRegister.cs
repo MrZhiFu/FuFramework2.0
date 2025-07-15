@@ -19,7 +19,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="handler">处理对象</param>
-        protected void Subscribe(string id, EventHandler<GameEventArgs> handler)
+        public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
             GameFrameworkGuard.NotNull(handler, nameof(handler));
             GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
@@ -32,7 +32,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="handler">处理对象</param>
-        protected void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
+        public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
             GameFrameworkGuard.NotNull(handler, nameof(handler));
             GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
@@ -45,7 +45,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="id">消息ID</param>
         /// <param name="e">消息对象</param>
-        protected void Fire(string id, GameEventArgs e)
+        public void Fire(string id, GameEventArgs e)
         {
             GameFrameworkGuard.NotNull(e, nameof(e));
             GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
@@ -58,7 +58,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        protected void Fire(object sender, string eventId)
+        public void Fire(object sender, string eventId)
         {
             GameFrameworkGuard.NotNull(sender, nameof(sender));
             GameFrameworkGuard.NotNullOrEmpty(eventId, nameof(eventId));
@@ -71,7 +71,7 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="e">事件内容。</param>
-        protected void FireNow(object sender, GameEventArgs e)
+        public void FireNow(object sender, GameEventArgs e)
         {
             GameFrameworkGuard.NotNull(sender, nameof(sender));
             GameFrameworkGuard.NotNull(e, nameof(e));
@@ -82,7 +82,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 取消所有订阅
         /// </summary>
-        protected void UnSubscribeAll()
+        public void UnSubscribeAll()
         {
             GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.UnSubscribeAll();
