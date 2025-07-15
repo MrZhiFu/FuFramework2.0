@@ -19,7 +19,7 @@ namespace Game.Runtime.Logics.UI.View
         }
 
         /// <summary>
-        /// 界面UI组件事件初始化
+        /// 注册相关逻辑事件
         /// </summary>
         private void InitEvent()
         {

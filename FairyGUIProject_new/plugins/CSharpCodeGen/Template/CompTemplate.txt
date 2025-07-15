@@ -1,5 +1,6 @@
-using System;
 using FairyGUI;
+using GameFrameX.UI.Runtime;
+using GameFrameX.Runtime;
 
 #region ReSharper disable
 // ReSharper disable CheckNamespace
@@ -13,28 +14,21 @@ namespace Game.Runtime.Logics.UI.View
         /// <summary>
         /// UI组件初始化
         /// </summary>
-        protected override void Init()
+        public void Init(ViewBase view)
         {
-        
+            Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
+            uiView = view;
+            InitUIComp();
+            InitUIEvent();
+            InitEvent();
         }
 
         /// <summary>
-        /// UI组件初始化
+        /// 注册相关逻辑事件
         /// </summary>
-        public void DoInit(ViewBase viewBase)
+        public void InitEvent()
         {
-            view = viewBase;
-            DoInitUIComp();
-            DoInitUIEvent();
-            DoRegisterEvents();
-        }
-
-        /// <summary>
-        /// 注册组件相关逻辑事件
-        /// </summary>
-        public void DoRegisterEvents()
-        {
-            
+             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
         
         #region UI组件事件处理

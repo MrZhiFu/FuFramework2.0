@@ -158,7 +158,7 @@ function GenCommon:GenTransitionInit(dataTable, cls, AllClsMap)
             table.insert(dataTable, " = ")
 
             if Tool:StartWith(cls.resName, "Win") then
-                table.insert(dataTable, "contentPane.")
+                table.insert(dataTable, "UIView.")
             end
         
             table.insert(dataTable, string.format("GetTransition(\"%s\");\n", transitionName))
@@ -188,7 +188,7 @@ function GenCommon:GenControllerInit(dataTable, winCls, content)
             table.insert(dataTable, " = ")
 
             if Tool:StartWith(winCls.resName, "Win") then
-                table.insert(dataTable, "contentPane.")
+                table.insert(dataTable, "UIView.")
             end
 
             table.insert(dataTable, string.format("GetController(\"%s\");\n", controllerName))

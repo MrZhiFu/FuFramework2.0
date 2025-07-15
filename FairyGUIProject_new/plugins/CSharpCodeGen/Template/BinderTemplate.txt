@@ -1,4 +1,5 @@
 using FairyGUI;
+using GameFrameX.Runtime;
 
 #region ReSharper disable
 // ReSharper disable ClassNeverInstantiated.Global
@@ -8,7 +9,8 @@ using FairyGUI;
 namespace Game.Runtime.Logics.UI.View
 {
     /// <summary>
-    /// 自定义组件绑定器
+    /// 自定义组件绑定器。
+    /// 由FuiPackageManager加载包时自动反射调用。
     /// </summary>
     public class #PKGNAME#Binder
     {
@@ -17,6 +19,7 @@ namespace Game.Runtime.Logics.UI.View
         /// </summary>
         public static void BindAll()
         {
+            Log.Info("绑定 包-{#PKGNAME#} 所有自定义组件");
 #BinderComps#
         }
     }
