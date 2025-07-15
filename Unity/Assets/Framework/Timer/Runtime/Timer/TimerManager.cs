@@ -110,10 +110,7 @@ namespace GameFrameX.Timer.Runtime
 
                         // 计算已过时间是否大于间隔时间
                         timerItem.Elapsed += realElapseSeconds;
-                        if (timerItem.Elapsed < timerItem.Interval)
-                        {
-                            continue;
-                        }
+                        if (timerItem.Elapsed < timerItem.Interval) continue;
 
                         // 已过时间大于间隔时间，已过时间减去间隔时间，理论上应该等于0，为了防止误差出现负数和超过一帧的时间，即小于0或大于0.03f，则重置为0
                         // 0.03f是参考30Fps的一帧的时间，防止出现超过一帧的时间
