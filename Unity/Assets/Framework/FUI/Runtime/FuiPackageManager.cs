@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
@@ -22,7 +23,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         private readonly Dictionary<string, UniTask<UIPackage>> m_loadingTasks = new();
 
         /// 包对应的资源加载器字典，key:包名，value：资源加载器，一个包对应一个资源加载器，用于加载包的描述文件和资源文件
-        private readonly Dictionary<string, AssetLoader> m_pkgAssetLoaderDict = new();
+        private readonly Dictionary<string, AssetLoadRegister> m_pkgAssetLoaderDict = new();
 
         /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
         private readonly Dictionary<string, int> m_pkgRefCountDict = new();
@@ -102,8 +103,14 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             await AddPackageDepAsync(package);
 
             // 绑定该包下的所有自定义组件
-            if (FuiConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder))
-                compBinder?.BindComp();
+            var compBinderType = Utility.Assembly.GetType($"{package}Binder");
+            if (compBinderType != null)
+            {
+                // 获取 BindAll 方法的信息
+                var bindAllMethod = compBinderType.GetMethod("BindAll", BindingFlags.Public | BindingFlags.Static);
+                if (bindAllMethod != null) 
+                    bindAllMethod.Invoke(null, null);
+            }
 
             return package;
         }
@@ -167,7 +174,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_pkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
             if (descLoader == null)
             {
-                descLoader = AssetLoader.Create();
+                descLoader = AssetLoadRegister.Create();
                 m_pkgAssetLoaderDict[pkgName] = descLoader;
             }
 
@@ -193,7 +200,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_pkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
             if (resLoader == null)
             {
-                resLoader = AssetLoader.Create();
+                resLoader = AssetLoadRegister.Create();
                 m_pkgAssetLoaderDict[pkgName] = resLoader;
             }
 
@@ -285,21 +292,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 Log.Info($"[FuiPackageManager]释放UIPackage-{pkgName}内的资源完成.");
             }
 
-            // 7.移除自定义组件绑定
-            if (FuiConfig.CompBinderDic.TryGetValue(pkgName, out var compBinder))
-            {
-                try
-                {
-                    compBinder?.RemoveBindComp();
-                    Log.Info($"[FuiPackageManager]移除包{pkgName}的自定义组件绑定");
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning($"[FuiPackageManager]移除包{pkgName}的自定义组件绑定时出错: {ex.Message}");
-                }
-            }
-
-            // 8. 移除引用计数
+            // 7. 移除引用计数
             m_pkgRefCountDict.Remove(pkgName);
         }
 

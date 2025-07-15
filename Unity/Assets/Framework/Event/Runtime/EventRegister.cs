@@ -1,8 +1,7 @@
 ﻿using System;
-using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
 
-namespace GameFrameX.UI.Runtime
+namespace GameFrameX.Event.Runtime
 {
     /// <summary>
     /// 事件注册器。
@@ -21,7 +20,7 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 事件处理字典，key为消息ID，value为处理对象
         /// </summary>
-        private readonly GameFrameworkMultiDictionary<string, EventHandler<GameEventArgs>> m_DicEventHandlerDict = new();
+        private readonly GameFrameworkMultiDictionary<string, EventHandler<GameEventArgs>> m_EventHandlerDict = new();
 
         /// <summary>
         /// 创建事件订阅器
@@ -45,7 +44,7 @@ namespace GameFrameX.UI.Runtime
         {
             if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
 
-            m_DicEventHandlerDict.Add(id, handler);
+            m_EventHandlerDict.Add(id, handler);
             EventManager.Subscribe(id, handler);
         }
 
@@ -57,7 +56,7 @@ namespace GameFrameX.UI.Runtime
         /// <exception cref="Exception"></exception>
         public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            if (!m_DicEventHandlerDict.Remove(id, handler))
+            if (!m_EventHandlerDict.Remove(id, handler))
                 throw new Exception(Utility.Text.Format("[EventRegister]事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
 
             EventManager.Unsubscribe(id, handler);
@@ -70,7 +69,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="e">消息对象</param>
         public void Fire(string id, GameEventArgs e)
         {
-            if (!m_DicEventHandlerDict.Contains(id)) return;
+            if (!m_EventHandlerDict.Contains(id)) return;
             EventManager.Fire(this, e);
         }
 
@@ -99,9 +98,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public void UnSubscribeAll()
         {
-            if (m_DicEventHandlerDict.Count == 0) return;
+            if (m_EventHandlerDict.Count == 0) return;
 
-            foreach (var (id, eventHandlers) in m_DicEventHandlerDict)
+            foreach (var (id, eventHandlers) in m_EventHandlerDict)
             {
                 foreach (var eventHandler in eventHandlers)
                 {
@@ -109,7 +108,7 @@ namespace GameFrameX.UI.Runtime
                 }
             }
 
-            m_DicEventHandlerDict.Clear();
+            m_EventHandlerDict.Clear();
         }
 
         /// <summary>

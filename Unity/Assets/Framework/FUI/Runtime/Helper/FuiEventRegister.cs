@@ -22,8 +22,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 添加UI上指定组件的监听事件
         /// </summary>
-        /// <param name="listener"></param>
-        /// <param name="callback"></param>
+        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
+        /// <param name="callback">回调函数</param>
         public void AddUIListener(EventListener listener, EventCallback1 callback)
         {
             if (listener == null)
@@ -44,8 +44,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 移除UI上指定组件的监听事件
         /// </summary>
-        /// <param name="listener"></param>
-        /// <param name="callback"></param>
+        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
+        /// <param name="callback">回调函数</param>
         public void RemoveUIListener(EventListener listener, EventCallback1 callback)
         {
             if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
@@ -66,8 +66,8 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 设置UI上指定组件的监听事件(会删除以前添加的事件)
         /// </summary>
-        /// <param name="listener"></param>
-        /// <param name="callback"></param>
+        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
+        /// <param name="callback">回调函数</param>
         public void SetUIListener(EventListener listener, EventCallback1 callback)
         {
             if (listener == null)
@@ -90,7 +90,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             }
             else
             {
-                handlers = new List<EventCallback1>();
+                handlers                       = new List<EventCallback1>();
                 m_UIEventListenerDic[listener] = handlers;
             }
 
@@ -101,7 +101,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <summary>
         /// 清理UI上指定组件的所有监听事件
         /// </summary>
-        /// <param name="listener"></param>
+        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         public void ClearUIListener(EventListener listener)
         {
             if (listener == null)
@@ -125,17 +125,22 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 清理所有注册的事件
+        /// 清理所有UI上组件的所有监听事件
         /// </summary>
-        public void Clear()
+        public void ClearAllUIListener()
         {
             foreach (var listener in m_UIEventListenerDic.Keys)
             {
                 ClearUIListener(listener);
             }
-            
+
             m_UIEventListenerDic.Clear();
         }
+
+        /// <summary>
+        /// 清理所有注册的事件
+        /// </summary>
+        public void Clear() => ClearAllUIListener();
 
         /// <summary>
         /// 释放资源

@@ -8,7 +8,8 @@
         "UniTask.Runtime",
         "YooAsset.Runtime",
         "GameFrameX.Localization.Runtime",
-        "FairyGUI"
+        "FairyGUI",
+        "GameFrameX.Timer.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

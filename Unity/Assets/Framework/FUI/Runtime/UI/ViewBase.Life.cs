@@ -112,8 +112,9 @@ namespace GameFrameX.UI.Runtime
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
             FuiPackageManager.Instance.SubRef(PackageName);
 
-            ReleaseEventRegister();
-            DisposeUIEventRegister();
+            ReleaseEventRegister();   // 释放事件注册器
+            ReleaseUIEventRegister(); // 释放UI事件注册器
+            ReleaseTimerRegister();   // 释放计时器注册器
 
             OnDispose();
         }

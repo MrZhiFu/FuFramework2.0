@@ -82,7 +82,7 @@ namespace GameFrameX.UI.Runtime
                 Fire(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
             }
         }
-        
+
         /// <summary>
         /// 初始化界面。
         /// </summary>
@@ -107,8 +107,10 @@ namespace GameFrameX.UI.Runtime
 
             if (!isNewInstance) return;
 
-            EventRegister   = EventRegister.Create(this);
+            // 创建UI事件注册器，事件注册器，定时器注册器
             UIEventRegister = FuiEventRegister.Create();
+            EventRegister   = Event.Runtime.EventRegister.Create(this);
+            TimerRegister   = Timer.Runtime.TimerRegister.Create();
 
             try
             {
@@ -139,7 +141,7 @@ namespace GameFrameX.UI.Runtime
         /// <param name="childName"></param>
         /// <returns></returns>
         protected GObject GetChild(string childName) => UIView.GetChild(childName);
-        
+
         /// <summary>
         /// 获取界面子对象。
         /// </summary>
