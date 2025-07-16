@@ -5,30 +5,27 @@ local GenBinder = {}
 --- 生成组件绑定C#代码
 ---@param pkgName string 包名
 ---@param compClsArray CS.FairyEditor.PublishHandler.ClassInfo[] 组件数组
----@param unityDataPath string Untity路径 “xxx/Assets”
-function GenBinder:Gen(pkgName, compClsArray, unityDataPath, AllClsMap)
-    for _, cls in ipairs(compClsArray) do
+---@param unityDataPath string Unity路径 “xxx/Assets”
+function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
+    for _, _ in ipairs(compClsArray) do
         local dir = Tool:StrFormat(Tool.ExportViewGenPath, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)
 
         local path = Tool:StrFormat('%s/%sBinder.cs', dir, pkgName)
 
         if true then
-            ---not Tool:IsFileExists(path) then
-            -- local compArray = Tool:GetCompArray(cls)
-
             --- 读取代码模板文档
             local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/BinderTemplate.txt")
-            local content = Tool:ReadTxt(templatePath)
+            local template = Tool:ReadTxt(templatePath)
 
             -- 处理模板中的组件绑定部分
-            content = GenBinder:BinderComps(content, compClsArray)
-           
+            template = GenBinder:BinderComps(template, compClsArray)
+
             ---替换模板中的占位符：包名，组件名，类型
-            content = content:gsub('#PKGNAME#', pkgName)
-            
+            template = template:gsub('#PKGNAME#', pkgName)
+
             -- 写入最终生成的代码文件
-            Tool:WriteTxt(path, content)
+            Tool:WriteTxt(path, template)
         end
     end
 end

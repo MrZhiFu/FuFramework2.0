@@ -11,7 +11,6 @@ Tool.ExportViewPath = "%s/Game/Scripts/Runtime/Logics/UI/View/%s/ViewImpl"
 --- 导出界面ViewGen的C#代码路径
 Tool.ExportViewGenPath = "%s/Game/Scripts/Runtime/Logics/UI/View/%s/ViewGen/"
 
-
 --- 字符串格式化（封装 string.format，提供一致性调用接口）
 ---@param str string 格式字符串（参考 string.format）
 ---@param ... any 可变参数，用于填充格式字符串
@@ -29,7 +28,7 @@ end
 --- @return number|nil start  匹配起始位置（未找到返回 nil）
 --- @return number|nil end    匹配结束位置（未找到返回 nil）
 --- @return string|nil capture 第一个捕获组内容（无捕获组时返回 nil）
---- @usage 
+--- @usage
 ---   local s, e = Tool:StrFind("hello world", "world") --> 7, 11
 ---   local s, e, cap = Tool:StrFind("2023-12-31", "(%d+)-%d+-%d+") --> 1, 10, "2023"
 function Tool:StrFind(s, pattern, init, plain)
@@ -40,7 +39,7 @@ end
 --- @param str    string 原字符串
 --- @param subStr string 要检查的前缀子串
 --- @return boolean 是否以该子串开头
---- @usage 
+--- @usage
 ---   Tool:StartWith("你好世界", "你好") --> true
 ---   Tool:StartWith("hello", "ello") --> false
 function Tool:StartWith(str, subStr)
@@ -83,8 +82,9 @@ end
 function Tool:FormatVarName(varName)
     varName = string.gsub(varName, "^_+", "") -- 1. 去除开头的一个或多个下划线
     varName = string.gsub(varName, "_+$", "") -- 2. 去除结尾的一个或多个下划线  
-    varName = string.gsub(varName, "_(%a)", function(c)  -- 3. 将下划线后跟字母转为大写字母（驼峰关键步骤）
-        return string.upper(c) 
+    varName = string.gsub(varName, "_(%a)", function(c)
+        -- 3. 将下划线后跟字母转为大写字母（驼峰关键步骤）
+        return string.upper(c)
     end)
     return varName
 end
@@ -197,7 +197,7 @@ function Tool:GetListRefRes(winCls, member)
         -- 5. 匹配目标组件
         if elementName == member.name then
             self:Log(string.format("[GetListRefRes] 找到匹配列表组件: %s", member.name), "SUCCESS")
-            
+
             -- 6. 获取列表默认项资源ID
             local defaultItemId = element:GetAttribute("defaultItem")
             if not defaultItemId then
@@ -211,16 +211,16 @@ function Tool:GetListRefRes(winCls, member)
             local defaultItem = handler.project:GetItemByURL(defaultItemId)
             if defaultItem then
                 self:Log(string.format(
-                    "[GetListRefRes] 成功加载资源: %s (类型: %s, 尺寸: %dx%d)", 
-                    defaultItem.name, 
-                    defaultItem.type,
-                    defaultItem.width,
-                    defaultItem.height
+                        "[GetListRefRes] 成功加载资源: %s (类型: %s, 尺寸: %dx%d)",
+                        defaultItem.name,
+                        defaultItem.type,
+                        defaultItem.width,
+                        defaultItem.height
                 ), "SUCCESS")
             else
                 self:Log(string.format("[GetListRefRes] 资源加载失败: %s", defaultItemId), "ERROR")
             end
-            
+
             return defaultItem
         end
     end
@@ -243,11 +243,11 @@ function Tool:GetCompFunName(comp)
 
     -- 组件类型与对应前缀映射表（更高效的查找方式）
     local prefixMap = {
-        GButton = {"_btn", "_Btn"},
-        GList = {"_list", "_List"},
-        GSlider = {"_slider", "_Slider", "_sld"},
+        GButton = { "_btn", "_Btn" },
+        GList = { "_list", "_List" },
+        GSlider = { "_slider", "_Slider", "_sld" },
         GComboBox = {
-            "_comboBox", "_combobox", "_Combobox", 
+            "_comboBox", "_combobox", "_Combobox",
             "_ComboBox", "_combo", "_Combo", "_com"
         },
         GTextInput = {
@@ -286,7 +286,9 @@ end
 --- @return table 新表
 function Tool:TableCopy(t)
     local res = {}
-    for k, v in pairs(t) do res[k] = v end
+    for k, v in pairs(t) do
+        res[k] = v
+    end
     return res
 end
 
@@ -359,59 +361,6 @@ function Tool:GetCompArray(winCls)
     return compArray
 end
 
---- 获得控制器功能名
---- CtrOK -> OK, _ctrItem -> Item
----@param name
----@return string
----@private
-function Tool:GetControllerFunName(name)
-    local removeList = { "Ctrl", "ctrl", "Ctr", "ctr", "_" }
-
-    for _, v in ipairs(removeList) do
-        if name and name ~= "" then
-            name = string.gsub(name, v, "")
-        end
-    end
-
-    if name and name ~= "" then
-        name = Tool:FirstCharUpper(name)
-    end
-
-    return name
-end
-
---- 获得动效功能名
---- transitionOK -> OK, _transItem -> Item
----@param name
----@return string
----@private
-function Tool:GetTransitionFunName(name)
-    local removeList = { "Transition", "transition", "Trans", "trans", "Tran", "tran", "_" }
-
-    for _, v in ipairs(removeList) do
-        if name and name ~= "" then
-            name = string.gsub(name, v, "")
-        end
-    end
-
-    if name and name ~= "" then
-        name = Tool:FirstCharUpper(name)
-    end
-
-    return name
-end
-
---- 获得列表变量名
----@param funName string
----@return string
-function Tool:GetListFieldName(funName)
-    if funName == "" then
-        return "value"
-    end
-
-    return Tool:FirstCharLower(funName)
-end
-
 ---获取组件类型
 ---@param comp MemberInfo  组件信息对象
 ---@param AllClsMap table 类名映射表（资源名→类信息）
@@ -429,23 +378,6 @@ function Tool:GetCompType(comp, AllClsMap)
         end
     end
     return comp.type
-end
-
---- 检查组件资源是否被导出
---- @param comp MemberInfo 组件信息
---- @param AllClsMap table 类映射表
---- @return boolean
-function Tool:IsCompResExported(comp, AllClsMap)
-    -- 根据组件类型查找类定义
-    local cls = AllClsMap[comp.type]
-
-    -- 如果找到类定义，返回其导出状态
-    if cls then
-        return cls.res.exported
-    end
-    
-    -- 默认返回false
-    return false
 end
 
 return Tool

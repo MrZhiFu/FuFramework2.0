@@ -5,80 +5,92 @@ local GenWin = {}
 --- 生成界面的C#代码
 ---@param pkgName string 包名
 ---@param winClsArray CS.FairyEditor.PublishHandler.ClassInfo[] 所有界面类
----@param unityDataPath string Unity工程路径 “xxx/Assets”
 ---@param AllClsMap talbe 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
-function GenWin:Gen(pkgName, winClsArray, unityDataPath, AllClsMap)
-    fprintf("生成界面的C#代码  %s %s", pkgName, winClsArray, unityDataPath)
+---@param unityDataPath string Unity工程路径 “xxx/Assets”
+function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     for _, cls in ipairs(winClsArray) do
-        local dir = Tool:StrFormat(Tool.ExportViewGenPath, unityDataPath, pkgName)
-
-        Tool:CreateDirectory(dir)
 
         -------------------------------------WinXxx.Gen.cs----------------------------------------
+        fprintf("生成包%s下界面C#代码-%s.Gen.cs", pkgName, cls.resName)
+        local dir = Tool:StrFormat(Tool.ExportViewGenPath, unityDataPath, pkgName)
+        Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewGen
+
         local path = Tool:StrFormat('%s/%s.Gen.cs', dir, cls.resName)
-        
         local compArray = Tool:GetCompArray(cls)
         local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
-        local content = Tool:ReadTxt(templatePath)
+        local template = Tool:ReadTxt(templatePath)  -- 读取模板代码
+
+        -- 定义模板代码中需要填充的关键字
         local dataKeys = {
-            '#CompDefine#',
-            '#CompInit#',
-            '#CompDoInit#',
-            '#INITUIEVENT#',
+            '#CompDefine#', -- 界面包含的组件定义关键字
+            '#CompInit#', -- 界面包含的组件初始化赋值关键字
+            '#CustomCompInit#', -- 自定义组件的初始化Init函数代码
+            '#INITUIEVENT#', -- 界面可交互组件事件初始化
         }
+
+        -- 定义关键字对应的填充内容字典
         local dataTable = {}
-        for _,key in ipairs(dataKeys) do
+        for _, key in ipairs(dataKeys) do
             dataTable[key] = {}
         end
-        
-        GenCommon:GenControllerDefine(dataTable['#CompDefine#'], cls, AllClsMap)
-        GenCommon:GenCompDefine(dataTable['#CompDefine#'], compArray, AllClsMap)
-        GenCommon:GenTransitionDefine(dataTable['#CompDefine#'], cls, AllClsMap)
 
-        GenCommon:GenControllerInit(dataTable['#CompInit#'], cls, AllClsMap)
-        GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)
-        GenCommon:GenTransitionInit(dataTable['#CompInit#'], cls, AllClsMap)
-        GenCommon:GenDoInit(dataTable['#CompDoInit#'], compArray, AllClsMap)
-         
-        GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)
-        GenCommon:GenCompOperationn(dataTable['#INITUIEVENT#'], compArray, AllClsMap)
+        GenCommon:GenControllerDefine(dataTable['#CompDefine#'], cls)-- 生成控制器的定义代码和枚举定义，如：private Controller CtrlSelected;
+        GenCommon:GenCompDefine(dataTable['#CompDefine#'], compArray, AllClsMap)-- 生成组件的定义代码，如：private GButton btnEnter;
+        GenCommon:GenTransitionDefine(dataTable['#CompDefine#'], cls)           -- 生成动效的定义代码，如：private Transition xxxAnim;
 
-        for k,v in pairs(dataTable) do
-            content = content:gsub(k, table.concat(v))
+        GenCommon:GenControllerInit(dataTable['#CompInit#'], cls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
+        GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
+        GenCommon:GenTransitionInit(dataTable['#CompInit#'], cls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
+        GenCommon:GenCustomCompInit(dataTable['#CustomCompInit#'], compArray, AllClsMap, false)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的界面View
+
+        GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
+        GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
+
+        -- 使用生成的代码替换模板代码中各个关键字
+        for k, v in pairs(dataTable) do
+            template = template:gsub(k, table.concat(v))
         end
-        content = content:gsub('#PKGNAME#', pkgName)
-        content = content:gsub('#WINNAME#', cls.resName)
-        
-        Tool:WriteTxt(path, content)
+
+        -- 替换包名，界面名
+        template = template:gsub('#PKGNAME#', pkgName)
+        template = template:gsub('#WINNAME#', cls.resName)
+
+        -- 写入替换完成后的代码文件WinXxx.Gen.cs
+        Tool:WriteTxt(path, template)
 
         -------------------------------------WinXxx.cs----------------------------------------
+        fprintf("生成包%s下界面C#代码-%s.cs", pkgName, cls.resName)
         dir = Tool:StrFormat(Tool.ExportViewPath, unityDataPath, pkgName)
-        Tool:CreateDirectory(dir)
+        Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewImpl
+
         path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)
         if cls.res.exported and not Tool:IsFileExists(path) then
             local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
-            local content = Tool:ReadTxt(templatePath)
+            local template = Tool:ReadTxt(templatePath)  -- 读取模板代码
 
             local dataKeys = {
-                '#HANDLER#',
+                '#HANDLER#', -- 交互事件处理函数关键子
             }
 
             local dataTable = {}
-            for _,key in ipairs(dataKeys) do
+            for _, key in ipairs(dataKeys) do
                 dataTable[key] = {}
             end
 
+            -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
             GenCommon:GenCompEventHandler(dataTable['#HANDLER#'], compArray, AllClsMap)
 
-            for k,v in pairs(dataTable) do
-                content = content:gsub(k, table.concat(v))
+            -- 使用生成的代码替换模板代码中各个关键字
+            for k, v in pairs(dataTable) do
+                template = template:gsub(k, table.concat(v))
             end
-            
-            --- 替换包名，界面名
-            content = content:gsub('#PKGNAME#', pkgName)
-            content = content:gsub('#WINNAME#', cls.resName)
-            
-            Tool:WriteTxt(path, content)
+
+            -- 替换包名，界面名
+            template = template:gsub('#PKGNAME#', pkgName)
+            template = template:gsub('#WINNAME#', cls.resName)
+
+            -- 写入替换完成后的代码文件WinXxx.cs
+            Tool:WriteTxt(path, template)
         end
     end
 end

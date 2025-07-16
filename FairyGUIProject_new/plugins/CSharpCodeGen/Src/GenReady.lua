@@ -10,13 +10,13 @@ local GenReady = {}
 function GenReady:Init(handler, pluginPath)
     fprintf("初始化...")
     ---@type Tool
-    Tool = require(pluginPath..'/Src/Tool')
+    Tool = require(pluginPath .. '/Src/Tool')
 
     Tool:SetHandler(handler)
     Tool:SetPluginPath(pluginPath)
 
     ---@type GenCommon
-    GenCommon = require(pluginPath..'/Src/GenCommon')
+    GenCommon = require(pluginPath .. '/Src/GenCommon')
 end
 
 --- 导出路径是否有效
@@ -31,13 +31,13 @@ function GenReady:IsExportPathOK()
         Tool:Log('Need Set Res Publish Path To Unity/Assets/Game/Res/Bundle/UI')
         return false
     end
-    
+
     return true
 end
 
 --- 获得Unity工程目录 “xxx/Assets”
 ---@param handler CS.FairyEditor.PublishHandler FGUI发布处理器对象
----@return string 
+---@return string
 function GenReady:GetUnityDataPath(handler)
     local exportCodePath = handler.exportCodePath
     exportCodePath = exportCodePath:gsub('\\', '/')
@@ -51,7 +51,7 @@ function GenReady:GetUnityDataPath(handler)
     local unityDataPath = Tool:StrSub(exportCodePath, 1, idx)
     unityDataPath = unityDataPath:gsub('\\', '/')
     Tool:Log('Unity数据路径: %s', unityDataPath)
-    
+
     return unityDataPath
 end
 
@@ -84,9 +84,8 @@ function GenReady:GetClsArray(handler)
             end
         end
     end
-    
+
     return winClsArray, compClsArray, AllClsMap
 end
-
 
 return GenReady

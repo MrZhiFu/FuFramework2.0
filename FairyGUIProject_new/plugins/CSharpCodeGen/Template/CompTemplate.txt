@@ -2,14 +2,9 @@ using FairyGUI;
 using GameFrameX.UI.Runtime;
 using GameFrameX.Runtime;
 
-#region ReSharper disable
-// ReSharper disable CheckNamespace
-// ReSharper disable MemberCanBePrivate.Global
-#endregion 
-
 namespace Game.Runtime.Logics.UI.View
 {
-    public partial class #COMPNAME# : IViewCompBase
+    public partial class #COMPNAME#
     {
         /// <summary>
         /// UI组件初始化
@@ -28,11 +23,11 @@ namespace Game.Runtime.Logics.UI.View
         /// </summary>
         public void InitEvent()
         {
-             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
         
-        #region UI组件事件处理
-    #HANDLER#
-        #endregion
+        #region 交互事件以及ListItem渲染回调处理
+        
+#HANDLER#        #endregion
     }
 }

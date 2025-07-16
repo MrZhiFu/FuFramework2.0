@@ -39,13 +39,13 @@ function onPublish(handler)
     local winClsArray, compClsArray, AllClsMap = GenReady:GetClsArray(handler)
 
     --- 生成界面代码
-    GenWin:Gen(handler.pkg.name, winClsArray, unityDataPath, AllClsMap)
+    GenWin:Gen(handler.pkg.name, winClsArray, AllClsMap, unityDataPath)
 
     --- 生成组件代码
-    GenComp:Gen(handler.pkg.name, compClsArray, unityDataPath, AllClsMap)
+    GenComp:Gen(handler.pkg.name, compClsArray, AllClsMap, unityDataPath)
     
     --- 生成Binder代码
-    GenBinder:Gen(handler.pkg.name, compClsArray, unityDataPath, AllClsMap)
+    GenBinder:Gen(handler.pkg.name, compClsArray, unityDataPath)
 end
 
 -------do cleanup here-------

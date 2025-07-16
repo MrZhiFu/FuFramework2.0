@@ -1,11 +1,6 @@
 using FairyGUI;
 using GameFrameX.UI.Runtime;
 
-#region ReSharper disable
-// ReSharper disable CheckNamespace
-// ReSharper disable ClassNeverInstantiated.Global
-#endregion 
-
 namespace Game.Runtime.Logics.UI.View
 {
     public partial class #WINNAME# : ViewBase
@@ -37,23 +32,23 @@ namespace Game.Runtime.Logics.UI.View
         /// <summary>
         /// 界面关闭
         /// </summary>
-        protected override void OnClose(){}
+        protected override void OnClose() { }
 
         /// <summary>
         /// 界面销毁
         /// </summary>
-        protected override void OnDispose(){}
+        protected override void OnDispose() { }
 
         /// <summary>
         /// 刷新界面
         /// </summary>
-        public void Refresh()
+        private void Refresh()
         {
-           // TODO：刷新逻辑
+        	// TODO：刷新逻辑
         }
 
-        #region UI交互事件处理
-    #HANDLER#
-        #endregion
+        #region 交互事件以及ListItem渲染回调处理
+        
+#HANDLER#        #endregion
     }
 }
