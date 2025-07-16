@@ -24,6 +24,12 @@ namespace Game.Runtime.Logics.UI.View
         /// </summary>
         public void InitUIComp()
         {
+            // 初始化自定义组件-组件嵌套情况
+            foreach (var customGComp in GetChildren())
+            {
+                if (customGComp is not IViewCompBase viewComp) continue;
+                viewComp.Init(this.uiView);
+            }
 #CompInit#
         }
         
