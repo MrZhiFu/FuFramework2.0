@@ -8,7 +8,14 @@ local GenBinder = {}
 ---@param unityDataPath string Unity路径 “xxx/Assets”
 function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
     for _, _ in ipairs(compClsArray) do
-        local dir = Tool:StrFormat(Tool.ExportViewGenPath, unityDataPath, pkgName)
+        
+        -- 如果是UILauncher界面，则生成AOT模式的绑定代码
+        local tempPath = Tool.ExportViewGenPath
+        if pkaName == "Launcher" then
+            tempPath = Tool.ExportViewGenAOTPath
+        end
+        
+        local dir = Tool:StrFormat(tempPath, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)
 
         local path = Tool:StrFormat('%s/%sBinder.cs', dir, pkgName)

@@ -12,7 +12,14 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
 
         -------------------------------------WinXxx.Gen.cs----------------------------------------
         fprintf("生成包%s下界面C#代码-%s.Gen.cs", pkgName, cls.resName)
-        local dir = Tool:StrFormat(Tool.ExportViewGenPath, unityDataPath, pkgName)
+        
+        -- 如果是UILauncher界面，则生成AOT模式的绑定代码
+        local tempPath = Tool.ExportViewGenPath
+        if pkaName == "Launcher" then
+            tempPath = Tool.ExportViewGenAOTPath
+        end
+        
+        local dir = Tool:StrFormat(tempPath, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewGen
 
         local path = Tool:StrFormat('%s/%s.Gen.cs', dir, cls.resName)
@@ -60,37 +67,44 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
 
         -------------------------------------WinXxx.cs----------------------------------------
         fprintf("生成包%s下界面C#代码-%s.cs", pkgName, cls.resName)
-        dir = Tool:StrFormat(Tool.ExportViewPath, unityDataPath, pkgName)
+        
+        -- 如果是UILauncher界面，则生成AOT模式的界面代码
+        local tempPath1 = Tool.ExportViewPath
+        if pkaName == "Launcher" then
+            tempPath1 = Tool.ExportViewAOTPath
+        end
+        
+        dir = Tool:StrFormat(tempPath1, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewImpl
 
         path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)
         if cls.res.exported and not Tool:IsFileExists(path) then
-            local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
-            local template = Tool:ReadTxt(templatePath)  -- 读取模板代码
+            local templatePath1 = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
+            local template1 = Tool:ReadTxt(templatePath1)  -- 读取模板代码
 
-            local dataKeys = {
+            local dataKeys1 = {
                 '#HANDLER#', -- 交互事件处理函数关键子
             }
 
-            local dataTable = {}
-            for _, key in ipairs(dataKeys) do
-                dataTable[key] = {}
+            local dataTable1 = {}
+            for _, key in ipairs(dataKeys1) do
+                dataTable1[key] = {}
             end
 
             -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-            GenCommon:GenCompEventHandler(dataTable['#HANDLER#'], compArray, AllClsMap)
+            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
 
             -- 使用生成的代码替换模板代码中各个关键字
-            for k, v in pairs(dataTable) do
-                template = template:gsub(k, table.concat(v))
+            for k, v in pairs(dataTable1) do
+                template1 = template1:gsub(k, table.concat(v))
             end
 
             -- 替换包名，界面名
-            template = template:gsub('#PKGNAME#', pkgName)
-            template = template:gsub('#WINNAME#', cls.resName)
+            template1 = template1:gsub('#PKGNAME#', pkgName)
+            template1 = template1:gsub('#WINNAME#', cls.resName)
 
             -- 写入替换完成后的代码文件WinXxx.cs
-            Tool:WriteTxt(path, template)
+            Tool:WriteTxt(path, template1)
         end
     end
 end
