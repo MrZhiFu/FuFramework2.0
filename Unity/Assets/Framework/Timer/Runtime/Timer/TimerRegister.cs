@@ -68,7 +68,7 @@ namespace GameFrameX.Timer.Runtime
         /// </summary>
         /// <param name="callback">要检查的回调函数</param>
         /// <returns>存在返回 true，不存在返回 false</returns>
-        public bool TimerExists(Action<object> callback)
+        public bool ExistsTimer(Action<object> callback)
         {
             return m_TimerHandlerList.Contains(callback) || TimerManager.Exists(callback);
         }

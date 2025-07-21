@@ -8,7 +8,6 @@ namespace GameFrameX.Timer.Runtime
     /// 定时器管理器。
     /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
     /// </summary>
-    
     public sealed class TimerManager : GameFrameworkModule, ITimerManager
     {
         /// <summary>
@@ -279,32 +278,33 @@ namespace GameFrameX.Timer.Runtime
         }
 
         /// <summary>
-        /// 获取一个定时器项
+        /// 获取一个定时器项。
+        /// 如果池中有可用的定时器项，则从池中取出，否则创建一个新的定时器项
         /// </summary>
         /// <returns></returns>
         private TimerItem GetTimerItem()
         {
-            // 如果池中有可用的定时器项，则从池中取出，否则创建一个新的定时器项
-            if (m_PoolList.Count > 0)
-            {
-                var tempTimer = m_PoolList[m_PoolList.Count - 1];
-                m_PoolList.RemoveAt(m_PoolList.Count - 1);
-                tempTimer.Deleted = false;
-                tempTimer.Elapsed = 0;
-                return tempTimer;
-            }
+            if (m_PoolList.Count <= 0) return new TimerItem();
 
-            return new TimerItem();
+            var lastIdx   = m_PoolList.Count - 1;
+            var lastTimer = m_PoolList[lastIdx];
+
+            m_PoolList.RemoveAt(lastIdx);
+
+            lastTimer.Deleted = false;
+            lastTimer.Elapsed = 0;
+            lastTimer.Param   = null;
+            return lastTimer;
         }
 
         /// <summary>
         /// 回收定时器项到池中
         /// </summary>
-        /// <param name="t"></param>
-        private void RecycleTimerItem(TimerItem t)
+        /// <param name="timer"></param>
+        private void RecycleTimerItem(TimerItem timer)
         {
-            t.Callback = null;
-            m_PoolList.Add(t);
+            timer.Callback = null;
+            m_PoolList.Add(timer);
         }
     }
 }
