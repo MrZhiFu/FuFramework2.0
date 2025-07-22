@@ -2,9 +2,9 @@
 App = App
 
 ------------------- FUI发布时调试lua代码, 可以使用Rider的EmmyLua插件进行调试-----------------
-package.cpath = package.cpath .. ';C:/Users/PC/AppData/Roaming/JetBrains/Rider2024.3/plugins/EmmyLua/debugger/emmy/windows/x64/?.dll'
-local dbg = require('emmy_core')
-dbg.tcpListen('localhost', 9966)
+--package.cpath = package.cpath .. ';C:/Users/PC/AppData/Roaming/JetBrains/Rider2024.3/plugins/EmmyLua/debugger/emmy/windows/x64/?.dll'
+--local dbg = require('emmy_core')
+--dbg.tcpListen('localhost', 9966)
 ----------------------------------------------------------------------------------------
 
 ---@type GenReady

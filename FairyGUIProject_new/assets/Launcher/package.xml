@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <packageDescription id="u7deosq0">
   <resources>
-    <component id="mw8e0" name="WinLauncher.xml" path="/Scene/" exported="true"/>
+    <component id="mw8e0" name="WinLauncher.xml" path="/" exported="true"/>
     <component id="mw8e3" name="ProgressBarDownload.xml" path="/Comps/"/>
     <image id="qew11h" name="UI_icon_btn_green.png" path="/Res/" scale="9grid" scale9grid="152,17,194,90"/>
     <component id="qew11i" name="BtnSure.xml" path="/Comps/"/>
