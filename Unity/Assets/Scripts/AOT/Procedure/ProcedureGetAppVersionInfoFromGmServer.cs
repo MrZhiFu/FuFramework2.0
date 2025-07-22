@@ -70,8 +70,7 @@ namespace Unity.Startup.Procedure
                     if (gameAppVersion.IsUpgrade)
                     {
                         // 需要更新，显示更新提示框
-                        var uiLauncher = UIManager.Instance.GetUI("UI/UILauncher")as UILauncher;
-                        if (uiLauncher == null) return;
+                        if (UIManager.Instance.GetUI("UI/UILauncher") is not UILauncher uiLauncher) return;
                         uiLauncher.m_IsUpgrade.SetSelectedIndex(1);
 
                         var isChinese = GameApp.Localization.SystemLanguage == Language.ChineseSimplified ||
