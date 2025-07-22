@@ -8,8 +8,8 @@ namespace Game.Runtime.Logics.UI.View
 {
     public partial class #WINNAME#
     {
-        public override string UIName => "#WINNAME#";     // 界面名称
-        public override string PackageName => "#PKGNAME#";// 包名
+        public override string UIName => "#WINNAME#";      // 界面名称
+        public override string PackageName => "#PKGNAME#"; // 包名
         
 #CompDefine#
         /// <summary>
