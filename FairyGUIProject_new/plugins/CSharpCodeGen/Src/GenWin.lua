@@ -12,20 +12,24 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         return
     end
 
-    local exportGenPath = Tool:GetExportViewGenPath(pkgName) --- 导出ViewGen的C#代码路径
-    local exportPath = Tool:GetExportViewPath(pkgName)       --- 导出View的C#代码路径
+    local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
+    local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
+    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     for _, cls in ipairs(winClsArray) do
         -------------------------------------WinXxx.Gen.cs----------------------------------------
         Tool:Log("生成界面C#代码-%s.Gen.cs", cls.resName)
 
-        local dir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
-        Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewGen
+        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
 
-        local path = Tool:StrFormat('%s/%s.Gen.cs', dir, cls.resName)
+        -- 创建存放代码的文件夹=>.../ViewGen
+        Tool:CreateDirectory(targetDir)
+
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, cls.resName) --- 界面代码生成目标路径
         local compArray = Tool:GetCompArray(cls)
-        local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
-        local template = Tool:ReadTxt(templatePath)  -- 读取模板代码
+
+        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
+        local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码
 
         -- 定义模板代码中需要填充的关键字
         local dataKeys = {
@@ -55,26 +59,36 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
 
         -- 使用生成的代码替换模板代码中各个关键字
         for k, v in pairs(dataTable) do
-            template = template:gsub(k, table.concat(v))
+            templateCodeGen = templateCodeGen:gsub(k, table.concat(v))
         end
 
-        -- 替换包名，界面名
-        template = template:gsub('#PKGNAME#', pkgName)
-        template = template:gsub('#WINNAME#', cls.resName)
+        -- 替换命名空间，包名，界面名
+        templateCodeGen = templateCodeGen:gsub('#NAMESPACE#', namespace)
+        templateCodeGen = templateCodeGen:gsub('#PKGNAME#', pkgName)
+        templateCodeGen = templateCodeGen:gsub('#WINNAME#', cls.resName)
 
         -- 写入替换完成后的代码文件WinXxx.Gen.cs
-        Tool:WriteTxt(path, template)
+        Tool:WriteTxt(targetPath, templateCodeGen)
 
         -------------------------------------WinXxx.cs----------------------------------------
         Tool:Log("生成界面C#代码-%s.cs", cls.resName)
 
-        dir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-        Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewImpl
+        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
+        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, cls.resName)
+        
+        -- 如果界面代码文件存在，则不再生成
+        if Tool:IsFileExists(targetPath)  then
+            Tool:Log("界面代码文件已存在，不再生成:%s", targetPath)
+            return
+        end
 
-        path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)
-        if cls.res.exported and not Tool:IsFileExists(path) then
-            local templatePath1 = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
-            local template1 = Tool:ReadTxt(templatePath1)  -- 读取模板代码
+        -- 创建存放代码的文件夹=>.../ViewImpl
+        Tool:CreateDirectory(targetDir)
+        
+        -- 如果设置为导出代码，则生成界面代码文件WinXxx.cs
+        if cls.res.exported then
+            local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
+            local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
 
             local dataKeys1 = {
                 '#HANDLER#', -- 交互事件处理函数关键子
@@ -86,19 +100,20 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             end
 
             -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
+            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
 
             -- 使用生成的代码替换模板代码中各个关键字
             for k, v in pairs(dataTable1) do
-                template1 = template1:gsub(k, table.concat(v))
+                templateCode = templateCode:gsub(k, table.concat(v))
             end
 
-            -- 替换包名，界面名
-            template1 = template1:gsub('#PKGNAME#', pkgName)
-            template1 = template1:gsub('#WINNAME#', cls.resName)
+            -- 替换命名空间，包名，界面名
+            templateCode = templateCode:gsub('#NAMESPACE#', namespace)
+            templateCode = templateCode:gsub('#PKGNAME#', pkgName)
+            templateCode = templateCode:gsub('#WINNAME#', cls.resName)
 
             -- 写入替换完成后的代码文件WinXxx.cs
-            Tool:WriteTxt(path, template1)
+            Tool:WriteTxt(targetPath, templateCode)
         end
     end
 end

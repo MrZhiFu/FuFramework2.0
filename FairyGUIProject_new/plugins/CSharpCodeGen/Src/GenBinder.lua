@@ -11,27 +11,28 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
         return
     end
 
-    --- 导出ViewGen的C#代码路径
-    local exportGenPath = Tool:GetExportViewGenPath(pkgName)
+    local exportGenPath = Tool:GetExportCodeGenPath(pkgName)--- 导出ViewGen的C#代码路径
+    local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) --- 导出ViewGen的C#代码目录
+    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
+    Tool:CreateDirectory(targetDir)
 
     for _, _ in ipairs(compClsArray) do
-        local dir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
-        Tool:CreateDirectory(dir)
 
-        local path = Tool:StrFormat('%s/%sBinder.cs', dir, pkgName)
+        local targetPath = Tool:StrFormat('%s/%sBinder.cs', targetDir, pkgName)
 
         --- 读取代码模板文档
-        local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/BinderTemplate.txt")
-        local template = Tool:ReadTxt(templatePath)
+        local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/BinderTemplate.txt")
+        local templateCode = Tool:ReadTxt(templateCodePath)
 
         -- 处理模板中的组件绑定部分
-        template = GenBinder:BinderComps(template, compClsArray)
+        templateCode = GenBinder:BinderComps(templateCode, compClsArray)
 
-        ---替换模板中的占位符：包名，组件名，类型
-        template = template:gsub('#PKGNAME#', pkgName)
+        -- 替换命名空间，包名，界面名
+        templateCode = templateCode:gsub('#NAMESPACE#', namespace)
+        templateCode = templateCode:gsub('#PKGNAME#', pkgName)
 
         -- 写入最终生成的代码文件
-        Tool:WriteTxt(path, template)
+        Tool:WriteTxt(targetPath, templateCode)
     end
 end
 

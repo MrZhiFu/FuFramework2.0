@@ -2,7 +2,8 @@ using FairyGUI;
 using GameFrameX.UI.Runtime;
 using GameFrameX.Runtime;
 
-namespace Game.Runtime.Logics.UI.View
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace #NAMESPACE#
 {
     public partial class #COMPNAME#
     {

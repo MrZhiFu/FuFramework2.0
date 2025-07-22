@@ -8,19 +8,28 @@ local Directory = CS.System.IO.Directory
 --- 导出界面View的C#代码AOT路径
 Tool.ExportViewAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewImpl"
 
---- 导出界面ViewGen的C#代码AOT路径
-Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewGen/"
-
 --- 导出界面View的C#代码路径
 Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/View/%s/ViewImpl"
+
+
+--- 导出界面ViewGen的C#代码AOT路径
+Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewGen/"
 
 --- 导出界面ViewGen的C#代码路径
 Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/View/%s/ViewGen/"
 
+
+--- 导出界面View的命名空间
+Tool.ExportViewNamespace = "Hotfix.UI.View.%s"
+
+--- 导出界面ViewGen的命名空间
+Tool.ExportViewAOTNamespace = "AOT.UI.View.%s"
+
+
 --- 获取导出View的C#代码路径
 ---@param pkgName string
 ---@return string
-function Tool:GetExportViewPath(pkgName)
+function Tool:GetExportCodePath(pkgName)
     -- 如果是Launcher包，则生成AOT目录下的绑定代码
     if tostring(pkgName) == "Launcher" then
         return self.ExportViewAOTPath
@@ -28,15 +37,26 @@ function Tool:GetExportViewPath(pkgName)
     return self.ExportViewPath
 end
 
---- 获取导出ViewGen的C#代码路径
+--- 获取导出的C#代码路径
 ---@param pkgName string
 ---@return string
-function Tool:GetExportViewGenPath(pkgName)
+function Tool:GetExportCodeGenPath(pkgName)
     -- 如果是Launcher包，则生成AOT目录下的绑定代码
     if tostring(pkgName) == "Launcher" then
         return self.ExportViewGenAOTPath
     end
     return self.ExportViewGenPath
+end
+
+--- 获取导出时的C#代码命名空间
+---@param pkgName string
+---@return string
+function Tool:GetExportCodeNamespace(pkgName)
+    -- 如果是Launcher包，则生成AOT命名空间下的绑定代码
+    if tostring(pkgName) == "Launcher" then
+        return Tool:StrFormat(self.ExportViewAOTNamespace, pkgName)
+    end
+    return Tool:StrFormat(self.ExportViewNamespace, pkgName)
 end
 
 --- 字符串格式化（封装 string.format，提供一致性调用接口）

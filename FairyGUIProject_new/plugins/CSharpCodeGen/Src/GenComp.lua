@@ -12,21 +12,23 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         return
     end
 
-    local exportGenPath = Tool:GetExportViewGenPath(pkgName) --- 导出ViewGen的C#代码路径
-    local exportPath = Tool:GetExportViewPath(pkgName)       --- 导出View的C#代码路径
+    local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
+    local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
+    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     for _, cls in ipairs(compClsArray) do
         -------------------------------------CompXxx.Gen.cs----------------------------------------
         Tool:Log("生成组件C#代码--%s", cls.resName .. ".Gen.cs")
 
-        local dir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
-        dir = dir .. "/Comp"
-        Tool:CreateDirectory(dir) -- 创建存放代码的文件夹=>.../ViewGen/Comp
+        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. "/Comp"
 
-        local path = Tool:StrFormat('%s/%s.Gen.cs', dir, cls.resName)
+        -- 创建存放代码的文件夹=>.../ViewGen/Comp
+        Tool:CreateDirectory(targetDir)
+
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, cls.resName)
         local compArray = Tool:GetCompArray(cls)
-        local templatePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompGenTemplate.txt")
-        local template = Tool:ReadTxt(templatePath) -- 读取模板代码
+        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompGenTemplate.txt")
+        local templateCodeGen = Tool:ReadTxt(templateCodeGenPath) -- 读取模板代码
 
         -- 定义模板代码中需要填充的关键字
         local dataKeys = {
@@ -56,53 +58,60 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
 
         -- 使用生成的代码替换模板代码中各个关键字
         for k, v in pairs(dataTable) do
-            template = template:gsub(k, table.concat(v))
+            templateCodeGen = templateCodeGen:gsub(k, table.concat(v))
         end
 
-        -- 替换包名，界面名
-        template = template:gsub('#COMPNAME#', cls.resName)
-        template = template:gsub('#COMPTYPE#', cls.superClassName)
+        -- 替换命名空间，包名，界面名
+        templateCodeGen = templateCodeGen:gsub('#NAMESPACE#', namespace)
+        templateCodeGen = templateCodeGen:gsub('#COMPNAME#', cls.resName)
+        templateCodeGen = templateCodeGen:gsub('#COMPTYPE#', cls.superClassName)
 
         -- 写入替换完成后的代码文件WinXxx.Gen.cs
-        Tool:WriteTxt(path, template)
+        Tool:WriteTxt(targetPath, templateCodeGen)
 
         ------------------------------------------CompXxx.cs----------------------------------------------
         Tool:Log("生成组件C#代码--%s", cls.resName .. ".cs")
 
-        dir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-        dir = dir .. "/Comp"
-        Tool:CreateDirectory(dir) -- 创建存放代码的文件夹=>.../ViewImpl/Comp
-        path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)
+        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. "/Comp"
+        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, cls.resName)
 
-        if not Tool:IsFileExists(path) then
-            local compArray1 = Tool:GetCompArray(cls)
-            local templatePath1 = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
-            local template1 = Tool:ReadTxt(templatePath1) -- 读取模板代码
-
-            -- 定义模板代码中需要填充的关键字
-            local dataKeys1 = {
-                '#HANDLER#', -- 交互事件处理函数关键子
-            }
-
-            local dataTable1 = {}
-            for _, key in ipairs(dataKeys1) do
-                dataTable1[key] = {}
-            end
-
-            -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
-            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray1, AllClsMap)
-
-            -- 使用生成的代码替换模板代码中各个关键字
-            for k, v in pairs(dataTable1) do
-                template1 = template1:gsub(k, table.concat(v))
-            end
-
-            -- 替换包名，界面名
-            template1 = template1:gsub('#COMPNAME#', cls.resName)
-            template1 = template1:gsub('#COMPTYPE#', cls.superClassName)
-            -- 写入替换完成后的代码文件WinXxx.cs
-            Tool:WriteTxt(path, template1)
+        -- 如果界面代码文件存在，则不再生成
+        if Tool:IsFileExists(targetPath) then
+            Tool:Log("界面代码文件已存在，不再生成:%s", genTargetPath)
+            return
         end
+
+        -- 创建存放代码的文件夹=>.../ViewImpl/Comp
+        Tool:CreateDirectory(targetDir)
+
+        local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
+        local templateCode = Tool:ReadTxt(templateCodePath) -- 读取模板代码
+
+        -- 定义模板代码中需要填充的关键字
+        local dataKeys1 = {
+            '#HANDLER#', -- 交互事件处理函数关键子
+        }
+
+        local dataTable1 = {}
+        for _, key in ipairs(dataKeys1) do
+            dataTable1[key] = {}
+        end
+
+        -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
+        GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
+
+        -- 使用生成的代码替换模板代码中各个关键字
+        for k, v in pairs(dataTable1) do
+            templateCode = templateCode:gsub(k, table.concat(v))
+        end
+
+        -- 替换命名空间，包名，界面名
+        templateCode = templateCode:gsub('#NAMESPACE#', namespace)
+        templateCode = templateCode:gsub('#COMPNAME#', cls.resName)
+        templateCode = templateCode:gsub('#COMPTYPE#', cls.superClassName)
+
+        -- 写入替换完成后的代码文件WinXxx.cs
+        Tool:WriteTxt(targetPath, templateCode)
     end
 end
 
