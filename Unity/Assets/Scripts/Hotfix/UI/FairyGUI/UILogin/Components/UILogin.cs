@@ -9,10 +9,9 @@ namespace Hotfix.UI
 {
     public sealed partial class UILogin : ViewBase
     {
-        public const string UIPackageName = "UILogin";
-        public const string UIResName = "UILogin";
-        public const string URL = "ui://f011l0h9nmd0c";
-
+        public override string UIName =>  "UILogin";
+        public override string PackageName =>  "UILogin";
+        
         /// <summary>
         /// {uiResName}的组件类型(GComponent、GButton、GProcessBar等)，它们都是GObject的子类。
         /// </summary>

@@ -100,7 +100,6 @@ namespace GameFrameX.UI.Runtime
 
             SerialId       = 0;
             DepthInUIGroup = 0;
-            PauseCoveredUI = true;
             OnRecycle();
         }
 

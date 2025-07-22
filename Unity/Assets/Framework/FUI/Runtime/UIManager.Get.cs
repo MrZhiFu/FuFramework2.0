@@ -87,28 +87,28 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         }
 
         /// <summary>
-        /// 获取界面。
+        /// 获取所有界面组下的该名称的界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public ViewBase[] GetUIs(string uiName)
+        public T[] GetUIs<T>(string uiName) where T : ViewBase
         {
             GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
 
-            var results = new List<ViewBase>();
+            var results = new List<T>();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetUIs(uiName));
+                results.AddRange(group.GetUIs<T>(uiName));
             }
 
             return results.ToArray();
         }
 
         /// <summary>
-        /// 获取所有界面组下的界面。
+        /// 获取所有界面组下的该类型界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
-        /// <param name="results">要获取的界面。</param>
+        /// <param name="uiName">界面名称。</param>
+        /// <param name="results">结果列表。</param>
         public void GetUIs(string uiName, List<ViewBase> results)
         {
             GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));

@@ -37,7 +37,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <typeparam name="T"></typeparam>
         public void CloseUI<T>() where T : ViewBase
         {
-            var uis = GetUIs(typeof(T).Name);
+            var uis = GetUIs<T>(typeof(T).Name);
             foreach (var ui in uis)
             {
                 CloseUI(ui);
@@ -65,7 +65,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             if (IsLoadingUI(view.SerialId))
             {
-                m_LoadingInCloseSet.Add(view.SerialId);
                 m_LoadingDict.Remove(view.SerialId);
                 return;
             }
@@ -106,7 +105,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <typeparam name="T"></typeparam>
         public void CloseUINow<T>() where T : ViewBase
         {
-            var uis = GetUIs(typeof(T).Name);
+            var uis = GetUIs<T>(typeof(T).Name);
             foreach (var ui in uis)
             {
                 CloseUINow(ui);
@@ -134,7 +133,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             if (IsLoadingUI(view.SerialId))
             {
-                m_LoadingInCloseSet.Add(view.SerialId);
                 m_LoadingDict.Remove(view.SerialId);
                 return;
             }
@@ -167,7 +165,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public void CloseAllLoadedUIs()
         {
-            ViewBase[] uis = GetAllLoadedUIs();
+            var uis = GetAllLoadedUIs();
             foreach (var ui in uis)
             {
                 if (!HasUI(ui.SerialId)) continue;
@@ -180,11 +178,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// </summary>
         public void CloseAllLoadingUIs()
         {
-            foreach (var (serialId, _) in m_LoadingDict)
-            {
-                m_LoadingInCloseSet.Add(serialId);
-            }
-
             m_LoadingDict.Clear();
         }
 

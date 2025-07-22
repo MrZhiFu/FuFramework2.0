@@ -9,9 +9,18 @@ namespace Hotfix.UI
 {
     public partial class UILogin
     {
+        #region 界面基本属性(无特殊需求，可不做修改)
+
+        //@formatter:off
+        protected override UILayer Layer => UILayer.Tip; // 界面所属的层级。
+        protected override bool IsFullScreen => true;       // 是否是全屏界面。
+        public override bool PauseCoveredUI => false;       // 显示时是否暂停被覆盖的界面。
+        //@formatter:on
+        
+        #endregion
+
         protected override void OnInit()
         {
-            Layer = UILayer.Normal;
             base.OnInit();
             OnInitUI();
         }
@@ -40,11 +49,11 @@ namespace Hotfix.UI
             // 请求登录
             var req = new ReqLogin
             {
-                SdkType  = 0,
+                SdkType = 0,
                 SdkToken = "",
                 UserName = m_UserName.text,
                 Password = m_Password.text,
-                Device   = SystemInfo.deviceUniqueIdentifier,
+                Device = SystemInfo.deviceUniqueIdentifier,
                 Platform = PathHelper.GetPlatformName
             };
 
@@ -54,10 +63,12 @@ namespace Hotfix.UI
                 Log.Error("登录失败，错误信息:" + respLogin.ErrorCode);
                 return;
             }
-            
+
             // 获取角色列表
             var reqPlayerList = new ReqPlayerList { Id = respLogin.Id };
-            var respPlayerList = await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
+            var respPlayerList =
+                await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+                    reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
                 Log.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);

@@ -14,10 +14,9 @@ namespace Unity.Startup
 {
     public sealed partial class UILauncher : ViewBase
     {
-        public const string UIPackageName = "UILauncher";
-        public const string UIResName = "UILauncher";
-        public const string URL = "ui://u7deosq0mw8e0";
-
+	    public override string UIName =>  "UILauncher";
+	    public override string PackageName =>  "UILauncher";
+	    
         /// <summary>
         /// {uiResName}的组件类型(GComponent、GButton、GProcessBar等)，它们都是GObject的子类。
         /// </summary>

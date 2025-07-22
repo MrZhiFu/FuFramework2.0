@@ -23,7 +23,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
     public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager>
     {
         private Dictionary<int, string> m_LoadingDict;       // 正在加载中的界面字典, key为界面Id, value为界面名称
-        private HashSet<int>            m_LoadingInCloseSet; // 正在加载中被关闭的界面集合，int为界面Id，防止在打开界面时重复创建界面实例对象
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
 
         private ObjectPoolComponent m_ObjectPoolManager;     // 对象池管理器
@@ -51,7 +50,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         {
             m_UIGroupDict       = new Dictionary<UILayer, UIGroup>();
             m_LoadingDict       = new Dictionary<int, string>();
-            m_LoadingInCloseSet = new HashSet<int>();
             m_WaitRecycleQueue  = new Queue<ViewBase>();
 
             m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
@@ -138,7 +136,6 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             m_IsShutdown = true;
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
-            m_LoadingInCloseSet.Clear();
             m_WaitRecycleQueue.Clear();
         }
     }

@@ -22,16 +22,6 @@ namespace GameFrameX.UI.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 界面名称。
-        /// </summary>
-        public string UIName { get; private set; }
-
-        /// <summary>
-        /// 界面资源包名称。
-        /// </summary>
-        public string PackageName { get; private set; }
-
-        /// <summary>
         /// UI显示对象
         /// </summary>
         public GComponent UIView { get; private set; }
@@ -49,17 +39,27 @@ namespace GameFrameX.UI.Runtime
         /// <summary>
         /// 显示时是否暂停被覆盖的界面。
         /// </summary>
-        public virtual bool PauseCoveredUI { get; protected set; } = false;
+        public virtual bool PauseCoveredUI => false;
+
+        /// <summary>
+        /// 界面名称。
+        /// </summary>
+        public virtual string UIName => "";
+
+        /// <summary>
+        /// 界面资源包名称。
+        /// </summary>
+        public virtual string PackageName => "";
 
         /// <summary>
         /// 是否是全屏界面。
         /// </summary>
-        protected virtual bool IsFullScreen { get; set; } = true;
+        protected virtual bool IsFullScreen => true;
 
         /// <summary>
-        /// 获取界面所属的层级。
+        /// 界面所属的层级。
         /// </summary>
-        protected UILayer Layer = UILayer.Normal;
+        protected virtual UILayer Layer => UILayer.Normal;
 
         /// <summary>
         /// 获取界面所属的界面组。
@@ -87,12 +87,10 @@ namespace GameFrameX.UI.Runtime
         /// 初始化界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="packageName">界面资源包名称。</param>
-        /// <param name="uiName">界面资源名称。</param>
         /// <param name="uiView">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, string packageName, string uiName, GComponent uiView, bool isNewInstance, object userData)
+        public void Init(int serialId, GComponent uiView, bool isNewInstance, object userData = null)
         {
             SerialId = serialId;
             UserData = userData;
@@ -101,8 +99,6 @@ namespace GameFrameX.UI.Runtime
             if (m_IsInit) return;
 
             m_IsInit       = true;
-            PackageName    = packageName;
-            UIName         = uiName;
             DepthInUIGroup = 0;
 
             if (!isNewInstance) return;
