@@ -8,18 +8,18 @@ local GenComp = {}
 ---@param AllClsMap table 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
 ---@param unityDataPath string Unity工程路径 “xxx/Assets”
 function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
-    for _, cls in ipairs(compClsArray) do
+    if not compClsArray or #compClsArray == 0 then
+        return
+    end
 
+    local exportGenPath = Tool:GetExportViewGenPath(pkgName) --- 导出ViewGen的C#代码路径
+    local exportPath = Tool:GetExportViewPath(pkgName)       --- 导出View的C#代码路径
+
+    for _, cls in ipairs(compClsArray) do
         -------------------------------------CompXxx.Gen.cs----------------------------------------
-        fprintf("生成组件的C#代码--%s", cls.resName .. ".Gen.cs")
-        
-        -- 如果是UILauncher界面，则生成AOT模式的组件代码
-        local tempPath = Tool.ExportViewGenPath
-        if pkaName == "Launcher" then
-            tempPath = Tool.ExportViewGenAOTPath
-        end
-        
-        local dir = Tool:StrFormat(tempPath, unityDataPath, pkgName)
+        Tool:Log("生成组件C#代码--%s", cls.resName .. ".Gen.cs")
+
+        local dir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
         dir = dir .. "/Comp"
         Tool:CreateDirectory(dir) -- 创建存放代码的文件夹=>.../ViewGen/Comp
 
@@ -67,25 +67,19 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         Tool:WriteTxt(path, template)
 
         ------------------------------------------CompXxx.cs----------------------------------------------
-        fprintf("生成组件的C#代码--%s", cls.resName .. ".cs")
+        Tool:Log("生成组件C#代码--%s", cls.resName .. ".cs")
 
-        -- 如果是UILauncher界面，则生成AOT模式的组件代码
-        local tempPath1 = Tool.ExportViewPath
-        if pkaName == "Launcher" then
-            tempPath1 = Tool.ExportViewAOTPath
-        end
-        
-        dir = Tool:StrFormat(tempPath1, unityDataPath, pkgName)
+        dir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
         dir = dir .. "/Comp"
         Tool:CreateDirectory(dir) -- 创建存放代码的文件夹=>.../ViewImpl/Comp
         path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)
 
         if not Tool:IsFileExists(path) then
             local compArray1 = Tool:GetCompArray(cls)
-
             local templatePath1 = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
             local template1 = Tool:ReadTxt(templatePath1) -- 读取模板代码
 
+            -- 定义模板代码中需要填充的关键字
             local dataKeys1 = {
                 '#HANDLER#', -- 交互事件处理函数关键子
             }
@@ -95,7 +89,7 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
                 dataTable1[key] = {}
             end
 
-            -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
+            -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
             GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray1, AllClsMap)
 
             -- 使用生成的代码替换模板代码中各个关键字

@@ -1,6 +1,12 @@
 ---@type CS.FairyEditor.App
 App = App
 
+------------------- FUI发布时调试lua代码, 可以使用Rider的EmmyLua插件进行调试-----------------
+package.cpath = package.cpath .. ';C:/Users/PC/AppData/Roaming/JetBrains/Rider2024.3/plugins/EmmyLua/debugger/emmy/windows/x64/?.dll'
+local dbg = require('emmy_core')
+dbg.tcpListen('localhost', 9966)
+----------------------------------------------------------------------------------------
+
 ---@type GenReady
 GenReady = require(PluginPath..'/Src/GenReady')
 
@@ -15,7 +21,6 @@ GenBinder = require(PluginPath..'/Src/GenBinder')
 
 ---@param handler CS.FairyEditor.PublishHandler
 function onPublish(handler)
-
     --- 初始化
     --- 1.加载Tool工具对象，并为Tool指定FGUI发布处理器对象与该插件路径
     --- 2.加载GenCommon生成时的通用功能对象
@@ -33,7 +38,7 @@ function onPublish(handler)
         return
     end
 
-    fprintf("开始生成......")
+    Tool:Log("---------------------开始生成（%s）包下的C#代码---------------------", handler.pkg.name)
     
     --- 获得所有界面数组，组件数组，所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
     local winClsArray, compClsArray, AllClsMap = GenReady:GetClsArray(handler)

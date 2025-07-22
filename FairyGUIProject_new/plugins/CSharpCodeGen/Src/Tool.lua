@@ -17,6 +17,28 @@ Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/View/%s/ViewImpl"
 --- 导出界面ViewGen的C#代码路径
 Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/View/%s/ViewGen/"
 
+--- 获取导出View的C#代码路径
+---@param pkgName string
+---@return string
+function Tool:GetExportViewPath(pkgName)
+    -- 如果是Launcher包，则生成AOT目录下的绑定代码
+    if tostring(pkgName) == "Launcher" then
+        return self.ExportViewAOTPath
+    end
+    return self.ExportViewPath
+end
+
+--- 获取导出ViewGen的C#代码路径
+---@param pkgName string
+---@return string
+function Tool:GetExportViewGenPath(pkgName)
+    -- 如果是Launcher包，则生成AOT目录下的绑定代码
+    if tostring(pkgName) == "Launcher" then
+        return self.ExportViewGenAOTPath
+    end
+    return self.ExportViewGenPath
+end
+
 --- 字符串格式化（封装 string.format，提供一致性调用接口）
 ---@param str string 格式字符串（参考 string.format）
 ---@param ... any 可变参数，用于填充格式字符串

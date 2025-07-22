@@ -8,18 +8,18 @@ local GenWin = {}
 ---@param AllClsMap talbe 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
 ---@param unityDataPath string Unity工程路径 “xxx/Assets”
 function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
-    for _, cls in ipairs(winClsArray) do
+    if not winClsArray or #winClsArray == 0 then
+        return
+    end
 
+    local exportGenPath = Tool:GetExportViewGenPath(pkgName) --- 导出ViewGen的C#代码路径
+    local exportPath = Tool:GetExportViewPath(pkgName)       --- 导出View的C#代码路径
+
+    for _, cls in ipairs(winClsArray) do
         -------------------------------------WinXxx.Gen.cs----------------------------------------
-        fprintf("生成包%s下界面C#代码-%s.Gen.cs", pkgName, cls.resName)
-        
-        -- 如果是UILauncher界面，则生成AOT模式的绑定代码
-        local tempPath = Tool.ExportViewGenPath
-        if pkaName == "Launcher" then
-            tempPath = Tool.ExportViewGenAOTPath
-        end
-        
-        local dir = Tool:StrFormat(tempPath, unityDataPath, pkgName)
+        Tool:Log("生成界面C#代码-%s.Gen.cs", cls.resName)
+
+        local dir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewGen
 
         local path = Tool:StrFormat('%s/%s.Gen.cs', dir, cls.resName)
@@ -66,15 +66,9 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         Tool:WriteTxt(path, template)
 
         -------------------------------------WinXxx.cs----------------------------------------
-        fprintf("生成包%s下界面C#代码-%s.cs", pkgName, cls.resName)
-        
-        -- 如果是UILauncher界面，则生成AOT模式的界面代码
-        local tempPath1 = Tool.ExportViewPath
-        if pkaName == "Launcher" then
-            tempPath1 = Tool.ExportViewAOTPath
-        end
-        
-        dir = Tool:StrFormat(tempPath1, unityDataPath, pkgName)
+        Tool:Log("生成界面C#代码-%s.cs", cls.resName)
+
+        dir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
         Tool:CreateDirectory(dir)-- 创建存放代码的文件夹=>.../ViewImpl
 
         path = Tool:StrFormat('%s/%s.cs', dir, cls.resName)

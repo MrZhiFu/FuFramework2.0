@@ -2,36 +2,32 @@
 ---@class GenCommon
 local GenCommon = {}
 
---- 全局格式化输出函数
-fprintf = function(fmt, ...)
-    fprint(string.format(fmt, ...))
-end
-
 --- 生成组件的定义代码：private GButton btnEnter;
 function GenCommon:GenCompDefine(dataTable, compArray, AllClsMap)
-    fprintf("生成组件的C#代码")
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
-            if Tool:StartWith(comp.comp.name, "_") then
-                local comType = Tool:GetCompType(comp.comp, AllClsMap)
-                local paramName = Tool:FormatVarName(comp.comp.name)
-                local comDef = string.format("\t\tprivate %s %s;\n", comType, paramName)
-                table.insert(dataTable, comDef)
-            end
+    if #compArray <= 0 then
+        return
+    end
+
+    Tool:Log("生成组件的定义代码")
+    for _, comp in ipairs(compArray) do
+        if Tool:StartWith(comp.comp.name, "_") then
+            local comType = Tool:GetCompType(comp.comp, AllClsMap)
+            local paramName = Tool:FormatVarName(comp.comp.name)
+            local comDef = string.format("\t\tprivate %s %s;\n", comType, paramName)
+            table.insert(dataTable, comDef)
         end
     end
 end
 
 --- 生成自定义组件的URL代码：public const string URL = "ui://mkasn9e4jo110";
 function GenCommon:GenCompURL(dataTable, compCls)
-    fprintf("生成组件的URL的C#代码")
+    Tool:Log("生成组件的URL的C#代码")
     local url = string.format("\t\tpublic const string URL = \"ui://%s%s\";\n\n", compCls.res.owner.id, compCls.resId)
     table.insert(dataTable, url)
 end
 
 --- 生成动效的定义代码：private Transition xxxAnim;
 function GenCommon:GenTransitionDefine(dataTable, compCls)
-    fprintf("生成动效的C#代码")
     local handler = Tool:Handler()
 
     ---@type CS.FairyGUI.Utils.XML
@@ -39,20 +35,22 @@ function GenCommon:GenTransitionDefine(dataTable, compCls)
 
     ---@type CS.FairyGUI.Utils.XMLList
     local transitionList = desc:Elements("transition")
-    local transitionCnt = transitionList.Count
-    if transitionCnt > 0 then
-        for i = 1, transitionCnt do
-            ---@type CS.FairyGUI.Utils.XML
-            local transition = transitionList[i - 1]
+    if transitionList.Count <= 0 then
+        return
+    end
 
-            local transitionName = transition:GetAttribute("name")
-            transitionName = transitionName:gsub("^_", "")
-            table.insert(dataTable, string.format("\t\tprivate Transition %s;\n", transitionName .. 'Anim'))
-        end
+    Tool:Log("生成动效的定义C#代码")
+    for i = 1, transitionList.Count do
+        ---@type CS.FairyGUI.Utils.XML
+        local transition = transitionList[i - 1]
+
+        local transitionName = transition:GetAttribute("name")
+        transitionName = transitionName:gsub("^_", "")
+        table.insert(dataTable, string.format("\t\tprivate Transition %s;\n", transitionName .. 'Anim'))
     end
 end
 
---- 生成控制器的定义代码和枚举定义
+--- 生成控制器的定义代码和枚举定义，以及使用枚举的SetController函数C#代码：
 --- @param dataTable table 需要填充的内容
 --- @param compCls table
 function GenCommon:GenControllerDefine(dataTable, compCls)
@@ -63,90 +61,104 @@ function GenCommon:GenControllerDefine(dataTable, compCls)
 
     ---@type CS.FairyGUI.Utils.XMLList
     local controllerList = desc:Elements("controller")
-    local controllerCnt = controllerList.Count
+    if controllerList.Count <= 0 then
+        return
+    end
 
-    if controllerCnt > 0 then
-        local nameList = {}
-        for i = 1, controllerCnt do
-            ---@type CS.FairyGUI.Utils.XML
-            local controller = controllerList[i - 1]
+    Tool:Log("生成控制器的定义代码和枚举定义C#代码")
 
-            local controllerName = controller:GetAttribute("name")
-            table.insert(nameList, controllerName)
+    local nameList = {}
+    for i = 1, controllerList.Count do
+        ---@type CS.FairyGUI.Utils.XML
+        local controller = controllerList[i - 1]
 
-            ------------生成控制器对应的枚举定义-------------------
-            ------ 如：enum ECtrlSelected
-            ------       {
-            ------            No = 0,
-            ------            Yes = 1,
-            ------       }
-            table.insert(dataTable, "\t\tprivate enum E")
-            table.insert(dataTable, controllerName)
-            table.insert(dataTable, "\n\t\t{\n")
+        local controllerName = controller:GetAttribute("name")
+        table.insert(nameList, controllerName)
 
-            local pages = controller:GetAttribute("pages")
-            if pages then
-                local valArray = Tool:StrSplit(pages, ",")
-                for t = 1, #valArray, 2 do
-                    local idx = valArray[t]
-                    local value = valArray[t + 1]
+        ------------生成控制器对应的枚举定义-------------------
+        ------ 如：enum ECtrlSelected
+        ------       {
+        ------            No = 0,
+        ------            Yes = 1,
+        ------       }
+        table.insert(dataTable, "\t\tprivate enum E")
+        table.insert(dataTable, controllerName)
+        table.insert(dataTable, "\n\t\t{\n")
 
-                    if value == "" then
-                        value = ("N" .. idx)
-                    end
+        local pages = controller:GetAttribute("pages")
+        if pages then
+            local valArray = Tool:StrSplit(pages, ",")
+            for t = 1, #valArray, 2 do
+                local idx = valArray[t]
+                local value = valArray[t + 1]
 
-                    table.insert(dataTable, "\t\t\t")
-                    local keyName = Tool:FirstCharUpper(value)
-                    table.insert(dataTable, keyName)
-                    table.insert(dataTable, " = ")
-                    table.insert(dataTable, idx)
-                    table.insert(dataTable, ",\n")
+                if value == "" then
+                    value = ("N" .. idx)
                 end
-            end
-            table.insert(dataTable, "\t\t}\n\n")
-        end
 
-        ------------生成控制器的定义-------------------
-        ---如：private Controller CtrlSelected
-        for _, name in ipairs(nameList) do
-            table.insert(dataTable, string.format("\t\tprivate Controller %s;\n", name))
+                table.insert(dataTable, "\t\t\t")
+                local keyName = Tool:FirstCharUpper(value)
+                table.insert(dataTable, keyName)
+                table.insert(dataTable, " = ")
+                table.insert(dataTable, idx)
+                table.insert(dataTable, ",\n")
+            end
         end
+        table.insert(dataTable, "\t\t}\n\n")
+
+        ------------生成控制器的SetController函数----------------
+        --- 如：private void SetController(ETestCtrl eTestCtrl) => CtrlSelected.SetSelectedIndex((int) eTestCtrl);
+        table.insert(dataTable, Tool:StrFormat("\t\tprivate void SetController(E%s e%s) => ", controllerName, controllerName))
+        table.insert(dataTable, Tool:StrFormat("%s.SetSelectedIndex((int) e%s);\n", controllerName, controllerName))
+        table.insert(dataTable, "\n")
+    end
+
+    ------------生成控制器的定义-------------------
+    ---如：private Controller CtrlSelected
+    for _, name in ipairs(nameList) do
+        table.insert(dataTable, string.format("\t\tprivate Controller %s;\n", name))
     end
 end
 
---- 生成组件的初始化赋值代码：_btnEnter = (btn_Enter)GetChild("_btnEnter");
+--- 生成组件的初始化赋值C#代码：_btnEnter = (btn_Enter)GetChild("_btnEnter");
 function GenCommon:GenCompInit(dataTable, compArray, AllClsMap)
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
-            if Tool:StartWith(comp.comp.name, "_") and comp.comp.type ~= "Controller" and comp.comp.type ~= "Transition" then
-                local comType = Tool:GetCompType(comp.comp, AllClsMap)
-                local paramName = Tool:FormatVarName(comp.comp.name)
-                local comDef = string.format("\t\t\t%s = (%s)GetChild(\"%s\");\n", paramName, comType, comp.comp.name)
-                table.insert(dataTable, comDef)
-            end
-        end
+    if #compArray <= 0 then
+        return
     end
-end
 
---- 生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的
-function GenCommon:GenCustomCompInit(dataTable, compArray, AllClsMap, isComp)
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
+    Tool:Log("生成组件的初始化赋值C#代码")
+    for _, comp in ipairs(compArray) do
+        if Tool:StartWith(comp.comp.name, "_") and comp.comp.type ~= "Controller" and comp.comp.type ~= "Transition" then
             local comType = Tool:GetCompType(comp.comp, AllClsMap)
             local paramName = Tool:FormatVarName(comp.comp.name)
-            if Tool:StartWith(comType, "Comp") then
-                local comDef = string.format("\t\t\t%s.Init(this);", paramName)
-                if isComp then
-                    -- 如果是自定义组件里面的自定义组件，传递uiView到Init方法中
-                    comDef = string.format("\t\t\t%s.Init(this.uiView);", paramName)
-                end
-                table.insert(dataTable, comDef)
-            end
+            local comDef = string.format("\t\t\t%s = (%s)GetChild(\"%s\");\n", paramName, comType, comp.comp.name)
+            table.insert(dataTable, comDef)
         end
     end
 end
 
---- 生成动效的初始化赋值代码：testAnim = UIView.GetTransition("TestAnim");
+--- 生成自定义组件的初始化Init函数C#代码：compXXX.Init(this)，注入该组件所属的界面
+function GenCommon:GenCustomCompInit(dataTable, compArray, AllClsMap, isComp)
+    if #compArray <= 0 then
+        return
+    end
+
+    Tool:Log("生成自定义组件的初始化Init函数C#代码")
+    for _, comp in ipairs(compArray) do
+        local comType = Tool:GetCompType(comp.comp, AllClsMap)
+        local paramName = Tool:FormatVarName(comp.comp.name)
+        if Tool:StartWith(comType, "Comp") then
+            local comDef = string.format("\t\t\t%s.Init(this);", paramName)
+            if isComp then
+                -- 如果是自定义组件里面的自定义组件，传递uiView到Init方法中
+                comDef = string.format("\t\t\t%s.Init(this.uiView);", paramName)
+            end
+            table.insert(dataTable, comDef)
+        end
+    end
+end
+
+--- 生成动效的初始化赋值C#代码：testAnim = UIView.GetTransition("TestAnim");
 function GenCommon:GenTransitionInit(dataTable, compCls)
     local handler = Tool:Handler()
 
@@ -155,29 +167,32 @@ function GenCommon:GenTransitionInit(dataTable, compCls)
 
     ---@type CS.FairyGUI.Utils.XMLList
     local transitionList = desc:Elements("transition")
-    local transitionCnt = transitionList.Count
-    if transitionCnt > 0 then
-        for i = 1, transitionCnt do
-            ---@type CS.FairyGUI.Utils.XML
-            local transition = transitionList[i - 1]
-            ---@type string
-            local transitionName = transition:GetAttribute("name")
-            transitionName = transitionName:gsub("^_", "")
+    if transitionList.Count <= 0 then
+        return
+    end
 
-            table.insert(dataTable, "\t\t\t")
-            table.insert(dataTable, transitionName .. 'Anim')
-            table.insert(dataTable, " = ")
+    Tool:Log("生成动效的初始化赋值C#代码")
+    for i = 1, transitionList.Count do
+        ---@type CS.FairyGUI.Utils.XML
+        local transition = transitionList[i - 1]
 
-            if Tool:StartWith(compCls.resName, "Win") then
-                table.insert(dataTable, "UIView.")
-            end
+        ---@type string
+        local transitionName = transition:GetAttribute("name")
+        transitionName = transitionName:gsub("^_", "")
 
-            table.insert(dataTable, string.format("GetTransition(\"%s\");\n", transitionName))
+        table.insert(dataTable, "\t\t\t")
+        table.insert(dataTable, transitionName .. 'Anim')
+        table.insert(dataTable, " = ")
+
+        if Tool:StartWith(compCls.resName, "Win") then
+            table.insert(dataTable, "UIView.")
         end
+
+        table.insert(dataTable, string.format("GetTransition(\"%s\");\n", transitionName))
     end
 end
 
---- 生成控制器的初始化赋值代码：testCtrl = UIView.GetController("TestCtrl");
+--- 生成控制器的初始化赋值C#代码：testCtrl = UIView.GetController("TestCtrl");
 function GenCommon:GenControllerInit(dataTable, compCls)
     local handler = Tool:Handler()
 
@@ -186,104 +201,115 @@ function GenCommon:GenControllerInit(dataTable, compCls)
 
     ---@type CS.FairyGUI.Utils.XMLList
     local controllerList = desc:Elements("controller")
-    local controllerCnt = controllerList.Count
-    if controllerCnt > 0 then
-        local nameList = {}
-        for i = 1, controllerCnt do
-            ---@type CS.FairyGUI.Utils.XML
-            local controller = controllerList[i - 1]
-            local controllerName = controller:GetAttribute("name")
+    if controllerList.Count <= 0 then
+        return
+    end
 
-            table.insert(dataTable, "\t\t\t")
-            table.insert(dataTable, controllerName)
-            table.insert(dataTable, " = ")
+    Tool:Log("生成控制器的初始化赋值C#代码")
+    for i = 1, controllerList.Count do
+        ---@type CS.FairyGUI.Utils.XML
+        local controller = controllerList[i - 1]
+        local controllerName = controller:GetAttribute("name")
 
-            if Tool:StartWith(compCls.resName, "Win") then
-                table.insert(dataTable, "UIView.")
-            end
+        table.insert(dataTable, "\t\t\t")
+        table.insert(dataTable, controllerName)
+        table.insert(dataTable, " = ")
 
-            table.insert(dataTable, string.format("GetController(\"%s\");\n", controllerName))
+        if Tool:StartWith(compCls.resName, "Win") then
+            table.insert(dataTable, "UIView.")
         end
+
+        table.insert(dataTable, string.format("GetController(\"%s\");\n", controllerName))
     end
 end
 
---- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
+--- 生成GList组件Item的渲染回调函数赋值C#代码：listPlayer.itemRenderer = OnShowListPlayerItem;
 function GenCommon:GenCompListOnRender(dataTable, compArray, AllClsMap)
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
-            if Tool:StartWith(comp.comp.name, "_") then
-                local comType = Tool:GetCompType(comp.comp, AllClsMap)
-                if comType == "GList" then
-                    local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
-                    table.insert(dataTable, "\t\t\t")
-                    table.insert(dataTable, Tool:FormatVarName(comp.comp.name))
-                    table.insert(dataTable, ".itemRenderer = OnRender")
-                    table.insert(dataTable, upName)
-                    table.insert(dataTable, "Item;\n")
-                end
-            end
-        end
+    if #compArray <= 0 then
+        return
     end
-end
 
---- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
-function GenCommon:GenCompEvent(dataTable, compArray, AllClsMap)
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
-            local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
-            local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
-            for i, v in pairs(uiEventsNameArray) do
+    Tool:Log("生成GList组件Item的渲染回调函数赋值C#代码")
+    for _, comp in ipairs(compArray) do
+        if Tool:StartWith(comp.comp.name, "_") then
+            local comType = Tool:GetCompType(comp.comp, AllClsMap)
+            if comType == "GList" then
+                local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
                 table.insert(dataTable, "\t\t\t")
-                table.insert(dataTable, "AddUIListener(")
                 table.insert(dataTable, Tool:FormatVarName(comp.comp.name))
-                table.insert(dataTable, ".")
-                table.insert(dataTable, v.eventName)
-                table.insert(dataTable, ", ")
-                table.insert(dataTable, string.format(v.cbNamePattern, upName))
-                table.insert(dataTable, ");\n")
+                table.insert(dataTable, ".itemRenderer = OnRender")
+                table.insert(dataTable, upName)
+                table.insert(dataTable, "Item;\n")
             end
         end
     end
 end
 
---- 生成组件的交互事件处理函数代码:private void OnBtnEnterClick(EventContext ctx){ }。
+--- 生成组件的交互事件添加监听C#代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
+function GenCommon:GenCompEvent(dataTable, compArray, AllClsMap)
+    if #compArray <= 0 then
+        return
+    end
+
+    Tool:Log("生成组件的交互事件添加监听C#代码")
+    for _, comp in ipairs(compArray) do
+        local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
+        local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
+        for i, v in pairs(uiEventsNameArray) do
+            table.insert(dataTable, "\t\t\t")
+            table.insert(dataTable, "AddUIListener(")
+            table.insert(dataTable, Tool:FormatVarName(comp.comp.name))
+            table.insert(dataTable, ".")
+            table.insert(dataTable, v.eventName)
+            table.insert(dataTable, ", ")
+            table.insert(dataTable, string.format(v.cbNamePattern, upName))
+            table.insert(dataTable, ");\n")
+        end
+    end
+end
+
+--- 生成组件的交互事件处理函数C#代码:private void OnBtnEnterClick(EventContext ctx){ }。
 -- list组件特殊处理，需要生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){ } 
 function GenCommon:GenCompEventHandler(dataTable, compArray, AllClsMap)
-    if #compArray > 0 then
-        for _, comp in ipairs(compArray) do
-            local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
-            local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
+    if #compArray <= 0 then
+        return
+    end
 
-            for i, v in pairs(uiEventsNameArray) do
-                table.insert(dataTable, "\t\tprivate void ")
-                table.insert(dataTable, string.format(v.cbNamePattern, upName))
-                table.insert(dataTable, "(")
+    Tool:Log("生成组件的交互事件处理函数C#代码")
 
-                for _, arg in ipairs(v.args) do
-                    table.insert(dataTable, string.format("%s %s", arg.argType, arg.argName))
-                end
+    for _, comp in ipairs(compArray) do
+        local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
+        local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
 
-                table.insert(dataTable, ")\n")
-                table.insert(dataTable, "\t\t{\n")
+        for i, v in pairs(uiEventsNameArray) do
+            table.insert(dataTable, "\t\tprivate void ")
+            table.insert(dataTable, string.format(v.cbNamePattern, upName))
+            table.insert(dataTable, "(")
 
-                if v.defaultContent then
-                    table.insert(dataTable, v.defaultContent)
-                end
-                table.insert(dataTable, "\t\t\t// todo\n")
-                table.insert(dataTable, "\t\t}\n\n")
+            for _, arg in ipairs(v.args) do
+                table.insert(dataTable, string.format("%s %s", arg.argType, arg.argName))
             end
 
-            -- 生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){} 
-            if comp.comp.type == "GList" then
-                GenCommon:GenListOnRenderHandler(dataTable, comp.resName, upName)
+            table.insert(dataTable, ")\n")
+            table.insert(dataTable, "\t\t{\n")
+
+            if v.defaultContent then
+                table.insert(dataTable, v.defaultContent)
             end
+            table.insert(dataTable, "\t\t\t// todo\n")
+            table.insert(dataTable, "\t\t}\n\n")
+        end
+
+        -- 生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){} 
+        if comp.comp.type == "GList" then
+            GenCommon:GenListOnRenderHandler(dataTable, comp.resName, upName)
         end
     end
 end
 
 --- 生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){}
 function GenCommon:GenListOnRenderHandler(dataTable, resName, upName)
-    fprintf("生成渲染GList组件<%s>的Item处理函数-%s", resName, "OnRender" .. upName .. "Item")
+    Tool:Log("生成渲染GList组件<%s>的Item处理函数-%s", resName, "OnRender" .. upName .. "Item")
     table.insert(dataTable, "\t\tprivate void OnRender")
     table.insert(dataTable, upName)
     table.insert(dataTable, "Item(int idx, GObject item)\n")
@@ -315,7 +341,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
             },
         })
 
-    -- 复选框
+        -- 复选框
     elseif type == "GComboBox" then
         table.insert(uiEventsNameArray, {
             eventName = "onChanged",
@@ -328,7 +354,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
             },
         })
 
-    -- 输入框
+        -- 输入框
     elseif type == "GTextInput" then
         table.insert(uiEventsNameArray, {
             eventName = "onChanged",
@@ -351,7 +377,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
             },
         })
 
-    -- 按钮
+        -- 按钮
     elseif type == "GButton" then
         table.insert(uiEventsNameArray, {
             eventName = "onClick",
@@ -363,8 +389,8 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
                 }
             },
         })
-       
-    -- 列表
+
+        -- 列表
     elseif type == "GList" then
         local dataTable = {}
 

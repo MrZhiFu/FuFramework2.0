@@ -8,10 +8,9 @@ local GenReady = {}
 ---@param handler CS.FairyEditor.PublishHandler FGUI发布处理器对象
 ---@param pluginPath string 该插件路径
 function GenReady:Init(handler, pluginPath)
-    fprintf("初始化...")
     ---@type Tool
     Tool = require(pluginPath .. '/Src/Tool')
-
+    Tool:Log("导出插件初始化...")
     Tool:SetHandler(handler)
     Tool:SetPluginPath(pluginPath)
 
@@ -28,7 +27,7 @@ function GenReady:IsExportPathOK()
 
     local _, idx = Tool:StrFind(exportPath, "Assets")
     if not idx then
-        Tool:Log('Need Set Res Publish Path To Unity/Assets/Game/Res/Bundle/UI')
+        Tool:Log('路径不在Assets目录下')
         return false
     end
 
@@ -36,7 +35,7 @@ function GenReady:IsExportPathOK()
 end
 
 --- 获得Unity工程目录 “xxx/Assets”
----@param handler CS.FairyEditor.PublishHandler FGUI发布处理器对象
+---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
 ---@return string
 function GenReady:GetUnityDataPath(handler)
     local exportCodePath = handler.exportCodePath
@@ -44,7 +43,7 @@ function GenReady:GetUnityDataPath(handler)
 
     local _, idx = Tool:StrFind(exportCodePath, "Assets")
     if not idx then
-        Tool:Log('Need Set Res Publish Code Path To Client/Assets/Game/Scripts/Runtime/Logics/UI/Gen')
+        Tool:Log('路径不在Assets目录下')
         return
     end
 
@@ -56,7 +55,7 @@ function GenReady:GetUnityDataPath(handler)
 end
 
 --- 获得所有界面数组和组件数组
----@param handler CS.FairyEditor.PublishHandler FGUI发布处理器对象
+---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
 ---@return CS.FairyEditor.PublishHandler.ClassInfo[] 界面数组, CS.FairyEditor.PublishHandler.ClassInfo[] 组件数组, table 所有类型的Map-包括所有界面与组件--key-资源名称，value-资源对应的界面或组件
 function GenReady:GetClsArray(handler)
     local winClsArray = {}
@@ -70,10 +69,7 @@ function GenReady:GetClsArray(handler)
     --- 获得所有导出的界面和有引用的组件
     ---@type CS.FairyEditor.PublishHandler.ClassInfo[]
     local classes = handler:CollectClasses(settings.ignoreNoname, settings.ignoreNoname, nil)
-
-    local classCnt = classes.Count
-
-    for i = 1, classCnt do
+    for i = 1, classes.Count do
         local clsInfo = classes[i - 1]
         AllClsMap[clsInfo.resName] = clsInfo
         if Tool:StrFind(clsInfo.resName, 'Win') == 1 then
