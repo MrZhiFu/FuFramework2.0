@@ -11,20 +11,17 @@ Tool.ExportViewAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewImpl"
 --- 导出界面View的C#代码路径
 Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/View/%s/ViewImpl"
 
-
 --- 导出界面ViewGen的C#代码AOT路径
 Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewGen/"
 
 --- 导出界面ViewGen的C#代码路径
 Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/View/%s/ViewGen/"
 
-
 --- 导出界面View的命名空间
 Tool.ExportViewNamespace = "Hotfix.UI.View.%s"
 
 --- 导出界面ViewGen的命名空间
 Tool.ExportViewAOTNamespace = "AOT.UI.View.%s"
-
 
 --- 获取导出View的C#代码路径
 ---@param pkgName string
@@ -223,70 +220,63 @@ function Tool:IsExportedComp(member)
     return Tool:StrFind(member.name, '_') == 1
 end
 
---- 获取窗口中指定列表组件（List）引用的默认项资源
+--- 获取组件中指定列表组件(List)引用的默认项资源
 ---@param winCls CS.FairyEditor.PublishHandler.ClassInfo 窗口类信息
 ---@param member CS.FairyEditor.PublishHandler.MemberInfo 成员信息（列表组件）
 ---@return CS.FairyEditor.FPackageItem|nil 列表引用的默认资源项
 function Tool:GetListRefRes(winCls, member)
-    -- 1. 获取发布处理器实例
     local handler = Tool:Handler()
-    self:Log("[GetListRefRes] 获取发布处理器实例", "DEBUG")
 
-    -- 2. 获取窗口类的XML结构描述文件
+    -- 1. 获取窗口类的XML结构描述文件
     ---@type CS.FairyGUI.Utils.XML
     local desc = handler:GetItemDesc(winCls.res)
-    self:Log(string.format("[GetListRefRes] 加载资源描述XML，资源ID: %s", winCls.res.id), "INFO")
+    self:Log("[GetListRefRes] 加载资源描述XML，资源: %s", winCls.res)
 
-    -- 3. 获取显示列表节点
+    -- 2. 获取显示列表节点
     local displayList = desc:GetNode("displayList")
     if not displayList then
-        self:Log("[GetListRefRes] 未找到displayList节点", "WARNING")
+        self:Log("[GetListRefRes] 未找到displayList节点")
         return nil
     end
-    self:Log(string.format("[GetListRefRes] displayList节点包含 %d 个子元素", displayList.elements.Count), "DEBUG")
+    self:Log("[GetListRefRes] displayList节点包含 %d 个子元素", displayList.elements.Count)
 
-    -- 4. 遍历列表所有显示元素
+    -- 3. 遍历列表所有显示元素
     local cnt = displayList.elements.Count
     for i = 1, cnt do
         -- C#集合索引从0开始，需要-1
         ---@type CS.FairyGUI.Utils.XML
         local element = displayList.elements[i - 1]
         local elementName = element:GetAttribute("name") or ""
-        self:Log(string.format("[GetListRefRes] 检查元素[%d/%d]: %s", i, cnt, elementName), "TRACE")
+        self:Log("[GetListRefRes] 检查元素[%d/%d]: %s", i, cnt, elementName)
 
-        -- 5. 匹配目标组件
+        -- 3.1. 匹配目标组件
         if elementName == member.name then
-            self:Log(string.format("[GetListRefRes] 找到匹配列表组件: %s", member.name), "SUCCESS")
+            self:Log("[GetListRefRes] 找到匹配列表组件: %s", member.name)
 
-            -- 6. 获取列表默认项资源ID
+            -- 3.2. 获取列表默认项资源ID
             local defaultItemId = element:GetAttribute("defaultItem")
             if not defaultItemId then
-                self:Log("[GetListRefRes] 该列表组件未设置defaultItem属性", "WARNING")
+                self:Log("[GetListRefRes] 该列表组件未设置defaultItem属性")
                 return nil
             end
-            self:Log(string.format("[GetListRefRes] 默认项资源ID: %s", defaultItemId), "INFO")
 
-            -- 7. 通过资源URL获取具体资源项
+            self:Log("[GetListRefRes] 默认项资源ID: %s", defaultItemId)
+
+            -- 3.3. 通过资源URL获取具体资源项
             ---@type CS.FairyEditor.FPackageItem
             local defaultItem = handler.project:GetItemByURL(defaultItemId)
             if defaultItem then
-                self:Log(string.format(
-                        "[GetListRefRes] 成功加载资源: %s (类型: %s, 尺寸: %dx%d)",
-                        defaultItem.name,
-                        defaultItem.type,
-                        defaultItem.width,
-                        defaultItem.height
-                ), "SUCCESS")
+                self:Log("[GetListRefRes] 成功加载资源: %s (类型: %s, 尺寸: %dx%d)", defaultItem.name, defaultItem.type, defaultItem.width, defaultItem.height)
             else
-                self:Log(string.format("[GetListRefRes] 资源加载失败: %s", defaultItemId), "ERROR")
+                self:Log("[GetListRefRes] 资源加载失败: %s", defaultItemId)
             end
 
             return defaultItem
         end
     end
 
-    -- 8. 未找到匹配组件
-    self:Log(string.format("[GetListRefRes] 未找到匹配的列表组件: %s", member.name), "WARNING")
+    -- 4. 未找到匹配组件
+    self:Log("[GetListRefRes] 未找到匹配的列表组件: %s", member.name)
     return nil
 end
 
@@ -306,15 +296,8 @@ function Tool:GetCompFunName(comp)
         GButton = { "_btn", "_Btn" },
         GList = { "_list", "_List" },
         GSlider = { "_slider", "_Slider", "_sld" },
-        GComboBox = {
-            "_comboBox", "_combobox", "_Combobox",
-            "_ComboBox", "_combo", "_Combo", "_com"
-        },
-        GTextInput = {
-            "_input", "_Input", "_txtInput", "_TxtInput",
-            "_textInput", "_TextInput", "_text", "_Text",
-            "_txt", "_Txt"
-        }
+        GComboBox = { "_comboBox", "_combobox", "_Combobox", "_ComboBox", "_combo", "_Combo", "_com" },
+        GTextInput = { "_input", "_Input", "_txtInput", "_TxtInput", "_textInput", "_TextInput", "_text", "_Text", "_txt", "_Txt" }
     }
 
     -- 1. 获取待移除前缀列表
@@ -384,7 +367,7 @@ function Tool:FirstCharLower(str)
     return string.gsub(str, "^%u", string.lower)
 end
 
---- 获取组件类信息中中所有需要导出的组件的结构化信息
+--- 获取组件类信息中所有需要导出的组件的结构化信息
 --- @param classInfo CS.FairyEditor.PublishHandler.ClassInfo 窗口类信息
 --- @return table 包含组件信息的数组，每个元素格式为：
 --- {comp:MemberInfo, resName:string, resPkg:string, funName:string}

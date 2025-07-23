@@ -3,6 +3,7 @@
 local GenWin = {}
 
 --- 生成界面的C#代码
+---注意：界面逻辑代码WinXxx.cs不会多次生成，只会在首次导出时生成一次, 而界面非逻辑代码WinXxx.Gen.cs会在每次导出时重新生成。
 ---@param pkgName string 包名
 ---@param winClsArray CS.FairyEditor.PublishHandler.ClassInfo[] 所有界面类
 ---@param AllClsMap table 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
@@ -16,17 +17,17 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
-    for _, cls in ipairs(winClsArray) do
+    for _, winCls in ipairs(winClsArray) do
         -------------------------------------WinXxx.Gen.cs----------------------------------------
-        Tool:Log("生成界面C#代码-%s.Gen.cs", cls.resName)
+        Tool:Log("生成界面C#代码----%s.Gen.cs", winCls.resName)
 
         local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
 
         -- 创建存放代码的文件夹=>.../ViewGen
         Tool:CreateDirectory(targetDir)
 
-        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, cls.resName) --- 界面代码生成目标路径
-        local compArray = Tool:GetCompArray(cls)
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, winCls.resName) --- 界面代码生成目标路径
+        local compArray = Tool:GetCompArray(winCls)
 
         local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
         local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码
@@ -45,13 +46,13 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             dataTable[key] = {}
         end
 
-        GenCommon:GenControllerDefine(dataTable['#CompDefine#'], cls)-- 生成控制器的定义代码和枚举定义，如：private Controller CtrlSelected;
+        GenCommon:GenControllerDefine(dataTable['#CompDefine#'], winCls)-- 生成控制器的定义代码和枚举定义，如：private Controller CtrlSelected;
         GenCommon:GenCompDefine(dataTable['#CompDefine#'], compArray, AllClsMap)-- 生成组件的定义代码，如：private GButton btnEnter;
-        GenCommon:GenTransitionDefine(dataTable['#CompDefine#'], cls)           -- 生成动效的定义代码，如：private Transition xxxAnim;
+        GenCommon:GenTransitionDefine(dataTable['#CompDefine#'], winCls)           -- 生成动效的定义代码，如：private Transition xxxAnim;
 
-        GenCommon:GenControllerInit(dataTable['#CompInit#'], cls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
+        GenCommon:GenControllerInit(dataTable['#CompInit#'], winCls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
         GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
-        GenCommon:GenTransitionInit(dataTable['#CompInit#'], cls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
+        GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
         GenCommon:GenCustomCompInit(dataTable['#CustomCompInit#'], compArray, AllClsMap, false)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的界面View
 
         GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
@@ -65,28 +66,28 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         -- 替换命名空间，包名，界面名
         templateCodeGen = templateCodeGen:gsub('#NAMESPACE#', namespace)
         templateCodeGen = templateCodeGen:gsub('#PKGNAME#', pkgName)
-        templateCodeGen = templateCodeGen:gsub('#WINNAME#', cls.resName)
+        templateCodeGen = templateCodeGen:gsub('#WINNAME#', winCls.resName)
 
         -- 写入替换完成后的代码文件WinXxx.Gen.cs
         Tool:WriteTxt(targetPath, templateCodeGen)
 
         -------------------------------------WinXxx.cs----------------------------------------
-        Tool:Log("生成界面C#代码-%s.cs", cls.resName)
+        Tool:Log("生成界面逻辑C#代码----%s.cs", winCls.resName)
 
         targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, cls.resName)
-        
-        -- 如果界面代码文件存在，则不再生成
-        if Tool:IsFileExists(targetPath)  then
-            Tool:Log("界面代码文件已存在，不再生成:%s", targetPath)
+        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winCls.resName)
+
+        -- 如果界面逻辑代码文件存在，则不再生成
+        if Tool:IsFileExists(targetPath) then
+            Tool:Log("界面代码文件%s已存在，不再生成", winCls.resName)
             return
         end
 
         -- 创建存放代码的文件夹=>.../ViewImpl
         Tool:CreateDirectory(targetDir)
-        
-        -- 如果设置为导出代码，则生成界面代码文件WinXxx.cs
-        if cls.res.exported then
+
+        -- 如果设置为导出，则生成界面代码文件WinXxx.cs
+        if winCls.res.exported then
             local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
             local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
 
@@ -110,7 +111,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             -- 替换命名空间，包名，界面名
             templateCode = templateCode:gsub('#NAMESPACE#', namespace)
             templateCode = templateCode:gsub('#PKGNAME#', pkgName)
-            templateCode = templateCode:gsub('#WINNAME#', cls.resName)
+            templateCode = templateCode:gsub('#WINNAME#', winCls.resName)
 
             -- 写入替换完成后的代码文件WinXxx.cs
             Tool:WriteTxt(targetPath, templateCode)

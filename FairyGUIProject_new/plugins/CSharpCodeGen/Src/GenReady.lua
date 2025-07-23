@@ -54,7 +54,7 @@ function GenReady:GetUnityDataPath(handler)
     return unityDataPath
 end
 
---- 获得所有界面数组和组件数组
+--- 获得所有待导出的界面数组和组件数组
 ---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
 ---@return CS.FairyEditor.PublishHandler.ClassInfo[], CS.FairyEditor.PublishHandler.ClassInfo[], table<string, CS.FairyEditor.PublishHandler.ClassInfo>  界面数组, 组件数组, 所有类型的Map-包括所有界面与组件--key-资源名称，value-资源对应的界面或组件
 function GenReady:GetClsArray(handler)
@@ -66,18 +66,11 @@ function GenReady:GetClsArray(handler)
     local settings = handler.project:GetSettings("Publish").codeGeneration
     settings.ignoreNoname = false
 
-    --- 获得所有导出的界面和有引用的组件
+    --- 获得当前包的所有待导出对象
     ---@type CS.FairyEditor.PublishHandler.ClassInfo[]
     local classes = handler:CollectClasses(settings.ignoreNoname, settings.ignoreNoname, nil)
     for i = 1, classes.Count do
         local clsInfo = classes[i - 1]
-
-        --检查资源依赖是否正确
-        local depIsRight = self:CheckDependency(clsInfo, handler)
-        if not depIsRight then
-            return nil, nil, nil
-        end
-
         allClsMap[clsInfo.resName] = clsInfo
         if Tool:StrFind(clsInfo.resName, 'Win') == 1 then
             table.insert(winClsArray, clsInfo)
@@ -91,32 +84,87 @@ function GenReady:GetClsArray(handler)
     return winClsArray, compClsArray, allClsMap
 end
 
---- 检查资源依赖是否正确,即资源依赖的包只能是当前发布的或以Common开头的包
----@param itemClsInfo CS.FairyEditor.PublishHandler.ClassInfo 资源项
----@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
----@return boolean 依赖是否正确
-function GenReady:CheckDependency(itemClsInfo, handler)
-    for _, member in pairs(itemClsInfo.members) do
-        if Tool:IsExportedComp(member) then
-            local pkgName = ""
-            if member.res then
-                pkgName = member.res.owner.name
-            elseif member.type == "GList" then
-                --- 获得列表引用的组件
-                local defaultItem = Tool:GetListRefRes(itemClsInfo, member)
-                if defaultItem then
-                    pkgName = defaultItem.owner.name
-                end
-            end
+--- 检查依赖组件是否在任意Common包或当前正在发布的包中
+---@param handler CS.FairyEditor.PublishHandler
+---@return boolean 所有依赖合法返回true，否则返回false
+function GenReady:CheckDependencies(handler)
+    local project = handler.project
+    local currentPkg = handler.pkg  -- 当前正在发布的包
 
-            if pkgName ~= handler.pkg.name and Tool:StrFind(pkgName, 'Common') == nil then
-                Tool:Error('资源依赖错误：%s，依赖的包只能是当前发布的或以Common开头的包，请将资源拖入正确的包中', itemClsInfo.name)
-                return false
-            end
+    ---@type CS.FairyEditor.PublishHandler.ClassInfo[]
+    local classes = handler:CollectClasses()  -- 所有待导出的组件
+
+    if not classes then
+        return true  -- 无组件需要检查，默认合法
+    end
+
+    -- 收集所有名称包含 "Common" 的包（不区分大小写）
+    local commonPackages = {}
+    for _, pkg in pairs(project.allPackages) do
+        local pkgName = string.lower(pkg.name)
+        local isCommon = Tool:StrFind(pkgName, "common") ~= nil
+        if isCommon then
+            table.insert(commonPackages, pkg)
         end
     end
 
-    return true
+    if #commonPackages == 0 then
+        Tool:Log("[GenReady] 未找到任何包含 'Common' 的包，跳过依赖检查")
+        return true  -- 无Common包，默认合法（或根据需求返回false）
+    end
+
+    local allDependenciesValid = true  -- 初始假设全部合法
+
+    -- 遍历检查包内的所有组件
+    for _, classInfo in pairs(classes) do
+        local compName = classInfo.className
+        
+        -- 遍历检查直接属于当前组件的子组件的依赖项是否合法
+        ---@type CS.FairyEditor.PublishHandler.MemberInfo[]
+        local members = classInfo.members  -- 该组件的所有依赖成员
+        for _, memberInfo in pairs(members) do
+            -- 跳过非资源类型成员
+            if memberInfo.res == nil then
+                goto continue
+            end
+
+            local memberName = memberInfo.name
+            local memberType = memberInfo.type
+            local memberURL = memberInfo.res:GetURL()
+
+            --- 获取该依赖项的包信息
+            ---@type CS.FairyEditor.FPackageItem
+            local memberItem = project:GetItemByURL(memberURL)
+            if not memberItem then
+                Tool:Error("[GenReady] 依赖项未找到: %s (组件: %s, 类型: %s)", memberName, compName, memberType)
+                allDependenciesValid = false
+                goto continue
+            end
+
+            local memberPkg = memberItem.owner  -- 依赖项所在的包
+            local isCurPkg = (memberPkg == currentPkg)
+
+            -- 检查是否在任意 Common 包中
+            if not isCurPkg then
+                for _, commonPkg in ipairs(commonPackages) do
+                    if memberPkg == commonPkg then
+                        isCurPkg = true
+                        break
+                    end
+                end
+            end
+
+            -- 如果既不在 Common 包，也不在当前包，则标记为非法
+            if not isCurPkg then
+                Tool:Error("[GenReady] %s中存在非法依赖：组件: %s, 类型: %s, 所在包: %s",compName, memberName, memberType, memberPkg.name)
+                allDependenciesValid = false
+            end
+
+            :: continue ::
+        end
+    end
+
+    return allDependenciesValid
 end
 
 return GenReady

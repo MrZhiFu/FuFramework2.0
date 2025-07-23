@@ -8,16 +8,16 @@ App = App
 ----------------------------------------------------------------------------------------
 
 ---@type GenReady
-GenReady = require(PluginPath..'/Src/GenReady')
+GenReady = require(PluginPath .. '/Src/GenReady')
 
 ---@type GenWin
-GenWin = require(PluginPath..'/Src/GenWin')
+GenWin = require(PluginPath .. '/Src/GenWin')
 
 ---@type GenComp
-GenComp = require(PluginPath..'/Src/GenComp')
+GenComp = require(PluginPath .. '/Src/GenComp')
 
 ---@type GenBinder
-GenBinder = require(PluginPath..'/Src/GenBinder')
+GenBinder = require(PluginPath .. '/Src/GenBinder')
 
 ---@param handler CS.FairyEditor.PublishHandler
 function onPublish(handler)
@@ -38,8 +38,15 @@ function onPublish(handler)
         return
     end
 
-    Tool:Log("---------------------开始生成（%s）包下的C#代码---------------------", handler.pkg.name)
-    
+    --- 检查依赖项是否有效
+    local isValid = GenReady:CheckDependencies(handler)
+    if not isValid then
+        Tool:Error("[发布终止：存在非法依赖！")
+        return
+    end
+
+    Tool:Log("---------------------开始生成 %s 包下的C#代码---------------------", handler.pkg.name)
+
     --- 获得发布的包下所有界面数组，组件数组，所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
     local winClsArray, compClsArray, AllClsMap = GenReady:GetClsArray(handler)
 
@@ -47,15 +54,17 @@ function onPublish(handler)
         Tool:Error("生成失败，收集不到有效的界面或组件信息")
         return
     end
-    
+
     --- 生成界面代码
     GenWin:Gen(handler.pkg.name, winClsArray, AllClsMap, unityDataPath)
 
     --- 生成组件代码
     GenComp:Gen(handler.pkg.name, compClsArray, AllClsMap, unityDataPath)
-    
+
     --- 生成Binder代码
     GenBinder:Gen(handler.pkg.name, compClsArray, unityDataPath)
+
+    Tool:Log("---------------------生成 %s 包下的C#代码完成---------------------", handler.pkg.name)
 end
 
 -------do cleanup here-------
