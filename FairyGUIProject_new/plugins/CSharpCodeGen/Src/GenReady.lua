@@ -60,7 +60,7 @@ end
 function GenReady:GetClsArray(handler)
     local winClsArray = {}
     local compClsArray = {}
-    local AllClsMap = {}
+    local allClsMap = {}
 
     ---@type CS.FairyEditor.GlobalPublishSettings.CodeGenerationConfig
     local settings = handler.project:GetSettings("Publish").codeGeneration
@@ -71,7 +71,7 @@ function GenReady:GetClsArray(handler)
     local classes = handler:CollectClasses(settings.ignoreNoname, settings.ignoreNoname, nil)
     for i = 1, classes.Count do
         local clsInfo = classes[i - 1]
-        AllClsMap[clsInfo.resName] = clsInfo
+        allClsMap[clsInfo.resName] = clsInfo
         if Tool:StrFind(clsInfo.resName, 'Win') == 1 then
             table.insert(winClsArray, clsInfo)
         elseif Tool:StrFind(clsInfo.resName, 'Comp') == 1 then
@@ -81,7 +81,7 @@ function GenReady:GetClsArray(handler)
         end
     end
 
-    return winClsArray, compClsArray, AllClsMap
+    return winClsArray, compClsArray, allClsMap
 end
 
 return GenReady
