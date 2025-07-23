@@ -1,11 +1,11 @@
 {
-	"name": "com.fairygui.plugin.rulecheck",
-	"displayName": "RuleCheck",
-	"description": "Settings Rule Check",
-	"version": "0.0.1",
-	"author": {
-		"name": "starunion.com"
-	},
-	"icon": "",
-	"main": "main.lua"
+  "name": "com.fairygui.plugin.rulecheck",
+  "displayName": "RuleCheck",
+  "description": "组件属性规范检查器，目前主要检查文本属性：\n1.是否设置了\"自动清除文本\"属性，没有则记录错误，同时可选是否自动修改为\"自动清除文本\"。\n2.是否设置了\"Microsoft YaHei\"字体，是则移除字体属性，并保存(主要是为了在Unity ConfigSetting中统一设置字体，所以这里有个软规范，如果需要统一使用Unity ConfigSetting中的字体，需要在FGUI编辑器中设置为\"Microsoft YaHei\"字体)。\n3.后续可添加更多自定义检查项。\n使用方法：打开编辑器，在菜单栏中点击“工具”->“自定义-组件属性规范检查器",
+  "version": "1.0",
+  "author": {
+    "name": "MrFu"
+  },
+  "icon": "",
+  "main": "main.lua"
 }

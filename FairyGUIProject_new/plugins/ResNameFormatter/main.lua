@@ -1,21 +1,21 @@
 ---@type CS.FairyEditor.App
 App = App
 
---- 全局格式化输出函数
-fprintf = function(fmt, ...)
-    fprint(string.format(fmt, ...))
-end
+Tool = require(PluginPath .. '/Tool')
 
+---@type ResNameFormatter
 local ResNameFormatter = require(PluginPath..'/ResNameFormatter')
 
--------Add custom menu-------
+---添加工具栏自定义检查菜单项
 local toolMenu = App.menu:GetSubMenu("tool");
-toolMenu:AddItem("FormatResName", "ResNameFormatter", 0, false, function()
+toolMenu:AddItem("自定义-资源名称格式化器", "自定义-资源名称格式化器", 0, false, function()
+    Tool:Log("[ResNameFormatter]资源格式化开始......")
+    ResNameFormatter:Init(PluginPath)
     ResNameFormatter:Run()
+    Tool:Log("[ResNameFormatter]资源格式化完成......")
 end)
 
--------do cleanup here-------
-
+-- 销毁菜单项
 function onDestroy()
-    toolMenu:RemoveItem("ResNameFormatter")
+    toolMenu:RemoveItem("自定义-资源名称格式化器")
 end

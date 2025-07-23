@@ -1,10 +1,10 @@
 {
 	"name": "com.fairygui.plugin.resnameformatter",
 	"displayName": "ResNameFormatter",
-	"description": "Format Resources Name.",
-	"version": "0.0.1",
+	"description": "资源名称格式化工具：用于格式化资源名称，可批量修改资源名称，以便于在编辑器中更统一的管理资源(目前暂未有具体规范，后续再根据实际情况进行调整)\n使用方法：打开编辑器，在菜单栏中点击“工具”->“自定义-资源名称格式化器”；",
+	"version": "1.0",
 	"author": {
-		"name": "starunion.com"
+		"name": "MrFu"
 	},
 	"icon": "",
 	"main": "main.lua"

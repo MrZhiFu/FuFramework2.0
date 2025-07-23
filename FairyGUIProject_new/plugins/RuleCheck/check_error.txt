@@ -113,3 +113,340 @@ path: WorldUI/Comps/Button/CompFavoriteItem	name: _timeTip
 [ text not set autoClearText ]:
 path: Game/Win/WinMain	name: txt_Tittle
 path: Game/Win/WinSun	name: txt_Tittle
+
+
+========== 2025-07-23 10:26:47 ==========
+
+[ text not set autoClearText ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:12:50 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:12:59 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:24:04 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:25:26 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:34:55 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:36:14 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnYellowCheck	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:37:16 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:38:05 ==========
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+path: Bag/Comps/CompBagItemInfo	name: _txtDesc
+path: Bag/Comps/CompTypeItem	name: title
+path: Common/Comps/Btns/BtnWhiteCheck	name: title
+path: Common/Comps/Btns/BtnBlueCheck	name: title
+path: Common/Comps/Btns/BtnYellowSingle	name: title
+path: Common/Comps/Btns/BtnYellowNormal	name: title
+path: Common/Comps/Btns/BtnBlueSingle	name: title
+path: Common/Comps/Btns/BtnBlueNormal	name: title
+path: Common/Comps/Btns/BtnWhiteSingle	name: title
+path: Common/Comps/Btns/BtnWhiteNormal	name: title
+path: Launcher/Comps/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comps/BtnLogin	name: title
+path: Login/Comps/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comps/BtnBag	name: title
+
+
+========== 2025-07-23 11:47:23 ==========
+
+
+========== 2025-07-23 11:50:12 ==========
+
+
+========== 2025-07-23 15:54:28 ==========
+
+
+========== 2025-07-23 15:57:55 ==========
+
+
+========== 2025-07-23 16:05:48 ==========
+
+
+========== 2025-07-23 16:18:30 ==========
+
+[ 文本设置了Microsoft YaHei字体，字体属性已被清除： ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+[ 文本没有设置自动清除文本属性： ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+
+========== 2025-07-23 16:29:37 ==========
+
+[ 文本设置了Microsoft YaHei字体：%s ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+[ 文本没有设置自动清除文本属性：%s ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+
+========== 2025-07-23 16:29:51 ==========
+
+[ 文本设置了Microsoft YaHei字体：%s ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+[ 文本没有设置自动清除文本属性：%s ]:
+path: Bag/Comps/CompBagItemInfo	name: _txtName

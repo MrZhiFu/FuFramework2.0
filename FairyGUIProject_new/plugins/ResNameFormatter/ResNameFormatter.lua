@@ -1,29 +1,28 @@
+---@class ResNameFormatter
+---资源名称格式化器：用于格式化资源名称，可批量修改资源名称，以便于在编辑器中更统一的管理资源。
+---
+---使用方法：打开编辑器，在菜单栏中点击“工具”->“自定义-资源名称格式化器”；
+---
+---注意：目前暂未有具体规范，后续再根据实际情况进行调整。
 local ResNameFormatter = {}
 
---- CS.FairyEditor_FPackageItemType
---- "image", "movieclip", "swf", "sound", "component", "font", "misc", "atlas", "spine", "dragonbones"
-
-local dicHasType = {}
-
-fprintf = function(fmt, ...)
-    local msg = string.format(fmt, ...)
-    fprint(msg)
-    
-    return msg
+---初始化
+---@param pluginPath_ string 插件路径
+function ResNameFormatter:Init(pluginPath_)
+    Tool = require(pluginPath_ .. '/Tool')
 end
 
+--- 执行重命名
 function ResNameFormatter:Run()
-
-    self:DoChange()
-
+    self:DoRename()
     App.RefreshProject()
 end
 
---- 获得新名字
----@param itemType 类型
----@param oriName 原名
----@return 新名
-local function getNameName(itemType, oriName)
+--- 根据类型与原名，获得新名字
+---@param itemType table 类型
+---@param oriName string 原名
+---@return string 新名
+local function getNewName(itemType, oriName)
     local switch = {
         ["image"] = function(name)
             -- todo
@@ -47,43 +46,33 @@ local function getNameName(itemType, oriName)
     return func(oriName)
 end
 
-function ResNameFormatter:DoChange()
+--- 执行重命名
+function ResNameFormatter:DoRename()
     local project = App.project
-
-    -- logF('project[%s] opened: %s', project.name, project.opened)
     if not project.opened then
         return
     end
-    
+
     local allPackages = project.allPackages
-    local numPkg = allPackages.Count
-    for i = 0, numPkg - 1 do
+
+    ---遍历所有包
+    for i = 0, allPackages.Count - 1 do
         ---@type CS.FairyEditor.FPackage
         local pkg = allPackages[i]
-
-        -- logF('pkg: %s', pkg.name)
         local items = pkg.items
-        local numItem = items.Count
-        for j = 0, numItem - 1 do
+
+        ---遍历包下的所有Item，进行重命名
+        for j = 0, items.Count - 1 do
             ---@type CS.FairyEditor.FPackageItem
             local item = items[j]
-
-            if dicHasType[item.type] == nil then
-                dicHasType[item.type] = 1
-            end
-
-            local newName = getNameName(item.type, item.name)
+            local newName = getNewName(item.type, item.name)
             if newName ~= item.name then
+                Tool:Log("资源被重命名：OldName-%s, NewName-%s", item.name, newName)
                 pkg:RenameItem(item, newName)
             end
         end
 
         collectgarbage('collect')
-    end
-
-    fprintf("Has type:")
-    for i, v in pairs(dicHasType) do
-        fprintf(string.format("Type:%s", i))
     end
 end
 

@@ -1,10 +1,10 @@
 {
-  "name": "CSharpCodeGen",
-  "displayName": "",
-  "description": "Gen C# code, Include \"Win\", \"Comp\",  \"CompBinder\"",
+  "name": "com.fairygui.plugin.csharpcodegen",
+  "displayName": "CSharpCodeGen",
+  "description": "自动生成C#代码的扩展, 包括 \"Win-界面\", \"Comp-自定义组件\",  \"CompBinder-组件绑定\"\n 规范说明：\n 1. 命名规则：\n    - 界面：WinXXX\n    - 自定义组件：CompXXX\n    - 窗口或者组件内的控件：_ + 控件类型+功能名称”，如：_btnXXX，_txtXXX，_imgXXX, _listXXX...\n 2. 目录结构：\n    - 资源：包名/Res/\n    - 界面：包名/WinXXX\n    - 自定义组件：包名/Comps/CompXXX \n使用方法：发布时自动启用\"",
   "version": "1.0",
   "author": {
-    "name": "MrFuge"
+    "name": "MrFu"
   },
   "icon": "",
   "main": "main.lua"
