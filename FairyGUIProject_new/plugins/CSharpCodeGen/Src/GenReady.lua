@@ -56,7 +56,7 @@ end
 
 --- 获得所有界面数组和组件数组
 ---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
----@return CS.FairyEditor.PublishHandler.ClassInfo[] 界面数组, CS.FairyEditor.PublishHandler.ClassInfo[] 组件数组, table 所有类型的Map-包括所有界面与组件--key-资源名称，value-资源对应的界面或组件
+---@return CS.FairyEditor.PublishHandler.ClassInfo[], CS.FairyEditor.PublishHandler.ClassInfo[], table<string, CS.FairyEditor.PublishHandler.ClassInfo>  界面数组, 组件数组, 所有类型的Map-包括所有界面与组件--key-资源名称，value-资源对应的界面或组件
 function GenReady:GetClsArray(handler)
     local winClsArray = {}
     local compClsArray = {}
@@ -71,6 +71,13 @@ function GenReady:GetClsArray(handler)
     local classes = handler:CollectClasses(settings.ignoreNoname, settings.ignoreNoname, nil)
     for i = 1, classes.Count do
         local clsInfo = classes[i - 1]
+
+        --检查资源依赖是否正确
+        local depIsRight = self:CheckDependency(clsInfo, handler)
+        if not depIsRight then
+            return nil, nil, nil
+        end
+
         allClsMap[clsInfo.resName] = clsInfo
         if Tool:StrFind(clsInfo.resName, 'Win') == 1 then
             table.insert(winClsArray, clsInfo)
@@ -82,6 +89,34 @@ function GenReady:GetClsArray(handler)
     end
 
     return winClsArray, compClsArray, allClsMap
+end
+
+--- 检查资源依赖是否正确,即资源依赖的包只能是当前发布的或以Common开头的包
+---@param itemClsInfo CS.FairyEditor.PublishHandler.ClassInfo 资源项
+---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
+---@return boolean 依赖是否正确
+function GenReady:CheckDependency(itemClsInfo, handler)
+    for _, member in pairs(itemClsInfo.members) do
+        if Tool:IsExportedComp(member) then
+            local pkgName = ""
+            if member.res then
+                pkgName = member.res.owner.name
+            elseif member.type == "GList" then
+                --- 获得列表引用的组件
+                local defaultItem = Tool:GetListRefRes(itemClsInfo, member)
+                if defaultItem then
+                    pkgName = defaultItem.owner.name
+                end
+            end
+
+            if pkgName ~= handler.pkg.name and Tool:StrFind(pkgName, 'Common') == nil then
+                Tool:Error('资源依赖错误：%s，依赖的包只能是当前发布的或以Common开头的包，请将资源拖入正确的包中', itemClsInfo.name)
+                return false
+            end
+        end
+    end
+
+    return true
 end
 
 return GenReady

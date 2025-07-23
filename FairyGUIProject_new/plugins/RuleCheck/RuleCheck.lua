@@ -210,7 +210,7 @@ function RuleCheck:CheckTextProperty()
                                 end
                                 
                                 local errorMsg = string.format(errorTitle, attrName)
-                                Tool:Log("Error---:%s", errorMsg)
+                                Tool:Warning("Error---:%s", errorMsg)
                             end
 
                             ---是否设置了"Microsoft YaHei"字体，是则移除字体属性，并将是否需要保存设置true
@@ -227,7 +227,7 @@ function RuleCheck:CheckTextProperty()
                                 end
                                 
                                 local errorMsg = string.format(errorTitle, attrName)
-                                Tool:Log("Error---:%s", errorMsg)
+                                Tool:Warning("Error---:%s", errorMsg)
                             end
                         end)
 
@@ -249,7 +249,7 @@ function RuleCheck:CheckTextProperty()
     if errorCnt > 0 then
         writeToErrorLog()
     else
-        Tool:Log("没有错误发生")
+        Tool:Log("没有检查到错误规范的组件属性")
     end
 end
 

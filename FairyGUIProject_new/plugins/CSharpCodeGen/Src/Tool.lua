@@ -143,6 +143,18 @@ function Tool:Log(fmt, ...)
     fprint(string.format(fmt, ...))
 end
 
+--- 警告日志输出
+function Tool:Warning(fmt, ...)
+    fmt = tostring(fmt)
+    App.consoleView:LogWarning(string.format(fmt, ...))
+end
+
+--- 错误日志输出
+function Tool:Error(fmt, ...)
+    fmt = tostring(fmt)
+    App.consoleView:LogError(string.format(fmt, ...))
+end
+
 --- 读取文本
 ---@return string
 function Tool:ReadTxt(path)
@@ -372,15 +384,15 @@ function Tool:FirstCharLower(str)
     return string.gsub(str, "^%u", string.lower)
 end
 
---- 获取窗口类中所有导出组件的结构化信息
---- @param winCls CS.FairyEditor.PublishHandler.ClassInfo 窗口类信息
+--- 获取组件类信息中中所有需要导出的组件的结构化信息
+--- @param classInfo CS.FairyEditor.PublishHandler.ClassInfo 窗口类信息
 --- @return table 包含组件信息的数组，每个元素格式为：
 --- {comp:MemberInfo, resName:string, resPkg:string, funName:string}
-function Tool:GetCompArray(winCls)
+function Tool:GetCompArray(classInfo)
     local compArray = {}
 
     ---@type CS.FairyEditor.PublishHandler.MemberInfo[]
-    local members = winCls.members
+    local members = classInfo.members
     for _, member in pairs(members) do
         if Tool:IsExportedComp(member) then
             local resName = ""
@@ -390,7 +402,7 @@ function Tool:GetCompArray(winCls)
                 resPkg = member.res.owner.name
             elseif member.type == "GList" then
                 --- 获得列表引用的组件
-                local defaultItem = Tool:GetListRefRes(winCls, member)
+                local defaultItem = Tool:GetListRefRes(classInfo, member)
                 if defaultItem then
                     resName = defaultItem.name
                     resPkg = defaultItem.owner.name

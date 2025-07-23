@@ -40,9 +40,14 @@ function onPublish(handler)
 
     Tool:Log("---------------------开始生成（%s）包下的C#代码---------------------", handler.pkg.name)
     
-    --- 获得所有界面数组，组件数组，所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
+    --- 获得发布的包下所有界面数组，组件数组，所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
     local winClsArray, compClsArray, AllClsMap = GenReady:GetClsArray(handler)
 
+    if winClsArray == nil or compClsArray == nil or AllClsMap == nil then
+        Tool:Error("生成失败，收集不到有效的界面或组件信息")
+        return
+    end
+    
     --- 生成界面代码
     GenWin:Gen(handler.pkg.name, winClsArray, AllClsMap, unityDataPath)
 

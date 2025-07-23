@@ -5,7 +5,7 @@ local GenWin = {}
 --- 生成界面的C#代码
 ---@param pkgName string 包名
 ---@param winClsArray CS.FairyEditor.PublishHandler.ClassInfo[] 所有界面类
----@param AllClsMap talbe 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
+---@param AllClsMap table 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
 ---@param unityDataPath string Unity工程路径 “xxx/Assets”
 function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     if not winClsArray or #winClsArray == 0 then
