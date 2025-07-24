@@ -61,8 +61,7 @@ namespace Hotfix
         private static void LoadUI()
         {
             // 添加通用UI资源包
-            FuiPackageManager.Instance.AddPackageAsync(FUIPackage.UICommon).Forget();
-            FuiPackageManager.Instance.AddPackageAsync(FUIPackage.UICommonAvatar).Forget();
+            FuiPackageManager.Instance.AddPackageAsync("Common").Forget();
             
             // 打开登录界面
             UIManager.Instance.OpenUI<WinLogin>();

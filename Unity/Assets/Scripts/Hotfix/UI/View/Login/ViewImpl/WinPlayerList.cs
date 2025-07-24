@@ -9,6 +9,7 @@ using GameFrameX.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;
+using Hotfix.UI.View.Main;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI.View.Login
@@ -91,7 +92,7 @@ namespace Hotfix.UI.View.Login
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
-	        await UIManager.Instance.OpenUIAsync<UIMain>();
+	        await UIManager.Instance.OpenUIAsync<WinMain>();
 
 	        // 关闭当前界面
 	        UIManager.Instance.CloseUI(this);
