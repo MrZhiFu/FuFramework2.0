@@ -1,4 +1,5 @@
 using System;
+using AOT.UI.View.Launcher;
 using Cysharp.Threading.Tasks;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
@@ -70,16 +71,17 @@ namespace Unity.Startup.Procedure
                     if (gameAppVersion.IsUpgrade)
                     {
                         // 需要更新，显示更新提示框
-                        if (UIManager.Instance.GetUI("UI/UILauncher") is not UILauncher uiLauncher) return;
-                        uiLauncher.m_IsUpgrade.SetSelectedIndex(1);
+                        var winLauncher = UIManager.Instance.GetUI<WinLauncher>();
+                        if (winLauncher == null) return;
+                        winLauncher.SetUpdateSureUIState(true);
 
                         var isChinese = GameApp.Localization.SystemLanguage == Language.ChineseSimplified ||
                                         GameApp.Localization.SystemLanguage == Language.ChineseTraditional;
 
-                        uiLauncher.m_upgrade.m_EnterButton.title = isChinese ? "确认" : "Enter";
-                        uiLauncher.m_upgrade.m_TextContent.title = gameAppVersion.UpdateAnnouncement;
-                        uiLauncher.m_upgrade.m_TextContent.onClickLink.Set(context => { Application.OpenURL(context.data.ToString()); });
-                        uiLauncher.m_upgrade.m_EnterButton.onClick.Set(() =>
+                        winLauncher.SetUpdateBtnTitle(isChinese ? "确认" : "Enter");
+                        winLauncher.SetUpdateTipText(gameAppVersion.UpdateAnnouncement);
+                        winLauncher.SetUpdateTipTextOnClick(context => { Application.OpenURL(context.data.ToString()); });
+                        winLauncher.SetUpdateBtnOnClick(() =>
                         {
                             if (gameAppVersion.IsForce)
                             {
@@ -89,7 +91,7 @@ namespace Unity.Startup.Procedure
                             else
                             {
                                 // 非强更，点击进入获取资源包版本流程
-                                uiLauncher.m_IsUpgrade.SetSelectedIndex(0);
+                                winLauncher.SetUpdateSureUIState(false);
                                 ChangeState<ProcedureGetAssetPkgVersionInfoFromGmServer>(procedureOwner);
                             }
                         });

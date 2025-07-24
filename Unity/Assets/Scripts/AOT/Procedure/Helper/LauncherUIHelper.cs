@@ -1,7 +1,9 @@
-﻿using GameFrameX.Asset.Runtime;
+﻿using AOT.UI.View.Launcher;
+using Cysharp.Threading.Tasks;
+using FuFramework.UI.Runtime;
+using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
-using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Unity.Startup.Procedure
 {
@@ -13,14 +15,14 @@ namespace Unity.Startup.Procedure
         /// <summary>
         /// 热更进度显示UI界面
         /// </summary>
-        private static UILauncher _ui;
+        private static WinLauncher _ui;
 
         /// <summary>
         /// 开启热更进度显示UI
         /// </summary>
-        public static async void Start()
+        public static async UniTaskVoid Start()
         {
-            _ui = await UIManager.Instance.OpenUIAsync<UILauncher>();
+            _ui = await UIManager.Instance.OpenUIAsync<WinLauncher>();
             GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
@@ -29,7 +31,7 @@ namespace Unity.Startup.Procedure
         /// </summary>
         public static void Dispose()
         {
-            UIManager.Instance.CloseUI<UILauncher>();
+            UIManager.Instance.CloseUI<WinLauncher>();
             _ui = null;
         }
 
@@ -39,7 +41,7 @@ namespace Unity.Startup.Procedure
         /// <param name="text"></param>
         public static void SetTipText(string text)
         {
-            _ui.m_TipText.text = text;
+            _ui.SetTipText(text);
         }
 
         /// <summary>
@@ -47,7 +49,7 @@ namespace Unity.Startup.Procedure
         /// </summary>
         public static void SetProgressUpdateFinish()
         {
-            _ui.m_IsDownload.SetSelectedIndex(0);
+            _ui.SetUpdateState(true);
         }
 
         /// <summary>
@@ -57,13 +59,13 @@ namespace Unity.Startup.Procedure
         /// <param name="gameEventArgs"></param>
         private static void SetUpdateProgress(object sender, GameEventArgs gameEventArgs)
         {
-            _ui.m_IsDownload.SetSelectedIndex(1);
-            var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
-            var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
+            _ui.SetUpdateState(false);
+            var message = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
+            var progress = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
             var currentSizeMb = Utility.File.GetBytesSize(message.CurrentDownloadSizeBytes);
-            var totalSizeMb   = Utility.File.GetBytesSize(message.TotalDownloadSizeBytes);
-            _ui.m_ProgressBar.value = progress * 100;
-            _ui.m_TipText.text      = $"Downloading {currentSizeMb}/{totalSizeMb}";
+            var totalSizeMb = Utility.File.GetBytesSize(message.TotalDownloadSizeBytes);
+            _ui.SetUpdateProgress(progress * 100);
+            _ui.SetTipText($"Downloading {currentSizeMb}/{totalSizeMb}");
         }
     }
 }
