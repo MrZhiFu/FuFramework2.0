@@ -113,6 +113,12 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
+        /// <returns>要获取的界面。</returns>
+        public T GetUI<T>() where T : ViewBase => (T)GetUI(typeof(T).Name);
+
+        /// <summary>
+        /// 从界面组中获取界面。
+        /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(string uiName)

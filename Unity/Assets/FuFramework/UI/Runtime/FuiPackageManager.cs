@@ -29,10 +29,10 @@ namespace FuFramework.UI.Runtime
         private readonly Dictionary<string, int> m_pkgRefCountDict = new();
 
         /// 从Resources中加载的包名
-        private readonly List<string> m_fromResourcesPackages = new() { "UILauncher" };
+        private readonly List<string> m_fromResourcesPackages = new() { "Launcher" };
 
         /// 不会被释放的包名
-        private readonly List<string> m_notReleasePackages = new() { "UICommon" };
+        private readonly List<string> m_notReleasePackages = new() { "Common" };
 
 
         /// <summary>

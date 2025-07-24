@@ -58,6 +58,12 @@ namespace FuFramework.UI.Runtime
 
             return null;
         }
+        
+        /// <summary>
+        /// 获取界面。
+        /// </summary>
+        /// <returns>要获取的界面。</returns>
+        public T GetUI<T>() where T : ViewBase => (T)GetUI(typeof(T).Name);
 
         /// <summary>
         /// 获取界面。
