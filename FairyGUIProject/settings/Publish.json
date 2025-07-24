@@ -1,5 +1,5 @@
 {
-  "path": "../Unity/Assets/Bundles/UI",
+  "path": "../Unity/Assets/Bundles/UI/{publish_file_name}",
   "branchPath": "",
   "fileExtension": "bytes",
   "packageCount": 2,
@@ -8,12 +8,12 @@
   "jpegQuality": 80,
   "compressPNG": false,
   "codeGeneration": {
-    "allowGenCode": true,
-    "codePath": "../Unity/Assets/Hotfix/UI/FairyGUI/",
+    "allowGenCode": false,
+    "codePath": "",
     "classNamePrefix": "",
-    "memberNamePrefix": "m_",
+    "memberNamePrefix": "",
     "packageName": null,
-    "ignoreNoname": true,
+    "ignoreNoname": false,
     "getMemberByName": true,
     "codeType": ""
   },
