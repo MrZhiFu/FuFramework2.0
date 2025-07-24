@@ -1,5 +1,6 @@
 {
-    "name": "GameFrameX.UI.FairyGUI.Editor",
+    "name": "FuFramework.UI.Editor",
+    "rootNamespace": "",
     "references": [
         "GameFrameX.UI.FairyGUI.Runtime",
         "GameFrameX.Editor",

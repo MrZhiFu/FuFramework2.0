@@ -20,7 +20,7 @@
         "GameFrameX.Localization.Runtime",
         "GameFrameX.Config.Runtime",
         "GameFrameX.Network.Runtime",
-        "GameFrameX.UI.FairyGUI.Runtime"
+        "FuFramework.UI.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

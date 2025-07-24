@@ -19,10 +19,10 @@
         "GameFrameX.Asset.Runtime",
         "GameFrameX.Localization.Runtime",
         "HybridCLRData",
-        "GameFrameX.UI.FairyGUI.Runtime",
         "GameFrameX.Mono.Runtime",
         "GameFrameX.Timer.Runtime",
-        "FairyGUI"
+        "FairyGUI",
+        "FuFramework.UI.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

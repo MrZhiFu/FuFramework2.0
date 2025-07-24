@@ -1,6 +1,6 @@
 {
-    "name": "GameFrameX.UI.FairyGUI.Runtime",
-    "rootNamespace": "GameFrameX.UI.FairyGUI.Runtime",
+    "name": "FuFramework.UI.Runtime",
+    "rootNamespace": "",
     "references": [
         "GameFrameX.Runtime",
         "GameFrameX.Asset.Runtime",
