@@ -9,6 +9,7 @@
     <component id="l50q5" name="CompBagItem.xml" path="/Comps/" exported="true"/>
     <image id="l50q6" name="avatar.png" path="/Res/"/>
     <image id="l50q7" name="bg.png" path="/Res/"/>
+    <component id="72ce2u" name="CompGoodItem.xml" path="/Comps/" exported="true"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

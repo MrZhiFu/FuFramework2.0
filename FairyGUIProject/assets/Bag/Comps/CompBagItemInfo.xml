@@ -7,7 +7,7 @@
     </graph>
     <text id="n30_dsha" name="_txtName" xy="233,12" size="768,72" fontSize="50" color="#333333" vAlign="middle" autoSize="none" bold="true" text="夏日沙滩碎片"/>
     <richtext id="n31_dsha" name="_txtDesc" xy="237,98" size="767,141" fontSize="40" color="#333333" leading="0" ubb="true" autoSize="none" text="消耗该随便可合成城墙:夏日沙滩"/>
-    <component id="n34_72ce" name="_compBagItem" src="72ce2u" fileName="Comps/Goods/CompGoodItem.xml" pkg="ats3vms3" xy="28,20"/>
+    <component id="n34_72ce" name="_compBagItem" src="72ce2u" fileName="Comps/Goods/CompGoodItem.xml" xy="28,20"/>
     <component id="n32_dsha" name="_btnUse" src="oo3b2p" fileName="Comps/Btns/BtnYellowNormal.xml" pkg="ats3vms3" xy="1022,2" size="242,100">
       <gearDisplay controller="IsCanUse" pages="1"/>
       <Button title="使用"/>

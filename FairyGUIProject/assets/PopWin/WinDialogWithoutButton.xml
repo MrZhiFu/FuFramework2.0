@@ -4,13 +4,13 @@
     <loader id="n2_srah" name="Bg" xy="0,0" size="1080,1920" url="ui://xnc0qo2eflr49" align="center" vAlign="middle" fill="scaleFree">
       <relation target="" sidePair="width-width,height-height"/>
     </loader>
-    <image id="n4_7m3k" name="Bg1" src="flr49" fileName="Res/bg/dialog_bg.png" xy="134,623" size="842,532">
+    <image id="n4_7m3k" name="Bg1" src="flr49" fileName="Res/bg/dialog_bg.png" xy="134,623" size="842,532" pkg="ats3vms3">
       <relation target="" sidePair="center-center,middle-middle"/>
     </image>
     <richtext id="n5_7m3k" name="_txtContent" xy="226,769" size="657,239" fontSize="30" color="#333333" autoSize="none" autoClearText="true" text="较高冷淡开召开C型解开返矿三肯将发骚略开销解开装三开返矿隆基分开手打就劳烦开动捷富凯囧as开饭开市大吉开动副将扫街分开动静开饭闪刀姬分开冬季开发开解开反动开机费开始单开捷富凯动静劳烦董凯捷富凯三劳烦劳动节开发">
       <relation target="n4_7m3k" sidePair="center-center,middle-middle"/>
     </richtext>
-    <component id="n3_srah" name="_btnClose" src="flr4d" fileName="Comps/button/UICloseButton.xml" xy="913,627" size="80,80">
+    <component id="n3_srah" name="_btnClose" src="flr4d" fileName="Comps/button/UICloseButton.xml" xy="913,627" size="80,80" pkg="ats3vms3">
       <relation target="n4_7m3k" sidePair="right-right,top-top"/>
     </component>
   </displayList>

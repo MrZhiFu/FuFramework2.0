@@ -58,7 +58,6 @@
     <image id="e6bx1q" name="button1.png" path="/Res/button/" exported="true" scale="9grid" scale9grid="27,29,54,58"/>
     <image id="e6bx1r" name="goods_bg1.png" path="/Res/goods/" exported="true"/>
     <image id="e6bx1s" name="category_bg.png" path="/Res/category/" exported="true" scale="9grid" scale9grid="15,14,30,28"/>
-    <component id="srah1v" name="WinDialogWithoutButton.xml" path="/" exported="true"/>
     <image id="w4oz1y" name="pointer.png" path="/Res/icon/" exported="true"/>
     <image id="w4oz1z" name="button_2.png" path="/Res/button/" exported="true"/>
     <image id="rnzi20" name="back.png" path="/Res/icon/" exported="true"/>
@@ -73,7 +72,6 @@
     <image id="dsha2i" name="图层1_697.png" path="/Res/button/" scale="9grid" scale9grid="33,25,46,22"/>
     <image id="dsha2j" name="图层1_6.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="27,16,54,32"/>
     <image id="dsha2k" name="图层1_54.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="26,16,52,32"/>
-    <component id="iopl2l" name="WinDialogMessageBox.xml" path="/" exported="true"/>
     <component id="iopl2m" name="BtnWhiteCheck.xml" path="/Comps/Btns/" exported="true"/>
     <component id="iopl2n" name="BtnBlueCheck.xml" path="/Comps/Btns/" exported="true"/>
     <component id="oo3b2o" name="BtnYellowSingle.xml" path="/Comps/Btns/" exported="true"/>
@@ -83,7 +81,6 @@
     <component id="oo3b2s" name="BtnWhiteSingle.xml" path="/Comps/Btns/" exported="true"/>
     <component id="oo3b2t" name="BtnWhiteNormal.xml" path="/Comps/Btns/" exported="true"/>
     <image id="l50q8" name="图层1_2.png" path="/Res/goods/" exported="true"/>
-    <component id="72ce2u" name="CompGoodItem.xml" path="/Comps/Goods/" exported="true"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

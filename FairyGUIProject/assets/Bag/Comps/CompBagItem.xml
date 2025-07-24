@@ -6,7 +6,7 @@
       <gearDisplay controller="button" pages="3"/>
       <relation target="" sidePair="width-width,height-height"/>
     </image>
-    <component id="n36_dsha" name="_compGoodItem" src="72ce2u" fileName="Comps/Goods/CompGoodItem.xml" pkg="ats3vms3" xy="7,7"/>
+    <component id="n36_dsha" name="_compGoodItem" src="72ce2u" fileName="Comps/Goods/CompGoodItem.xml" xy="7,7"/>
   </displayList>
   <Button mode="Check"/>
 </component>
