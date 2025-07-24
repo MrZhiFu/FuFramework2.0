@@ -9,6 +9,7 @@ using GameFrameX.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.UI;
+using Hotfix.UI.View.Login;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 #if ENABLE_BINARY_CONFIG
 using LuBan.Runtime;
@@ -64,7 +65,7 @@ namespace Hotfix
             FuiPackageManager.Instance.AddPackageAsync(FUIPackage.UICommonAvatar).Forget();
             
             // 打开登录界面
-            UIManager.Instance.OpenUI<UILogin>();
+            UIManager.Instance.OpenUI<WinLogin>();
             var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }
