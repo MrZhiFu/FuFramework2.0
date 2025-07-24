@@ -65,11 +65,14 @@ namespace Hotfix.UI.View.PopWin
 	        
             Refresh();
         }
-        
+
         /// <summary>
         /// 界面关闭
         /// </summary>
-        protected override void OnClose() { }
+        protected override void OnClose()
+        {
+	        m_data = null;
+        }
 
         /// <summary>
         /// 界面销毁
