@@ -1,3 +1,4 @@
+using System;
 using FairyGUI;
 using FuFramework.UI.Runtime;
 
@@ -16,6 +17,25 @@ namespace Hotfix.UI.View.PopWin
          
          #endregion
         
+         /// <summary>
+         /// 对话框弹窗数据
+         /// </summary>
+         public sealed class DialogMessageBoxData
+         {
+	         public string Message  { get; }
+	         public Action OnEnter  { get; }
+	         public Action OnCancel { get; }
+
+	         public DialogMessageBoxData(string message, Action onEnter, Action onCancel = null)
+	         {
+		         Message  = message;
+		         OnEnter  = onEnter;
+		         OnCancel = onCancel;
+	         }
+         }
+         
+          private DialogMessageBoxData m_data;
+         
         /// <summary>
         /// 初始化
         /// </summary>  
@@ -39,6 +59,10 @@ namespace Hotfix.UI.View.PopWin
         /// </summary>
         protected override void OnOpen()
         {
+	        if (UserData is not DialogMessageBoxData userData) return;
+	        m_data = userData;
+	        txtContent.text = m_data.Message;
+	        
             Refresh();
         }
         
@@ -64,12 +88,14 @@ namespace Hotfix.UI.View.PopWin
         
 		private void OnBtnOkClick(EventContext ctx)
 		{
-			// todo
+			CloseSelf();
+			m_data.OnEnter?.Invoke();
 		}
 
 		private void OnBtnNoClick(EventContext ctx)
 		{
-			// todo
+			CloseSelf();
+			m_data.OnCancel?.Invoke();
 		}
 
         #endregion
