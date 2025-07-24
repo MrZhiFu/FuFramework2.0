@@ -8,5 +8,5 @@
     <image id="i3db1j" name="background_00_title_1920.png" path="/Res/"/>
     <image id="i3db1k" name="Background.png" path="/Res/"/>
   </resources>
-  <publish name="" path="../Unity/Assets/Resources/UI" packageCount="2" maxAtlasSize="2048" rotation="true"/>
+  <publish name="" path="../Unity/Assets/Resources/UI/{publish_file_name}" packageCount="2" maxAtlasSize="2048" rotation="true"/>
 </packageDescription>

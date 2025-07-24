@@ -1,5 +1,5 @@
 {
-  "path": "../Unity/Assets/Bundles/UI",
+  "path": "../Unity/Assets/Bundles/UI/{publish_file_name}",
   "branchPath": "",
   "fileExtension": "bytes",
   "packageCount": 2,
@@ -13,7 +13,7 @@
     "classNamePrefix": "",
     "memberNamePrefix": "",
     "packageName": null,
-    "ignoreNoname": true,
+    "ignoreNoname": false,
     "getMemberByName": true,
     "codeType": ""
   },
