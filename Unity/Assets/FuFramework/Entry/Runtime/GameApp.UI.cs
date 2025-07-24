@@ -1,5 +1,4 @@
-﻿using GameFrameX.UI.Runtime;
-using GameFrameX.Runtime;
+﻿using GameFrameX.Runtime;
 
 public static partial class GameApp
 {

@@ -1,14 +1,15 @@
 ﻿using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using FuFramework.UI.Runtime;
 using GameFrameX.Network.Runtime;
 using Hotfix.Proto;
 using SimpleJSON;
 using UnityEngine;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.UI;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 #if ENABLE_BINARY_CONFIG
 using LuBan.Runtime;
 #endif

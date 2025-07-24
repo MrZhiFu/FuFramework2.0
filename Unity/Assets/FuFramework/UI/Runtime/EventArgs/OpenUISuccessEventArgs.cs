@@ -1,14 +1,8 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
+﻿using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 打开界面成功事件。

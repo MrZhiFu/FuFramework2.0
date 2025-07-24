@@ -5,10 +5,10 @@ using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.Web.Runtime;
 using UnityEngine;
 using YooAsset;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Unity.Startup.Procedure
 {

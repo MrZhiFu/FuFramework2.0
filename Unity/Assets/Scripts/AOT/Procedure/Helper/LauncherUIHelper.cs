@@ -1,7 +1,7 @@
 ﻿using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Unity.Startup.Procedure
 {

@@ -1,7 +1,7 @@
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Hotfix.UI
 {

@@ -2,10 +2,7 @@
 
 #if ENABLE_UI_FAIRYGUI
 using FairyGUI;
-using FairyGUI.Utils;
-using GameFrameX.UI.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.UI.Runtime;
 
 namespace Hotfix.UI
 {

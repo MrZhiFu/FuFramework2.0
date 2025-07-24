@@ -4,11 +4,10 @@ using FairyGUI;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Network.Runtime;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
-using GameFrameX.UI.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Hotfix.UI
 {

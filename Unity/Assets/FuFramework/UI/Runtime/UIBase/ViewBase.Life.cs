@@ -1,8 +1,8 @@
-﻿using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
+﻿using GameFrameX.Runtime;
+using GameFrameX.Event.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面基类: 生命周期相关

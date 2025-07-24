@@ -1,10 +1,9 @@
 ﻿using System;
-using FairyGUI;
 using Cysharp.Threading.Tasks;
+using FairyGUI;
 using GameFrameX.Runtime;
-using GameFrameX.UI.Runtime;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面管理器.打开界面(打开一个界面只支持异步方式)
@@ -19,7 +18,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <typeparam name="T"></typeparam>
         public void OpenUI<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
         {
-            OpenUIAsync<T>(userData, isMultiple).Forget();
+            _OpenUIAsync<T>(userData, isMultiple).Forget();
         }
 
         /// <summary>
@@ -51,7 +50,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             T view;
 
             // 获取界面实例对象，如果对象池中存在并且不允许使用多个实例，则直接使用对象池中的对象
-            UIInstanceObject uiInstanceObject = m_InstancePool.Spawn(uiName);
+            var uiInstanceObject = m_InstancePool.Spawn(uiName);
             if (uiInstanceObject != null && isMultiple == false)
             {
                 view = uiInstanceObject.Target as T;
@@ -62,7 +61,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             view = new T();
             uiInstanceObject = UIInstanceObject.Create(view.UIName, view);
             m_InstancePool.Register(uiInstanceObject, true);
-                
+
             // UI包已经加载过，则直接通过回调创建界面
             if (FuiPackageManager.Instance.HasPackage(view.PackageName))
             {
@@ -73,7 +72,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
             // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
             await FuiPackageManager.Instance.AddPackageAsync(view.PackageName);
-            
+
             // 从正在加载的字典中移除，并创建FUI界面
             m_LoadingDict.Remove(m_SerialId);
             return CreateUIView(view, true, userData);
@@ -86,7 +85,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateUIView<T> (T view, bool isNewInstance, object userData = null) where T : ViewBase, new()
+        private T CreateUIView<T>(T view, bool isNewInstance, object userData = null) where T : ViewBase, new()
         {
             try
             {
@@ -94,10 +93,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
 
                 // 创建FUI界面。
                 var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;
-                
+
                 // 初始化界面
                 view.Init(m_SerialId, uiView, isNewInstance, userData);
-                
+
                 // FUI界面加入界面组
                 var uiGroup = view.UIGroup;
                 uiGroup.AddChild(view.UIView);
@@ -105,10 +104,10 @@ namespace GameFrameX.UI.FairyGUI.Runtime
                 {
                     uiGroup.AddUI(view);
                 }
-                
-                view._OnOpen();            // 界面打开回调
+
+                view._OnOpen(); // 界面打开回调
                 view.UpdateLocalization(); // 更新本地化文本
-                uiGroup.Refresh();         // 刷新界面组
+                uiGroup.Refresh(); // 刷新界面组
 
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);

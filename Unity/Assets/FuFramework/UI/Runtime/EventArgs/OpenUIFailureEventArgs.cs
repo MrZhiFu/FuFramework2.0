@@ -1,19 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Event.Runtime;
+﻿using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 打开界面失败事件。
     /// </summary>
-    
     public sealed class OpenUIFailureEventArgs : GameEventArgs
     {
         /// <summary>
@@ -46,9 +39,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public OpenUIFailureEventArgs()
         {
-            SerialId       = 0;
+            SerialId  = 0;
             UIName    = null;
-            UserData       = null;
+            UserData  = null;
         }
 
         /// <summary>
@@ -61,9 +54,9 @@ namespace GameFrameX.UI.Runtime
         public static OpenUIFailureEventArgs Create(int serialId, string uiName, object userData)
         {
             var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
-            openUIFailureEventArgs.SerialId     = serialId;
-            openUIFailureEventArgs.UIName       = uiName;
-            openUIFailureEventArgs.UserData     = userData;
+            openUIFailureEventArgs.SerialId = serialId;
+            openUIFailureEventArgs.UIName   = uiName;
+            openUIFailureEventArgs.UserData = userData;
             return openUIFailureEventArgs;
         }
 
@@ -72,9 +65,9 @@ namespace GameFrameX.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId       = 0;
-            UIName    = null;
-            UserData       = null;
+            SerialId = 0;
+            UIName   = null;
+            UserData = null;
         }
     }
 }

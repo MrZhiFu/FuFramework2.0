@@ -1,7 +1,4 @@
-﻿using GameFrameX.UI.FairyGUI.Runtime;
-using GameFrameX.UI.Runtime;
-
-namespace Unity.Startup
+﻿namespace Unity.Startup
 {
     public partial class UILauncher
     {

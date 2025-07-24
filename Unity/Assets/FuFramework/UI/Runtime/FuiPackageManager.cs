@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 using FairyGUI;
-using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using GameFrameX.Runtime;
+using Cysharp.Threading.Tasks;
+using GameFrameX.Asset.Runtime;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// FGui的包管理器，

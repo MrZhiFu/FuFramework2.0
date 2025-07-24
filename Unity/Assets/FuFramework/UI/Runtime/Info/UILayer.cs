@@ -1,4 +1,5 @@
-﻿namespace GameFrameX.UI.Runtime
+﻿// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面层级

@@ -1,8 +1,8 @@
 ﻿using FairyGUI;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// UI事件订阅器-界面的UI事件管理

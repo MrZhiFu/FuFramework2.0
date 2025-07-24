@@ -1,8 +1,7 @@
 ﻿using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
-using GameFrameX.UI.Runtime;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+namespace FuFramework.UI.Runtime
 {
     public sealed partial class UIManager
     {
@@ -32,7 +31,7 @@ namespace GameFrameX.UI.FairyGUI.Runtime
             protected override void Release(bool isShutdown)
             {
                 if (Target is not ViewBase viewBase)
-                    throw new GameFrameworkException("[UIInstanceObject]目标对象不是界面基类ViewBase");
+                    throw new GameFrameworkException("[UIInstanceObject]需要释放的目标对象不是界面基类ViewBase");
                 
                 viewBase.UIView.Dispose();
                 viewBase._OnDispose();

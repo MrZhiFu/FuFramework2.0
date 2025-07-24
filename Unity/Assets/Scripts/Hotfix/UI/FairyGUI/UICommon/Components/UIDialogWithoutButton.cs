@@ -3,9 +3,9 @@
 #if ENABLE_UI_FAIRYGUI
 using FairyGUI;
 using FairyGUI.Utils;
-using GameFrameX.UI.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
+using FuFramework.UI.Runtime;
 using GameFrameX.Runtime;
+using ViewBase = FuFramework.UI.Runtime.ViewBase;
 
 namespace Hotfix.UI
 {

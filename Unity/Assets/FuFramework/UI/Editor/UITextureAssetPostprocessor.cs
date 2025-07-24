@@ -1,7 +1,7 @@
 ﻿using GameFrameX.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.UI.Editor
+namespace FuFramework.UI.Editor
 {
     /// <summary>
     /// UI纹理资源导入后处理器

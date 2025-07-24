@@ -1,10 +1,10 @@
 ﻿using System;
 using FairyGUI;
-using GameFrameX.Localization.Runtime;
 using GameFrameX.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
+using GameFrameX.Localization.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面基类。
@@ -105,8 +105,8 @@ namespace GameFrameX.UI.Runtime
 
             // 创建UI事件注册器，事件注册器，定时器注册器
             UIEventRegister = FuiEventRegister.Create();
-            EventRegister   = Event.Runtime.EventRegister.Create(this);
-            TimerRegister   = Timer.Runtime.TimerRegister.Create();
+            EventRegister   = GameFrameX.Event.Runtime.EventRegister.Create(this);
+            TimerRegister   = GameFrameX.Timer.Runtime.TimerRegister.Create();
 
             try
             {

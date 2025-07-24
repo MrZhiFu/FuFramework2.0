@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using FairyGUI;
 using GameFrameX.Runtime;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
+    /// <summary>
+    /// GObject扩展类
+    /// </summary>
     public static class GObjectExtensions
     {
         /// <summary>

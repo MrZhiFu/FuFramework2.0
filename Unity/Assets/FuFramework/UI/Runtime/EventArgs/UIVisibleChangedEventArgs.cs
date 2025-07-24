@@ -1,19 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Event.Runtime;
+﻿using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面可见状态变化事件。
     /// </summary>
-    
     public sealed class UIVisibleChangedEventArgs : GameEventArgs
     {
         /// <summary>

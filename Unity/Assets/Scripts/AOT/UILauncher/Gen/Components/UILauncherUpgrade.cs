@@ -4,11 +4,11 @@
 using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FairyGUI.Utils;
+using FuFramework.UI.Runtime;
 using GameFrameX.Entity.Runtime;
-using GameFrameX.UI.Runtime;
-using GameFrameX.UI.FairyGUI.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
+using ViewBase = FuFramework.UI.Runtime.ViewBase;
 
 namespace Unity.Startup
 {

@@ -4,7 +4,8 @@ using FairyGUI;
 using GameFrameX.Runtime;
 using UnityEngine;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面组。

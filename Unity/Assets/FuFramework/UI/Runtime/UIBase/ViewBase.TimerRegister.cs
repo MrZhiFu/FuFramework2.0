@@ -2,7 +2,8 @@
 using GameFrameX.Runtime;
 using GameFrameX.Timer.Runtime;
 
-namespace GameFrameX.UI.Runtime
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 计时器订阅器-界面的计时器管理

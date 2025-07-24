@@ -1,14 +1,11 @@
 using System;
-using GameFrameX.UI.Runtime;
 using UnityEngine;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+namespace FuFramework.UI.Runtime
 {
-   
     public class GameFrameXuiToFairyGUICroppingHelper : MonoBehaviour
     {
         private Type[] m_Types;
-
        
         private void Start()
         {

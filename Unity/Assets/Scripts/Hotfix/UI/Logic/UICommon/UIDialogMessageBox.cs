@@ -1,5 +1,5 @@
 ﻿using System;
-using GameFrameX.UI.FairyGUI.Runtime;
+using UIManager = FuFramework.UI.Runtime.UIManager;
 
 namespace Hotfix.UI
 {

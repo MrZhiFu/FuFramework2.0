@@ -1,15 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GameFrameX.Runtime;
-using GameFrameX.UI.Runtime;
 
-namespace GameFrameX.UI.FairyGUI.Runtime
+namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面管理器。
