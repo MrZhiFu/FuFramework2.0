@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component size="1920,1080" bgColor="#00ff00">
-  <controller name="IsUpgrade" alias="是否更新" exported="true" pages="0,No,1,Yes" selected="0"/>
-  <controller name="IsDownload" alias="是否下载中" pages="0,No,1,Yes" selected="0"/>
+  <controller name="IsNeedUpgrade" alias="是否需要更新" exported="true" pages="0,No,1,Yes" selected="0">
+    <remark page="0" value="不需要"/>
+    <remark page="1" value="需要"/>
+  </controller>
+  <controller name="IsDownloading" alias="是否下载中" pages="0,No,1,Yes" selected="0">
+    <remark page="0" value="否"/>
+    <remark page="1" value="下载中"/>
+  </controller>
   <displayList>
     <loader id="n14_iwzd" name="bg" xy="0,0" size="1920,1080" url="ui://u7deosq0i3db1j" align="center" vAlign="middle" fill="scale">
       <relation target="" sidePair="width-width,height-height"/>
@@ -9,20 +15,20 @@
     <text id="n10_iwzd" name="_txtTips" xy="287,976" pivot="0.5,0.5" size="1346,49" font="ui://f59y7iy8ghno32" fontSize="36" color="#cccccc" align="center" autoSize="shrink" strokeColor="#2f1708" strokeSize="2" autoClearText="true" text="正在下载游戏资源  30%  (128MB)">
       <relation target="" sidePair="width-width,center-center,bottom-bottom"/>
     </text>
-    <component id="n12_iwzd" name="_progressBar" src="mw8e3" fileName="Widget/UILoadingMainProgressBar.xml" xy="0,1040" size="1920,40">
-      <gearDisplay controller="IsDownload" pages="1"/>
+    <component id="n12_iwzd" name="_progressBar" src="mw8e3" fileName="Comps/ProgressBarDownload.xml" xy="0,1040" size="1920,40">
+      <gearDisplay controller="IsDownloading" pages="1"/>
       <relation target="" sidePair="width-width,center-center,bottom-bottom"/>
       <ProgressBar max="100"/>
     </component>
     <image id="n15_7m3k" name="Bg1" src="i3db1k" fileName="Res/Background.png" xy="198,92" size="1524,895" group="n18_7m3k">
-      <gearDisplay2 controller="IsUpgrade" pages="1" condition="0"/>
+      <gearDisplay2 controller="IsNeedUpgrade" pages="1" condition="0"/>
     </image>
-    <component id="n16_7m3k" name="_btnOk" src="qew11i" fileName="Widget/UILauncherEnterButton.xml" xy="616,843" group="n18_7m3k">
-      <gearDisplay controller="IsUpgrade" pages="1"/>
+    <component id="n16_7m3k" name="_btnOk" src="qew11i" fileName="Comps/BtnSure.xml" xy="616,843" group="n18_7m3k">
+      <gearDisplay controller="IsNeedUpgrade" pages="1"/>
       <Button title="确定"/>
     </component>
     <richtext id="n17_7m3k" name="_txtContent" xy="294,220" size="1332,639" group="n18_7m3k" font="ui://f59y7iy8udcb2" fontSize="30" color="#d1c7ba" letterSpacing="1" ubb="true" vars="true" autoSize="none" autoClearText="true" text="更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本更新文本">
-      <gearDisplay2 controller="IsUpgrade" pages="1" condition="0"/>
+      <gearDisplay2 controller="IsNeedUpgrade" pages="1" condition="0"/>
     </richtext>
     <group id="n18_7m3k" name="Group_UpdateTips" xy="198,92" size="1524,895"/>
   </displayList>
