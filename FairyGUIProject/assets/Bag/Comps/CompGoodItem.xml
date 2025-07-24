@@ -2,7 +2,7 @@
 <component size="160,160" extention="Button" initName="good_item">
   <controller name="button" pages="2,up,3,down" selected="0"/>
   <displayList>
-    <loader id="n88_flr4" name="bg" xy="0,0" size="160,160" url="ui://xnc0qo2eflr4h" align="center" vAlign="middle" fill="scaleFree">
+    <loader id="n88_flr4" name="_loaderBg" xy="0,0" size="160,160" url="ui://xnc0qo2eflr4h" align="center" vAlign="middle" fill="scaleFree">
       <relation target="" sidePair="width-width,height-height"/>
     </loader>
     <loader id="n89_flr4" name="_loaderGift" xy="18,30" size="123,99" url="ui://xnc0qo2eflr4i" align="center" vAlign="middle" fill="scale">
