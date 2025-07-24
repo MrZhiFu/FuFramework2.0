@@ -5,9 +5,9 @@
 
 using System;
 using FairyGUI;
-using GameFrameX.UI.Runtime;
-using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
+using FuFramework.UI.Runtime;
+using GameFrameX.Event.Runtime;
 
 namespace #NAMESPACE#
 {
