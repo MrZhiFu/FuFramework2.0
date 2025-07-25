@@ -21,7 +21,7 @@ namespace Hotfix.UI.View.Bag
         {
 			compContent = (CompBagContent)GetChild("_compContent");
 
-			compContent.Init(this);
+			compContent.InitView(this);
         }
 
         /// <summary>

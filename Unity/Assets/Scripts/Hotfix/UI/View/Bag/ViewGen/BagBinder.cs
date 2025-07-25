@@ -4,6 +4,7 @@
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 
 using FairyGUI;
+using UnityEngine;
 using GameFrameX.Runtime;
 
 namespace Hotfix.UI.View.Bag
@@ -17,6 +18,7 @@ namespace Hotfix.UI.View.Bag
         /// <summary>
         /// 绑定所有自定义组件
         /// </summary>
+        [RuntimeInitializeOnLoadMethod]
         public static void BindAll()
         {
             Log.Info("绑定包-{Bag}下的所有自定义组件");

@@ -5,6 +5,7 @@
 
 using FairyGUI;
 using GameFrameX.Runtime;
+using UnityEngine;
 
 namespace Hotfix.UI.View.Login
 {
@@ -17,6 +18,7 @@ namespace Hotfix.UI.View.Login
         /// <summary>
         /// 绑定所有自定义组件
         /// </summary>
+        [RuntimeInitializeOnLoadMethod]
         public static void BindAll()
         {
             Log.Info("绑定包-{Login}下的所有自定义组件");

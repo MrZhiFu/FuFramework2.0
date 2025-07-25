@@ -124,6 +124,8 @@ namespace Hotfix.UI.View.Login
 		private void OnClickListPlayerItem(EventContext ctx)
 		{
 			var idx = listPlayer.GetChildIndex((GObject)ctx.data);
+			if (listPlayer.isVirtual) idx = listPlayer.ChildIndexToItemIndex(idx);
+
 			m_SelectedPlayerInfo  = playerList[idx];
 			// var data = xxxModel:GetListDataByIdx(idx);
 			loaderSelectedIcon.icon  = UIPackage.GetItemURL("Common", "wrap_1");
@@ -134,9 +136,11 @@ namespace Hotfix.UI.View.Login
 
 		private void OnRenderListPlayerItem(int idx, GObject item)
 		{
+			if (item is not CompPlayerListItem compItem) return;
 			//var data = xxxModel:GetListPlayerDataByIdx(idx);
 			var playerInfo       = playerList[idx];
-			((CompPlayerListItem)item)?.SetData(playerInfo);
+			compItem.InitView(this);
+			compItem.SetData(playerInfo);
 		}
 
 		private void OnBtnLoginClick(EventContext ctx)

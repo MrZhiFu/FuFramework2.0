@@ -5,6 +5,7 @@
 
 using System;
 using FairyGUI;
+using FairyGUI.Utils;
 using GameFrameX.Runtime;
 using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
@@ -13,9 +14,6 @@ namespace Hotfix.UI.View.Bag
 {
     public partial class CompBagItemInfo : GComponent
     {
-        /// 组件所属界面
-        private ViewBase uiView;
-
 		public const string URL = "ui://a3awyna7l50q3";
 
 		private enum EIsCanUse
@@ -33,6 +31,15 @@ namespace Hotfix.UI.View.Bag
 		private GButton btnUse;
 		private GButton btnGet;
 
+        /// 组件所属界面
+        private ViewBase uiView;
+        
+        public override void ConstructFromXML(XML xml)
+        {
+            base.ConstructFromXML(xml);
+            InitUIComp();
+        }
+        
         /// <summary>
         /// UI组件初始化
         /// </summary>
@@ -45,7 +52,7 @@ namespace Hotfix.UI.View.Bag
 			btnUse = (GButton)GetChild("_btnUse");
 			btnGet = (GButton)GetChild("_btnGet");
 
-			compBagItem.Init(this.uiView);
+			compBagItem.InitView(this.uiView);
         }
         
         /// <summary>
@@ -64,8 +71,8 @@ namespace Hotfix.UI.View.Bag
         public override void Dispose()
         {
             Log.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
-            base.Dispose();
             uiView = null;
+            base.Dispose();
         }
 
         /// <summary>

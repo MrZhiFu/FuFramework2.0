@@ -101,17 +101,6 @@ namespace FuFramework.UI.Runtime
         {
             var package = await LoadPackageAsync__(pkgName);
             await AddPackageDepAsync(package);
-
-            // 绑定该包下的所有自定义组件
-            var compBinderType = Utility.Assembly.GetType($"{package}Binder");
-            if (compBinderType != null)
-            {
-                // 获取 BindAll 方法的信息
-                var bindAllMethod = compBinderType.GetMethod("BindAll", BindingFlags.Public | BindingFlags.Static);
-                if (bindAllMethod != null) 
-                    bindAllMethod.Invoke(null, null);
-            }
-
             return package;
         }
 

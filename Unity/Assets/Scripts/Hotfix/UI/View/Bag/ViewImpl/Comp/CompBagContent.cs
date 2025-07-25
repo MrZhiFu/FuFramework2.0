@@ -37,13 +37,14 @@ namespace Hotfix.UI.View.Bag
         private BagItem _selectBagItem = null; // 选中的背包道具
 
         /// <summary>
-        /// UI组件初始化
+        /// 初始化所属界面.
+        /// 注意，如果该组件作为列表的Item使用，请在列表渲染回调方法OnRenderListXxxItem()中确保被成功调用，否则无法注册组件所属界面
         /// </summary>
-        public void Init(ViewBase view)
+        public void InitView(ViewBase view)
         {
+            if (uiView != null) return;
             Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
             uiView = view;
-            InitUIComp();
             InitUIEvent();
             InitEvent();
             InitData();
@@ -60,7 +61,7 @@ namespace Hotfix.UI.View.Bag
                 new(ItemType.Material, "材料"),
                 new(ItemType.Expendable, "消耗品"),
             };
-            
+
             listItem.numItems = _tabs.Count;
         }
 
@@ -91,7 +92,7 @@ namespace Hotfix.UI.View.Bag
             _selectBagItem = bagItem;
             compBagItem.SetData(bagItem);
         }
-        
+
         #region 交互事件以及ListItem渲染回调处理
 
         /// <summary>
@@ -124,7 +125,7 @@ namespace Hotfix.UI.View.Bag
         {
             var idx = listType.GetChildIndex((GObject)ctx.data);
             var itemTypeData = _tabs[idx];
-            
+
             _bagItems.Clear();
             _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
             if (_bagItems.Count > 0)

@@ -5,6 +5,7 @@
 
 using System;
 using FairyGUI;
+using FairyGUI.Utils;
 using GameFrameX.Runtime;
 using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
@@ -13,6 +14,12 @@ namespace Hotfix.UI.View.Login
 {
     public partial class CompPlayerListItem : GComponent
     {
+        public override void ConstructFromXML(XML xml)
+        {
+            base.ConstructFromXML(xml);
+            InitUIComp();
+        }
+
         /// 组件所属界面
         private ViewBase uiView;
 
@@ -51,8 +58,8 @@ namespace Hotfix.UI.View.Login
         public override void Dispose()
         {
             Log.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
-            base.Dispose();
             uiView = null;
+            base.Dispose();
         }
 
         /// <summary>
