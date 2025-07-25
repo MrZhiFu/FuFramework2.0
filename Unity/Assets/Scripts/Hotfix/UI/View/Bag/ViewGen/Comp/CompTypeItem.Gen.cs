@@ -12,7 +12,7 @@ using GameFrameX.Event.Runtime;
 
 namespace Hotfix.UI.View.Bag
 {
-    public partial class CompTypeItem : GButton
+    public partial class CompTypeItem : GButton, ICustomComp
     {
 		public const string URL = "ui://a3awyna7l50q4";
 

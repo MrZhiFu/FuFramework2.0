@@ -12,7 +12,7 @@ using GameFrameX.Event.Runtime;
 
 namespace Hotfix.UI.View.Bag
 {
-    public partial class CompBagContent : GComponent
+    public partial class CompBagContent : GComponent, ICustomComp
     {
 		public const string URL = "ui://a3awyna7l50q2";
 
@@ -47,8 +47,6 @@ namespace Hotfix.UI.View.Bag
 			listItem = (GList)GetChild("_listItem");
 			listType = (GList)GetChild("_listType");
 			compBagItem = (CompBagItemInfo)GetChild("_compBagItem");
-
-			compBagItem.InitView(this.uiView);
         }
         
         /// <summary>

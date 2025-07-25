@@ -12,7 +12,7 @@ using GameFrameX.Event.Runtime;
 
 namespace Hotfix.UI.View.Login
 {
-    public partial class CompPlayerListItem : GComponent
+    public partial class CompPlayerListItem : GComponent, ICustomComp
     {
         public override void ConstructFromXML(XML xml)
         {

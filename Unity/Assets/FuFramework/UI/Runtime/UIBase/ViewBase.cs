@@ -111,6 +111,10 @@ namespace FuFramework.UI.Runtime
             try
             {
                 UIView = uiView;
+                // 递归初始化子组件，传递自身实例给子组件。
+                InitChildrenView();
+                
+                // 设置全屏
                 if (IsFullScreen) UIView?.MakeFullScreen();
 
                 // 注册本地化语言改变事件
@@ -122,6 +126,21 @@ namespace FuFramework.UI.Runtime
             catch (Exception exception)
             {
                 Log.Error($"UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
+            }
+        }
+
+        /// <summary>
+        /// 递归初始化子组件，传递自身实例给子组件。
+        /// 如果子组件实现了ICustomComp接口，则递归初始化子组件。
+        /// </summary>
+        private void InitChildrenView()
+        {
+            var children = UIView.GetChildren();
+            foreach (var child in children)
+            {
+                if (child is not ICustomComp comp) continue;
+                comp.InitView(this);
+                InitChildrenView();
             }
         }
 
