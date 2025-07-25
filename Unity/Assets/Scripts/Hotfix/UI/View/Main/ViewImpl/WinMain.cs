@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.UI.Runtime;
 using Hotfix.Manager;
+using Hotfix.UI.View.Bag;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI.View.Main
@@ -68,7 +69,7 @@ namespace Hotfix.UI.View.Main
         {
             // 请求背包信息
             await BagManager.Instance.RequestGetBagInfo();
-            await UIManager.Instance.OpenUIAsync<UIBag>();
+            await UIManager.Instance.OpenUIAsync<WinBag>();
         }
         
         #region 交互事件与ListItem渲染回调处理

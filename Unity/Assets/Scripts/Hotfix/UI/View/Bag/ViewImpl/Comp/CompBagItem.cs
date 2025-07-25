@@ -26,9 +26,16 @@ namespace Hotfix.UI.View.Bag
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
-        
-        #region 交互事件以及ListItem渲染回调处理
-        
-        #endregion
+
+        /// <summary>
+        /// 设置数据
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="count"></param>
+        public void SetData(int itemId, long count)
+        {
+            compGoodItem.SetIcon(itemId);
+            compGoodItem.SetCount(count);
+        }
     }
 }

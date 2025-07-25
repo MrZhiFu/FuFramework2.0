@@ -1,4 +1,3 @@
-using FairyGUI;
 using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -15,7 +14,7 @@ namespace Hotfix.UI.View.Bag
          //@formatter:on
          
          #endregion
-        
+         
         /// <summary>
         /// 初始化
         /// </summary>  
@@ -29,10 +28,7 @@ namespace Hotfix.UI.View.Bag
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
-        {
-            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
-        }
+        private void InitEvent() { }
 
         /// <summary>
         /// 界面打开
@@ -59,9 +55,5 @@ namespace Hotfix.UI.View.Bag
         {
         	// TODO：刷新逻辑
         }
-
-        #region 交互事件与ListItem渲染回调处理
-        
-        #endregion
     }
 }

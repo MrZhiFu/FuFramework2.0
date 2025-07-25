@@ -26,22 +26,18 @@ namespace Hotfix.UI.View.Bag
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
-        
+
         /// <summary>
         /// 设置物品的图标
         /// </summary>
         /// <param name="itemId"></param>
         /// <returns></returns>
-        public CompGoodItem SetIcon(int itemId)
+        public void SetIcon(int itemId)
         {
             var itemConfig = GameApp.Config.GetConfig<TbItemConfig>().Get(itemId);
-            if (itemConfig.IsNotNull())
-            {
-                loaderGift.icon = Utility.Asset.Path.GetImagePath(itemConfig.Icon);
-                loaderBg.icon   = Utility.Asset.Path.GetImagePath(itemConfig.BgIcon);
-            }
-
-            return this;
+            if (!itemConfig.IsNotNull()) return;
+            loaderGift.icon = Utility.Asset.Path.GetImagePath(itemConfig.Icon);
+            loaderBg.icon = Utility.Asset.Path.GetImagePath(itemConfig.BgIcon);
         }
 
         /// <summary>
@@ -49,14 +45,9 @@ namespace Hotfix.UI.View.Bag
         /// </summary>
         /// <param name="count"></param>
         /// <returns></returns>
-        public CompGoodItem SetCount(long count)
+        public void SetCount(long count)
         {
             txtNum.text = count.ToString();
-            return this;
         }
-        
-        #region 交互事件以及ListItem渲染回调处理
-        
-        #endregion
     }
 }
