@@ -80,7 +80,7 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         -- 如果组件逻辑代码文件存在，则不再生成
         if Tool:IsFileExists(targetPath) then
             Tool:Log("组件代码文件%s已存在，不再生成", compCls.resName)
-            return
+            goto continue
         end
 
         -- 创建存放代码的文件夹=>.../ViewImpl/Comp
@@ -114,6 +114,7 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
 
         -- 写入替换完成后的代码文件WinXxx.cs
         Tool:WriteTxt(targetPath, templateCode)
+        :: continue ::
     end
 end
 

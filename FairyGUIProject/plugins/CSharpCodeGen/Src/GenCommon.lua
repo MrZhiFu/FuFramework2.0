@@ -137,21 +137,21 @@ function GenCommon:GenCompInit(dataList, compArray, AllClsMap)
     end
 end
 
---- 生成自定义组件的初始化Init函数C#代码：compXXX.Init(this)，注入该组件所属的界面
+--- 生成自定义组件的初始化Init函数C#代码：compXXX.InitView(this.uiView)，注入该组件所属的界面
 function GenCommon:GenCustomCompInit(dataList, compArray, AllClsMap, isComp)
     if #compArray <= 0 then
         return
     end
 
-    Tool:Log("生成自定义组件的初始化Init函数C#代码")
+    Tool:Log("生成自定义组件的初始化InitView函数C#代码")
     for _, comp in ipairs(compArray) do
         local comType = Tool:GetCompType(comp.comp, AllClsMap)
         local paramName = Tool:FormatVarName(comp.comp.name)
         if Tool:StartWith(comType, "Comp") then
-            local comDef = string.format("\t\t\t%s.Init(this);", paramName)
+            local comDef = string.format("\t\t\t%s.InitView(this);", paramName)
             if isComp then
-                -- 如果是自定义组件里面的自定义组件，传递uiView到Init方法中
-                comDef = string.format("\t\t\t%s.Init(this.uiView);", paramName)
+                -- 如果是自定义组件里面的自定义组件，传递uiView到InitView方法中
+                comDef = string.format("\t\t\t%s.InitView(this.uiView);", paramName)
             end
             table.insert(dataList, comDef)
         end
@@ -314,11 +314,14 @@ function GenCommon:GenListOnRenderHandler(dataList, resName, upName)
     table.insert(dataList, upName)
     table.insert(dataList, "Item(int idx, GObject item)\n")
     table.insert(dataList, "\t\t{\n")
+    table.insert(dataList, "\t\t\tif (item is not ")
+    table.insert(dataList, upName)
+    table.insert(dataList, " compItem) return;")
     table.insert(dataList, "\t\t\t//var data = xxxModel:Get")
     table.insert(dataList, upName)
     table.insert(dataList, "DataByIdx(idx);\n")
-    table.insert(dataList, string.format("\t\t\t//Make Sure the %s is Exported\n", resName))
-    table.insert(dataList, string.format("\t\t\t//((%s)item)?.SetData(data);\n", resName))
+    table.insert(dataList, "\t\t\tcompItem.InitView(this);\n")
+    table.insert(dataList, "\t\t\t//compItem.SetData(data);\n")
     table.insert(dataList, "\t\t\t// todo\n")
     table.insert(dataList, "\t\t}\n\n")
 end
@@ -393,8 +396,10 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
         -- 列表
     elseif type == "GList" then
         local dataList = {}
-
-        table.insert(dataList, "\t\t\t//var idx = ((GObject)ctx.data)?.ItemIndex;\n")
+        
+        local lowerName = Tool:FirstCharLower("%s")
+        table.insert(dataList, Tool:StrFormat("\t\t\tvar idx = %s.GetChildIndex((GObject)ctx.data);\n", lowerName))
+        table.insert(dataList, Tool:StrFormat("\t\t\tif (%s.isVirtual) idx = %s.ChildIndexToItemIndex(idx);\n", lowerName, lowerName))
         table.insert(dataList, "\t\t\t//var data = xxxModel:Get")
         table.insert(dataList, "ListDataByIdx(idx);\n")
 

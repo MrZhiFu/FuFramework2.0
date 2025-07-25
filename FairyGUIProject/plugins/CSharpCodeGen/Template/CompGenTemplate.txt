@@ -5,6 +5,7 @@
 
 using System;
 using FairyGUI;
+using FairyGUI.Utils;
 using GameFrameX.Runtime;
 using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
@@ -13,10 +14,16 @@ namespace #NAMESPACE#
 {
     public partial class #COMPNAME# : #COMPTYPE#
     {
+#CompDefine#
         /// 组件所属界面
         private ViewBase uiView;
-
-#CompDefine#
+        
+        public override void ConstructFromXML(XML xml)
+        {
+            base.ConstructFromXML(xml);
+            InitUIComp();
+        }
+        
         /// <summary>
         /// UI组件初始化
         /// </summary>
@@ -40,8 +47,8 @@ namespace #NAMESPACE#
         public override void Dispose()
         {
             Log.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
-            base.Dispose();
             uiView = null;
+            base.Dispose();
         }
 
         /// <summary>
