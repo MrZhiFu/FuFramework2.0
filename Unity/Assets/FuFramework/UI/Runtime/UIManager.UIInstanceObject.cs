@@ -33,6 +33,7 @@ namespace FuFramework.UI.Runtime
                 if (Target is not ViewBase viewBase)
                     throw new GameFrameworkException("[UIInstanceObject]需要释放的目标对象不是界面基类ViewBase");
                 
+                viewBase.UIView?.Dispose();
                 viewBase._OnDispose();
             }
         }
