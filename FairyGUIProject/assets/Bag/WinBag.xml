@@ -10,5 +10,6 @@
     <component id="n22_dsha" name="_compContent" src="l50q2" fileName="Comps/CompBagContent.xml" xy="160,28">
       <relation target="" sidePair="center-center,middle-middle"/>
     </component>
+    <component id="n40_ssyy" name="_btnClose" src="rnzid" fileName="Comps/Btns/BtnBack.xml" pkg="ats3vms3" xy="1643,23" size="100,100"/>
   </displayList>
 </component>

@@ -1,3 +1,4 @@
+using FairyGUI;
 using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -53,7 +54,12 @@ namespace Hotfix.UI.View.Bag
         /// </summary>
         private void Refresh()
         {
-        	// TODO：刷新逻辑
+        	compContent.Refresh();
+        }
+
+        private void OnBtnCloseClick(EventContext context)
+        {
+            CloseSelf();
         }
     }
 }

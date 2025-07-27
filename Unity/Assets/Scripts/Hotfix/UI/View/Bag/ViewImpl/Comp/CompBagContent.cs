@@ -61,8 +61,6 @@ namespace Hotfix.UI.View.Bag
                 new(ItemType.Material, "材料"),
                 new(ItemType.Expendable, "消耗品"),
             };
-
-            listItem.numItems = _tabs.Count;
         }
 
         /// <summary>
@@ -71,6 +69,28 @@ namespace Hotfix.UI.View.Bag
         public void InitEvent()
         {
             Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
+        }
+
+        public void Refresh()
+        {  
+            // var itemTypeData = _tabs[0];
+            // _bagItems.Clear();
+            // _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
+            // if (_bagItems.Count > 0)
+            // {
+            //     listItem.selectedIndex = 0;
+            //     SetController(EIsSelectedItem.Yes);
+            //     var bagItem = _bagItems[0];
+            //     UpdateSelectItem(bagItem);
+            // }
+            // else
+            // {
+            //     SetController(EIsSelectedItem.No);
+            //     _selectBagItem = null;
+            // }
+            
+            listItem.numItems = _bagItems.Count;
+            listType.numItems = _tabs.Count;
         }
 
         /// <summary>
@@ -114,7 +134,10 @@ namespace Hotfix.UI.View.Bag
         private void OnRenderListItemItem(int idx, GObject item)
         {
             var bagItem = _bagItems[idx];
-            ((CompBagItem)item)?.SetData(bagItem.ItemId, bagItem.Count);
+            if (item is not CompBagItem compItem) return;
+            //var data = xxxModel:GetListPlayerDataByIdx(idx);
+            compItem.InitView(uiView);
+            compItem.SetData(bagItem.ItemId, bagItem.Count);
         }
 
         /// <summary>
@@ -149,7 +172,10 @@ namespace Hotfix.UI.View.Bag
         /// <param name="item"></param>
         private void OnRenderListTypeItem(int idx, GObject item)
         {
-            ((CompTypeItem)item)?.SetData(_tabs[idx].Name);
+            if (item is not CompTypeItem compItem) return;
+            //var data = xxxModel:GetListPlayerDataByIdx(idx);
+            compItem.InitView(uiView);
+            compItem.SetData(_tabs[idx].Name);
         }
 
         #endregion
