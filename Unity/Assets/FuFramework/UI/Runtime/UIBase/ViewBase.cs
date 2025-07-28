@@ -60,6 +60,11 @@ namespace FuFramework.UI.Runtime
         /// 界面所属的层级。
         /// </summary>
         protected virtual UILayer Layer => UILayer.Normal;
+        
+        /// <summary>
+        /// 界面打开/关闭时的动画类型。
+        /// </summary>
+        protected virtual UITweenType TweenType => UITweenType.Fade;
 
         /// <summary>
         /// 获取界面所属的界面组。
