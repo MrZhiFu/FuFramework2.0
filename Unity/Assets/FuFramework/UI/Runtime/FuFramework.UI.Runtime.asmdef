@@ -9,7 +9,8 @@
         "YooAsset.Runtime",
         "GameFrameX.Localization.Runtime",
         "FairyGUI",
-        "GameFrameX.Timer.Runtime"
+        "GameFrameX.Timer.Runtime",
+        "GameFrameX.Web.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

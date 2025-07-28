@@ -1,13 +1,17 @@
 ﻿using System;
-using System.IO;
 using FairyGUI;
+using System.IO;
+using UnityEngine;
 using GameFrameX.Runtime;
+using GameFrameX.Web.Runtime;
+using GameFrameX.Asset.Runtime;
+using System.Collections.Generic;
+using Object = UnityEngine.Object;
 
-namespace Unity.Startup
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+// ReSharper disable once InconsistentNaming 禁用命名风格检查
+namespace FuFramework.UI.Runtime
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-
     /// <summary>
     /// FUI自定义Loader加载器的LRU缓存机制
     /// </summary>
@@ -18,32 +22,28 @@ namespace Unity.Startup
         /// </summary>
         private class CacheItem
         {
-            /// <summary>
             /// 缓存的Key
-            /// </summary>
             public readonly string Key;
 
-            /// <summary>
             /// 缓存的纹理
-            /// </summary>
             public NTexture Texture;
 
             public CacheItem(string key, NTexture texture)
             {
-                Key     = key;
+                Key = key;
                 Texture = texture;
             }
         }
 
-        private readonly int                           _maxCapacity; // 最大容量
-        private readonly Dictionary<string, CacheItem> _cacheDict;   // 缓存字典，Key为资源路径，Value为缓存项
-        private readonly LinkedList<CacheItem>         _lruList;     // 最近使用列表
+        private readonly int _maxCapacity; // 最大容量
+        private readonly Dictionary<string, CacheItem> _cacheDict; // 缓存字典，Key为资源路径，Value为缓存项
+        private readonly LinkedList<CacheItem> _lruList; // 最近使用列表
 
         public LRUCache(int maxCapacity)
         {
             _maxCapacity = maxCapacity;
-            _cacheDict   = new Dictionary<string, CacheItem>();
-            _lruList     = new LinkedList<CacheItem>();
+            _cacheDict = new Dictionary<string, CacheItem>();
+            _lruList = new LinkedList<CacheItem>();
         }
 
         /// <summary>
@@ -91,7 +91,6 @@ namespace Unity.Startup
             }
         }
 
-
         /// <summary>
         /// 移除最少使用的项
         /// </summary>
@@ -132,14 +131,13 @@ namespace Unity.Startup
         }
     }
 
-
     /// <summary>
     /// FairyGUI 自定义Loader加载器，
     /// 功能：
-    /// 1.实现了网络资源和AB包内资源的加载
+    /// 1.实现了网络纹理资源和YooAsset包内纹理资源的加载
     /// 2.实现了LRU缓存机制，避免重复加载资源
     /// </summary>
-    public sealed class FuiCustomLoader : GLoader
+    public sealed class CustomLoader : GLoader
     {
         /// <summary>
         /// Loader 纹理LRU缓存
@@ -151,13 +149,11 @@ namespace Unity.Startup
         /// </summary>
         private static string _cachePath;
 
-        public FuiCustomLoader()
+        public CustomLoader()
         {
             _cachePath = PathHelper.AppHotfixResPath + "/cache/images/";
-            if (!Directory.Exists(_cachePath))
-            {
+            if (!Directory.Exists(_cachePath)) 
                 Directory.CreateDirectory(_cachePath);
-            }
         }
 
         /// <summary>
@@ -174,9 +170,11 @@ namespace Unity.Startup
                 }
 
                 NTexture tempTexture = null;
+
+                // 1.从网络资源获取
                 if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
                 {
-                    // 1.先看缓存中是否有，如果没有则从网络资源获取
+                    // 先看缓存中是否有，如果有则直接使用缓存的纹理
                     var nTexture = s_Cache.Get(url);
                     if (!nTexture.IsNull())
                     {
@@ -185,10 +183,10 @@ namespace Unity.Startup
                     else
                     {
                         var hash = Utility.Hash.MD5.Hash(url);
-
-                        var path      = $"{_cachePath}{hash}.png";
-                        var isExists  = FileHelper.IsExists(path);
+                        var path = $"{_cachePath}{hash}.png";
+                        var isExists = FileHelper.IsExists(path);
                         var texture2D = Texture2D.whiteTexture;
+
                         if (isExists)
                         {
                             var buffer = FileHelper.ReadAllBytes(path);
@@ -196,7 +194,7 @@ namespace Unity.Startup
                         }
                         else
                         {
-                            var webBufferResult = await GameApp.Web.GetToBytes(url, null);
+                            var webBufferResult = await GameEntry.GetComponent<WebComponent>().GetToBytes(url, null);
                             FileHelper.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
                         }
@@ -205,14 +203,17 @@ namespace Unity.Startup
                         s_Cache.Put(url, tempTexture);
                     }
                 }
+
+                // 2.从FairyGUI的Package包内获取
                 else if (url.StartsWithFast("ui://"))
                 {
-                    // 2.从FairyGUI的Package包内获取
                     LoadContent();
                 }
+
+                // 3.从资源管理器中获取
                 else
                 {
-                    // 1.先看缓存中是否有，没有则从资源管理器中获取
+                    // 先看缓存中是否有，有则使用缓存的纹理
                     var nTexture = s_Cache.Get(url);
                     if (nTexture.IsNotNull())
                     {
@@ -220,10 +221,11 @@ namespace Unity.Startup
                     }
                     else
                     {
-                        var assetInfo = GameApp.Asset.GetAssetInfo(url);
+                        var assetComponent = GameEntry.GetComponent<AssetComponent>();
+                        var assetInfo = assetComponent.GetAssetInfo(url);
                         if (assetInfo.IsInvalid == false)
                         {
-                            var assetHandle = await GameApp.Asset.LoadAssetAsync<Texture2D>(url);
+                            var assetHandle = await assetComponent.LoadAssetAsync<Texture2D>(url);
                             if (assetHandle.IsSucceed)
                             {
                                 tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
