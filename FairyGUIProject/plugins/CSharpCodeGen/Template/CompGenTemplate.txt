@@ -34,7 +34,7 @@ namespace #NAMESPACE#
         /// </summary>
         public void Init(ViewBase view)
         {
-	        if (uiView == null)
+	        if (view == null)
 	        {
 		        Log.Error($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
 		        return;
