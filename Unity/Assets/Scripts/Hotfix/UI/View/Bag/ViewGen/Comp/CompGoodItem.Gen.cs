@@ -14,6 +14,9 @@ namespace Hotfix.UI.View.Bag
 {
     public partial class CompGoodItem : GButton, ICustomComp
     {
+        /// 组件所属界面
+        private ViewBase uiView;
+            
 		public const string URL = "ui://a3awyna772ce2u";
 
 		private enum Ebutton
@@ -29,14 +32,33 @@ namespace Hotfix.UI.View.Bag
 		private GLoader loaderGift;
 		private GTextField txtNum;
 
-        /// 组件所属界面
-        private ViewBase uiView;
-        
+		/// <summary>
+		/// 组件被构造时由FUI自动调用
+		/// </summary>
+		/// <param name="xml">组件描述结构</param>
         public override void ConstructFromXML(XML xml)
         {
             base.ConstructFromXML(xml);
             InitUIComp();
         }
+        
+        /// <summary>
+        /// 初始化所属界面.
+        /// 注意，如果该组件作为列表的Item使用，请在列表渲染回调方法OnRenderListXxxItem()中确保被成功调用，否则无法注册组件所属界面
+        /// </summary>
+        public void Init(ViewBase view)
+        {
+	        if (view == null)
+	        {
+		        Log.Error($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
+		        return;
+	        }
+	        Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
+	        uiView = view;
+	        InitUIEvent();
+	        InitEvent();
+	        OnInit();
+        } 
         
         /// <summary>
         /// UI组件初始化
@@ -74,32 +96,32 @@ namespace Hotfix.UI.View.Bag
         /// </summary>
         /// <param name="listener">监听者</param>
         /// <param name="callback">回调函数</param>
-        protected void AddUIListener(EventListener listener, EventCallback1 callback) => uiView.AddUIListener(listener, callback);
+        protected void AddUIListener(EventListener listener, EventCallback1 callback) => uiView?.AddUIListener(listener, callback);
 
         /// <summary>
         /// 设置UI上指定组件的监听事件(会删除以前添加的事件)
         /// </summary>
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         /// <param name="callback">回调函数</param>
-        protected void SetUIListener(EventListener listener, EventCallback1 callback) => uiView.SetUIListener(listener, callback);
+        protected void SetUIListener(EventListener listener, EventCallback1 callback) => uiView?.SetUIListener(listener, callback);
 
         /// <summary>
         /// 移除UI上指定组件的监听事件
         /// </summary>
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         /// <param name="callback">回调函数</param>
-        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => uiView.RemoveUIListener(listener, callback);
+        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => uiView?.RemoveUIListener(listener, callback);
         
         /// <summary>
         /// 清理UI上指定组件的所有监听事件
         /// </summary>
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
-        protected void ClearUIListener(EventListener listener) => uiView.ClearUIListener(listener);
+        protected void ClearUIListener(EventListener listener) => uiView?.ClearUIListener(listener);
 
         /// <summary>
         /// 清理UI上所有组件的所有监听事件
         /// </summary>
-        protected void ClearAllUIListener() => uiView.ClearAllUIListener();
+        protected void ClearAllUIListener() => uiView?.ClearAllUIListener();
 
         
         /// <summary>
@@ -107,40 +129,40 @@ namespace Hotfix.UI.View.Bag
         /// </summary>
         /// <param name="eventId">消息ID</param>
         /// <param name="handler">处理对象</param>
-        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView.Subscribe(eventId, handler);
+        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView?.Subscribe(eventId, handler);
 
         /// <summary>
         /// 取消订阅事件
         /// </summary>
         /// <param name="eventId">消息ID</param>
         /// <param name="handler">处理对象</param>
-        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView.UnSubscribe(eventId, handler);
+        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView?.UnSubscribe(eventId, handler);
 
         /// <summary>
         /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="eventId">消息ID</param>
         /// <param name="e">消息对象</param>
-        protected void Fire(string eventId, GameEventArgs e) => uiView.Fire(eventId, e);
+        protected void Fire(string eventId, GameEventArgs e) => uiView?.Fire(eventId, e);
 
         /// <summary>
         /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        protected void Fire(object sender, string eventId) => uiView.Fire(sender, eventId);
+        protected void Fire(object sender, string eventId) => uiView?.Fire(sender, eventId);
 
         /// <summary>
         /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="e">事件内容。</param>
-        protected void FireNow(object sender, GameEventArgs e) =>  uiView.FireNow(sender, e);
+        protected void FireNow(object sender, GameEventArgs e) =>  uiView?.FireNow(sender, e);
 
         /// <summary>
         /// 取消所有订阅
         /// </summary>
-        protected void UnSubscribeAll() => uiView.UnSubscribeAll();
+        protected void UnSubscribeAll() => uiView?.UnSubscribeAll();
 
 
         /// <summary>
@@ -151,7 +173,7 @@ namespace Hotfix.UI.View.Bag
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         protected void AddTimer(float interval, int repeat, Action<object> callback, object callbackParam = null)
-            => uiView.AddTimer(interval, repeat,callback, callbackParam);
+            => uiView?.AddTimer(interval, repeat,callback, callbackParam);
 
         /// <summary>
         /// 添加一个只执行一次的任务
@@ -160,7 +182,7 @@ namespace Hotfix.UI.View.Bag
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         protected void AddTimerOnce(float interval, Action<object> callback, object callbackParam = null) 
-            => uiView.AddTimerOnce(interval, callback, callbackParam);
+            => uiView?.AddTimerOnce(interval, callback, callbackParam);
 
         /// <summary>
         /// 添加一个每帧更新执行的任务
@@ -168,17 +190,17 @@ namespace Hotfix.UI.View.Bag
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数</param>
         protected void AddTimerUpdate(Action<object> callback, object callbackParam = null) 
-            => uiView.AddTimerUpdate(callback, callbackParam);
+            => uiView?.AddTimerUpdate(callback, callbackParam);
 
         /// <summary>
         /// 移除指定的任务
         /// </summary>
         /// <param name="callback">要移除的回调函数</param>
-        protected void RemoveTimer(Action<object> callback) => uiView.RemoveTimer(callback);
+        protected void RemoveTimer(Action<object> callback) => uiView?.RemoveTimer(callback);
  
         /// <summary>
         /// 移除所有计时任务
         /// </summary>
-        protected void RemoveAllTimer() => uiView.RemoveAllTimer();
+        protected void RemoveAllTimer() => uiView?.RemoveAllTimer();
     }
 }

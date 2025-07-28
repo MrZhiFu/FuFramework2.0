@@ -4,8 +4,8 @@
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 
 using FairyGUI;
-using GameFrameX.Runtime;
 using UnityEngine;
+using GameFrameX.Runtime;
 
 namespace Hotfix.UI.View.Login
 {

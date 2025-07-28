@@ -1,5 +1,4 @@
 using GameFrameX.Runtime;
-using FuFramework.UI.Runtime;
 using Hotfix.Config.Tables;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -8,15 +7,11 @@ namespace Hotfix.UI.View.Bag
     public partial class CompGoodItem
     {
         /// <summary>
-        /// 初始化所属界面.
-        /// 注意，如果该组件作为列表的Item使用，请在列表渲染回调方法OnRenderListXxxItem()中确保被成功调用，否则无法注册组件所属界面
+        /// 初始化
         /// </summary>
-        public void Init(ViewBase view)
-        {
-            Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
-            uiView = view;
-            InitUIEvent();
-            InitEvent();
+        private void OnInit()
+        { 
+            // DoSomething
         }
 
         /// <summary>
