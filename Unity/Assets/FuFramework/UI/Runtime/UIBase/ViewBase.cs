@@ -111,6 +111,7 @@ namespace FuFramework.UI.Runtime
             try
             {
                 UIView = uiView;
+                UIView.fairyBatching = true;
                 
                 // 设置全屏
                 if (IsFullScreen) UIView?.MakeFullScreen();
