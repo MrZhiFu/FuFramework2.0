@@ -139,7 +139,7 @@ namespace Hotfix.UI.View.Login
 			if (item is not CompPlayerListItem compItem) return;
 			//var data = xxxModel:GetListPlayerDataByIdx(idx);
 			var playerInfo       = playerList[idx];
-			compItem.InitView(this);
+			compItem.Init(this);
 			compItem.SetData(playerInfo);
 		}
 

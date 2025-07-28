@@ -140,7 +140,7 @@ namespace FuFramework.UI.Runtime
             foreach (var child in children)
             {
                 if (child is not ICustomComp comp) continue;
-                comp.InitView(this);
+                comp.Init(this);
                 InitChildrenView(child as GComponent);
             }
         }

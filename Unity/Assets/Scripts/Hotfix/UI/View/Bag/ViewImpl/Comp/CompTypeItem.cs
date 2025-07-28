@@ -10,7 +10,7 @@ namespace Hotfix.UI.View.Bag
         /// <summary>
         /// UI组件初始化
         /// </summary>
-        public void InitView(ViewBase view)
+        public void Init(ViewBase view)
         {
             Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
             uiView = view;

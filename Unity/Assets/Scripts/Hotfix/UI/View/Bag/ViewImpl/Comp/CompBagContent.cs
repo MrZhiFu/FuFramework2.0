@@ -40,9 +40,13 @@ namespace Hotfix.UI.View.Bag
         /// 初始化所属界面.
         /// 注意，如果该组件作为列表的Item使用，请在列表渲染回调方法OnRenderListXxxItem()中确保被成功调用，否则无法注册组件所属界面
         /// </summary>
-        public void InitView(ViewBase view)
+        public void Init(ViewBase view)
         {
-            if (uiView != null) return;
+            if (uiView == null)
+            {
+                Log.Error($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
+                return;
+            }
             Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
             uiView = view;
             InitUIEvent();
@@ -73,22 +77,6 @@ namespace Hotfix.UI.View.Bag
 
         public void Refresh()
         {  
-            // var itemTypeData = _tabs[0];
-            // _bagItems.Clear();
-            // _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
-            // if (_bagItems.Count > 0)
-            // {
-            //     listItem.selectedIndex = 0;
-            //     SetController(EIsSelectedItem.Yes);
-            //     var bagItem = _bagItems[0];
-            //     UpdateSelectItem(bagItem);
-            // }
-            // else
-            // {
-            //     SetController(EIsSelectedItem.No);
-            //     _selectBagItem = null;
-            // }
-            
             listItem.numItems = _bagItems.Count;
             listType.numItems = _tabs.Count;
         }
@@ -136,7 +124,7 @@ namespace Hotfix.UI.View.Bag
             var bagItem = _bagItems[idx];
             if (item is not CompBagItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
-            compItem.InitView(uiView);
+            compItem.Init(uiView);
             compItem.SetData(bagItem.ItemId, bagItem.Count);
         }
 
@@ -174,7 +162,7 @@ namespace Hotfix.UI.View.Bag
         {
             if (item is not CompTypeItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
-            compItem.InitView(uiView);
+            compItem.Init(uiView);
             compItem.SetData(_tabs[idx].Name);
         }
 

@@ -2,7 +2,7 @@
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 自定义组件接口
+    /// 自定义组件接口，用于实现自定义组件的初始化，注入自定义组件所属界面
     /// </summary>
     public interface ICustomComp
     {
@@ -10,6 +10,6 @@ namespace FuFramework.UI.Runtime
         /// 初始化View
         /// </summary>
         /// <param name="view"></param>
-        void InitView(ViewBase view);
+        void Init(ViewBase view);
     }
 }
