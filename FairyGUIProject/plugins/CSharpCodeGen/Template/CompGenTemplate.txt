@@ -12,12 +12,9 @@ using GameFrameX.Event.Runtime;
 
 namespace #NAMESPACE#
 {
-    public partial class #COMPNAME# : #COMPTYPE#
+    public partial class #COMPNAME# : #COMPTYPE#, ICustomComp
     {
 #CompDefine#
-        /// 组件所属界面
-        private ViewBase uiView;
-        
         public override void ConstructFromXML(XML xml)
         {
             base.ConstructFromXML(xml);
