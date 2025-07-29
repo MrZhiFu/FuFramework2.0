@@ -1,7 +1,6 @@
-﻿using System;
+﻿using FairyGUI;
 using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -36,7 +35,7 @@ namespace FuFramework.UI.Runtime
             {
                 case UITweenType.None: OnOpen(); return;
                 case UITweenType.Fade: UIView.TweenFade(1, TweenDuration).OnComplete(OnOpen); return;
-                case UITweenType.Custom: DoCustomTweenOpen(); return;
+                case UITweenType.Custom: OnCustomTweenOpen(); return;
                 default: OnOpen(); break;
             }
         }
@@ -104,7 +103,7 @@ namespace FuFramework.UI.Runtime
             {
                 case UITweenType.None: OnClose(); return;
                 case UITweenType.Fade: UIView.TweenFade(0, TweenDuration).OnComplete(OnClose); return;
-                case UITweenType.Custom: DoCustomTweenClose(); return;
+                case UITweenType.Custom: OnCustomTweenClose(); return;
                 default: OnClose(); return;
             }
         }
@@ -154,6 +153,34 @@ namespace FuFramework.UI.Runtime
         private void _OnLocalizationLanguageChanged(object sender, GameEventArgs e)
         {
             UpdateLocalization();
+        }
+        
+        /// <summary>
+        /// 自定义界面打开动画
+        /// </summary>
+        private void OnCustomTweenOpen()
+        {
+            var gTween = DoCustomTweenOpen();
+            if (gTween == null)
+            {
+                OnOpen();
+                return;
+            }
+            gTween.OnComplete(OnOpen);
+        }
+
+        /// <summary>
+        /// 自定义界面关闭动画
+        /// </summary>
+        private void OnCustomTweenClose()
+        {
+            var gTween = DoCustomTweenClose();
+            if (gTween == null)
+            {
+                OnClose();
+                return;
+            }
+            gTween.OnComplete(OnClose);
         }
 
         #endregion
@@ -220,12 +247,12 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 自定义界面打开动画(可重写实现属于自身自定义动画)
         /// </summary>
-        protected virtual void DoCustomTweenOpen() => OnOpen();
+        protected virtual GTweener DoCustomTweenOpen() => null;
 
         /// <summary>
         /// 自定义界面关闭动画(可重写实现属于自身自定义动画)
         /// </summary>
-        protected virtual void DoCustomTweenClose() => OnClose();
+        protected virtual GTweener DoCustomTweenClose() => null;
         
         #endregion
     }
