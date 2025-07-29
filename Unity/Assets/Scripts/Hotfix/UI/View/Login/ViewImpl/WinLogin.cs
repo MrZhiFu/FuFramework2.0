@@ -107,17 +107,10 @@ namespace Hotfix.UI.View.Login
             // 将角色列表保存到Manager中
             AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
 
-
             if (respPlayerList.PlayerList.Count > 0)
-            {
-                // 有角色，打开角色列表界面
-                UIManager.Instance.OpenUI<WinPlayerList>();
-            }
+                UIManager.Instance.OpenUI<WinPlayerList>(); // 有角色，打开角色列表界面
             else
-            {
-                // 无角色，打开角色创建界面
-                UIManager.Instance.OpenUI<WinPlayerCreate>();
-            }
+                UIManager.Instance.OpenUI<WinPlayerCreate>();// 无角色，打开角色创建界面
 
             // 关闭当前界面
             UIManager.Instance.CloseUI(this);

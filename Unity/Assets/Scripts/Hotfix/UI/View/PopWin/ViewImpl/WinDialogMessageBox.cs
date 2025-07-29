@@ -93,13 +93,13 @@ namespace Hotfix.UI.View.PopWin
 		private void OnBtnOkClick(EventContext ctx)
 		{
 			CloseSelf();
-			m_data.OnEnter?.Invoke();
+			m_data?.OnEnter?.Invoke();
 		}
 
 		private void OnBtnNoClick(EventContext ctx)
 		{
 			CloseSelf();
-			m_data.OnCancel?.Invoke();
+			m_data?.OnCancel?.Invoke();
 		}
 
         #endregion
