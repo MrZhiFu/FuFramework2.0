@@ -14,9 +14,10 @@ namespace Hotfix.UI.View.Login
         #region 界面基本属性(无特殊需求，可不做修改)
  
          //@formatter:off
-         protected override UILayer Layer     => UILayer.Normal; // 界面所属的层级。
-         protected override bool IsFullScreen => true;           // 是否是全屏界面。
-         public override bool PauseCoveredUI  => false;          // 显示时是否暂停被覆盖的界面。
+         protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
+         protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
+         protected override bool IsFullScreen     => true;             // 是否是全屏界面。
+         public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
         //@formatter:on
 
         #endregion

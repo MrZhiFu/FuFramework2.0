@@ -67,6 +67,11 @@ namespace FuFramework.UI.Runtime
         protected virtual UITweenType TweenType => UITweenType.Fade;
 
         /// <summary>
+        /// 界面打开/关闭时的动画时长。
+        /// </summary>
+        protected virtual float TweenDuration => 0.25f;
+        
+        /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
         public UIGroup UIGroup => UIManager.Instance.GetUIGroup(Layer);

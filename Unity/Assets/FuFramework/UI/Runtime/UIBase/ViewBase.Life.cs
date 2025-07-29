@@ -1,5 +1,7 @@
-﻿using GameFrameX.Runtime;
+﻿using System;
+using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -28,7 +30,15 @@ namespace FuFramework.UI.Runtime
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]打开-OnOpen().");
             Visible = true;
-            OnOpen();
+
+            // 界面打开动画
+            switch (TweenType)
+            {
+                case UITweenType.None: OnOpen(); return;
+                case UITweenType.Fade: UIView.TweenFade(1, TweenDuration).OnComplete(OnOpen); return;
+                case UITweenType.Custom: DoCustomTweenOpen(); return;
+                default: OnOpen(); break;
+            }
         }
 
         /// <summary>
@@ -88,9 +98,17 @@ namespace FuFramework.UI.Runtime
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
             Visible = false;
-            OnClose();
-        }
 
+            // 界面关闭动画
+            switch (TweenType)
+            {
+                case UITweenType.None: OnClose(); return;
+                case UITweenType.Fade: UIView.TweenFade(0, TweenDuration).OnComplete(OnClose); return;
+                case UITweenType.Custom: DoCustomTweenClose(); return;
+                default: OnClose(); return;
+            }
+        }
+        
         /// <summary>
         /// 界面回收。
         /// </summary>
@@ -98,7 +116,7 @@ namespace FuFramework.UI.Runtime
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
 
-            SerialId       = 0;
+            SerialId = 0;
             DepthInUIGroup = 0;
             OnRecycle();
         }
@@ -111,9 +129,9 @@ namespace FuFramework.UI.Runtime
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
             FuiPackageManager.Instance.SubRef(PackageName);
 
-            ReleaseEventRegister();   // 释放事件注册器
+            ReleaseEventRegister(); // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器
-            ReleaseTimerRegister();   // 释放计时器注册器
+            ReleaseTimerRegister(); // 释放计时器注册器
 
             OnDispose();
         }
@@ -199,6 +217,16 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public virtual void UpdateLocalization() { }
 
+        /// <summary>
+        /// 自定义界面打开动画(可重写实现属于自身自定义动画)
+        /// </summary>
+        protected virtual void DoCustomTweenOpen() => OnOpen();
+
+        /// <summary>
+        /// 自定义界面关闭动画(可重写实现属于自身自定义动画)
+        /// </summary>
+        protected virtual void DoCustomTweenClose() => OnClose();
+        
         #endregion
     }
 }
