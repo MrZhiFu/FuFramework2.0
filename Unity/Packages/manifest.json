@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.code-philosophy.hybridclr": "https://gitee.com/gameframex/com.gameframex.unity.code-philosophy.hybridclr.git",
+    "com.code-philosophy.hybridclr": "https://gitee.com/focus-creative-games/hybridclr_unity.git",
     "com.gameframex.unity.cysharp.unitask": "https://gitee.com/gameframex/com.gameframex.unity.cysharp.unitask.git",
     "com.gameframex.unity.demigiant.dotween": "https://gitee.com/gameframex/com.gameframex.unity.demigiant.dotween.git",
     "com.gameframex.unity.google.protobuf": "https://gitee.com/gameframex/com.gameframex.unity.google.protobuf.git",
