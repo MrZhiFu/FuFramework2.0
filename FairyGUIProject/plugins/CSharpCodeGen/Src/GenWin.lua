@@ -53,7 +53,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         GenCommon:GenControllerInit(dataTable['#CompInit#'], winCls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
         GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
         GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
-        GenCommon:GenCustomCompInit(dataTable['#CustomCompInit#'], compArray, AllClsMap, false)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的界面View
+        --GenCommon:GenCustomCompInit(dataTable['#CustomCompInit#'], compArray, AllClsMap, false)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的界面View
 
         GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
