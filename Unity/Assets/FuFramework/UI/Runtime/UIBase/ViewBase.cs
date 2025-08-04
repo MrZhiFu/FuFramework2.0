@@ -150,9 +150,16 @@ namespace FuFramework.UI.Runtime
             var children = curComp.GetChildren();
             foreach (var child in children)
             {
-                if (child is not ICustomComp comp) continue;
-                comp.Init(this);
-                InitChildrenView(child as GComponent);
+                var comp = child switch
+                {
+                    CustomLoader loader  => loader.component,
+                    GComponent component => component,
+                    _                    => null
+                };
+
+                if (comp is not ICustomComp customComp) continue;
+                customComp.Init(this);
+                InitChildrenView(comp);
             }
         }
 
