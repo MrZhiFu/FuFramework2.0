@@ -70,7 +70,7 @@ namespace Hotfix.UI.View.Bag
 			listType = (GList)GetChild("_listType");
 			compBagItem = (CompBagItemInfo)GetChild("_compBagItem");
 
-			compBagItem.Init(uiView);
+
         }
         
         /// <summary>

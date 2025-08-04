@@ -66,7 +66,7 @@ namespace Hotfix.UI.View.Bag
 			button = GetController("button");
 			compGoodItem = (CompGoodItem)GetChild("_compGoodItem");
 
-			compGoodItem.Init(uiView);
+
         }
         
         /// <summary>

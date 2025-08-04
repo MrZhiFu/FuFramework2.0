@@ -74,7 +74,7 @@ namespace Hotfix.UI.View.Bag
 			btnUse = (GButton)GetChild("_btnUse");
 			btnGet = (GButton)GetChild("_btnGet");
 
-			compBagItem.Init(uiView);
+
         }
         
         /// <summary>

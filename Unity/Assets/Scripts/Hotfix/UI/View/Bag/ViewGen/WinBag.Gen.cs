@@ -23,7 +23,7 @@ namespace Hotfix.UI.View.Bag
 			compContent = (CompBagContent)GetChild("_compContent");
 			btnClose = (GButton)GetChild("_btnClose");
 
-			compContent.Init(this);
+
         }
 
         /// <summary>
