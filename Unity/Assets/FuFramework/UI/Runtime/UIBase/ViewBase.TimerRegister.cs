@@ -24,9 +24,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         public void AddTimer(float interval, int repeat, Action<object> callback, object callbackParam = null)
         {
-            GameFrameworkGuard.NotNull(callback, nameof(callback));
+            GameFrameworkGuard.NotNull(callback,      nameof(callback));
             GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.AddTimer(interval, repeat,callback, callbackParam);
+            TimerRegister.AddTimer(interval, repeat, callback, callbackParam);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="callbackParam">回调函数的参数</param>
         public void AddTimerUpdate(Action<object> callback, object callbackParam = null)
         {
-            GameFrameworkGuard.NotNull(callback, nameof(callback));
+            GameFrameworkGuard.NotNull(callback,      nameof(callback));
             GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.AddTimerUpdate(callback, callbackParam);
         }
@@ -73,7 +73,7 @@ namespace FuFramework.UI.Runtime
             GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.RemoveAllTimer();
         }
-        
+
         /// <summary>
         /// 释放事件注册器
         /// </summary>

@@ -58,7 +58,7 @@ namespace FuFramework.UI.Runtime
             }
 
             // 创建界面实例对象
-            view = new T();
+            view             = new T();
             uiInstanceObject = UIInstanceObject.Create(view.UIName, view);
             m_InstancePool.Register(uiInstanceObject, true);
 
@@ -105,9 +105,9 @@ namespace FuFramework.UI.Runtime
                     uiGroup.AddUI(view);
                 }
 
-                view._OnOpen(); // 界面打开回调
+                view._OnOpen();            // 界面打开回调
                 view.UpdateLocalization(); // 更新本地化文本
-                uiGroup.Refresh(); // 刷新界面组
+                uiGroup.Refresh();         // 刷新界面组
 
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);

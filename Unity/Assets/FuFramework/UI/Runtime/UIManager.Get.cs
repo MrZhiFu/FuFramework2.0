@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GameFrameX.Runtime;
 
 namespace FuFramework.UI.Runtime
@@ -58,7 +59,7 @@ namespace FuFramework.UI.Runtime
 
             return null;
         }
-        
+
         /// <summary>
         /// 获取界面。
         /// </summary>
@@ -79,6 +80,24 @@ namespace FuFramework.UI.Runtime
                 var ui = group.GetUI(uiName);
                 if (ui == null) continue;
                 return ui;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 获取最顶部界面。
+        /// </summary>
+        /// <returns></returns>
+        public T GetTopUI<T>(UILayer? uiLayer = null) where T : ViewBase
+        {
+            foreach (var (layer, group) in m_UIGroupDict)
+            {
+                if (uiLayer == null)
+                    return group.CurrentViewBase as T;
+                
+                if (layer != uiLayer.Value) continue;
+                return group.CurrentViewBase as T;
             }
 
             return null;

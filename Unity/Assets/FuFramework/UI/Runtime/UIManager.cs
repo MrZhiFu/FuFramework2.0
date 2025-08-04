@@ -64,7 +64,7 @@ namespace FuFramework.UI.Runtime
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
                 if (AddUIGroup(layer)) continue;
-                Log.Warning("[UIManager]添加UI组 '{0}' 失败 .", layer.ToString());
+                Log.Error("[UIManager]添加UI组 '{0}' 失败 .", layer.ToString());
             }
         }
 

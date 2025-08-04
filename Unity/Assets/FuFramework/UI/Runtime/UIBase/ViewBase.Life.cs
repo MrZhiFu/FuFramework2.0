@@ -28,15 +28,27 @@ namespace FuFramework.UI.Runtime
         internal void _OnOpen()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]打开-OnOpen().");
-            Visible = true;
+            Visible      = true;
+            UIView.alpha = 0;
 
             // 界面打开动画
             switch (TweenType)
             {
-                case UITweenType.None: OnOpen(); return;
-                case UITweenType.Fade: UIView.TweenFade(1, TweenDuration).OnComplete(OnOpen); return;
-                case UITweenType.Custom: OnCustomTweenOpen(); return;
-                default: OnOpen(); break;
+                case UITweenType.None:
+                    UIView.alpha = 1;
+                    OnOpen();
+                    return;
+                case UITweenType.Fade:
+                    UIView.TweenFade(1, TweenDuration).OnComplete(OnOpen);
+                    return;
+                case UITweenType.Custom:
+                    UIView.alpha = 1;
+                    OnCustomTweenOpen();
+                    return;
+                default:
+                    UIView.alpha = 1;
+                    OnOpen();
+                    return;
             }
         }
 
@@ -101,13 +113,21 @@ namespace FuFramework.UI.Runtime
             // 界面关闭动画
             switch (TweenType)
             {
-                case UITweenType.None: OnClose(); return;
-                case UITweenType.Fade: UIView.TweenFade(0, TweenDuration).OnComplete(OnClose); return;
-                case UITweenType.Custom: OnCustomTweenClose(); return;
-                default: OnClose(); return;
+                case UITweenType.None:
+                    OnClose();
+                    return;
+                case UITweenType.Fade:
+                    UIView.TweenFade(0, TweenDuration).OnComplete(OnClose);
+                    return;
+                case UITweenType.Custom:
+                    OnCustomTweenClose();
+                    return;
+                default:
+                    OnClose();
+                    return;
             }
         }
-        
+
         /// <summary>
         /// 界面回收。
         /// </summary>
@@ -115,7 +135,7 @@ namespace FuFramework.UI.Runtime
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
 
-            SerialId = 0;
+            SerialId       = 0;
             DepthInUIGroup = 0;
             OnRecycle();
         }
@@ -128,9 +148,9 @@ namespace FuFramework.UI.Runtime
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
             FuiPackageManager.Instance.SubRef(PackageName);
 
-            ReleaseEventRegister(); // 释放事件注册器
+            ReleaseEventRegister();   // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器
-            ReleaseTimerRegister(); // 释放计时器注册器
+            ReleaseTimerRegister();   // 释放计时器注册器
 
             OnDispose();
         }
@@ -154,7 +174,7 @@ namespace FuFramework.UI.Runtime
         {
             UpdateLocalization();
         }
-        
+
         /// <summary>
         /// 自定义界面打开动画
         /// </summary>
@@ -166,6 +186,7 @@ namespace FuFramework.UI.Runtime
                 OnOpen();
                 return;
             }
+
             gTween.OnComplete(OnOpen);
         }
 
@@ -180,6 +201,7 @@ namespace FuFramework.UI.Runtime
                 OnClose();
                 return;
             }
+
             gTween.OnComplete(OnClose);
         }
 
@@ -253,7 +275,7 @@ namespace FuFramework.UI.Runtime
         /// 自定义界面关闭动画(可重写实现属于自身自定义动画)
         /// </summary>
         protected virtual GTweener DoCustomTweenClose() => null;
-        
+
         #endregion
     }
 }

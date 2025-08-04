@@ -58,9 +58,7 @@ namespace FuFramework.UI.Runtime
             m_Pause = false;
             m_UIInfoList.Clear();
             m_CachedNode = null;
-
-            // 根据层级设置显示对象Z轴位置
-            displayObject.gameObject.transform.localPosition = new Vector3(0, 0, (int)layer * 100);
+            sortingOrder = (int)layer;
         }
 
         /// <summary>

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
 using FairyGUI;
 using UnityEngine;
+using System.Threading;
 using GameFrameX.Runtime;
 using Cysharp.Threading.Tasks;
 using GameFrameX.Asset.Runtime;
+using System.Collections.Generic;
 
 namespace FuFramework.UI.Runtime
 {
@@ -163,7 +162,7 @@ namespace FuFramework.UI.Runtime
             m_pkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
             if (descLoader == null)
             {
-                descLoader = AssetLoadRegister.Create();
+                descLoader                    = AssetLoadRegister.Create();
                 m_pkgAssetLoaderDict[pkgName] = descLoader;
             }
 
@@ -189,7 +188,7 @@ namespace FuFramework.UI.Runtime
             m_pkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
             if (resLoader == null)
             {
-                resLoader = AssetLoadRegister.Create();
+                resLoader                     = AssetLoadRegister.Create();
                 m_pkgAssetLoaderDict[pkgName] = resLoader;
             }
 

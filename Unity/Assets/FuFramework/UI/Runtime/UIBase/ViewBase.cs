@@ -60,7 +60,7 @@ namespace FuFramework.UI.Runtime
         /// 界面所属的层级。
         /// </summary>
         protected virtual UILayer Layer => UILayer.Normal;
-        
+
         /// <summary>
         /// 界面打开/关闭时的动画类型。
         /// </summary>
@@ -69,8 +69,8 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 界面打开/关闭时的动画时长。
         /// </summary>
-        protected virtual float TweenDuration => 0.25f;
-        
+        protected virtual float TweenDuration => 0.3f;
+
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
@@ -120,9 +120,9 @@ namespace FuFramework.UI.Runtime
 
             try
             {
-                UIView = uiView;
+                UIView               = uiView;
                 UIView.fairyBatching = true;
-                
+
                 // 设置全屏
                 if (IsFullScreen) UIView?.MakeFullScreen();
 
@@ -131,7 +131,7 @@ namespace FuFramework.UI.Runtime
 
                 // 初始化
                 _OnInit();
-                
+
                 // 递归初始化子组件，传递自身实例给子组件。
                 InitChildrenView(UIView);
             }

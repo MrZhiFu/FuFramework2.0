@@ -74,8 +74,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="e">事件内容。</param>
         public void FireNow(object sender, GameEventArgs e)
         {
-            GameFrameworkGuard.NotNull(sender, nameof(sender));
-            GameFrameworkGuard.NotNull(e, nameof(e));
+            GameFrameworkGuard.NotNull(sender,        nameof(sender));
+            GameFrameworkGuard.NotNull(e,             nameof(e));
             GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.FireNow(sender, e);
         }

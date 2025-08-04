@@ -1,4 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace 禁用命名空间检查
+
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
@@ -7,63 +8,38 @@ namespace FuFramework.UI.Runtime
     public enum UILayer
     {
         /// <summary>
-        /// 隐藏
+        /// 世界场景中的UI，如：HUD, 血条等
         /// </summary>
-        Hidden = 20,
+        WorldUI = 0,
 
         /// <summary>
-        /// 底板
+        /// 主界面
         /// </summary>
-        Floor = 15,
+        MainUI = 1500,
 
         /// <summary>
-        /// 正常
+        /// 一般全屏界面
         /// </summary>
-        Normal = 10,
-
-        /// <summary>
-        /// 固定
-        /// </summary>
-        Fixed = 0,
+        Normal = 2000,
 
         /// <summary>
         /// 窗口
         /// </summary>
-        Window = -10,
+        Window = 2500,
 
         /// <summary>
         /// 提示
         /// </summary>
-        Tip = -15,
+        Tip = 3000,
 
         /// <summary>
         /// 引导
         /// </summary>
-        Guide = -20,
-
-        /// <summary>
-        /// 黑板
-        /// </summary>
-        BlackBoard = -22,
-
-        /// <summary>
-        /// 对话
-        /// </summary>
-        Dialogue = -23,
+        Guide = 3500,
 
         /// <summary>
         /// Loading 
         /// </summary>
-        Loading = -25,
-
-        /// <summary>
-        /// 通知
-        /// </summary>
-        Notify = -30,
-
-        /// <summary>
-        /// 系统顶级
-        /// </summary>
-        System = -35,
+        Loading = 4000,
     }
 }

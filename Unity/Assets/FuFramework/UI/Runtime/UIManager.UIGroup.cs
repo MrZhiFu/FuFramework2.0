@@ -42,7 +42,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>所有界面组。</returns>
         public UIGroup[] GetAllUIGroups()
         {
-            var index = 0;
+            var index   = 0;
             var results = new UIGroup[m_UIGroupDict.Count];
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -82,7 +82,7 @@ namespace FuFramework.UI.Runtime
 
             var component = new UIGroup();
             GRoot.inst.AddChild(component);
-            
+
             component.displayObject.name = layer.ToString();
             component.gameObjectName     = layer.ToString();
             component.name               = layer.ToString();
@@ -90,10 +90,10 @@ namespace FuFramework.UI.Runtime
 
             component.AddRelation(GRoot.inst, RelationType.Width);
             component.AddRelation(GRoot.inst, RelationType.Height);
-            
+
             component.MakeFullScreen();
             component.Init(layer);
-            
+
             m_UIGroupDict.Add(layer, component);
             return true;
         }
