@@ -50,7 +50,7 @@ namespace Hotfix.UI.View.Login
 	        InitUIEvent();
 	        InitEvent();
 	        OnInit();
-        } 
+        }
         
         /// <summary>
         /// UI组件初始化

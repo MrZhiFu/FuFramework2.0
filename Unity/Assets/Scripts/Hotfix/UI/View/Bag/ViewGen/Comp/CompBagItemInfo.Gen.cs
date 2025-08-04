@@ -60,7 +60,7 @@ namespace Hotfix.UI.View.Bag
 	        InitUIEvent();
 	        InitEvent();
 	        OnInit();
-        } 
+        }
         
         /// <summary>
         /// UI组件初始化
