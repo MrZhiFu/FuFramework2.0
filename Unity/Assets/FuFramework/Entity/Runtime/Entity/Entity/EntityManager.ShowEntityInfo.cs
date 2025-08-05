@@ -5,7 +5,9 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Entity.Runtime
 {

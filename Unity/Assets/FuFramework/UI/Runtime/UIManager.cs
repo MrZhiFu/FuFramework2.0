@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FairyGUI;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.ObjectPool;
@@ -12,7 +13,7 @@ namespace FuFramework.UI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
-    public sealed partial class UIManager : GameFrameworkMonoSingleton<UIManager>
+    public sealed partial class UIManager : MonoSingleton<UIManager>
     {
         private Dictionary<int, string> m_LoadingDict;       // 正在加载中的界面字典, key为界面Id, value为界面名称
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合

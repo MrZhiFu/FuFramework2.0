@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using FairyGUI;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime

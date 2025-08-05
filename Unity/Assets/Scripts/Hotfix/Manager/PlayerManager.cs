@@ -1,9 +1,10 @@
-﻿using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
+using GameFrameX.Runtime;
 using Hotfix.Proto;
 
 namespace Hotfix.Manager
 {
-    public sealed class PlayerManager : GameFrameworkSingleton<PlayerManager>
+    public sealed class PlayerManager : Singleton<PlayerManager>
     {
         public PlayerManager()
         {

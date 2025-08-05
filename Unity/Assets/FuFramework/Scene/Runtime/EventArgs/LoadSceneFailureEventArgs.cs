@@ -8,6 +8,7 @@
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
 using YooAsset;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Scene.Runtime
 {

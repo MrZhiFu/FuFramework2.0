@@ -5,10 +5,13 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载代理辅助器更新数据流事件。

@@ -5,6 +5,7 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using FuFramework.Core.Runtime;
 using GameFrameX;
 using GameFrameX.Runtime;
 

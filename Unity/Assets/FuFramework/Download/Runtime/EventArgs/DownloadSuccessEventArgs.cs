@@ -8,8 +8,10 @@
 
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载成功事件。

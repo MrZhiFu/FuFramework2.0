@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime

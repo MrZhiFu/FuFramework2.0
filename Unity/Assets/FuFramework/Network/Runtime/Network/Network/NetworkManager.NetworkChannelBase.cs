@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime

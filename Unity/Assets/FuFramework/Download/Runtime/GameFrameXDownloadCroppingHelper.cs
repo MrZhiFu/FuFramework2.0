@@ -1,7 +1,8 @@
+using Runtime.FuFramework.Download;
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
    
     public class GameFrameXDownloadCroppingHelper : MonoBehaviour

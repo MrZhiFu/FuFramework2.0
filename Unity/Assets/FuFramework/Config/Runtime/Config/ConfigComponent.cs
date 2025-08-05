@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
 

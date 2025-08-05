@@ -1731,9 +1731,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   componentType: 
   m_TextHelperTypeName: GameFrameX.Runtime.DefaultTextHelper
-  m_VersionHelperTypeName: GameFrameX.Runtime.DefaultVersionHelper
+  m_VersionHelperTypeName: FuFramework.Core.Runtime.DefaultVersionHelper
   m_LogHelperTypeName: GameFrameX.Runtime.DefaultLogHelper
-  m_CompressionHelperTypeName: GameFrameX.Runtime.DefaultCompressionHelper
+  m_CompressionHelperTypeName: FuFramework.Core.Runtime.DefaultCompressionHelper
   m_JsonHelperTypeName: GameFrameX.Runtime.NewtonsoftJsonHelper
   m_FrameRate: 30
   m_GameSpeed: 1

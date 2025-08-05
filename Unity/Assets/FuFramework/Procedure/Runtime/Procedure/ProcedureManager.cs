@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using System;
+using FuFramework.Core.Runtime;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Runtime;
 

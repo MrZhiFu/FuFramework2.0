@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime

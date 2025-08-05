@@ -1,19 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
-using GameFrameX.Runtime;
-#if UNITY_5_4_OR_NEWER
+﻿using System;
 using UnityEngine.Networking;
-#else
-using UnityEngine.Experimental.Networking;
-#endif
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     public partial class UnityWebRequestDownloadAgentHelper : DownloadAgentHelperBase, IDisposable
     {

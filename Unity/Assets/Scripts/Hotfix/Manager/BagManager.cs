@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
 using GameFrameX.Runtime;
 using Hotfix.Config;
@@ -13,7 +14,7 @@ namespace Hotfix.Manager
     /// <summary>
     /// 背包 管理器
     /// </summary>
-    public sealed class BagManager : GameFrameworkSingleton<BagManager>, IMessageHandler
+    public sealed class BagManager : Singleton<BagManager>, IMessageHandler
     {
         private readonly Dictionary<int, BagItem> _itemDic = new Dictionary<int, BagItem>();
 

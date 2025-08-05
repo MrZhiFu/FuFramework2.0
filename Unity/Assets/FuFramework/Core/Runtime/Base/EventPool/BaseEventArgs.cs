@@ -1,0 +1,17 @@
+﻿using FuFramework.Core.Runtime;
+using GameFrameX.Runtime;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
+{
+    /// <summary>
+    /// 事件基类。
+    /// </summary>
+    public abstract class BaseEventArgs : GameFrameworkEventArgs
+    {
+        /// <summary>
+        /// 获取事件ID。
+        /// </summary>
+        public abstract string Id { get; }
+    }
+}

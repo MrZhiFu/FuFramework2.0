@@ -8,10 +8,12 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
 using YooAsset;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Sound.Runtime
 {

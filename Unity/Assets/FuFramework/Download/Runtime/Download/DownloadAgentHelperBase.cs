@@ -5,11 +5,12 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.Download;
+
 using System;
+// ReSharper disable once CheckNamespace
 using UnityEngine;
 
-namespace GameFrameX.Download.Runtime
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载代理辅助器基类。

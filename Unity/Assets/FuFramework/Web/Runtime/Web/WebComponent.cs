@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
 

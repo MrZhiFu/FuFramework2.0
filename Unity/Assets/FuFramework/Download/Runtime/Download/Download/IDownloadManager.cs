@@ -1,15 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载管理器接口。
@@ -19,69 +14,42 @@ namespace GameFrameX.Download.Runtime
         /// <summary>
         /// 获取或设置下载是否被暂停。
         /// </summary>
-        bool Paused
-        {
-            get;
-            set;
-        }
+        bool Paused { get; set; }
 
         /// <summary>
         /// 获取下载代理总数量。
         /// </summary>
-        int TotalAgentCount
-        {
-            get;
-        }
+        int TotalAgentCount { get; }
 
         /// <summary>
         /// 获取可用下载代理数量。
         /// </summary>
-        int FreeAgentCount
-        {
-            get;
-        }
+        int FreeAgentCount { get; }
 
         /// <summary>
         /// 获取工作中下载代理数量。
         /// </summary>
-        int WorkingAgentCount
-        {
-            get;
-        }
+        int WorkingAgentCount { get; }
 
         /// <summary>
         /// 获取等待下载任务数量。
         /// </summary>
-        int WaitingTaskCount
-        {
-            get;
-        }
+        int WaitingTaskCount { get; }
 
         /// <summary>
         /// 获取或设置将缓冲区写入磁盘的临界大小。
         /// </summary>
-        int FlushSize
-        {
-            get;
-            set;
-        }
+        int FlushSize { get; set; }
 
         /// <summary>
         /// 获取或设置下载超时时长，以秒为单位。
         /// </summary>
-        float Timeout
-        {
-            get;
-            set;
-        }
+        float Timeout { get; set; }
 
         /// <summary>
         /// 获取当前下载速度。
         /// </summary>
-        float CurrentSpeed
-        {
-            get;
-        }
+        float CurrentSpeed { get; }
 
         /// <summary>
         /// 下载开始事件。

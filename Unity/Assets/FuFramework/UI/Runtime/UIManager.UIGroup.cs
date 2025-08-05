@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FairyGUI;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace FuFramework.UI.Runtime

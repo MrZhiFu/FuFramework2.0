@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 

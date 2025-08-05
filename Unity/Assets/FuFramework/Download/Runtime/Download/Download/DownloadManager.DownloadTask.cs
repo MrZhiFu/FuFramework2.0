@@ -1,15 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using FuFramework.Core.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-using GameFrameX.Runtime;
-
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
-    public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
+    public sealed partial class DownloadManager
     {
         /// <summary>
         /// 下载任务。
@@ -19,21 +14,21 @@ namespace GameFrameX.Download.Runtime
             private static int s_Serial = 0;
 
             private DownloadTaskStatus m_Status;
-            private string m_DownloadPath;
-            private string m_DownloadUri;
-            private int m_FlushSize;
-            private float m_Timeout;
+            private string             m_DownloadPath;
+            private string             m_DownloadUri;
+            private int                m_FlushSize;
+            private float              m_Timeout;
 
             /// <summary>
             /// 初始化下载任务的新实例。
             /// </summary>
             public DownloadTask()
             {
-                m_Status = DownloadTaskStatus.Todo;
+                m_Status       = DownloadTaskStatus.Todo;
                 m_DownloadPath = null;
-                m_DownloadUri = null;
-                m_FlushSize = 0;
-                m_Timeout = 0f;
+                m_DownloadUri  = null;
+                m_FlushSize    = 0;
+                m_Timeout      = 0f;
             }
 
             /// <summary>
@@ -41,14 +36,8 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public DownloadTaskStatus Status
             {
-                get
-                {
-                    return m_Status;
-                }
-                set
-                {
-                    m_Status = value;
-                }
+                get { return m_Status; }
+                set { m_Status = value; }
             }
 
             /// <summary>
@@ -56,10 +45,7 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public string DownloadPath
             {
-                get
-                {
-                    return m_DownloadPath;
-                }
+                get { return m_DownloadPath; }
             }
 
             /// <summary>
@@ -67,10 +53,7 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public string DownloadUri
             {
-                get
-                {
-                    return m_DownloadUri;
-                }
+                get { return m_DownloadUri; }
             }
 
             /// <summary>
@@ -78,10 +61,7 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public int FlushSize
             {
-                get
-                {
-                    return m_FlushSize;
-                }
+                get { return m_FlushSize; }
             }
 
             /// <summary>
@@ -89,10 +69,7 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public float Timeout
             {
-                get
-                {
-                    return m_Timeout;
-                }
+                get { return m_Timeout; }
             }
 
             /// <summary>
@@ -100,10 +77,7 @@ namespace GameFrameX.Download.Runtime
             /// </summary>
             public override string Description
             {
-                get
-                {
-                    return m_DownloadPath;
-                }
+                get { return m_DownloadPath; }
             }
 
             /// <summary>
@@ -119,12 +93,12 @@ namespace GameFrameX.Download.Runtime
             /// <returns>创建的下载任务。</returns>
             public static DownloadTask Create(string downloadPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
             {
-                DownloadTask downloadTask = ReferencePool.Acquire<DownloadTask>();
+                var downloadTask = ReferencePool.Acquire<DownloadTask>();
                 downloadTask.Initialize(++s_Serial, tag, priority, userData);
                 downloadTask.m_DownloadPath = downloadPath;
-                downloadTask.m_DownloadUri = downloadUri;
-                downloadTask.m_FlushSize = flushSize;
-                downloadTask.m_Timeout = timeout;
+                downloadTask.m_DownloadUri  = downloadUri;
+                downloadTask.m_FlushSize    = flushSize;
+                downloadTask.m_Timeout      = timeout;
                 return downloadTask;
             }
 
@@ -134,11 +108,11 @@ namespace GameFrameX.Download.Runtime
             public override void Clear()
             {
                 base.Clear();
-                m_Status = DownloadTaskStatus.Todo;
+                m_Status       = DownloadTaskStatus.Todo;
                 m_DownloadPath = null;
-                m_DownloadUri = null;
-                m_FlushSize = 0;
-                m_Timeout = 0f;
+                m_DownloadUri  = null;
+                m_FlushSize    = 0;
+                m_Timeout      = 0f;
             }
         }
     }

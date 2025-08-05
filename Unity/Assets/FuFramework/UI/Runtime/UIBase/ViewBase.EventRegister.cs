@@ -1,4 +1,5 @@
 ﻿using System;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
 

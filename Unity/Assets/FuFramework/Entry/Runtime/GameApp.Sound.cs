@@ -1,4 +1,5 @@
-﻿using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
+using GameFrameX.Runtime;
 using GameFrameX.Sound.Runtime;
 
 public static partial class GameApp

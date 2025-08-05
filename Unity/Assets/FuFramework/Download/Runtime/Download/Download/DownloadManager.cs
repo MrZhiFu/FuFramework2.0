@@ -1,30 +1,27 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
+using Runtime.FuFramework.Download;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载管理器。
     /// </summary>
-    
     public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
     {
         private const int OneMegaBytes = 1024 * 1024;
 
         private readonly TaskPool<DownloadTask> m_TaskPool;
-        private readonly DownloadCounter m_DownloadCounter;
-        private int m_FlushSize;
+        private readonly DownloadCounter        m_DownloadCounter;
+
+        private int   m_FlushSize;
         private float m_Timeout;
-        private EventHandler<DownloadStartEventArgs> m_DownloadStartEventHandler;
-        private EventHandler<DownloadUpdateEventArgs> m_DownloadUpdateEventHandler;
+
+        private EventHandler<DownloadStartEventArgs>   m_DownloadStartEventHandler;
+        private EventHandler<DownloadUpdateEventArgs>  m_DownloadUpdateEventHandler;
         private EventHandler<DownloadSuccessEventArgs> m_DownloadSuccessEventHandler;
         private EventHandler<DownloadFailureEventArgs> m_DownloadFailureEventHandler;
 
@@ -33,12 +30,12 @@ namespace GameFrameX.Download.Runtime
         /// </summary>
         public DownloadManager()
         {
-            m_TaskPool = new TaskPool<DownloadTask>();
-            m_DownloadCounter = new DownloadCounter(1f, 10f);
-            m_FlushSize = OneMegaBytes;
-            m_Timeout = 30f;
-            m_DownloadStartEventHandler = null;
-            m_DownloadUpdateEventHandler = null;
+            m_TaskPool                    = new TaskPool<DownloadTask>();
+            m_DownloadCounter             = new DownloadCounter(1f, 10f);
+            m_FlushSize                   = OneMegaBytes;
+            m_Timeout                     = 30f;
+            m_DownloadStartEventHandler   = null;
+            m_DownloadUpdateEventHandler  = null;
             m_DownloadSuccessEventHandler = null;
             m_DownloadFailureEventHandler = null;
         }
@@ -124,7 +121,7 @@ namespace GameFrameX.Download.Runtime
         /// </summary>
         public event EventHandler<DownloadStartEventArgs> DownloadStart
         {
-            add { m_DownloadStartEventHandler += value; }
+            add { m_DownloadStartEventHandler    += value; }
             remove { m_DownloadStartEventHandler -= value; }
         }
 
@@ -133,7 +130,7 @@ namespace GameFrameX.Download.Runtime
         /// </summary>
         public event EventHandler<DownloadUpdateEventArgs> DownloadUpdate
         {
-            add { m_DownloadUpdateEventHandler += value; }
+            add { m_DownloadUpdateEventHandler    += value; }
             remove { m_DownloadUpdateEventHandler -= value; }
         }
 
@@ -142,7 +139,7 @@ namespace GameFrameX.Download.Runtime
         /// </summary>
         public event EventHandler<DownloadSuccessEventArgs> DownloadSuccess
         {
-            add { m_DownloadSuccessEventHandler += value; }
+            add { m_DownloadSuccessEventHandler    += value; }
             remove { m_DownloadSuccessEventHandler -= value; }
         }
 
@@ -151,7 +148,7 @@ namespace GameFrameX.Download.Runtime
         /// </summary>
         public event EventHandler<DownloadFailureEventArgs> DownloadFailure
         {
-            add { m_DownloadFailureEventHandler += value; }
+            add { m_DownloadFailureEventHandler    += value; }
             remove { m_DownloadFailureEventHandler -= value; }
         }
 
@@ -181,9 +178,9 @@ namespace GameFrameX.Download.Runtime
         /// <param name="downloadAgentHelper">要增加的下载代理辅助器。</param>
         public void AddDownloadAgentHelper(IDownloadAgentHelper downloadAgentHelper)
         {
-            DownloadAgent agent = new DownloadAgent(downloadAgentHelper);
-            agent.DownloadAgentStart += OnDownloadAgentStart;
-            agent.DownloadAgentUpdate += OnDownloadAgentUpdate;
+            Runtime.DownloadManager.DownloadAgent agent = new Runtime.DownloadManager.DownloadAgent(downloadAgentHelper);
+            agent.DownloadAgentStart   += OnDownloadAgentStart;
+            agent.DownloadAgentUpdate  += OnDownloadAgentUpdate;
             agent.DownloadAgentSuccess += OnDownloadAgentSuccess;
             agent.DownloadAgentFailure += OnDownloadAgentFailure;
 
@@ -350,7 +347,7 @@ namespace GameFrameX.Download.Runtime
                 throw new GameFrameworkException("You must add download agent first.");
             }
 
-            DownloadTask downloadTask = DownloadTask.Create(downloadPath, downloadUri, tag, priority, m_FlushSize, m_Timeout, userData);
+            Runtime.DownloadManager.DownloadTask downloadTask = Runtime.DownloadManager.DownloadTask.Create(downloadPath, downloadUri, tag, priority, m_FlushSize, m_Timeout, userData);
             m_TaskPool.AddTask(downloadTask);
             return downloadTask.SerialId;
         }
@@ -384,7 +381,7 @@ namespace GameFrameX.Download.Runtime
             return m_TaskPool.RemoveAllTasks();
         }
 
-        private void OnDownloadAgentStart(DownloadAgent sender)
+        private void OnDownloadAgentStart(Runtime.DownloadManager.DownloadAgent sender)
         {
             if (m_DownloadStartEventHandler != null)
             {
@@ -395,28 +392,30 @@ namespace GameFrameX.Download.Runtime
             }
         }
 
-        private void OnDownloadAgentUpdate(DownloadAgent sender, int deltaLength)
+        private void OnDownloadAgentUpdate(Runtime.DownloadManager.DownloadAgent sender, int deltaLength)
         {
             m_DownloadCounter.RecordDeltaLength(deltaLength);
             if (m_DownloadUpdateEventHandler != null)
             {
-                DownloadUpdateEventArgs downloadUpdateEventArgs = DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
+                DownloadUpdateEventArgs downloadUpdateEventArgs =
+                    DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
                 m_DownloadUpdateEventHandler(this, downloadUpdateEventArgs);
                 ReferencePool.Release(downloadUpdateEventArgs);
             }
         }
 
-        private void OnDownloadAgentSuccess(DownloadAgent sender, long length)
+        private void OnDownloadAgentSuccess(Runtime.DownloadManager.DownloadAgent sender, long length)
         {
             if (m_DownloadSuccessEventHandler != null)
             {
-                DownloadSuccessEventArgs downloadSuccessEventArgs = DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
+                DownloadSuccessEventArgs downloadSuccessEventArgs =
+                    DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
                 m_DownloadSuccessEventHandler(this, downloadSuccessEventArgs);
                 ReferencePool.Release(downloadSuccessEventArgs);
             }
         }
 
-        private void OnDownloadAgentFailure(DownloadAgent sender, string errorMessage)
+        private void OnDownloadAgentFailure(Runtime.DownloadManager.DownloadAgent sender, string errorMessage)
         {
             if (m_DownloadFailureEventHandler != null)
             {

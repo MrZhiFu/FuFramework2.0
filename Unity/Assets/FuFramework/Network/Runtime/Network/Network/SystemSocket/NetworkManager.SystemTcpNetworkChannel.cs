@@ -8,6 +8,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime

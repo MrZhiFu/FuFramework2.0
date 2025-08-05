@@ -8,6 +8,7 @@
 using System;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Entity.Runtime
 {

@@ -9,6 +9,7 @@ using GameFrameX.Event.Runtime;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Runtime;

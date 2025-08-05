@@ -1,14 +1,8 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using GameFrameX.Event.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
-
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载更新事件。

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using Object = UnityEngine.Object;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Asset.Runtime
 {

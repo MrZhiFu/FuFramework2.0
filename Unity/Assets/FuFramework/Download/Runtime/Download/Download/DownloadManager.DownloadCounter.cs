@@ -1,24 +1,19 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using FuFramework.Core.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-using GameFrameX.Runtime;
-
-namespace GameFrameX.Download.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
-    public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
+    public sealed partial class DownloadManager
     {
         private sealed partial class DownloadCounter
         {
             private readonly GameFrameworkLinkedList<DownloadCounterNode> m_DownloadCounterNodes;
-            private float m_UpdateInterval;
-            private float m_RecordInterval;
-            private float m_CurrentSpeed;
-            private float m_Accumulator;
-            private float m_TimeLeft;
+            private          float                                                                                                                                        m_UpdateInterval;
+            private          float                                                                                                                                        m_RecordInterval;
+            private          float                                                                                                                                        m_CurrentSpeed;
+            private          float                                                                                                                                        m_Accumulator;
+            private          float                                                                                                                                        m_TimeLeft;
 
             public DownloadCounter(float updateInterval, float recordInterval)
             {
@@ -32,9 +27,9 @@ namespace GameFrameX.Download.Runtime
                     throw new GameFrameworkException("Record interval is invalid.");
                 }
 
-                m_DownloadCounterNodes = new GameFrameworkLinkedList<DownloadCounterNode>();
-                m_UpdateInterval = updateInterval;
-                m_RecordInterval = recordInterval;
+                m_DownloadCounterNodes = new GameFrameworkLinkedList<Runtime.DownloadManager.DownloadCounter.DownloadCounterNode>();
+                m_UpdateInterval       = updateInterval;
+                m_RecordInterval       = recordInterval;
                 Reset();
             }
 
@@ -101,14 +96,14 @@ namespace GameFrameX.Download.Runtime
                 }
 
                 m_TimeLeft -= realElapseSeconds;
-                foreach (DownloadCounterNode downloadCounterNode in m_DownloadCounterNodes)
+                foreach (Runtime.DownloadManager.DownloadCounter.DownloadCounterNode downloadCounterNode in m_DownloadCounterNodes)
                 {
                     downloadCounterNode.Update(elapseSeconds, realElapseSeconds);
                 }
 
                 while (m_DownloadCounterNodes.Count > 0)
                 {
-                    DownloadCounterNode downloadCounterNode = m_DownloadCounterNodes.First.Value;
+                    Runtime.DownloadManager.DownloadCounter.DownloadCounterNode downloadCounterNode = m_DownloadCounterNodes.First.Value;
                     if (downloadCounterNode.ElapseSeconds < m_RecordInterval)
                     {
                         break;
@@ -127,7 +122,7 @@ namespace GameFrameX.Download.Runtime
                 if (m_TimeLeft <= 0f)
                 {
                     long totalDeltaLength = 0L;
-                    foreach (DownloadCounterNode downloadCounterNode in m_DownloadCounterNodes)
+                    foreach (Runtime.DownloadManager.DownloadCounter.DownloadCounterNode downloadCounterNode in m_DownloadCounterNodes)
                     {
                         totalDeltaLength += downloadCounterNode.DeltaLength;
                     }
@@ -144,7 +139,7 @@ namespace GameFrameX.Download.Runtime
                     return;
                 }
 
-                DownloadCounterNode downloadCounterNode = null;
+                Runtime.DownloadManager.DownloadCounter.DownloadCounterNode downloadCounterNode = null;
                 if (m_DownloadCounterNodes.Count > 0)
                 {
                     downloadCounterNode = m_DownloadCounterNodes.Last.Value;
@@ -155,7 +150,7 @@ namespace GameFrameX.Download.Runtime
                     }
                 }
 
-                downloadCounterNode = DownloadCounterNode.Create();
+                downloadCounterNode = Runtime.DownloadManager.DownloadCounter.DownloadCounterNode.Create();
                 downloadCounterNode.AddDeltaLength(deltaLength);
                 m_DownloadCounterNodes.AddLast(downloadCounterNode);
             }

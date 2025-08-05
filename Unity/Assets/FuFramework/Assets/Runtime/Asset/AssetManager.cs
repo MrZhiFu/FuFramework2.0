@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine.SceneManagement;
 using YooAsset;

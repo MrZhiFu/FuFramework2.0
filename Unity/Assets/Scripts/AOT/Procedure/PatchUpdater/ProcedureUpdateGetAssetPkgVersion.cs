@@ -5,6 +5,7 @@ using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
 using YooAsset;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace Unity.Startup.Procedure
 {

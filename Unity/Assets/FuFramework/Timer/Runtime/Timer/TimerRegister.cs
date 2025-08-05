@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Timer.Runtime
 {

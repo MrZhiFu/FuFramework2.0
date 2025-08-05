@@ -7,6 +7,7 @@ using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using GameFrameX.Runtime;
 using GameFrameX.Web.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace Unity.Startup.Procedure
 {

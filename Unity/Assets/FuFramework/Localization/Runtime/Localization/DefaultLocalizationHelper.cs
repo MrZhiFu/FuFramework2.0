@@ -9,6 +9,7 @@ using GameFrameX.Localization;
 using System;
 using System.IO;
 using System.Text;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;

@@ -11,6 +11,7 @@ using GameFrameX.Entity.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Sound.Runtime
 {

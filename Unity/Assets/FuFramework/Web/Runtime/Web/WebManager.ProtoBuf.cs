@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
 using GameFrameX.Runtime;
 using ProtoBuf;

@@ -1,15 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Runtime;
-
-namespace GameFrameX.Download.Runtime
+﻿// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Runtime
 {
-    public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
+    public sealed partial class DownloadManager
     {
         /// <summary>
         /// 下载任务的状态。

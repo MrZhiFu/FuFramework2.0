@@ -6,6 +6,7 @@ using GameFrameX.Runtime;
 using GameFrameX.Web.Runtime;
 using GameFrameX.Asset.Runtime;
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using System;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Event.Runtime
@@ -16,14 +17,14 @@ namespace GameFrameX.Event.Runtime
     
     public sealed class EventManager : GameFrameworkModule, IEventManager
     {
-        private readonly EventPool<GameEventArgs> m_EventPool;
+        private readonly FuFramework.Core.Runtime.EventPool<GameEventArgs> m_EventPool;
 
         /// <summary>
         /// 初始化事件管理器的新实例。
         /// </summary>
         public EventManager()
         {
-            m_EventPool = new EventPool<GameEventArgs>(EventPoolMode.AllowNoHandler | EventPoolMode.AllowMultiHandler);
+            m_EventPool = new FuFramework.Core.Runtime.EventPool<GameEventArgs>(EventPoolMode.AllowNoHandler | EventPoolMode.AllowMultiHandler);
         }
 
         /// <summary>

@@ -1,28 +1,23 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
-using GameFrameX.Download.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Download.Runtime;
 using GameFrameX.Editor;
 using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace GameFrameX.Download.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Download.Editor
 {
     [CustomEditor(typeof(DownloadComponent))]
     internal sealed class DownloadComponentInspector : ComponentTypeComponentInspector
     {
-        private SerializedProperty m_InstanceRoot = null;
+        private SerializedProperty m_InstanceRoot             = null;
         private SerializedProperty m_DownloadAgentHelperCount = null;
-        private SerializedProperty m_Timeout = null;
-        private SerializedProperty m_FlushSize = null;
+        private SerializedProperty m_Timeout                  = null;
+        private SerializedProperty m_FlushSize                = null;
 
         private HelperInfo<DownloadAgentHelperBase> m_DownloadAgentHelperInfo = new HelperInfo<DownloadAgentHelperBase>("DownloadAgent");
 
@@ -70,12 +65,12 @@ namespace GameFrameX.Download.Editor
 
             if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
             {
-                EditorGUILayout.LabelField("Paused", t.Paused.ToString());
-                EditorGUILayout.LabelField("Total Agent Count", t.TotalAgentCount.ToString());
-                EditorGUILayout.LabelField("Free Agent Count", t.FreeAgentCount.ToString());
+                EditorGUILayout.LabelField("Paused",              t.Paused.ToString());
+                EditorGUILayout.LabelField("Total Agent Count",   t.TotalAgentCount.ToString());
+                EditorGUILayout.LabelField("Free Agent Count",    t.FreeAgentCount.ToString());
                 EditorGUILayout.LabelField("Working Agent Count", t.WorkingAgentCount.ToString());
                 EditorGUILayout.LabelField("Waiting Agent Count", t.WaitingTaskCount.ToString());
-                EditorGUILayout.LabelField("Current Speed", t.CurrentSpeed.ToString());
+                EditorGUILayout.LabelField("Current Speed",       t.CurrentSpeed.ToString());
                 EditorGUILayout.BeginVertical("box");
                 {
                     TaskInfo[] downloadInfos = t.GetAllDownloadInfos();
@@ -93,12 +88,13 @@ namespace GameFrameX.Download.Editor
                             {
                                 try
                                 {
-                                    int index = 0;
-                                    string[] data = new string[downloadInfos.Length + 1];
+                                    int      index = 0;
+                                    string[] data  = new string[downloadInfos.Length + 1];
                                     data[index++] = "Download Path,Serial Id,Tag,Priority,Status";
                                     foreach (TaskInfo downloadInfo in downloadInfos)
                                     {
-                                        data[index++] = Utility.Text.Format("{0},{1},{2},{3},{4}", downloadInfo.Description, downloadInfo.SerialId, downloadInfo.Tag ?? string.Empty, downloadInfo.Priority, downloadInfo.Status);
+                                        data[index++] = Utility.Text.Format("{0},{1},{2},{3},{4}", downloadInfo.Description, downloadInfo.SerialId, downloadInfo.Tag ?? string.Empty,
+                                                                            downloadInfo.Priority, downloadInfo.Status);
                                     }
 
                                     File.WriteAllLines(exportFileName, data, Encoding.UTF8);
@@ -134,10 +130,10 @@ namespace GameFrameX.Download.Editor
         protected override void Enable()
         {
             base.Enable();
-            m_InstanceRoot = serializedObject.FindProperty("m_InstanceRoot");
+            m_InstanceRoot             = serializedObject.FindProperty("m_InstanceRoot");
             m_DownloadAgentHelperCount = serializedObject.FindProperty("m_DownloadAgentHelperCount");
-            m_Timeout = serializedObject.FindProperty("m_Timeout");
-            m_FlushSize = serializedObject.FindProperty("m_FlushSize");
+            m_Timeout                  = serializedObject.FindProperty("m_Timeout");
+            m_FlushSize                = serializedObject.FindProperty("m_FlushSize");
 
             m_DownloadAgentHelperInfo.Init(serializedObject);
             m_DownloadAgentHelperInfo.Refresh();
@@ -146,12 +142,14 @@ namespace GameFrameX.Download.Editor
 
         private void DrawDownloadInfo(TaskInfo downloadInfo)
         {
-            EditorGUILayout.LabelField(downloadInfo.Description, Utility.Text.Format("[SerialId]{0} [Tag]{1} [Priority]{2} [Status]{3}", downloadInfo.SerialId, downloadInfo.Tag ?? "<None>", downloadInfo.Priority, downloadInfo.Status));
+            EditorGUILayout.LabelField(downloadInfo.Description,
+                                       Utility.Text.Format("[SerialId]{0} [Tag]{1} [Priority]{2} [Status]{3}", downloadInfo.SerialId, downloadInfo.Tag ?? "<None>", downloadInfo.Priority,
+                                                           downloadInfo.Status));
         }
 
         protected override void RefreshTypeNames()
         {
-           RefreshComponentTypeNames(typeof(IDownloadManager));
+            RefreshComponentTypeNames(typeof(IDownloadManager));
         }
     }
 }

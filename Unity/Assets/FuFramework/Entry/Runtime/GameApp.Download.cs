@@ -1,5 +1,5 @@
-﻿using GameFrameX.Download.Runtime;
-using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
+using FuFramework.Download.Runtime;
 
 public static partial class GameApp
 {

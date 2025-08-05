@@ -6,6 +6,7 @@ using GameFrameX.Runtime;
 using Cysharp.Threading.Tasks;
 using GameFrameX.Asset.Runtime;
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 
 namespace FuFramework.UI.Runtime
 {
@@ -13,7 +14,7 @@ namespace FuFramework.UI.Runtime
     /// FGui的包管理器，
     /// 主要处理包的资源加载，缓存，卸载等
     /// </summary>
-    public class FuiPackageManager : GameFrameworkMonoSingleton<FuiPackageManager>
+    public class FuiPackageManager : MonoSingleton<FuiPackageManager>
     {
         /// 缓存已加载的包的字典，key:包名，value：包
         private readonly Dictionary<string, UIPackage> m_loadedPkgDict = new();

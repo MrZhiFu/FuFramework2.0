@@ -9,6 +9,7 @@ using GameFrameX.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Runtime;

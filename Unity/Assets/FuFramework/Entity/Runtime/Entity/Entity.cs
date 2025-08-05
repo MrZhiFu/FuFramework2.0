@@ -10,6 +10,7 @@ using GameFrameX.Entity;
 using System;
 using GameFrameX.Runtime;
 using UnityEngine;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Entity.Runtime
 {

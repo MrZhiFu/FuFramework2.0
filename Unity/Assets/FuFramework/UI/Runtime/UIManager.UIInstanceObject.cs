@@ -1,5 +1,7 @@
-﻿using GameFrameX.ObjectPool;
+﻿using FuFramework.Core.Runtime;
+using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
+using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace FuFramework.UI.Runtime
 {
