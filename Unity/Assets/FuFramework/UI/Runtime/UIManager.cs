@@ -26,13 +26,13 @@ namespace FuFramework.UI.Runtime
         private bool m_IsShutdown; // 是否是关机
 
         [Header("界面实例对象池自动释放可释放对象的间隔秒数")]
-        [SerializeField] private float m_InstanceAutoReleaseInterval = 3f;
+        [SerializeField] private float m_InstanceAutoReleaseInterval = 60f;
 
         [Header("界面实例对象池的容量")]
         [SerializeField] private int m_InstanceCapacity = 16;
 
         [Header("界面实例对象池对象过期秒数")]
-        [SerializeField] private float m_InstanceExpireTime = 3f;
+        [SerializeField] private float m_InstanceExpireTime = 60f;
 
 
         /// <summary>
