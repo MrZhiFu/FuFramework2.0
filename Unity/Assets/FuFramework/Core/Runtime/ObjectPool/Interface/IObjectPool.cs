@@ -1,16 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System;
 
-using System;
-
-namespace GameFrameX.ObjectPool
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 对象池接口。
+    /// 功能：
+    /// 1. 定义了对象池的基本属性接口，如名称、类型、容量、过期秒数、优先级等。
+    /// 2. 对象池管理对象生命周期，包括对象过期、对象优先级、对象加锁等。
     /// </summary>
     /// <typeparam name="T">对象类型。</typeparam>
     public interface IObjectPool<T> where T : ObjectBase
@@ -41,27 +38,27 @@ namespace GameFrameX.ObjectPool
         int CanReleaseCount { get; }
 
         /// <summary>
-        /// 获取是否允许对象被多次获取。
+        /// 是否允许对象在使用时获取。如果不允许，只有当对象被回收后才能再次获取。
         /// </summary>
-        bool AllowMultiSpawn { get; }
+        bool AllowSpawnInUse { get; }
 
         /// <summary>
-        /// 获取或设置对象池自动释放可释放对象的间隔秒数。
+        /// 对象池每次轮询中自动释放可释放对象的间隔秒数。
         /// </summary>
         float AutoReleaseInterval { get; set; }
 
         /// <summary>
-        /// 获取或设置对象池的容量。
+        /// 对象池的容量。
         /// </summary>
         int Capacity { get; set; }
 
         /// <summary>
-        /// 获取或设置对象池对象过期秒数。
+        /// 对象池对象过期时间(秒)。
         /// </summary>
         float ExpireTime { get; set; }
 
         /// <summary>
-        /// 获取或设置对象池的优先级。
+        /// 对象池的优先级。该优先级会影响该池子在对象池管理器中卸载的顺序。
         /// </summary>
         int Priority { get; set; }
 
@@ -102,13 +99,13 @@ namespace GameFrameX.ObjectPool
         /// 回收对象。
         /// </summary>
         /// <param name="obj">要回收的对象。</param>
-        void Unspawn(T obj);
+        void Recycle(T obj);
 
         /// <summary>
         /// 回收对象。
         /// </summary>
         /// <param name="target">要回收的对象。</param>
-        void Unspawn(object target);
+        void Recycle(object target);
 
         /// <summary>
         /// 设置对象是否被加锁。

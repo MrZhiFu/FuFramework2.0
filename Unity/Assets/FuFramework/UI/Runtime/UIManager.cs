@@ -4,7 +4,6 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using UnityEngine;
 
@@ -46,7 +45,7 @@ namespace FuFramework.UI.Runtime
             m_WaitRecycleQueue  = new Queue<ViewBase>();
 
             m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
-            m_InstancePool      = m_ObjectPoolManager.CreateMultiSpawnObjectPool<UIManager.UIInstanceObject>("UIInstanceObjectPool");
+            m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             GameEntry.GetComponent<AssetComponent>();

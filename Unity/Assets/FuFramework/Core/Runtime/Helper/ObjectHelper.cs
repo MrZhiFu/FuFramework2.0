@@ -1,9 +1,9 @@
+// ReSharper disable once CheckNamespace
 namespace GameFrameX.Runtime
 {
     /// <summary>
     /// 对象帮助类
     /// </summary>
-    
     public static class ObjectHelper
     {
         /// <summary>
@@ -12,10 +12,6 @@ namespace GameFrameX.Runtime
         /// <param name="t1"></param>
         /// <param name="t2"></param>
         /// <typeparam name="T"></typeparam>
-        
-        public static void Swap<T>(ref T t1, ref T t2)
-        {
-            (t1, t2) = (t2, t1);
-        }
+        public static void Swap<T>(ref T t1, ref T t2) => (t1, t2) = (t2, t1);
     }
 }

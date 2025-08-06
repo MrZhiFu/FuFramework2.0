@@ -58,18 +58,18 @@ namespace FuFramework.Core.Runtime
         // Added Preserve attribute
         public SequenceReader(in ReadOnlySequence<T> sequence)
         {
-            this.usingSequence = true;
+            this.usingSequence    = true;
             this.CurrentSpanIndex = 0;
-            this.Consumed = 0;
-            this.sequence = sequence;
-            this.memory = default;
-            this.currentPosition = sequence.Start;
-            this.length = -1;
+            this.Consumed         = 0;
+            this.sequence         = sequence;
+            this.memory           = default;
+            this.currentPosition  = sequence.Start;
+            this.length           = -1;
 
             ReadOnlySpan<T> first = sequence.First.Span;
             this.nextPosition = sequence.GetPosition(first.Length);
-            this.CurrentSpan = first;
-            this.moreData = first.Length > 0;
+            this.CurrentSpan  = first;
+            this.moreData     = first.Length > 0;
 
             if (!this.moreData && !sequence.IsSingleSegment)
             {
@@ -86,17 +86,17 @@ namespace FuFramework.Core.Runtime
         // Added Preserve attribute
         public SequenceReader(ReadOnlyMemory<T> memory)
         {
-            this.usingSequence = false;
+            this.usingSequence    = false;
             this.CurrentSpanIndex = 0;
-            this.Consumed = 0;
-            this.memory = memory;
-            this.CurrentSpan = memory.Span;
-            this.length = memory.Length;
-            this.moreData = memory.Length > 0;
+            this.Consumed         = 0;
+            this.memory           = memory;
+            this.CurrentSpan      = memory.Span;
+            this.length           = memory.Length;
+            this.moreData         = memory.Length > 0;
 
             this.currentPosition = default;
-            this.nextPosition = default;
-            this.sequence = default;
+            this.nextPosition    = default;
+            this.sequence        = default;
         }
 
         /// <summary>
@@ -116,9 +116,9 @@ namespace FuFramework.Core.Runtime
                 {
                     // We're in memory mode (instead of sequence mode).
                     // Lazily fill in the sequence data.
-                    this.sequence = new ReadOnlySequence<T>(this.memory);
+                    this.sequence        = new ReadOnlySequence<T>(this.memory);
                     this.currentPosition = this.sequence.Start;
-                    this.nextPosition = this.sequence.End;
+                    this.nextPosition    = this.sequence.End;
                 }
 
                 return this.sequence;
@@ -257,7 +257,7 @@ namespace FuFramework.Core.Runtime
             if (this.CurrentSpanIndex >= count)
             {
                 this.CurrentSpanIndex -= (int)count;
-                this.moreData = true;
+                this.moreData         =  true;
             }
             else if (this.usingSequence)
             {
@@ -282,9 +282,9 @@ namespace FuFramework.Core.Runtime
         {
             Debug.Assert(this.usingSequence, "usingSequence");
             this.CurrentSpanIndex = 0;
-            this.Consumed = 0;
-            this.currentPosition = this.Sequence.Start;
-            this.nextPosition = this.currentPosition;
+            this.Consumed         = 0;
+            this.currentPosition  = this.Sequence.Start;
+            this.nextPosition     = this.currentPosition;
 
             if (this.Sequence.TryGet(ref this.nextPosition, out ReadOnlyMemory<T> memory, advance: true))
             {
@@ -305,7 +305,7 @@ namespace FuFramework.Core.Runtime
             else
             {
                 // No data in any spans and at end of sequence
-                this.moreData = false;
+                this.moreData    = false;
                 this.CurrentSpan = default;
             }
         }
@@ -324,15 +324,15 @@ namespace FuFramework.Core.Runtime
                     this.currentPosition = previousNextPosition;
                     if (memory.Length > 0)
                     {
-                        this.CurrentSpan = memory.Span;
+                        this.CurrentSpan      = memory.Span;
                         this.CurrentSpanIndex = 0;
                         return;
                     }
                     else
                     {
-                        this.CurrentSpan = default;
+                        this.CurrentSpan      = default;
                         this.CurrentSpanIndex = 0;
-                        previousNextPosition = this.nextPosition;
+                        previousNextPosition  = this.nextPosition;
                     }
                 }
             }
@@ -351,7 +351,7 @@ namespace FuFramework.Core.Runtime
             if ((count & TooBigOrNegative) == 0 && this.CurrentSpan.Length - this.CurrentSpanIndex > (int)count)
             {
                 this.CurrentSpanIndex += (int)count;
-                this.Consumed += count;
+                this.Consumed         += count;
             }
             else if (this.usingSequence)
             {
@@ -361,8 +361,8 @@ namespace FuFramework.Core.Runtime
             else if (this.CurrentSpan.Length - this.CurrentSpanIndex == (int)count)
             {
                 this.CurrentSpanIndex += (int)count;
-                this.Consumed += count;
-                this.moreData = false;
+                this.Consumed         += count;
+                this.moreData         =  false;
             }
             else
             {
@@ -378,7 +378,7 @@ namespace FuFramework.Core.Runtime
         {
             Debug.Assert(count >= 0, "count >= 0");
 
-            this.Consumed += count;
+            this.Consumed         += count;
             this.CurrentSpanIndex += (int)count;
             if (this.usingSequence && this.CurrentSpanIndex >= this.CurrentSpan.Length)
             {
@@ -395,7 +395,7 @@ namespace FuFramework.Core.Runtime
         {
             Debug.Assert(count >= 0, "count >= 0");
 
-            this.Consumed += count;
+            this.Consumed         += count;
             this.CurrentSpanIndex += (int)count;
 
             Debug.Assert(this.CurrentSpanIndex < this.CurrentSpan.Length, "this.CurrentSpanIndex < this.CurrentSpan.Length");
@@ -433,14 +433,14 @@ namespace FuFramework.Core.Runtime
                 if (remaining > count)
                 {
                     this.CurrentSpanIndex += (int)count;
-                    count = 0;
+                    count                 =  0;
                     break;
                 }
 
                 // As there may not be any further segments we need to
                 // push the current index to the end of the span.
                 this.CurrentSpanIndex += remaining;
-                count -= remaining;
+                count                 -= remaining;
                 Debug.Assert(count >= 0, "count >= 0");
 
                 this.GetNextSpan();
@@ -496,7 +496,7 @@ namespace FuFramework.Core.Runtime
                 if (nextSegment.Length > 0)
                 {
                     ReadOnlySpan<T> nextSpan = nextSegment.Span;
-                    int toCopy = Math.Min(nextSpan.Length, destination.Length - copied);
+                    int             toCopy   = Math.Min(nextSpan.Length, destination.Length - copied);
                     nextSpan.Slice(0, toCopy).CopyTo(destination.Slice(copied));
                     copied += toCopy;
                     if (copied >= destination.Length)

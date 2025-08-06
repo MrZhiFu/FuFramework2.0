@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using GameFrameX.Runtime;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
     /// <summary>

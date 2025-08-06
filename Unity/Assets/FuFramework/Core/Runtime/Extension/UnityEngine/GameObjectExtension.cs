@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine.Scripting;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace UnityEngine
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
-    public static class UnityEngageGameObjectExtension
+    /// <summary>
+    /// <see cref="GameObject"/> 扩展方法集。
+    /// </summary>
+    public static class GameObjectExtension
     {
-        private static readonly List<Transform> s_CachedTransforms = new List<Transform>();
+        private static readonly List<Transform> s_CachedTransforms = new();
 
         /// <summary>
         /// 获取或增加组件。
@@ -33,11 +38,9 @@ namespace UnityEngine
         /// <returns>获取或增加的组件。</returns>
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
         {
-            T component = gameObject.GetComponent<T>();
+            var component = gameObject.GetComponent<T>();
             if (component == null)
-            {
                 component = gameObject.AddComponent<T>();
-            }
 
             return component;
         }
@@ -50,11 +53,9 @@ namespace UnityEngine
         /// <returns>获取或增加的组件。</returns>
         public static Component GetOrAddComponent(this GameObject gameObject, Type type)
         {
-            Component component = gameObject.GetComponent(type);
+            var component = gameObject.GetComponent(type);
             if (component == null)
-            {
                 component = gameObject.AddComponent(type);
-            }
 
             return component;
         }

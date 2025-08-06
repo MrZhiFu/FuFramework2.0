@@ -9,6 +9,7 @@ using GameFrameX;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using UnityEngine;
 

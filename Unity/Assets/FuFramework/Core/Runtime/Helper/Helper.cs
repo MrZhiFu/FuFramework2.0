@@ -1,18 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
+﻿using GameFrameX.Runtime;
 using UnityEngine;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 辅助器创建器相关的实用函数。
     /// </summary>
-    
     public static class Helper
     {
         /// <summary>
@@ -22,7 +16,6 @@ namespace GameFrameX.Runtime
         /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
         /// <param name="customHelper">若要创建的辅助器类型为空时，使用的自定义辅助器类型。</param>
         /// <returns>创建的辅助器。</returns>
-        
         public static T CreateHelper<T>(string helperTypeName, T customHelper) where T : MonoBehaviour
         {
             return CreateHelper(helperTypeName, customHelper, 0);
@@ -37,7 +30,6 @@ namespace GameFrameX.Runtime
         /// <param name="index">要创建的辅助器索引。</param>
         /// <param name="target">辅助器挂载的对象。</param>
         /// <returns>创建的辅助器。</returns>
-        
         public static T CreateHelper<T>(string helperTypeName, T customHelper, int index, GameObject target = null) where T : MonoBehaviour
         {
             // 辅助器挂载的对象为空时，创建一个新的GameObject

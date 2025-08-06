@@ -1,297 +1,260 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    /// <summary>
-    /// 对象池组件。
+       /// <summary>
+    /// 对象池管理器。
     /// "只允许单次获取"代表对象池中的对象只能在回收后才能再次被获取;
     /// "允许多次获取"代表对象池对中的对象能在未回收的状态下就能再次被获取
     /// </summary>
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/ObjectPoolComponent(对象池管理器)")]
-    public sealed class ObjectPoolComponent : GameFrameworkComponent
+    public interface IObjectPoolManager
     {
-        /// 对象池管理器
-        private IObjectPoolManager m_ObjectPoolManager;
-
         /// <summary>
         /// 获取对象池数量。
         /// </summary>
-        public int Count => m_ObjectPoolManager.Count;
+        int Count { get; }
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
-        {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IObjectPoolManager);
-            
-            base.Awake();
-
-            m_ObjectPoolManager = GameFrameworkEntry.GetModule<IObjectPoolManager>();
-            if (m_ObjectPoolManager != null) return;
-            Log.Fatal("对象池管理器为空.");
-        }
-
-        #region 获取对象池相关
+        #region 获取对象池相关接口
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.HasObjectPool<T>();
+        bool HasObjectPool<T>() where T : ObjectBase;
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Type objectType) =>
-            m_ObjectPoolManager.HasObjectPool(objectType);
+        bool HasObjectPool(Type objectType);
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.HasObjectPool<T>(poolName);
+        bool HasObjectPool<T>(string name) where T : ObjectBase;
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.HasObjectPool(objectType, poolName);
+        bool HasObjectPool(Type objectType, string name);
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.HasObjectPool(condition);
+        bool HasObjectPool(Predicate<ObjectPoolBase> condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>要获取的对象池。</returns>
-        public IObjectPool<T> GetObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.GetObjectPool<T>();
+        IObjectPool<T> GetObjectPool<T>() where T : ObjectBase;
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Type objectType) =>
-            m_ObjectPoolManager.GetObjectPool(objectType);
+        ObjectPoolBase GetObjectPool(Type objectType);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <returns>要获取的对象池。</returns>
-        public IObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.GetObjectPool<T>(poolName);
+        IObjectPool<T> GetObjectPool<T>(string name) where T : ObjectBase;
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.GetObjectPool(objectType, poolName);
+        ObjectPoolBase GetObjectPool(Type objectType, string name);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.GetObjectPool(condition);
+        ObjectPoolBase GetObjectPool(Predicate<ObjectPoolBase> condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase[] GetObjectPools(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.GetObjectPools(condition);
+        ObjectPoolBase[] GetObjectPools(Predicate<ObjectPoolBase> condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <param name="results">要获取的对象池。</param>
-        public void GetObjectPools(Predicate<ObjectPoolBase> condition, List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetObjectPools(condition, results);
+        void GetObjectPools(Predicate<ObjectPoolBase> condition, List<ObjectPoolBase> results);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
-        public ObjectPoolBase[] GetAllObjectPools() =>
-            m_ObjectPoolManager.GetAllObjectPools();
+        /// <returns>所有对象池。</returns>
+        ObjectPoolBase[] GetAllObjectPools();
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="results">所有对象池。</param>
-        public void GetAllObjectPools(List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetAllObjectPools(results);
+        void GetAllObjectPools(List<ObjectPoolBase> results);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="sort">是否根据对象池的优先级排序。</param>
         /// <returns>所有对象池。</returns>
-        public ObjectPoolBase[] GetAllObjectPools(bool sort) =>
-            m_ObjectPoolManager.GetAllObjectPools(sort);
+        ObjectPoolBase[] GetAllObjectPools(bool sort);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="sort">是否根据对象池的优先级排序。</param>
         /// <param name="results">所有对象池。</param>
-        public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetAllObjectPools(sort, results);
+        void GetAllObjectPools(bool sort, List<ObjectPoolBase> results);
 
         #endregion
 
-        #region 创建对象池
+        #region 创建对象池相关接口
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>();
+        IObjectPool<T> CreateObjectPool<T>(bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType);
+        ObjectPoolBase CreateObjectPool(Type objectType, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName);
+        IObjectPool<T> CreateObjectPool<T>(string name, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="capacity">对象池的容量。</param>
-        /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <param name="objectType">对象类型。</param>
-        /// <param name="capacity">对象池的容量。</param>
-        /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
-        /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(expireTime);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <param name="objectType">对象类型。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
-        /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, expireTime);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
-        /// <param name="capacity">对象池的容量。</param>
-        /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
-        /// <param name="capacity">对象池的容量。</param>
-        /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
-        /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, expireTime);
-
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
-        /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, expireTime);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="capacity">对象池的容量。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity, expireTime);
+        IObjectPool<T> CreateObjectPool<T>(int capacity, bool allowSpawnInUse = false) where T : ObjectBase;
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <param name="objectType">对象类型。</param>
+        /// <param name="capacity">对象池的容量。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        ObjectPoolBase CreateObjectPool(Type objectType, int capacity, bool allowSpawnInUse = false);
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <typeparam name="T">对象类型。</typeparam>
+        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        IObjectPool<T> CreateObjectPool<T>(float expireTime, bool allowSpawnInUse = false) where T : ObjectBase;
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <param name="objectType">对象类型。</param>
+        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        ObjectPoolBase CreateObjectPool(Type objectType, float expireTime, bool allowSpawnInUse = false);
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <typeparam name="T">对象类型。</typeparam>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="capacity">对象池的容量。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        IObjectPool<T> CreateObjectPool<T>(string name, int capacity, bool allowSpawnInUse = false) where T : ObjectBase;
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <param name="objectType">对象类型。</param>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="capacity">对象池的容量。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, int capacity, bool allowSpawnInUse = false);
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <typeparam name="T">对象类型。</typeparam>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        IObjectPool<T> CreateObjectPool<T>(string name, float expireTime, bool allowSpawnInUse = false) where T : ObjectBase;
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <param name="objectType">对象类型。</param>
+        /// <param name="name">对象池名称。</param>
+        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, float expireTime, bool allowSpawnInUse = false);
+
+        /// <summary>
+        /// 创建对象池。
+        /// </summary>
+        /// <typeparam name="T">对象类型。</typeparam>
+        /// <param name="capacity">对象池的容量。</param>
+        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+        /// <returns>创建的对象池。</returns>
+        IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
@@ -299,9 +262,9 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity, expireTime);
+        ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
@@ -309,9 +272,9 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity, priority);
+        IObjectPool<T> CreateObjectPool<T>(int capacity, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
@@ -319,9 +282,9 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, int capacity, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
@@ -329,9 +292,9 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(expireTime, priority);
+        IObjectPool<T> CreateObjectPool<T>(float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
@@ -339,75 +302,75 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, expireTime, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, float expireTime, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity, expireTime);
+        IObjectPool<T> CreateObjectPool<T>(string name, int capacity, float expireTime, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity, expireTime);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, int capacity, float expireTime, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity, priority);
+        IObjectPool<T> CreateObjectPool<T>(string name, int capacity, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, int capacity, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, expireTime, priority);
+        IObjectPool<T> CreateObjectPool<T>(string name, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, expireTime, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, float expireTime, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
@@ -416,9 +379,9 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity, expireTime, priority);
+        IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
@@ -427,93 +390,94 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity, expireTime, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity, expireTime, priority);
+        IObjectPool<T> CreateObjectPool<T>(string name, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity, expireTime, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, int capacity, float expireTime, int priority, bool allowSpawnInUse = false);
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="autoReleaseInterval">对象池自动释放可释放对象的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, float autoReleaseInterval, int capacity, float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, autoReleaseInterval, capacity, expireTime, priority);
+        IObjectPool<T> CreateObjectPool<T>(string name, float autoReleaseInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase;
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">对象池名称。</param>
+        /// <param name="name">对象池名称。</param>
         /// <param name="autoReleaseInterval">对象池自动释放可释放对象的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
+        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, float autoReleaseInterval, int capacity, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, autoReleaseInterval, capacity, expireTime, priority);
+        ObjectPoolBase CreateObjectPool(Type objectType, string name, float autoReleaseInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false);
+        
 
         #endregion
 
-        #region 销毁对象池
+        #region 销毁对象池相关接口
 
         /// <summary>
         /// 销毁对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool<T>() where T : ObjectBase => m_ObjectPoolManager.DestroyObjectPool<T>();
+        bool DestroyObjectPool<T>() where T : ObjectBase;
 
         /// <summary>
         /// 销毁对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool(Type objectType) => m_ObjectPoolManager.DestroyObjectPool(objectType);
+        bool DestroyObjectPool(Type objectType);
 
         /// <summary>
         /// 销毁对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">要销毁的对象池名称。</param>
+        /// <param name="name">要销毁的对象池名称。</param>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool<T>(string poolName) where T : ObjectBase => m_ObjectPoolManager.DestroyObjectPool<T>(poolName);
+        bool DestroyObjectPool<T>(string name) where T : ObjectBase;
 
         /// <summary>
         /// 销毁对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
-        /// <param name="poolName">要销毁的对象池名称。</param>
+        /// <param name="name">要销毁的对象池名称。</param>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool(Type objectType, string poolName) => m_ObjectPoolManager.DestroyObjectPool(objectType, poolName);
+        bool DestroyObjectPool(Type objectType, string name);
 
         /// <summary>
         /// 销毁对象池。
@@ -521,36 +485,28 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="objectPool">要销毁的对象池。</param>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool<T>(IObjectPool<T> objectPool) where T : ObjectBase => m_ObjectPoolManager.DestroyObjectPool(objectPool);
+        bool DestroyObjectPool<T>(IObjectPool<T> objectPool) where T : ObjectBase;
 
         /// <summary>
         /// 销毁对象池。
         /// </summary>
         /// <param name="objectPool">要销毁的对象池。</param>
         /// <returns>是否销毁对象池成功。</returns>
-        public bool DestroyObjectPool(ObjectPoolBase objectPool) => m_ObjectPoolManager.DestroyObjectPool(objectPool);
+        bool DestroyObjectPool(ObjectPoolBase objectPool);
 
         #endregion
 
-        #region 释放对象池
+        #region 释放对象池相关接口
 
         /// <summary>
         /// 释放对象池中的可释放对象。
         /// </summary>
-        public void Release()
-        {
-            Log.Info("Object pool release...");
-            m_ObjectPoolManager.Release();
-        }
+        void Release();
 
         /// <summary>
         /// 释放对象池中的所有未使用对象。
         /// </summary>
-        public void ReleaseAllUnused()
-        {
-            Log.Info("Object pool release all unused...");
-            m_ObjectPoolManager.ReleaseAllUnused();
-        }
+        void ReleaseAllUnused();
 
         #endregion
     }

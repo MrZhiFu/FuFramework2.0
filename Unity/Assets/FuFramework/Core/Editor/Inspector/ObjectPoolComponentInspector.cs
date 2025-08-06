@@ -5,11 +5,11 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -93,11 +93,11 @@ namespace GameFrameX.Editor
                 var objectInfos = objectPool.GetAllObjectInfos();
                 if (objectInfos.Length > 0)
                 {
-                    EditorGUILayout.LabelField("Name", objectPool.AllowMultiSpawn ? "Locked\tCount\tFlag\tPriority\tLast Use Time" : "Locked\tIn Use\tFlag\tPriority\tLast Use Time");
+                    EditorGUILayout.LabelField("Name", objectPool.AllowSpawnInUse ? "Locked\tCount\tFlag\tPriority\tLast Use Time" : "Locked\tIn Use\tFlag\tPriority\tLast Use Time");
                     foreach (var objectInfo in objectInfos)
                     {
                         EditorGUILayout.LabelField(string.IsNullOrEmpty(objectInfo.Name) ? "<None>" : objectInfo.Name,
-                                                   objectPool.AllowMultiSpawn
+                                                   objectPool.AllowSpawnInUse
                                                        ? Utility.Text.Format("{0}\t{1}\t{2}\t{3}\t{4:yyyy-MM-dd HH:mm:ss}", objectInfo.Locked, objectInfo.SpawnCount, objectInfo.CustomCanReleaseFlag,
                                                                              objectInfo.Priority, objectInfo.LastUseTime.ToLocalTime())
                                                        : Utility.Text.Format("{0}\t{1}\t{2}\t{3}\t{4:yyyy-MM-dd HH:mm:ss}", objectInfo.Locked, objectInfo.IsInUse, objectInfo.CustomCanReleaseFlag,
@@ -123,10 +123,10 @@ namespace GameFrameX.Editor
                             {
                                 var index = 0;
                                 var data  = new string[objectInfos.Length + 1];
-                                data[index++] = Utility.Text.Format("Name,Locked,{0},Custom Can Release Flag,Priority,Last Use Time", objectPool.AllowMultiSpawn ? "Count" : "In Use");
+                                data[index++] = Utility.Text.Format("Name,Locked,{0},Custom Can Release Flag,Priority,Last Use Time", objectPool.AllowSpawnInUse ? "Count" : "In Use");
                                 foreach (var objectInfo in objectInfos)
                                 {
-                                    data[index++] = objectPool.AllowMultiSpawn
+                                    data[index++] = objectPool.AllowSpawnInUse
                                         ? Utility.Text.Format("{0},{1},{2},{3},{4},{5:yyyy-MM-dd HH:mm:ss}", objectInfo.Name, objectInfo.Locked, objectInfo.SpawnCount, objectInfo.CustomCanReleaseFlag,
                                                               objectInfo.Priority, objectInfo.LastUseTime.ToLocalTime())
                                         : Utility.Text.Format("{0},{1},{2},{3},{4},{5:yyyy-MM-dd HH:mm:ss}", objectInfo.Name, objectInfo.Locked, objectInfo.IsInUse, objectInfo.CustomCanReleaseFlag,

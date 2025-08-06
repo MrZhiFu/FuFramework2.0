@@ -1,46 +1,37 @@
 ﻿using System;
-using UnityEngine.Scripting; // Added this line for the Preserve attribute
 
-/// <summary>
-/// 对象扩展函数
-/// </summary>
-[Preserve]
-public static class ObjectExtension
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 检查对象是否为null
+    /// 对象扩展函数
     /// </summary>
-    /// <param name="self"></param>
-    /// <returns></returns>
-   
-    public static bool IsNull(this object self)
+    public static class ObjectExtension
     {
-        return self == null;
-    }
+        /// <summary>
+        /// 检查对象是否为null
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static bool IsNull(this object self) => self == null;
 
-    /// <summary>
-    /// 检查对象是否不为null
-    /// </summary>
-    /// <param name="self"></param>
-    /// <returns></returns>
-   
-    public static bool IsNotNull(this object self)
-    {
-        return !self.IsNull();
-    }
+        /// <summary>
+        /// 检查对象是否不为null
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static bool IsNotNull(this object self) => !self.IsNull();
 
-    /// <summary>
-    /// 检查对象是否为null,当为null时抛出异常
-    /// </summary>
-    /// <param name="self">对象值</param>
-    /// <param name="name">异常信息</param>
-    /// <exception cref="ArgumentNullException">参数为空的异常</exception>
-   
-    public static void CheckNull(this object self, string name)
-    {
-        if (self.IsNull())
+        /// <summary>
+        /// 检查对象是否为null,当为null时抛出异常
+        /// </summary>
+        /// <param name="self">对象值</param>
+        /// <param name="name">异常信息</param>
+        /// <exception cref="ArgumentNullException">参数为空的异常</exception>
+        public static void CheckNull(this object self, string name)
         {
-            throw new ArgumentNullException(name, " can not be null.");
+            if (self.IsNull())
+                throw new ArgumentNullException(name, " can not be null.");
         }
     }
 }

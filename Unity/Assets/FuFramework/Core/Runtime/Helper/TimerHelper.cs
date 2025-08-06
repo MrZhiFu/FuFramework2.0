@@ -1,6 +1,7 @@
 using System;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 游戏时间帮助类
@@ -10,20 +11,26 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 1970-01-01 00:00:00 本地时间
         /// </summary>
-        public static readonly DateTime EpochLocal = TimeZoneInfo.ConvertTime(new DateTime(1970, 1, 1), TimeZoneInfo.Local);
+        public static readonly DateTime s_EpochLocal = TimeZoneInfo.ConvertTime(new DateTime(1970, 1, 1), TimeZoneInfo.Local);
 
         /// <summary>
         /// 1970-01-01 00:00:00 UTC 时间
         /// </summary>
-        public static readonly DateTime EpochUtc = TimeZoneInfo.ConvertTime(new DateTime(1970, 1, 1), TimeZoneInfo.Utc);
+        public static readonly DateTime s_EpochUtc = TimeZoneInfo.ConvertTime(new DateTime(1970, 1, 1), TimeZoneInfo.Utc);
 
-        private static readonly long Epoch = EpochUtc.Ticks;
+        /// <summary>
+        /// 
+        /// </summary>
+        private static readonly long Epoch = s_EpochUtc.Ticks;
 
         /// <summary>
         /// 时间差
         /// </summary>
         private static long _differenceTime;
 
+        /// <summary>
+        /// 是否是秒级
+        /// </summary>
         private static bool _isSecLevel = true;
 
         /// <summary>
@@ -50,67 +57,47 @@ namespace GameFrameX.Runtime
         /// 设置时间差
         /// </summary>
         /// <param name="timeSpan"></param>
-        
         public static void SetDifferenceTime(long timeSpan)
         {
-            if (timeSpan > 1000000000000)
-            {
-                _isSecLevel = false;
-            }
-            else
-            {
-                _isSecLevel = true;
-            }
+            _isSecLevel = timeSpan <= 1000000000000;
 
             if (_isSecLevel)
-            {
                 _differenceTime = timeSpan - ClientNowSeconds();
-            }
             else
-            {
                 _differenceTime = timeSpan - ClientNowMillisecond();
-            }
         }
 
         /// <summary>
         /// 毫秒级
         /// </summary>
         /// <returns></returns>
-        
-        public static long ClientNowMillisecond()
-        {
-            return (DateTime.UtcNow.Ticks - Epoch) / TicksMillisecondUnit;
-        }
+        public static long ClientNowMillisecond() => (DateTime.UtcNow.Ticks - Epoch) / TicksMillisecondUnit;
 
-        
+
+        /// <summary>
+        /// 服务器今天
+        /// </summary>
+        /// <returns></returns>
         public static long ServerToday()
         {
-            if (_isSecLevel)
-            {
-                return _differenceTime + ClientToday();
-            }
-
+            if (_isSecLevel) return _differenceTime + ClientToday();
             return (_differenceTime + ClientTodayMillisecond()) / 1000;
         }
 
-        
-        public static long ClientTodayMillisecond()
-        {
-            return (DateTime.Now.Date.ToUniversalTime().Ticks - Epoch) / 10000;
-        }
+
+        /// <summary>
+        /// 客户端今天
+        /// </summary>
+        /// <returns></returns>
+        public static long ClientTodayMillisecond() => (DateTime.Now.Date.ToUniversalTime().Ticks - Epoch) / 10000;
 
         /// <summary>
         /// 服务器当前时间
         /// </summary>
         /// <returns></returns>
-        
-        public static long ServerNow() //秒级
+        public static long ServerNow()
         {
-            if (_isSecLevel)
-            {
-                return _differenceTime + ClientNowMillisecond();
-            }
-
+            if (_isSecLevel) return _differenceTime + ClientNowMillisecond();
             return (_differenceTime + ClientNowMillisecond()) / 1000;
         }
 
@@ -119,62 +106,41 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="seconds">秒</param>
         /// <returns></returns>
-        
-        public static TimeSpan FromSeconds(int seconds)
-        {
-            return TimeSpan.FromSeconds(seconds);
-        }
+        public static TimeSpan FromSeconds(int seconds) => TimeSpan.FromSeconds(seconds);
 
         /// <summary>
         /// 今天的客户端时间
         /// </summary>
         /// <returns></returns>
-        
-        public static long ClientToday()
-        {
-            return (DateTime.Now.Date.ToUniversalTime().Ticks - Epoch) / TicksSecondUnit;
-        }
+        public static long ClientToday() => (DateTime.Now.Date.ToUniversalTime().Ticks - Epoch) / TicksSecondUnit;
 
         /// <summary>
         /// 客户端时间，毫秒
         /// </summary>
         /// <returns></returns>
-        
-        public static long ClientNow()
-        {
-            return (DateTime.UtcNow.Ticks - Epoch) / 10000;
-        }
+        public static long ClientNow() => (DateTime.UtcNow.Ticks - Epoch) / 10000;
 
         /// <summary>
         /// 客户端时间。秒
         /// </summary>
         /// <returns></returns>
-        
-        public static long ClientNowSeconds()
-        {
-            return (DateTime.UtcNow.Ticks - Epoch) / 10000000;
-        }
+        public static long ClientNowSeconds() => (DateTime.UtcNow.Ticks - Epoch) / 10000000;
 
         /// <summary>
         /// 客户端时间
         /// </summary>
         /// <returns></returns>
-        
-        public static long Now()
-        {
-            return ClientNow();
-        }
+        public static long Now() => ClientNow();
 
         /// <summary>
         /// 指定时间转换成Unix时间戳的时间差，单位秒
         /// </summary>
         /// <param name="time">指定时间</param>
         /// <returns></returns>
-        
         public static long LocalTimeToUnixTimeSeconds(DateTime time)
         {
             var utcDateTime = time.ToUniversalTime();
-            return (long)(utcDateTime - EpochUtc).TotalSeconds;
+            return (long)(utcDateTime - s_EpochUtc).TotalSeconds;
         }
 
         /// <summary>
@@ -182,48 +148,35 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="time">指定时间</param>
         /// <returns></returns>
-        
         public static long LocalTimeToUnixTimeMilliseconds(DateTime time)
         {
             var utcDateTime = time.ToUniversalTime();
-            return (long)(utcDateTime - EpochUtc).TotalMilliseconds;
+            return (long)(utcDateTime - s_EpochUtc).TotalMilliseconds;
         }
 
         /// <summary>
         /// 当前UTC 时间 秒时间戳
         /// </summary>
         /// <returns>当前UTC时间的秒时间戳。</returns>
-        public static long UnixTimeSeconds()
-        {
-            return new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-        }
+        public static long UnixTimeSeconds() => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
 
         /// <summary>
         /// 当前UTC 时间 毫秒时间戳
         /// </summary>
         /// <returns>当前UTC时间的毫秒时间戳。</returns>
-        public static long UnixTimeMilliseconds()
-        {
-            return new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
-        }
+        public static long UnixTimeMilliseconds() => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
 
         /// <summary>
         /// 当前时区时间 秒时间戳
         /// </summary>
         /// <returns>当前时区时间的秒时间戳。</returns>
-        public static long TimeSeconds()
-        {
-            return new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
-        }
+        public static long TimeSeconds() => new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
 
         /// <summary>
         /// 当前时区时间 毫秒时间戳
         /// </summary>
         /// <returns>当前时区时间的毫秒时间戳。</returns>
-        public static long TimeMilliseconds()
-        {
-            return new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
-        }
+        public static long TimeMilliseconds() => new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
 
         /// <summary>
         /// 获取指定时间距离纪元时间（本地时间或UTC时间）的毫秒数。
@@ -233,12 +186,8 @@ namespace GameFrameX.Runtime
         /// <returns>距离纪元时间的毫秒数。</returns>
         public static long TimeToMilliseconds(DateTime time, bool utc = false)
         {
-            if (utc)
-            {
-                return (long)(time - EpochUtc).TotalMilliseconds;
-            }
-
-            return (long)(time - EpochLocal).TotalMilliseconds;
+            if (utc) return (long)(time - s_EpochUtc).TotalMilliseconds;
+            return (long)(time - s_EpochLocal).TotalMilliseconds;
         }
 
         /// <summary>
@@ -249,12 +198,8 @@ namespace GameFrameX.Runtime
         /// <returns>距离纪元时间的秒数。</returns>
         public static long TimeToSecond(DateTime time, bool utc = false)
         {
-            if (utc)
-            {
-                return (long)(time - EpochUtc).TotalSeconds;
-            }
-
-            return (long)(time - EpochLocal).TotalSeconds;
+            if (utc) return (long)(time - s_EpochUtc).TotalSeconds;
+            return (long)(time - s_EpochLocal).TotalSeconds;
         }
 
 
@@ -314,12 +259,7 @@ namespace GameFrameX.Runtime
         /// <returns>转换后的时间。</returns>
         public static DateTime MillisecondsTimeStampToDateTime(long timestamp, bool utc = false)
         {
-            if (utc)
-            {
-                return EpochUtc.AddMilliseconds(timestamp);
-            }
-
-            return EpochLocal.AddMilliseconds(timestamp);
+            return utc ? s_EpochUtc.AddMilliseconds(timestamp) : s_EpochLocal.AddMilliseconds(timestamp);
         }
 
         /// <summary>
@@ -330,12 +270,7 @@ namespace GameFrameX.Runtime
         /// <returns>转换后的时间。</returns>
         public static DateTime TimestampToDateTime(long timestamp, bool utc = false)
         {
-            if (utc)
-            {
-                return EpochUtc.AddSeconds(timestamp);
-            }
-
-            return EpochLocal.AddSeconds(timestamp);
+            return utc ? s_EpochUtc.AddSeconds(timestamp) : s_EpochLocal.AddSeconds(timestamp);
         }
 
         /// <summary>
@@ -344,10 +279,7 @@ namespace GameFrameX.Runtime
         /// <param name="startTime">起始日期。</param>
         /// <param name="hour">小时。</param>
         /// <returns>跨越的天数。</returns>
-        public static int GetCrossDays(DateTime startTime, int hour = 0)
-        {
-            return GetCrossDays(startTime, DateTime.UtcNow, hour);
-        }
+        public static int GetCrossDays(DateTime startTime, int hour = 0) => GetCrossDays(startTime, DateTime.UtcNow, hour);
 
         /// <summary>
         /// 获取从指定日期到当前本地日期之间跨越的天数。
@@ -355,10 +287,7 @@ namespace GameFrameX.Runtime
         /// <param name="startTime">起始日期。</param>
         /// <param name="hour">小时。</param>
         /// <returns>跨越的天数。</returns>
-        public static int GetCrossLocalDays(DateTime startTime, int hour = 0)
-        {
-            return GetCrossDays(startTime, DateTime.Now, hour);
-        }
+        public static int GetCrossLocalDays(DateTime startTime, int hour = 0) => GetCrossDays(startTime, DateTime.Now, hour);
 
         /// <summary>
         /// 获取两个时间戳之间跨越的天数。
@@ -396,16 +325,8 @@ namespace GameFrameX.Runtime
         public static int GetCrossDays(DateTime startTime, DateTime endTime, int hour = 0)
         {
             var days = (int)(endTime.Date - startTime.Date).TotalDays;
-            if (startTime.Hour < hour)
-            {
-                days++;
-            }
-
-            if (endTime.Hour < hour)
-            {
-                days--;
-            }
-
+            if (startTime.Hour < hour) days++;
+            if (endTime.Hour   < hour) days--;
             return days;
         }
 
@@ -418,7 +339,7 @@ namespace GameFrameX.Runtime
         public static int GetCrossLocalDays(long startTimestamp, long endTimestamp)
         {
             var startTime = UtcToLocalDateTime(startTimestamp);
-            var endTime = UtcToLocalDateTime(endTimestamp);
+            var endTime   = UtcToLocalDateTime(endTimestamp);
             return GetCrossDays(startTime, endTime);
         }
 
@@ -427,20 +348,14 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="start">指定时间的起始时间。</param>
         /// <returns>如果当前时间与指定时间处于同一周，则为 true；否则为 false。</returns>
-        public static bool IsNowSameWeek(long start)
-        {
-            return IsNowSameWeek(new DateTime(start));
-        }
+        public static bool IsNowSameWeek(long start) => IsNowSameWeek(new DateTime(start));
 
         /// <summary>
         /// 判断当前时间是否与指定时间处于同一周。
         /// </summary>
         /// <param name="start">指定时间的起始时间。</param>
         /// <returns>如果当前时间与指定时间处于同一周，则为 true；否则为 false。</returns>
-        public static bool IsNowSameWeek(DateTime start)
-        {
-            return IsSameWeek(start, DateTime.Now);
-        }
+        public static bool IsNowSameWeek(DateTime start) => IsSameWeek(start, DateTime.Now);
 
         /// <summary>
         /// 判断两个时间是否处于同一周。
@@ -452,9 +367,7 @@ namespace GameFrameX.Runtime
         {
             // 让start是较早的时间
             if (start > end)
-            {
                 (start, end) = (end, start);
-            }
 
             var dayOfWeek = (int)start.DayOfWeek;
             if (dayOfWeek == (int)DayOfWeek.Sunday)
@@ -496,10 +409,7 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="day">星期几。</param>
         /// <returns>当前日期所在星期的时间。</returns>
-        public static DateTime GetDayOfWeekTime(DayOfWeek day)
-        {
-            return GetDayOfWeekTime(DateTime.Now, day);
-        }
+        public static DateTime GetDayOfWeekTime(DayOfWeek day) => GetDayOfWeekTime(DateTime.Now, day);
 
         /// <summary>
         /// 获取指定星期在中国的对应数字。
@@ -521,122 +431,83 @@ namespace GameFrameX.Runtime
         /// 获取当前星期在中国的对应数字。
         /// </summary>
         /// <returns>当前星期在中国的对应数字。</returns>
-        public static int GetChinaDayOfWeek()
-        {
-            return GetChinaDayOfWeek(DateTime.Now.DayOfWeek);
-        }
+        public static int GetChinaDayOfWeek() => GetChinaDayOfWeek(DateTime.Now.DayOfWeek);
 
         /// <summary>
         /// 获取当前本地时区的日期，格式为yyyyMMdd的整数
         /// </summary>
         /// <returns>返回一个8位整数，表示当前本地时区的日期。例如：20231225表示2023年12月25日</returns>
-        public static int CurrentDateWithDay()
-        {
-            return Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
-        }
+        public static int CurrentDateWithDay() => Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
 
         /// <summary>
         /// 获取当前UTC时区的日期，格式为yyyyMMdd的整数
         /// </summary>
         /// <returns>返回一个8位整数，表示当前UTC时区的日期。例如：20231225表示2023年12月25日</returns>
-        public static int CurrentDateWithUtcDay()
-        {
-            return Convert.ToInt32(DateTime.UtcNow.ToString("yyyyMMdd"));
-        }
+        public static int CurrentDateWithUtcDay() => Convert.ToInt32(DateTime.UtcNow.ToString("yyyyMMdd"));
 
         /// <summary>
         /// 获取当前UTC时间，格式为HHmmss的字符串
         /// </summary>
         /// <returns>返回一个6位字符串，表示当前UTC时间。例如：143045表示14:30:45</returns>
-        public static string CurrentTimeWithUtcFullString()
-        {
-            return DateTime.UtcNow.ToString("HHmmss");
-        }
+        public static string CurrentTimeWithUtcFullString() => DateTime.UtcNow.ToString("HHmmss");
 
         /// <summary>
         /// 获取当前本地时间，格式为HHmmss的字符串
         /// </summary>
         /// <returns>返回一个6位字符串，表示当前本地时间。例如：143045表示14:30:45</returns>
-        public static string CurrentTimeWithLocalFullString()
-        {
-            return DateTime.Now.ToString("HHmmss");
-        }
+        public static string CurrentTimeWithLocalFullString() => DateTime.Now.ToString("HHmmss");
 
         /// <summary>
         /// 获取当前UTC时间，格式为HHmmss的整数
         /// </summary>
         /// <returns>返回一个6位整数，表示当前UTC时间。例如：143045表示14:30:45</returns>
-        public static int CurrentTimeWithUtcTime()
-        {
-            return Convert.ToInt32(CurrentTimeWithUtcFullString());
-        }
+        public static int CurrentTimeWithUtcTime() => Convert.ToInt32(CurrentTimeWithUtcFullString());
 
         /// <summary>
         /// 获取当前本地时间，格式为HHmmss的整数
         /// </summary>
         /// <returns>返回一个6位整数，表示当前本地时间。例如：143045表示14:30:45</returns>
-        public static int CurrentTimeWithLocalTime()
-        {
-            return Convert.ToInt32(CurrentTimeWithLocalFullString());
-        }
+        public static int CurrentTimeWithLocalTime() => Convert.ToInt32(CurrentTimeWithLocalFullString());
 
         /// <summary>
         /// 获取当前本地时区时间的完整格式字符串
         /// </summary>
         /// <returns>返回格式为"yyyy-MM-dd-HH-mm-ss.fff K"的时间字符串，包含年-月-日-时-分-秒.毫秒 时区偏移。例如："2023-12-25-14-30-45.123 +08:00"</returns>
-        public static string CurrentDateTimeWithFullString()
-        {
-            return DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff K");
-        }
+        public static string CurrentDateTimeWithFullString() => DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.fff K");
 
         /// <summary>
         /// 获取当前UTC时区时间的完整格式字符串
         /// </summary>
         /// <returns>返回格式为"yyyy-MM-dd-HH-mm-ss.fff K"的UTC时间字符串，包含年-月-日-时-分-秒.毫秒 时区偏移。例如："2023-12-25-06-30-45.123 +00:00"</returns>
-        public static string CurrentDateTimeWithUtcFullString()
-        {
-            return DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss.fff K");
-        }
+        public static string CurrentDateTimeWithUtcFullString() => DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss.fff K");
 
         /// <summary>
         /// UTC 时间戳 转换成UTC时间
         /// </summary>
         /// <param name="utcTimestamp">UTC时间戳,单位秒</param>
         /// <returns>转换后的UTC时间。</returns>
-        public static DateTime UtcToUtcDateTime(long utcTimestamp)
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(utcTimestamp).UtcDateTime;
-        }
+        public static DateTime UtcToUtcDateTime(long utcTimestamp) => DateTimeOffset.FromUnixTimeSeconds(utcTimestamp).UtcDateTime;
 
         /// <summary>
         /// UTC 毫秒时间戳 转换成UTC时间
         /// </summary>
         /// <param name="utcTimestampMilliseconds">UTC时间戳,单位毫秒</param>
         /// <returns>转换后的UTC时间。</returns>
-        public static DateTime UtcMillisecondsToUtcDateTime(long utcTimestampMilliseconds)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(utcTimestampMilliseconds).UtcDateTime;
-        }
+        public static DateTime UtcMillisecondsToUtcDateTime(long utcTimestampMilliseconds) => DateTimeOffset.FromUnixTimeMilliseconds(utcTimestampMilliseconds).UtcDateTime;
 
         /// <summary>
         /// UTC 时间戳 转换成本地时间
         /// </summary>
         /// <param name="utcTimestamp">UTC时间戳,单位秒</param>
         /// <returns>转换后的本地时间。</returns>
-        public static DateTime UtcToLocalDateTime(long utcTimestamp)
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(utcTimestamp).LocalDateTime;
-        }
+        public static DateTime UtcToLocalDateTime(long utcTimestamp) => DateTimeOffset.FromUnixTimeSeconds(utcTimestamp).LocalDateTime;
 
         /// <summary>
         /// UTC 毫秒时间戳 转换成本地时间
         /// </summary>
         /// <param name="utcTimestampMilliseconds">UTC时间戳,单位毫秒</param>
         /// <returns>转换后的本地时间。</returns>
-        public static DateTime UtcMillisecondsToDateTime(long utcTimestampMilliseconds)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(utcTimestampMilliseconds).LocalDateTime;
-        }
+        public static DateTime UtcMillisecondsToDateTime(long utcTimestampMilliseconds) => DateTimeOffset.FromUnixTimeMilliseconds(utcTimestampMilliseconds).LocalDateTime;
 
         /// <summary>
         /// 按照UTC时间判断两个时间戳是否是同一天
@@ -655,37 +526,25 @@ namespace GameFrameX.Runtime
         /// 获取今天开始时间
         /// </summary>
         /// <returns>今天零点时间</returns>
-        public static DateTime GetTodayStartTime()
-        {
-            return DateTime.Today;
-        }
+        public static DateTime GetTodayStartTime() => DateTime.Today;
 
         /// <summary>
         /// 获取今天开始时间戳
         /// </summary>
         /// <returns>今天零点时间戳(秒)</returns>
-        public static long GetTodayStartTimestamp()
-        {
-            return new DateTimeOffset(GetTodayStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetTodayStartTimestamp() => new DateTimeOffset(GetTodayStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取今天结束时间
         /// </summary>
         /// <returns>今天23:59:59的时间</returns>
-        public static DateTime GetTodayEndTime()
-        {
-            return DateTime.Today.AddDays(1).AddSeconds(-1);
-        }
+        public static DateTime GetTodayEndTime() => DateTime.Today.AddDays(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取今天结束时间戳
         /// </summary>
         /// <returns>今天23:59:59的时间戳(秒)</returns>
-        public static long GetTodayEndTimestamp()
-        {
-            return new DateTimeOffset(GetTodayEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetTodayEndTimestamp() => new DateTimeOffset(GetTodayEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本周开始时间
@@ -693,7 +552,7 @@ namespace GameFrameX.Runtime
         /// <returns>本周一零点时间</returns>
         public static DateTime GetWeekStartTime()
         {
-            var now = DateTime.Now;
+            var now       = DateTime.Now;
             var dayOfWeek = (int)now.DayOfWeek;
             dayOfWeek = dayOfWeek == 0 ? 7 : dayOfWeek;
             return now.AddDays(1 - dayOfWeek).Date;
@@ -703,140 +562,95 @@ namespace GameFrameX.Runtime
         /// 获取本周开始时间戳
         /// </summary>
         /// <returns>本周一零点时间戳(秒)</returns>
-        public static long GetWeekStartTimestamp()
-        {
-            return new DateTimeOffset(GetWeekStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetWeekStartTimestamp() => new DateTimeOffset(GetWeekStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本周结束时间
         /// </summary>
         /// <returns>本周日23:59:59的时间</returns>
-        public static DateTime GetWeekEndTime()
-        {
-            return GetWeekStartTime().AddDays(7).AddSeconds(-1);
-        }
+        public static DateTime GetWeekEndTime() => GetWeekStartTime().AddDays(7).AddSeconds(-1);
 
         /// <summary>
         /// 获取本周结束时间戳
         /// </summary>
         /// <returns>本周日23:59:59的时间戳(秒)</returns>
-        public static long GetWeekEndTimestamp()
-        {
-            return new DateTimeOffset(GetWeekEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetWeekEndTimestamp() => new DateTimeOffset(GetWeekEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本月开始时间
         /// </summary>
         /// <returns>本月1号零点时间</returns>
-        public static DateTime GetMonthStartTime()
-        {
-            return new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-        }
+        public static DateTime GetMonthStartTime() => new(DateTime.Now.Year, DateTime.Now.Month, 1);
 
         /// <summary>
         /// 获取本月开始时间戳
         /// </summary>
         /// <returns>本月1号零点时间戳(秒)</returns>
-        public static long GetMonthStartTimestamp()
-        {
-            return new DateTimeOffset(GetMonthStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetMonthStartTimestamp() => new DateTimeOffset(GetMonthStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本月结束时间
         /// </summary>
         /// <returns>本月最后一天23:59:59的时间</returns>
-        public static DateTime GetMonthEndTime()
-        {
-            return GetMonthStartTime().AddMonths(1).AddSeconds(-1);
-        }
+        public static DateTime GetMonthEndTime() => GetMonthStartTime().AddMonths(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取本月结束时间戳
         /// </summary>
         /// <returns>本月最后一天23:59:59的时间戳(秒)</returns>
-        public static long GetMonthEndTimestamp()
-        {
-            return new DateTimeOffset(GetMonthEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetMonthEndTimestamp() => new DateTimeOffset(GetMonthEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本年开始时间
         /// </summary>
         /// <returns>本年1月1日零点时间</returns>
-        public static DateTime GetYearStartTime()
-        {
-            return new DateTime(DateTime.Now.Year, 1, 1);
-        }
+        public static DateTime GetYearStartTime() => new(DateTime.Now.Year, 1, 1);
 
         /// <summary>
         /// 获取本年开始时间戳
         /// </summary>
         /// <returns>本年1月1日零点时间戳(秒)</returns>
-        public static long GetYearStartTimestamp()
-        {
-            return new DateTimeOffset(GetYearStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetYearStartTimestamp() => new DateTimeOffset(GetYearStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取本年结束时间
         /// </summary>
         /// <returns>本年12月31日23:59:59的时间</returns>
-        public static DateTime GetYearEndTime()
-        {
-            return GetYearStartTime().AddYears(1).AddSeconds(-1);
-        }
+        public static DateTime GetYearEndTime() => GetYearStartTime().AddYears(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取本年结束时间戳
         /// </summary>
         /// <returns>本年12月31日23:59:59的时间戳(秒)</returns>
-        public static long GetYearEndTimestamp()
-        {
-            return new DateTimeOffset(GetYearEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetYearEndTimestamp() => new DateTimeOffset(GetYearEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期的开始时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>指定日期零点时间</returns>
-        public static DateTime GetStartTimeOfDay(DateTime date)
-        {
-            return date.Date;
-        }
+        public static DateTime GetStartTimeOfDay(DateTime date) => date.Date;
 
         /// <summary>
         /// 获取指定日期的开始时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>指定日期零点时间戳(秒)</returns>
-        public static long GetStartTimestampOfDay(DateTime date)
-        {
-            return new DateTimeOffset(GetStartTimeOfDay(date)).ToUnixTimeSeconds();
-        }
+        public static long GetStartTimestampOfDay(DateTime date) => new DateTimeOffset(GetStartTimeOfDay(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期的结束时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>指定日期23:59:59的时间</returns>
-        public static DateTime GetEndTimeOfDay(DateTime date)
-        {
-            return date.Date.AddDays(1).AddSeconds(-1);
-        }
+        public static DateTime GetEndTimeOfDay(DateTime date) => date.Date.AddDays(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取指定日期的结束时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>指定日期23:59:59的时间戳(秒)</returns>
-        public static long GetEndTimestampOfDay(DateTime date)
-        {
-            return new DateTimeOffset(GetEndTimeOfDay(date)).ToUnixTimeSeconds();
-        }
+        public static long GetEndTimestampOfDay(DateTime date) => new DateTimeOffset(GetEndTimeOfDay(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在周的开始时间
@@ -855,218 +669,149 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在周周一零点时间戳(秒)</returns>
-        public static long GetStartTimestampOfWeek(DateTime date)
-        {
-            return new DateTimeOffset(GetStartTimeOfWeek(date)).ToUnixTimeSeconds();
-        }
+        public static long GetStartTimestampOfWeek(DateTime date) => new DateTimeOffset(GetStartTimeOfWeek(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取明天开始时间
         /// </summary>
         /// <returns>明天零点时间</returns>
-        public static DateTime GetTomorrowStartTime()
-        {
-            return DateTime.Today.AddDays(1);
-        }
+        public static DateTime GetTomorrowStartTime() => DateTime.Today.AddDays(1);
 
         /// <summary>
         /// 获取明天开始时间戳
         /// </summary>
         /// <returns>明天零点时间戳(秒)</returns>
-        public static long GetTomorrowStartTimestamp()
-        {
-            return new DateTimeOffset(GetTomorrowStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetTomorrowStartTimestamp() => new DateTimeOffset(GetTomorrowStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取明天结束时间
         /// </summary>
         /// <returns>明天23:59:59的时间</returns>
-        public static DateTime GetTomorrowEndTime()
-        {
-            return DateTime.Today.AddDays(2).AddSeconds(-1);
-        }
+        public static DateTime GetTomorrowEndTime() => DateTime.Today.AddDays(2).AddSeconds(-1);
 
         /// <summary>
         /// 获取明天结束时间戳
         /// </summary>
         /// <returns>明天23:59:59的时间戳(秒)</returns>
-        public static long GetTomorrowEndTimestamp()
-        {
-            return new DateTimeOffset(GetTomorrowEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetTomorrowEndTimestamp() => new DateTimeOffset(GetTomorrowEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取下周开始时间
         /// </summary>
         /// <returns>下周一零点时间</returns>
-        public static DateTime GetNextWeekStartTime()
-        {
-            return GetWeekStartTime().AddDays(7);
-        }
+        public static DateTime GetNextWeekStartTime() => GetWeekStartTime().AddDays(7);
 
         /// <summary>
         /// 获取下周开始时间戳
         /// </summary>
         /// <returns>下周一零点时间戳(秒)</returns>
-        public static long GetNextWeekStartTimestamp()
-        {
-            return new DateTimeOffset(GetNextWeekStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetNextWeekStartTimestamp() => new DateTimeOffset(GetNextWeekStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取下周结束时间
         /// </summary>
         /// <returns>下周日23:59:59的时间</returns>
-        public static DateTime GetNextWeekEndTime()
-        {
-            return GetNextWeekStartTime().AddDays(7).AddSeconds(-1);
-        }
+        public static DateTime GetNextWeekEndTime() => GetNextWeekStartTime().AddDays(7).AddSeconds(-1);
 
         /// <summary>
         /// 获取下周结束时间戳
         /// </summary>
         /// <returns>下周日23:59:59的时间戳(秒)</returns>
-        public static long GetNextWeekEndTimestamp()
-        {
-            return new DateTimeOffset(GetNextWeekEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetNextWeekEndTimestamp() => new DateTimeOffset(GetNextWeekEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取下月开始时间
         /// </summary>
         /// <returns>下月1号零点时间</returns>
-        public static DateTime GetNextMonthStartTime()
-        {
-            return GetMonthStartTime().AddMonths(1);
-        }
+        public static DateTime GetNextMonthStartTime() => GetMonthStartTime().AddMonths(1);
 
         /// <summary>
         /// 获取下月开始时间戳
         /// </summary>
         /// <returns>下月1号零点时间戳(秒)</returns>
-        public static long GetNextMonthStartTimestamp()
-        {
-            return new DateTimeOffset(GetNextMonthStartTime()).ToUnixTimeSeconds();
-        }
+        public static long GetNextMonthStartTimestamp() => new DateTimeOffset(GetNextMonthStartTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取下月结束时间
         /// </summary>
         /// <returns>下月最后一天23:59:59的时间</returns>
-        public static DateTime GetNextMonthEndTime()
-        {
-            return GetNextMonthStartTime().AddMonths(1).AddSeconds(-1);
-        }
+        public static DateTime GetNextMonthEndTime() => GetNextMonthStartTime().AddMonths(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取下月结束时间戳
         /// </summary>
         /// <returns>下月最后一天23:59:59的时间戳(秒)</returns>
-        public static long GetNextMonthEndTimestamp()
-        {
-            return new DateTimeOffset(GetNextMonthEndTime()).ToUnixTimeSeconds();
-        }
+        public static long GetNextMonthEndTimestamp() => new DateTimeOffset(GetNextMonthEndTime()).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在周的结束时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在周周日23:59:59的时间</returns>
-        public static DateTime GetEndTimeOfWeek(DateTime date)
-        {
-            return GetStartTimeOfWeek(date).AddDays(7).AddSeconds(-1);
-        }
+        public static DateTime GetEndTimeOfWeek(DateTime date) => GetStartTimeOfWeek(date).AddDays(7).AddSeconds(-1);
 
         /// <summary>
         /// 获取指定日期所在周的结束时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在周周日23:59:59的时间戳(秒)</returns>
-        public static long GetEndTimestampOfWeek(DateTime date)
-        {
-            return new DateTimeOffset(GetEndTimeOfWeek(date)).ToUnixTimeSeconds();
-        }
+        public static long GetEndTimestampOfWeek(DateTime date) => new DateTimeOffset(GetEndTimeOfWeek(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在月的开始时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在月1号零点时间</returns>
-        public static DateTime GetStartTimeOfMonth(DateTime date)
-        {
-            return new DateTime(date.Year, date.Month, 1);
-        }
+        public static DateTime GetStartTimeOfMonth(DateTime date) => new(date.Year, date.Month, 1);
 
         /// <summary>
         /// 获取指定日期所在月的开始时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在月1号零点时间戳(秒)</returns>
-        public static long GetStartTimestampOfMonth(DateTime date)
-        {
-            return new DateTimeOffset(GetStartTimeOfMonth(date)).ToUnixTimeSeconds();
-        }
+        public static long GetStartTimestampOfMonth(DateTime date) => new DateTimeOffset(GetStartTimeOfMonth(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在月的结束时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在月最后一天23:59:59的时间</returns>
-        public static DateTime GetEndTimeOfMonth(DateTime date)
-        {
-            return GetStartTimeOfMonth(date).AddMonths(1).AddSeconds(-1);
-        }
+        public static DateTime GetEndTimeOfMonth(DateTime date) => GetStartTimeOfMonth(date).AddMonths(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取指定日期所在月的结束时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在月最后一天23:59:59的时间戳(秒)</returns>
-        public static long GetEndTimestampOfMonth(DateTime date)
-        {
-            return new DateTimeOffset(GetEndTimeOfMonth(date)).ToUnixTimeSeconds();
-        }
+        public static long GetEndTimestampOfMonth(DateTime date) => new DateTimeOffset(GetEndTimeOfMonth(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在年的开始时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在年1月1日零点时间</returns>
-        public static DateTime GetStartTimeOfYear(DateTime date)
-        {
-            return new DateTime(date.Year, 1, 1);
-        }
+        public static DateTime GetStartTimeOfYear(DateTime date) => new(date.Year, 1, 1);
 
         /// <summary>
         /// 获取指定日期所在年的开始时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在年1月1日零点时间戳(秒)</returns>
-        public static long GetStartTimestampOfYear(DateTime date)
-        {
-            return new DateTimeOffset(GetStartTimeOfYear(date)).ToUnixTimeSeconds();
-        }
+        public static long GetStartTimestampOfYear(DateTime date) => new DateTimeOffset(GetStartTimeOfYear(date)).ToUnixTimeSeconds();
 
         /// <summary>
         /// 获取指定日期所在年的结束时间
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在年12月31日23:59:59的时间</returns>
-        public static DateTime GetEndTimeOfYear(DateTime date)
-        {
-            return GetStartTimeOfYear(date).AddYears(1).AddSeconds(-1);
-        }
+        public static DateTime GetEndTimeOfYear(DateTime date) => GetStartTimeOfYear(date).AddYears(1).AddSeconds(-1);
 
         /// <summary>
         /// 获取指定日期所在年的结束时间戳
         /// </summary>
         /// <param name="date">指定日期</param>
         /// <returns>所在年12月31日23:59:59的时间戳(秒)</returns>
-        public static long GetEndTimestampOfYear(DateTime date)
-        {
-            return new DateTimeOffset(GetEndTimeOfYear(date)).ToUnixTimeSeconds();
-        }
+        public static long GetEndTimestampOfYear(DateTime date) => new DateTimeOffset(GetEndTimeOfYear(date)).ToUnixTimeSeconds();
 
 
         /// <summary>
@@ -1076,10 +821,7 @@ namespace GameFrameX.Runtime
         /// <param name="startTime">开始时间</param>
         /// <param name="endTime">结束时间</param>
         /// <returns>是否在范围内</returns>
-        public static bool IsTimeInRange(DateTime time, DateTime startTime, DateTime endTime)
-        {
-            return time >= startTime && time <= endTime;
-        }
+        public static bool IsTimeInRange(DateTime time, DateTime startTime, DateTime endTime) => time >= startTime && time <= endTime;
 
         /// <summary>
         /// 获取指定时间戳是否在指定的时间戳范围内
@@ -1088,10 +830,7 @@ namespace GameFrameX.Runtime
         /// <param name="startTimestamp">开始时间戳</param>
         /// <param name="endTimestamp">结束时间戳</param>
         /// <returns>是否在范围内</returns>
-        public static bool IsTimestampInRange(long timestamp, long startTimestamp, long endTimestamp)
-        {
-            return timestamp >= startTimestamp && timestamp <= endTimestamp;
-        }
+        public static bool IsTimestampInRange(long timestamp, long startTimestamp, long endTimestamp) => timestamp >= startTimestamp && timestamp <= endTimestamp;
 
         /// <summary>
         /// 按照本地时间判断两个时间戳是否是同一天

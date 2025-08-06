@@ -179,7 +179,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="view"></param>
         private void RecycleUI(ViewBase view)
         {
-            m_InstancePool.Unspawn(view);
+            m_InstancePool.Recycle(view);
             view._OnRecycle();
         }
     }

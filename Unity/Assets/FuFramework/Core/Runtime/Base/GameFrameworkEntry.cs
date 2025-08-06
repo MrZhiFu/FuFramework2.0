@@ -1,13 +1,5 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -69,8 +61,8 @@ namespace FuFramework.Core.Runtime
             if (!interfaceType.IsInterface)
                 throw new GameFrameworkException(Utility.Text.Format("要获取框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
-            if (interfaceType.FullName != null && !interfaceType.FullName.StartsWith("GameFrameX.", StringComparison.Ordinal))
-                throw new GameFrameworkException(Utility.Text.Format("要获取的框架模块必须是命名空间为GameFramework的模块, 但是 '{0}' 不是GameFramework模块.", interfaceType.FullName));
+            // if (interfaceType.FullName != null && !interfaceType.FullName.StartsWith("FuFramework.", StringComparison.Ordinal))
+            //     throw new GameFrameworkException(Utility.Text.Format("要获取的框架模块必须是命名空间为FuFramework的模块, 但是 '{0}' 不是FuFramework模块.", interfaceType.FullName));
 
             // 如GameFramework.Resource.IResourceManager => GameFramework.Resource.ResourceManager
             if (s_ModuleTypeDict.TryGetValue(interfaceType, out var moduleType))
@@ -80,7 +72,7 @@ namespace FuFramework.Core.Runtime
             moduleType = s_ModuleTypeDict.TryGetValue(interfaceType, out moduleType) ? moduleType : Type.GetType(moduleName);
 
             if (moduleType == null)
-                throw new GameFrameworkException(Utility.Text.Format("在GameFramework中找不到模块 '{0}''.", moduleName));
+                throw new GameFrameworkException(Utility.Text.Format("在FuFramework中找不到模块 '{0}''.", moduleName));
 
             return GetModule(moduleType) as T;
         }

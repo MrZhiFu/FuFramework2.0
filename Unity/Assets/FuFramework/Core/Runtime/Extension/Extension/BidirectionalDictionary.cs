@@ -1,4 +1,7 @@
-﻿namespace System.Collections.Generic
+﻿using System.Collections.Generic;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     
     public class BidirectionalDictionary<TKey, TValue>

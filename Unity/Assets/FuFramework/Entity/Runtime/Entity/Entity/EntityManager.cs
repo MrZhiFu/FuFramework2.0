@@ -11,7 +11,6 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;

@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Buffers;
 using System.IO;
+using System.Buffers;
+using GameFrameX.Runtime;
 using ICSharpCode.SharpZipLib.Checksum;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 压缩帮助类
+    /// 压缩帮助类。
+    /// 功能：压缩文件夹、压缩文件、解压文件
     /// </summary>
-    
     public static class ZipHelper
     {
         private static readonly Crc32 CRC = new Crc32();
@@ -22,7 +24,6 @@ namespace GameFrameX.Runtime
         /// <param name="stream">压缩前的Stream,方法执行后变为压缩完成后的文件</param> 
         /// <param name="password">密码</param> 
         /// <returns>是否成功</returns> 
-        
         public static bool CompressDirectoryToStream(string folderToZip, Stream stream, string password = null)
         {
             return CompressDirectoryToZipStream(folderToZip, stream, password) != null;
@@ -36,20 +37,15 @@ namespace GameFrameX.Runtime
         /// <param name="stream">压缩前的Stream,方法执行后变为压缩完成后的文件</param> 
         /// <param name="password">密码</param> 
         /// <returns>是否压缩成功返回ZipOutputStream，否则返回null</returns> 
-        
         public static ZipOutputStream CompressDirectoryToZipStream(string folderToZip, Stream stream, string password = null)
         {
-            if (!Directory.Exists(folderToZip))
-            {
-                return null;
-            }
+            if (!Directory.Exists(folderToZip)) return null;
 
-            ZipOutputStream zipStream = new ZipOutputStream(stream);
+            var zipStream = new ZipOutputStream(stream);
             zipStream.SetLevel(6);
+
             if (!string.IsNullOrEmpty(password))
-            {
                 zipStream.Password = password;
-            }
 
             if (CompressDirectory(folderToZip, zipStream, ""))
             {
@@ -68,7 +64,6 @@ namespace GameFrameX.Runtime
         /// <param name="zipStream">压缩输出流</param> 
         /// <param name="parentFolderName">此文件夹的上级文件夹</param> 
         /// <returns>是否成功</returns> 
-        
         private static bool CompressDirectory(string folderToZip, ZipOutputStream zipStream, string parentFolderName)
         {
             //这段是创建空文件夹,注释掉可以去掉空文件夹(因为在写入文件的时候也会创建文件夹)
@@ -83,7 +78,7 @@ namespace GameFrameX.Runtime
             foreach (string file in files)
             {
                 byte[] buffer = File.ReadAllBytes(file);
-                var path = Path.GetFileName(file);
+                var    path   = Path.GetFileName(file);
                 if (parentFolderName.IsNotNullOrWhiteSpace())
                 {
                     path = parentFolderName + Path.DirectorySeparatorChar + Path.GetFileName(file);
@@ -93,7 +88,7 @@ namespace GameFrameX.Runtime
                 {
                     //ent.DateTime = File.GetLastWriteTime(file);//设置文件最后修改时间
                     DateTime = DateTime.Now,
-                    Size = buffer.Length,
+                    Size     = buffer.Length,
                 };
 
                 CRC.Reset();
@@ -130,7 +125,6 @@ namespace GameFrameX.Runtime
         /// <param name="zipFile">压缩文件完整路径</param> 
         /// <param name="password">密码</param> 
         /// <returns>是否成功</returns> 
-        
         public static bool CompressDirectory(string folderToZip, string zipFile, string password = null)
         {
             if (folderToZip.EndsWithFast(Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWithFast("/"))
@@ -155,7 +149,6 @@ namespace GameFrameX.Runtime
         /// <param name="zipFile">压缩后的文件名</param> 
         /// <param name="password">密码</param> 
         /// <returns>是否成功</returns> 
-        
         public static bool CompressFile(string fileToZip, string zipFile, string password = null)
         {
             if (!File.Exists(fileToZip))
@@ -166,13 +159,13 @@ namespace GameFrameX.Runtime
             using (var readStream = File.OpenRead(fileToZip))
             {
                 byte[] buffer = new byte[readStream.Length];
-                var read = readStream.Read(buffer, 0, buffer.Length);
+                var    read   = readStream.Read(buffer, 0, buffer.Length);
                 using (var writeStream = File.Create(zipFile))
                 {
                     var entry = new ZipEntry(Path.GetFileName(fileToZip))
                     {
                         DateTime = DateTime.Now,
-                        Size = readStream.Length
+                        Size     = readStream.Length
                     };
                     CRC.Reset();
                     CRC.Update(buffer);
@@ -203,10 +196,9 @@ namespace GameFrameX.Runtime
         /// <param name="zipFolder">指定解压目标目录</param> 
         /// <param name="password">密码</param> 
         /// <returns>是否成功</returns> 
-        
         public static bool DecompressFile(string fileToUnZip, string zipFolder, string password = null)
         {
-            if (!System.IO.File.Exists(fileToUnZip))
+            if (!File.Exists(fileToUnZip))
             {
                 return false;
             }
@@ -221,7 +213,7 @@ namespace GameFrameX.Runtime
                 zipFolder += "\\";
             }
 
-            using (var zipStream = new ZipInputStream(System.IO.File.OpenRead(fileToUnZip)))
+            using (var zipStream = new ZipInputStream(File.OpenRead(fileToUnZip)))
             {
                 if (!string.IsNullOrEmpty(password))
                 {
@@ -242,16 +234,16 @@ namespace GameFrameX.Runtime
                     }
 
                     string fileName = zipFolder + zipEntry.Name.Replace('/', '\\');
-                    var index = zipEntry.Name.LastIndexOf('/');
+                    var    index    = zipEntry.Name.LastIndexOf('/');
                     if (index != -1)
                     {
                         string path = zipFolder + zipEntry.Name.Substring(0, index).Replace('/', '\\');
-                        System.IO.Directory.CreateDirectory(path);
+                        Directory.CreateDirectory(path);
                     }
 
                     var bytes = new byte[zipEntry.Size];
-                    var read = zipStream.Read(bytes, 0, bytes.Length);
-                    System.IO.File.WriteAllBytes(fileName, bytes);
+                    var read  = zipStream.Read(bytes, 0, bytes.Length);
+                    File.WriteAllBytes(fileName, bytes);
                 }
             }
 
@@ -270,7 +262,6 @@ namespace GameFrameX.Runtime
         /// <param name="content">要压缩的原始字节数组。不能为null。</param>
         /// <returns>压缩后的字节数组。如果输入为空数组，则直接返回该空数组。如果压缩过程中发生异常，则返回原始数组。</returns>
         /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
-        
         public static byte[] Compress(byte[] content)
         {
             content.CheckNull(nameof(content));
@@ -285,30 +276,29 @@ namespace GameFrameX.Runtime
             compressor.SetInput(content);
             compressor.Finish();
 
-            using (var compressorMemoryStream = new MemoryStream(content.Length))
+            using var compressorMemoryStream = new MemoryStream(content.Length);
+
+            var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+            try
             {
-                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-                try
+                while (!compressor.IsFinished)
                 {
-                    while (!compressor.IsFinished)
-                    {
-                        var count = compressor.Deflate(buffer);
-                        compressorMemoryStream.Write(buffer, 0, count);
-                    }
-
-                    return compressorMemoryStream.ToArray();
-                }
-                catch (Exception e)
-                {
-                    Log.Fatal(e);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
+                    var count = compressor.Deflate(buffer);
+                    compressorMemoryStream.Write(buffer, 0, count);
                 }
 
-                return content;
+                return compressorMemoryStream.ToArray();
             }
+            catch (Exception e)
+            {
+                Log.Fatal(e);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+
+            return content;
         }
 
         /// <summary>
@@ -318,7 +308,6 @@ namespace GameFrameX.Runtime
         /// <returns>解压后的原始字节数组。如果输入为空数组，则直接返回该空数组。如果解压过程中发生异常，则返回原始数组。</returns>
         /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
         /// <exception cref="InvalidDataException">当压缩数据格式无效或已损坏时抛出。</exception>
-        
         public static byte[] Decompress(byte[] content)
         {
             content.CheckNull(nameof(content));
@@ -329,30 +318,29 @@ namespace GameFrameX.Runtime
 
             var decompressor = new Inflater();
             decompressor.SetInput(content, 0, content.Length);
-            using (var decompressMemoryStream = new MemoryStream(content.Length))
+            using var decompressMemoryStream = new MemoryStream(content.Length);
+
+            var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+            try
             {
-                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-                try
+                while (!decompressor.IsFinished)
                 {
-                    while (!decompressor.IsFinished)
-                    {
-                        var countLength = decompressor.Inflate(buffer);
-                        decompressMemoryStream.Write(buffer, 0, countLength);
-                    }
-
-                    return decompressMemoryStream.ToArray();
-                }
-                catch (Exception e)
-                {
-                    Log.Fatal(e);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer, true);
+                    var countLength = decompressor.Inflate(buffer);
+                    decompressMemoryStream.Write(buffer, 0, countLength);
                 }
 
-                return content;
+                return decompressMemoryStream.ToArray();
             }
+            catch (Exception e)
+            {
+                Log.Fatal(e);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, true);
+            }
+
+            return content;
         }
     }
 }

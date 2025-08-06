@@ -2,13 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架链表类(结合使用一个缓存队列对链表节点的生成做了相当于缓存池的优化)
+    /// 游戏框架链表类(结合一个缓存队列对链表节点的生成做了相当于缓存池的优化)
     /// </summary>
     /// <typeparam name="T">指定链表的元素类型。</typeparam>
     public sealed class GameFrameworkLinkedList<T> : ICollection<T>, ICollection

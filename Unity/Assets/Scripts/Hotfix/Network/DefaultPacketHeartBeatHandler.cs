@@ -1,3 +1,4 @@
+using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
 using GameFrameX.Runtime;
 using Hotfix.Proto;

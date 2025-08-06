@@ -1,7 +1,4 @@
-﻿using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
     /// <summary>

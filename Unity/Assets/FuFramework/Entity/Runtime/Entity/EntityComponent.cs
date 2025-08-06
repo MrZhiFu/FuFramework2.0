@@ -5,7 +5,6 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

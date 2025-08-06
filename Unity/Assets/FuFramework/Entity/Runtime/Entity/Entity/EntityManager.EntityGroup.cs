@@ -7,7 +7,6 @@
 
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.ObjectPool;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Entity.Runtime
@@ -49,7 +48,7 @@ namespace GameFrameX.Entity.Runtime
 
                 m_Name = name;
                 m_EntityGroupHelper = entityGroupHelper;
-                m_InstancePool = objectPoolManager.CreateSingleSpawnObjectPool<EntityInstanceObject>(Utility.Text.Format("Entity Instance Pool ({0})", name), instanceCapacity, instanceExpireTime, instancePriority);
+                m_InstancePool = objectPoolManager.CreateObjectPool<EntityInstanceObject>(Utility.Text.Format("Entity Instance Pool ({0})", name), instanceCapacity, instanceExpireTime, instancePriority);
                 m_InstancePool.AutoReleaseInterval = instanceAutoReleaseInterval;
                 m_Entities = new GameFrameworkLinkedList<IEntity>();
                 m_CachedNode = null;
@@ -369,7 +368,7 @@ namespace GameFrameX.Entity.Runtime
 
             public void UnspawnEntity(IEntity entity)
             {
-                m_InstancePool.Unspawn(entity.Handle);
+                m_InstancePool.Recycle(entity.Handle);
             }
 
             public void SetEntityInstanceLocked(object entityInstance, bool locked)

@@ -1,11 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
-namespace System
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 扩展方法，用于检查当前类型是否实现了指定的接口。
     /// </summary>
-    
     public static class TypeExtensions
     {
         /// <summary>
@@ -25,32 +26,19 @@ namespace System
         /// 4. self实现了target接口（根据directOnly参数决定检查范围）
         /// 否则返回false
         /// </returns>
-        
         public static bool IsImplWithInterface(this Type self, Type target, bool directOnly = false)
         {
             // 参数有效性检查
-            if (target == null || self == null)
-            {
-                return false;
-            }
+            if (target == null || self == null) return false;
 
             // 确保target是接口类型
-            if (!target.IsInterface)
-            {
-                return false;
-            }
+            if (!target.IsInterface) return false;
 
             // 检查是否是接口类型或抽象类型
-            if (self.IsInterface || self.IsAbstract)
-            {
-                return false;
-            }
+            if (self.IsInterface || self.IsAbstract) return false;
 
-            if (directOnly)
-            {
-                // 只检查直接实现的接口
-                return self.GetInterfaces().Any(i => i == target);
-            }
+            // 只检查直接实现的接口
+            if (directOnly) return self.GetInterfaces().Any(i => i == target);
 
             // 检查所有实现的接口（包括继承的接口）
             return self.GetInterfaces().Any(i => i == target || i.GetInterfaces().Contains(target));

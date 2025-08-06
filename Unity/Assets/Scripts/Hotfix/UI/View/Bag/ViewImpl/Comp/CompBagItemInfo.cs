@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;

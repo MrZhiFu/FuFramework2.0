@@ -1,4 +1,7 @@
-﻿namespace System
+﻿using System;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static class DateTimeExtensions
     {

@@ -2,19 +2,18 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 游戏对象帮助类
     /// </summary>
-    
     public static class GameObjectHelper
     {
         /// <summary>
         /// 销毁子物体
         /// </summary>
         /// <param name="go"></param>
-        
         public static void RemoveChildren(GameObject go)
         {
             for (var i = go.transform.childCount - 1; i >= 0; i--)
@@ -27,48 +26,38 @@ namespace GameFrameX.Runtime
         /// 销毁游戏物体
         /// </summary>
         /// <param name="gameObject"></param>
-        
         public static void DestroyObject(this GameObject gameObject)
         {
-            if (!ReferenceEquals(gameObject, null))
+            if (ReferenceEquals(gameObject, null)) return;
+            if (Application.isEditor && !Application.isPlaying)
             {
-                if (Application.isEditor && !Application.isPlaying)
-                {
-                    Object.DestroyImmediate(gameObject);
-                    return;
-                }
-
-                Object.Destroy(gameObject);
+                Object.DestroyImmediate(gameObject);
+                return;
             }
+
+            Object.Destroy(gameObject);
         }
 
         /// <summary>
         /// 销毁游戏物体
         /// </summary>
         /// <param name="gameObject"></param>
-        
-        public static void Destroy(GameObject gameObject)
-        {
-            gameObject.DestroyObject();
-        }
+        public static void Destroy(GameObject gameObject) => gameObject.DestroyObject();
 
         /// <summary>
         /// 销毁游戏组件
         /// </summary>
         /// <param name="component"></param>
-        
         public static void DestroyComponent(Component component)
         {
-            if (!ReferenceEquals(component, null))
+            if (ReferenceEquals(component, null)) return;
+            if (Application.isEditor && !Application.isPlaying)
             {
-                if (Application.isEditor && !Application.isPlaying)
-                {
-                    Object.DestroyImmediate(component);
-                    return;
-                }
-
-                Object.Destroy(component);
+                Object.DestroyImmediate(component);
+                return;
             }
+
+            Object.Destroy(component);
         }
 
         /// <summary>
@@ -77,7 +66,6 @@ namespace GameFrameX.Runtime
         /// <param name="sceneName">场景名称。</param>
         /// <param name="nodeName">节点名称。</param>
         /// <returns>找到的节点的GameObject实例，如果没有找到返回null。</returns>
-        
         public static GameObject FindChildGamObjectByName(string nodeName, string sceneName = null)
         {
             Scene scene;
@@ -88,20 +76,14 @@ namespace GameFrameX.Runtime
             else
             {
                 scene = SceneManager.GetSceneByName(sceneName);
-                if (!scene.isLoaded)
-                {
-                    return null;
-                }
+                if (!scene.isLoaded) return null;
             }
 
             var rootObjects = scene.GetRootGameObjects();
             foreach (var rootObject in rootObjects)
             {
                 var result = FindChildGamObjectByName(rootObject, nodeName);
-                if (result.IsNotNull())
-                {
-                    return result;
-                }
+                if (result.IsNotNull()) return result;
             }
 
             return null;
@@ -113,16 +95,10 @@ namespace GameFrameX.Runtime
         /// <param name="gameObject"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        
         public static GameObject FindChildGamObjectByName(GameObject gameObject, string name)
         {
             var transform = gameObject.transform.FindChildName(name);
-            if (transform.IsNotNull())
-            {
-                return transform.gameObject;
-            }
-
-            return null;
+            return transform.IsNotNull() ? transform.gameObject : null;
         }
 
         /// <summary>
@@ -131,7 +107,6 @@ namespace GameFrameX.Runtime
         /// <param name="parent"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        
         public static GameObject Create(Transform parent, string name)
         {
             Debug.Assert(!ReferenceEquals(parent, null), nameof(parent) + " == null");
@@ -146,7 +121,6 @@ namespace GameFrameX.Runtime
         /// <param name="parent"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        
         public static GameObject Create(GameObject parent, string name)
         {
             Debug.Assert(!ReferenceEquals(parent, null), nameof(parent) + " == null");
@@ -158,10 +132,9 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="gameObject"></param>
         /// <returns></returns>
-        
         public static void ResetTransform(GameObject gameObject)
         {
-            gameObject.transform.localScale = Vector3.one;
+            gameObject.transform.localScale    = Vector3.one;
             gameObject.transform.localPosition = Vector3.zero;
             gameObject.transform.localRotation = Quaternion.identity;
         }
@@ -171,11 +144,10 @@ namespace GameFrameX.Runtime
         /// </summary>
         /// <param name="gameObject">游戏对象</param>
         /// <param name="sortingLayer">显示层</param>
-        
         public static void SetSortingGroupLayer(GameObject gameObject, string sortingLayer)
         {
-            SortingGroup[] sortingGroups = gameObject.GetComponentsInChildren<SortingGroup>();
-            foreach (SortingGroup sg in sortingGroups)
+            var sortingGroups = gameObject.GetComponentsInChildren<SortingGroup>();
+            foreach (var sg in sortingGroups)
             {
                 sg.sortingLayerName = sortingLayer;
             }
@@ -187,21 +159,17 @@ namespace GameFrameX.Runtime
         /// <param name="gameObject">游戏对象</param>
         /// <param name="layer">层</param>
         /// <param name="children">是否设置子物体</param>
-        
         public static void SetLayer(GameObject gameObject, int layer, bool children = true)
         {
             if (gameObject.layer != layer)
-            {
                 gameObject.layer = layer;
-            }
-
-            if (children)
+            
+            if (!children) return;
+            
+            var transforms = gameObject.GetComponentsInChildren<Transform>();
+            foreach (var child in transforms)
             {
-                Transform[] transforms = gameObject.GetComponentsInChildren<Transform>();
-                foreach (var sg in transforms)
-                {
-                    sg.gameObject.layer = layer;
-                }
+                child.gameObject.layer = layer;
             }
         }
     }

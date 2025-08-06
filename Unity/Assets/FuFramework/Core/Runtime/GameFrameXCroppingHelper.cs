@@ -10,30 +10,30 @@ namespace GameFrameX.Runtime
         private void Start()
         {
 #if ENABLE_GAME_FRAME_X_DO_TWEEN
-            _ = typeof(GameFrameX.Runtime.DoTweenHelper);
+            _ = typeof(DoTweenHelper);
 #endif
             _ = typeof(BinaryExtension);
             _ = typeof(BufferExtension);
-            _ = typeof(GameFrameX.ObjectPool.IObjectPool<>);
-            _ = typeof(GameFrameX.ObjectPool.IObjectPoolManager);
-            _ = typeof(GameFrameX.ObjectPool.ObjectBase);
-            _ = typeof(GameFrameX.ObjectPool.ObjectInfo);
-            _ = typeof(GameFrameX.ObjectPool.ObjectPoolBase);
-            _ = typeof(GameFrameX.ObjectPool.ObjectPoolManager);
-            _ = typeof(GameFrameX.ObjectPool.ReleaseObjectFilterCallback<>);
-            _ = typeof(GameFrameX.Runtime.ApplicationHelper);
+            _ = typeof(IObjectPool<>);
+            _ = typeof(IObjectPoolManager);
+            _ = typeof(ObjectBase);
+            _ = typeof(ObjectInfo);
+            _ = typeof(ObjectPoolBase);
+            _ = typeof(ObjectPoolManager);
+            _ = typeof(ReleaseObjectFilterCallback<>);
+            _ = typeof(ApplicationHelper);
             _ = typeof(BaseComponent);
             _ = typeof(BaseEventArgs);
             _ = typeof(GameFrameX.Runtime.BindableProperty<>);
-            _ = typeof(GameFrameX.Runtime.CameraHelper);
+            _ = typeof(CameraHelper);
             _ = typeof(DefaultCompressionHelper);
-            _ = typeof(GameFrameX.Runtime.DefaultLogHelper);
-            _ = typeof(GameFrameX.Runtime.DefaultTextHelper);
+            _ = typeof(DefaultLogHelper);
+            _ = typeof(DefaultTextHelper);
             _ = typeof(DefaultVersionHelper);
-            _ = typeof(GameFrameX.Runtime.DistinctHelper);
+            _ = typeof(DistinctHelper);
             _ = typeof(FuFramework.Core.Runtime.EventPool<>);
             _ = typeof(EventPoolMode);
-            _ = typeof(GameFrameX.Runtime.FileHelper);
+            _ = typeof(FileHelper);
             _ = typeof(GameEntry);
             _ = typeof(GameFrameworkComponent);
             _ = typeof(GameFrameworkEntry);
@@ -57,20 +57,20 @@ namespace GameFrameX.Runtime
             _ = typeof(GameFrameworkSerializer<>.TryGetValueCallback);
             _ = typeof(Singleton<>);
             _ = typeof(GameFrameX.Runtime.GameFrameXCroppingHelper);
-            _ = typeof(GameFrameX.Runtime.GameObjectHelper);
-            _ = typeof(GameFrameX.Runtime.Helper);
+            _ = typeof(GameObjectHelper);
+            _ = typeof(Helper);
             _ = typeof(IReference);
             _ = typeof(ITaskAgent<>);
             _ = typeof(GameFrameX.Runtime.Log);
-            _ = typeof(GameFrameX.Runtime.MathHelper);
-            _ = typeof(GameFrameX.Runtime.NetworkHelper);
-            _ = typeof(GameFrameX.Runtime.NewtonsoftJsonHelper);
+            _ = typeof(MathHelper);
+            _ = typeof(NetworkHelper);
+            _ = typeof(NewtonsoftJsonHelper);
             _ = typeof(ObjectDontDestroyOnLoad);
             _ = typeof(GameFrameX.Runtime.ObjectHelper);
-            _ = typeof(GameFrameX.Runtime.ObjectPoolComponent);
-            _ = typeof(GameFrameX.Runtime.PathHelper);
-            _ = typeof(GameFrameX.Runtime.PositionHelper);
-            _ = typeof(GameFrameX.Runtime.RandomHelper);
+            _ = typeof(ObjectPoolComponent);
+            _ = typeof(PathHelper);
+            _ = typeof(PositionHelper);
+            _ = typeof(RandomHelper);
             _ = typeof(ReferencePool);
             _ = typeof(GameFrameX.Runtime.ReferencePoolComponent);
             _ = typeof(ReferencePoolInfo);
@@ -83,9 +83,9 @@ namespace GameFrameX.Runtime
             _ = typeof(TaskInfo);
             _ = typeof(TaskPool<>);
             _ = typeof(TaskStatus);
-            _ = typeof(GameFrameX.Runtime.TimerHelper);
+            _ = typeof(TimerHelper);
             _ = typeof(TypeNamePair);
-            _ = typeof(GameFrameX.Runtime.UnityRendererHelper);
+            _ = typeof(UnityRendererHelper);
             _ = typeof(GameFrameX.Runtime.Utility);
             _ = typeof(GameFrameX.Runtime.Utility.Assembly);
             _ = typeof(GameFrameX.Runtime.Utility.Asset);
@@ -152,19 +152,19 @@ namespace GameFrameX.Runtime
             _ = typeof(GameFrameX.Runtime.VarVector4);
             _ = typeof(FuFramework.Core.Runtime.Version);
             _ = typeof(FuFramework.Core.Runtime.Version.IVersionHelper);
-            _ = typeof(GameFrameX.Runtime.ZipHelper);
+            _ = typeof(ZipHelper);
             _ = typeof(ObjectExtension);
             _ = typeof(SpanExtension);
             _ = typeof(StringExtension);
-            _ = typeof(System.Collections.Generic.BidirectionalDictionary<,>);
-            _ = typeof(System.Collections.Generic.CollectionExtensions);
-            _ = typeof(System.DateTimeExtensions);
-            _ = typeof(System.ThreadLocalRandom);
-            _ = typeof(System.TypeExtensions);
-            _ = typeof(UnityEngine.UnityEngageGameObjectExtension);
-            _ = typeof(UnityEngine.UnityEngineTransformExtension);
-            _ = typeof(UnityEngine.UnityEngineVector2Extension);
-            _ = typeof(UnityEngine.UnityEngineVector3Extension);
+            _ = typeof(BidirectionalDictionary<,>);
+            _ = typeof(CollectionExtensions);
+            _ = typeof(DateTimeExtensions);
+            _ = typeof(ThreadLocalRandom);
+            _ = typeof(TypeExtensions);
+            _ = typeof(GameObjectExtension);
+            _ = typeof(TransformExtension);
+            _ = typeof(Vector2Extension);
+            _ = typeof(Vector3Extension);
         }
     }
 }

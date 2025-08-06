@@ -616,9 +616,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84be3d5ad3c1cc942ba61bd768ca9177, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Download.Runtime.DownloadManager
+  componentType: FuFramework.Download.Runtime.DownloadManager
   m_InstanceRoot: {fileID: 1146593347797569675}
-  m_DownloadAgentHelperTypeName: GameFrameX.Download.Runtime.UnityWebRequestDownloadAgentHelper
+  m_DownloadAgentHelperTypeName: FuFramework.Download.Runtime.UnityWebRequestDownloadAgentHelper
   m_CustomDownloadAgentHelper: {fileID: 0}
   m_DownloadAgentHelperCount: 3
   m_Timeout: 30
@@ -1730,11 +1730,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   componentType: 
-  m_TextHelperTypeName: GameFrameX.Runtime.DefaultTextHelper
+  m_TextHelperTypeName: FuFramework.Core.Runtime.DefaultTextHelper
   m_VersionHelperTypeName: FuFramework.Core.Runtime.DefaultVersionHelper
-  m_LogHelperTypeName: GameFrameX.Runtime.DefaultLogHelper
+  m_LogHelperTypeName: FuFramework.Core.Runtime.DefaultLogHelper
   m_CompressionHelperTypeName: FuFramework.Core.Runtime.DefaultCompressionHelper
-  m_JsonHelperTypeName: GameFrameX.Runtime.NewtonsoftJsonHelper
+  m_JsonHelperTypeName: FuFramework.Core.Runtime.NewtonsoftJsonHelper
   m_FrameRate: 30
   m_GameSpeed: 1
   m_RunInBackground: 1
@@ -1875,7 +1875,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0737d1efa343e48b4f5cb924e9b437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.ObjectPool.ObjectPoolManager
+  componentType: FuFramework.Core.Runtime.ObjectPoolManager
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

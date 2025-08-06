@@ -1,8 +1,12 @@
 ﻿using System.Text;
 using UnityEngine;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
+    /// <summary>
+    /// 路径相关的帮助类
+    /// </summary>
     public static class PathHelper
     {
         /// <summary>

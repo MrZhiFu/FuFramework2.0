@@ -9,8 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.ObjectPool;
 
 namespace GameFrameX.Entity.Runtime
 {

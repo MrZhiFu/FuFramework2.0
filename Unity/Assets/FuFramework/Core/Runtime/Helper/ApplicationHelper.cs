@@ -1,17 +1,17 @@
 ﻿using UnityEngine;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 应用帮助类
     /// </summary>
-    
     public static class ApplicationHelper
     {
         /// <summary>
         /// 是否是编辑器
         /// </summary>
-        
+
         public static bool IsEditor
         {
             get
@@ -27,7 +27,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是安卓
         /// </summary>
-        
+
         public static bool IsAndroid
         {
             get
@@ -43,7 +43,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是WebGL平台
         /// </summary>
-        
+
         public static bool IsWebGL
         {
             get
@@ -59,7 +59,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是Windows平台
         /// </summary>
-        
+
         public static bool IsWindows
         {
             get
@@ -74,7 +74,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是Linux平台
         /// </summary>
-        
+
         public static bool IsLinux
         {
             get { return Application.platform == RuntimePlatform.LinuxPlayer; }
@@ -83,7 +83,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是Mac平台
         /// </summary>
-        
+
         public static bool IsMacOsx
         {
             get
@@ -98,7 +98,7 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 是否是iOS 移动平台
         /// </summary>
-        
+
         public static bool IsIOS
         {
             get
@@ -114,7 +114,6 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 退出
         /// </summary>
-        
         public static void Quit()
         {
 #if UNITY_EDITOR
@@ -131,7 +130,6 @@ namespace GameFrameX.Runtime
         /// 打开URL
         /// </summary>
         /// <param name="url">url地址</param>
-        
         public static void OpenURL(string url)
         {
 #if UNITY_EDITOR

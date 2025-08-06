@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime

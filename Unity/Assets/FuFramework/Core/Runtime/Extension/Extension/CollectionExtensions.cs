@@ -1,6 +1,10 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using FuFramework.Core.Runtime;
 
-namespace System.Collections.Generic
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     
     public static class CollectionExtensions
@@ -72,8 +76,7 @@ namespace System.Collections.Generic
         }
 
         #endregion
-
-
+        
         #region ICollectionExtensions
 
         

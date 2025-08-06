@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 
 namespace GameFrameX.Web.Runtime
 {

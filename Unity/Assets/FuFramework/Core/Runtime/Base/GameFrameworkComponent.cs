@@ -1,6 +1,4 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace

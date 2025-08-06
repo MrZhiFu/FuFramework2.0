@@ -14,7 +14,6 @@ using System.Runtime.InteropServices;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    
     public static partial class SequenceReaderExtensions
     {
         /// <summary>
@@ -30,9 +29,7 @@ namespace FuFramework.Core.Runtime
         /// True if successful. <paramref name="value"/> will be default if failed (due to lack of space).
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        
-        internal static unsafe bool TryRead<T>(ref this SequenceReader<byte> reader, out T value)
-            where T : unmanaged
+        internal static unsafe bool TryRead<T>(ref this SequenceReader<byte> reader, out T value) where T : unmanaged
         {
             ReadOnlySpan<byte> span = reader.UnreadSpan;
             if (span.Length < sizeof(T))
@@ -51,7 +48,7 @@ namespace FuFramework.Core.Runtime
             Debug.Assert(reader.UnreadSpan.Length < sizeof(T), "reader.UnreadSpan.Length < sizeof(T)");
 
             // Not enough data in the current segment, try to peek for the data we need.
-            T buffer = default;
+            T          buffer   = default;
             Span<byte> tempSpan = new Span<byte>(&buffer, sizeof(T));
 
             if (!reader.TryCopyTo(tempSpan))
@@ -71,7 +68,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="reader">The reader to read from.</param>
         /// <param name="value">Receives the value read.</param>
         /// <returns><see langword="true"/> if there was another byte in the sequence; <see langword="false"/> otherwise.</returns>
-        
         public static bool TryRead(ref this SequenceReader<byte> reader, out sbyte value)
         {
             if (TryRead(ref reader, out byte byteValue))
@@ -88,7 +84,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="Int16"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="Int16"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out short value)
         {
             if (!BitConverter.IsLittleEndian)
@@ -103,7 +98,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="UInt16"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="UInt16"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out ushort value)
         {
             if (TryReadBigEndian(ref reader, out short shortValue))
@@ -131,7 +125,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="Int32"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="Int32"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out int value)
         {
             if (!BitConverter.IsLittleEndian)
@@ -146,7 +139,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="UInt32"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="UInt32"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out uint value)
         {
             if (TryReadBigEndian(ref reader, out int intValue))
@@ -174,7 +166,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="Int64"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="Int64"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out long value)
         {
             if (!BitConverter.IsLittleEndian)
@@ -189,7 +180,6 @@ namespace FuFramework.Core.Runtime
         /// Reads an <see cref="UInt64"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for an <see cref="UInt64"/>.</returns>
-        
         public static bool TryReadBigEndian(ref this SequenceReader<byte> reader, out ulong value)
         {
             if (TryReadBigEndian(ref reader, out long longValue))
@@ -217,7 +207,6 @@ namespace FuFramework.Core.Runtime
         /// Reads a <see cref="Single"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for a <see cref="Single"/>.</returns>
-        
         public static unsafe bool TryReadBigEndian(ref this SequenceReader<byte> reader, out float value)
         {
             if (TryReadBigEndian(ref reader, out int intValue))
@@ -234,7 +223,6 @@ namespace FuFramework.Core.Runtime
         /// Reads a <see cref="Double"/> as big endian.
         /// </summary>
         /// <returns>False if there wasn't enough data for a <see cref="Double"/>.</returns>
-        
         public static unsafe bool TryReadBigEndian(ref this SequenceReader<byte> reader, out double value)
         {
             if (TryReadBigEndian(ref reader, out long longValue))

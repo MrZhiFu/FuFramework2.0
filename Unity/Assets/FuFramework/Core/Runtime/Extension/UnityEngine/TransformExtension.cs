@@ -1,39 +1,30 @@
 using UnityEngine;
 
-namespace UnityEngine
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
-    
-    public static class UnityEngineTransformExtension
+    /// <summary>
+    /// <see cref="Transform" /> 扩展方法集。
+    /// </summary>
+    public static class TransformExtension
     {
         /// <summary>
         /// 查找子节点的名称符合的 <see cref="Transform" />。
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="name">子节点的名称</param>
-        
         public static Transform FindChildName(this Transform transform, string name)
         {
             var child = transform.Find(name);
-            if (child.IsNotNull())
-            {
-                return child;
-            }
+            if (child.IsNotNull()) return child;
 
             var childCount = transform.childCount;
-            for (int i = 0; i < childCount; i++)
+            for (var i = 0; i < childCount; i++)
             {
                 var t = transform.GetChild(i);
-                if (t.name.EqualsFast(name))
-                {
-                    return t;
-                }
-
+                if (t.name.EqualsFast(name)) return t;
                 t = t.FindChildName(name);
-
-                if (t.IsNotNull())
-                {
-                    return t;
-                }
+                if (t.IsNotNull()) return t;
             }
 
             return null;
@@ -44,11 +35,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">x 坐标值。</param>
-        
         public static void SetPositionX(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.x = newValue;
+            v.x                = newValue;
             transform.position = v;
         }
 
@@ -57,11 +47,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">y 坐标值。</param>
-        
         public static void SetPositionY(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.y = newValue;
+            v.y                = newValue;
             transform.position = v;
         }
 
@@ -70,11 +59,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">z 坐标值。</param>
-        
         public static void SetPositionZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.z = newValue;
+            v.z                = newValue;
             transform.position = v;
         }
 
@@ -83,12 +71,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">x 坐标值增量。</param>
-        
         public static void AddPositionX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.x += deltaValue;
-            transform.position = v;
+            v.x                += deltaValue;
+            transform.position =  v;
         }
 
         /// <summary>
@@ -96,12 +83,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">y 坐标值增量。</param>
-        
         public static void AddPositionY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.y += deltaValue;
-            transform.position = v;
+            v.y                += deltaValue;
+            transform.position =  v;
         }
 
         /// <summary>
@@ -109,12 +95,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">z 坐标值增量。</param>
-        
         public static void AddPositionZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.z += deltaValue;
-            transform.position = v;
+            v.z                += deltaValue;
+            transform.position =  v;
         }
 
         /// <summary>
@@ -122,11 +107,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">x 坐标值。</param>
-        
         public static void SetLocalPositionX(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.x = newValue;
+            v.x                     = newValue;
             transform.localPosition = v;
         }
 
@@ -135,11 +119,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">y 坐标值。</param>
-        
         public static void SetLocalPositionY(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.y = newValue;
+            v.y                     = newValue;
             transform.localPosition = v;
         }
 
@@ -148,11 +131,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">z 坐标值。</param>
-        
         public static void SetLocalPositionZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.z = newValue;
+            v.z                     = newValue;
             transform.localPosition = v;
         }
 
@@ -161,12 +143,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">x 坐标值。</param>
-        
         public static void AddLocalPositionX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.x += deltaValue;
-            transform.localPosition = v;
+            v.x                     += deltaValue;
+            transform.localPosition =  v;
         }
 
         /// <summary>
@@ -174,12 +155,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">y 坐标值。</param>
-        
         public static void AddLocalPositionY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.y += deltaValue;
-            transform.localPosition = v;
+            v.y                     += deltaValue;
+            transform.localPosition =  v;
         }
 
         /// <summary>
@@ -187,12 +167,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">z 坐标值。</param>
-        
         public static void AddLocalPositionZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.z += deltaValue;
-            transform.localPosition = v;
+            v.z                     += deltaValue;
+            transform.localPosition =  v;
         }
 
         /// <summary>
@@ -200,11 +179,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">x 分量值。</param>
-        
         public static void SetLocalScaleX(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.x = newValue;
+            v.x                  = newValue;
             transform.localScale = v;
         }
 
@@ -213,11 +191,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">y 分量值。</param>
-        
         public static void SetLocalScaleY(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.y = newValue;
+            v.y                  = newValue;
             transform.localScale = v;
         }
 
@@ -226,11 +203,10 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="newValue">z 分量值。</param>
-        
         public static void SetLocalScaleZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.z = newValue;
+            v.z                  = newValue;
             transform.localScale = v;
         }
 
@@ -239,12 +215,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">x 分量增量。</param>
-        
         public static void AddLocalScaleX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.x += deltaValue;
-            transform.localScale = v;
+            v.x                  += deltaValue;
+            transform.localScale =  v;
         }
 
         /// <summary>
@@ -252,12 +227,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">y 分量增量。</param>
-        
         public static void AddLocalScaleY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.y += deltaValue;
-            transform.localScale = v;
+            v.y                  += deltaValue;
+            transform.localScale =  v;
         }
 
         /// <summary>
@@ -265,12 +239,11 @@ namespace UnityEngine
         /// </summary>
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="deltaValue">z 分量增量。</param>
-        
         public static void AddLocalScaleZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.z += deltaValue;
-            transform.localScale = v;
+            v.z                  += deltaValue;
+            transform.localScale =  v;
         }
 
         /// <summary>
@@ -279,7 +252,6 @@ namespace UnityEngine
         /// <param name="transform"><see cref="Transform" /> 对象。</param>
         /// <param name="lookAtPoint2D">要朝向的二维坐标点。</param>
         /// <remarks>假定其 forward 向量为 <see cref="Vector3.up" />。</remarks>
-        
         public static void LookAt2D(this Transform transform, Vector2 lookAtPoint2D)
         {
             Vector3 vector = lookAtPoint2D.ToVector3() - transform.position;

@@ -1,3 +1,4 @@
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 using Hotfix.Config.Tables;
 

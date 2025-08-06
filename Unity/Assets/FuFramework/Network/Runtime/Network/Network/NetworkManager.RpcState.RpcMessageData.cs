@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime

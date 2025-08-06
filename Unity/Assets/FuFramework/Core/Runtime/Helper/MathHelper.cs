@@ -1,12 +1,12 @@
 using System;
 using UnityEngine;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 数学帮助类
     /// </summary>
-    
     public static class MathHelper
     {
         /// <summary>
@@ -15,19 +15,13 @@ namespace GameFrameX.Runtime
         /// <param name="src"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        
         public static bool CheckIntersect(RectInt src, RectInt target)
         {
-            int minX = Math.Max(src.x, target.x);
-            int minY = Math.Max(src.y, target.y);
-            int maxX = Math.Min(src.x + src.width, target.x + target.width);
-            int maxY = Math.Min(src.y + src.height, target.y + target.height);
-            if (minX >= maxX || minY >= maxY)
-            {
-                return false;
-            }
-
-            return true;
+            var minX = Math.Max(src.x, target.x);
+            var minY = Math.Max(src.y, target.y);
+            var maxX = Math.Min(src.x + src.width,  target.x + target.width);
+            var maxY = Math.Min(src.y + src.height, target.y + target.height);
+            return minX < maxX && minY < maxY;
         }
 
         /// <summary>
@@ -42,19 +36,13 @@ namespace GameFrameX.Runtime
         /// <param name="w2"></param>
         /// <param name="h2"></param>
         /// <returns></returns>
-        
         public static bool CheckIntersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
         {
-            int minX = Math.Max(x1, x2);
-            int minY = Math.Max(y1, y2);
-            int maxX = Math.Min(x1 + w1, x2 + w2);
-            int maxY = Math.Min(y1 + h1, y2 + h2);
-            if (minX >= maxX || minY >= maxY)
-            {
-                return false;
-            }
-
-            return true;
+            var minX = Math.Max(x1, x2);
+            var minY = Math.Max(y1, y2);
+            var maxX = Math.Min(x1 + w1, x2 + w2);
+            var maxY = Math.Min(y1 + h1, y2 + h2);
+            return minX < maxX && minY < maxY;
         }
 
         /// <summary>
@@ -73,18 +61,15 @@ namespace GameFrameX.Runtime
         private static bool CheckIntersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2, out RectInt rect)
         {
             rect = default;
-            int minX = Math.Max(x1, x2);
-            int minY = Math.Max(y1, y2);
-            int maxX = Math.Min(x1 + w1, x2 + w2);
-            int maxY = Math.Min(y1 + h1, y2 + h2);
-            if (minX >= maxX || minY >= maxY)
-            {
-                return false;
-            }
+            var minX = Math.Max(x1, x2);
+            var minY = Math.Max(y1, y2);
+            var maxX = Math.Min(x1 + w1, x2 + w2);
+            var maxY = Math.Min(y1 + h1, y2 + h2);
+            if (minX >= maxX || minY >= maxY) return false;
 
-            rect.x = minX;
-            rect.y = minY;
-            rect.width = Math.Abs(maxX - minX);
+            rect.x      = minX;
+            rect.y      = minY;
+            rect.width  = Math.Abs(maxX - minX);
             rect.height = Math.Abs(maxY - minY);
             return true;
         }
@@ -102,29 +87,21 @@ namespace GameFrameX.Runtime
         /// <param name="h2">B 高度</param>
         /// <param name="intersectPoints">交叉点列表</param>
         /// <returns>返回是否相交</returns>
-        
         public static bool CheckIntersectPoints(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2, int[] intersectPoints)
         {
-            Vector2Int dPt = new Vector2Int();
-
-            if (false == CheckIntersect(x1, y1, w1, h1, x2, y2, w2, h2, out var rectInt))
-            {
-                return false;
-            }
+            var dPt = new Vector2Int();
+            if (false == CheckIntersect(x1, y1, w1, h1, x2, y2, w2, h2, out var rectInt)) return false;
 
             for (var i = 0; i < w1; i++)
             {
                 for (var n = 0; n < h1; n++)
                 {
-                    if (intersectPoints[i * h1 + n] == 1)
-                    {
-                        dPt.x = x1 + i;
-                        dPt.y = y1 + n;
-                        if (rectInt.Contains(dPt))
-                        {
-                            intersectPoints[i * h1 + n] = 0;
-                        }
-                    }
+                    if (intersectPoints[i * h1 + n] != 1) continue;
+                    dPt.x = x1 + i;
+                    dPt.y = y1 + n;
+                    
+                    if (!rectInt.Contains(dPt)) continue;
+                    intersectPoints[i * h1 + n] = 0;
                 }
             }
 
