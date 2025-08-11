@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    
-    public static class CollectionExtensions
+    /// <summary>
+    /// 集合相关扩展
+    /// </summary>
+    public static class CollectionEx
     {
-        #region DictionaryExtensions
+        #region DictionaryEx
 
         /// <summary>
         /// 将k和v进行合并
@@ -20,7 +21,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="func"></param>
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
-        
         public static void Merge<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey k, TValue v, Func<TValue, TValue, TValue> func)
         {
             self[k] = self.TryGetValue(k, out var value) ? func(value, v) : v;
@@ -29,12 +29,11 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 根据key获取value值，当不存在时通过valueGetter生成value，放入Dictionary并返回value
         /// </summary>
-        
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key, Func<TKey, TValue> valueGetter)
         {
             if (!self.TryGetValue(key, out var value))
             {
-                value = valueGetter(key);
+                value     = valueGetter(key);
                 self[key] = value;
             }
 
@@ -44,19 +43,17 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 根据key获取value值，当不存在时通过默认构造函数生成value，放入Dictionary并返回value
         /// </summary>
-        
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key) where TValue : new()
         {
-            return GetOrAdd(self, key, k => new TValue());
+            return GetOrAdd(self, key, _ => new TValue());
         }
 
         /// <summary>
         /// 根据条件移除
         /// </summary>
-        
         public static int RemoveIf<TKey, TValue>(this Dictionary<TKey, TValue> self, Func<TKey, TValue, bool> predict)
         {
-            int count = 0;
+            int count  = 0;
             var remove = new HashSet<TKey>();
             foreach (var kv in self)
             {
@@ -76,13 +73,18 @@ namespace FuFramework.Core.Runtime
         }
 
         #endregion
-        
+
         #region ICollectionExtensions
 
-        
+        /// <summary>
+        /// 判断集合是否为空
+        /// </summary>
+        /// <param name="self"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static bool IsNullOrEmpty<T>(this ICollection<T> self)
         {
-            return self == null || self.Count <= 0;
+            return self is not { Count: > 0 };
         }
 
         #endregion
@@ -92,11 +94,10 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 打乱
         /// </summary>
-        
         public static void Shuffer<T>(this List<T> list)
         {
             int n = list.Count;
-            var r = ThreadLocalRandom.Current;
+            var r = ThreadLocalRandomEx.Current;
             for (int i = 0; i < n; i++)
             {
                 int rand = r.Next(i, n);
@@ -104,7 +105,7 @@ namespace FuFramework.Core.Runtime
             }
         }
 
-        
+
         public static void RemoveIf<T>(this List<T> list, Predicate<T> condition)
         {
             var idx = list.FindIndex(condition);
@@ -124,7 +125,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="separator">默认为逗号</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        
         public static string ListToString<T>(this List<T> list, string separator = ",")
         {
             ListToStringBuilder.Clear();
@@ -139,7 +139,8 @@ namespace FuFramework.Core.Runtime
 
         #endregion
 
-        
+        #region HashSet<T>
+
         public static void AddRange<T>(this HashSet<T> c, IEnumerable<T> e)
         {
             foreach (var item in e)
@@ -147,5 +148,7 @@ namespace FuFramework.Core.Runtime
                 c.Add(item);
             }
         }
+
+        #endregion
     }
 }

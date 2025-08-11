@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Web.Runtime;
 
 public static partial class GameApp

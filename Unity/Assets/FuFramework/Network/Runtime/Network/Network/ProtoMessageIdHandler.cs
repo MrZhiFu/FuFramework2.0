@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 // using System.Text;
 
@@ -14,8 +13,8 @@ namespace GameFrameX.Network.Runtime
     
     public static class ProtoMessageIdHandler
     {
-        private static readonly BidirectionalDictionary<int, Type> ReqDictionary = new BidirectionalDictionary<int, Type>();
-        private static readonly BidirectionalDictionary<int, Type> RespDictionary = new BidirectionalDictionary<int, Type>();
+        private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary = new FuBidirectionalDictionary<int, Type>();
+        private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new FuBidirectionalDictionary<int, Type>();
         private static readonly List<Type> HeartBeatList = new List<Type>();
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace GameFrameX.Network.Runtime
                     {
                         if (HeartBeatList.Contains(type))
                         {
-                            throw new GameFrameworkException($"心跳消息重复==>类型:{type.FullName}");
+                            throw new FuException($"心跳消息重复==>类型:{type.FullName}");
                         }
                         else
                         {
@@ -140,7 +139,7 @@ namespace GameFrameX.Network.Runtime
                         if (!ReqDictionary.TryAdd(messageIdHandler.MessageId, type))
                         {
                             ReqDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new GameFrameworkException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                            throw new FuException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                         }
                     }
                     else if (type.IsImplWithInterface(typeof(IResponseMessage)))
@@ -149,7 +148,7 @@ namespace GameFrameX.Network.Runtime
                         if (!RespDictionary.TryAdd(messageIdHandler.MessageId, type))
                         {
                             RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new GameFrameworkException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                            throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                         }
                     }
                     else if (type.IsImplWithInterface(typeof(INotifyMessage)))
@@ -158,7 +157,7 @@ namespace GameFrameX.Network.Runtime
                         if (!RespDictionary.TryAdd(messageIdHandler.MessageId, type))
                         {
                             RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new GameFrameworkException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                            throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                         }
                     }
                 }

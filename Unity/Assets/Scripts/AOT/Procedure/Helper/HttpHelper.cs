@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using UnityEngine;
-using GameFrameX.Runtime;
 
 
 /// <summary>

@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
 using ProtoBuf;
 #if UNITY_WEBGL
 using UnityEngine.Networking;
@@ -17,7 +16,7 @@ namespace GameFrameX.Web.Runtime
     /// <summary>
     /// Web请求管理器的ProtoBuf部分实现
     /// </summary>
-    public partial class WebManager : GameFrameworkModule, IWebManager
+    public partial class WebManager : FuModule, IWebManager
     {
         /// <summary>
         /// 等待处理的ProtoBuf请求队列

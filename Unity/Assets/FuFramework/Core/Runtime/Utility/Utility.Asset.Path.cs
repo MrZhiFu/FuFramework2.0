@@ -1,4 +1,6 @@
-﻿namespace GameFrameX.Runtime
+﻿// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -10,6 +12,7 @@
             /// <summary>
             /// 路径
             /// </summary>
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             public static class Path
             {
                 /// <summary>

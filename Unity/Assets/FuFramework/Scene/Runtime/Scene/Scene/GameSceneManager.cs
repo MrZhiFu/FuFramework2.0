@@ -11,9 +11,9 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine.SceneManagement;
 using YooAsset;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Scene.Runtime
 {
@@ -21,7 +21,7 @@ namespace GameFrameX.Scene.Runtime
     /// 场景管理器。
     /// </summary>
     
-    public sealed class GameSceneManager : GameFrameworkModule, IGameSceneManager
+    public sealed class GameSceneManager : FuModule, IGameSceneManager
     {
         private sealed class SceneHandleData
         {
@@ -153,7 +153,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (assetManager == null)
             {
-                throw new GameFrameworkException("Resource manager is invalid.");
+                throw new FuException("Resource manager is invalid.");
             }
 
             m_assetManager = assetManager;
@@ -168,7 +168,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
             {
-                throw new GameFrameworkException("Scene asset name is invalid.");
+                throw new FuException("Scene asset name is invalid.");
             }
 
             return m_LoadedSceneAssetNames.ContainsKey(sceneAssetName);
@@ -191,7 +191,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -207,7 +207,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
             {
-                throw new GameFrameworkException("Scene asset name is invalid.");
+                throw new FuException("Scene asset name is invalid.");
             }
 
             return m_LoadingSceneAssetNames.ContainsKey(sceneAssetName);
@@ -230,7 +230,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -246,7 +246,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
             {
-                throw new GameFrameworkException("Scene asset name is invalid.");
+                throw new FuException("Scene asset name is invalid.");
             }
 
             return m_UnloadingSceneAssetNames.ContainsKey(sceneAssetName);
@@ -269,7 +269,7 @@ namespace GameFrameX.Scene.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -325,27 +325,27 @@ namespace GameFrameX.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
             {
-                throw new GameFrameworkException("Scene asset name is invalid.");
+                throw new FuException("Scene asset name is invalid.");
             }
 
             if (m_assetManager == null)
             {
-                throw new GameFrameworkException("You must set resource manager first.");
+                throw new FuException("You must set resource manager first.");
             }
 
             if (SceneIsUnloading(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));
             }
 
             if (SceneIsLoading(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is being loaded.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is being loaded.", sceneAssetName));
             }
 
             if (SceneIsLoaded(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is already loaded.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is already loaded.", sceneAssetName));
             }
 
             var sceneOperationHandle = await m_assetManager.LoadSceneAsync(sceneAssetName, sceneMode, true);
@@ -402,27 +402,27 @@ namespace GameFrameX.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
             {
-                throw new GameFrameworkException("Scene asset name is invalid.");
+                throw new FuException("Scene asset name is invalid.");
             }
 
             if (m_assetManager == null)
             {
-                throw new GameFrameworkException("You must set resource manager first.");
+                throw new FuException("You must set resource manager first.");
             }
 
             if (SceneIsUnloading(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));
             }
 
             if (SceneIsLoading(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is being loaded.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is being loaded.", sceneAssetName));
             }
 
             if (!SceneIsLoaded(sceneAssetName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Scene asset '{0}' is not loaded yet.", sceneAssetName));
+                throw new FuException(Utility.Text.Format("Scene asset '{0}' is not loaded yet.", sceneAssetName));
             }
 
             if (m_LoadedSceneAssetNames.TryGetValue(sceneAssetName, out var sceneOperationHandle))
@@ -471,7 +471,7 @@ namespace GameFrameX.Scene.Runtime
                 return;
             }
 
-            throw new GameFrameworkException(appendErrorMessage);
+            throw new FuException(appendErrorMessage);
         }
 
         private void LoadSceneUpdateCallback(string sceneAssetName, float progress, object userData)
@@ -507,7 +507,7 @@ namespace GameFrameX.Scene.Runtime
                 return;
             }
 
-            throw new GameFrameworkException(Utility.Text.Format("Unload scene failure, scene asset name '{0}'.", sceneAssetName));
+            throw new FuException(Utility.Text.Format("Unload scene failure, scene asset name '{0}'.", sceneAssetName));
         }
     }
 }

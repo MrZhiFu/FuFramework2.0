@@ -1,6 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
 
 public static partial class GameApp
 {

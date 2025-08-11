@@ -6,7 +6,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏框架异常判空静态方法
     /// </summary>
-    public static class GameFrameworkGuard
+    public static class FuGuard
     {
         /// <summary>
         /// 确保指定的值不为null。

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -59,7 +60,7 @@ namespace GameFrameX.Runtime
                 /// <param name="dataToSign">要签名的数据</param>
                 /// <param name="privateKey">私钥字符串</param>
                 /// <returns>签名后的字节数组</returns>
-                public static byte[] DSASignData(byte[] dataToSign, string privateKey)
+                public static byte[] DsaSignData(byte[] dataToSign, string privateKey)
                 {
                     try
                     {
@@ -79,9 +80,9 @@ namespace GameFrameX.Runtime
                 /// <param name="dataToSign">要签名的字符串数据</param>
                 /// <param name="privateKey">私钥字符串</param>
                 /// <returns>签名后的 Base64 字符串</returns>
-                public static string DSASignData(string dataToSign, string privateKey)
+                public static string DsaSignData(string dataToSign, string privateKey)
                 {
-                    var res = DSASignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
+                    var res = DsaSignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
                     return Convert.ToBase64String(res);
                 }
 
@@ -120,7 +121,7 @@ namespace GameFrameX.Runtime
                 /// <param name="signedData">签名数据</param>
                 /// <param name="privateKey">私钥字符串</param>
                 /// <returns>验证结果</returns>
-                public static bool DSAVerifyData(byte[] dataToVerify, byte[] signedData, string privateKey)
+                public static bool DsaVerifyData(byte[] dataToVerify, byte[] signedData, string privateKey)
                 {
                     try
                     {
@@ -141,9 +142,9 @@ namespace GameFrameX.Runtime
                 /// <param name="signedData">签名的 Base64 字符串</param>
                 /// <param name="privateKey">私钥字符串</param>
                 /// <returns>验证结果</returns>
-                public static bool DSAVerifyData(string dataToVerify, string signedData, string privateKey)
+                public static bool DsaVerifyData(string dataToVerify, string signedData, string privateKey)
                 {
-                    return DSAVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), privateKey);
+                    return DsaVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), privateKey);
                 }
 
                 /// <summary>

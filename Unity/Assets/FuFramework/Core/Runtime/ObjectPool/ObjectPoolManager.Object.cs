@@ -1,10 +1,9 @@
 ﻿using System;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    internal sealed partial class ObjectPoolManager : GameFrameworkModule, IObjectPoolManager
+    internal sealed partial class ObjectPoolManager
     {
         /// <summary>
         /// 内部对象。
@@ -79,7 +78,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>创建的内部对象。</returns>
             public static Object<T> Create(T obj, bool spawned)
             {
-                if (obj == null) throw new GameFrameworkException("要创建的对象不能为空.");
+                if (obj == null) throw new FuException("要创建的对象不能为空.");
 
                 var internalObject = ReferencePool.Acquire<Object<T>>();
                 internalObject.m_Object     = obj;
@@ -126,7 +125,7 @@ namespace FuFramework.Core.Runtime
                 m_Object.LastUseTime = DateTime.UtcNow;
                 m_SpawnCount--;
                 if (m_SpawnCount < 0)
-                    throw new GameFrameworkException(Utility.Text.Format("对象 '{0}' 生成次数已经小于 0, 回收失败.", Name));
+                    throw new FuException(Utility.Text.Format("对象 '{0}' 生成次数已经小于 0, 回收失败.", Name));
             }
 
             /// <summary>

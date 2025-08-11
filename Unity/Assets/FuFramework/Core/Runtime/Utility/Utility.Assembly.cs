@@ -1,16 +1,8 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -66,7 +58,7 @@ namespace GameFrameX.Runtime
             public static void GetTypes(List<Type> results)
             {
                 if (results == null)
-                    throw new GameFrameworkException("传入的结果列表为空，请检查参数是否正确.");
+                    throw new FuException("传入的结果列表为空，请检查参数是否正确.");
 
                 results.Clear();
                 foreach (var assembly in s_Assemblies)
@@ -83,7 +75,7 @@ namespace GameFrameX.Runtime
             public static Type GetType(string typeName)
             {
                 if (string.IsNullOrEmpty(typeName))
-                    throw new GameFrameworkException("传入的类型名为空，请检查参数是否正确.");
+                    throw new FuException("传入的类型名为空，请检查参数是否正确.");
 
                 if (s_CachedDict.TryGetValue(typeName, out var type)) return type;
 

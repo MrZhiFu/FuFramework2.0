@@ -14,11 +14,11 @@ using System.Runtime.InteropServices;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class SequenceReaderExtensions
+    public static class SequenceReaderExtensions
     {
         /// <summary>
         /// Try to read the given type out of the buffer if possible. Warning: this is dangerous to use with arbitrary
-        /// structs- see remarks for full details.
+        /// structs - see remarks for full details.
         /// </summary>
         /// <remarks>
         /// IMPORTANT: The read is a straight copy of bits. If a struct depends on specific state of its members to

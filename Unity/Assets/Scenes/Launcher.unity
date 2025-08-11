@@ -1563,7 +1563,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7148938655606090472}
-  - component: {fileID: 6212013545076678543}
   - component: {fileID: 7148938655606090473}
   m_Layer: 0
   m_Name: GFX
@@ -1572,18 +1571,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &6212013545076678543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6212013545076678542}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ec57361e2f60044ba6dbaa148977283, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &6394611483762413553
 Transform:
   m_ObjectHideFlags: 0

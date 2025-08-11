@@ -9,7 +9,6 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -62,7 +61,7 @@ namespace GameFrameX.Network.Runtime
                         return;
                     }
 
-                    throw new GameFrameworkException(errorMessage);
+                    throw new FuException(errorMessage);
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
@@ -202,7 +201,7 @@ namespace GameFrameX.Network.Runtime
                 if (PReceiveState.PacketHeader.ZipFlag != 0)
                 {
                     // 解压
-                    GameFrameworkGuard.NotNull(MessageDecompressHandler, nameof(MessageDecompressHandler));
+                    FuGuard.NotNull(MessageDecompressHandler, nameof(MessageDecompressHandler));
                     buffer = MessageDecompressHandler.Handler(buffer);
                 }
 

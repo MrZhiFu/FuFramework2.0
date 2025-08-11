@@ -10,8 +10,8 @@ using GameFrameX.Setting;
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Setting.Runtime
 {
@@ -20,7 +20,7 @@ namespace GameFrameX.Setting.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Setting")]
-    public sealed class SettingComponent : GameFrameworkComponent
+    public sealed class SettingComponent : FuComponent
     {
         private ISettingManager m_SettingManager = null;
 
@@ -44,7 +44,7 @@ namespace GameFrameX.Setting.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ISettingManager);
             base.Awake();
-            m_SettingManager = GameFrameworkEntry.GetModule<ISettingManager>();
+            m_SettingManager = FuEntry.GetModule<ISettingManager>();
             if (m_SettingManager == null)
             {
                 Log.Fatal("Setting manager is invalid.");

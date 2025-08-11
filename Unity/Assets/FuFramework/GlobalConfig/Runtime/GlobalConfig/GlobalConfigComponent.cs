@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.GlobalConfig.Runtime
 {
@@ -11,7 +11,7 @@ namespace GameFrameX.GlobalConfig.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Global Config")]
-    public sealed class GlobalConfigComponent : GameFrameworkComponent
+    public sealed class GlobalConfigComponent : FuComponent
     {
         /// <summary>
         /// 检测App版本地址接口

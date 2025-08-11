@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -14,7 +14,7 @@ namespace FuFramework.Download.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Download")]
-    public sealed class DownloadComponent : GameFrameworkComponent
+    public sealed class DownloadComponent : FuComponent
     {
         private const int DefaultPriority = 0;
         private const int OneMegaBytes = 1024 * 1024;
@@ -138,7 +138,7 @@ namespace FuFramework.Download.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IDownloadManager);
             base.Awake();
-            m_DownloadManager = GameFrameworkEntry.GetModule<IDownloadManager>();
+            m_DownloadManager = FuEntry.GetModule<IDownloadManager>();
             if (m_DownloadManager == null)
             {
                 Log.Fatal("Download manager is invalid.");

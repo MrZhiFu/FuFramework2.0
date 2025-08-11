@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -166,7 +165,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 _rpcErrorCodeHandler = handler;
             }
 
@@ -177,7 +176,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 _rpcErrorHandler = handler;
             }
 
@@ -188,7 +187,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 _rpcStartHandler = handler;
             }
 
@@ -199,7 +198,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 _rpcEndHandler = handler;
             }
         }

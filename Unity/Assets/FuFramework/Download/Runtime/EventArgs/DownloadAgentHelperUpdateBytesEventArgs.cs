@@ -7,7 +7,6 @@
 
 using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
@@ -61,17 +60,17 @@ namespace FuFramework.Download.Runtime
         {
             if (bytes == null)
             {
-                throw new GameFrameworkException("Bytes is invalid.");
+                throw new FuException("Bytes is invalid.");
             }
 
             if (offset < 0 || offset >= bytes.Length)
             {
-                throw new GameFrameworkException("Offset is invalid.");
+                throw new FuException("Offset is invalid.");
             }
 
             if (length <= 0 || offset + length > bytes.Length)
             {
-                throw new GameFrameworkException("Length is invalid.");
+                throw new FuException("Length is invalid.");
             }
 
             DownloadAgentHelperUpdateBytesEventArgs downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();

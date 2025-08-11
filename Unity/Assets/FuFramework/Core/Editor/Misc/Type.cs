@@ -8,7 +8,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Editor
 {

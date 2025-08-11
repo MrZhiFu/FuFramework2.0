@@ -7,14 +7,13 @@
 
 using FuFramework.Core.Runtime;
 using GameFrameX;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Setting.Runtime
 {
     /// <summary>
     /// 默认游戏配置序列化器。
     /// </summary>
-    public sealed class DefaultSettingSerializer : GameFrameworkSerializer<DefaultSetting>
+    public sealed class DefaultSettingSerializer : FuSerializer<DefaultSetting>
     {
         private static readonly byte[] Header = new byte[] { (byte)'G', (byte)'F', (byte)'S' };
 

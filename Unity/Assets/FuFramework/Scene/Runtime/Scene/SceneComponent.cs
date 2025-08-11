@@ -12,10 +12,10 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using YooAsset;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Scene.Runtime
 {
@@ -24,7 +24,7 @@ namespace GameFrameX.Scene.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Scene")]
-    public sealed class SceneComponent : GameFrameworkComponent
+    public sealed class SceneComponent : FuComponent
     {
         private const int DefaultPriority = 0;
 
@@ -57,7 +57,7 @@ namespace GameFrameX.Scene.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IGameSceneManager);
             base.Awake();
-            _gameSceneManager = GameFrameworkEntry.GetModule<IGameSceneManager>();
+            _gameSceneManager = FuEntry.GetModule<IGameSceneManager>();
             if (_gameSceneManager == null)
             {
                 Log.Fatal("Scene manager is invalid.");
@@ -104,7 +104,7 @@ namespace GameFrameX.Scene.Runtime
                 return;
             }
 
-            _assetManager = GameFrameworkEntry.GetModule<IAssetManager>();
+            _assetManager = FuEntry.GetModule<IAssetManager>();
             if (_assetManager == null)
             {
                 Log.Fatal("Asset Manager is invalid.");

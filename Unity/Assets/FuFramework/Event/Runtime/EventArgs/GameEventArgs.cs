@@ -6,7 +6,6 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Event.Runtime
 {

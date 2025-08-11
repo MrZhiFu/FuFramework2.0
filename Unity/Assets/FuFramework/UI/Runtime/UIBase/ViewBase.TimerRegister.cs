@@ -1,6 +1,5 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Timer.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -25,8 +24,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         public void AddTimer(float interval, int repeat, Action<object> callback, object callbackParam = null)
         {
-            GameFrameworkGuard.NotNull(callback,      nameof(callback));
-            GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
+            FuGuard.NotNull(callback,      nameof(callback));
+            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.AddTimer(interval, repeat, callback, callbackParam);
         }
 
@@ -38,8 +37,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         public void AddTimerOnce(float interval, Action<object> callback, object callbackParam = null)
         {
-            GameFrameworkGuard.NotNull(callback,      nameof(callback));
-            GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
+            FuGuard.NotNull(callback,      nameof(callback));
+            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.AddTimerOnce(interval, callback, callbackParam);
         }
 
@@ -50,8 +49,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="callbackParam">回调函数的参数</param>
         public void AddTimerUpdate(Action<object> callback, object callbackParam = null)
         {
-            GameFrameworkGuard.NotNull(callback,      nameof(callback));
-            GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
+            FuGuard.NotNull(callback,      nameof(callback));
+            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.AddTimerUpdate(callback, callbackParam);
         }
 
@@ -61,8 +60,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">要移除的回调函数</param>
         public void RemoveTimer(Action<object> callback)
         {
-            GameFrameworkGuard.NotNull(callback,      nameof(callback));
-            GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
+            FuGuard.NotNull(callback,      nameof(callback));
+            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.RemoveTimer(callback);
         }
 
@@ -71,7 +70,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void RemoveAllTimer()
         {
-            GameFrameworkGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
+            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
             TimerRegister.RemoveAllTimer();
         }
 

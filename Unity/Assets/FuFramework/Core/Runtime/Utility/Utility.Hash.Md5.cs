@@ -2,7 +2,8 @@
 using System.IO;
 using System.Text;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -26,6 +27,7 @@ namespace GameFrameX.Runtime
                 /// </summary>
                 /// <param name="input"></param>
                 /// <returns></returns>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(string input)
                 {
                     var data = s_MD5Cryptography.ComputeHash(Encoding.UTF8.GetBytes(input));
@@ -37,6 +39,7 @@ namespace GameFrameX.Runtime
                 /// </summary>
                 /// <param name="input"></param>
                 /// <returns></returns>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(Stream input)
                 {
                     var data = s_MD5Cryptography.ComputeHash(input);

@@ -10,8 +10,8 @@ using GameFrameX.Fsm;
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Fsm.Runtime
 {
@@ -20,7 +20,7 @@ namespace GameFrameX.Fsm.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/FSM")]
-    public sealed class FsmComponent : GameFrameworkComponent
+    public sealed class FsmComponent : FuComponent
     {
         private IFsmManager m_FsmManager = null;
 
@@ -40,7 +40,7 @@ namespace GameFrameX.Fsm.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IFsmManager);
             base.Awake();
-            m_FsmManager = GameFrameworkEntry.GetModule<IFsmManager>();
+            m_FsmManager = FuEntry.GetModule<IFsmManager>();
             if (m_FsmManager == null)
             {
                 Log.Fatal("FSM manager is invalid.");

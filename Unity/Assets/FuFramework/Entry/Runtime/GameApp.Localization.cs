@@ -1,6 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Localization.Runtime;
-using GameFrameX.Runtime;
 
 public static partial class GameApp
 {

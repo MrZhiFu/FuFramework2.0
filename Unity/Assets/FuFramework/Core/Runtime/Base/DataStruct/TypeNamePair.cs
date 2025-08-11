@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -30,7 +30,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="name">名称。</param>
         public TypeNamePair(Type type, string name)
         {
-            m_Type = type ?? throw new GameFrameworkException("Type is invalid.");
+            m_Type = type ?? throw new FuException("Type is invalid.");
             m_Name = name ?? string.Empty;
         }
 
@@ -50,9 +50,9 @@ namespace FuFramework.Core.Runtime
         /// <returns>类型和名称的组合值字符串。</returns>
         public override string ToString()
         {
-            if (m_Type == null) throw new GameFrameworkException("Type is invalid.");
+            if (m_Type == null) throw new FuException("Type is invalid.");
             var typeName = m_Type.FullName;
-            return (string.IsNullOrEmpty(m_Name) ? typeName : Utility.Text.Format("{0}.{1}", typeName, m_Name)) ?? string.Empty;
+            return (string.IsNullOrEmpty(m_Name) ? typeName : Runtime.Utility.Text.Format("{0}.{1}", typeName, m_Name)) ?? string.Empty;
         }
 
         /// <summary>

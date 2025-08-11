@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -22,7 +21,7 @@ namespace FuFramework.Core.Runtime
         private readonly Queue<Event> m_EventQueue;
 
         /// 事件处理器多值字典, key:事件编号Id--Value:事件处理器
-        private readonly GameFrameworkMultiDictionary<string, EventHandler<T>> m_EventHandlerDict;
+        private readonly FuMultiDictionary<string, EventHandler<T>> m_EventHandlerDict;
 
         /// 记录缓存的事件处理器字典, key:事件--Value:事件处理器链表节点
         private readonly Dictionary<object, LinkedListNode<EventHandler<T>>> m_CachedNodeDict;
@@ -40,7 +39,7 @@ namespace FuFramework.Core.Runtime
             m_EventPoolMode    = mode;
             m_DefaultHandler   = null;
             m_EventQueue       = new Queue<Event>();
-            m_EventHandlerDict = new GameFrameworkMultiDictionary<string, EventHandler<T>>();
+            m_EventHandlerDict = new FuMultiDictionary<string, EventHandler<T>>();
             m_CachedNodeDict   = new Dictionary<object, LinkedListNode<EventHandler<T>>>();
             m_WaitDelNodeDict  = new Dictionary<object, LinkedListNode<EventHandler<T>>>();
         }
@@ -115,7 +114,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>是否存在事件处理函数。</returns>
         public bool Check(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new GameFrameworkException("Event handler is invalid.");
+            if (handler == null) throw new FuException("Event handler is invalid.");
             return m_EventHandlerDict.Contains(id, handler);
         }
 
@@ -126,7 +125,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="handler">要订阅的事件处理函数。</param>
         public void Subscribe(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new GameFrameworkException("Event handler is invalid.");
+            if (handler == null) throw new FuException("Event handler is invalid.");
 
             if (!m_EventHandlerDict.Contains(id))
             {
@@ -135,10 +134,10 @@ namespace FuFramework.Core.Runtime
             }
 
             if ((m_EventPoolMode & EventPoolMode.AllowMultiHandler) != EventPoolMode.AllowMultiHandler)
-                throw new GameFrameworkException(Utility.Text.Format("Event '{0}' not allow multi handler.", id));
+                throw new FuException(Utility.Text.Format("Event '{0}' not allow multi handler.", id));
 
             if ((m_EventPoolMode & EventPoolMode.AllowDuplicateHandler) != EventPoolMode.AllowDuplicateHandler && Check(id, handler))
-                throw new GameFrameworkException(Utility.Text.Format("Event '{0}' not allow duplicate handler.", id));
+                throw new FuException(Utility.Text.Format("Event '{0}' not allow duplicate handler.", id));
 
             m_EventHandlerDict.Add(id, handler);
         }
@@ -150,7 +149,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="handler">要取消订阅的事件处理函数。</param>
         public void Unsubscribe(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new GameFrameworkException("Event handler is invalid.");
+            if (handler == null) throw new FuException("Event handler is invalid.");
 
             if (m_CachedNodeDict.Count > 0)
             {
@@ -172,7 +171,7 @@ namespace FuFramework.Core.Runtime
             }
 
             if (!m_EventHandlerDict.Remove(id, handler))
-                throw new GameFrameworkException(Utility.Text.Format("Event '{0}' not exists specified handler.", id));
+                throw new FuException(Utility.Text.Format("Event '{0}' not exists specified handler.", id));
         }
 
         /// <summary>
@@ -188,7 +187,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="eArgs">事件参数。</param>
         public void Fire(object sender, T eArgs)
         {
-            if (eArgs == null) throw new GameFrameworkException("Event is invalid.");
+            if (eArgs == null) throw new FuException("Event is invalid.");
 
             var tempEvent = Event.Create(sender, eArgs);
             lock (m_EventQueue)
@@ -204,7 +203,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="eArgs">事件参数。</param>
         public void FireNow(object sender, T eArgs)
         {
-            if (eArgs == null) throw new GameFrameworkException("Event is invalid.");
+            if (eArgs == null) throw new FuException("Event is invalid.");
             HandleEvent(sender, eArgs);
         }
 
@@ -243,7 +242,7 @@ namespace FuFramework.Core.Runtime
             ReferencePool.Release(eArgs);
 
             if (noHandlerException)
-                throw new GameFrameworkException(Utility.Text.Format("Event '{0}' not allow no handler.", eArgs.Id));
+                throw new FuException(Utility.Text.Format("Event '{0}' not allow no handler.", eArgs.Id));
         }
     }
 }

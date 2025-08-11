@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -12,7 +12,6 @@ namespace GameFrameX.Runtime
         /// 网络相关的对象工具类。
         /// 提供了获取网络相关信息的方法，如获取本机IP地址、获取域名的IP地址、获取第一个可用的端口号等。
         /// </summary>
-       
         public static class Net
         {
             /// <summary>
@@ -75,7 +74,7 @@ namespace GameFrameX.Runtime
             /// <returns>如果端口可用则返回true，否则返回false</returns>
             public static bool PortIsAvailable(int port)
             {
-                var portUsed    = PortIsUsed();
+                var portUsed = PortIsUsed();
                 foreach (var p in portUsed)
                 {
                     if (p != port) continue;

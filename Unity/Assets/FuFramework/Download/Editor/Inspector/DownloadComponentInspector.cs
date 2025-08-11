@@ -4,9 +4,9 @@ using System.Text;
 using FuFramework.Core.Runtime;
 using FuFramework.Download.Runtime;
 using GameFrameX.Editor;
-using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Editor

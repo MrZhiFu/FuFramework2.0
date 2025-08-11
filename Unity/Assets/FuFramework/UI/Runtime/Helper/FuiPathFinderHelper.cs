@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FairyGUI;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime

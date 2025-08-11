@@ -9,7 +9,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// <see cref="GameObject"/> 扩展方法集。
     /// </summary>
-    public static class GameObjectExtension
+    public static class GameObjectEx
     {
         private static readonly List<Transform> s_CachedTransforms = new();
 

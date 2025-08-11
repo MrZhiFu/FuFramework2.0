@@ -1,7 +1,7 @@
 ﻿using GameFrameX.Asset.Runtime;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 
 namespace Unity.Startup.Procedure
 {

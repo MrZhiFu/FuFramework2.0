@@ -4,7 +4,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏框架模块抽象类。
     /// </summary>
-    public abstract class GameFrameworkModule
+    public abstract class FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。

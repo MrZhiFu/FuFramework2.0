@@ -7,11 +7,11 @@
 
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Entity.Runtime
 {
-    public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
+    public sealed partial class EntityManager : FuModule, IEntityManager
     {
         /// <summary>
         /// 实体组。
@@ -21,7 +21,7 @@ namespace GameFrameX.Entity.Runtime
             private readonly string m_Name;
             private readonly IEntityGroupHelper m_EntityGroupHelper;
             private readonly IObjectPool<EntityInstanceObject> m_InstancePool;
-            private readonly GameFrameworkLinkedList<IEntity> m_Entities;
+            private readonly FuLinkedList<IEntity> m_Entities;
             private LinkedListNode<IEntity> m_CachedNode;
 
             /// <summary>
@@ -38,19 +38,19 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (string.IsNullOrEmpty(name))
                 {
-                    throw new GameFrameworkException("Entity group name is invalid.");
+                    throw new FuException("Entity group name is invalid.");
                 }
 
                 if (entityGroupHelper == null)
                 {
-                    throw new GameFrameworkException("Entity group helper is invalid.");
+                    throw new FuException("Entity group helper is invalid.");
                 }
 
                 m_Name = name;
                 m_EntityGroupHelper = entityGroupHelper;
                 m_InstancePool = objectPoolManager.CreateObjectPool<EntityInstanceObject>(Utility.Text.Format("Entity Instance Pool ({0})", name), instanceCapacity, instanceExpireTime, instancePriority);
                 m_InstancePool.AutoReleaseInterval = instanceAutoReleaseInterval;
-                m_Entities = new GameFrameworkLinkedList<IEntity>();
+                m_Entities = new FuLinkedList<IEntity>();
                 m_CachedNode = null;
             }
 
@@ -191,7 +191,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (string.IsNullOrEmpty(entityAssetName))
                 {
-                    throw new GameFrameworkException("Entity asset name is invalid.");
+                    throw new FuException("Entity asset name is invalid.");
                 }
 
                 foreach (IEntity entity in m_Entities)
@@ -232,7 +232,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (string.IsNullOrEmpty(entityAssetName))
                 {
-                    throw new GameFrameworkException("Entity asset name is invalid.");
+                    throw new FuException("Entity asset name is invalid.");
                 }
 
                 foreach (IEntity entity in m_Entities)
@@ -255,7 +255,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (string.IsNullOrEmpty(entityAssetName))
                 {
-                    throw new GameFrameworkException("Entity asset name is invalid.");
+                    throw new FuException("Entity asset name is invalid.");
                 }
 
                 List<IEntity> results = new List<IEntity>();
@@ -279,12 +279,12 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (string.IsNullOrEmpty(entityAssetName))
                 {
-                    throw new GameFrameworkException("Entity asset name is invalid.");
+                    throw new FuException("Entity asset name is invalid.");
                 }
 
                 if (results == null)
                 {
-                    throw new GameFrameworkException("Results is invalid.");
+                    throw new FuException("Results is invalid.");
                 }
 
                 results.Clear();
@@ -320,7 +320,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (results == null)
                 {
-                    throw new GameFrameworkException("Results is invalid.");
+                    throw new FuException("Results is invalid.");
                 }
 
                 results.Clear();
@@ -352,7 +352,7 @@ namespace GameFrameX.Entity.Runtime
 
                 if (!m_Entities.Remove(entity))
                 {
-                    throw new GameFrameworkException(Utility.Text.Format("Entity group '{0}' not exists specified entity '[{1}]{2}'.", m_Name, entity.Id, entity.EntityAssetName));
+                    throw new FuException(Utility.Text.Format("Entity group '{0}' not exists specified entity '[{1}]{2}'.", m_Name, entity.Id, entity.EntityAssetName));
                 }
             }
 
@@ -375,7 +375,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (entityInstance == null)
                 {
-                    throw new GameFrameworkException("Entity instance is invalid.");
+                    throw new FuException("Entity instance is invalid.");
                 }
 
                 m_InstancePool.SetLocked(entityInstance, locked);
@@ -385,7 +385,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (entityInstance == null)
                 {
-                    throw new GameFrameworkException("Entity instance is invalid.");
+                    throw new FuException("Entity instance is invalid.");
                 }
 
                 m_InstancePool.SetPriority(entityInstance, priority);

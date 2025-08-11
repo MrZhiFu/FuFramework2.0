@@ -1,16 +1,8 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Text;
-using FuFramework.Core.Runtime;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -48,7 +40,7 @@ namespace GameFrameX.Runtime
             /// <returns>厘米。</returns>
             public static float GetCentimetersFromPixels(float pixels)
             {
-                if (ScreenDpi <= 0) throw new GameFrameworkException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
                 return InchesToCentimeters * pixels / ScreenDpi;
             }
 
@@ -59,7 +51,7 @@ namespace GameFrameX.Runtime
             /// <returns>像素。</returns>
             public static float GetPixelsFromCentimeters(float centimeters)
             {
-                if (ScreenDpi <= 0) throw new GameFrameworkException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
                 return CentimetersToInches * centimeters * ScreenDpi;
             }
 
@@ -70,7 +62,7 @@ namespace GameFrameX.Runtime
             /// <returns>英寸。</returns>
             public static float GetInchesFromPixels(float pixels)
             {
-                if (ScreenDpi <= 0) throw new GameFrameworkException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
                 return pixels / ScreenDpi;
             }
 
@@ -81,7 +73,7 @@ namespace GameFrameX.Runtime
             /// <returns>像素。</returns>
             public static float GetPixelsFromInches(float inches)
             {
-                if (ScreenDpi <= 0) throw new GameFrameworkException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
                 return inches * ScreenDpi;
             }
 
@@ -112,8 +104,8 @@ namespace GameFrameX.Runtime
             /// <param name="startIndex">buffer 内的起始位置。</param>
             public static void GetBytes(bool value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new GameFrameworkException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 1 > buffer.Length) throw new GameFrameworkException("开始索引超出范围.");
+                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
+                if (startIndex < 0 || startIndex + 1 > buffer.Length) throw new FuException("开始索引超出范围.");
                 buffer[startIndex] = value ? (byte)1 : (byte)0;
             }
 
@@ -201,8 +193,8 @@ namespace GameFrameX.Runtime
             /// <param name="startIndex">buffer 内的起始位置。</param>
             public static unsafe void GetBytes(short value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new GameFrameworkException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 2 > buffer.Length) throw new GameFrameworkException("开始索引超出范围.");
+                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
+                if (startIndex < 0 || startIndex + 2 > buffer.Length) throw new FuException("开始索引超出范围.");
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -294,8 +286,8 @@ namespace GameFrameX.Runtime
             /// <param name="startIndex">buffer 内的起始位置。</param>
             public static unsafe void GetBytes(int value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new GameFrameworkException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 4 > buffer.Length) throw new GameFrameworkException("开始索引超出范围.");
+                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
+                if (startIndex < 0 || startIndex + 4 > buffer.Length) throw new FuException("开始索引超出范围.");
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -387,8 +379,8 @@ namespace GameFrameX.Runtime
             /// <param name="startIndex">buffer 内的起始位置。</param>
             public static unsafe void GetBytes(long value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new GameFrameworkException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 8 > buffer.Length) throw new GameFrameworkException("开始索引超出范围.");
+                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
+                if (startIndex < 0 || startIndex + 8 > buffer.Length) throw new FuException("开始索引超出范围.");
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -569,8 +561,8 @@ namespace GameFrameX.Runtime
             /// <returns>用于存放结果的字节数组。</returns>
             public static byte[] GetBytes(string value, Encoding encoding)
             {
-                if (value    == null) throw new GameFrameworkException("传入的字符串为空.");
-                if (encoding == null) throw new GameFrameworkException("传入的编码为空.");
+                if (value    == null) throw new FuException("传入的字符串为空.");
+                if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetBytes(value);
             }
@@ -594,8 +586,8 @@ namespace GameFrameX.Runtime
             /// <returns>buffer 内实际填充了多少字节。</returns>
             public static int GetBytes(string value, Encoding encoding, byte[] buffer, int startIndex)
             {
-                if (value    == null) throw new GameFrameworkException("传入的字符串为空.");
-                if (encoding == null) throw new GameFrameworkException("传入的编码为空.");
+                if (value    == null) throw new FuException("传入的字符串为空.");
+                if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetBytes(value, 0, value.Length, buffer, startIndex);
             }
@@ -615,8 +607,8 @@ namespace GameFrameX.Runtime
             /// <returns>转换后的字符串。</returns>
             public static string GetString(byte[] value, Encoding encoding)
             {
-                if (value    == null) throw new GameFrameworkException("传入的字节数组为空.");
-                if (encoding == null) throw new GameFrameworkException("传入的编码为空.");
+                if (value    == null) throw new FuException("传入的字节数组为空.");
+                if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetString(value);
             }
@@ -640,8 +632,8 @@ namespace GameFrameX.Runtime
             /// <returns>转换后的字符串。</returns>
             public static string GetString(byte[] value, int startIndex, int length, Encoding encoding)
             {
-                if (value    == null) throw new GameFrameworkException("传入的字节数组为空.");
-                if (encoding == null) throw new GameFrameworkException("传入的编码为空.");
+                if (value    == null) throw new FuException("传入的字节数组为空.");
+                if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetString(value, startIndex, length);
             }

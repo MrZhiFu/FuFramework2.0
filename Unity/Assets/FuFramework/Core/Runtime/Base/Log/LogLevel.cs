@@ -4,7 +4,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏框架日志等级。
     /// </summary>
-    public enum GameFrameworkLogLevel : byte
+    public enum LogLevel : byte
     {
         /// <summary>
         /// 调试。

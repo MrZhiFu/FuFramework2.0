@@ -2,9 +2,10 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Editor
 {

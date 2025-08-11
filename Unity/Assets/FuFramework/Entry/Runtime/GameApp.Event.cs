@@ -1,6 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 
 public static partial class GameApp
 {

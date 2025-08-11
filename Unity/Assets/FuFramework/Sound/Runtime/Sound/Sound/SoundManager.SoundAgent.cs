@@ -7,11 +7,10 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Sound.Runtime
 {
-    public sealed partial class SoundManager : GameFrameworkModule, ISoundManager
+    public sealed partial class SoundManager : FuModule, ISoundManager
     {
         /// <summary>
         /// 声音代理。
@@ -68,17 +67,17 @@ namespace GameFrameX.Sound.Runtime
             {
                 if (soundGroup == null)
                 {
-                    throw new GameFrameworkException("Sound group is invalid.");
+                    throw new FuException("Sound group is invalid.");
                 }
 
                 if (soundHelper == null)
                 {
-                    throw new GameFrameworkException("Sound helper is invalid.");
+                    throw new FuException("Sound helper is invalid.");
                 }
 
                 if (soundAgentHelper == null)
                 {
-                    throw new GameFrameworkException("Sound agent helper is invalid.");
+                    throw new FuException("Sound agent helper is invalid.");
                 }
 
                 m_SoundGroup = soundGroup;

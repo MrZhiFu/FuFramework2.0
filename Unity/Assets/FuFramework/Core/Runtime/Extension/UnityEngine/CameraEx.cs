@@ -8,14 +8,14 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 相机帮助类
     /// </summary>
-    public static class CameraHelper
+    public static class CameraEx
     {
         /// <summary>
         /// 获取相机快照
         /// </summary>
         /// <param name="main">相机</param>
         /// <param name="scale">缩放比</param>
-        public static Texture2D GetCaptureScreenshot(Camera main, float scale = 0.5f)
+        public static Texture2D GetCaptureScreenshot(this Camera main, float scale = 0.5f)
         {
             var rect          = new Rect(0, 0, Screen.width * scale, Screen.height * scale);
             var name          = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");

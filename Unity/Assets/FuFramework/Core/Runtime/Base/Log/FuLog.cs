@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -7,41 +6,48 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏框架日志类。
     /// </summary>
-    public static partial class GameFrameworkLog
+    public static partial class FuLog
     {
         /// 游戏框架日志辅助器接口
-        private static ILogHelper s_LogHelper;
+        private static ILogHelper _logHelper;
 
         /// <summary>
-        /// 设置游戏框架日志辅助器。
+        ///     设置游戏框架日志辅助器。
         /// </summary>
         /// <param name="logHelper">要设置的游戏框架日志辅助器。</param>
-        public static void SetLogHelper(ILogHelper logHelper) => s_LogHelper = logHelper;
+        public static void SetLogHelper(ILogHelper logHelper)
+        {
+            _logHelper = logHelper;
+        }
 
         #region Debug(记录调试类日志信息)
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(object message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, message);
+        {
+            _logHelper?.Log(LogLevel.Debug, message);
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(string message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, message);
+        {
+            _logHelper?.Log(LogLevel.Debug, message);
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
@@ -50,10 +56,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T>(string format, T arg)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -64,10 +72,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2>(string format, T1 arg1, T2 arg2)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -80,10 +90,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -98,10 +110,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -118,10 +132,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -140,10 +156,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -164,10 +182,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -190,10 +210,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -218,10 +240,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -245,10 +269,12 @@ namespace FuFramework.Core.Runtime
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -277,10 +303,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -312,10 +340,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -349,10 +379,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -388,10 +420,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -429,10 +463,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        }
 
         /// <summary>
-        /// 打印调试级别日志，用于记录调试类日志信息。
+        ///     打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -472,14 +508,16 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        {
+            _logHelper?.Log(LogLevel.Debug, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        }
 
         #endregion
 
         #region Info(记录程序正常运行日志信息)
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -487,10 +525,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(object message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, message);
+        {
+            _logHelper?.Log(LogLevel.Info, message);
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -498,10 +538,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(string message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, message);
+        {
+            _logHelper?.Log(LogLevel.Info, message);
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
@@ -511,10 +553,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T>(string format, T arg)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -526,10 +570,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2>(string format, T1 arg1, T2 arg2)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -543,10 +589,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -562,10 +610,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -583,10 +633,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -606,10 +658,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -631,10 +685,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -658,10 +714,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -687,10 +745,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -718,10 +778,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -751,10 +813,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -787,10 +851,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11,
                                                                                    T12 arg12)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -825,10 +891,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                         T11 arg11, T12 arg12, T13 arg13)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -865,10 +933,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                              T11 arg11, T12 arg12, T13 arg13, T14 arg14)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -907,10 +977,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                   T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        }
 
         /// <summary>
-        /// 打印信息级别日志，用于记录程序正常运行日志信息。
+        ///     打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -951,14 +1023,16 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                        T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        {
+            _logHelper?.Log(LogLevel.Info, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        }
 
         #endregion
 
         #region Warning(警告级别日志)
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -967,10 +1041,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(object message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, message);
+        {
+            _logHelper?.Log(LogLevel.Warning, message);
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -979,10 +1055,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(string message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, message);
+        {
+            _logHelper?.Log(LogLevel.Warning, message);
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
@@ -993,10 +1071,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T>(string format, T arg)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1009,10 +1089,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2>(string format, T1 arg1, T2 arg2)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1027,10 +1109,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1047,10 +1131,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1069,10 +1155,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1093,10 +1181,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1119,10 +1209,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1147,10 +1239,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1177,10 +1271,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1209,10 +1305,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1243,10 +1341,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1280,10 +1380,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                       T11 arg11, T12 arg12)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1319,10 +1421,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                            T11 arg11, T12 arg12, T13 arg13)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1360,10 +1464,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                 T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1403,10 +1509,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                      T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        }
 
         /// <summary>
-        /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1448,14 +1556,16 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8,
                                                                                                           T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        {
+            _logHelper?.Log(LogLevel.Warning, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        }
 
         #endregion
 
         #region Error(打印错误级别日志)
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -1465,10 +1575,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(object message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, message);
+        {
+            _logHelper?.Log(LogLevel.Error, message);
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -1478,10 +1590,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(string message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, message);
+        {
+            _logHelper?.Log(LogLevel.Error, message);
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
@@ -1493,10 +1607,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T>(string format, T arg)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1510,10 +1626,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2>(string format, T1 arg1, T2 arg2)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1529,10 +1647,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1550,10 +1670,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1573,10 +1695,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1598,10 +1722,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1625,10 +1751,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1654,10 +1782,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1685,10 +1815,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1718,10 +1850,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1753,10 +1887,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1791,10 +1927,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1831,10 +1969,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1873,10 +2013,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1917,10 +2059,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        }
 
         /// <summary>
-        /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
+        ///     打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -1963,14 +2107,16 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        {
+            _logHelper?.Log(LogLevel.Error, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        }
 
         #endregion
 
         #region Fatal(严重错误级别日志)
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -1981,10 +2127,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(object message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, message);
+        {
+            _logHelper?.Log(LogLevel.Fatal, message);
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <param name="message">日志内容。</param>
         [Conditional("ENABLE_LOG")]
@@ -1995,10 +2143,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(string message)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, message);
+        {
+            _logHelper?.Log(LogLevel.Fatal, message);
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
@@ -2011,10 +2161,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T>(string format, T arg)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2029,10 +2181,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2>(string format, T1 arg1, T2 arg2)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2049,10 +2203,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2071,10 +2227,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2095,10 +2253,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2121,10 +2281,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2149,10 +2311,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2179,10 +2343,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2211,10 +2377,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2245,10 +2413,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2281,10 +2451,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2320,10 +2492,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2361,10 +2535,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2404,10 +2580,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2449,10 +2627,12 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+        }
 
         /// <summary>
-        /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
+        ///     打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <typeparam name="T1">日志参数 1 的类型。</typeparam>
         /// <typeparam name="T2">日志参数 2 的类型。</typeparam>
@@ -2496,7 +2676,9 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
-            => s_LogHelper?.Log(GameFrameworkLogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        {
+            _logHelper?.Log(LogLevel.Fatal, Utility.Text.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+        }
 
         #endregion
     }

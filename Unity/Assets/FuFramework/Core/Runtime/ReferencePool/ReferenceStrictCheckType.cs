@@ -1,18 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using UnityEngine.Scripting;
-
-namespace GameFrameX.Runtime
+﻿// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 引用强制检查类型。
     /// </summary>
-   
     public enum ReferenceStrictCheckType : byte
     {
         /// <summary>

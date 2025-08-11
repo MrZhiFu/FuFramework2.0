@@ -12,7 +12,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Setting.Runtime
 {
@@ -52,7 +51,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();

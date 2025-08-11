@@ -121,7 +121,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="path"></param>
         /// <param name="readPath"></param>
         /// <returns></returns>
-        private static bool IsAndroidReadOnlyPath(string path, out string readPath)
+        public static bool IsAndroidReadOnlyPath(string path, out string readPath)
         {
             if (Application.platform == RuntimePlatform.Android)
             {

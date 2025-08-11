@@ -7,12 +7,11 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.Sound.Runtime
 {
-    public sealed partial class SoundComponent : GameFrameworkComponent
+    public sealed partial class SoundComponent : FuComponent
     {
         /// <summary>
         /// 声音组。

@@ -1,15 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System;
 
-using System;
-using FuFramework.Core.Runtime;
-using UnityEngine.Scripting;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -22,13 +14,13 @@ namespace GameFrameX.Runtime
         public static partial class Json
         {
             /// JSON 辅助器
-            private static IJsonHelper s_JsonHelper;
+            private static IJsonHelper _jsonHelper;
 
             /// <summary>
             /// 设置 JSON 辅助器。
             /// </summary>
             /// <param name="jsonHelper">要设置的 JSON 辅助器。</param>
-            public static void SetJsonHelper(IJsonHelper jsonHelper) => s_JsonHelper = jsonHelper;
+            public static void SetJsonHelper(IJsonHelper jsonHelper) => _jsonHelper = jsonHelper;
 
             /// <summary>
             /// 将对象序列化为 JSON 字符串。
@@ -37,16 +29,16 @@ namespace GameFrameX.Runtime
             /// <returns>序列化后的 JSON 字符串。</returns>
             public static string ToJson(object obj)
             {
-                if (s_JsonHelper == null) throw new GameFrameworkException("JSON 辅助器未设置.");
+                if (_jsonHelper == null) throw new FuException("JSON 辅助器未设置.");
 
                 try
                 {
-                    return s_JsonHelper.ToJson(obj);
+                    return _jsonHelper.ToJson(obj);
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException) throw;
-                    throw new GameFrameworkException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
+                    if (exception is FuException) throw;
+                    throw new FuException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
                 }
             }
 
@@ -58,16 +50,16 @@ namespace GameFrameX.Runtime
             /// <returns>反序列化后的对象。</returns>
             public static T ToObject<T>(string json)
             {
-                if (s_JsonHelper == null) throw new GameFrameworkException("JSON 辅助器未设置.");
+                if (_jsonHelper == null) throw new FuException("JSON 辅助器未设置.");
 
                 try
                 {
-                    return s_JsonHelper.ToObject<T>(json);
+                    return _jsonHelper.ToObject<T>(json);
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException) throw;
-                    throw new GameFrameworkException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
+                    if (exception is FuException) throw;
+                    throw new FuException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
                 }
             }
 
@@ -79,17 +71,17 @@ namespace GameFrameX.Runtime
             /// <returns>反序列化后的对象。</returns>
             public static object ToObject(Type objectType, string json)
             {
-                if (s_JsonHelper == null) throw new GameFrameworkException("JSON 辅助器未设置.");
-                if (objectType   == null) throw new GameFrameworkException("目标对象类型为空.");
+                if (_jsonHelper == null) throw new FuException("JSON 辅助器未设置.");
+                if (objectType   == null) throw new FuException("目标对象类型为空.");
 
                 try
                 {
-                    return s_JsonHelper.ToObject(objectType, json);
+                    return _jsonHelper.ToObject(objectType, json);
                 }
                 catch (Exception exception)
                 {
-                    if (exception is GameFrameworkException) throw;
-                    throw new GameFrameworkException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
+                    if (exception is FuException) throw;
+                    throw new FuException(Text.Format("无法转换为 JSON 并出现异常 '{0}'.", exception), exception);
                 }
             }
         }

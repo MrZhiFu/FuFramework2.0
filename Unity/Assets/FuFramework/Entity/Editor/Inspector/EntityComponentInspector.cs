@@ -7,8 +7,9 @@
 
 using GameFrameX.Editor;
 using GameFrameX.Entity.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using UnityEditor;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Entity.Editor
 {

@@ -1,14 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using UnityEngine;
 
-using FuFramework.Core.Runtime;
-using UnityEngine;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// UnityEngine.GameObject 变量类。
@@ -17,7 +10,7 @@ namespace GameFrameX.Runtime
     public sealed class VarGameObject : Variable<GameObject>
     {
         /// <summary>
-        /// 初始化 UnityEngine.GameObject 变量类的新实例。
+        /// 初始化 VarGameObject 变量类的新实例。
         /// </summary>
         public VarGameObject() { }
 
@@ -33,7 +26,7 @@ namespace GameFrameX.Runtime
         }
 
         /// <summary>
-        /// 从 UnityEngine.GameObject 变量类到 UnityEngine.GameObject 的隐式转换。
+        /// 从 VarGameObject 变量类到 UnityEngine.GameObject 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator GameObject(VarGameObject value) => value.Value;

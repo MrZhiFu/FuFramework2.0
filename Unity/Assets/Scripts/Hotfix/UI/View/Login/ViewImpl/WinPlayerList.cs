@@ -5,7 +5,7 @@ using FairyGUI;
 using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;

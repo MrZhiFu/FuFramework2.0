@@ -1,14 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System.Diagnostics;
 
-using System.Diagnostics;
-using FuFramework.Core.Runtime;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 日志工具集。
@@ -37,7 +30,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(object message)
         {
-            GameFrameworkLog.Debug(message);
+            FuLog.Debug(message);
         }
 
         /// <summary>
@@ -50,7 +43,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(string message)
         {
-            GameFrameworkLog.Debug(message);
+            FuLog.Debug(message);
         }
 
         /// <summary>
@@ -65,7 +58,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T>(string format, T arg)
         {
-            GameFrameworkLog.Debug(format, arg);
+            FuLog.Debug(format, arg);
         }
 
         /// <summary>
@@ -82,7 +75,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2);
+            FuLog.Debug(format, arg1, arg2);
         }
 
         /// <summary>
@@ -101,7 +94,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3);
+            FuLog.Debug(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -122,7 +115,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -145,7 +138,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -170,7 +163,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -197,7 +190,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -226,7 +219,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -257,7 +250,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -290,7 +283,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -325,7 +318,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -363,7 +356,7 @@ namespace GameFrameX.Runtime
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -403,7 +396,7 @@ namespace GameFrameX.Runtime
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -445,7 +438,7 @@ namespace GameFrameX.Runtime
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -489,7 +482,7 @@ namespace GameFrameX.Runtime
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -535,7 +528,7 @@ namespace GameFrameX.Runtime
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            GameFrameworkLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
+            FuLog.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
@@ -549,7 +542,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(object message)
         {
-            GameFrameworkLog.Info(message);
+            FuLog.Info(message);
         }
 
         /// <summary>
@@ -563,7 +556,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(string message)
         {
-            GameFrameworkLog.Info(message);
+            FuLog.Info(message);
         }
 
         /// <summary>
@@ -579,7 +572,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T>(string format, T arg)
         {
-            GameFrameworkLog.Info(format, arg);
+            FuLog.Info(format, arg);
         }
 
         /// <summary>
@@ -597,7 +590,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            GameFrameworkLog.Info(format, arg1, arg2);
+            FuLog.Info(format, arg1, arg2);
         }
 
         /// <summary>
@@ -617,7 +610,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3);
+            FuLog.Info(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -639,7 +632,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4);
+            FuLog.Info(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -663,7 +656,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -689,7 +682,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -717,7 +710,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -747,7 +740,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -779,7 +772,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -813,7 +806,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -849,7 +842,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -888,7 +881,7 @@ namespace GameFrameX.Runtime
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11,
                                                                                    T12 arg12)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -929,7 +922,7 @@ namespace GameFrameX.Runtime
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                         T11 arg11, T12 arg12, T13 arg13)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -972,7 +965,7 @@ namespace GameFrameX.Runtime
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                              T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -1017,7 +1010,7 @@ namespace GameFrameX.Runtime
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                   T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -1064,7 +1057,7 @@ namespace GameFrameX.Runtime
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                        T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            GameFrameworkLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
+            FuLog.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
@@ -1079,7 +1072,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(object message)
         {
-            GameFrameworkLog.Warning(message);
+            FuLog.Warning(message);
         }
 
         /// <summary>
@@ -1094,7 +1087,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(string message)
         {
-            GameFrameworkLog.Warning(message);
+            FuLog.Warning(message);
         }
 
         /// <summary>
@@ -1111,7 +1104,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T>(string format, T arg)
         {
-            GameFrameworkLog.Warning(format, arg);
+            FuLog.Warning(format, arg);
         }
 
         /// <summary>
@@ -1130,7 +1123,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2);
+            FuLog.Warning(format, arg1, arg2);
         }
 
         /// <summary>
@@ -1151,7 +1144,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3);
+            FuLog.Warning(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -1174,7 +1167,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -1199,7 +1192,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -1226,7 +1219,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -1255,7 +1248,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -1286,7 +1279,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -1319,7 +1312,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -1354,7 +1347,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -1391,7 +1384,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -1431,7 +1424,7 @@ namespace GameFrameX.Runtime
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                       T11 arg11, T12 arg12)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -1473,7 +1466,7 @@ namespace GameFrameX.Runtime
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                            T11 arg11, T12 arg12, T13 arg13)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -1517,7 +1510,7 @@ namespace GameFrameX.Runtime
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                 T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -1563,7 +1556,7 @@ namespace GameFrameX.Runtime
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                      T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -1611,7 +1604,7 @@ namespace GameFrameX.Runtime
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8,
                                                                                                           T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            GameFrameworkLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
+            FuLog.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
@@ -1627,7 +1620,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(object message)
         {
-            GameFrameworkLog.Error(message);
+            FuLog.Error(message);
         }
 
         /// <summary>
@@ -1643,7 +1636,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(string message)
         {
-            GameFrameworkLog.Error(message);
+            FuLog.Error(message);
         }
 
         /// <summary>
@@ -1661,7 +1654,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T>(string format, T arg)
         {
-            GameFrameworkLog.Error(format, arg);
+            FuLog.Error(format, arg);
         }
 
         /// <summary>
@@ -1681,7 +1674,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            GameFrameworkLog.Error(format, arg1, arg2);
+            FuLog.Error(format, arg1, arg2);
         }
 
         /// <summary>
@@ -1703,7 +1696,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3);
+            FuLog.Error(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -1727,7 +1720,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4);
+            FuLog.Error(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -1753,7 +1746,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -1781,7 +1774,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -1811,7 +1804,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -1843,7 +1836,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -1877,7 +1870,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -1913,7 +1906,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -1951,7 +1944,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -1992,7 +1985,7 @@ namespace GameFrameX.Runtime
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -2035,7 +2028,7 @@ namespace GameFrameX.Runtime
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -2080,7 +2073,7 @@ namespace GameFrameX.Runtime
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -2127,7 +2120,7 @@ namespace GameFrameX.Runtime
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -2176,7 +2169,7 @@ namespace GameFrameX.Runtime
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            GameFrameworkLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
+            FuLog.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
@@ -2193,7 +2186,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(object message)
         {
-            GameFrameworkLog.Fatal(message);
+            FuLog.Fatal(message);
         }
 
         /// <summary>
@@ -2210,7 +2203,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(string message)
         {
-            GameFrameworkLog.Fatal(message);
+            FuLog.Fatal(message);
         }
 
         /// <summary>
@@ -2229,7 +2222,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T>(string format, T arg)
         {
-            GameFrameworkLog.Fatal(format, arg);
+            FuLog.Fatal(format, arg);
         }
 
         /// <summary>
@@ -2250,7 +2243,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2);
+            FuLog.Fatal(format, arg1, arg2);
         }
 
         /// <summary>
@@ -2273,7 +2266,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3);
+            FuLog.Fatal(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -2298,7 +2291,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -2325,7 +2318,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -2354,7 +2347,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -2385,7 +2378,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -2418,7 +2411,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -2453,7 +2446,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -2490,7 +2483,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -2529,7 +2522,7 @@ namespace GameFrameX.Runtime
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -2571,7 +2564,7 @@ namespace GameFrameX.Runtime
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                     T11 arg11, T12 arg12)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -2615,7 +2608,7 @@ namespace GameFrameX.Runtime
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                          T11 arg11, T12 arg12, T13 arg13)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -2661,7 +2654,7 @@ namespace GameFrameX.Runtime
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10,
                                                                                               T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -2709,7 +2702,7 @@ namespace GameFrameX.Runtime
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                    T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -2759,7 +2752,7 @@ namespace GameFrameX.Runtime
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9,
                                                                                                         T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            GameFrameworkLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
+            FuLog.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
     }
 }

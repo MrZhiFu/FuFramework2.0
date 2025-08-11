@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
 using ProtoBuf;
+using Utility = FuFramework.Core.Runtime.Utility;
 #if UNITY_WEBGL
 using UnityEngine.Networking;
 #endif
@@ -17,7 +17,7 @@ namespace GameFrameX.Web.Runtime
     /// <summary>
     /// Web请求管理器,实现HTTP GET和POST请求功能
     /// </summary>
-    public partial class WebManager : GameFrameworkModule, IWebManager
+    public partial class WebManager : FuModule, IWebManager
     {
         // 用于构建URL的StringBuilder
         private readonly StringBuilder m_StringBuilder = new StringBuilder(256);
@@ -255,7 +255,7 @@ namespace GameFrameX.Web.Runtime
                 if (webJsonData.Form != null && webJsonData.Form.Count > 0)
                 {
                     request.ContentType = "application/json";
-                    string body = GameFrameX.Runtime.Utility.Json.ToJson(webJsonData.Form);
+                    string body = Utility.Json.ToJson(webJsonData.Form);
                     byte[] postData = Encoding.UTF8.GetBytes(body);
                     request.ContentLength = postData.Length;
                     using (Stream requestStream = request.GetRequestStream())
@@ -390,7 +390,7 @@ namespace GameFrameX.Web.Runtime
                 if (webJsonData.Form != null && webJsonData.Form.Count > 0)
                 {
                     request.ContentType = "application/json";
-                    string body = GameFrameX.Runtime.Utility.Json.ToJson(webJsonData.Form);
+                    string body = Utility.Json.ToJson(webJsonData.Form);
                     byte[] postData = Encoding.UTF8.GetBytes(body);
                     request.ContentLength = postData.Length;
                     using (Stream requestStream = request.GetRequestStream())

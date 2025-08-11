@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static class StringExtension
+    public static class StringEx
     {
         /// <summary>
         /// 快速比较两个字符串内容是否一致
@@ -266,13 +266,13 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void CreateAsDirectory(this string path, bool isFile = false)
         {
-            if (isFile) 
+            if (isFile)
                 path = Path.GetDirectoryName(path);
 
             if (Directory.Exists(path)) return;
             CreateAsDirectory(path, true);
-        
-            if (path == null)  return;
+
+            if (path == null) return;
             Directory.CreateDirectory(path);
         }
 
@@ -285,10 +285,10 @@ namespace FuFramework.Core.Runtime
         public static string ReadLine(this string rawString, ref int position)
         {
             if (position < 0) return null;
-        
+
             var length = rawString.Length;
             var offset = position;
-        
+
             while (offset < length)
             {
                 char ch = rawString[offset];

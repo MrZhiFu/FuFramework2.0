@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -47,8 +46,8 @@ namespace GameFrameX.Network.Runtime
         /// <param name="invokeMethodName">执行的方法名称。建议使用nameof标记当前的函数</param>
         public MessageHandlerAttribute(Type message, string invokeMethodName)
         {
-            GameFrameworkGuard.NotNull(message, nameof(message));
-            GameFrameworkGuard.NotNullOrEmpty(invokeMethodName, nameof(invokeMethodName));
+            FuGuard.NotNull(message, nameof(message));
+            FuGuard.NotNullOrEmpty(invokeMethodName, nameof(invokeMethodName));
             m_InvokeMethodName = invokeMethodName;
             if (message.BaseType != typeof(MessageObject))
             {
@@ -69,7 +68,7 @@ namespace GameFrameX.Network.Runtime
         /// <param name="messageObject">消息对象</param>
         public void SetMessageObject(MessageObject messageObject)
         {
-            GameFrameworkGuard.NotNull(messageObject, nameof(messageObject));
+            FuGuard.NotNull(messageObject, nameof(messageObject));
             m_MessageObjects.Enqueue(messageObject);
         }
 
@@ -118,8 +117,8 @@ namespace GameFrameX.Network.Runtime
         /// <exception cref="ArgumentException"></exception>
         internal bool Add(IMessageHandler messageHandler)
         {
-            GameFrameworkGuard.NotNull(MessageType, nameof(MessageType));
-            GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));
+            FuGuard.NotNull(MessageType, nameof(MessageType));
+            FuGuard.NotNull(messageHandler, nameof(messageHandler));
             m_MessageHandler = messageHandler;
             var target = messageHandler.GetType();
 
@@ -160,8 +159,8 @@ namespace GameFrameX.Network.Runtime
         /// <exception cref="ArgumentException"></exception>
         internal bool Remove(IMessageHandler messageHandler)
         {
-            GameFrameworkGuard.NotNull(MessageType, nameof(MessageType));
-            GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));
+            FuGuard.NotNull(MessageType, nameof(MessageType));
+            FuGuard.NotNull(messageHandler, nameof(messageHandler));
             m_MessageHandler = null;
             var target = messageHandler.GetType();
 

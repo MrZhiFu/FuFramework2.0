@@ -1,6 +1,4 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -12,7 +10,7 @@ namespace FuFramework.Core.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Base")]
     [DefaultExecutionOrder(-500)]
-    public sealed class BaseComponent : GameFrameworkComponent
+    public sealed class BaseComponent : FuComponent
     {
         /// 屏幕每英寸点数 默认为windows dpi
         private const int DefaultDpi = 96;
@@ -22,19 +20,19 @@ namespace FuFramework.Core.Runtime
 
 
         /// 默认文本辅助器全名称
-        [SerializeField] private string m_TextHelperTypeName = "UnityGameFramework.Runtime.DefaultTextHelper";
+        [SerializeField] private string m_TextHelperTypeName = "FuFramework.Core.Runtime.DefaultTextHelper";
 
         /// 默认版本号辅助器全名称
-        [SerializeField] private string m_VersionHelperTypeName = "UnityGameFramework.Runtime.DefaultVersionHelper";
+        [SerializeField] private string m_VersionHelperTypeName = "FuFramework.Core.Runtime.DefaultVersionHelper";
 
         /// 默认日志辅助器全名称
-        [SerializeField] private string m_LogHelperTypeName = "UnityGameFramework.Runtime.DefaultLogHelper";
+        [SerializeField] private string m_LogHelperTypeName = "FuFramework.Core.Runtime.DefaultLogHelper";
 
         /// 默认压缩辅助器全名称
-        [SerializeField] private string m_CompressionHelperTypeName = "UnityGameFramework.Runtime.DefaultCompressionHelper";
+        [SerializeField] private string m_CompressionHelperTypeName = "FuFramework.Core.Runtime.DefaultCompressionHelper";
 
         /// 默认Json辅助器全名称
-        [SerializeField] private string m_JsonHelperTypeName = "UnityGameFramework.Runtime.DefaultJsonHelper";
+        [SerializeField] private string m_JsonHelperTypeName = "FuFramework.Core.Runtime.DefaultJsonHelper";
 
 
         /// 游戏帧率
@@ -99,7 +97,7 @@ namespace FuFramework.Core.Runtime
                 Screen.sleepTimeout = value ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             }
         }
-        
+
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -118,7 +116,7 @@ namespace FuFramework.Core.Runtime
             InitCompressionHelper();
             InitJsonHelper();
 
-            Log.Info("游戏版本号: {0}, Unity版本号: {1}", FuFramework.Core.Runtime.Version.GameVersion, Application.unityVersion);
+            Log.Info("游戏版本号: {0}, Unity版本号: {1}", Version.GameVersion, Application.unityVersion);
 
             // 设置工具类Converter的屏幕dpi, 方便进行屏幕像素和厘米与英寸的转换方法实现
             Utility.Converter.ScreenDpi = Screen.dpi;
@@ -138,7 +136,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         private void Update()
         {
-            GameFrameworkEntry.Update(Time.deltaTime, Time.unscaledDeltaTime);
+            FuEntry.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
 
         /// <summary>
@@ -153,7 +151,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 销毁。
         /// </summary>
-        private void OnDestroy() => GameFrameworkEntry.Shutdown();
+        private void OnDestroy() => FuEntry.Shutdown();
 
         /// <summary>
         /// 低内存回调
@@ -167,7 +165,7 @@ namespace FuFramework.Core.Runtime
             if (objectPoolComponent != null)
                 objectPoolComponent.ReleaseAllUnused();
         }
-        
+
 
         /// <summary>
         /// 暂停游戏。
@@ -201,7 +199,7 @@ namespace FuFramework.Core.Runtime
         /// 关闭游戏框架组件。
         /// </summary>
         internal void Shutdown() => Destroy(gameObject);
-        
+
 
         /// <summary>
         /// 初始化文本辅助器
@@ -213,14 +211,14 @@ namespace FuFramework.Core.Runtime
             var textHelperType = Utility.Assembly.GetType(m_TextHelperTypeName);
             if (textHelperType == null)
             {
-                Log.Error("Can not find text helper type '{0}'.", m_TextHelperTypeName);
+                Log.Error("找不到文本辅助器类型'{0}'.", m_TextHelperTypeName);
                 return;
             }
 
             var textHelper = (Utility.Text.ITextHelper)Activator.CreateInstance(textHelperType);
             if (textHelper == null)
             {
-                Log.Error("Can not create text helper instance '{0}'.", m_TextHelperTypeName);
+                Log.Error("创建文本辅助器实例'{0}'失败.", m_TextHelperTypeName);
                 return;
             }
 
@@ -236,13 +234,13 @@ namespace FuFramework.Core.Runtime
 
             var versionHelperType = Utility.Assembly.GetType(m_VersionHelperTypeName);
             if (versionHelperType == null)
-                throw new GameFrameworkException(Utility.Text.Format("Can not find version helper type '{0}'.", m_VersionHelperTypeName));
+                throw new FuException(Utility.Text.Format("不能找到版本辅助器类型'{0}'.", m_VersionHelperTypeName));
 
-            var versionHelper = (FuFramework.Core.Runtime.Version.IVersionHelper)Activator.CreateInstance(versionHelperType);
+            var versionHelper = (Version.IVersionHelper)Activator.CreateInstance(versionHelperType);
             if (versionHelper == null)
-                throw new GameFrameworkException(Utility.Text.Format("Can not create version helper instance '{0}'.", m_VersionHelperTypeName));
+                throw new FuException(Utility.Text.Format("创建版本辅助器实例'{0}'失败.", m_VersionHelperTypeName));
 
-            FuFramework.Core.Runtime.Version.SetVersionHelper(versionHelper);
+            Version.SetVersionHelper(versionHelper);
         }
 
         /// <summary>
@@ -254,13 +252,13 @@ namespace FuFramework.Core.Runtime
 
             var logHelperType = Utility.Assembly.GetType(m_LogHelperTypeName);
             if (logHelperType == null)
-                throw new GameFrameworkException(Utility.Text.Format("Can not find log helper type '{0}'.", m_LogHelperTypeName));
+                throw new FuException(Utility.Text.Format("不能找到日志辅助器类型'{0}'.", m_LogHelperTypeName));
 
-            var logHelper = (GameFrameworkLog.ILogHelper)Activator.CreateInstance(logHelperType);
+            var logHelper = (FuLog.ILogHelper)Activator.CreateInstance(logHelperType);
             if (logHelper == null)
-                throw new GameFrameworkException(Utility.Text.Format("Can not create log helper instance '{0}'.", m_LogHelperTypeName));
+                throw new FuException(Utility.Text.Format("创建日志辅助器实例'{0}'失败.", m_LogHelperTypeName));
 
-            GameFrameworkLog.SetLogHelper(logHelper);
+            FuLog.SetLogHelper(logHelper);
         }
 
         /// <summary>
@@ -273,14 +271,14 @@ namespace FuFramework.Core.Runtime
             var compressionHelperType = Utility.Assembly.GetType(m_CompressionHelperTypeName);
             if (compressionHelperType == null)
             {
-                Log.Error("Can not find compression helper type '{0}'.", m_CompressionHelperTypeName);
+                Log.Error("不能找到压缩辅助器类型'{0}'.", m_CompressionHelperTypeName);
                 return;
             }
 
             var compressionHelper = (Utility.Compression.ICompressionHelper)Activator.CreateInstance(compressionHelperType);
             if (compressionHelper == null)
             {
-                Log.Error("Can not create compression helper instance '{0}'.", m_CompressionHelperTypeName);
+                Log.Error("创建压缩辅助器实例'{0}'失败.", m_CompressionHelperTypeName);
                 return;
             }
 
@@ -297,19 +295,18 @@ namespace FuFramework.Core.Runtime
             var jsonHelperType = Utility.Assembly.GetType(m_JsonHelperTypeName);
             if (jsonHelperType == null)
             {
-                Log.Error("Can not find JSON helper type '{0}'.", m_JsonHelperTypeName);
+                Log.Error("不能找到Json辅助器类型'{0}'.", m_JsonHelperTypeName);
                 return;
             }
 
             var jsonHelper = (Utility.Json.IJsonHelper)Activator.CreateInstance(jsonHelperType);
             if (jsonHelper == null)
             {
-                Log.Error("Can not create JSON helper instance '{0}'.", m_JsonHelperTypeName);
+                Log.Error("创建Json辅助器实例'{0}'失败.", m_JsonHelperTypeName);
                 return;
             }
 
             Utility.Json.SetJsonHelper(jsonHelper);
         }
-        
     }
 }

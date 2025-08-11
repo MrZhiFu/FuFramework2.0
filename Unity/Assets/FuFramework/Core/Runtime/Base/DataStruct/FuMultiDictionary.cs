@@ -10,21 +10,21 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     /// <typeparam name="TKey">指定多值字典的主键类型。</typeparam>
     /// <typeparam name="TValue">指定多值字典的值类型。</typeparam>
-    public sealed class GameFrameworkMultiDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>>>
+    public sealed class FuMultiDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, FuLinkedListRange<TValue>>>
     {
         /// 存放值的链表
-        private readonly GameFrameworkLinkedList<TValue> m_LinkedList;
+        private readonly FuLinkedList<TValue> m_LinkedList;
 
         /// 存放主键与多值的字典, key:指定多值字典的主键类型--Value:存放值的一段范围链表
-        private readonly Dictionary<TKey, GameFrameworkLinkedListRange<TValue>> m_Dictionary;
+        private readonly Dictionary<TKey, FuLinkedListRange<TValue>> m_Dictionary;
 
         /// <summary>
         /// 初始化游戏框架多值字典类的新实例。
         /// </summary>
-        public GameFrameworkMultiDictionary()
+        public FuMultiDictionary()
         {
-            m_LinkedList = new GameFrameworkLinkedList<TValue>();
-            m_Dictionary = new Dictionary<TKey, GameFrameworkLinkedListRange<TValue>>();
+            m_LinkedList = new FuLinkedList<TValue>();
+            m_Dictionary = new Dictionary<TKey, FuLinkedListRange<TValue>>();
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="key">指定的主键。</param>
         /// <returns>指定主键的范围。</returns>
-        public GameFrameworkLinkedListRange<TValue> this[TKey key]
+        public FuLinkedListRange<TValue> this[TKey key]
         {
             get
             {
@@ -76,7 +76,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="key">指定的主键。</param>
         /// <param name="range">指定主键的范围。</param>
         /// <returns>是否获取成功。</returns>
-        public bool TryGetValue(TKey key, out GameFrameworkLinkedListRange<TValue> range) => m_Dictionary.TryGetValue(key, out range);
+        public bool TryGetValue(TKey key, out FuLinkedListRange<TValue> range) => m_Dictionary.TryGetValue(key, out range);
 
         /// <summary>
         /// 向指定的主键增加指定的值。
@@ -94,7 +94,7 @@ namespace FuFramework.Core.Runtime
             var firstNode    = m_LinkedList.AddLast(value);
             var terminalNode = m_LinkedList.AddLast(default(TValue));
 
-            m_Dictionary.Add(key, new GameFrameworkLinkedListRange<TValue>(firstNode, terminalNode));
+            m_Dictionary.Add(key, new FuLinkedListRange<TValue>(firstNode, terminalNode));
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace FuFramework.Core.Runtime
                         m_Dictionary.Remove(key);
                     }
                     else
-                        m_Dictionary[key] = new GameFrameworkLinkedListRange<TValue>(next, range.Terminal);
+                        m_Dictionary[key] = new FuLinkedListRange<TValue>(next, range.Terminal);
                 }
 
                 m_LinkedList.Remove(current);
@@ -160,7 +160,7 @@ namespace FuFramework.Core.Runtime
         /// 返回循环访问集合的枚举数。
         /// </summary>
         /// <returns>循环访问集合的枚举数。</returns>
-        IEnumerator<KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>>> IEnumerable<KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>>>.GetEnumerator()
+        IEnumerator<KeyValuePair<TKey, FuLinkedListRange<TValue>>> IEnumerable<KeyValuePair<TKey, FuLinkedListRange<TValue>>>.GetEnumerator()
             => GetEnumerator();
 
         /// <summary>
@@ -173,15 +173,15 @@ namespace FuFramework.Core.Runtime
         /// 循环访问集合的枚举数。
         /// </summary>
         [StructLayout(LayoutKind.Auto)]
-        public struct Enumerator : IEnumerator<KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>>>
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, FuLinkedListRange<TValue>>>
         {
-            private Dictionary<TKey, GameFrameworkLinkedListRange<TValue>>.Enumerator m_Enumerator;
+            private Dictionary<TKey, FuLinkedListRange<TValue>>.Enumerator m_Enumerator;
 
-            internal Enumerator(Dictionary<TKey, GameFrameworkLinkedListRange<TValue>> dictionary)
+            internal Enumerator(Dictionary<TKey, FuLinkedListRange<TValue>> dictionary)
             {
                 if (dictionary == null)
                 {
-                    throw new GameFrameworkException("Dictionary is invalid.");
+                    throw new FuException("Dictionary is invalid.");
                 }
 
                 m_Enumerator = dictionary.GetEnumerator();
@@ -190,7 +190,7 @@ namespace FuFramework.Core.Runtime
             /// <summary>
             /// 获取当前结点。
             /// </summary>
-            public KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>> Current => m_Enumerator.Current;
+            public KeyValuePair<TKey, FuLinkedListRange<TValue>> Current => m_Enumerator.Current;
 
             /// <summary>
             /// 获取当前的枚举数。
@@ -213,7 +213,7 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             void IEnumerator.Reset()
             {
-                ((IEnumerator<KeyValuePair<TKey, GameFrameworkLinkedListRange<TValue>>>)m_Enumerator).Reset();
+                ((IEnumerator<KeyValuePair<TKey, FuLinkedListRange<TValue>>>)m_Enumerator).Reset();
             }
         }
     }

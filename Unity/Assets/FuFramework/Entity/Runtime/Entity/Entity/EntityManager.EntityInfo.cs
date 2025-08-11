@@ -7,12 +7,11 @@
 
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Entity.Runtime
 {
-    public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
+    public sealed partial class EntityManager : FuModule, IEntityManager
     {
         /// <summary>
         /// 实体信息。
@@ -76,7 +75,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (entity == null)
                 {
-                    throw new GameFrameworkException("Entity is invalid.");
+                    throw new FuException("Entity is invalid.");
                 }
 
                 EntityInfo entityInfo = ReferencePool.Acquire<EntityInfo>();
@@ -107,7 +106,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (results == null)
                 {
-                    throw new GameFrameworkException("Results is invalid.");
+                    throw new FuException("Results is invalid.");
                 }
 
                 results.Clear();
@@ -121,7 +120,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (m_ChildEntities.Contains(childEntity))
                 {
-                    throw new GameFrameworkException("Can not add child entity which is already exist.");
+                    throw new FuException("Can not add child entity which is already exist.");
                 }
 
                 m_ChildEntities.Add(childEntity);
@@ -131,7 +130,7 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (!m_ChildEntities.Remove(childEntity))
                 {
-                    throw new GameFrameworkException("Can not remove child entity which is not exist.");
+                    throw new FuException("Can not remove child entity which is not exist.");
                 }
             }
         }

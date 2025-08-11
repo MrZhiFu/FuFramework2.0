@@ -5,7 +5,13 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static class BufferExtension
+    /// <summary>
+    /// 字节数组的扩展方法。
+    /// 功能包括：
+    /// 1. 字节数组的读写操作。
+    /// 2. 字节数组的转换操作。
+    /// </summary>
+    public static class BufferEx
     {
         /// <summary>
         /// 整型的大小
@@ -66,7 +72,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的整数值。</param>
         /// <param name="offset">写入操作的偏移量。</param>
-   
         public static unsafe void WriteInt(this byte[] buffer, int value, ref int offset)
         {
             if (offset + IntSize > buffer.Length)
@@ -88,8 +93,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的整数值。</param>
         /// <param name="offset">写入操作的偏移量。</param>
-   
-        public static unsafe void WriteUInt(this byte[] buffer, uint value, ref int offset)
+        public static void WriteUInt(this byte[] buffer, uint value, ref int offset)
         {
             if (offset + IntSize > buffer.Length)
             {
@@ -97,7 +101,7 @@ namespace FuFramework.Core.Runtime
                 return;
             }
 
-            var     span  = buffer.AsSpan<byte>();
+            var     span  = buffer.AsSpan();
             ref var local = ref span;
             int     start = offset;
             BinaryPrimitives.WriteUInt32BigEndian(local.Slice(start, local.Length - start), value);
@@ -108,7 +112,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的缓冲区。</param>
         /// <param name="value">要写入的值。</param>
         /// <param name="offset">要写入值的缓冲区中的偏移量。</param>
-   
         public static void WriteUShort(this byte[] buffer, ushort value, ref int offset)
         {
             if (offset + 2 > buffer.Length)
@@ -117,7 +120,7 @@ namespace FuFramework.Core.Runtime
             }
             else
             {
-                Span<byte>     span  = buffer.AsSpan<byte>();
+                Span<byte>     span  = buffer.AsSpan();
                 ref Span<byte> local = ref span;
                 int            start = offset;
                 BinaryPrimitives.WriteUInt16BigEndian(local.Slice(start, local.Length - start), value);
@@ -131,7 +134,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的短整数值。</param>
         /// <param name="offset">写入操作的偏移量。</param>
-   
         public static unsafe void WriteShort(this byte[] buffer, short value, ref int offset)
         {
             if (offset + ShortSize > buffer.Length)
@@ -153,7 +155,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的长整数值。</param>
         /// <param name="offset">写入操作的偏移量。</param>
-   
         public static unsafe void WriteLong(this byte[] buffer, long value, ref int offset)
         {
             if (offset + LongSize > buffer.Length)
@@ -175,7 +176,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的单精度浮点数值。</param>
         /// <param name="offset">字节数组中的偏移量，传递引用以便更新偏移量。</param>
-   
         public static unsafe void WriteFloat(this byte[] buffer, float value, ref int offset)
         {
             if (offset + FloatSize > buffer.Length)
@@ -198,7 +198,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的双精度浮点数值。</param>
         /// <param name="offset">字节数组中的偏移量，传递引用以便更新偏移量。</param>
-   
         public static unsafe void WriteDouble(this byte[] buffer, double value, ref int offset)
         {
             if (offset + DoubleSize > buffer.Length)
@@ -221,7 +220,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要写入的字节数组。</param>
         /// <param name="value">要写入的字节值。</param>
         /// <param name="offset">字节数组中的偏移量，传递引用以便更新偏移量。</param>
-   
         public static unsafe void WriteByte(this byte[] buffer, byte value, ref int offset)
         {
             if (offset + ByteSize > buffer.Length)
@@ -243,7 +241,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">目标缓冲区。</param>
         /// <param name="value">要写入的字节数组。</param>
         /// <param name="offset">偏移量。</param>
-   
         public static unsafe void WriteBytesWithoutLength(this byte[] buffer, byte[] value, ref int offset)
         {
             if (value == null)
@@ -270,8 +267,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">目标缓冲区。</param>
         /// <param name="value">要写入的字节数组。</param>
         /// <param name="offset">偏移量。</param>
-   
-        public static unsafe void WriteBytes(this byte[] buffer, byte[] value, ref int offset)
+        public static void WriteBytes(this byte[] buffer, byte[] value, ref int offset)
         {
             if (value == null)
             {
@@ -286,7 +282,7 @@ namespace FuFramework.Core.Runtime
             }
 
             buffer.WriteInt(value.Length, ref offset);
-            System.Array.Copy(value, 0, buffer, offset, value.Length);
+            Array.Copy(value, 0, buffer, offset, value.Length);
             offset += value.Length;
         }
 
@@ -296,7 +292,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">目标缓冲区。</param>
         /// <param name="value">要写入的有符号字节。</param>
         /// <param name="offset">偏移量。</param>
-   
         public static unsafe void WriteSByte(this byte[] buffer, sbyte value, ref int offset)
         {
             if (offset + SbyteSize > buffer.Length)
@@ -318,7 +313,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">目标缓冲区。</param>
         /// <param name="value">要写入的字符串。</param>
         /// <param name="offset">偏移量。</param>
-   
         public static unsafe void WriteString(this byte[] buffer, string value, ref int offset)
         {
             if (value == null)
@@ -326,7 +320,7 @@ namespace FuFramework.Core.Runtime
                 value = string.Empty;
             }
 
-            int len = System.Text.Encoding.UTF8.GetByteCount(value);
+            int len = Encoding.UTF8.GetByteCount(value);
 
             if (len > short.MaxValue)
             {
@@ -340,9 +334,10 @@ namespace FuFramework.Core.Runtime
                 return;
             }
 
+            // ReSharper disable once UnusedVariable
             fixed (byte* ptr = buffer)
             {
-                System.Text.Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, offset + ShortSize);
+                Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, offset + ShortSize);
                 buffer.WriteShort((short)len, ref offset);
                 offset += len;
             }
@@ -354,7 +349,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">目标缓冲区。</param>
         /// <param name="value">要写入的布尔值。</param>
         /// <param name="offset">偏移量。</param>
-   
         public static unsafe void WriteBool(this byte[] buffer, bool value, ref int offset)
         {
             if (offset + BoolSize > buffer.Length)
@@ -380,7 +374,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">包含整数值的字节数组。</param>
         /// <param name="offset">从字节数组中读取整数值的偏移量。</param>
         /// <returns>从字节数组中读取的整数值。</returns>
-   
         public static unsafe int ReadInt(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + IntSize)
@@ -403,7 +396,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="offset">从字节数组中读取整数值的偏移量。</param>
         /// <returns>从字节数组中读取的无符号整数值。</returns>
         /// <exception cref="Exception"></exception>
-   
         public static uint ReadUInt(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + UIntSize)
@@ -411,10 +403,10 @@ namespace FuFramework.Core.Runtime
                 throw new Exception("buffer read out of index");
             }
 
-            Span<byte>     span  = buffer.AsSpan<byte>();
+            Span<byte>     span  = buffer.AsSpan();
             ref Span<byte> local = ref span;
             int            start = offset;
-            int            num   = (int)BinaryPrimitives.ReadUInt32BigEndian((ReadOnlySpan<byte>)local.Slice(start, local.Length - start));
+            int            num   = (int)BinaryPrimitives.ReadUInt32BigEndian(local.Slice(start, local.Length - start));
             offset += UIntSize;
             return (uint)num;
         }
@@ -425,7 +417,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">包含短整数值的字节数组。</param>
         /// <param name="offset">从字节数组中读取短整数值的偏移量。</param>
         /// <returns>从字节数组中读取的短整数值。</returns>
-   
         public static unsafe short ReadShort(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + ShortSize)
@@ -445,7 +436,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">要读取的字节数组。</param>
         /// <param name="offset">引用偏移量。</param>
         /// <returns>返回读取的16位无符号整数。</returns>
-   
         public static ushort ReadUShort(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + UShortSize)
@@ -453,10 +443,10 @@ namespace FuFramework.Core.Runtime
                 throw new Exception("buffer read out of index");
             }
 
-            Span<byte>     span  = buffer.AsSpan<byte>();
+            Span<byte>     span  = buffer.AsSpan();
             ref Span<byte> local = ref span;
             int            start = offset;
-            int            num   = (int)BinaryPrimitives.ReadUInt16BigEndian((ReadOnlySpan<byte>)local.Slice(start, local.Length - start));
+            int            num   = BinaryPrimitives.ReadUInt16BigEndian(local.Slice(start, local.Length - start));
             offset += UShortSize;
             return (ushort)num;
         }
@@ -467,7 +457,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>长整型数值。</returns>
-   
         public static unsafe long ReadLong(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + LongSize)
@@ -489,7 +478,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>单精度浮点数值。</returns>
-   
         public static unsafe float ReadFloat(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + FloatSize)
@@ -512,7 +500,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>双精度浮点数值。</returns>
-   
         public static unsafe double ReadDouble(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + DoubleSize)
@@ -535,7 +522,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>字节值。</returns>
-   
         public static unsafe byte ReadByte(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + ByteSize)
@@ -558,8 +544,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="offset">偏移量。</param>
         /// <param name="len">数据长度。</param>
         /// <returns>读取的字节数组。</returns>
-   
-        public static unsafe byte[] ReadBytes(this byte[] buffer, int offset, int len)
+        public static byte[] ReadBytes(this byte[] buffer, int offset, int len)
         {
             //数据不可信
             if (len <= 0 || offset > buffer.Length + len * ByteSize)
@@ -568,7 +553,7 @@ namespace FuFramework.Core.Runtime
             }
 
             var data = new byte[len];
-            System.Array.Copy(buffer, offset, data, 0, len);
+            Array.Copy(buffer, offset, data, 0, len);
             return data;
         }
 
@@ -579,8 +564,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="offset">偏移量。</param>
         /// <param name="len">数据长度。</param>
         /// <returns>读取的字节数组。</returns>
-   
-        public static unsafe byte[] ReadBytes(this byte[] buffer, ref int offset, int len)
+        public static byte[] ReadBytes(this byte[] buffer, ref int offset, int len)
         {
             //数据不可信
             if (len <= 0 || offset > buffer.Length + len * ByteSize)
@@ -589,7 +573,7 @@ namespace FuFramework.Core.Runtime
             }
 
             var data = new byte[len];
-            System.Array.Copy(buffer, offset, data, 0, len);
+            Array.Copy(buffer, offset, data, 0, len);
             offset += len;
             return data;
         }
@@ -600,8 +584,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>读取的字节数组。</returns>
-   
-        public static unsafe byte[] ReadBytes(this byte[] buffer, ref int offset)
+        public static byte[] ReadBytes(this byte[] buffer, ref int offset)
         {
             var len = ReadInt(buffer, ref offset);
             //数据不可信
@@ -611,7 +594,7 @@ namespace FuFramework.Core.Runtime
             }
 
             var data = new byte[len];
-            System.Array.Copy(buffer, offset, data, 0, len);
+            Array.Copy(buffer, offset, data, 0, len);
             offset += len;
             return data;
         }
@@ -622,7 +605,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>读取的有符号字节。</returns>
-   
         public static unsafe sbyte ReadSByte(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + ByteSize)
@@ -644,9 +626,9 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>读取的字符串。</returns>
-   
         public static unsafe string ReadString(this byte[] buffer, ref int offset)
         {
+            // ReSharper disable once UnusedVariable
             fixed (byte* ptr = buffer)
             {
                 var len = ReadShort(buffer, ref offset);
@@ -654,7 +636,7 @@ namespace FuFramework.Core.Runtime
                 if (len <= 0 || offset > buffer.Length + len * ByteSize)
                     return "";
 
-                var value = System.Text.Encoding.UTF8.GetString(buffer, offset, len);
+                var value = Encoding.UTF8.GetString(buffer, offset, len);
                 offset += len;
                 return value;
             }
@@ -666,7 +648,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="buffer">字节数组。</param>
         /// <param name="offset">偏移量。</param>
         /// <returns>读取的布尔值。</returns>
-   
         public static unsafe bool ReadBool(this byte[] buffer, ref int offset)
         {
             if (offset > buffer.Length + BoolSize)
@@ -689,7 +670,6 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-   
         public static string ToArrayString(this byte[] bytes)
         {
             StringBuilder.Clear();
@@ -708,7 +688,6 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="b">要转换的字节。</param>
         /// <returns>表示字节的十六进制字符串。</returns>
-   
         public static string ToHex(this byte b)
         {
             return b.ToString("X2");
@@ -719,7 +698,6 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="bytes">要转换的字节数组。</param>
         /// <returns>表示字节数组的十六进制字符串。</returns>
-   
         public static string ToHex(this byte[] bytes)
         {
             StringBuilder.Clear();
@@ -737,7 +715,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="bytes">要转换的字节数组。</param>
         /// <param name="format">十六进制格式。</param>
         /// <returns>表示字节数组的十六进制字符串。</returns>
-   
         public static string ToHex(this byte[] bytes, string format)
         {
             StringBuilder.Clear();
@@ -756,7 +733,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="offset">起始偏移量。</param>
         /// <param name="count">要转换的字节数。</param>
         /// <returns>表示指定范围内字节的十六进制字符串。</returns>
-   
         public static string ToHex(this byte[] bytes, int offset, int count)
         {
             StringBuilder.Clear();
@@ -773,7 +749,6 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="bytes">要转换的字节数组。</param>
         /// <returns>转换后的字符串。</returns>
-   
         public static string ToDefaultString(this byte[] bytes)
         {
             return Encoding.Default.GetString(bytes);
@@ -786,7 +761,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="index">起始位置。</param>
         /// <param name="count">要转换的字节数。</param>
         /// <returns>转换后的字符串。</returns>
-   
         public static string ToDefaultString(this byte[] bytes, int index, int count)
         {
             return Encoding.Default.GetString(bytes, index, count);
@@ -797,7 +771,6 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="bytes">要转换的字节数组。</param>
         /// <returns>转换后的字符串。</returns>
-   
         public static string ToUtf8String(this byte[] bytes)
         {
             return Encoding.UTF8.GetString(bytes);
@@ -810,7 +783,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="index">起始位置。</param>
         /// <param name="count">要转换的字节数。</param>
         /// <returns>转换后的字符串。</returns>
-   
         public static string ToUtf8String(this byte[] bytes, int index, int count)
         {
             return Encoding.UTF8.GetString(bytes, index, count);

@@ -6,12 +6,11 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Entity.Runtime
 {
-    public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
+    public sealed partial class EntityManager : FuModule, IEntityManager
     {
         /// <summary>
         /// 实体实例对象。
@@ -31,12 +30,12 @@ namespace GameFrameX.Entity.Runtime
             {
                 if (entityAsset == null)
                 {
-                    throw new GameFrameworkException("Entity asset is invalid.");
+                    throw new FuException("Entity asset is invalid.");
                 }
 
                 if (entityHelper == null)
                 {
-                    throw new GameFrameworkException("Entity helper is invalid.");
+                    throw new FuException("Entity helper is invalid.");
                 }
 
                 EntityInstanceObject entityInstanceObject = ReferencePool.Acquire<EntityInstanceObject>();

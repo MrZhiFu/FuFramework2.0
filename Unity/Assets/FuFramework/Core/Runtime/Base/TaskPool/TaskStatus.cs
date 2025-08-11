@@ -1,10 +1,10 @@
 ﻿// ReSharper disable once CheckNamespace
+
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 任务状态。
     /// </summary>
-    
     public enum TaskStatus : byte
     {
         /// <summary>

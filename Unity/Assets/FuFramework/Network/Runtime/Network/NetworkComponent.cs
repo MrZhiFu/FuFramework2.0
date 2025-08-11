@@ -8,8 +8,8 @@
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -19,7 +19,7 @@ namespace GameFrameX.Network.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Network")]
     
-    public sealed class NetworkComponent : GameFrameworkComponent
+    public sealed class NetworkComponent : FuComponent
     {
         private INetworkManager m_NetworkManager = null;
         private EventComponent m_EventComponent = null;
@@ -55,7 +55,7 @@ namespace GameFrameX.Network.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(INetworkManager);
             base.Awake();
-            m_NetworkManager = GameFrameworkEntry.GetModule<INetworkManager>();
+            m_NetworkManager = FuEntry.GetModule<INetworkManager>();
             if (m_NetworkManager == null)
             {
                 Log.Fatal("Network manager is invalid.");
@@ -86,7 +86,7 @@ namespace GameFrameX.Network.Runtime
         
         public bool HasNetworkChannel(string channelName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             return m_NetworkManager.HasNetworkChannel(channelName);
         }
 
@@ -98,7 +98,7 @@ namespace GameFrameX.Network.Runtime
         
         public INetworkChannel GetNetworkChannel(string channelName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             return m_NetworkManager.GetNetworkChannel(channelName);
         }
 
@@ -131,7 +131,7 @@ namespace GameFrameX.Network.Runtime
         
         public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             var networkChannel = m_NetworkManager.CreateNetworkChannel(channelName, networkChannelHelper, m_rpcTimeout);
             networkChannel.SetIgnoreLogNetworkIds(m_IgnoredSendNetworkIds, m_IgnoredReceiveNetworkIds);
             return networkChannel;
@@ -145,7 +145,7 @@ namespace GameFrameX.Network.Runtime
         
         public bool DestroyNetworkChannel(string channelName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             return m_NetworkManager.DestroyNetworkChannel(channelName);
         }
 

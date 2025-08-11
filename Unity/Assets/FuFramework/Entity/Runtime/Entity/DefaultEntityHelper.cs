@@ -7,7 +7,6 @@
 
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using YooAsset;
 
@@ -83,7 +82,7 @@ namespace GameFrameX.Entity.Runtime
 
         private void Start()
         {
-            _assetManager = GameFrameworkEntry.GetModule<IAssetManager>();
+            _assetManager = FuEntry.GetModule<IAssetManager>();
             if (_assetManager == null)
             {
                 Log.Fatal("Resource component is invalid.");

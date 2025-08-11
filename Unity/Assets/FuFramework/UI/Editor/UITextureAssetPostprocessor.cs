@@ -1,6 +1,6 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEditor;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace FuFramework.UI.Editor
 {

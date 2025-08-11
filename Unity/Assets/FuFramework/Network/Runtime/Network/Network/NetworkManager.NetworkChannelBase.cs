@@ -12,7 +12,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -33,7 +33,7 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             private const int DefaultMissHeartBeatCountByClose = 10;
 
-            protected readonly GameFrameworkLinkedList<MessageObject> PSendPacketPool;
+            protected readonly FuLinkedList<MessageObject> PSendPacketPool;
             protected readonly INetworkChannelHelper PNetworkChannelHelper;
             protected AddressFamily PAddressFamily;
 
@@ -124,7 +124,7 @@ namespace GameFrameX.Network.Runtime
             private IPacketReceiveBodyHandler m_PacketReceiveBodyHandler;
             private IPacketHeartBeatHandler m_PacketHeartBeatHandler;
 
-            protected readonly GameFrameworkLinkedList<MessageObject> m_ExecutionMessageLinkedList = new GameFrameworkLinkedList<MessageObject>();
+            protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new FuLinkedList<MessageObject>();
 
             public Action<NetworkChannelBase, object> NetworkChannelConnected;
             public Action<NetworkChannelBase> NetworkChannelClosed;
@@ -142,7 +142,7 @@ namespace GameFrameX.Network.Runtime
             public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
             {
                 Name = name ?? string.Empty;
-                PSendPacketPool = new GameFrameworkLinkedList<MessageObject>();
+                PSendPacketPool = new FuLinkedList<MessageObject>();
                 PNetworkChannelHelper = networkChannelHelper;
                 PAddressFamily = AddressFamily.Unknown;
                 PResetHeartBeatElapseSecondsWhenReceivePacket = false;
@@ -483,7 +483,7 @@ namespace GameFrameX.Network.Runtime
             
             public void RegisterHandler(IPacketSendHeaderHandler handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 m_PacketSendHeaderHandler = handler;
             }
 
@@ -495,7 +495,7 @@ namespace GameFrameX.Network.Runtime
             
             public void RegisterHandler(IPacketSendBodyHandler handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 m_PacketSendBodyHandler = handler;
             }
 
@@ -506,7 +506,7 @@ namespace GameFrameX.Network.Runtime
             
             public void RegisterHandler(IPacketReceiveHeaderHandler handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 m_PacketReceiveHeaderHandler = handler;
             }
 
@@ -517,7 +517,7 @@ namespace GameFrameX.Network.Runtime
             
             public void RegisterHandler(IPacketReceiveBodyHandler handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 m_PacketReceiveBodyHandler = handler;
             }
 
@@ -539,7 +539,7 @@ namespace GameFrameX.Network.Runtime
             
             public void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 m_PacketHeartBeatHandler = handler;
                 if (handler.HeartBeatInterval > 0)
                 {
@@ -559,7 +559,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 PRpcState.SetRPCErrorCodeHandler(handler);
             }
 
@@ -570,7 +570,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 PRpcState.SetRPCErrorHandler(handler);
             }
 
@@ -581,7 +581,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 PRpcState.SetRPCStartHandler(handler);
             }
 
@@ -592,7 +592,7 @@ namespace GameFrameX.Network.Runtime
             
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
-                GameFrameworkGuard.NotNull(handler, nameof(handler));
+                FuGuard.NotNull(handler, nameof(handler));
                 PRpcState.SetRPCEndHandler(handler);
             }
 
@@ -664,7 +664,7 @@ namespace GameFrameX.Network.Runtime
                                 return;
                             }
 
-                            throw new GameFrameworkException(errorMessage);
+                            throw new FuException(errorMessage);
                     }
                 }
 
@@ -729,7 +729,7 @@ namespace GameFrameX.Network.Runtime
             
             public async Task<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
             {
-                GameFrameworkGuard.NotNull(messageObject, nameof(messageObject));
+                FuGuard.NotNull(messageObject, nameof(messageObject));
                 Send(messageObject);
                 var result = await PRpcState.Call(messageObject);
                 return result as TResult;
@@ -743,7 +743,7 @@ namespace GameFrameX.Network.Runtime
             
             public void Send<T>(T messageObject) where T : MessageObject
             {
-                GameFrameworkGuard.NotNull(messageObject, nameof(messageObject));
+                FuGuard.NotNull(messageObject, nameof(messageObject));
                 if (PSocket == null)
                 {
                     const string errorMessage = "You must connect first.";
@@ -753,7 +753,7 @@ namespace GameFrameX.Network.Runtime
                         return;
                     }
 
-                    throw new GameFrameworkException(errorMessage);
+                    throw new FuException(errorMessage);
                 }
 
                 if (!PActive)
@@ -765,7 +765,7 @@ namespace GameFrameX.Network.Runtime
                         return;
                     }
 
-                    throw new GameFrameworkException(errorMessage);
+                    throw new FuException(errorMessage);
                 }
 
                 if (messageObject == null)
@@ -777,7 +777,7 @@ namespace GameFrameX.Network.Runtime
                         return;
                     }
 
-                    throw new GameFrameworkException(errorMessage);
+                    throw new FuException(errorMessage);
                 }
 
                 lock (PSendPacketPool)
@@ -842,7 +842,7 @@ namespace GameFrameX.Network.Runtime
             /// 处理消息发送
             /// </summary>
             /// <returns></returns>
-            /// <exception cref="GameFrameworkException"></exception>
+            /// <exception cref="FuException"></exception>
             protected virtual bool ProcessSend()
             {
                 lock (PSendPacketPool)
@@ -888,7 +888,7 @@ namespace GameFrameX.Network.Runtime
                                 return false;
                             }
 
-                            throw new GameFrameworkException(errorMessage);
+                            throw new FuException(errorMessage);
                         }
 
                         // PSendState.Reset();

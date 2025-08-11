@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace FuFramework.UI.Runtime
 {
@@ -33,7 +32,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -74,7 +73,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -111,7 +110,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public T[] GetUIs<T>(string uiName) where T : ViewBase
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
 
             var results = new List<T>();
             foreach (var (_, group) in m_UIGroupDict)
@@ -129,8 +128,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">结果列表。</param>
         public void GetUIs(string uiName, List<ViewBase> results)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
@@ -160,7 +159,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有已加载的界面。</param>
         public void GetAllLoadedUIs(List<ViewBase> results)
         {
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
@@ -191,7 +190,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有正在加载界面的序列编号。</param>
         public void GetAllLoadingUISerialIds(List<int> results)
         {
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var (id, _) in m_LoadingDict)
@@ -214,7 +213,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>是否正在加载界面。</returns>
         public bool IsLoadingUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
             return m_LoadingDict.ContainsValue(uiName);
         }
 

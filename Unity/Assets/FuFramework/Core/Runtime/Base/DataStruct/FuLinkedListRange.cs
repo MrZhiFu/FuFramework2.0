@@ -10,7 +10,7 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     /// <typeparam name="T">指定链表范围的元素类型。</typeparam>
     [StructLayout(LayoutKind.Auto)]
-    public readonly struct GameFrameworkLinkedListRange<T> : IEnumerable<T>
+    public readonly struct FuLinkedListRange<T> : IEnumerable<T>
     {
         /// <summary>
         /// 获取链表范围的开始结点。
@@ -27,10 +27,10 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="first">链表范围的开始结点。</param>
         /// <param name="terminal">链表范围的终结点。</param>
-        public GameFrameworkLinkedListRange(LinkedListNode<T> first, LinkedListNode<T> terminal)
+        public FuLinkedListRange(LinkedListNode<T> first, LinkedListNode<T> terminal)
         {
             if (first == null || terminal == null || first == terminal)
-                throw new GameFrameworkException("Range is invalid.");
+                throw new FuException("Range is invalid.");
 
             First    = first;
             Terminal = terminal;
@@ -103,13 +103,13 @@ namespace FuFramework.Core.Runtime
         [StructLayout(LayoutKind.Auto)]
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly GameFrameworkLinkedListRange<T> m_Range;
+            private readonly FuLinkedListRange<T> m_Range;
             private          LinkedListNode<T>               m_Current;
             private          T                               m_CurrentValue;
 
-            internal Enumerator(GameFrameworkLinkedListRange<T> range)
+            internal Enumerator(FuLinkedListRange<T> range)
             {
-                if (!range.IsValid) throw new GameFrameworkException("Range is invalid.");
+                if (!range.IsValid) throw new FuException("Range is invalid.");
 
                 m_Range        = range;
                 m_CurrentValue = default;

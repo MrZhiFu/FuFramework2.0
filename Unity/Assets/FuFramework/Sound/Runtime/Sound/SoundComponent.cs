@@ -11,11 +11,11 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Scene.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Sound.Runtime
 {
@@ -24,7 +24,7 @@ namespace GameFrameX.Sound.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Sound")]
-    public sealed partial class SoundComponent : GameFrameworkComponent
+    public sealed partial class SoundComponent : FuComponent
     {
         private const int DefaultPriority = 0;
 
@@ -74,7 +74,7 @@ namespace GameFrameX.Sound.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ISoundManager);
             base.Awake();
-            m_SoundManager = GameFrameworkEntry.GetModule<ISoundManager>();
+            m_SoundManager = FuEntry.GetModule<ISoundManager>();
             if (m_SoundManager == null)
             {
                 Log.Fatal("Sound manager is invalid.");
@@ -125,7 +125,7 @@ namespace GameFrameX.Sound.Runtime
                 return;
             }
 
-            m_SoundManager.SetResourceManager(GameFrameworkEntry.GetModule<IAssetManager>());
+            m_SoundManager.SetResourceManager(FuEntry.GetModule<IAssetManager>());
 
             SoundHelperBase soundHelper = Helper.CreateHelper(m_SoundHelperTypeName, m_CustomSoundHelper);
             if (soundHelper == null)

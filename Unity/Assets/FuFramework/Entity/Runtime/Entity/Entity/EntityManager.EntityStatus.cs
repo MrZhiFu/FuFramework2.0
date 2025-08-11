@@ -6,11 +6,10 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Entity.Runtime
 {
-    public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
+    public sealed partial class EntityManager : FuModule, IEntityManager
     {
         /// <summary>
         /// 实体状态。

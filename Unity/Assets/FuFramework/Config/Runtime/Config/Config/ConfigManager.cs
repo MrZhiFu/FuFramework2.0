@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Config.Runtime
 {
@@ -18,7 +17,7 @@ namespace GameFrameX.Config.Runtime
     /// 全局配置管理器。
     /// </summary>
     
-    public sealed partial class ConfigManager : GameFrameworkModule, IConfigManager
+    public sealed partial class ConfigManager : FuModule, IConfigManager
     {
         private readonly ConcurrentDictionary<string, IDataTable> m_ConfigDatas;
 

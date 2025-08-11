@@ -1,5 +1,4 @@
 ﻿using System;
-using GameFrameX.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,7 +13,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 记录所有模块组件的链表集合
         /// </summary>
-        private static readonly GameFrameworkLinkedList<GameFrameworkComponent> s_AllComponentList = new();
+        private static readonly FuLinkedList<FuComponent> s_AllComponentList = new();
 
         /// <summary>
         /// 游戏框架所在的场景编号。
@@ -26,7 +25,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <typeparam name="T">要获取的游戏框架组件类型。</typeparam>
         /// <returns>要获取的游戏框架组件。</returns>
-        public static T GetComponent<T>() where T : GameFrameworkComponent
+        public static T GetComponent<T>() where T : FuComponent
         {
             return GetComponent(typeof(T)) as T;
         }
@@ -36,7 +35,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="type">要获取的游戏框架组件类型。</param>
         /// <returns>要获取的游戏框架组件。</returns>
-        public static GameFrameworkComponent GetComponent(Type type)
+        public static FuComponent GetComponent(Type type)
         {
             var current = s_AllComponentList.First;
             while (current != null)
@@ -55,7 +54,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="typeName">要获取的游戏框架组件类型名称。</param>
         /// <returns>要获取的游戏框架组件。</returns>
-        public static GameFrameworkComponent GetComponent(string typeName)
+        public static FuComponent GetComponent(string typeName)
         {
             var current = s_AllComponentList.First;
             while (current != null)
@@ -73,16 +72,16 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 注册游戏框架组件。
         /// </summary>
-        /// <param name="gameFrameworkComponent">要注册的游戏框架组件。</param>
-        internal static void RegisterComponent(GameFrameworkComponent gameFrameworkComponent)
+        /// <param name="fuComponent">要注册的游戏框架组件。</param>
+        internal static void RegisterComponent(FuComponent fuComponent)
         {
-            if (!gameFrameworkComponent)
+            if (!fuComponent)
             {
                 Log.Error("要注册的游戏框架组件为空.");
                 return;
             }
 
-            var type = gameFrameworkComponent.GetType();
+            var type = fuComponent.GetType();
 
             var current = s_AllComponentList.First;
             while (current != null)
@@ -96,7 +95,7 @@ namespace FuFramework.Core.Runtime
                 current = current.Next;
             }
 
-            s_AllComponentList.AddLast(gameFrameworkComponent);
+            s_AllComponentList.AddLast(fuComponent);
         }
 
         /// <summary>

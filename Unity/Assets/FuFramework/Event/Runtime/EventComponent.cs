@@ -7,8 +7,8 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Event.Runtime
 {
@@ -18,7 +18,7 @@ namespace GameFrameX.Event.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Event")]
     
-    public sealed class EventComponent : GameFrameworkComponent
+    public sealed class EventComponent : FuComponent
     {
         /// <summary>
         /// 事件管理器。
@@ -45,7 +45,7 @@ namespace GameFrameX.Event.Runtime
             
             base.Awake();
             
-            m_EventManager = GameFrameworkEntry.GetModule<IEventManager>();
+            m_EventManager = FuEntry.GetModule<IEventManager>();
             if (m_EventManager == null)
             {
                 Log.Fatal("事件管理器不存在.");
@@ -124,7 +124,7 @@ namespace GameFrameX.Event.Runtime
         /// <param name="eventId">事件编号。</param>
         public void Fire(object sender, string eventId)
         {
-            GameFrameworkGuard.NotNullOrEmpty(eventId, nameof(eventId));
+            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
             m_EventManager.Fire(sender, EmptyEventArgs.Create(eventId));
         }
 

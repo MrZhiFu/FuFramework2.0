@@ -8,7 +8,7 @@ namespace FuFramework.Download.Runtime
     {
         private sealed partial class DownloadCounter
         {
-            private readonly GameFrameworkLinkedList<DownloadCounterNode> m_DownloadCounterNodes;
+            private readonly FuLinkedList<DownloadCounterNode> m_DownloadCounterNodes;
             private          float                                                                                                                                        m_UpdateInterval;
             private          float                                                                                                                                        m_RecordInterval;
             private          float                                                                                                                                        m_CurrentSpeed;
@@ -19,15 +19,15 @@ namespace FuFramework.Download.Runtime
             {
                 if (updateInterval <= 0f)
                 {
-                    throw new GameFrameworkException("Update interval is invalid.");
+                    throw new FuException("Update interval is invalid.");
                 }
 
                 if (recordInterval <= 0f)
                 {
-                    throw new GameFrameworkException("Record interval is invalid.");
+                    throw new FuException("Record interval is invalid.");
                 }
 
-                m_DownloadCounterNodes = new GameFrameworkLinkedList<Runtime.DownloadManager.DownloadCounter.DownloadCounterNode>();
+                m_DownloadCounterNodes = new FuLinkedList<Runtime.DownloadManager.DownloadCounter.DownloadCounterNode>();
                 m_UpdateInterval       = updateInterval;
                 m_RecordInterval       = recordInterval;
                 Reset();
@@ -43,7 +43,7 @@ namespace FuFramework.Download.Runtime
                 {
                     if (value <= 0f)
                     {
-                        throw new GameFrameworkException("Update interval is invalid.");
+                        throw new FuException("Update interval is invalid.");
                     }
 
                     m_UpdateInterval = value;
@@ -61,7 +61,7 @@ namespace FuFramework.Download.Runtime
                 {
                     if (value <= 0f)
                     {
-                        throw new GameFrameworkException("Record interval is invalid.");
+                        throw new FuException("Record interval is invalid.");
                     }
 
                     m_RecordInterval = value;

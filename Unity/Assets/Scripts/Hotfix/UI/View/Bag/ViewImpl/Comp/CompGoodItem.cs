@@ -1,6 +1,6 @@
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using Hotfix.Config.Tables;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI.View.Bag

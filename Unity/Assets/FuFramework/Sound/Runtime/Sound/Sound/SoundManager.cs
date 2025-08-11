@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Sound.Runtime
 {
@@ -21,7 +21,7 @@ namespace GameFrameX.Sound.Runtime
     /// 声音管理器。
     /// </summary>
     
-    public sealed partial class SoundManager : GameFrameworkModule, ISoundManager
+    public sealed partial class SoundManager : FuModule, ISoundManager
     {
         private readonly Dictionary<string, SoundGroup> m_SoundGroups;
         private readonly List<int> m_SoundsBeingLoaded;
@@ -116,7 +116,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (assetManager == null)
             {
-                throw new GameFrameworkException("Resource manager is invalid.");
+                throw new FuException("Resource manager is invalid.");
             }
 
             _assetManager = assetManager;
@@ -130,7 +130,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (soundHelper == null)
             {
-                throw new GameFrameworkException("Sound helper is invalid.");
+                throw new FuException("Sound helper is invalid.");
             }
 
             m_SoundHelper = soundHelper;
@@ -145,7 +145,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (string.IsNullOrEmpty(soundGroupName))
             {
-                throw new GameFrameworkException("Sound group name is invalid.");
+                throw new FuException("Sound group name is invalid.");
             }
 
             return m_SoundGroups.ContainsKey(soundGroupName);
@@ -160,7 +160,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (string.IsNullOrEmpty(soundGroupName))
             {
-                throw new GameFrameworkException("Sound group name is invalid.");
+                throw new FuException("Sound group name is invalid.");
             }
 
             if (m_SoundGroups.TryGetValue(soundGroupName, out var soundGroup))
@@ -195,7 +195,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -229,12 +229,12 @@ namespace GameFrameX.Sound.Runtime
         {
             if (string.IsNullOrEmpty(soundGroupName))
             {
-                throw new GameFrameworkException("Sound group name is invalid.");
+                throw new FuException("Sound group name is invalid.");
             }
 
             if (soundGroupHelper == null)
             {
-                throw new GameFrameworkException("Sound group helper is invalid.");
+                throw new FuException("Sound group helper is invalid.");
             }
 
             if (HasSoundGroup(soundGroupName))
@@ -263,13 +263,13 @@ namespace GameFrameX.Sound.Runtime
         {
             if (m_SoundHelper == null)
             {
-                throw new GameFrameworkException("You must set sound helper first.");
+                throw new FuException("You must set sound helper first.");
             }
 
             SoundGroup soundGroup = (SoundGroup)GetSoundGroup(soundGroupName);
             if (soundGroup == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Sound group '{0}' is not exist.", soundGroupName));
+                throw new FuException(Utility.Text.Format("Sound group '{0}' is not exist.", soundGroupName));
             }
 
             soundGroup.AddSoundAgentHelper(m_SoundHelper, soundAgentHelper);
@@ -292,7 +292,7 @@ namespace GameFrameX.Sound.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -421,12 +421,12 @@ namespace GameFrameX.Sound.Runtime
         {
             if (_assetManager == null)
             {
-                throw new GameFrameworkException("You must set resource manager first.");
+                throw new FuException("You must set resource manager first.");
             }
 
             if (m_SoundHelper == null)
             {
-                throw new GameFrameworkException("You must set sound helper first.");
+                throw new FuException("You must set sound helper first.");
             }
 
             if (playSoundParams == null)
@@ -475,7 +475,7 @@ namespace GameFrameX.Sound.Runtime
                     return newSerialId;
                 }
 
-                throw new GameFrameworkException(errorMessage);
+                throw new FuException(errorMessage);
             }
 
             m_SoundsBeingLoaded.Add(newSerialId);
@@ -582,7 +582,7 @@ namespace GameFrameX.Sound.Runtime
                 }
             }
 
-            throw new GameFrameworkException(Utility.Text.Format("Can not find sound '{0}'.", serialId));
+            throw new FuException(Utility.Text.Format("Can not find sound '{0}'.", serialId));
         }
 
         /// <summary>
@@ -609,7 +609,7 @@ namespace GameFrameX.Sound.Runtime
                 }
             }
 
-            throw new GameFrameworkException(Utility.Text.Format("Can not find sound '{0}'.", serialId));
+            throw new FuException(Utility.Text.Format("Can not find sound '{0}'.", serialId));
         }
 
         private void LoadAssetSuccessCallback(string soundAssetName, object soundAsset, float duration, object userData)
@@ -617,7 +617,7 @@ namespace GameFrameX.Sound.Runtime
             PlaySoundInfo playSoundInfo = (PlaySoundInfo)userData;
             if (playSoundInfo == null)
             {
-                throw new GameFrameworkException("Play sound info is invalid.");
+                throw new FuException("Play sound info is invalid.");
             }
 
             if (m_SoundsToReleaseOnLoad.Contains(playSoundInfo.SerialId))
@@ -679,7 +679,7 @@ namespace GameFrameX.Sound.Runtime
             }
 
             ReferencePool.Release(playSoundInfo);
-            throw new GameFrameworkException(errorMessage);
+            throw new FuException(errorMessage);
         }
 
         /*

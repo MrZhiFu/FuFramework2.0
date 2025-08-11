@@ -9,8 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Web.Runtime
 {
@@ -23,7 +23,7 @@ namespace GameFrameX.Web.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Web")]
     
-    public sealed class WebComponent : GameFrameworkComponent
+    public sealed class WebComponent : FuComponent
     {
         /// <summary>
         /// Web请求管理器实例
@@ -55,7 +55,7 @@ namespace GameFrameX.Web.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IWebManager);
             base.Awake();
-            m_WebManager = GameFrameworkEntry.GetModule<IWebManager>();
+            m_WebManager = FuEntry.GetModule<IWebManager>();
             if (m_WebManager == null)
             {
                 Log.Fatal("Web manager is invalid.");

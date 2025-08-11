@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -17,7 +17,7 @@ namespace GameFrameX.Network.Runtime
     /// 网络管理器。
     /// </summary>
     
-    public sealed partial class NetworkManager : GameFrameworkModule, INetworkManager
+    public sealed partial class NetworkManager : FuModule, INetworkManager
     {
         private readonly Dictionary<string, NetworkChannelBase> m_NetworkChannels;
 
@@ -161,7 +161,7 @@ namespace GameFrameX.Network.Runtime
         /// <param name="results">所有网络频道。</param>
         public void GetAllNetworkChannels(List<INetworkChannel> results)
         {
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var networkChannel in m_NetworkChannels)
@@ -179,12 +179,12 @@ namespace GameFrameX.Network.Runtime
         /// <returns>要创建的网络频道。</returns>
         public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
-            GameFrameworkGuard.NotNull(networkChannelHelper, nameof(networkChannelHelper));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNull(networkChannelHelper, nameof(networkChannelHelper));
 
             if (HasNetworkChannel(channelName))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Already exist network channel '{0}'.", channelName ?? string.Empty));
+                throw new FuException(Utility.Text.Format("Already exist network channel '{0}'.", channelName ?? string.Empty));
             }
 #if (ENABLE_GAME_FRAME_X_WEB_SOCKET && UNITY_WEBGL) || FORCE_ENABLE_GAME_FRAME_X_WEB_SOCKET
             NetworkChannelBase networkChannel = new WebSocketNetworkChannel(channelName, networkChannelHelper, rpcTimeout);
@@ -206,7 +206,7 @@ namespace GameFrameX.Network.Runtime
         /// <returns>是否销毁网络频道成功。</returns>
         public bool DestroyNetworkChannel(string channelName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             if (m_NetworkChannels.TryGetValue(channelName ?? string.Empty, out var networkChannel))
             {
                 networkChannel.NetworkChannelConnected -= OnNetworkChannelConnected;

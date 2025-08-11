@@ -1,7 +1,7 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Event.Runtime
 {
@@ -22,7 +22,7 @@ namespace GameFrameX.Event.Runtime
         /// <summary>
         /// 事件处理字典，key为消息ID，value为处理对象
         /// </summary>
-        private readonly GameFrameworkMultiDictionary<string, EventHandler<GameEventArgs>> m_EventHandlerDict = new();
+        private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_EventHandlerDict = new();
 
         /// <summary>
         /// 创建事件订阅器

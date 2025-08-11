@@ -1,7 +1,7 @@
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Timer.Runtime
 {
@@ -12,7 +12,7 @@ namespace GameFrameX.Timer.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Timer")]
     
-    public class TimerComponent : GameFrameworkComponent
+    public class TimerComponent : FuComponent
     {
         private ITimerManager m_TimerManager;
 
@@ -23,7 +23,7 @@ namespace GameFrameX.Timer.Runtime
             
             base.Awake();
             
-            m_TimerManager = GameFrameworkEntry.GetModule<ITimerManager>();
+            m_TimerManager = FuEntry.GetModule<ITimerManager>();
             if (m_TimerManager == null)
             {
                 Log.Fatal("定时器管理器为空.");

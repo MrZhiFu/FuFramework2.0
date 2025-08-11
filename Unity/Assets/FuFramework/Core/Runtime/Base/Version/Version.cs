@@ -11,7 +11,7 @@ namespace FuFramework.Core.Runtime
 
       
         /// 版本号辅助器
-        private static IVersionHelper s_VersionHelper;
+        private static IVersionHelper _versionHelper;
 
         /// <summary>
         /// 获取游戏框架版本号。
@@ -21,12 +21,12 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 获取游戏版本号。
         /// </summary>
-        public static string GameVersion => s_VersionHelper != null ? s_VersionHelper.GameVersion : string.Empty;
+        public static string GameVersion => _versionHelper != null ? _versionHelper.GameVersion : string.Empty;
 
         /// <summary>
         /// 设置版本号辅助器。
         /// </summary>
         /// <param name="versionHelper">要设置的版本号辅助器。</param>
-        public static void SetVersionHelper(IVersionHelper versionHelper) => s_VersionHelper = versionHelper;
+        public static void SetVersionHelper(IVersionHelper versionHelper) => _versionHelper = versionHelper;
     }
 }

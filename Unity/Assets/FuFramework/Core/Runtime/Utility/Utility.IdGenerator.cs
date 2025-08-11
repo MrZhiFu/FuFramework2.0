@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -15,17 +16,16 @@ namespace GameFrameX.Runtime
             /// 全局UTC起始时间，用作计数器的基准时间点
             /// 设置为2020年1月1日0时0分0秒(UTC)
             /// </summary>
-            public static readonly DateTime UtcTimeStart = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            public static readonly DateTime s_UtcTimeStart = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             // 共享计数器
-            private static long _counter = (long)(DateTime.UtcNow - UtcTimeStart).TotalSeconds;
-            private static int _intCounter = (int)(DateTime.UtcNow - UtcTimeStart).TotalSeconds;
+            private static long _counter    = (long)(DateTime.UtcNow - s_UtcTimeStart).TotalSeconds;
+            private static int  _intCounter = (int)(DateTime.UtcNow  - s_UtcTimeStart).TotalSeconds;
 
             /// <summary>
             /// 使用Interlocked.Increment生成唯一ID的方法
             /// </summary>
             /// <returns>返回一个唯一的长整型ID</returns>
-            
             public static long GetNextUniqueId()
             {
                 // 原子性地递增值，确保即使多个线程同时尝试递增同一个变量
@@ -36,7 +36,6 @@ namespace GameFrameX.Runtime
             /// 使用Interlocked.Increment生成唯一ID的方法
             /// </summary>
             /// <returns>返回一个唯一的整型ID</returns>
-            
             public static int GetNextUniqueIntId()
             {
                 // 原子性地递增值，确保即使多个线程同时尝试递增同一个变量

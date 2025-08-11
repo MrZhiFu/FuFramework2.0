@@ -22,7 +22,8 @@ namespace FuFramework.Core.Runtime
             private readonly Queue<IReference> m_RefQueue;
 
             /// 闲置未使用的引用数量(即引用池中的元素数量)
-            public int UnusedReferenceCount => m_RefQueue.Count;
+            // ReSharper disable once InconsistentlySynchronizedField
+            public int UnusedReferenceCount => m_RefQueue?.Count ?? 0;
 
             /// 正在使用的引用数量(从引用池中获取的 + 引用池中不存在时new创建的引用数量 - 释放归还的引用数量)
             public int UsingReferenceCount { get; private set; }
@@ -56,10 +57,11 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             /// <typeparam name="T"></typeparam>
             /// <returns></returns>
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             public T Acquire<T>() where T : class, IReference, new()
             {
                 if (typeof(T) != RefType)
-                    throw new GameFrameworkException("类型无效.");
+                    throw new FuException("类型无效.");
 
                 UsingReferenceCount++;
                 AcquireReferenceCount++;
@@ -96,6 +98,7 @@ namespace FuFramework.Core.Runtime
             /// 释放引用, 将引用归还引用池
             /// </summary>
             /// <param name="reference"></param>
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Release(IReference reference)
             {
                 // 清理引用，清除数据后重用该对象
@@ -104,7 +107,7 @@ namespace FuFramework.Core.Runtime
                 lock (m_RefQueue)
                 {
                     if (EnableStrictCheck && m_RefQueue.Contains(reference))
-                        throw new GameFrameworkException("该引用对象已经被释放.");
+                        throw new FuException("该引用对象已经被释放.");
 
                     m_RefQueue.Enqueue(reference);
                 }
@@ -118,10 +121,11 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             /// <param name="count"></param>
             /// <typeparam name="T"></typeparam>
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Add<T>(int count) where T : class, IReference, new()
             {
                 if (typeof(T) != RefType)
-                    throw new GameFrameworkException("类型无效，该类型不是引用池类型.");
+                    throw new FuException("类型无效，该类型不是引用池类型.");
 
                 lock (m_RefQueue)
                 {

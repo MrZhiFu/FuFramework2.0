@@ -10,7 +10,7 @@ namespace FuFramework.Core.Runtime
     /// 游戏框架链表类(结合一个缓存队列对链表节点的生成做了相当于缓存池的优化)
     /// </summary>
     /// <typeparam name="T">指定链表的元素类型。</typeparam>
-    public sealed class GameFrameworkLinkedList<T> : ICollection<T>, ICollection
+    public sealed class FuLinkedList<T> : ICollection<T>, ICollection
     {
         /// 存放目标元素的链表
         private readonly LinkedList<T> m_LinkedList;
@@ -21,7 +21,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 初始化游戏框架链表类的新实例。
         /// </summary>
-        public GameFrameworkLinkedList()
+        public FuLinkedList()
         {
             m_LinkedList      = new LinkedList<T>();
             m_CachedNodeQueue = new Queue<LinkedListNode<T>>();
@@ -224,7 +224,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveFirst()
         {
             var first = m_LinkedList.First;
-            if (first == null) throw new GameFrameworkException("First is invalid.");
+            if (first == null) throw new FuException("First is invalid.");
 
             m_LinkedList.RemoveFirst();
             _ReleaseNode(first);
@@ -236,7 +236,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveLast()
         {
             var last = m_LinkedList.Last;
-            if (last == null) throw new GameFrameworkException("Last is invalid.");
+            if (last == null) throw new FuException("Last is invalid.");
 
             m_LinkedList.RemoveLast();
             _ReleaseNode(last);
@@ -309,7 +309,7 @@ namespace FuFramework.Core.Runtime
             internal Enumerator(LinkedList<T> linkedList)
             {
                 if (linkedList == null)
-                    throw new GameFrameworkException("Linked list is invalid.");
+                    throw new FuException("Linked list is invalid.");
 
                 m_Enumerator = linkedList.GetEnumerator();
             }

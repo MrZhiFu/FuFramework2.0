@@ -1,4 +1,4 @@
-﻿using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 

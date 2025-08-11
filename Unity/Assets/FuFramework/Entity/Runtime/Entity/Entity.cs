@@ -8,7 +8,7 @@
 using GameFrameX;
 using GameFrameX.Entity;
 using System;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 

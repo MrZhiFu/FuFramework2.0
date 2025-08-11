@@ -3,7 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -23,70 +24,74 @@ namespace GameFrameX.Runtime
                 /// <summary>
                 /// AES 加密字符串
                 /// </summary>
-                /// <param name="EncryptString">待加密密文</param>
-                /// <param name="EncryptKey">加密密钥</param>
-                public static string AESEncrypt(string EncryptString, string EncryptKey)
+                /// <param name="encryptStr">待加密密文</param>
+                /// <param name="encryptKey">加密密钥</param>
+                public static string AesEncrypt(string encryptStr, string encryptKey)
                 {
-                    return Convert.ToBase64String(AESEncrypt(Encoding.UTF8.GetBytes(EncryptString), EncryptKey));
+                    return Convert.ToBase64String(AesEncrypt(Encoding.UTF8.GetBytes(encryptStr), encryptKey));
                 }
 
                 /// <summary>
                 /// AES 加密字节数组
                 /// </summary>
-                /// <param name="EncryptByte">待加密的字节数组</param>
-                /// <param name="EncryptKey">加密密钥</param>
-                public static byte[] AESEncrypt(byte[] EncryptByte, string EncryptKey)
+                /// <param name="encryptByte">待加密的字节数组</param>
+                /// <param name="encryptKey">加密密钥</param>
+                public static byte[] AesEncrypt(byte[] encryptByte, string encryptKey)
                 {
-                    if (EncryptByte.Length == 0)
+                    if (encryptByte.Length == 0)
                     {
                         throw (new Exception("明文不得为空"));
                     }
 
-                    if (string.IsNullOrEmpty(EncryptKey))
+                    if (string.IsNullOrEmpty(encryptKey))
                     {
                         throw (new Exception("密钥不得为空"));
                     }
 
-                    byte[]   m_strEncrypt;
-                    byte[]   m_btIV        = new byte[16] { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
-                    byte[]   m_salt        = new byte[16] { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
-                    Rijndael m_AESProvider = Rijndael.Create();
+                    byte[]   strEncrypt;
+                    byte[]   btIv        = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
+                    byte[]   salt        = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
+                    Rijndael aesProvider = Rijndael.Create();
                     try
                     {
-                        MemoryStream        m_stream   = new MemoryStream();
-                        PasswordDeriveBytes pdb        = new PasswordDeriveBytes(EncryptKey, m_salt);
-                        ICryptoTransform    transform  = m_AESProvider.CreateEncryptor(pdb.GetBytes(32), m_btIV);
-                        CryptoStream        m_csstream = new CryptoStream(m_stream, transform, CryptoStreamMode.Write);
-                        m_csstream.Write(EncryptByte, 0, EncryptByte.Length);
-                        m_csstream.FlushFinalBlock();
-                        m_strEncrypt = m_stream.ToArray();
-                        m_stream.Close();
-                        m_stream.Dispose();
-                        m_csstream.Close();
-                        m_csstream.Dispose();
+                        MemoryStream        mStream   = new MemoryStream();
+                        PasswordDeriveBytes pdb       = new PasswordDeriveBytes(encryptKey, salt);
+                        ICryptoTransform    transform = aesProvider.CreateEncryptor(pdb.GetBytes(32), btIv);
+                        CryptoStream        cStream   = new CryptoStream(mStream, transform, CryptoStreamMode.Write);
+                        cStream.Write(encryptByte, 0, encryptByte.Length);
+                        cStream.FlushFinalBlock();
+                        strEncrypt = mStream.ToArray();
+                        mStream.Close();
+                        mStream.Dispose();
+                        cStream.Close();
+                        cStream.Dispose();
                     }
                     catch (IOException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (CryptographicException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (ArgumentException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (Exception ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     finally
                     {
-                        m_AESProvider.Clear();
+                        aesProvider.Clear();
                     }
 
-                    return m_strEncrypt;
+                    return strEncrypt;
                 }
 
                 #endregion
@@ -96,63 +101,67 @@ namespace GameFrameX.Runtime
                 /// <summary>
                 /// AES 解密字符串
                 /// </summary>
-                /// <param name="DecryptString">待解密密文</param>
-                /// <param name="DecryptKey">解密密钥</param>
-                public static string AESDecrypt(string DecryptString, string DecryptKey)
+                /// <param name="decryptStr">待解密密文</param>
+                /// <param name="decryptKey">解密密钥</param>
+                public static string AesDecrypt(string decryptStr, string decryptKey)
                 {
-                    return Encoding.UTF8.GetString((AESDecrypt(Convert.FromBase64String(DecryptString), DecryptKey)));
+                    return Encoding.UTF8.GetString((AesDecrypt(Convert.FromBase64String(decryptStr), decryptKey)));
                 }
 
                 /// <summary>
                 /// AES 解密字节数组
                 /// </summary>
-                /// <param name="DecryptByte">待解密的字节数组</param>
-                /// <param name="DecryptKey">解密密钥</param>
-                public static byte[] AESDecrypt(byte[] DecryptByte, string DecryptKey)
+                /// <param name="decryptByte">待解密的字节数组</param>
+                /// <param name="decryptKey">解密密钥</param>
+                public static byte[] AesDecrypt(byte[] decryptByte, string decryptKey)
                 {
-                    if (DecryptByte.Length == 0) throw (new Exception("密文不得为空"));
-                    if (string.IsNullOrEmpty(DecryptKey)) throw (new Exception("密钥不得为空"));
+                    if (decryptByte.Length == 0) throw (new Exception("密文不得为空"));
+                    if (string.IsNullOrEmpty(decryptKey)) throw (new Exception("密钥不得为空"));
 
-                    byte[]   m_strDecrypt;
-                    byte[]   m_btIV        = new byte[16] { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
-                    byte[]   m_salt        = new byte[16] { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
-                    Rijndael m_AESProvider = Rijndael.Create();
+                    byte[]   strDecrypt;
+                    byte[]   btIv        = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
+                    byte[]   salt        = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
+                    Rijndael aesProvider = Rijndael.Create();
                     try
                     {
-                        MemoryStream        m_stream   = new MemoryStream();
-                        PasswordDeriveBytes pdb        = new PasswordDeriveBytes(DecryptKey, m_salt);
-                        ICryptoTransform    transform  = m_AESProvider.CreateDecryptor(pdb.GetBytes(32), m_btIV);
-                        CryptoStream        m_csstream = new CryptoStream(m_stream, transform, CryptoStreamMode.Write);
-                        m_csstream.Write(DecryptByte, 0, DecryptByte.Length);
-                        m_csstream.FlushFinalBlock();
-                        m_strDecrypt = m_stream.ToArray();
-                        m_stream.Close();
-                        m_stream.Dispose();
-                        m_csstream.Close();
-                        m_csstream.Dispose();
+                        MemoryStream        mStream   = new MemoryStream();
+                        PasswordDeriveBytes pdb       = new PasswordDeriveBytes(decryptKey, salt);
+                        ICryptoTransform    transform = aesProvider.CreateDecryptor(pdb.GetBytes(32), btIv);
+                        CryptoStream        cStream   = new CryptoStream(mStream, transform, CryptoStreamMode.Write);
+                        cStream.Write(decryptByte, 0, decryptByte.Length);
+                        cStream.FlushFinalBlock();
+                        strDecrypt = mStream.ToArray();
+                        mStream.Close();
+                        mStream.Dispose();
+                        cStream.Close();
+                        cStream.Dispose();
                     }
                     catch (IOException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (CryptographicException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (ArgumentException ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     catch (Exception ex)
                     {
+                        // ReSharper disable once PossibleIntendedRethrow
                         throw ex;
                     }
                     finally
                     {
-                        m_AESProvider.Clear();
+                        aesProvider.Clear();
                     }
 
-                    return m_strDecrypt;
+                    return strDecrypt;
                 }
 
                 #endregion

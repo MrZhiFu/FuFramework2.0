@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using GameFrameX.Runtime;
 using ICSharpCode.SharpZipLib.GZip;
 
 // ReSharper disable once CheckNamespace
@@ -128,7 +127,7 @@ namespace FuFramework.Core.Runtime
             try
             {
                 var gZipInputStream = new GZipInputStream(stream);
-                var bytesRead       = 0;
+                int bytesRead;
                 while ((bytesRead = gZipInputStream.Read(m_CachedBytes, 0, CachedBytesLength)) > 0)
                 {
                     decompressedStream.Write(m_CachedBytes, 0, bytesRead);

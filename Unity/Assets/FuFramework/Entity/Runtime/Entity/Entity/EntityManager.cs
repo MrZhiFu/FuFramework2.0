@@ -11,9 +11,9 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Entity.Runtime
 {
@@ -21,7 +21,7 @@ namespace GameFrameX.Entity.Runtime
     /// 实体管理器。
     /// </summary>
     
-    public sealed partial class EntityManager : GameFrameworkModule, IEntityManager
+    public sealed partial class EntityManager : FuModule, IEntityManager
     {
         private readonly Dictionary<int, EntityInfo> m_EntityInfos;
         private readonly Dictionary<string, EntityGroup> m_EntityGroups;
@@ -137,7 +137,7 @@ namespace GameFrameX.Entity.Runtime
                 EntityGroup entityGroup = (EntityGroup)entity.EntityGroup;
                 if (entityGroup == null)
                 {
-                    throw new GameFrameworkException("Entity group is invalid.");
+                    throw new FuException("Entity group is invalid.");
                 }
 
                 entityInfo.Status = EntityStatus.WillRecycle;
@@ -174,7 +174,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (objectPoolManager == null)
             {
-                throw new GameFrameworkException("Object pool manager is invalid.");
+                throw new FuException("Object pool manager is invalid.");
             }
 
             m_ObjectPoolManager = objectPoolManager;
@@ -188,7 +188,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (assetManager == null)
             {
-                throw new GameFrameworkException("Resource manager is invalid.");
+                throw new FuException("Resource manager is invalid.");
             }
 
             _assetManager = assetManager;
@@ -202,7 +202,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (entityHelper == null)
             {
-                throw new GameFrameworkException("Entity helper is invalid.");
+                throw new FuException("Entity helper is invalid.");
             }
 
             m_EntityHelper = entityHelper;
@@ -217,7 +217,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityGroupName))
             {
-                throw new GameFrameworkException("Entity group name is invalid.");
+                throw new FuException("Entity group name is invalid.");
             }
 
             return m_EntityGroups.ContainsKey(entityGroupName);
@@ -232,7 +232,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityGroupName))
             {
-                throw new GameFrameworkException("Entity group name is invalid.");
+                throw new FuException("Entity group name is invalid.");
             }
 
             EntityGroup entityGroup = null;
@@ -268,7 +268,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -292,17 +292,17 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityGroupName))
             {
-                throw new GameFrameworkException("Entity group name is invalid.");
+                throw new FuException("Entity group name is invalid.");
             }
 
             if (entityGroupHelper == null)
             {
-                throw new GameFrameworkException("Entity group helper is invalid.");
+                throw new FuException("Entity group helper is invalid.");
             }
 
             if (m_ObjectPoolManager == null)
             {
-                throw new GameFrameworkException("You must set object pool manager first.");
+                throw new FuException("You must set object pool manager first.");
             }
 
             if (HasEntityGroup(entityGroupName))
@@ -334,7 +334,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityAssetName))
             {
-                throw new GameFrameworkException("Entity asset name is invalid.");
+                throw new FuException("Entity asset name is invalid.");
             }
 
             foreach (KeyValuePair<int, EntityInfo> entityInfo in m_EntityInfos)
@@ -373,7 +373,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityAssetName))
             {
-                throw new GameFrameworkException("Entity asset name is invalid.");
+                throw new FuException("Entity asset name is invalid.");
             }
 
             foreach (KeyValuePair<int, EntityInfo> entityInfo in m_EntityInfos)
@@ -396,7 +396,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityAssetName))
             {
-                throw new GameFrameworkException("Entity asset name is invalid.");
+                throw new FuException("Entity asset name is invalid.");
             }
 
             List<IEntity> results = new List<IEntity>();
@@ -420,12 +420,12 @@ namespace GameFrameX.Entity.Runtime
         {
             if (string.IsNullOrEmpty(entityAssetName))
             {
-                throw new GameFrameworkException("Entity asset name is invalid.");
+                throw new FuException("Entity asset name is invalid.");
             }
 
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -462,7 +462,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -496,7 +496,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -578,38 +578,38 @@ namespace GameFrameX.Entity.Runtime
         {
             if (_assetManager == null)
             {
-                throw new GameFrameworkException("You must set resource manager first.");
+                throw new FuException("You must set resource manager first.");
             }
 
             if (m_EntityHelper == null)
             {
-                throw new GameFrameworkException("You must set entity helper first.");
+                throw new FuException("You must set entity helper first.");
             }
 
             if (string.IsNullOrEmpty(entityAssetName))
             {
-                throw new GameFrameworkException("Entity asset name is invalid.");
+                throw new FuException("Entity asset name is invalid.");
             }
 
             if (string.IsNullOrEmpty(entityGroupName))
             {
-                throw new GameFrameworkException("Entity group name is invalid.");
+                throw new FuException("Entity group name is invalid.");
             }
 
             if (HasEntity(entityId))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Entity id '{0}' is already exist.", entityId));
+                throw new FuException(Utility.Text.Format("Entity id '{0}' is already exist.", entityId));
             }
 
             if (IsLoadingEntity(entityId))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Entity '{0}' is already being loaded.", entityId));
+                throw new FuException(Utility.Text.Format("Entity '{0}' is already being loaded.", entityId));
             }
 
             EntityGroup entityGroup = (EntityGroup)GetEntityGroup(entityGroupName);
             if (entityGroup == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Entity group '{0}' is not exist.", entityGroupName));
+                throw new FuException(Utility.Text.Format("Entity group '{0}' is not exist.", entityGroupName));
             }
 
             UniTaskCompletionSource<IEntity> tcs = new UniTaskCompletionSource<IEntity>();
@@ -665,7 +665,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo entityInfo = GetEntityInfo(entityId);
             if (entityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find entity '{0}'.", entityId));
+                throw new FuException(Utility.Text.Format("Can not find entity '{0}'.", entityId));
             }
 
             InternalHideEntity(entityInfo, userData);
@@ -689,7 +689,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (entity == null)
             {
-                throw new GameFrameworkException("Entity is invalid.");
+                throw new FuException("Entity is invalid.");
             }
 
             HideEntity(entity.Id, userData);
@@ -742,7 +742,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
+                throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
             }
 
             return childEntityInfo.ParentEntity;
@@ -757,7 +757,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (childEntity == null)
             {
-                throw new GameFrameworkException("Child entity is invalid.");
+                throw new FuException("Child entity is invalid.");
             }
 
             return GetParentEntity(childEntity.Id);
@@ -773,7 +773,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             return parentEntityInfo.ChildEntityCount;
@@ -789,7 +789,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             return parentEntityInfo.GetChildEntity();
@@ -804,7 +804,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             return GetChildEntity(parentEntity.Id);
@@ -820,7 +820,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             return parentEntityInfo.GetChildEntities();
@@ -836,7 +836,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             parentEntityInfo.GetChildEntities(results);
@@ -851,7 +851,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             return GetChildEntities(parentEntity.Id);
@@ -866,7 +866,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             GetChildEntities(parentEntity.Id, results);
@@ -892,29 +892,29 @@ namespace GameFrameX.Entity.Runtime
         {
             if (childEntityId == parentEntityId)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not attach entity when child entity id equals to parent entity id '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not attach entity when child entity id equals to parent entity id '{0}'.", parentEntityId));
             }
 
             EntityInfo childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
+                throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
             }
 
             if (childEntityInfo.Status >= EntityStatus.WillHide)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not attach entity when child entity status is '{0}'.", childEntityInfo.Status));
+                throw new FuException(Utility.Text.Format("Can not attach entity when child entity status is '{0}'.", childEntityInfo.Status));
             }
 
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             if (parentEntityInfo.Status >= EntityStatus.WillHide)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
+                throw new FuException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
             }
 
             IEntity childEntity = childEntityInfo.Entity;
@@ -946,7 +946,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             AttachEntity(childEntityId, parentEntity.Id, userData);
@@ -972,7 +972,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (childEntity == null)
             {
-                throw new GameFrameworkException("Child entity is invalid.");
+                throw new FuException("Child entity is invalid.");
             }
 
             AttachEntity(childEntity.Id, parentEntityId, userData);
@@ -998,12 +998,12 @@ namespace GameFrameX.Entity.Runtime
         {
             if (childEntity == null)
             {
-                throw new GameFrameworkException("Child entity is invalid.");
+                throw new FuException("Child entity is invalid.");
             }
 
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             AttachEntity(childEntity.Id, parentEntity.Id, userData);
@@ -1028,7 +1028,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
+                throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
             }
 
             IEntity parentEntity = childEntityInfo.ParentEntity;
@@ -1040,7 +1040,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntity.Id);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntity.Id));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntity.Id));
             }
 
             IEntity childEntity = childEntityInfo.Entity;
@@ -1068,7 +1068,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (childEntity == null)
             {
-                throw new GameFrameworkException("Child entity is invalid.");
+                throw new FuException("Child entity is invalid.");
             }
 
             DetachEntity(childEntity.Id, userData);
@@ -1093,7 +1093,7 @@ namespace GameFrameX.Entity.Runtime
             EntityInfo parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null)
             {
-                throw new GameFrameworkException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+                throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             }
 
             while (parentEntityInfo.ChildEntityCount > 0)
@@ -1121,7 +1121,7 @@ namespace GameFrameX.Entity.Runtime
         {
             if (parentEntity == null)
             {
-                throw new GameFrameworkException("Parent entity is invalid.");
+                throw new FuException("Parent entity is invalid.");
             }
 
             DetachChildEntities(parentEntity.Id, userData);
@@ -1149,7 +1149,7 @@ namespace GameFrameX.Entity.Runtime
                 IEntity entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup, userData);
                 if (entity == null)
                 {
-                    var exception = new GameFrameworkException("Can not create entity in entity helper.");
+                    var exception = new FuException("Can not create entity in entity helper.");
                     tcs.TrySetException(exception);
                     throw exception;
                 }
@@ -1210,13 +1210,13 @@ namespace GameFrameX.Entity.Runtime
             EntityGroup entityGroup = (EntityGroup)entity.EntityGroup;
             if (entityGroup == null)
             {
-                throw new GameFrameworkException("Entity group is invalid.");
+                throw new FuException("Entity group is invalid.");
             }
 
             entityGroup.RemoveEntity(entity);
             if (!m_EntityInfos.Remove(entity.Id))
             {
-                throw new GameFrameworkException("Entity info is unmanaged.");
+                throw new FuException("Entity info is unmanaged.");
             }
 
             if (m_HideEntityCompleteEventHandler != null)
@@ -1234,7 +1234,7 @@ namespace GameFrameX.Entity.Runtime
             ShowEntityInfo showEntityInfo = (ShowEntityInfo)userData;
             if (showEntityInfo == null)
             {
-                var exception = new GameFrameworkException("Show entity info is invalid.");
+                var exception = new FuException("Show entity info is invalid.");
                 tcs.TrySetException(exception);
                 throw exception;
             }
@@ -1258,10 +1258,10 @@ namespace GameFrameX.Entity.Runtime
         private void LoadAssetFailureCallback(UniTaskCompletionSource<IEntity> tcs, string entityAssetName, EOperationStatus status, string errorMessage, object userData)
         {
             ShowEntityInfo showEntityInfo = (ShowEntityInfo)userData;
-            GameFrameworkException exception;
+            FuException exception;
             if (showEntityInfo == null)
             {
-                exception = new GameFrameworkException("Show entity info is invalid.");
+                exception = new FuException("Show entity info is invalid.");
                 tcs.TrySetException(exception);
                 throw exception;
             }
@@ -1274,7 +1274,7 @@ namespace GameFrameX.Entity.Runtime
 
             m_EntitiesBeingLoaded.Remove(showEntityInfo.EntityId);
             string appendErrorMessage = Utility.Text.Format("Load entity failure, asset name '{0}', status '{1}', error message '{2}'.", entityAssetName, status, errorMessage);
-            exception = new GameFrameworkException(appendErrorMessage);
+            exception = new FuException(appendErrorMessage);
             if (m_ShowEntityFailureEventHandler != null)
             {
                 ShowEntityFailureEventArgs showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, appendErrorMessage, showEntityInfo.UserData);
@@ -1292,7 +1292,7 @@ namespace GameFrameX.Entity.Runtime
             ShowEntityInfo showEntityInfo = (ShowEntityInfo)userData;
             if (showEntityInfo == null)
             {
-                throw new GameFrameworkException("Show entity info is invalid.");
+                throw new FuException("Show entity info is invalid.");
             }
 
             if (m_ShowEntityUpdateEventHandler != null)
@@ -1308,7 +1308,7 @@ namespace GameFrameX.Entity.Runtime
             ShowEntityInfo showEntityInfo = (ShowEntityInfo)userData;
             if (showEntityInfo == null)
             {
-                throw new GameFrameworkException("Show entity info is invalid.");
+                throw new FuException("Show entity info is invalid.");
             }
 
             if (m_ShowEntityDependencyAssetEventHandler != null)

@@ -1,8 +1,8 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Mono.Runtime
 {
@@ -12,7 +12,7 @@ namespace GameFrameX.Mono.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Mono")]
-    public class MonoComponent : GameFrameworkComponent
+    public class MonoComponent : FuComponent
     {
         private IMonoManager   m_MonoManager;
         private EventComponent m_EventComponent;
@@ -24,7 +24,7 @@ namespace GameFrameX.Mono.Runtime
 
             base.Awake();
 
-            m_MonoManager = GameFrameworkEntry.GetModule<IMonoManager>();
+            m_MonoManager = FuEntry.GetModule<IMonoManager>();
             if (m_MonoManager == null)
             {
                 Log.Fatal("Mono管理器为空.");

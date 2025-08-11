@@ -6,12 +6,11 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Sound.Runtime
 {
-    public sealed partial class SoundManager : GameFrameworkModule, ISoundManager
+    public sealed partial class SoundManager : FuModule, ISoundManager
     {
         /// <summary>
         /// 播放声音信息。

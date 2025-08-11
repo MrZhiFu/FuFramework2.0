@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Entity.Runtime
 {
@@ -21,7 +21,7 @@ namespace GameFrameX.Entity.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Entity")]
-    public sealed partial class EntityComponent : GameFrameworkComponent
+    public sealed partial class EntityComponent : FuComponent
     {
         private const int DefaultPriority = 0;
 
@@ -70,7 +70,7 @@ namespace GameFrameX.Entity.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IEntityManager);
             base.Awake();
-            m_EntityManager = GameFrameworkEntry.GetModule<IEntityManager>();
+            m_EntityManager = FuEntry.GetModule<IEntityManager>();
             if (m_EntityManager == null)
             {
                 Log.Fatal("Entity manager is invalid.");
@@ -109,9 +109,9 @@ namespace GameFrameX.Entity.Runtime
                 return;
             }
 
-            m_EntityManager.SetResourceManager(GameFrameworkEntry.GetModule<IAssetManager>());
+            m_EntityManager.SetResourceManager(FuEntry.GetModule<IAssetManager>());
 
-            m_EntityManager.SetObjectPoolManager(GameFrameworkEntry.GetModule<IObjectPoolManager>());
+            m_EntityManager.SetObjectPoolManager(FuEntry.GetModule<IObjectPoolManager>());
 
             EntityHelperBase entityHelper = Helper.CreateHelper(m_EntityHelperTypeName, m_CustomEntityHelper);
             if (entityHelper == null)

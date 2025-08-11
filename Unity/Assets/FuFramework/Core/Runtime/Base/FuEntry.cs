@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -8,12 +7,12 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏框架入口。
     /// </summary>
-    public static class GameFrameworkEntry
+    public static class FuEntry
     {
         /// <summary>
         /// 所有游戏框架模块。
         /// </summary>
-        private static readonly GameFrameworkLinkedList<GameFrameworkModule> s_AllModuleList = new();
+        private static readonly FuLinkedList<FuModule> s_AllModuleList = new();
 
         /// <summary>
         /// 所有游戏框架模块类型映射字典，key：为游戏框架模块接口类型如各个IxxxManager，value：为游戏框架模块具体类型，如xxxManager。
@@ -45,7 +44,7 @@ namespace FuFramework.Core.Runtime
 
             s_AllModuleList.Clear();
             ReferencePool.ClearAll();
-            GameFrameworkLog.SetLogHelper(null);
+            FuLog.SetLogHelper(null);
         }
 
         /// <summary>
@@ -59,7 +58,7 @@ namespace FuFramework.Core.Runtime
             var interfaceType = typeof(T);
 
             if (!interfaceType.IsInterface)
-                throw new GameFrameworkException(Utility.Text.Format("要获取框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
+                throw new FuException(Utility.Text.Format("要获取框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
             // if (interfaceType.FullName != null && !interfaceType.FullName.StartsWith("FuFramework.", StringComparison.Ordinal))
             //     throw new GameFrameworkException(Utility.Text.Format("要获取的框架模块必须是命名空间为FuFramework的模块, 但是 '{0}' 不是FuFramework模块.", interfaceType.FullName));
@@ -72,7 +71,7 @@ namespace FuFramework.Core.Runtime
             moduleType = s_ModuleTypeDict.TryGetValue(interfaceType, out moduleType) ? moduleType : Type.GetType(moduleName);
 
             if (moduleType == null)
-                throw new GameFrameworkException(Utility.Text.Format("在FuFramework中找不到模块 '{0}''.", moduleName));
+                throw new FuException(Utility.Text.Format("在FuFramework中找不到模块 '{0}''.", moduleName));
 
             return GetModule(moduleType) as T;
         }
@@ -83,7 +82,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="moduleType">要获取的游戏框架模块类型。</param>
         /// <returns>要获取的游戏框架模块。</returns>
         /// <remarks>如果要获取的游戏框架模块不存在，则自动创建该游戏框架模块。</remarks>
-        public static GameFrameworkModule GetModule(Type moduleType)
+        public static FuModule GetModule(Type moduleType)
         {
             foreach (var module in s_AllModuleList)
             {
@@ -103,10 +102,10 @@ namespace FuFramework.Core.Runtime
         public static void RegisterModule(Type interfaceType, Type implType)
         {
             if (!interfaceType.IsInterface)
-                throw new GameFrameworkException(Utility.Text.Format("要注册的框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
+                throw new FuException(Utility.Text.Format("要注册的框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
             if (!implType.IsClass || implType.IsInterface || implType.IsAbstract)
-                throw new GameFrameworkException(Utility.Text.Format("要注册的框架模块必须为非抽象类, 但是 '{0}' 不是非抽象类.", implType.FullName));
+                throw new FuException(Utility.Text.Format("要注册的框架模块必须为非抽象类, 但是 '{0}' 不是非抽象类.", implType.FullName));
 
             if (!s_ModuleTypeDict.TryGetValue(interfaceType, out _))
             {
@@ -119,10 +118,10 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="moduleType">要创建的游戏框架模块类型。</param>
         /// <returns>要创建的游戏框架模块。</returns>
-        private static GameFrameworkModule CreateModule(Type moduleType)
+        private static FuModule CreateModule(Type moduleType)
         {
-            var module = (GameFrameworkModule)Activator.CreateInstance(moduleType);
-            if (module == null) throw new GameFrameworkException(Utility.Text.Format("创建模块失败, 模块类型 '{0}'.", moduleType.FullName));
+            var module = (FuModule)Activator.CreateInstance(moduleType);
+            if (module == null) throw new FuException(Utility.Text.Format("创建模块失败, 模块类型 '{0}'.", moduleType.FullName));
 
             var current = s_AllModuleList.First;
             while (current != null)

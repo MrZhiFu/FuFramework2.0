@@ -6,7 +6,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// <see cref="Transform" /> 扩展方法集。
     /// </summary>
-    public static class TransformExtension
+    public static class TransformEx
     {
         /// <summary>
         /// 查找子节点的名称符合的 <see cref="Transform" />。

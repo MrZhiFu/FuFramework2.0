@@ -2,12 +2,12 @@
 using FairyGUI;
 using System.IO;
 using UnityEngine;
-using GameFrameX.Runtime;
 using GameFrameX.Web.Runtime;
 using GameFrameX.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using Object = UnityEngine.Object;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 // ReSharper disable once InconsistentNaming 禁用命名风格检查

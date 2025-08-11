@@ -1,5 +1,4 @@
 ﻿using System;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -81,7 +80,7 @@ namespace FuFramework.Core.Runtime
         private void _Initialize(string name, object target, bool locked, int priority)
         {
             Name        = name   ?? string.Empty;
-            Target      = target ?? throw new GameFrameworkException(Utility.Text.Format("对象“{0}”为空.", name));
+            Target      = target ?? throw new FuException(Utility.Text.Format("对象“{0}”为空.", name));
             Locked      = locked;
             Priority    = priority;
             LastUseTime = DateTime.UtcNow;

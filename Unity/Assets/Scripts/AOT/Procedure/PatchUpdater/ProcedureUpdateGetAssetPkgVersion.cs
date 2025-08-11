@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 

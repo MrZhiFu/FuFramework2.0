@@ -1,6 +1,5 @@
 using FuFramework.Core.Runtime;
 using GameFrameX.Network.Runtime;
-using GameFrameX.Runtime;
 using Hotfix.Proto;
 
 namespace Hotfix.Network
@@ -16,7 +15,7 @@ namespace Hotfix.Network
 
         public override MessageObject Handler()
         {
-            _reqHeartBeat.Timestamp = TimerHelper.UnixTimeMilliseconds();
+            _reqHeartBeat.Timestamp = TimeHelper.UnixTimeMilliseconds();
             _reqHeartBeat.UpdateUniqueId();
             return _reqHeartBeat;
         }

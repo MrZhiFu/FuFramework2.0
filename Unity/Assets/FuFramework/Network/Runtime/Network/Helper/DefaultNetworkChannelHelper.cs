@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 
 namespace GameFrameX.Network.Runtime
@@ -131,35 +131,35 @@ namespace GameFrameX.Network.Runtime
 
         public bool SerializePacketHeader<T>(T messageObject, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
         {
-            GameFrameworkGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
-            GameFrameworkGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
-            GameFrameworkGuard.NotNull(messageObject, nameof(messageObject));
-            GameFrameworkGuard.NotNull(destination, nameof(destination));
+            FuGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
+            FuGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
+            FuGuard.NotNull(messageObject, nameof(messageObject));
+            FuGuard.NotNull(destination, nameof(destination));
 
             return m_NetworkChannel.PacketSendHeaderHandler.Handler(messageObject, m_NetworkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
         }
 
         public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
         {
-            GameFrameworkGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
-            GameFrameworkGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
-            GameFrameworkGuard.NotNull(m_NetworkChannel.PacketSendBodyHandler, nameof(m_NetworkChannel.PacketSendBodyHandler));
-            GameFrameworkGuard.NotNull(messageBodyBuffer, nameof(messageBodyBuffer));
-            GameFrameworkGuard.NotNull(destination, nameof(destination));
+            FuGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
+            FuGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
+            FuGuard.NotNull(m_NetworkChannel.PacketSendBodyHandler, nameof(m_NetworkChannel.PacketSendBodyHandler));
+            FuGuard.NotNull(messageBodyBuffer, nameof(messageBodyBuffer));
+            FuGuard.NotNull(destination, nameof(destination));
 
             return m_NetworkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
         }
 
         public bool DeserializePacketHeader(byte[] source)
         {
-            GameFrameworkGuard.NotNull(source, nameof(source));
+            FuGuard.NotNull(source, nameof(source));
 
             return m_NetworkChannel.PacketReceiveHeaderHandler.Handler(source);
         }
 
         public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
         {
-            GameFrameworkGuard.NotNull(source, nameof(source));
+            FuGuard.NotNull(source, nameof(source));
 
             return m_NetworkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
         }

@@ -1,4 +1,5 @@
-﻿namespace GameFrameX.Runtime
+﻿// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {

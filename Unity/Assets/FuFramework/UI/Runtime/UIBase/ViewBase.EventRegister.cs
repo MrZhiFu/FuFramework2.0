@@ -1,6 +1,5 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Event.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -23,9 +22,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="handler">处理对象</param>
         public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            GameFrameworkGuard.NotNull(handler, nameof(handler));
-            GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(handler, nameof(handler));
+            FuGuard.NotNullOrEmpty(id, nameof(id));
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.Subscribe(id, handler);
         }
 
@@ -36,9 +35,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="handler">处理对象</param>
         public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            GameFrameworkGuard.NotNull(handler, nameof(handler));
-            GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(handler, nameof(handler));
+            FuGuard.NotNullOrEmpty(id, nameof(id));
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.UnSubscribe(id, handler);
         }
 
@@ -49,9 +48,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="e">消息对象</param>
         public void Fire(string id, GameEventArgs e)
         {
-            GameFrameworkGuard.NotNull(e, nameof(e));
-            GameFrameworkGuard.NotNullOrEmpty(id, nameof(id));
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(e, nameof(e));
+            FuGuard.NotNullOrEmpty(id, nameof(id));
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.Fire(id, e);
         }
 
@@ -62,9 +61,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="eventId">事件编号。</param>
         public void Fire(object sender, string eventId)
         {
-            GameFrameworkGuard.NotNull(sender, nameof(sender));
-            GameFrameworkGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(sender, nameof(sender));
+            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.Fire(sender, eventId);
         }
 
@@ -75,9 +74,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="e">事件内容。</param>
         public void FireNow(object sender, GameEventArgs e)
         {
-            GameFrameworkGuard.NotNull(sender,        nameof(sender));
-            GameFrameworkGuard.NotNull(e,             nameof(e));
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(sender,        nameof(sender));
+            FuGuard.NotNull(e,             nameof(e));
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.FireNow(sender, e);
         }
 
@@ -86,7 +85,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void UnSubscribeAll()
         {
-            GameFrameworkGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
             EventRegister.UnSubscribeAll();
         }
 

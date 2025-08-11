@@ -1,4 +1,4 @@
-﻿using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
 
 public static partial class GameApp
 {

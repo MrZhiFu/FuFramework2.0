@@ -1,28 +1,24 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿// ReSharper disable once CheckNamespace
 
-namespace GameFrameX.Runtime
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
         /// <summary>
         /// 常量相关的实用函数。
         /// </summary>
-        public static partial class Const
+        public static class Const
         {
             /// <summary>
             /// 文件名后缀
             /// 定义了常用的文件名后缀，方便使用。
             /// </summary>
-            public static partial class FileNameSuffix
+            public static class FileNameSuffix
             {
                 /// <summary>
                 /// Json 文件
                 /// </summary>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public const string Json = ".json";
 
                 /// <summary>
@@ -88,11 +84,12 @@ namespace GameFrameX.Runtime
                 /// <summary>
                 /// PDB 调试文件
                 /// </summary>
-                public const string PDB = ".pdb";
+                public const string Pdb = ".pdb";
 
                 /// <summary>
                 /// Asset 文件
                 /// </summary>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public const string Asset = ".asset";
             }
         }

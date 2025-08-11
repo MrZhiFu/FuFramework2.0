@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Setting.Runtime
 {
@@ -16,7 +15,7 @@ namespace GameFrameX.Setting.Runtime
     /// 游戏配置管理器。
     /// </summary>
     
-    public sealed class SettingManager : GameFrameworkModule, ISettingManager
+    public sealed class SettingManager : FuModule, ISettingManager
     {
         private ISettingHelper m_SettingHelper;
 
@@ -37,7 +36,7 @@ namespace GameFrameX.Setting.Runtime
             {
                 if (m_SettingHelper == null)
                 {
-                    throw new GameFrameworkException("Setting helper is invalid.");
+                    throw new FuException("Setting helper is invalid.");
                 }
 
                 return m_SettingHelper.Count;
@@ -69,7 +68,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (settingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             m_SettingHelper = settingHelper;
@@ -83,7 +82,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             return m_SettingHelper.Load();
@@ -97,7 +96,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             return m_SettingHelper.Save();
@@ -111,7 +110,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             return m_SettingHelper.GetAllSettingNames();
@@ -125,7 +124,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             m_SettingHelper.GetAllSettingNames(results);
@@ -140,12 +139,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.HasSetting(settingName);
@@ -160,12 +159,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.RemoveSetting(settingName);
@@ -178,7 +177,7 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             m_SettingHelper.RemoveAllSettings();
@@ -193,12 +192,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetBool(settingName);
@@ -214,12 +213,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetBool(settingName, defaultValue);
@@ -234,12 +233,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetBool(settingName, value);
@@ -254,12 +253,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetInt(settingName);
@@ -275,12 +274,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetInt(settingName, defaultValue);
@@ -295,12 +294,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetInt(settingName, value);
@@ -315,12 +314,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetFloat(settingName);
@@ -336,12 +335,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetFloat(settingName, defaultValue);
@@ -356,12 +355,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetFloat(settingName, value);
@@ -376,12 +375,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetString(settingName);
@@ -397,12 +396,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetString(settingName, defaultValue);
@@ -417,12 +416,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetString(settingName, value);
@@ -438,12 +437,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetObject<T>(settingName);
@@ -459,17 +458,17 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (objectType == null)
             {
-                throw new GameFrameworkException("Object type is invalid.");
+                throw new FuException("Object type is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetObject(objectType, settingName);
@@ -486,12 +485,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetObject(settingName, defaultObj);
@@ -508,17 +507,17 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (objectType == null)
             {
-                throw new GameFrameworkException("Object type is invalid.");
+                throw new FuException("Object type is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             return m_SettingHelper.GetObject(objectType, settingName, defaultObj);
@@ -534,12 +533,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetObject(settingName, obj);
@@ -554,12 +553,12 @@ namespace GameFrameX.Setting.Runtime
         {
             if (m_SettingHelper == null)
             {
-                throw new GameFrameworkException("Setting helper is invalid.");
+                throw new FuException("Setting helper is invalid.");
             }
 
             if (string.IsNullOrEmpty(settingName))
             {
-                throw new GameFrameworkException("Setting name is invalid.");
+                throw new FuException("Setting name is invalid.");
             }
 
             m_SettingHelper.SetObject(settingName, obj);

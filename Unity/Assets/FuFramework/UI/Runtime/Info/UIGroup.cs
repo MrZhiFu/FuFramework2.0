@@ -2,9 +2,9 @@
 using System.Linq;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -21,7 +21,7 @@ namespace FuFramework.UI.Runtime
         public UILayer Layer { get; private set; }
 
         /// 界面组内的界面列表
-        private readonly GameFrameworkLinkedList<UIInfo> m_UIInfoList = new();
+        private readonly FuLinkedList<UIInfo> m_UIInfoList = new();
 
         /// 临时缓存界面节点
         private LinkedListNode<UIInfo> m_CachedNode;
@@ -96,7 +96,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            if (string.IsNullOrEmpty(uiName)) throw new GameFrameworkException("传入的UI界面资源名称为空.");
+            if (string.IsNullOrEmpty(uiName)) throw new FuException("传入的UI界面资源名称为空.");
             return m_UIInfoList.Any(uiInfo => uiInfo.View.UIName == uiName);
         }
 
@@ -123,7 +123,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(string uiName)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
             return (from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View).FirstOrDefault();
         }
 
@@ -134,7 +134,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public T[] GetUIs<T>(string uiName) where T : ViewBase
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
             return (from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View as T).ToArray();
         }
 
@@ -145,8 +145,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">要获取的界面。</param>
         public void GetUIs(string uiName, List<ViewBase> results)
         {
-            GameFrameworkGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             results.AddRange(from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View);
@@ -167,7 +167,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">界面组中的所有界面。</param>
         public void GetAllUIs(List<ViewBase> results)
         {
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNull(results, nameof(results));
             results.Clear();
             results.AddRange(m_UIInfoList.Select(uiInfo => uiInfo.View));
         }
@@ -189,13 +189,13 @@ namespace FuFramework.UI.Runtime
         {
             var uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new GameFrameworkException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIName));
+                throw new FuException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIName));
 
             if (m_CachedNode != null && m_CachedNode.Value.View == view)
                 m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new GameFrameworkException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIName));
+                throw new FuException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIName));
 
             ReferencePool.Release(uiInfo);
         }
@@ -297,10 +297,10 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="view"></param>
         /// <returns></returns>
-        /// <exception cref="GameFrameworkException"></exception>
+        /// <exception cref="FuException"></exception>
         private UIInfo GetUIInfo(ViewBase view)
         {
-            GameFrameworkGuard.NotNull(view, nameof(view));
+            FuGuard.NotNull(view, nameof(view));
             return m_UIInfoList.FirstOrDefault(uiInfo => uiInfo.View == view);
         }
     }

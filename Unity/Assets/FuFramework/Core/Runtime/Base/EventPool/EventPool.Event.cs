@@ -11,12 +11,12 @@ namespace FuFramework.Core.Runtime
             /// <summary>
             /// 发送者
             /// </summary>
-            public object Sender { get; private set; } = null;
+            public object Sender { get; private set; }
 
             /// <summary>
             /// 事件参数
             /// </summary>
-            public T EventArgs { get; private set; } = null;
+            public T EventArgs { get; private set; }
 
             /// <summary>
             /// 创建事件节点

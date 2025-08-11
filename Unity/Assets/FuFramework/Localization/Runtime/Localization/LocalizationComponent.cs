@@ -9,9 +9,9 @@ using System;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using GameFrameX.Setting.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Localization.Runtime
 {
@@ -20,7 +20,7 @@ namespace GameFrameX.Localization.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Localization")]
-    public sealed class LocalizationComponent : GameFrameworkComponent
+    public sealed class LocalizationComponent : FuComponent
     {
         private ILocalizationManager m_LocalizationManager = null;
 
@@ -141,7 +141,7 @@ namespace GameFrameX.Localization.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ILocalizationManager);
             base.Awake();
-            m_LocalizationManager = GameFrameworkEntry.GetModule<ILocalizationManager>();
+            m_LocalizationManager = FuEntry.GetModule<ILocalizationManager>();
             if (m_LocalizationManager == null)
             {
                 Log.Fatal("Localization manager is invalid.");
@@ -180,7 +180,7 @@ namespace GameFrameX.Localization.Runtime
                 return;
             }
 
-            m_LocalizationManager.SetAssetManager(GameFrameworkEntry.GetModule<IAssetManager>());
+            m_LocalizationManager.SetAssetManager(FuEntry.GetModule<IAssetManager>());
 
             LocalizationHelperBase localizationHelper = Helper.CreateHelper(m_LocalizationHelperTypeName, m_CustomLocalizationHelper);
             if (localizationHelper == null)

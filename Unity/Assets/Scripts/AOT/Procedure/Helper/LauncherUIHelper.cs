@@ -3,7 +3,8 @@ using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
 {

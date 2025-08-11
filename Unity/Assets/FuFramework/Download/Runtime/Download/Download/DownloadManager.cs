@@ -10,7 +10,7 @@ namespace FuFramework.Download.Runtime
     /// <summary>
     /// 下载管理器。
     /// </summary>
-    public sealed partial class DownloadManager : GameFrameworkModule, IDownloadManager
+    public sealed partial class DownloadManager : FuModule, IDownloadManager
     {
         private const int OneMegaBytes = 1024 * 1024;
 
@@ -334,17 +334,17 @@ namespace FuFramework.Download.Runtime
         {
             if (string.IsNullOrEmpty(downloadPath))
             {
-                throw new GameFrameworkException("Download path is invalid.");
+                throw new FuException("Download path is invalid.");
             }
 
             if (string.IsNullOrEmpty(downloadUri))
             {
-                throw new GameFrameworkException("Download uri is invalid.");
+                throw new FuException("Download uri is invalid.");
             }
 
             if (TotalAgentCount <= 0)
             {
-                throw new GameFrameworkException("You must add download agent first.");
+                throw new FuException("You must add download agent first.");
             }
 
             Runtime.DownloadManager.DownloadTask downloadTask = Runtime.DownloadManager.DownloadTask.Create(downloadPath, downloadUri, tag, priority, m_FlushSize, m_Timeout, userData);

@@ -1,7 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine.SceneManagement;
 using YooAsset;
 using Object = UnityEngine.Object;
@@ -12,7 +11,7 @@ namespace GameFrameX.Asset.Runtime
     /// 资源组件。
     /// </summary>
     
-    public partial class AssetManager : GameFrameworkModule, IAssetManager
+    public partial class AssetManager : FuModule, IAssetManager
     {
         public string DefaultPackageName { get; set; } = "DefaultPackage";
 
@@ -52,9 +51,9 @@ namespace GameFrameX.Asset.Runtime
         public UniTask<bool> InitPackageAsync(string packageName, string hostServerURL, string fallbackHostServerURL, bool isDefaultPackage = false)
         {
             var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
-            GameFrameworkGuard.NotNull(hostServerURL, nameof(hostServerURL));
-            GameFrameworkGuard.NotNull(fallbackHostServerURL, nameof(fallbackHostServerURL));
+            FuGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(hostServerURL, nameof(hostServerURL));
+            FuGuard.NotNull(fallbackHostServerURL, nameof(fallbackHostServerURL));
 
             // 创建默认的资源包
             var resourcePackage = YooAssets.TryGetPackage(packageName);
@@ -89,7 +88,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string assetPath)
         {
-            GameFrameworkGuard.NotNull(assetPath, nameof(assetPath));
+            FuGuard.NotNull(assetPath, nameof(assetPath));
             var package = YooAssets.GetPackage(DefaultPackageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -101,8 +100,8 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string packageName, string assetPath)
         {
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
-            GameFrameworkGuard.NotNull(assetPath, nameof(assetPath));
+            FuGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(assetPath, nameof(assetPath));
             var package = YooAssets.GetPackage(packageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -114,7 +113,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public void UnloadAllAssetsAsync(string packageName)
         {
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             package.UnloadAllAssetsAsync();
         }
@@ -125,7 +124,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public void UnloadUnusedAssetsAsync(string packageName)
         {
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             package.UnloadUnusedAssetsAsync();
         }
@@ -136,7 +135,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public void ClearAllBundleFilesAsync(string packageName)
         {
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             package.ClearAllBundleFilesAsync();
         }
@@ -147,7 +146,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public void ClearUnusedBundleFilesAsync(string packageName)
         {
-            GameFrameworkGuard.NotNull(packageName, nameof(packageName));
+            FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             package.ClearUnusedBundleFilesAsync();
         }
@@ -708,7 +707,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="readOnlyPath">资源只读区路径。</param>
         public void SetReadOnlyPath(string readOnlyPath)
         {
-            GameFrameworkGuard.NotNull(readOnlyPath, nameof(readOnlyPath));
+            FuGuard.NotNull(readOnlyPath, nameof(readOnlyPath));
             ReadOnlyPath = readOnlyPath;
         }
 
@@ -723,7 +722,7 @@ namespace GameFrameX.Asset.Runtime
         /// <param name="readWritePath">资源读写区路径。</param>
         public void SetReadWritePath(string readWritePath)
         {
-            GameFrameworkGuard.NotNull(readWritePath, nameof(readWritePath));
+            FuGuard.NotNull(readWritePath, nameof(readWritePath));
             ReadWritePath = readWritePath;
         }
     }

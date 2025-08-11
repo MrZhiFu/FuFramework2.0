@@ -10,8 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Setting.Runtime
 {

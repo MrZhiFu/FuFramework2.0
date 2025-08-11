@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Editor
 {

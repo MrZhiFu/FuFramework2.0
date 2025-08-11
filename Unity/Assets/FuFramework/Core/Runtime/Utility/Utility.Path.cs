@@ -1,18 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System.IO;
 
-using System.IO;
-using FuFramework.Core.Runtime;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
-       /// <summary>
+        /// <summary>
         /// 文件路径相关的实用函数。
         /// 功能：
         /// 1. 获取规范的路径。
@@ -47,7 +40,7 @@ namespace GameFrameX.Runtime
             /// <returns>是否移除空文件夹成功。</returns>
             public static bool RemoveEmptyDirectory(string directoryName)
             {
-                if (string.IsNullOrEmpty(directoryName)) throw new GameFrameworkException("要处理的文件夹名称不能为空.");
+                if (string.IsNullOrEmpty(directoryName)) throw new FuException("要处理的文件夹名称不能为空.");
                 try
                 {
                     if (!Directory.Exists(directoryName)) return false;
@@ -61,7 +54,7 @@ namespace GameFrameX.Runtime
                         subDirectoryCount--;
                     }
 
-                    if (subDirectoryCount > 0) return false;
+                    if (subDirectoryCount                             > 0) return false;
                     if (Directory.GetFiles(directoryName, "*").Length > 0) return false;
                     Directory.Delete(directoryName);
                     return true;

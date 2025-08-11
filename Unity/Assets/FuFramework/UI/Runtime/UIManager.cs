@@ -4,7 +4,6 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 namespace FuFramework.UI.Runtime

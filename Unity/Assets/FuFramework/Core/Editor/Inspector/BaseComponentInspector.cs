@@ -7,10 +7,9 @@
 
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
-using GameFrameworkLog = FuFramework.Core.Runtime.GameFrameworkLog;
+using Utility = FuFramework.Core.Runtime.Utility;
 using Version = FuFramework.Core.Runtime.Version;
 
 namespace GameFrameX.Editor
@@ -220,7 +219,7 @@ namespace GameFrameX.Editor
 
             // 日志辅助器
             var logHelperTypeNames = new List<string> { NoneOptionName };
-            logHelperTypeNames.AddRange(Type.GetRuntimeTypeNames(typeof(GameFrameworkLog.ILogHelper)));
+            logHelperTypeNames.AddRange(Type.GetRuntimeTypeNames(typeof(FuLog.ILogHelper)));
             m_LogHelperTypeNames     = logHelperTypeNames.ToArray();
             m_LogHelperTypeNameIndex = 0;
             if (!string.IsNullOrEmpty(m_LogHelperTypeName.stringValue))

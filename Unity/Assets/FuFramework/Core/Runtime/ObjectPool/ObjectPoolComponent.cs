@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -13,7 +12,7 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/ObjectPoolComponent(对象池管理器)")]
-    public sealed class ObjectPoolComponent : GameFrameworkComponent
+    public sealed class ObjectPoolComponent : FuComponent
     {
         /// 对象池管理器
         private IObjectPoolManager m_ObjectPoolManager;
@@ -30,10 +29,10 @@ namespace FuFramework.Core.Runtime
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IObjectPoolManager);
-            
+
             base.Awake();
 
-            m_ObjectPoolManager = GameFrameworkEntry.GetModule<IObjectPoolManager>();
+            m_ObjectPoolManager = FuEntry.GetModule<IObjectPoolManager>();
             if (m_ObjectPoolManager != null) return;
             Log.Fatal("对象池管理器为空.");
         }
@@ -45,16 +44,14 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.HasObjectPool<T>();
+        public bool HasObjectPool<T>() where T : ObjectBase => m_ObjectPoolManager.HasObjectPool<T>();
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Type objectType) =>
-            m_ObjectPoolManager.HasObjectPool(objectType);
+        public bool HasObjectPool(Type objectType) => m_ObjectPoolManager.HasObjectPool(objectType);
 
         /// <summary>
         /// 检查是否存在对象池。
@@ -62,8 +59,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.HasObjectPool<T>(poolName);
+        public bool HasObjectPool<T>(string poolName) where T : ObjectBase => m_ObjectPoolManager.HasObjectPool<T>(poolName);
 
         /// <summary>
         /// 检查是否存在对象池。
@@ -71,32 +67,28 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.HasObjectPool(objectType, poolName);
+        public bool HasObjectPool(Type objectType, string poolName) => m_ObjectPoolManager.HasObjectPool(objectType, poolName);
 
         /// <summary>
         /// 检查是否存在对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.HasObjectPool(condition);
+        public bool HasObjectPool(Predicate<ObjectPoolBase> condition) => m_ObjectPoolManager.HasObjectPool(condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>要获取的对象池。</returns>
-        public IObjectPool<T> GetObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.GetObjectPool<T>();
+        public IObjectPool<T> GetObjectPool<T>() where T : ObjectBase => m_ObjectPoolManager.GetObjectPool<T>();
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Type objectType) =>
-            m_ObjectPoolManager.GetObjectPool(objectType);
+        public ObjectPoolBase GetObjectPool(Type objectType) => m_ObjectPoolManager.GetObjectPool(objectType);
 
         /// <summary>
         /// 获取对象池。
@@ -104,8 +96,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>要获取的对象池。</returns>
-        public IObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.GetObjectPool<T>(poolName);
+        public IObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase => m_ObjectPoolManager.GetObjectPool<T>(poolName);
 
         /// <summary>
         /// 获取对象池。
@@ -113,61 +104,54 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.GetObjectPool(objectType, poolName);
+        public ObjectPoolBase GetObjectPool(Type objectType, string poolName) => m_ObjectPoolManager.GetObjectPool(objectType, poolName);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase GetObjectPool(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.GetObjectPool(condition);
+        public ObjectPoolBase GetObjectPool(Predicate<ObjectPoolBase> condition) => m_ObjectPoolManager.GetObjectPool(condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <returns>要获取的对象池。</returns>
-        public ObjectPoolBase[] GetObjectPools(Predicate<ObjectPoolBase> condition) =>
-            m_ObjectPoolManager.GetObjectPools(condition);
+        public ObjectPoolBase[] GetObjectPools(Predicate<ObjectPoolBase> condition) => m_ObjectPoolManager.GetObjectPools(condition);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="condition">要检查的条件。</param>
         /// <param name="results">要获取的对象池。</param>
-        public void GetObjectPools(Predicate<ObjectPoolBase> condition, List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetObjectPools(condition, results);
+        public void GetObjectPools(Predicate<ObjectPoolBase> condition, List<ObjectPoolBase> results)
+            => m_ObjectPoolManager.GetObjectPools(condition, results);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
-        public ObjectPoolBase[] GetAllObjectPools() =>
-            m_ObjectPoolManager.GetAllObjectPools();
+        public ObjectPoolBase[] GetAllObjectPools() => m_ObjectPoolManager.GetAllObjectPools();
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="results">所有对象池。</param>
-        public void GetAllObjectPools(List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetAllObjectPools(results);
+        public void GetAllObjectPools(List<ObjectPoolBase> results) => m_ObjectPoolManager.GetAllObjectPools(results);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="sort">是否根据对象池的优先级排序。</param>
         /// <returns>所有对象池。</returns>
-        public ObjectPoolBase[] GetAllObjectPools(bool sort) =>
-            m_ObjectPoolManager.GetAllObjectPools(sort);
+        public ObjectPoolBase[] GetAllObjectPools(bool sort) => m_ObjectPoolManager.GetAllObjectPools(sort);
 
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
         /// <param name="sort">是否根据对象池的优先级排序。</param>
         /// <param name="results">所有对象池。</param>
-        public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results) =>
-            m_ObjectPoolManager.GetAllObjectPools(sort, results);
+        public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results) => m_ObjectPoolManager.GetAllObjectPools(sort, results);
 
         #endregion
 
@@ -178,16 +162,14 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>() where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>();
+        public IObjectPool<T> CreateObjectPool<T>() where T : ObjectBase => m_ObjectPoolManager.CreateObjectPool<T>();
 
         /// <summary>
         /// 创建对象池。
         /// </summary>
         /// <param name="objectType">对象类型。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType);
+        public ObjectPoolBase CreateObjectPool(Type objectType) => m_ObjectPoolManager.CreateObjectPool(objectType);
 
         /// <summary>
         /// 创建对象池。
@@ -195,8 +177,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName);
+        public IObjectPool<T> CreateObjectPool<T>(string poolName) where T : ObjectBase => m_ObjectPoolManager.CreateObjectPool<T>(poolName);
 
         /// <summary>
         /// 创建对象池。
@@ -204,8 +185,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName);
+        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName) => m_ObjectPoolManager.CreateObjectPool(objectType, poolName);
 
         /// <summary>
         /// 创建对象池。
@@ -213,8 +193,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="capacity">对象池的容量。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity);
+        public IObjectPool<T> CreateObjectPool<T>(int capacity) where T : ObjectBase => m_ObjectPoolManager.CreateObjectPool<T>(capacity);
 
         /// <summary>
         /// 创建对象池。
@@ -222,8 +201,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity);
+        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity) => m_ObjectPoolManager.CreateObjectPool(objectType, capacity);
 
         /// <summary>
         /// 创建对象池。
@@ -231,8 +209,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(expireTime);
+        public IObjectPool<T> CreateObjectPool<T>(float expireTime) where T : ObjectBase => m_ObjectPoolManager.CreateObjectPool<T>(expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -240,8 +217,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="objectType">对象类型。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, expireTime);
+        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime) => m_ObjectPoolManager.CreateObjectPool(objectType, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -250,8 +226,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="poolName">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity);
+        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity) where T : ObjectBase
+            => m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity);
 
         /// <summary>
         /// 创建对象池。
@@ -260,8 +236,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="poolName">对象池名称。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity);
+        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity)
+            => m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity);
 
         /// <summary>
         /// 创建对象池。
@@ -270,8 +246,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="poolName">对象池名称。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, expireTime);
+        public IObjectPool<T> CreateObjectPool<T>(string poolName, float expireTime) where T : ObjectBase
+            => m_ObjectPoolManager.CreateObjectPool<T>(poolName, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -280,8 +256,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="poolName">对象池名称。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, expireTime);
+        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, float expireTime)
+            => m_ObjectPoolManager.CreateObjectPool(objectType, poolName, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -290,8 +266,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity, expireTime);
+        public IObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime) where T : ObjectBase
+            => m_ObjectPoolManager.CreateObjectPool<T>(capacity, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -300,8 +276,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity, expireTime);
+        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, float expireTime)
+            => m_ObjectPoolManager.CreateObjectPool(objectType, capacity, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -310,8 +286,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(int capacity, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(capacity, priority);
+        public IObjectPool<T> CreateObjectPool<T>(int capacity, int priority) where T : ObjectBase
+            => m_ObjectPoolManager.CreateObjectPool<T>(capacity, priority);
 
         /// <summary>
         /// 创建对象池。
@@ -320,8 +296,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, capacity, priority);
+        public ObjectPoolBase CreateObjectPool(Type objectType, int capacity, int priority)
+            => m_ObjectPoolManager.CreateObjectPool(objectType, capacity, priority);
 
         /// <summary>
         /// 创建对象池。
@@ -330,8 +306,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(float expireTime, int priority) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(expireTime, priority);
+        public IObjectPool<T> CreateObjectPool<T>(float expireTime, int priority) where T : ObjectBase
+            => m_ObjectPoolManager.CreateObjectPool<T>(expireTime, priority);
 
         /// <summary>
         /// 创建对象池。
@@ -340,8 +316,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime, int priority) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, expireTime, priority);
+        public ObjectPoolBase CreateObjectPool(Type objectType, float expireTime, int priority) 
+            => m_ObjectPoolManager.CreateObjectPool(objectType, expireTime, priority);
 
         /// <summary>
         /// 创建对象池。
@@ -351,8 +327,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime) where T : ObjectBase =>
-            m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity, expireTime);
+        public IObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime) where T : ObjectBase 
+            => m_ObjectPoolManager.CreateObjectPool<T>(poolName, capacity, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -362,8 +338,8 @@ namespace FuFramework.Core.Runtime
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime) =>
-            m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity, expireTime);
+        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime) 
+            => m_ObjectPoolManager.CreateObjectPool(objectType, poolName, capacity, expireTime);
 
         /// <summary>
         /// 创建对象池。
@@ -539,7 +515,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public void Release()
         {
-            Log.Info("Object pool release...");
+            Log.Info("[ObjectPoolComponent]释放对象池中可释放对象...");
             m_ObjectPoolManager.Release();
         }
 
@@ -548,7 +524,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public void ReleaseAllUnused()
         {
-            Log.Info("Object pool release all unused...");
+            Log.Info("[ObjectPoolComponent]释放对象池中的所有未使用对象...");
             m_ObjectPoolManager.ReleaseAllUnused();
         }
 

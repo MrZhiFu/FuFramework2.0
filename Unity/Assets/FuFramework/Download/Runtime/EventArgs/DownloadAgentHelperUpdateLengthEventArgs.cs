@@ -7,7 +7,6 @@
 
 using FuFramework.Core.Runtime;
 using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
@@ -42,7 +41,7 @@ namespace FuFramework.Download.Runtime
         {
             if (deltaLength <= 0)
             {
-                throw new GameFrameworkException("Delta length is invalid.");
+                throw new FuException("Delta length is invalid.");
             }
 
             DownloadAgentHelperUpdateLengthEventArgs downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();

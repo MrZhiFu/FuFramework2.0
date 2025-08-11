@@ -6,7 +6,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 游戏时间帮助类
     /// </summary>
-    public static class TimerHelper
+    public static class TimeHelper
     {
         /// <summary>
         /// 1970-01-01 00:00:00 本地时间

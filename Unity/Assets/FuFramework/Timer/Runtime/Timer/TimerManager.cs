@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Timer.Runtime
 {
@@ -9,7 +8,7 @@ namespace GameFrameX.Timer.Runtime
     /// 定时器管理器。
     /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
     /// </summary>
-    public sealed class TimerManager : GameFrameworkModule, ITimerManager
+    public sealed class TimerManager : FuModule, ITimerManager
     {
         /// <summary>
         /// 定时器项

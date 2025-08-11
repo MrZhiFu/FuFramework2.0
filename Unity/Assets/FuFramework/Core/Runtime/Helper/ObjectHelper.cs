@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace GameFrameX.Runtime
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 对象帮助类

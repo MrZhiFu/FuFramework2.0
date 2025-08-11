@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.Coroutine.Runtime
@@ -11,7 +10,7 @@ namespace GameFrameX.Coroutine.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Coroutine")]
-    public class CoroutineComponent : GameFrameworkComponent
+    public class CoroutineComponent : FuComponent
     {
         /// <summary>
         /// 等待帧结束

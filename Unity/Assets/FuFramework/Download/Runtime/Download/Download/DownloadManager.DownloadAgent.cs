@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -38,7 +38,7 @@ namespace FuFramework.Download.Runtime
             {
                 if (downloadAgentHelper == null)
                 {
-                    throw new GameFrameworkException("Download agent helper is invalid.");
+                    throw new FuException("Download agent helper is invalid.");
                 }
 
                 m_Helper           = downloadAgentHelper;
@@ -157,7 +157,7 @@ namespace FuFramework.Download.Runtime
             {
                 if (task == null)
                 {
-                    throw new GameFrameworkException("Task is invalid.");
+                    throw new FuException("Task is invalid.");
                 }
 
                 m_Task = task;
@@ -303,7 +303,7 @@ namespace FuFramework.Download.Runtime
                 m_DownloadedLength = e.Length;
                 if (m_SavedLength != CurrentLength)
                 {
-                    throw new GameFrameworkException("Internal download error.");
+                    throw new FuException("Internal download error.");
                 }
 
                 m_Helper.Reset();

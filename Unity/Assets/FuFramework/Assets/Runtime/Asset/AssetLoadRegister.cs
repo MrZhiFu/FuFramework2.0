@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using Object = UnityEngine.Object;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
@@ -41,7 +40,7 @@ namespace GameFrameX.Asset.Runtime
 
             var assetHandle = await AssetManager.LoadAssetAsync<T>(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-            if (!isSuccess) throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败.");
+            if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
             var assetObject = assetHandle.GetAssetObject<T>();
             assetHandle.Release();
@@ -67,7 +66,7 @@ namespace GameFrameX.Asset.Runtime
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
 
             if (!isSuccess)
-                throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败");
+                throw new FuException($"[AssetLoader]资源{path}加载失败");
 
             var assetObject = assetHandle.AssetObject;
             assetHandle.Release();
@@ -88,7 +87,7 @@ namespace GameFrameX.Asset.Runtime
 
             var assetHandle = await AssetManager.LoadAssetAsync(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-            if (!isSuccess) throw new GameFrameworkException($"[AssetLoader]资源{path}加载失败.");
+            if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
             var assetObject = assetHandle.AssetObject;
             assetHandle.Release();

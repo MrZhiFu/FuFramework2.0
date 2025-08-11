@@ -1,5 +1,4 @@
 ﻿using System;
-using GameFrameX.Runtime;
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace

@@ -6,7 +6,6 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.Entity.Runtime

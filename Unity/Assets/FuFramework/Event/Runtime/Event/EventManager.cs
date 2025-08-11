@@ -7,7 +7,6 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Event.Runtime
 {
@@ -15,7 +14,7 @@ namespace GameFrameX.Event.Runtime
     /// 事件管理器。
     /// </summary>
     
-    public sealed class EventManager : GameFrameworkModule, IEventManager
+    public sealed class EventManager : FuModule, IEventManager
     {
         private readonly FuFramework.Core.Runtime.EventPool<GameEventArgs> m_EventPool;
 

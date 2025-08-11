@@ -1,43 +1,31 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using UnityEngine;
 
-using FuFramework.Core.Runtime;
-using GameFrameX;
-using UnityEngine;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 引用池组件。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/ReferencePool")]
-    
-    public sealed class ReferencePoolComponent : GameFrameworkComponent
+    public sealed class ReferencePoolComponent : FuComponent
     {
-        [SerializeField]
-        private ReferenceStrictCheckType m_EnableStrictCheck = ReferenceStrictCheckType.AlwaysEnable;
+        [Header("是否开启强制检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类, 同时在 Release 调用时，会检查传入的引用是否已经可以重复归还-EnQueue)")]
+        [SerializeField] private ReferenceStrictCheckType m_EnableStrictCheck = ReferenceStrictCheckType.AlwaysEnable;
 
         /// <summary>
         /// 获取或设置是否开启强制检查。
         /// </summary>
-        
+
         public bool EnableStrictCheck
         {
-            get
-            {
-                return ReferencePool.EnableStrictCheck;
-            }
+            get => ReferencePool.EnableStrictCheck;
             set
             {
                 ReferencePool.EnableStrictCheck = value;
                 if (value)
                 {
-                    Log.Info("Strict checking is enabled for the Reference Pool. It will drastically affect the performance.");
+                    Log.Info("对 Reference Pool 启用了严格检查。它将会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能.");
                 }
             }
         }
@@ -45,34 +33,22 @@ namespace GameFrameX.Runtime
         /// <summary>
         /// 游戏框架组件初始化。
         /// </summary>
-        
         protected override void Awake()
         {
             IsAutoRegister = false;
             base.Awake();
         }
 
-        
+
         private void Start()
         {
-            switch (m_EnableStrictCheck)
+            EnableStrictCheck = m_EnableStrictCheck switch
             {
-                case ReferenceStrictCheckType.AlwaysEnable:
-                    EnableStrictCheck = true;
-                    break;
-
-                case ReferenceStrictCheckType.OnlyEnableWhenDevelopment:
-                    EnableStrictCheck = Debug.isDebugBuild;
-                    break;
-
-                case ReferenceStrictCheckType.OnlyEnableInEditor:
-                    EnableStrictCheck = Application.isEditor;
-                    break;
-
-                default:
-                    EnableStrictCheck = false;
-                    break;
-            }
+                ReferenceStrictCheckType.AlwaysEnable              => true,
+                ReferenceStrictCheckType.OnlyEnableWhenDevelopment => Debug.isDebugBuild,
+                ReferenceStrictCheckType.OnlyEnableInEditor        => Application.isEditor,
+                _                                                  => false
+            };
         }
     }
 }

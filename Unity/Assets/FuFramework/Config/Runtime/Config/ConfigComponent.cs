@@ -8,8 +8,8 @@
 using System;
 using System.Collections.Concurrent;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Config.Runtime
 {
@@ -18,7 +18,7 @@ namespace GameFrameX.Config.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Config")]
-    public sealed class ConfigComponent : GameFrameworkComponent
+    public sealed class ConfigComponent : FuComponent
     {
         private IConfigManager m_ConfigManager = null;
         private ConcurrentDictionary<Type, string> m_ConfigNameTypeMap = new ConcurrentDictionary<Type, string>();
@@ -40,7 +40,7 @@ namespace GameFrameX.Config.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IConfigManager);
             base.Awake();
-            m_ConfigManager = GameFrameworkEntry.GetModule<IConfigManager>();
+            m_ConfigManager = FuEntry.GetModule<IConfigManager>();
             if (m_ConfigManager == null)
             {
                 Log.Fatal("Config manager is invalid.");

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -15,12 +16,12 @@ namespace GameFrameX.Runtime
             /// </summary>
             public static class Sha1
             {
-
                 /// <summary>
                 /// 计算给定内容的Sha1哈希值，使用UTF-8编码。
                 /// </summary>
                 /// <param name="content">要计算哈希值的内容。</param>
                 /// <returns>返回计算得到的Sha1哈希值。</returns>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(string content) => Hash(content, Encoding.UTF8);
 
                 /// <summary>
@@ -29,11 +30,12 @@ namespace GameFrameX.Runtime
                 /// <param name="content">要计算哈希值的内容。</param>
                 /// <param name="encode">用于编码的Encoding对象。</param>
                 /// <returns>返回计算得到的Sha1哈希值。</returns>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(string content, Encoding encode)
                 {
                     //创建SHA1对象
                     using var sha1 = new System.Security.Cryptography.SHA1CryptoServiceProvider();
-                    
+
                     //将待加密字符串转为byte类型
                     var bytesIn  = encode.GetBytes(content);
                     var bytesOut = sha1.ComputeHash(bytesIn);

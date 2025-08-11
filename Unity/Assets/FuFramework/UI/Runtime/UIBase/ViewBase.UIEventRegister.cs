@@ -1,6 +1,5 @@
 ﻿using FairyGUI;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -22,9 +21,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void AddUIListener(EventListener listener, EventCallback1 callback)
         {
-            GameFrameworkGuard.NotNull(listener,        nameof(listener));
-            GameFrameworkGuard.NotNull(callback,        nameof(callback));
-            GameFrameworkGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
+            FuGuard.NotNull(listener,        nameof(listener));
+            FuGuard.NotNull(callback,        nameof(callback));
+            FuGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
             UIEventRegister.AddUIListener(listener, callback);
         }
 
@@ -35,9 +34,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void SetUIListener(EventListener listener, EventCallback1 callback)
         {
-            GameFrameworkGuard.NotNull(listener,        nameof(listener));
-            GameFrameworkGuard.NotNull(callback,        nameof(callback));
-            GameFrameworkGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
+            FuGuard.NotNull(listener,        nameof(listener));
+            FuGuard.NotNull(callback,        nameof(callback));
+            FuGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
             UIEventRegister.SetUIListener(listener, callback);
         }
 
@@ -48,9 +47,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void RemoveUIListener(EventListener listener, EventCallback1 callback)
         {
-            GameFrameworkGuard.NotNull(listener,        nameof(listener));
-            GameFrameworkGuard.NotNull(callback,        nameof(callback));
-            GameFrameworkGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
+            FuGuard.NotNull(listener,        nameof(listener));
+            FuGuard.NotNull(callback,        nameof(callback));
+            FuGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
             UIEventRegister.RemoveUIListener(listener, callback);
         }
 
@@ -60,8 +59,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         public void ClearUIListener(EventListener listener)
         {
-            GameFrameworkGuard.NotNull(listener,        nameof(listener));
-            GameFrameworkGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
+            FuGuard.NotNull(listener,        nameof(listener));
+            FuGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
             UIEventRegister.ClearUIListener(listener);
         }
 
@@ -70,7 +69,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void ClearAllUIListener()
         {
-            GameFrameworkGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
+            FuGuard.NotNull(UIEventRegister, "UI事件订阅器为空, 请先初始化UIEventRegister.");
             UIEventRegister.ClearAllUIListener();
         }
 

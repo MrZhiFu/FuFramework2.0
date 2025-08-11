@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -25,7 +24,8 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 获取引用池的数量。
         /// </summary>
-        public static int Count => s_ReferenceCollectionDict.Count;
+        // ReSharper disable once InconsistentlySynchronizedField
+        public static int Count => s_ReferenceCollectionDict?.Count ?? 0;
 
         /// <summary>
         /// 获取所有引用池的信息。
@@ -95,7 +95,7 @@ namespace FuFramework.Core.Runtime
         public static void Release(IReference reference)
         {
             if (reference == null)
-                throw new GameFrameworkException("要归还的引用对象为空.");
+                throw new FuException("要归还的引用对象为空.");
 
             var refType = reference.GetType();
             _CheckReferenceType(refType);
@@ -173,13 +173,13 @@ namespace FuFramework.Core.Runtime
             if (!EnableStrictCheck) return;
 
             if (refType == null)
-                throw new GameFrameworkException("引用类型为空.");
+                throw new FuException("引用类型为空.");
 
             if (!refType.IsClass || refType.IsAbstract)
-                throw new GameFrameworkException("引用类型不是非抽象类类型.");
+                throw new FuException("引用类型不是非抽象类类型.");
 
             if (!typeof(IReference).IsAssignableFrom(refType))
-                throw new GameFrameworkException(Utility.Text.Format("引用类型 '{0}' 不是 IReference 类型.", refType.FullName));
+                throw new FuException(Utility.Text.Format("引用类型 '{0}' 不是 IReference 类型.", refType.FullName));
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace FuFramework.Core.Runtime
         private static ReferenceCollection _GetReferenceCollection(Type refType)
         {
             if (refType == null)
-                throw new GameFrameworkException("引用类型为空.");
+                throw new FuException("引用类型为空.");
 
             ReferenceCollection referenceCollection;
 

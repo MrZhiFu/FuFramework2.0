@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFrameX.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    internal sealed partial class ObjectPoolManager : GameFrameworkModule, IObjectPoolManager
+    internal sealed partial class ObjectPoolManager
     {
         /// <summary>
         /// 一个具体存放T类型对象的对象池。继承于ObjectPoolBase，实现了IObjectPool接口
@@ -16,7 +15,7 @@ namespace FuFramework.Core.Runtime
         {
             /// 存储对象的多值字典，key为对象名称，value为对象(可为多个)。
             /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用
-            private readonly GameFrameworkMultiDictionary<string, Object<T>> m_ObjectMultiDict;
+            private readonly FuMultiDictionary<string, Object<T>> m_ObjectMultiDict;
 
             /// 存储目标对象与其对应的内部对象的字典，key为标对象，value为对应的内部对象.
             private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
@@ -76,7 +75,7 @@ namespace FuFramework.Core.Runtime
                 get => m_Capacity;
                 set
                 {
-                    if (value      < 0) throw new GameFrameworkException("对象池容量不能小于0.");
+                    if (value      < 0) throw new FuException("对象池容量不能小于0.");
                     if (m_Capacity == value) return;
 
                     m_Capacity = value;
@@ -90,7 +89,7 @@ namespace FuFramework.Core.Runtime
                 get => m_ExpireTime;
                 set
                 {
-                    if (value < 0f) throw new GameFrameworkException("对象过期秒数不能小于0.");
+                    if (value < 0f) throw new FuException("对象过期秒数不能小于0.");
                     if (Mathf.Approximately(ExpireTime, value)) return;
 
                     m_ExpireTime = value;
@@ -109,7 +108,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="priority">对象池的优先级。</param>
             public ObjectPool(string name, bool allowSpawnInUse, float autoReleaseInterval, int capacity, float expireTime, int priority) : base(name)
             {
-                m_ObjectMultiDict                    = new GameFrameworkMultiDictionary<string, Object<T>>();
+                m_ObjectMultiDict                    = new FuMultiDictionary<string, Object<T>>();
                 m_TargetObjectDict                         = new Dictionary<object, Object<T>>();
                 m_DefaultReleaseObjectFilterCallback = _DefaultReleaseObjectFilterCallback;
                 m_CachedCanReleaseObjectList         = new List<T>();
@@ -159,7 +158,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="spawned">对象是否已被获取。</param>
             public void Register(T obj, bool spawned)
             {
-                if (obj == null) throw new GameFrameworkException("要创建并注册对象不能为空.");
+                if (obj == null) throw new FuException("要创建并注册对象不能为空.");
 
                 var internalObject = Object<T>.Create(obj, spawned);
                 m_ObjectMultiDict.Add(obj.Name, internalObject);
@@ -182,7 +181,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>要检查的对象是否存在。</returns>
             public bool CanSpawn(string name)
             {
-                if (name == null) throw new GameFrameworkException("对象名称不能为空.");
+                if (name == null) throw new FuException("对象名称不能为空.");
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return false;
 
@@ -208,7 +207,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>要获取的对象。</returns>
             public T Spawn(string name)
             {
-                if (name == null) throw new GameFrameworkException("对象名称不能为空.");
+                if (name == null) throw new FuException("对象名称不能为空.");
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return null;
 
@@ -227,7 +226,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="obj">要回收的对象。</param>
             public void Recycle(T obj)
             {
-                if (obj == null) throw new GameFrameworkException("对象不能为空.");
+                if (obj == null) throw new FuException("对象不能为空.");
                 Recycle(obj.Target);
             }
 
@@ -237,12 +236,12 @@ namespace FuFramework.Core.Runtime
             /// <param name="target">要回收的对象。</param>
             public void Recycle(object target)
             {
-                if (target == null) throw new GameFrameworkException("要回收的目标对象不能为空.");
+                if (target == null) throw new FuException("要回收的目标对象不能为空.");
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new GameFrameworkException(Utility.Text.Format("在对象池“{0}”中找不到目标，目标类型为“{1}”，目标值为“{2}'.", new TypeNamePair(typeof(T), Name),
-                                                                         target.GetType().FullName, target));
+                    throw new FuException(Utility.Text.Format("在对象池“{0}”中找不到目标，目标类型为“{1}”，目标值为“{2}'.", new TypeNamePair(typeof(T), Name),
+                                                                                 target.GetType().FullName, target));
                 internalObject.Recycle();
                 if (Count > m_Capacity && internalObject.SpawnCount <= 0)
                 {
@@ -257,7 +256,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="locked">是否被加锁。</param>
             public void SetLocked(T obj, bool locked)
             {
-                if (obj == null) throw new GameFrameworkException("对象不能为空.");
+                if (obj == null) throw new FuException("对象不能为空.");
                 SetLocked(obj.Target, locked);
             }
 
@@ -268,12 +267,12 @@ namespace FuFramework.Core.Runtime
             /// <param name="locked">是否被加锁。</param>
             public void SetLocked(object target, bool locked)
             {
-                if (target == null) throw new GameFrameworkException("对象不能为空.");
+                if (target == null) throw new FuException("对象不能为空.");
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new GameFrameworkException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”.", new TypeNamePair(typeof(T), Name),
-                                                                         target.GetType().FullName, target));
+                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”.", new TypeNamePair(typeof(T), Name),
+                                                                                 target.GetType().FullName, target));
                 internalObject.Locked = locked;
             }
 
@@ -284,7 +283,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="priority">优先级。</param>
             public void SetPriority(T obj, int priority)
             {
-                if (obj == null) throw new GameFrameworkException("对象不能为空.");
+                if (obj == null) throw new FuException("对象不能为空.");
                 SetPriority(obj.Target, priority);
             }
 
@@ -295,12 +294,12 @@ namespace FuFramework.Core.Runtime
             /// <param name="priority">优先级。</param>
             public void SetPriority(object target, int priority)
             {
-                if (target == null) throw new GameFrameworkException("目标对象不能为空.");
+                if (target == null) throw new FuException("目标对象不能为空.");
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new GameFrameworkException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”..", new TypeNamePair(typeof(T), Name),
-                                                                         target.GetType().FullName, target));
+                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”..", new TypeNamePair(typeof(T), Name),
+                                                                                 target.GetType().FullName, target));
 
                 internalObject.Priority = priority;
             }
@@ -312,7 +311,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>释放对象是否成功。</returns>
             public bool ReleaseObject(T obj)
             {
-                if (obj == null) throw new GameFrameworkException("目标对象不能为空.");
+                if (obj == null) throw new FuException("目标对象不能为空.");
                 return ReleaseObject(obj.Target);
             }
 
@@ -324,7 +323,7 @@ namespace FuFramework.Core.Runtime
             public bool ReleaseObject(object target)
             {
                 
-                if (target == null) throw new GameFrameworkException("目标对象不能为空.");
+                if (target == null) throw new FuException("目标对象不能为空.");
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null) return false;
@@ -333,7 +332,7 @@ namespace FuFramework.Core.Runtime
                 if (internalObject.IsInUse || internalObject.Locked || !internalObject.CustomCanReleaseFlag)
                     return false;
 
-                GameFrameworkLog.Info("真正释放对象池中的可释放对象 '{0}'", internalObject.Name);
+                FuLog.Info("真正释放对象池中的可释放对象 '{0}'", internalObject.Name);
                 
                 m_ObjectMultiDict.Remove(internalObject.Name, internalObject);
                 m_TargetObjectDict.Remove(internalObject.Peek().Target);
@@ -378,7 +377,7 @@ namespace FuFramework.Core.Runtime
             public void Release(int toReleaseCount, ReleaseObjectFilterCallback<T> releaseObjectFilterCallback)
             {
                 if (releaseObjectFilterCallback == null)
-                    throw new GameFrameworkException("释放对象筛选函数不能为空.");
+                    throw new FuException("释放对象筛选函数不能为空.");
 
                 if (toReleaseCount < 0)
                     toReleaseCount = 0;
@@ -390,7 +389,7 @@ namespace FuFramework.Core.Runtime
                 
                 m_AutoReleaseTimer = 0f;
                 _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                GameFrameworkLog.Info("尝试释放对象池中的可释放对象-对象数量: '{0}'", m_CachedCanReleaseObjectList.Count);
+                FuLog.Info("尝试释放对象池中的可释放对象-对象数量: '{0}'", m_CachedCanReleaseObjectList.Count);
 
                 // 筛选需要释放的对象
                 var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTime);
@@ -441,7 +440,7 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             private Object<T> _GetObject(object target)
             {
-                if (target == null) throw new GameFrameworkException("目标对象不能为空.");
+                if (target == null) throw new FuException("目标对象不能为空.");
                 return m_TargetObjectDict.GetValueOrDefault(target);
             }
 
@@ -451,7 +450,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="results">结果列表</param>
             private void _GetCanReleaseObjects(List<T> results)
             {
-                if (results == null) throw new GameFrameworkException("结果列表不能为空.");
+                if (results == null) throw new FuException("结果列表不能为空.");
 
                 results.Clear();
                 foreach (var (_, internalObject) in m_TargetObjectDict)

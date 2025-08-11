@@ -5,12 +5,13 @@ using GameFrameX.Network.Runtime;
 using Hotfix.Proto;
 using SimpleJSON;
 using UnityEngine;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.UI;
 using Hotfix.UI.View.Login;
 using UIManager = FuFramework.UI.Runtime.UIManager;
+using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_BINARY_CONFIG
 using LuBan.Runtime;
 #endif

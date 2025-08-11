@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -35,7 +34,7 @@ namespace GameFrameX.Network.Runtime
         
         public static void Add(IMessageHandler messageHandler)
         {
-            GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));
+            FuGuard.NotNull(messageHandler, nameof(messageHandler));
             var type = messageHandler.GetType();
             var methodInfos = type.GetMethods(MessageHandlerAttribute.Flags);
 
@@ -80,7 +79,7 @@ namespace GameFrameX.Network.Runtime
         
         public static void Remove(IMessageHandler messageHandler)
         {
-            GameFrameworkGuard.NotNull(messageHandler, nameof(messageHandler));
+            FuGuard.NotNull(messageHandler, nameof(messageHandler));
             var type = messageHandler.GetType();
 
             var methodInfos = type.GetMethods(MessageHandlerAttribute.Flags);

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Localization.Runtime
 {
@@ -18,7 +18,7 @@ namespace GameFrameX.Localization.Runtime
     /// 本地化管理器。
     /// </summary>
     
-    public sealed partial class LocalizationManager : GameFrameworkModule, ILocalizationManager
+    public sealed partial class LocalizationManager : FuModule, ILocalizationManager
     {
         private readonly Dictionary<string, string> _dictionary;
         private ILocalizationHelper _localizationHelper;
@@ -46,7 +46,7 @@ namespace GameFrameX.Localization.Runtime
             {
                 if (value == Language.Unspecified)
                 {
-                    throw new GameFrameworkException("default Language is invalid.");
+                    throw new FuException("default Language is invalid.");
                 }
 
                 _defaultLanguage = value;
@@ -63,7 +63,7 @@ namespace GameFrameX.Localization.Runtime
             {
                 if (value == Language.Unspecified)
                 {
-                    throw new GameFrameworkException("Language is invalid.");
+                    throw new FuException("Language is invalid.");
                 }
 
                 _language = value;
@@ -77,7 +77,7 @@ namespace GameFrameX.Localization.Runtime
         {
             get
             {
-                GameFrameworkGuard.NotNull(_localizationHelper, nameof(_localizationHelper));
+                FuGuard.NotNull(_localizationHelper, nameof(_localizationHelper));
                 return _localizationHelper.SystemLanguage;
             }
         }
@@ -167,7 +167,7 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="localizationHelper">本地化辅助器。</param>
         public void SetLocalizationHelper(ILocalizationHelper localizationHelper)
         {
-            GameFrameworkGuard.NotNull(localizationHelper, nameof(localizationHelper));
+            FuGuard.NotNull(localizationHelper, nameof(localizationHelper));
             _localizationHelper = localizationHelper;
         }
 
@@ -963,7 +963,7 @@ namespace GameFrameX.Localization.Runtime
         /// <returns>是否存在字典。</returns>
         public bool HasRawString(string key)
         {
-            GameFrameworkGuard.NotNullOrEmpty(key, nameof(key));
+            FuGuard.NotNullOrEmpty(key, nameof(key));
             return _dictionary.ContainsKey(key);
         }
 
@@ -974,7 +974,7 @@ namespace GameFrameX.Localization.Runtime
         /// <returns>字典值。</returns>
         public string GetRawString(string key)
         {
-            GameFrameworkGuard.NotNullOrEmpty(key, nameof(key));
+            FuGuard.NotNullOrEmpty(key, nameof(key));
             if (_dictionary.TryGetValue(key, out var value))
             {
                 return value;
@@ -991,7 +991,7 @@ namespace GameFrameX.Localization.Runtime
         /// <returns>是否增加字典成功。</returns>
         public bool AddRawString(string key, string value)
         {
-            GameFrameworkGuard.NotNullOrEmpty(key, nameof(key));
+            FuGuard.NotNullOrEmpty(key, nameof(key));
             if (_dictionary.ContainsKey(key))
             {
                 return false;
@@ -1008,7 +1008,7 @@ namespace GameFrameX.Localization.Runtime
         /// <returns>是否移除字典成功。</returns>
         public bool RemoveRawString(string key)
         {
-            GameFrameworkGuard.NotNullOrEmpty(key, nameof(key));
+            FuGuard.NotNullOrEmpty(key, nameof(key));
             return _dictionary.Remove(key);
         }
 

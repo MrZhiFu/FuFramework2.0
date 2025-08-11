@@ -7,9 +7,9 @@
 
 using System.Diagnostics;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEditor;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Editor
 {
@@ -66,7 +66,7 @@ namespace GameFrameX.Editor
                     break;
 
                 default:
-                    throw new GameFrameworkException(Utility.Text.Format("Not support open folder on '{0}' platform.", Application.platform));
+                    throw new FuException(Utility.Text.Format("Not support open folder on '{0}' platform.", Application.platform));
             }
         }
     }

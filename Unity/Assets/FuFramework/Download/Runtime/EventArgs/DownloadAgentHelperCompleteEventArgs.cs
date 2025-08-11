@@ -41,7 +41,7 @@ namespace FuFramework.Download.Runtime
         {
             if (length < 0L)
             {
-                throw new GameFrameworkException("Length is invalid.");
+                throw new FuException("Length is invalid.");
             }
 
             DownloadAgentHelperCompleteEventArgs downloadAgentHelperCompleteEventArgs = ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();

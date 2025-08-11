@@ -1,5 +1,4 @@
-﻿using GameFrameX.Runtime;
-using UnityEngine;
+﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -39,7 +38,7 @@ namespace FuFramework.Core.Runtime
             // 使用名称创建
             if (!string.IsNullOrEmpty(helperTypeName))
             {
-                var helperType = Utility.Assembly.GetType(helperTypeName);
+                var helperType = Runtime.Utility.Assembly.GetType(helperTypeName);
                 if (helperType == null)
                 {
                     Log.Warning("当前域中不存在类型 '{0}'.", helperTypeName);

@@ -7,7 +7,6 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Fsm.Runtime
 {

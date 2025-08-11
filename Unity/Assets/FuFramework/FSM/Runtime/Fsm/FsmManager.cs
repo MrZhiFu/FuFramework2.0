@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Fsm.Runtime
 {
@@ -16,7 +16,7 @@ namespace GameFrameX.Fsm.Runtime
     /// 有限状态机管理器。
     /// </summary>
     
-    public sealed class FsmManager : GameFrameworkModule, IFsmManager
+    public sealed class FsmManager : FuModule, IFsmManager
     {
         private readonly Dictionary<TypeNamePair, FsmBase> m_Fsms;
         private readonly List<FsmBase> m_TempFsms;
@@ -109,7 +109,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalHasFsm(new TypeNamePair(ownerType));
@@ -136,7 +136,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalHasFsm(new TypeNamePair(ownerType, name));
@@ -161,7 +161,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalGetFsm(new TypeNamePair(ownerType));
@@ -188,7 +188,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalGetFsm(new TypeNamePair(ownerType, name));
@@ -218,7 +218,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (results == null)
             {
-                throw new GameFrameworkException("Results is invalid.");
+                throw new FuException("Results is invalid.");
             }
 
             results.Clear();
@@ -253,7 +253,7 @@ namespace GameFrameX.Fsm.Runtime
             var typeNamePair = new TypeNamePair(typeof(T), name);
             if (HasFsm<T>(name))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
+                throw new FuException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
             }
 
             Fsm<T> fsm = Fsm<T>.Create(name, owner, states);
@@ -286,7 +286,7 @@ namespace GameFrameX.Fsm.Runtime
             var typeNamePair = new TypeNamePair(typeof(T), name);
             if (HasFsm<T>(name))
             {
-                throw new GameFrameworkException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
+                throw new FuException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
             }
 
             Fsm<T> fsm = Fsm<T>.Create(name, owner, states);
@@ -313,7 +313,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalDestroyFsm(new TypeNamePair(ownerType));
@@ -340,7 +340,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (ownerType == null)
             {
-                throw new GameFrameworkException("Owner type is invalid.");
+                throw new FuException("Owner type is invalid.");
             }
 
             return InternalDestroyFsm(new TypeNamePair(ownerType, name));
@@ -356,7 +356,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (fsm == null)
             {
-                throw new GameFrameworkException("FSM is invalid.");
+                throw new FuException("FSM is invalid.");
             }
 
             return InternalDestroyFsm(new TypeNamePair(typeof(T), fsm.Name));
@@ -371,7 +371,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             if (fsm == null)
             {
-                throw new GameFrameworkException("FSM is invalid.");
+                throw new FuException("FSM is invalid.");
             }
 
             return InternalDestroyFsm(new TypeNamePair(fsm.OwnerType, fsm.Name));

@@ -7,7 +7,6 @@
 
 using FuFramework.Core.Runtime;
 using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Sound.Runtime
 {
@@ -29,7 +28,7 @@ namespace GameFrameX.Sound.Runtime
 
         private void Start()
         {
-            m_ResourceComponent = GameFrameworkEntry.GetModule<IAssetManager>();
+            m_ResourceComponent = FuEntry.GetModule<IAssetManager>();
             if (m_ResourceComponent == null)
             {
                 Log.Fatal("Resource component is invalid.");

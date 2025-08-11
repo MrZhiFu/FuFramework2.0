@@ -1,6 +1,7 @@
 ﻿using System;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -22,12 +23,14 @@ namespace GameFrameX.Runtime
                 /// <param name="str">要哈希的字符串。</param>
                 /// <param name="seed">哈希种子，默认为 27。</param>
                 /// <returns>计算得到的哈希值。</returns>
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static uint Hash(string str, uint seed = 27)
                 {
                     var data = System.Text.Encoding.UTF8.GetBytes(str);
                     return Hash(data, (uint)data.Length, seed);
                 }
 
+                // ReSharper disable once MemberHidesStaticFromOuterClass
                 private static uint Hash(byte[] data, uint length, uint seed)
                 {
                     uint nBlocks = length >> 2;

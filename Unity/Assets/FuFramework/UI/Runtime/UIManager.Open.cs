@@ -2,7 +2,6 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace FuFramework.UI.Runtime
 {
@@ -90,7 +89,7 @@ namespace FuFramework.UI.Runtime
         {
             try
             {
-                if (view == null) throw new GameFrameworkException($"[UIManager]创建界面实例{typeof(T).Name}失败.");
+                if (view == null) throw new FuException($"[UIManager]创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
                 var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;

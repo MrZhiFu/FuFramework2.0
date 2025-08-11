@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using YooAsset;
 using Object = UnityEngine.Object;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Asset.Runtime
 {
@@ -17,7 +17,7 @@ namespace GameFrameX.Asset.Runtime
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Asset")]
     
-    public sealed class AssetComponent : GameFrameworkComponent
+    public sealed class AssetComponent : FuComponent
     {
         [Tooltip("当目标平台为Web平台时，将会强制设置为" + nameof(EPlayMode.WebPlayMode))] [SerializeField]
         private EPlayMode m_GamePlayMode;
@@ -53,7 +53,7 @@ namespace GameFrameX.Asset.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IAssetManager);
             base.Awake();
-            _assetManager = GameFrameworkEntry.GetModule<IAssetManager>();
+            _assetManager = FuEntry.GetModule<IAssetManager>();
             if (_assetManager == null)
             {
                 Log.Fatal("Asset manager is invalid.");

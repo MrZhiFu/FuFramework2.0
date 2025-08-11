@@ -3,9 +3,10 @@ using Cysharp.Threading.Tasks;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using GameFrameX.Web.Runtime;
 using YooAsset;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
 {

@@ -1,7 +1,8 @@
 ﻿using System;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using UnityEngine.Networking;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -106,7 +107,7 @@ namespace FuFramework.Download.Runtime
 
             m_UnityWebRequest = new UnityWebRequest(downloadUri);
             m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
-            m_UnityWebRequest.SetRequestHeader("Range", GameFrameX.Runtime.Utility.Text.Format("bytes={0}-", fromPosition));
+            m_UnityWebRequest.SetRequestHeader("Range", Utility.Text.Format("bytes={0}-", fromPosition));
             m_UnityWebRequest.downloadHandler = new DownloadHandler(this);
 #if UNITY_2017_2_OR_NEWER
             m_UnityWebRequest.SendWebRequest();
@@ -132,7 +133,7 @@ namespace FuFramework.Download.Runtime
 
             m_UnityWebRequest = new UnityWebRequest(downloadUri);
             m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
-            m_UnityWebRequest.SetRequestHeader("Range", GameFrameX.Runtime.Utility.Text.Format("bytes={0}-{1}", fromPosition, toPosition));
+            m_UnityWebRequest.SetRequestHeader("Range", Utility.Text.Format("bytes={0}-{1}", fromPosition, toPosition));
             m_UnityWebRequest.downloadHandler = new DownloadHandler(this);
 #if UNITY_2017_2_OR_NEWER
             m_UnityWebRequest.SendWebRequest();

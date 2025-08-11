@@ -2,11 +2,11 @@
 using FairyGUI;
 using UnityEngine;
 using System.Threading;
-using GameFrameX.Runtime;
 using Cysharp.Threading.Tasks;
 using GameFrameX.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace FuFramework.UI.Runtime
 {
@@ -151,10 +151,10 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        /// <exception cref="GameFrameworkException"></exception>
+        /// <exception cref="FuException"></exception>
         private async UniTask<TextAsset> LoadDesc(string pkgName)
         {
-            if (string.IsNullOrEmpty(pkgName)) throw new GameFrameworkException("[FuiPackageManager]包名不能为空.");
+            if (string.IsNullOrEmpty(pkgName)) throw new FuException("[FuiPackageManager]包名不能为空.");
 
             //"Assets/Bundles/UI/";
             var rootPath = Utility.Asset.Path.GetUIRootPath();

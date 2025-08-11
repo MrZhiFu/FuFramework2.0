@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -18,7 +19,7 @@ namespace GameFrameX.Runtime
             /// </summary>
             public sealed class Rsa
             {
-                private readonly RSACryptoServiceProvider _rsa = null;
+                private readonly RSACryptoServiceProvider _rsa;
 
                 /// <summary>
                 /// 使用提供的 RSACryptoServiceProvider 实例初始化 Rsa 类。
@@ -59,9 +60,9 @@ namespace GameFrameX.Runtime
                 /// <param name="publicKey">公钥</param>
                 /// <param name="content">所加密的内容</param>
                 /// <returns>加密后的内容</returns>
-                public static string RSAEncrypt(string publicKey, string content)
+                public static string RsaEncrypt(string publicKey, string content)
                 {
-                    var res = RSAEncrypt(publicKey, Encoding.UTF8.GetBytes(content));
+                    var res = RsaEncrypt(publicKey, Encoding.UTF8.GetBytes(content));
                     return Convert.ToBase64String(res);
                 }
 
@@ -82,7 +83,7 @@ namespace GameFrameX.Runtime
                 /// <param name="publicKey"></param>
                 /// <param name="content"></param>
                 /// <returns></returns>
-                public static byte[] RSAEncrypt(string publicKey, byte[] content)
+                public static byte[] RsaEncrypt(string publicKey, byte[] content)
                 {
                     var rsa = new RSACryptoServiceProvider();
                     rsa.FromXmlString(publicKey);
@@ -107,9 +108,9 @@ namespace GameFrameX.Runtime
                 /// <param name="privateKey">私钥</param>
                 /// <param name="content">加密后的内容</param>
                 /// <returns>解密后的内容</returns>
-                public static string RSADecrypt(string privateKey, string content)
+                public static string RsaDecrypt(string privateKey, string content)
                 {
-                    var res = RSADecrypt(privateKey, Convert.FromBase64String(content));
+                    var res = RsaDecrypt(privateKey, Convert.FromBase64String(content));
                     return Encoding.UTF8.GetString(res);
                 }
 
@@ -119,7 +120,7 @@ namespace GameFrameX.Runtime
                 /// <param name="privateKey"></param>
                 /// <param name="content"></param>
                 /// <returns></returns>
-                public static byte[] RSADecrypt(string privateKey, byte[] content)
+                public static byte[] RsaDecrypt(string privateKey, byte[] content)
                 {
                     RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
                     rsa.FromXmlString(privateKey);
@@ -155,7 +156,7 @@ namespace GameFrameX.Runtime
                 /// <param name="dataToSign">要签名的数据</param>
                 /// <param name="privateKey">私钥字符串</param>
                 /// <returns>签名后的字节数组</returns>
-                public static byte[] RSASignData(byte[] dataToSign, string privateKey)
+                public static byte[] RsaSignData(byte[] dataToSign, string privateKey)
                 {
                     try
                     {
@@ -175,9 +176,9 @@ namespace GameFrameX.Runtime
                 /// <param name="dataToSign"></param>
                 /// <param name="privateKey"></param>
                 /// <returns></returns>
-                public static string RSASignData(string dataToSign, string privateKey)
+                public static string RsaSignData(string dataToSign, string privateKey)
                 {
-                    byte[] res = RSASignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
+                    byte[] res = RsaSignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
                     return Convert.ToBase64String(res);
                 }
 
@@ -216,7 +217,7 @@ namespace GameFrameX.Runtime
                 /// <param name="signedData">签名数据</param>
                 /// <param name="publicKey">公钥字符串</param>
                 /// <returns>验证结果</returns>
-                public static bool RSAVerifyData(byte[] dataToVerify, byte[] signedData, string publicKey)
+                public static bool RsaVerifyData(byte[] dataToVerify, byte[] signedData, string publicKey)
                 {
                     try
                     {
@@ -237,9 +238,9 @@ namespace GameFrameX.Runtime
                 /// <param name="signedData"></param>
                 /// <param name="publicKey"></param>
                 /// <returns></returns>
-                public static bool RSAVerifyData(string dataToVerify, string signedData, string publicKey)
+                public static bool RsaVerifyData(string dataToVerify, string signedData, string publicKey)
                 {
-                    return RSAVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), publicKey);
+                    return RsaVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), publicKey);
                 }
 
                 /// <summary>

@@ -75,10 +75,7 @@ namespace FuFramework.Core.Runtime
         /// 是否是Linux平台
         /// </summary>
 
-        public static bool IsLinux
-        {
-            get { return Application.platform == RuntimePlatform.LinuxPlayer; }
-        }
+        public static bool IsLinux => Application.platform == RuntimePlatform.LinuxPlayer;
 
         /// <summary>
         /// 是否是Mac平台

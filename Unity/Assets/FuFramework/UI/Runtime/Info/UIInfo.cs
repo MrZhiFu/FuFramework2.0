@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -30,10 +29,10 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
-        /// <exception cref="GameFrameworkException">界面为空时抛出。</exception>
+        /// <exception cref="FuException">界面为空时抛出。</exception>
         public static UIInfo Create(ViewBase view)
         {
-            if (view == null) throw new GameFrameworkException("ui界面逻辑实例为空.");
+            if (view == null) throw new FuException("ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<UIInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;

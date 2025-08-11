@@ -103,14 +103,14 @@ namespace FuFramework.Core.Runtime
             Vector2 startVe2 = startPoint.IgnoreYAxis();
             Vector2 endVe2   = endPoint.IgnoreYAxis();
 
-            float A = endVe2.y              - startVe2.y;
-            float B = startVe2.x            - endVe2.x;
-            float C = endVe2.x * startVe2.y - startVe2.x * endVe2.y;
+            float a = endVe2.y              - startVe2.y;
+            float b = startVe2.x            - endVe2.x;
+            float c = endVe2.x * startVe2.y - startVe2.x * endVe2.y;
 
-            float   denominator = Mathf.Sqrt(A * A + B * B);
+            float   denominator = Mathf.Sqrt(a * a + b * b);
             Vector2 pointVe2    = point.IgnoreYAxis();
 
-            return Mathf.Abs((A * pointVe2.x + B * pointVe2.y + C) / denominator);
+            return Mathf.Abs((a * pointVe2.x + b * pointVe2.y + c) / denominator);
         }
 
         /// <summary>

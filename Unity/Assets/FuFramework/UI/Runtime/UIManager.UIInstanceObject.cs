@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace FuFramework.UI.Runtime
@@ -32,7 +31,7 @@ namespace FuFramework.UI.Runtime
             protected override void Release(bool isShutdown)
             {
                 if (Target is not ViewBase viewBase)
-                    throw new GameFrameworkException("[UIInstanceObject]需要释放的目标对象不是界面基类ViewBase");
+                    throw new FuException("[UIInstanceObject]需要释放的目标对象不是界面基类ViewBase");
 
                 viewBase.UIView?.Dispose();
                 viewBase._OnDispose();

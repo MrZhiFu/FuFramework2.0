@@ -1,7 +1,7 @@
 ﻿// ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class GameFrameworkLog
+    public static partial class FuLog
     {
         /// <summary>
         /// 游戏框架日志辅助器接口。
@@ -13,7 +13,7 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             /// <param name="level">游戏框架日志等级。</param>
             /// <param name="message">日志内容。</param>
-            void Log(GameFrameworkLogLevel level, object message);
+            void Log(LogLevel level, object message);
         }
     }
 }

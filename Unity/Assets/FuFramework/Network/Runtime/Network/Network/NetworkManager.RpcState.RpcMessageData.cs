@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -84,7 +83,7 @@ namespace GameFrameX.Network.Runtime
 
                 private RpcMessageData(IRequestMessage requestMessage, int timeout)
                 {
-                    CreatedTime = TimerHelper.UnixTimeMilliseconds();
+                    CreatedTime = TimeHelper.UnixTimeMilliseconds();
                     RequestMessage = requestMessage;
                     Timeout = timeout;
                     UniqueId = ((MessageObject)requestMessage).UniqueId;

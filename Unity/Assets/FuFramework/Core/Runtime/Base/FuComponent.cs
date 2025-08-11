@@ -8,7 +8,7 @@ namespace FuFramework.Core.Runtime
     /// 游戏框架组件抽象基类。
     /// 实现了组件的自动注册功能。
     /// </summary>
-    public abstract class GameFrameworkComponent : MonoBehaviour
+    public abstract class FuComponent : MonoBehaviour
     {
         /// <summary>
         /// 是否自动注册
@@ -38,9 +38,9 @@ namespace FuFramework.Core.Runtime
             GameEntry.RegisterComponent(this);
             if (IsAutoRegister)
             {
-                GameFrameworkGuard.NotNull(ImplementationComponentType, nameof(ImplementationComponentType));
-                GameFrameworkGuard.NotNull(InterfaceComponentType,      nameof(InterfaceComponentType));
-                GameFrameworkEntry.RegisterModule(InterfaceComponentType, ImplementationComponentType);
+                FuGuard.NotNull(ImplementationComponentType, nameof(ImplementationComponentType));
+                FuGuard.NotNull(InterfaceComponentType,      nameof(InterfaceComponentType));
+                FuEntry.RegisterModule(InterfaceComponentType, ImplementationComponentType);
             }
         }
     }

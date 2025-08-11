@@ -8,7 +8,6 @@
 using System;
 using System.IO;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace GameFrameX.Network.Runtime
 {
@@ -70,7 +69,7 @@ namespace GameFrameX.Network.Runtime
             {
                 if (targetLength < 0)
                 {
-                    throw new GameFrameworkException("Target length is invalid.");
+                    throw new FuException("Target length is invalid.");
                 }
 
                 Stream.Position = 0L;

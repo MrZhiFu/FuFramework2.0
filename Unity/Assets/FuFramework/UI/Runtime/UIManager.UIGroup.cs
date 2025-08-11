@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
 
 namespace FuFramework.UI.Runtime
 {
@@ -59,7 +58,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有界面组。</param>
         public void GetAllUIGroups(List<UIGroup> results)
         {
-            GameFrameworkGuard.NotNull(results, nameof(results));
+            FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)

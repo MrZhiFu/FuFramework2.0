@@ -8,16 +8,8 @@ namespace FuFramework.Core.Runtime
     /// 对象信息。
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
-    // Preserve the ObjectInfo struct for Unity's serialization
-    public struct ObjectInfo
+    public readonly struct ObjectInfo
     {
-        private readonly string m_Name;
-        private readonly bool m_Locked;
-        private readonly bool m_CustomCanReleaseFlag;
-        private readonly int m_Priority;
-        private readonly DateTime m_LastUseTime;
-        private readonly int m_SpawnCount;
-
         /// <summary>
         /// 初始化对象信息的新实例。
         /// </summary>
@@ -30,96 +22,54 @@ namespace FuFramework.Core.Runtime
         // Preserve the constructor for Unity's serialization
         public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int spawnCount)
         {
-            m_Name = name;
-            m_Locked = locked;
-            m_CustomCanReleaseFlag = customCanReleaseFlag;
-            m_Priority = priority;
-            m_LastUseTime = lastUseTime;
-            m_SpawnCount = spawnCount;
+            Name = name;
+            Locked = locked;
+            CustomCanReleaseFlag = customCanReleaseFlag;
+            Priority = priority;
+            LastUseTime = lastUseTime;
+            SpawnCount = spawnCount;
         }
 
         /// <summary>
         /// 获取对象名称。
         /// </summary>
         // Preserve the Name property for Unity's serialization
-        public string Name
-        {
-            get
-            {
-                return m_Name;
-            }
-        }
+        public string Name { get; }
 
         /// <summary>
         /// 获取对象是否被加锁。
         /// </summary>
         // Preserve the Locked property for Unity's serialization
-        public bool Locked
-        {
-            get
-            {
-                return m_Locked;
-            }
-        }
+        public bool Locked { get; }
 
         /// <summary>
         /// 获取对象自定义释放检查标记。
         /// </summary>
         // Preserve the CustomCanReleaseFlag property for Unity's serialization
-        public bool CustomCanReleaseFlag
-        {
-            get
-            {
-                return m_CustomCanReleaseFlag;
-            }
-        }
+        public bool CustomCanReleaseFlag { get; }
 
         /// <summary>
         /// 获取对象的优先级。
         /// </summary>
         // Preserve the Priority property for Unity's serialization
-        public int Priority
-        {
-            get
-            {
-                return m_Priority;
-            }
-        }
+        public int Priority { get; }
 
         /// <summary>
         /// 获取对象上次使用时间。
         /// </summary>
         // Preserve the LastUseTime property for Unity's serialization
-        public DateTime LastUseTime
-        {
-            get
-            {
-                return m_LastUseTime;
-            }
-        }
-
-        /// <summary>
-        /// 获取对象是否正在使用。
-        /// </summary>
-        // Preserve the IsInUse property for Unity's serialization
-        public bool IsInUse
-        {
-            get
-            {
-                return m_SpawnCount > 0;
-            }
-        }
+        public DateTime LastUseTime { get; }
 
         /// <summary>
         /// 获取对象的获取计数。
         /// </summary>
         // Preserve the SpawnCount property for Unity's serialization
-        public int SpawnCount
-        {
-            get
-            {
-                return m_SpawnCount;
-            }
-        }
+        public int SpawnCount { get; }
+
+        /// <summary>
+        /// 获取对象是否正在使用。
+        /// </summary>
+        // Preserve the IsInUse property for Unity's serialization
+        public bool IsInUse => SpawnCount > 0;
     }
 }

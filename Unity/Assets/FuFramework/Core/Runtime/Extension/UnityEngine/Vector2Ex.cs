@@ -6,14 +6,14 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// <see cref="Vector2" /> 类的扩展方法。
     /// </summary>
-    public static class Vector2Extension
+    public static class Vector2Ex
     {
         /// <summary>
         /// 取 <see cref="Vector2" /> 的 (x, y) 转换为 <see cref="Vector3" /> 的 (x, 0, y)。
         /// </summary>
         /// <param name="vector2">要转换的 Vector2。</param>
         /// <returns>转换后的 Vector3。</returns>
-        public static Vector3 ToVector3(this global::UnityEngine.Vector2 vector2)
+        public static Vector3 ToVector3(this Vector2 vector2)
         {
             return new Vector3(vector2.x, 0f, vector2.y);
         }
@@ -24,7 +24,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="vector2">要转换的 Vector2。</param>
         /// <param name="y">Vector3 的 y 值。</param>
         /// <returns>转换后的 Vector3。</returns>
-        public static Vector3 ToVector3(this global::UnityEngine.Vector2 vector2, float y)
+        public static Vector3 ToVector3(this Vector2 vector2, float y)
         {
             return new Vector3(vector2.x, y, vector2.y);
         }

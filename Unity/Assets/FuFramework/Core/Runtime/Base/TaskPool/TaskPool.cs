@@ -26,10 +26,10 @@ namespace FuFramework.Core.Runtime
         private readonly Stack<ITaskAgent<T>> m_FreeAgentStack;
 
         /// 等待中的任务链表集合
-        private readonly GameFrameworkLinkedList<T> m_WaitingTaskList;
+        private readonly FuLinkedList<T> m_WaitingTaskList;
 
         /// 工作中任务代理链表集合
-        private readonly GameFrameworkLinkedList<ITaskAgent<T>> m_WorkingAgentList;
+        private readonly FuLinkedList<ITaskAgent<T>> m_WorkingAgentList;
 
         /// <summary>
         /// 初始化任务池的新实例。
@@ -39,8 +39,8 @@ namespace FuFramework.Core.Runtime
             Paused = false;
 
             m_FreeAgentStack   = new Stack<ITaskAgent<T>>();
-            m_WaitingTaskList  = new GameFrameworkLinkedList<T>();
-            m_WorkingAgentList = new GameFrameworkLinkedList<ITaskAgent<T>>();
+            m_WaitingTaskList  = new FuLinkedList<T>();
+            m_WorkingAgentList = new FuLinkedList<ITaskAgent<T>>();
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace FuFramework.Core.Runtime
             if (Paused) return;
 
             _ProcessRunningTasks(elapseSeconds, realElapseSeconds); // 处理正在运行的任务
-            _ProcessWaitingTasks(elapseSeconds, realElapseSeconds); // 处理正在等待的任务
+            _ProcessWaitingTasks();                                 // 处理正在等待的任务
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="agent">要增加的任务代理。</param>
         public void AddAgent(ITaskAgent<T> agent)
         {
-            if (agent == null) throw new GameFrameworkException("任务代理为空.");
+            if (agent == null) throw new FuException("任务代理为空.");
 
             agent.Initialize();
             m_FreeAgentStack.Push(agent);
@@ -148,7 +148,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="results">任务的信息。</param>
         public void GetTaskInfos(string tag, List<TaskInfo> results)
         {
-            if (results == null) throw new GameFrameworkException("Results is invalid.");
+            if (results == null) throw new FuException("Results is invalid.");
 
             results.Clear();
 
@@ -198,7 +198,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="results">所有任务的信息。</param>
         public void GetAllTaskInfos(List<TaskInfo> results)
         {
-            if (results == null) throw new GameFrameworkException("Results is invalid.");
+            if (results == null) throw new FuException("Results is invalid.");
 
             results.Clear();
 
@@ -375,9 +375,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 处理正在等待的任务
         /// </summary>
-        /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
-        private void _ProcessWaitingTasks(float elapseSeconds, float realElapseSeconds)
+        private void _ProcessWaitingTasks()
         {
             var current = m_WaitingTaskList.First;
             while (current != null && FreeAgentCount > 0)

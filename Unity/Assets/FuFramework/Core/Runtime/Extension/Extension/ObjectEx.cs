@@ -6,7 +6,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 对象扩展函数
     /// </summary>
-    public static class ObjectExtension
+    public static class ObjectEx
     {
         /// <summary>
         /// 检查对象是否为null
@@ -30,8 +30,7 @@ namespace FuFramework.Core.Runtime
         /// <exception cref="ArgumentNullException">参数为空的异常</exception>
         public static void CheckNull(this object self, string name)
         {
-            if (self.IsNull())
-                throw new ArgumentNullException(name, " can not be null.");
+            if (self.IsNull()) throw new ArgumentNullException(name, " can not be null.");
         }
     }
 }

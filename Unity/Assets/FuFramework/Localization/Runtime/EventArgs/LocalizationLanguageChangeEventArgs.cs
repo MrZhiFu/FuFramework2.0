@@ -1,5 +1,5 @@
 ﻿using GameFrameX.Event.Runtime;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Localization.Runtime

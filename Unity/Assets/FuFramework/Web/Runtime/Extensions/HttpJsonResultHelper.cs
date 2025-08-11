@@ -1,5 +1,5 @@
 using System;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using Newtonsoft.Json;
 
 namespace GameFrameX.Web.Runtime

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Buffers;
-using GameFrameX.Runtime;
 using ICSharpCode.SharpZipLib.Checksum;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Zip.Compression;
@@ -15,7 +14,7 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     public static class ZipHelper
     {
-        private static readonly Crc32 CRC = new Crc32();
+        private static readonly Crc32 CRC = new();
 
         /// <summary> 
         /// 压缩文件夹  
@@ -159,6 +158,7 @@ namespace FuFramework.Core.Runtime
             using (var readStream = File.OpenRead(fileToZip))
             {
                 byte[] buffer = new byte[readStream.Length];
+                // ReSharper disable once UnusedVariable
                 var    read   = readStream.Read(buffer, 0, buffer.Length);
                 using (var writeStream = File.Create(zipFile))
                 {
@@ -220,7 +220,7 @@ namespace FuFramework.Core.Runtime
                     zipStream.Password = password;
                 }
 
-                ZipEntry zipEntry = null;
+                ZipEntry zipEntry;
                 while ((zipEntry = zipStream.GetNextEntry()) != null)
                 {
                     if (zipEntry.IsDirectory)
@@ -242,6 +242,7 @@ namespace FuFramework.Core.Runtime
                     }
 
                     var bytes = new byte[zipEntry.Size];
+                    // ReSharper disable once UnusedVariable
                     var read  = zipStream.Read(bytes, 0, bytes.Length);
                     File.WriteAllBytes(fileName, bytes);
                 }

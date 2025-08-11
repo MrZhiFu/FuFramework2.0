@@ -1,5 +1,6 @@
-﻿using GameFrameX.Runtime;
+﻿using FuFramework.Core.Runtime;
 using Newtonsoft.Json;
+using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_GAME_FRAME_X_PROTOBUF
 using ProtoBuf;
 #endif

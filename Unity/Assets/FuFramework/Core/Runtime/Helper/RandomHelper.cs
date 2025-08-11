@@ -44,18 +44,12 @@ namespace FuFramework.Core.Runtime
         /// <param name="lower">下限</param>
         /// <param name="upper">上限</param>
         /// <returns>返回一个在指定范围内的随机整数</returns>
-        public static int Next(int lower, int upper)
-        {
-            return _random.Next(lower, upper);
-        }
+        public static int Next(int lower, int upper) => _random.Next(lower, upper);
 
         /// <summary>
         /// 获取0与1之间的随机数
         /// </summary>
         /// <returns>返回一个在0到1之间的随机浮点数</returns>
-        public static float Next()
-        {
-            return _random.Next(0, 100_000) / 100_000f;
-        }
+        public static float Next() => _random.Next(0, 100_000) / 100_000f;
     }
 }

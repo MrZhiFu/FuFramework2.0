@@ -10,8 +10,8 @@ using System;
 using System.Collections;
 using FuFramework.Core.Runtime;
 using GameFrameX.Fsm.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Procedure.Runtime
 {
@@ -20,7 +20,7 @@ namespace GameFrameX.Procedure.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Procedure")]
-    public sealed class ProcedureComponent : GameFrameworkComponent
+    public sealed class ProcedureComponent : FuComponent
     {
         private IProcedureManager m_ProcedureManager = null;
         private ProcedureBase m_EntranceProcedure = null;
@@ -61,7 +61,7 @@ namespace GameFrameX.Procedure.Runtime
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IProcedureManager);
             base.Awake();
-            m_ProcedureManager = GameFrameworkEntry.GetModule<IProcedureManager>();
+            m_ProcedureManager = FuEntry.GetModule<IProcedureManager>();
             if (m_ProcedureManager == null)
             {
                 Log.Fatal("Procedure manager is invalid.");
@@ -100,7 +100,7 @@ namespace GameFrameX.Procedure.Runtime
                 yield break;
             }
 
-            m_ProcedureManager.Initialize(GameFrameworkEntry.GetModule<IFsmManager>(), procedures);
+            m_ProcedureManager.Initialize(FuEntry.GetModule<IFsmManager>(), procedures);
 
             yield return new WaitForEndOfFrame();
 

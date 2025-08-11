@@ -7,7 +7,7 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Runtime;
+using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Fsm.Runtime
 {
@@ -77,7 +77,7 @@ namespace GameFrameX.Fsm.Runtime
             Fsm<T> fsmImplement = (Fsm<T>) fsm;
             if (fsmImplement == null)
             {
-                throw new GameFrameworkException("FSM is invalid.");
+                throw new FuException("FSM is invalid.");
             }
 
             fsmImplement.ChangeState<TState>();
@@ -93,7 +93,7 @@ namespace GameFrameX.Fsm.Runtime
             Fsm<T> fsmImplement = (Fsm<T>) fsm;
             if (fsmImplement == null)
             {
-                throw new GameFrameworkException("FSM is invalid.");
+                throw new FuException("FSM is invalid.");
             }
 
             fsmImplement.ChangeState<TState>();
@@ -109,17 +109,17 @@ namespace GameFrameX.Fsm.Runtime
             Fsm<T> fsmImplement = (Fsm<T>) fsm;
             if (fsmImplement == null)
             {
-                throw new GameFrameworkException("FSM is invalid.");
+                throw new FuException("FSM is invalid.");
             }
 
             if (stateType == null)
             {
-                throw new GameFrameworkException("State type is invalid.");
+                throw new FuException("State type is invalid.");
             }
 
             if (!typeof(FsmState<T>).IsAssignableFrom(stateType))
             {
-                throw new GameFrameworkException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
+                throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
             }
 
             fsmImplement.ChangeState(stateType);

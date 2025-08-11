@@ -1,14 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System;
 
-using System;
-using FuFramework.Core.Runtime;
-
-namespace GameFrameX.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
@@ -88,17 +81,18 @@ namespace GameFrameX.Runtime
             public static void GetSelfXorBytes(byte[] bytes, int startIndex, int length, byte[] code)
             {
                 if (bytes == null) return;
-                
-                if (code  == null) throw 
-                    new GameFrameworkException("传入的 code密钥 为空.");
+
+                if (code == null)
+                    throw
+                        new FuException("传入的 code密钥 为空.");
 
                 var codeLength = code.Length;
 
-                if (codeLength <= 0) 
-                    throw new GameFrameworkException("传入的 code密钥 长度不正确.");
-                
-                if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length) 
-                    throw new GameFrameworkException("传入的开始位置或长度不正确.");
+                if (codeLength <= 0)
+                    throw new FuException("传入的 code密钥 长度不正确.");
+
+                if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length)
+                    throw new FuException("传入的开始位置或长度不正确.");
 
                 var codeIndex = startIndex % codeLength;
                 for (var i = startIndex; i < length; i++)

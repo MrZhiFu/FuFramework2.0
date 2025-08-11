@@ -6,7 +6,7 @@
 using System;
 using FairyGUI;
 using FairyGUI.Utils;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
 
