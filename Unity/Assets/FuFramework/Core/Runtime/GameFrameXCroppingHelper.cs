@@ -1,6 +1,4 @@
-using FuFramework.Core.Runtime;
 using UnityEngine;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace FuFramework.Core.Runtime
 {
@@ -8,9 +6,7 @@ namespace FuFramework.Core.Runtime
     {
         private void Start()
         {
-#if ENABLE_GAME_FRAME_X_DO_TWEEN
             _ = typeof(DoTweenHelper);
-#endif
             _ = typeof(BinaryEx);
             _ = typeof(BufferEx);
             _ = typeof(IObjectPool<>);
@@ -30,7 +26,7 @@ namespace FuFramework.Core.Runtime
             _ = typeof(DefaultTextHelper);
             _ = typeof(DefaultVersionHelper);
             _ = typeof(DistinctHelper);
-            _ = typeof(FuFramework.Core.Runtime.EventPool<>);
+            _ = typeof(EventPool<>);
             _ = typeof(EventPoolMode);
             _ = typeof(FileHelper);
             _ = typeof(GameEntry);
@@ -85,38 +81,38 @@ namespace FuFramework.Core.Runtime
             _ = typeof(TimeHelper);
             _ = typeof(TypeNamePair);
             _ = typeof(UnityRendererHelper);
-            _ = typeof(FuFramework.Core.Runtime.Utility);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Assembly);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Asset);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Asset.Path);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Compression);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Compression.ICompressionHelper);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Const);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Const.FileNameSuffix);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Converter);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Encryption);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Encryption.Aes);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Encryption.Dsa);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Encryption.Rsa);
-            _ = typeof(FuFramework.Core.Runtime.Utility.File);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash.HmacSha256);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash.MD5);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash.MurmurHash3);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash.Sha1);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Hash.XxHash);
-            _ = typeof(FuFramework.Core.Runtime.Utility.IdGenerator);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Json);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Json.IJsonHelper);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Net);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Object);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Path);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Random);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Text);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Text.ITextHelper);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Verifier);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Verifier.Crc64);
-            _ = typeof(FuFramework.Core.Runtime.Utility.Verifier.NonCryptographicHashAlgorithm);
+            _ = typeof(Utility);
+            _ = typeof(Utility.Assembly);
+            _ = typeof(Utility.Asset);
+            _ = typeof(Utility.Asset.Path);
+            _ = typeof(Utility.Compression);
+            _ = typeof(Utility.Compression.ICompressionHelper);
+            _ = typeof(Utility.Const);
+            _ = typeof(Utility.Const.FileNameSuffix);
+            _ = typeof(Utility.Converter);
+            _ = typeof(Utility.Encryption);
+            _ = typeof(Utility.Encryption.Aes);
+            _ = typeof(Utility.Encryption.Dsa);
+            _ = typeof(Utility.Encryption.Rsa);
+            _ = typeof(Utility.File);
+            _ = typeof(Utility.Hash);
+            _ = typeof(Utility.Hash.HmacSha256);
+            _ = typeof(Utility.Hash.MD5);
+            _ = typeof(Utility.Hash.MurmurHash3);
+            _ = typeof(Utility.Hash.Sha1);
+            _ = typeof(Utility.Hash.XxHash);
+            _ = typeof(Utility.IdGenerator);
+            _ = typeof(Utility.Json);
+            _ = typeof(Utility.Json.IJsonHelper);
+            _ = typeof(Utility.Net);
+            _ = typeof(Utility.Object);
+            _ = typeof(Utility.Path);
+            _ = typeof(Utility.Random);
+            _ = typeof(Utility.Text);
+            _ = typeof(Utility.Text.ITextHelper);
+            _ = typeof(Utility.Verifier);
+            _ = typeof(Utility.Verifier.Crc64);
+            _ = typeof(Utility.Verifier.NonCryptographicHashAlgorithm);
             _ = typeof(VarBoolean);
             _ = typeof(VarByte);
             _ = typeof(VarByteArray);
@@ -149,8 +145,8 @@ namespace FuFramework.Core.Runtime
             _ = typeof(VarVector2);
             _ = typeof(VarVector3);
             _ = typeof(VarVector4);
-            _ = typeof(FuFramework.Core.Runtime.Version);
-            _ = typeof(FuFramework.Core.Runtime.Version.IVersionHelper);
+            _ = typeof(Version);
+            _ = typeof(Version.IVersionHelper);
             _ = typeof(ZipHelper);
             _ = typeof(ObjectEx);
             _ = typeof(SpanEx);

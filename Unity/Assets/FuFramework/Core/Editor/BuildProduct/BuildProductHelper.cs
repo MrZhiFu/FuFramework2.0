@@ -1,16 +1,19 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using GameFrameX.Editor;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
-    ///  导出和发布产品帮助类
+    /// 构建产品帮助类。
+    /// 主要用于发布游戏的各个平台的产品
     /// </summary>
     public static class BuildProductHelper
     {
@@ -53,7 +56,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
                 PlayerSettings.defaultScreenHeight = 720;
                 PlayerSettings.defaultScreenWidth = 1280;
@@ -85,7 +88,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -102,7 +105,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
                 PlayerSettings.defaultScreenHeight = 720;
                 PlayerSettings.defaultScreenWidth = 1280;
@@ -136,7 +139,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -151,7 +154,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.SplashScreen.show = false;
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
                 PlayerSettings.defaultScreenHeight = 720;
@@ -184,7 +187,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -232,7 +235,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 UpdateBuildTime();
                 AssetDatabase.SaveAssets();
                 BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, BuildOutputPath(), BuildTarget.WebGL, BuildOptions.None);
@@ -240,7 +243,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 #if ENABLE_WX_MINI_GAME
@@ -311,7 +314,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 UpdateBuildTime();
                 EditorUserBuildSettings.buildAppBundle = false;
                 EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
@@ -323,7 +326,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -361,7 +364,7 @@ namespace GameFrameX.Editor
 
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
 
                 EditorUserBuildSettings.buildAppBundle = true;
@@ -374,7 +377,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -465,7 +468,7 @@ namespace GameFrameX.Editor
         {
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.SplashScreen.show = false;
                 UpdateBuildTime();
                 _buildPath = BuildOutputPath();
@@ -483,7 +486,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -495,7 +498,7 @@ namespace GameFrameX.Editor
         {
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.SplashScreen.show = false;
                 UpdateBuildTime();
                 _buildPath = BuildOutputPath();
@@ -512,7 +515,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -525,7 +528,7 @@ namespace GameFrameX.Editor
         {
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.SplashScreen.show = false;
                 UpdateBuildTime();
                 _buildPath = BuildOutputPath();
@@ -538,7 +541,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 
@@ -551,7 +554,7 @@ namespace GameFrameX.Editor
         {
             try
             {
-                HotFixEditorCompilerHelper.AddEditor();
+                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
                 PlayerSettings.SplashScreen.show = false;
                 UpdateBuildTime();
                 _buildPath = BuildOutputPath();
@@ -564,7 +567,7 @@ namespace GameFrameX.Editor
             }
             finally
             {
-                HotFixEditorCompilerHelper.RemoveEditor();
+                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
             }
         }
 

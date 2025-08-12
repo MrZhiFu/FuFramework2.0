@@ -1,4 +1,5 @@
 ﻿using GameFrameX.Editor;
+using FuFramework.Core.Editor;
 using UnityEditor;
 
 namespace GameFrameX.Config.Editor

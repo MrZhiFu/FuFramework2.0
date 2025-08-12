@@ -1,11 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -15,10 +8,14 @@ using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
+    /// <summary>
+    /// 引用池组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(ReferencePoolComponent))]
-    internal sealed class ReferencePoolComponentInspector : GameFrameworkInspector
+    internal sealed class ReferencePoolComponentInspector : FuFrameworkInspector
     {
         /// <summary>
         /// 存储所有引用池信息的字典，key为程序集名称，value为该程序集下的所有引用池信息
@@ -33,12 +30,12 @@ namespace GameFrameX.Editor
         /// <summary>
         /// 激活严格检查的属性
         /// </summary>
-        private SerializedProperty m_EnableStrictCheck = null;
+        private SerializedProperty m_EnableStrictCheck;
 
         /// <summary>
         /// 是否显示完整类名的属性
         /// </summary>
-        private bool m_ShowFullClassName = false;
+        private bool m_ShowFullClassName;
 
         public override void OnInspectorGUI()
         {
@@ -50,9 +47,9 @@ namespace GameFrameX.Editor
 
             if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
             {
-                var enableStrictCheck = EditorGUILayout.Toggle("激活严格检查(打开会降低性能)", t.EnableStrictCheck);
-                if (enableStrictCheck != t.EnableStrictCheck)
-                    t.EnableStrictCheck = enableStrictCheck;
+                var enableStrictCheck = EditorGUILayout.Toggle("激活严格检查(打开会影响性能)", ReferencePoolComponent.EnableStrictCheck);
+                if (enableStrictCheck != ReferencePoolComponent.EnableStrictCheck)
+                    ReferencePoolComponent.EnableStrictCheck = enableStrictCheck;
 
                 EditorGUILayout.LabelField("引用池个数", ReferencePool.Count.ToString());
                 m_ShowFullClassName = EditorGUILayout.Toggle("是否显示完整类名", m_ShowFullClassName);

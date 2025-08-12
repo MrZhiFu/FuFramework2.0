@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 日志脚本宏定义。

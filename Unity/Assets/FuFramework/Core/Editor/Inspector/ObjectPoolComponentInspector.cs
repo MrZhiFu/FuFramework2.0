@@ -1,11 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -14,13 +7,14 @@ using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 对象池组件Inspector
+    /// 对象池组件的Inspector
     /// </summary>
     [CustomEditor(typeof(ObjectPoolComponent))]
-    internal sealed class ObjectPoolComponentInspector : ComponentTypeComponentInspector
+    internal sealed class ObjectPoolComponentInspector : GameComponentInspector
     {
         /// <summary>
         /// 已打开的对象池项

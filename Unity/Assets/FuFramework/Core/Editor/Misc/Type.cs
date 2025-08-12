@@ -1,17 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 类型相关的实用函数。

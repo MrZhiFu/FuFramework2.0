@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 各个帮助器Inspector的信息显示
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T"> 帮助器类型 </typeparam>
     public sealed class HelperInfo<T> where T : MonoBehaviour
     {
         /// <summary>

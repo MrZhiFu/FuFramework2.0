@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Coroutine.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Coroutine.Runtime
 {
    
     public class GameFrameXCoroutineCroppingHelper : MonoBehaviour

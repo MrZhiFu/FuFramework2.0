@@ -1,9 +1,10 @@
 {
     "name": "GameFrameX.Coroutine.Editor",
+    "rootNamespace": "",
     "references": [
         "GameFrameX.Coroutine.Runtime",
-        "GameFrameX.Editor",
-        "GameFrameX.Runtime"
+        "GameFrameX.Runtime",
+        "GameFrameX.Editor"
     ],
     "includePlatforms": [
         "Editor"

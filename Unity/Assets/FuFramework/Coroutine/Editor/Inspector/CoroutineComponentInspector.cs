@@ -1,18 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Coroutine.Runtime;
-using GameFrameX.Editor;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Coroutine.Runtime;
 using UnityEditor;
 
+// ReSharper disable once CheckNamespace
 namespace GameFrameX.Coroutine.Editor
 {
     [CustomEditor(typeof(CoroutineComponent))]
-    internal sealed class CoroutineComponentInspector : GameFrameworkInspector
+    internal sealed class CoroutineComponentInspector : FuFrameworkInspector
     {
     }
 }

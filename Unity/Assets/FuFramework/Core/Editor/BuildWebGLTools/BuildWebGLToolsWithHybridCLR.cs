@@ -3,7 +3,8 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 当使用HybridCLR发布到WEBGL的时候执行

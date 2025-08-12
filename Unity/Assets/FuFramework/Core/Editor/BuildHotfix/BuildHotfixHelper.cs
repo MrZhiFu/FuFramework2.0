@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 热更新编辑器

@@ -16,8 +16,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 获取或设置是否开启强制检查。
         /// </summary>
-
-        public bool EnableStrictCheck
+        public static bool EnableStrictCheck
         {
             get => ReferencePool.EnableStrictCheck;
             set
@@ -38,8 +37,7 @@ namespace FuFramework.Core.Runtime
             IsAutoRegister = false;
             base.Awake();
         }
-
-
+        
         private void Start()
         {
             EnableStrictCheck = m_EnableStrictCheck switch

@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 防裁剪代码生成窗口
+    /// 防裁剪代码生成窗口。
+    /// 用于生成防裁剪代码，防止代码被裁剪。
     /// </summary>
     public sealed class CroppingWindow : EditorWindow
     {
@@ -32,7 +33,7 @@ namespace GameFrameX.Editor
         };
 
         /// 选择的类型下标
-        private int _selectedDropdownIndex = 0;
+        private int _selectedDropdownIndex;
 
         /// 搜索文本框
         private string _searchText = string.Empty;

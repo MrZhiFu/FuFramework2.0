@@ -1,53 +1,50 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 using Version = FuFramework.Core.Runtime.Version;
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// Base组件Inspector
     /// </summary>
     [CustomEditor(typeof(BaseComponent))]
-    internal sealed class BaseComponentInspector : GameFrameworkInspector
+    internal sealed class BaseComponentInspector : FuFrameworkInspector
     {
-        private static readonly float[]  s_GameSpeed           = { 0f, 0.01f, 0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 4f, 8f };                     // 游戏速度数组
-        private static readonly string[] s_GameSpeedForDisplay = { "0x", "0.01x", "0.1x", "0.25x", "0.5x", "1x", "1.5x", "2x", "4x", "8x" }; // 游戏速度显示名称数组
+        /// 游戏速度数组
+        private static readonly float[] s_GameSpeed = { 0f, 0.01f, 0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 4f, 8f };
 
-        private SerializedProperty m_TextHelperTypeName        = null; // 文本辅助器类型名称
-        private SerializedProperty m_VersionHelperTypeName     = null; // 版本辅助器类型名称
-        private SerializedProperty m_LogHelperTypeName         = null; // 日志辅助器类型名称
-        private SerializedProperty m_CompressionHelperTypeName = null; // 压缩辅助器类型名称
-        private SerializedProperty m_JsonHelperTypeName        = null; // JSON辅助器类型名称
+        /// 游戏速度显示名称数组
+        private static readonly string[] s_GameSpeedForDisplay = { "0x", "0.01x", "0.1x", "0.25x", "0.5x", "1x", "1.5x", "2x", "4x", "8x" };
 
-        private SerializedProperty m_FrameRate       = null; // 帧率
-        private SerializedProperty m_GameSpeed       = null; // 游戏速度
-        private SerializedProperty m_RunInBackground = null; // 是否后台运行
-        private SerializedProperty m_NeverSleep      = null; // 是否禁止休眠
+        private SerializedProperty m_TextHelperTypeName;        // 文本辅助器类型名称
+        private SerializedProperty m_VersionHelperTypeName;     // 版本辅助器类型名称
+        private SerializedProperty m_LogHelperTypeName;         // 日志辅助器类型名称
+        private SerializedProperty m_CompressionHelperTypeName; // 压缩辅助器类型名称
+        private SerializedProperty m_JsonHelperTypeName;        // JSON辅助器类型名称
 
-        private string[] m_TextHelperTypeNames     = null; // 文本辅助器类型名称数组
-        private int      m_TextHelperTypeNameIndex = 0;    // 文本辅助器类型名称索引
+        private SerializedProperty m_FrameRate;       // 帧率
+        private SerializedProperty m_GameSpeed;       // 游戏速度
+        private SerializedProperty m_RunInBackground; // 是否后台运行
+        private SerializedProperty m_NeverSleep;      // 是否禁止休眠
 
-        private string[] m_VersionHelperTypeNames     = null; // 版本辅助器类型名称数组
-        private int      m_VersionHelperTypeNameIndex = 0;    // 版本辅助器类型名称索引
+        private string[] m_TextHelperTypeNames;     // 文本辅助器类型名称数组
+        private int      m_TextHelperTypeNameIndex; // 文本辅助器类型名称索引
 
-        private string[] m_LogHelperTypeNames     = null; // 日志辅助器类型名称数组
-        private int      m_LogHelperTypeNameIndex = 0;    // 日志辅助器类型名称索引
+        private string[] m_VersionHelperTypeNames;     // 版本辅助器类型名称数组
+        private int      m_VersionHelperTypeNameIndex; // 版本辅助器类型名称索引
 
-        private string[] m_CompressionHelperTypeNames     = null; // 压缩辅助器类型名称数组
-        private int      m_CompressionHelperTypeNameIndex = 0;    // 压缩辅助器类型名称索引
+        private string[] m_LogHelperTypeNames;     // 日志辅助器类型名称数组
+        private int      m_LogHelperTypeNameIndex; // 日志辅助器类型名称索引
 
-        private string[] m_JsonHelperTypeNames     = null; // JSON辅助器类型名称数组
-        private int      m_JsonHelperTypeNameIndex = 0;    // JSON辅助器类型名称索引
+        private string[] m_CompressionHelperTypeNames;     // 压缩辅助器类型名称数组
+        private int      m_CompressionHelperTypeNameIndex; // 压缩辅助器类型名称索引
+
+        private string[] m_JsonHelperTypeNames;     // JSON辅助器类型名称数组
+        private int      m_JsonHelperTypeNameIndex; // JSON辅助器类型名称索引
 
         public override void OnInspectorGUI()
         {
@@ -55,7 +52,8 @@ namespace GameFrameX.Editor
 
             serializedObject.Update();
 
-            BaseComponent t = (BaseComponent)target;
+            var baseComp = target as BaseComponent;
+            if (!baseComp) return;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -112,7 +110,7 @@ namespace GameFrameX.Editor
             if (frameRate != m_FrameRate.intValue)
             {
                 if (EditorApplication.isPlaying)
-                    t.FrameRate = frameRate;
+                    baseComp.FrameRate = frameRate;
                 else
                     m_FrameRate.intValue = frameRate;
             }
@@ -130,7 +128,7 @@ namespace GameFrameX.Editor
                 if (!Mathf.Approximately(gameSpeed, m_GameSpeed.floatValue))
                 {
                     if (EditorApplication.isPlaying)
-                        t.GameSpeed = gameSpeed;
+                        baseComp.GameSpeed = gameSpeed;
                     else
                         m_GameSpeed.floatValue = gameSpeed;
                 }
@@ -142,7 +140,7 @@ namespace GameFrameX.Editor
             if (runInBackground != m_RunInBackground.boolValue)
             {
                 if (EditorApplication.isPlaying)
-                    t.RunInBackground = runInBackground;
+                    baseComp.RunInBackground = runInBackground;
                 else
                     m_RunInBackground.boolValue = runInBackground;
             }
@@ -152,7 +150,7 @@ namespace GameFrameX.Editor
             if (neverSleep != m_NeverSleep.boolValue)
             {
                 if (EditorApplication.isPlaying)
-                    t.NeverSleep = neverSleep;
+                    baseComp.NeverSleep = neverSleep;
                 else
                     m_NeverSleep.boolValue = neverSleep;
             }

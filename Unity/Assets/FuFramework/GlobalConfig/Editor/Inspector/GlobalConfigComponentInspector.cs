@@ -1,4 +1,5 @@
 ﻿using GameFrameX.Editor;
+using FuFramework.Core.Editor;
 using GameFrameX.GlobalConfig.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine;
 namespace GameFrameX.GlobalConfig.Editor
 {
     [CustomEditor(typeof(GlobalConfigComponent))]
-    internal sealed class GlobalConfigComponentInspector : GameFrameworkInspector
+    internal sealed class GlobalConfigComponentInspector : FuFrameworkInspector
     {
         private SerializedProperty m_HostServerUrl = null;
         private SerializedProperty m_Content = null;

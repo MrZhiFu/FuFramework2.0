@@ -3,7 +3,8 @@ using UnityEditor;
 using UnityEngine;
 #endif
 
-namespace GameFrameX.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 小游戏宏定义帮助类

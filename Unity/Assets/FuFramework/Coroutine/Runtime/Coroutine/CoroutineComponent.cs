@@ -3,7 +3,8 @@ using System.Collections.Concurrent;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 
-namespace GameFrameX.Coroutine.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Coroutine.Runtime
 {
     /// <summary>
     /// 协程组件
