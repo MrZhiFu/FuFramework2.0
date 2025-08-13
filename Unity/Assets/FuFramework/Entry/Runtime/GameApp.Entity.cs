@@ -1,5 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Entity.Runtime;
+using FuFramework.Entity.Runtime;
 
 public static partial class GameApp
 {

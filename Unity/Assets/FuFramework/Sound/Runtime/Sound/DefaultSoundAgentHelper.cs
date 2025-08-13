@@ -8,10 +8,9 @@
 using System;
 using System.Collections;
 using FuFramework.Core.Runtime;
-using GameFrameX.Entity.Runtime;
+using FuFramework.Entity.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace GameFrameX.Sound.Runtime
 {
@@ -335,7 +334,7 @@ namespace GameFrameX.Sound.Runtime
         /// 设置声音绑定的实体。
         /// </summary>
         /// <param name="bindingEntity">声音绑定的实体。</param>
-        public override void SetBindingEntity(Entity.Runtime.Entity bindingEntity)
+        public override void SetBindingEntity(Entity bindingEntity)
         {
             m_BindingEntityLogic = bindingEntity.Logic;
             if (m_BindingEntityLogic != null)

@@ -7,6 +7,7 @@
 
 using GameFrameX.Sound;
 using System;
+using FuFramework.Entity.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -177,7 +178,7 @@ namespace GameFrameX.Sound.Runtime
         /// 设置声音绑定的实体。
         /// </summary>
         /// <param name="bindingEntity">声音绑定的实体。</param>
-        public abstract void SetBindingEntity(Entity.Runtime.Entity bindingEntity);
+        public abstract void SetBindingEntity(Entity bindingEntity);
 
         /// <summary>
         /// 设置声音所在的世界坐标。

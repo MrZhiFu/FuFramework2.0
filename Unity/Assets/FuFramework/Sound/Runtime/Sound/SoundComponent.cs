@@ -9,13 +9,13 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using FuFramework.Entity.Runtime;
 using GameFrameX.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Scene.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Sound.Runtime
 {
@@ -368,7 +368,7 @@ namespace GameFrameX.Sound.Runtime
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <returns>声音的序列编号。</returns>
-        public UniTask<int> PlaySound(string soundAssetName, string soundGroupName, Entity.Runtime.Entity bindingEntity)
+        public UniTask<int> PlaySound(string soundAssetName, string soundGroupName, Entity bindingEntity)
         {
             return PlaySound(soundAssetName, soundGroupName, DefaultPriority, null, bindingEntity, null, -1);
         }
@@ -433,7 +433,7 @@ namespace GameFrameX.Sound.Runtime
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity.Runtime.Entity bindingEntity)
+        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity bindingEntity)
         {
             return await PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, bindingEntity, null, -1);
         }
@@ -449,7 +449,7 @@ namespace GameFrameX.Sound.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity.Runtime.Entity bindingEntity, object userData, int serialId)
+        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity bindingEntity, object userData, int serialId)
         {
             return await m_SoundManager.PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, PlaySoundInfo.Create(bindingEntity, Vector3.zero, userData), serialId);
         }

@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Entity.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entity.Runtime
 {
-   
     public class GameFrameXEntityCroppingHelper : MonoBehaviour
     {
-       
         private void Start()
         {
             _ = typeof(EntityManager);
@@ -16,10 +14,8 @@ namespace GameFrameX.Entity.Runtime
             _ = typeof(IEntityGroupHelper);
             _ = typeof(IEntityHelper);
             _ = typeof(IEntityManager);
-            _ = typeof(ShowEntityDependencyAssetEventArgs);
             _ = typeof(ShowEntityFailureEventArgs);
             _ = typeof(ShowEntitySuccessEventArgs);
-            _ = typeof(ShowEntityUpdateEventArgs);
             _ = typeof(DefaultEntityGroupHelper);
             _ = typeof(DefaultEntityHelper);
             _ = typeof(AttachEntityInfo);

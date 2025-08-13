@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
+using FuFramework.Entity.Runtime;
 using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
@@ -19,7 +20,7 @@ namespace GameFrameX.Sound.Runtime
         /// <summary>
         /// 绑定的实体。
         /// </summary>
-        private Entity.Runtime.Entity m_BindingEntity;
+        private Entity m_BindingEntity;
 
         /// <summary>
         /// 声音在世界空间中的位置。
@@ -44,7 +45,7 @@ namespace GameFrameX.Sound.Runtime
         /// <summary>
         /// 获取绑定的实体。
         /// </summary>
-        public Entity.Runtime.Entity BindingEntity
+        public Entity BindingEntity
         {
             get
             {
@@ -81,7 +82,7 @@ namespace GameFrameX.Sound.Runtime
         /// <param name="worldPosition">声音在世界空间中的位置。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音信息。</returns>
-        public static PlaySoundInfo Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition, object userData)
+        public static PlaySoundInfo Create(Entity bindingEntity, Vector3 worldPosition, object userData)
         {
             PlaySoundInfo playSoundInfo = ReferencePool.Acquire<PlaySoundInfo>();
             playSoundInfo.m_BindingEntity = bindingEntity;

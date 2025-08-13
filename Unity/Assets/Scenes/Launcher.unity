@@ -800,13 +800,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 198010413be0346448b0952211bacc56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Entity.Runtime.EntityManager
+  componentType: FuFramework.Entity.Runtime.EntityManager
   m_EnableShowEntityUpdateEvent: 1
   m_EnableShowEntityDependencyAssetEvent: 1
   m_InstanceRoot: {fileID: 8708873050020472038}
-  m_EntityHelperTypeName: GameFrameX.Entity.Runtime.DefaultEntityHelper
+  m_EntityHelperTypeName: FuFramework.Entity.Runtime.DefaultEntityHelper
   m_CustomEntityHelper: {fileID: 0}
-  m_EntityGroupHelperTypeName: GameFrameX.Entity.Runtime.DefaultEntityGroupHelper
+  m_EntityGroupHelperTypeName: FuFramework.Entity.Runtime.DefaultEntityGroupHelper
   m_CustomEntityGroupHelper: {fileID: 0}
   m_EntityGroups: []
 --- !u!114 &1681186168
