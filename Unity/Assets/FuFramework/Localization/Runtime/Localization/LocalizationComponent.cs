@@ -7,7 +7,7 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Setting.Runtime;
 using UnityEngine;

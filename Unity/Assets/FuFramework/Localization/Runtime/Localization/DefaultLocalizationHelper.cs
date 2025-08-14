@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Text;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using UnityEngine;
 
 namespace GameFrameX.Localization.Runtime

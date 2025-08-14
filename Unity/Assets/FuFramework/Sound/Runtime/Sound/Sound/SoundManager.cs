@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using UnityEngine;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;

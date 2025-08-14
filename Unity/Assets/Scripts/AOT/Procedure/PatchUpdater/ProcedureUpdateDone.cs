@@ -1,4 +1,4 @@
-﻿using GameFrameX.Asset.Runtime;
+﻿using FuFramework.Asset.Runtime;
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;

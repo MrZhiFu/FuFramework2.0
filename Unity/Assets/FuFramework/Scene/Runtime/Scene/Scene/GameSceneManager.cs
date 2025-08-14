@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using UnityEngine.SceneManagement;
 using YooAsset;
 using Utility = FuFramework.Core.Runtime.Utility;

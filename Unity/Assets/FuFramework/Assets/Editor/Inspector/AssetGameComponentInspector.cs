@@ -1,25 +1,21 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using GameFrameX.Asset.Runtime;
+﻿using FuFramework.Asset.Runtime;
 using FuFramework.Core.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace GameFrameX.Asset.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Editor
 {
+    /// <summary>
+    /// 自定义资源管理器组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(AssetComponent))]
     internal sealed class AssetGameComponentInspector : GameComponentInspector
     {
         private SerializedProperty m_GamePlayMode;
 
-        private GUIContent m_GamePlayModeGUIContent = new GUIContent("资源运行模式");
-        private GUIContent m_AssetResourcePackagesGUIContent = new GUIContent("包列表");
+        private readonly GUIContent m_GamePlayModeGUIContent = new("资源运行模式");
+        private readonly GUIContent m_AssetResourcePackagesGUIContent = new("包列表");
         private SerializedProperty m_AssetResourcePackages;
 
         public override void OnInspectorGUI()
@@ -36,9 +32,8 @@ namespace GameFrameX.Asset.Editor
                 GUI.enabled = true;
             }
             EditorGUI.EndDisabledGroup();
-
+            
             serializedObject.ApplyModifiedProperties();
-
             Repaint();
         }
 

@@ -6,7 +6,7 @@
 //------------------------------------------------------------
 
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 
 namespace GameFrameX.Sound.Runtime
 {

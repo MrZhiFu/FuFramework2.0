@@ -1,15 +1,18 @@
 ﻿using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 发现更新文件
     /// </summary>
-    
     public sealed class AssetFoundUpdateFilesEventArgs : GameEventArgs
     {
+        public static readonly string EventId = typeof(AssetFoundUpdateFilesEventArgs).FullName;
+        public override string Id => EventId;
+
         /// <summary>
         /// 总数量
         /// </summary>
@@ -30,16 +33,6 @@ namespace GameFrameX.Asset.Runtime
             PackageName = null;
             TotalCount = 0;
             TotalSizeBytes = 0;
-        }
-
-        /// <summary>
-        /// 发现更新文件事件编号
-        /// </summary>
-        public static readonly string EventId = typeof(AssetFoundUpdateFilesEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
         }
 
         /// <summary>

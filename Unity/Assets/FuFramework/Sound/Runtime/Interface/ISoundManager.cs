@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 
 namespace GameFrameX.Sound.Runtime
 {

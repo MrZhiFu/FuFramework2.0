@@ -1,4 +1,6 @@
-﻿namespace GameFrameX.Asset.Runtime
+﻿// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 补丁系统更新状态

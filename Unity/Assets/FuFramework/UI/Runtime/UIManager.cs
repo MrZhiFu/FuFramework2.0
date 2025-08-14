@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using UnityEngine;
 

@@ -9,7 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 
 namespace GameFrameX.Config.Runtime
 {

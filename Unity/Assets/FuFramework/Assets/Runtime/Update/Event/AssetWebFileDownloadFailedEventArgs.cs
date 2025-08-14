@@ -1,15 +1,18 @@
 ﻿using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 网络文件下载失败
     /// </summary>
-    
     public sealed class AssetWebFileDownloadFailedEventArgs : GameEventArgs
     {
+        public static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
+        public override string Id => EventId;
+
         /// <summary>
         /// 文件名
         /// </summary>
@@ -30,16 +33,6 @@ namespace GameFrameX.Asset.Runtime
             FileName = null;
             Error = null;
             PackageName = null;
-        }
-
-        /// <summary>
-        /// 网络文件下载失败事件编号
-        /// </summary>
-        public static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
         }
 
         /// <summary>

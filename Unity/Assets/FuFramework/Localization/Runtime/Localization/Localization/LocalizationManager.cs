@@ -8,8 +8,7 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace GameFrameX.Localization.Runtime

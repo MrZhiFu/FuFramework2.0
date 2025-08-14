@@ -5,8 +5,7 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.Asset;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 
 namespace GameFrameX.Localization.Runtime
 {

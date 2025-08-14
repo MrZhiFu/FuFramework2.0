@@ -1,27 +1,17 @@
 ﻿using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 补丁流程步骤改变
     /// </summary>
-    
     public sealed class AssetPatchStatesChangeEventArgs : GameEventArgs
     {
-        public override void Clear()
-        {
-            PackageName = null;
-            CurrentStates = EPatchStates.CreateDownloader;
-        }
-
         public static readonly string EventId = typeof(AssetPatchStatesChangeEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 包名称
@@ -32,6 +22,12 @@ namespace GameFrameX.Asset.Runtime
         /// 当前步骤
         /// </summary>
         public EPatchStates CurrentStates { get; private set; }
+
+        public override void Clear()
+        {
+            PackageName = null;
+            CurrentStates = EPatchStates.CreateDownloader;
+        }
 
         /// <summary>
         /// 创建补丁流程步骤改变

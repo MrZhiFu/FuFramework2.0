@@ -4,10 +4,12 @@ using UnityEngine.SceneManagement;
 using YooAsset;
 using Object = UnityEngine.Object;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 资源组件。
+    /// 资源管理器接口。
+    /// 定义资源管理器需要实现的相关接口。
     /// </summary>
     public interface IAssetManager
     {

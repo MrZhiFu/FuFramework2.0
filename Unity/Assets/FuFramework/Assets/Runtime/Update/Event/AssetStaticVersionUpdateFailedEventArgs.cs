@@ -1,30 +1,17 @@
 ﻿using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源版本号更新失败
     /// </summary>
-    
     public sealed class AssetStaticVersionUpdateFailedEventArgs : GameEventArgs
     {
-        public override void Clear()
-        {
-            PackageName = null;
-            Error = null;
-        }
-
-        /// <summary>
-        /// 资源版本号更新失败事件编号
-        /// </summary>
         public static readonly string EventId = typeof(AssetStaticVersionUpdateFailedEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 包名称
@@ -35,6 +22,12 @@ namespace GameFrameX.Asset.Runtime
         /// 错误信息
         /// </summary>
         public string Error { get; private set; }
+
+        public override void Clear()
+        {
+            PackageName = null;
+            Error = null;
+        }
 
         /// <summary>
         /// 创建资源版本号更新失败

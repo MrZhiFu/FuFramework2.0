@@ -5,7 +5,8 @@ using FuFramework.Core.Runtime;
 using Object = UnityEngine.Object;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源加载注册器。

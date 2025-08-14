@@ -1,7 +1,7 @@
 ﻿using AOT.UI.View.Launcher;
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;

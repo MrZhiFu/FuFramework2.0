@@ -1,8 +1,8 @@
 ﻿using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 下载进度更新
@@ -10,6 +10,9 @@ namespace GameFrameX.Asset.Runtime
     
     public sealed class AssetDownloadProgressUpdateEventArgs : GameEventArgs
     {
+        public static readonly string EventId = typeof(AssetDownloadProgressUpdateEventArgs).FullName;
+        public override string Id => EventId;
+
         /// <summary>
         /// 包名称
         /// </summary>
@@ -43,18 +46,7 @@ namespace GameFrameX.Asset.Runtime
             TotalDownloadSizeBytes = 0;
             CurrentDownloadSizeBytes = 0;
         }
-
-        /// <summary>
-        /// 下载进度更新事件编号
-        /// </summary>
-        public static readonly string EventId = typeof(AssetDownloadProgressUpdateEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
-        }
-
-
+        
         /// <summary>
         /// 创建下载进度更新
         /// </summary>

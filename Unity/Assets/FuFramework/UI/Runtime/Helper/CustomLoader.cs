@@ -3,7 +3,7 @@ using FairyGUI;
 using System.IO;
 using UnityEngine;
 using GameFrameX.Web.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using Object = UnityEngine.Object;

@@ -1,4 +1,5 @@
-﻿namespace GameFrameX.Asset.Runtime
+﻿// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源相关常量。

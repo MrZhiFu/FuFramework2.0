@@ -1,46 +1,35 @@
-using UnityEngine;
 using YooAsset;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
+    /// <summary>
+    /// 初始化加载模式
+    /// </summary>
     public partial class AssetManager
     {
         /// <summary>
         /// 根据运行模式创建初始化操作数据
         /// </summary>
         /// <returns></returns>
-        private InitializationOperation CreateInitializationOperationHandler(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        private InitializationOperation CreateInitOperationHandler(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
-            switch (PlayMode)
+            return PlayMode switch
             {
-                case EPlayMode.EditorSimulateMode:
-                {
-                    // 编辑器下的模拟模式
-                    return InitializeYooAssetEditorSimulateMode(resourcePackage);
-                }
-                case EPlayMode.OfflinePlayMode:
-                {
-                    // 单机运行模式
-                    return InitializeYooAssetOfflinePlayMode(resourcePackage);
-                }
-                case EPlayMode.HostPlayMode:
-                {
-                    // 联机运行模式
-                    return InitializeYooAssetHostPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL);
-                }
-                case EPlayMode.WebPlayMode:
-                {
-                    // WebGL运行模式
-                    return InitializeYooAssetWebPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL);
-                }
-                default:
-                {
-                    return null;
-                }
-            }
+                EPlayMode.EditorSimulateMode => InitAsEditorSimulateMode(resourcePackage), // 编辑器下的模拟模式
+                EPlayMode.OfflinePlayMode => InitAsOfflinePlayMode(resourcePackage), // 单机运行模式
+                EPlayMode.HostPlayMode => InitAsHostPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL), // 联机运行模式
+                EPlayMode.WebPlayMode => InitAsWebPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL), // WebGL运行模式
+                _ => null
+            };
         }
 
-        private InitializationOperation InitializeYooAssetEditorSimulateMode(ResourcePackage resourcePackage)
+        /// <summary>
+        /// 初始化为编辑器下模拟模式
+        /// </summary>
+        /// <param name="resourcePackage"></param>
+        /// <returns></returns>
+        private InitializationOperation InitAsEditorSimulateMode(ResourcePackage resourcePackage)
         {
             var initParameters = new EditorSimulateModeParameters();
             //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
@@ -51,20 +40,33 @@ namespace GameFrameX.Asset.Runtime
             return resourcePackage.InitializeAsync(initParameters);
         }
 
-        private InitializationOperation InitializeYooAssetOfflinePlayMode(ResourcePackage resourcePackage)
+        /// <summary>
+        /// 初始化为单机运行模式
+        /// </summary>
+        /// <param name="resourcePackage"></param>
+        /// <returns></returns>
+        private InitializationOperation InitAsOfflinePlayMode(ResourcePackage resourcePackage)
         {
-            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-            var initParameters = new OfflinePlayModeParameters();
-            initParameters.BuildinFileSystemParameters = buildinFileSystem;
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var initParameters = new OfflinePlayModeParameters
+            {
+                BuildinFileSystemParameters = buildInFileSystem
+            };
             return resourcePackage.InitializeAsync(initParameters);
         }
 
-        private InitializationOperation InitializeYooAssetWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        /// <summary>
+        /// 初始化为Web运行模式
+        /// </summary>
+        /// <param name="resourcePackage"></param>
+        /// <param name="hostServerURL"></param>
+        /// <param name="fallbackHostServerURL"></param>
+        /// <returns></returns>
+        private InitializationOperation InitAsWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
             var initParameters = new WebPlayModeParameters();
             FileSystemParameters webFileSystem = null;
 #if UNITY_WEBGL
-
 #if ENABLE_DOUYIN_MINI_GAME
             // 创建字节小游戏文件系统
             if (hostServerURL.IsNullOrWhiteSpace())
@@ -97,14 +99,23 @@ namespace GameFrameX.Asset.Runtime
             return resourcePackage.InitializeAsync(initParameters);
         }
 
-        private InitializationOperation InitializeYooAssetHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        /// <summary>
+        /// 初始化为联机运行模式
+        /// </summary>
+        /// <param name="resourcePackage"></param>
+        /// <param name="hostServerURL"></param>
+        /// <param name="fallbackHostServerURL"></param>
+        /// <returns></returns>
+        private InitializationOperation InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
             IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
             var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-            var initParameters = new HostPlayModeParameters();
-            initParameters.BuildinFileSystemParameters = buildinFileSystem;
-            initParameters.CacheFileSystemParameters = cacheFileSystem;
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var initParameters = new HostPlayModeParameters
+            {
+                BuildinFileSystemParameters = buildInFileSystem,
+                CacheFileSystemParameters = cacheFileSystem
+            };
             return resourcePackage.InitializeAsync(initParameters);
         }
     }

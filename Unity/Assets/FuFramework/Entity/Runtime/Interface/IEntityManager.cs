@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime

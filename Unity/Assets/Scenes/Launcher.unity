@@ -834,7 +834,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36df5770ca0b164295fd712d2baa6bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Asset.Runtime.AssetManager
+  componentType: FuFramework.Asset.Runtime.AssetManager
   m_GamePlayMode: 0
   m_assetResourcePackages: []
 --- !u!114 &1681186170

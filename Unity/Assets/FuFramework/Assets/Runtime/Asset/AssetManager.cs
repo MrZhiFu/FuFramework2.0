@@ -5,20 +5,18 @@ using UnityEngine.SceneManagement;
 using YooAsset;
 using Object = UnityEngine.Object;
 
-namespace GameFrameX.Asset.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源组件。
     /// </summary>
-    
     public partial class AssetManager : FuModule, IAssetManager
     {
         public string DefaultPackageName { get; set; } = "DefaultPackage";
-
-
+        
         public int DownloadingMaxNum { get; set; }
         public int FailedTryAgain { get; set; }
-
 
         public EFileVerifyLevel VerifyLevel { get; set; }
         public long Milliseconds { get; set; }
@@ -67,7 +65,7 @@ namespace GameFrameX.Asset.Runtime
                 }
             }
 
-            var initializationOperationHandler = CreateInitializationOperationHandler(resourcePackage, hostServerURL, fallbackHostServerURL);
+            var initializationOperationHandler = CreateInitOperationHandler(resourcePackage, hostServerURL, fallbackHostServerURL);
             initializationOperationHandler.Completed += asyncOperationBase =>
             {
                 if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
@@ -673,13 +671,9 @@ namespace GameFrameX.Asset.Runtime
         }
 
 
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
-        {
-        }
+        protected override void Update(float elapseSeconds, float realElapseSeconds) { }
 
-        protected override void Shutdown()
-        {
-        }
+        protected override void Shutdown() { }
 
 
         /// <summary>

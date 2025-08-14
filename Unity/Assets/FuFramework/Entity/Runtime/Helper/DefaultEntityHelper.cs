@@ -1,5 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using UnityEngine;
 using YooAsset;
 

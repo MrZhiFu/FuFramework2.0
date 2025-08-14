@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Entity.Runtime;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Scene.Runtime;
 using UnityEngine;

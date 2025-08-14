@@ -3,7 +3,7 @@ using FairyGUI;
 using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GameFrameX.Asset.Runtime;
+using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
