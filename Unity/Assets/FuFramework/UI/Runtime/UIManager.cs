@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using UnityEngine;
 
 namespace FuFramework.UI.Runtime
@@ -16,8 +16,8 @@ namespace FuFramework.UI.Runtime
         private Dictionary<int, string> m_LoadingDict;       // 正在加载中的界面字典, key为界面Id, value为界面名称
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
 
-        private ObjectPoolComponent m_ObjectPoolManager;     // 对象池管理器
-        private EventComponent      m_EventComponent = null; // 事件组件
+        private ObjectPoolComponent m_ObjectPoolManager; // 对象池管理器
+        private EventComponent      m_EventComponent;    // 事件组件
 
         private IObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
 

@@ -3,7 +3,8 @@ using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Event.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Event.Runtime
 {
     /// <summary>
     /// 事件注册器。
@@ -11,11 +12,6 @@ namespace GameFrameX.Event.Runtime
     /// </summary>
     public sealed class EventRegister : IReference
     {
-        /// <summary>
-        /// 持有者
-        /// </summary>
-        public object Owner { get; private set; }
-
         /// 事件管理器
         private static EventComponent EventManager => GameEntry.GetComponent<EventComponent>();
 
@@ -27,13 +23,10 @@ namespace GameFrameX.Event.Runtime
         /// <summary>
         /// 创建事件订阅器
         /// </summary>
-        /// <param name="owner">持有者</param>
         /// <returns></returns>
-        public static EventRegister Create(object owner)
+        public static EventRegister Create()
         {
-            var eventSubscriber = ReferencePool.Acquire<EventRegister>();
-            eventSubscriber.Owner = owner;
-            return eventSubscriber;
+            return ReferencePool.Acquire<EventRegister>();
         }
 
         /// <summary>
@@ -80,20 +73,14 @@ namespace GameFrameX.Event.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        public void Fire(object sender, string eventId)
-        {
-            EventManager.Fire(sender, EmptyEventArgs.Create(eventId));
-        }
+        public void Fire(object sender, string eventId) => EventManager.Fire(sender, EmptyEventArgs.Create(eventId));
 
         /// <summary>
         /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="e">事件内容。</param>
-        public void FireNow(object sender, GameEventArgs e)
-        {
-            EventManager.FireNow(sender, e);
-        }
+        public void FireNow(object sender, GameEventArgs e) => EventManager.FireNow(sender, e);
 
         /// <summary>
         /// 取消所有订阅
@@ -116,11 +103,7 @@ namespace GameFrameX.Event.Runtime
         /// <summary>
         /// 清理
         /// </summary>
-        public void Clear()
-        {
-            UnSubscribeAll();
-            Owner = null;
-        }
+        public void Clear() => UnSubscribeAll();
 
         /// <summary>
         /// 将引用归还引用池-释放资源

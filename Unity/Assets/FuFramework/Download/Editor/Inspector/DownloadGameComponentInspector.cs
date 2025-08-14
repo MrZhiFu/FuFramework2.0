@@ -12,6 +12,9 @@ using Utility = FuFramework.Core.Runtime.Utility;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Editor
 {
+    /// <summary>
+    /// 自定义下载组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(DownloadComponent))]
     internal sealed class DownloadGameComponentInspector : GameComponentInspector
     {

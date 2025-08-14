@@ -18,7 +18,6 @@ namespace FuFramework.Core.Runtime
             _ = typeof(ReleaseObjectFilterCallback<>);
             _ = typeof(ApplicationHelper);
             _ = typeof(BaseComponent);
-            _ = typeof(BaseEventArgs);
             _ = typeof(BindableProperty<>);
             _ = typeof(CameraEx);
             _ = typeof(DefaultCompressionHelper);
@@ -26,13 +25,10 @@ namespace FuFramework.Core.Runtime
             _ = typeof(DefaultTextHelper);
             _ = typeof(DefaultVersionHelper);
             _ = typeof(DistinctHelper);
-            _ = typeof(EventPool<>);
-            _ = typeof(EventPoolMode);
             _ = typeof(FileHelper);
             _ = typeof(GameEntry);
             _ = typeof(FuComponent);
             _ = typeof(FuEntry);
-            _ = typeof(FuEventArgs);
             _ = typeof(FuException);
             _ = typeof(FuGuard);
             _ = typeof(FuLinkedList<>);

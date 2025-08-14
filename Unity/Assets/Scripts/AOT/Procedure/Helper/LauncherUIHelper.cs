@@ -2,7 +2,7 @@
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
 using FuFramework.Asset.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;

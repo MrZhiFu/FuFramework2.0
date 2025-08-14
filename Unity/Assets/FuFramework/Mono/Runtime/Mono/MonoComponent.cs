@@ -1,6 +1,6 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 

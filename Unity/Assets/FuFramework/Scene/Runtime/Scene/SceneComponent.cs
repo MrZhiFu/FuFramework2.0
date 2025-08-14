@@ -5,7 +5,7 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;

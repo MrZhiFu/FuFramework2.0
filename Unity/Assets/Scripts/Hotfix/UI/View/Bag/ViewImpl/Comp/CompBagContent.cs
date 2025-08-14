@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using FairyGUI;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using Hotfix.Config;
 using Hotfix.Events;
 using Hotfix.Manager;

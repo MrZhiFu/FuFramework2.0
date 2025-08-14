@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace FuFramework.Event.Runtime
 {
     /// <summary>
     /// 事件池。
@@ -10,7 +11,7 @@ namespace FuFramework.Core.Runtime
     /// <typeparam name="T">事件类型。</typeparam>
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {
-         /// 事件池模式
+        /// 事件池模式
         private readonly EventPoolMode m_EventPoolMode;
 
         /// 事件默认处理器(T:事件参数数据类型)

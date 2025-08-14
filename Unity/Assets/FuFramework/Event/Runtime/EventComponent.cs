@@ -1,29 +1,22 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Event.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Event.Runtime
 {
     /// <summary>
     /// 事件组件。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Event")]
-    
     public sealed class EventComponent : FuComponent
     {
         /// <summary>
         /// 事件管理器。
         /// </summary>
-        private IEventManager m_EventManager = null;
+        private IEventManager m_EventManager;
 
         /// <summary>
         /// 获取事件处理函数的数量。
@@ -41,15 +34,12 @@ namespace GameFrameX.Event.Runtime
         protected override void Awake()
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IEventManager);
-            
+            InterfaceComponentType      = typeof(IEventManager);
+
             base.Awake();
-            
+
             m_EventManager = FuEntry.GetModule<IEventManager>();
-            if (m_EventManager == null)
-            {
-                Log.Fatal("事件管理器不存在.");
-            }
+            if (m_EventManager == null) Log.Fatal("事件管理器不存在.");
         }
 
         /// <summary>
@@ -65,10 +55,7 @@ namespace GameFrameX.Event.Runtime
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要检查的事件处理函数。</param>
         /// <returns>是否存在事件处理函数。</returns>
-        public bool Check(string id, EventHandler<GameEventArgs> handler)
-        {
-            return m_EventManager.Check(id, handler);
-        }
+        public bool Check(string id, EventHandler<GameEventArgs> handler) => m_EventManager.Check(id, handler);
 
         /// <summary>
         /// 检查订阅事件处理回调函数。当不存在时自动订阅
@@ -77,10 +64,8 @@ namespace GameFrameX.Event.Runtime
         /// <param name="handler">要订阅的事件处理回调函数。</param>
         public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            if (!Check(id, handler))
-            {
-                m_EventManager.Subscribe(id, handler);
-            }
+            if (Check(id, handler)) return;
+            m_EventManager.Subscribe(id, handler);
         }
 
         /// <summary>
@@ -90,11 +75,7 @@ namespace GameFrameX.Event.Runtime
         /// <param name="handler">要取消订阅的事件处理回调函数。</param>
         public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            if (!Check(id, handler))
-            {
-                return;
-            }
-
+            if (!Check(id, handler)) return;
             m_EventManager.Unsubscribe(id, handler);
         }
 
@@ -102,23 +83,18 @@ namespace GameFrameX.Event.Runtime
         /// 设置默认事件处理函数。
         /// </summary>
         /// <param name="handler">要设置的默认事件处理函数。</param>
-        public void SetDefaultHandler(EventHandler<GameEventArgs> handler)
-        {
-            m_EventManager.SetDefaultHandler(handler);
-        }
+        public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_EventManager.SetDefaultHandler(handler);
 
         /// <summary>
         /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="e">事件内容。</param>
-        public void Fire(object sender, GameEventArgs e)
-        {
-            m_EventManager.Fire(sender, e);
-        }
+        public void Fire(object sender, GameEventArgs e) => m_EventManager.Fire(sender, e);
 
         /// <summary>
-        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
+        /// 这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>

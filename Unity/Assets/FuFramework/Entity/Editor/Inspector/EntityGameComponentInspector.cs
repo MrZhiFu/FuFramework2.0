@@ -6,6 +6,9 @@ using Utility = FuFramework.Core.Runtime.Utility;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Editor
 {
+    /// <summary>
+    /// 自定义实体组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(EntityComponent))]
     internal sealed class EntityGameComponentInspector : GameComponentInspector
     {

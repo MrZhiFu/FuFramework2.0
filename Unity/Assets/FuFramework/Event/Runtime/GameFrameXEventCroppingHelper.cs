@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Scripting;
 
-namespace GameFrameX.Event.Runtime
+namespace FuFramework.Event.Runtime
 {
    
     public class GameFrameXEventCroppingHelper : MonoBehaviour

@@ -5,7 +5,7 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using FuFramework.Core.Runtime;
 using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;

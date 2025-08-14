@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using FuFramework.Core.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 

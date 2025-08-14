@@ -1,4 +1,4 @@
-﻿using GameFrameX.Event.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace

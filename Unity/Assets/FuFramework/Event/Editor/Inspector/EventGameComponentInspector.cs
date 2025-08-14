@@ -1,17 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Event.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Event.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Event.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Event.Editor
 {
+    /// <summary>
+    /// 自定义事件组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(EventComponent))]
     internal sealed class EventGameComponentInspector : GameComponentInspector
     {
@@ -25,12 +21,12 @@ namespace GameFrameX.Event.Editor
                 return;
             }
 
-            EventComponent t = (EventComponent)target;
+            var eventComp = (EventComponent)target;
 
-            if (IsPrefabInHierarchy(t.gameObject))
+            if (IsPrefabInHierarchy(eventComp.gameObject))
             {
-                EditorGUILayout.LabelField("Event Handler Count", t.EventHandlerCount.ToString());
-                EditorGUILayout.LabelField("Event Count", t.EventCount.ToString());
+                EditorGUILayout.LabelField("Event Handler Count", eventComp.EventHandlerCount.ToString());
+                EditorGUILayout.LabelField("Event Count", eventComp.EventCount.ToString());
             }
 
             Repaint();

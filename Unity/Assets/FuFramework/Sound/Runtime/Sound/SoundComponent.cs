@@ -11,7 +11,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Asset.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using GameFrameX.Scene.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;

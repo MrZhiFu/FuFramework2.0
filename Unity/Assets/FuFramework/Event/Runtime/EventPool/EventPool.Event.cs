@@ -1,5 +1,7 @@
-﻿// ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+﻿using FuFramework.Core.Runtime;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Event.Runtime
 {
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {

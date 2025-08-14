@@ -8,7 +8,7 @@ using FairyGUI;
 using FairyGUI.Utils;
 using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 
 namespace Hotfix.UI.View.Bag
 {

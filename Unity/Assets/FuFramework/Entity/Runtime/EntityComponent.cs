@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using GameFrameX.Event.Runtime;
+using FuFramework.Event.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
