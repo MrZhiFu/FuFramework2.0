@@ -87,12 +87,6 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         UniTask<bool> InitPackageAsync(string packageName, string hostServerURL, string fallbackHostServerURL, bool isDefaultPackage = true);
 
-        /// <summary>
-        /// 卸载资源
-        /// </summary>
-        /// <param name="assetPath"></param>
-        void UnloadAsset(string assetPath);
-
         #region 异步加载子资源对象
 
         /// <summary>
@@ -180,7 +174,6 @@ namespace FuFramework.Asset.Runtime
         RawFileHandle LoadRawFileSync(string path);
 
         #endregion
-
 
         #region 异步加载资源
 
@@ -379,6 +372,49 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
+        #region 卸载资源
+
+        /// <summary>
+        /// 卸载资源
+        /// </summary>
+        /// <param name="assetPath"></param>
+        void UnloadAsset(string assetPath);
+
+        /// <summary>
+        /// 卸载资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        /// <param name="assetPath">资源路径</param>
+        void UnloadAsset(string packageName, string assetPath);
+
+        /// <summary>
+        /// 强制回收所有资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        void UnloadAllAssetsAsync(string packageName);
+
+        /// <summary>
+        /// 卸载无用资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        void UnloadUnusedAssetsAsync(string packageName);
+
+        /// <summary>
+        /// 清理无用资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        void ClearUnusedBundleFilesAsync(string packageName);
+
+        /// <summary>
+        /// 清理所有资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        void ClearAllBundleFilesAsync(string packageName);
+
+        #endregion
+
+        #region Get
+
         /// <summary>
         /// 是否需要下载
         /// </summary>
@@ -419,6 +455,10 @@ namespace FuFramework.Asset.Runtime
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>
         bool HasAssetPath(string assetPath);
 
+        #endregion
+
+        #region Set
+
         /// <summary>
         /// 设置默认资源包
         /// </summary>
@@ -426,35 +466,6 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         void SetDefaultAssetsPackage(ResourcePackage resourcePackage);
 
-        /// <summary>
-        /// 清理无用资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        void ClearUnusedBundleFilesAsync(string packageName);
-
-        /// <summary>
-        /// 清理所有资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        void ClearAllBundleFilesAsync(string packageName);
-
-        /// <summary>
-        /// 卸载无用资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        void UnloadUnusedAssetsAsync(string packageName);
-
-        /// <summary>
-        /// 强制回收所有资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        void UnloadAllAssetsAsync(string packageName);
-
-        /// <summary>
-        /// 卸载资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        /// <param name="assetPath">资源路径</param>
-        void UnloadAsset(string packageName, string assetPath);
+        #endregion
     }
 }

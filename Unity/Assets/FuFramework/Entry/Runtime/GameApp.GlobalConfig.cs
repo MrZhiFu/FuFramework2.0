@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取全局配置组件。
-    /// </summary>
-    public static GlobalConfigComponent GlobalConfig
+    public static partial class GameApp
     {
-        get
-        {
-            if (_globalConfig == null)
-            {
-                _globalConfig = GameEntry.GetComponent<GlobalConfigComponent>();
-            }
+        private static GlobalConfigComponent _globalConfig;
 
-            return _globalConfig;
+        /// <summary>
+        /// 获取全局配置组件。
+        /// </summary>
+        public static GlobalConfigComponent GlobalConfig
+        {
+            get
+            {
+                if (!_globalConfig) _globalConfig = GameEntry.GetComponent<GlobalConfigComponent>();
+                return _globalConfig;
+            }
         }
     }
-
-    private static GlobalConfigComponent _globalConfig;
 }

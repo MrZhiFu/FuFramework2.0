@@ -9,15 +9,21 @@ using Object = UnityEngine.Object;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源组件。
+    /// 功能：封装资源管理器
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Asset")]
     public sealed class AssetComponent : FuComponent
     {
+        /// <summary>
+        /// 资源的运行模式
+        /// </summary>
         [Tooltip("当目标平台为Web平台时，将会强制设置为" + nameof(EPlayMode.WebPlayMode))] [SerializeField]
         private EPlayMode m_GamePlayMode;
 
@@ -29,13 +35,27 @@ namespace FuFramework.Asset.Runtime
             get => m_GamePlayMode;
             set => m_GamePlayMode = value;
         }
+
 #if UNITY_EDITOR
+        /// <summary>
+        /// 资源包信息列表
+        /// </summary>
         [SerializeField] private List<AssetResourcePackageInfo> m_assetResourcePackages = new();
 #endif
 
+        /// <summary>
+        /// 默认包名称
+        /// </summary>
         public const string BuildInPackageName = "DefaultPackage";
+
+        /// <summary>
+        /// 初始化操作句柄
+        /// </summary>
         private InitializationOperation _initializationOperation;
 
+        /// <summary>
+        /// 资源管理器
+        /// </summary>
         private IAssetManager _assetManager;
 
         protected override void Awake()
@@ -50,7 +70,7 @@ namespace FuFramework.Asset.Runtime
 #endif
 #endif
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IAssetManager);
+            InterfaceComponentType      = typeof(IAssetManager);
 
             base.Awake();
 
@@ -81,8 +101,8 @@ namespace FuFramework.Asset.Runtime
 #if UNITY_EDITOR
             var assetResourcePackageInfo = new AssetResourcePackageInfo
             {
-                PackageName = packageName,
-                DownloadURL = host,
+                PackageName         = packageName,
+                DownloadURL         = host,
                 FallbackDownloadURL = fallbackHostServer
             };
 
@@ -373,6 +393,49 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
+        #region 卸载资源
+
+        /// <summary>
+        /// 卸载资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        /// <param name="assetPath">资源路径</param>
+        public void UnloadAsset(string packageName, string assetPath) => _assetManager.UnloadAsset(packageName, assetPath);
+
+        /// <summary>
+        /// 卸载资源
+        /// </summary>
+        /// <param name="assetPath">资源路径</param>
+        public void UnloadAsset(string assetPath) => _assetManager.UnloadAsset(assetPath);
+
+        /// <summary>
+        /// 卸载无用资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        public void UnloadUnusedAssetsAsync(string packageName) => _assetManager.UnloadUnusedAssetsAsync(packageName);
+
+        /// <summary>
+        /// 强制回收所有资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        public void UnloadAllAssetsAsync(string packageName) => _assetManager.UnloadAllAssetsAsync(packageName);
+
+        /// <summary>
+        /// 清理所有资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        public void ClearAllBundleFilesAsync(string packageName) => _assetManager.ClearAllBundleFilesAsync(packageName);
+
+        /// <summary>
+        /// 清理无用资源
+        /// </summary>
+        /// <param name="packageName">资源包名称</param>
+        public void ClearUnusedBundleFilesAsync(string packageName) => _assetManager.ClearUnusedBundleFilesAsync(packageName);
+
+        #endregion
+
+        #region Get
+
         /// <summary>
         /// 是否需要下载
         /// </summary>
@@ -413,6 +476,10 @@ namespace FuFramework.Asset.Runtime
         /// <returns>如果存在指定的资源路径，则返回 true；否则返回 false。</returns>
         public bool HasAssetPath(string assetPath) => _assetManager.HasAssetPath(assetPath);
 
+        #endregion
+
+        #region Set
+
         /// <summary>
         /// 设置默认资源包
         /// </summary>
@@ -420,45 +487,13 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public void SetDefaultAssetsPackage(ResourcePackage assetsPackage) => _assetManager.SetDefaultAssetsPackage(assetsPackage);
 
-        /// <summary>
-        /// 强制回收所有资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        public void UnloadAllAssetsAsync(string packageName) => _assetManager.UnloadAllAssetsAsync(packageName);
-
-        /// <summary>
-        /// 卸载资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        /// <param name="assetPath">资源路径</param>
-        public void UnloadAsset(string packageName, string assetPath) => _assetManager.UnloadAsset(packageName, assetPath);
-
-        /// <summary>
-        /// 卸载资源
-        /// </summary>
-        /// <param name="assetPath">资源路径</param>
-        public void UnloadAsset(string assetPath) => _assetManager.UnloadAsset(assetPath);
-
-        /// <summary>
-        /// 卸载无用资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        public void UnloadUnusedAssetsAsync(string packageName) => _assetManager.UnloadUnusedAssetsAsync(packageName);
-
-        /// <summary>
-        /// 清理所有资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        public void ClearAllBundleFilesAsync(string packageName) => _assetManager.ClearAllBundleFilesAsync(packageName);
-
-        /// <summary>
-        /// 清理无用资源
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        public void ClearUnusedBundleFilesAsync(string packageName) => _assetManager.ClearUnusedBundleFilesAsync(packageName);
+        #endregion
     }
-    
+
 #if UNITY_EDITOR
+    /// <summary>
+    /// 资源包信息
+    /// </summary>
     [Serializable]
     public sealed class AssetResourcePackageInfo
     {

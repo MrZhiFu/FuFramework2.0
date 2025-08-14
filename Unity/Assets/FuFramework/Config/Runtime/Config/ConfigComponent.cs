@@ -1,17 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Config.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 全局配置组件。
@@ -20,32 +14,34 @@ namespace GameFrameX.Config.Runtime
     [AddComponentMenu("Game Framework/Config")]
     public sealed class ConfigComponent : FuComponent
     {
-        private IConfigManager m_ConfigManager = null;
-        private ConcurrentDictionary<Type, string> m_ConfigNameTypeMap = new ConcurrentDictionary<Type, string>();
+        /// <summary>
+        /// 全局配置管理器。
+        /// </summary>
+        private IConfigManager m_ConfigManager;
+
+        /// <summary>
+        /// 全局配置类型与名称字典。key为配置类型，value为配置名称。
+        /// </summary>
+        private readonly ConcurrentDictionary<Type, string> m_ConfigNameTypeDict = new();
 
         /// <summary>
         /// 获取全局配置项数量。
         /// </summary>
-        public int Count
-        {
-            get { return m_ConfigManager.Count; }
-        }
+        public int Count => m_ConfigManager.Count;
 
         /// <summary>
         /// 游戏框架组件初始化。
         /// </summary>
         protected override void Awake()
         {
-            m_ConfigNameTypeMap.Clear();
+            m_ConfigNameTypeDict.Clear();
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IConfigManager);
+            InterfaceComponentType      = typeof(IConfigManager);
+
             base.Awake();
+
             m_ConfigManager = FuEntry.GetModule<IConfigManager>();
-            if (m_ConfigManager == null)
-            {
-                Log.Fatal("Config manager is invalid.");
-                return;
-            }
+            if (m_ConfigManager == null) Log.Fatal("Config manager is invalid.");
         }
 
         /// <summary>
@@ -55,14 +51,9 @@ namespace GameFrameX.Config.Runtime
         /// <returns>返回类型名称</returns>
         private string GetTypeName<T>()
         {
-            if (m_ConfigNameTypeMap.TryGetValue(typeof(T), out var configName))
-            {
-                return configName;
-            }
-
+            if (m_ConfigNameTypeDict.TryGetValue(typeof(T), out var configName)) return configName;
             configName = typeof(T).Name;
-            m_ConfigNameTypeMap.TryAdd(typeof(T), configName);
-
+            m_ConfigNameTypeDict.TryAdd(typeof(T), configName);
             return configName;
         }
 
@@ -73,17 +64,10 @@ namespace GameFrameX.Config.Runtime
         /// <returns></returns>
         public T GetConfig<T>() where T : IDataTable
         {
-            if (HasConfig<T>())
-            {
-                var configName = GetTypeName<T>();
-                var config = m_ConfigManager.GetConfig(configName);
-                if (config != null)
-                {
-                    return (T)config;
-                }
-            }
-
-            return default;
+            if (!HasConfig<T>()) return default;
+            var configName = GetTypeName<T>();
+            var config     = m_ConfigManager.GetConfig(configName);
+            return config != null ? (T)config : default;
         }
 
         /// <summary>
@@ -111,7 +95,7 @@ namespace GameFrameX.Config.Runtime
         /// </summary>
         public void RemoveAllConfigs()
         {
-            m_ConfigNameTypeMap.Clear();
+            m_ConfigNameTypeDict.Clear();
             m_ConfigManager.RemoveAllConfigs();
         }
 
@@ -120,9 +104,6 @@ namespace GameFrameX.Config.Runtime
         /// </summary>
         /// <param name="configName"></param>
         /// <param name="dataTable"></param>
-        public void Add(string configName, IDataTable dataTable)
-        {
-            m_ConfigManager.AddConfig(configName, dataTable);
-        }
+        public void Add(string configName, IDataTable dataTable) => m_ConfigManager.AddConfig(configName, dataTable);
     }
 }

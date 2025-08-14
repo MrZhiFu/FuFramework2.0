@@ -1,22 +1,22 @@
 ﻿using FuFramework.Core.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取对象池组件。
-    /// </summary>
-    public static ObjectPoolComponent ObjectPool
+    public static partial class GameApp
     {
-        get
-        {
-            if (_objectPool == null)
-            {
-                _objectPool = GameEntry.GetComponent<ObjectPoolComponent>();
-            }
+        private static ObjectPoolComponent _objectPool;
 
-            return _objectPool;
+        /// <summary>
+        /// 获取对象池组件。
+        /// </summary>
+        public static ObjectPoolComponent ObjectPool
+        {
+            get
+            {
+                if (!_objectPool) _objectPool = GameEntry.GetComponent<ObjectPoolComponent>();
+                return _objectPool;
+            }
         }
     }
-
-    private static ObjectPoolComponent _objectPool;
 }

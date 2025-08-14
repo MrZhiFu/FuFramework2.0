@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using FuFramework.Download.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取下载组件。
-    /// </summary>
-    public static DownloadComponent Download
+    public static partial class GameApp
     {
-        get
-        {
-            if (_download == null)
-            {
-                _download = GameEntry.GetComponent<DownloadComponent>();
-            }
+        private static DownloadComponent _download;
 
-            return _download;
+        /// <summary>
+        /// 获取下载组件。
+        /// </summary>
+        public static DownloadComponent Download
+        {
+            get
+            {
+                if (!_download) _download = GameEntry.GetComponent<DownloadComponent>();
+                return _download;
+            }
         }
     }
-
-    private static DownloadComponent _download;
 }

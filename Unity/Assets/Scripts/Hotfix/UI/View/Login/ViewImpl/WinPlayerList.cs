@@ -6,6 +6,7 @@ using FuFramework.UI.Runtime;
 using GameFrameX.Event.Runtime;
 using GameFrameX.Network.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;

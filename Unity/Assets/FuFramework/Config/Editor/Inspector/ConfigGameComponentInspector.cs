@@ -1,17 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Config.Runtime;
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Config.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Config.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Config.Editor
 {
+    /// <summary>
+    /// 自定义配置表Inspector
+    /// </summary>
     [CustomEditor(typeof(ConfigComponent))]
     internal sealed class ConfigGameComponentInspector : GameComponentInspector
     {

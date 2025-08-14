@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using FuFramework.Coroutine.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取协程组件。
-    /// </summary>
-    public static CoroutineComponent Coroutine
+    public static partial class GameApp
     {
-        get
-        {
-            if (_coroutine == null)
-            {
-                _coroutine = GameEntry.GetComponent<CoroutineComponent>();
-            }
+        private static CoroutineComponent _coroutine;
 
-            return _coroutine;
+        /// <summary>
+        /// 获取协程组件。
+        /// </summary>
+        public static CoroutineComponent Coroutine
+        {
+            get
+            {
+                if (!_coroutine) _coroutine = GameEntry.GetComponent<CoroutineComponent>();
+                return _coroutine;
+            }
         }
     }
-
-    private static CoroutineComponent _coroutine;
 }

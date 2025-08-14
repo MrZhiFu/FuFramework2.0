@@ -2,15 +2,16 @@
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 下载进度更新
     /// </summary>
-    
     public sealed class AssetDownloadProgressUpdateEventArgs : GameEventArgs
     {
         public static readonly string EventId = typeof(AssetDownloadProgressUpdateEventArgs).FullName;
+
         public override string Id => EventId;
 
         /// <summary>
@@ -40,13 +41,13 @@ namespace FuFramework.Asset.Runtime
 
         public override void Clear()
         {
-            PackageName = null;
-            TotalDownloadCount = 0;
-            CurrentDownloadCount = 0;
-            TotalDownloadSizeBytes = 0;
+            PackageName              = null;
+            TotalDownloadCount       = 0;
+            CurrentDownloadCount     = 0;
+            TotalDownloadSizeBytes   = 0;
             CurrentDownloadSizeBytes = 0;
         }
-        
+
         /// <summary>
         /// 创建下载进度更新
         /// </summary>
@@ -59,11 +60,11 @@ namespace FuFramework.Asset.Runtime
         public static AssetDownloadProgressUpdateEventArgs Create(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
         {
             var assetDownloadProgressUpdate = ReferencePool.Acquire<AssetDownloadProgressUpdateEventArgs>();
-            assetDownloadProgressUpdate.TotalDownloadCount = totalDownloadCount;
-            assetDownloadProgressUpdate.CurrentDownloadCount = currentDownloadCount;
-            assetDownloadProgressUpdate.TotalDownloadSizeBytes = totalDownloadSizeBytes;
+            assetDownloadProgressUpdate.TotalDownloadCount       = totalDownloadCount;
+            assetDownloadProgressUpdate.CurrentDownloadCount     = currentDownloadCount;
+            assetDownloadProgressUpdate.TotalDownloadSizeBytes   = totalDownloadSizeBytes;
             assetDownloadProgressUpdate.CurrentDownloadSizeBytes = currentDownloadSizeBytes;
-            assetDownloadProgressUpdate.PackageName = packageName;
+            assetDownloadProgressUpdate.PackageName              = packageName;
             return assetDownloadProgressUpdate;
         }
     }

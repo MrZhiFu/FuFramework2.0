@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.Manager;

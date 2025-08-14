@@ -2,25 +2,24 @@
 using GameFrameX.Runtime;
 using GameFrameX.Advertisement.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取广告组件。
-    /// </summary>
-    public static AdvertisementComponent Advertisement
+    public static partial class GameApp
     {
-        get
+        private static AdvertisementComponent _advertisement;
+        
+/// <summary>
+        /// 获取广告组件。
+        /// </summary>
+        public static AdvertisementComponent Advertisement
         {
-            if (_advertisement == null)
+            get
             {
-                _advertisement = GameEntry.GetComponent<AdvertisementComponent>();
+                if (!_advertisement) _advertisement = GameEntry.GetComponent<AdvertisementComponent>();
+                return _advertisement;
             }
-
-            return _advertisement;
         }
     }
-
-    private static AdvertisementComponent _advertisement;
-
 }
 #endif

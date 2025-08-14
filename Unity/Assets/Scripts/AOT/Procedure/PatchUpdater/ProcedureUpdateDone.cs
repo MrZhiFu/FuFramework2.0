@@ -2,6 +2,7 @@
 using GameFrameX.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 
 namespace Unity.Startup.Procedure
 {

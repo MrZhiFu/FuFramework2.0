@@ -17,7 +17,7 @@ namespace FuFramework.Asset.Runtime
             /// 远端资源服务器地址
             /// </summary>
             private string HostServer { get; }
-            
+
             /// <summary>
             /// 远端资源服务器备用地址
             /// </summary>
@@ -25,7 +25,7 @@ namespace FuFramework.Asset.Runtime
 
             public RemoteServices(string hostServer, string fallbackHostServer)
             {
-                HostServer = hostServer;
+                HostServer         = hostServer;
                 FallbackHostServer = fallbackHostServer;
             }
 
@@ -54,7 +54,7 @@ namespace FuFramework.Asset.Runtime
 #if UNITY_WEBGL
                 return false;
 #endif
-                
+
                 // 注意：使用了BetterStreamingAssets插件，使用前需要初始化该插件！
                 string buildinFolderName = PathHelper.AppResPath;
                 return BetterStreamingAssets.FileExists($"{buildinFolderName}/{fileName}");

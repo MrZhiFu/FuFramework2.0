@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Localization.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取本地化组件。
-    /// </summary>
-    public static LocalizationComponent Localization
+    public static partial class GameApp
     {
-        get
-        {
-            if (_localization == null)
-            {
-                _localization = GameEntry.GetComponent<LocalizationComponent>();
-            }
+        private static LocalizationComponent _localization;
 
-            return _localization;
+        /// <summary>
+        /// 获取本地化组件。
+        /// </summary>
+        public static LocalizationComponent Localization
+        {
+            get
+            {
+                if (!_localization) _localization = GameEntry.GetComponent<LocalizationComponent>();
+                return _localization;
+            }
         }
     }
-
-    private static LocalizationComponent _localization;
 }

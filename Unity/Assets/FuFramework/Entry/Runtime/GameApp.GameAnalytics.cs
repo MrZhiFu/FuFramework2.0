@@ -2,24 +2,24 @@
 using GameFrameX.GameAnalytics.Runtime;
 using GameFrameX.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取游戏分析组件。
-    /// </summary>
-    public static GameAnalyticsComponent GameAnalytics
+    public static partial class GameApp
     {
-        get
-        {
-            if (_gameAnalytics == null)
-            {
-                _gameAnalytics = GameEntry.GetComponent<GameAnalyticsComponent>();
-            }
+        private static GameAnalyticsComponent _gameAnalytics;
 
-            return _gameAnalytics;
+        /// <summary>
+        /// 获取游戏分析组件。
+        /// </summary>
+        public static GameAnalyticsComponent GameAnalytics
+        {
+            get
+            {
+                if (!_gameAnalytics) _gameAnalytics = GameEntry.GetComponent<GameAnalyticsComponent>();
+                return _gameAnalytics;
+            }
         }
     }
-
-    private static GameAnalyticsComponent _gameAnalytics;
 }
 #endif

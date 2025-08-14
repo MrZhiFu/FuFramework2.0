@@ -1,23 +1,23 @@
-﻿using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
+﻿using FuFramework.Asset.Runtime;
+using FuFramework.Core.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取Asset组件。
-    /// </summary>
-    public static AssetComponent Asset
+    public static partial class GameApp
     {
-        get
-        {
-            if (_asset == null)
-            {
-                _asset = GameEntry.GetComponent<AssetComponent>();
-            }
+        private static AssetComponent _asset;
 
-            return _asset;
+        /// <summary>
+        /// 获取Asset组件。
+        /// </summary>
+        public static AssetComponent Asset
+        {
+            get
+            {
+                if (!_asset) _asset = GameEntry.GetComponent<AssetComponent>();
+                return _asset;
+            }
         }
     }
-
-    private static AssetComponent _asset;
 }

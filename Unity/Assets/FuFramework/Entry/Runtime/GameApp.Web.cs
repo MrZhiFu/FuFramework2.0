@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Web.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取Web组件。
-    /// </summary>
-    public static WebComponent Web
+    public static partial class GameApp
     {
-        get
-        {
-            if (_web == null)
-            {
-                _web = GameEntry.GetComponent<WebComponent>();
-            }
+        private static WebComponent _web;
 
-            return _web;
+        /// <summary>
+        /// 获取Web组件。
+        /// </summary>
+        public static WebComponent Web
+        {
+            get
+            {
+                if (!_web) _web = GameEntry.GetComponent<WebComponent>();
+                return _web;
+            }
         }
     }
-
-    private static WebComponent _web;
 }

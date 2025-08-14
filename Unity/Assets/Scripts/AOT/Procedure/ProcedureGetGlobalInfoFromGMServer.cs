@@ -4,6 +4,7 @@ using GameFrameX.Fsm.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using GameFrameX.Web.Runtime;
 using YooAsset;
 using Utility = FuFramework.Core.Runtime.Utility;

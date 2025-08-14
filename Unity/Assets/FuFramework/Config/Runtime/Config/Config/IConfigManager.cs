@@ -1,11 +1,6 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿// ReSharper disable once CheckNamespace
 
-namespace GameFrameX.Config.Runtime
+namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 全局配置管理器接口。

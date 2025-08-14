@@ -6,6 +6,7 @@ using GameFrameX.Fsm.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using GameFrameX.Web.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using GameFrameX.Network.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;

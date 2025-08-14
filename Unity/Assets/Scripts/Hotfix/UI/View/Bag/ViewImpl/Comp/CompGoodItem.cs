@@ -1,4 +1,5 @@
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using Hotfix.Config.Tables;
 using Utility = FuFramework.Core.Runtime.Utility;
 

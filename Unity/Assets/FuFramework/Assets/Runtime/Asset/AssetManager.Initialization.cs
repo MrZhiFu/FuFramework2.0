@@ -16,11 +16,11 @@ namespace FuFramework.Asset.Runtime
         {
             return PlayMode switch
             {
-                EPlayMode.EditorSimulateMode => InitAsEditorSimulateMode(resourcePackage), // 编辑器下的模拟模式
-                EPlayMode.OfflinePlayMode => InitAsOfflinePlayMode(resourcePackage), // 单机运行模式
-                EPlayMode.HostPlayMode => InitAsHostPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL), // 联机运行模式
-                EPlayMode.WebPlayMode => InitAsWebPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL), // WebGL运行模式
-                _ => null
+                EPlayMode.EditorSimulateMode => InitAsEditorSimulateMode(resourcePackage),                                 // 编辑器下的模拟模式
+                EPlayMode.OfflinePlayMode    => InitAsOfflinePlayMode(resourcePackage),                                    // 单机运行模式
+                EPlayMode.HostPlayMode       => InitAsHostPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL), // 联机运行模式
+                EPlayMode.WebPlayMode        => InitAsWebPlayMode(resourcePackage, hostServerURL, fallbackHostServerURL),  // WebGL运行模式
+                _                            => null
             };
         }
 
@@ -33,9 +33,9 @@ namespace FuFramework.Asset.Runtime
         {
             var initParameters = new EditorSimulateModeParameters();
             //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
-            var buildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
+            var buildPipeline       = EDefaultBuildPipeline.BuiltinBuildPipeline;
             var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, DefaultPackageName);
-            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+            var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
             initParameters.EditorFileSystemParameters = editorFileSystem;
             return resourcePackage.InitializeAsync(initParameters);
         }
@@ -65,7 +65,9 @@ namespace FuFramework.Asset.Runtime
         private InitializationOperation InitAsWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
             var initParameters = new WebPlayModeParameters();
+
             FileSystemParameters webFileSystem = null;
+
 #if UNITY_WEBGL
 #if ENABLE_DOUYIN_MINI_GAME
             // 创建字节小游戏文件系统
@@ -109,12 +111,14 @@ namespace FuFramework.Asset.Runtime
         private InitializationOperation InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
             IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
-            var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+
+            var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
             var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+
             var initParameters = new HostPlayModeParameters
             {
                 BuildinFileSystemParameters = buildInFileSystem,
-                CacheFileSystemParameters = cacheFileSystem
+                CacheFileSystemParameters   = cacheFileSystem
             };
             return resourcePackage.InitializeAsync(initParameters);
         }

@@ -1,8 +1,7 @@
-﻿using GameFrameX.Editor;
-using FuFramework.Core.Editor;
+﻿using FuFramework.Core.Editor;
 using UnityEditor;
 
-namespace GameFrameX.Config.Editor
+namespace FuFramework.Config.Editor
 {
     /// <summary>
     /// 配置表二进制功能脚本宏定义。

@@ -1,15 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using GameFrameX.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Config.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 加载全局配置失败事件。
@@ -22,21 +17,18 @@ namespace GameFrameX.Config.Runtime
         public static readonly string EventId = typeof(LoadConfigFailureEventArgs).FullName;
 
         /// <summary>
+        /// 获取加载全局配置失败事件编号。
+        /// </summary>
+        public override string Id => EventId;
+
+        /// <summary>
         /// 初始化加载全局配置失败事件的新实例。
         /// </summary>
         public LoadConfigFailureEventArgs()
         {
             ConfigAssetName = null;
-            ErrorMessage = null;
-            UserData = null;
-        }
-
-        /// <summary>
-        /// 获取加载全局配置失败事件编号。
-        /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
+            ErrorMessage    = null;
+            UserData        = null;
         }
 
         /// <summary>
@@ -63,10 +55,10 @@ namespace GameFrameX.Config.Runtime
         /// <returns>创建的加载全局配置失败事件。</returns>
         public static LoadConfigFailureEventArgs Create(string dataAssetName, string errorMessage, object userData)
         {
-            LoadConfigFailureEventArgs loadConfigFailureEventArgs = ReferencePool.Acquire<LoadConfigFailureEventArgs>();
+            var loadConfigFailureEventArgs = ReferencePool.Acquire<LoadConfigFailureEventArgs>();
             loadConfigFailureEventArgs.ConfigAssetName = dataAssetName;
-            loadConfigFailureEventArgs.ErrorMessage = errorMessage;
-            loadConfigFailureEventArgs.UserData = userData;
+            loadConfigFailureEventArgs.ErrorMessage    = errorMessage;
+            loadConfigFailureEventArgs.UserData        = userData;
             return loadConfigFailureEventArgs;
         }
 
@@ -76,8 +68,8 @@ namespace GameFrameX.Config.Runtime
         public override void Clear()
         {
             ConfigAssetName = null;
-            ErrorMessage = null;
-            UserData = null;
+            ErrorMessage    = null;
+            UserData        = null;
         }
     }
 }

@@ -3,6 +3,7 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace FuFramework.Asset.Runtime
     public sealed class AssetPatchStatesChangeEventArgs : GameEventArgs
     {
         public static readonly string EventId = typeof(AssetPatchStatesChangeEventArgs).FullName;
+
         public override string Id => EventId;
 
         /// <summary>
@@ -25,7 +27,7 @@ namespace FuFramework.Asset.Runtime
 
         public override void Clear()
         {
-            PackageName = null;
+            PackageName   = null;
             CurrentStates = EPatchStates.CreateDownloader;
         }
 
@@ -38,7 +40,7 @@ namespace FuFramework.Asset.Runtime
         public static AssetPatchStatesChangeEventArgs Create(string packageName, EPatchStates currentStates)
         {
             var assetPatchStatesChange = ReferencePool.Acquire<AssetPatchStatesChangeEventArgs>();
-            assetPatchStatesChange.PackageName = packageName;
+            assetPatchStatesChange.PackageName   = packageName;
             assetPatchStatesChange.CurrentStates = currentStates;
             return assetPatchStatesChange;
         }

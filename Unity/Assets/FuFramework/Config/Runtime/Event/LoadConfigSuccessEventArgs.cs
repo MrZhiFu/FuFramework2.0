@@ -1,15 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using GameFrameX.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Config.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 加载全局配置成功事件。
@@ -22,22 +17,9 @@ namespace GameFrameX.Config.Runtime
         public static readonly string EventId = typeof(LoadConfigSuccessEventArgs).FullName;
 
         /// <summary>
-        /// 初始化加载全局配置成功事件编号的新实例。
-        /// </summary>
-        public LoadConfigSuccessEventArgs()
-        {
-            ConfigAssetName = null;
-            Duration = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 获取加载全局配置成功事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取全局配置资源名称。
@@ -55,6 +37,16 @@ namespace GameFrameX.Config.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化加载全局配置成功事件编号的新实例。
+        /// </summary>
+        public LoadConfigSuccessEventArgs()
+        {
+            ConfigAssetName = null;
+            Duration        = 0f;
+            UserData        = null;
+        }
+
+        /// <summary>
         /// 创建加载全局配置成功事件。
         /// </summary>
         /// <param name="dataAssetName"></param>
@@ -63,10 +55,10 @@ namespace GameFrameX.Config.Runtime
         /// <returns>创建的加载全局配置成功事件。</returns>
         public static LoadConfigSuccessEventArgs Create(string dataAssetName, float duration, object userData)
         {
-            LoadConfigSuccessEventArgs loadConfigSuccessEventArgs = ReferencePool.Acquire<LoadConfigSuccessEventArgs>();
+            var loadConfigSuccessEventArgs = ReferencePool.Acquire<LoadConfigSuccessEventArgs>();
             loadConfigSuccessEventArgs.ConfigAssetName = dataAssetName;
-            loadConfigSuccessEventArgs.Duration = duration;
-            loadConfigSuccessEventArgs.UserData = userData;
+            loadConfigSuccessEventArgs.Duration        = duration;
+            loadConfigSuccessEventArgs.UserData        = userData;
             return loadConfigSuccessEventArgs;
         }
 
@@ -76,8 +68,8 @@ namespace GameFrameX.Config.Runtime
         public override void Clear()
         {
             ConfigAssetName = null;
-            Duration = 0f;
-            UserData = null;
+            Duration        = 0f;
+            UserData        = null;
         }
     }
 }

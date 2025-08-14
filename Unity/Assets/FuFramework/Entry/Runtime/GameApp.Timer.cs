@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Timer.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取定时器组件。
-    /// </summary>
-    public static TimerComponent Timer
+    public static partial class GameApp
     {
-        get
-        {
-            if (_timer == null)
-            {
-                _timer = GameEntry.GetComponent<TimerComponent>();
-            }
+        private static TimerComponent _timer;
 
-            return _timer;
+        /// <summary>
+        /// 获取定时器组件。
+        /// </summary>
+        public static TimerComponent Timer
+        {
+            get
+            {
+                if (!_timer) _timer = GameEntry.GetComponent<TimerComponent>();
+                return _timer;
+            }
         }
     }
-
-    private static TimerComponent _timer;
 }

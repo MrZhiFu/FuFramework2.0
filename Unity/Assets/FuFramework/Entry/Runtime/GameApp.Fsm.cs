@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Fsm.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取有限状态机组件。
-    /// </summary>
-    public static FsmComponent Fsm
+    public static partial class GameApp
     {
-        get
-        {
-            if (_fsm == null)
-            {
-                _fsm = GameEntry.GetComponent<FsmComponent>();
-            }
+        private static FsmComponent _fsm;
 
-            return _fsm;
+        /// <summary>
+        /// 获取有限状态机组件。
+        /// </summary>
+        public static FsmComponent Fsm
+        {
+            get
+            {
+                if (!_fsm) _fsm = GameEntry.GetComponent<FsmComponent>();
+                return _fsm;
+            }
         }
     }
-
-    private static FsmComponent _fsm;
 }

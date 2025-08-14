@@ -3,6 +3,7 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace FuFramework.Asset.Runtime
     public sealed class AssetFoundUpdateFilesEventArgs : GameEventArgs
     {
         public static readonly string EventId = typeof(AssetFoundUpdateFilesEventArgs).FullName;
+
         public override string Id => EventId;
 
         /// <summary>
@@ -30,8 +32,8 @@ namespace FuFramework.Asset.Runtime
 
         public override void Clear()
         {
-            PackageName = null;
-            TotalCount = 0;
+            PackageName    = null;
+            TotalCount     = 0;
             TotalSizeBytes = 0;
         }
 
@@ -45,9 +47,9 @@ namespace FuFramework.Asset.Runtime
         public static AssetFoundUpdateFilesEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
         {
             var foundUpdateFiles = ReferencePool.Acquire<AssetFoundUpdateFilesEventArgs>();
-            foundUpdateFiles.TotalCount = totalCount;
+            foundUpdateFiles.TotalCount     = totalCount;
             foundUpdateFiles.TotalSizeBytes = totalSizeBytes;
-            foundUpdateFiles.PackageName = packageName;
+            foundUpdateFiles.PackageName    = packageName;
             return foundUpdateFiles;
         }
     }

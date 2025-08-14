@@ -9,7 +9,7 @@
 
 using System;
 using LuBan.Runtime;
-using GameFrameX.Config.Runtime;
+using FuFramework.Config.Runtime;
 using SimpleJSON;
 
 namespace Hotfix.Config

@@ -1,23 +1,23 @@
 ﻿using FuFramework.Core.Runtime;
 using GameFrameX.Procedure.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取流程组件。
-    /// </summary>
-    public static ProcedureComponent Procedure
+    public static partial class GameApp
     {
-        get
-        {
-            if (_procedure == null)
-            {
-                _procedure = GameEntry.GetComponent<ProcedureComponent>();
-            }
+        private static ProcedureComponent _procedure;
 
-            return _procedure;
+        /// <summary>
+        /// 获取流程组件。
+        /// </summary>
+        public static ProcedureComponent Procedure
+        {
+            get
+            {
+                if (!_procedure) _procedure = GameEntry.GetComponent<ProcedureComponent>();
+                return _procedure;
+            }
         }
     }
-
-    private static ProcedureComponent _procedure;
 }

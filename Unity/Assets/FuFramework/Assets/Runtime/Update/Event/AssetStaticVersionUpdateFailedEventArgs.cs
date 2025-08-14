@@ -3,6 +3,7 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace FuFramework.Asset.Runtime
     public sealed class AssetStaticVersionUpdateFailedEventArgs : GameEventArgs
     {
         public static readonly string EventId = typeof(AssetStaticVersionUpdateFailedEventArgs).FullName;
+
         public override string Id => EventId;
 
         /// <summary>
@@ -26,7 +28,7 @@ namespace FuFramework.Asset.Runtime
         public override void Clear()
         {
             PackageName = null;
-            Error = null;
+            Error       = null;
         }
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace FuFramework.Asset.Runtime
         {
             var assetStaticVersionUpdateFailed = ReferencePool.Acquire<AssetStaticVersionUpdateFailedEventArgs>();
             assetStaticVersionUpdateFailed.PackageName = packageName;
-            assetStaticVersionUpdateFailed.Error = error;
+            assetStaticVersionUpdateFailed.Error       = error;
             return assetStaticVersionUpdateFailed;
         }
     }

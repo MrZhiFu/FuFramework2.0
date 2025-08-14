@@ -3,6 +3,7 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable InconsistentNaming
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace FuFramework.Asset.Runtime
     public sealed class AssetWebFileDownloadFailedEventArgs : GameEventArgs
     {
         public static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
+
         public override string Id => EventId;
 
         /// <summary>
@@ -30,8 +32,8 @@ namespace FuFramework.Asset.Runtime
 
         public override void Clear()
         {
-            FileName = null;
-            Error = null;
+            FileName    = null;
+            Error       = null;
             PackageName = null;
         }
 
@@ -45,8 +47,8 @@ namespace FuFramework.Asset.Runtime
         public static AssetWebFileDownloadFailedEventArgs Create(string packageName, string fileName, string error)
         {
             var assetWebFileDownloadFailed = ReferencePool.Acquire<AssetWebFileDownloadFailedEventArgs>();
-            assetWebFileDownloadFailed.FileName = fileName;
-            assetWebFileDownloadFailed.Error = error;
+            assetWebFileDownloadFailed.FileName    = fileName;
+            assetWebFileDownloadFailed.Error       = error;
             assetWebFileDownloadFailed.PackageName = packageName;
             return assetWebFileDownloadFailed;
         }

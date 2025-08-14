@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using HybridCLR;
 using Utility = FuFramework.Core.Runtime.Utility;
 

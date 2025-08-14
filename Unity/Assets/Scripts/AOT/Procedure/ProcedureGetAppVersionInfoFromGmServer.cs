@@ -6,6 +6,7 @@ using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Localization.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using GameFrameX.Web.Runtime;
 using UnityEngine;
 using YooAsset;

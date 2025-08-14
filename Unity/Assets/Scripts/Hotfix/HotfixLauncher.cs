@@ -6,6 +6,7 @@ using Hotfix.Proto;
 using SimpleJSON;
 using UnityEngine;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.UI;

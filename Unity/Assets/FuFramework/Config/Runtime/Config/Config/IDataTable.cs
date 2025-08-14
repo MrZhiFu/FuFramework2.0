@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Config.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Config.Runtime
 {
     public interface IDataTable
     {
@@ -24,7 +23,6 @@ namespace GameFrameX.Config.Runtime
     /// <summary>
     /// 数据表基础接口
     /// </summary>
-   
     public interface IDataTable<T> : IDataTable where T : class
     {
         /// <summary>

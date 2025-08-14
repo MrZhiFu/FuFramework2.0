@@ -2,24 +2,24 @@
 using GameFrameX.Runtime;
 using GameFrameX.Guide.Runtime;
 
-public static partial class GameApp
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Entry.Runtime
 {
-    /// <summary>
-    /// 获取引导组件。
-    /// </summary>
-    public static GuideComponent Guide
+    public static partial class GameApp
     {
-        get
-        {
-            if (_guide == null)
-            {
-                _guide = GameEntry.GetComponent<GuideComponent>();
-            }
+        private static GuideComponent _guide;
 
-            return _guide;
+        /// <summary>
+        /// 获取引导组件。
+        /// </summary>
+        public static GuideComponent Guide
+        {
+            get
+            {
+                if (!_guide) _guide = GameEntry.GetComponent<GuideComponent>();
+                return _guide;
+            }
         }
     }
-
-    private static GuideComponent _guide;
 }
 #endif

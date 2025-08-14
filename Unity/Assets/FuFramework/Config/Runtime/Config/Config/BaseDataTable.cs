@@ -2,133 +2,75 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Config.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Config.Runtime
 {
-   
+    /// <summary>
+    /// 数据表基类
+    /// </summary>
+    /// <typeparam name="T">具体数据表类型</typeparam>
     public abstract class BaseDataTable<T> : IDataTable<T> where T : class
     {
-        protected readonly SortedDictionary<long, T> LongDataMaps = new SortedDictionary<long, T>();
-        protected readonly SortedDictionary<string, T> StringDataMaps = new SortedDictionary<string, T>();
+        protected readonly SortedDictionary<long, T>   LongDataMaps   = new();
+        protected readonly SortedDictionary<string, T> StringDataMaps = new();
 
-        protected readonly List<T> DataList = new List<T>();
+        protected readonly List<T> DataList = new();
+
         public abstract Task LoadAsync();
 
         public T Get(int id)
         {
-            LongDataMaps.TryGetValue(id, out T value);
+            LongDataMaps.TryGetValue(id, out var value);
             return value;
         }
 
         public T Get(long id)
         {
-            LongDataMaps.TryGetValue(id, out T value);
+            LongDataMaps.TryGetValue(id, out var value);
             return value;
         }
 
         public T Get(string id)
         {
-            StringDataMaps.TryGetValue(id, out T value);
+            StringDataMaps.TryGetValue(id, out var value);
             return value;
         }
 
-        public T this[int index]
-        {
-            get
-            {
-                if (index >= Count || index < 0)
-                {
-                    throw new IndexOutOfRangeException(nameof(index));
-                }
+        public T this[int index] => index >= Count || index < 0 ? throw new IndexOutOfRangeException(nameof(index)) : DataList[index];
 
-                return DataList[index];
-            }
-        }
+        public int Count => Math.Max(LongDataMaps.Count, StringDataMaps.Count);
 
-        public int Count
-        {
-            get { return Math.Max(LongDataMaps.Count, StringDataMaps.Count); }
-        }
+        public T FirstOrDefault => DataList.FirstOrDefault();
 
-        public T FirstOrDefault
-        {
-            get { return DataList.FirstOrDefault(); }
-        }
+        public T LastOrDefault => DataList.LastOrDefault();
 
-        public T LastOrDefault
-        {
-            get { return DataList.LastOrDefault(); }
-        }
+        public T[] All => DataList.ToArray();
 
-        public T[] All
-        {
-            get { return DataList.ToArray(); }
-        }
+        public T[] ToArray() => DataList.ToArray();
 
-        public T[] ToArray()
-        {
-            return DataList.ToArray();
-        }
+        public List<T> ToList() => DataList.ToList();
 
-        public List<T> ToList()
-        {
-            return DataList.ToList();
-        }
+        public T Find(Func<T, bool> func) => DataList.FirstOrDefault(func);
 
-        public T Find(Func<T, bool> func)
-        {
-            return DataList.FirstOrDefault(func);
-        }
+        public T[] FindListArray(Func<T, bool> func) => DataList.Where(func).ToArray();
 
-        public T[] FindListArray(Func<T, bool> func)
-        {
-            return DataList.Where(func).ToArray();
-        }
+        public List<T> FindList(Func<T, bool> func) => DataList.Where(func).ToList();
 
-        public List<T> FindList(Func<T, bool> func)
-        {
-            return DataList.Where(func).ToList();
-        }
+        public void ForEach(Action<T> func) => DataList.ForEach(func);
 
-        public void ForEach(Action<T> func)
-        {
-            DataList.ForEach(func);
-        }
+        public TK Max<TK>(Func<T, TK> func) => DataList.Max(func);
 
-        public TK Max<TK>(Func<T, TK> func)
-        {
-            return DataList.Max(func);
-        }
+        public TK Min<TK>(Func<T, TK> func) => DataList.Min(func);
 
-        public TK Min<TK>(Func<T, TK> func)
-        {
-            return DataList.Min(func);
-        }
+        public int Sum(Func<T, int> func) => DataList.Sum(func);
 
-        public int Sum(Func<T, int> func)
-        {
-            return DataList.Sum(func);
-        }
+        public long Sum(Func<T, long> func) => DataList.Sum(func);
 
-        public long Sum(Func<T, long> func)
-        {
-            return DataList.Sum(func);
-        }
+        public float Sum(Func<T, float> func) => DataList.Sum(func);
 
-        public float Sum(Func<T, float> func)
-        {
-            return DataList.Sum(func);
-        }
+        public double Sum(Func<T, double> func) => DataList.Sum(func);
 
-        public double Sum(Func<T, double> func)
-        {
-            return DataList.Sum(func);
-        }
-
-        public decimal Sum(Func<T, decimal> func)
-        {
-            return DataList.Sum(func);
-        }
+        public decimal Sum(Func<T, decimal> func) => DataList.Sum(func);
     }
 }
