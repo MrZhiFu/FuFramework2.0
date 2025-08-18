@@ -1,19 +1,14 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音管理器接口。
+    /// 功能：定义了声音管理器相关接口，包括声音组、声音播放，暂停，继续，停止等。
     /// </summary>
     public interface ISoundManager
     {

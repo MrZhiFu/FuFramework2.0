@@ -3,7 +3,7 @@
 namespace FuFramework.Sound.Runtime
 {
     /// <summary>
-    /// 声音组辅助器接口。
+    /// 默认声音组辅助器。
     /// </summary>
-    public interface ISoundGroupHelper { }
+    public class DefaultSoundGroupHelper : SoundGroupHelperBase { }
 }

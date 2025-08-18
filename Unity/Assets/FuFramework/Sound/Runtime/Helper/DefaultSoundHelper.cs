@@ -1,21 +1,19 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 默认声音辅助器。
+    /// 实现了声音资源的卸载功能。
     /// </summary>
     public class DefaultSoundHelper : SoundHelperBase
     {
-        private IAssetManager m_ResourceComponent = null;
+        /// <summary>
+        /// 资源管理器。
+        /// </summary>
+        private IAssetManager m_ResourceComponent;
 
         /// <summary>
         /// 释放声音资源。
@@ -29,11 +27,7 @@ namespace GameFrameX.Sound.Runtime
         private void Start()
         {
             m_ResourceComponent = FuEntry.GetModule<IAssetManager>();
-            if (m_ResourceComponent == null)
-            {
-                Log.Fatal("Resource component is invalid.");
-                return;
-            }
+            if (m_ResourceComponent == null) Log.Fatal("Resource component is invalid.");
         }
     }
 }

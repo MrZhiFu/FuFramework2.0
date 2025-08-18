@@ -1,14 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿// ReSharper disable once CheckNamespace
 
-namespace GameFrameX.Sound.Runtime
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音辅助器接口。
+    /// 定义了声音资源的释放接口。
     /// </summary>
     public interface ISoundHelper
     {

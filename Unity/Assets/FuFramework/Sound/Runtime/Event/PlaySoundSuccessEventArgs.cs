@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 播放声音成功事件。
@@ -17,16 +11,14 @@ namespace GameFrameX.Sound.Runtime
     public sealed class PlaySoundSuccessEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 初始化播放声音成功事件的新实例。
+        /// 获取事件编号。
         /// </summary>
-        public PlaySoundSuccessEventArgs()
-        {
-            SerialId = 0;
-            SoundAssetName = null;
-            SoundAgent = null;
-            Duration = 0f;
-            UserData = null;
-        }
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 播放声音成功事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(PlaySoundSuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取声音的序列编号。
@@ -54,6 +46,18 @@ namespace GameFrameX.Sound.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化播放声音成功事件的新实例。
+        /// </summary>
+        public PlaySoundSuccessEventArgs()
+        {
+            SerialId       = 0;
+            SoundAssetName = null;
+            SoundAgent     = null;
+            Duration       = 0f;
+            UserData       = null;
+        }
+
+        /// <summary>
         /// 创建播放声音成功事件。
         /// </summary>
         /// <param name="serialId">声音的序列编号。</param>
@@ -64,12 +68,12 @@ namespace GameFrameX.Sound.Runtime
         /// <returns>创建的播放声音成功事件。</returns>
         public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, ISoundAgent soundAgent, float duration, object userData)
         {
-            PlaySoundSuccessEventArgs playSoundSuccessEventArgs = ReferencePool.Acquire<PlaySoundSuccessEventArgs>();
-            playSoundSuccessEventArgs.SerialId = serialId;
+            var playSoundSuccessEventArgs = ReferencePool.Acquire<PlaySoundSuccessEventArgs>();
+            playSoundSuccessEventArgs.SerialId       = serialId;
             playSoundSuccessEventArgs.SoundAssetName = soundAssetName;
-            playSoundSuccessEventArgs.SoundAgent = soundAgent;
-            playSoundSuccessEventArgs.Duration = duration;
-            playSoundSuccessEventArgs.UserData = userData;
+            playSoundSuccessEventArgs.SoundAgent     = soundAgent;
+            playSoundSuccessEventArgs.Duration       = duration;
+            playSoundSuccessEventArgs.UserData       = userData;
             return playSoundSuccessEventArgs;
         }
 
@@ -78,21 +82,11 @@ namespace GameFrameX.Sound.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId = 0;
+            SerialId       = 0;
             SoundAssetName = null;
-            SoundAgent = null;
-            Duration = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
-        /// 播放声音成功事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(PlaySoundSuccessEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
+            SoundAgent     = null;
+            Duration       = 0f;
+            UserData       = null;
         }
     }
 }

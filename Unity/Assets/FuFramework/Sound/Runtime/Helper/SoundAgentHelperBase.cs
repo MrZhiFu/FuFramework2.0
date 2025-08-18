@@ -1,137 +1,80 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Sound;
-using System;
-using FuFramework.Entity.Runtime;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Audio;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音代理辅助器基类。
+    /// 功能：主要定义了声音相关属性和方法，包括播放，暂停，停止，重置等。 
     /// </summary>
     public abstract class SoundAgentHelperBase : MonoBehaviour, ISoundAgentHelper
     {
         /// <summary>
         /// 获取当前是否正在播放。
         /// </summary>
-        public abstract bool IsPlaying
-        {
-            get;
-        }
+        public abstract bool IsPlaying { get; }
 
         /// <summary>
         /// 获取声音长度。
         /// </summary>
-        public abstract float Length
-        {
-            get;
-        }
+        public abstract float Length { get; }
 
         /// <summary>
         /// 获取或设置播放位置。
         /// </summary>
-        public abstract float Time
-        {
-            get;
-            set;
-        }
+        public abstract float Time { get; set; }
 
         /// <summary>
         /// 获取或设置是否静音。
         /// </summary>
-        public abstract bool Mute
-        {
-            get;
-            set;
-        }
+        public abstract bool Mute { get; set; }
 
         /// <summary>
         /// 获取或设置是否循环播放。
         /// </summary>
-        public abstract bool Loop
-        {
-            get;
-            set;
-        }
+        public abstract bool Loop { get; set; }
 
         /// <summary>
         /// 获取或设置声音优先级。
         /// </summary>
-        public abstract int Priority
-        {
-            get;
-            set;
-        }
+        public abstract int Priority { get; set; }
 
         /// <summary>
         /// 获取或设置音量大小。
         /// </summary>
-        public abstract float Volume
-        {
-            get;
-            set;
-        }
+        public abstract float Volume { get; set; }
 
         /// <summary>
         /// 获取或设置声音音调。
         /// </summary>
-        public abstract float Pitch
-        {
-            get;
-            set;
-        }
+        public abstract float Pitch { get; set; }
 
         /// <summary>
         /// 获取或设置声音立体声声相。
         /// </summary>
-        public abstract float PanStereo
-        {
-            get;
-            set;
-        }
+        public abstract float PanStereo { get; set; }
 
         /// <summary>
         /// 获取或设置声音空间混合量。
         /// </summary>
-        public abstract float SpatialBlend
-        {
-            get;
-            set;
-        }
+        public abstract float SpatialBlend { get; set; }
 
         /// <summary>
         /// 获取或设置声音最大距离。
         /// </summary>
-        public abstract float MaxDistance
-        {
-            get;
-            set;
-        }
+        public abstract float MaxDistance { get; set; }
 
         /// <summary>
         /// 获取或设置声音多普勒等级。
         /// </summary>
-        public abstract float DopplerLevel
-        {
-            get;
-            set;
-        }
+        public abstract float DopplerLevel { get; set; }
 
         /// <summary>
         /// 获取或设置声音代理辅助器所在的混音组。
         /// </summary>
-        public abstract AudioMixerGroup AudioMixerGroup
-        {
-            get;
-            set;
-        }
+        public abstract AudioMixerGroup AudioMixerGroup { get; set; }
 
         /// <summary>
         /// 重置声音代理事件。
@@ -178,7 +121,7 @@ namespace GameFrameX.Sound.Runtime
         /// 设置声音绑定的实体。
         /// </summary>
         /// <param name="bindingEntity">声音绑定的实体。</param>
-        public abstract void SetBindingEntity(Entity bindingEntity);
+        public abstract void SetBindingEntity(Entity.Runtime.Entity bindingEntity);
 
         /// <summary>
         /// 设置声音所在的世界坐标。

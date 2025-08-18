@@ -1,17 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using UnityEngine;
 
-using GameFrameX.Sound;
-using UnityEngine;
-
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音辅助器基类。
+    /// 用于实现声音资源的释放。
     /// </summary>
     public abstract class SoundHelperBase : MonoBehaviour, ISoundHelper
     {

@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 播放声音失败事件。
@@ -17,18 +11,14 @@ namespace GameFrameX.Sound.Runtime
     public sealed class PlaySoundFailureEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 初始化播放声音失败事件的新实例。
+        /// 获取事件编号。
         /// </summary>
-        public PlaySoundFailureEventArgs()
-        {
-            SerialId = 0;
-            SoundAssetName = null;
-            SoundGroupName = null;
-            PlaySoundParams = null;
-            ErrorCode = PlaySoundErrorCode.Unknown;
-            ErrorMessage = null;
-            UserData = null;
-        }
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 播放声音失败事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(PlaySoundFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取声音的序列编号。
@@ -66,6 +56,20 @@ namespace GameFrameX.Sound.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化播放声音失败事件的新实例。
+        /// </summary>
+        public PlaySoundFailureEventArgs()
+        {
+            SerialId        = 0;
+            SoundAssetName  = null;
+            SoundGroupName  = null;
+            PlaySoundParams = null;
+            ErrorCode       = PlaySoundErrorCode.Unknown;
+            ErrorMessage    = null;
+            UserData        = null;
+        }
+
+        /// <summary>
         /// 创建播放声音失败事件。
         /// </summary>
         /// <param name="serialId">声音的序列编号。</param>
@@ -77,16 +81,16 @@ namespace GameFrameX.Sound.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音失败事件。</returns>
         public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams, PlaySoundErrorCode errorCode, string errorMessage,
-            object userData)
+                                                       object userData)
         {
-            PlaySoundFailureEventArgs playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
-            playSoundFailureEventArgs.SerialId = serialId;
-            playSoundFailureEventArgs.SoundAssetName = soundAssetName;
-            playSoundFailureEventArgs.SoundGroupName = soundGroupName;
+            var playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
+            playSoundFailureEventArgs.SerialId        = serialId;
+            playSoundFailureEventArgs.SoundAssetName  = soundAssetName;
+            playSoundFailureEventArgs.SoundGroupName  = soundGroupName;
             playSoundFailureEventArgs.PlaySoundParams = playSoundParams;
-            playSoundFailureEventArgs.ErrorCode = errorCode;
-            playSoundFailureEventArgs.ErrorMessage = errorMessage;
-            playSoundFailureEventArgs.UserData = userData;
+            playSoundFailureEventArgs.ErrorCode       = errorCode;
+            playSoundFailureEventArgs.ErrorMessage    = errorMessage;
+            playSoundFailureEventArgs.UserData        = userData;
             return playSoundFailureEventArgs;
         }
 
@@ -95,20 +99,13 @@ namespace GameFrameX.Sound.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId = 0;
-            SoundAssetName = null;
-            SoundGroupName = null;
+            SerialId        = 0;
+            SoundAssetName  = null;
+            SoundGroupName  = null;
             PlaySoundParams = null;
-            ErrorCode = PlaySoundErrorCode.Unknown;
-            ErrorMessage = null;
-            UserData = null;
+            ErrorCode       = PlaySoundErrorCode.Unknown;
+            ErrorMessage    = null;
+            UserData        = null;
         }
-
-        /// <summary>
-        /// 播放声音失败事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(PlaySoundFailureEventArgs).FullName;
-
-        public override string Id => EventId;
     }
 }

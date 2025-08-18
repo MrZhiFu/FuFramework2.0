@@ -1,29 +1,22 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Sound.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Sound.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Sound.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Editor
 {
     [CustomEditor(typeof(SoundComponent))]
     internal sealed class SoundGameComponentInspector : GameComponentInspector
     {
         // private SerializedProperty m_EnablePlaySoundUpdateEvent = null;
         // private SerializedProperty m_EnablePlaySoundDependencyAssetEvent = null;
-        private SerializedProperty m_InstanceRoot = null;
-        private SerializedProperty m_AudioMixer = null;
-        private SerializedProperty m_SoundGroups = null;
+        private SerializedProperty m_InstanceRoot;
+        private SerializedProperty m_AudioMixer;
+        private SerializedProperty m_SoundGroups;
 
-        private HelperInfo<SoundHelperBase> m_SoundHelperInfo = new HelperInfo<SoundHelperBase>("Sound");
-        private HelperInfo<SoundGroupHelperBase> m_SoundGroupHelperInfo = new HelperInfo<SoundGroupHelperBase>("SoundGroup");
-        private HelperInfo<SoundAgentHelperBase> m_SoundAgentHelperInfo = new HelperInfo<SoundAgentHelperBase>("SoundAgent");
+        private readonly HelperInfo<SoundHelperBase>      m_SoundHelperInfo      = new("Sound");
+        private readonly HelperInfo<SoundGroupHelperBase> m_SoundGroupHelperInfo = new("SoundGroup");
+        private readonly HelperInfo<SoundAgentHelperBase> m_SoundAgentHelperInfo = new("SoundAgent");
 
         public override void OnInspectorGUI()
         {
@@ -70,8 +63,8 @@ namespace GameFrameX.Sound.Editor
             // m_EnablePlaySoundUpdateEvent = serializedObject.FindProperty("m_EnablePlaySoundUpdateEvent");
             // m_EnablePlaySoundDependencyAssetEvent = serializedObject.FindProperty("m_EnablePlaySoundDependencyAssetEvent");
             m_InstanceRoot = serializedObject.FindProperty("m_InstanceRoot");
-            m_AudioMixer = serializedObject.FindProperty("m_AudioMixer");
-            m_SoundGroups = serializedObject.FindProperty("m_SoundGroups");
+            m_AudioMixer   = serializedObject.FindProperty("m_AudioMixer");
+            m_SoundGroups  = serializedObject.FindProperty("m_SoundGroups");
 
             m_SoundHelperInfo.Init(serializedObject);
             m_SoundGroupHelperInfo.Init(serializedObject);

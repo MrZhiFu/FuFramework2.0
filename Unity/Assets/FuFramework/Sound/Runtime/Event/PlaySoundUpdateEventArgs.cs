@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 播放声音更新事件。
@@ -17,17 +11,14 @@ namespace GameFrameX.Sound.Runtime
     public sealed class PlaySoundUpdateEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 初始化播放声音更新事件的新实例。
+        /// 获取播放声音更新事件编号。
         /// </summary>
-        public PlaySoundUpdateEventArgs()
-        {
-            SerialId = 0;
-            SoundAssetName = null;
-            SoundGroupName = null;
-            PlaySoundParams = null;
-            Progress = 0f;
-            UserData = null;
-        }
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 播放声音更新事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(PlaySoundUpdateEventArgs).FullName;
 
         /// <summary>
         /// 获取声音的序列编号。
@@ -60,6 +51,19 @@ namespace GameFrameX.Sound.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化播放声音更新事件的新实例。
+        /// </summary>
+        public PlaySoundUpdateEventArgs()
+        {
+            SerialId        = 0;
+            SoundAssetName  = null;
+            SoundGroupName  = null;
+            PlaySoundParams = null;
+            Progress        = 0f;
+            UserData        = null;
+        }
+
+        /// <summary>
         /// 创建播放声音更新事件。
         /// </summary>
         /// <param name="serialId">声音的序列编号。</param>
@@ -71,13 +75,13 @@ namespace GameFrameX.Sound.Runtime
         /// <returns>创建的播放声音更新事件。</returns>
         public static PlaySoundUpdateEventArgs Create(int serialId, string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams, float progress, object userData)
         {
-            PlaySoundUpdateEventArgs playSoundUpdateEventArgs = ReferencePool.Acquire<PlaySoundUpdateEventArgs>();
-            playSoundUpdateEventArgs.SerialId = serialId;
-            playSoundUpdateEventArgs.SoundAssetName = soundAssetName;
-            playSoundUpdateEventArgs.SoundGroupName = soundGroupName;
+            var playSoundUpdateEventArgs = ReferencePool.Acquire<PlaySoundUpdateEventArgs>();
+            playSoundUpdateEventArgs.SerialId        = serialId;
+            playSoundUpdateEventArgs.SoundAssetName  = soundAssetName;
+            playSoundUpdateEventArgs.SoundGroupName  = soundGroupName;
             playSoundUpdateEventArgs.PlaySoundParams = playSoundParams;
-            playSoundUpdateEventArgs.Progress = progress;
-            playSoundUpdateEventArgs.UserData = userData;
+            playSoundUpdateEventArgs.Progress        = progress;
+            playSoundUpdateEventArgs.UserData        = userData;
             return playSoundUpdateEventArgs;
         }
 
@@ -86,22 +90,12 @@ namespace GameFrameX.Sound.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId = 0;
-            SoundAssetName = null;
-            SoundGroupName = null;
+            SerialId        = 0;
+            SoundAssetName  = null;
+            SoundGroupName  = null;
             PlaySoundParams = null;
-            Progress = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
-        /// 播放声音更新事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(PlaySoundUpdateEventArgs).FullName;
-
-        public override string Id
-        {
-            get { return EventId; }
+            Progress        = 0f;
+            UserData        = null;
         }
     }
 }

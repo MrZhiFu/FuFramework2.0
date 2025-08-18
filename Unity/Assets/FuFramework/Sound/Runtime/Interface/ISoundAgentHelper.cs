@@ -1,124 +1,73 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using System;
 
-using System;
-
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音代理辅助器接口。
+    /// 功能：主要定义了声音播放，暂停，停止，重置等接口。
     /// </summary>
     public interface ISoundAgentHelper
     {
         /// <summary>
         /// 获取当前是否正在播放。
         /// </summary>
-        bool IsPlaying
-        {
-            get;
-        }
+        bool IsPlaying { get; }
 
         /// <summary>
         /// 获取声音长度。
         /// </summary>
-        float Length
-        {
-            get;
-        }
+        float Length { get; }
 
         /// <summary>
         /// 获取或设置播放位置。
         /// </summary>
-        float Time
-        {
-            get;
-            set;
-        }
+        float Time { get; set; }
 
         /// <summary>
         /// 获取或设置是否静音。
         /// </summary>
-        bool Mute
-        {
-            get;
-            set;
-        }
+        bool Mute { get; set; }
 
         /// <summary>
         /// 获取或设置是否循环播放。
         /// </summary>
-        bool Loop
-        {
-            get;
-            set;
-        }
+        bool Loop { get; set; }
 
         /// <summary>
         /// 获取或设置声音优先级。
         /// </summary>
-        int Priority
-        {
-            get;
-            set;
-        }
+        int Priority { get; set; }
 
         /// <summary>
         /// 获取或设置音量大小。
         /// </summary>
-        float Volume
-        {
-            get;
-            set;
-        }
+        float Volume { get; set; }
 
         /// <summary>
         /// 获取或设置声音音调。
         /// </summary>
-        float Pitch
-        {
-            get;
-            set;
-        }
+        float Pitch { get; set; }
 
         /// <summary>
         /// 获取或设置声音立体声声相。
         /// </summary>
-        float PanStereo
-        {
-            get;
-            set;
-        }
+        float PanStereo { get; set; }
 
         /// <summary>
         /// 获取或设置声音空间混合量。
         /// </summary>
-        float SpatialBlend
-        {
-            get;
-            set;
-        }
+        float SpatialBlend { get; set; }
 
         /// <summary>
         /// 获取或设置声音最大距离。
         /// </summary>
-        float MaxDistance
-        {
-            get;
-            set;
-        }
+        float MaxDistance { get; set; }
 
         /// <summary>
         /// 获取或设置声音多普勒等级。
         /// </summary>
-        float DopplerLevel
-        {
-            get;
-            set;
-        }
+        float DopplerLevel { get; set; }
 
         /// <summary>
         /// 重置声音代理事件。

@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Sound.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Sound.Runtime
 {
    
     public class GameFrameXSoundCroppingHelper : MonoBehaviour

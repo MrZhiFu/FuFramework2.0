@@ -1122,14 +1122,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82a4a470d83682344897f40629582aa9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Sound.Runtime.SoundManager
+  componentType: FuFramework.Sound.Runtime.SoundManager
   m_InstanceRoot: {fileID: 6524165465694967693}
   m_AudioMixer: {fileID: 24100000, guid: 48f2ad666d69da749ae823e0526b2249, type: 2}
-  m_SoundHelperTypeName: GameFrameX.Sound.Runtime.DefaultSoundHelper
+  m_SoundHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundHelper
   m_CustomSoundHelper: {fileID: 0}
-  m_SoundGroupHelperTypeName: GameFrameX.Sound.Runtime.DefaultSoundGroupHelper
+  m_SoundGroupHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundGroupHelper
   m_CustomSoundGroupHelper: {fileID: 0}
-  m_SoundAgentHelperTypeName: GameFrameX.Sound.Runtime.DefaultSoundAgentHelper
+  m_SoundAgentHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundAgentHelper
   m_CustomSoundAgentHelper: {fileID: 0}
   m_SoundGroups: []
 --- !u!4 &2120699936
