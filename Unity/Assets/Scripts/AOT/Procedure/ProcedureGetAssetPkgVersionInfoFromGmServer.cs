@@ -3,7 +3,7 @@ using System.IO;
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using GameFrameX.GlobalConfig.Runtime;
+using FuFramework.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;

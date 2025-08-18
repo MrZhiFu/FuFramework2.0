@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.GlobalConfig.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.GlobalConfig.Runtime
 {
-   
     public class GameFrameXGlobalConfigCroppingHelper : MonoBehaviour
     {
-       
         private void Start()
         {
             _ = typeof(GlobalConfigComponent);

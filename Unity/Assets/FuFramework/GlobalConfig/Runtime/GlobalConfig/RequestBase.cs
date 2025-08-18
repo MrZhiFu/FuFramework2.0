@@ -1,4 +1,6 @@
-﻿namespace GameFrameX.GlobalConfig.Runtime
+﻿// ReSharper disable once CheckNamespace
+
+namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
     /// 请求基类

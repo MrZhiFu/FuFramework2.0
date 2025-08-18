@@ -1,9 +1,9 @@
-﻿namespace GameFrameX.GlobalConfig.Runtime
+﻿// ReSharper disable once CheckNamespace
+
+namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
     /// 全局信息请求对象,可以自己继承实现自己的字段
     /// </summary>
-    public class RequestGlobalInfo : RequestBase
-    {
-    }
+    public class RequestGlobalInfo : RequestBase { }
 }

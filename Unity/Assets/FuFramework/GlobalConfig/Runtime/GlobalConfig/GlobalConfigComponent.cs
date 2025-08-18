@@ -4,10 +4,19 @@ using FuFramework.Core.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.GlobalConfig.Runtime
+// ReSharper disable InconsistentNaming
+// ReSharper disable once CheckNamespace
+namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
     /// 全局配置组件。
+    /// 功能：提供游戏全局配置。包括：
+    ///    - 检测App版本地址接口
+    ///    - 检测资源版本地址接口
+    ///    - 主机服务地址
+    ///    - AOT代码列表
+    ///    - AOT补充元数据列表
+    ///    - 附加内容
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Global Config")]
@@ -17,6 +26,31 @@ namespace GameFrameX.GlobalConfig.Runtime
         /// 检测App版本地址接口
         /// </summary>
         [SerializeField] private string m_CheckAppVersionUrl = string.Empty;
+
+        /// <summary>
+        /// 检测资源版本地址接口
+        /// </summary>
+        [SerializeField] private string m_CheckResourceVersionUrl = string.Empty;
+
+        /// <summary>
+        /// 主机服务地址
+        /// </summary>
+        [SerializeField] private string m_HostServerUrl = string.Empty;
+
+        /// <summary>
+        /// AOT代码列表
+        /// </summary>
+        [SerializeField] private string m_AOTCodeList = string.Empty;
+
+        /// <summary>
+        /// AOT补充元数据列表
+        /// </summary>
+        [SerializeField] private List<string> m_AOTCodeLists = new List<string>();
+
+        /// <summary>
+        /// 附加内容
+        /// </summary>
+        [SerializeField] private string m_Content = string.Empty;
 
         /// <summary>
         /// 检测App版本地址接口
@@ -30,11 +64,6 @@ namespace GameFrameX.GlobalConfig.Runtime
         /// <summary>
         /// 检测资源版本地址接口
         /// </summary>
-        [SerializeField] private string m_CheckResourceVersionUrl = string.Empty;
-
-        /// <summary>
-        /// 检测资源版本地址接口
-        /// </summary>
         public string CheckResourceVersionUrl
         {
             get => m_CheckResourceVersionUrl;
@@ -42,22 +71,9 @@ namespace GameFrameX.GlobalConfig.Runtime
         }
 
         /// <summary>
-        /// AOT代码列表
-        /// </summary>
-        [SerializeField] private string m_AOTCodeList = string.Empty;
-
-        /// <summary>
-        /// AOT补充元数据列表
-        /// </summary>
-        [SerializeField] private List<string> m_AOTCodeLists = new List<string>();
-
-        /// <summary>
         /// 补充元数据列表
         /// </summary>
-        public List<string> AOTCodeLists
-        {
-            get { return m_AOTCodeLists; }
-        }
+        public List<string> AOTCodeLists => m_AOTCodeLists;
 
         /// <summary>
         /// AOT代码列表
@@ -82,21 +98,11 @@ namespace GameFrameX.GlobalConfig.Runtime
         /// <summary>
         /// 附加内容
         /// </summary>
-        [SerializeField] private string m_Content = string.Empty;
-
-        /// <summary>
-        /// 附加内容
-        /// </summary>
         public string Content
         {
             get => m_Content;
             set => m_Content = value;
         }
-
-        /// <summary>
-        /// 主机服务地址
-        /// </summary>
-        [SerializeField] private string m_HostServerUrl = string.Empty;
 
         /// <summary>
         /// 主机服务地址

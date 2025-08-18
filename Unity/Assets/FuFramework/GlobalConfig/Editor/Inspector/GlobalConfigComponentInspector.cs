@@ -1,26 +1,31 @@
-﻿using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.GlobalConfig.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.GlobalConfig.Runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace GameFrameX.GlobalConfig.Editor
+// ReSharper disable once CheckNamespace
+// ReSharper disable InconsistentNaming
+namespace FuFramework.GlobalConfig.Editor
 {
+    /// <summary>
+    /// 自定义全局配置组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(GlobalConfigComponent))]
     internal sealed class GlobalConfigComponentInspector : FuFrameworkInspector
     {
-        private SerializedProperty m_HostServerUrl = null;
-        private SerializedProperty m_Content = null;
-        private SerializedProperty m_AOTCodeList = null;
-        private SerializedProperty m_AOTCodeLists = null;
-        private SerializedProperty m_CheckAppVersionUrl = null;
-        private SerializedProperty m_CheckResourceVersionUrl = null;
-        private GUIContent m_HostServerUrlGUIContent = new GUIContent("主机服务地址");
-        private GUIContent m_ContentGUIContent = new GUIContent("附加内容");
-        private GUIContent m_ContentGUIAOTCodeList = new GUIContent("补充程序集列表");
-        private GUIContent m_AOTCodeListsContentGUI = new GUIContent("补充元数据列表");
-        private GUIContent m_CheckAppVersionUrlGUIContent = new GUIContent("检测App版本地址接口");
-        private GUIContent m_CheckResourceVersionUrlGUIContent = new GUIContent("检测资源版本地址接口");
+        private SerializedProperty m_HostServerUrl;
+        private SerializedProperty m_Content;
+        private SerializedProperty m_AOTCodeList;
+        private SerializedProperty m_AOTCodeLists;
+        private SerializedProperty m_CheckAppVersionUrl;
+        private SerializedProperty m_CheckResourceVersionUrl;
+
+        private readonly GUIContent m_HostServerUrlGUIContent = new("主机服务地址");
+        private readonly GUIContent m_ContentGUIContent = new("附加内容");
+        private readonly GUIContent m_ContentGUIAOTCodeList = new("补充程序集列表");
+        private readonly GUIContent m_AOTCodeListsContentGUI = new("补充元数据列表");
+        private readonly GUIContent m_CheckAppVersionUrlGUIContent = new("检测App版本地址接口");
+        private readonly GUIContent m_CheckResourceVersionUrlGUIContent = new("检测资源版本地址接口");
 
         public override void OnInspectorGUI()
         {
@@ -40,14 +45,12 @@ namespace GameFrameX.GlobalConfig.Editor
             EditorGUI.EndDisabledGroup();
 
             serializedObject.ApplyModifiedProperties();
-
             Repaint();
         }
 
         protected override void OnCompileComplete()
         {
             base.OnCompileComplete();
-
             RefreshTypeNames();
         }
 

@@ -1,4 +1,7 @@
-namespace GameFrameX.GlobalConfig.Runtime
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
     /// 全局信息响应对象
