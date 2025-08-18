@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
-namespace GameFrameX.Scene.Runtime
+namespace FuFramework.Scene.Runtime
 {
    
     public class GameFrameXSceneCroppingHelper : MonoBehaviour

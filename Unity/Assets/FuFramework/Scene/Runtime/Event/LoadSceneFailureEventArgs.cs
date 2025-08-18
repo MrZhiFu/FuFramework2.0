@@ -1,16 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
+﻿using YooAsset;
 using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
-using YooAsset;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Scene.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Runtime
 {
     /// <summary>
     /// 加载场景失败事件。
@@ -18,27 +12,14 @@ namespace GameFrameX.Scene.Runtime
     public sealed class LoadSceneFailureEventArgs : GameEventArgs
     {
         /// <summary>
+        /// 获取加载场景失败事件编号。
+        /// </summary>
+        public override string Id => EventId;
+
+        /// <summary>
         /// 加载场景失败事件编号。
         /// </summary>
         public static readonly string EventId = typeof(LoadSceneFailureEventArgs).FullName;
-
-        /// <summary>
-        /// 初始化加载场景失败事件的新实例。
-        /// </summary>
-        public LoadSceneFailureEventArgs()
-        {
-            SceneAssetName = null;
-            ErrorMessage = null;
-            UserData = null;
-        }
-
-        /// <summary>
-        /// 获取加载场景失败事件编号。
-        /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
 
         /// <summary>
         /// 获取场景资源名称。
@@ -61,15 +42,26 @@ namespace GameFrameX.Scene.Runtime
         public EOperationStatus Status { get; private set; }
 
         /// <summary>
+        /// 初始化加载场景失败事件的新实例。
+        /// </summary>
+        public LoadSceneFailureEventArgs()
+        {
+            SceneAssetName = null;
+            ErrorMessage = null;
+            UserData = null;
+        }
+
+        /// <summary>
         /// 创建加载场景失败事件。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
+        /// <param name="status">加载场景状态。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的加载场景失败事件。</returns>
         public static LoadSceneFailureEventArgs Create(string sceneAssetName, EOperationStatus status, string errorMessage, object userData)
         {
-            LoadSceneFailureEventArgs loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
+            var loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
             loadSceneFailureEventArgs.SceneAssetName = sceneAssetName;
             loadSceneFailureEventArgs.ErrorMessage = errorMessage;
             loadSceneFailureEventArgs.UserData = userData;

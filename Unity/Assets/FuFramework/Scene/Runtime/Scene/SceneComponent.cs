@@ -1,22 +1,17 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using YooAsset;
+using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using UnityEngine;
+using FuFramework.Event.Runtime;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using YooAsset;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Scene.Runtime
+// ReSharper disable InconsistentNaming
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Runtime
 {
     /// <summary>
     /// 场景组件。
@@ -25,28 +20,27 @@ namespace GameFrameX.Scene.Runtime
     [AddComponentMenu("Game Framework/Scene")]
     public sealed class SceneComponent : FuComponent
     {
-        private const int DefaultPriority = 0;
+        private const int DefaultPriority = 0; // 场景模块优先级
 
-        private IGameSceneManager _gameSceneManager = null;
-        private IAssetManager _assetManager = null;
-        private EventComponent m_EventComponent = null;
+        private IGameSceneManager m_gameSceneManager; // 游戏场景管理器
+        private IAssetManager m_assetManager; // 资源管理器
+        private EventComponent m_EventComponent; // 事件组件
 
-        private readonly SortedDictionary<string, int> m_SceneOrder = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        /// 记录场景加载顺序的字典。key为场景资源名称，value为加载顺序。
+        private readonly SortedDictionary<string, int> m_SceneOrder = new(StringComparer.Ordinal);
 
-        private Camera m_MainCamera = null;
-        private UnityEngine.SceneManagement.Scene m_GameFrameworkScene = default(UnityEngine.SceneManagement.Scene);
+        private UnityEngine.SceneManagement.Scene m_GameFrameworkScene; // 游戏框架场景
 
-        [SerializeField] private bool m_EnableLoadSceneUpdateEvent = true;
+        [Header("启用加载场景更新事件")] [SerializeField]
+        private bool m_EnableLoadSceneUpdateEvent = true;
 
-        [SerializeField] private bool m_EnableLoadSceneDependencyAssetEvent = true;
+        [Header("启用加载场景依赖资源事件")] [SerializeField]
+        private bool m_EnableLoadSceneDependencyAssetEvent = true;
 
         /// <summary>
-        /// 获取当前场景主摄像机。
+        /// 当前场景主摄像机。
         /// </summary>
-        public Camera MainCamera
-        {
-            get { return m_MainCamera; }
-        }
+        public Camera MainCamera { get; private set; }
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -55,42 +49,36 @@ namespace GameFrameX.Scene.Runtime
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IGameSceneManager);
+
             base.Awake();
-            _gameSceneManager = FuEntry.GetModule<IGameSceneManager>();
-            if (_gameSceneManager == null)
+
+            m_gameSceneManager = FuEntry.GetModule<IGameSceneManager>();
+            if (m_gameSceneManager == null)
             {
                 Log.Fatal("Scene manager is invalid.");
                 return;
             }
 
-            _gameSceneManager.LoadSceneSuccess += OnLoadGameSceneSuccess;
-            _gameSceneManager.LoadSceneFailure += OnLoadGameSceneFailure;
+            m_gameSceneManager.LoadSceneSuccess += OnLoadGameSceneSuccess;
+            m_gameSceneManager.LoadSceneFailure += OnLoadGameSceneFailure;
 
-            if (m_EnableLoadSceneUpdateEvent)
-            {
-                _gameSceneManager.LoadSceneUpdate += OnLoadGameSceneUpdate;
-            }
-
+            if (m_EnableLoadSceneUpdateEvent) m_gameSceneManager.LoadSceneUpdate += OnLoadGameSceneUpdate;
             if (m_EnableLoadSceneDependencyAssetEvent)
             {
                 // _gameSceneManager.LoadSceneDependencyAsset += OnLoadGameSceneDependencyAsset;
             }
 
-            _gameSceneManager.UnloadSceneSuccess += OnUnloadGameSceneSuccess;
-            _gameSceneManager.UnloadSceneFailure += OnUnloadGameSceneFailure;
+            m_gameSceneManager.UnloadSceneSuccess += OnUnloadGameSceneSuccess;
+            m_gameSceneManager.UnloadSceneFailure += OnUnloadGameSceneFailure;
 
-            m_GameFrameworkScene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(GameEntry.GameFrameworkSceneId);
-            if (!m_GameFrameworkScene.IsValid())
-            {
-                Log.Fatal("Game Framework scene is invalid.");
-                return;
-            }
+            m_GameFrameworkScene = SceneManager.GetSceneAt(GameEntry.GameFrameworkSceneId);
+            if (!m_GameFrameworkScene.IsValid()) Log.Fatal("Game Framework scene is invalid.");
         }
 
         private void Start()
         {
-            BaseComponent baseComponent = GameEntry.GetComponent<BaseComponent>();
-            if (baseComponent == null)
+            var baseComp = GameEntry.GetComponent<BaseComponent>();
+            if (baseComp == null)
             {
                 Log.Fatal("Base component is invalid.");
                 return;
@@ -103,14 +91,14 @@ namespace GameFrameX.Scene.Runtime
                 return;
             }
 
-            _assetManager = FuEntry.GetModule<IAssetManager>();
-            if (_assetManager == null)
+            m_assetManager = FuEntry.GetModule<IAssetManager>();
+            if (m_assetManager == null)
             {
                 Log.Fatal("Asset Manager is invalid.");
                 return;
             }
 
-            _gameSceneManager.SetResourceManager(_assetManager);
+            m_gameSceneManager.SetResourceManager(m_assetManager);
         }
 
         /// <summary>
@@ -134,7 +122,7 @@ namespace GameFrameX.Scene.Runtime
             }
 
             string sceneName = sceneAssetName.Substring(sceneNamePosition + 1);
-            sceneNamePosition = sceneName.LastIndexOf(".unity");
+            sceneNamePosition = sceneName.LastIndexOf(".unity", StringComparison.Ordinal);
             if (sceneNamePosition > 0)
             {
                 sceneName = sceneName.Substring(0, sceneNamePosition);
@@ -148,84 +136,57 @@ namespace GameFrameX.Scene.Runtime
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
         /// <returns>场景是否已加载。</returns>
-        public bool SceneIsLoaded(string sceneAssetName)
-        {
-            return _gameSceneManager.SceneIsLoaded(sceneAssetName);
-        }
+        public bool SceneIsLoaded(string sceneAssetName) => m_gameSceneManager.SceneIsLoaded(sceneAssetName);
 
         /// <summary>
         /// 获取已加载场景的资源名称。
         /// </summary>
         /// <returns>已加载场景的资源名称。</returns>
-        public string[] GetLoadedSceneAssetNames()
-        {
-            return _gameSceneManager.GetLoadedSceneAssetNames();
-        }
+        public string[] GetLoadedSceneAssetNames() => m_gameSceneManager.GetLoadedSceneAssetNames();
 
         /// <summary>
         /// 获取已加载场景的资源名称。
         /// </summary>
         /// <param name="results">已加载场景的资源名称。</param>
-        public void GetLoadedSceneAssetNames(List<string> results)
-        {
-            _gameSceneManager.GetLoadedSceneAssetNames(results);
-        }
+        public void GetLoadedSceneAssetNames(List<string> results) => m_gameSceneManager.GetLoadedSceneAssetNames(results);
 
         /// <summary>
         /// 获取场景是否正在加载。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
         /// <returns>场景是否正在加载。</returns>
-        public bool SceneIsLoading(string sceneAssetName)
-        {
-            return _gameSceneManager.SceneIsLoading(sceneAssetName);
-        }
+        public bool SceneIsLoading(string sceneAssetName) => m_gameSceneManager.SceneIsLoading(sceneAssetName);
 
         /// <summary>
         /// 获取正在加载场景的资源名称。
         /// </summary>
         /// <returns>正在加载场景的资源名称。</returns>
-        public string[] GetLoadingSceneAssetNames()
-        {
-            return _gameSceneManager.GetLoadingSceneAssetNames();
-        }
+        public string[] GetLoadingSceneAssetNames() => m_gameSceneManager.GetLoadingSceneAssetNames();
 
         /// <summary>
         /// 获取正在加载场景的资源名称。
         /// </summary>
         /// <param name="results">正在加载场景的资源名称。</param>
-        public void GetLoadingSceneAssetNames(List<string> results)
-        {
-            _gameSceneManager.GetLoadingSceneAssetNames(results);
-        }
+        public void GetLoadingSceneAssetNames(List<string> results) => m_gameSceneManager.GetLoadingSceneAssetNames(results);
 
         /// <summary>
         /// 获取场景是否正在卸载。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
         /// <returns>场景是否正在卸载。</returns>
-        public bool SceneIsUnloading(string sceneAssetName)
-        {
-            return _gameSceneManager.SceneIsUnloading(sceneAssetName);
-        }
+        public bool SceneIsUnloading(string sceneAssetName) => m_gameSceneManager.SceneIsUnloading(sceneAssetName);
 
         /// <summary>
         /// 获取正在卸载场景的资源名称。
         /// </summary>
         /// <returns>正在卸载场景的资源名称。</returns>
-        public string[] GetUnloadingSceneAssetNames()
-        {
-            return _gameSceneManager.GetUnloadingSceneAssetNames();
-        }
+        public string[] GetUnloadingSceneAssetNames() => m_gameSceneManager.GetUnloadingSceneAssetNames();
 
         /// <summary>
         /// 获取正在卸载场景的资源名称。
         /// </summary>
         /// <param name="results">正在卸载场景的资源名称。</param>
-        public void GetUnloadingSceneAssetNames(List<string> results)
-        {
-            _gameSceneManager.GetUnloadingSceneAssetNames(results);
-        }
+        public void GetUnloadingSceneAssetNames(List<string> results) => m_gameSceneManager.GetUnloadingSceneAssetNames(results);
 
         /// <summary>
         /// 检查场景资源是否存在。
@@ -247,17 +208,14 @@ namespace GameFrameX.Scene.Runtime
                 return false;
             }
 
-            return _gameSceneManager.HasScene(sceneAssetName);
+            return m_gameSceneManager.HasScene(sceneAssetName);
         }
 
         /// <summary>
         /// 加载场景。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
-        public UniTask<SceneHandle> LoadScene(string sceneAssetName)
-        {
-            return LoadScene(sceneAssetName, LoadSceneMode.Additive, null);
-        }
+        public UniTask<SceneHandle> LoadScene(string sceneAssetName) => LoadScene(sceneAssetName, LoadSceneMode.Additive, null);
 
         /// <summary>
         /// 加载场景。
@@ -280,7 +238,7 @@ namespace GameFrameX.Scene.Runtime
                 throw new ArgumentException(nameof(sceneAssetName));
             }
 
-            return _gameSceneManager.LoadScene(sceneAssetName, sceneMode, userData);
+            return m_gameSceneManager.LoadScene(sceneAssetName, sceneMode, userData);
         }
 
         /// <summary>
@@ -303,7 +261,7 @@ namespace GameFrameX.Scene.Runtime
                 return;
             }
 
-            _gameSceneManager.UnloadScene(sceneAssetName, userData);
+            m_gameSceneManager.UnloadScene(sceneAssetName, userData);
             m_SceneOrder.Remove(sceneAssetName);
         }
 
@@ -346,23 +304,21 @@ namespace GameFrameX.Scene.Runtime
         /// <summary>
         /// 刷新当前场景主摄像机。
         /// </summary>
-        public void RefreshMainCamera()
-        {
-            m_MainCamera = Camera.main;
-        }
+        public void RefreshMainCamera() => MainCamera = Camera.main;
 
+        /// <summary>
+        /// 刷新场景顺序。
+        /// </summary>
         private void RefreshSceneOrder()
         {
             if (m_SceneOrder.Count > 0)
             {
                 string maxSceneName = null;
-                int maxSceneOrder = 0;
+                var maxSceneOrder = 0;
+
                 foreach (var sceneOrder in m_SceneOrder)
                 {
-                    if (SceneIsLoading(sceneOrder.Key))
-                    {
-                        continue;
-                    }
+                    if (SceneIsLoading(sceneOrder.Key)) continue;
 
                     if (maxSceneName == null)
                     {
@@ -384,7 +340,7 @@ namespace GameFrameX.Scene.Runtime
                     return;
                 }
 
-                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(GetSceneName(maxSceneName));
+                var scene = SceneManager.GetSceneByName(GetSceneName(maxSceneName));
                 if (!scene.IsValid())
                 {
                     Log.Error("Active scene '{0}' is invalid.", maxSceneName);
@@ -399,41 +355,60 @@ namespace GameFrameX.Scene.Runtime
             }
         }
 
+        /// <summary>
+        /// 设置活动场景。
+        /// </summary>
+        /// <param name="activeScene"></param>
         private void SetActiveScene(UnityEngine.SceneManagement.Scene activeScene)
         {
-            var lastActiveScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            var lastActiveScene = SceneManager.GetActiveScene();
             if (lastActiveScene != activeScene)
             {
-                UnityEngine.SceneManagement.SceneManager.SetActiveScene(activeScene);
+                SceneManager.SetActiveScene(activeScene);
                 m_EventComponent.Fire(this, ActiveSceneChangedEventArgs.Create(lastActiveScene, activeScene));
             }
 
             RefreshMainCamera();
         }
 
+        /// <summary>
+        /// 加载场景成功事件。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void OnLoadGameSceneSuccess(object sender, LoadSceneSuccessEventArgs eventArgs)
         {
-            if (!m_SceneOrder.ContainsKey(eventArgs.SceneAssetName))
-            {
-                m_SceneOrder.Add(eventArgs.SceneAssetName, 0);
-            }
-
+            m_SceneOrder.TryAdd(eventArgs.SceneAssetName, 0);
             m_EventComponent.Fire(this, eventArgs);
             RefreshSceneOrder();
         }
 
+        /// <summary>
+        /// 加载场景失败事件。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void OnLoadGameSceneFailure(object sender, LoadSceneFailureEventArgs eventArgs)
         {
-            Log.Warning("Load scene failure, scene asset name '{0}', error message '{1}'.", eventArgs.SceneAssetName,
-                eventArgs.ErrorMessage);
+            Log.Warning("Load scene failure, scene asset name '{0}', error message '{1}'.", eventArgs.SceneAssetName, eventArgs.ErrorMessage);
             m_EventComponent.Fire(this, eventArgs);
         }
 
+        /// <summary>
+        /// 加载场景更新事件。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void OnLoadGameSceneUpdate(object sender, LoadSceneUpdateEventArgs eventArgs)
         {
             m_EventComponent.Fire(this, eventArgs);
         }
 
+        /// <summary>
+        /// 卸载场景成功事件。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void OnUnloadGameSceneSuccess(object sender, UnloadSceneSuccessEventArgs eventArgs)
         {
             m_EventComponent.Fire(this, eventArgs);
@@ -441,6 +416,11 @@ namespace GameFrameX.Scene.Runtime
             RefreshSceneOrder();
         }
 
+        /// <summary>
+        /// 卸载场景失败事件。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void OnUnloadGameSceneFailure(object sender, UnloadSceneFailureEventArgs eventArgs)
         {
             Log.Warning("Unload scene failure, scene asset name '{0}'.", eventArgs.SceneAssetName);

@@ -12,7 +12,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
-using GameFrameX.Scene.Runtime;
+using FuFramework.Scene.Runtime;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;

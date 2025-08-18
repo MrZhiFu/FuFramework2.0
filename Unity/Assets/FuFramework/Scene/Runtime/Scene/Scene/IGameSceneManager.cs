@@ -1,22 +1,16 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
+﻿using System;
+using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
-using FuFramework.Core.Runtime;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using YooAsset;
 
-namespace GameFrameX.Scene.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Runtime
 {
     /// <summary>
     /// 场景管理器接口。
+    /// 功能：定义场景管理器的接口，负责管理场景的加载、卸载等流程。
     /// </summary>
     public interface IGameSceneManager
     {

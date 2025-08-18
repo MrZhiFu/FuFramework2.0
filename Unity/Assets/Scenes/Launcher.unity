@@ -189,7 +189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c2f5662080649a4a818e010532d37d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Scene.Runtime.GameSceneManager
+  componentType: FuFramework.Scene.Runtime.GameSceneManager
   m_EnableLoadSceneUpdateEvent: 1
   m_EnableLoadSceneDependencyAssetEvent: 1
 --- !u!1001 &551349808

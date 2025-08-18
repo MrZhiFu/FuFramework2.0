@@ -1,23 +1,19 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Scene.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Scene.Runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace GameFrameX.Scene.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Editor
 {
+    /// <summary>
+    /// 自定义场景组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(SceneComponent))]
     internal sealed class SceneGameComponentInspector : GameComponentInspector
     {
-        private SerializedProperty m_EnableLoadSceneUpdateEvent = null;
-        private SerializedProperty m_EnableLoadSceneDependencyAssetEvent = null;
+        private SerializedProperty m_EnableLoadSceneUpdateEvent;
+        private SerializedProperty m_EnableLoadSceneDependencyAssetEvent;
 
         public override void OnInspectorGUI()
         {
@@ -25,7 +21,7 @@ namespace GameFrameX.Scene.Editor
 
             serializedObject.Update();
 
-            SceneComponent t = (SceneComponent)target;
+            var sceneComp = (SceneComponent)target;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -36,15 +32,14 @@ namespace GameFrameX.Scene.Editor
 
             serializedObject.ApplyModifiedProperties();
 
-            if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
-            {
-                EditorGUILayout.LabelField("Loaded Scene Asset Names", GetSceneNameString(t.GetLoadedSceneAssetNames()));
-                EditorGUILayout.LabelField("Loading Scene Asset Names", GetSceneNameString(t.GetLoadingSceneAssetNames()));
-                EditorGUILayout.LabelField("Unloading Scene Asset Names", GetSceneNameString(t.GetUnloadingSceneAssetNames()));
-                EditorGUILayout.ObjectField("Main Camera", t.MainCamera, typeof(Camera), true);
+            if (!EditorApplication.isPlaying || !IsPrefabInHierarchy(sceneComp.gameObject)) return;
+            
+            EditorGUILayout.LabelField("Loaded Scene Asset Names", GetSceneNameString(sceneComp.GetLoadedSceneAssetNames()));
+            EditorGUILayout.LabelField("Loading Scene Asset Names", GetSceneNameString(sceneComp.GetLoadingSceneAssetNames()));
+            EditorGUILayout.LabelField("Unloading Scene Asset Names", GetSceneNameString(sceneComp.GetUnloadingSceneAssetNames()));
+            EditorGUILayout.ObjectField("Main Camera", sceneComp.MainCamera, typeof(Camera), true);
 
-                Repaint();
-            }
+            Repaint();
         }
 
         protected override void Enable()
@@ -60,19 +55,12 @@ namespace GameFrameX.Scene.Editor
 
         private string GetSceneNameString(string[] sceneAssetNames)
         {
-            if (sceneAssetNames == null || sceneAssetNames.Length <= 0)
-            {
-                return "<Empty>";
-            }
+            if (sceneAssetNames is not { Length: > 0 }) return "<Empty>";
 
-            string sceneNameString = string.Empty;
-            foreach (string sceneAssetName in sceneAssetNames)
+            var sceneNameString = string.Empty;
+            foreach (var sceneAssetName in sceneAssetNames)
             {
-                if (!string.IsNullOrEmpty(sceneNameString))
-                {
-                    sceneNameString += ", ";
-                }
-
+                if (!string.IsNullOrEmpty(sceneNameString)) sceneNameString += ", ";
                 sceneNameString += SceneComponent.GetSceneName(sceneAssetName);
             }
 

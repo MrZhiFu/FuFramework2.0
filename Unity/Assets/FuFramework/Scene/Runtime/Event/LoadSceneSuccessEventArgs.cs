@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Scene.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Runtime
 {
     /// <summary>
     /// 加载场景成功事件。
@@ -17,27 +11,14 @@ namespace GameFrameX.Scene.Runtime
     public sealed class LoadSceneSuccessEventArgs : GameEventArgs
     {
         /// <summary>
+        /// 获取加载场景成功事件编号。
+        /// </summary>
+        public override string Id => EventId;
+
+        /// <summary>
         /// 加载场景成功事件编号。
         /// </summary>
         public static readonly string EventId = typeof(LoadSceneSuccessEventArgs).FullName;
-
-        /// <summary>
-        /// 初始化加载场景成功事件的新实例。
-        /// </summary>
-        public LoadSceneSuccessEventArgs()
-        {
-            SceneAssetName = null;
-            Duration = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
-        /// 获取加载场景成功事件编号。
-        /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
 
         /// <summary>
         /// 获取场景资源名称。
@@ -55,6 +36,16 @@ namespace GameFrameX.Scene.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
+        /// 初始化加载场景成功事件的新实例。
+        /// </summary>
+        public LoadSceneSuccessEventArgs()
+        {
+            SceneAssetName = null;
+            Duration = 0f;
+            UserData = null;
+        }
+
+        /// <summary>
         /// 创建加载场景成功事件。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
@@ -63,7 +54,7 @@ namespace GameFrameX.Scene.Runtime
         /// <returns>创建的加载场景成功事件。</returns>
         public static LoadSceneSuccessEventArgs Create(string sceneAssetName, float duration, object userData)
         {
-            LoadSceneSuccessEventArgs loadSceneSuccessEventArgs = ReferencePool.Acquire<LoadSceneSuccessEventArgs>();
+            var loadSceneSuccessEventArgs = ReferencePool.Acquire<LoadSceneSuccessEventArgs>();
             loadSceneSuccessEventArgs.SceneAssetName = sceneAssetName;
             loadSceneSuccessEventArgs.Duration = duration;
             loadSceneSuccessEventArgs.UserData = userData;
