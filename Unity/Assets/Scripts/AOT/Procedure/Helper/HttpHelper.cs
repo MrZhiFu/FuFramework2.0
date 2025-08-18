@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using FuFramework.GetChannel.Runtime;
 using UnityEngine;
 
 

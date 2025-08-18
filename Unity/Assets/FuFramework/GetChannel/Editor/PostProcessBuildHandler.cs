@@ -6,18 +6,17 @@ using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 using UnityEngine;
 
-namespace GameFrameX.GetChannel.Editor
+namespace FuFramework.GetChannel.Editor
 {
+    /// <summary>
+    /// 发布时配置IOS渠道名称
+    /// </summary>
     internal static class PostProcessBuildHandler
     {
         [PostProcessBuild(99)]
         public static void OnPostProcessBuild(BuildTarget target, string path)
         {
-            if (target != BuildTarget.iOS)
-            {
-                return;
-            }
-
+            if (target != BuildTarget.iOS) return;
             try
             {
                 Run(path);
@@ -33,9 +32,10 @@ namespace GameFrameX.GetChannel.Editor
             const string channelKey = "channel";
             const string channelValue = "default";
 
-            string plistPath = path + "/Info.plist";
+            var plistPath = path + "/Info.plist";
             PlistDocument plist = new PlistDocument();
             plist.ReadFromString(File.ReadAllText(plistPath));
+            
             if (!plist.root.values.TryGetValue(channelKey, out var value))
             {
                 plist.root.SetString(channelKey, channelValue);
