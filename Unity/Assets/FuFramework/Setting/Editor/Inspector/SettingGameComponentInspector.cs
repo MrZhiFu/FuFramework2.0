@@ -1,17 +1,14 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Core.Editor;
-using GameFrameX.Setting.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Setting.Runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace FuFramework.Setting.Editor.Inspector
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Setting.Editor
 {
+    /// <summary>
+    /// 自定义Setting组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(SettingComponent))]
     internal sealed class SettingGameComponentInspector : GameComponentInspector
     {
@@ -21,7 +18,7 @@ namespace FuFramework.Setting.Editor.Inspector
         {
             base.OnInspectorGUI();
 
-            SettingComponent t = (SettingComponent)target;
+            var settingComp = (SettingComponent)target;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -29,15 +26,15 @@ namespace FuFramework.Setting.Editor.Inspector
             }
             EditorGUI.EndDisabledGroup();
 
-            if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
+            if (EditorApplication.isPlaying && IsPrefabInHierarchy(settingComp.gameObject))
             {
-                EditorGUILayout.LabelField("Setting Count", t.Count >= 0 ? t.Count.ToString() : "<Unknown>");
-                if (t.Count > 0)
+                EditorGUILayout.LabelField("Setting Count", settingComp.Count >= 0 ? settingComp.Count.ToString() : "<Unknown>");
+                if (settingComp.Count > 0)
                 {
-                    string[] settingNames = t.GetAllSettingNames();
-                    foreach (string settingName in settingNames)
+                    var settingNames = settingComp.GetAllSettingNames();
+                    foreach (var settingName in settingNames)
                     {
-                        EditorGUILayout.LabelField(settingName, t.GetString(settingName));
+                        EditorGUILayout.LabelField(settingName, settingComp.GetString(settingName));
                     }
                 }
             }
@@ -45,32 +42,25 @@ namespace FuFramework.Setting.Editor.Inspector
             if (EditorApplication.isPlaying)
             {
                 if (GUILayout.Button("Save Settings"))
-                {
-                    t.Save();
-                }
+                    settingComp.Save();
 
                 if (GUILayout.Button("Remove All Settings"))
-                {
-                    t.RemoveAllSettings();
-                }
+                    settingComp.RemoveAllSettings();
             }
 
             serializedObject.ApplyModifiedProperties();
-
             Repaint();
         }
 
         protected override void OnCompileComplete()
         {
             base.OnCompileComplete();
-
             _RefreshTypeNames();
         }
 
         protected override void Enable()
         {
             m_SettingHelperInfo.Init(serializedObject);
-
             _RefreshTypeNames();
         }
 

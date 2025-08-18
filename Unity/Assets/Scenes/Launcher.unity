@@ -599,8 +599,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe5a0a352e493e4887a267e1dc999d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Setting.Runtime.SettingManager
-  m_SettingHelperTypeName: GameFrameX.Setting.Runtime.DefaultSettingHelper
+  componentType: FuFramework.Setting.Runtime.SettingManager
+  m_SettingHelperTypeName: FuFramework.Setting.Runtime.DefaultSettingHelper
   m_CustomSettingHelper: {fileID: 0}
 --- !u!114 &1548725358
 MonoBehaviour:

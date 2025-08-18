@@ -1,141 +1,75 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX;
-using GameFrameX.Setting;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
-using UnityEngine;
-using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Setting.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Setting.Runtime
 {
     /// <summary>
-    /// 游戏配置组件。
+    /// 游戏配置管理器接口。
+    /// 功能：定义游戏配置管理器相关接口。包括加载、保存、获取、设置配置项等功能。
     /// </summary>
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/Setting")]
-    public sealed class SettingComponent : FuComponent
+    public interface ISettingManager
     {
-        private ISettingManager m_SettingManager = null;
-
-        [SerializeField] private string m_SettingHelperTypeName = "UnityGameFramework.Runtime.DefaultSettingHelper";
-
-        [SerializeField] private SettingHelperBase m_CustomSettingHelper = null;
-
         /// <summary>
         /// 获取游戏配置项数量。
         /// </summary>
-        public int Count
-        {
-            get { return m_SettingManager.Count; }
-        }
+        int Count { get; }
 
         /// <summary>
-        /// 游戏框架组件初始化。
+        /// 设置游戏配置辅助器。
         /// </summary>
-        protected override void Awake()
-        {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(ISettingManager);
-            base.Awake();
-            m_SettingManager = FuEntry.GetModule<ISettingManager>();
-            if (m_SettingManager == null)
-            {
-                Log.Fatal("Setting manager is invalid.");
-                return;
-            }
+        /// <param name="settingHelper">游戏配置辅助器。</param>
+        void SetSettingHelper(ISettingHelper settingHelper);
 
-            SettingHelperBase settingHelper = Helper.CreateHelper(m_SettingHelperTypeName, m_CustomSettingHelper);
-            if (settingHelper == null)
-            {
-                Log.Error("Can not create setting helper.");
-                return;
-            }
-
-            settingHelper.name = "SettingHelper";
-            Transform helperTransform = settingHelper.transform;
-            helperTransform.SetParent(this.transform);
-            helperTransform.localScale = Vector3.one;
-
-            m_SettingManager.SetSettingHelper(settingHelper);
-        }
-
-        private void Start()
-        {
-            if (!m_SettingManager.Load())
-            {
-                Log.Error("Load settings failure.");
-            }
-        }
+        /// <summary>
+        /// 加载游戏配置。
+        /// </summary>
+        /// <returns>是否加载游戏配置成功。</returns>
+        bool Load();
 
         /// <summary>
         /// 保存游戏配置。
         /// </summary>
-        public void Save()
-        {
-            m_SettingManager.Save();
-        }
+        /// <returns>是否保存游戏配置成功。</returns>
+        bool Save();
 
         /// <summary>
         /// 获取所有游戏配置项的名称。
         /// </summary>
         /// <returns>所有游戏配置项的名称。</returns>
-        public string[] GetAllSettingNames()
-        {
-            return m_SettingManager.GetAllSettingNames();
-        }
+        string[] GetAllSettingNames();
 
         /// <summary>
         /// 获取所有游戏配置项的名称。
         /// </summary>
         /// <param name="results">所有游戏配置项的名称。</param>
-        public void GetAllSettingNames(List<string> results)
-        {
-            m_SettingManager.GetAllSettingNames(results);
-        }
+        void GetAllSettingNames(List<string> results);
 
         /// <summary>
         /// 检查是否存在指定游戏配置项。
         /// </summary>
         /// <param name="settingName">要检查游戏配置项的名称。</param>
         /// <returns>指定的游戏配置项是否存在。</returns>
-        public bool HasSetting(string settingName)
-        {
-            return m_SettingManager.HasSetting(settingName);
-        }
+        bool HasSetting(string settingName);
 
         /// <summary>
         /// 移除指定游戏配置项。
         /// </summary>
         /// <param name="settingName">要移除游戏配置项的名称。</param>
-        public void RemoveSetting(string settingName)
-        {
-            m_SettingManager.RemoveSetting(settingName);
-        }
+        /// <returns>是否移除指定游戏配置项成功。</returns>
+        bool RemoveSetting(string settingName);
 
         /// <summary>
         /// 清空所有游戏配置项。
         /// </summary>
-        public void RemoveAllSettings()
-        {
-            m_SettingManager.RemoveAllSettings();
-        }
+        void RemoveAllSettings();
 
         /// <summary>
         /// 从指定游戏配置项中读取布尔值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的布尔值。</returns>
-        public bool GetBool(string settingName)
-        {
-            return m_SettingManager.GetBool(settingName);
-        }
+        bool GetBool(string settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取布尔值。
@@ -143,30 +77,21 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的布尔值。</returns>
-        public bool GetBool(string settingName, bool defaultValue)
-        {
-            return m_SettingManager.GetBool(settingName, defaultValue);
-        }
+        bool GetBool(string settingName, bool defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入布尔值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的布尔值。</param>
-        public void SetBool(string settingName, bool value)
-        {
-            m_SettingManager.SetBool(settingName, value);
-        }
+        void SetBool(string settingName, bool value);
 
         /// <summary>
         /// 从指定游戏配置项中读取整数值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的整数值。</returns>
-        public int GetInt(string settingName)
-        {
-            return m_SettingManager.GetInt(settingName);
-        }
+        int GetInt(string settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取整数值。
@@ -174,30 +99,21 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的整数值。</returns>
-        public int GetInt(string settingName, int defaultValue)
-        {
-            return m_SettingManager.GetInt(settingName, defaultValue);
-        }
+        int GetInt(string settingName, int defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入整数值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的整数值。</param>
-        public void SetInt(string settingName, int value)
-        {
-            m_SettingManager.SetInt(settingName, value);
-        }
+        void SetInt(string settingName, int value);
 
         /// <summary>
         /// 从指定游戏配置项中读取浮点数值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的浮点数值。</returns>
-        public float GetFloat(string settingName)
-        {
-            return m_SettingManager.GetFloat(settingName);
-        }
+        float GetFloat(string settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取浮点数值。
@@ -205,30 +121,21 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的浮点数值。</returns>
-        public float GetFloat(string settingName, float defaultValue)
-        {
-            return m_SettingManager.GetFloat(settingName, defaultValue);
-        }
+        float GetFloat(string settingName, float defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入浮点数值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的浮点数值。</param>
-        public void SetFloat(string settingName, float value)
-        {
-            m_SettingManager.SetFloat(settingName, value);
-        }
+        void SetFloat(string settingName, float value);
 
         /// <summary>
         /// 从指定游戏配置项中读取字符串值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的字符串值。</returns>
-        public string GetString(string settingName)
-        {
-            return m_SettingManager.GetString(settingName);
-        }
+        string GetString(string settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取字符串值。
@@ -236,20 +143,14 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的字符串值。</returns>
-        public string GetString(string settingName, string defaultValue)
-        {
-            return m_SettingManager.GetString(settingName, defaultValue);
-        }
+        string GetString(string settingName, string defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入字符串值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的字符串值。</param>
-        public void SetString(string settingName, string value)
-        {
-            m_SettingManager.SetString(settingName, value);
-        }
+        void SetString(string settingName, string value);
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -257,10 +158,7 @@ namespace GameFrameX.Setting.Runtime
         /// <typeparam name="T">要读取对象的类型。</typeparam>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的对象。</returns>
-        public T GetObject<T>(string settingName) where T : class, new()
-        {
-            return m_SettingManager.GetObject<T>(settingName);
-        }
+        T GetObject<T>(string settingName) where T : class, new();
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -268,10 +166,7 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="objectType">要读取对象的类型。</param>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的对象。</returns>
-        public object GetObject(Type objectType, string settingName)
-        {
-            return m_SettingManager.GetObject(objectType, settingName);
-        }
+        object GetObject(Type objectType, string settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -280,10 +175,7 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultObj">当指定的游戏配置项不存在时，返回此默认对象。</param>
         /// <returns>读取的对象。</returns>
-        public T GetObject<T>(string settingName, T defaultObj) where T : class, new()
-        {
-            return m_SettingManager.GetObject(settingName, defaultObj);
-        }
+        T GetObject<T>(string settingName, T defaultObj) where T : class, new();
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -292,10 +184,7 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultObj">当指定的游戏配置项不存在时，返回此默认对象。</param>
         /// <returns>读取的对象。</returns>
-        public object GetObject(Type objectType, string settingName, object defaultObj)
-        {
-            return m_SettingManager.GetObject(objectType, settingName, defaultObj);
-        }
+        object GetObject(Type objectType, string settingName, object defaultObj);
 
         /// <summary>
         /// 向指定游戏配置项写入对象。
@@ -303,19 +192,13 @@ namespace GameFrameX.Setting.Runtime
         /// <typeparam name="T">要写入对象的类型。</typeparam>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="obj">要写入的对象。</param>
-        public void SetObject<T>(string settingName, T obj)
-        {
-            m_SettingManager.SetObject(settingName, obj);
-        }
+        void SetObject<T>(string settingName, T obj) where T : class, new();
 
         /// <summary>
         /// 向指定游戏配置项写入对象。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="obj">要写入的对象。</param>
-        public void SetObject(string settingName, object obj)
-        {
-            m_SettingManager.SetObject(settingName, obj);
-        }
+        void SetObject(string settingName, object obj);
     }
 }

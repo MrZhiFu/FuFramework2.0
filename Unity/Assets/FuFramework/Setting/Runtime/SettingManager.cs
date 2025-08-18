@@ -1,22 +1,19 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Setting.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Setting.Runtime
 {
     /// <summary>
     /// 游戏配置管理器。
+    /// 功能：通过游戏配置辅助器，管理游戏相关的本地存储配置项。
     /// </summary>
-    
     public sealed class SettingManager : FuModule, ISettingManager
     {
+        /// <summary>
+        /// 配置辅助器。
+        /// </summary>
         private ISettingHelper m_SettingHelper;
 
         /// <summary>
@@ -34,11 +31,7 @@ namespace GameFrameX.Setting.Runtime
         {
             get
             {
-                if (m_SettingHelper == null)
-                {
-                    throw new FuException("Setting helper is invalid.");
-                }
-
+                if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
                 return m_SettingHelper.Count;
             }
         }
@@ -48,17 +41,12 @@ namespace GameFrameX.Setting.Runtime
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
-        {
-        }
+        protected override void Update(float elapseSeconds, float realElapseSeconds) { }
 
         /// <summary>
         /// 关闭并清理游戏配置管理器。
         /// </summary>
-        protected override void Shutdown()
-        {
-            Save();
-        }
+        protected override void Shutdown() => Save();
 
         /// <summary>
         /// 设置游戏配置辅助器。
@@ -66,12 +54,7 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="settingHelper">游戏配置辅助器。</param>
         public void SetSettingHelper(ISettingHelper settingHelper)
         {
-            if (settingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            m_SettingHelper = settingHelper;
+            m_SettingHelper = settingHelper ?? throw new FuException("Setting helper is invalid.");
         }
 
         /// <summary>
@@ -80,11 +63,7 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>是否加载游戏配置成功。</returns>
         public bool Load()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
             return m_SettingHelper.Load();
         }
 
@@ -94,11 +73,7 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>是否保存游戏配置成功。</returns>
         public bool Save()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
             return m_SettingHelper.Save();
         }
 
@@ -108,11 +83,7 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>所有游戏配置项的名称。</returns>
         public string[] GetAllSettingNames()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
             return m_SettingHelper.GetAllSettingNames();
         }
 
@@ -122,11 +93,7 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="results">所有游戏配置项的名称。</param>
         public void GetAllSettingNames(List<string> results)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
             m_SettingHelper.GetAllSettingNames(results);
         }
 
@@ -137,16 +104,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>指定的游戏配置项是否存在。</returns>
         public bool HasSetting(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.HasSetting(settingName);
         }
 
@@ -157,16 +116,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>是否移除指定游戏配置项成功。</returns>
         public bool RemoveSetting(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.RemoveSetting(settingName);
         }
 
@@ -175,11 +126,7 @@ namespace GameFrameX.Setting.Runtime
         /// </summary>
         public void RemoveAllSettings()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
             m_SettingHelper.RemoveAllSettings();
         }
 
@@ -190,16 +137,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的布尔值。</returns>
         public bool GetBool(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetBool(settingName);
         }
 
@@ -211,16 +150,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的布尔值。</returns>
         public bool GetBool(string settingName, bool defaultValue)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetBool(settingName, defaultValue);
         }
 
@@ -231,16 +162,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="value">要写入的布尔值。</param>
         public void SetBool(string settingName, bool value)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetBool(settingName, value);
         }
 
@@ -251,16 +174,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的整数值。</returns>
         public int GetInt(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetInt(settingName);
         }
 
@@ -272,16 +187,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的整数值。</returns>
         public int GetInt(string settingName, int defaultValue)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetInt(settingName, defaultValue);
         }
 
@@ -292,16 +199,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="value">要写入的整数值。</param>
         public void SetInt(string settingName, int value)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetInt(settingName, value);
         }
 
@@ -312,16 +211,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的浮点数值。</returns>
         public float GetFloat(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetFloat(settingName);
         }
 
@@ -333,16 +224,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的浮点数值。</returns>
         public float GetFloat(string settingName, float defaultValue)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetFloat(settingName, defaultValue);
         }
 
@@ -353,16 +236,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="value">要写入的浮点数值。</param>
         public void SetFloat(string settingName, float value)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetFloat(settingName, value);
         }
 
@@ -373,16 +248,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的字符串值。</returns>
         public string GetString(string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetString(settingName);
         }
 
@@ -394,16 +261,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的字符串值。</returns>
         public string GetString(string settingName, string defaultValue)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetString(settingName, defaultValue);
         }
 
@@ -414,16 +273,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="value">要写入的字符串值。</param>
         public void SetString(string settingName, string value)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetString(settingName, value);
         }
 
@@ -435,16 +286,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的对象。</returns>
         public T GetObject<T>(string settingName) where T : class, new()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetObject<T>(settingName);
         }
 
@@ -456,21 +299,9 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的对象。</returns>
         public object GetObject(Type objectType, string settingName)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (objectType == null)
-            {
-                throw new FuException("Object type is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (objectType      == null) throw new FuException("Object type is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetObject(objectType, settingName);
         }
 
@@ -483,16 +314,8 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的对象。</returns>
         public T GetObject<T>(string settingName, T defaultObj) where T : class, new()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetObject(settingName, defaultObj);
         }
 
@@ -505,21 +328,9 @@ namespace GameFrameX.Setting.Runtime
         /// <returns>读取的对象。</returns>
         public object GetObject(Type objectType, string settingName, object defaultObj)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (objectType == null)
-            {
-                throw new FuException("Object type is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (objectType      == null) throw new FuException("Object type is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             return m_SettingHelper.GetObject(objectType, settingName, defaultObj);
         }
 
@@ -531,16 +342,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="obj">要写入的对象。</param>
         public void SetObject<T>(string settingName, T obj) where T : class, new()
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetObject(settingName, obj);
         }
 
@@ -551,16 +354,8 @@ namespace GameFrameX.Setting.Runtime
         /// <param name="obj">要写入的对象。</param>
         public void SetObject(string settingName, object obj)
         {
-            if (m_SettingHelper == null)
-            {
-                throw new FuException("Setting helper is invalid.");
-            }
-
-            if (string.IsNullOrEmpty(settingName))
-            {
-                throw new FuException("Setting name is invalid.");
-            }
-
+            if (m_SettingHelper == null) throw new FuException("Setting helper is invalid.");
+            if (string.IsNullOrEmpty(settingName)) throw new FuException("Setting name is invalid.");
             m_SettingHelper.SetObject(settingName, obj);
         }
     }
