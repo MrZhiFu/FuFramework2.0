@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
-namespace GameFrameX.Timer.Runtime
+namespace FuFramework.Timer.Runtime
 {
    
     public class GameFrameXTimerCroppingHelper : MonoBehaviour

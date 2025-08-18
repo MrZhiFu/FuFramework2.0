@@ -1,9 +1,9 @@
-﻿using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Timer.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Timer.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Timer.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Timer.Editor
 {
     [CustomEditor(typeof(TimerComponent))]
     internal sealed class TimerGameComponentInspector : GameComponentInspector

@@ -1,6 +1,6 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Timer.Runtime;
+using FuFramework.Timer.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime

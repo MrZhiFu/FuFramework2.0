@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Timer.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Timer.Runtime
 {
     /// <summary>
     /// 定时器管理器。
@@ -55,9 +56,9 @@ namespace GameFrameX.Timer.Runtime
             public void Set(float interval, int repeat, Action<object> callback, object param)
             {
                 Interval = interval;
-                Repeat   = repeat;
+                Repeat = repeat;
                 Callback = callback;
-                Param    = param;
+                Param = param;
             }
         }
 
@@ -286,14 +287,14 @@ namespace GameFrameX.Timer.Runtime
         {
             if (m_PoolList.Count <= 0) return new TimerItem();
 
-            var lastIdx   = m_PoolList.Count - 1;
+            var lastIdx = m_PoolList.Count - 1;
             var lastTimer = m_PoolList[lastIdx];
 
             m_PoolList.RemoveAt(lastIdx);
 
             lastTimer.Deleted = false;
             lastTimer.Elapsed = 0;
-            lastTimer.Param   = null;
+            lastTimer.Param = null;
             return lastTimer;
         }
 

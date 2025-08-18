@@ -1176,7 +1176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8b6cd5f02c8dee4fbe160e8600a3f94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Timer.Runtime.TimerManager
+  componentType: FuFramework.Timer.Runtime.TimerManager
 --- !u!1 &175056986957474636
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,11 +1,11 @@
 using System;
 
-namespace GameFrameX.Timer.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Timer.Runtime
 {
     /// <summary>
-    /// 定时器接口
+    /// 计时器接口
     /// </summary>
-    
     public interface ITimerManager
     {
         /// <summary>
@@ -24,7 +24,7 @@ namespace GameFrameX.Timer.Runtime
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         void AddOnce(float interval, Action<object> callback, object callbackParam = null);
-        
+
         /// <summary>
         /// 添加一个每帧更新执行的任务
         /// </summary>

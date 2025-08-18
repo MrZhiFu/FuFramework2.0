@@ -116,7 +116,7 @@ namespace FuFramework.UI.Runtime
             // 创建UI事件注册器，事件注册器，定时器注册器
             UIEventRegister = FuiEventRegister.Create();
             EventRegister   = Event.Runtime.EventRegister.Create();
-            TimerRegister   = GameFrameX.Timer.Runtime.TimerRegister.Create();
+            TimerRegister   = Timer.Runtime.TimerRegister.Create();
 
             try
             {

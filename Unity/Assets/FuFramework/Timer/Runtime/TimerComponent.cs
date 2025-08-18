@@ -1,33 +1,30 @@
 using System;
-using FuFramework.Core.Runtime;
 using UnityEngine;
+using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Timer.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Timer.Runtime
 {
     /// <summary>
     /// 计时器组件。
-    /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
+    /// 用于管理计时器任务，提供添加、移除、检查计时器等功能。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Timer")]
-    
     public class TimerComponent : FuComponent
     {
-        private ITimerManager m_TimerManager;
+        private ITimerManager m_TimerManager; // 计时器管理器
 
         protected override void Awake()
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ITimerManager);
-            
+
             base.Awake();
-            
+
             m_TimerManager = FuEntry.GetModule<ITimerManager>();
-            if (m_TimerManager == null)
-            {
-                Log.Fatal("定时器管理器为空.");
-            }
+            if (m_TimerManager == null) Log.Fatal("计时器管理器为空.");
         }
 
         /// <summary>
@@ -37,7 +34,8 @@ namespace GameFrameX.Timer.Runtime
         /// <param name="repeat">重复次数（0 表示无限重复）</param>
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void Add(float interval, int repeat, Action<object> callback, object callbackParam = null) => m_TimerManager.Add(interval, repeat, callback, callbackParam);
+        public void Add(float interval, int repeat, Action<object> callback, object callbackParam = null) =>
+            m_TimerManager.Add(interval, repeat, callback, callbackParam);
 
         /// <summary>
         /// 添加一个只执行一次的任务
@@ -45,8 +43,9 @@ namespace GameFrameX.Timer.Runtime
         /// <param name="interval">间隔时间（以秒为单位）</param>
         /// <param name="callback">要执行的回调函数</param>
         /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddOnce(float interval, Action<object> callback, object callbackParam = null) => m_TimerManager.AddOnce(interval, callback, callbackParam);
-        
+        public void AddOnce(float interval, Action<object> callback, object callbackParam = null) =>
+            m_TimerManager.AddOnce(interval, callback, callbackParam);
+
         /// <summary>
         /// 添加一个每帧更新执行的任务
         /// </summary>

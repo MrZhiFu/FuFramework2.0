@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Timer.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Timer.Runtime
 {
     /// <summary>
     /// 计时器注册器。
