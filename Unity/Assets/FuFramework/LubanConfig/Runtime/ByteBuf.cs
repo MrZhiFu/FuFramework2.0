@@ -2,11 +2,9 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using UnityEngine.Scripting;
 
 namespace LuBan.Runtime
 {
-   
     public enum EDeserializeError
     {
         OK,
@@ -15,23 +13,17 @@ namespace LuBan.Runtime
         // UNMARSHAL_ERR,
     }
 
-   
+
     public class SerializationException : Exception
     {
-        public SerializationException()
-        {
-        }
+        public SerializationException() { }
 
-        public SerializationException(string msg) : base(msg)
-        {
-        }
+        public SerializationException(string msg) : base(msg) { }
 
-        public SerializationException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+        public SerializationException(string message, Exception innerException) : base(message, innerException) { }
     }
 
-   
+
     public readonly struct SegmentSaveState
     {
         public SegmentSaveState(int readerIndex, int writerIndex)
@@ -45,7 +37,7 @@ namespace LuBan.Runtime
         public int WriterIndex { get; }
     }
 
-   
+
     public sealed class ByteBuf : ICloneable, IEquatable<ByteBuf>
     {
         public ByteBuf()
@@ -455,7 +447,8 @@ namespace LuBan.Runtime
             else
             {
                 EnsureRead(5);
-                uint x = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)(Bytes[ReaderIndex + 2] << 16)) | ((uint)Bytes[ReaderIndex + 3] << 8) | Bytes[ReaderIndex + 4];
+                uint x = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)(Bytes[ReaderIndex + 2] << 16)) | ((uint)Bytes[ReaderIndex + 3] << 8) |
+                         Bytes[ReaderIndex + 4];
                 ReaderIndex += 5;
                 return x;
             }
@@ -772,7 +765,8 @@ namespace LuBan.Runtime
             else if (h < 0xf8)
             {
                 EnsureRead(5);
-                uint xl = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)(Bytes[ReaderIndex + 2] << 16)) | ((uint)Bytes[ReaderIndex + 3] << 8) | (Bytes[ReaderIndex + 4]);
+                uint xl = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)(Bytes[ReaderIndex + 2] << 16)) | ((uint)Bytes[ReaderIndex + 3] << 8) |
+                          (Bytes[ReaderIndex + 4]);
                 uint xh = h & 0x07;
                 ReaderIndex += 5;
                 return ((ulong)xh << 32) | xl;
@@ -780,7 +774,8 @@ namespace LuBan.Runtime
             else if (h < 0xfc)
             {
                 EnsureRead(6);
-                uint xl = ((uint)Bytes[ReaderIndex + 2] << 24) | ((uint)(Bytes[ReaderIndex + 3] << 16)) | ((uint)Bytes[ReaderIndex + 4] << 8) | (Bytes[ReaderIndex + 5]);
+                uint xl = ((uint)Bytes[ReaderIndex + 2] << 24) | ((uint)(Bytes[ReaderIndex + 3] << 16)) | ((uint)Bytes[ReaderIndex + 4] << 8) |
+                          (Bytes[ReaderIndex + 5]);
                 uint xh = ((h & 0x03) << 8) | Bytes[ReaderIndex + 1];
                 ReaderIndex += 6;
                 return ((ulong)xh << 32) | xl;
@@ -788,7 +783,8 @@ namespace LuBan.Runtime
             else if (h < 0xfe)
             {
                 EnsureRead(7);
-                uint xl = ((uint)Bytes[ReaderIndex + 3] << 24) | ((uint)(Bytes[ReaderIndex + 4] << 16)) | ((uint)Bytes[ReaderIndex + 5] << 8) | (Bytes[ReaderIndex + 6]);
+                uint xl = ((uint)Bytes[ReaderIndex + 3] << 24) | ((uint)(Bytes[ReaderIndex + 4] << 16)) | ((uint)Bytes[ReaderIndex + 5] << 8) |
+                          (Bytes[ReaderIndex + 6]);
                 uint xh = ((h & 0x01) << 16) | ((uint)Bytes[ReaderIndex + 1] << 8) | Bytes[ReaderIndex + 2];
                 ReaderIndex += 7;
                 return ((ulong)xh << 32) | xl;
@@ -796,16 +792,20 @@ namespace LuBan.Runtime
             else if (h < 0xff)
             {
                 EnsureRead(8);
-                uint xl = ((uint)Bytes[ReaderIndex + 4] << 24) | ((uint)(Bytes[ReaderIndex + 5] << 16)) | ((uint)Bytes[ReaderIndex + 6] << 8) | (Bytes[ReaderIndex + 7]);
-                uint xh = /*((h & 0x01) << 24) |*/ ((uint)Bytes[ReaderIndex + 1] << 16) | ((uint)Bytes[ReaderIndex + 2] << 8) | Bytes[ReaderIndex + 3];
+                uint xl = ((uint)Bytes[ReaderIndex + 4] << 24) | ((uint)(Bytes[ReaderIndex + 5] << 16)) | ((uint)Bytes[ReaderIndex + 6] << 8) |
+                          (Bytes[ReaderIndex + 7]);
+                uint xh = /*((h & 0x01) << 24) |*/
+                    ((uint)Bytes[ReaderIndex + 1] << 16) | ((uint)Bytes[ReaderIndex + 2] << 8) | Bytes[ReaderIndex + 3];
                 ReaderIndex += 8;
                 return ((ulong)xh << 32) | xl;
             }
             else
             {
                 EnsureRead(9);
-                uint xl = ((uint)Bytes[ReaderIndex + 5] << 24) | ((uint)(Bytes[ReaderIndex + 6] << 16)) | ((uint)Bytes[ReaderIndex + 7] << 8) | (Bytes[ReaderIndex + 8]);
-                uint xh = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)Bytes[ReaderIndex + 2] << 16) | ((uint)Bytes[ReaderIndex + 3] << 8) | Bytes[ReaderIndex + 4];
+                uint xl = ((uint)Bytes[ReaderIndex + 5] << 24) | ((uint)(Bytes[ReaderIndex + 6] << 16)) | ((uint)Bytes[ReaderIndex + 7] << 8) |
+                          (Bytes[ReaderIndex + 8]);
+                uint xh = ((uint)Bytes[ReaderIndex + 1] << 24) | ((uint)Bytes[ReaderIndex + 2] << 16) | ((uint)Bytes[ReaderIndex + 3] << 8) |
+                          Bytes[ReaderIndex + 4];
                 ReaderIndex += 9;
                 return ((ulong)xh << 32) | xl;
             }
