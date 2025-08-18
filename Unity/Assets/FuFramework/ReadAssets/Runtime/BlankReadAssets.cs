@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-namespace BlankReadAssets
+namespace FuFramework.ReadAssets.Runtime
 {
+    /// <summary>
+    /// Android平台读取Assets类
+    /// </summary>
     public static class BlankReadAssets
     {
         private static AndroidJavaClass _androidJavaClass;
@@ -17,14 +20,6 @@ namespace BlankReadAssets
             return _androidJavaClass.CallStatic<byte[]>("readFile", path);
         }
 
-        private static void Guard()
-        {
-            if (_androidJavaClass == null)
-            {
-                _androidJavaClass = new AndroidJavaClass("com.alianblank.readassets.MainActivity");
-            }
-        }
-
         /// <summary>
         /// 判断文件是否存在
         /// </summary>
@@ -33,8 +28,12 @@ namespace BlankReadAssets
         public static bool IsFileExists(string path)
         {
             Guard();
-
             return _androidJavaClass.CallStatic<bool>("isFileExists", path);
+        }
+
+        private static void Guard()
+        {
+            _androidJavaClass ??= new AndroidJavaClass("com.alianblank.readassets.MainActivity");
         }
     }
 }
