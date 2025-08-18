@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
    
     public class GameFrameXLocalizationCroppingHelper : MonoBehaviour

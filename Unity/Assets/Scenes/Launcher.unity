@@ -755,12 +755,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b92b132742cfba40befc63e8b124faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Localization.Runtime.LocalizationManager
+  componentType: FuFramework.Localization.Runtime.LocalizationManager
   m_EditorLanguage: 0
   m_DefaultLanguage: 0
   m_EnableLoadDictionaryUpdateEvent: 0
   m_IsEnableEditorMode: 0
-  m_LocalizationHelperTypeName: GameFrameX.Localization.Runtime.DefaultLocalizationHelper
+  m_LocalizationHelperTypeName: FuFramework.Localization.Runtime.DefaultLocalizationHelper
   m_CustomLocalizationHelper: {fileID: 0}
 --- !u!114 &1681186165
 MonoBehaviour:
@@ -972,10 +972,10 @@ MonoBehaviour:
   componentType: 
   m_CheckAppVersionUrl: 
   m_CheckResourceVersionUrl: 
+  m_HostServerUrl: 
   m_AOTCodeList: 
   m_AOTCodeLists: []
   m_Content: 
-  m_HostServerUrl: 
 --- !u!114 &1681186182
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,26 +1,22 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Localization.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Localization.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Localization.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Editor
 {
+    /// <summary>
+    /// 自定义本地化组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(LocalizationComponent))]
     internal sealed class LocalizationGameComponentInspector : GameComponentInspector
     {
         // private SerializedProperty m_EnableLoadDictionaryUpdateEvent = null;
-        private SerializedProperty m_EditorLanguage = null;
-        private SerializedProperty m_DefaultLanguage = null;
-        private SerializedProperty m_IsEnableEditorMode = null;
+        private SerializedProperty m_EditorLanguage;
+        private SerializedProperty m_DefaultLanguage;
+        private SerializedProperty m_IsEnableEditorMode;
 
-        private HelperInfo<LocalizationHelperBase> m_LocalizationHelperInfo = new HelperInfo<LocalizationHelperBase>("Localization");
+        private readonly HelperInfo<LocalizationHelperBase> m_LocalizationHelperInfo = new("Localization");
 
         public override void OnInspectorGUI()
         {
@@ -28,7 +24,7 @@ namespace GameFrameX.Localization.Editor
 
             serializedObject.Update();
 
-            LocalizationComponent localizationComponent = (LocalizationComponent)target;
+            var localizationComp = (LocalizationComponent)target;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -41,21 +37,19 @@ namespace GameFrameX.Localization.Editor
             }
             EditorGUI.EndDisabledGroup();
 
-            if (EditorApplication.isPlaying && IsPrefabInHierarchy(localizationComponent.gameObject))
+            if (EditorApplication.isPlaying && IsPrefabInHierarchy(localizationComp.gameObject))
             {
-                EditorGUILayout.LabelField("Language", localizationComponent.Language.ToString());
-                EditorGUILayout.LabelField("System Language", localizationComponent.SystemLanguage.ToString());
+                EditorGUILayout.LabelField("Language", localizationComp.Language.ToString());
+                EditorGUILayout.LabelField("System Language", localizationComp.SystemLanguage.ToString());
             }
 
             serializedObject.ApplyModifiedProperties();
-
             Repaint();
         }
 
         protected override void OnCompileComplete()
         {
             base.OnCompileComplete();
-
             RefreshTypeNames();
         }
 

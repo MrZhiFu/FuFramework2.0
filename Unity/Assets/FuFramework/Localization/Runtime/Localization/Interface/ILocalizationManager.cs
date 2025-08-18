@@ -1,16 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using FuFramework.Asset.Runtime;
 
-using FuFramework.Asset.Runtime;
-
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
     /// <summary>
     /// 本地化管理器接口。
+    /// 功能：定义本地化管理器相关接口，包括获取本地化字符串、设置默认本地化语言、设置本地化语言等。
     /// </summary>
     public interface ILocalizationManager
     {
@@ -68,7 +63,6 @@ namespace GameFrameX.Localization.Runtime
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
         /// </summary>
-        /// <typeparam name="T">字典参数的类型。</typeparam>
         /// <param name="key">字典主键。</param>
         /// <param name="args">字典参数列表。</param>
         /// <returns>要获取的字典内容字符串。</returns>
@@ -225,7 +219,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg8">字典参数 8。</param>
         /// <param name="arg9">字典参数 9。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8,
+            T9 arg9);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -252,7 +247,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg9">字典参数 9。</param>
         /// <param name="arg10">字典参数 10。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8,
+            T9 arg9, T10 arg10);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -281,7 +277,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg10">字典参数 10。</param>
         /// <param name="arg11">字典参数 11。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7,
+            T8 arg8, T9 arg9, T10 arg10, T11 arg11);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -312,7 +309,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg11">字典参数 11。</param>
         /// <param name="arg12">字典参数 12。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7,
+            T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -345,7 +343,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg12">字典参数 12。</param>
         /// <param name="arg13">字典参数 13。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6,
+            T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -380,7 +379,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg13">字典参数 13。</param>
         /// <param name="arg14">字典参数 14。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
+            T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -417,7 +417,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg14">字典参数 14。</param>
         /// <param name="arg15">字典参数 15。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5,
+            T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15);
 
         /// <summary>
         /// 根据字典主键获取字典内容字符串。
@@ -456,7 +457,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="arg15">字典参数 15。</param>
         /// <param name="arg16">字典参数 16。</param>
         /// <returns>要获取的字典内容字符串。</returns>
-        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16);
+        string GetString<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string key, T1 arg1, T2 arg2, T3 arg3, T4 arg4,
+            T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16);
 
         /// <summary>
         /// 是否存在字典。

@@ -3,7 +3,7 @@ using AOT.UI.View.Launcher;
 using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
-using GameFrameX.Localization.Runtime;
+using FuFramework.Localization.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;

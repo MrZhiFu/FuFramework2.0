@@ -1,30 +1,23 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Localization;
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using UnityEngine;
 
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
     /// <summary>
     /// 默认本地化辅助器。
     /// </summary>
     public class DefaultLocalizationHelper : LocalizationHelperBase
     {
-        private static readonly string[] ColumnSplitSeparator = new string[] { "\t" };
+        private static readonly string[] ColumnSplitSeparator = { "\t" };
         private static readonly string BytesAssetExtension = ".bytes";
         private const int ColumnCount = 4;
 
-        private AssetComponent m_ResourceComponent = null;
+        private AssetComponent m_ResourceComponent;// 资源组件
 
         /// <summary>
         /// 获取系统语言。
@@ -33,54 +26,60 @@ namespace GameFrameX.Localization.Runtime
         {
             get
             {
-                switch (Application.systemLanguage)
+                return Application.systemLanguage switch
                 {
-                    case UnityEngine.SystemLanguage.Afrikaans: return Language.Afrikaans;
-                    case UnityEngine.SystemLanguage.Arabic: return Language.Arabic;
-                    case UnityEngine.SystemLanguage.Basque: return Language.Basque;
-                    case UnityEngine.SystemLanguage.Belarusian: return Language.Belarusian;
-                    case UnityEngine.SystemLanguage.Bulgarian: return Language.Bulgarian;
-                    case UnityEngine.SystemLanguage.Catalan: return Language.Catalan;
-                    case UnityEngine.SystemLanguage.Chinese: return Language.ChineseSimplified;
-                    case UnityEngine.SystemLanguage.ChineseSimplified: return Language.ChineseSimplified;
-                    case UnityEngine.SystemLanguage.ChineseTraditional: return Language.ChineseTraditional;
-                    case UnityEngine.SystemLanguage.Czech: return Language.Czech;
-                    case UnityEngine.SystemLanguage.Danish: return Language.Danish;
-                    case UnityEngine.SystemLanguage.Dutch: return Language.Dutch;
-                    case UnityEngine.SystemLanguage.English: return Language.English;
-                    case UnityEngine.SystemLanguage.Estonian: return Language.Estonian;
-                    case UnityEngine.SystemLanguage.Faroese: return Language.Faroese;
-                    case UnityEngine.SystemLanguage.Finnish: return Language.Finnish;
-                    case UnityEngine.SystemLanguage.French: return Language.French;
-                    case UnityEngine.SystemLanguage.German: return Language.German;
-                    case UnityEngine.SystemLanguage.Greek: return Language.Greek;
-                    case UnityEngine.SystemLanguage.Hebrew: return Language.Hebrew;
-                    case UnityEngine.SystemLanguage.Hungarian: return Language.Hungarian;
-                    case UnityEngine.SystemLanguage.Icelandic: return Language.Icelandic;
-                    case UnityEngine.SystemLanguage.Indonesian: return Language.Indonesian;
-                    case UnityEngine.SystemLanguage.Italian: return Language.Italian;
-                    case UnityEngine.SystemLanguage.Japanese: return Language.Japanese;
-                    case UnityEngine.SystemLanguage.Korean: return Language.Korean;
-                    case UnityEngine.SystemLanguage.Latvian: return Language.Latvian;
-                    case UnityEngine.SystemLanguage.Lithuanian: return Language.Lithuanian;
-                    case UnityEngine.SystemLanguage.Norwegian: return Language.Norwegian;
-                    case UnityEngine.SystemLanguage.Polish: return Language.Polish;
-                    case UnityEngine.SystemLanguage.Portuguese: return Language.PortuguesePortugal;
-                    case UnityEngine.SystemLanguage.Romanian: return Language.Romanian;
-                    case UnityEngine.SystemLanguage.Russian: return Language.Russian;
-                    case UnityEngine.SystemLanguage.SerboCroatian: return Language.SerboCroatian;
-                    case UnityEngine.SystemLanguage.Slovak: return Language.Slovak;
-                    case UnityEngine.SystemLanguage.Slovenian: return Language.Slovenian;
-                    case UnityEngine.SystemLanguage.Spanish: return Language.Spanish;
-                    case UnityEngine.SystemLanguage.Swedish: return Language.Swedish;
-                    case UnityEngine.SystemLanguage.Thai: return Language.Thai;
-                    case UnityEngine.SystemLanguage.Turkish: return Language.Turkish;
-                    case UnityEngine.SystemLanguage.Ukrainian: return Language.Ukrainian;
-                    case UnityEngine.SystemLanguage.Unknown: return Language.Unspecified;
-                    case UnityEngine.SystemLanguage.Vietnamese: return Language.Vietnamese;
-                    default: return Language.Unspecified;
-                }
+                    UnityEngine.SystemLanguage.Afrikaans => Language.Afrikaans,
+                    UnityEngine.SystemLanguage.Arabic => Language.Arabic,
+                    UnityEngine.SystemLanguage.Basque => Language.Basque,
+                    UnityEngine.SystemLanguage.Belarusian => Language.Belarusian,
+                    UnityEngine.SystemLanguage.Bulgarian => Language.Bulgarian,
+                    UnityEngine.SystemLanguage.Catalan => Language.Catalan,
+                    UnityEngine.SystemLanguage.Chinese => Language.ChineseSimplified,
+                    UnityEngine.SystemLanguage.ChineseSimplified => Language.ChineseSimplified,
+                    UnityEngine.SystemLanguage.ChineseTraditional => Language.ChineseTraditional,
+                    UnityEngine.SystemLanguage.Czech => Language.Czech,
+                    UnityEngine.SystemLanguage.Danish => Language.Danish,
+                    UnityEngine.SystemLanguage.Dutch => Language.Dutch,
+                    UnityEngine.SystemLanguage.English => Language.English,
+                    UnityEngine.SystemLanguage.Estonian => Language.Estonian,
+                    UnityEngine.SystemLanguage.Faroese => Language.Faroese,
+                    UnityEngine.SystemLanguage.Finnish => Language.Finnish,
+                    UnityEngine.SystemLanguage.French => Language.French,
+                    UnityEngine.SystemLanguage.German => Language.German,
+                    UnityEngine.SystemLanguage.Greek => Language.Greek,
+                    UnityEngine.SystemLanguage.Hebrew => Language.Hebrew,
+                    UnityEngine.SystemLanguage.Hungarian => Language.Hungarian,
+                    UnityEngine.SystemLanguage.Icelandic => Language.Icelandic,
+                    UnityEngine.SystemLanguage.Indonesian => Language.Indonesian,
+                    UnityEngine.SystemLanguage.Italian => Language.Italian,
+                    UnityEngine.SystemLanguage.Japanese => Language.Japanese,
+                    UnityEngine.SystemLanguage.Korean => Language.Korean,
+                    UnityEngine.SystemLanguage.Latvian => Language.Latvian,
+                    UnityEngine.SystemLanguage.Lithuanian => Language.Lithuanian,
+                    UnityEngine.SystemLanguage.Norwegian => Language.Norwegian,
+                    UnityEngine.SystemLanguage.Polish => Language.Polish,
+                    UnityEngine.SystemLanguage.Portuguese => Language.PortuguesePortugal,
+                    UnityEngine.SystemLanguage.Romanian => Language.Romanian,
+                    UnityEngine.SystemLanguage.Russian => Language.Russian,
+                    UnityEngine.SystemLanguage.SerboCroatian => Language.SerboCroatian,
+                    UnityEngine.SystemLanguage.Slovak => Language.Slovak,
+                    UnityEngine.SystemLanguage.Slovenian => Language.Slovenian,
+                    UnityEngine.SystemLanguage.Spanish => Language.Spanish,
+                    UnityEngine.SystemLanguage.Swedish => Language.Swedish,
+                    UnityEngine.SystemLanguage.Thai => Language.Thai,
+                    UnityEngine.SystemLanguage.Turkish => Language.Turkish,
+                    UnityEngine.SystemLanguage.Ukrainian => Language.Ukrainian,
+                    UnityEngine.SystemLanguage.Unknown => Language.Unspecified,
+                    UnityEngine.SystemLanguage.Vietnamese => Language.Vietnamese,
+                    _ => Language.Unspecified
+                };
             }
+        }
+
+        private void Start()
+        {
+            m_ResourceComponent = GameEntry.GetComponent<AssetComponent>();
+            if (!m_ResourceComponent) Log.Fatal("Resource component is invalid.");
         }
 
         /// <summary>
@@ -225,16 +224,6 @@ namespace GameFrameX.Localization.Runtime
         public override void ReleaseDataAsset(ILocalizationManager localizationManager, object dictionaryAsset)
         {
             // m_ResourceComponent.UnloadAsset(dictionaryAsset);
-        }
-
-        private void Start()
-        {
-            m_ResourceComponent = GameEntry.GetComponent<AssetComponent>();
-            if (m_ResourceComponent == null)
-            {
-                Log.Fatal("Resource component is invalid.");
-                return;
-            }
         }
     }
 }

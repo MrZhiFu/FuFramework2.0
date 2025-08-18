@@ -1,14 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿using UnityEngine;
 
-using GameFrameX.Localization;
-using UnityEngine;
-
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
     /// <summary>
     /// 本地化辅助器基类。
@@ -40,7 +33,8 @@ namespace GameFrameX.Localization.Runtime
         /// <param name="length">字典二进制流的长度。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>是否读取字典成功。</returns>
-        public abstract bool ReadData(ILocalizationManager localizationManager, string dictionaryAssetName, byte[] dictionaryBytes, int startIndex, int length, object userData);
+        public abstract bool ReadData(ILocalizationManager localizationManager, string dictionaryAssetName, byte[] dictionaryBytes, int startIndex,
+            int length, object userData);
 
         /// <summary>
         /// 解析字典。

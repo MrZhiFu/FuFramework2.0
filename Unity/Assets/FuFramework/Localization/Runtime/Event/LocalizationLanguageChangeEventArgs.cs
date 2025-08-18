@@ -1,14 +1,21 @@
 ﻿using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
     /// <summary>
     /// 本地化语言改变事件。
     /// </summary>
     public sealed class LocalizationLanguageChangeEventArgs : GameEventArgs
     {
+        /// <summary>
+        /// 获取事件编号。
+        /// </summary>
+        /// <returns>事件编号。</returns>
+        public override string Id => EventId;
+
         /// <summary>
         /// 本地化语言改变事件编号。
         /// </summary>
@@ -54,15 +61,6 @@ namespace GameFrameX.Localization.Runtime
         {
             OldLanguage = Language.Unspecified;
             Language = Language.Unspecified;
-        }
-
-        /// <summary>
-        /// 获取事件编号。
-        /// </summary>
-        /// <returns>事件编号。</returns>
-        public override string Id
-        {
-            get { return EventId; }
         }
     }
 }

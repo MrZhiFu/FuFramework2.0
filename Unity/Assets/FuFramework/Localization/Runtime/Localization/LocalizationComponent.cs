@@ -1,11 +1,4 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
@@ -13,7 +6,9 @@ using GameFrameX.Setting.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Localization.Runtime
+// ReSharper disable InconsistentNaming
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Localization.Runtime
 {
     /// <summary>
     /// 本地化组件。
@@ -22,30 +17,33 @@ namespace GameFrameX.Localization.Runtime
     [AddComponentMenu("Game Framework/Localization")]
     public sealed class LocalizationComponent : FuComponent
     {
-        private ILocalizationManager m_LocalizationManager = null;
-
-        private EventComponent m_EventComponent = null;
-        private SettingComponent m_SettingComponent = null;
-
+        private ILocalizationManager m_LocalizationManager; // 本地化管理器
+        private EventComponent m_EventComponent; // 事件组件
+        private SettingComponent m_SettingComponent; // Setting组件
+        
+        //@formatter:off 
+        [Header("编辑器模式语言")] 
         [SerializeField] private Language m_EditorLanguage = Language.Unspecified;
-
+        [Header("默认语言")] 
         [SerializeField] private Language m_DefaultLanguage = Language.Unspecified;
+        [Header("是否启用加载多语言资源更新事件")]
+        [SerializeField] private bool m_EnableLoadDictionaryUpdateEvent;
+        [Header("是否启用编辑器模式")] 
+        [SerializeField] private bool m_IsEnableEditorMode;
 
-        [SerializeField] private bool m_EnableLoadDictionaryUpdateEvent = false;
-        [SerializeField] private bool m_IsEnableEditorMode = false;
-
-        [SerializeField] private string m_LocalizationHelperTypeName = "GameFrameX.Localization.Runtime.DefaultLocalizationHelper";
-
-        [SerializeField] private LocalizationHelperBase m_CustomLocalizationHelper = null;
-
+        [Header("本地化帮助类")] 
+        [SerializeField] private string m_LocalizationHelperTypeName = "FuFramework.Localization.Runtime.DefaultLocalizationHelper";
+        [Header("自定义本地化帮助类基类")]
+        [SerializeField] private LocalizationHelperBase m_CustomLocalizationHelper;
+        //@formatter:on
 
         /// <summary>
         /// 获取或设置编辑器语言（仅编辑器内有效）。
         /// </summary>
         public Language EditorLanguage
         {
-            get { return m_EditorLanguage; }
-            set { m_EditorLanguage = value; }
+            get => m_EditorLanguage;
+            set => m_EditorLanguage = value;
         }
 
         /// <summary>
@@ -55,25 +53,23 @@ namespace GameFrameX.Localization.Runtime
         {
             get
             {
-                if (m_LocalizationManager.DefaultLanguage == Language.Unspecified)
+                if (m_LocalizationManager.DefaultLanguage != Language.Unspecified) 
+                    return m_LocalizationManager.DefaultLanguage;
+                
+                var value = m_SettingComponent.GetString(nameof(LocalizationComponent) + "." + nameof(DefaultLanguage));
+                if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out Language result))
                 {
-                    var value = m_SettingComponent.GetString(nameof(LocalizationComponent) + "." + nameof(DefaultLanguage));
-                    if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out Language result))
-                    {
-                        m_LocalizationManager.DefaultLanguage = result;
-                    }
+                    m_LocalizationManager.DefaultLanguage = result;
                 }
 
                 return m_LocalizationManager.DefaultLanguage;
             }
             set
             {
-                if (m_LocalizationManager.DefaultLanguage != value)
-                {
-                    m_LocalizationManager.DefaultLanguage = value;
-                    m_SettingComponent.SetString(nameof(LocalizationComponent) + "." + nameof(DefaultLanguage), value.ToString());
-                    m_SettingComponent.Save();
-                }
+                if (m_LocalizationManager.DefaultLanguage == value) return;
+                m_LocalizationManager.DefaultLanguage = value;
+                m_SettingComponent.SetString(nameof(LocalizationComponent) + "." + nameof(DefaultLanguage), value.ToString());
+                m_SettingComponent.Save();
             }
         }
 
@@ -84,54 +80,38 @@ namespace GameFrameX.Localization.Runtime
         {
             get
             {
-                if (m_LocalizationManager.Language == Language.Unspecified)
+                if (m_LocalizationManager.Language != Language.Unspecified) 
+                    return m_LocalizationManager.Language;
+                
+                var value = m_SettingComponent.GetString(nameof(LocalizationComponent) + "." + nameof(Language));
+                if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out Language result))
                 {
-                    var value = m_SettingComponent.GetString(nameof(LocalizationComponent) + "." + nameof(Language));
-                    if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out Language result))
-                    {
-                        m_LocalizationManager.Language = result;
-                    }
+                    m_LocalizationManager.Language = result;
                 }
 
                 return m_LocalizationManager.Language;
             }
             set
             {
-                if (m_LocalizationManager.Language != value)
-                {
-                    var oldLanguage = m_LocalizationManager.Language;
-                    m_LocalizationManager.Language = value;
-                    m_SettingComponent.SetString(nameof(LocalizationComponent) + "." + nameof(Language), value.ToString());
-                    m_SettingComponent.Save();
-                    var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
-                    m_EventComponent.Fire(this, localizationLanguageChangeEventArgs);
-                }
+                if (m_LocalizationManager.Language == value) return;
+                var oldLanguage = m_LocalizationManager.Language;
+                m_LocalizationManager.Language = value;
+                m_SettingComponent.SetString(nameof(LocalizationComponent) + "." + nameof(Language), value.ToString());
+                m_SettingComponent.Save();
+                var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
+                m_EventComponent.Fire(this, localizationLanguageChangeEventArgs);
             }
         }
 
         /// <summary>
         /// 获取系统语言。
         /// </summary>
-        public Language SystemLanguage
-        {
-            get { return m_LocalizationManager.SystemLanguage; }
-        }
+        public Language SystemLanguage => m_LocalizationManager.SystemLanguage;
 
         /// <summary>
         /// 获取字典数量。
         /// </summary>
-        public int DictionaryCount
-        {
-            get { return m_LocalizationManager.DictionaryCount; }
-        }
-
-        /// <summary>
-        /// 获取缓冲二进制流的大小。
-        /// </summary>
-        // public int CachedBytesSize
-        // {
-        //     get { return m_LocalizationManager.CachedBytesSize; }
-        // }
+        public int DictionaryCount => m_LocalizationManager.DictionaryCount;
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -142,39 +122,27 @@ namespace GameFrameX.Localization.Runtime
             InterfaceComponentType = typeof(ILocalizationManager);
             base.Awake();
             m_LocalizationManager = FuEntry.GetModule<ILocalizationManager>();
-            if (m_LocalizationManager == null)
-            {
-                Log.Fatal("Localization manager is invalid.");
-                return;
-            }
-
-            /*m_LocalizationManager.ReadDataSuccess += OnReadDataSuccess;
-            m_LocalizationManager.ReadDataFailure += OnReadDataFailure;
-
-            if (m_EnableLoadDictionaryUpdateEvent)
-            {
-                m_LocalizationManager.ReadDataUpdate += OnReadDataUpdate;
-            }*/
+            if (m_LocalizationManager == null) Log.Fatal("Localization manager is invalid.");
         }
 
         private void Start()
         {
-            BaseComponent baseComponent = GameEntry.GetComponent<BaseComponent>();
-            if (baseComponent == null)
+            var baseComp = GameEntry.GetComponent<BaseComponent>();
+            if (!baseComp)
             {
                 Log.Fatal("Base component is invalid.");
                 return;
             }
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
-            if (m_EventComponent == null)
+            if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
                 return;
             }
 
             m_SettingComponent = GameEntry.GetComponent<SettingComponent>();
-            if (m_SettingComponent == null)
+            if (!m_SettingComponent)
             {
                 Log.Fatal("Setting component is invalid.");
                 return;
@@ -182,7 +150,7 @@ namespace GameFrameX.Localization.Runtime
 
             m_LocalizationManager.SetAssetManager(FuEntry.GetModule<IAssetManager>());
 
-            LocalizationHelperBase localizationHelper = Helper.CreateHelper(m_LocalizationHelperTypeName, m_CustomLocalizationHelper);
+            var localizationHelper = Helper.CreateHelper(m_LocalizationHelperTypeName, m_CustomLocalizationHelper);
             if (localizationHelper == null)
             {
                 Log.Error("Can not create localization helper.");
@@ -190,7 +158,7 @@ namespace GameFrameX.Localization.Runtime
             }
 
             localizationHelper.name = "Localization Helper";
-            Transform localizationHelperTransform = localizationHelper.transform;
+            var localizationHelperTransform = localizationHelper.transform;
             localizationHelperTransform.SetParent(this.transform);
             localizationHelperTransform.localScale = Vector3.one;
 
