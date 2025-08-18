@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using FairyGUI;
+﻿using FairyGUI;
 using FuFramework.Core.Runtime;
+using System.Collections.Generic;
 
 namespace FuFramework.UI.Runtime
 {

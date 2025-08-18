@@ -1,6 +1,6 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
 using FairyGUI;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
 namespace FuFramework.UI.Runtime

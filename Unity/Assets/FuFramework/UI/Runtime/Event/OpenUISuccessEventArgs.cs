@@ -1,34 +1,29 @@
 ﻿using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面可见状态变化事件。
+    /// 打开界面成功事件。
     /// </summary>
-    public sealed class UIVisibleChangedEventArgs : GameEventArgs
+    public sealed class OpenUISuccessEventArgs : GameEventArgs
     {
-        /// <summary>
-        /// 界面可见状态变化事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(UIVisibleChangedEventArgs).FullName;
-
         /// <summary>
         /// 获取打开界面成功事件编号。
         /// </summary>
         public override string Id => EventId;
 
         /// <summary>
-        /// 获取打开成功的界面。
+        /// 打开界面成功事件编号。
         /// </summary>
-        public ViewBase Base { get; private set; }
+        public static readonly string EventId = typeof(OpenUISuccessEventArgs).FullName;
 
         /// <summary>
-        /// 获取加载持续时间。
+        /// 获取打开成功的界面。
         /// </summary>
-        public bool Visible { get; private set; }
+        public ViewBase ViewBase { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -38,27 +33,24 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public UIVisibleChangedEventArgs()
+        public OpenUISuccessEventArgs()
         {
-            Base     = null;
-            Visible  = false;
+            ViewBase = null;
             UserData = null;
         }
 
         /// <summary>
         /// 创建打开界面成功事件。
         /// </summary>
-        /// <param name="iuiBase">打开成功的界面。</param>
-        /// <param name="visible">显示状态。</param>
+        /// <param name="view">打开成功的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static UIVisibleChangedEventArgs Create(ViewBase iuiBase, bool visible, object userData)
+        public static OpenUISuccessEventArgs Create(ViewBase view, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
-            uiSuccessEventArgs.Base     = iuiBase;
-            uiSuccessEventArgs.Visible  = visible;
-            uiSuccessEventArgs.UserData = userData;
-            return uiSuccessEventArgs;
+            var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
+            openUISuccessEventArgs.ViewBase = view;
+            openUISuccessEventArgs.UserData = userData;
+            return openUISuccessEventArgs;
         }
 
         /// <summary>
@@ -66,8 +58,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public override void Clear()
         {
-            Base     = null;
-            Visible  = false;
+            ViewBase = null;
             UserData = null;
         }
     }

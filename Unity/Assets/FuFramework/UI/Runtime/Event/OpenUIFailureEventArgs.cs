@@ -1,7 +1,7 @@
 ﻿using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
 {
@@ -11,14 +11,14 @@ namespace FuFramework.UI.Runtime
     public sealed class OpenUIFailureEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 打开界面失败事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(OpenUIFailureEventArgs).FullName;
-
-        /// <summary>
         /// 获取打开界面失败事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 打开界面失败事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(OpenUIFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取界面序列编号。

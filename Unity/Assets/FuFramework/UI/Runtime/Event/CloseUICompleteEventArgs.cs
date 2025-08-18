@@ -1,7 +1,7 @@
 ﻿using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
 {
@@ -11,14 +11,14 @@ namespace FuFramework.UI.Runtime
     public sealed class CloseUICompleteEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 关闭界面完成事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(CloseUICompleteEventArgs).FullName;
-
-        /// <summary>
         /// 获取关闭界面完成事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 关闭界面完成事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(CloseUICompleteEventArgs).FullName;
 
         /// <summary>
         /// 获取界面序列编号。
@@ -41,8 +41,8 @@ namespace FuFramework.UI.Runtime
         public CloseUICompleteEventArgs()
         {
             SerialId = 0;
-            UIName   = null;
-            UIGroup  = null;
+            UIName = null;
+            UIGroup = null;
         }
 
         /// <summary>
@@ -56,8 +56,8 @@ namespace FuFramework.UI.Runtime
         {
             var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId = serialId;
-            closeUICompleteEventArgs.UIName   = uiName;
-            closeUICompleteEventArgs.UIGroup  = uiGroup;
+            closeUICompleteEventArgs.UIName = uiName;
+            closeUICompleteEventArgs.UIGroup = uiGroup;
             return closeUICompleteEventArgs;
         }
 
@@ -67,8 +67,8 @@ namespace FuFramework.UI.Runtime
         public override void Clear()
         {
             SerialId = 0;
-            UIName   = null;
-            UIGroup  = null;
+            UIName = null;
+            UIGroup = null;
         }
     }
 }

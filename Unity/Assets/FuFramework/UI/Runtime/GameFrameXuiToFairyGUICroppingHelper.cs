@@ -9,12 +9,10 @@ namespace FuFramework.UI.Runtime
        
         private void Start()
         {
-            m_Types = new Type[]
+            m_Types = new[]
             {
-                typeof(GObjectHelper),
                 typeof(ViewBase),
                 typeof(UIManager),
-                // typeof(FuiLoadAsyncResourceHelper),
                 typeof(FuiPackageManager),
                 typeof(FuiPathFinderHelper),
             };

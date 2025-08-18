@@ -20,9 +20,8 @@ namespace FuFramework.UI.Runtime
     }
 
     /// <summary>
-    /// FGUI 路径帮助类
+    /// FUI 路径帮助类
     /// </summary>
-    
     public static class FuiPathFinderHelper
     {
         /// <summary>
@@ -163,17 +162,14 @@ namespace FuFramework.UI.Runtime
             for (var i = 0; i < nameList.Count; i++)
             {
                 if (gObjectList[i].name == nameList[i]) continue;
-                
-                // 如果名称以'$'开头，则尝试将其解析为索引，并检查当前对象在其父级中的索引是否匹配
-                if (nameList[i][0] == '$')
-                {
-                    var idxStr = nameList[i].Substring(1);
-                    var idx = int.Parse(idxStr);
-                    if (gObjectList[i].parent.GetChildIndex(gObjectList[i]) == idx) continue;
-                    return false;
-                }
 
+                // 如果名称以'$'开头，则尝试将其解析为索引，并检查当前对象在其父级中的索引是否匹配
+                if (nameList[i][0] != '$') return false;
+                var idxStr = nameList[i].Substring(1);
+                var idx = int.Parse(idxStr);
+                if (gObjectList[i].parent.GetChildIndex(gObjectList[i]) == idx) continue;
                 return false;
+
             }
 
             return true;

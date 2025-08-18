@@ -36,15 +36,15 @@ namespace FuFramework.UI.Runtime
             }
         }
 
-        private readonly int _maxCapacity; // 最大容量
-        private readonly Dictionary<string, CacheItem> _cacheDict; // 缓存字典，Key为资源路径，Value为缓存项
-        private readonly LinkedList<CacheItem> _lruList; // 最近使用列表
+        private readonly int m_maxCapacity; // 最大容量
+        private readonly Dictionary<string, CacheItem> m_cacheDict; // 缓存字典，Key为资源路径，Value为缓存项
+        private readonly LinkedList<CacheItem> m_lruList; // 最近使用列表
 
         public LRUCache(int maxCapacity)
         {
-            _maxCapacity = maxCapacity;
-            _cacheDict = new Dictionary<string, CacheItem>();
-            _lruList = new LinkedList<CacheItem>();
+            m_maxCapacity = maxCapacity;
+            m_cacheDict = new Dictionary<string, CacheItem>();
+            m_lruList = new LinkedList<CacheItem>();
         }
 
         /// <summary>
@@ -55,11 +55,11 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         public NTexture Get(string key)
         {
-            if (!_cacheDict.TryGetValue(key, out var item)) return null; // 纹理未找到
+            if (!m_cacheDict.TryGetValue(key, out var item)) return null; // 纹理未找到
 
             // 移动到最近使用的位置
-            _lruList.Remove(item);
-            _lruList.AddFirst(item);
+            m_lruList.Remove(item);
+            m_lruList.AddFirst(item);
             return item.Texture;
         }
 
@@ -72,23 +72,23 @@ namespace FuFramework.UI.Runtime
         {
             if (key == null) return;
 
-            if (_cacheDict.TryGetValue(key, out var cacheItem))
+            if (m_cacheDict.TryGetValue(key, out var cacheItem))
             {
                 // 更新已有项并移动到最近使用位置
-                _lruList.Remove(cacheItem);
+                m_lruList.Remove(cacheItem);
                 cacheItem.Texture = texture;
-                _lruList.AddFirst(cacheItem);
+                m_lruList.AddFirst(cacheItem);
             }
             else
             {
                 // 如果超过最大数量，则移除最少使用的项
-                if (_cacheDict.Count >= _maxCapacity)
+                if (m_cacheDict.Count >= m_maxCapacity)
                     RemoveLeastRecentlyUsed();
 
                 // 添加新项
                 var newItem = new CacheItem(key, texture);
-                _cacheDict[key] = newItem;
-                _lruList.AddFirst(newItem);
+                m_cacheDict[key] = newItem;
+                m_lruList.AddFirst(newItem);
             }
         }
 
@@ -97,12 +97,12 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private void RemoveLeastRecentlyUsed()
         {
-            if (_lruList.Count <= 0) return;
+            if (m_lruList.Count <= 0) return;
 
-            var leastUsedItem = _lruList.Last.Value;
+            var leastUsedItem = m_lruList.Last.Value;
 
-            _lruList.RemoveLast();
-            _cacheDict.Remove(leastUsedItem.Key);
+            m_lruList.RemoveLast();
+            m_cacheDict.Remove(leastUsedItem.Key);
             leastUsedItem.Texture.Dispose();
 
             if (leastUsedItem.Texture.nativeTexture.IsNotNull())
@@ -117,7 +117,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            foreach (var item in _lruList)
+            foreach (var item in m_lruList)
             {
                 item.Texture.Dispose();
                 if (item.Texture.nativeTexture.IsNotNull())
@@ -127,8 +127,8 @@ namespace FuFramework.UI.Runtime
                     Object.Destroy(item.Texture.alphaTexture); // 释放纹理资源
             }
 
-            _cacheDict.Clear();
-            _lruList.Clear();
+            m_cacheDict.Clear();
+            m_lruList.Clear();
         }
     }
 
@@ -143,6 +143,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// Loader 纹理LRU缓存
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         private static readonly LRUCache s_Cache = new(100);
 
         /// <summary>

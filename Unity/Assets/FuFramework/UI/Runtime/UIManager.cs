@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using FairyGUI;
+using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace FuFramework.UI.Runtime
 {
