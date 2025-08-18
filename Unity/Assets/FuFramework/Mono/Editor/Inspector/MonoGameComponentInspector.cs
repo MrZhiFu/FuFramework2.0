@@ -1,17 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Mono.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Mono.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Mono.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Editor
 {
+    /// <summary>
+    /// 自定义Mono组件Inspector
+    /// </summary>
     [CustomEditor(typeof(MonoComponent))]
     internal sealed class MonoGameComponentInspector : GameComponentInspector
     {

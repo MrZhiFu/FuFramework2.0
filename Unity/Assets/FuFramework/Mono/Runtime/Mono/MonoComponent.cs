@@ -1,10 +1,11 @@
 ﻿using System;
+using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Mono.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Runtime
 {
     /// <summary>
     /// Mono 组件。
@@ -14,13 +15,13 @@ namespace GameFrameX.Mono.Runtime
     [AddComponentMenu("Game Framework/Mono")]
     public class MonoComponent : FuComponent
     {
-        private IMonoManager   m_MonoManager;
-        private EventComponent m_EventComponent;
+        private IMonoManager m_MonoManager; // Mono管理器
+        private EventComponent m_EventComponent; // 事件管理器
 
         protected override void Awake()
         {
             ImplementationComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IMonoManager);
+            InterfaceComponentType = typeof(IMonoManager);
 
             base.Awake();
 
@@ -61,10 +62,8 @@ namespace GameFrameX.Mono.Runtime
         private void OnApplicationFocus(bool focusStatus)
         {
             m_MonoManager.OnApplicationFocus(focusStatus);
-            if (m_EventComponent != null)
-            {
+            if (m_EventComponent)
                 m_EventComponent.Fire(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
-            }
         }
 
         /// <summary>
@@ -74,10 +73,8 @@ namespace GameFrameX.Mono.Runtime
         private void OnApplicationPause(bool pauseStatus)
         {
             m_MonoManager.OnApplicationPause(pauseStatus);
-            if (m_EventComponent != null)
-            {
+            if (m_EventComponent)
                 m_EventComponent.Fire(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
-            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 
-namespace GameFrameX.Mono.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Runtime
 {
     /// <summary>
     /// 用于管理 MonoBehaviour 的接口。

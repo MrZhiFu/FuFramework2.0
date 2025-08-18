@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Mono.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Runtime
 {
-   
     public class GameFrameXMonoCroppingHelper : MonoBehaviour
     {
-       
         private void Start()
         {
             _ = typeof(IMonoManager);

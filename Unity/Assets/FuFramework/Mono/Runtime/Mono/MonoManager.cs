@@ -2,31 +2,31 @@ using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Mono.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Runtime
 {
     /// <summary>
     /// Mono管理器。
     /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
     /// </summary>
-    
     public sealed class MonoManager : FuModule, IMonoManager
     {
-        private readonly List<Action> m_WaitUpdateList     = new(); // 等待调用的 Update 回调列表
+        private readonly List<Action> m_WaitUpdateList = new(); // 等待调用的 Update 回调列表
         private readonly List<Action> m_InvokingUpdateList = new(); // 正在调用的 Update 回调列表
 
-        private readonly List<Action> m_WaitFixedUpdateList     = new(); // 等待调用的 FixedUpdate 回调列表
+        private readonly List<Action> m_WaitFixedUpdateList = new(); // 等待调用的 FixedUpdate 回调列表
         private readonly List<Action> m_InvokingFixedUpdateList = new(); // 正在调用的 FixedUpdate 回调列表
 
-        private readonly List<Action> m_WaitLateUpdateList     = new(); // 等待调用的 LateUpdate 回调列表
+        private readonly List<Action> m_WaitLateUpdateList = new(); // 等待调用的 LateUpdate 回调列表
         private readonly List<Action> m_InvokingLateUpdateList = new(); // 正在调用的 LateUpdate 回调列表
 
-        private readonly List<Action> m_WaitDestroyList     = new(); // 等待调用的 Destroy 回调列表
+        private readonly List<Action> m_WaitDestroyList = new(); // 等待调用的 Destroy 回调列表
         private readonly List<Action> m_InvokingDestroyList = new(); // 正在调用的 Destroy 回调列表
 
-        private List<Action<bool>> m_WaitOnApplicationPauseList   = new(); // 等待调用的 OnApplicationPause 回调列表
+        private List<Action<bool>> m_WaitOnApplicationPauseList = new(); // 等待调用的 OnApplicationPause 回调列表
         private List<Action<bool>> m_InvokeOnApplicationPauseList = new(); // 正在调用的 OnApplicationPause 回调列表
 
-        private List<Action<bool>> m_WaitOnApplicationFocusList   = new(); // 等待调用的 OnApplicationFocus 回调列表
+        private List<Action<bool>> m_WaitOnApplicationFocusList = new(); // 等待调用的 OnApplicationFocus 回调列表
         private List<Action<bool>> m_InvokeOnApplicationFocusList = new(); // 正在调用的 OnApplicationFocus 回调列表
 
         /// <summary>
@@ -88,11 +88,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitUpdateList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitUpdateList.Add(action);
         }
 
         /// <summary>
@@ -101,11 +98,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddLateUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitLateUpdateList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitLateUpdateList.Add(action);
         }
 
         /// <summary>
@@ -114,11 +108,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveLateUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitLateUpdateList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitLateUpdateList.Remove(action);
         }
 
         /// <summary>
@@ -127,11 +118,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddFixedUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitFixedUpdateList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitFixedUpdateList.Add(action);
         }
 
         /// <summary>
@@ -140,11 +128,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveFixedUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitFixedUpdateList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitFixedUpdateList.Remove(action);
         }
 
         /// <summary>
@@ -153,11 +138,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveUpdateListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitUpdateList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitUpdateList.Remove(action);
         }
 
 
@@ -167,11 +149,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddDestroyListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitDestroyList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitDestroyList.Add(action);
         }
 
         /// <summary>
@@ -180,11 +159,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveDestroyListener(Action action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitDestroyList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitDestroyList.Remove(action);
         }
 
         /// <summary>
@@ -193,11 +169,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationPauseListener(Action<bool> action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitOnApplicationPauseList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitOnApplicationPauseList.Add(action);
         }
 
         /// <summary>
@@ -206,11 +179,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationPauseListener(Action<bool> action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitOnApplicationPauseList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitOnApplicationPauseList.Remove(action);
         }
 
         /// <summary>
@@ -219,11 +189,8 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationFocusListener(Action<bool> action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitOnApplicationFocusList.Add(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitOnApplicationFocusList.Add(action);
         }
 
         /// <summary>
@@ -232,13 +199,9 @@ namespace GameFrameX.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationFocusListener(Action<bool> action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            lock (s_Lock)
-                m_WaitOnApplicationFocusList.Remove(action);
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            lock (s_Lock) m_WaitOnApplicationFocusList.Remove(action);
         }
-
 
         /// <summary>
         /// 释放
@@ -253,6 +216,7 @@ namespace GameFrameX.Mono.Runtime
             m_WaitOnApplicationPauseList.Clear();
         }
 
+        protected override void Shutdown() => Release();
 
         /// <summary>
         /// 使用交互引用的形式实现队列调用效果，确保在多线程环境下安全，在执行回调函数时不会发生竞态条件:
@@ -300,11 +264,6 @@ namespace GameFrameX.Mono.Runtime
                     }
                 }
             }
-        }
-
-        protected override void Shutdown()
-        {
-            Release();
         }
     }
 }

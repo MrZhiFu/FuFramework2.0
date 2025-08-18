@@ -1,53 +1,42 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Mono.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Mono.Runtime
 {
     /// <summary>
-    /// 程序是否是暂停状态变化事件。
+    /// 程序暂停状态变化事件。
     /// </summary>
     public sealed class OnApplicationPauseChangedEventArgs : GameEventArgs
     {
+        /// <summary>
+        /// 获取程序暂停状态变化事件编号。
+        /// </summary>
+        public override string Id => EventId;
+
         /// <summary>
         /// 程序是否是暂停状态变化更新事件编号。
         /// </summary>
         public static readonly string EventId = typeof(OnApplicationPauseChangedEventArgs).FullName;
 
         /// <summary>
-        /// 初始化加载字典更新事件的新实例。
+        /// 是否暂停。
+        /// </summary>
+        public bool IsPause { get; private set; }
+
+        /// <summary>
+        /// 初始化程序暂停状态变化事件的新实例。
         /// </summary>
         public OnApplicationPauseChangedEventArgs()
         {
             IsPause = false;
         }
-
+        
         /// <summary>
-        /// 获取加载字典更新事件编号。
-        /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
-
-        /// <summary>
-        /// 是否暂停。
-        /// </summary>
-        public bool IsPause { get; private set; }
-
-
-        /// <summary>
-        /// 创建加载字典更新事件。
+        /// 创建程序暂停状态变化事件。
         /// </summary>
         /// <param name="isPause">是否是前台</param>
-        /// <returns>创建的加载字典更新事件。</returns>
+        /// <returns>创建的程序暂停状态变化事件。</returns>
         public static OnApplicationPauseChangedEventArgs Create(bool isPause)
         {
             var loadDictionaryUpdateEventArgs = ReferencePool.Acquire<OnApplicationPauseChangedEventArgs>();

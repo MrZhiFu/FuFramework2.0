@@ -1510,7 +1510,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07de683c80b22a348905d088ee1d2b6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Mono.Runtime.MonoManager
+  componentType: FuFramework.Mono.Runtime.MonoManager
 --- !u!1 &6090082196613657399
 GameObject:
   m_ObjectHideFlags: 0
