@@ -6,7 +6,7 @@
 //------------------------------------------------------------
 
 using System;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 
 namespace GameFrameX.Procedure.Runtime
 {

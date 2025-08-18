@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;

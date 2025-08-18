@@ -1,6 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 using GameFrameX.GlobalConfig.Runtime;
 using GameFrameX.Procedure.Runtime;
 using FuFramework.Core.Runtime;

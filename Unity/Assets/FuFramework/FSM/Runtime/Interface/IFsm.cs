@@ -1,91 +1,62 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Fsm.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Fsm.Runtime
 {
     /// <summary>
     /// 有限状态机接口。
+    /// 功能：定义有限状态机的相关接口，包括有限状态机的基本属性和方法。
     /// </summary>
-    /// <typeparam name="T">有限状态机持有者类型。</typeparam>
+    /// <typeparam name="T">有限状态机持有者类型</typeparam>
     public interface IFsm<T> where T : class
     {
         /// <summary>
         /// 获取有限状态机名称。
         /// </summary>
-        string Name
-        {
-            get;
-        }
+        string Name { get; }
 
         /// <summary>
         /// 获取有限状态机完整名称。
         /// </summary>
-        string FullName
-        {
-            get;
-        }
+        string FullName { get; }
 
         /// <summary>
         /// 获取有限状态机持有者。
         /// </summary>
-        T Owner
-        {
-            get;
-        }
+        T Owner { get; }
 
         /// <summary>
         /// 获取有限状态机中状态的数量。
         /// </summary>
-        int FsmStateCount
-        {
-            get;
-        }
+        int FsmStateCount { get; }
 
         /// <summary>
         /// 获取有限状态机是否正在运行。
         /// </summary>
-        bool IsRunning
-        {
-            get;
-        }
+        bool IsRunning { get; }
 
         /// <summary>
         /// 获取有限状态机是否被销毁。
         /// </summary>
-        bool IsDestroyed
-        {
-            get;
-        }
+        bool IsDestroyed { get; }
 
         /// <summary>
         /// 获取当前有限状态机状态。
         /// </summary>
-        FsmState<T> CurrentState
-        {
-            get;
-        }
+        FsmStateBase<T> CurrentStateBase { get; }
 
         /// <summary>
         /// 获取当前有限状态机状态持续时间。
         /// </summary>
-        float CurrentStateTime
-        {
-            get;
-        }
+        float CurrentStateTime { get; }
 
         /// <summary>
         /// 开始有限状态机。
         /// </summary>
         /// <typeparam name="TState">要开始的有限状态机状态类型。</typeparam>
-        void Start<TState>() where TState : FsmState<T>;
+        void Start<TState>() where TState : FsmStateBase<T>;
 
         /// <summary>
         /// 开始有限状态机。
@@ -98,7 +69,7 @@ namespace GameFrameX.Fsm.Runtime
         /// </summary>
         /// <typeparam name="TState">要检查的有限状态机状态类型。</typeparam>
         /// <returns>是否存在有限状态机状态。</returns>
-        bool HasState<TState>() where TState : FsmState<T>;
+        bool HasState<TState>() where TState : FsmStateBase<T>;
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -112,26 +83,26 @@ namespace GameFrameX.Fsm.Runtime
         /// </summary>
         /// <typeparam name="TState">要获取的有限状态机状态类型。</typeparam>
         /// <returns>要获取的有限状态机状态。</returns>
-        TState GetState<TState>() where TState : FsmState<T>;
+        TState GetState<TState>() where TState : FsmStateBase<T>;
 
         /// <summary>
         /// 获取有限状态机状态。
         /// </summary>
         /// <param name="stateType">要获取的有限状态机状态类型。</param>
         /// <returns>要获取的有限状态机状态。</returns>
-        FsmState<T> GetState(Type stateType);
+        FsmStateBase<T> GetState(Type stateType);
 
         /// <summary>
         /// 获取有限状态机的所有状态。
         /// </summary>
         /// <returns>有限状态机的所有状态。</returns>
-        FsmState<T>[] GetAllStates();
+        FsmStateBase<T>[] GetAllStates();
 
         /// <summary>
         /// 获取有限状态机的所有状态。
         /// </summary>
         /// <param name="results">有限状态机的所有状态。</param>
-        void GetAllStates(List<FsmState<T>> results);
+        void GetAllStates(List<FsmStateBase<T>> results);
 
         /// <summary>
         /// 是否存在有限状态机数据。

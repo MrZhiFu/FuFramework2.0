@@ -12,7 +12,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        public Variable() { }
+        protected Variable() { }
 
         /// <summary>
         /// 获取变量类型。

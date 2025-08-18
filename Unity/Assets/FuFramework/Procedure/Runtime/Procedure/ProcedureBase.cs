@@ -5,15 +5,14 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using GameFrameX.Fsm;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 
 namespace GameFrameX.Procedure.Runtime
 {
     /// <summary>
     /// 流程基类。
     /// </summary>
-    public abstract class ProcedureBase : FsmState<IProcedureManager>
+    public abstract class ProcedureBase : FsmStateBase<IProcedureManager>
     {
         /// <summary>
         /// 状态初始化时调用。

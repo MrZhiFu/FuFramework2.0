@@ -9,7 +9,7 @@ using GameFrameX.Procedure;
 using System;
 using System.Collections;
 using FuFramework.Core.Runtime;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 

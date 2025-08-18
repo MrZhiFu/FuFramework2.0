@@ -1,27 +1,21 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace GameFrameX.Fsm.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Fsm.Runtime
 {
     /// <summary>
-    /// 有限状态机管理器。
+    /// 有限状态机管理器接口。
+    /// 功能：定义有限状态机管理器的相关接口，包括创建、获取、销毁有限状态机等。
     /// </summary>
     public interface IFsmManager
     {
         /// <summary>
         /// 获取有限状态机数量。
         /// </summary>
-        int Count
-        {
-            get;
-        }
+        int Count { get; }
+
+        #region 获取有限状态机
 
         /// <summary>
         /// 检查是否存在有限状态机。
@@ -95,6 +89,10 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="results">所有有限状态机。</param>
         void GetAllFsms(List<FsmBase> results);
 
+        #endregion
+
+        #region 创建有限状态机
+
         /// <summary>
         /// 创建有限状态机。
         /// </summary>
@@ -102,7 +100,7 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
         /// <returns>要创建的有限状态机。</returns>
-        IFsm<T> CreateFsm<T>(T owner, params FsmState<T>[] states) where T : class;
+        IFsm<T> CreateFsm<T>(T owner, params FsmStateBase<T>[] states) where T : class;
 
         /// <summary>
         /// 创建有限状态机。
@@ -112,7 +110,7 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
         /// <returns>要创建的有限状态机。</returns>
-        IFsm<T> CreateFsm<T>(string name, T owner, params FsmState<T>[] states) where T : class;
+        IFsm<T> CreateFsm<T>(string name, T owner, params FsmStateBase<T>[] states) where T : class;
 
         /// <summary>
         /// 创建有限状态机。
@@ -121,7 +119,7 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
         /// <returns>要创建的有限状态机。</returns>
-        IFsm<T> CreateFsm<T>(T owner, List<FsmState<T>> states) where T : class;
+        IFsm<T> CreateFsm<T>(T owner, List<FsmStateBase<T>> states) where T : class;
 
         /// <summary>
         /// 创建有限状态机。
@@ -131,7 +129,11 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
         /// <returns>要创建的有限状态机。</returns>
-        IFsm<T> CreateFsm<T>(string name, T owner, List<FsmState<T>> states) where T : class;
+        IFsm<T> CreateFsm<T>(string name, T owner, List<FsmStateBase<T>> states) where T : class;
+
+        #endregion
+
+        #region 销毁有限状态机
 
         /// <summary>
         /// 销毁有限状态机。
@@ -177,5 +179,7 @@ namespace GameFrameX.Fsm.Runtime
         /// <param name="fsm">要销毁的有限状态机。</param>
         /// <returns>是否销毁有限状态机成功。</returns>
         bool DestroyFsm(FsmBase fsm);
+
+        #endregion
     }
 }

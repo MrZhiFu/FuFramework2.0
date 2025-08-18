@@ -7,7 +7,7 @@
 
 using System;
 using FuFramework.Core.Runtime;
-using GameFrameX.Fsm.Runtime;
+using FuFramework.Fsm.Runtime;
 
 namespace GameFrameX.Procedure.Runtime
 {
@@ -50,7 +50,7 @@ namespace GameFrameX.Procedure.Runtime
                     throw new FuException("You must initialize procedure first.");
                 }
 
-                return (ProcedureBase)m_ProcedureFsm.CurrentState;
+                return (ProcedureBase)m_ProcedureFsm.CurrentStateBase;
             }
         }
 

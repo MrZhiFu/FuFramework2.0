@@ -1,17 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Fsm.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Fsm.Runtime;
 using UnityEditor;
 
-namespace GameFrameX.Fsm.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Fsm.Editor
 {
+    /// <summary>
+    /// 自定义游戏状态机组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(FsmComponent))]
     internal sealed class FsmGameComponentInspector : GameComponentInspector
     {
@@ -32,7 +28,7 @@ namespace GameFrameX.Fsm.Editor
                 EditorGUILayout.LabelField("FSM Count", t.Count.ToString());
 
                 var fsms = t.GetAllFsmList();
-                foreach (FsmBase fsm in fsms)
+                foreach (var fsm in fsms)
                 {
                     DrawFsm(fsm);
                 }
@@ -48,7 +44,14 @@ namespace GameFrameX.Fsm.Editor
 
         private void DrawFsm(FsmBase fsm)
         {
-            EditorGUILayout.LabelField(fsm.FullName, fsm.IsRunning ? string.Format("{0}, {1:F1} s", fsm.CurrentStateName, fsm.CurrentStateTime) : (fsm.IsDestroyed ? "Destroyed" : "Not Running"));
+            string label;
+            if (fsm.IsRunning)
+                label = $"{fsm.CurrentStateName}, {fsm.CurrentStateTime:F1} s";
+            else if (fsm.IsDestroyed)
+                label = "Destroyed";
+            else
+                label = "Not Running";
+            EditorGUILayout.LabelField(fsm.FullName, label);
         }
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
-namespace GameFrameX.Fsm.Runtime
+namespace FuFramework.Fsm.Runtime
 {
    
     public class GameFrameXFsmCroppingHelper : MonoBehaviour
@@ -11,7 +11,7 @@ namespace GameFrameX.Fsm.Runtime
         {
             _ = typeof(IFsmManager);
             _ = typeof(IFsm<>);
-            _ = typeof(FsmState<>);
+            _ = typeof(FsmStateBase<>);
             _ = typeof(FsmBase);
             _ = typeof(FsmManager);
             _ = typeof(FsmComponent);
