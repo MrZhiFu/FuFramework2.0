@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
-using GameFrameX.Procedure.Runtime;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {

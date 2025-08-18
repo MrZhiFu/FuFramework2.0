@@ -1,14 +1,8 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using FuFramework.Fsm.Runtime;
 
-namespace GameFrameX.Procedure.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Procedure.Runtime
 {
     /// <summary>
     /// 流程管理器接口。

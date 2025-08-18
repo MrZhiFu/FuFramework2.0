@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
 using FuFramework.Fsm.Runtime;
-using GameFrameX.Procedure.Runtime;
+using FuFramework.Procedure.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Unity.Startup.Procedure

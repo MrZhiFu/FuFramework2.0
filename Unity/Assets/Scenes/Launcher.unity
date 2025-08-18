@@ -1012,7 +1012,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef831d928c2ce9409f354a23aa0280e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Procedure.Runtime.ProcedureManager
+  componentType: FuFramework.Procedure.Runtime.ProcedureManager
   m_AvailableProcedureTypeNames:
   - Unity.Startup.Procedure.ProcedureGetAppVersionInfoFromGmServer
   - Unity.Startup.Procedure.ProcedureGetAssetPkgVersionInfoFromGmServer

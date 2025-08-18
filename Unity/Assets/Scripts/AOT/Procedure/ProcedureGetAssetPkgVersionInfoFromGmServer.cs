@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
-using GameFrameX.Procedure.Runtime;
+using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using GameFrameX.Web.Runtime;
