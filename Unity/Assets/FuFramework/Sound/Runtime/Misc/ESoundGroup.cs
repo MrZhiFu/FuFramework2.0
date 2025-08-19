@@ -5,7 +5,7 @@ namespace FuFramework.Sound.Runtime
     /// <summary>
     /// 声音组类型
     /// </summary>
-    public enum SoundGroup
+    public enum ESoundGroup
     {
         /// <summary>
         /// BGM
