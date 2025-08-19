@@ -37,7 +37,7 @@ namespace FuFramework.Sound.Runtime
         /// 设置声音辅助器。
         /// </summary>
         /// <param name="soundHelper">声音辅助器。</param>
-        void SetSoundHelper(ISoundHelper soundHelper);
+        void SetSoundHelper(SoundHelperBase soundHelper);
 
         /// <summary>
         /// 是否存在指定声音组。
@@ -51,19 +51,19 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <returns>要获取的声音组。</returns>
-        ISoundGroup GetSoundGroup(string soundGroupName);
+        SoundManager.SoundGroup GetSoundGroup(string soundGroupName);
 
         /// <summary>
         /// 获取所有声音组。
         /// </summary>
         /// <returns>所有声音组。</returns>
-        ISoundGroup[] GetAllSoundGroups();
+        SoundManager.SoundGroup[] GetAllSoundGroups();
 
         /// <summary>
         /// 获取所有声音组。
         /// </summary>
         /// <param name="results">所有声音组。</param>
-        void GetAllSoundGroups(List<ISoundGroup> results);
+        void GetAllSoundGroups(List<SoundManager.SoundGroup> results);
 
         /// <summary>
         /// 增加声音组。
@@ -77,12 +77,12 @@ namespace FuFramework.Sound.Runtime
         /// 增加声音组。
         /// </summary>
         /// <param name="groupName">声音组名称。</param>
-        /// <param name="avoidBeReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
+        /// <param name="allowBeReplacedBySamePriority">声音组中的声音是否允许被同优先级声音替换。</param>
         /// <param name="soundGroupMute">声音组是否静音。</param>
         /// <param name="soundGroupVolume">声音组音量。</param>
         /// <param name="groupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        bool AddSoundGroup(string groupName, bool avoidBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, ISoundGroupHelper groupHelper);
+        bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, ISoundGroupHelper groupHelper);
 
         /// <summary>
         /// 增加声音代理辅助器。

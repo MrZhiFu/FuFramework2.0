@@ -10,7 +10,7 @@ namespace FuFramework.Sound.Runtime
         /// 播放的声音信息。
         /// 功能：用于在加载声音资源时保存相关信息。
         /// </summary>
-        private sealed class PlaySoundInfo : IReference
+        private class PlaySoundInfo : IReference
         {
             /// <summary>
             /// 获取序列编号。

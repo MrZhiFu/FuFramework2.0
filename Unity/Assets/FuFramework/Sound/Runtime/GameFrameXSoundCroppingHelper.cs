@@ -18,11 +18,8 @@ namespace FuFramework.Sound.Runtime
             _ = typeof(SoundGroupHelperBase);
             _ = typeof(SoundHelperBase);
             _ = typeof(Constant);
-            _ = typeof(ISoundAgent);
             _ = typeof(ISoundAgentHelper);
-            _ = typeof(ISoundGroup);
             _ = typeof(ISoundGroupHelper);
-            _ = typeof(ISoundHelper);
             _ = typeof(ISoundManager);
             _ = typeof(PlaySoundErrorCode);
             _ = typeof(PlaySoundFailureEventArgs);

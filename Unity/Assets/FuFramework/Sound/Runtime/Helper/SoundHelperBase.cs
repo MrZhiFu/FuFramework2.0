@@ -7,7 +7,7 @@ namespace FuFramework.Sound.Runtime
     /// 声音辅助器基类。
     /// 用于实现声音资源的释放。
     /// </summary>
-    public abstract class SoundHelperBase : MonoBehaviour, ISoundHelper
+    public abstract class SoundHelperBase : MonoBehaviour
     {
         /// <summary>
         /// 释放声音资源。

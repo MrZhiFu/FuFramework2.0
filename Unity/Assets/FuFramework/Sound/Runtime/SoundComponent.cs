@@ -129,7 +129,7 @@ namespace FuFramework.Sound.Runtime
             // 添加声音组
             foreach (var group in m_SoundGroups)
             {
-                if (AddSoundGroup(group.Name, group.AvoidBeingReplacedBySamePriority, group.Mute, group.Volume, group.AgentHelperCount)) continue;
+                if (AddSoundGroup(group.Name, group.AllowBeingReplacedBySamePriority, group.Mute, group.Volume, group.AgentHelperCount)) continue;
                 Log.Warning("[SoundComponent] 添加声音组 '{0}' 失败!", group.Name);
             }
         }
@@ -154,19 +154,19 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <returns>要获取的声音组。</returns>
-        public ISoundGroup GetSoundGroup(string soundGroupName) => m_SoundManager.GetSoundGroup(soundGroupName);
+        public SoundManager.SoundGroup GetSoundGroup(string soundGroupName) => m_SoundManager.GetSoundGroup(soundGroupName);
 
         /// <summary>
         /// 获取所有声音组。
         /// </summary>
         /// <returns>所有声音组。</returns>
-        public ISoundGroup[] GetAllSoundGroups() => m_SoundManager.GetAllSoundGroups();
+        public SoundManager.SoundGroup[] GetAllSoundGroups() => m_SoundManager.GetAllSoundGroups();
 
         /// <summary>
         /// 获取所有声音组。
         /// </summary>
         /// <param name="results">所有声音组。</param>
-        public void GetAllSoundGroups(List<ISoundGroup> results) => m_SoundManager.GetAllSoundGroups(results);
+        public void GetAllSoundGroups(List<SoundManager.SoundGroup> results) => m_SoundManager.GetAllSoundGroups(results);
 
         /// <summary>
         /// 增加声音组。
@@ -183,12 +183,12 @@ namespace FuFramework.Sound.Runtime
         /// 增加声音组。
         /// </summary>
         /// <param name="groupName">声音组名称。</param>
-        /// <param name="avoidBeReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
+        /// <param name="allowBeReplacedBySamePriority">声音组中的声音是否允许被同优先级声音替换。</param>
         /// <param name="groupMute">声音组是否静音。</param>
         /// <param name="groupVolume">声音组音量。</param>
         /// <param name="soundAgentHelperCount">声音代理辅助器数量。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(string groupName, bool avoidBeReplacedBySamePriority, bool groupMute, float groupVolume, int soundAgentHelperCount)
+        public bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool groupMute, float groupVolume, int soundAgentHelperCount)
         {
             if (m_SoundManager.HasSoundGroup(groupName)) return false;
 
@@ -213,7 +213,7 @@ namespace FuFramework.Sound.Runtime
                     soundGroupHelper.AudioMixerGroup = m_AudioMixer.FindMatchingGroups("Master")[0];
             }
 
-            if (!m_SoundManager.AddSoundGroup(groupName, avoidBeReplacedBySamePriority, groupMute, groupVolume, soundGroupHelper))
+            if (!m_SoundManager.AddSoundGroup(groupName, allowBeReplacedBySamePriority, groupMute, groupVolume, soundGroupHelper))
                 return false;
 
             // 添加声音组辅助器中的声音播放代理辅助器

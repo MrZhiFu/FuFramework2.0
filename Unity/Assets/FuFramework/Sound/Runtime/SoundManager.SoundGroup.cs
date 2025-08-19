@@ -5,13 +5,13 @@ using FuFramework.Core.Runtime;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
 {
-    public sealed partial class SoundManager
+    public partial class SoundManager
     {
         /// <summary>
         /// 声音组。
         /// 功能:管理该组中的声音, 包括播放、停止、暂停、恢复等。
         /// </summary>
-        private sealed class SoundGroup : ISoundGroup
+        public class SoundGroup
         {
             private readonly List<SoundAgent> m_SoundAgents; // 声音播放代理列表
 
@@ -29,9 +29,9 @@ namespace FuFramework.Sound.Runtime
             public ISoundGroupHelper Helper { get; }
 
             /// <summary>
-            /// 获取或设置声音组中的声音是否避免被同优先级声音替换。
+            /// 获取或设置声音组中的声音是否允许被同优先级声音替换。
             /// </summary>
-            public bool AvoidBeReplacedBySamePriority { get; set; }
+            public bool AllowBeReplacedBySamePriority { get; set; } = true;
 
             /// <summary>
             /// 获取声音代理数。
@@ -89,7 +89,7 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             /// <param name="soundHelper">声音辅助器接口。</param>
             /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
-            public void AddSoundAgentHelper(ISoundHelper soundHelper, ISoundAgentHelper soundAgentHelper)
+            public void AddSoundAgentHelper(SoundHelperBase soundHelper, ISoundAgentHelper soundAgentHelper)
             {
                 m_SoundAgents.Add(new SoundAgent(this, soundHelper, soundAgentHelper));
             }
@@ -102,7 +102,7 @@ namespace FuFramework.Sound.Runtime
             /// <param name="playSoundParams">播放声音参数。</param>
             /// <param name="errorCode">错误码。</param>
             /// <returns>用于播放的声音代理。</returns>
-            public ISoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
+            public SoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
             {
                 errorCode = null;
                 SoundAgent candidateAgent = null; // 候选播放代理
@@ -125,8 +125,8 @@ namespace FuFramework.Sound.Runtime
                         break;
                     }
 
-                    // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了避免被同优先级声音替换，如果没有设置，则使用同优先级的代理作为候选代理。
-                    if (!AvoidBeReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
+                    // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
+                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
                     {
                         if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime) 
                             candidateAgent = soundAgent;

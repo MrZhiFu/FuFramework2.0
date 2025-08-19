@@ -33,7 +33,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取用于播放的声音代理。
         /// </summary>
-        public ISoundAgent SoundAgent { get; private set; }
+        public SoundManager.SoundAgent SoundAgent { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -66,7 +66,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音成功事件。</returns>
-        public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, ISoundAgent soundAgent, float duration, object userData)
+        public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, SoundManager.SoundAgent soundAgent, float duration, object userData)
         {
             var playSoundSuccessEventArgs = ReferencePool.Acquire<PlaySoundSuccessEventArgs>();
             playSoundSuccessEventArgs.SerialId       = serialId;

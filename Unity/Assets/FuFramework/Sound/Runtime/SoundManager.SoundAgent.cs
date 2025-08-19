@@ -5,13 +5,13 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
 {
-    public sealed partial class SoundManager
+    public partial class SoundManager
     {
         /// <summary>
         /// 声音代理。
         /// 功能：实现声音代理接口，实现了主要包括声音播放、停止、暂停、恢复等操作。
         /// </summary>
-        private sealed class SoundAgent : ISoundAgent
+        public sealed class SoundAgent
         {
             /// <summary>
             /// 所在的声音组。
@@ -21,7 +21,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 声音辅助器。
             /// </summary>
-            private readonly ISoundHelper m_SoundHelper;
+            private readonly SoundHelperBase m_SoundHelper;
 
             /// <summary>
             /// 声音资源。
@@ -44,7 +44,7 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundGroup">所在的声音组。</param>
             /// <param name="soundHelper">声音辅助器接口。</param>
             /// <param name="soundAgentHelper">声音代理辅助器接口。</param>
-            public SoundAgent(SoundGroup soundGroup, ISoundHelper soundHelper, ISoundAgentHelper soundAgentHelper)
+            public SoundAgent(SoundGroup soundGroup, SoundHelperBase soundHelper, ISoundAgentHelper soundAgentHelper)
             {
                 m_SoundGroup  = soundGroup       ?? throw new FuException("[SoundAgent]声音组不能为空!");
                 m_SoundHelper = soundHelper      ?? throw new FuException("[SoundAgent]声音辅助器不能为空!");
@@ -60,7 +60,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取所在的声音组。
             /// </summary>
-            ISoundGroup ISoundAgent.SoundGroup => m_SoundGroup;
+            public SoundGroup SoundGroup => m_SoundGroup;
 
             /// <summary>
             /// 获取或设置声音的序列编号。

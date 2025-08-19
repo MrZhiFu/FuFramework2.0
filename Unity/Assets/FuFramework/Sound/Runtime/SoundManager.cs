@@ -21,8 +21,8 @@ namespace FuFramework.Sound.Runtime
         private readonly List<int> m_LoadingSoundList; // 记录正在加载的声音ID列表
         private readonly HashSet<int> m_LoadingToReleaseSet; // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
-        private IAssetManager m_assetManager; // 资源管理器
-        private ISoundHelper m_SoundHelper; // 声音辅助器
+        private IAssetManager   m_assetManager; // 资源管理器
+        private SoundHelperBase m_SoundHelper;  // 声音辅助器
 
         private int m_Serial; // 声音自增序列号
 
@@ -100,7 +100,7 @@ namespace FuFramework.Sound.Runtime
         /// 设置声音辅助器。
         /// </summary>
         /// <param name="soundHelper">声音辅助器。</param>
-        public void SetSoundHelper(ISoundHelper soundHelper)
+        public void SetSoundHelper(SoundHelperBase soundHelper)
         {
             m_SoundHelper = soundHelper ?? throw new FuException("[SoundManager]声音辅助器为空!");
         }
@@ -123,7 +123,7 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <returns>要获取的声音组。</returns>
-        public ISoundGroup GetSoundGroup(string soundGroupName)
+        public SoundGroup GetSoundGroup(string soundGroupName)
         {
             if (string.IsNullOrEmpty(soundGroupName)) throw new FuException("[SoundManager]声音组名称为空!");
             return m_SoundGroupDict.GetValueOrDefault(soundGroupName);
@@ -133,10 +133,10 @@ namespace FuFramework.Sound.Runtime
         /// 获取所有声音组。
         /// </summary>
         /// <returns>所有声音组。</returns>
-        public ISoundGroup[] GetAllSoundGroups()
+        public SoundGroup[] GetAllSoundGroups()
         {
             var index = 0;
-            var results = new ISoundGroup[m_SoundGroupDict.Count];
+            var results = new SoundGroup[m_SoundGroupDict.Count];
             foreach (var (_, soundGroup) in m_SoundGroupDict)
             {
                 results[index++] = soundGroup;
@@ -149,7 +149,7 @@ namespace FuFramework.Sound.Runtime
         /// 获取所有声音组。
         /// </summary>
         /// <param name="results">所有声音组。</param>
-        public void GetAllSoundGroups(List<ISoundGroup> results)
+        public void GetAllSoundGroups(List<SoundGroup> results)
         {
             if (results == null) throw new FuException("[SoundManager]参数结果列表为空!");
             results.Clear();
@@ -174,12 +174,12 @@ namespace FuFramework.Sound.Runtime
         /// 增加声音组。
         /// </summary>
         /// <param name="groupName">声音组名称。</param>
-        /// <param name="avoidBeReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
+        /// <param name="allowBeReplacedBySamePriority">声音组中的声音是否允许被同优先级声音替换。</param>
         /// <param name="soundGroupMute">声音组是否静音。</param>
         /// <param name="soundGroupVolume">声音组音量。</param>
         /// <param name="groupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(string groupName, bool avoidBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume,
+        public bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume,
             ISoundGroupHelper groupHelper)
         {
             if (string.IsNullOrEmpty(groupName)) throw new FuException("[SoundManager]声音组名称为空!");
@@ -188,7 +188,7 @@ namespace FuFramework.Sound.Runtime
 
             var soundGroup = new SoundGroup(groupName, groupHelper)
             {
-                AvoidBeReplacedBySamePriority = avoidBeReplacedBySamePriority,
+                AllowBeReplacedBySamePriority = allowBeReplacedBySamePriority,
                 Mute = soundGroupMute,
                 Volume = soundGroupVolume
             };

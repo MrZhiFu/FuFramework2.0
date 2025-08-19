@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -18,9 +19,9 @@ namespace FuFramework.Sound.Runtime
             [SerializeField] private string m_Name;
 
             /// <summary>
-            /// 是否避免被同优先级声音替换。
+            /// 是否允许被同优先级声音替换。
             /// </summary>
-            [SerializeField] private bool m_AvoidBeingReplacedBySamePriority;
+            [SerializeField] private bool m_AllowBeingReplacedBySamePriority;
 
             /// <summary>
             /// 是否静音。
@@ -43,9 +44,9 @@ namespace FuFramework.Sound.Runtime
             public string Name => m_Name;
 
             /// <summary>
-            /// 获取是否避免被同优先级声音替换。
+            /// 获取是否允许被同优先级声音替换。
             /// </summary>
-            public bool AvoidBeingReplacedBySamePriority => m_AvoidBeingReplacedBySamePriority;
+            public bool AllowBeingReplacedBySamePriority => m_AllowBeingReplacedBySamePriority;
 
             /// <summary>
             /// 获取是否静音。
