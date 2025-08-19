@@ -21,10 +21,7 @@ namespace FuFramework.Sound.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-
             serializedObject.Update();
-
-            SoundComponent t = (SoundComponent)target;
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
@@ -39,9 +36,10 @@ namespace FuFramework.Sound.Editor
             }
             EditorGUI.EndDisabledGroup();
 
-            if (EditorApplication.isPlaying && IsPrefabInHierarchy(t.gameObject))
+            var soundComp = (SoundComponent)target;
+            if (EditorApplication.isPlaying && IsPrefabInHierarchy(soundComp.gameObject))
             {
-                EditorGUILayout.LabelField("Sound Group Count", t.SoundGroupCount.ToString());
+                EditorGUILayout.LabelField("声音组数量：", soundComp.SoundGroupCount.ToString());
             }
 
             serializedObject.ApplyModifiedProperties();

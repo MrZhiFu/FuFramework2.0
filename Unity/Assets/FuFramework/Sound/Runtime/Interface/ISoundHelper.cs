@@ -11,7 +11,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 释放声音资源。
         /// </summary>
-        /// <param name="soundAsset">要释放的声音资源。</param>
-        void ReleaseSoundAsset(object soundAsset);
+        /// <param name="soundAssetName">要释放的声音资源名称。</param>
+        void ReleaseSoundAsset(string soundAssetName);
     }
 }

@@ -21,7 +21,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音组中的声音是否避免被同优先级声音替换。
         /// </summary>
-        bool AvoidBeingReplacedBySamePriority { get; set; }
+        bool AvoidBeReplacedBySamePriority { get; set; }
 
         /// <summary>
         /// 获取或设置声音组静音。

@@ -68,21 +68,21 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 增加声音组。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="soundGroupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        bool AddSoundGroup(string soundGroupName, ISoundGroupHelper soundGroupHelper);
+        bool AddSoundGroup(string groupName, ISoundGroupHelper soundGroupHelper);
 
         /// <summary>
         /// 增加声音组。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
-        /// <param name="soundGroupAvoidBeingReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
+        /// <param name="groupName">声音组名称。</param>
+        /// <param name="avoidBeReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
         /// <param name="soundGroupMute">声音组是否静音。</param>
         /// <param name="soundGroupVolume">声音组音量。</param>
-        /// <param name="soundGroupHelper">声音组辅助器。</param>
+        /// <param name="groupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        bool AddSoundGroup(string soundGroupName, bool soundGroupAvoidBeingReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, ISoundGroupHelper soundGroupHelper);
+        bool AddSoundGroup(string groupName, bool avoidBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, ISoundGroupHelper groupHelper);
 
         /// <summary>
         /// 增加声音代理辅助器。

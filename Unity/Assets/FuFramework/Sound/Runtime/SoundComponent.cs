@@ -7,6 +7,7 @@ using FuFramework.Event.Runtime;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
+// ReSharper disable InconsistentNaming
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
 {
@@ -72,7 +73,7 @@ namespace FuFramework.Sound.Runtime
             m_SoundManager = FuEntry.GetModule<ISoundManager>();
             if (m_SoundManager == null)
             {
-                Log.Fatal("Sound manager is invalid.");
+                Log.Fatal("[SoundComponent] 声音管理器不存在!");
                 return;
             }
 
@@ -90,14 +91,14 @@ namespace FuFramework.Sound.Runtime
             var baseComp = GameEntry.GetComponent<BaseComponent>();
             if (!baseComp)
             {
-                Log.Fatal("Base component is invalid.");
+                Log.Fatal("[SoundComponent] Base组件不存在!");
                 return;
             }
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             if (!m_EventComponent)
             {
-                Log.Fatal("Event component is invalid.");
+                Log.Fatal("[SoundComponent] 事件组件不存在!");
                 return;
             }
 
@@ -108,7 +109,7 @@ namespace FuFramework.Sound.Runtime
             SoundHelperBase soundHelper = Helper.CreateHelper(m_SoundHelperTypeName, m_CustomSoundHelper);
             if (!soundHelper)
             {
-                Log.Error("Can not create sound helper.");
+                Log.Error("[SoundComponent] 创建声音辅助器失败!");
                 return;
             }
 
@@ -129,16 +130,14 @@ namespace FuFramework.Sound.Runtime
             foreach (var group in m_SoundGroups)
             {
                 if (AddSoundGroup(group.Name, group.AvoidBeingReplacedBySamePriority, group.Mute, group.Volume, group.AgentHelperCount)) continue;
-                Log.Warning("Add sound group '{0}' failure.", group.Name);
+                Log.Warning("[SoundComponent] 添加声音组 '{0}' 失败!", group.Name);
             }
         }
 
         private void OnDestroy()
         {
-#if UNITY_5_4_OR_NEWER
             SceneManager.sceneLoaded   -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
-#endif
         }
 
         #region 声音组
@@ -172,54 +171,55 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 增加声音组。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="soundAgentHelperCount">声音代理辅助器数量。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(string soundGroupName, int soundAgentHelperCount)
+        public bool AddSoundGroup(string groupName, int soundAgentHelperCount)
         {
-            return AddSoundGroup(soundGroupName, false, false, 1f, soundAgentHelperCount);
+            return AddSoundGroup(groupName, false, false, 1f, soundAgentHelperCount);
         }
 
         /// <summary>
         /// 增加声音组。
         /// </summary>
-        /// <param name="soundGroupName">声音组名称。</param>
-        /// <param name="soundGroupAvoidBeingReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
-        /// <param name="soundGroupMute">声音组是否静音。</param>
-        /// <param name="soundGroupVolume">声音组音量。</param>
+        /// <param name="groupName">声音组名称。</param>
+        /// <param name="avoidBeReplacedBySamePriority">声音组中的声音是否避免被同优先级声音替换。</param>
+        /// <param name="groupMute">声音组是否静音。</param>
+        /// <param name="groupVolume">声音组音量。</param>
         /// <param name="soundAgentHelperCount">声音代理辅助器数量。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(string soundGroupName, bool soundGroupAvoidBeingReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, int soundAgentHelperCount)
+        public bool AddSoundGroup(string groupName, bool avoidBeReplacedBySamePriority, bool groupMute, float groupVolume, int soundAgentHelperCount)
         {
-            if (m_SoundManager.HasSoundGroup(soundGroupName)) return false;
+            if (m_SoundManager.HasSoundGroup(groupName)) return false;
 
             SoundGroupHelperBase soundGroupHelper = Helper.CreateHelper(m_SoundGroupHelperTypeName, m_CustomSoundGroupHelper, SoundGroupCount);
             if (!soundGroupHelper)
             {
-                Log.Error("Can not create sound group helper.");
+                Log.Error("[SoundComponent] 创建声音组辅助器失败!.");
                 return false;
             }
 
-            soundGroupHelper.name = Utility.Text.Format("Sound Group - {0}", soundGroupName);
+            soundGroupHelper.name = Utility.Text.Format("Sound Group - {0}", groupName);
             soundGroupHelper.transform.SetParent(m_InstanceRoot);
             soundGroupHelper.transform.localScale = Vector3.one;
 
             if (m_AudioMixer)
             {
-                // 设置声音组的混音器
-                AudioMixerGroup[] audioMixerGroups = m_AudioMixer.FindMatchingGroups(Utility.Text.Format("Master/{0}", soundGroupName));
+                // 设置声音组辅助器所在的混音组。
+                AudioMixerGroup[] audioMixerGroups = m_AudioMixer.FindMatchingGroups(Utility.Text.Format("Master/{0}", groupName));
                 if (audioMixerGroups.Length > 0)
                     soundGroupHelper.AudioMixerGroup = audioMixerGroups[0];
                 else
                     soundGroupHelper.AudioMixerGroup = m_AudioMixer.FindMatchingGroups("Master")[0];
             }
 
-            if (!m_SoundManager.AddSoundGroup(soundGroupName, soundGroupAvoidBeingReplacedBySamePriority, soundGroupMute, soundGroupVolume, soundGroupHelper))
+            if (!m_SoundManager.AddSoundGroup(groupName, avoidBeReplacedBySamePriority, groupMute, groupVolume, soundGroupHelper))
                 return false;
 
+            // 添加声音组辅助器中的声音播放代理辅助器
             for (var i = 0; i < soundAgentHelperCount; i++)
             {
-                if (AddSoundAgentHelper(soundGroupName, soundGroupHelper, i)) continue;
+                if (AddSoundAgentHelper(groupName, soundGroupHelper, i)) continue;
                 return false;
             }
 
@@ -227,7 +227,7 @@ namespace FuFramework.Sound.Runtime
         }
 
         /// <summary>
-        /// 增加声音代理辅助器。
+        /// 增加声音代理辅助器到声音组下。
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="soundGroupHelper">声音组辅助器。</param>
@@ -238,7 +238,7 @@ namespace FuFramework.Sound.Runtime
             SoundAgentHelperBase soundAgentHelper = Helper.CreateHelper(m_SoundAgentHelperTypeName, m_CustomSoundAgentHelper, index);
             if (!soundAgentHelper)
             {
-                Log.Error("Can not create sound agent helper.");
+                Log.Error("[SoundComponent] 创建声音代理辅助器失败!");
                 return false;
             }
 
@@ -403,7 +403,7 @@ namespace FuFramework.Sound.Runtime
             => await PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, bindingEntity, null, -1);
 
         /// <summary>
-        /// 播放声音。
+        /// 播放声音
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="soundGroupName">声音组名称。</param>
@@ -416,11 +416,12 @@ namespace FuFramework.Sound.Runtime
         public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity.Runtime.Entity bindingEntity, object userData,
                                             int serialId)
         {
-            return await m_SoundManager.PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, PlaySoundInfo.Create(bindingEntity, Vector3.zero, userData), serialId);
+            var playSoundInfoExtra = PlaySoundInfoExtra.Create(bindingEntity, Vector3.zero, userData);
+            return await m_SoundManager.PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, playSoundInfoExtra, serialId);
         }
 
         /// <summary>
-        /// 播放声音。
+        /// 播放声音
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="soundGroupName">声音组名称。</param>
@@ -442,7 +443,10 @@ namespace FuFramework.Sound.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>声音的序列编号。</returns>
         public UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Vector3 worldPosition, object userData)
-            => m_SoundManager.PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, PlaySoundInfo.Create(null, worldPosition, userData), -1);
+        {
+            var playSoundInfoExtra = PlaySoundInfoExtra.Create(null, worldPosition, userData);
+            return m_SoundManager.PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, playSoundInfoExtra, -1);
+        }
 
         #endregion
 
@@ -481,7 +485,7 @@ namespace FuFramework.Sound.Runtime
 
         #endregion
 
-        #region 暂停播放声音
+        #region 暂停/播放声音
 
         /// <summary>
         /// 暂停播放声音。
@@ -495,10 +499,6 @@ namespace FuFramework.Sound.Runtime
         /// <param name="serialId">要暂停播放声音的序列编号。</param>
         /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
         public void PauseSound(int serialId, float fadeOutSeconds) => m_SoundManager.PauseSound(serialId, fadeOutSeconds);
-
-        #endregion
-
-        #region 继续播放声音
 
         /// <summary>
         /// 恢复播放声音。
@@ -524,7 +524,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="eventArgs"></param>
         private void OnPlaySoundSuccess(object sender, PlaySoundSuccessEventArgs eventArgs)
         {
-            if (eventArgs.UserData is PlaySoundInfo playSoundInfo)
+            if (eventArgs.UserData is PlaySoundInfoExtra playSoundInfo)
             {
                 var soundAgentHelper = eventArgs.SoundAgent.Helper as SoundAgentHelperBase;
                 if (!soundAgentHelper) return;
@@ -545,7 +545,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="eventArgs"></param>
         private void OnPlaySoundFailure(object sender, PlaySoundFailureEventArgs eventArgs)
         {
-            var logMessage = Utility.Text.Format("Play sound failure, asset name '{0}', sound group name '{1}', error code '{2}', error message '{3}'.",
+            var logMessage = Utility.Text.Format("[SoundComponent]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}', 错误信息 '{3}'.",
                                                  eventArgs.SoundAssetName, eventArgs.SoundGroupName, eventArgs.ErrorCode, eventArgs.ErrorMessage);
             if (eventArgs.ErrorCode == PlaySoundErrorCode.IgnoredDueToLowPriority)
                 Log.Info(logMessage);

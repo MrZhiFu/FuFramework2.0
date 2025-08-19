@@ -31,7 +31,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取或设置声音组中的声音是否避免被同优先级声音替换。
             /// </summary>
-            public bool AvoidBeingReplacedBySamePriority { get; set; }
+            public bool AvoidBeReplacedBySamePriority { get; set; }
 
             /// <summary>
             /// 获取声音代理数。
@@ -77,10 +77,10 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundGroupHelper">声音组辅助器。</param>
             public SoundGroup(string name, ISoundGroupHelper soundGroupHelper)
             {
-                if (string.IsNullOrEmpty(name)) throw new FuException("Sound group name is invalid.");
+                if (string.IsNullOrEmpty(name)) throw new FuException("[SoundGroup]声音组名称不能为空!");
 
                 Name          = name;
-                Helper        = soundGroupHelper ?? throw new FuException("Sound group helper is invalid.");
+                Helper        = soundGroupHelper ?? throw new FuException("[SoundGroup]声音组辅助器不能为空!.");
                 m_SoundAgents = new List<SoundAgent>();
             }
 
@@ -105,29 +105,31 @@ namespace FuFramework.Sound.Runtime
             public ISoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
             {
                 errorCode = null;
-                SoundAgent candidateAgent = null;
+                SoundAgent candidateAgent = null; // 候选播放代理
 
+                // 遍历所有声音播放代理，找到合适的代理播放声音
                 foreach (var soundAgent in m_SoundAgents)
                 {
+                    // 1.如果存在没有在播放声音的代理，则将其作为候选代理，并跳出查找。
                     if (!soundAgent.IsPlaying)
                     {
                         candidateAgent = soundAgent;
                         break;
                     }
 
+                    // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
                     if (soundAgent.Priority < playSoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority)
-                        {
+                        if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority) 
                             candidateAgent = soundAgent;
-                        }
+                        break;
                     }
-                    else if (!AvoidBeingReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
+
+                    // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了避免被同优先级声音替换，如果没有设置，则使用同优先级的代理作为候选代理。
+                    if (!AvoidBeReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
-                        {
+                        if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime) 
                             candidateAgent = soundAgent;
-                        }
                     }
                 }
 
@@ -154,6 +156,8 @@ namespace FuFramework.Sound.Runtime
                 candidateAgent.SpatialBlend       = playSoundParams.SpatialBlend;
                 candidateAgent.MaxDistance        = playSoundParams.MaxDistance;
                 candidateAgent.DopplerLevel       = playSoundParams.DopplerLevel;
+                
+                // 使用代理播放声音
                 candidateAgent.Play(playSoundParams.FadeInSeconds);
                 return candidateAgent;
             }

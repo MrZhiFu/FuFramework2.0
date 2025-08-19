@@ -7,7 +7,8 @@ namespace FuFramework.Sound.Runtime
     public sealed partial class SoundManager
     {
         /// <summary>
-        /// 播放声音信息。
+        /// 播放的声音信息。
+        /// 功能：用于在加载声音资源时保存相关信息。
         /// </summary>
         private sealed class PlaySoundInfo : IReference
         {

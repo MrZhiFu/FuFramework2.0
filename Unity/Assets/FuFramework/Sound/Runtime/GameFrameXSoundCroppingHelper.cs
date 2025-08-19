@@ -12,7 +12,7 @@ namespace FuFramework.Sound.Runtime
             _ = typeof(DefaultSoundAgentHelper);
             _ = typeof(DefaultSoundGroupHelper);
             _ = typeof(DefaultSoundHelper);
-            _ = typeof(PlaySoundInfo);
+            _ = typeof(PlaySoundInfoExtra);
             _ = typeof(SoundAgentHelperBase);
             _ = typeof(SoundComponent);
             _ = typeof(SoundGroupHelperBase);
@@ -28,7 +28,6 @@ namespace FuFramework.Sound.Runtime
             _ = typeof(PlaySoundFailureEventArgs);
             _ = typeof(PlaySoundParams);
             _ = typeof(PlaySoundSuccessEventArgs);
-            _ = typeof(PlaySoundUpdateEventArgs);
             _ = typeof(ResetSoundAgentEventArgs);
             _ = typeof(SoundManager);
         }

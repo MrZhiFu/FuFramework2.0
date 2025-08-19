@@ -13,32 +13,19 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <typeparam name="T">要创建的辅助器类型。</typeparam>
         /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
-        /// <param name="customHelper">若要创建的辅助器类型为空时，使用的自定义辅助器类型。</param>
-        /// <returns>创建的辅助器。</returns>
-        public static T CreateHelper<T>(string helperTypeName, T customHelper) where T : MonoBehaviour
-        {
-            return CreateHelper(helperTypeName, customHelper, 0);
-        }
-
-        /// <summary>
-        /// 创建辅助器。
-        /// </summary>
-        /// <typeparam name="T">要创建的辅助器类型。</typeparam>
-        /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
-        /// <param name="customHelper">若要创建的辅助器类型为空时，使用的自定义辅助器类型。</param>
-        /// <param name="index">要创建的辅助器索引。</param>
+        /// <param name="customHelper">自定义辅助器类型，要创建的辅助器类型为空时，替换其使用。</param>
+        /// <param name="index">要创建的辅助器索引。只要大于0，则创建的辅助器将会克隆自customHelper，否则直接使用customHelper。</param>
         /// <param name="target">辅助器挂载的对象。</param>
         /// <returns>创建的辅助器。</returns>
-        public static T CreateHelper<T>(string helperTypeName, T customHelper, int index, GameObject target = null) where T : MonoBehaviour
+        public static T CreateHelper<T>(string helperTypeName, T customHelper, int index = 0, GameObject target = null) where T : MonoBehaviour
         {
             // 辅助器挂载的对象为空时，创建一个新的GameObject
-            if (target == null)
-                target = new GameObject { name = helperTypeName };
+            if (!target) target = new GameObject { name = helperTypeName };
 
-            // 使用名称创建
+            // 使用辅助器类型名称创建
             if (!string.IsNullOrEmpty(helperTypeName))
             {
-                var helperType = Runtime.Utility.Assembly.GetType(helperTypeName);
+                var helperType = Utility.Assembly.GetType(helperTypeName);
                 if (helperType == null)
                 {
                     Log.Warning("当前域中不存在类型 '{0}'.", helperTypeName);
@@ -51,16 +38,17 @@ namespace FuFramework.Core.Runtime
                     return null;
                 }
 
-                return (T)target.AddComponent(helperType);
+                return target.AddComponent(helperType) as T;
             }
 
-            // 使用组件类型创建
-            if (customHelper == null)
+            // 使用使用自定义的辅助器对象创建
+            if (!customHelper)
             {
                 Log.Warning("你必须设置自定义辅助器 '{0}' 类型.", typeof(T).FullName);
                 return null;
             }
 
+            // 自定义辅助器对象已挂载到游戏场景中的GameObject上时，判断是否需要创建新的对象，是则创建新的对象，否则直接返回原对象
             if (customHelper.gameObject.InScene())
             {
                 var helper = index > 0 ? Object.Instantiate(customHelper) : customHelper;

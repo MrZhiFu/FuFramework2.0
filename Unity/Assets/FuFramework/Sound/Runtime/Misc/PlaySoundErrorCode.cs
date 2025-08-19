@@ -23,11 +23,6 @@ namespace FuFramework.Sound.Runtime
         SoundGroupHasNoAgent,
 
         /// <summary>
-        /// 加载资源失败。
-        /// </summary>
-        LoadAssetFailure,
-
-        /// <summary>
         /// 播放声音因优先级低被忽略。
         /// </summary>
         IgnoredDueToLowPriority,

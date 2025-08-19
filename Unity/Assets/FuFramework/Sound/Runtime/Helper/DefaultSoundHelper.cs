@@ -15,19 +15,19 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         private IAssetManager m_ResourceComponent;
 
-        /// <summary>
-        /// 释放声音资源。
-        /// </summary>
-        /// <param name="soundAsset">要释放的声音资源。</param>
-        public override void ReleaseSoundAsset(object soundAsset)
-        {
-            // m_ResourceComponent.UnloadAsset(soundAsset);
-        }
-
         private void Start()
         {
             m_ResourceComponent = FuEntry.GetModule<IAssetManager>();
-            if (m_ResourceComponent == null) Log.Fatal("Resource component is invalid.");
+            if (m_ResourceComponent == null) Log.Fatal("[DefaultSoundHelper]声音资源管理器未找到!");
+        }
+
+        /// <summary>
+        /// 释放声音资源。
+        /// </summary>
+        /// <param name="soundAssetName">要释放的声音资源名称。</param>
+        public override void ReleaseSoundAsset(string soundAssetName)
+        {
+            m_ResourceComponent.UnloadAsset(soundAssetName);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -45,9 +46,9 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundAgentHelper">声音代理辅助器接口。</param>
             public SoundAgent(SoundGroup soundGroup, ISoundHelper soundHelper, ISoundAgentHelper soundAgentHelper)
             {
-                m_SoundGroup  = soundGroup       ?? throw new FuException("Sound group is invalid.");
-                m_SoundHelper = soundHelper      ?? throw new FuException("Sound helper is invalid.");
-                Helper        = soundAgentHelper ?? throw new FuException("Sound agent helper is invalid.");
+                m_SoundGroup  = soundGroup       ?? throw new FuException("[SoundAgent]声音组不能为空!");
+                m_SoundHelper = soundHelper      ?? throw new FuException("[SoundAgent]声音辅助器不能为空!");
+                Helper        = soundAgentHelper ?? throw new FuException("[SoundAgent]声音代理辅助器不能为空!");
 
                 Helper.ResetSoundAgent += OnResetSoundAgent;
 
@@ -245,7 +246,8 @@ namespace FuFramework.Sound.Runtime
             {
                 if (m_SoundAsset != null)
                 {
-                    m_SoundHelper.ReleaseSoundAsset(m_SoundAsset);
+                    var soundName = (m_SoundAsset as AudioClip)?.name;
+                    m_SoundHelper.ReleaseSoundAsset(soundName);
                     m_SoundAsset = null;
                 }
 

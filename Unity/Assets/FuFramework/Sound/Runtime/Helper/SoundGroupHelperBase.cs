@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
 
+// ReSharper disable InconsistentNaming
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
 {
@@ -9,8 +10,10 @@ namespace FuFramework.Sound.Runtime
     /// </summary>
     public abstract class SoundGroupHelperBase : MonoBehaviour, ISoundGroupHelper
     {
-        [SerializeField]
-        private AudioMixerGroup m_AudioMixerGroup;
+        /// <summary>
+        /// 声音组辅助器所在的混音组。
+        /// </summary>
+        [SerializeField] private AudioMixerGroup m_AudioMixerGroup;
 
         /// <summary>
         /// 获取或设置声音组辅助器所在的混音组。
