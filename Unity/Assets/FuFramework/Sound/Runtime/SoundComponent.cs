@@ -27,23 +27,28 @@ namespace FuFramework.Sound.Runtime
         [Header("Sound实例根节点")]
         [SerializeField] private Transform m_InstanceRoot;
 
-        [Header("混音器")]
-        [SerializeField] private AudioMixer m_AudioMixer;
+        /// <summary>
+        /// 混音器
+        /// </summary>
+        private AudioMixer m_AudioMixer;
 
-        [Header("声音组默认辅助器类型名")]
-        [SerializeField] private string m_SoundGroupHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundGroupHelper";
+        // [Header("声音组默认辅助器类型名")]
+        // [SerializeField]
+        private string m_SoundGroupHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundGroupHelper";
 
         [Header("自定义声音组辅助器")]
-        [SerializeField] private SoundGroupHelperBase m_CustomSoundGroupHelper;
+        [SerializeField] 
+        private DefaultSoundGroupHelper m_CustomSoundGroupHelper;
 
-        [Header("声音代理默认辅助器类型名")]
-        [SerializeField] private string m_SoundAgentHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundAgentHelper";
+        // [Header("声音代理默认辅助器类型名")]
+        // [SerializeField] 
+        private string m_SoundAgentHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundAgentHelper";
 
         [Header("自定义声音代理默认辅助器类型")]
-        [SerializeField] private SoundAgentHelperBase m_CustomSoundAgentHelper;
+        [SerializeField] private DefaultSoundAgentHelper m_CustomSoundAgentHelper;
 
-        [Header("所有声音组")]
-        [SerializeField] private SoundGroup[] m_SoundGroups;
+        // [Header("所有声音组")]
+        // [SerializeField] private SoundGroup[] m_SoundGroups;
 
         /// <summary>
         /// 获取声音组数量。
@@ -104,9 +109,15 @@ namespace FuFramework.Sound.Runtime
                 m_InstanceRoot.SetParent(transform);
                 m_InstanceRoot.localScale = Vector3.one;
             }
+            
+            // 获取声音配置数据
+            var soundSetting = ModuleSetting.Runtime.ModuleSetting.Instance.SoundSetting;
+            
+            // 设置混音器
+            m_AudioMixer = soundSetting.AudioMixer;
 
             // 添加声音组
-            foreach (var group in m_SoundGroups)
+            foreach (var group in soundSetting.AllGroups)
             {
                 if (AddSoundGroup(group.Name, group.AllowBeingReplacedBySamePriority, group.Mute, group.Volume, group.AgentHelperCount)) continue;
                 Log.Warning("[SoundComponent] 添加声音组 '{0}' 失败!", group.Name);
@@ -171,7 +182,7 @@ namespace FuFramework.Sound.Runtime
         {
             if (m_SoundManager.HasSoundGroup(groupName)) return false;
 
-            SoundGroupHelperBase soundGroupHelper = Helper.CreateHelper(m_SoundGroupHelperTypeName, m_CustomSoundGroupHelper, SoundGroupCount);
+            DefaultSoundGroupHelper soundGroupHelper = Helper.CreateHelper(m_SoundGroupHelperTypeName, m_CustomSoundGroupHelper, SoundGroupCount);
             if (!soundGroupHelper)
             {
                 Log.Error("[SoundComponent] 创建声音组辅助器失败!.");
@@ -212,9 +223,9 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundGroupHelper">声音组辅助器。</param>
         /// <param name="index">声音代理辅助器索引。</param>
         /// <returns>是否增加声音代理辅助器成功。</returns>
-        private bool AddSoundAgentHelper(string soundGroupName, SoundGroupHelperBase soundGroupHelper, int index)
+        private bool AddSoundAgentHelper(string soundGroupName, DefaultSoundGroupHelper soundGroupHelper, int index)
         {
-            SoundAgentHelperBase soundAgentHelper = Helper.CreateHelper(m_SoundAgentHelperTypeName, m_CustomSoundAgentHelper, index);
+            DefaultSoundAgentHelper soundAgentHelper = Helper.CreateHelper(m_SoundAgentHelperTypeName, m_CustomSoundAgentHelper, index);
             if (!soundAgentHelper)
             {
                 Log.Error("[SoundComponent] 创建声音代理辅助器失败!");
@@ -505,7 +516,7 @@ namespace FuFramework.Sound.Runtime
         {
             if (eventArgs.UserData is PlaySoundInfoExtra playSoundInfo)
             {
-                var soundAgentHelper = eventArgs.SoundAgent.Helper as SoundAgentHelperBase;
+                var soundAgentHelper = eventArgs.SoundAgent.Helper;
                 if (!soundAgentHelper) return;
 
                 if (playSoundInfo.BindingEntity)

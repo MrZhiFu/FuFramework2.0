@@ -45,7 +45,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 音频混音器
         /// </summary>
-        public AudioMixer AudioMixerGroup => m_AudioMixer;
+        public AudioMixer AudioMixer => m_AudioMixer;
 
         /// <summary>
         /// 索引器：通过名称获取声音组

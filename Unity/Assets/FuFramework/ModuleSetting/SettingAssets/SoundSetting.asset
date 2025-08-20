@@ -18,17 +18,17 @@ MonoBehaviour:
     m_GroupName: BGM
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 1
+    m_AgentHelperCount: 2
     m_AllowBeingReplacedBySamePriority: 0
   - m_GroupID: 688d39b6-6adf-4b52-99e8-e098188d70f2
     m_GroupName: SFX
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 1
+    m_AgentHelperCount: 10
     m_AllowBeingReplacedBySamePriority: 1
   - m_GroupID: 0cf3c547-a641-4572-92cd-0757558ec369
     m_GroupName: UI
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 1
+    m_AgentHelperCount: 5
     m_AllowBeingReplacedBySamePriority: 1

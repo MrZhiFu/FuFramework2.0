@@ -44,7 +44,7 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundGroup">所在的声音组。</param>
             /// <param name="soundAgentHelper">声音代理辅助器接口。</param>
             /// <param name="manager">声音管理器</param>
-            public SoundAgent(SoundGroup soundGroup, ISoundAgentHelper soundAgentHelper, SoundManager manager)
+            public SoundAgent(SoundGroup soundGroup, DefaultSoundAgentHelper soundAgentHelper, SoundManager manager)
             {
                 m_SoundGroup   = soundGroup       ?? throw new FuException("[SoundAgent]声音组不能为空!");
                 Helper         = soundAgentHelper ?? throw new FuException("[SoundAgent]声音代理辅助器不能为空!");
@@ -187,12 +187,13 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取声音代理辅助器。
             /// </summary>
-            public ISoundAgentHelper Helper { get; }
+            public DefaultSoundAgentHelper Helper { get; }
 
             /// <summary>
             /// 获取声音创建时间。
             /// </summary>
             internal DateTime SetSoundAssetTime { get; private set; }
+            
 
             /// <summary>
             /// 播放声音。

@@ -26,7 +26,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取声音组辅助器。
             /// </summary>
-            public ISoundGroupHelper Helper { get; }
+            public DefaultSoundGroupHelper Helper { get; }
 
             /// <summary>
             /// 获取或设置声音组中的声音是否允许被同优先级声音替换。
@@ -75,7 +75,7 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             /// <param name="name">声音组名称。</param>
             /// <param name="soundGroupHelper">声音组辅助器。</param>
-            public SoundGroup(string name, ISoundGroupHelper soundGroupHelper)
+            public SoundGroup(string name, DefaultSoundGroupHelper soundGroupHelper)
             {
                 if (string.IsNullOrEmpty(name)) throw new FuException("[SoundGroup]声音组名称不能为空!");
 
@@ -89,7 +89,7 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
             /// <param name="manager">声音管理器。</param>
-            public void AddSoundAgentHelper(ISoundAgentHelper soundAgentHelper, SoundManager manager)
+            public void AddSoundAgentHelper(DefaultSoundAgentHelper soundAgentHelper, SoundManager manager)
             {
                 m_SoundAgents.Add(new SoundAgent(this, soundAgentHelper, manager));
             }

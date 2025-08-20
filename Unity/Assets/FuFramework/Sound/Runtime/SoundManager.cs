@@ -17,12 +17,12 @@ namespace FuFramework.Sound.Runtime
     /// </summary>
     public sealed partial class SoundManager : FuModule, ISoundManager
     {
-        private readonly Dictionary<string, SoundGroup> m_SoundGroupDict; // 声音组字典，Key为声音组名称，Value为声音组对象
-        private readonly List<int> m_LoadingSoundList; // 记录正在加载的声音ID列表
-        private readonly HashSet<int> m_LoadingToReleaseSet; // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
+        private readonly Dictionary<string, SoundGroup> m_SoundGroupDict;      // 声音组字典，Key为声音组名称，Value为声音组对象
+        private readonly List<int>                      m_LoadingSoundList;    // 记录正在加载的声音ID列表
+        private readonly HashSet<int>                   m_LoadingToReleaseSet; // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
-        private int m_Serial; // 声音自增序列号
-        private IAssetManager   m_assetManager; // 资源管理器
+        private int           m_Serial;       // 声音自增序列号
+        private IAssetManager m_assetManager; // 资源管理器
 
         private EventHandler<PlaySoundSuccessEventArgs> m_PlaySoundSuccessEventHandler; // 播放声音成功事件
         private EventHandler<PlaySoundFailureEventArgs> m_PlaySoundFailureEventHandler; // 播放声音失败事件
@@ -32,11 +32,11 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public SoundManager()
         {
-            m_SoundGroupDict = new Dictionary<string, SoundGroup>(StringComparer.Ordinal);
-            m_LoadingSoundList = new List<int>();
+            m_SoundGroupDict      = new Dictionary<string, SoundGroup>(StringComparer.Ordinal);
+            m_LoadingSoundList    = new List<int>();
             m_LoadingToReleaseSet = new HashSet<int>();
 
-            m_Serial = 0;
+            m_Serial       = 0;
             m_assetManager = null;
 
             m_PlaySoundSuccessEventHandler = null;
@@ -123,7 +123,7 @@ namespace FuFramework.Sound.Runtime
         /// <returns>所有声音组。</returns>
         public SoundGroup[] GetAllSoundGroups()
         {
-            var index = 0;
+            var index   = 0;
             var results = new SoundGroup[m_SoundGroupDict.Count];
             foreach (var (_, soundGroup) in m_SoundGroupDict)
             {
@@ -153,7 +153,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="groupName">声音组名称。</param>
         /// <param name="soundGroupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(string groupName, ISoundGroupHelper soundGroupHelper)
+        public bool AddSoundGroup(string groupName, DefaultSoundGroupHelper soundGroupHelper)
         {
             return AddSoundGroup(groupName, false, Constant.DefaultMute, Constant.DefaultVolume, soundGroupHelper);
         }
@@ -168,7 +168,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="groupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
         public bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume,
-            ISoundGroupHelper groupHelper)
+                                  DefaultSoundGroupHelper groupHelper)
         {
             if (string.IsNullOrEmpty(groupName)) throw new FuException("[SoundManager]声音组名称为空!");
             if (groupHelper == null) throw new FuException("[SoundManager]声音组辅助器为空!");
@@ -176,9 +176,9 @@ namespace FuFramework.Sound.Runtime
 
             var soundGroup = new SoundGroup(groupName, groupHelper)
             {
-                AllowBeReplacedBySamePriority = allowBeReplacedBySamePriority,
-                Mute = soundGroupMute,
-                Volume = soundGroupVolume
+                Mute                          = soundGroupMute,
+                Volume                        = soundGroupVolume,
+                AllowBeReplacedBySamePriority = allowBeReplacedBySamePriority
             };
 
             m_SoundGroupDict.Add(groupName, soundGroup);
@@ -190,7 +190,7 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
-        public void AddSoundAgentHelper(string soundGroupName, ISoundAgentHelper soundAgentHelper)
+        public void AddSoundAgentHelper(string soundGroupName, DefaultSoundAgentHelper soundAgentHelper)
         {
             var soundGroup = GetSoundGroup(soundGroupName);
             if (soundGroup == null) throw new FuException(Utility.Text.Format("[SoundManager]声音组 '{0}' 不存在!.", soundGroupName));
@@ -322,10 +322,10 @@ namespace FuFramework.Sound.Runtime
         /// <param name="serialId">序列编号</param>
         /// <returns>声音的序列编号。</returns>
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, PlaySoundParams playSoundParams,
-            object userData, int serialId = -1)
+                                            object userData, int serialId = -1)
         {
             if (m_assetManager == null) throw new FuException("[SoundManager]声音资源管理器为空!");
-            
+
             playSoundParams ??= PlaySoundParams.Create();
 
             int newSerialId;
@@ -333,20 +333,20 @@ namespace FuFramework.Sound.Runtime
                 newSerialId = serialId;
             else
                 newSerialId = ++m_Serial;
-            
-            EPlaySoundErrorCode? errorCode = null;
-            string errorMessage = null;
-            
+
+            EPlaySoundErrorCode? errorCode    = null;
+            string               errorMessage = null;
+
             // 检查声音组是否存在
             var soundGroup = GetSoundGroup(groupName);
             if (soundGroup == null)
             {
-                errorCode = EPlaySoundErrorCode.SoundGroupNotExist;
+                errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
                 errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 不存在!", groupName);
             }
             else if (soundGroup.SoundAgentCount <= 0)
             {
-                errorCode = EPlaySoundErrorCode.SoundGroupHasNoAgent;
+                errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
                 errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 没有声音播放代理!", groupName);
             }
 
@@ -354,10 +354,10 @@ namespace FuFramework.Sound.Runtime
             {
                 // 播放声音失败
                 if (m_PlaySoundFailureEventHandler == null) throw new FuException(errorMessage);
-                
+
                 var playSoundFailureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetName, groupName, playSoundParams,
-                    errorCode.Value, errorMessage, userData);
-                
+                                                                                 errorCode.Value, errorMessage, userData);
+
                 m_PlaySoundFailureEventHandler(this, playSoundFailureEventArgs);
                 ReferencePool.Release(playSoundFailureEventArgs);
 
@@ -377,7 +377,7 @@ namespace FuFramework.Sound.Runtime
             // 加载声音资源完成回调
             void OnAssetOperationHandleOnCompleted(AssetHandle assetHandle)
             {
-                var assetObject = assetHandle.GetAssetObject<AudioClip>();
+                var assetObject   = assetHandle.GetAssetObject<AudioClip>();
                 var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundGroup, playSoundParams, userData);
                 LoadAssetSuccessCallback(soundAssetName, assetObject, assetHandle.Duration, playSoundInfo);
             }
@@ -535,7 +535,7 @@ namespace FuFramework.Sound.Runtime
             }
 
             m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-            
+
             // 释放声音资源
             m_assetManager?.UnloadAsset(soundAssetName);
 
@@ -543,12 +543,12 @@ namespace FuFramework.Sound.Runtime
             var errorMessage = Utility.Text.Format("[SoundManager]声音组 '{0}' 播放声音 '{1}' 失败!.", playSoundInfo.SoundGroup.Name, soundAssetName);
             if (m_PlaySoundFailureEventHandler != null)
             {
-                var errorCodeValue = EPlaySoundErrorCode.Unknown;
+                var errorCodeValue                    = EPlaySoundErrorCode.Unknown;
                 if (errorCode != null) errorCodeValue = errorCode.Value;
 
-                var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, soundAssetName, 
-                    playSoundInfo.SoundGroup.Name, playSoundInfo.PlaySoundParams, errorCodeValue, errorMessage, playSoundInfo.UserData);
-                
+                var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, soundAssetName,
+                                                                        playSoundInfo.SoundGroup.Name, playSoundInfo.PlaySoundParams, errorCodeValue, errorMessage, playSoundInfo.UserData);
+
                 m_PlaySoundFailureEventHandler(this, failureEventArgs);
                 ReferencePool.Release(failureEventArgs);
             }

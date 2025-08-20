@@ -1,14 +1,13 @@
-using FuFramework.ModuleSetting.Runtime;
+using FuFramework.Core.Runtime;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-// ReSharper disable once CheckNamespace
-namespace FuFramework.GlobalSetting.Runtime
+namespace FuFramework.ModuleSetting.Runtime
 {
     /// <summary>
-    /// 全局模块配置
+    /// 系统模块配置
     /// </summary>
-    public class ModuleSetting : MonoBehaviour
+    public class ModuleSetting : MonoSingleton<ModuleSetting>
     {
         [FormerlySerializedAs("soundSetting")]
         [Header("音频系统配置")]

@@ -41,7 +41,7 @@ namespace FuFramework.Core.Runtime
                 return target.AddComponent(helperType) as T;
             }
 
-            // 使用使用自定义的辅助器对象创建
+            // 使用自定义的辅助器对象创建
             if (!customHelper)
             {
                 Log.Warning("你必须设置自定义辅助器 '{0}' 类型.", typeof(T).FullName);

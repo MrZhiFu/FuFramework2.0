@@ -17,7 +17,7 @@ namespace FuFramework.Sound.Runtime
     ///     4.提供接口，用于获取声音的长度，播放位置，是否静音，是否循环播放，声音优先级，音量大小，声音音调，声音立体声声相，
     ///       声音空间混合量，声音最大距离，声音多普勒等级，声音混音组等属性。
     /// </summary>
-    public class DefaultSoundAgentHelper : SoundAgentHelperBase
+    public class DefaultSoundAgentHelper : MonoBehaviour
     {
         private Transform   m_CachedTransform;    // 缓存Transform组件
         private AudioSource m_AudioSource;        // 播放声音的AudioSource组件
@@ -31,17 +31,17 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取当前是否正在播放。
         /// </summary>
-        public override bool IsPlaying => m_AudioSource.isPlaying;
+        public bool IsPlaying => m_AudioSource.isPlaying;
 
         /// <summary>
         /// 获取声音长度。
         /// </summary>
-        public override float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
+        public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
 
         /// <summary>
         /// 获取或设置播放位置。
         /// </summary>
-        public override float Time
+        public float Time
         {
             get => m_AudioSource.time;
             set => m_AudioSource.time = value;
@@ -50,7 +50,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置是否静音。
         /// </summary>
-        public override bool Mute
+        public bool Mute
         {
             get => m_AudioSource.mute;
             set => m_AudioSource.mute = value;
@@ -59,7 +59,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置是否循环播放。
         /// </summary>
-        public override bool Loop
+        public bool Loop
         {
             get => m_AudioSource.loop;
             set => m_AudioSource.loop = value;
@@ -68,7 +68,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音优先级。
         /// </summary>
-        public override int Priority
+        public int Priority
         {
             get => 128 - m_AudioSource.priority;
             set => m_AudioSource.priority = 128 - value;
@@ -77,7 +77,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置音量大小。
         /// </summary>
-        public override float Volume
+        public float Volume
         {
             get => m_AudioSource.volume;
             set => m_AudioSource.volume = value;
@@ -86,7 +86,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音音调。
         /// </summary>
-        public override float Pitch
+        public float Pitch
         {
             get => m_AudioSource.pitch;
             set => m_AudioSource.pitch = value;
@@ -95,7 +95,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音立体声声相。
         /// </summary>
-        public override float PanStereo
+        public float PanStereo
         {
             get => m_AudioSource.panStereo;
             set => m_AudioSource.panStereo = value;
@@ -104,7 +104,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音空间混合量。
         /// </summary>
-        public override float SpatialBlend
+        public float SpatialBlend
         {
             get => m_AudioSource.spatialBlend;
             set => m_AudioSource.spatialBlend = value;
@@ -113,7 +113,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音最大距离。
         /// </summary>
-        public override float MaxDistance
+        public float MaxDistance
         {
             get => m_AudioSource.maxDistance;
             set => m_AudioSource.maxDistance = value;
@@ -122,7 +122,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音多普勒等级。
         /// </summary>
-        public override float DopplerLevel
+        public float DopplerLevel
         {
             get => m_AudioSource.dopplerLevel;
             set => m_AudioSource.dopplerLevel = value;
@@ -131,7 +131,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置声音代理辅助器所在的混音组。
         /// </summary>
-        public override AudioMixerGroup AudioMixerGroup
+        public AudioMixerGroup AudioMixerGroup
         {
             get => m_AudioSource.outputAudioMixerGroup;
             set => m_AudioSource.outputAudioMixerGroup = value;
@@ -140,7 +140,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 重置声音代理事件。
         /// </summary>
-        public override event EventHandler<ResetSoundAgentEventArgs> ResetSoundAgent
+        public event EventHandler<ResetSoundAgentEventArgs> ResetSoundAgent
         {
             add => m_ResetSoundAgentEventHandler += value;
             remove => m_ResetSoundAgentEventHandler -= value;
@@ -197,7 +197,7 @@ namespace FuFramework.Sound.Runtime
         /// 播放声音。
         /// </summary>
         /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-        public override void Play(float fadeInSeconds)
+        public void Play(float fadeInSeconds)
         {
             StopAllCoroutines();
             m_AudioSource.Play();
@@ -213,7 +213,7 @@ namespace FuFramework.Sound.Runtime
         /// 停止播放声音。
         /// </summary>
         /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-        public override void Stop(float fadeOutSeconds)
+        public void Stop(float fadeOutSeconds)
         {
             StopAllCoroutines();
             if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
@@ -226,7 +226,7 @@ namespace FuFramework.Sound.Runtime
         /// 暂停播放声音。
         /// </summary>
         /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-        public override void Pause(float fadeOutSeconds)
+        public void Pause(float fadeOutSeconds)
         {
             StopAllCoroutines();
             m_VolumeWhenPause = m_AudioSource.volume;
@@ -240,7 +240,7 @@ namespace FuFramework.Sound.Runtime
         /// 恢复播放声音。
         /// </summary>
         /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-        public override void Resume(float fadeInSeconds)
+        public void Resume(float fadeInSeconds)
         {
             StopAllCoroutines();
             m_AudioSource.UnPause();
@@ -253,7 +253,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 重置声音代理辅助器。
         /// </summary>
-        public override void Reset()
+        public void Reset()
         {
             m_CachedTransform.localPosition = Vector3.zero;
             m_AudioSource.clip              = null;
@@ -266,7 +266,7 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundAsset">声音资源。</param>
         /// <returns>是否设置声音资源成功。</returns>
-        public override bool SetSoundAsset(object soundAsset)
+        public bool SetSoundAsset(object soundAsset)
         {
             var audioClip = soundAsset as AudioClip;
             if (!audioClip) return false;
@@ -278,7 +278,7 @@ namespace FuFramework.Sound.Runtime
         /// 设置声音绑定的实体。
         /// </summary>
         /// <param name="bindingEntity">声音绑定的实体。</param>
-        public override void SetBindingEntity(Entity.Runtime.Entity bindingEntity)
+        public void SetBindingEntity(Entity.Runtime.Entity bindingEntity)
         {
             m_BindingEntityLogic = bindingEntity.Logic;
             if (m_BindingEntityLogic)
@@ -298,7 +298,7 @@ namespace FuFramework.Sound.Runtime
         /// 设置声音所在的世界坐标。
         /// </summary>
         /// <param name="worldPosition">声音所在的世界坐标。</param>
-        public override void SetWorldPosition(Vector3 worldPosition)
+        public void SetWorldPosition(Vector3 worldPosition)
         {
             m_CachedTransform.position = worldPosition;
         }
@@ -312,11 +312,11 @@ namespace FuFramework.Sound.Runtime
         /// <returns></returns>
         private IEnumerator FadeToVolume(AudioSource audioSource, float volume, float duration)
         {
-            var time = 0f;
+            var time           = 0f;
             var originalVolume = audioSource.volume;
             while (time < duration)
             {
-                time += UnityEngine.Time.deltaTime;
+                time               += UnityEngine.Time.deltaTime;
                 audioSource.volume =  Mathf.Lerp(originalVolume, volume, time / duration);
                 yield return new WaitForEndOfFrame();
             }

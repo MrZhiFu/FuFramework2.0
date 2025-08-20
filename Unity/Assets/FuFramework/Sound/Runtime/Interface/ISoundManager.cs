@@ -65,7 +65,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="groupName">声音组名称。</param>
         /// <param name="soundGroupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        bool AddSoundGroup(string groupName, ISoundGroupHelper soundGroupHelper);
+        bool AddSoundGroup(string groupName, DefaultSoundGroupHelper soundGroupHelper);
 
         /// <summary>
         /// 增加声音组。
@@ -76,14 +76,14 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundGroupVolume">声音组音量。</param>
         /// <param name="groupHelper">声音组辅助器。</param>
         /// <returns>是否增加声音组成功。</returns>
-        bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, ISoundGroupHelper groupHelper);
+        bool AddSoundGroup(string groupName, bool allowBeReplacedBySamePriority, bool soundGroupMute, float soundGroupVolume, DefaultSoundGroupHelper groupHelper);
 
         /// <summary>
         /// 增加声音代理辅助器。
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
-        void AddSoundAgentHelper(string soundGroupName, ISoundAgentHelper soundAgentHelper);
+        void AddSoundAgentHelper(string soundGroupName, DefaultSoundAgentHelper soundAgentHelper);
 
         /// <summary>
         /// 获取所有正在加载声音的序列编号。
