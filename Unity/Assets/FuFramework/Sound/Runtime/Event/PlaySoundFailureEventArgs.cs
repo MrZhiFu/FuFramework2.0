@@ -43,7 +43,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取错误码。
         /// </summary>
-        public PlaySoundErrorCode ErrorCode { get; private set; }
+        public EPlaySoundErrorCode ErrorCode { get; private set; }
 
         /// <summary>
         /// 获取错误信息。
@@ -64,7 +64,7 @@ namespace FuFramework.Sound.Runtime
             SoundAssetName  = null;
             SoundGroupName  = null;
             PlaySoundParams = null;
-            ErrorCode       = PlaySoundErrorCode.Unknown;
+            ErrorCode       = EPlaySoundErrorCode.Unknown;
             ErrorMessage    = null;
             UserData        = null;
         }
@@ -80,7 +80,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音失败事件。</returns>
-        public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams, PlaySoundErrorCode errorCode, string errorMessage,
+        public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams, EPlaySoundErrorCode errorCode, string errorMessage,
                                                        object userData)
         {
             var playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
@@ -103,7 +103,7 @@ namespace FuFramework.Sound.Runtime
             SoundAssetName  = null;
             SoundGroupName  = null;
             PlaySoundParams = null;
-            ErrorCode       = PlaySoundErrorCode.Unknown;
+            ErrorCode       = EPlaySoundErrorCode.Unknown;
             ErrorMessage    = null;
             UserData        = null;
         }

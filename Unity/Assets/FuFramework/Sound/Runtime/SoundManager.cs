@@ -334,19 +334,19 @@ namespace FuFramework.Sound.Runtime
             else
                 newSerialId = ++m_Serial;
             
-            PlaySoundErrorCode? errorCode = null;
+            EPlaySoundErrorCode? errorCode = null;
             string errorMessage = null;
             
             // 检查声音组是否存在
             var soundGroup = GetSoundGroup(groupName);
             if (soundGroup == null)
             {
-                errorCode = PlaySoundErrorCode.SoundGroupNotExist;
+                errorCode = EPlaySoundErrorCode.SoundGroupNotExist;
                 errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 不存在!", groupName);
             }
             else if (soundGroup.SoundAgentCount <= 0)
             {
-                errorCode = PlaySoundErrorCode.SoundGroupHasNoAgent;
+                errorCode = EPlaySoundErrorCode.SoundGroupHasNoAgent;
                 errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 没有声音播放代理!", groupName);
             }
 
@@ -543,7 +543,7 @@ namespace FuFramework.Sound.Runtime
             var errorMessage = Utility.Text.Format("[SoundManager]声音组 '{0}' 播放声音 '{1}' 失败!.", playSoundInfo.SoundGroup.Name, soundAssetName);
             if (m_PlaySoundFailureEventHandler != null)
             {
-                var errorCodeValue = PlaySoundErrorCode.Unknown;
+                var errorCodeValue = EPlaySoundErrorCode.Unknown;
                 if (errorCode != null) errorCodeValue = errorCode.Value;
 
                 var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, soundAssetName, 

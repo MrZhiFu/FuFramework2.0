@@ -1,20 +1,19 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Sound.Editor
+namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音组，如背景音乐、音效等
     /// </summary>
     [Serializable]
-    public class SoundGroup
+    public class SoundGroupInfo
     {
         [SerializeField] private string m_GroupID;   // 唯一标识符
         [SerializeField] private string m_GroupName; // 声音组名称
         [SerializeField] private bool   m_IsMute;    // 是否静音
-
-
+        
         [SerializeField, Range(0f, 1f)] private float m_Volume; // 音量大小
 
         [SerializeField] private int  m_AgentHelperCount;             // 播放代理数量
@@ -73,7 +72,7 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 构造函数
         /// </summary>
-        public SoundGroup(string groupName = "New Sound Group")
+        public SoundGroupInfo(string groupName = "New Sound Group")
         {
             m_GroupID                          = Guid.NewGuid().ToString();
             m_GroupName                        = groupName;

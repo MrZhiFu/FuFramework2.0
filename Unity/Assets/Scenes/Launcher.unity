@@ -1125,8 +1125,6 @@ MonoBehaviour:
   componentType: FuFramework.Sound.Runtime.SoundManager
   m_InstanceRoot: {fileID: 6524165465694967693}
   m_AudioMixer: {fileID: 24100000, guid: 48f2ad666d69da749ae823e0526b2249, type: 2}
-  m_SoundHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundHelper
-  m_CustomSoundHelper: {fileID: 0}
   m_SoundGroupHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundGroupHelper
   m_CustomSoundGroupHelper: {fileID: 0}
   m_SoundAgentHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundAgentHelper
@@ -1538,6 +1536,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7148938655606090472}
   - component: {fileID: 7148938655606090473}
+  - component: {fileID: 7148938655606090474}
   m_Layer: 0
   m_Name: GFX
   m_TagString: Untagged
@@ -1700,6 +1699,19 @@ MonoBehaviour:
   m_GameSpeed: 1
   m_RunInBackground: 1
   m_NeverSleep: 1
+--- !u!114 &7148938655606090474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212013545076678542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb2f8fa7d6f04cf1a8304d49b973e3b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
 --- !u!1 &7149020525938990140
 GameObject:
   m_ObjectHideFlags: 0

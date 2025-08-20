@@ -102,7 +102,7 @@ namespace FuFramework.Sound.Runtime
             /// <param name="playSoundParams">播放声音参数。</param>
             /// <param name="errorCode">错误码。</param>
             /// <returns>用于播放的声音代理。</returns>
-            public SoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out PlaySoundErrorCode? errorCode)
+            public SoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out EPlaySoundErrorCode? errorCode)
             {
                 errorCode = null;
                 SoundAgent candidateAgent = null; // 候选播放代理
@@ -135,13 +135,13 @@ namespace FuFramework.Sound.Runtime
 
                 if (candidateAgent == null)
                 {
-                    errorCode = PlaySoundErrorCode.IgnoredDueToLowPriority;
+                    errorCode = EPlaySoundErrorCode.IgnoredDueToLowPriority;
                     return null;
                 }
 
                 if (!candidateAgent.SetSoundAsset(soundAsset))
                 {
-                    errorCode = PlaySoundErrorCode.SetSoundAssetFailure;
+                    errorCode = EPlaySoundErrorCode.SetSoundAssetFailure;
                     return null;
                 }
 

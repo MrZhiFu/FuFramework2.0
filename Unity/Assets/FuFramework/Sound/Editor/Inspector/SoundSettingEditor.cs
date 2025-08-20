@@ -1,7 +1,8 @@
 ﻿#if UNITY_EDITOR
-using FuFramework.Core.Editor;
 using UnityEditor;
 using UnityEngine;
+using FuFramework.Core.Editor;
+using FuFramework.Sound.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Editor
@@ -12,10 +13,11 @@ namespace FuFramework.Sound.Editor
     [CustomEditor(typeof(SoundSetting))]
     public class SoundSettingEditor : GameComponentInspector
     {
+        private SerializedProperty m_SoundMixerProperty; // 声音混音器属性
         private SerializedProperty m_SoundGroupsProperty; // 所有声音组列表属性
 
-        private bool[] m_GroupFoldouts;                    // 声音组折叠状态数组，true表示展开，false表示折叠
-        private bool   m_ShowTools    = true;              // 是否显示工具区域
+        private bool[] m_GroupFoldouts; // 声音组折叠状态数组，true表示展开，false表示折叠
+        private bool m_ShowTools; // 是否显示工具区域
         private string m_NewGroupName = "New Sound Group"; // 新声音组名称
 
         /// <summary>
@@ -23,6 +25,7 @@ namespace FuFramework.Sound.Editor
         /// </summary>
         private void OnEnable()
         {
+            m_SoundMixerProperty = serializedObject.FindProperty("m_AudioMixer");
             m_SoundGroupsProperty = serializedObject.FindProperty("m_SoundGroups");
             UpdateFoldoutState();
         }
@@ -34,15 +37,21 @@ namespace FuFramework.Sound.Editor
         {
             serializedObject.Update();
 
-            var soundSetting = (SoundSetting)target;
+            var soundSetting = target as SoundSetting;
+            if (!soundSetting) return;
 
-            EditorGUILayout.LabelField($"声音组管理(数量: {soundSetting.Count})", EditorStyles.boldLabel);
-            EditorGUILayout.Space(5);
-            
-            DisplaySoundGroupsList(soundSetting);// 显示声音组列表
+            // 显示音频混合器属性
+            EditorGUILayout.Space(10);
+            EditorGUILayout.PropertyField(m_SoundMixerProperty, new GUIContent("音频混合器"));
 
             EditorGUILayout.Space(20);
-            DisplayToolsArea(soundSetting);// 工具区域
+            EditorGUILayout.LabelField($"声音组管理(数量: {soundSetting.Count})", EditorStyles.boldLabel);
+            EditorGUILayout.Space(5);
+
+            DisplaySoundGroupsList(soundSetting); // 显示声音组列表
+
+            EditorGUILayout.Space(20);
+            DisplayToolsArea(soundSetting); // 工具区域
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -77,10 +86,10 @@ namespace FuFramework.Sound.Editor
         /// <param name="setting">声音配置</param>
         private void DisplaySoundGroup(int index, SerializedProperty groupProperty, SoundSetting setting)
         {
-            var nameProperty         = groupProperty.FindPropertyRelative("m_GroupName");
-            var muteProperty         = groupProperty.FindPropertyRelative("m_IsMute");
-            var volumeProperty       = groupProperty.FindPropertyRelative("m_Volume");
-            var agentCountProperty   = groupProperty.FindPropertyRelative("m_AgentHelperCount");
+            var nameProperty = groupProperty.FindPropertyRelative("m_GroupName");
+            var muteProperty = groupProperty.FindPropertyRelative("m_IsMute");
+            var volumeProperty = groupProperty.FindPropertyRelative("m_Volume");
+            var agentCountProperty = groupProperty.FindPropertyRelative("m_AgentHelperCount");
             var avoidReplaceProperty = groupProperty.FindPropertyRelative("m_AllowBeingReplacedBySamePriority");
 
             // 确保折叠状态数组足够大
@@ -93,9 +102,7 @@ namespace FuFramework.Sound.Editor
 
             // 标题行
             EditorGUILayout.BeginHorizontal();
-
             m_GroupFoldouts[index] = EditorGUILayout.Foldout(m_GroupFoldouts[index], nameProperty.stringValue, true);
-
             GUILayout.FlexibleSpace();
 
             // 删除按钮
@@ -112,10 +119,10 @@ namespace FuFramework.Sound.Editor
             {
                 EditorGUILayout.Space(5);
 
-                EditorGUILayout.PropertyField(nameProperty,         new GUIContent("名称"));
-                EditorGUILayout.PropertyField(muteProperty,         new GUIContent("静音"));
-                EditorGUILayout.PropertyField(volumeProperty,       new GUIContent("音量"));
-                EditorGUILayout.PropertyField(agentCountProperty,   new GUIContent("播放代理数量"));
+                EditorGUILayout.PropertyField(nameProperty, new GUIContent("名称"));
+                EditorGUILayout.PropertyField(muteProperty, new GUIContent("静音"));
+                EditorGUILayout.PropertyField(volumeProperty, new GUIContent("音量"));
+                EditorGUILayout.PropertyField(agentCountProperty, new GUIContent("播放代理数量"));
                 EditorGUILayout.PropertyField(avoidReplaceProperty, new GUIContent("允许同优先级替换"));
 
                 EditorGUILayout.Space(5);
@@ -193,7 +200,7 @@ namespace FuFramework.Sound.Editor
             // 在集合中创建新组
             var newGroup = setting.CreateNewSoundGroup(groupName);
             if (newGroup == null) return;
-            
+
             serializedObject.Update();
             UpdateFoldoutState();
             EditorUtility.SetDirty(setting);
@@ -207,7 +214,7 @@ namespace FuFramework.Sound.Editor
         /// <param name="setting">声音配置</param>
         private void AddDefaultSoundGroups(SoundSetting setting)
         {
-            string[] defaultGroups = { "BGM", "SFX", "UI"};
+            string[] defaultGroups = { "BGM", "SFX", "UI" };
 
             foreach (var groupName in defaultGroups)
             {
@@ -232,7 +239,7 @@ namespace FuFramework.Sound.Editor
             var groupName = setting[index]?.Name ?? "未知";
 
             if (!EditorUtility.DisplayDialog("确认删除", $"确定要删除声音组 '{groupName}' 吗？", "删除", "取消")) return;
-            
+
             setting.RemoveGroupAt(index);
             serializedObject.Update();
             UpdateFoldoutState();
@@ -247,10 +254,10 @@ namespace FuFramework.Sound.Editor
         /// <param name="groupProperty">声音组序列化属性</param>
         private void ResetSoundGroup(SerializedProperty groupProperty)
         {
-            groupProperty.FindPropertyRelative("m_Mute").boolValue                             = false;
-            groupProperty.FindPropertyRelative("m_Volume").floatValue                          = 1f;
-            groupProperty.FindPropertyRelative("m_AgentHelperCount").intValue                  = 1;
-            groupProperty.FindPropertyRelative("m_AvoidBeingReplacedBySamePriority").boolValue = false;
+            groupProperty.FindPropertyRelative("m_IsMute").boolValue = false;
+            groupProperty.FindPropertyRelative("m_Volume").floatValue = 1f;
+            groupProperty.FindPropertyRelative("m_AgentHelperCount").intValue = 1;
+            groupProperty.FindPropertyRelative("m_AllowBeingReplacedBySamePriority").boolValue = true;
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -5,7 +5,7 @@ namespace FuFramework.Sound.Runtime
     /// <summary>
     /// 播放声音错误码。
     /// </summary>
-    public enum PlaySoundErrorCode : byte
+    public enum EPlaySoundErrorCode : byte
     {
         /// <summary>
         /// 未知错误。

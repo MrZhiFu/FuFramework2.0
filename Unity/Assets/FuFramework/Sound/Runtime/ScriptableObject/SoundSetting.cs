@@ -1,23 +1,30 @@
 ﻿using System.Linq;
+using UnityEngine;
+using UnityEngine.Audio;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Sound.Editor
+namespace FuFramework.Sound.Runtime
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-
-    [CreateAssetMenu(fileName = "SoundSetting", menuName = "全局配置/音效配置")]
+    /// <summary>
+    /// 音频模块配置
+    /// </summary>
     public class SoundSetting : ScriptableObject
     {
         /// <summary>
+        /// 音频混音器
+        /// </summary>
+        [SerializeField] private AudioMixer m_AudioMixer;
+
+        /// <summary>
         /// 声音组列表
         /// </summary>
-        [SerializeField] private List<SoundGroup> m_SoundGroups = new();
+        [SerializeField] private List<SoundGroupInfo> m_SoundGroups = new();
 
         /// <summary>
         /// 声音组字典，用于快速查找，key为声音组名称，value为声音组
         /// </summary>
-        private Dictionary<string, SoundGroup> m_GroupDictionary;
+        private Dictionary<string, SoundGroupInfo> m_GroupDictionary;
 
         /// <summary>
         /// 是否初始化完成
@@ -28,18 +35,22 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 获取所有声音组
         /// </summary>
-        public IReadOnlyList<SoundGroup> AllGroups => m_SoundGroups;
+        public IReadOnlyList<SoundGroupInfo> AllGroups => m_SoundGroups;
 
         /// <summary>
         /// 声音组数量
         /// </summary>
         public int Count => m_SoundGroups.Count;
 
+        /// <summary>
+        /// 音频混音器
+        /// </summary>
+        public AudioMixer AudioMixerGroup => m_AudioMixer;
 
         /// <summary>
         /// 索引器：通过名称获取声音组
         /// </summary>
-        public SoundGroup this[string groupName]
+        public SoundGroupInfo this[string groupName]
         {
             get
             {
@@ -51,7 +62,7 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 索引器：通过索引获取声音组
         /// </summary>
-        public SoundGroup this[int index]
+        public SoundGroupInfo this[int index]
         {
             get
             {
@@ -63,7 +74,7 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 通过名称获取声音组
         /// </summary>
-        public SoundGroup GetGroup(string groupName)
+        public SoundGroupInfo GetGroup(string groupName)
         {
             InitializeDictionary();
             return m_GroupDictionary.GetValueOrDefault(groupName);
@@ -72,7 +83,7 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 通过ID获取声音组
         /// </summary>
-        public SoundGroup GetGroupByID(string groupID)
+        public SoundGroupInfo GetGroupByID(string groupID)
         {
             InitializeDictionary();
             return m_SoundGroups.FirstOrDefault(group => group.GroupID == groupID);
@@ -81,24 +92,38 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 添加声音组
         /// </summary>
-        public void AddGroup(SoundGroup group)
+        public void AddGroup(SoundGroupInfo groupInfo)
         {
-            if (group == null) return;
+            if (groupInfo == null) return;
 
             InitializeDictionary();
-            if (m_GroupDictionary.ContainsKey(group.Name)) return;
-            m_SoundGroups.Add(group);
-            m_GroupDictionary[group.Name] = group;
+            if (m_GroupDictionary.ContainsKey(groupInfo.Name)) return;
+            m_SoundGroups.Add(groupInfo);
+            m_GroupDictionary[groupInfo.Name] = groupInfo;
+        }
+
+        /// <summary>
+        /// 添加默认声音组
+        /// </summary>
+        public void AddDefaultSoundGroups()
+        {
+            string[] defaultGroups = { "BGM", "SFX", "UI" };
+
+            foreach (var groupName in defaultGroups)
+            {
+                if (ContainsGroup(groupName)) continue;
+                CreateNewSoundGroup(groupName);
+            }
         }
 
         /// <summary>
         /// 创建新的声音组
         /// </summary>
-        public SoundGroup CreateNewSoundGroup(string groupName)
+        public SoundGroupInfo CreateNewSoundGroup(string groupName)
         {
             // 确保名称唯一
             var uniqueName = GetUniqueName(groupName);
-            var newGroup   = new SoundGroup(uniqueName);
+            var newGroup = new SoundGroupInfo(uniqueName);
             AddGroup(newGroup);
             return newGroup;
         }
@@ -106,14 +131,14 @@ namespace FuFramework.Sound.Editor
         /// <summary>
         /// 移除声音组
         /// </summary>
-        public void RemoveGroup(SoundGroup group)
+        public void RemoveGroup(SoundGroupInfo groupInfo)
         {
-            if (group == null) return;
+            if (groupInfo == null) return;
 
             InitializeDictionary();
-            if (!m_GroupDictionary.ContainsKey(group.Name)) return;
-            m_SoundGroups.Remove(group);
-            m_GroupDictionary.Remove(group.Name);
+            if (!m_GroupDictionary.ContainsKey(groupInfo.Name)) return;
+            m_SoundGroups.Remove(groupInfo);
+            m_GroupDictionary.Remove(groupInfo.Name);
         }
 
         /// <summary>
@@ -171,7 +196,7 @@ namespace FuFramework.Sound.Editor
         private string GetUniqueName(string baseName)
         {
             var groupName = baseName;
-            var counter   = 1;
+            var counter = 1;
 
             while (ContainsGroup(groupName))
             {
@@ -189,7 +214,7 @@ namespace FuFramework.Sound.Editor
         {
             if (m_IsInitialized && m_GroupDictionary != null && m_GroupDictionary.Count == m_SoundGroups.Count) return;
 
-            m_GroupDictionary = new Dictionary<string, SoundGroup>();
+            m_GroupDictionary = new Dictionary<string, SoundGroupInfo>();
             foreach (var group in m_SoundGroups.Where(group => group != null && !string.IsNullOrEmpty(group.Name)))
             {
                 m_GroupDictionary.TryAdd(group.Name, group);

@@ -526,7 +526,7 @@ namespace FuFramework.Sound.Runtime
         {
             var logMessage = Utility.Text.Format("[SoundComponent]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}', 错误信息 '{3}'.",
                                                  eventArgs.SoundAssetName, eventArgs.SoundGroupName, eventArgs.ErrorCode, eventArgs.ErrorMessage);
-            if (eventArgs.ErrorCode == PlaySoundErrorCode.IgnoredDueToLowPriority)
+            if (eventArgs.ErrorCode == EPlaySoundErrorCode.IgnoredDueToLowPriority)
                 Log.Info(logMessage);
             else
                 Log.Warning(logMessage);
