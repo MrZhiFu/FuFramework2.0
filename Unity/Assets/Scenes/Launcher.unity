@@ -631,7 +631,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1672025865}
   - component: {fileID: 1672025864}
-  - component: {fileID: 1672025863}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -639,14 +638,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1672025863
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1672025862}
-  m_Enabled: 1
 --- !u!20 &1672025864
 Camera:
   m_ObjectHideFlags: 0
@@ -1124,9 +1115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   componentType: FuFramework.Sound.Runtime.SoundManager
   m_InstanceRoot: {fileID: 6524165465694967693}
-  m_SoundGroupHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundGroupHelper
   m_CustomSoundGroupHelper: {fileID: 0}
-  m_SoundAgentHelperTypeName: FuFramework.Sound.Runtime.DefaultSoundAgentHelper
   m_CustomSoundAgentHelper: {fileID: 0}
 --- !u!4 &2120699936
 Transform:
