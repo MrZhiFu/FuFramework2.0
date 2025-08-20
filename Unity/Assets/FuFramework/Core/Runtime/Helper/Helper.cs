@@ -14,7 +14,7 @@ namespace FuFramework.Core.Runtime
         /// <typeparam name="T">要创建的辅助器类型。</typeparam>
         /// <param name="helperTypeName">要创建的辅助器类型名称。</param>
         /// <param name="customHelper">自定义辅助器类型，要创建的辅助器类型为空时，替换其使用。</param>
-        /// <param name="index">要创建的辅助器索引。只要大于0，则创建的辅助器将会克隆自customHelper，否则直接使用customHelper。</param>
+        /// <param name="index">要创建的辅助器索引。只要大于0，则创建的辅助器将会克隆一个customHelper，否则直接使用customHelper自身。</param>
         /// <param name="target">辅助器挂载的对象。</param>
         /// <returns>创建的辅助器。</returns>
         public static T CreateHelper<T>(string helperTypeName, T customHelper, int index = 0, GameObject target = null) where T : MonoBehaviour
