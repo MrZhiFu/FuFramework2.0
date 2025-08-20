@@ -9,7 +9,7 @@ namespace FuFramework.Sound.Runtime
     {
         /// <summary>
         /// 声音代理。
-        /// 功能：实现声音代理接口，实现了主要包括声音播放、停止、暂停、恢复等操作。
+        /// 功能：实现了主要包括声音播放、停止、暂停、恢复等操作。
         /// </summary>
         public sealed class SoundAgent
         {
@@ -17,11 +17,11 @@ namespace FuFramework.Sound.Runtime
             /// 所在的声音组。
             /// </summary>
             private readonly SoundGroup m_SoundGroup;
-
+            
             /// <summary>
-            /// 声音辅助器。
+            /// 声音管理器
             /// </summary>
-            private readonly SoundHelperBase m_SoundHelper;
+            private readonly SoundManager m_SoundManager;
 
             /// <summary>
             /// 声音资源。
@@ -42,14 +42,13 @@ namespace FuFramework.Sound.Runtime
             /// 初始化声音代理的新实例。
             /// </summary>
             /// <param name="soundGroup">所在的声音组。</param>
-            /// <param name="soundHelper">声音辅助器接口。</param>
             /// <param name="soundAgentHelper">声音代理辅助器接口。</param>
-            public SoundAgent(SoundGroup soundGroup, SoundHelperBase soundHelper, ISoundAgentHelper soundAgentHelper)
+            /// <param name="manager">声音管理器</param>
+            public SoundAgent(SoundGroup soundGroup, ISoundAgentHelper soundAgentHelper, SoundManager manager)
             {
-                m_SoundGroup  = soundGroup       ?? throw new FuException("[SoundAgent]声音组不能为空!");
-                m_SoundHelper = soundHelper      ?? throw new FuException("[SoundAgent]声音辅助器不能为空!");
-                Helper        = soundAgentHelper ?? throw new FuException("[SoundAgent]声音代理辅助器不能为空!");
-
+                m_SoundGroup   = soundGroup       ?? throw new FuException("[SoundAgent]声音组不能为空!");
+                Helper         = soundAgentHelper ?? throw new FuException("[SoundAgent]声音代理辅助器不能为空!");
+                m_SoundManager = manager          ?? throw new FuException("[SoundAgent]声音管理器不能为空!");
                 Helper.ResetSoundAgent += OnResetSoundAgent;
 
                 SerialId     = 0;
@@ -78,7 +77,7 @@ namespace FuFramework.Sound.Runtime
             public float Length => Helper.Length;
 
             /// <summary>
-            /// 获取或设置播放位置。
+            /// 获取或设置播放时间。
             /// </summary>
             public float Time
             {
@@ -238,7 +237,7 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
             public void Resume(float fadeInSeconds) => Helper.Resume(fadeInSeconds);
-
+            
             /// <summary>
             /// 重置声音代理。
             /// </summary>
@@ -247,7 +246,7 @@ namespace FuFramework.Sound.Runtime
                 if (m_SoundAsset != null)
                 {
                     var soundName = (m_SoundAsset as AudioClip)?.name;
-                    m_SoundHelper.ReleaseSoundAsset(soundName);
+                    m_SoundManager?.m_assetManager?.UnloadAsset(soundName);
                     m_SoundAsset = null;
                 }
 

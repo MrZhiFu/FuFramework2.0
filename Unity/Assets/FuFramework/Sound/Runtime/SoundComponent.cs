@@ -30,13 +30,6 @@ namespace FuFramework.Sound.Runtime
         [Header("混音器")]
         [SerializeField] private AudioMixer m_AudioMixer;
 
-
-        [Header("声音默认辅助器类型名")]
-        [SerializeField] private string m_SoundHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundHelper";
-
-        [Header("自定义声音辅助器")]
-        [SerializeField] private SoundHelperBase m_CustomSoundHelper;
-
         [Header("声音组默认辅助器类型名")]
         [SerializeField] private string m_SoundGroupHelperTypeName = "FuFramework.Sound.Runtime.DefaultSoundGroupHelper";
 
@@ -104,20 +97,6 @@ namespace FuFramework.Sound.Runtime
 
             // 设置资源管理器
             m_SoundManager.SetResourceManager(FuEntry.GetModule<IAssetManager>());
-
-            // 设置声音辅助器
-            SoundHelperBase soundHelper = Helper.CreateHelper(m_SoundHelperTypeName, m_CustomSoundHelper);
-            if (!soundHelper)
-            {
-                Log.Error("[SoundComponent] 创建声音辅助器失败!");
-                return;
-            }
-
-            soundHelper.name = "Sound Helper";
-            soundHelper.transform.SetParent(transform);
-            soundHelper.transform.localScale = Vector3.one;
-
-            m_SoundManager.SetSoundHelper(soundHelper);
 
             if (!m_InstanceRoot)
             {

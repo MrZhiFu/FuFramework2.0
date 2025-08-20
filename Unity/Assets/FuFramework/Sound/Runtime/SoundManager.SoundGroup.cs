@@ -87,11 +87,11 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 增加声音代理辅助器。
             /// </summary>
-            /// <param name="soundHelper">声音辅助器接口。</param>
             /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
-            public void AddSoundAgentHelper(SoundHelperBase soundHelper, ISoundAgentHelper soundAgentHelper)
+            /// <param name="manager">声音管理器。</param>
+            public void AddSoundAgentHelper(ISoundAgentHelper soundAgentHelper, SoundManager manager)
             {
-                m_SoundAgents.Add(new SoundAgent(this, soundHelper, soundAgentHelper));
+                m_SoundAgents.Add(new SoundAgent(this, soundAgentHelper, manager));
             }
 
             /// <summary>
@@ -147,10 +147,10 @@ namespace FuFramework.Sound.Runtime
 
                 candidateAgent.SerialId           = serialId;
                 candidateAgent.Time               = playSoundParams.Time;
-                candidateAgent.MuteInSoundGroup   = playSoundParams.MuteInSoundGroup;
+                candidateAgent.MuteInSoundGroup   = playSoundParams.IsMute;
                 candidateAgent.Loop               = playSoundParams.Loop;
                 candidateAgent.Priority           = playSoundParams.Priority;
-                candidateAgent.VolumeInSoundGroup = playSoundParams.VolumeInSoundGroup;
+                candidateAgent.VolumeInSoundGroup = playSoundParams.Volume;
                 candidateAgent.Pitch              = playSoundParams.Pitch;
                 candidateAgent.PanStereo          = playSoundParams.PanStereo;
                 candidateAgent.SpatialBlend       = playSoundParams.SpatialBlend;

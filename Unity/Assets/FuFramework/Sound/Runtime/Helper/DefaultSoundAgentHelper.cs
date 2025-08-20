@@ -312,11 +312,11 @@ namespace FuFramework.Sound.Runtime
         /// <returns></returns>
         private IEnumerator FadeToVolume(AudioSource audioSource, float volume, float duration)
         {
-            var time           = 0f;
+            var time = 0f;
             var originalVolume = audioSource.volume;
             while (time < duration)
             {
-                time               += UnityEngine.Time.deltaTime;
+                time += UnityEngine.Time.deltaTime;
                 audioSource.volume =  Mathf.Lerp(originalVolume, volume, time / duration);
                 yield return new WaitForEndOfFrame();
             }

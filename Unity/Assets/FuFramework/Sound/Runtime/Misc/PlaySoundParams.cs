@@ -6,6 +6,8 @@ namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 播放声音参数。
+    /// 包括：播放时间、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
+    ///      声音立体声声相、声音空间混合量、声音最大距离、声音多普勒等级。
     /// </summary>
     public sealed class PlaySoundParams : IReference
     {
@@ -17,7 +19,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置在声音组内是否静音。
         /// </summary>
-        public bool MuteInSoundGroup { get; private set; }
+        public bool IsMute { get; private set; }
 
         /// <summary>
         /// 获取或设置是否循环播放。
@@ -32,7 +34,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 获取或设置在声音组内音量大小。
         /// </summary>
-        public float VolumeInSoundGroup { get; private set; }
+        public float Volume { get; private set; }
 
         /// <summary>
         /// 获取或设置声音淡入时间，以秒为单位。
@@ -74,18 +76,18 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public PlaySoundParams()
         {
-            Referenced         = false;
-            Time               = Constant.DefaultTime;
-            MuteInSoundGroup   = Constant.DefaultMute;
-            Loop               = Constant.DefaultLoop;
-            Priority           = Constant.DefaultPriority;
-            VolumeInSoundGroup = Constant.DefaultVolume;
-            FadeInSeconds      = Constant.DefaultFadeInSeconds;
-            Pitch              = Constant.DefaultPitch;
-            PanStereo          = Constant.DefaultPanStereo;
-            SpatialBlend       = Constant.DefaultSpatialBlend;
-            MaxDistance        = Constant.DefaultMaxDistance;
-            DopplerLevel       = Constant.DefaultDopplerLevel;
+            Referenced    = false;
+            Time          = Constant.DefaultTime;
+            IsMute        = Constant.DefaultMute;
+            Loop          = Constant.DefaultLoop;
+            Priority      = Constant.DefaultPriority;
+            Volume        = Constant.DefaultVolume;
+            FadeInSeconds = Constant.DefaultFadeInSeconds;
+            Pitch         = Constant.DefaultPitch;
+            PanStereo     = Constant.DefaultPanStereo;
+            SpatialBlend  = Constant.DefaultSpatialBlend;
+            MaxDistance   = Constant.DefaultMaxDistance;
+            DopplerLevel  = Constant.DefaultDopplerLevel;
         }
 
         /// <summary>
@@ -106,17 +108,17 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public void Clear()
         {
-            Time               = Constant.DefaultTime;
-            MuteInSoundGroup   = Constant.DefaultMute;
-            Loop               = Constant.DefaultLoop;
-            Priority           = Constant.DefaultPriority;
-            VolumeInSoundGroup = Constant.DefaultVolume;
-            FadeInSeconds      = Constant.DefaultFadeInSeconds;
-            Pitch              = Constant.DefaultPitch;
-            PanStereo          = Constant.DefaultPanStereo;
-            SpatialBlend       = Constant.DefaultSpatialBlend;
-            MaxDistance        = Constant.DefaultMaxDistance;
-            DopplerLevel       = Constant.DefaultDopplerLevel;
+            Time          = Constant.DefaultTime;
+            IsMute        = Constant.DefaultMute;
+            Loop          = Constant.DefaultLoop;
+            Priority      = Constant.DefaultPriority;
+            Volume        = Constant.DefaultVolume;
+            FadeInSeconds = Constant.DefaultFadeInSeconds;
+            Pitch         = Constant.DefaultPitch;
+            PanStereo     = Constant.DefaultPanStereo;
+            SpatialBlend  = Constant.DefaultSpatialBlend;
+            MaxDistance   = Constant.DefaultMaxDistance;
+            DopplerLevel  = Constant.DefaultDopplerLevel;
         }
     }
 }

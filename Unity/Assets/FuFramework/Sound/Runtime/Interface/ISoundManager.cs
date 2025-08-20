@@ -34,12 +34,6 @@ namespace FuFramework.Sound.Runtime
         void SetResourceManager(IAssetManager assetManager);
 
         /// <summary>
-        /// 设置声音辅助器。
-        /// </summary>
-        /// <param name="soundHelper">声音辅助器。</param>
-        void SetSoundHelper(SoundHelperBase soundHelper);
-
-        /// <summary>
         /// 是否存在指定声音组。
         /// </summary>
         /// <param name="soundGroupName">声音组名称。</param>
@@ -114,78 +108,78 @@ namespace FuFramework.Sound.Runtime
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName);
+        UniTask<int> PlaySound(string soundAssetName, string groupName);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">加载声音资源的优先级。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, int priority);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, PlaySoundParams playSoundParams);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, object userData);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, object userData);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">加载声音资源的优先级。</param>
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, PlaySoundParams playSoundParams);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">加载声音资源的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, object userData);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, object userData);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, PlaySoundParams playSoundParams, object userData);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, PlaySoundParams playSoundParams, object userData);
 
         /// <summary>
         /// 播放声音。
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">加载声音资源的优先级。</param>
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <returns>声音的序列编号。</returns>
-        UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, object userData, int serialId);
+        UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, PlaySoundParams playSoundParams, object userData, int serialId);
 
         /// <summary>
         /// 停止播放声音。
