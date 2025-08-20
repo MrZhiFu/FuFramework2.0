@@ -2,7 +2,7 @@
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Sound.Runtime
+namespace FuFramework.ModuleSetting.Runtime
 {
     /// <summary>
     /// 声音组，如背景音乐、音效等
@@ -13,10 +13,10 @@ namespace FuFramework.Sound.Runtime
         [SerializeField] private string m_GroupID;   // 唯一标识符
         [SerializeField] private string m_GroupName; // 声音组名称
         [SerializeField] private bool   m_IsMute;    // 是否静音
-        
+
         [SerializeField, Range(0f, 1f)] private float m_Volume; // 音量大小
 
-        [SerializeField] private int  m_AgentHelperCount;             // 播放代理数量
+        [SerializeField] private int  m_AgentHelperCount;                 // 播放代理数量
         [SerializeField] private bool m_AllowBeingReplacedBySamePriority; // 是否允许被同优先级声音替换
 
         /// <summary>

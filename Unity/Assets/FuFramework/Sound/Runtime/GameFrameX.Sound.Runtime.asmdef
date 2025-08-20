@@ -1,5 +1,6 @@
 {
     "name": "GameFrameX.Sound.Runtime",
+    "rootNamespace": "GameFrameX.Sound.Runtime",
     "references": [
         "GameFrameX.Runtime",
         "GameFrameX.Event.Runtime",
@@ -7,9 +8,9 @@
         "GameFrameX.Entity.Runtime",
         "UniTask.Runtime",
         "YooAsset.Runtime",
-        "GameFrameX.Scene.Runtime"
+        "GameFrameX.Scene.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
-    "rootNamespace": "GameFrameX.Sound.Runtime",
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

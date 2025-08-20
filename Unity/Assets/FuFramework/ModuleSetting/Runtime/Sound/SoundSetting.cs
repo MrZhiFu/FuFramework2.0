@@ -4,7 +4,7 @@ using UnityEngine.Audio;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Sound.Runtime
+namespace FuFramework.ModuleSetting.Runtime
 {
     /// <summary>
     /// 音频模块配置
@@ -123,7 +123,7 @@ namespace FuFramework.Sound.Runtime
         {
             // 确保名称唯一
             var uniqueName = GetUniqueName(groupName);
-            var newGroup = new SoundGroupInfo(uniqueName);
+            var newGroup   = new SoundGroupInfo(uniqueName);
             AddGroup(newGroup);
             return newGroup;
         }
@@ -196,7 +196,7 @@ namespace FuFramework.Sound.Runtime
         private string GetUniqueName(string baseName)
         {
             var groupName = baseName;
-            var counter = 1;
+            var counter   = 1;
 
             while (ContainsGroup(groupName))
             {

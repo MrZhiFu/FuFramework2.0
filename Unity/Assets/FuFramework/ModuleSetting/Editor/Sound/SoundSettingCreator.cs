@@ -1,28 +1,30 @@
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEngine;
-using System.IO;
-using FuFramework.Sound.Runtime;
+using FuFramework.ModuleSetting.Runtime;
 
-namespace FuFramework.Sound.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.ModuleSetting.Editor
 {
     /// <summary>
     /// 声音配置-SoundSetting 创建器
     /// </summary>
     public static class SoundSettingCreator
     {
-        private const string AssetName = "SoundSetting.asset"; // 资源名称
-        private const string AssetPath = "Assets/FuFramework/Sound/Config";// 配置路径
+        private const string AssetName = "SoundSetting.asset";                             // 资源名称
+        private const string AssetPath = "Assets/FuFramework/ModuleSetting/SettingAssets"; // 配置路径
+
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
-        
-        [MenuItem("FuFramework/全局配置/音频配置/创建")]
+
+        [MenuItem("FuFramework/框架模块配置/音频配置/创建")]
         public static void CreateDefaultSoundSetting()
         {
             // 检查资源是否已存在
             var existingSetting = AssetDatabase.LoadAssetAtPath<SoundSetting>(FullPath);
             if (existingSetting != null)
             {
-                EditorUtility.DisplayDialog("创建失败", "SoundSetting 资源已存在！", "确定");
+                EditorUtility.DisplayDialog("创建失败", "SoundSetting 资源已存在, 请勿重复创建!", "确定");
                 Selection.activeObject = existingSetting;
                 EditorUtility.FocusProjectWindow();
                 return;
@@ -49,20 +51,20 @@ namespace FuFramework.Sound.Editor
         private static void EnsureDirectoryExists(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
-            
+
             // 使用 System.IO 创建物理目录，然后导入到 AssetDatabase
             var physicalPath = Path.Combine(Application.dataPath, path.Replace("Assets/", ""));
             Directory.CreateDirectory(physicalPath);
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FuFramework/全局配置/音频配置/查找")]
+        [MenuItem("FuFramework/框架模块配置/音频配置/查找")]
         public static void FindSoundSetting()
         {
             var guids = AssetDatabase.FindAssets("t:SoundSetting");
             if (guids.Length > 0)
             {
-                var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                var path         = AssetDatabase.GUIDToAssetPath(guids[0]);
                 var soundSetting = AssetDatabase.LoadAssetAtPath<SoundSetting>(path);
                 Selection.activeObject = soundSetting;
                 EditorUtility.FocusProjectWindow();

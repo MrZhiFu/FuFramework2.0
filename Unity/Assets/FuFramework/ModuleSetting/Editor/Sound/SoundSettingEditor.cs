@@ -1,23 +1,23 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using FuFramework.Core.Editor;
-using FuFramework.Sound.Runtime;
+using FuFramework.ModuleSetting.Runtime;
+
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Sound.Editor
+namespace FuFramework.ModuleSetting.Editor
 {
     /// <summary>
     /// 声音配置文件Inspector
     /// </summary>
     [CustomEditor(typeof(SoundSetting))]
-    public class SoundSettingEditor : GameComponentInspector
+    public class SoundSettingEditor : UnityEditor.Editor
     {
-        private SerializedProperty m_SoundMixerProperty; // 声音混音器属性
+        private SerializedProperty m_SoundMixerProperty;  // 声音混音器属性
         private SerializedProperty m_SoundGroupsProperty; // 所有声音组列表属性
 
-        private bool[] m_GroupFoldouts; // 声音组折叠状态数组，true表示展开，false表示折叠
-        private bool m_ShowTools; // 是否显示工具区域
+        private bool[] m_GroupFoldouts;                    // 声音组折叠状态数组，true表示展开，false表示折叠
+        private bool   m_ShowTools;                        // 是否显示工具区域
         private string m_NewGroupName = "New Sound Group"; // 新声音组名称
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace FuFramework.Sound.Editor
         /// </summary>
         private void OnEnable()
         {
-            m_SoundMixerProperty = serializedObject.FindProperty("m_AudioMixer");
+            m_SoundMixerProperty  = serializedObject.FindProperty("m_AudioMixer");
             m_SoundGroupsProperty = serializedObject.FindProperty("m_SoundGroups");
             UpdateFoldoutState();
         }
@@ -86,10 +86,10 @@ namespace FuFramework.Sound.Editor
         /// <param name="setting">声音配置</param>
         private void DisplaySoundGroup(int index, SerializedProperty groupProperty, SoundSetting setting)
         {
-            var nameProperty = groupProperty.FindPropertyRelative("m_GroupName");
-            var muteProperty = groupProperty.FindPropertyRelative("m_IsMute");
-            var volumeProperty = groupProperty.FindPropertyRelative("m_Volume");
-            var agentCountProperty = groupProperty.FindPropertyRelative("m_AgentHelperCount");
+            var nameProperty         = groupProperty.FindPropertyRelative("m_GroupName");
+            var muteProperty         = groupProperty.FindPropertyRelative("m_IsMute");
+            var volumeProperty       = groupProperty.FindPropertyRelative("m_Volume");
+            var agentCountProperty   = groupProperty.FindPropertyRelative("m_AgentHelperCount");
             var avoidReplaceProperty = groupProperty.FindPropertyRelative("m_AllowBeingReplacedBySamePriority");
 
             // 确保折叠状态数组足够大
@@ -119,10 +119,10 @@ namespace FuFramework.Sound.Editor
             {
                 EditorGUILayout.Space(5);
 
-                EditorGUILayout.PropertyField(nameProperty, new GUIContent("名称"));
-                EditorGUILayout.PropertyField(muteProperty, new GUIContent("静音"));
-                EditorGUILayout.PropertyField(volumeProperty, new GUIContent("音量"));
-                EditorGUILayout.PropertyField(agentCountProperty, new GUIContent("播放代理数量"));
+                EditorGUILayout.PropertyField(nameProperty,         new GUIContent("名称"));
+                EditorGUILayout.PropertyField(muteProperty,         new GUIContent("静音"));
+                EditorGUILayout.PropertyField(volumeProperty,       new GUIContent("音量"));
+                EditorGUILayout.PropertyField(agentCountProperty,   new GUIContent("播放代理数量"));
                 EditorGUILayout.PropertyField(avoidReplaceProperty, new GUIContent("允许同优先级替换"));
 
                 EditorGUILayout.Space(5);
@@ -254,9 +254,9 @@ namespace FuFramework.Sound.Editor
         /// <param name="groupProperty">声音组序列化属性</param>
         private void ResetSoundGroup(SerializedProperty groupProperty)
         {
-            groupProperty.FindPropertyRelative("m_IsMute").boolValue = false;
-            groupProperty.FindPropertyRelative("m_Volume").floatValue = 1f;
-            groupProperty.FindPropertyRelative("m_AgentHelperCount").intValue = 1;
+            groupProperty.FindPropertyRelative("m_IsMute").boolValue                           = false;
+            groupProperty.FindPropertyRelative("m_Volume").floatValue                          = 1f;
+            groupProperty.FindPropertyRelative("m_AgentHelperCount").intValue                  = 1;
             groupProperty.FindPropertyRelative("m_AllowBeingReplacedBySamePriority").boolValue = true;
             serializedObject.ApplyModifiedProperties();
         }
@@ -285,14 +285,6 @@ namespace FuFramework.Sound.Editor
             {
                 m_GroupFoldouts[i] = true; // 默认展开
             }
-        }
-
-        /// <summary>
-        /// 刷新组件类型名称数组
-        /// </summary>
-        protected override void RefreshTypeNames()
-        {
-            // Nothing
         }
     }
 }

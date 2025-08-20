@@ -1,0 +1,16 @@
+{
+    "name": "FuFramework.ModuleSetting.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a38628879c417cf49b28b1d0a90f18fa"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
