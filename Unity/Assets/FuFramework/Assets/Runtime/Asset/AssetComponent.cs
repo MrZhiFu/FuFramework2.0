@@ -69,7 +69,7 @@ namespace FuFramework.Asset.Runtime
             GamePlayMode = EPlayMode.WebPlayMode;
 #endif
 #endif
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IAssetManager);
 
             base.Awake();

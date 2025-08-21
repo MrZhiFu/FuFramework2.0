@@ -29,7 +29,7 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IFsmManager);
 
             base.Awake();

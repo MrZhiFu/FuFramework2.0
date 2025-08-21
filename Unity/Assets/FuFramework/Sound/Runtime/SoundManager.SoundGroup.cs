@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FuFramework.Core.Runtime;
+using FuFramework.ModuleSetting.Runtime;
+using UnityEngine;
+using UnityEngine.Audio;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -11,27 +14,37 @@ namespace FuFramework.Sound.Runtime
         /// 声音组。
         /// 功能:管理该组中的声音, 包括播放、停止、暂停、恢复等。
         /// </summary>
-        public class SoundGroup
+        public class SoundGroup : MonoBehaviour
         {
-            private readonly List<SoundAgent> m_SoundAgents; // 声音播放代理列表
+            /// <summary>
+            /// 声音播放代理列表
+            /// </summary>
+            private readonly List<SoundAgent> m_SoundAgents = new();
 
-            private bool  m_Mute;   // 是否静音。
-            private float m_Volume; // 声音组音量。
+            /// <summary>
+            /// 是否静音
+            /// </summary>
+            private bool m_Mute;
+
+            /// <summary>
+            /// 声音组音量。
+            /// </summary>
+            private float m_Volume;
 
             /// <summary>
             /// 获取声音组名称。
             /// </summary>
-            public string Name { get; }
+            public string Name { get; private set; }
 
             /// <summary>
-            /// 获取声音组辅助器。
+            /// 获取或设置声音组辅助器所在的混音组。
             /// </summary>
-            public DefaultSoundGroupHelper Helper { get; }
+            public AudioMixerGroup AudioMixerGroup { get; private set; }
 
             /// <summary>
             /// 获取或设置声音组中的声音是否允许被同优先级声音替换。
             /// </summary>
-            public bool AllowBeReplacedBySamePriority { get; set; } = true;
+            public bool AllowBeReplacedBySamePriority { get; private set; }
 
             /// <summary>
             /// 获取声音代理数。
@@ -46,7 +59,9 @@ namespace FuFramework.Sound.Runtime
                 get => m_Mute;
                 set
                 {
+                    if (value == m_Mute) return;
                     m_Mute = value;
+                    // TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
                     foreach (var soundAgent in m_SoundAgents)
                     {
                         soundAgent.RefreshMute();
@@ -62,7 +77,9 @@ namespace FuFramework.Sound.Runtime
                 get => m_Volume;
                 set
                 {
+                    if (Mathf.Approximately(value, m_Volume)) return;
                     m_Volume = value;
+                    // TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
                     foreach (var soundAgent in m_SoundAgents)
                     {
                         soundAgent.RefreshVolume();
@@ -73,25 +90,37 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 初始化声音组的新实例。
             /// </summary>
-            /// <param name="name">声音组名称。</param>
-            /// <param name="soundGroupHelper">声音组辅助器。</param>
-            public SoundGroup(string name, DefaultSoundGroupHelper soundGroupHelper)
+            /// <param name="soundGroupInfo">声音组信息。</param>
+            public void Init(SoundGroupInfo soundGroupInfo, SoundManager soundManager)
             {
-                if (string.IsNullOrEmpty(name)) throw new FuException("[SoundGroup]声音组名称不能为空!");
+                FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
+                Name = soundGroupInfo.Name;
+                AllowBeReplacedBySamePriority = soundGroupInfo.AllowBeReplacedBySamePriority;
 
-                Name          = name;
-                Helper        = soundGroupHelper ?? throw new FuException("[SoundGroup]声音组辅助器不能为空!.");
-                m_SoundAgents = new List<SoundAgent>();
+                // TODO：这里获取玩家是否存储了相关的设置，如果是，则使用玩家的设置，否则使用默认设置。
+                Volume = soundGroupInfo.Volume;
+                Mute = soundGroupInfo.Mute;
+                
+                // 添加声音组辅助器中的声音播放代理辅助器
+                for (var i = 0; i < soundGroupInfo.AgentHelperCount; i++)
+                {
+                    AddSoundAgentHelper(i, soundManager);
+                }
             }
 
             /// <summary>
             /// 增加声音代理辅助器。
             /// </summary>
-            /// <param name="soundAgentHelper">要增加的声音代理辅助器。</param>
+            /// <param name="idx">声音代理索引。</param>
             /// <param name="manager">声音管理器。</param>
-            public void AddSoundAgentHelper(DefaultSoundAgentHelper soundAgentHelper, SoundManager manager)
+            public void AddSoundAgentHelper(int idx, SoundManager manager)
             {
-                m_SoundAgents.Add(new SoundAgent(this, soundAgentHelper, manager));
+                var soundAgentGo = new GameObject($"Sound Agent - {idx}");
+                soundAgentGo.transform.SetParent(transform);
+                soundAgentGo.transform.localScale = Vector3.one;
+                var soundAgent = soundAgentGo.GetOrAddComponent<SoundAgent>();
+                soundAgent.Init(this, manager);
+                m_SoundAgents.Add(soundAgent);
             }
 
             /// <summary>
@@ -120,7 +149,7 @@ namespace FuFramework.Sound.Runtime
                     // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
                     if (soundAgent.Priority < playSoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority) 
+                        if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority)
                             candidateAgent = soundAgent;
                         break;
                     }
@@ -128,7 +157,7 @@ namespace FuFramework.Sound.Runtime
                     // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
                     if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime) 
+                        if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
                             candidateAgent = soundAgent;
                     }
                 }
@@ -145,18 +174,18 @@ namespace FuFramework.Sound.Runtime
                     return null;
                 }
 
-                candidateAgent.SerialId           = serialId;
-                candidateAgent.Time               = playSoundParams.Time;
-                candidateAgent.MuteInSoundGroup   = playSoundParams.IsMute;
-                candidateAgent.Loop               = playSoundParams.Loop;
-                candidateAgent.Priority           = playSoundParams.Priority;
+                candidateAgent.SerialId = serialId;
+                candidateAgent.Time = playSoundParams.Time;
+                candidateAgent.MuteInSoundGroup = playSoundParams.IsMute;
+                candidateAgent.Loop = playSoundParams.Loop;
+                candidateAgent.Priority = playSoundParams.Priority;
                 candidateAgent.VolumeInSoundGroup = playSoundParams.Volume;
-                candidateAgent.Pitch              = playSoundParams.Pitch;
-                candidateAgent.PanStereo          = playSoundParams.PanStereo;
-                candidateAgent.SpatialBlend       = playSoundParams.SpatialBlend;
-                candidateAgent.MaxDistance        = playSoundParams.MaxDistance;
-                candidateAgent.DopplerLevel       = playSoundParams.DopplerLevel;
-                
+                candidateAgent.Pitch = playSoundParams.Pitch;
+                candidateAgent.PanStereo = playSoundParams.PanStereo;
+                candidateAgent.SpatialBlend = playSoundParams.SpatialBlend;
+                candidateAgent.MaxDistance = playSoundParams.MaxDistance;
+                candidateAgent.DopplerLevel = playSoundParams.DopplerLevel;
+
                 // 使用代理播放声音
                 candidateAgent.Play(playSoundParams.FadeInSeconds);
                 return candidateAgent;

@@ -139,7 +139,7 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IDownloadManager);
 
             base.Awake();

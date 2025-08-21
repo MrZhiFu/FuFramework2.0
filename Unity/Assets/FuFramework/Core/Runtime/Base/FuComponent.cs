@@ -23,7 +23,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 实现类的类型
         /// </summary>
-        protected Type ImplementationComponentType = null;
+        protected Type ImplComponentType = null;
 
         /// <summary>
         /// 游戏框架组件类型。
@@ -36,12 +36,13 @@ namespace FuFramework.Core.Runtime
         protected virtual void Awake()
         {
             GameEntry.RegisterComponent(this);
-            if (IsAutoRegister)
-            {
-                FuGuard.NotNull(ImplementationComponentType, nameof(ImplementationComponentType));
-                FuGuard.NotNull(InterfaceComponentType,      nameof(InterfaceComponentType));
-                FuEntry.RegisterModule(InterfaceComponentType, ImplementationComponentType);
-            }
+            
+            if (!IsAutoRegister) return;
+            
+            FuGuard.NotNull(ImplComponentType,      nameof(ImplComponentType));
+            FuGuard.NotNull(InterfaceComponentType, nameof(InterfaceComponentType));
+            
+            FuEntry.RegisterModule(InterfaceComponentType, ImplComponentType);
         }
     }
 }

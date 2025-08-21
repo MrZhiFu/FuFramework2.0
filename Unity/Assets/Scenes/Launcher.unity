@@ -1101,22 +1101,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103b87e8484fae14b8b67174ab1e5bf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1917164023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 813768251727118787}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82a4a470d83682344897f40629582aa9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  componentType: FuFramework.Sound.Runtime.SoundManager
-  m_InstanceRoot: {fileID: 6524165465694967693}
-  m_CustomSoundGroupHelper: {fileID: 0}
-  m_CustomSoundAgentHelper: {fileID: 0}
 --- !u!4 &2120699936
 Transform:
   m_ObjectHideFlags: 0
@@ -1225,23 +1209,6 @@ GameObject:
   - component: {fileID: 9043005308408896577}
   m_Layer: 0
   m_Name: Object Pool
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &813768251727118787
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6524165465694967693}
-  - component: {fileID: 1917164023}
-  m_Layer: 0
-  m_Name: Sound
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1546,21 +1513,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &6524165465694967693
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 813768251727118787}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6529379366163002800
 Transform:
   m_ObjectHideFlags: 0
@@ -1653,7 +1605,6 @@ Transform:
   - {fileID: 8145429920746508751}
   - {fileID: 2885466766715029128}
   - {fileID: 6394611483762413553}
-  - {fileID: 6524165465694967693}
   - {fileID: 755918134}
   - {fileID: 2506581721167664985}
   - {fileID: 8613711354764159178}

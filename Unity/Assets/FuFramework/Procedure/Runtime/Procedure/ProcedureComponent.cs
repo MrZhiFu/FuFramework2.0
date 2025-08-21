@@ -42,7 +42,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IProcedureManager);
             base.Awake();
             m_ProcedureManager = FuEntry.GetModule<IProcedureManager>();

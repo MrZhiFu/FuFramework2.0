@@ -102,15 +102,13 @@ namespace FuFramework.Core.Runtime
         public static void RegisterModule(Type interfaceType, Type implType)
         {
             if (!interfaceType.IsInterface)
-                throw new FuException(Utility.Text.Format("要注册的框架模块必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
+                throw new FuException(Utility.Text.Format("要注册的框架模块接口类必须为接口类型, 但是 '{0}' 不是接口类型.", interfaceType.FullName));
 
             if (!implType.IsClass || implType.IsInterface || implType.IsAbstract)
-                throw new FuException(Utility.Text.Format("要注册的框架模块必须为非抽象类, 但是 '{0}' 不是非抽象类.", implType.FullName));
+                throw new FuException(Utility.Text.Format("要注册的框架模块实现类必须为非抽象类, 但是 '{0}' 不是非抽象类.", implType.FullName));
 
-            if (!s_ModuleTypeDict.TryGetValue(interfaceType, out _))
-            {
-                s_ModuleTypeDict[interfaceType] = implType;
-            }
+            if (s_ModuleTypeDict.TryGetValue(interfaceType, out _)) return;
+            s_ModuleTypeDict[interfaceType] = implType;
         }
 
         /// <summary>
@@ -120,8 +118,9 @@ namespace FuFramework.Core.Runtime
         /// <returns>要创建的游戏框架模块。</returns>
         private static FuModule CreateModule(Type moduleType)
         {
-            var module = (FuModule)Activator.CreateInstance(moduleType);
-            if (module == null) throw new FuException(Utility.Text.Format("创建模块失败, 模块类型 '{0}'.", moduleType.FullName));
+            var moduleInstance = Activator.CreateInstance(moduleType);
+            if (moduleInstance is not FuModule module)
+                throw new FuException(Utility.Text.Format("创建模块失败, 模块类型 '{0}'.", moduleType.FullName));
 
             var current = s_AllModuleList.First;
             while (current != null)

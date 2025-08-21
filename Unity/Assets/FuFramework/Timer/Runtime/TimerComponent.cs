@@ -18,7 +18,7 @@ namespace FuFramework.Timer.Runtime
 
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ITimerManager);
 
             base.Awake();

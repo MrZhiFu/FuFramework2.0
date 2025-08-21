@@ -21,7 +21,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 是否允许被同优先级声音替换。
             /// </summary>
-            [SerializeField] private bool m_AllowBeingReplacedBySamePriority;
+            [SerializeField] private bool m_AllowBeReplacedBySamePriority;
 
             /// <summary>
             /// 是否静音。
@@ -46,7 +46,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取是否允许被同优先级声音替换。
             /// </summary>
-            public bool AllowBeingReplacedBySamePriority => m_AllowBeingReplacedBySamePriority;
+            public bool AllowBeReplacedBySamePriority => m_AllowBeReplacedBySamePriority;
 
             /// <summary>
             /// 获取是否静音。

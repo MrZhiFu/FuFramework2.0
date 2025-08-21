@@ -27,7 +27,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IObjectPoolManager);
 
             base.Awake();

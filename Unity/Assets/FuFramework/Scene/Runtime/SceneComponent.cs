@@ -47,7 +47,7 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IGameSceneManager);
 
             base.Awake();

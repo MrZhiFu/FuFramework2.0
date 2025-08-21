@@ -34,7 +34,7 @@ namespace FuFramework.Setting.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(ISettingManager);
             base.Awake();
             m_SettingManager = FuEntry.GetModule<ISettingManager>();

@@ -91,7 +91,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IEntityManager);
 
             base.Awake();

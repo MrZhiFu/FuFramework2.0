@@ -52,7 +52,7 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(INetworkManager);
             base.Awake();
             m_NetworkManager = FuEntry.GetModule<INetworkManager>();

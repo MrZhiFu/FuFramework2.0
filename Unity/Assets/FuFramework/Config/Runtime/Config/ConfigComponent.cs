@@ -35,7 +35,7 @@ namespace FuFramework.Config.Runtime
         protected override void Awake()
         {
             m_ConfigNameTypeDict.Clear();
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType      = typeof(IConfigManager);
 
             base.Awake();

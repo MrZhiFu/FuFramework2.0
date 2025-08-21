@@ -118,7 +118,7 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplementationComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(ILocalizationManager);
             base.Awake();
             m_LocalizationManager = FuEntry.GetModule<ILocalizationManager>();
