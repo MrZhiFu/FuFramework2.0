@@ -3,6 +3,7 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Entry.Runtime;
+using FuFramework.Sound.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
 using UnityEngine;
@@ -121,7 +122,9 @@ namespace Hotfix.UI.View.Login
 
     private void OnBtnLoginClick(EventContext ctx)
     {
-        Login().Forget();
+        // Login().Forget();
+        var soundPath = Utility.Asset.Path.GetSoundPath("bgm_outer_Christmas", ".ogg");
+        SoundManager.Instance.PlayBGM(soundPath);
     }
 
     private void OnInputUserNameChanged(EventContext ctx)

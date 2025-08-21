@@ -45,7 +45,6 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             private float m_VolumeInSoundGroup;
 
-            private Transform m_CachedTransform; // 缓存Transform组件
             private AudioSource m_AudioSource; // 播放声音的AudioSource组件
             private EntityLogic m_BindingEntityLogic; // 声音绑定的实体
 
@@ -89,7 +88,7 @@ namespace FuFramework.Sound.Runtime
             public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
 
             /// <summary>
-            /// 获取或设置播放位置。
+            /// 获取或设置播放位置(以秒为单位)。
             /// </summary>
             public float Time
             {
@@ -211,7 +210,6 @@ namespace FuFramework.Sound.Runtime
 
             private void Awake()
             {
-                m_CachedTransform = transform;
                 m_AudioSource = gameObject.GetOrAddComponent<AudioSource>();
                 m_AudioSource.playOnAwake = false;
                 m_AudioSource.rolloffMode = AudioRolloffMode.Custom;
@@ -243,7 +241,7 @@ namespace FuFramework.Sound.Runtime
                     return;
                 }
 
-                m_CachedTransform.position = m_BindingEntityLogic.CachedTransform.position;
+                transform.position = m_BindingEntityLogic.CachedTransform.position;
             }
 
 
@@ -337,7 +335,7 @@ namespace FuFramework.Sound.Runtime
                     m_SoundAsset = null;
                 }
 
-                m_CachedTransform.localPosition = Vector3.zero;
+                transform.localPosition = Vector3.zero;
                 m_AudioSource.clip = null;
                 m_BindingEntityLogic = null;
                 m_VolumeWhenPause = 0f;
@@ -402,10 +400,10 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 设置声音所在的世界坐标。
             /// </summary>
-            /// <param name="worldPosition">声音所在的世界坐标。</param>
-            public void SetWorldPosition(Vector3 worldPosition)
+            /// <param name="wPos">声音所在的世界坐标。</param>
+            public void SetWorldPosition(Vector3 wPos)
             {
-                m_CachedTransform.position = worldPosition;
+                transform.position = wPos;
             }
 
             /// <summary>

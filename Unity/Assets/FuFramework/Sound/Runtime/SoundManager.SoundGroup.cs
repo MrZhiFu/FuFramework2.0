@@ -95,13 +95,13 @@ namespace FuFramework.Sound.Runtime
             public void Init(SoundGroupInfo soundGroupInfo, SoundManager soundManager)
             {
                 FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
-                Name = soundGroupInfo.Name;
+                Name                          = soundGroupInfo.Name;
                 AllowBeReplacedBySamePriority = soundGroupInfo.AllowBeReplacedBySamePriority;
 
                 // TODO：这里获取玩家是否存储了相关的设置，如果是，则使用玩家的设置，否则使用默认设置。
                 Volume = soundGroupInfo.Volume;
-                Mute = soundGroupInfo.Mute;
-                
+                Mute   = soundGroupInfo.Mute;
+
                 // 添加声音组辅助器中的声音播放代理辅助器
                 for (var i = 0; i < soundGroupInfo.AgentHelperCount; i++)
                 {
@@ -127,15 +127,16 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 播放声音。
             /// </summary>
-            /// <param name="serialId">声音的序列编号。</param>
-            /// <param name="soundAsset">声音资源。</param>
-            /// <param name="playSoundParams">播放声音参数。</param>
-            /// <param name="errorCode">错误码。</param>
+            /// <param name="playSoundInfo">播放时的声音信息。</param>
+            /// <param name="errorCode">播放过程中可能出现的错误码。</param>
             /// <returns>用于播放的声音代理。</returns>
-            public SoundAgent PlaySound(int serialId, object soundAsset, PlaySoundParams playSoundParams, out EPlaySoundErrorCode? errorCode)
+            public SoundAgent PlaySound(PlaySoundInfo playSoundInfo, out EPlaySoundErrorCode? errorCode)
             {
                 errorCode = null;
                 SoundAgent candidateAgent = null; // 候选播放代理
+                
+                if (playSoundInfo is null) return null;
+                
 
                 // 遍历所有声音播放代理，找到合适的代理播放声音
                 foreach (var soundAgent in m_SoundAgents)
@@ -148,47 +149,47 @@ namespace FuFramework.Sound.Runtime
                     }
 
                     // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
-                    if (soundAgent.Priority < playSoundParams.Priority)
+                    if (soundAgent.Priority < playSoundInfo.PlaySoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.Priority < candidateAgent.Priority)
+                        if (!candidateAgent || soundAgent.Priority < candidateAgent.Priority)
                             candidateAgent = soundAgent;
                         break;
                     }
 
                     // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
-                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundParams.Priority)
+                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundInfo.PlaySoundParams.Priority)
                     {
-                        if (candidateAgent == null || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
+                        if (!candidateAgent || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
                             candidateAgent = soundAgent;
                     }
                 }
 
-                if (candidateAgent == null)
+                if (!candidateAgent)
                 {
                     errorCode = EPlaySoundErrorCode.IgnoredBecauseLowPriority;
                     return null;
                 }
 
-                if (!candidateAgent.SetSoundAsset(soundAsset))
+                if (!candidateAgent.SetSoundAsset(playSoundInfo.SoundAsset))
                 {
                     errorCode = EPlaySoundErrorCode.SetSoundAssetFailure;
                     return null;
                 }
 
-                candidateAgent.SerialId = serialId;
-                candidateAgent.Time = playSoundParams.Time;
-                candidateAgent.MuteInSoundGroup = playSoundParams.IsMute;
-                candidateAgent.Loop = playSoundParams.Loop;
-                candidateAgent.Priority = playSoundParams.Priority;
-                candidateAgent.VolumeInSoundGroup = playSoundParams.Volume;
-                candidateAgent.Pitch = playSoundParams.Pitch;
-                candidateAgent.PanStereo = playSoundParams.PanStereo;
-                candidateAgent.SpatialBlend = playSoundParams.SpatialBlend;
-                candidateAgent.MaxDistance = playSoundParams.MaxDistance;
-                candidateAgent.DopplerLevel = playSoundParams.DopplerLevel;
+                candidateAgent.SerialId           = playSoundInfo.SerialId;
+                candidateAgent.Time               = playSoundInfo.PlaySoundParams.Time;
+                candidateAgent.MuteInSoundGroup   = playSoundInfo.PlaySoundParams.IsMute;
+                candidateAgent.Loop               = playSoundInfo.PlaySoundParams.Loop;
+                candidateAgent.Priority           = playSoundInfo.PlaySoundParams.Priority;
+                candidateAgent.VolumeInSoundGroup = playSoundInfo.PlaySoundParams.Volume;
+                candidateAgent.Pitch              = playSoundInfo.PlaySoundParams.Pitch;
+                candidateAgent.PanStereo          = playSoundInfo.PlaySoundParams.PanStereo;
+                candidateAgent.SpatialBlend       = playSoundInfo.PlaySoundParams.SpatialBlend;
+                candidateAgent.MaxDistance        = playSoundInfo.PlaySoundParams.MaxDistance;
+                candidateAgent.DopplerLevel       = playSoundInfo.PlaySoundParams.DopplerLevel;
 
                 // 使用代理播放声音
-                candidateAgent.Play(playSoundParams.FadeInSeconds);
+                candidateAgent.Play(playSoundInfo.PlaySoundParams.FadeInSeconds);
                 return candidateAgent;
             }
 

@@ -8,7 +8,7 @@ namespace FuFramework.Sound.Runtime
     internal static class Constant
     {
         /// <summary>
-        /// 默认播放时间。
+        /// 默认播放位置(以秒为单位)。
         /// </summary>
         internal const float DefaultTime = 0f;
 

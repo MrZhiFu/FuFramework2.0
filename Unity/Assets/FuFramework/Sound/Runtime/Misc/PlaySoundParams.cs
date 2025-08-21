@@ -1,4 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
+using UnityEngine;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
@@ -6,13 +7,13 @@ namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 播放声音参数。
-    /// 包括：播放时间、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
+    /// 包括：播放位置(以秒为单位)、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
     ///      声音立体声声相、声音空间混合量、声音最大距离、声音多普勒等级。
     /// </summary>
     public sealed class PlaySoundParams : IReference
     {
         /// <summary>
-        /// 获取或设置播放位置。
+        /// 获取或设置播放位置(以秒为单位)。
         /// </summary>
         public float Time { get; private set; }
 
@@ -66,17 +67,12 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public float DopplerLevel { get; private set; }
 
-        /// <summary>
-        /// 获取是否被引用。
-        /// </summary>
-        internal bool Referenced { get; private set; }
-
+        
         /// <summary>
         /// 初始化播放声音参数的新实例。
         /// </summary>
         public PlaySoundParams()
         {
-            Referenced    = false;
             Time          = Constant.DefaultTime;
             IsMute        = Constant.DefaultMute;
             Loop          = Constant.DefaultLoop;
@@ -99,7 +95,6 @@ namespace FuFramework.Sound.Runtime
         public static PlaySoundParams Create(bool isLoop = false, int priority = Constant.DefaultPriority)
         {
             var playSoundParams = ReferencePool.Acquire<PlaySoundParams>();
-            playSoundParams.Referenced = true;
             playSoundParams.Loop       = isLoop;
             playSoundParams.Priority      = priority;
             return playSoundParams;

@@ -9,7 +9,7 @@ namespace FuFramework.Sound.Runtime
        
         private void Start()
         {
-            _ = typeof(PlaySoundInfoExtra);
+            _ = typeof(PlaySoundParams3D);
             _ = typeof(SoundComponent);
             _ = typeof(Constant);
             _ = typeof(EPlaySoundErrorCode);

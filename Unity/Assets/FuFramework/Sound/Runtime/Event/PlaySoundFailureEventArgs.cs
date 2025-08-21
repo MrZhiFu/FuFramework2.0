@@ -40,27 +40,16 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public EPlaySoundErrorCode ErrorCode { get; private set; }
 
-        /// <summary>
-        /// 获取错误信息。
-        /// </summary>
-        public string ErrorMessage { get; private set; }
-
-        /// <summary>
-        /// 获取用户自定义数据。
-        /// </summary>
-        public object UserData { get; private set; }
 
         /// <summary>
         /// 初始化播放声音失败事件的新实例。
         /// </summary>
         public PlaySoundFailureEventArgs()
         {
-            SerialId        = 0;
-            SoundAssetName  = null;
-            SoundGroupName  = null;
-            ErrorCode       = EPlaySoundErrorCode.Unknown;
-            ErrorMessage    = null;
-            UserData        = null;
+            SerialId       = 0;
+            SoundAssetName = null;
+            SoundGroupName = null;
+            ErrorCode      = EPlaySoundErrorCode.Unknown;
         }
 
         /// <summary>
@@ -70,19 +59,14 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="errorCode">错误码。</param>
-        /// <param name="errorMessage">错误信息。</param>
-        /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音失败事件。</returns>
-        public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, EPlaySoundErrorCode errorCode, string errorMessage,
-                                                       object userData)
+        public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, EPlaySoundErrorCode errorCode)
         {
             var playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
-            playSoundFailureEventArgs.SerialId        = serialId;
-            playSoundFailureEventArgs.SoundAssetName  = soundAssetName;
-            playSoundFailureEventArgs.SoundGroupName  = soundGroupName;
-            playSoundFailureEventArgs.ErrorCode       = errorCode;
-            playSoundFailureEventArgs.ErrorMessage    = errorMessage;
-            playSoundFailureEventArgs.UserData        = userData;
+            playSoundFailureEventArgs.SerialId       = serialId;
+            playSoundFailureEventArgs.SoundAssetName = soundAssetName;
+            playSoundFailureEventArgs.SoundGroupName = soundGroupName;
+            playSoundFailureEventArgs.ErrorCode      = errorCode;
             return playSoundFailureEventArgs;
         }
 
@@ -91,12 +75,10 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId        = 0;
-            SoundAssetName  = null;
-            SoundGroupName  = null;
-            ErrorCode       = EPlaySoundErrorCode.Unknown;
-            ErrorMessage    = null;
-            UserData        = null;
+            SerialId       = 0;
+            SoundAssetName = null;
+            SoundGroupName = null;
+            ErrorCode      = EPlaySoundErrorCode.Unknown;
         }
     }
 }
