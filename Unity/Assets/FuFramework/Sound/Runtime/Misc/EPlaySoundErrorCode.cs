@@ -25,10 +25,10 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 播放声音因优先级低被忽略。
         /// </summary>
-        IgnoredDueToLowPriority,
+        IgnoredBecauseLowPriority,
 
         /// <summary>
-        /// 设置声音资源失败。
+        /// 设置声音资源到AudioSource组件上失败。
         /// </summary>
         SetSoundAssetFailure
     }

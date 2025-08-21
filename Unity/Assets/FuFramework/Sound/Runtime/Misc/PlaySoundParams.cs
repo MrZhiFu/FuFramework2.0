@@ -94,12 +94,14 @@ namespace FuFramework.Sound.Runtime
         /// 创建播放声音参数。
         /// </summary>
         /// <param name="isLoop">是否循环播放。</param>
+        /// <param name="priority">声音优先级。</param>
         /// <returns>创建的播放声音参数。</returns>
-        public static PlaySoundParams Create(bool isLoop = false)
+        public static PlaySoundParams Create(bool isLoop = false, int priority = Constant.DefaultPriority)
         {
             var playSoundParams = ReferencePool.Acquire<PlaySoundParams>();
             playSoundParams.Referenced = true;
             playSoundParams.Loop       = isLoop;
+            playSoundParams.Priority      = priority;
             return playSoundParams;
         }
 

@@ -91,6 +91,7 @@ namespace FuFramework.Sound.Runtime
             /// 初始化声音组的新实例。
             /// </summary>
             /// <param name="soundGroupInfo">声音组信息。</param>
+            /// <param name="soundManager">声音管理器。</param>
             public void Init(SoundGroupInfo soundGroupInfo, SoundManager soundManager)
             {
                 FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
@@ -164,7 +165,7 @@ namespace FuFramework.Sound.Runtime
 
                 if (candidateAgent == null)
                 {
-                    errorCode = EPlaySoundErrorCode.IgnoredDueToLowPriority;
+                    errorCode = EPlaySoundErrorCode.IgnoredBecauseLowPriority;
                     return null;
                 }
 

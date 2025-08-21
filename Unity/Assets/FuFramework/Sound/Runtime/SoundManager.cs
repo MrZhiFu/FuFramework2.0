@@ -50,7 +50,7 @@ namespace FuFramework.Sound.Runtime
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             if (!m_EventComponent)
             {
-                Log.Fatal("[SoundComponent] 事件组件不存在!");
+                Log.Fatal("[SoundManager] 事件组件不存在!");
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace FuFramework.Sound.Runtime
             foreach (var group in soundSetting.AllGroups)
             {
                 if (AddSoundGroup(group)) continue;
-                Log.Warning("[SoundComponent] 添加声音组 '{0}' 失败!", group.Name);
+                Log.Warning("[SoundManager] 添加声音组 '{0}' 失败!", group.Name);
             }
         }
 
@@ -335,9 +335,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams,
-            Entity.Runtime.Entity bindingEntity, object userData,
-            int serialId)
+        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity.Runtime.Entity bindingEntity, object userData, int serialId)
         {
             var playSoundInfoExtra = PlaySoundInfoExtra.Create(bindingEntity, Vector3.zero, userData);
             return await PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, playSoundInfoExtra, serialId);
@@ -352,13 +350,13 @@ namespace FuFramework.Sound.Runtime
         /// <param name="playSoundParams">播放声音参数。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
+        /// <param name="isLoop">是否循环播放。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, PlaySoundParams playSoundParams,
-            object userData, int serialId = -1)
+        public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority, PlaySoundParams playSoundParams, object userData, int serialId = -1, bool isLoop = false)
         {
             if (m_assetManager == null) throw new FuException("[SoundManager]声音资源管理器为空!");
 
-            playSoundParams ??= PlaySoundParams.Create();
+            playSoundParams ??= PlaySoundParams.Create(isLoop, priority);
 
             int newSerialId;
             if (serialId >= 0)
@@ -374,26 +372,18 @@ namespace FuFramework.Sound.Runtime
             if (soundGroup == null)
             {
                 errorCode = EPlaySoundErrorCode.SoundGroupNotExist;
-                errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 不存在!", groupName);
+                errorMessage = Utility.Text.Format("[SoundManager] 播放声音 '{0}' 失败, 声音组 '{1}' 不存在!", soundAssetName, groupName);
             }
             else if (soundGroup.SoundAgentCount <= 0)
             {
                 errorCode = EPlaySoundErrorCode.SoundGroupHasNoAgent;
-                errorMessage = Utility.Text.Format("[SoundManager] 声音组 '{0}' 没有声音播放代理!", groupName);
+                errorMessage = Utility.Text.Format("[SoundManager]  播放声音 '{0}' 失败, 声音组 '{1}' 没有声音播放代理!", soundAssetName, groupName);
             }
 
             if (errorCode.HasValue)
             {
-                var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetName, groupName, playSoundParams,
-                    errorCode.Value, errorMessage, userData);
-
-                var logMessage = Utility.Text.Format("[SoundComponent]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}', 错误信息 '{3}'.",
-                    failureEventArgs.SoundAssetName, failureEventArgs.SoundGroupName, failureEventArgs.ErrorCode, failureEventArgs.ErrorMessage);
-                if (failureEventArgs.ErrorCode == EPlaySoundErrorCode.IgnoredDueToLowPriority)
-                    Log.Info(logMessage);
-                else
-                    Log.Warning(logMessage);
-
+                Log.Error(errorMessage);
+                var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetName, groupName, errorCode.Value, errorMessage, userData);
                 m_EventComponent.Fire(this, failureEventArgs);
                 ReferencePool.Release(failureEventArgs);
                 return newSerialId;
@@ -550,12 +540,12 @@ namespace FuFramework.Sound.Runtime
 
             m_LoadingSoundList.Remove(playSoundInfo.SerialId);
 
-            // 播放声音成功
+            // 播放声音成功--派发成功事件
             var soundAgent = playSoundInfo.SoundGroup.PlaySound(playSoundInfo.SerialId, soundAsset, playSoundInfo.PlaySoundParams, out var errorCode);
             if (soundAgent)
             {
-                var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, soundAssetName, soundAgent, duration,
-                    playSoundInfo.UserData);
+                Log.Info(Utility.Text.Format("[SoundManager]播放声音 '{0}' 成功, 声音组 '{1}'", soundAssetName, playSoundInfo.SoundGroup.Name));
+                var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, soundAssetName, soundAgent, duration, playSoundInfo.UserData);
                 if (successEventArgs.UserData is PlaySoundInfoExtra playSoundInfoExtra)
                 {
                     if (playSoundInfoExtra.BindingEntity)
@@ -572,26 +562,21 @@ namespace FuFramework.Sound.Runtime
                 return;
             }
 
+            // 播放声音失败--释放声音资源，派发失败事件
             m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-
-            // 释放声音资源
             m_assetManager?.UnloadAsset(soundAssetName);
-
-            // 播放声音失败
-            var errorMessage = Utility.Text.Format("[SoundManager]声音组 '{0}' 播放声音 '{1}' 失败!.", playSoundInfo.SoundGroup.Name, soundAssetName);
+            
             var errorCodeValue = EPlaySoundErrorCode.Unknown;
             if (errorCode != null)
                 errorCodeValue = errorCode.Value;
 
-            var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, soundAssetName,
-                playSoundInfo.SoundGroup.Name, playSoundInfo.PlaySoundParams, errorCodeValue, errorMessage, playSoundInfo.UserData);
+            var errorMessage = Utility.Text.Format("[SoundManager]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}'.", soundAssetName, playSoundInfo.SoundGroup.Name, errorCodeValue);
+            var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, soundAssetName, playSoundInfo.SoundGroup.Name, errorCodeValue, errorMessage, playSoundInfo.UserData);
 
-            var logMessage = Utility.Text.Format("[SoundComponent]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}', 错误信息 '{3}'.",
-                failureEventArgs.SoundAssetName, failureEventArgs.SoundGroupName, failureEventArgs.ErrorCode, failureEventArgs.ErrorMessage);
-            if (failureEventArgs.ErrorCode == EPlaySoundErrorCode.IgnoredDueToLowPriority)
-                Log.Info(logMessage);
+            if (failureEventArgs.ErrorCode == EPlaySoundErrorCode.IgnoredBecauseLowPriority)
+                Log.Info(errorMessage);
             else
-                Log.Warning(logMessage);
+                Log.Error(errorMessage);
 
             m_EventComponent.Fire(this, failureEventArgs);
             ReferencePool.Release(failureEventArgs);
