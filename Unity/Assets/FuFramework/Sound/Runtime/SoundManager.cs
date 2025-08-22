@@ -251,8 +251,8 @@ namespace FuFramework.Sound.Runtime
         /// <returns>声音的序列编号。</returns>
         public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, Vector3 worldPosition, object userData = null)
         {
-            var playSoundParams3D = PlaySoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, playSoundParams3D: playSoundParams3D);
+            var soundParams3D = SoundParams3D.Create(null, worldPosition, userData);
+            return PlaySound(soundAssetName, soundGroupName, soundParams3D: soundParams3D);
         }
 
         /// <summary>
@@ -266,8 +266,8 @@ namespace FuFramework.Sound.Runtime
         /// <returns>声音的序列编号。</returns>
         public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, int priority, Vector3 worldPosition, object userData = null)
         {
-            var playSoundParams3D = PlaySoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, priority, playSoundParams3D: playSoundParams3D);
+            var soundParams3D = SoundParams3D.Create(null, worldPosition, userData);
+            return PlaySound(soundAssetName, soundGroupName, priority, soundParams3D: soundParams3D);
         }
 
         /// <summary>
@@ -276,14 +276,14 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
-        /// <param name="playSoundParams">播放时的声音参数。</param>
+        /// <param name="soundParams">播放时的声音参数。</param>
         /// <param name="worldPosition">声音所在的世界坐标。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>声音的序列编号。</returns>
-        public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Vector3 worldPosition, object userData = null)
+        public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, int priority, SoundParams soundParams, Vector3 worldPosition, object userData = null)
         {
-            var playSoundInfoExtra = PlaySoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, playSoundInfoExtra, userData);
+            var playSoundInfoExtra = SoundParams3D.Create(null, worldPosition, userData);
+            return PlaySound(soundAssetName, soundGroupName, priority, soundParams, playSoundInfoExtra, userData);
         }
 
         /// <summary>
@@ -296,8 +296,8 @@ namespace FuFramework.Sound.Runtime
         /// <returns>声音的序列编号。</returns>
         public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, Entity.Runtime.Entity bindingEntity, object userData = null)
         {
-            var playSoundParams3D = PlaySoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, playSoundParams3D: playSoundParams3D);
+            var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
+            return await PlaySound(soundAssetName, soundGroupName, soundParams3D: soundParams3D);
         }
 
         /// <summary>
@@ -311,8 +311,8 @@ namespace FuFramework.Sound.Runtime
         /// <returns>声音的序列编号。</returns>
         public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, Entity.Runtime.Entity bindingEntity, object userData = null)
         {
-            var playSoundParams3D = PlaySoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, priority, null, playSoundParams3D);
+            var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
+            return await PlaySound(soundAssetName, soundGroupName, priority, null, soundParams3D);
         }
 
         /// <summary>
@@ -321,16 +321,16 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="soundGroupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
-        /// <param name="playSoundParams">播放时的声音参数。</param>
+        /// <param name="soundParams">播放时的声音参数。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, PlaySoundParams playSoundParams, Entity.Runtime.Entity bindingEntity, object userData,
+        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, SoundParams soundParams, Entity.Runtime.Entity bindingEntity, object userData,
                                             int serialId)
         {
-            var playSoundParams3D = PlaySoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, priority, playSoundParams, playSoundParams3D, serialId);
+            var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
+            return await PlaySound(soundAssetName, soundGroupName, priority, soundParams, soundParams3D, serialId);
         }
 
         /// <summary>
@@ -339,18 +339,18 @@ namespace FuFramework.Sound.Runtime
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
-        /// <param name="playSoundParams">播放时的声音参数。</param>
-        /// <param name="playSoundParams3D"></param>
+        /// <param name="soundParams">播放时的声音参数。</param>
+        /// <param name="soundParams3D"></param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <param name="isLoop">是否循环播放。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority = Constant.DefaultPriority, PlaySoundParams playSoundParams = null,
-                                            PlaySoundParams3D playSoundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false)
+        public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority = Constant.DefaultPriority, SoundParams soundParams = null,
+                                            SoundParams3D soundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false)
         {
             if (m_assetManager == null) throw new FuException("[SoundManager]声音资源管理器为空!");
 
-            playSoundParams ??= PlaySoundParams.Create(isLoop, priority);
+            soundParams ??= SoundParams.Create(isLoop, priority);
 
             int newSerialId;
             if (serialId >= 0)
@@ -394,7 +394,7 @@ namespace FuFramework.Sound.Runtime
             void OnAssetOperationHandleOnCompleted(AssetHandle assetHandle)
             {
                 var assetObject   = assetHandle.GetAssetObject<AudioClip>();
-                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetName, assetObject, soundGroup, playSoundParams, playSoundParams3D, userData);
+                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetName, assetObject, soundGroup, soundParams, soundParams3D, userData);
                 LoadAssetSuccessCallback(playSoundInfo);
             }
         }
@@ -520,15 +520,15 @@ namespace FuFramework.Sound.Runtime
             if (playSoundInfo is null)
                 throw new FuException("[SoundManager]要播放的声音信息为空!");
 
-            // 如果正在加载但是又被标记为要释放的声音，则直接释放资源并返回
+            // 如果正在加载但是又被标记为要释放的声音，则播放参数信息对象和释放资源后直接返回
             if (m_LoadingToReleaseSet.Contains(playSoundInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-                if (playSoundInfo.PlaySoundParams != null)
-                    ReferencePool.Release(playSoundInfo.PlaySoundParams);
+                if (playSoundInfo.SoundParams != null)
+                    ReferencePool.Release(playSoundInfo.SoundParams);
 
-                if (playSoundInfo.PlaySoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.PlaySoundParams3D);
+                if (playSoundInfo.SoundParams3D != null)
+                    ReferencePool.Release(playSoundInfo.SoundParams3D);
 
                 m_assetManager?.UnloadAsset(playSoundInfo.SoundName);
                 ReferencePool.Release(playSoundInfo);
@@ -540,27 +540,26 @@ namespace FuFramework.Sound.Runtime
             // 使用声音播放代理播放声音
             var soundAgent = playSoundInfo.SoundGroup.PlaySound(playSoundInfo, out var errorCode);
 
-            // 播放声音成功--派发成功事件
+            // 播放声音成功--派发成功事件, 释放播放参数信息对象
             if (soundAgent)
             {
                 Log.Info(Utility.Text.Format("[SoundManager]播放声音 '{0}' 成功, 声音组 '{1}'", playSoundInfo.SoundName, playSoundInfo.SoundGroup.Name));
-                if (playSoundInfo.PlaySoundParams3D != null)
+                if (playSoundInfo.SoundParams3D != null)
                 {
-                    if (playSoundInfo.PlaySoundParams3D.BindingEntity)
-                        soundAgent.SetBindingEntity(playSoundInfo.PlaySoundParams3D.BindingEntity);
+                    if (playSoundInfo.SoundParams3D.BindingEntity)
+                        soundAgent.SetBindingEntity(playSoundInfo.SoundParams3D.BindingEntity);
                     else
-                        soundAgent.SetWorldPosition(playSoundInfo.PlaySoundParams3D.WorldPosition);
+                        soundAgent.SetWorldPosition(playSoundInfo.SoundParams3D.WorldPosition);
                 }
 
                 var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundName, soundAgent);
                 m_EventComponent.Fire(this, successEventArgs);
-                ReferencePool.Release(successEventArgs);
 
-                if (playSoundInfo.PlaySoundParams != null)
-                    ReferencePool.Release(playSoundInfo.PlaySoundParams);
+                if (playSoundInfo.SoundParams != null)
+                    ReferencePool.Release(playSoundInfo.SoundParams);
 
-                if (playSoundInfo.PlaySoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.PlaySoundParams3D);
+                if (playSoundInfo.SoundParams3D != null)
+                    ReferencePool.Release(playSoundInfo.SoundParams3D);
 
                 ReferencePool.Release(playSoundInfo);
                 return;
@@ -586,11 +585,11 @@ namespace FuFramework.Sound.Runtime
             ReferencePool.Release(failureEventArgs);
 
             // 释放播放相关信息，并抛出异常
-            if (playSoundInfo.PlaySoundParams != null)
-                ReferencePool.Release(playSoundInfo.PlaySoundParams);
+            if (playSoundInfo.SoundParams != null)
+                ReferencePool.Release(playSoundInfo.SoundParams);
 
-            if (playSoundInfo.PlaySoundParams3D != null)
-                ReferencePool.Release(playSoundInfo.PlaySoundParams3D);
+            if (playSoundInfo.SoundParams3D != null)
+                ReferencePool.Release(playSoundInfo.SoundParams3D);
 
             ReferencePool.Release(playSoundInfo);
             throw new FuException(errorMessage);

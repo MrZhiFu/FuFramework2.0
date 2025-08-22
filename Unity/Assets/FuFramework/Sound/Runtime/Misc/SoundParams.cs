@@ -10,7 +10,7 @@ namespace FuFramework.Sound.Runtime
     /// 包括：播放位置(以秒为单位)、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
     ///      声音立体声声相、声音空间混合量、声音最大距离、声音多普勒等级。
     /// </summary>
-    public sealed class PlaySoundParams : IReference
+    public sealed class SoundParams : IReference
     {
         /// <summary>
         /// 获取或设置播放位置(以秒为单位)。
@@ -71,7 +71,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 初始化播放声音参数的新实例。
         /// </summary>
-        public PlaySoundParams()
+        public SoundParams()
         {
             Time          = Constant.DefaultTime;
             IsMute        = Constant.DefaultMute;
@@ -92,9 +92,9 @@ namespace FuFramework.Sound.Runtime
         /// <param name="isLoop">是否循环播放。</param>
         /// <param name="priority">声音优先级。</param>
         /// <returns>创建的播放声音参数。</returns>
-        public static PlaySoundParams Create(bool isLoop = false, int priority = Constant.DefaultPriority)
+        public static SoundParams Create(bool isLoop = false, int priority = Constant.DefaultPriority)
         {
-            var playSoundParams = ReferencePool.Acquire<PlaySoundParams>();
+            var playSoundParams = ReferencePool.Acquire<SoundParams>();
             playSoundParams.Loop       = isLoop;
             playSoundParams.Priority      = priority;
             return playSoundParams;

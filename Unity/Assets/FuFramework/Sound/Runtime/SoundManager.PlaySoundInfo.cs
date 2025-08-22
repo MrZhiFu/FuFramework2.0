@@ -35,12 +35,12 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 播放时的声音参数。
             /// </summary>
-            public PlaySoundParams PlaySoundParams { get; private set; }
+            public SoundParams SoundParams { get; private set; }
 
             /// <summary>
             /// 播放时的3D声音参数。
             /// </summary>
-            public PlaySoundParams3D PlaySoundParams3D { get; private set; }
+            public SoundParams3D SoundParams3D { get; private set; }
 
             /// <summary>
             /// 获取用户自定义数据。
@@ -54,10 +54,10 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundName">声音名称。</param>
             /// <param name="soundAsset">声音资源对象。</param>
             /// <param name="soundGroup">所在声音组。</param>
-            /// <param name="playSoundParams">播放声音参数。</param>
+            /// <param name="soundParams">播放声音参数。</param>
             /// <param name="userData">用户自定义数据。</param>
             /// <returns>创建的播放声音信息。</returns>
-            public static PlaySoundInfo Create(int serialId, string soundName, object soundAsset, SoundGroup soundGroup, PlaySoundParams playSoundParams, PlaySoundParams3D playSoundParams3D,
+            public static PlaySoundInfo Create(int serialId, string soundName, object soundAsset, SoundGroup soundGroup, SoundParams soundParams, SoundParams3D soundParams3D,
                                                object userData)
             {
                 var playSoundInfo = ReferencePool.Acquire<PlaySoundInfo>();
@@ -65,8 +65,8 @@ namespace FuFramework.Sound.Runtime
                 playSoundInfo.SoundName         = soundName;
                 playSoundInfo.SoundAsset        = soundAsset;
                 playSoundInfo.SoundGroup        = soundGroup;
-                playSoundInfo.PlaySoundParams   = playSoundParams;
-                playSoundInfo.PlaySoundParams3D = playSoundParams3D;
+                playSoundInfo.SoundParams   = soundParams;
+                playSoundInfo.SoundParams3D = soundParams3D;
                 playSoundInfo.UserData          = userData;
                 return playSoundInfo;
             }
@@ -78,8 +78,8 @@ namespace FuFramework.Sound.Runtime
             {
                 SerialId        = 0;
                 SoundGroup      = null;
-                PlaySoundParams = null;
-                PlaySoundParams3D = null;
+                SoundParams = null;
+                SoundParams3D = null;
                 UserData        = null;
             }
         }

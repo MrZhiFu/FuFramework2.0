@@ -8,7 +8,7 @@ namespace FuFramework.Sound.Runtime
     /// <summary>
     /// 播放3D声音时的额外参数。包括绑定的实体、声音在世界空间中的位置、用户自定义数据。
     /// </summary>
-    public sealed class PlaySoundParams3D : IReference
+    public sealed class SoundParams3D : IReference
     {
         /// <summary>
         /// 绑定的实体。
@@ -29,7 +29,7 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 初始化播放声音信息的新实例。
         /// </summary>
-        public PlaySoundParams3D()
+        public SoundParams3D()
         {
             BindingEntity = null;
             WorldPosition = Vector3.zero;
@@ -43,9 +43,9 @@ namespace FuFramework.Sound.Runtime
         /// <param name="worldPosition">声音在世界空间中的位置。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音信息。</returns>
-        public static PlaySoundParams3D Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition, object userData)
+        public static SoundParams3D Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition, object userData)
         {
-            var playSoundInfo = ReferencePool.Acquire<PlaySoundParams3D>();
+            var playSoundInfo = ReferencePool.Acquire<SoundParams3D>();
             playSoundInfo.BindingEntity = bindingEntity;
             playSoundInfo.WorldPosition = worldPosition;
             playSoundInfo.UserData      = userData;

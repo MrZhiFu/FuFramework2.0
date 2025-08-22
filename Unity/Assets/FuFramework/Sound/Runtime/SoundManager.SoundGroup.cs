@@ -149,7 +149,7 @@ namespace FuFramework.Sound.Runtime
                     }
 
                     // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
-                    if (soundAgent.Priority < playSoundInfo.PlaySoundParams.Priority)
+                    if (soundAgent.Priority < playSoundInfo.SoundParams.Priority)
                     {
                         if (!candidateAgent || soundAgent.Priority < candidateAgent.Priority)
                             candidateAgent = soundAgent;
@@ -157,7 +157,7 @@ namespace FuFramework.Sound.Runtime
                     }
 
                     // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
-                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundInfo.PlaySoundParams.Priority)
+                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundInfo.SoundParams.Priority)
                     {
                         if (!candidateAgent || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
                             candidateAgent = soundAgent;
@@ -177,19 +177,19 @@ namespace FuFramework.Sound.Runtime
                 }
 
                 candidateAgent.SerialId           = playSoundInfo.SerialId;
-                candidateAgent.Time               = playSoundInfo.PlaySoundParams.Time;
-                candidateAgent.MuteInSoundGroup   = playSoundInfo.PlaySoundParams.IsMute;
-                candidateAgent.Loop               = playSoundInfo.PlaySoundParams.Loop;
-                candidateAgent.Priority           = playSoundInfo.PlaySoundParams.Priority;
-                candidateAgent.VolumeInSoundGroup = playSoundInfo.PlaySoundParams.Volume;
-                candidateAgent.Pitch              = playSoundInfo.PlaySoundParams.Pitch;
-                candidateAgent.PanStereo          = playSoundInfo.PlaySoundParams.PanStereo;
-                candidateAgent.SpatialBlend       = playSoundInfo.PlaySoundParams.SpatialBlend;
-                candidateAgent.MaxDistance        = playSoundInfo.PlaySoundParams.MaxDistance;
-                candidateAgent.DopplerLevel       = playSoundInfo.PlaySoundParams.DopplerLevel;
+                candidateAgent.Time               = playSoundInfo.SoundParams.Time;
+                candidateAgent.MuteInSoundGroup   = playSoundInfo.SoundParams.IsMute;
+                candidateAgent.Loop               = playSoundInfo.SoundParams.Loop;
+                candidateAgent.Priority           = playSoundInfo.SoundParams.Priority;
+                candidateAgent.VolumeInSoundGroup = playSoundInfo.SoundParams.Volume;
+                candidateAgent.Pitch              = playSoundInfo.SoundParams.Pitch;
+                candidateAgent.PanStereo          = playSoundInfo.SoundParams.PanStereo;
+                candidateAgent.SpatialBlend       = playSoundInfo.SoundParams.SpatialBlend;
+                candidateAgent.MaxDistance        = playSoundInfo.SoundParams.MaxDistance;
+                candidateAgent.DopplerLevel       = playSoundInfo.SoundParams.DopplerLevel;
 
                 // 使用代理播放声音
-                candidateAgent.Play(playSoundInfo.PlaySoundParams.FadeInSeconds);
+                candidateAgent.Play(playSoundInfo.SoundParams.FadeInSeconds);
                 return candidateAgent;
             }
 
