@@ -1,8 +1,8 @@
 ﻿using System;
+using UnityEngine;
 using System.Collections;
 using FuFramework.Core.Runtime;
 using FuFramework.Entity.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -10,7 +10,7 @@ namespace FuFramework.Sound.Runtime
     public partial class SoundManager
     {
         /// <summary>
-        /// 默认声音代理辅助器。
+        /// 声音播放代理。
         /// 功能：
         ///     1.使用AudioSource组件，实现了声音播放，暂停，停止，重置，渐入渐出等方法。
         ///     2.提供事件机制，用于通知绑定实体的声音资源发生变化。
@@ -45,32 +45,36 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             private float m_VolumeInSoundGroup;
 
-            private AudioSource m_AudioSource; // 播放声音的AudioSource组件
-            private EntityLogic m_BindingEntityLogic; // 声音绑定的实体
-
-            private float m_VolumeWhenPause; // 暂停时音量
-            private bool m_ApplicationPauseFlag; // 是否处于应用暂停状态
+            /// <summary>
+            /// 播放声音的AudioSource组件
+            /// </summary>
+            private AudioSource m_AudioSource;
+            
+            /// <summary>
+            /// 声音绑定的实体
+            /// </summary>
+            private EntityLogic m_BindingEntityLogic;
 
             /// <summary>
-            /// 初始化声音代理的新实例。
+            /// 是否暂停
             /// </summary>
-            /// <param name="soundGroup">所在的声音组。</param>
-            /// <param name="manager">声音管理器</param>
-            public void Init(SoundGroup soundGroup, SoundManager manager)
-            {
-                FuGuard.NotNull(soundGroup, nameof(soundGroup));
-                FuGuard.NotNull(manager, nameof(manager));
-                m_SoundGroup = soundGroup;
-                m_SoundManager = manager;
-                SerialId = 0;
-                m_SoundAsset = null;
-                Reset();
-            }
+            private bool m_IsPause;
 
             /// <summary>
-            /// 获取所在的声音组。
+            /// 暂停时音量
             /// </summary>
-            public SoundGroup SoundGroup => m_SoundGroup;
+            private float m_VolumeWhenPause;
+
+            /// <summary>
+            /// 是否处于应用暂停状态
+            /// </summary>
+            private bool m_IsApplicationPause;
+
+            /// <summary>
+            /// 正常播放完成的回调
+            /// </summary>
+            private Action m_OnPlayEnd;
+            
 
             /// <summary>
             /// 获取或设置声音的序列编号。
@@ -78,15 +82,16 @@ namespace FuFramework.Sound.Runtime
             public int SerialId { get; set; }
 
             /// <summary>
-            /// 获取当前是否正在播放。
+            /// 声音资源全路径。
             /// </summary>
-            public bool IsPlaying => m_AudioSource.isPlaying;
-
+            private string SoundAssetPath { get; set; }
+            
             /// <summary>
-            /// 获取声音长度。
+            /// 获取声音创建时间。
             /// </summary>
-            public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
-
+            internal DateTime SetSoundAssetTime { get; private set; }
+            
+            
             /// <summary>
             /// 获取或设置播放位置(以秒为单位)。
             /// </summary>
@@ -202,12 +207,36 @@ namespace FuFramework.Sound.Runtime
                     RefreshVolume();
                 }
             }
+            
+            
+            /// <summary>
+            /// 获取当前是否正在播放。
+            /// </summary>
+            public bool IsPlaying => m_AudioSource.isPlaying;
 
             /// <summary>
-            /// 获取声音创建时间。
+            /// 获取声音长度。
             /// </summary>
-            internal DateTime SetSoundAssetTime { get; private set; }
+            public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
 
+            
+            /// <summary>
+            /// 初始化声音代理的新实例。
+            /// </summary>
+            /// <param name="soundGroup">所在的声音组。</param>
+            /// <param name="manager">声音管理器</param>
+            public void Init(SoundGroup soundGroup, SoundManager manager)
+            {
+                FuGuard.NotNull(soundGroup, nameof(soundGroup));
+                FuGuard.NotNull(manager, nameof(manager));
+                m_SoundGroup = soundGroup;
+                m_SoundManager = manager;
+                SerialId = 0;
+                SoundAssetPath = null;
+                m_SoundAsset = null;
+                Reset();
+            }
+            
             private void Awake()
             {
                 m_AudioSource = gameObject.GetOrAddComponent<AudioSource>();
@@ -218,7 +247,7 @@ namespace FuFramework.Sound.Runtime
             private void Update()
             {
                 // 应用没有暂停，且声音没有播放，且声音资源存在，则重置声音设置
-                if (!m_ApplicationPauseFlag && !IsPlaying && m_AudioSource.clip)
+                if (!m_IsApplicationPause && !IsPlaying && m_AudioSource.clip)
                 {
                     Reset();
                     return;
@@ -243,116 +272,7 @@ namespace FuFramework.Sound.Runtime
 
                 transform.position = m_BindingEntityLogic.CachedTransform.position;
             }
-
-
-            /// <summary>
-            /// 播放声音。
-            /// </summary>
-            public void Play() => Play(Constant.DefaultFadeInSeconds);
-
-            /// <summary>
-            /// 播放声音。
-            /// </summary>
-            /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-            public void Play(float fadeInSeconds)
-            {
-                StopAllCoroutines();
-                m_AudioSource.Play();
-
-                // 声音淡入
-                if (fadeInSeconds <= 0f) return;
-                var volume = m_AudioSource.volume;
-                m_AudioSource.volume = 0f;
-                StartCoroutine(FadeToVolume(m_AudioSource, volume, fadeInSeconds));
-            }
-
-            /// <summary>
-            /// 停止播放声音。
-            /// </summary>
-            public void Stop() => Stop(Constant.DefaultFadeOutSeconds);
-
-            /// <summary>
-            /// 停止播放声音。
-            /// </summary>
-            /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-            public void Stop(float fadeOutSeconds)
-            {
-                StopAllCoroutines();
-                if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
-                    StartCoroutine(StopCo(fadeOutSeconds));
-                else
-                    m_AudioSource.Stop();
-            }
-
-
-            /// <summary>
-            /// 暂停播放声音。
-            /// </summary>
-            public void Pause() => Pause(Constant.DefaultFadeOutSeconds);
-
-            /// <summary>
-            /// 暂停播放声音。
-            /// </summary>
-            /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-            public void Pause(float fadeOutSeconds)
-            {
-                StopAllCoroutines();
-                m_VolumeWhenPause = m_AudioSource.volume;
-                if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
-                    StartCoroutine(PauseCo(fadeOutSeconds));
-                else
-                    m_AudioSource.Pause();
-            }
-
-            /// <summary>
-            /// 恢复播放声音。
-            /// </summary>
-            public void Resume() => Resume(Constant.DefaultFadeInSeconds);
-
-            /// <summary>
-            /// 恢复播放声音。
-            /// </summary>
-            /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-            public void Resume(float fadeInSeconds)
-            {
-                StopAllCoroutines();
-                m_AudioSource.UnPause();
-                if (fadeInSeconds > 0f)
-                    StartCoroutine(FadeToVolume(m_AudioSource, m_VolumeWhenPause, fadeInSeconds));
-                else
-                    m_AudioSource.volume = m_VolumeWhenPause;
-            }
-
-            /// <summary>
-            /// 重置声音代理。
-            /// </summary>
-            public void Reset()
-            {
-                if (m_SoundAsset != null)
-                {
-                    var soundName = (m_SoundAsset as AudioClip)?.name;
-                    m_SoundManager?.m_assetManager?.UnloadAsset(soundName);
-                    m_SoundAsset = null;
-                }
-
-                transform.localPosition = Vector3.zero;
-                m_AudioSource.clip = null;
-                m_BindingEntityLogic = null;
-                m_VolumeWhenPause = 0f;
-
-                SetSoundAssetTime = DateTime.MinValue;
-                Time = Constant.DefaultTime;
-                MuteInSoundGroup = Constant.DefaultMute;
-                Loop = Constant.DefaultLoop;
-                Priority = Constant.DefaultPriority;
-                VolumeInSoundGroup = Constant.DefaultVolume;
-                Pitch = Constant.DefaultPitch;
-                PanStereo = Constant.DefaultPanStereo;
-                SpatialBlend = Constant.DefaultSpatialBlend;
-                MaxDistance = Constant.DefaultMaxDistance;
-                DopplerLevel = Constant.DefaultDopplerLevel;
-            }
-
+            
             /// <summary>
             /// 设置声音资源。
             /// </summary>
@@ -369,18 +289,7 @@ namespace FuFramework.Sound.Runtime
                 m_AudioSource.clip = audioClip;
                 return true;
             }
-
-            /// <summary>
-            /// 刷新静音设置。
-            /// </summary>
-            internal void RefreshMute() => Mute = m_SoundGroup.Mute || m_MuteInSoundGroup;
-
-            /// <summary>
-            /// 刷新音量设置。
-            /// </summary>
-            internal void RefreshVolume() => Volume = m_SoundGroup.Volume * m_VolumeInSoundGroup;
-
-
+            
             /// <summary>
             /// 设置声音绑定的实体。
             /// </summary>
@@ -401,10 +310,118 @@ namespace FuFramework.Sound.Runtime
             /// 设置声音所在的世界坐标。
             /// </summary>
             /// <param name="wPos">声音所在的世界坐标。</param>
-            public void SetWorldPosition(Vector3 wPos)
+            public void SetWorldPosition(Vector3 wPos) => transform.position = wPos;
+
+            /// <summary>
+            /// 播放声音。
+            /// </summary>
+            /// <param name="assetPath">声音资源路径。</param>
+            /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
+            /// <param name="onPlayEnd"></param>
+            public void Play(string assetPath, float fadeInSeconds = Constant.DefaultFadeInSeconds, Action onPlayEnd = null)
             {
-                transform.position = wPos;
+                StopAllCoroutines();
+                m_AudioSource.Play();
+                SoundAssetPath = assetPath;
+                m_OnPlayEnd = onPlayEnd;
+                
+                // 声音淡入
+                if (fadeInSeconds <= 0f) return;
+                var volume = m_AudioSource.volume;
+                m_AudioSource.volume = 0f;
+                StartCoroutine(FadeToVolume(m_AudioSource, volume, fadeInSeconds));
+                
+                if(!Loop)
+                    StartCoroutine(EndCallbackCo());
             }
+
+            /// <summary>
+            /// 停止播放声音。
+            /// </summary>
+            /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
+            public void Stop(float fadeOutSeconds = Constant.DefaultFadeOutSeconds)
+            {
+                StopAllCoroutines();
+                if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
+                    StartCoroutine(StopCo(fadeOutSeconds));
+                else
+                    m_AudioSource.Stop();
+            }
+
+            /// <summary>
+            /// 暂停播放声音。
+            /// </summary>
+            /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
+            public void Pause(float fadeOutSeconds = Constant.DefaultFadeOutSeconds)
+            {
+                StopAllCoroutines();
+                m_VolumeWhenPause = m_AudioSource.volume;
+                if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
+                    StartCoroutine(PauseCo(fadeOutSeconds));
+                else
+                {
+                    m_AudioSource.Pause();
+                    m_IsPause = true;
+                }
+            }
+
+            /// <summary>
+            /// 恢复播放声音。
+            /// </summary>
+            /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
+            public void Resume(float fadeInSeconds = Constant.DefaultFadeInSeconds)
+            {
+                StopAllCoroutines();
+                m_AudioSource.UnPause();
+                m_IsPause = false;
+                if (fadeInSeconds > 0f)
+                    StartCoroutine(FadeToVolume(m_AudioSource, m_VolumeWhenPause, fadeInSeconds));
+                else
+                    m_AudioSource.volume = m_VolumeWhenPause;
+            }
+
+            /// <summary>
+            /// 重置声音代理。
+            /// </summary>
+            public void Reset()
+            {
+                if (m_SoundAsset != null)
+                {
+                    m_SoundManager?.m_assetManager?.UnloadAsset(SoundAssetPath);
+                    m_SoundAsset = null;
+                }
+
+                transform.localPosition = Vector3.zero;
+                m_AudioSource.clip = null;
+                m_BindingEntityLogic = null;
+                m_VolumeWhenPause = 0f;
+                m_OnPlayEnd = null;
+                m_IsPause = false;
+
+                SetSoundAssetTime = DateTime.MinValue;
+                Time = Constant.DefaultTime;
+                MuteInSoundGroup = Constant.DefaultMute;
+                Loop = Constant.DefaultLoop;
+                Priority = Constant.DefaultPriority;
+                VolumeInSoundGroup = Constant.DefaultVolume;
+                Pitch = Constant.DefaultPitch;
+                PanStereo = Constant.DefaultPanStereo;
+                SpatialBlend = Constant.DefaultSpatialBlend;
+                MaxDistance = Constant.DefaultMaxDistance;
+                DopplerLevel = Constant.DefaultDopplerLevel;
+            }
+
+            
+            /// <summary>
+            /// 刷新静音设置。
+            /// </summary>
+            internal void RefreshMute() => Mute = m_SoundGroup.Mute || m_MuteInSoundGroup;
+
+            /// <summary>
+            /// 刷新音量设置。
+            /// </summary>
+            internal void RefreshVolume() => Volume = m_SoundGroup.Volume * m_VolumeInSoundGroup;
+            
 
             /// <summary>
             /// 声音渐入协程。
@@ -447,6 +464,27 @@ namespace FuFramework.Sound.Runtime
             {
                 yield return FadeToVolume(m_AudioSource, 0f, fadeOutSeconds);
                 m_AudioSource.Pause();
+                m_IsPause = true;
+            }
+
+            /// <summary>
+            /// 正常播放回调
+            /// </summary>
+            /// <returns></returns>
+            private IEnumerator EndCallbackCo()
+            {
+                // 如果处于暂停状态，则一直等待
+                var remainingTime = Length;
+        
+                while (remainingTime > 0)
+                {
+                    if (!m_IsPause) 
+                        remainingTime -= UnityEngine.Time.unscaledDeltaTime;
+                    yield return null;
+                }
+                
+                Log.Info($"声音 '{m_AudioSource.clip.name}' 播放完成!");
+                m_OnPlayEnd?.Invoke();
             }
         }
     }

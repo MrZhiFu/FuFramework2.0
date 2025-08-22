@@ -6,7 +6,8 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 namespace FuFramework.Sound.Runtime
 {
     /// <summary>
-    /// 播放3D声音时的额外参数。包括绑定的实体、声音在世界空间中的位置、用户自定义数据。
+    /// 播放3D声音时的参数。
+    /// 包括：绑定的实体、声音在世界空间中的位置、用户自定义数据。
     /// </summary>
     public sealed class SoundParams3D : IReference
     {
@@ -18,24 +19,14 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 声音在世界空间中的位置。
         /// </summary>
-        public Vector3 WorldPosition { get; private set; }
+        public Vector3 WorldPosition { get; private set; } = Vector3.zero;
 
         /// <summary>
         /// 用户自定义数据。
         /// </summary>
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public object UserData { get; private set; }
-
-        /// <summary>
-        /// 初始化播放声音信息的新实例。
-        /// </summary>
-        public SoundParams3D()
-        {
-            BindingEntity = null;
-            WorldPosition = Vector3.zero;
-            UserData      = null;
-        }
-
+        
         /// <summary>
         /// 创建播放声音额外信息。
         /// </summary>

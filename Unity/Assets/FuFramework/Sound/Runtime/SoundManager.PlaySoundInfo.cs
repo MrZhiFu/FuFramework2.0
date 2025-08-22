@@ -1,4 +1,5 @@
-﻿using FuFramework.Core.Runtime;
+﻿using System;
+using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
@@ -18,9 +19,9 @@ namespace FuFramework.Sound.Runtime
             public int SerialId { get; private set; }
 
             /// <summary>
-            /// 声音名称。
+            /// 声音资源全路径。
             /// </summary>
-            public string SoundName { get; private set; }
+            public string SoundAssetPath { get; private set; }
 
             /// <summary>
             /// 声音资源。
@@ -46,28 +47,35 @@ namespace FuFramework.Sound.Runtime
             /// 获取用户自定义数据。
             /// </summary>
             public object UserData { get; private set; }
+            
+            /// <summary>
+            /// 播放结束时的回调。
+            /// </summary>
+            public Action OnPlayEnd{ get; private set; }
 
             /// <summary>
             /// 创建播放声音信息。
             /// </summary>
             /// <param name="serialId">序列编号。</param>
-            /// <param name="soundName">声音名称。</param>
+            /// <param name="soundName">声音资源全路径。</param>
             /// <param name="soundAsset">声音资源对象。</param>
             /// <param name="soundGroup">所在声音组。</param>
             /// <param name="soundParams">播放声音参数。</param>
             /// <param name="userData">用户自定义数据。</param>
+            /// <param name="onPlayEnd">播放结束时的回调。</param>
             /// <returns>创建的播放声音信息。</returns>
             public static PlaySoundInfo Create(int serialId, string soundName, object soundAsset, SoundGroup soundGroup, SoundParams soundParams, SoundParams3D soundParams3D,
-                                               object userData)
+                                               object userData, Action onPlayEnd)
             {
                 var playSoundInfo = ReferencePool.Acquire<PlaySoundInfo>();
-                playSoundInfo.SerialId          = serialId;
-                playSoundInfo.SoundName         = soundName;
-                playSoundInfo.SoundAsset        = soundAsset;
-                playSoundInfo.SoundGroup        = soundGroup;
-                playSoundInfo.SoundParams   = soundParams;
-                playSoundInfo.SoundParams3D = soundParams3D;
-                playSoundInfo.UserData          = userData;
+                playSoundInfo.SerialId       = serialId;
+                playSoundInfo.SoundAssetPath = soundName;
+                playSoundInfo.SoundAsset     = soundAsset;
+                playSoundInfo.SoundGroup     = soundGroup;
+                playSoundInfo.SoundParams    = soundParams;
+                playSoundInfo.SoundParams3D  = soundParams3D;
+                playSoundInfo.OnPlayEnd      = onPlayEnd;
+                playSoundInfo.UserData       = userData;
                 return playSoundInfo;
             }
 
@@ -76,11 +84,14 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             public void Clear()
             {
-                SerialId        = 0;
-                SoundGroup      = null;
-                SoundParams = null;
+                SerialId      = 0;
+                SoundAssetPath     = null;
+                SoundAsset    = null;
+                SoundGroup    = null;
+                SoundParams   = null;
                 SoundParams3D = null;
-                UserData        = null;
+                OnPlayEnd     = null;
+                UserData      = null;
             }
         }
     }

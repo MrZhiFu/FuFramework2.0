@@ -17,7 +17,7 @@ namespace FuFramework.Core.Runtime
         public static void NotNullOrEmpty(string value, string name)
         {
             if (string.IsNullOrEmpty(value))
-                throw new ArgumentNullException(name, "不能为空.");
+                throw new ArgumentNullException(name, "不能为空或空字符串.");
         }
 
         /// <summary>

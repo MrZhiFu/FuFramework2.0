@@ -176,20 +176,20 @@ namespace FuFramework.Sound.Runtime
                     return null;
                 }
 
-                candidateAgent.SerialId           = playSoundInfo.SerialId;
                 candidateAgent.Time               = playSoundInfo.SoundParams.Time;
-                candidateAgent.MuteInSoundGroup   = playSoundInfo.SoundParams.IsMute;
                 candidateAgent.Loop               = playSoundInfo.SoundParams.Loop;
-                candidateAgent.Priority           = playSoundInfo.SoundParams.Priority;
-                candidateAgent.VolumeInSoundGroup = playSoundInfo.SoundParams.Volume;
                 candidateAgent.Pitch              = playSoundInfo.SoundParams.Pitch;
+                candidateAgent.SerialId           = playSoundInfo.SerialId;
+                candidateAgent.Priority           = playSoundInfo.SoundParams.Priority;
                 candidateAgent.PanStereo          = playSoundInfo.SoundParams.PanStereo;
-                candidateAgent.SpatialBlend       = playSoundInfo.SoundParams.SpatialBlend;
                 candidateAgent.MaxDistance        = playSoundInfo.SoundParams.MaxDistance;
+                candidateAgent.SpatialBlend       = playSoundInfo.SoundParams.SpatialBlend;
                 candidateAgent.DopplerLevel       = playSoundInfo.SoundParams.DopplerLevel;
+                candidateAgent.MuteInSoundGroup   = playSoundInfo.SoundParams.IsMute;
+                candidateAgent.VolumeInSoundGroup = playSoundInfo.SoundParams.Volume;
 
                 // 使用代理播放声音
-                candidateAgent.Play(playSoundInfo.SoundParams.FadeInSeconds);
+                candidateAgent.Play(playSoundInfo.SoundAssetPath, playSoundInfo.SoundParams.FadeInSeconds, playSoundInfo.OnPlayEnd);
                 return candidateAgent;
             }
 

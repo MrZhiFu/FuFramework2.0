@@ -21,22 +21,22 @@ namespace FuFramework.Sound.Runtime
         public static readonly string EventId = typeof(PlaySoundFailureEventArgs).FullName;
 
         /// <summary>
-        /// 获取声音的序列编号。
+        /// 声音的序列编号。
         /// </summary>
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取声音资源名称。
+        /// 声音资源名称。
         /// </summary>
         public string SoundAssetName { get; private set; }
 
         /// <summary>
-        /// 获取声音组名称。
+        /// 声音组名称。
         /// </summary>
         public string SoundGroupName { get; private set; }
 
         /// <summary>
-        /// 获取错误码。
+        /// 错误码。
         /// </summary>
         public EPlaySoundErrorCode ErrorCode { get; private set; }
 

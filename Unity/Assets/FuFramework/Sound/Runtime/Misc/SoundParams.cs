@@ -6,7 +6,7 @@ using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 namespace FuFramework.Sound.Runtime
 {
     /// <summary>
-    /// 播放声音参数。
+    /// 播放时的声音参数。
     /// 包括：播放位置(以秒为单位)、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
     ///      声音立体声声相、声音空间混合量、声音最大距离、声音多普勒等级。
     /// </summary>

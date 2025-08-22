@@ -21,17 +21,17 @@ namespace FuFramework.Sound.Runtime
         public static readonly string EventId = typeof(PlaySoundSuccessEventArgs).FullName;
 
         /// <summary>
-        /// 获取声音的序列编号。
+        /// 声音的序列编号。
         /// </summary>
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取声音资源名称。
+        /// 声音资源名称。
         /// </summary>
         public string SoundAssetName { get; private set; }
 
         /// <summary>
-        /// 获取用于播放的声音代理。
+        /// 用于播放的声音代理。
         /// </summary>
         public SoundManager.SoundAgent SoundAgent { get; private set; }
 

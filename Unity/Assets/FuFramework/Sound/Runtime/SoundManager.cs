@@ -1,4 +1,5 @@
-﻿using YooAsset;
+﻿using System;
+using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
@@ -30,10 +31,9 @@ namespace FuFramework.Sound.Runtime
         private IAssetManager  m_assetManager;   // 资源管理器
         private EventComponent m_EventComponent; // 事件组件
 
-        private int        m_Serial;       // 声音自增序列号
-        private Transform  m_InstanceRoot; // Sound实例根节点
-        private AudioMixer m_AudioMixer;   // 混音器
-
+        private int m_Serial;       // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
+        
+        private AudioMixer m_AudioMixer;       // 混音器
         private AudioListener m_AudioListener; // 声音监听器
 
         /// <summary>
@@ -61,13 +61,7 @@ namespace FuFramework.Sound.Runtime
                 return;
             }
 
-            if (!m_InstanceRoot)
-            {
-                m_InstanceRoot = new GameObject("Sound Instances").transform;
-                m_InstanceRoot.SetParent(transform);
-                m_InstanceRoot.localScale = Vector3.one;
-            }
-
+            // 添加AudioListener组件
             m_AudioListener = gameObject.GetOrAddComponent<AudioListener>();
 
             // 获取声音配置数据
@@ -115,7 +109,7 @@ namespace FuFramework.Sound.Runtime
         /// <returns>指定声音组是否存在。</returns>
         public bool HasSoundGroup(string groupName)
         {
-            if (string.IsNullOrEmpty(groupName)) throw new FuException("[SoundManager]声音组名称为空!");
+            FuGuard.NotNullOrEmpty(groupName, "[SoundManager]声音组名称");
             return m_SoundGroupDict.ContainsKey(groupName);
         }
 
@@ -126,7 +120,7 @@ namespace FuFramework.Sound.Runtime
         /// <returns>要获取的声音组。</returns>
         public SoundGroup GetSoundGroup(string groupName)
         {
-            if (string.IsNullOrEmpty(groupName)) throw new FuException("[SoundManager]声音组名称为空!");
+            FuGuard.NotNullOrEmpty(groupName, "[SoundManager]声音组名称");
             return m_SoundGroupDict.GetValueOrDefault(groupName);
         }
 
@@ -152,7 +146,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="results">所有声音组。</param>
         public void GetAllSoundGroups(List<SoundGroup> results)
         {
-            if (results == null) throw new FuException("[SoundManager]参数结果列表为空!");
+            FuGuard.NotNull(results, nameof(results));
             results.Clear();
             foreach (var (_, soundGroup) in m_SoundGroupDict)
             {
@@ -175,7 +169,7 @@ namespace FuFramework.Sound.Runtime
             }
 
             var soundGroupGo = new GameObject($"Sound Group - {soundGroupInfo.Name}");
-            soundGroupGo.transform.SetParent(m_InstanceRoot);
+            soundGroupGo.transform.SetParent(transform);
             soundGroupGo.transform.localScale = Vector3.one;
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
             soundGroup.Init(soundGroupInfo, this);
@@ -199,7 +193,7 @@ namespace FuFramework.Sound.Runtime
         /// <param name="results">所有正在加载声音的序列编号。</param>
         public void GetAllLoadingSoundSerialIds(List<int> results)
         {
-            if (results == null) throw new FuException("[SoundManager]参数结果列表为空!");
+            FuGuard.NotNull(results, nameof(results));
             results.Clear();
             results.AddRange(m_LoadingSoundList);
         }
@@ -216,121 +210,120 @@ namespace FuFramework.Sound.Runtime
         #region 播放声音
 
         /// <summary>
-        /// 播放背景音乐。
+        /// 简单播放一个声音。
         /// </summary>
-        /// <param name="soundAssetName"></param>
-        /// <returns></returns>
-        public UniTask<int> PlayBGM(string soundAssetName)
-            => PlaySound(soundAssetName, groupName: "BGM", isLoop: true);
-
-        /// <summary>
-        /// 播放UI音乐。
-        /// </summary>
-        /// <param name="soundAssetName"></param>
-        /// <returns></returns>
-        public UniTask<int> PlayUISound(string soundAssetName)
-            => PlaySound(soundAssetName, "UI");
-
-
-        /// <summary>
-        /// 播放音效。
-        /// </summary>
-        /// <param name="soundAssetName"></param>
-        /// <returns></returns>
-        public UniTask<int> PlaySfx(string soundAssetName)
-            => PlaySound(soundAssetName, "SFX");
-
-
+        /// <param name="soundAssetName">声音资源名称。</param>
+        /// <param name="groupName">声音组名称。</param>
+        /// <param name="extension">声音资源扩展名。</param>
+        /// <param name="priority">在同组播放的优先级。</param>
+        /// <param name="soundParams">播放时的声音参数。</param>
+        /// <param name="soundParams3D"></param>
+        /// <param name="userData">用户自定义数据。</param>
+        /// <param name="serialId">序列编号</param>
+        /// <param name="isLoop">是否循环播放。</param>
+        /// <param name="onPlayEnd">播放结束回调。</param>
+        /// <returns>声音的序列编号。</returns>
+        public void PlaySoundSimple(string soundAssetName, string groupName, string extension = ".mp3", int priority = Constant.DefaultPriority, SoundParams soundParams = null,
+            SoundParams3D soundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false, Action onPlayEnd = null)
+        {
+             PlaySound(soundAssetName, groupName, extension, priority, soundParams, soundParams3D, userData, serialId, isLoop, onPlayEnd).Forget();
+        }
+        
         /// <summary>
         /// 播放声音(在指定3D位置播放)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="worldPosition">声音所在的世界坐标。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, Vector3 worldPosition, object userData = null)
+        public UniTask<int> PlaySound3DPos(string soundAssetName, string groupName, Vector3 worldPosition, object userData = null, string extension = ".mp3")
         {
             var soundParams3D = SoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, soundParams3D: soundParams3D);
+            return PlaySound(soundAssetName, groupName, extension, soundParams3D: soundParams3D);
         }
 
         /// <summary>
         /// 播放声音(在指定3D位置播放)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
         /// <param name="worldPosition">声音所在的世界坐标。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, int priority, Vector3 worldPosition, object userData = null)
+        public UniTask<int> PlaySound3DPos(string soundAssetName, string groupName, int priority, Vector3 worldPosition, object userData = null, string extension = ".mp3")
         {
             var soundParams3D = SoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, priority, soundParams3D: soundParams3D);
+            return PlaySound(soundAssetName, groupName, extension, priority, soundParams3D: soundParams3D);
         }
 
         /// <summary>
         /// 播放声音(在指定位置播放)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
         /// <param name="soundParams">播放时的声音参数。</param>
         /// <param name="worldPosition">声音所在的世界坐标。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public UniTask<int> PlaySound3DPos(string soundAssetName, string soundGroupName, int priority, SoundParams soundParams, Vector3 worldPosition, object userData = null)
+        public async UniTask<int> PlaySound3DPos(string soundAssetName, string groupName, int priority, SoundParams soundParams, Vector3 worldPosition, object userData = null, string extension = ".mp3")
         {
             var playSoundInfoExtra = SoundParams3D.Create(null, worldPosition, userData);
-            return PlaySound(soundAssetName, soundGroupName, priority, soundParams, playSoundInfoExtra, userData);
+            return await PlaySound(soundAssetName, groupName, extension, priority, soundParams, playSoundInfoExtra, userData);
         }
 
         /// <summary>
         /// 播放声音(绑定一个实体)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, Entity.Runtime.Entity bindingEntity, object userData = null)
+        public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, Entity.Runtime.Entity bindingEntity, object userData = null, string extension = ".mp3")
         {
             var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, soundParams3D: soundParams3D);
+            return await PlaySound(soundAssetName, groupName, extension, soundParams3D: soundParams3D, userData: userData);
         }
 
         /// <summary>
         /// 播放声音(绑定一个实体)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, Entity.Runtime.Entity bindingEntity, object userData = null)
+        public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, int priority, Entity.Runtime.Entity bindingEntity, object userData = null, string extension = ".mp3")
         {
             var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, priority, null, soundParams3D);
+            return await PlaySound(soundAssetName, groupName, extension, priority, null, soundParams3D);
         }
 
         /// <summary>
         /// 播放声音(绑定一个实体)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundGroupName">声音组名称。</param>
+        /// <param name="groupName">声音组名称。</param>
         /// <param name="priority">在同组播放的优先级。</param>
         /// <param name="soundParams">播放时的声音参数。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string soundGroupName, int priority, SoundParams soundParams, Entity.Runtime.Entity bindingEntity, object userData,
-                                            int serialId)
+        public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, int priority, SoundParams soundParams, Entity.Runtime.Entity bindingEntity, object userData, int serialId, string extension = ".mp3")
         {
             var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero, userData);
-            return await PlaySound(soundAssetName, soundGroupName, priority, soundParams, soundParams3D, serialId);
+            return await PlaySound(soundAssetName, groupName, extension, priority, soundParams, soundParams3D, serialId);
         }
 
         /// <summary>
@@ -338,18 +331,21 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="groupName">声音组名称。</param>
+        /// <param name="extension">声音资源扩展名。</param>
         /// <param name="priority">在同组播放的优先级。</param>
         /// <param name="soundParams">播放时的声音参数。</param>
         /// <param name="soundParams3D"></param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号</param>
         /// <param name="isLoop">是否循环播放。</param>
+        /// <param name="onPlayEnd">播放结束回调。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySound(string soundAssetName, string groupName, int priority = Constant.DefaultPriority, SoundParams soundParams = null,
-                                            SoundParams3D soundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false)
+        public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int priority = Constant.DefaultPriority, SoundParams soundParams = null,
+                                            SoundParams3D soundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false, Action onPlayEnd = null)
         {
             if (m_assetManager == null) throw new FuException("[SoundManager]声音资源管理器为空!");
 
+            var  soundAssetPath = Utility.Asset.Path.GetSoundPath(soundAssetName, extension);
             soundParams ??= SoundParams.Create(isLoop, priority);
 
             int newSerialId;
@@ -366,27 +362,26 @@ namespace FuFramework.Sound.Runtime
             if (!soundGroup)
             {
                 errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
-                errorMessage = Utility.Text.Format("[SoundManager] 播放声音 '{0}' 失败, 声音组 '{1}' 不存在!", soundAssetName, groupName);
+                errorMessage = Utility.Text.Format("[SoundManager] 播放声音 '{0}' 失败, 声音组 '{1}' 不存在!", soundAssetPath, groupName);
             }
             else if (soundGroup.SoundAgentCount <= 0)
             {
                 errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
-                errorMessage = Utility.Text.Format("[SoundManager]  播放声音 '{0}' 失败, 声音组 '{1}' 没有声音播放代理!", soundAssetName, groupName);
+                errorMessage = Utility.Text.Format("[SoundManager]  播放声音 '{0}' 失败, 声音组 '{1}' 没有声音播放代理!", soundAssetPath, groupName);
             }
 
             if (errorCode.HasValue)
             {
                 Log.Error(errorMessage);
-                var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetName, groupName, errorCode.Value);
+                var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
                 m_EventComponent.Fire(this, failureEventArgs);
-                ReferencePool.Release(failureEventArgs);
                 return newSerialId;
             }
 
             m_LoadingSoundList.Add(newSerialId);
 
             // 加载声音资源
-            var assetOperationHandle = await m_assetManager.LoadAssetAsync<AudioClip>(soundAssetName);
+            var assetOperationHandle = await m_assetManager.LoadAssetAsync<AudioClip>(soundAssetPath);
             assetOperationHandle.Completed += OnAssetOperationHandleOnCompleted;
             return newSerialId;
 
@@ -394,7 +389,7 @@ namespace FuFramework.Sound.Runtime
             void OnAssetOperationHandleOnCompleted(AssetHandle assetHandle)
             {
                 var assetObject   = assetHandle.GetAssetObject<AudioClip>();
-                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetName, assetObject, soundGroup, soundParams, soundParams3D, userData);
+                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
                 LoadAssetSuccessCallback(playSoundInfo);
             }
         }
@@ -530,7 +525,7 @@ namespace FuFramework.Sound.Runtime
                 if (playSoundInfo.SoundParams3D != null)
                     ReferencePool.Release(playSoundInfo.SoundParams3D);
 
-                m_assetManager?.UnloadAsset(playSoundInfo.SoundName);
+                m_assetManager?.UnloadAsset(playSoundInfo.SoundAssetPath);
                 ReferencePool.Release(playSoundInfo);
                 return;
             }
@@ -543,7 +538,7 @@ namespace FuFramework.Sound.Runtime
             // 播放声音成功--派发成功事件, 释放播放参数信息对象
             if (soundAgent)
             {
-                Log.Info(Utility.Text.Format("[SoundManager]播放声音 '{0}' 成功, 声音组 '{1}'", playSoundInfo.SoundName, playSoundInfo.SoundGroup.Name));
+                Log.Info(Utility.Text.Format("[SoundManager]播放声音 '{0}' 成功, 声音组 '{1}'", playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name));
                 if (playSoundInfo.SoundParams3D != null)
                 {
                     if (playSoundInfo.SoundParams3D.BindingEntity)
@@ -552,7 +547,7 @@ namespace FuFramework.Sound.Runtime
                         soundAgent.SetWorldPosition(playSoundInfo.SoundParams3D.WorldPosition);
                 }
 
-                var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundName, soundAgent);
+                var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, soundAgent);
                 m_EventComponent.Fire(this, successEventArgs);
 
                 if (playSoundInfo.SoundParams != null)
@@ -567,22 +562,24 @@ namespace FuFramework.Sound.Runtime
 
             // 播放声音失败--释放声音资源
             m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-            m_assetManager?.UnloadAsset(playSoundInfo.SoundName);
+            m_assetManager?.UnloadAsset(playSoundInfo.SoundAssetPath);
 
             var errorCodeValue = EPlaySoundErrorCode.Unknown;
             if (errorCode != null)
                 errorCodeValue = errorCode.Value;
 
-            var errorMessage = Utility.Text.Format("[SoundManager]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}'.", playSoundInfo.SoundName, playSoundInfo.SoundGroup.Name, errorCodeValue);
+            var errorMessage = Utility.Text.Format("[SoundManager]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}'.", playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
             if (errorCodeValue == EPlaySoundErrorCode.IgnoredBecauseLowPriority)
+            {
                 Log.Info(errorMessage);
-            else
-                Log.Error(errorMessage);
+                return;
+            }
+
+            Log.Error(errorMessage);
 
             // 派发播放失败事件
-            var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundName, playSoundInfo.SoundGroup.Name, errorCodeValue);
+            var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
             m_EventComponent.Fire(this, failureEventArgs);
-            ReferencePool.Release(failureEventArgs);
 
             // 释放播放相关信息，并抛出异常
             if (playSoundInfo.SoundParams != null)
