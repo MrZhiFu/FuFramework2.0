@@ -89,7 +89,7 @@ namespace FuFramework.ModuleSetting.Editor
             var nameProperty         = groupProperty.FindPropertyRelative("m_GroupName");
             var muteProperty         = groupProperty.FindPropertyRelative("m_IsMute");
             var volumeProperty       = groupProperty.FindPropertyRelative("m_Volume");
-            var agentCountProperty   = groupProperty.FindPropertyRelative("m_AgentHelperCount");
+            var agentCountProperty   = groupProperty.FindPropertyRelative("m_AgentCount");
             var avoidReplaceProperty = groupProperty.FindPropertyRelative("m_AllowBeReplacedBySamePriority");
 
             // 确保折叠状态数组足够大
@@ -256,7 +256,7 @@ namespace FuFramework.ModuleSetting.Editor
         {
             groupProperty.FindPropertyRelative("m_IsMute").boolValue                           = false;
             groupProperty.FindPropertyRelative("m_Volume").floatValue                          = 1f;
-            groupProperty.FindPropertyRelative("m_AgentHelperCount").intValue                  = 1;
+            groupProperty.FindPropertyRelative("m_AgentCount").intValue                  = 1;
             groupProperty.FindPropertyRelative("m_AllowBeReplacedBySamePriority").boolValue = true;
             serializedObject.ApplyModifiedProperties();
         }

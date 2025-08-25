@@ -56,19 +56,14 @@ namespace FuFramework.Sound.Runtime
             private EntityLogic m_BindingEntityLogic;
 
             /// <summary>
-            /// 是否暂停
-            /// </summary>
-            private bool m_IsPause;
-
-            /// <summary>
             /// 暂停时音量
             /// </summary>
             private float m_VolumeWhenPause;
 
             /// <summary>
-            /// 是否处于应用暂停状态
+            /// 应用是否处于暂停状态
             /// </summary>
-            private bool m_IsApplicationPause;
+            private bool m_IsAppPause;
 
             /// <summary>
             /// 正常播放完成的回调
@@ -246,17 +241,18 @@ namespace FuFramework.Sound.Runtime
 
             private void Update()
             {
-                // 应用没有暂停，且声音没有播放，且声音资源存在，则重置声音设置
-                if (!m_IsApplicationPause && !IsPlaying && m_AudioSource.clip)
+                // 应用没有暂停，且声音没有播放，且声音资源存在，且播放位置大于等于声音长度，说明播放完成，则重置声音相关设置
+                if (!m_IsAppPause && !IsPlaying && m_AudioSource.clip && Time >= Length)
                 {
+                    Log.Info($"声音 '{m_AudioSource.clip.name}' 播放完成!");
+                    m_OnPlayEnd?.Invoke();
                     Reset();
                     return;
                 }
 
-                if (m_BindingEntityLogic)
-                {
+                // 声音绑定的实体存在，则更新声音位置
+                if (m_BindingEntityLogic) 
                     UpdateAgentPosition();
-                }
             }
 
             /// <summary>
@@ -324,15 +320,12 @@ namespace FuFramework.Sound.Runtime
                 m_AudioSource.Play();
                 SoundAssetPath = assetPath;
                 m_OnPlayEnd = onPlayEnd;
-                
+
                 // 声音淡入
                 if (fadeInSeconds <= 0f) return;
                 var volume = m_AudioSource.volume;
                 m_AudioSource.volume = 0f;
                 StartCoroutine(FadeToVolume(m_AudioSource, volume, fadeInSeconds));
-                
-                if(!Loop)
-                    StartCoroutine(EndCallbackCo());
             }
 
             /// <summary>
@@ -359,10 +352,7 @@ namespace FuFramework.Sound.Runtime
                 if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
                     StartCoroutine(PauseCo(fadeOutSeconds));
                 else
-                {
                     m_AudioSource.Pause();
-                    m_IsPause = true;
-                }
             }
 
             /// <summary>
@@ -373,7 +363,6 @@ namespace FuFramework.Sound.Runtime
             {
                 StopAllCoroutines();
                 m_AudioSource.UnPause();
-                m_IsPause = false;
                 if (fadeInSeconds > 0f)
                     StartCoroutine(FadeToVolume(m_AudioSource, m_VolumeWhenPause, fadeInSeconds));
                 else
@@ -396,7 +385,6 @@ namespace FuFramework.Sound.Runtime
                 m_BindingEntityLogic = null;
                 m_VolumeWhenPause = 0f;
                 m_OnPlayEnd = null;
-                m_IsPause = false;
 
                 SetSoundAssetTime = DateTime.MinValue;
                 Time = Constant.DefaultTime;
@@ -464,27 +452,19 @@ namespace FuFramework.Sound.Runtime
             {
                 yield return FadeToVolume(m_AudioSource, 0f, fadeOutSeconds);
                 m_AudioSource.Pause();
-                m_IsPause = true;
             }
 
             /// <summary>
-            /// 正常播放回调
+            /// 应用暂停/恢复时(进入后台/回到前台)时，设置标志位，暂停/恢复播放声音。
             /// </summary>
-            /// <returns></returns>
-            private IEnumerator EndCallbackCo()
+            /// <param name="isPause"></param>
+            private void OnApplicationPause(bool isPause)
             {
-                // 如果处于暂停状态，则一直等待
-                var remainingTime = Length;
-        
-                while (remainingTime > 0)
-                {
-                    if (!m_IsPause) 
-                        remainingTime -= UnityEngine.Time.unscaledDeltaTime;
-                    yield return null;
-                }
-                
-                Log.Info($"声音 '{m_AudioSource.clip.name}' 播放完成!");
-                m_OnPlayEnd?.Invoke();
+                m_IsAppPause = isPause;
+                if (isPause)
+                    Pause();
+                else
+                    Resume();
             }
         }
     }

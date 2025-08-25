@@ -14,21 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AudioMixer: {fileID: 24100000, guid: 48f2ad666d69da749ae823e0526b2249, type: 2}
   m_SoundGroups:
-  - m_GroupID: fd2da9da-b82f-4ad7-9275-a0e326a3b459
+  - m_GroupID: 73eeb736-f8e6-4204-8bde-5ce31e37849b
     m_GroupName: BGM
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 2
-    m_AllowBeingReplacedBySamePriority: 0
-  - m_GroupID: 688d39b6-6adf-4b52-99e8-e098188d70f2
+    m_AgentCount: 1
+    m_AllowBeReplacedBySamePriority: 1
+  - m_GroupID: 5053ef51-9080-4fd4-95df-2d1c0095328a
     m_GroupName: SFX
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 10
-    m_AllowBeingReplacedBySamePriority: 1
-  - m_GroupID: 0cf3c547-a641-4572-92cd-0757558ec369
+    m_AgentCount: 10
+    m_AllowBeReplacedBySamePriority: 1
+  - m_GroupID: 34e0aa25-6a77-4740-a303-5204d90dbe38
     m_GroupName: UI
     m_IsMute: 0
     m_Volume: 1
-    m_AgentHelperCount: 5
-    m_AllowBeingReplacedBySamePriority: 1
+    m_AgentCount: 5
+    m_AllowBeReplacedBySamePriority: 1

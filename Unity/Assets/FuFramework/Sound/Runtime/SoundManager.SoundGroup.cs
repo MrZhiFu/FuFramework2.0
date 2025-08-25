@@ -39,6 +39,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 获取或设置声音组辅助器所在的混音组。
             /// </summary>
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
             public AudioMixerGroup AudioMixerGroup { get; private set; }
 
             /// <summary>
@@ -103,7 +104,7 @@ namespace FuFramework.Sound.Runtime
                 Mute   = soundGroupInfo.Mute;
 
                 // 添加声音组辅助器中的声音播放代理辅助器
-                for (var i = 0; i < soundGroupInfo.AgentHelperCount; i++)
+                for (var i = 0; i < soundGroupInfo.AgentCount; i++)
                 {
                     AddSoundAgentHelper(i, soundManager);
                 }

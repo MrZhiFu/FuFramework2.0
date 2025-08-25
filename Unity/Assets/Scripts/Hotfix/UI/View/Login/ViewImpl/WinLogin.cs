@@ -13,7 +13,7 @@ namespace Hotfix.UI.View.Login
 {
     public partial class WinLogin : ViewBase
     {
-        private int _BgmId = -1;
+        private int _soundId = -1;
 
         #region 界面基本属性(无特殊需求，可不做修改)
  
@@ -120,17 +120,17 @@ namespace Hotfix.UI.View.Login
             UIManager.Instance.CloseUI(this);
         }
 
-        public async UniTaskVoid PlayBgm()
-        {
-            _BgmId = await SoundManager.Instance.PlaySound("sd_combo_1", "BGM", ".ogg");
-        }
+        // public async UniTaskVoid PlayBgm()
+        // {
+        //     _soundId = await SoundManager.Instance.PlaySound("sfx_lose", "UI", ".ogg");
+        // }
 
         #region 交互事件与ListItem渲染回调处理
 
         private void OnBtnLoginClick(EventContext ctx)
         {
-            // Login().Forget();
-            PlayBgm().Forget();
+            Login().Forget();
+            // PlayBgm().Forget();
         }
     
         private void OnInputUserNameChanged(EventContext ctx)
@@ -140,8 +140,8 @@ namespace Hotfix.UI.View.Login
     
         private void OnInputUserNameFocusOut(EventContext ctx)
         {
-            if (_BgmId != -1)
-                SoundManager.Instance.StopSound(_BgmId);
+            // if (_soundId != -1)
+                // SoundManager.Instance.PauseSound(_soundId);
         }
     
         private void OnInputPasswordChanged(EventContext ctx)
@@ -151,7 +151,8 @@ namespace Hotfix.UI.View.Login
     
         private void OnInputPasswordFocusOut(EventContext ctx)
         {
-            // todo
+            // if (_soundId != -1)
+                // SoundManager.Instance.ResumeSound(_soundId);
         }
     
     #endregion

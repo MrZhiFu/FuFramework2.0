@@ -210,26 +210,6 @@ namespace FuFramework.Sound.Runtime
         #region 播放声音
 
         /// <summary>
-        /// 简单播放一个声音。
-        /// </summary>
-        /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="groupName">声音组名称。</param>
-        /// <param name="extension">声音资源扩展名。</param>
-        /// <param name="priority">在同组播放的优先级。</param>
-        /// <param name="soundParams">播放时的声音参数。</param>
-        /// <param name="soundParams3D"></param>
-        /// <param name="userData">用户自定义数据。</param>
-        /// <param name="serialId">序列编号</param>
-        /// <param name="isLoop">是否循环播放。</param>
-        /// <param name="onPlayEnd">播放结束回调。</param>
-        /// <returns>声音的序列编号。</returns>
-        public void PlaySoundSimple(string soundAssetName, string groupName, string extension = ".mp3", int priority = Constant.DefaultPriority, SoundParams soundParams = null,
-            SoundParams3D soundParams3D = null, object userData = null, int serialId = -1, bool isLoop = false, Action onPlayEnd = null)
-        {
-             PlaySound(soundAssetName, groupName, extension, priority, soundParams, soundParams3D, userData, serialId, isLoop, onPlayEnd).Forget();
-        }
-        
-        /// <summary>
         /// 播放声音(在指定3D位置播放)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>

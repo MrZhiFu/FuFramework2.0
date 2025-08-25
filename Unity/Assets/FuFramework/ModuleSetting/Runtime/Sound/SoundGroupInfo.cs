@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ModuleSetting.Runtime
@@ -16,7 +17,7 @@ namespace FuFramework.ModuleSetting.Runtime
 
         [SerializeField, Range(0f, 1f)] private float m_Volume; // 音量大小
 
-        [SerializeField] private int  m_AgentHelperCount;                 // 播放代理数量
+        [SerializeField] private int  m_AgentCount;                    // 播放代理数量
         [SerializeField] private bool m_AllowBeReplacedBySamePriority; // 是否允许被同优先级声音替换
 
         /// <summary>
@@ -52,12 +53,12 @@ namespace FuFramework.ModuleSetting.Runtime
         }
 
         /// <summary>
-        /// 声音代理辅助器数量
+        /// 声音播放代理数量
         /// </summary>
-        public int AgentHelperCount
+        public int AgentCount
         {
-            get => m_AgentHelperCount;
-            set => m_AgentHelperCount = Mathf.Max(1, value);
+            get => m_AgentCount;
+            set => m_AgentCount = Mathf.Max(1, value);
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace FuFramework.ModuleSetting.Runtime
             m_GroupName                        = groupName;
             m_IsMute                           = false;
             m_Volume                           = 1f;
-            m_AgentHelperCount                 = 1;
+            m_AgentCount                 = 1;
             m_AllowBeReplacedBySamePriority = true;
         }
 
@@ -90,7 +91,7 @@ namespace FuFramework.ModuleSetting.Runtime
             m_GroupName                        = "New Sound Group";
             m_IsMute                           = false;
             m_Volume                           = 1f;
-            m_AgentHelperCount                 = 1;
+            m_AgentCount                 = 1;
             m_AllowBeReplacedBySamePriority = true;
         }
     }
