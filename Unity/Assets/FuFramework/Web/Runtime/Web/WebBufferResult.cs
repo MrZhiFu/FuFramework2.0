@@ -1,11 +1,12 @@
-﻿namespace GameFrameX.Web.Runtime
+﻿// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     public sealed class WebBufferResult
     {
         public WebBufferResult(object userData, byte[] result)
         {
             UserData = userData;
-            Result = result;
+            Result   = result;
         }
 
         /// <summary>

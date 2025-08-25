@@ -1,4 +1,6 @@
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Web.Runtime
 {
     /// <summary>
     /// 消息返回统一结构

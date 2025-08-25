@@ -7,7 +7,7 @@ using FuFramework.Localization.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using GameFrameX.Web.Runtime;
+using FuFramework.Web.Runtime;
 using UnityEngine;
 using YooAsset;
 using UIManager = FuFramework.UI.Runtime.UIManager;

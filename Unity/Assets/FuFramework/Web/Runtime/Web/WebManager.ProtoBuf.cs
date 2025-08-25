@@ -1,32 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
+using ProtoBuf;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using System.Collections.Generic;
 using FuFramework.Network.Runtime;
-using ProtoBuf;
+
 #if UNITY_WEBGL
 using UnityEngine.Networking;
 #endif
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     /// <summary>
     /// Web请求管理器的ProtoBuf部分实现
     /// </summary>
-    public partial class WebManager : FuModule, IWebManager
+    public partial class WebManager
     {
         /// <summary>
         /// 等待处理的ProtoBuf请求队列
         /// </summary>
-        private readonly Queue<WebProtoBufData> m_WaitingProtoBufQueue = new Queue<WebProtoBufData>(256);
+        private readonly Queue<WebProtoBufData> m_WaitingProtoBufQueue = new(256);
 
         /// <summary>
         /// 正在处理的ProtoBuf请求列表
         /// </summary>
-        private readonly List<WebProtoBufData> m_SendingProtoBufList = new List<WebProtoBufData>(16);
+        private readonly List<WebProtoBufData> m_SendingProtoBufList = new(16);
 
         /// <summary>
         /// ProtoBuf内容类型常量
@@ -38,21 +39,14 @@ namespace GameFrameX.Web.Runtime
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位</param>
-        void UpdateProtoBuf(float elapseSeconds, float realElapseSeconds)
+        private void UpdateProtoBuf(float elapseSeconds, float realElapseSeconds)
         {
             lock (m_StringBuilder)
             {
-                if (m_SendingProtoBufList.Count < MaxConnectionPerServer)
-                {
-                    if (m_WaitingProtoBufQueue.Count > 0)
-                    {
-                        var webProtoBufData = m_WaitingProtoBufQueue.Dequeue();
-
-                        MakeProtoBufBytesRequest(webProtoBufData);
-
-                        m_SendingProtoBufList.Add(webProtoBufData);
-                    }
-                }
+                if (m_SendingProtoBufList.Count >= MaxConnectionPerServer || m_WaitingProtoBufQueue.Count <= 0) return;
+                var webProtoBufData = m_WaitingProtoBufQueue.Dequeue();
+                MakeProtoBufBytesRequest(webProtoBufData);
+                m_SendingProtoBufList.Add(webProtoBufData);
             }
         }
 
@@ -68,6 +62,7 @@ namespace GameFrameX.Web.Runtime
             }
 
             m_WaitingProtoBufQueue.Clear();
+
             while (m_SendingProtoBufList.Count > 0)
             {
                 var webData = m_SendingProtoBufList[0];
@@ -76,7 +71,6 @@ namespace GameFrameX.Web.Runtime
             }
 
             m_SendingProtoBufList.Clear();
-
             m_MemoryStream.Dispose();
         }
 
@@ -87,28 +81,20 @@ namespace GameFrameX.Web.Runtime
         private async void MakeProtoBufBytesRequest(WebProtoBufData webData)
         {
 #if UNITY_WEBGL
-            UnityWebRequest unityWebRequest;
-            if (webData.IsGet)
-            {
-                unityWebRequest = UnityWebRequest.Get(webData.URL);
-            }
-            else
-            {
-                unityWebRequest = UnityWebRequest.Post(webData.URL, string.Empty);
-            }
+            var unityWebRequest = webData.IsGet ? UnityWebRequest.Get(webData.URL) : UnityWebRequest.PostWwwForm(webData.URL, string.Empty);
 
             unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
             {
                 unityWebRequest.SetRequestHeader("Content-Type", ProtoBufContentType);
-                byte[] postData = webData.SendData;
+                var postData = webData.SendData;
                 unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
             }
 
             var asyncOperation = unityWebRequest.SendWebRequest();
-            asyncOperation.completed += (asyncOperation2) =>
+            asyncOperation.completed += _ =>
             {
                 m_SendingProtoBufList.Remove(webData);
-                if (unityWebRequest.isNetworkError || unityWebRequest.isHttpError || unityWebRequest.error != null)
+                if (unityWebRequest.result != UnityWebRequest.Result.Success || unityWebRequest.error != null)
                 {
                     webData.Task.TrySetException(new Exception(unityWebRequest.error));
                     return;
@@ -119,27 +105,22 @@ namespace GameFrameX.Web.Runtime
 #else
             try
             {
-                HttpWebRequest request = WebRequest.CreateHttp(webData.URL);
-                request.Method = webData.IsGet ? WebRequestMethods.Http.Get : WebRequestMethods.Http.Post;
-                request.Timeout = (int)RequestTimeout.TotalMilliseconds; // 设置请求超时时间
+                var request = WebRequest.CreateHttp(webData.URL);
+                request.Method      = webData.IsGet ? WebRequestMethods.Http.Get : WebRequestMethods.Http.Post;
+                request.Timeout     = (int)RequestTimeout.TotalMilliseconds; // 设置请求超时时间
                 request.ContentType = ProtoBufContentType;
-                byte[] postData = webData.SendData;
+                var postData = webData.SendData;
                 request.ContentLength = postData.Length;
-                using (Stream requestStream = request.GetRequestStream())
-                {
-                    await requestStream.WriteAsync(postData, 0, postData.Length);
-                }
+                await using var requestStream = request.GetRequestStream();
+                await requestStream.WriteAsync(postData, 0, postData.Length);
 
-                using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
-                {
-                    using (Stream responseStream = response.GetResponseStream())
-                    {
-                        m_MemoryStream.SetLength(response.ContentLength);
-                        m_MemoryStream.Position = 0;
-                        await responseStream.CopyToAsync(m_MemoryStream);
-                        webData.Task.SetResult(new WebBufferResult(webData.UserData, m_MemoryStream.ToArray())); // 将流的内容复制到内存流中并转换为byte数组 
-                    }
-                }
+                using var       response       = (HttpWebResponse)await request.GetResponseAsync();
+                await using var responseStream = response.GetResponseStream();
+                m_MemoryStream.SetLength(response.ContentLength);
+                m_MemoryStream.Position = 0;
+                if (responseStream != null)
+                    await responseStream.CopyToAsync(m_MemoryStream);
+                webData.Task.SetResult(new WebBufferResult(webData.UserData, m_MemoryStream.ToArray())); // 将流的内容复制到内存流中并转换为byte数组 
             }
             catch (WebException e)
             {
@@ -180,23 +161,18 @@ namespace GameFrameX.Web.Runtime
         public async Task<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
         {
             var webBufferResult = await PostInner(url, message);
-            if (webBufferResult.IsNotNull())
-            {
-                var messageObjectHttp = SerializerHelper.Deserialize<MessageHttpObject>(webBufferResult.Result);
-                if (messageObjectHttp.IsNotNull() && messageObjectHttp.Id != default)
-                {
-                    var messageType = ProtoMessageIdHandler.GetRespTypeById(messageObjectHttp.Id);
-                    if (messageType != typeof(T))
-                    {
-                        Log.Error($"Response message type is invalid. Expected '{typeof(T).FullName}', actual '{messageType.FullName}'.");
-                        return default;
-                    }
+            if (!webBufferResult.IsNotNull()) return default;
+            var messageObjectHttp = SerializerHelper.Deserialize<MessageHttpObject>(webBufferResult.Result);
+            if (!messageObjectHttp.IsNotNull() || messageObjectHttp.Id == default) return default;
 
-                    return SerializerHelper.Deserialize<T>(messageObjectHttp.Body);
-                }
+            var messageType = ProtoMessageIdHandler.GetRespTypeById(messageObjectHttp.Id);
+            if (messageType != typeof(T))
+            {
+                Log.Error($"Response message type is invalid. Expected '{typeof(T).FullName}', actual '{messageType.FullName}'.");
+                return default;
             }
 
-            return default;
+            return SerializerHelper.Deserialize<T>(messageObjectHttp.Body);
         }
 
         /// <summary>
@@ -211,14 +187,14 @@ namespace GameFrameX.Web.Runtime
             var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, null);
             var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());
-            MessageHttpObject messageHttpObject = new MessageHttpObject
+            var messageHttpObject = new MessageHttpObject
             {
-                Id = id,
+                Id       = id,
                 UniqueId = message.UniqueId,
-                Body = SerializerHelper.Serialize(message),
+                Body     = SerializerHelper.Serialize(message),
             };
             var sendData = SerializerHelper.Serialize(messageHttpObject);
-            var webData = new WebProtoBufData(url, sendData, uniTaskCompletionSource, userData);
+            var webData  = new WebProtoBufData(url, sendData, uniTaskCompletionSource, userData);
             m_WaitingProtoBufQueue.Enqueue(webData);
             return uniTaskCompletionSource.Task;
         }

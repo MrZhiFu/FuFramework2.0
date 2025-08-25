@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     public partial class WebManager
     {
@@ -67,10 +67,11 @@ namespace GameFrameX.Web.Runtime
             /// <param name="form">表单数据</param>
             /// <param name="source">字符串结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebStringResult> source, object userData = null) : base(false, url, userData)
+            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebStringResult> source, object userData = null) :
+                base(false, url, userData)
             {
                 Header = header;
-                Form = form;
+                Form   = form;
                 UniTaskCompletionStringSource = source;
             }
 
@@ -82,10 +83,11 @@ namespace GameFrameX.Web.Runtime
             /// <param name="form">表单数据</param>
             /// <param name="source">字节数组结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebBufferResult> source, object userData = null) : base(false, url, userData)
+            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebBufferResult> source, object userData = null) :
+                base(false, url, userData)
             {
                 Header = header;
-                Form = form;
+                Form   = form;
                 UniTaskCompletionBytesSource = source;
             }
 
@@ -94,16 +96,8 @@ namespace GameFrameX.Web.Runtime
             /// </summary>
             public override void Dispose()
             {
-                if (UniTaskCompletionStringSource != null)
-                {
-                    UniTaskCompletionStringSource.TrySetCanceled();
-                }
-
-                if (UniTaskCompletionBytesSource != null)
-                {
-                    UniTaskCompletionBytesSource.TrySetCanceled();
-                }
-
+                UniTaskCompletionStringSource?.TrySetCanceled();
+                UniTaskCompletionBytesSource?.TrySetCanceled();
                 base.Dispose();
             }
         }

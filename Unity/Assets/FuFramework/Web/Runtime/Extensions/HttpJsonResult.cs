@@ -1,15 +1,15 @@
 using Newtonsoft.Json;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     /// <summary>
     /// HTTP网页请求的消息响应结构
     /// </summary>
-    
     public sealed class HttpJsonResult
     {
         /// <summary>
-        /// 响应码0 为成功
+        /// 响应码0表示响应成功
         /// </summary>
         [JsonProperty(PropertyName = "code")]
         public int Code { get; set; }
@@ -26,9 +26,6 @@ namespace GameFrameX.Web.Runtime
         [JsonProperty(PropertyName = "data")]
         public string Data { get; set; }
 
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
+        public override string ToString() => JsonConvert.SerializeObject(this);
     }
 }

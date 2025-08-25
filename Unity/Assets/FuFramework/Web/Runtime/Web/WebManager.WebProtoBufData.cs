@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     public partial class WebManager
     {
@@ -31,7 +32,7 @@ namespace GameFrameX.Web.Runtime
             {
                 task.CheckNull(nameof(task));
                 SendData = sendData;
-                Task = task;
+                Task     = task;
             }
         }
     }

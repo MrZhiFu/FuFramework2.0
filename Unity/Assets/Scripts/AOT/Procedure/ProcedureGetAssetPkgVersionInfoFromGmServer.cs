@@ -7,7 +7,7 @@ using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using GameFrameX.Web.Runtime;
+using FuFramework.Web.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 

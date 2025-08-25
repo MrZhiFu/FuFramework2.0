@@ -2,7 +2,8 @@ using System;
 using FuFramework.Core.Runtime;
 using Newtonsoft.Json;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     /// <summary>
     /// 提供用于处理HTTP JSON结果的辅助方法。
@@ -19,14 +20,13 @@ namespace GameFrameX.Web.Runtime
         /// <returns>HttpJsonResultData<T>对象，表示反序列化的结果。</returns>
         public static HttpJsonResultData<T> ToHttpJsonResultData<T>(this string jsonResult) where T : class, new()
         {
-            HttpJsonResultData<T> resultData = new HttpJsonResultData<T>
-            {
-                IsSuccess = false,
-            };
+            var resultData = new HttpJsonResultData<T> { IsSuccess = false, };
+
             try
             {
                 // 反序列化JSON字符串为HttpJsonResult对象
                 var httpJsonResult = JsonConvert.DeserializeObject<HttpJsonResult>(jsonResult);
+                
                 // 检查响应码是否表示成功
                 if (httpJsonResult.Code != 0)
                 {
@@ -35,6 +35,7 @@ namespace GameFrameX.Web.Runtime
                 }
 
                 resultData.IsSuccess = true; // 设置成功标志
+               
                 // 反序列化数据部分，如果数据为空则返回类型T的默认实例
                 resultData.Data = string.IsNullOrEmpty(httpJsonResult.Data) ? new T() : JsonConvert.DeserializeObject<T>(httpJsonResult.Data);
             }

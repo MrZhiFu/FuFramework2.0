@@ -1,18 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     /// <summary>
     /// Web 请求组件。
@@ -22,7 +15,6 @@ namespace GameFrameX.Web.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Web")]
-    
     public sealed class WebComponent : FuComponent
     {
         /// <summary>
@@ -42,8 +34,8 @@ namespace GameFrameX.Web.Runtime
         /// </summary>
         public float Timeout
         {
-            get { return m_WebManager.Timeout; }
-            set { m_WebManager.Timeout = m_Timeout = value; }
+            get => m_WebManager.Timeout;
+            set => m_WebManager.Timeout = m_Timeout = value;
         }
 
         /// <summary>
@@ -52,9 +44,11 @@ namespace GameFrameX.Web.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IWebManager);
+            ImplComponentType      = Utility.Assembly.GetType(componentType);
+            InterfaceComponentType = typeof(IWebManager);
+
             base.Awake();
+
             m_WebManager = FuEntry.GetModule<IWebManager>();
             if (m_WebManager == null)
             {
@@ -73,9 +67,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> GetToString(string url, object userData = null)
-        {
-            return m_WebManager.GetToString(url, userData);
-        }
+            => m_WebManager.GetToString(url, userData);
 
         /// <summary>
         /// 发送带查询参数的Get请求，返回字符串结果。
@@ -85,9 +77,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
-        {
-            return m_WebManager.GetToString(url, queryString, userData);
-        }
+            => m_WebManager.GetToString(url, queryString, userData);
 
         /// <summary>
         /// 发送带查询参数和请求头的Get请求，返回字符串结果。
@@ -98,9 +88,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
-        {
-            return m_WebManager.GetToString(url, queryString, header, userData);
-        }
+            => m_WebManager.GetToString(url, queryString, header, userData);
 
 
         /// <summary>
@@ -111,9 +99,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> GetToBytes(string url, object userData = null)
-        {
-            return m_WebManager.GetToBytes(url, userData);
-        }
+            => m_WebManager.GetToBytes(url, userData);
 
         /// <summary>
         /// 发送带查询参数的Get请求，返回字节数组结果。
@@ -123,9 +109,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
-        {
-            return m_WebManager.GetToBytes(url, queryString, userData);
-        }
+            => m_WebManager.GetToBytes(url, queryString, userData);
 
         /// <summary>
         /// 发送带查询参数和请求头的Get请求，返回字节数组结果。
@@ -136,9 +120,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
-        {
-            return m_WebManager.GetToBytes(url, queryString, header, userData);
-        }
+            => m_WebManager.GetToBytes(url, queryString, header, userData);
 
 
         /// <summary>
@@ -150,9 +132,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from = null, object userData = null)
-        {
-            return m_WebManager.PostToString(url, from, userData);
-        }
+            => m_WebManager.PostToString(url, from, userData);
 
         /// <summary>
         /// 发送带查询参数的Post请求，返回字符串结果。
@@ -163,9 +143,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-        {
-            return m_WebManager.PostToString(url, from, queryString, userData);
-        }
+            => m_WebManager.PostToString(url, from, queryString, userData);
 
         /// <summary>
         /// 发送带查询参数和请求头的Post请求，返回字符串结果。
@@ -177,9 +155,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字符串结果的WebStringResult异步任务</returns>
         public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
-        {
-            return m_WebManager.PostToString(url, from, queryString, header, userData);
-        }
+            => m_WebManager.PostToString(url, from, queryString, header, userData);
 
 
         /// <summary>
@@ -191,9 +167,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
-        {
-            return m_WebManager.PostToBytes(url, from, userData);
-        }
+            => m_WebManager.PostToBytes(url, from, userData);
 
         /// <summary>
         /// 发送带查询参数的Post请求，返回字节数组结果。
@@ -204,9 +178,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-        {
-            return m_WebManager.PostToBytes(url, from, queryString, userData);
-        }
+            => m_WebManager.PostToBytes(url, from, queryString, userData);
 
         /// <summary>
         /// 发送带查询参数和请求头的Post请求，返回字节数组结果。
@@ -218,9 +190,7 @@ namespace GameFrameX.Web.Runtime
         /// <param name="userData">用户自定义数据，会在结果中原样返回</param>
         /// <returns>返回包含字节数组的WebBufferResult异步任务</returns>
         public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
-        {
-            return m_WebManager.PostToBytes(url, from, queryString, header, userData);
-        }
+            => m_WebManager.PostToBytes(url, from, queryString, header, userData);
 
         /// <summary>
         /// 发送Post请求，用于发送和接收Protocol Buffer消息。
@@ -235,8 +205,6 @@ namespace GameFrameX.Web.Runtime
         /// 发送的消息和接收的响应都必须是Protocol Buffer消息类型。
         /// </remarks>
         public Task<T> Post<T>(string url, FuFramework.Network.Runtime.MessageObject message) where T : FuFramework.Network.Runtime.MessageObject, FuFramework.Network.Runtime.IResponseMessage
-        {
-            return m_WebManager.Post<T>(url, message);
-        }
+            => m_WebManager.Post<T>(url, message);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
     public partial class WebManager
     {
@@ -9,11 +10,6 @@ namespace GameFrameX.Web.Runtime
         /// </summary>
         private class WebData : IDisposable
         {
-            /// <summary>
-            /// 获取用户自定义数据
-            /// </summary>
-            public object UserData { get; }
-
             /// <summary>
             /// 获取是否为GET请求
             /// </summary>
@@ -25,6 +21,11 @@ namespace GameFrameX.Web.Runtime
             public string URL { get; }
 
             /// <summary>
+            /// 获取用户自定义数据
+            /// </summary>
+            public object UserData { get; }
+
+            /// <summary>
             /// 初始化Web请求数据
             /// </summary>
             /// <param name="isGet">是否为GET请求</param>
@@ -33,16 +34,14 @@ namespace GameFrameX.Web.Runtime
             protected WebData(bool isGet, string url, object userData = null)
             {
                 UserData = userData;
-                IsGet = isGet;
-                URL = url;
+                IsGet    = isGet;
+                URL      = url;
             }
 
             /// <summary>
             /// 释放资源
             /// </summary>
-            public virtual void Dispose()
-            {
-            }
+            public virtual void Dispose() { }
         }
     }
 }

@@ -1,14 +1,18 @@
-﻿using GameFrameX.Editor;
-using FuFramework.Core.Editor;
-using GameFrameX.Web.Runtime;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Web.Runtime;
 using UnityEditor;
+using UnityEngine;
 
-namespace GameFrameX.Web.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Editor
 {
+    /// <summary>
+    /// 自定义Web组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(WebComponent))]
     internal sealed class WebGameComponentInspector : GameComponentInspector
     {
-        private SerializedProperty m_Timeout = null;
+        private SerializedProperty m_Timeout;
 
         protected override void RefreshTypeNames()
         {
@@ -20,18 +24,16 @@ namespace GameFrameX.Web.Editor
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            WebComponent t = (WebComponent)target;
-            float timeout = EditorGUILayout.Slider("Timeout", m_Timeout.floatValue, 0f, 120f);
-            if (timeout != m_Timeout.floatValue)
+            var webComp = target as WebComponent;
+            if (webComp == null) return;
+            
+            var timeout = EditorGUILayout.Slider("Timeout", m_Timeout.floatValue, 0f, 120f);
+            if (!Mathf.Approximately(timeout, m_Timeout.floatValue))
             {
                 if (EditorApplication.isPlaying)
-                {
-                    t.Timeout = timeout;
-                }
+                    webComp.Timeout = timeout;
                 else
-                {
                     m_Timeout.floatValue = timeout;
-                }
             }
 
             serializedObject.ApplyModifiedProperties();

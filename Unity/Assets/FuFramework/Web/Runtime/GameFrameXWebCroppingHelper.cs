@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
-namespace GameFrameX.Web.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Web.Runtime
 {
-   
     public class GameFrameXWebCroppingHelper : MonoBehaviour
     {
-       
         private void Start()
         {
             _ = typeof(WebComponent);
