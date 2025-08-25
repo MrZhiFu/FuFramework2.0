@@ -215,15 +215,6 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path, Type type);
 
-        /*/// <summary>
-        /// 异步加载资源。
-        /// </summary>
-        /// <param name="assetPath"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        System.Threading.Tasks.Task<T> LoadAssetTaskAsync<T>(string assetPath) where T : UnityEngine.Object;*/
-
-
         /// <summary>
         /// 异步加载资源包内所有资源对象
         /// </summary>

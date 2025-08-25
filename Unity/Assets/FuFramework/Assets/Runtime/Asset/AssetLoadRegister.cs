@@ -37,7 +37,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径。</param>
         public async UniTask<T> Load<T>(string path) where T : Object
         {
-            if (m_resDict.TryGetValue(path, out var obj)) return (T)obj;
+            if (m_resDict.TryGetValue(path, out var obj)) return obj as T;
 
             var assetHandle = await AssetManager.LoadAssetAsync<T>(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
