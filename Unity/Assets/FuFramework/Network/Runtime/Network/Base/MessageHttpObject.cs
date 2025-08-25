@@ -1,45 +1,30 @@
-﻿using FuFramework.Core.Runtime;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Utility = FuFramework.Core.Runtime.Utility;
-#if ENABLE_GAME_FRAME_X_PROTOBUF
 using ProtoBuf;
-#endif
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// HTTP消息包装基类
     /// </summary>
-#if ENABLE_GAME_FRAME_X_PROTOBUF
     [ProtoContract]
-#endif
     public class MessageHttpObject
     {
         /// <summary>
         /// 消息ID
         /// </summary>
-#if ENABLE_GAME_FRAME_X_PROTOBUF
         [ProtoMember(1)]
-#endif
         public int Id { get; set; }
 
         /// <summary>
         /// 消息序列号
         /// </summary>
-#if ENABLE_GAME_FRAME_X_PROTOBUF
         [ProtoMember(2)]
-#endif
         public int UniqueId { get; set; }
 
-        [JsonIgnore]
-#if ENABLE_GAME_FRAME_X_PROTOBUF
-        [ProtoMember(3)]
-#endif
-        public byte[] Body { get; set; }
+        [JsonIgnore] [ProtoMember(3)] public byte[] Body { get; set; }
 
-        public override string ToString()
-        {
-            return Utility.Json.ToJson(this);
-        }
+        public override string ToString() => Utility.Json.ToJson(this);
     }
 }

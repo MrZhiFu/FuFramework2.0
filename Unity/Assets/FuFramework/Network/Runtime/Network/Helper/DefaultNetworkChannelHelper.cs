@@ -5,42 +5,38 @@ using FuFramework.Event.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
-    /// 默认网络通道帮助
+    /// 默认网络频道帮助器
     /// </summary>
-    
     public class DefaultNetworkChannelHelper : INetworkChannelHelper, IReference
     {
         private INetworkChannel m_NetworkChannel;
 
-        public DefaultNetworkChannelHelper()
-        {
-            m_NetworkChannel = null;
-        }
-
         /// <summary>
         /// 获取事件组件。
         /// </summary>
-        public EventComponent Event
+        public static EventComponent Event
         {
             get
             {
-                if (_event == null)
-                {
-                    _event = GameEntry.GetComponent<EventComponent>();
-                }
-
+                if (!_event) _event = GameEntry.GetComponent<EventComponent>();
                 return _event;
             }
         }
 
         private static EventComponent _event;
 
+        /// <summary>
+        /// 初始化网络频道帮助器。
+        /// </summary>
+        /// <param name="netChannel"></param>
         public void Initialize(INetworkChannel netChannel)
         {
             m_NetworkChannel = netChannel;
+            
             // 反射注册包和包处理函数。
             var packetReceiveHeaderHandlerBaseType = typeof(IPacketReceiveHeaderHandler);
             var packetReceiveBodyHandlerBaseType = typeof(IPacketReceiveBodyHandler);
@@ -54,49 +50,42 @@ namespace GameFrameX.Network.Runtime
             var types = Utility.Assembly.GetTypes();
             foreach (var type in types)
             {
-                if (!type.IsClass || type.IsAbstract)
-                {
-                    continue;
-                }
-
-                if (!type.IsImplWithInterface(packetHandlerBaseType))
-                {
-                    continue;
-                }
+                if (!type.IsClass || type.IsAbstract) continue;
+                if (!type.IsImplWithInterface(packetHandlerBaseType)) continue;
 
                 if (type.IsImplWithInterface(packetReceiveHeaderHandlerBaseType))
                 {
-                    var handler = (IPacketReceiveHeaderHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IPacketReceiveHeaderHandler;
                     m_NetworkChannel.RegisterHandler(handler);
                 }
                 else if (type.IsImplWithInterface(packetReceiveBodyHandlerBaseType))
                 {
-                    var handler = (IPacketReceiveBodyHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IPacketReceiveBodyHandler;
                     m_NetworkChannel.RegisterHandler(handler);
                 }
                 else if (type.IsImplWithInterface(packetSendHeaderHandlerBaseType))
                 {
-                    var handler = (IPacketSendHeaderHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IPacketSendHeaderHandler;
                     m_NetworkChannel.RegisterHandler(handler);
                 }
                 else if (type.IsImplWithInterface(packetSendBodyHandlerBaseType))
                 {
-                    var handler = (IPacketSendBodyHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IPacketSendBodyHandler;
                     m_NetworkChannel.RegisterHandler(handler);
                 }
                 else if (type.IsImplWithInterface(packetHeartBeatHandlerBaseType))
                 {
-                    var handler = (IPacketHeartBeatHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IPacketHeartBeatHandler;
                     m_NetworkChannel.RegisterHeartBeatHandler(handler);
                 }
                 else if (type.IsImplWithInterface(messageCompressHandlerBaseType))
                 {
-                    var handler = (IMessageCompressHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IMessageCompressHandler;
                     m_NetworkChannel.RegisterMessageCompressHandler(handler);
                 }
                 else if (type.IsImplWithInterface(messageDecompressHandlerBaseType))
                 {
-                    var handler = (IMessageDecompressHandler)Activator.CreateInstance(type);
+                    var handler = Activator.CreateInstance(type) as IMessageDecompressHandler;
                     m_NetworkChannel.RegisterMessageDecompressHandler(handler);
                 }
             }
@@ -136,7 +125,8 @@ namespace GameFrameX.Network.Runtime
             FuGuard.NotNull(messageObject, nameof(messageObject));
             FuGuard.NotNull(destination, nameof(destination));
 
-            return m_NetworkChannel.PacketSendHeaderHandler.Handler(messageObject, m_NetworkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
+            return m_NetworkChannel.PacketSendHeaderHandler.Handler(messageObject, m_NetworkChannel.MessageCompressHandler, destination,
+                out messageBodyBuffer);
         }
 
         public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
@@ -172,42 +162,27 @@ namespace GameFrameX.Network.Runtime
 
         private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
         {
-            if (!(e is NetworkConnectedEventArgs ne) || ne.NetworkChannel != m_NetworkChannel)
-            {
-                return;
-            }
-
+            if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
             Log.Debug($"网络连接成功......{ne.NetworkChannel.Name}");
         }
 
         private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
         {
-            if (!(e is NetworkClosedEventArgs ne) || ne.NetworkChannel != m_NetworkChannel)
-            {
-                return;
-            }
-
+            if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
             Log.Debug($"网络连接关闭......{ne.NetworkChannel.Name}");
         }
 
         private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
         {
-            if (!(e is NetworkMissHeartBeatEventArgs ne) || ne.NetworkChannel != m_NetworkChannel)
-            {
-                return;
-            }
-
+            if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
             Log.Warning(Utility.Text.Format("Network channel '{0}' miss heart beat '{1}' times.", ne.NetworkChannel.Name, ne.MissCount));
         }
 
         private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
         {
-            if (!(e is NetworkErrorEventArgs ne) || ne.NetworkChannel != m_NetworkChannel)
-            {
-                return;
-            }
-
-            Log.Error(Utility.Text.Format("Network channel '{0}' error, error code is '{1}', error message is '{2}'.", ne.NetworkChannel.Name, ne.ErrorCode, ne.ErrorMessage));
+            if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
+            Log.Error(Utility.Text.Format("Network channel '{0}' error, error code is '{1}', error message is '{2}'.", ne.NetworkChannel.Name,
+                ne.ErrorCode, ne.ErrorMessage));
             ne.NetworkChannel.Close();
         }
     }

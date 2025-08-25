@@ -5,33 +5,22 @@ using System.Linq;
 using System.Reflection;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 协议消息处理帮助类
     /// </summary>
-    
     public static class ProtoMessageHandler
     {
-        private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new ConcurrentDictionary<Type, List<MessageHandlerAttribute>>();
-        private static readonly List<MessageHandlerAttribute> EmptyList = new List<MessageHandlerAttribute>();
+        private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new();
 
-        /// <summary>
-        /// 初始化消息处理器
-        /// </summary>
-        /// <param name="messageHandler">消息接收对象</param>
-        
-        [Obsolete("请使用Add方法")]
-        public static void Init(IMessageHandler messageHandler)
-        {
-            Add(messageHandler);
-        }
+        private static readonly List<MessageHandlerAttribute> EmptyList = new();
 
         /// <summary>
         /// 增加消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
-        
         public static void Add(IMessageHandler messageHandler)
         {
             FuGuard.NotNull(messageHandler, nameof(messageHandler));
@@ -41,34 +30,26 @@ namespace GameFrameX.Network.Runtime
             foreach (var methodInfo in methodInfos)
             {
                 var messageHandlerAttribute = methodInfo.GetCustomAttribute<MessageHandlerAttribute>();
-                if (messageHandlerAttribute == null)
+                if (messageHandlerAttribute == null) continue;
+
+                var isAddSuccess = messageHandlerAttribute.Add(messageHandler);
+                if (!isAddSuccess)
                 {
+                    Log.Error("初始化消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
                     continue;
                 }
 
-                var isAddSuccess = messageHandlerAttribute.Add(messageHandler);
-                if (isAddSuccess)
+                MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
+                if (list == null)
                 {
-                    MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
-                    if (list == null)
-                    {
-                        list = new List<MessageHandlerAttribute>(8);
-                        MessageHandlerDictionary.TryAdd(messageHandlerAttribute.MessageType, list);
-                    }
+                    list = new List<MessageHandlerAttribute>(8);
+                    MessageHandlerDictionary.TryAdd(messageHandlerAttribute.MessageType, list);
+                }
 
-                    if (!list.Contains(messageHandlerAttribute))
-                    {
-                        list.Add(messageHandlerAttribute);
-                    }
-                    else
-                    {
-                        Log.Error("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
-                    }
-                }
+                if (!list.Contains(messageHandlerAttribute))
+                    list.Add(messageHandlerAttribute);
                 else
-                {
-                    Log.Error("初始化消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
-                }
+                    Log.Error("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
             }
         }
 
@@ -76,7 +57,6 @@ namespace GameFrameX.Network.Runtime
         /// 移除消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
-        
         public static void Remove(IMessageHandler messageHandler)
         {
             FuGuard.NotNull(messageHandler, nameof(messageHandler));
@@ -87,40 +67,29 @@ namespace GameFrameX.Network.Runtime
             foreach (var methodInfo in methodInfos)
             {
                 var messageHandlerAttribute = methodInfo.GetCustomAttribute<MessageHandlerAttribute>();
-                if (messageHandlerAttribute == null)
+                if (messageHandlerAttribute == null) continue;
+
+                var isRemoveSuccess = messageHandlerAttribute.Remove(messageHandler);
+                if (!isRemoveSuccess)
                 {
+                    Log.Error("移除消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
                     continue;
                 }
 
-                var isRemoveSuccess = messageHandlerAttribute.Remove(messageHandler);
-                if (isRemoveSuccess)
+                var isFind = MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
+                if (isFind)
                 {
-                    var isFind = MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
-                    if (isFind)
+                    if (list?.Contains(messageHandlerAttribute) == true)
                     {
-                        if (list != null)
-                        {
-                            if (list.Contains(messageHandlerAttribute))
-                            {
-                                list.Remove(messageHandlerAttribute);
-                                if (list.Count > 0)
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-
-                        MessageHandlerDictionary.TryRemove(messageHandlerAttribute.MessageType, out _);
-
-                        continue;
+                        list.Remove(messageHandlerAttribute);
+                        if (list.Count > 0) continue;
                     }
 
-                    Log.Error("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                    MessageHandlerDictionary.TryRemove(messageHandlerAttribute.MessageType, out _);
+                    continue;
                 }
-                else
-                {
-                    Log.Error("移除消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
-                }
+
+                Log.Error("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
             }
         }
 
@@ -132,11 +101,7 @@ namespace GameFrameX.Network.Runtime
         /// <returns>消息处理器</returns>
         internal static List<MessageHandlerAttribute> GetHandlers(Type messageType)
         {
-            if (MessageHandlerDictionary.TryGetValue(messageType, out var list))
-            {
-                return list?.ToList();
-            }
-
+            if (MessageHandlerDictionary.TryGetValue(messageType, out var list)) return list?.ToList();
             Log.Warning("没有找到消息处理器消息类型：" + messageType.Name);
             return EmptyList;
         }

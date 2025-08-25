@@ -1,11 +1,11 @@
 ﻿using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 默认消息压缩处理
     /// </summary>
-    
     public sealed class DefaultMessageCompressHandler : IMessageCompressHandler, IPacketHandler
     {
         /// <summary>
@@ -13,9 +13,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="message">消息未压缩内容</param>
         /// <returns></returns>
-        public byte[] Handler(byte[] message)
-        {
-            return ZipHelper.Compress(message);
-        }
+        public byte[] Handler(byte[] message) => ZipHelper.Compress(message);
     }
 }

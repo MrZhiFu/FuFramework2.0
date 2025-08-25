@@ -1,15 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.IO;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
@@ -17,16 +11,9 @@ namespace GameFrameX.Network.Runtime
         {
             public const int DefaultBufferLength = 1024 * 64;
             public const int PacketHeaderLength = 14;
-            private bool _disposed;
-
+            private bool m_disposed = false;
             
-            public ReceiveState()
-            {
-                Stream = new MemoryStream(DefaultBufferLength);
-                _disposed = false;
-            }
-
-            public MemoryStream Stream { get; private set; }
+            public MemoryStream Stream { get; private set; } = new(DefaultBufferLength);
 
             /// <summary>
             /// 是否为空消息体
@@ -48,43 +35,26 @@ namespace GameFrameX.Network.Runtime
 
             private void Dispose(bool disposing)
             {
-                if (_disposed)
+                if (m_disposed) return;
+
+                if (disposing && Stream != null)
                 {
-                    return;
+                    Stream.Dispose();
+                    Stream = null;
                 }
 
-                if (disposing)
-                {
-                    if (Stream != null)
-                    {
-                        Stream.Dispose();
-                        Stream = null;
-                    }
-                }
-
-                _disposed = true;
+                m_disposed = true;
             }
 
             public void Reset(int targetLength, IPacketReceiveHeaderHandler packetHeader)
             {
-                if (targetLength < 0)
-                {
-                    throw new FuException("Target length is invalid.");
-                }
+                if (targetLength < 0) throw new FuException("Target length is invalid.");
 
                 Stream.Position = 0L;
                 Stream.SetLength(targetLength);
 
-                if (targetLength == 0)
-                {
-                    // 发现内容长度为空.说明是个空消息或者内容是默认值.
-                    IsEmptyBody = true;
-                }
-                else
-                {
-                    IsEmptyBody = false;
-                }
-
+                // 发现内容长度为空.说明是个空消息或者内容是默认值.
+                IsEmptyBody = targetLength == 0;
                 PacketHeader = packetHeader;
             }
         }

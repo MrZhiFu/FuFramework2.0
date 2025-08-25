@@ -1,10 +1,11 @@
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络服务类型。
     /// </summary>
-    
-    public enum ServiceType : byte
+    public enum EServiceType : byte
     {
         /// <summary>
         /// TCP 网络服务。

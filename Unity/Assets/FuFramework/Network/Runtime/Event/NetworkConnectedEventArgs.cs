@@ -1,20 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络连接成功事件。
     /// </summary>
-    
     public sealed class NetworkConnectedEventArgs : GameEventArgs
     {
         /// <summary>
@@ -25,19 +17,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 获取网络连接成功事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
-
-        /// <summary>
-        /// 初始化网络连接成功事件的新实例。
-        /// </summary>
-        public NetworkConnectedEventArgs()
-        {
-            NetworkChannel = null;
-            UserData = null;
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取网络频道。
@@ -47,6 +27,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 获取用户自定义数据。
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public object UserData { get; private set; }
 
         /// <summary>
@@ -57,7 +38,7 @@ namespace GameFrameX.Network.Runtime
         /// <returns>创建的网络连接成功事件。</returns>
         public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel, object userData)
         {
-            NetworkConnectedEventArgs networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
+            var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
             networkConnectedEventArgs.NetworkChannel = networkChannel;
             networkConnectedEventArgs.UserData = userData;
             return networkConnectedEventArgs;

@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
-    /// 网络非RPC返回消息处理器
+    /// 网络非RPC返回消息处理器属性定义
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    
     public class MessageHandlerAttribute : Attribute
     {
-        public const BindingFlags Flags = BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+        public const BindingFlags Flags = BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
+                                          BindingFlags.Static;
 
         /// <summary>
         /// 消息对象
@@ -37,7 +38,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 消息处理对象队列
         /// </summary>
-        private readonly Queue<MessageObject> m_MessageObjects = new Queue<MessageObject>();
+        private readonly Queue<MessageObject> m_MessageObjects = new();
 
         /// <summary>
         /// 网络消息处理器
@@ -50,14 +51,10 @@ namespace GameFrameX.Network.Runtime
             FuGuard.NotNullOrEmpty(invokeMethodName, nameof(invokeMethodName));
             m_InvokeMethodName = invokeMethodName;
             if (message.BaseType != typeof(MessageObject))
-            {
                 throw new ArgumentException("message必须继承:" + nameof(MessageObject));
-            }
 
             if (!message.IsImplWithInterface(typeof(INotifyMessage)))
-            {
                 throw new ArgumentException($"message:{message.FullName}必须实现:" + nameof(INotifyMessage));
-            }
 
             MessageType = message;
         }
@@ -75,9 +72,7 @@ namespace GameFrameX.Network.Runtime
         internal void Invoke()
         {
             if (m_InvokeMethod == null)
-            {
                 throw new ArgumentNullException(nameof(m_InvokeMethod), $"未找到方法：{m_InvokeMethodName}.请确认是否注册成功");
-            }
 
             if (m_MessageObjects.Count <= 0)
             {
@@ -88,25 +83,9 @@ namespace GameFrameX.Network.Runtime
             var messageObject = m_MessageObjects.Dequeue();
 
             if (m_InvokeMethod.IsStatic)
-            {
                 m_InvokeMethod?.Invoke(null, new object[] { messageObject });
-            }
             else
-            {
                 m_InvokeMethod?.Invoke(m_MessageHandler, new object[] { messageObject });
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="messageHandler"></param>
-        /// <exception cref="TargetParameterCountException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        [Obsolete("已过时, 使用Add 函数")]
-        internal bool Init(IMessageHandler messageHandler)
-        {
-            return Add(messageHandler);
         }
 
         /// <summary>
@@ -126,26 +105,17 @@ namespace GameFrameX.Network.Runtime
 
             foreach (var method in methodInfos)
             {
-                if (!method.IsDefined(typeof(MessageHandlerAttribute), true))
-                {
-                    continue;
-                }
+                if (!method.IsDefined(typeof(MessageHandlerAttribute), true)) continue;
+                if (method.Name != m_InvokeMethodName) continue;
 
-                if (method.Name == m_InvokeMethodName)
-                {
-                    if (method.GetParameters().Length != 1)
-                    {
-                        throw new TargetParameterCountException("参数个数必须为1");
-                    }
+                if (method.GetParameters().Length != 1)
+                    throw new TargetParameterCountException("参数个数必须为1");
 
-                    if (method.GetParameters()[0].ParameterType.FullName != MessageType.FullName)
-                    {
-                        throw new ArgumentException("参数类型数必须为:" + MessageType.FullName);
-                    }
+                if (method.GetParameters()[0].ParameterType.FullName != MessageType.FullName)
+                    throw new ArgumentException("参数类型数必须为:" + MessageType.FullName);
 
-                    m_InvokeMethod = method;
-                    return true;
-                }
+                m_InvokeMethod = method;
+                return true;
             }
 
             return false;
@@ -168,26 +138,17 @@ namespace GameFrameX.Network.Runtime
 
             foreach (var method in methodInfos)
             {
-                if (!method.IsDefined(typeof(MessageHandlerAttribute), true))
-                {
-                    continue;
-                }
+                if (!method.IsDefined(typeof(MessageHandlerAttribute), true)) continue;
+                if (method.Name != m_InvokeMethodName) continue;
 
-                if (method.Name == m_InvokeMethodName)
-                {
-                    if (method.GetParameters().Length != 1)
-                    {
-                        throw new TargetParameterCountException("参数个数必须为1");
-                    }
+                if (method.GetParameters().Length != 1)
+                    throw new TargetParameterCountException("参数个数必须为1");
 
-                    if (method.GetParameters()[0].ParameterType.FullName != MessageType.FullName)
-                    {
-                        throw new ArgumentException("参数类型数必须为:" + MessageType.FullName);
-                    }
+                if (method.GetParameters()[0].ParameterType.FullName != MessageType.FullName)
+                    throw new ArgumentException("参数类型数必须为:" + MessageType.FullName);
 
-                    m_InvokeMethod = null;
-                    return true;
-                }
+                m_InvokeMethod = null;
+                return true;
             }
 
             return false;

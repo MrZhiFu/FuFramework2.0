@@ -1,7 +1,7 @@
 ﻿using System;
 using ProtoBuf;
 using System.Collections.Generic;
-using GameFrameX.Network.Runtime;
+using FuFramework.Network.Runtime;
 
 namespace Hotfix.Proto
 {

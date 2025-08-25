@@ -2,99 +2,74 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public partial class NetworkManager
     {
-        
+        /// <summary>
+        /// 系统套接字实现
+        /// </summary>
         private sealed class SystemNetSocket : INetworkSocket
         {
             private readonly Socket m_Socket;
 
-            public SystemNetSocket(System.Net.Sockets.AddressFamily ipAddressAddressFamily, SocketType socketType, ProtocolType protocolType)
+            public SystemNetSocket(AddressFamily ipAddressAddressFamily, SocketType socketType, ProtocolType protocolType)
             {
                 m_Socket = new Socket(ipAddressAddressFamily, socketType, protocolType);
             }
 
-            public bool IsConnected
-            {
-                get { return m_Socket.Connected; }
-            }
+            public bool IsConnected => m_Socket.Connected;
 
             public bool IsClosed { get; private set; }
 
-            public Socket Socket
-            {
-                get { return m_Socket; }
-            }
+            public Socket Socket => m_Socket;
 
-            public EndPoint LocalEndPoint
-            {
-                get { return m_Socket.LocalEndPoint; }
-            }
+            public EndPoint LocalEndPoint => m_Socket.LocalEndPoint;
 
-            public EndPoint RemoteEndPoint
-            {
-                get { return m_Socket.RemoteEndPoint; }
-            }
+            public EndPoint RemoteEndPoint => m_Socket.RemoteEndPoint;
 
-            public int Available
-            {
-                get { return m_Socket.Available; }
-            }
+            public int Available => m_Socket.Available;
 
             public int ReceiveBufferSize
             {
-                get { return m_Socket.ReceiveBufferSize; }
+                get => m_Socket.ReceiveBufferSize;
                 set
                 {
                     if (value <= 0)
-                    {
                         throw new ArgumentException("Receive buffer size is invalid.", nameof(value));
-                    }
-
                     m_Socket.ReceiveBufferSize = value;
                 }
             }
 
             public int SendBufferSize
             {
-                get { return m_Socket.SendBufferSize; }
+                get => m_Socket.SendBufferSize;
                 set
                 {
                     if (value <= 0)
-                    {
                         throw new ArgumentException("Send buffer size is invalid.", nameof(value));
-                    }
-
                     m_Socket.SendBufferSize = value;
                 }
             }
 
             public void Shutdown()
             {
-                if (IsClosed)
-                {
-                    return;
-                }
-
+                if (IsClosed) return;
                 m_Socket.Shutdown(SocketShutdown.Both);
             }
 
             public void Close()
             {
-                if (IsClosed)
-                {
-                    return;
-                }
-
+                if (IsClosed) return;
                 m_Socket.Close();
                 m_Socket.Dispose();
                 IsClosed = true;
             }
 
 
-            public IAsyncResult BeginSend(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mSendCallback, INetworkSocket mSocket)
+            public IAsyncResult BeginSend(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mSendCallback,
+                INetworkSocket mSocket)
             {
                 return m_Socket.BeginSend(getBuffer, streamPosition, streamLength, none, mSendCallback, mSocket);
             }
@@ -115,7 +90,8 @@ namespace GameFrameX.Network.Runtime
                 m_Socket.EndConnect(ar);
             }
 
-            public void BeginReceive(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mReceiveCallback, INetworkSocket mSocket)
+            public void BeginReceive(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mReceiveCallback,
+                INetworkSocket mSocket)
             {
                 m_Socket.BeginReceive(getBuffer, streamPosition, streamLength, none, mReceiveCallback, mSocket);
             }

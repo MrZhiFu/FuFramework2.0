@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using GameFrameX.Network.Runtime;
+using FuFramework.Network.Runtime;
 using ProtoBuf;
 #if UNITY_WEBGL
 using UnityEngine.Networking;

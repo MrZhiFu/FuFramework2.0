@@ -1,4 +1,6 @@
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 消息处理器约束

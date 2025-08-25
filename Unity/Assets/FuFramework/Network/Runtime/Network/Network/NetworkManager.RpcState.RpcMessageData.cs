@@ -2,18 +2,18 @@
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public partial class NetworkManager
     {
-        public partial class RpcState : IDisposable
+        public partial class RpcState
         {
             internal sealed class RpcMessageData : IDisposable
             {
                 /// <summary>
                 /// 消息的唯一ID
                 /// </summary>
-                
                 public long UniqueId { get; }
 
                 /// <summary>
@@ -59,13 +59,10 @@ namespace GameFrameX.Network.Runtime
                 internal bool IncrementalElapseTime(long time)
                 {
                     ElapseTime += time;
-                    if (ElapseTime >= Timeout)
-                    {
-                        m_Tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
-                        return true;
-                    }
+                    if (ElapseTime < Timeout) return false;
+                    m_Tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
+                    return true;
 
-                    return false;
                 }
 
                 /// <summary>
@@ -74,7 +71,6 @@ namespace GameFrameX.Network.Runtime
                 /// <param name="actorRequestMessage"></param>
                 /// <param name="timeout"></param>
                 /// <returns></returns>
-                
                 internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeout = 5000)
                 {
                     var defaultMessageActorObject = new RpcMessageData(actorRequestMessage, timeout);
@@ -92,10 +88,7 @@ namespace GameFrameX.Network.Runtime
 
                 private readonly TaskCompletionSource<IResponseMessage> m_Tcs;
 
-                public Task<IResponseMessage> Task
-                {
-                    get { return m_Tcs.Task; }
-                }
+                public Task<IResponseMessage> Task => m_Tcs.Task;
 
                 public void Dispose()
                 {

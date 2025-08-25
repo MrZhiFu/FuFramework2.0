@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.UI.Runtime;
 using FuFramework.Event.Runtime;
-using GameFrameX.Network.Runtime;
+using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using Hotfix.Manager;

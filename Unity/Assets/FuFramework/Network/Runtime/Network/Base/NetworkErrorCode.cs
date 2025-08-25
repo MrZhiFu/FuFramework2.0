@@ -1,16 +1,10 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿// ReSharper disable once CheckNamespace
 
-namespace GameFrameX.Network.Runtime
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络错误码。
     /// </summary>
-    
     public enum NetworkErrorCode : byte
     {
         /// <summary>

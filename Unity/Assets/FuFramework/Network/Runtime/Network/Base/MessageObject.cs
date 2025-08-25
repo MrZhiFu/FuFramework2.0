@@ -1,18 +1,14 @@
-﻿using FuFramework.Core.Runtime;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Utility = FuFramework.Core.Runtime.Utility;
-#if ENABLE_GAME_FRAME_X_PROTOBUF
 using ProtoBuf;
-#endif
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 消息基类
     /// </summary>
-#if ENABLE_GAME_FRAME_X_PROTOBUF
     [ProtoContract]
-#endif
     public class MessageObject
     {
         /// <summary>
@@ -21,30 +17,18 @@ namespace GameFrameX.Network.Runtime
         [JsonIgnore]
         public int UniqueId { get; private set; }
 
-        protected MessageObject()
-        {
-            UpdateUniqueId();
-        }
+        protected MessageObject() => UpdateUniqueId();
 
         /// <summary>
         /// 更新唯一编码
         /// </summary>
-        public void UpdateUniqueId()
-        {
-            UniqueId = Utility.IdGenerator.GetNextUniqueIntId();
-        }
+        public void UpdateUniqueId() => UniqueId = Utility.IdGenerator.GetNextUniqueIntId();
 
         /// <summary>
         /// 设置唯一编码
         /// </summary>
-        public void SetUpdateUniqueId(int uniqueId)
-        {
-            UniqueId = uniqueId;
-        }
+        public void SetUpdateUniqueId(int uniqueId) => UniqueId = uniqueId;
 
-        public override string ToString()
-        {
-            return Utility.Json.ToJson(this);
-        }
+        public override string ToString() => Utility.Json.ToJson(this);
     }
 }

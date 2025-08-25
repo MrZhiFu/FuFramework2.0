@@ -143,8 +143,8 @@ namespace GameFrameX.Web.Runtime
         /// 此方法用于向指定的URL发送POST请求，并接收响应。请求的消息体由参数message提供，而响应则会被解析为指定的泛型类型T。
         /// 仅在启用ENABLE_GAME_FRAME_X_WEB_PROTOBUF_NETWORK宏定义时可用。
         /// </remarks>
-        Task<T> Post<T>(string url, GameFrameX.Network.Runtime.MessageObject message)
-            where T : GameFrameX.Network.Runtime.MessageObject, GameFrameX.Network.Runtime.IResponseMessage;
+        Task<T> Post<T>(string url, FuFramework.Network.Runtime.MessageObject message)
+            where T : FuFramework.Network.Runtime.MessageObject, FuFramework.Network.Runtime.IResponseMessage;
 
         /// <summary>
         /// 超时时间

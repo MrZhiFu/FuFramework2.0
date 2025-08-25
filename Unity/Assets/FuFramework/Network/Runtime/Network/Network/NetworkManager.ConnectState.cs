@@ -1,37 +1,29 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
+﻿// ReSharper disable once CheckNamespace
 
-namespace GameFrameX.Network.Runtime
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
+        /// <summary>
+        /// 网络连接状态
+        /// </summary>
         public sealed class ConnectState
         {
-            private readonly INetworkSocket m_Socket;
-
-            
-            public ConnectState(INetworkSocket socket, object userData)
-            {
-                m_Socket = socket;
-                UserData = userData;
-            }
-
             /// <summary>
             /// Socket
             /// </summary>
-            public INetworkSocket Socket
-            {
-                get { return m_Socket; }
-            }
+            public INetworkSocket Socket { get; }
 
             /// <summary>
             /// 用户自定义数据
             /// </summary>
             public object UserData { get; }
+
+            public ConnectState(INetworkSocket socket, object userData)
+            {
+                Socket = socket;
+                UserData = userData;
+            }
         }
     }
 }

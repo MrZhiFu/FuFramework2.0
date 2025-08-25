@@ -1,11 +1,11 @@
 using System;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
-    /// 网络消息处理器
+    /// 网络消息处理器属性定义
     /// </summary>
-    
     [AttributeUsage(AttributeTargets.Class)]
     public class MessageTypeHandlerAttribute : Attribute
     {
@@ -18,7 +18,6 @@ namespace GameFrameX.Network.Runtime
         /// 网络消息处理器
         /// </summary>
         /// <param name="messageId">消息ID,不能重复</param>
-        
         public MessageTypeHandlerAttribute(int messageId)
         {
             MessageId = messageId;

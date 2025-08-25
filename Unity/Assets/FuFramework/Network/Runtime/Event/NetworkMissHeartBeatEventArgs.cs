@@ -1,20 +1,12 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络心跳包丢失事件。
     /// </summary>
-    
     public sealed class NetworkMissHeartBeatEventArgs : GameEventArgs
     {
         /// <summary>
@@ -25,19 +17,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 获取网络心跳包丢失事件编号。
         /// </summary>
-        public override string Id
-        {
-            get { return EventId; }
-        }
-
-        /// <summary>
-        /// 初始化网络心跳包丢失事件的新实例。
-        /// </summary>
-        public NetworkMissHeartBeatEventArgs()
-        {
-            NetworkChannel = null;
-            MissCount = 0;
-        }
+        public override string Id => EventId;
 
         /// <summary>
         /// 获取网络频道。
@@ -57,7 +37,7 @@ namespace GameFrameX.Network.Runtime
         /// <returns>创建的网络心跳包丢失事件。</returns>
         public static NetworkMissHeartBeatEventArgs Create(INetworkChannel networkChannel, int missCount)
         {
-            NetworkMissHeartBeatEventArgs networkMissHeartBeatEventArgs = ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
+            var networkMissHeartBeatEventArgs = ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
             networkMissHeartBeatEventArgs.NetworkChannel = networkChannel;
             networkMissHeartBeatEventArgs.MissCount = missCount;
             return networkMissHeartBeatEventArgs;

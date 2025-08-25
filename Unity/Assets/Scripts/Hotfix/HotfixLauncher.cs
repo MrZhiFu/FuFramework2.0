@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
-using GameFrameX.Network.Runtime;
+using FuFramework.Network.Runtime;
 using Hotfix.Proto;
 using SimpleJSON;
 using UnityEngine;

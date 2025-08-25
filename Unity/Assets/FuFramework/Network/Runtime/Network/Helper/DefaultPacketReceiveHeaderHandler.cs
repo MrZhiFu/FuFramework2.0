@@ -1,11 +1,11 @@
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 默认消息接收头处理器
     /// </summary>
-    
     public sealed class DefaultPacketReceiveHeaderHandler : IPacketReceiveHeaderHandler, IPacketHandler
     {
         /// <summary>
@@ -41,11 +41,7 @@ namespace GameFrameX.Network.Runtime
         /// <returns></returns>
         public bool Handler(object source)
         {
-            byte[] reader = source as byte[];
-            if (reader == null)
-            {
-                return false;
-            }
+            if (source is not byte[] reader) return false;
 
             // packetLength
             int offset = 0;
@@ -90,6 +86,6 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 包头长度 2 + 1 + 1 + 4 + 4
         /// </summary>
-        public ushort PacketHeaderLength { get; } = NetPacketLength + OperationTypeLength + NetZipFlagLength + NetUniqueIdLength + NetCmdIdLength;
+        public ushort PacketHeaderLength => NetPacketLength + OperationTypeLength + NetZipFlagLength + NetUniqueIdLength + NetCmdIdLength;
     }
 }

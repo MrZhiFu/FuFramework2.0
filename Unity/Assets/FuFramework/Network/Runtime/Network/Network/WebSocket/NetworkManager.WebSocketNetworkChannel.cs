@@ -1,29 +1,20 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-#if ENABLE_GAME_FRAME_X_WEB_SOCKET
-using System;
+﻿using System;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
-using GameFrameX.Runtime;
+using System.Net.Sockets;
+using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
         /// <summary>
         /// Web Socket 网络频道。
         /// </summary>
-        
         private sealed class WebSocketNetworkChannel : NetworkChannelBase
         {
-            private readonly CancellationTokenSource m_CancellationTokenSource = new CancellationTokenSource();
+            private readonly CancellationTokenSource m_CancellationTokenSource = new();
 
             /// <summary>
             /// 初始化网络频道的新实例。
@@ -31,9 +22,7 @@ namespace GameFrameX.Network.Runtime
             /// <param name="name">网络频道名称。</param>
             /// <param name="networkChannelHelper">网络频道辅助器。</param>
             /// <param name="rpcTimeout">RPC超时时间</param>
-            public WebSocketNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout)
-            {
-            }
+            public WebSocketNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout) { }
 
             /// <summary>
             /// 连接到远程主机。
@@ -42,33 +31,24 @@ namespace GameFrameX.Network.Runtime
             /// <param name="userData">用户自定义数据。</param>
             public override void Connect(Uri address, object userData = null)
             {
-                if (PIsConnecting)
-                {
-                    return;
-                }
+                if (PIsConnecting) return;
 
                 base.Connect(address, userData);
                 PSocket = new WebSocketNetSocket(address.ToString(), ReceiveCallback, CloseCallback);
                 if (PSocket == null)
                 {
                     const string errorMessage = "Initialize network channel failure.";
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                    return;
 
-                    throw new GameFrameworkException(errorMessage);
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
                 ConnectAsync(userData);
             }
 
-            private void CloseCallback(string errorMessage)
-            {
-                Close();
-            }
+            private void CloseCallback(string errorMessage) => Close();
 
             public override void Close()
             {
@@ -85,10 +65,7 @@ namespace GameFrameX.Network.Runtime
             {
                 lock (PSendPacketPool)
                 {
-                    if (PSendPacketPool.Count <= 0)
-                    {
-                        return false;
-                    }
+                    if (PSendPacketPool.Count <= 0) return false;
 
                     while (PSendPacketPool.First != null)
                     {
@@ -103,14 +80,11 @@ namespace GameFrameX.Network.Runtime
                         catch (Exception exception)
                         {
                             PActive = false;
-                            if (NetworkChannelError != null)
-                            {
-                                SocketException socketException = exception as SocketException;
-                                NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                                return false;
-                            }
+                            if (NetworkChannelError == null) throw;
+                            var socketException = exception as SocketException;
+                            NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                            return false;
 
-                            throw;
                         }
                         finally
                         {
@@ -120,13 +94,10 @@ namespace GameFrameX.Network.Runtime
                         if (!serializeResult)
                         {
                             const string errorMessage = "Serialized packet failure.";
-                            if (NetworkChannelError != null)
-                            {
-                                NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
-                                return false;
-                            }
+                            if (NetworkChannelError == null) throw new FuException(errorMessage);
+                            NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                            return false;
 
-                            throw new GameFrameworkException(errorMessage);
                         }
 
                         PSendState.Reset();
@@ -135,8 +106,7 @@ namespace GameFrameX.Network.Runtime
                     return true;
                 }
             }
-
-
+            
             /// <summary>
             /// 处理发送消息对象
             /// </summary>
@@ -154,12 +124,12 @@ namespace GameFrameX.Network.Runtime
                     return false;
                 }
 
-                bool serializeResult = base.ProcessSendMessage(messageObject);
+                var serializeResult = base.ProcessSendMessage(messageObject);
                 if (serializeResult)
                 {
                     var webSocketClientNetSocket = (WebSocketNetSocket)PSocket;
 
-                    byte[] buffer = new byte[PSendState.Stream.Length];
+                    var buffer = new byte[PSendState.Stream.Length];
                     PSendState.Stream.Seek(0, SeekOrigin.Begin);
                     _ = PSendState.Stream.Read(buffer, 0, buffer.Length);
 
@@ -185,18 +155,13 @@ namespace GameFrameX.Network.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
-
-                    throw;
+                    // ReSharper disable once AsyncVoidMethod
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
-
-
+            
             private void ConnectCallback(ConnectState connectState)
             {
                 PIsConnecting = false;
@@ -204,9 +169,7 @@ namespace GameFrameX.Network.Runtime
                 {
                     var socketUserData = (WebSocketNetSocket)PSocket;
                     if (!socketUserData.IsConnected)
-                    {
                         throw new SocketException((int)NetworkErrorCode.ConnectError);
-                    }
                 }
                 catch (ObjectDisposedException)
                 {
@@ -215,31 +178,19 @@ namespace GameFrameX.Network.Runtime
                 catch (Exception exception)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    return;
 
-                    throw;
                 }
 
                 PSentPacketCount = 0;
                 PReceivedPacketCount = 0;
 
-                lock (PSendPacketPool)
-                {
-                    PSendPacketPool.Clear();
-                }
-
-                lock (PHeartBeatState)
-                {
-                    PHeartBeatState.Reset(true);
-                }
-
+                lock (PSendPacketPool) PSendPacketPool.Clear();
+                lock (PHeartBeatState) PHeartBeatState.Reset(true);
                 NetworkChannelConnected?.Invoke(this, connectState.UserData);
-
                 PActive = true;
             }
 
@@ -254,26 +205,20 @@ namespace GameFrameX.Network.Runtime
 
                     PReceivedPacketCount++;
 
-                    if (buffer.Length < PacketReceiveHeaderHandler.PacketHeaderLength)
-                    {
-                        return;
-                    }
+                    if (buffer.Length < PacketReceiveHeaderHandler.PacketHeaderLength) return;
 
                     var processSuccess = PNetworkChannelHelper.DeserializePacketHeader(buffer);
                     if (processSuccess)
                     {
                         var bodyLength = (int)(PacketReceiveHeaderHandler.PacketLength - PacketReceiveHeaderHandler.PacketHeaderLength);
                         PReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
-                        if (buffer.Length < bodyLength)
-                        {
-                            return;
-                        }
+                        if (buffer.Length < bodyLength) return;
 
                         var body = buffer.ReadBytes(PacketReceiveHeaderHandler.PacketHeaderLength, bodyLength);
                         if (PReceiveState.PacketHeader.ZipFlag != 0)
                         {
                             // 解压
-                            GameFrameworkGuard.NotNull(MessageDecompressHandler, nameof(MessageDecompressHandler));
+                            FuGuard.NotNull(MessageDecompressHandler, nameof(MessageDecompressHandler));
                             body = MessageDecompressHandler.Handler(body);
                         }
 
@@ -296,7 +241,6 @@ namespace GameFrameX.Network.Runtime
 
                         // 将收到的消息加入到链表最后
                         m_ExecutionMessageLinkedList.AddLast(messageObject);
-
                         PReceivedPacketCount++;
                     }
                     else
@@ -312,4 +256,3 @@ namespace GameFrameX.Network.Runtime
         }
     }
 }
-#endif

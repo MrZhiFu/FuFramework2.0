@@ -1,9 +1,10 @@
 using System.IO;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
-    /// 网络消息包头接口。
+    /// 网络发送消息包头接口。
     /// </summary>
     public interface IPacketSendHeaderHandler
     {
@@ -41,6 +42,7 @@ namespace GameFrameX.Network.Runtime
         /// <param name="messageBodyBuffer">消息序列化完的二进制数组</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        bool Handler<T>(T messageObject, IMessageCompressHandler messageCompressHandler, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject;
+        bool Handler<T>(T messageObject, IMessageCompressHandler messageCompressHandler, MemoryStream destination, out byte[] messageBodyBuffer)
+            where T : MessageObject;
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace GameFrameX.Network.Runtime
+﻿// ReSharper disable once CheckNamespace
+
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 消息解压器接口定义，用于解压压缩后的消息

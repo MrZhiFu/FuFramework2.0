@@ -1,7 +1,8 @@
 using System.Net;
-using System.Net.Sockets;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable UnusedMember.Global
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络套接字接口。

@@ -1,20 +1,15 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using GameFrameX.Network.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Core.Editor;
+﻿using FuFramework.Core.Editor;
+using FuFramework.Network.Runtime;
 using UnityEditor;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Network.Editor
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Editor
 {
+    /// <summary>
+    /// 自定义网络组件的Inspector
+    /// </summary>
     [CustomEditor(typeof(NetworkComponent))]
     internal sealed class NetworkGameComponentInspector : GameComponentInspector
     {
@@ -22,9 +17,9 @@ namespace GameFrameX.Network.Editor
         private SerializedProperty m_IgnoredReceiveNetworkIds;
         private SerializedProperty m_rpcTimeout;
 
-        private readonly GUIContent m_IgnoredSendNetworkIdsGUIContent = new GUIContent("忽略发送消息ID的日志打印");
-        private readonly GUIContent m_IgnoredReceiveNetworkIdsGUIContent = new GUIContent("忽略接收消息ID的日志打印");
-        private readonly GUIContent m_rpcTimeoutGUIContent = new GUIContent("RPC超时时间,单位:毫秒");
+        private readonly GUIContent m_IgnoredSendNetworkIdsGUIContent = new("忽略发送消息ID的日志打印");
+        private readonly GUIContent m_IgnoredReceiveNetworkIdsGUIContent = new("忽略接收消息ID的日志打印");
+        private readonly GUIContent m_rpcTimeoutGUIContent = new("RPC超时时间,单位:毫秒");
 
         public override void OnInspectorGUI()
         {
@@ -42,7 +37,7 @@ namespace GameFrameX.Network.Editor
             serializedObject.ApplyModifiedProperties();
             if (!EditorApplication.isPlaying)
             {
-                EditorGUILayout.HelpBox("Available during runtime only.", MessageType.Info);
+                EditorGUILayout.HelpBox("仅在运行时可用.", MessageType.Info);
                 return;
             }
 
@@ -50,7 +45,7 @@ namespace GameFrameX.Network.Editor
 
             if (IsPrefabInHierarchy(t.gameObject))
             {
-                EditorGUILayout.LabelField("Network Channel Count", t.NetworkChannelCount.ToString());
+                EditorGUILayout.LabelField("网络频道数", t.NetworkChannelCount.ToString());
 
                 INetworkChannel[] networkChannels = t.GetAllNetworkChannels();
                 foreach (INetworkChannel networkChannel in networkChannels)
@@ -73,7 +68,7 @@ namespace GameFrameX.Network.Editor
             {
                 EditorGUILayout.LabelField(networkChannel.Name, networkChannel.Connected ? "Connected" : "Disconnected");
                 // EditorGUILayout.LabelField("Service Type", networkChannel.ServiceType.ToString());
-                EditorGUILayout.LabelField("Address Family", networkChannel.AddressFamily.ToString());
+                EditorGUILayout.LabelField("Address Family", networkChannel.EAddressFamily.ToString());
                 EditorGUILayout.LabelField("Local Address", networkChannel.Connected ? networkChannel.Socket.LocalEndPoint.ToString() : "Unavailable");
                 EditorGUILayout.LabelField("Remote Address", networkChannel.Connected ? networkChannel.Socket.RemoteEndPoint.ToString() : "Unavailable");
                 EditorGUILayout.LabelField("Send Packet", Utility.Text.Format("{0} / {1}", networkChannel.SendPacketCount, networkChannel.SentPacketCount));

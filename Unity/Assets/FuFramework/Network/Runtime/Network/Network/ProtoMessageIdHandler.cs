@@ -3,26 +3,23 @@ using System.Collections.Generic;
 using System.Reflection;
 using FuFramework.Core.Runtime;
 
-// using System.Text;
-
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 协议消息处理器
     /// </summary>
-    
     public static class ProtoMessageIdHandler
     {
-        private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary = new FuBidirectionalDictionary<int, Type>();
-        private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new FuBidirectionalDictionary<int, Type>();
-        private static readonly List<Type> HeartBeatList = new List<Type>();
+        private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary = new();
+        private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new();
+        private static readonly List<Type> HeartBeatList = new();
 
         /// <summary>
         /// 根据消息ID获取请求的类型
         /// </summary>
         /// <param name="messageId">消息ID</param>
         /// <returns>请求的类型</returns>
-        
         public static Type GetReqTypeById(int messageId)
         {
             if (ReqDictionary.Count <= 0)
@@ -40,7 +37,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>请求消息ID</returns>
-        
         public static int GetReqMessageIdByType(Type type)
         {
             if (ReqDictionary.Count <= 0)
@@ -58,7 +54,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="messageId">消息ID</param>
         /// <returns>响应的类型</returns>
-        
         public static Type GetRespTypeById(int messageId)
         {
             if (RespDictionary.Count <= 0)
@@ -76,7 +71,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>响应消息ID</returns>
-        
         public static int GetRespMessageIdByType(Type type)
         {
             if (RespDictionary.Count <= 0)
@@ -94,16 +88,11 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="type">消息类型</param>
         /// <returns></returns>
-        
-        public static bool IsHeartbeat(Type type)
-        {
-            return HeartBeatList.Contains(type);
-        }
+        public static bool IsHeartbeat(Type type) => HeartBeatList.Contains(type);
 
         /// <summary>
         /// 初始化所有协议对象
         /// </summary>
-        
         public static void Init(Assembly assembly)
         {
             ReqDictionary.Clear();
@@ -113,52 +102,38 @@ namespace GameFrameX.Network.Runtime
             foreach (var type in types)
             {
                 var attribute = type.GetCustomAttribute(typeof(MessageTypeHandlerAttribute));
-                if (attribute == null)
-                {
-                    continue;
-                }
 
                 // stringBuilder.AppendLine(type.FullName);
                 if (attribute is MessageTypeHandlerAttribute messageIdHandler)
                 {
                     if (type.IsImplWithInterface(typeof(IHeartBeatMessage)))
                     {
-                        if (HeartBeatList.Contains(type))
-                        {
-                            throw new FuException($"心跳消息重复==>类型:{type.FullName}");
-                        }
-                        else
-                        {
-                            HeartBeatList.Add(type);
-                        }
+                        if (HeartBeatList.Contains(type)) throw new FuException($"心跳消息重复==>类型:{type.FullName}");
+                        HeartBeatList.Add(type);
                     }
 
                     if (type.IsImplWithInterface(typeof(IRequestMessage)))
                     {
                         // 请求
-                        if (!ReqDictionary.TryAdd(messageIdHandler.MessageId, type))
-                        {
-                            ReqDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new FuException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
-                        }
+                        if (ReqDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
+                        ReqDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        throw new FuException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
-                    else if (type.IsImplWithInterface(typeof(IResponseMessage)))
+
+                    if (type.IsImplWithInterface(typeof(IResponseMessage)))
                     {
                         // 返回
-                        if (!RespDictionary.TryAdd(messageIdHandler.MessageId, type))
-                        {
-                            RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
-                        }
+                        if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
+                        RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
-                    else if (type.IsImplWithInterface(typeof(INotifyMessage)))
+
+                    if (type.IsImplWithInterface(typeof(INotifyMessage)))
                     {
                         // 返回
-                        if (!RespDictionary.TryAdd(messageIdHandler.MessageId, type))
-                        {
-                            RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
-                            throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
-                        }
+                        if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
+                        RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
                 }
             }

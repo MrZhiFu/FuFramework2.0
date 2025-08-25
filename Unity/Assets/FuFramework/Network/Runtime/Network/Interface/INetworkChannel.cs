@@ -1,16 +1,9 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络频道接口。
@@ -35,7 +28,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 获取网络地址类型。
         /// </summary>
-        AddressFamily AddressFamily { get; }
+        EAddressFamily EAddressFamily { get; }
 
         /// <summary>
         /// 获取要发送的消息包数量。

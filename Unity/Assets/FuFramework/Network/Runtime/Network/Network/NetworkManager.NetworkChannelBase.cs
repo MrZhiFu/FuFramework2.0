@@ -1,20 +1,13 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
@@ -35,7 +28,7 @@ namespace GameFrameX.Network.Runtime
 
             protected readonly FuLinkedList<MessageObject> PSendPacketPool;
             protected readonly INetworkChannelHelper PNetworkChannelHelper;
-            protected AddressFamily PAddressFamily;
+            protected EAddressFamily PEAddressFamily;
 
             /// <summary>
             /// 当收到数据包时是否重置心跳流逝时长
@@ -105,14 +98,10 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             protected bool PActive
             {
-                get { return m_PActive; }
+                get => m_PActive;
                 set
                 {
-                    if (m_PActive == value)
-                    {
-                        return;
-                    }
-
+                    if (m_PActive == value) return;
                     m_PActive = value;
                     NetworkChannelActiveChanged?.Invoke(this, m_PActive);
                 }
@@ -124,7 +113,7 @@ namespace GameFrameX.Network.Runtime
             private IPacketReceiveBodyHandler m_PacketReceiveBodyHandler;
             private IPacketHeartBeatHandler m_PacketHeartBeatHandler;
 
-            protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new FuLinkedList<MessageObject>();
+            protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new();
 
             public Action<NetworkChannelBase, object> NetworkChannelConnected;
             public Action<NetworkChannelBase> NetworkChannelClosed;
@@ -138,13 +127,12 @@ namespace GameFrameX.Network.Runtime
             /// <param name="name">网络频道名称。</param>
             /// <param name="networkChannelHelper">网络频道辅助器。</param>
             /// <param name="rpcTimeout">RPC超时时间</param>
-            
             public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
             {
                 Name = name ?? string.Empty;
                 PSendPacketPool = new FuLinkedList<MessageObject>();
                 PNetworkChannelHelper = networkChannelHelper;
-                PAddressFamily = AddressFamily.Unknown;
+                PEAddressFamily = EAddressFamily.Unknown;
                 PResetHeartBeatElapseSecondsWhenReceivePacket = false;
                 PHeartBeatInterval = DefaultHeartBeatInterval;
                 MissHeartBeatCountByClose = DefaultMissHeartBeatCountByClose;
@@ -176,34 +164,17 @@ namespace GameFrameX.Network.Runtime
             /// <summary>
             /// 获取网络频道所使用的 Socket。
             /// </summary>
-            public INetworkSocket Socket
-            {
-                get { return PSocket; }
-            }
+            public INetworkSocket Socket => PSocket;
 
             /// <summary>
             /// 获取是否已连接。
             /// </summary>
-            public bool Connected
-            {
-                get
-                {
-                    if (PSocket != null)
-                    {
-                        return PSocket.IsConnected;
-                    }
-
-                    return false;
-                }
-            }
+            public bool Connected => PSocket is { IsConnected: true };
 
             /// <summary>
             /// 获取网络地址类型。
             /// </summary>
-            public AddressFamily AddressFamily
-            {
-                get { return PAddressFamily; }
-            }
+            public EAddressFamily EAddressFamily => PEAddressFamily;
 
             /// <summary>
             /// 获取要发送的消息包数量。
@@ -213,35 +184,27 @@ namespace GameFrameX.Network.Runtime
                 get
                 {
                     lock (PSendPacketPool)
-                    {
                         return PSendPacketPool.Count;
-                    }
                 }
             }
 
             /// <summary>
             /// 获取累计发送的消息包数量。
             /// </summary>
-            public int SentPacketCount
-            {
-                get { return PSentPacketCount; }
-            }
+            public int SentPacketCount => PSentPacketCount;
 
             /// <summary>
             /// 获取累计已接收的消息包数量。
             /// </summary>
-            public int ReceivedPacketCount
-            {
-                get { return PReceivedPacketCount; }
-            }
+            public int ReceivedPacketCount => PReceivedPacketCount;
 
             /// <summary>
             /// 获取或设置当收到消息包时是否重置心跳流逝时间。
             /// </summary>
             public bool ResetHeartBeatElapseSecondsWhenReceivePacket
             {
-                get { return PResetHeartBeatElapseSecondsWhenReceivePacket; }
-                set { PResetHeartBeatElapseSecondsWhenReceivePacket = value; }
+                get => PResetHeartBeatElapseSecondsWhenReceivePacket;
+                set => PResetHeartBeatElapseSecondsWhenReceivePacket = value;
             }
 
             /// <summary>
@@ -252,9 +215,7 @@ namespace GameFrameX.Network.Runtime
                 get
                 {
                     lock (PHeartBeatState)
-                    {
                         return PHeartBeatState.MissHeartBeatCount;
-                    }
                 }
             }
 
@@ -263,8 +224,8 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             public float HeartBeatInterval
             {
-                get { return PHeartBeatInterval; }
-                set { PHeartBeatInterval = value; }
+                get => PHeartBeatInterval;
+                set => PHeartBeatInterval = value;
             }
 
             /// <summary>
@@ -284,42 +245,27 @@ namespace GameFrameX.Network.Runtime
             /// <summary>
             /// 消息发送包头处理器
             /// </summary>
-            public IPacketSendHeaderHandler PacketSendHeaderHandler
-            {
-                get { return m_PacketSendHeaderHandler; }
-            }
+            public IPacketSendHeaderHandler PacketSendHeaderHandler => m_PacketSendHeaderHandler;
 
             /// <summary>
             /// 消息发送内容处理器
             /// </summary>
-            public IPacketSendBodyHandler PacketSendBodyHandler
-            {
-                get { return m_PacketSendBodyHandler; }
-            }
+            public IPacketSendBodyHandler PacketSendBodyHandler => m_PacketSendBodyHandler;
 
             /// <summary>
             /// 消息接收包头处理器
             /// </summary>
-            public IPacketReceiveHeaderHandler PacketReceiveHeaderHandler
-            {
-                get { return m_PacketReceiveHeaderHandler; }
-            }
+            public IPacketReceiveHeaderHandler PacketReceiveHeaderHandler => m_PacketReceiveHeaderHandler;
 
             /// <summary>
             /// 心跳消息处理器
             /// </summary>
-            public IPacketHeartBeatHandler PacketHeartBeatHandler
-            {
-                get { return m_PacketHeartBeatHandler; }
-            }
+            public IPacketHeartBeatHandler PacketHeartBeatHandler => m_PacketHeartBeatHandler;
 
             /// <summary>
             /// 消息接收内容处理器
             /// </summary>
-            public IPacketReceiveBodyHandler PacketReceiveBodyHandler
-            {
-                get { return m_PacketReceiveBodyHandler; }
-            }
+            public IPacketReceiveBodyHandler PacketReceiveBodyHandler => m_PacketReceiveBodyHandler;
 
             /// <summary>
             /// 消息压缩处理器
@@ -340,17 +286,12 @@ namespace GameFrameX.Network.Runtime
             /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
             public virtual void Update(float elapseSeconds, float realElapseSeconds)
             {
-                if (PSocket == null || !PActive)
-                {
-                    return;
-                }
+                if (PSocket == null || !PActive) return;
 
                 ProcessSend();
                 ProcessReceive();
-                if (PSocket == null || !PActive)
-                {
-                    return;
-                }
+                
+                if (PSocket == null || !PActive) return;
 
                 ProcessHeartBeat(realElapseSeconds);
                 ProcessReceivedMessage();
@@ -369,10 +310,7 @@ namespace GameFrameX.Network.Runtime
                     {
                         // 执行RPC匹配
                         var replySuccess = PRpcState.TryReply(messageObject);
-                        if (replySuccess)
-                        {
-                            continue;
-                        }
+                        if (replySuccess) continue;
 
                         // 执行通知消息
                         var handlers = ProtoMessageHandler.GetHandlers(messageObject.GetType());
@@ -406,42 +344,37 @@ namespace GameFrameX.Network.Runtime
             /// <param name="realElapseSeconds"></param>
             private void ProcessHeartBeat(float realElapseSeconds)
             {
-                if (PHeartBeatInterval > 0f)
+                if (PHeartBeatInterval <= 0f) return;
+                var sendHeartBeat = false;
+                var missHeartBeatCount = 0;
+                lock (PHeartBeatState)
                 {
-                    bool sendHeartBeat = false;
-                    int missHeartBeatCount = 0;
-                    lock (PHeartBeatState)
+                    if (PSocket == null || !PActive) return;
+
+                    PHeartBeatState.HeartBeatElapseSeconds += realElapseSeconds;
+                    if (PHeartBeatState.HeartBeatElapseSeconds >= PHeartBeatInterval)
                     {
-                        if (PSocket == null || !PActive)
+                        sendHeartBeat = true;
+                        missHeartBeatCount = PHeartBeatState.MissHeartBeatCount;
+                        PHeartBeatState.HeartBeatElapseSeconds = 0f;
+                        PHeartBeatState.MissHeartBeatCount++;
+                    }
+
+                    if (sendHeartBeat && PNetworkChannelHelper.SendHeartBeat())
+                    {
+                        if (missHeartBeatCount > 0 && NetworkChannelMissHeartBeat != null)
                         {
-                            return;
+                            NetworkChannelMissHeartBeat(this, missHeartBeatCount);
                         }
 
-                        PHeartBeatState.HeartBeatElapseSeconds += realElapseSeconds;
-                        if (PHeartBeatState.HeartBeatElapseSeconds >= PHeartBeatInterval)
-                        {
-                            sendHeartBeat = true;
-                            missHeartBeatCount = PHeartBeatState.MissHeartBeatCount;
-                            PHeartBeatState.HeartBeatElapseSeconds = 0f;
-                            PHeartBeatState.MissHeartBeatCount++;
-                        }
+                        // PHeartBeatState.Reset(this.ResetHeartBeatElapseSecondsWhenReceivePacket);
+                        return;
+                    }
 
-                        if (sendHeartBeat && PNetworkChannelHelper.SendHeartBeat())
-                        {
-                            if (missHeartBeatCount > 0 && NetworkChannelMissHeartBeat != null)
-                            {
-                                NetworkChannelMissHeartBeat(this, missHeartBeatCount);
-                            }
-
-                            // PHeartBeatState.Reset(this.ResetHeartBeatElapseSecondsWhenReceivePacket);
-                            return;
-                        }
-
-                        if (PHeartBeatState.MissHeartBeatCount > MissHeartBeatCountByClose)
-                        {
-                            // 心跳丢失达到上线。触发断开
-                            Close();
-                        }
+                    if (PHeartBeatState.MissHeartBeatCount > MissHeartBeatCountByClose)
+                    {
+                        // 心跳丢失达到上线。触发断开
+                        Close();
                     }
                 }
             }
@@ -460,7 +393,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册消息压缩处理器
             /// </summary>
             /// <param name="handler">处理器对象,当设置为空的时候，不启用消息压缩</param>
-            
             public void RegisterMessageCompressHandler(IMessageCompressHandler handler)
             {
                 MessageCompressHandler = handler;
@@ -470,7 +402,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册消息解压处理器
             /// </summary>
             /// <param name="handler">处理器对象,当设置为空的时候，不启用消息解压</param>
-            
             public void RegisterMessageDecompressHandler(IMessageDecompressHandler handler)
             {
                 MessageDecompressHandler = handler;
@@ -480,7 +411,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册网络消息包处理函数。
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数。</param>
-            
             public void RegisterHandler(IPacketSendHeaderHandler handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -492,7 +422,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册网络消息包处理函数。
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数。</param>
-            
             public void RegisterHandler(IPacketSendBodyHandler handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -503,7 +432,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册网络消息包处理函数。
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数。</param>
-            
             public void RegisterHandler(IPacketReceiveHeaderHandler handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -514,7 +442,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册网络消息包处理函数。
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数。</param>
-            
             public void RegisterHandler(IPacketReceiveBodyHandler handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -526,7 +453,6 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数</param>
             [Obsolete("Use RegisterHeartBeatHandler instead")]
-            
             public void RegisterHandler(IPacketHeartBeatHandler handler)
             {
                 RegisterHeartBeatHandler(handler);
@@ -536,7 +462,6 @@ namespace GameFrameX.Network.Runtime
             /// 注册网络消息心跳处理函数，用于处理心跳消息
             /// </summary>
             /// <param name="handler">要注册的网络消息包处理函数</param>
-            
             public void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -556,7 +481,6 @@ namespace GameFrameX.Network.Runtime
             /// 设置RPC 的 ErrorCode 不为 0 的时候的处理函数
             /// </summary>
             /// <param name="handler"></param>
-            
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -567,7 +491,6 @@ namespace GameFrameX.Network.Runtime
             /// 设置RPC错误的处理函数
             /// </summary>
             /// <param name="handler"></param>
-            
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -578,7 +501,6 @@ namespace GameFrameX.Network.Runtime
             /// 设置RPC开始的处理函数
             /// </summary>
             /// <param name="handler"></param>
-            
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -589,7 +511,6 @@ namespace GameFrameX.Network.Runtime
             /// 设置RPC结束的处理函数
             /// </summary>
             /// <param name="handler"></param>
-            
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -602,7 +523,6 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             /// <param name="address">远程主机的地址。</param>
             /// <param name="userData">用户自定义数据。</param>
-            
             public virtual void Connect(Uri address, object userData = null)
             {
                 if (PSocket != null)
@@ -648,23 +568,20 @@ namespace GameFrameX.Network.Runtime
                 {
                     switch (ConnectEndPoint.AddressFamily)
                     {
-                        case System.Net.Sockets.AddressFamily.InterNetwork:
-                            PAddressFamily = AddressFamily.IPv4;
+                        case AddressFamily.InterNetwork:
+                            PEAddressFamily = EAddressFamily.IPv4;
                             break;
 
-                        case System.Net.Sockets.AddressFamily.InterNetworkV6:
-                            PAddressFamily = AddressFamily.IPv6;
+                        case AddressFamily.InterNetworkV6:
+                            PEAddressFamily = EAddressFamily.IPv6;
                             break;
 
                         default:
-                            string errorMessage = Utility.Text.Format("Not supported address family '{0}'.", ConnectEndPoint.AddressFamily);
-                            if (NetworkChannelError != null)
-                            {
-                                NetworkChannelError(this, NetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
-                                return;
-                            }
+                            var errorMessage = Utility.Text.Format("Not supported address family '{0}'.", ConnectEndPoint.AddressFamily);
+                            if (NetworkChannelError == null) throw new FuException(errorMessage);
+                            NetworkChannelError(this, NetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
+                            return;
 
-                            throw new FuException(errorMessage);
                     }
                 }
 
@@ -676,18 +593,13 @@ namespace GameFrameX.Network.Runtime
             /// <summary>
             /// 关闭连接并释放所有相关资源。
             /// </summary>
-            
             public virtual void Close()
             {
                 lock (this)
                 {
-                    if (PSocket == null)
-                    {
-                        return;
-                    }
-
+                    if (PSocket == null) return;
                     PActive = false;
-
+                    
                     try
                     {
                         PSocket.Shutdown();
@@ -706,15 +618,8 @@ namespace GameFrameX.Network.Runtime
                     PSentPacketCount = 0;
                     PReceivedPacketCount = 0;
 
-                    lock (PSendPacketPool)
-                    {
-                        PSendPacketPool.Clear();
-                    }
-
-                    lock (PHeartBeatState)
-                    {
-                        PHeartBeatState.Reset(true);
-                    }
+                    lock (PSendPacketPool) PSendPacketPool.Clear();
+                    lock (PHeartBeatState) PHeartBeatState.Reset(true);
 
                     PRpcState.Dispose();
                     m_ExecutionMessageLinkedList.Clear();
@@ -726,7 +631,6 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             /// <param name="messageObject"></param>
             /// <typeparam name="TResult"></typeparam>
-            
             public async Task<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
             {
                 FuGuard.NotNull(messageObject, nameof(messageObject));
@@ -740,44 +644,34 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             /// <typeparam name="T">消息包类型。</typeparam>
             /// <param name="messageObject">要发送的消息包。</param>
-            
             public void Send<T>(T messageObject) where T : MessageObject
             {
                 FuGuard.NotNull(messageObject, nameof(messageObject));
                 if (PSocket == null)
                 {
                     const string errorMessage = "You must connect first.";
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    return;
 
-                    throw new FuException(errorMessage);
                 }
 
                 if (!PActive)
                 {
                     const string errorMessage = "Socket is not active.";
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    return;
 
-                    throw new FuException(errorMessage);
                 }
 
                 if (messageObject == null)
                 {
                     const string errorMessage = "Packet is invalid.";
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    return;
 
-                    throw new FuException(errorMessage);
                 }
 
                 lock (PSendPacketPool)
@@ -801,10 +695,7 @@ namespace GameFrameX.Network.Runtime
             /// <param name="disposing">释放资源标记。</param>
             private void Dispose(bool disposing)
             {
-                if (m_Disposed)
-                {
-                    return;
-                }
+                if (m_Disposed) return;
 
                 if (disposing)
                 {
@@ -824,7 +715,7 @@ namespace GameFrameX.Network.Runtime
             /// <exception cref="InvalidOperationException"></exception>
             protected virtual bool ProcessSendMessage(MessageObject messageObject)
             {
-                bool serializeResult = PNetworkChannelHelper.SerializePacketHeader(messageObject, PSendState.Stream, out var messageBodyBuffer);
+                var serializeResult = PNetworkChannelHelper.SerializePacketHeader(messageObject, PSendState.Stream, out var messageBodyBuffer);
                 if (serializeResult)
                 {
                     serializeResult = PNetworkChannelHelper.SerializePacketBody(messageBodyBuffer, PSendState.Stream);
@@ -847,12 +738,8 @@ namespace GameFrameX.Network.Runtime
             {
                 lock (PSendPacketPool)
                 {
-                    if (PSendState.Stream.Length > 0 || PSendPacketPool.Count <= 0)
-                    {
-                        return false;
-                    }
-
-
+                    if (PSendState.Stream.Length > 0 || PSendPacketPool.Count <= 0) return false;
+                    
                     while (PSendPacketPool.First != null)
                     {
                         var messageObject = PSendPacketPool.First.Value;
@@ -865,31 +752,22 @@ namespace GameFrameX.Network.Runtime
                         catch (Exception exception)
                         {
                             PActive = false;
-                            if (NetworkChannelError != null)
-                            {
-                                SocketException socketException = exception as SocketException;
-                                NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                                return false;
-                            }
+                            if (NetworkChannelError == null) throw;
+                            var socketException = exception as SocketException;
+                            NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                            return false;
 
-                            throw;
                         }
                         finally
                         {
                             PSendPacketPool.RemoveFirst();
                         }
 
-                        if (!serializeResult)
-                        {
-                            const string errorMessage = "Serialized packet failure.";
-                            if (NetworkChannelError != null)
-                            {
-                                NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
-                                return false;
-                            }
-
-                            throw new FuException(errorMessage);
-                        }
+                        if (serializeResult) continue;
+                        const string errorMessage = "Serialized packet failure.";
+                        if (NetworkChannelError == null) throw new FuException(errorMessage);
+                        NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                        return false;
 
                         // PSendState.Reset();
                     }
@@ -899,9 +777,7 @@ namespace GameFrameX.Network.Runtime
                 }
             }
 
-            protected void ProcessReceive()
-            {
-            }
+            protected void ProcessReceive() { }
 
             protected void DebugSendLog(MessageObject messageObject)
             {
@@ -929,7 +805,6 @@ namespace GameFrameX.Network.Runtime
             /// </summary>
             /// <param name="sendIds">发送列表</param>
             /// <param name="receiveIds">接收列表</param>
-            
             public void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds)
             {
                 IgnoreSendIds = sendIds;

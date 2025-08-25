@@ -234,7 +234,7 @@ namespace GameFrameX.Web.Runtime
         /// 此方法专门用于处理Protocol Buffer格式的请求和响应。
         /// 发送的消息和接收的响应都必须是Protocol Buffer消息类型。
         /// </remarks>
-        public Task<T> Post<T>(string url, GameFrameX.Network.Runtime.MessageObject message) where T : GameFrameX.Network.Runtime.MessageObject, GameFrameX.Network.Runtime.IResponseMessage
+        public Task<T> Post<T>(string url, FuFramework.Network.Runtime.MessageObject message) where T : FuFramework.Network.Runtime.MessageObject, FuFramework.Network.Runtime.IResponseMessage
         {
             return m_WebManager.Post<T>(url, message);
         }

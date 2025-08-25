@@ -1,27 +1,22 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
-using System.Net;
+﻿using System;
 using System.Net.Sockets;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
         /// <summary>
         /// TCP 网络频道。
+        /// 功能：
+        /// 1. 实现TCP网络通讯功能。
+        /// 2. 实现消息的发送和接收。
         /// </summary>
-        
         private sealed class SystemTcpNetworkChannel : NetworkChannelBase
         {
-            private ConnectState m_ConnectState = null;
-            private SystemNetSocket PSystemNetSocket = null;
+            private ConnectState m_ConnectState;
+            private SystemNetSocket m_SystemNetSocket;
 
             /// <summary>
             /// 初始化网络频道的新实例。
@@ -29,9 +24,7 @@ namespace GameFrameX.Network.Runtime
             /// <param name="name">网络频道名称。</param>
             /// <param name="networkChannelHelper">网络频道辅助器。</param>
             /// <param name="rpcTimeout">RPC超时时间</param>
-            public SystemTcpNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout)
-            {
-            }
+            public SystemTcpNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout) { }
 
             /// <summary>
             /// 连接到远程主机。
@@ -40,28 +33,22 @@ namespace GameFrameX.Network.Runtime
             /// <param name="userData">用户自定义数据。</param>
             public override void Connect(Uri address, object userData = null)
             {
-                if (PIsConnecting)
-                {
-                    return;
-                }
+                if (PIsConnecting) return;
 
                 base.Connect(address, userData);
                 if (IsVerifyAddress)
                 {
-                    PSystemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    PSocket = PSystemNetSocket;
+                    m_SystemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    PSocket = m_SystemNetSocket;
                 }
 
                 if (PSocket == null)
                 {
-                    string errorMessage = "Initialize network channel failure.";
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
-                        return;
-                    }
+                    const string errorMessage = "Initialize network channel failure.";
+                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                    return;
 
-                    throw new FuException(errorMessage);
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
@@ -71,13 +58,10 @@ namespace GameFrameX.Network.Runtime
 
             protected override bool ProcessSend()
             {
-                if (base.ProcessSend())
-                {
-                    SendAsync();
-                    return true;
-                }
+                if (!base.ProcessSend()) return false;
+                SendAsync();
+                return true;
 
-                return false;
             }
 
             #region Receive
@@ -88,31 +72,23 @@ namespace GameFrameX.Network.Runtime
                 {
                     var position = (int)PReceiveState.Stream.Position;
                     var length = (int)(PReceiveState.Stream.Length - PReceiveState.Stream.Position);
-                    PSystemNetSocket.BeginReceive(PReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, PSystemNetSocket);
+                    m_SystemNetSocket.BeginReceive(PReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_SystemNetSocket);
                 }
                 catch (Exception exception)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
-
-                    throw;
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
             private void ReceiveCallback(IAsyncResult asyncResult)
             {
                 var systemNetSocket = (SystemNetSocket)asyncResult.AsyncState;
-                if (!systemNetSocket.IsConnected)
-                {
-                    return;
-                }
+                if (!systemNetSocket.IsConnected) return;
 
-                int bytesReceived = 0;
+                int bytesReceived;
                 try
                 {
                     bytesReceived = systemNetSocket.EndReceive(asyncResult);
@@ -120,14 +96,11 @@ namespace GameFrameX.Network.Runtime
                 catch (Exception exception)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    return;
 
-                    throw;
                 }
 
                 if (bytesReceived <= 0)
@@ -166,11 +139,8 @@ namespace GameFrameX.Network.Runtime
                     }
                 }
 
-                if (processSuccess)
-                {
+                if (processSuccess) 
                     ReceiveAsync();
-                    return;
-                }
             }
 
             /// <summary>
@@ -212,6 +182,7 @@ namespace GameFrameX.Network.Runtime
                 }
 
                 DebugReceiveLog(messageObject);
+                
                 // 将收到的消息加入到链表最后
                 m_ExecutionMessageLinkedList.AddLast(messageObject);
 
@@ -229,25 +200,14 @@ namespace GameFrameX.Network.Runtime
                 if (PActive == false)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Disconnecting, "Network channel is closing.");
-                    }
-
+                    NetworkChannelError?.Invoke(this, NetworkErrorCode.SocketError, SocketError.Disconnecting, "Network channel is closing.");
                     return false;
                 }
 
-                bool serializeResult = base.ProcessSendMessage(messageObject);
-                if (serializeResult)
-                {
-                }
-                else
-                {
-                    const string errorMessage = "Serialized packet failure.";
-                    throw new InvalidOperationException(errorMessage);
-                }
-
-                return true;
+                var serializeResult = base.ProcessSendMessage(messageObject);
+                if (serializeResult) return true;
+                const string errorMessage = "Serialized packet failure.";
+                throw new InvalidOperationException(errorMessage);
             }
 
 
@@ -258,44 +218,34 @@ namespace GameFrameX.Network.Runtime
             {
                 try
                 {
-                    PSystemNetSocket.BeginSend(PSendState.Stream.GetBuffer(), (int)PSendState.Stream.Position, (int)(PSendState.Stream.Length - PSendState.Stream.Position), SocketFlags.None, SendCallback, PSystemNetSocket);
+                    m_SystemNetSocket.BeginSend(PSendState.Stream.GetBuffer(), (int)PSendState.Stream.Position,
+                        (int)(PSendState.Stream.Length - PSendState.Stream.Position), SocketFlags.None, SendCallback, m_SystemNetSocket);
                 }
                 catch (Exception exception)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
-
-                    throw;
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
             private void SendCallback(IAsyncResult asyncResult)
             {
                 var systemNetSocket = (SystemNetSocket)asyncResult.AsyncState;
-                if (!systemNetSocket.IsConnected)
-                {
-                    return;
-                }
+                if (!systemNetSocket.IsConnected) return;
 
-                int bytesSent = 0;
+                int bytesSent;
                 try
                 {
-                    bytesSent = systemNetSocket.EndSend(asyncResult, out var error);
+                    bytesSent = systemNetSocket.EndSend(asyncResult, out _);
                 }
                 catch (Exception exception)
                 {
                     PActive = false;
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                    }
-
+                    if (NetworkChannelError == null) return;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     return;
                 }
 
@@ -319,19 +269,14 @@ namespace GameFrameX.Network.Runtime
                 try
                 {
                     PIsConnecting = true;
-                    m_ConnectState = new ConnectState(PSystemNetSocket, userData);
+                    m_ConnectState = new ConnectState(m_SystemNetSocket, userData);
                     ((SystemNetSocket)PSocket).BeginConnect(ConnectEndPoint.Address, ConnectEndPoint.Port, ConnectCallback, m_ConnectState);
                 }
                 catch (Exception exception)
                 {
-                    if (NetworkChannelError != null)
-                    {
-                        SocketException socketException = exception as SocketException;
-                        NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
-                        return;
-                    }
-
-                    throw;
+                    if (NetworkChannelError == null) throw;
+                    var socketException = exception as SocketException;
+                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
@@ -350,7 +295,7 @@ namespace GameFrameX.Network.Runtime
                 }
                 catch (Exception exception)
                 {
-                    SocketException socketException = exception as SocketException;
+                    var socketException = exception as SocketException;
                     NetworkChannelError?.Invoke(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     Close();
                     return;
@@ -359,16 +304,8 @@ namespace GameFrameX.Network.Runtime
                 PSentPacketCount = 0;
                 PReceivedPacketCount = 0;
 
-                lock (PSendPacketPool)
-                {
-                    PSendPacketPool.Clear();
-                }
-
-
-                lock (PHeartBeatState)
-                {
-                    PHeartBeatState.Reset(true);
-                }
+                lock (PSendPacketPool) PSendPacketPool.Clear();
+                lock (PHeartBeatState) PHeartBeatState.Reset(true);
 
                 NetworkChannelConnected?.Invoke(this, m_ConnectState.UserData);
                 PActive = true;

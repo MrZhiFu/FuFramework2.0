@@ -1,15 +1,7 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using GameFrameX.Editor;
-using FuFramework.Core.Editor;
+﻿using FuFramework.Core.Editor;
 using UnityEditor;
 
-namespace GameFrameX.Network.Editor
+namespace FuFramework.Network.Editor
 {
     /// <summary>
     /// 网络日志脚本宏定义。

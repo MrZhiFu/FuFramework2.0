@@ -1,38 +1,31 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using UnityEngine;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络组件。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Network")]
-    
     public sealed class NetworkComponent : FuComponent
     {
-        private INetworkManager m_NetworkManager = null;
-        private EventComponent m_EventComponent = null;
+        private INetworkManager m_NetworkManager; // 网络管理器。
+        private EventComponent m_EventComponent; // 事件组件。
 
         /// <summary>
         /// 忽略发送的网络消息ID的日志打印
         /// </summary>
-        [SerializeField] private List<int> m_IgnoredSendNetworkIds = new List<int>();
+        [SerializeField] private List<int> m_IgnoredSendNetworkIds = new();
 
         /// <summary>
         /// 忽略接收的网络消息ID的日志打印
         /// </summary>
-        [SerializeField] private List<int> m_IgnoredReceiveNetworkIds = new List<int>();
+        [SerializeField] private List<int> m_IgnoredReceiveNetworkIds = new();
 
         /// <summary>
         /// RPC超时时间，以毫秒为单位,默认为5秒
@@ -42,10 +35,7 @@ namespace GameFrameX.Network.Runtime
         /// <summary>
         /// 获取网络频道数量。
         /// </summary>
-        public int NetworkChannelCount
-        {
-            get { return m_NetworkManager.NetworkChannelCount; }
-        }
+        public int NetworkChannelCount => m_NetworkManager.NetworkChannelCount;
 
         /// <summary>
         /// 游戏框架组件初始化。
@@ -54,7 +44,9 @@ namespace GameFrameX.Network.Runtime
         {
             ImplComponentType = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(INetworkManager);
+
             base.Awake();
+
             m_NetworkManager = FuEntry.GetModule<INetworkManager>();
             if (m_NetworkManager == null)
             {
@@ -71,11 +63,7 @@ namespace GameFrameX.Network.Runtime
         private void Start()
         {
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
-            if (m_EventComponent == null)
-            {
-                Log.Fatal("Event component is invalid.");
-                return;
-            }
+            if (!m_EventComponent) Log.Fatal("Event component is invalid.");
         }
 
         /// <summary>
@@ -83,7 +71,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="channelName">网络频道名称。</param>
         /// <returns>是否存在网络频道。</returns>
-        
         public bool HasNetworkChannel(string channelName)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
@@ -95,7 +82,6 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="channelName">网络频道名称。</param>
         /// <returns>要获取的网络频道。</returns>
-        
         public INetworkChannel GetNetworkChannel(string channelName)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
@@ -106,21 +92,13 @@ namespace GameFrameX.Network.Runtime
         /// 获取所有网络频道。
         /// </summary>
         /// <returns>所有网络频道。</returns>
-        
-        public INetworkChannel[] GetAllNetworkChannels()
-        {
-            return m_NetworkManager.GetAllNetworkChannels();
-        }
+        public INetworkChannel[] GetAllNetworkChannels() => m_NetworkManager.GetAllNetworkChannels();
 
         /// <summary>
         /// 获取所有网络频道。
         /// </summary>
         /// <param name="results">所有网络频道。</param>
-        
-        public void GetAllNetworkChannels(List<INetworkChannel> results)
-        {
-            m_NetworkManager.GetAllNetworkChannels(results);
-        }
+        public void GetAllNetworkChannels(List<INetworkChannel> results) => m_NetworkManager.GetAllNetworkChannels(results);
 
         /// <summary>
         /// 创建网络频道。
@@ -128,7 +106,6 @@ namespace GameFrameX.Network.Runtime
         /// <param name="channelName">网络频道名称。</param>
         /// <param name="networkChannelHelper">网络频道辅助器。</param>
         /// <returns>要创建的网络频道。</returns>
-        
         public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
@@ -142,31 +119,38 @@ namespace GameFrameX.Network.Runtime
         /// </summary>
         /// <param name="channelName">网络频道名称。</param>
         /// <returns>是否销毁网络频道成功。</returns>
-        
         public bool DestroyNetworkChannel(string channelName)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             return m_NetworkManager.DestroyNetworkChannel(channelName);
         }
 
-        private void OnNetworkConnected(object sender, NetworkConnectedEventArgs eventArgs)
-        {
-            m_EventComponent.Fire(this, eventArgs);
-        }
+        /// <summary>
+        /// 网络连接成功回调。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void OnNetworkConnected(object sender, NetworkConnectedEventArgs eventArgs) => m_EventComponent.Fire(this, eventArgs);
 
-        private void OnNetworkClosed(object sender, NetworkClosedEventArgs eventArgs)
-        {
-            m_EventComponent.Fire(this, eventArgs);
-        }
+        /// <summary>
+        /// 网络连接关闭回调。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void OnNetworkClosed(object sender, NetworkClosedEventArgs eventArgs) => m_EventComponent.Fire(this, eventArgs);
 
-        private void OnNetworkMissHeartBeat(object sender, NetworkMissHeartBeatEventArgs eventArgs)
-        {
-            m_EventComponent.Fire(this, eventArgs);
-        }
+        /// <summary>
+        /// 网络心跳包丢失回调。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void OnNetworkMissHeartBeat(object sender, NetworkMissHeartBeatEventArgs eventArgs) => m_EventComponent.Fire(this, eventArgs);
 
-        private void OnNetworkError(object sender, NetworkErrorEventArgs eventArgs)
-        {
-            m_EventComponent.Fire(this, eventArgs);
-        }
+        /// <summary>
+        /// 网络错误回调。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void OnNetworkError(object sender, NetworkErrorEventArgs eventArgs) => m_EventComponent.Fire(this, eventArgs);
     }
 }

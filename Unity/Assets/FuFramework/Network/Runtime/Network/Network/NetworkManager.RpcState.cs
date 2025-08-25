@@ -1,17 +1,11 @@
-﻿//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
-namespace GameFrameX.Network.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkManager
     {
@@ -20,24 +14,24 @@ namespace GameFrameX.Network.Runtime
             /// <summary>
             /// 等待回复处理对象字典
             /// </summary>
-            private readonly ConcurrentDictionary<long, RpcMessageData> _waitingReplyHandlingObjects = new ConcurrentDictionary<long, RpcMessageData>();
+            private readonly ConcurrentDictionary<long, RpcMessageData> m_waitingReplyHandlingObjects = new();
 
             /// <summary>
             /// 删除等待中的处理器ID列表,由于超时导致的删除
             /// </summary>
-            private readonly HashSet<long> _removeReplyHandlingObjectIds = new HashSet<long>();
+            private readonly HashSet<long> m_removeReplyHandlingObjectIds = new();
 
-            private EventHandler<MessageObject> _rpcStartHandler;
-            private EventHandler<MessageObject> _rpcEndHandler;
-            private EventHandler<MessageObject> _rpcErrorHandler;
-            private EventHandler<MessageObject> _rpcErrorCodeHandler;
-            private readonly int _rpcTimeout;
-            private bool _disposed;
+            private EventHandler<MessageObject> m_rpcStartHandler;
+            private EventHandler<MessageObject> m_rpcEndHandler;
+            private EventHandler<MessageObject> m_rpcErrorHandler;
+            private EventHandler<MessageObject> m_rpcErrorCodeHandler;
+            private readonly int m_rpcTimeout;
+            private bool m_disposed;
 
             public RpcState(int timeout)
             {
-                _rpcTimeout = timeout;
-                if (_rpcTimeout < 3000)
+                m_rpcTimeout = timeout;
+                if (m_rpcTimeout < 3000)
                 {
                     throw new ArgumentOutOfRangeException(nameof(timeout), "RPC超时时间不能小于3000毫秒");
                 }
@@ -45,17 +39,12 @@ namespace GameFrameX.Network.Runtime
 
             public void Dispose()
             {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                _waitingReplyHandlingObjects.Clear();
-                _removeReplyHandlingObjectIds.Clear();
-                _disposed = true;
+                if (m_disposed) return;
+                m_waitingReplyHandlingObjects.Clear();
+                m_removeReplyHandlingObjectIds.Clear();
+                m_disposed = true;
             }
-
-
+            
             /// <summary>
             /// 处理RPC回复消息。
             /// 此方法用于处理接收到的RPC回复消息，并触发相应的结束处理程序。
@@ -64,30 +53,26 @@ namespace GameFrameX.Network.Runtime
             /// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
             public bool TryReply(MessageObject message)
             {
-                if (message.GetType().IsImplWithInterface(typeof(IResponseMessage)))
+                if (!message.GetType().IsImplWithInterface(typeof(IResponseMessage))) return false;
+                if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
+                
+                try
                 {
-                    if (_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject))
+                    var responseMessage = message as IResponseMessage;
+                    messageActorObject.Reply(responseMessage);
+                    m_rpcEndHandler?.Invoke(this, message);
+                    if (responseMessage?.ErrorCode != default)
                     {
-                        try
-                        {
-                            var responseMessage = message as IResponseMessage;
-                            messageActorObject.Reply(responseMessage);
-                            _rpcEndHandler?.Invoke(this, message);
-                            if (responseMessage?.ErrorCode != default)
-                            {
-                                _rpcErrorCodeHandler?.Invoke(this, message);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Fatal(e);
-                        }
-
-                        return true;
+                        m_rpcErrorCodeHandler?.Invoke(this, message);
                     }
                 }
+                catch (Exception e)
+                {
+                    Log.Fatal(e);
+                }
 
-                return false;
+                return true;
+
             }
 
             /// <summary>
@@ -99,16 +84,16 @@ namespace GameFrameX.Network.Runtime
             /// <returns>返回一个任务，该任务在收到响应时完成，并返回IResponseMessage。</returns>
             public Task<IResponseMessage> Call(MessageObject messageObject)
             {
-                if (_waitingReplyHandlingObjects.TryGetValue(messageObject.UniqueId, out var messageActorObject))
+                if (m_waitingReplyHandlingObjects.TryGetValue(messageObject.UniqueId, out var messageActorObject))
                 {
                     return messageActorObject.Task;
                 }
 
-                var defaultMessageActorObject = RpcMessageData.Create(messageObject as IRequestMessage, _rpcTimeout);
-                _waitingReplyHandlingObjects.TryAdd(messageObject.UniqueId, defaultMessageActorObject);
+                var defaultMessageActorObject = RpcMessageData.Create(messageObject as IRequestMessage, m_rpcTimeout);
+                m_waitingReplyHandlingObjects.TryAdd(messageObject.UniqueId, defaultMessageActorObject);
                 try
                 {
-                    _rpcStartHandler?.Invoke(this, messageObject);
+                    m_rpcStartHandler?.Invoke(this, messageObject);
                 }
                 catch (Exception e)
                 {
@@ -125,36 +110,34 @@ namespace GameFrameX.Network.Runtime
             /// <param name="realElapseSeconds"></param>
             public void Update(float elapseSeconds, float realElapseSeconds)
             {
-                if (_waitingReplyHandlingObjects.Count > 0)
+                if (m_waitingReplyHandlingObjects.Count > 0)
                 {
                     var elapseSecondsTime = (long)(elapseSeconds * 1000);
-                    _removeReplyHandlingObjectIds.Clear();
-                    foreach (var handlingObject in _waitingReplyHandlingObjects)
+                    m_removeReplyHandlingObjectIds.Clear();
+                    foreach (var handlingObject in m_waitingReplyHandlingObjects)
                     {
-                        bool isTimeout = handlingObject.Value.IncrementalElapseTime(elapseSecondsTime);
-                        if (isTimeout)
+                        var isTimeout = handlingObject.Value.IncrementalElapseTime(elapseSecondsTime);
+                        if (!isTimeout) continue;
+                        m_removeReplyHandlingObjectIds.Add(handlingObject.Key);
+                        try
                         {
-                            _removeReplyHandlingObjectIds.Add(handlingObject.Key);
-                            try
-                            {
-                                _rpcErrorHandler?.Invoke(this, handlingObject.Value.RequestMessage as MessageObject);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Fatal(e);
-                            }
+                            m_rpcErrorHandler?.Invoke(this, handlingObject.Value.RequestMessage as MessageObject);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Fatal(e);
                         }
                     }
                 }
 
-                if (_removeReplyHandlingObjectIds.Count > 0)
+                if (m_removeReplyHandlingObjectIds.Count > 0)
                 {
-                    foreach (var objectId in _removeReplyHandlingObjectIds)
+                    foreach (var objectId in m_removeReplyHandlingObjectIds)
                     {
-                        _waitingReplyHandlingObjects.TryRemove(objectId, out _);
+                        m_waitingReplyHandlingObjects.TryRemove(objectId, out _);
                     }
 
-                    _removeReplyHandlingObjectIds.Clear();
+                    m_removeReplyHandlingObjectIds.Clear();
                 }
             }
 
@@ -166,7 +149,7 @@ namespace GameFrameX.Network.Runtime
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
-                _rpcErrorCodeHandler = handler;
+                m_rpcErrorCodeHandler = handler;
             }
 
             /// <summary>
@@ -177,7 +160,7 @@ namespace GameFrameX.Network.Runtime
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
-                _rpcErrorHandler = handler;
+                m_rpcErrorHandler = handler;
             }
 
             /// <summary>
@@ -188,7 +171,7 @@ namespace GameFrameX.Network.Runtime
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
-                _rpcStartHandler = handler;
+                m_rpcStartHandler = handler;
             }
 
             /// <summary>
@@ -199,7 +182,7 @@ namespace GameFrameX.Network.Runtime
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
-                _rpcEndHandler = handler;
+                m_rpcEndHandler = handler;
             }
         }
     }
