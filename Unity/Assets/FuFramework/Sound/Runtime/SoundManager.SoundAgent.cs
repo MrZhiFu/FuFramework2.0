@@ -224,12 +224,12 @@ namespace FuFramework.Sound.Runtime
             {
                 FuGuard.NotNull(soundGroup, nameof(soundGroup));
                 FuGuard.NotNull(manager, nameof(manager));
+                Reset();
                 m_SoundGroup = soundGroup;
                 m_SoundManager = manager;
                 SerialId = 0;
                 SoundAssetPath = null;
                 m_SoundAsset = null;
-                Reset();
             }
             
             private void Awake()
@@ -314,7 +314,7 @@ namespace FuFramework.Sound.Runtime
             /// <param name="assetPath">声音资源路径。</param>
             /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
             /// <param name="onPlayEnd"></param>
-            public void Play(string assetPath, float fadeInSeconds = Constant.DefaultFadeInSeconds, Action onPlayEnd = null)
+            public void Play(string assetPath, float fadeInSeconds, Action onPlayEnd = null)
             {
                 StopAllCoroutines();
                 m_AudioSource.Play();
@@ -332,7 +332,7 @@ namespace FuFramework.Sound.Runtime
             /// 停止播放声音。
             /// </summary>
             /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-            public void Stop(float fadeOutSeconds = Constant.DefaultFadeOutSeconds)
+            public void Stop(float fadeOutSeconds)
             {
                 StopAllCoroutines();
                 if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
@@ -345,7 +345,7 @@ namespace FuFramework.Sound.Runtime
             /// 暂停播放声音。
             /// </summary>
             /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
-            public void Pause(float fadeOutSeconds = Constant.DefaultFadeOutSeconds)
+            public void Pause(float fadeOutSeconds)
             {
                 StopAllCoroutines();
                 m_VolumeWhenPause = m_AudioSource.volume;
@@ -359,7 +359,7 @@ namespace FuFramework.Sound.Runtime
             /// 恢复播放声音。
             /// </summary>
             /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-            public void Resume(float fadeInSeconds = Constant.DefaultFadeInSeconds)
+            public void Resume(float fadeInSeconds)
             {
                 StopAllCoroutines();
                 m_AudioSource.UnPause();
@@ -387,16 +387,16 @@ namespace FuFramework.Sound.Runtime
                 m_OnPlayEnd = null;
 
                 SetSoundAssetTime = DateTime.MinValue;
-                Time = Constant.DefaultTime;
-                MuteInSoundGroup = Constant.DefaultMute;
-                Loop = Constant.DefaultLoop;
-                Priority = Constant.DefaultPriority;
-                VolumeInSoundGroup = Constant.DefaultVolume;
-                Pitch = Constant.DefaultPitch;
-                PanStereo = Constant.DefaultPanStereo;
-                SpatialBlend = Constant.DefaultSpatialBlend;
-                MaxDistance = Constant.DefaultMaxDistance;
-                DopplerLevel = Constant.DefaultDopplerLevel;
+                Time = 0;
+                Pitch = 1;
+                Loop = false;
+                Priority = 0;
+                PanStereo = 0;
+                SpatialBlend = 0;
+                DopplerLevel = 1;
+                MaxDistance = 100;
+                VolumeInSoundGroup = 1;
+                MuteInSoundGroup = false;
             }
 
             
@@ -462,9 +462,9 @@ namespace FuFramework.Sound.Runtime
             {
                 m_IsAppPause = isPause;
                 if (isPause)
-                    Pause();
+                    Pause(0);
                 else
-                    Resume();
+                    Resume(0);
             }
         }
     }

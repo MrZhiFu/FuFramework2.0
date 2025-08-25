@@ -177,10 +177,10 @@ namespace FuFramework.Sound.Runtime
                     return null;
                 }
 
+                candidateAgent.SerialId           = playSoundInfo.SerialId;
                 candidateAgent.Time               = playSoundInfo.SoundParams.Time;
                 candidateAgent.Loop               = playSoundInfo.SoundParams.Loop;
                 candidateAgent.Pitch              = playSoundInfo.SoundParams.Pitch;
-                candidateAgent.SerialId           = playSoundInfo.SerialId;
                 candidateAgent.Priority           = playSoundInfo.SoundParams.Priority;
                 candidateAgent.PanStereo          = playSoundInfo.SoundParams.PanStereo;
                 candidateAgent.MaxDistance        = playSoundInfo.SoundParams.MaxDistance;
@@ -243,17 +243,6 @@ namespace FuFramework.Sound.Runtime
                 }
 
                 return false;
-            }
-
-            /// <summary>
-            /// 停止所有已加载的声音。
-            /// </summary>
-            public void StopAllLoadedSounds()
-            {
-                foreach (var soundAgent in m_SoundAgents.Where(soundAgent => soundAgent.IsPlaying))
-                {
-                    soundAgent.Stop();
-                }
             }
 
             /// <summary>

@@ -31,23 +31,23 @@ namespace FuFramework.Sound.Runtime
         public string SoundAssetName { get; private set; }
 
         /// <summary>
-        /// 用于播放的声音代理。
+        /// 用户自定义数据。
         /// </summary>
-        public SoundManager.SoundAgent SoundAgent { get; private set; }
+        public object UserData { get; private set; }
 
         /// <summary>
         /// 创建播放声音成功事件。
         /// </summary>
         /// <param name="serialId">声音的序列编号。</param>
         /// <param name="soundAssetName">声音资源名称。</param>
-        /// <param name="soundAgent">用于播放的声音代理。</param>
+        /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音成功事件。</returns>
-        public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, SoundManager.SoundAgent soundAgent)
+        public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, object userData)
         {
             var playSoundSuccessEventArgs = ReferencePool.Acquire<PlaySoundSuccessEventArgs>();
             playSoundSuccessEventArgs.SerialId       = serialId;
             playSoundSuccessEventArgs.SoundAssetName = soundAssetName;
-            playSoundSuccessEventArgs.SoundAgent     = soundAgent;
+            playSoundSuccessEventArgs.UserData       = userData;
             return playSoundSuccessEventArgs;
         }
 
@@ -58,7 +58,7 @@ namespace FuFramework.Sound.Runtime
         {
             SerialId       = 0;
             SoundAssetName = null;
-            SoundAgent     = null;
+            UserData       = null;
         }
     }
 }

@@ -22,24 +22,16 @@ namespace FuFramework.Sound.Runtime
         public Vector3 WorldPosition { get; private set; } = Vector3.zero;
 
         /// <summary>
-        /// 用户自定义数据。
-        /// </summary>
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public object UserData { get; private set; }
-        
-        /// <summary>
         /// 创建播放声音额外信息。
         /// </summary>
         /// <param name="bindingEntity">绑定的实体。</param>
         /// <param name="worldPosition">声音在世界空间中的位置。</param>
-        /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的播放声音信息。</returns>
-        public static SoundParams3D Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition, object userData)
+        public static SoundParams3D Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition)
         {
             var playSoundInfo = ReferencePool.Acquire<SoundParams3D>();
             playSoundInfo.BindingEntity = bindingEntity;
             playSoundInfo.WorldPosition = worldPosition;
-            playSoundInfo.UserData      = userData;
             return playSoundInfo;
         }
 
@@ -49,7 +41,6 @@ namespace FuFramework.Sound.Runtime
         public void Clear()
         {
             BindingEntity = null;
-            UserData      = null;
             WorldPosition = Vector3.zero;
         }
     }

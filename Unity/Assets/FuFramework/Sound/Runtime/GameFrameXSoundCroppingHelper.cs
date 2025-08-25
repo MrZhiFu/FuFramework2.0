@@ -9,7 +9,6 @@ namespace FuFramework.Sound.Runtime
        
         private void Start()
         {
-            _ = typeof(Constant);
             _ = typeof(SoundManager);
             _ = typeof(SoundParams);
             _ = typeof(SoundParams3D);

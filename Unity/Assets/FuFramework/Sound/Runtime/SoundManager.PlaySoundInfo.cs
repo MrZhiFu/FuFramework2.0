@@ -44,14 +44,14 @@ namespace FuFramework.Sound.Runtime
             public SoundParams3D SoundParams3D { get; private set; }
 
             /// <summary>
-            /// 获取用户自定义数据。
-            /// </summary>
-            public object UserData { get; private set; }
-            
-            /// <summary>
             /// 播放结束时的回调。
             /// </summary>
             public Action OnPlayEnd{ get; private set; }
+
+            /// <summary>
+            /// 用户自定义数据。
+            /// </summary>
+            public object UserData { get; private set; }
 
             /// <summary>
             /// 创建播放声音信息。
@@ -60,7 +60,8 @@ namespace FuFramework.Sound.Runtime
             /// <param name="soundName">声音资源全路径。</param>
             /// <param name="soundAsset">声音资源对象。</param>
             /// <param name="soundGroup">所在声音组。</param>
-            /// <param name="soundParams">播放声音参数。</param>
+            /// <param name="soundParams">播放声音时的参数。</param>
+            /// <param name="soundParams3D">播放3D声音时的参数。</param>
             /// <param name="userData">用户自定义数据。</param>
             /// <param name="onPlayEnd">播放结束时的回调。</param>
             /// <returns>创建的播放声音信息。</returns>
@@ -84,14 +85,14 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             public void Clear()
             {
-                SerialId      = 0;
-                SoundAssetPath     = null;
-                SoundAsset    = null;
-                SoundGroup    = null;
-                SoundParams   = null;
-                SoundParams3D = null;
-                OnPlayEnd     = null;
-                UserData      = null;
+                SerialId       = 0;
+                SoundAssetPath = null;
+                SoundAsset     = null;
+                SoundGroup     = null;
+                SoundParams    = null;
+                SoundParams3D  = null;
+                OnPlayEnd      = null;
+                UserData       = null;
             }
         }
     }
