@@ -716,7 +716,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fe517ad76a599343ad89285d1ea969f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Web.Runtime.WebManager
+  componentType: FuFramework.Web.Runtime.WebManager
   m_Timeout: 5
 --- !u!114 &1681186163
 MonoBehaviour:
@@ -730,7 +730,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 446d214fa0460ed4d91902528d37b69a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: GameFrameX.Network.Runtime.NetworkManager
+  componentType: FuFramework.Network.Runtime.NetworkManager
   m_IgnoredSendNetworkIds: 
   m_IgnoredReceiveNetworkIds: 
   m_rpcTimeout: 5000

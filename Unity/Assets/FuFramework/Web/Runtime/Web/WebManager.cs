@@ -296,7 +296,7 @@ namespace FuFramework.Web.Runtime
             if (webJsonData.Form is { Count: > 0 })
             {
                 unityWebRequest.SetRequestHeader("Content-Type", "application/json");
-                var body     = Utility.Json.ToJson(webJsonData.Form);
+                var body = Utility.Json.ToJson(webJsonData.Form);
                 var postData = Encoding.UTF8.GetBytes(body);
                 unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
             }
@@ -496,8 +496,9 @@ namespace FuFramework.Web.Runtime
         private string UrlHandler(string url, Dictionary<string, string> queryString)
         {
             m_StringBuilder.Clear();
-            m_StringBuilder.Append((url));
-            if (queryString is { Count: <= 0 }) return url;
+            m_StringBuilder.Append(url);
+
+            if (queryString is not { Count: > 0 }) return url;
 
             if (!url.EndsWithFast("?"))
                 m_StringBuilder.Append("?");
