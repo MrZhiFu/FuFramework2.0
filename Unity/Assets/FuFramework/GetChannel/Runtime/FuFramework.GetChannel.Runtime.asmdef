@@ -1,12 +1,10 @@
 {
-    "name": "FuFramework.ModuleSetting.Editor",
-    "rootNamespace": "FuFramework.ModuleSetting.Editor",
-    "references": [
-        "GUID:a38628879c417cf49b28b1d0a90f18fa"
-    ],
+    "name": "FuFramework.GetChannel.Runtime",
+    "rootNamespace": "FuFramework.GetChannel.Runtime",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

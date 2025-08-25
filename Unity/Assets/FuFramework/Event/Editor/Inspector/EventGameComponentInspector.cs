@@ -21,7 +21,8 @@ namespace FuFramework.Event.Editor
                 return;
             }
 
-            var eventComp = (EventComponent)target;
+            var eventComp = target as EventComponent;
+            if (!eventComp) return;
 
             if (IsPrefabInHierarchy(eventComp.gameObject))
             {

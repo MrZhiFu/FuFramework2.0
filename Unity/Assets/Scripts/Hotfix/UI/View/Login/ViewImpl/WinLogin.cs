@@ -117,7 +117,7 @@ namespace Hotfix.UI.View.Login
                 UIManager.Instance.OpenUI<WinPlayerCreate>();// 无角色，打开角色创建界面
 
             // 关闭当前界面
-            UIManager.Instance.CloseUI(this);
+            CloseSelf();
         }
 
         // public async UniTaskVoid PlayBgm()

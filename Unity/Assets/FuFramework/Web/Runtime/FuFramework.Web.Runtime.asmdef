@@ -1,0 +1,24 @@
+{
+    "name": "FuFramework.Web.Runtime",
+    "rootNamespace": "FuFramework.Web.Runtime",
+    "references": [
+        "ProtoBuffer.Runtime",
+        "FuFramework.Core.Runtime",
+        "FuFramework.Network.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.gameframex.unity.network",
+            "expression": "",
+            "define": "ENABLE_GAME_FRAME_X_WEB_PROTOBUF_NETWORK"
+        }
+    ],
+    "noEngineReferences": false
+}

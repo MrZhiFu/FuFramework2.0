@@ -1,8 +1,7 @@
 {
-    "name": "FuFramework.UI.Editor",
-    "rootNamespace": "FuFramework.UI.Editor",
+    "name": "FuFramework.Core.Editor",
+    "rootNamespace": "FuFramework.Core.Editor",
     "references": [
-        "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime"
     ],
     "includePlatforms": [
@@ -14,6 +13,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.qq.weixin.minigame",
+            "expression": "",
+            "define": "ENABLE_WX_MINI_GAME"
+        }
+    ],
     "noEngineReferences": false
 }

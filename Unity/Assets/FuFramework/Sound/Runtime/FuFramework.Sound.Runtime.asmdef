@@ -1,16 +1,15 @@
 {
-    "name": "FuFramework.UI.Runtime",
-    "rootNamespace": "FuFramework.UI.Runtime",
+    "name": "FuFramework.Sound.Runtime",
+    "rootNamespace": "FuFramework.Sound.Runtime",
     "references": [
-        "FairyGUI",
         "UniTask.Runtime",
         "YooAsset.Runtime",
         "FuFramework.Core.Runtime",
-        "FuFramework.Web.Runtime",
-        "FuFramework.Asset.Runtime",
+        "FuFramework.Entity.Runtime",
         "FuFramework.Event.Runtime",
-        "FuFramework.Timer.Runtime",
-        "FuFramework.Localization.Runtime"
+        "FuFramework.Asset.Runtime",
+        "FuFramework.Scene.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,12 +1,12 @@
 {
-    "name": "FuFramework.ModuleSetting.Editor",
-    "rootNamespace": "FuFramework.ModuleSetting.Editor",
+    "name": "FuFramework.GlobalConfig.Runtime",
+    "rootNamespace": "FuFramework.GlobalConfig.Runtime",
     "references": [
-        "GUID:a38628879c417cf49b28b1d0a90f18fa"
+        "FuFramework.Core.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

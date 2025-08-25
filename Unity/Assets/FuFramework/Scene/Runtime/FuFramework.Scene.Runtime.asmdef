@@ -1,16 +1,12 @@
 {
-    "name": "FuFramework.UI.Runtime",
-    "rootNamespace": "FuFramework.UI.Runtime",
+    "name": "FuFramework.Scene.Runtime",
+    "rootNamespace": "FuFramework.Scene.Runtime",
     "references": [
-        "FairyGUI",
-        "UniTask.Runtime",
         "YooAsset.Runtime",
+        "UniTask.Runtime",
         "FuFramework.Core.Runtime",
-        "FuFramework.Web.Runtime",
-        "FuFramework.Asset.Runtime",
         "FuFramework.Event.Runtime",
-        "FuFramework.Timer.Runtime",
-        "FuFramework.Localization.Runtime"
+        "FuFramework.Asset.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

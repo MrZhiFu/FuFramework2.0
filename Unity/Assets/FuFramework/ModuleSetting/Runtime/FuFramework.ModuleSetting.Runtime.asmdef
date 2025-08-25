@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.ModuleSetting.Runtime",
-    "rootNamespace": "",
+    "rootNamespace": "FuFramework.ModuleSetting.Runtime",
     "references": [
         "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c"
     ],
