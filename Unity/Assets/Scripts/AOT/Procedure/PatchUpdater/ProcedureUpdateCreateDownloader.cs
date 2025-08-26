@@ -52,7 +52,7 @@ namespace Unity.Startup.Procedure
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
 
-                GameApp.Event.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.GetPackageName(), totalDownloadCount, totalDownloadBytes));
+                GameApp.Event.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
                 ChangeState<ProcedureUpdateDownload>(procedureOwner);
             }
         }

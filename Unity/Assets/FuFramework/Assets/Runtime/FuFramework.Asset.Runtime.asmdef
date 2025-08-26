@@ -2,7 +2,7 @@
     "name": "FuFramework.Asset.Runtime",
     "rootNamespace": "FuFramework.Asset.Runtime",
     "references": [
-        "YooAsset.Runtime",
+        "YooAsset",
         "UniTask.Runtime",
         "BetterStreamingAssets",
         "FuFramework.Core.Runtime",

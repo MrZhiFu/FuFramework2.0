@@ -3,10 +3,10 @@
     "rootNamespace": "",
     "references": [
         "FairyGUI",
+        "YooAsset",
         "LuBan.Runtime",
         "HybridCLRData",
         "UniTask.Runtime",
-        "YooAsset.Runtime",
         "HybridCLR.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Entry.Runtime",

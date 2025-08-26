@@ -2,7 +2,7 @@
     "name": "FuFramework.Scene.Runtime",
     "rootNamespace": "FuFramework.Scene.Runtime",
     "references": [
-        "YooAsset.Runtime",
+        "YooAsset",
         "UniTask.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Event.Runtime",

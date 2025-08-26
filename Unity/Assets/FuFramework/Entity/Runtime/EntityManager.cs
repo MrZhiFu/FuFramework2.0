@@ -475,7 +475,7 @@ namespace FuFramework.Entity.Runtime
                 assetOperationHandle.Completed += handle =>
                 {
                     var newUserData = ShowEntityInfo.Create(serialId, entityId, entityGroup, userData);
-                    if (handle.IsSucceed)
+                    if (handle.IsDone)
                         LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, newUserData);
                     else
                         LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.LastError, newUserData);

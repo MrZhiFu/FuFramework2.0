@@ -124,7 +124,13 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds) { }
+        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        {
+            foreach (var (_, sceneHandleData) in m_LoadingSceneAssetNames)
+            {
+                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
+            }
+        }
 
         /// <summary>
         /// 关闭并清理场景管理器。
@@ -291,7 +297,6 @@ namespace FuFramework.Scene.Runtime
 
             var sceneOperationHandle = await m_assetManager.LoadSceneAsync(sceneAssetName, sceneMode);
             m_LoadingSceneAssetNames.Add(sceneAssetName, new SceneHandleData(sceneOperationHandle, userData));
-            sceneOperationHandle.Update += OnLoadSceneUpdate;
             sceneOperationHandle.Completed += OnLoadSceneCompleted;
             return sceneOperationHandle;
         }
@@ -310,17 +315,17 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 加载场景完成回调。
         /// </summary>
-        /// <param name="sceneOperationHandle"></param>
-        private void OnLoadSceneCompleted(SceneHandle sceneOperationHandle)
+        /// <param name="sceneHandle"></param>
+        private void OnLoadSceneCompleted(SceneHandle sceneHandle)
         {
-            m_LoadedSceneAssetNames.Add(sceneOperationHandle.GetAssetInfo().AssetPath, sceneOperationHandle);
-            m_LoadingSceneAssetNames.Remove(sceneOperationHandle.GetAssetInfo().AssetPath, out var value);
+            m_LoadedSceneAssetNames.Add(sceneHandle.GetAssetInfo().AssetPath, sceneHandle);
+            m_LoadingSceneAssetNames.Remove(sceneHandle.GetAssetInfo().AssetPath, out var value);
 
             if (value == null) return;
-            if (sceneOperationHandle.IsSucceed)
-                LoadSceneSuccessCallback(sceneOperationHandle.SceneName, sceneOperationHandle.Duration, value.UserData);
+            if (sceneHandle.IsDone)
+                LoadSceneSuccessCallback(sceneHandle.SceneName, sceneHandle.Progress, value.UserData);
             else
-                LoadSceneFailureCallback(sceneOperationHandle.SceneName, sceneOperationHandle.Status, sceneOperationHandle.LastError, value.UserData);
+                LoadSceneFailureCallback(sceneHandle.SceneName, sceneHandle.Status, sceneHandle.LastError, value.UserData);
         }
 
         /// <summary>

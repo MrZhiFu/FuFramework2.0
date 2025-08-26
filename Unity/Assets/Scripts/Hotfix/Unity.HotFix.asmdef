@@ -3,11 +3,11 @@
     "rootNamespace": "",
     "references": [
         "FairyGUI",
+        "YooAsset",
         "Unity.Startup",
         "LuBan.Runtime",
         "UniTask.Runtime",
         "LitJSON.Runtime",
-        "YooAsset.Runtime",
         "HybridCLR.Runtime",
         "ProtoBuffer.Runtime",
         "SimpleJSON.Runtime",

@@ -228,7 +228,7 @@ namespace FuFramework.UI.Runtime
                         if (assetInfo.IsInvalid == false)
                         {
                             var assetHandle = await assetComponent.LoadAssetAsync<Texture2D>(url);
-                            if (assetHandle.IsSucceed)
+                            if (assetHandle.IsDone)
                             {
                                 tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
                                 s_Cache.Put(url, tempTexture);

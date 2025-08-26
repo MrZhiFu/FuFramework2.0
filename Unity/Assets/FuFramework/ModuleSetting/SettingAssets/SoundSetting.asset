@@ -16,13 +16,13 @@ MonoBehaviour:
   m_SoundGroups:
   - m_GroupID: 73eeb736-f8e6-4204-8bde-5ce31e37849b
     m_GroupName: BGM
-    m_IsMute: 0
+    m_IsMute: 1
     m_Volume: 1
     m_AgentCount: 1
     m_AllowBeReplacedBySamePriority: 1
   - m_GroupID: 5053ef51-9080-4fd4-95df-2d1c0095328a
     m_GroupName: SFX
-    m_IsMute: 0
+    m_IsMute: 1
     m_Volume: 1
     m_AgentCount: 10
     m_AllowBeReplacedBySamePriority: 1

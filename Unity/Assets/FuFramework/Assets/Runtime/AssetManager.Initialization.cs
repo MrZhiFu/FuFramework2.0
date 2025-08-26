@@ -32,10 +32,9 @@ namespace FuFramework.Asset.Runtime
         private InitializationOperation InitAsEditorSimulateMode(ResourcePackage resourcePackage)
         {
             var initParameters = new EditorSimulateModeParameters();
-            //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
-            var buildPipeline       = EDefaultBuildPipeline.BuiltinBuildPipeline;
-            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, DefaultPackageName);
-            var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
+            var packageRoot = simulateBuildResult.PackageRootDirectory;
+            var editorFileSystem  = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
             initParameters.EditorFileSystemParameters = editorFileSystem;
             return resourcePackage.InitializeAsync(initParameters);
         }
@@ -95,9 +94,9 @@ namespace FuFramework.Asset.Runtime
             webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters();
 #endif
 #else
-            webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters();
+            // webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters();
 #endif
-            initParameters.WebFileSystemParameters = webFileSystem;
+            // initParameters.WebFileSystemParameters = webFileSystem;
             return resourcePackage.InitializeAsync(initParameters);
         }
 

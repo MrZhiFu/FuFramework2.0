@@ -3,8 +3,8 @@
     "rootNamespace": "FuFramework.UI.Runtime",
     "references": [
         "FairyGUI",
+        "YooAsset",
         "UniTask.Runtime",
-        "YooAsset.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Web.Runtime",
         "FuFramework.Asset.Runtime",

@@ -628,7 +628,7 @@ namespace FuFramework.Asset.Runtime
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.ClearAllBundleFilesAsync();
+            package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
         }
 
         /// <summary>
@@ -639,7 +639,7 @@ namespace FuFramework.Asset.Runtime
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.ClearUnusedBundleFilesAsync();
+            package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
         }
 
         #endregion

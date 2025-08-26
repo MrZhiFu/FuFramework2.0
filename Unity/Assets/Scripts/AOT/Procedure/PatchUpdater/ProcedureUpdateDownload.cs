@@ -37,10 +37,11 @@ namespace Unity.Startup.Procedure
         /// <returns></returns>
         private IEnumerator BeginDownload(IFsm<IProcedureManager> procedureOwner)
         {
-            var downloader = (ResourceDownloaderOperation)procedureOwner.GetData<VarObject>("Downloader").GetValue();
-
-            downloader.OnDownloadErrorCallback    = DownloaderOnDownloadErrorCallback;
-            downloader.OnDownloadProgressCallback = OnDownloadProgressCallback;
+            var downloader = procedureOwner.GetData<VarObject>("Downloader").GetValue() as ResourceDownloaderOperation;
+            if (downloader == null) yield break;
+            
+            downloader.DownloadErrorCallback  = DownloaderOnDownloadErrorCallback;
+            downloader.DownloadUpdateCallback = OnDownloadProgressCallback;
             downloader.BeginDownload();
             yield return downloader;
 
@@ -53,30 +54,28 @@ namespace Unity.Startup.Procedure
             // 下载完成，切换到更新完毕流程
             ChangeState<ProcedureUpdateDone>(procedureOwner);
         }
-        
+
         /// <summary>
         /// 下载失败回调, 重新创建下载器流程
         /// </summary>
-        /// <param name="packageName"></param>
-        /// <param name="name"></param>
-        /// <param name="error"></param>
-        private void DownloaderOnDownloadErrorCallback(string packageName, string name, string error)
+        /// <param name="errorData"></param>
+        private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
-            GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(packageName, name, error));
+            GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
             ChangeState<ProcedureUpdateCreateDownloader>(_procedureOwner);
         }
 
         /// <summary>
         /// 下载中进度回调，派发下载进度事件，通过事件更新进度条
         /// </summary>
-        /// <param name="packageName"></param>
-        /// <param name="totalDownloadCount"></param>
-        /// <param name="currentDownloadCount"></param>
-        /// <param name="totalDownloadBytes"></param>
-        /// <param name="currentDownloadBytes"></param>
-        
-        private void OnDownloadProgressCallback(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadBytes, long currentDownloadBytes)
+        /// <param name="data">下载中的数据</param>
+        private void OnDownloadProgressCallback(DownloadUpdateData data)
         {
+            var packageName = data.PackageName;
+            var totalDownloadCount = data.TotalDownloadCount;
+            var currentDownloadCount = data.CurrentDownloadCount;
+            var totalDownloadBytes = data.TotalDownloadBytes;
+            var currentDownloadBytes = data.CurrentDownloadBytes;
             GameApp.Event.Fire(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
         }
     }
