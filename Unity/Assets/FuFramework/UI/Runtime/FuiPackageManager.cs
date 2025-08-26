@@ -122,7 +122,10 @@ namespace FuFramework.UI.Runtime
             var pkgDesc = await LoadDesc(pkgName);
 
             // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-            var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
+            var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
+            {
+                LoadResAsync(assetName, extension, type, packageItem).Forget();
+            });
 
             return loadedPackage;
         }
