@@ -8,7 +8,6 @@ namespace FuFramework.Asset.Runtime
         private void Start()
         {
             _ = typeof(AssetManager);
-            _ = typeof(Constant);
             _ = typeof(IAssetManager);
             _ = typeof(AssetComponent);
         }
