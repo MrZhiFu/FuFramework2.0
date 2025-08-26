@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
+using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entity.Runtime;
 
@@ -26,11 +27,6 @@ namespace FuFramework.Sound.Runtime
             private SoundGroup m_SoundGroup;
 
             /// <summary>
-            /// 声音管理器
-            /// </summary>
-            private SoundManager m_SoundManager;
-
-            /// <summary>
             /// 声音资源。
             /// </summary>
             private object m_SoundAsset;
@@ -49,7 +45,7 @@ namespace FuFramework.Sound.Runtime
             /// 播放声音的AudioSource组件
             /// </summary>
             private AudioSource m_AudioSource;
-            
+
             /// <summary>
             /// 声音绑定的实体
             /// </summary>
@@ -69,7 +65,7 @@ namespace FuFramework.Sound.Runtime
             /// 正常播放完成的回调
             /// </summary>
             private Action m_OnPlayEnd;
-            
+
 
             /// <summary>
             /// 获取或设置声音的序列编号。
@@ -80,13 +76,13 @@ namespace FuFramework.Sound.Runtime
             /// 声音资源全路径。
             /// </summary>
             private string SoundAssetPath { get; set; }
-            
+
             /// <summary>
             /// 获取声音创建时间。
             /// </summary>
             internal DateTime SetSoundAssetTime { get; private set; }
-            
-            
+
+
             /// <summary>
             /// 获取或设置播放位置(以秒为单位)。
             /// </summary>
@@ -202,8 +198,8 @@ namespace FuFramework.Sound.Runtime
                     RefreshVolume();
                 }
             }
-            
-            
+
+
             /// <summary>
             /// 获取当前是否正在播放。
             /// </summary>
@@ -214,7 +210,7 @@ namespace FuFramework.Sound.Runtime
             /// </summary>
             public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
 
-            
+
             /// <summary>
             /// 初始化声音代理的新实例。
             /// </summary>
@@ -223,18 +219,17 @@ namespace FuFramework.Sound.Runtime
             public void Init(SoundGroup soundGroup, SoundManager manager)
             {
                 FuGuard.NotNull(soundGroup, nameof(soundGroup));
-                FuGuard.NotNull(manager, nameof(manager));
+                FuGuard.NotNull(manager,    nameof(manager));
                 Reset();
-                m_SoundGroup = soundGroup;
-                m_SoundManager = manager;
-                SerialId = 0;
+                m_SoundGroup   = soundGroup;
+                SerialId       = 0;
                 SoundAssetPath = null;
-                m_SoundAsset = null;
+                m_SoundAsset   = null;
             }
-            
+
             private void Awake()
             {
-                m_AudioSource = gameObject.GetOrAddComponent<AudioSource>();
+                m_AudioSource             = gameObject.GetOrAddComponent<AudioSource>();
                 m_AudioSource.playOnAwake = false;
                 m_AudioSource.rolloffMode = AudioRolloffMode.Custom;
             }
@@ -251,7 +246,7 @@ namespace FuFramework.Sound.Runtime
                 }
 
                 // 声音绑定的实体存在，则更新声音位置
-                if (m_BindingEntityLogic) 
+                if (m_BindingEntityLogic)
                     UpdateAgentPosition();
             }
 
@@ -268,7 +263,7 @@ namespace FuFramework.Sound.Runtime
 
                 transform.position = m_BindingEntityLogic.CachedTransform.position;
             }
-            
+
             /// <summary>
             /// 设置声音资源。
             /// </summary>
@@ -277,7 +272,7 @@ namespace FuFramework.Sound.Runtime
             internal bool SetSoundAsset(object soundAsset)
             {
                 Reset();
-                m_SoundAsset = soundAsset;
+                m_SoundAsset      = soundAsset;
                 SetSoundAssetTime = DateTime.UtcNow;
 
                 var audioClip = soundAsset as AudioClip;
@@ -285,7 +280,7 @@ namespace FuFramework.Sound.Runtime
                 m_AudioSource.clip = audioClip;
                 return true;
             }
-            
+
             /// <summary>
             /// 设置声音绑定的实体。
             /// </summary>
@@ -319,7 +314,7 @@ namespace FuFramework.Sound.Runtime
                 StopAllCoroutines();
                 m_AudioSource.Play();
                 SoundAssetPath = assetPath;
-                m_OnPlayEnd = onPlayEnd;
+                m_OnPlayEnd    = onPlayEnd;
 
                 // 声音淡入
                 if (fadeInSeconds <= 0f) return;
@@ -376,30 +371,30 @@ namespace FuFramework.Sound.Runtime
             {
                 if (m_SoundAsset != null)
                 {
-                    m_SoundManager?.m_assetManager?.UnloadAsset(SoundAssetPath);
+                    AssetManager.Instance.UnloadAsset(SoundAssetPath);
                     m_SoundAsset = null;
                 }
 
                 transform.localPosition = Vector3.zero;
-                m_AudioSource.clip = null;
-                m_BindingEntityLogic = null;
-                m_VolumeWhenPause = 0f;
-                m_OnPlayEnd = null;
+                m_AudioSource.clip      = null;
+                m_BindingEntityLogic    = null;
+                m_VolumeWhenPause       = 0f;
+                m_OnPlayEnd             = null;
 
-                SetSoundAssetTime = DateTime.MinValue;
-                Time = 0;
-                Pitch = 1;
-                Loop = false;
-                Priority = 0;
-                PanStereo = 0;
-                SpatialBlend = 0;
-                DopplerLevel = 1;
-                MaxDistance = 100;
+                SetSoundAssetTime  = DateTime.MinValue;
+                Time               = 0;
+                Pitch              = 1;
+                Loop               = false;
+                Priority           = 0;
+                PanStereo          = 0;
+                SpatialBlend       = 0;
+                DopplerLevel       = 1;
+                MaxDistance        = 100;
                 VolumeInSoundGroup = 1;
-                MuteInSoundGroup = false;
+                MuteInSoundGroup   = false;
             }
 
-            
+
             /// <summary>
             /// 刷新静音设置。
             /// </summary>
@@ -409,7 +404,7 @@ namespace FuFramework.Sound.Runtime
             /// 刷新音量设置。
             /// </summary>
             internal void RefreshVolume() => Volume = m_SoundGroup.Volume * m_VolumeInSoundGroup;
-            
+
 
             /// <summary>
             /// 声音渐入协程。
@@ -420,12 +415,12 @@ namespace FuFramework.Sound.Runtime
             /// <returns></returns>
             private IEnumerator FadeToVolume(AudioSource audioSource, float volume, float duration)
             {
-                var time = 0f;
+                var time           = 0f;
                 var originalVolume = audioSource.volume;
                 while (time < duration)
                 {
-                    time += UnityEngine.Time.deltaTime;
-                    audioSource.volume = Mathf.Lerp(originalVolume, volume, time / duration);
+                    time               += UnityEngine.Time.deltaTime;
+                    audioSource.volume =  Mathf.Lerp(originalVolume, volume, time / duration);
                     yield return new WaitForEndOfFrame();
                 }
 

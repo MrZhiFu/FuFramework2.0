@@ -16,8 +16,6 @@ namespace FuFramework.Asset.Runtime
     /// </summary>
     public class AssetLoadRegister : IReference
     {
-        /// 资源管理器
-        private static AssetComponent AssetManager => GameEntry.GetComponent<AssetComponent>();
 
         /// 缓存已经加载的资源路径列表
         private readonly Dictionary<string, Object> m_resDict = new();
@@ -39,7 +37,7 @@ namespace FuFramework.Asset.Runtime
         {
             if (m_resDict.TryGetValue(path, out var obj)) return obj as T;
 
-            var assetHandle = await AssetManager.LoadAssetAsync<T>(path);
+            var assetHandle = await AssetManager.Instance.LoadAssetAsync<T>(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
             if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
@@ -63,7 +61,7 @@ namespace FuFramework.Asset.Runtime
             if (m_resDict.TryGetValue(path, out var obj)) return obj;
 
             // 等待资源文件加载完成
-            var assetHandle = await AssetManager.LoadAssetAsync(path, type);
+            var assetHandle = await AssetManager.Instance.LoadAssetAsync(path, type);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
 
             if (!isSuccess)
@@ -86,7 +84,7 @@ namespace FuFramework.Asset.Runtime
         {
             if (m_resDict.TryGetValue(path, out var obj)) return obj;
 
-            var assetHandle = await AssetManager.LoadAssetAsync(path);
+            var assetHandle = await AssetManager.Instance.LoadAssetAsync(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
             if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
@@ -106,7 +104,7 @@ namespace FuFramework.Asset.Runtime
         public void Unload(string path)
         {
             if (!m_resDict.ContainsKey(path)) return;
-            AssetManager.UnloadAsset(path);
+            AssetManager.Instance.UnloadAsset(path);
             m_resDict.Remove(path);
             Log.Info($"[AssetLoader]释放{path}资源完成.");
         }
@@ -118,7 +116,7 @@ namespace FuFramework.Asset.Runtime
         {
             foreach (var path in m_resDict.Keys)
             {
-                AssetManager.UnloadAsset(path);
+                AssetManager.Instance.UnloadAsset(path);
                 Log.Info($"[AssetLoader]释放{path}资源完成.");
             }
 

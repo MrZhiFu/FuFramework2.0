@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>

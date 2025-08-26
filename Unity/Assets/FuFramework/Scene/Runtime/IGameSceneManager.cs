@@ -40,12 +40,6 @@ namespace FuFramework.Scene.Runtime
         event EventHandler<UnloadSceneFailureEventArgs> UnloadSceneFailure;
 
         /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager"></param>
-        void SetResourceManager(IAssetManager assetManager);
-
-        /// <summary>
         /// 获取场景是否已加载。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>

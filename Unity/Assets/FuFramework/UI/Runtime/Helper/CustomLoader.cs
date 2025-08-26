@@ -223,11 +223,10 @@ namespace FuFramework.UI.Runtime
                     }
                     else
                     {
-                        var assetComponent = GameEntry.GetComponent<AssetComponent>();
-                        var assetInfo = assetComponent.GetAssetInfo(url);
+                        var assetInfo = AssetManager.Instance.GetAssetInfo(url);
                         if (assetInfo.IsInvalid == false)
                         {
-                            var assetHandle = await assetComponent.LoadAssetAsync<Texture2D>(url);
+                            var assetHandle = await AssetManager.Instance.LoadAssetAsync<Texture2D>(url);
                             if (assetHandle.IsDone)
                             {
                                 tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());

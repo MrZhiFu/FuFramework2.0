@@ -813,21 +813,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   componentType: FuFramework.Config.Runtime.ConfigManager
---- !u!114 &1681186169
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 439350557509972502}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f36df5770ca0b164295fd712d2baa6bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  componentType: FuFramework.Asset.Runtime.AssetManager
-  m_GamePlayMode: 0
-  m_assetResourcePackages: []
 --- !u!114 &1681186170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1163,23 +1148,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &439350557509972502
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 872012544262737927}
-  - component: {fileID: 1681186169}
-  m_Layer: 0
-  m_Name: Asset
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &725468360076652821
 GameObject:
   m_ObjectHideFlags: 0
@@ -1214,21 +1182,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &872012544262737927
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 439350557509972502}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1146593347797569675
 Transform:
   m_ObjectHideFlags: 0
@@ -1592,7 +1545,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 872012544262737927}
   - {fileID: 1892822061223226589}
   - {fileID: 1146593347797569675}
   - {fileID: 8708873050020472038}
@@ -1650,6 +1602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
+  m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
 --- !u!1 &7149020525938990140
 GameObject:
   m_ObjectHideFlags: 0

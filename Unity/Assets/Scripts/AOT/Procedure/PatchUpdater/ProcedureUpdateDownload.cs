@@ -26,7 +26,7 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
             _procedureOwner = procedureOwner;
             
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.DownloadWebFiles));
+            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.DownloadWebFiles));
             BeginDownload(procedureOwner).ToUniTask();
         }
         

@@ -3,6 +3,7 @@ using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>

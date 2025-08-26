@@ -39,9 +39,6 @@ namespace FuFramework.Scene.Runtime
             }
         }
 
-        /// 资源管理器
-        private IAssetManager m_assetManager;
-
         private readonly Dictionary<string, SceneHandle> m_LoadedSceneAssetNames; // 已加载的场景字典，Key为场景资源名称，Value为场景加载句柄
         private readonly Dictionary<string, SceneHandleData> m_LoadingSceneAssetNames; // 正在加载的场景字典，Key为场景资源名称，Value为场景加载句柄数据
         private readonly Dictionary<string, SceneHandle> m_UnloadingSceneAssetNames; // 正在卸载的场景字典，Key为场景资源名称，Value为场景加载句柄
@@ -60,7 +57,6 @@ namespace FuFramework.Scene.Runtime
             m_LoadedSceneAssetNames = new Dictionary<string, SceneHandle>();
             m_LoadingSceneAssetNames = new Dictionary<string, SceneHandleData>();
             m_UnloadingSceneAssetNames = new Dictionary<string, SceneHandle>();
-            m_assetManager = null;
             m_LoadSceneSuccessEventHandler = null;
             m_LoadSceneFailureEventHandler = null;
             m_LoadSceneUpdateEventHandler = null;
@@ -147,15 +143,6 @@ namespace FuFramework.Scene.Runtime
             m_LoadedSceneAssetNames.Clear();
             m_LoadingSceneAssetNames.Clear();
             m_UnloadingSceneAssetNames.Clear();
-        }
-
-        /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager"></param>
-        public void SetResourceManager(IAssetManager assetManager)
-        {
-            m_assetManager = assetManager ?? throw new FuException("Resource manager is invalid.");
         }
 
         /// <summary>
@@ -249,7 +236,7 @@ namespace FuFramework.Scene.Runtime
         /// <returns>场景资源是否存在。</returns>
         public bool HasScene(string sceneAssetName)
         {
-            return m_assetManager.LoadSceneAsync(sceneAssetName, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
+            return AssetManager.Instance.LoadSceneAsync(sceneAssetName, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
         }
 
         /// <summary>
@@ -283,9 +270,6 @@ namespace FuFramework.Scene.Runtime
             if (string.IsNullOrEmpty(sceneAssetName))
                 throw new FuException("Scene asset name is invalid.");
 
-            if (m_assetManager == null)
-                throw new FuException("You must set resource manager first.");
-
             if (SceneIsUnloading(sceneAssetName))
                 throw new FuException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));
 
@@ -295,7 +279,7 @@ namespace FuFramework.Scene.Runtime
             if (SceneIsLoaded(sceneAssetName))
                 throw new FuException(Utility.Text.Format("Scene asset '{0}' is already loaded.", sceneAssetName));
 
-            var sceneOperationHandle = await m_assetManager.LoadSceneAsync(sceneAssetName, sceneMode);
+            var sceneOperationHandle = await AssetManager.Instance.LoadSceneAsync(sceneAssetName, sceneMode);
             m_LoadingSceneAssetNames.Add(sceneAssetName, new SceneHandleData(sceneOperationHandle, userData));
             sceneOperationHandle.Completed += OnLoadSceneCompleted;
             return sceneOperationHandle;
@@ -343,9 +327,6 @@ namespace FuFramework.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetName))
                 throw new FuException("Scene asset name is invalid.");
-
-            if (m_assetManager == null)
-                throw new FuException("You must set resource manager first.");
 
             if (SceneIsUnloading(sceneAssetName))
                 throw new FuException(Utility.Text.Format("Scene asset '{0}' is being unloaded.", sceneAssetName));

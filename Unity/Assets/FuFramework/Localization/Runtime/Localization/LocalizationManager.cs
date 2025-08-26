@@ -129,14 +129,14 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         protected override void Shutdown() { }
 
-        /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="resourceManager">资源管理器。</param>
-        public void SetAssetManager(IAssetManager resourceManager)
-        {
-            // m_DataProvider.SetResourceManager(resourceManager);
-        }
+        // /// <summary>
+        // /// 设置资源管理器。
+        // /// </summary>
+        // /// <param name="resourceManager">资源管理器。</param>
+        // public void SetAssetManager(IAssetManager resourceManager)
+        // {
+        //     // m_DataProvider.SetResourceManager(resourceManager);
+        // }
 
         /// <summary>
         /// 设置本地化辅助器。

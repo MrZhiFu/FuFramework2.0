@@ -30,12 +30,6 @@ namespace FuFramework.Localization.Runtime
         int DictionaryCount { get; }
 
         /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager">资源管理器。</param>
-        void SetAssetManager(IAssetManager assetManager);
-
-        /// <summary>
         /// 设置本地化辅助器。
         /// </summary>
         /// <param name="localizationHelper">本地化辅助器。</param>

@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ModuleSetting.Runtime
@@ -75,11 +74,11 @@ namespace FuFramework.ModuleSetting.Runtime
         /// </summary>
         public SoundGroupInfo(string groupName = "New Sound Group")
         {
-            m_GroupID                          = Guid.NewGuid().ToString();
-            m_GroupName                        = groupName;
-            m_IsMute                           = false;
-            m_Volume                           = 1f;
-            m_AgentCount                 = 1;
+            m_GroupID                       = Guid.NewGuid().ToString();
+            m_GroupName                     = groupName;
+            m_IsMute                        = false;
+            m_Volume                        = 1f;
+            m_AgentCount                    = 1;
             m_AllowBeReplacedBySamePriority = true;
         }
 
@@ -88,10 +87,10 @@ namespace FuFramework.ModuleSetting.Runtime
         /// </summary>
         public void Reset()
         {
-            m_GroupName                        = "New Sound Group";
-            m_IsMute                           = false;
-            m_Volume                           = 1f;
-            m_AgentCount                 = 1;
+            m_GroupName                     = "New Sound Group";
+            m_IsMute                        = false;
+            m_Volume                        = 1f;
+            m_AgentCount                    = 1;
             m_AllowBeReplacedBySamePriority = true;
         }
     }

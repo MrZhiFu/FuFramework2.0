@@ -6,7 +6,8 @@
         "UniTask.Runtime",
         "BetterStreamingAssets",
         "FuFramework.Core.Runtime",
-        "FuFramework.Event.Runtime"
+        "FuFramework.Event.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -148,7 +148,7 @@ namespace FuFramework.Localization.Runtime
                 return;
             }
 
-            m_LocalizationManager.SetAssetManager(FuEntry.GetModule<IAssetManager>());
+            // m_LocalizationManager.SetAssetManager(FuEntry.GetModule<IAssetManager>());
 
             var localizationHelper = Helper.CreateHelper(m_LocalizationHelperTypeName, m_CustomLocalizationHelper);
             if (localizationHelper == null)

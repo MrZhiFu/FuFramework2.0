@@ -12,21 +12,21 @@ namespace FuFramework.Entity.Runtime
     /// </summary>
     public class DefaultEntityHelper : EntityHelperBase
     {
-        /// <summary>
-        /// 资源管理器。
-        /// </summary>
-        private IAssetManager _assetManager;
+        // /// <summary>
+        // /// 资源管理器。
+        // /// </summary>
+        // private IAssetManager _assetManager;
 
         /// <summary>
         /// 资源操作句柄。
         /// </summary>
         private AssetHandle _assetOperationHandle;
 
-        private void Start()
-        {
-            _assetManager = FuEntry.GetModule<IAssetManager>();
-            if (_assetManager == null) Log.Fatal("Resource component is invalid.");
-        }
+        // private void Start()
+        // {
+        //     _assetManager = FuEntry.GetModule<IAssetManager>();
+        //     if (_assetManager == null) Log.Fatal("Resource component is invalid.");
+        // }
 
         /// <summary>
         /// 同步实例化实体。

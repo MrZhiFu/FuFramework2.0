@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Procedure.Runtime;
@@ -30,7 +31,7 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
 
             // 编辑器下的模拟模式--直接进入获取App版本号流程
-            if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模式，直接进入 FsmGetGlobalInfoState");
                 ChangeState<ProcedureGetAppVersionInfoFromGmServer>(procedureOwner);
@@ -38,7 +39,7 @@ namespace Unity.Startup.Procedure
             }
 
             // 离线模式--直接进入初始化YooAsset流程
-            if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 Log.Info("当前为离线模式，直接进入 ProcedurePatchInit");
                 ChangeState<ProcedureUpdateInit>(procedureOwner);

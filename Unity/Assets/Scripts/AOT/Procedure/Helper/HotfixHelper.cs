@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using HybridCLR;
@@ -46,7 +47,7 @@ namespace Unity.Startup.Procedure
             foreach (var aotDll in aotDlls)
             {
                 Log.Info("开始加载AOT DLL ==> " + aotDll);
-                var assetHandle = await GameApp.Asset.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
+                var assetHandle = await AssetManager.Instance.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
                 var aotBytes    = assetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
                 RuntimeApi.LoadMetadataForAOTAssembly(aotBytes, HomologousImageMode.SuperSet);
             }
@@ -55,7 +56,7 @@ namespace Unity.Startup.Procedure
 
             Log.Info("开始加载Unity.Hotfix.dll");
             var assetHotfixDllPath            = Utility.Asset.Path.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
-            var assetHotfixDllOperationHandle = await GameApp.Asset.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
+            var assetHotfixDllOperationHandle = await AssetManager.Instance.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
             var assemblyDataHotfixDll         = assetHotfixDllOperationHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 
             Log.Info("开始加载程序集Hotfix");

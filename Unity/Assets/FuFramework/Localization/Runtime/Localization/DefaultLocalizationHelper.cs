@@ -17,7 +17,7 @@ namespace FuFramework.Localization.Runtime
         private static readonly string BytesAssetExtension = ".bytes";
         private const int ColumnCount = 4;
 
-        private AssetComponent m_ResourceComponent;// 资源组件
+        // private AssetComponent m_ResourceComponent;// 资源组件
 
         /// <summary>
         /// 获取系统语言。
@@ -76,11 +76,11 @@ namespace FuFramework.Localization.Runtime
             }
         }
 
-        private void Start()
-        {
-            m_ResourceComponent = GameEntry.GetComponent<AssetComponent>();
-            if (!m_ResourceComponent) Log.Fatal("Resource component is invalid.");
-        }
+        // private void Start()
+        // {
+        //     m_ResourceComponent = GameEntry.GetComponent<AssetComponent>();
+        //     if (!m_ResourceComponent) Log.Fatal("Resource component is invalid.");
+        // }
 
         /// <summary>
         /// 读取字典。

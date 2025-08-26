@@ -29,7 +29,6 @@ namespace FuFramework.Entity.Runtime
         private readonly Queue<EntityInfo>               m_RecycleQueue;               // 待回收的实体信息队列
 
         private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private IAssetManager      _assetManager;       // 资源管理器
         private IEntityHelper      m_EntityHelper;      // 实体辅助器
 
         private int  m_Serial;     // 实体自增编号
@@ -50,7 +49,6 @@ namespace FuFramework.Entity.Runtime
             m_WaitReleaseOnLoadEntitySet     = new HashSet<int>();
             m_RecycleQueue                   = new Queue<EntityInfo>();
             m_ObjectPoolManager              = null;
-            _assetManager                    = null;
             m_EntityHelper                   = null;
             m_Serial                         = 0;
             m_IsShutdown                     = false;
@@ -147,15 +145,6 @@ namespace FuFramework.Entity.Runtime
         public void SetObjectPoolManager(IObjectPoolManager objectPoolManager)
         {
             m_ObjectPoolManager = objectPoolManager ?? throw new FuException("Object pool manager is invalid.");
-        }
-
-        /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager">资源管理器。</param>
-        public void SetResourceManager(IAssetManager assetManager)
-        {
-            _assetManager = assetManager ?? throw new FuException("Resource manager is invalid.");
         }
 
         /// <summary>
@@ -453,7 +442,6 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public async UniTask<IEntity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, int priority, object userData)
         {
-            if (_assetManager  == null) throw new FuException("You must set resource manager first.");
             if (m_EntityHelper == null) throw new FuException("You must set entity helper first.");
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
             if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("Entity group name is invalid.");
@@ -471,7 +459,7 @@ namespace FuFramework.Entity.Runtime
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
-                var assetOperationHandle = await _assetManager.LoadAssetAsync<Object>(entityAssetName);
+                var assetOperationHandle = await AssetManager.Instance.LoadAssetAsync<Object>(entityAssetName);
                 assetOperationHandle.Completed += handle =>
                 {
                     var newUserData = ShowEntityInfo.Create(serialId, entityId, entityGroup, userData);

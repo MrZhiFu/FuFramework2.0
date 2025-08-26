@@ -23,7 +23,6 @@ namespace FuFramework.Scene.Runtime
         private const int DefaultPriority = 0; // 场景模块优先级
 
         private IGameSceneManager m_gameSceneManager; // 游戏场景管理器
-        private IAssetManager m_assetManager; // 资源管理器
         private EventComponent m_EventComponent; // 事件组件
 
         /// 记录场景加载顺序的字典。key为场景资源名称，value为加载顺序。
@@ -78,27 +77,18 @@ namespace FuFramework.Scene.Runtime
         private void Start()
         {
             var baseComp = GameEntry.GetComponent<BaseComponent>();
-            if (baseComp == null)
+            if (!baseComp)
             {
                 Log.Fatal("Base component is invalid.");
                 return;
             }
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
-            if (m_EventComponent == null)
+            if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
-                return;
             }
 
-            m_assetManager = FuEntry.GetModule<IAssetManager>();
-            if (m_assetManager == null)
-            {
-                Log.Fatal("Asset Manager is invalid.");
-                return;
-            }
-
-            m_gameSceneManager.SetResourceManager(m_assetManager);
         }
 
         /// <summary>

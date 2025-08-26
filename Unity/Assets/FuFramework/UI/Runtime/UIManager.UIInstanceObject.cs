@@ -1,6 +1,7 @@
 ﻿using FuFramework.Core.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     public sealed partial class UIManager

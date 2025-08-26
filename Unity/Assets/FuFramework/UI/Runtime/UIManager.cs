@@ -2,10 +2,10 @@
 using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
@@ -49,7 +49,6 @@ namespace FuFramework.UI.Runtime
             m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
-            GameEntry.GetComponent<AssetComponent>();
 
             m_SerialId   = 0;
             m_IsShutdown = false;

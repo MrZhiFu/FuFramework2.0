@@ -23,11 +23,11 @@ namespace Unity.Startup.Procedure
         {
             base.OnEnter(procedureOwner);
 
-            if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 // 离线单机模式下的更新资源清单
-                var versionStr = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName + "Version");
-                var package    = GameApp.Asset.GetAssetsPackage(AssetComponent.BuildInPackageName);
+                var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
+                var package    = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
                 var operation  = package.UpdatePackageManifestAsync(versionStr.Value);
                 await operation.ToUniTask();
                 ChangeState<ProcedureUpdateDone>(procedureOwner);
@@ -35,7 +35,7 @@ namespace Unity.Startup.Procedure
             }
 
             // 联机模式下的更新资源清单流程
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.UpdateManifest));
+            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
             await UpdateManifest(procedureOwner).ToUniTask();
         }
 
@@ -49,10 +49,10 @@ namespace Unity.Startup.Procedure
         {
             yield return new WaitForSecondsRealtime(0.1f);
 
-            var buildInPackage = YooAssets.GetPackage(AssetComponent.BuildInPackageName);
+            var buildInPackage = YooAssets.GetPackage(AssetManager.Instance.DefaultPackageName);
             UpdatePackageManifestOperation operation;
 
-            if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 // 编辑器模拟模式下，强制使用Simulate版本
                 operation = buildInPackage.UpdatePackageManifestAsync("Simulate");
@@ -60,7 +60,7 @@ namespace Unity.Startup.Procedure
             else
             {
                 // 联机模式下，获取流程中存储的版本数据
-                var versionStr = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName + "Version");
+                var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
                 operation = buildInPackage.UpdatePackageManifestAsync(versionStr.Value);
             }
 
@@ -71,13 +71,13 @@ namespace Unity.Startup.Procedure
             {
                 // 更新成功，进入创建资源下载器流程
                 ChangeState<ProcedureUpdateCreateDownloader>(procedureOwner);
-                procedureOwner.RemoveData(AssetComponent.BuildInPackageName + "Version");
+                procedureOwner.RemoveData(AssetManager.Instance.DefaultPackageName + "Version");
             }
             else
             {
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetComponent.BuildInPackageName, operation.Error));
+                GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdateManifest>(procedureOwner);
             }
         }

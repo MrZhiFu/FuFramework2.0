@@ -12,6 +12,7 @@
         "ProtoBuffer.Runtime",
         "SimpleJSON.Runtime",
         "FuFramework.UI.Runtime",
+        "FuFramework.Web.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Entry.Runtime",
         "FuFramework.Event.Runtime",
@@ -21,8 +22,7 @@
         "FuFramework.Config.Runtime",
         "FuFramework.Network.Runtime",
         "FuFramework.GetChannel.Runtime",
-        "FuFramework.GlobalConfig.Runtime",
-        "FuFramework.Web.Runtime"
+        "FuFramework.GlobalConfig.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

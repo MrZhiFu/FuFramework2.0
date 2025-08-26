@@ -124,7 +124,6 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            m_EntityManager.SetResourceManager(FuEntry.GetModule<IAssetManager>());
             m_EntityManager.SetObjectPoolManager(FuEntry.GetModule<IObjectPoolManager>());
 
             var entityHelper = Helper.CreateHelper(m_EntityHelperTypeName, m_CustomEntityHelper);

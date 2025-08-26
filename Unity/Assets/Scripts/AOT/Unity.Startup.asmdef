@@ -21,7 +21,8 @@
         "FuFramework.Procedure.Runtime",
         "FuFramework.GetChannel.Runtime",
         "FuFramework.Localization.Runtime",
-        "FuFramework.GlobalConfig.Runtime"
+        "FuFramework.GlobalConfig.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -55,6 +55,28 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
+        /// 初始化为联机运行模式
+        /// </summary>
+        /// <param name="resourcePackage"></param>
+        /// <param name="hostServerURL"></param>
+        /// <param name="fallbackHostServerURL"></param>
+        /// <returns></returns>
+        private InitializationOperation InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        {
+            IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
+
+            var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+
+            var initParameters = new HostPlayModeParameters
+            {
+                BuildinFileSystemParameters = buildInFileSystem,
+                CacheFileSystemParameters   = cacheFileSystem
+            };
+            return resourcePackage.InitializeAsync(initParameters);
+        }
+
+        /// <summary>
         /// 初始化为Web运行模式
         /// </summary>
         /// <param name="resourcePackage"></param>
@@ -97,28 +119,6 @@ namespace FuFramework.Asset.Runtime
             // webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters(); // TODO
 #endif
             // initParameters.WebFileSystemParameters = webFileSystem;
-            return resourcePackage.InitializeAsync(initParameters);
-        }
-
-        /// <summary>
-        /// 初始化为联机运行模式
-        /// </summary>
-        /// <param name="resourcePackage"></param>
-        /// <param name="hostServerURL"></param>
-        /// <param name="fallbackHostServerURL"></param>
-        /// <returns></returns>
-        private InitializationOperation InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
-        {
-            IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
-
-            var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-
-            var initParameters = new HostPlayModeParameters
-            {
-                BuildinFileSystemParameters = buildInFileSystem,
-                CacheFileSystemParameters   = cacheFileSystem
-            };
             return resourcePackage.InitializeAsync(initParameters);
         }
     }

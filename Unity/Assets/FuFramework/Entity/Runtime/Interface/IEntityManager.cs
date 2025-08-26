@@ -45,12 +45,6 @@ namespace FuFramework.Entity.Runtime
         void SetObjectPoolManager(IObjectPoolManager objectPoolManager);
 
         /// <summary>
-        /// 设置资源管理器。
-        /// </summary>
-        /// <param name="assetManager">资源管理器。</param>
-        void SetResourceManager(IAssetManager assetManager);
-
-        /// <summary>
         /// 设置实体辅助器。
         /// </summary>
         /// <param name="entityHelper">实体辅助器。</param>

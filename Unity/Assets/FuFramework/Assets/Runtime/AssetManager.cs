@@ -12,12 +12,12 @@ namespace FuFramework.Asset.Runtime
     /// <summary>
     /// 资源组件。
     /// </summary>
-    public partial class AssetManager : FuModule, IAssetManager
+    public partial class AssetManager : MonoSingleton<AssetManager>
     {
         /// <summary>
         /// 默认资源包名称
         /// </summary>
-        public string DefaultPackageName { get; set; } = "DefaultPackage";
+        public string DefaultPackageName { get; private set; } = "DefaultPackage";
 
         /// <summary>
         /// 下载最大并发数量
@@ -54,28 +54,42 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         public string ReadWritePath { get; private set; }
 
-
         /// <summary>
         /// 初始化
         /// </summary>
-        /// <returns></returns>
-        public void Initialize()
+        protected override void Init()
         {
-            BetterStreamingAssets.Initialize();
+            // 获取资源模块配置数据
+            var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
+            if (!assetSetting) throw new FuException("资源模块配置数据为空!");
+
+            PlayMode           = assetSetting.PlayMode;
+            DefaultPackageName = assetSetting.DefaultPackage.PackageName;
+
+#if !UNITY_EDITOR
+            if (PlayMode == EPlayMode.EditorSimulateMode)
+            {
+                PlayMode = EPlayMode.HostPlayMode;
+            }
+#if UNITY_WEBGL
+            PlayMode = EPlayMode.WebPlayMode;
+#endif
+#endif
             Log.Info($"资源系统运行模式：{PlayMode}");
 
+            BetterStreamingAssets.Initialize();
+            
             YooAssets.Initialize();
-            YooAssets.SetOperationSystemMaxTimeSlice(30);
+            YooAssets.SetOperationSystemMaxTimeSlice(30); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 
-            // YooAssets.SetCacheSystemCachedFileVerifyLevel(EVerifyLevel.High);
-            // YooAssets.SetDownloadSystemBreakpointResumeFileSize(4096 * 8);
+            // // 遍历配置，初始化所有资源包
+            // foreach (var packageInfo in assetSetting.AllPackages)
+            // {
+            //     InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
+            // }
 
-            Log.Info("Asset Init Over");
+            Log.Info("资源系统初始化完毕！");
         }
-
-        protected override void Update(float elapseSeconds, float realElapseSeconds) { }
-
-        protected override void Shutdown() { }
 
         /// <summary>
         /// 初始化操作。
@@ -696,12 +710,6 @@ namespace FuFramework.Asset.Runtime
         #endregion
 
         #region Set
-
-        /// <summary>
-        /// 设置运行模式
-        /// </summary>
-        /// <param name="playMode">运行模式</param>
-        public void SetPlayMode(EPlayMode playMode) => PlayMode = playMode;
 
         /// <summary>
         /// 设置资源只读区路径。

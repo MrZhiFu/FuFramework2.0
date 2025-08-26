@@ -39,7 +39,7 @@ namespace Unity.Startup.Procedure
             try
             {
                 // 请求后台服务端，获取默认资源包的版本信息。
-                jsonParams["AssetPackageName"] = AssetComponent.BuildInPackageName;
+                jsonParams["AssetPackageName"] = AssetManager.Instance.DefaultPackageName;
                 var rstJson = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckResourceVersionUrl, jsonParams);
                 
                 Log.Info(rstJson);
@@ -65,12 +65,12 @@ namespace Unity.Startup.Procedure
                     var downloadUrl = Path.Combine(assetPackageVersion.RootPath, assetPackageVersion.PackageName, assetPackageVersion.Platform, assetPackageVersion.AppVersion, assetPackageVersion.Channel, assetPackageVersion.AssetPackageName, assetPackageVersion.Version) + Path.DirectorySeparatorChar;
                     var downloadUrlStr = ReferencePool.Acquire<VarString>();
                     downloadUrlStr.SetValue(downloadUrl);
-                    procedureOwner.SetData(AssetComponent.BuildInPackageName, downloadUrlStr);
+                    procedureOwner.SetData(AssetManager.Instance.DefaultPackageName, downloadUrlStr);
 
                     // 将版本信息保存到流程管理器的Data变量(DefaultPackageVersion)中，并进入资源更新初始化流程。
                     var versionStr = ReferencePool.Acquire<VarString>();
                     versionStr.SetValue(assetPackageVersion.Version);
-                    procedureOwner.SetData(AssetComponent.BuildInPackageName + "Version", versionStr);
+                    procedureOwner.SetData(AssetManager.Instance.DefaultPackageName + "Version", versionStr);
                     ChangeState<ProcedureUpdateInit>(procedureOwner);
                 }
             }

@@ -3,7 +3,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.ModuleSetting.Runtime;
 using YooAsset;
 
 namespace Unity.Startup.Procedure
@@ -20,32 +20,58 @@ namespace Unity.Startup.Procedure
         {
             base.OnEnter(procedureOwner);
 
+            // 获取资源模块配置数据
+            var assetSetting = ModuleSetting.Instance.AssetSetting;
+            if (!assetSetting) throw new FuException("资源模块配置数据为空!");
+
             // 编辑器模拟模式下，直接进入 获取资源版本号流程
-            if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模拟模式，直接进入 获取资源包版本号流程");
-                await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, string.Empty, string.Empty, true);
+
+
+                // 遍历配置，初始化所有资源包
+                foreach (var packageInfo in assetSetting.AllPackages)
+                {
+                    await AssetManager.Instance.InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
+                }
+
+                // await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, string.Empty, string.Empty, true);
                 ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
                 return;
             }
 
             // 离线模式下，直接进入 获取资源版本号流程
-            if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 Log.Info("当前为离线模式，直接进入 获取资源包版本号流程");
-                await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, string.Empty, string.Empty, true);
+
+                // 遍历配置，初始化所有资源包
+                foreach (var packageInfo in assetSetting.AllPackages)
+                {
+                    await AssetManager.Instance.InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
+                }
+
+                // await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, string.Empty, string.Empty, true);
                 ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
                 return;
             }
 
             // 网络模式下
             // 1.获取资源包的下载地址，并将下载地址初始化到YooAsset资源包相关信息中
-            var downloadUrl = procedureOwner.GetData<VarString>(AssetComponent.BuildInPackageName);
-            Log.Info("下载资源的路径：" + downloadUrl);
-            await GameApp.Asset.InitPackageAsync(AssetComponent.BuildInPackageName, downloadUrl.Value, downloadUrl.Value, true);
+            // var downloadUrl = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName);
+            // Log.Info("下载资源的路径：" + downloadUrl);
+            // await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, downloadUrl.Value, downloadUrl.Value, true);
 
-            // 2.移除流程中的资源包路径数据
-            procedureOwner.RemoveData(AssetComponent.BuildInPackageName);
+            // // 2.移除流程中的资源包路径数据
+            // procedureOwner.RemoveData(AssetManager.Instance.DefaultPackageName);
+
+            // 遍历配置，初始化所有资源包
+            foreach (var packageInfo in assetSetting.AllPackages)
+            {
+                await AssetManager.Instance.InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
+            }
+
             await UniTask.DelayFrame();
 
             // 3.进入获取资源包版本号流程

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -8,23 +8,23 @@ using FuFramework.ModuleSetting.Runtime;
 namespace FuFramework.ModuleSetting.Editor
 {
     /// <summary>
-    /// 声音配置-SoundSetting 创建器
+    /// 资源配置-AssetSetting 创建器
     /// </summary>
-    public static class SoundSettingCreator
+    public static class AssetSettingCreator
     {
-        private const string AssetName = "SoundSetting.asset";                             // 资源名称
+        private const string AssetName = "AssetSetting.asset";                             // 资源名称
         private const string AssetPath = "Assets/FuFramework/ModuleSetting/SettingAssets"; // 配置路径
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
 
-        [MenuItem("FuFramework/框架模块配置/音频配置/创建")]
-        public static void CreateDefaultSoundSetting()
+        [MenuItem("FuFramework/框架模块配置/资源配置/创建")]
+        public static void CreateDefaultAssetSetting()
         {
             // 检查资源是否已存在
-            var existingSetting = AssetDatabase.LoadAssetAtPath<SoundSetting>(FullPath);
+            var existingSetting = AssetDatabase.LoadAssetAtPath<AssetSetting>(FullPath);
             if (existingSetting)
             {
-                EditorUtility.DisplayDialog("创建失败", "SoundSetting 资源已存在, 请勿重复创建!", "确定");
+                EditorUtility.DisplayDialog("创建失败", "AssetSetting 资源已存在, 请勿重复创建!", "确定");
                 Selection.activeObject = existingSetting;
                 EditorUtility.FocusProjectWindow();
                 return;
@@ -33,15 +33,15 @@ namespace FuFramework.ModuleSetting.Editor
             // 确保目录存在
             EnsureDirectoryExists(AssetPath);
 
-            var soundSetting = ScriptableObject.CreateInstance<SoundSetting>();
-            soundSetting.AddDefaultSoundGroups(); // 添加默认声音组 "BGM", "SFX", "UI"
-            AssetDatabase.CreateAsset(soundSetting, FullPath);
+            var assetSetting = ScriptableObject.CreateInstance<AssetSetting>();
+            assetSetting.AddDefaultPackage(); // 添加默认资源包
+            AssetDatabase.CreateAsset(assetSetting, FullPath);
             AssetDatabase.SaveAssets();
 
             EditorUtility.FocusProjectWindow();
-            Selection.activeObject = soundSetting;
+            Selection.activeObject = assetSetting;
 
-            Debug.Log($"已创建默认声音设置: {FullPath}");
+            Debug.Log($"已创建默认资源配置: {FullPath}");
         }
 
         /// <summary>
@@ -58,22 +58,22 @@ namespace FuFramework.ModuleSetting.Editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FuFramework/框架模块配置/音频配置/查找")]
-        public static void FindSoundSetting()
+        [MenuItem("FuFramework/框架模块配置/资源配置/查找")]
+        public static void FindAssetSetting()
         {
-            var guids = AssetDatabase.FindAssets("t:SoundSetting");
+            var guids = AssetDatabase.FindAssets("t:AssetSetting");
             if (guids.Length > 0)
             {
                 var path         = AssetDatabase.GUIDToAssetPath(guids[0]);
-                var soundSetting = AssetDatabase.LoadAssetAtPath<SoundSetting>(path);
-                Selection.activeObject = soundSetting;
+                var assetSetting = AssetDatabase.LoadAssetAtPath<AssetSetting>(path);
+                Selection.activeObject = assetSetting;
                 EditorUtility.FocusProjectWindow();
-                EditorGUIUtility.PingObject(soundSetting); // 高亮显示资源
+                EditorGUIUtility.PingObject(assetSetting); // 高亮显示资源
             }
             else
             {
-                var createNew = EditorUtility.DisplayDialog("未找到资源", "未找到任何 SoundSetting 资源，是否创建新的？", "创建", "取消");
-                if (createNew) CreateDefaultSoundSetting();
+                var createNew = EditorUtility.DisplayDialog("未找到资源", "未找到任何 AssetSetting 资源，是否创建新的？", "创建", "取消");
+                if (createNew) CreateDefaultAssetSetting();
             }
         }
     }

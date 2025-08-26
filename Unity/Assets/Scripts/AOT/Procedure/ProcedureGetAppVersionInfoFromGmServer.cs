@@ -1,6 +1,7 @@
 using System;
 using AOT.UI.View.Launcher;
 using Cysharp.Threading.Tasks;
+using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
@@ -30,7 +31,7 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
 
             // 编辑器下的模拟模式
-            if (GameApp.Asset.GamePlayMode == EPlayMode.EditorSimulateMode)
+            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模式，直接进入资源更新的初始化流程");
                 ChangeState<ProcedureUpdateInit>(procedureOwner);

@@ -28,7 +28,6 @@ namespace FuFramework.Sound.Runtime
         private readonly List<int>    m_LoadingSoundList    = new(); // 记录正在加载的声音ID列表
         private readonly HashSet<int> m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
-        private IAssetManager  m_assetManager;   // 资源管理器
         private EventComponent m_EventComponent; // 事件组件
 
         private int m_Serial;       // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
@@ -52,7 +51,6 @@ namespace FuFramework.Sound.Runtime
         protected override void Init()
         {
             m_Serial       = 0;
-            m_assetManager = FuEntry.GetModule<IAssetManager>();
 
             m_EventComponent = GameEntry.GetComponent<EventComponent>();
             if (!m_EventComponent)
@@ -64,7 +62,7 @@ namespace FuFramework.Sound.Runtime
             // 添加AudioListener组件
             m_AudioListener = gameObject.GetOrAddComponent<AudioListener>();
 
-            // 获取声音配置数据
+            // 获取声音模块配置数据
             var soundSetting = ModuleSetting.Runtime.ModuleSetting.Instance.SoundSetting;
 
             // 设置混音器
@@ -262,8 +260,6 @@ namespace FuFramework.Sound.Runtime
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int serialId = -1, SoundParams soundParams = null,
                                             SoundParams3D soundParams3D = null, object userData = null, Action onPlayEnd = null)
         {
-            if (m_assetManager == null) throw new FuException("[SoundManager]声音资源管理器为空!");
-
             var  soundAssetPath = Utility.Asset.Path.GetSoundPath(soundAssetName, extension);
             soundParams ??= SoundParams.Create();
 
@@ -300,7 +296,7 @@ namespace FuFramework.Sound.Runtime
             m_LoadingSoundList.Add(newSerialId);
 
             // 加载声音资源
-            var assetOperationHandle = await m_assetManager.LoadAssetAsync<AudioClip>(soundAssetPath);
+            var assetOperationHandle = await AssetManager.Instance.LoadAssetAsync<AudioClip>(soundAssetPath);
             assetOperationHandle.Completed += OnAssetOperationHandleOnCompleted;
             return newSerialId;
 
@@ -444,7 +440,7 @@ namespace FuFramework.Sound.Runtime
                 if (playSoundInfo.SoundParams3D != null)
                     ReferencePool.Release(playSoundInfo.SoundParams3D);
 
-                m_assetManager?.UnloadAsset(playSoundInfo.SoundAssetPath);
+                AssetManager.Instance.UnloadAsset(playSoundInfo.SoundAssetPath);
                 ReferencePool.Release(playSoundInfo);
                 return;
             }
@@ -482,7 +478,7 @@ namespace FuFramework.Sound.Runtime
 
             // 播放声音失败--释放声音资源
             m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-            m_assetManager?.UnloadAsset(playSoundInfo.SoundAssetPath);
+            AssetManager.Instance.UnloadAsset(playSoundInfo.SoundAssetPath);
 
             var errorCodeValue = EPlaySoundErrorCode.Unknown;
             if (errorCode != null)

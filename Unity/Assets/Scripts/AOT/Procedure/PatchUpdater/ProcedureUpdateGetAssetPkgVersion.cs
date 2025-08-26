@@ -23,7 +23,7 @@ namespace Unity.Startup.Procedure
         {
             base.OnEnter(procedureOwner);
 
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetComponent.BuildInPackageName, EPatchStates.UpdateStaticVersion));
+            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateStaticVersion));
             GetVersion(procedureOwner).ToUniTask();
         }
 
@@ -34,7 +34,7 @@ namespace Unity.Startup.Procedure
         /// <returns></returns>
         private IEnumerator GetVersion(IFsm<IProcedureManager> procedureOwner)
         {
-            var package = GameApp.Asset.GetAssetsPackage(AssetComponent.BuildInPackageName);
+            var package = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
 
             // Package.RequestPackageVersionAsync()方法
             // 离线单机模式下请求的是应用程序内保存的版本号，一般存放在StreamingAssets目录下，
@@ -46,12 +46,12 @@ namespace Unity.Startup.Procedure
             {
                 // 获取成功
                 var packageVersion = operation.PackageVersion;
-                if (GameApp.Asset.GamePlayMode == EPlayMode.OfflinePlayMode)
+                if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
                 {
                     // 离线单机模式下，保存版本号到流程中的Data中
                     var versionStr = ReferencePool.Acquire<VarString>();
                     versionStr.SetValue(packageVersion);
-                    procedureOwner.SetData(AssetComponent.BuildInPackageName + "Version", versionStr);
+                    procedureOwner.SetData(AssetManager.Instance.DefaultPackageName + "Version", versionStr);
                 }
 
                 // 进入更新资源清单流程
@@ -62,7 +62,7 @@ namespace Unity.Startup.Procedure
             {
                 // 获取失败，再次进入自身流程尝试
                 Log.Error(operation.Error);
-                GameApp.Event.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetComponent.BuildInPackageName, operation.Error));
+                GameApp.Event.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
             }
         }
