@@ -206,7 +206,7 @@ namespace FuFramework.Procedure.Editor
             else if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
             {
                 m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
-                if (m_EntranceProcedureIndex < 0) 
+                if (m_EntranceProcedureIndex < 0)
                     m_EntranceProcedureTypeName.stringValue = null;
             }
 
