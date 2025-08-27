@@ -1,11 +1,11 @@
-﻿using System.Collections;
+﻿using YooAsset;
+using System.Collections;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
-using YooAsset;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {
@@ -17,21 +17,23 @@ namespace Unity.Startup.Procedure
     /// 3. 下载失败后，回到创建下载器的流程
     /// 4. 下载成功后，切换到更新完毕流程
     /// </summary>
-    public class ProcedureUpdateDownload : ProcedureBase
+    public class ProcedureDownloadPackage : ProcedureBase
     {
         private IFsm<IProcedureManager> _procedureOwner;
+
+        public override int Priority => 9; // 显示优先级
         
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
-            
+
             _procedureOwner = procedureOwner;
-            
+
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.DownloadWebFiles));
             BeginDownload(procedureOwner).ToUniTask();
         }
-        
+
         /// <summary>
         /// 开始下载热更包
         /// </summary>
@@ -41,7 +43,7 @@ namespace Unity.Startup.Procedure
         {
             var downloader = procedureOwner.GetData<VarObject>("Downloader").GetValue() as ResourceDownloaderOperation;
             if (downloader == null) yield break;
-            
+
             downloader.DownloadErrorCallback  = DownloaderOnDownloadErrorCallback;
             downloader.DownloadUpdateCallback = OnDownloadProgressCallback;
             downloader.BeginDownload();
@@ -64,7 +66,7 @@ namespace Unity.Startup.Procedure
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
             GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
-            ChangeState<ProcedureUpdateCreateDownloader>(_procedureOwner);
+            ChangeState<ProcedureCreateDownloader>(_procedureOwner);
         }
 
         /// <summary>
@@ -73,10 +75,10 @@ namespace Unity.Startup.Procedure
         /// <param name="data">下载中的数据</param>
         private void OnDownloadProgressCallback(DownloadUpdateData data)
         {
-            var packageName = data.PackageName;
-            var totalDownloadCount = data.TotalDownloadCount;
+            var packageName          = data.PackageName;
+            var totalDownloadCount   = data.TotalDownloadCount;
             var currentDownloadCount = data.CurrentDownloadCount;
-            var totalDownloadBytes = data.TotalDownloadBytes;
+            var totalDownloadBytes   = data.TotalDownloadBytes;
             var currentDownloadBytes = data.CurrentDownloadBytes;
             GameApp.Event.Fire(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
         }

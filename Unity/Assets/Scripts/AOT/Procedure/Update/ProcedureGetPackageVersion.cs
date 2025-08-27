@@ -1,11 +1,11 @@
-﻿using System.Collections;
+﻿using YooAsset;
+using System.Collections;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using YooAsset;
+using FuFramework.Asset.Runtime;
+using FuFramework.Procedure.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 namespace Unity.Startup.Procedure
@@ -17,8 +17,10 @@ namespace Unity.Startup.Procedure
     /// 2. 离线单机模式下，将最新版本号保存到流程的Data中，供再次使用，然后进入更新资源清单流程
     /// 3. 联机模式下，进入更新资源清单流程
     /// </summary>
-    public class ProcedureUpdateGetAssetPkgVersion : ProcedureBase
+    public class ProcedureGetPackageVersion : ProcedureBase
     {
+        public override int Priority => 6; // 显示优先级
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -64,7 +66,7 @@ namespace Unity.Startup.Procedure
                 // 获取失败，再次进入自身流程尝试
                 Log.Error(operation.Error);
                 GameApp.Event.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
-                ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
+                ChangeState<ProcedureGetPackageVersion>(procedureOwner);
             }
         }
     }

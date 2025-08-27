@@ -14,8 +14,10 @@ namespace Unity.Startup.Procedure
     /// 1. 初始化设置YooAsset的资源包相关信息，包括：包名称、下载地址
     /// 2. 进入获取资源版本号流程
     /// </summary>
-    public class ProcedureUpdateInitResPackage : ProcedureBase
+    public class ProcedureInitPackage : ProcedureBase
     {
+        public override int Priority => 5; // 显示优先级
+        
         protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -38,7 +40,7 @@ namespace Unity.Startup.Procedure
                 }
 
                 // await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, string.Empty, string.Empty, true);
-                ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
+                ChangeState<ProcedureGetPackageVersion>(procedureOwner);
                 return;
             }
 
@@ -54,7 +56,7 @@ namespace Unity.Startup.Procedure
                 }
 
                 // await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, string.Empty, string.Empty, true);
-                ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
+                ChangeState<ProcedureGetPackageVersion>(procedureOwner);
                 return;
             }
 
@@ -76,7 +78,7 @@ namespace Unity.Startup.Procedure
             await UniTask.DelayFrame();
 
             // 3.进入获取资源包版本号流程
-            ChangeState<ProcedureUpdateGetAssetPkgVersion>(procedureOwner);
+            ChangeState<ProcedureGetPackageVersion>(procedureOwner);
         }
     }
 }

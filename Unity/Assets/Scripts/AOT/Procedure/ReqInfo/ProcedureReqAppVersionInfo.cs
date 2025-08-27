@@ -24,8 +24,10 @@ namespace Unity.Startup.Procedure
     /// 3. 再判断是否需要强更，如果需要强更，则打开下载安装的Url。否则，进入获取资源版本流程。如果不需要更新，则进入获取资源版本流程。
     /// 4. 获取失败，则提示网络异常，并延迟3秒后重试。
     /// </summary>
-    public class ProcedureGetAppVersionInfoFromGmServer : ProcedureBase
+    public class ProcedureReqAppVersionInfo : ProcedureBase
     {
+        public override int Priority => 3; // 显示优先级
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -35,7 +37,7 @@ namespace Unity.Startup.Procedure
             if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模式，直接进入资源更新的初始化流程");
-                ChangeState<ProcedureUpdateInitResPackage>(procedureOwner);
+                ChangeState<ProcedureInitPackage>(procedureOwner);
                 return;
             }
 
@@ -96,13 +98,13 @@ namespace Unity.Startup.Procedure
                             {
                                 // 非强更，点击进入获取资源包版本流程
                                 winLauncher.SetUpdateSureUIState(false);
-                                ChangeState<ProcedureGetAssetPkgVersionInfoFromGmServer>(procedureOwner);
+                                ChangeState<ProcedureReqPackageVersionInfo>(procedureOwner);
                             }
                         });
                     }
                     else
                     {
-                        ChangeState<ProcedureGetAssetPkgVersionInfoFromGmServer>(procedureOwner);
+                        ChangeState<ProcedureReqPackageVersionInfo>(procedureOwner);
                     }
                 }
             }

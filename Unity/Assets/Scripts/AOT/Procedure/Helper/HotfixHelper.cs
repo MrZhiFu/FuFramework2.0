@@ -1,27 +1,26 @@
 ﻿using System;
+using HybridCLR;
 using System.Linq;
 using System.Reflection;
-using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
-using HybridCLR;
+using FuFramework.Asset.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 代码热更辅助类。
-    /// 用于加载热更程序集，并运行热更程序集入口函数。
+    /// 代码热修复辅助类。
+    /// 用于加载热修复程序集，并运行热修复程序集入口函数。
     /// </summary>
     public static class HotfixHelper
     {
         /// <summary>
-        /// 热更程序集名称
+        /// 热修复程序集名称
         /// </summary>
         private const string HotfixName = "Unity.Hotfix";
 
         /// <summary>
-        /// 启动代码热更
+        /// 启动代码热修复
         /// </summary>
         public static async void StartHotfix()
         {
@@ -43,6 +42,7 @@ namespace Unity.Startup.Procedure
 
             // 非编辑器模式下，加载AOT DLL，加载Unity.Hotfix.dll，运行入口函数
             Log.Info("开始加载AOT DLL");
+           
             var aotDlls = AOTGenericReferences.PatchedAOTAssemblyList.ToArray();
             foreach (var aotDll in aotDlls)
             {
@@ -63,12 +63,12 @@ namespace Unity.Startup.Procedure
             var hotfixAssembly = Assembly.Load(assemblyDataHotfixDll, null);
             Log.Info("加载程序集Hotfix 结束 Assembly " + hotfixAssembly.FullName);
 
-            // 运行热更程序集入口函数
+            // 运行热修复程序集入口函数
             Run(hotfixAssembly);
         }
 
         /// <summary>
-        /// 运行热更程序集入口函数
+        /// 运行热修复程序集入口函数
         /// </summary>
         /// <param name="assembly"></param>
         private static void Run(Assembly assembly)

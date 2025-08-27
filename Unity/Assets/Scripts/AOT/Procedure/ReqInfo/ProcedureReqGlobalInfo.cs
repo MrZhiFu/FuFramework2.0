@@ -6,8 +6,8 @@ using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
-using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Procedure.Runtime;
+using FuFramework.GlobalConfig.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
@@ -19,8 +19,10 @@ namespace Unity.Startup.Procedure
     /// 2. 获取成功，保存全局信息到globalConfigComponent组件中，并进入获取App版本号流程
     /// 3. 若获取失败，则提示网络异常，并延迟3秒后重试。。 
     ///  </summary>
-    public class ProcedureGetGlobalInfoFromGmServer : ProcedureBase
+    public class ProcedureReqGlobalInfo : ProcedureBase
     {
+        public override int Priority => 2; // 显示优先级
+        
         /// <summary>
         /// 全局信息的服务器地址
         /// </summary>
@@ -35,7 +37,7 @@ namespace Unity.Startup.Procedure
             if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模式，直接进入 FsmGetGlobalInfoState");
-                ChangeState<ProcedureGetAppVersionInfoFromGmServer>(procedureOwner);
+                ChangeState<ProcedureReqAppVersionInfo>(procedureOwner);
                 return;
             }
 
@@ -43,7 +45,7 @@ namespace Unity.Startup.Procedure
             if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 Log.Info("当前为离线模式，直接进入 ProcedurePatchInit");
-                ChangeState<ProcedureUpdateInitResPackage>(procedureOwner);
+                ChangeState<ProcedureInitPackage>(procedureOwner);
                 return;
             }
 
@@ -90,7 +92,7 @@ namespace Unity.Startup.Procedure
                     LauncherUIHelper.SetTipText("Loading...");
 
                     // 进入获取App版本号流程
-                    ChangeState<ProcedureGetAppVersionInfoFromGmServer>(procedureOwner);
+                    ChangeState<ProcedureReqAppVersionInfo>(procedureOwner);
                 }
             }
             catch (Exception e)

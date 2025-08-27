@@ -8,10 +8,12 @@ namespace Unity.Startup.Procedure
     /// <summary>
     /// 代码热修复流程
     /// 主要作用是：
-    /// 1.使用代码热更辅助器，加载热更程序集，并运行热更程序集入口函数
+    /// 1.使用代码热修复辅助器，加载热更程序集，并运行热更程序集入口函数
     /// </summary>
     public sealed class ProcedureHotfix : ProcedureBase
     {
+        public override int Priority => 11; // 显示优先级
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);

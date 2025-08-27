@@ -16,11 +16,14 @@ namespace FuFramework.Procedure.Runtime
     [AddComponentMenu("Game Framework/Procedure")]
     public sealed class ProcedureComponent : FuComponent
     {
-        private IProcedureManager m_ProcedureManager; // 流程管理器。
-        private ProcedureBase m_EntranceProcedure; // 入口流程。
+        private IProcedureManager m_ProcedureManager;  // 流程管理器。
+        private ProcedureBase     m_EntranceProcedure; // 入口流程。
 
-        [Header("所有可用的流程类型")] [SerializeField] private string[] m_AvailableProcedureTypeNames;
-        [Header("入口流程类型")] [SerializeField] private string m_EntranceProcedureTypeName;
+        [Header("所有可用的流程类型")]
+        [SerializeField] private string[] m_AvailableProcedureTypeNames;
+
+        [Header("入口流程类型")]
+        [SerializeField] private string m_EntranceProcedureTypeName;
 
         /// <summary>
         /// 获取流程管理器。
@@ -42,7 +45,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
+            ImplComponentType      = Utility.Assembly.GetType(componentType);
             InterfaceComponentType = typeof(IProcedureManager);
             base.Awake();
             m_ProcedureManager = FuEntry.GetModule<IProcedureManager>();

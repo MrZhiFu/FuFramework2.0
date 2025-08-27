@@ -1,8 +1,8 @@
-﻿using FuFramework.Asset.Runtime;
-using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
+﻿using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
+using FuFramework.Asset.Runtime;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {
@@ -11,6 +11,8 @@ namespace Unity.Startup.Procedure
     /// </summary>
     public class ProcedureUpdateDone : ProcedureBase
     {
+        public override int Priority => 10; // 显示优先级
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);

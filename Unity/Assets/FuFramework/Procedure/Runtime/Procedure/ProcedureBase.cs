@@ -10,6 +10,11 @@ namespace FuFramework.Procedure.Runtime
     public abstract class ProcedureBase : FsmStateBase<IProcedureManager>
     {
         /// <summary>
+        /// 显示优先级。
+        /// </summary>
+        public virtual int Priority => 0;
+        
+        /// <summary>
         /// 状态初始化时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>

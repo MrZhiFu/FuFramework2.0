@@ -4,6 +4,9 @@ using System.Linq;
 using FuFramework.Core.Editor;
 using System.Collections.Generic;
 using FuFramework.Procedure.Runtime;
+using System;
+using System.Reflection;
+using Type = FuFramework.Core.Editor.Type;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Procedure.Editor
@@ -14,12 +17,15 @@ namespace FuFramework.Procedure.Editor
     [CustomEditor(typeof(ProcedureComponent))]
     internal sealed class ProcedureGameComponentInspector : GameComponentInspector
     {
-        private SerializedProperty m_AvailableProcedureTypeNames;
-        private SerializedProperty m_EntranceProcedureTypeName;
+        private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
+        private SerializedProperty m_EntranceProcedureTypeName;   // 入口流程类型名称
 
-        private string[] m_ProcedureTypeNames; // 所有流程类型名称列表
+        private string[]     m_ProcedureTypeNames;                 // 所有流程类型名称列表
         private List<string> m_CurrentAvailableProcedureTypeNames; // 当前可用的流程类型名称列表
-        private int m_EntranceProcedureIndex = -1; // 入口流程索引
+        private int          m_EntranceProcedureIndex = -1;        // 入口流程索引
+
+
+        private readonly Dictionary<string, int> m_ProcedurePriorityCache = new(); // 缓存类型和类型显示优先级的映射
 
         public override void OnInspectorGUI()
         {
@@ -34,8 +40,7 @@ namespace FuFramework.Procedure.Editor
             }
             else if (EditorApplication.isPlaying)
             {
-                EditorGUILayout.LabelField("当前流程：",
-                    procedureComp.CurrentProcedure == null ? "None" : procedureComp.CurrentProcedure.GetType().ToString());
+                EditorGUILayout.LabelField("当前流程：", procedureComp.CurrentProcedure == null ? "None" : procedureComp.CurrentProcedure.GetType().ToString());
             }
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
@@ -45,21 +50,23 @@ namespace FuFramework.Procedure.Editor
                 {
                     EditorGUILayout.BeginVertical("box");
                     {
-                        foreach (var procedureTypeName in m_ProcedureTypeNames)
+                        // 按优先级排序显示
+                        var sortedProcedureNames = GetSortedProcedureNamesByPriority(m_CurrentAvailableProcedureTypeNames);
+                        foreach (var procedureTypeName in sortedProcedureNames)
                         {
-                            var selected = m_CurrentAvailableProcedureTypeNames.Contains(procedureTypeName);
-                            if (selected != EditorGUILayout.ToggleLeft(procedureTypeName, selected))
+                            var selected    = m_CurrentAvailableProcedureTypeNames.Contains(procedureTypeName);
+                            var displayName = $"{procedureTypeName}";
+
+                            if (selected == EditorGUILayout.ToggleLeft(displayName, selected)) continue;
+                            if (!selected)
                             {
-                                if (!selected)
-                                {
-                                    m_CurrentAvailableProcedureTypeNames.Add(procedureTypeName);
-                                    WriteAvailableProcedureTypeNames();
-                                }
-                                else if (procedureTypeName != m_EntranceProcedureTypeName.stringValue)
-                                {
-                                    m_CurrentAvailableProcedureTypeNames.Remove(procedureTypeName);
-                                    WriteAvailableProcedureTypeNames();
-                                }
+                                m_CurrentAvailableProcedureTypeNames.Add(procedureTypeName);
+                                WriteAvailableProcedureTypeNames();
+                            }
+                            else if (procedureTypeName != m_EntranceProcedureTypeName.stringValue)
+                            {
+                                m_CurrentAvailableProcedureTypeNames.Remove(procedureTypeName);
+                                WriteAvailableProcedureTypeNames();
                             }
                         }
                     }
@@ -74,11 +81,15 @@ namespace FuFramework.Procedure.Editor
                 {
                     EditorGUILayout.Separator();
 
-                    var selectedIndex = EditorGUILayout.Popup("入口流程", m_EntranceProcedureIndex, m_CurrentAvailableProcedureTypeNames.ToArray());
-                    if (selectedIndex != m_EntranceProcedureIndex)
+                    // 按优先级排序下拉选项
+                    var sortedAvailableProcedureNames = GetSortedProcedureNamesByPriority(m_CurrentAvailableProcedureTypeNames);
+                    var displayOptions                = sortedAvailableProcedureNames.Select(typeName => $"{typeName}").ToArray();
+
+                    var currentEntranceIndex = sortedAvailableProcedureNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
+                    var selectedIndex        = EditorGUILayout.Popup("入口流程", currentEntranceIndex, displayOptions);
+                    if (selectedIndex != currentEntranceIndex && selectedIndex >= 0)
                     {
-                        m_EntranceProcedureIndex = selectedIndex;
-                        m_EntranceProcedureTypeName.stringValue = m_CurrentAvailableProcedureTypeNames[selectedIndex];
+                        m_EntranceProcedureTypeName.stringValue = sortedAvailableProcedureNames[selectedIndex];
                     }
                 }
                 else
@@ -89,7 +100,6 @@ namespace FuFramework.Procedure.Editor
             EditorGUI.EndDisabledGroup();
 
             serializedObject.ApplyModifiedProperties();
-
             Repaint();
         }
 
@@ -102,7 +112,7 @@ namespace FuFramework.Procedure.Editor
         protected override void Enable()
         {
             m_AvailableProcedureTypeNames = serializedObject.FindProperty("m_AvailableProcedureTypeNames");
-            m_EntranceProcedureTypeName = serializedObject.FindProperty("m_EntranceProcedureTypeName");
+            m_EntranceProcedureTypeName   = serializedObject.FindProperty("m_EntranceProcedureTypeName");
             _RefreshTypeNames();
         }
 
@@ -112,14 +122,83 @@ namespace FuFramework.Procedure.Editor
         }
 
         /// <summary>
+        /// 根据优先级对流程名称进行排序
+        /// </summary>
+        private List<string> GetSortedProcedureNamesByPriority(List<string> procedureNames)
+        {
+            return procedureNames
+                   .OrderBy(GetProcedurePriority)
+                   .ThenBy(typeName => typeName) // 如果优先级相同，按名称排序
+                   .ToList();
+        }
+
+        /// <summary>
+        /// 获取流程的优先级
+        /// </summary>
+        private int GetProcedurePriority(string procedureTypeName)
+        {
+            // 如果已经在缓存中，直接返回
+            if (m_ProcedurePriorityCache.TryGetValue(procedureTypeName, out var priority))
+            {
+                return priority;
+            }
+
+            // 尝试从所有已加载的程序集中查找类型
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                                .SelectMany(assembly => assembly.GetTypes())
+                                .FirstOrDefault(t => t.FullName == procedureTypeName && typeof(ProcedureBase).IsAssignableFrom(t));
+
+            if (type != null)
+            {
+                try
+                {
+                    // 使用反射获取优先级属性
+                    var priorityProperty = type.GetProperty("Priority", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                    if (priorityProperty != null && priorityProperty.PropertyType == typeof(int))
+                    {
+                        // 创建实例并获取优先级
+                        if (Activator.CreateInstance(type) is ProcedureBase instance)
+                        {
+                            priority                                    = instance.Priority;
+                            m_ProcedurePriorityCache[procedureTypeName] = priority;
+                            return priority;
+                        }
+                    }
+
+                    // 如果无法通过实例获取，尝试获取默认值（对于抽象类）
+                    const int defaultPriority = 0;
+                    m_ProcedurePriorityCache[procedureTypeName] = defaultPriority;
+                    return defaultPriority;
+                }
+                catch
+                {
+                    // 如果出错，返回默认优先级
+                    m_ProcedurePriorityCache[procedureTypeName] = 0;
+                    return 0;
+                }
+            }
+
+            // 如果找不到类型，返回默认优先级
+            m_ProcedurePriorityCache[procedureTypeName] = 0;
+            return 0;
+        }
+
+        /// <summary>
         /// 刷新流程类型名称列表
         /// </summary>
         private void _RefreshTypeNames()
         {
+            // 清空缓存
+            m_ProcedurePriorityCache.Clear();
+
             m_ProcedureTypeNames = Type.GetRuntimeTypeNames(typeof(ProcedureBase));
             ReadAvailableProcedureTypeNames();
+
             var oldCount = m_CurrentAvailableProcedureTypeNames.Count;
-            m_CurrentAvailableProcedureTypeNames = m_CurrentAvailableProcedureTypeNames.Where(x => m_ProcedureTypeNames.Contains(x)).ToList();
+            m_CurrentAvailableProcedureTypeNames = m_CurrentAvailableProcedureTypeNames
+                                                   .Where(x => m_ProcedureTypeNames.Contains(x))
+                                                   .ToList();
+
             if (m_CurrentAvailableProcedureTypeNames.Count != oldCount)
             {
                 WriteAvailableProcedureTypeNames();
@@ -127,7 +206,8 @@ namespace FuFramework.Procedure.Editor
             else if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
             {
                 m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
-                if (m_EntranceProcedureIndex < 0) m_EntranceProcedureTypeName.stringValue = null;
+                if (m_EntranceProcedureIndex < 0) 
+                    m_EntranceProcedureTypeName.stringValue = null;
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -154,7 +234,6 @@ namespace FuFramework.Procedure.Editor
             m_AvailableProcedureTypeNames.ClearArray();
             if (m_CurrentAvailableProcedureTypeNames == null) return;
 
-            m_CurrentAvailableProcedureTypeNames.Sort();
             var count = m_CurrentAvailableProcedureTypeNames.Count;
             for (var i = 0; i < count; i++)
             {
@@ -162,9 +241,15 @@ namespace FuFramework.Procedure.Editor
                 m_AvailableProcedureTypeNames.GetArrayElementAtIndex(i).stringValue = m_CurrentAvailableProcedureTypeNames[i];
             }
 
-            if (string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue)) return;
-            m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
-            if (m_EntranceProcedureIndex < 0) m_EntranceProcedureTypeName.stringValue = null;
+            // 更新入口流程索引
+            if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
+            {
+                m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
+                if (m_EntranceProcedureIndex < 0)
+                {
+                    m_EntranceProcedureTypeName.stringValue = null;
+                }
+            }
         }
     }
 }

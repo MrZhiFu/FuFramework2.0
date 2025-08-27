@@ -1,12 +1,12 @@
-﻿using System.Collections;
-using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
-using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+﻿using YooAsset;
 using UnityEngine;
-using YooAsset;
+using System.Collections;
+using Cysharp.Threading.Tasks;
+using FuFramework.Fsm.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {
@@ -19,6 +19,8 @@ namespace Unity.Startup.Procedure
     /// </summary>
     public class ProcedureUpdatePackageManifest : ProcedureBase
     {
+        public override int Priority => 7; // 显示优先级
+        
         protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -50,19 +52,19 @@ namespace Unity.Startup.Procedure
         {
             yield return new WaitForSecondsRealtime(0.1f);
 
-            var defalutPackage = YooAssets.GetPackage(AssetManager.Instance.DefaultPackageName);
+            var defaultPackage = YooAssets.GetPackage(AssetManager.Instance.DefaultPackageName);
             UpdatePackageManifestOperation operation;
 
             if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 // 编辑器模拟模式下，强制使用Simulate版本
-                operation = defalutPackage.UpdatePackageManifestAsync("Simulate");
+                operation = defaultPackage.UpdatePackageManifestAsync("Simulate");
             }
             else
             {
                 // 联机模式下，获取流程中存储的版本数据
                 var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
-                operation = defalutPackage.UpdatePackageManifestAsync(versionStr.Value);
+                operation = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
             }
 
             yield return operation;
@@ -71,7 +73,7 @@ namespace Unity.Startup.Procedure
             if (operation.Status == EOperationStatus.Succeed)
             {
                 // 更新成功，进入创建资源下载器流程
-                ChangeState<ProcedureUpdateCreateDownloader>(procedureOwner);
+                ChangeState<ProcedureCreateDownloader>(procedureOwner);
                 procedureOwner.RemoveData(AssetManager.Instance.DefaultPackageName + "Version");
             }
             else

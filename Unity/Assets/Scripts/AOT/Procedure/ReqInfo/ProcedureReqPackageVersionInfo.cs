@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.GlobalConfig.Runtime;
-using FuFramework.Procedure.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Web.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
+using FuFramework.Procedure.Runtime;
+using FuFramework.GlobalConfig.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -20,8 +20,10 @@ namespace Unity.Startup.Procedure
     /// 2. 若获取成功，则将版本信息保存到流程管理器的Data变量中，并进入资源更新初始化流程。
     /// 3. 若获取失败，则等待一段时间后重新获取。
     /// </summary>
-    public class ProcedureGetAssetPkgVersionInfoFromGmServer : ProcedureBase
+    public class ProcedureReqPackageVersionInfo : ProcedureBase
     {
+        public override int Priority => 4; // 优先级。
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -72,7 +74,7 @@ namespace Unity.Startup.Procedure
                     var versionStr = ReferencePool.Acquire<VarString>();
                     versionStr.SetValue(assetPackageVersion.Version);
                     procedureOwner.SetData(AssetManager.Instance.DefaultPackageName + "Version", versionStr);
-                    ChangeState<ProcedureUpdateInitResPackage>(procedureOwner);
+                    ChangeState<ProcedureInitPackage>(procedureOwner);
                 }
             }
             catch (Exception e)

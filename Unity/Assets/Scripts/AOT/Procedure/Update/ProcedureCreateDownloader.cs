@@ -1,9 +1,9 @@
-﻿using FuFramework.Asset.Runtime;
+﻿using YooAsset;
 using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
-using YooAsset;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {
@@ -12,11 +12,13 @@ namespace Unity.Startup.Procedure
     /// 主要作用是：
     /// 1. 创建资源下载器。
     /// </summary>
-    public class ProcedureUpdateCreateDownloader : ProcedureBase
+    public class ProcedureCreateDownloader : ProcedureBase
     {
         private const int DownloadingMaxNum = 10; // 同时下载的最大文件数
         private const int FailedTryAgain    = 3;  // 失败后重试次数
 
+        public override int Priority => 8; // 显示优先级
+        
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
@@ -55,7 +57,7 @@ namespace Unity.Startup.Procedure
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
 
                 GameApp.Event.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
-                ChangeState<ProcedureUpdateDownload>(procedureOwner);
+                ChangeState<ProcedureDownloadPackage>(procedureOwner);
             }
         }
     }
