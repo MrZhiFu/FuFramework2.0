@@ -8,7 +8,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
-namespace Unity.Startup.Procedure
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--获取资源包版本号流程。

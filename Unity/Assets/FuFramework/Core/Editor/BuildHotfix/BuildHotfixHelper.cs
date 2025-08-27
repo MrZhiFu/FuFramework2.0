@@ -20,7 +20,7 @@ namespace FuFramework.Core.Editor
         private static readonly string ScriptAssembliesDir = $"HybridCLRData/HotUpdateDlls/{EditorUserBuildSettings.activeBuildTarget}";
 
         // 热更DLL名称
-        private static readonly string[] HotfixDlls = { "Unity.Hotfix.dll" };
+        private static readonly string[] HotfixDlls = { "Game.Hotfix.dll" };
 
         // 热更代码存放位置
         private const string CodeDir    = "Assets/Bundles/Code/";

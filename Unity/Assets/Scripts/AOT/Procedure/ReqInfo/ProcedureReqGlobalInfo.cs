@@ -10,7 +10,8 @@ using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace Unity.Startup.Procedure
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 获取服务端全局信息流程。

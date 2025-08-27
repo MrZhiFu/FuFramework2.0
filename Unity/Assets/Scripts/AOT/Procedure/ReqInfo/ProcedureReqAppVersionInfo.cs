@@ -1,7 +1,7 @@
 using System;
 using YooAsset;
 using UnityEngine;
-using AOT.UI.View.Launcher;
+using Launcher.UI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
@@ -14,7 +14,8 @@ using FuFramework.Localization.Runtime;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace Unity.Startup.Procedure
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 获取服务端App版本信息流程。

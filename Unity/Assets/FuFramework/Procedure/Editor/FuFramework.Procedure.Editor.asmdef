@@ -4,9 +4,8 @@
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",
-        "",
-        "FuFramework.Procedure.Runtime",
-        "FuFramework.FSM.Runtime"
+        "FuFramework.FSM.Runtime",
+        "FuFramework.Procedure.Runtime"
     ],
     "includePlatforms": [
         "Editor"

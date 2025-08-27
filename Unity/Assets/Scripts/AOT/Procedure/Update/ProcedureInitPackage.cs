@@ -6,7 +6,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 
-namespace Unity.Startup.Procedure
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--初始化资源包流程。

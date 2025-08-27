@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace Hotfix.UI.View.PopWin
+namespace Hotfix.UI.PopWin
 {
     public partial class WinDialogWithoutButton
     {

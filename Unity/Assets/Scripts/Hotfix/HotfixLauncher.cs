@@ -1,21 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using SimpleJSON;
+using UnityEngine;
+using Hotfix.Proto;
+using Hotfix.Config;
+using Hotfix.UI.Login;
+using Hotfix.Config.Tables;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Network.Runtime;
-using Hotfix.Proto;
-using SimpleJSON;
-using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using Hotfix.Config;
-using Hotfix.Config.Tables;
-using Hotfix.UI;
-using Hotfix.UI.View.Login;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_BINARY_CONFIG
-using LuBan.Runtime;
 #endif
 
 namespace Hotfix

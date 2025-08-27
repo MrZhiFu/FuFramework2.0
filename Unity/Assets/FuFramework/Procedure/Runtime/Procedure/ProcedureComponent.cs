@@ -79,7 +79,7 @@ namespace FuFramework.Procedure.Runtime
 
             if (m_EntranceProcedure == null)
             {
-                Log.Error("Entrance procedure is invalid.");
+                Log.Error("入口流程类型不存在!.");
                 yield break;
             }
 

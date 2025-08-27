@@ -1,5 +1,5 @@
 {
-    "name": "Unity.Startup",
+    "name": "Game.Launcher",
     "rootNamespace": "",
     "references": [
         "FairyGUI",

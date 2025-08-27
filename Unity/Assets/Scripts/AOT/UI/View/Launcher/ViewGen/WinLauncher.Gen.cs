@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace AOT.UI.View.Launcher
+namespace Launcher.UI
 {
     public partial class WinLauncher
     {

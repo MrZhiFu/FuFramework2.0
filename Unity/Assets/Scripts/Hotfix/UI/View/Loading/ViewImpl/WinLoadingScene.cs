@@ -1,7 +1,7 @@
 using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI.View.Loading
+namespace Hotfix.UI.Loading
 {
     public partial class WinLoadingScene : ViewBase
     {

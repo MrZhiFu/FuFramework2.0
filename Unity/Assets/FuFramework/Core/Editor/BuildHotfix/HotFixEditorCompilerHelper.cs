@@ -15,7 +15,7 @@ namespace GameFrameX.Editor
         [MenuItem("GameFrameX/Build/HotFix Editor Compiler Remove(标记HotFix.asmdef程序集在Editor环境下也可使用)", false, 15)]
         public static void RemoveEditorInExcludePlatforms()
         {
-            const string path = "Assets/Scripts/Hotfix/Unity.HotFix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";
             HotFixAssemblyDefinitionHelper.RemoveEditorInExcludePlatforms(path);
         }
 
@@ -25,7 +25,7 @@ namespace GameFrameX.Editor
         [MenuItem("GameFrameX/Build/HotFix Editor Compiler Add(标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用)", false, 16)]
         public static void AddEditorInExcludePlatforms()
         {
-            const string path = "Assets/Scripts/Hotfix/Unity.HotFix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";
             HotFixAssemblyDefinitionHelper.AddEditorInExcludePlatforms(path);
         }
     }

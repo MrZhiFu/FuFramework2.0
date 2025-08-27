@@ -5,7 +5,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
-namespace Unity.Startup.Procedure
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--创建资源下载器流程。

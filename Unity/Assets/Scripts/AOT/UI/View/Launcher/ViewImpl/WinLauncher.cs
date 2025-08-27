@@ -2,7 +2,7 @@ using FairyGUI;
 using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace AOT.UI.View.Launcher
+namespace Launcher.UI
 {
     public partial class WinLauncher : ViewBase
     {

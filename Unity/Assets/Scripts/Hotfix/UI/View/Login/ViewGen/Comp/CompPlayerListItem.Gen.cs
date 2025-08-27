@@ -10,7 +10,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Event.Runtime;
 
-namespace Hotfix.UI.View.Login
+namespace Hotfix.UI.Login
 {
     public partial class CompPlayerListItem : GComponent, ICustomComp
     {

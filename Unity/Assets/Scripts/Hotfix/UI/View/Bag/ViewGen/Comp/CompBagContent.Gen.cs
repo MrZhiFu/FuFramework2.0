@@ -10,7 +10,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Event.Runtime;
 
-namespace Hotfix.UI.View.Bag
+namespace Hotfix.UI.Bag
 {
     public partial class CompBagContent : GComponent, ICustomComp
     {

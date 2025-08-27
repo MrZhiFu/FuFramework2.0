@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace Hotfix.UI.View.Main
+namespace Hotfix.UI.Main
 {
     public partial class WinMain
     {

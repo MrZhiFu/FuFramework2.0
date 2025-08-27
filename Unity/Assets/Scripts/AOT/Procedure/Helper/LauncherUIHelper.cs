@@ -1,13 +1,13 @@
-﻿using AOT.UI.View.Launcher;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
+using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace Unity.Startup.Procedure
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更进度显示UI帮助类

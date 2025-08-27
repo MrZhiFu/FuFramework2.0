@@ -11,7 +11,8 @@ using FuFramework.GlobalConfig.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace Unity.Startup.Procedure
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 获取服务端默认资源包的版本信息流程。

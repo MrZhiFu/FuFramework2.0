@@ -20,9 +20,9 @@ namespace FuFramework.Procedure.Editor
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
         private SerializedProperty m_EntranceProcedureTypeName;   // 入口流程类型名称
 
-        private string[]     m_ProcedureTypeNames;                 // 所有流程类型名称列表
-        private List<string> m_CurrentAvailableProcedureTypeNames; // 当前可用的流程类型名称列表
-        private int          m_EntranceProcedureIndex = -1;        // 入口流程索引
+        private string[]     m_ProcedureTypeNames;          // 所有流程类型名称列表
+        private List<string> m_SelectedProcedureTypeNames;  // 已选择的流程类型名称列表
+        private int          m_EntranceProcedureIndex = -1; // 入口流程索引
 
 
         private readonly Dictionary<string, int> m_ProcedurePriorityCache = new(); // 缓存类型和类型显示优先级的映射
@@ -32,7 +32,8 @@ namespace FuFramework.Procedure.Editor
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            var procedureComp = (ProcedureComponent)target;
+            var procedureComp = target as ProcedureComponent;
+            if (!procedureComp) return;
 
             if (string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
             {
@@ -51,21 +52,21 @@ namespace FuFramework.Procedure.Editor
                     EditorGUILayout.BeginVertical("box");
                     {
                         // 按优先级排序显示
-                        var sortedProcedureNames = GetSortedProcedureNamesByPriority(m_CurrentAvailableProcedureTypeNames);
+                        var sortedProcedureNames = GetSortedProcedureNamesByPriority(m_ProcedureTypeNames.ToList());
                         foreach (var procedureTypeName in sortedProcedureNames)
                         {
-                            var selected    = m_CurrentAvailableProcedureTypeNames.Contains(procedureTypeName);
+                            var selected    = m_SelectedProcedureTypeNames.Contains(procedureTypeName);
                             var displayName = $"{procedureTypeName}";
 
                             if (selected == EditorGUILayout.ToggleLeft(displayName, selected)) continue;
                             if (!selected)
                             {
-                                m_CurrentAvailableProcedureTypeNames.Add(procedureTypeName);
+                                m_SelectedProcedureTypeNames.Add(procedureTypeName);
                                 WriteAvailableProcedureTypeNames();
                             }
                             else if (procedureTypeName != m_EntranceProcedureTypeName.stringValue)
                             {
-                                m_CurrentAvailableProcedureTypeNames.Remove(procedureTypeName);
+                                m_SelectedProcedureTypeNames.Remove(procedureTypeName);
                                 WriteAvailableProcedureTypeNames();
                             }
                         }
@@ -77,12 +78,12 @@ namespace FuFramework.Procedure.Editor
                     EditorGUILayout.HelpBox("没有找到可用的流程类型!", MessageType.Warning);
                 }
 
-                if (m_CurrentAvailableProcedureTypeNames.Count > 0)
+                if (m_SelectedProcedureTypeNames.Count > 0)
                 {
                     EditorGUILayout.Separator();
 
                     // 按优先级排序下拉选项
-                    var sortedAvailableProcedureNames = GetSortedProcedureNamesByPriority(m_CurrentAvailableProcedureTypeNames);
+                    var sortedAvailableProcedureNames = GetSortedProcedureNamesByPriority(m_ProcedureTypeNames.ToList());
                     var displayOptions                = sortedAvailableProcedureNames.Select(typeName => $"{typeName}").ToArray();
 
                     var currentEntranceIndex = sortedAvailableProcedureNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
@@ -194,18 +195,18 @@ namespace FuFramework.Procedure.Editor
             m_ProcedureTypeNames = Type.GetRuntimeTypeNames(typeof(ProcedureBase));
             ReadAvailableProcedureTypeNames();
 
-            var oldCount = m_CurrentAvailableProcedureTypeNames.Count;
-            m_CurrentAvailableProcedureTypeNames = m_CurrentAvailableProcedureTypeNames
-                                                   .Where(x => m_ProcedureTypeNames.Contains(x))
-                                                   .ToList();
+            var oldCount = m_SelectedProcedureTypeNames.Count;
+            m_SelectedProcedureTypeNames = m_SelectedProcedureTypeNames
+                                           .Where(x => m_ProcedureTypeNames.Contains(x))
+                                           .ToList();
 
-            if (m_CurrentAvailableProcedureTypeNames.Count != oldCount)
+            if (m_SelectedProcedureTypeNames.Count != oldCount)
             {
                 WriteAvailableProcedureTypeNames();
             }
             else if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
             {
-                m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
+                m_EntranceProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
                 if (m_EntranceProcedureIndex < 0)
                     m_EntranceProcedureTypeName.stringValue = null;
             }
@@ -218,11 +219,11 @@ namespace FuFramework.Procedure.Editor
         /// </summary>
         private void ReadAvailableProcedureTypeNames()
         {
-            m_CurrentAvailableProcedureTypeNames = new List<string>();
+            m_SelectedProcedureTypeNames = new List<string>();
             var count = m_AvailableProcedureTypeNames.arraySize;
             for (var i = 0; i < count; i++)
             {
-                m_CurrentAvailableProcedureTypeNames.Add(m_AvailableProcedureTypeNames.GetArrayElementAtIndex(i).stringValue);
+                m_SelectedProcedureTypeNames.Add(m_AvailableProcedureTypeNames.GetArrayElementAtIndex(i).stringValue);
             }
         }
 
@@ -232,19 +233,19 @@ namespace FuFramework.Procedure.Editor
         private void WriteAvailableProcedureTypeNames()
         {
             m_AvailableProcedureTypeNames.ClearArray();
-            if (m_CurrentAvailableProcedureTypeNames == null) return;
+            if (m_SelectedProcedureTypeNames == null) return;
 
-            var count = m_CurrentAvailableProcedureTypeNames.Count;
+            var count = m_SelectedProcedureTypeNames.Count;
             for (var i = 0; i < count; i++)
             {
                 m_AvailableProcedureTypeNames.InsertArrayElementAtIndex(i);
-                m_AvailableProcedureTypeNames.GetArrayElementAtIndex(i).stringValue = m_CurrentAvailableProcedureTypeNames[i];
+                m_AvailableProcedureTypeNames.GetArrayElementAtIndex(i).stringValue = m_SelectedProcedureTypeNames[i];
             }
 
             // 更新入口流程索引
             if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
             {
-                m_EntranceProcedureIndex = m_CurrentAvailableProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
+                m_EntranceProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
                 if (m_EntranceProcedureIndex < 0)
                 {
                     m_EntranceProcedureTypeName.stringValue = null;

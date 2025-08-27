@@ -6,7 +6,8 @@ using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
-namespace Unity.Startup.Procedure
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 代码热修复辅助类。
@@ -17,7 +18,7 @@ namespace Unity.Startup.Procedure
         /// <summary>
         /// 热修复程序集名称
         /// </summary>
-        private const string HotfixName = "Unity.Hotfix";
+        private const string HotfixName = "Game.Hotfix";
 
         /// <summary>
         /// 启动代码热修复
@@ -40,7 +41,7 @@ namespace Unity.Startup.Procedure
                 return;
             }
 
-            // 非编辑器模式下，加载AOT DLL，加载Unity.Hotfix.dll，运行入口函数
+            // 非编辑器模式下，加载AOT DLL，加载Game.Hotfix.dll，运行入口函数
             Log.Info("开始加载AOT DLL");
            
             var aotDlls = AOTGenericReferences.PatchedAOTAssemblyList.ToArray();
@@ -54,7 +55,7 @@ namespace Unity.Startup.Procedure
 
             Log.Info("结束加载AOT DLL");
 
-            Log.Info("开始加载Unity.Hotfix.dll");
+            Log.Info("开始加载Game.Hotfix.dll");
             var assetHotfixDllPath            = Utility.Asset.Path.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
             var assetHotfixDllOperationHandle = await AssetManager.Instance.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
             var assemblyDataHotfixDll         = assetHotfixDllOperationHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;

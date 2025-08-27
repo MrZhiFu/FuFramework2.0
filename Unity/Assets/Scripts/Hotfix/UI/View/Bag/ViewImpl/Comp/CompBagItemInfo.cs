@@ -8,7 +8,7 @@ using Hotfix.Manager;
 using Hotfix.Proto;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI.View.Bag
+namespace Hotfix.UI.Bag
 {
     public partial class CompBagItemInfo
     {

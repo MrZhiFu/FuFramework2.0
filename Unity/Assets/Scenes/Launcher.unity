@@ -990,18 +990,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   componentType: FuFramework.Procedure.Runtime.ProcedureManager
   m_AvailableProcedureTypeNames:
-  - Unity.Startup.Procedure.ProcedureCreateDownloader
-  - Unity.Startup.Procedure.ProcedureDownloadPackage
-  - Unity.Startup.Procedure.ProcedureGetPackageVersion
-  - Unity.Startup.Procedure.ProcedureHotfix
-  - Unity.Startup.Procedure.ProcedureInitPackage
-  - Unity.Startup.Procedure.ProcedureLauncher
-  - Unity.Startup.Procedure.ProcedureReqAppVersionInfo
-  - Unity.Startup.Procedure.ProcedureReqGlobalInfo
-  - Unity.Startup.Procedure.ProcedureReqPackageVersionInfo
-  - Unity.Startup.Procedure.ProcedureUpdateDone
-  - Unity.Startup.Procedure.ProcedureUpdatePackageManifest
-  m_EntranceProcedureTypeName: Unity.Startup.Procedure.ProcedureLauncher
+  - Launcher.Procedure.ProcedureLauncher
+  - Launcher.Procedure.ProcedureReqGlobalInfo
+  - Launcher.Procedure.ProcedureReqAppVersionInfo
+  - Launcher.Procedure.ProcedureReqPackageVersionInfo
+  - Launcher.Procedure.ProcedureInitPackage
+  - Launcher.Procedure.ProcedureCreateDownloader
+  - Launcher.Procedure.ProcedureUpdatePackageManifest
+  - Launcher.Procedure.ProcedureGetPackageVersion
+  - Launcher.Procedure.ProcedureDownloadPackage
+  - Launcher.Procedure.ProcedureUpdateDone
+  - Launcher.Procedure.ProcedureHotfix
+  m_EntranceProcedureTypeName: Launcher.Procedure.ProcedureLauncher
 --- !u!114 &1681186185
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace Hotfix.UI.View.Loading
+namespace Hotfix.UI.Loading
 {
     public partial class WinLoadingScene
     {

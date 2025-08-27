@@ -2,10 +2,10 @@ using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.UI.Runtime;
 using Hotfix.Manager;
-using Hotfix.UI.View.Bag;
+using Hotfix.UI.Bag;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI.View.Main
+namespace Hotfix.UI.Main
 {
     public partial class WinMain : ViewBase
     {

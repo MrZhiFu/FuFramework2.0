@@ -7,7 +7,7 @@ using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 
-namespace Hotfix.UI.View.Login
+namespace Hotfix.UI.Login
 {
     /// <summary>
     /// 自定义组件绑定器。

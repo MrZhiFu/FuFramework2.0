@@ -25,7 +25,7 @@ namespace FuFramework.Core.Editor
             "Mono".ToLower(),
             "System".ToLower(),
             "dnlib".ToLower(),
-            "Unity.Hotfix".ToLower(),
+            "Game.Hotfix".ToLower(),
             "Unity.Baselib".ToLower(),
             ".Editor".ToLower(),
             "JetBrains".ToLower(),
