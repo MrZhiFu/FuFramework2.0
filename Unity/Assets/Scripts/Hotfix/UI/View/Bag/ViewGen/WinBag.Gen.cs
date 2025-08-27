@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace Hotfix.UI.Bag
+namespace Hotfix.UI
 {
     public partial class WinBag
     {

@@ -2,7 +2,7 @@
 using UnityEngine;
 using Hotfix.Proto;
 using Hotfix.Config;
-using Hotfix.UI.Login;
+using Hotfix.UI;
 using Hotfix.Config.Tables;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;

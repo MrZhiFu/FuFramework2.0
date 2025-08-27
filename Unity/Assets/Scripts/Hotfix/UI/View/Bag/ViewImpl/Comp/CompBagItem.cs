@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI.Bag
+namespace Hotfix.UI
 {
     public partial class CompBagItem
     {

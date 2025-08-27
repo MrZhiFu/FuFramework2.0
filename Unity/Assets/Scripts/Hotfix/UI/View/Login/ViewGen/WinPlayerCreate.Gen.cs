@@ -5,7 +5,7 @@
 
 using FairyGUI;
 
-namespace Hotfix.UI.Login
+namespace Hotfix.UI
 {
     public partial class WinPlayerCreate
     {

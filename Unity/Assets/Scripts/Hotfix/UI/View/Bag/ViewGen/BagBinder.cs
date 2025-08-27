@@ -7,7 +7,7 @@ using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 
-namespace Hotfix.UI.Bag
+namespace Hotfix.UI
 {
     /// <summary>
     /// 自定义组件绑定器。

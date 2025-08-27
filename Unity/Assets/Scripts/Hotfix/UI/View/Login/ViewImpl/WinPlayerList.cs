@@ -10,10 +10,10 @@ using FuFramework.Entry.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;
-using Hotfix.UI.Main;
+using Hotfix.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI.Login
+namespace Hotfix.UI
 {
     public partial class WinPlayerList : ViewBase
     {
