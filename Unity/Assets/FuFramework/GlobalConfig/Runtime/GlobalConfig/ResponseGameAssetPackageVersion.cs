@@ -19,6 +19,11 @@ namespace FuFramework.GlobalConfig.Runtime
         public string Version { get; set; }
 
         /// <summary>
+        /// 游戏版本
+        /// </summary>
+        public string AppVersion { get; set; }
+
+        /// <summary>
         /// 资源包名称
         /// </summary>
         public string AssetPackageName { get; set; }
@@ -37,11 +42,6 @@ namespace FuFramework.GlobalConfig.Runtime
         /// 包名
         /// </summary>
         public string PackageName { get; set; }
-
-        /// <summary>
-        /// 游戏版本
-        /// </summary>
-        public string AppVersion { get; set; }
 
         /// <summary>
         /// 渠道名称

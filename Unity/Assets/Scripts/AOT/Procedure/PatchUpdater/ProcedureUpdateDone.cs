@@ -14,7 +14,7 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-            Log.Info("<color=#43f656>------进入热更流程--更新完毕-----</color>");
+            Log.Info("<color=#43f656>------热更流程更新完毕-----</color>");
             
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.PatchDone));
 
@@ -22,7 +22,7 @@ namespace Unity.Startup.Procedure
             LauncherUIHelper.SetProgressUpdateFinish();
             LauncherUIHelper.SetTipText(string.Empty);
 
-            Log.Info("资源热更流程更新完毕，进入游戏逻辑启动流程");
+            // 资源热更流程更新完毕，进入代码热修复流程;
             ChangeState<ProcedureHotfix>(procedureOwner);
         }
     }

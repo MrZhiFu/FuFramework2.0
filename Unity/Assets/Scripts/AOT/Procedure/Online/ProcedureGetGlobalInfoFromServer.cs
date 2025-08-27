@@ -29,15 +29,14 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入获取服务端全局信息流程-----</color>");
             
-            // 热更模式
-            GetGlobalInfo(procedureOwner);
+            ReqGlobalInfo(procedureOwner);
         }
 
         /// <summary>
-        /// 请求全局信息，包括：服务器地址、资源版本地址、内容信息s
+        /// 请求服务端全局信息，包括：App版本检查地址、资源版本检查地址、额外内容信息
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async void GetGlobalInfo(IFsm<IProcedureManager> procedureOwner)
+        private async void ReqGlobalInfo(IFsm<IProcedureManager> procedureOwner)
         {
             // 获取后台服务端全局信息的请求参数
             var reqBaseParams = HttpHelper.GetBaseParams();
@@ -57,7 +56,7 @@ namespace Unity.Startup.Procedure
 
                     // 等待3秒后重新获取
                     await UniTask.Delay(3000);
-                    GetGlobalInfo(procedureOwner);
+                    ReqGlobalInfo(procedureOwner);
                 }
                 else
                 {
@@ -83,7 +82,7 @@ namespace Unity.Startup.Procedure
 
                 // 等待3秒后重新获取
                 await UniTask.Delay(3000);
-                GetGlobalInfo(procedureOwner);
+                ReqGlobalInfo(procedureOwner);
             }
         }
     }

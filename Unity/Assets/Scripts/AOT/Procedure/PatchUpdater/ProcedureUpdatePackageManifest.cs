@@ -22,23 +22,29 @@ namespace Unity.Startup.Procedure
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------热更流程--更新资源清单流程-----</color>");
-            
+
+            // 模拟器环境下，直接进入更新完成流程
+            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
+            {
+                ChangeState<ProcedureUpdateDone>(procedureOwner);
+                return;
+            }
+
+            // 离线单机模式下的更新资源清单
             if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
-                // 离线单机模式下的更新资源清单
                 var pkgVersion = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
-                var package    = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
-                var operation  = package.UpdatePackageManifestAsync(pkgVersion.Value);
+                var package = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
+                var operation = package.UpdatePackageManifestAsync(pkgVersion.Value);
                 await operation.ToUniTask();
                 ChangeState<ProcedureUpdateDone>(procedureOwner);
                 return;
             }
 
-            // 联机模式下的更新资源清单流程
+            // 其他模式下的更新资源清单流程
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
             await UpdateManifest(procedureOwner).ToUniTask();
         }
-
 
         /// <summary>
         /// 更新资源清单
@@ -59,13 +65,12 @@ namespace Unity.Startup.Procedure
             }
             else
             {
-                // 联机模式下，获取流程中存储的版本数据
+                // 其他模式下，获取流程中存储的版本数据
                 var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
                 operation = buildInPackage.UpdatePackageManifestAsync(versionStr.Value);
             }
 
             yield return operation;
-
 
             if (operation.Status == EOperationStatus.Succeed)
             {
