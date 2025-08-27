@@ -1,16 +1,17 @@
 using System;
+using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using UnityEngine.SceneManagement;
-using YooAsset;
 using Object = UnityEngine.Object;
+using FuFramework.ModuleSetting.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 资源组件。
+    /// 资源管理器。
     /// </summary>
     public partial class AssetManager : MonoSingleton<AssetManager>
     {
@@ -20,39 +21,10 @@ namespace FuFramework.Asset.Runtime
         public string DefaultPackageName { get; private set; } = "DefaultPackage";
 
         /// <summary>
-        /// 下载最大并发数量
-        /// </summary>
-        public int DownloadingMaxNum { get; set; }
-
-        /// <summary>
-        /// 下载失败重试次数
-        /// </summary>
-        public int FailedTryAgain { get; set; }
-
-        /// <summary>
-        /// 文件校验等级
-        /// </summary>
-        public EFileVerifyLevel VerifyLevel { get; set; }
-
-        /// <summary>
-        /// 每帧执行消耗的最大时间切片（单位：毫秒）。
-        /// </summary>
-        public long Milliseconds { get; set; }
-
-        /// <summary>
         /// 获取或设置运行模式。
         /// </summary>
         public EPlayMode PlayMode { get; private set; }
 
-        /// <summary>
-        /// 获取资源只读区路径。
-        /// </summary>
-        public string ReadOnlyPath { get; private set; }
-
-        /// <summary>
-        /// 获取资源读写区路径。
-        /// </summary>
-        public string ReadWritePath { get; private set; }
 
         /// <summary>
         /// 初始化
@@ -63,7 +35,7 @@ namespace FuFramework.Asset.Runtime
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
             if (!assetSetting) throw new FuException("资源模块配置数据为空!");
 
-            PlayMode           = assetSetting.PlayMode;
+            PlayMode = assetSetting.PlayMode;
             DefaultPackageName = assetSetting.DefaultPackage.PackageName;
 
 #if !UNITY_EDITOR
@@ -78,61 +50,33 @@ namespace FuFramework.Asset.Runtime
             Log.Info($"资源系统运行模式：{PlayMode}");
 
             BetterStreamingAssets.Initialize();
-            
+
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(30); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-
-            // // 遍历配置，初始化所有资源包
-            // foreach (var packageInfo in assetSetting.AllPackages)
-            // {
-            //     InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
-            // }
 
             Log.Info("资源系统初始化完毕！");
         }
 
         /// <summary>
-        /// 初始化操作。
+        /// 异步初始化资源包。
         /// </summary>
-        /// <param name="packageName">包名称</param>
-        /// <param name="hostServerURL">热更链接URL。</param>
-        /// <param name="fallbackHostServerURL">备用热更链接URL</param>
-        /// <param name="isDefaultPackage">是否是默认包</param>
+        /// <param name="packageInfo">资源包信息，包括包名称，下载地址，备用下载地址等</param>
         /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string hostServerURL, string fallbackHostServerURL, bool isDefaultPackage = false)
+        public UniTask InitPackageAsync(AssetPackageInfo packageInfo)
         {
-            var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            FuGuard.NotNull(packageName,           nameof(packageName));
-            FuGuard.NotNull(hostServerURL,         nameof(hostServerURL));
-            FuGuard.NotNull(fallbackHostServerURL, nameof(fallbackHostServerURL));
+            FuGuard.NotNull(packageInfo, nameof(packageInfo));
 
             // 创建默认的资源包
-            var resourcePackage = YooAssets.TryGetPackage(packageName);
+            var resourcePackage = YooAssets.TryGetPackage(packageInfo.PackageName);
             if (resourcePackage == null)
             {
-                resourcePackage = YooAssets.CreatePackage(packageName);
-                if (isDefaultPackage)
-                {
-                    // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-                    YooAssets.SetDefaultPackage(resourcePackage);
-                }
+                resourcePackage = YooAssets.CreatePackage(packageInfo.PackageName);
+                if (packageInfo.IsDefaultPackage)
+                    YooAssets.SetDefaultPackage(resourcePackage); // 设置资源包默认资源包
             }
 
-            var initializationOperationHandler = CreateInitOperationHandler(resourcePackage, hostServerURL, fallbackHostServerURL);
-            initializationOperationHandler.Completed += asyncOperationBase =>
-            {
-                if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
-                {
-                    taskCompletionSource.TrySetResult(true);
-                }
-                else
-                {
-                    taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
-                }
-            };
-            return taskCompletionSource.Task;
+            return CreateInitPackageTask(resourcePackage, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL).ToUniTask();
         }
-
 
         #region 异步加载子资源对象
 
@@ -144,7 +88,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
+            var assetHandle = YooAssets.LoadSubAssetsAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -158,7 +102,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(path, type);
+            var assetHandle = YooAssets.LoadSubAssetsAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -171,7 +115,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
+            var assetHandle = YooAssets.LoadSubAssetsAsync<T>(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -223,7 +167,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<RawFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(assetInfo);
+            var assetHandle = YooAssets.LoadRawFileAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -236,7 +180,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<RawFileHandle> LoadRawFileAsync(string path)
         {
             var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(path);
+            var assetHandle = YooAssets.LoadRawFileAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -277,7 +221,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AssetHandle> LoadAssetAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(assetInfo);
+            var assetHandle = YooAssets.LoadAssetAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -291,7 +235,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(path, type);
+            var assetHandle = YooAssets.LoadAssetAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -304,7 +248,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync<T>(path);
+            var assetHandle = YooAssets.LoadAllAssetsAsync<T>(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -318,7 +262,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(path, type);
+            var assetHandle = YooAssets.LoadAllAssetsAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -330,7 +274,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(path);
+            var assetHandle = YooAssets.LoadAllAssetsAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -342,7 +286,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(assetInfo);
+            var assetHandle = YooAssets.LoadAllAssetsAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -365,7 +309,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AssetHandle> LoadAssetAsync(string path)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(path);
+            var assetHandle = YooAssets.LoadAssetAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -379,7 +323,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync<T>(path);
+            var assetHandle = YooAssets.LoadAssetAsync<T>(path);
 
             void OnAssetHandleOnCompleted(AssetHandle handle)
             {
@@ -389,27 +333,6 @@ namespace FuFramework.Asset.Runtime
             assetHandle.Completed += OnAssetHandleOnCompleted;
             return taskCompletionSource.Task;
         }
-
-        /*
-        public async Task<TObject> LoadAssetTaskAsync<TObject>(string assetPath) where TObject : Object
-        {
-            ResourcePackage assetPackage = YooAssets.TryGetPackage(DefaultPackageName);
-            var handle = assetPackage.LoadAssetAsync<TObject>(assetPath);
-            await handle.Task;
-            if (handle == null || handle.AssetObject == null || handle.Status == EOperationStatus.Failed)
-            {
-                string errorMessage = Utility.Text.Format("Can not load asset '{0}'.", assetPath);
-                throw new GameFrameworkException(errorMessage);
-            }
-
-            var result = handle.AssetObject as TObject;
-            if (result == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("TObject '{0}' is invalid.", typeof(TObject).FullName));
-            }
-
-            return result;
-        }*/
 
         #endregion
 
@@ -519,7 +442,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SceneHandle>();
-            var sceneHandle          = YooAssets.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
+            var sceneHandle = YooAssets.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
             sceneHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -534,7 +457,7 @@ namespace FuFramework.Asset.Runtime
         public UniTask<SceneHandle> LoadSceneAsync(AssetInfo assetInfo, LoadSceneMode sceneMode, bool activateOnLoad = true)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SceneHandle>();
-            var sceneHandle          = YooAssets.LoadSceneAsync(assetInfo, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
+            var sceneHandle = YooAssets.LoadSceneAsync(assetInfo, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
             sceneHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -548,40 +471,28 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage CreateAssetsPackage(string packageName)
-        {
-            return YooAssets.CreatePackage(packageName);
-        }
+        public ResourcePackage CreateAssetsPackage(string packageName) => YooAssets.CreatePackage(packageName);
 
         /// <summary>
         /// 尝试获取资源包
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage TryGetAssetsPackage(string packageName)
-        {
-            return YooAssets.TryGetPackage(packageName);
-        }
+        public ResourcePackage TryGetAssetsPackage(string packageName) => YooAssets.TryGetPackage(packageName);
 
         /// <summary>
         /// 检查资源包是否存在
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public bool HasAssetsPackage(string packageName)
-        {
-            return YooAssets.TryGetPackage(packageName) != null;
-        }
+        public bool HasAssetsPackage(string packageName) => YooAssets.TryGetPackage(packageName) != null;
 
         /// <summary>
         /// 获取资源包
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage GetAssetsPackage(string packageName)
-        {
-            return YooAssets.GetPackage(packageName);
-        }
+        public ResourcePackage GetAssetsPackage(string packageName) => YooAssets.GetPackage(packageName);
 
         #endregion
 
@@ -606,7 +517,7 @@ namespace FuFramework.Asset.Runtime
         public void UnloadAsset(string packageName, string assetPath)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
-            FuGuard.NotNull(assetPath,   nameof(assetPath));
+            FuGuard.NotNull(assetPath, nameof(assetPath));
             var package = YooAssets.GetPackage(packageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -706,30 +617,6 @@ namespace FuFramework.Asset.Runtime
         /// <param name="resourcePackage">资源信息</param>
         /// <returns></returns>
         public void SetDefaultAssetsPackage(ResourcePackage resourcePackage) => YooAssets.SetDefaultPackage(resourcePackage);
-
-        #endregion
-
-        #region Set
-
-        /// <summary>
-        /// 设置资源只读区路径。
-        /// </summary>
-        /// <param name="readOnlyPath">资源只读区路径。</param>
-        public void SetReadOnlyPath(string readOnlyPath)
-        {
-            FuGuard.NotNull(readOnlyPath, nameof(readOnlyPath));
-            ReadOnlyPath = readOnlyPath;
-        }
-
-        /// <summary>
-        /// 设置资源读写区路径。
-        /// </summary>
-        /// <param name="readWritePath">资源读写区路径。</param>
-        public void SetReadWritePath(string readWritePath)
-        {
-            FuGuard.NotNull(readWritePath, nameof(readWritePath));
-            ReadWritePath = readWritePath;
-        }
 
         #endregion
     }

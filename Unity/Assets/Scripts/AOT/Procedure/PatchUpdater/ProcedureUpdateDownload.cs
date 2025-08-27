@@ -1,18 +1,18 @@
-﻿using System.Collections;
+﻿using YooAsset;
+using System.Collections;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using YooAsset;
+using FuFramework.Asset.Runtime;
+using FuFramework.Procedure.Runtime;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 热更流程--下载热更包。
+    /// 热更流程--下载热更资源包。
     /// 主要作用是：
-    /// 1. 下载热更包
+    /// 1. 下载热更资源包
     /// 2. 监听下载进度
     /// 3. 下载失败后，回到创建下载器的流程
     /// 4. 下载成功后，切换到更新完毕流程
@@ -21,13 +21,14 @@ namespace Unity.Startup.Procedure
     {
         private IFsm<IProcedureManager> _procedureOwner;
         
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-            _procedureOwner = procedureOwner;
+            Log.Info("<color=#43f656>------进入热更流程--下载热更资源包-----</color>");
             
+            _procedureOwner = procedureOwner;
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.DownloadWebFiles));
-            BeginDownload(procedureOwner).ToUniTask();
+            await BeginDownload(procedureOwner).ToUniTask();
         }
         
         /// <summary>
@@ -46,10 +47,7 @@ namespace Unity.Startup.Procedure
             yield return downloader;
 
             // 检测下载结果
-            if (downloader.Status != EOperationStatus.Succeed)
-            {
-                yield break;
-            }
+            if (downloader.Status != EOperationStatus.Succeed) yield break;
 
             // 下载完成，切换到更新完毕流程
             ChangeState<ProcedureUpdateDone>(procedureOwner);

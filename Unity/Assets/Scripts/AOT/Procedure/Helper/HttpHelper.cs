@@ -3,7 +3,6 @@ using FuFramework.Core.Runtime;
 using FuFramework.GetChannel.Runtime;
 using UnityEngine;
 
-
 /// <summary>
 /// Http网络请求后台辅助类。
 /// 用于给各个平台提供Http网络请求的基础参数，如语言、版本号、设备ID等。

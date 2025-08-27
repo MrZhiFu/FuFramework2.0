@@ -34,8 +34,7 @@ namespace FuFramework.Procedure.Editor
             }
             else if (EditorApplication.isPlaying)
             {
-                EditorGUILayout.LabelField("当前流程：",
-                    procedureComp.CurrentProcedure == null ? "None" : procedureComp.CurrentProcedure.GetType().ToString());
+                EditorGUILayout.LabelField("当前流程：", procedureComp.CurrentProcedure is null ? "None" : procedureComp.CurrentProcedure.GetType().ToString());
             }
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);

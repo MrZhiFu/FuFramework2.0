@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using FuFramework.Core.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Procedure.Runtime;
 
@@ -14,6 +15,8 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+            Log.Info("<color=#43f656>------进入代码热更流程-----</color>");
+            
             Start();
         }
 
