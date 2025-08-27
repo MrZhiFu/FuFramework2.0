@@ -27,26 +27,12 @@ namespace FuFramework.Procedure.Runtime
         /// <summary>
         /// 获取当前流程。
         /// </summary>
-        public ProcedureBase CurrentProcedure
-        {
-            get
-            {
-                if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
-                return m_ProcedureFsm.CurrentStateBase as ProcedureBase;
-            }
-        }
+        public ProcedureBase CurrentProcedure => m_ProcedureFsm?.CurrentStateBase as ProcedureBase;
 
         /// <summary>
         /// 获取当前流程持续时间。
         /// </summary>
-        public float CurrentProcedureTime
-        {
-            get
-            {
-                if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
-                return m_ProcedureFsm.CurrentStateTime;
-            }
-        }
+        public float CurrentProcedureTime => m_ProcedureFsm?.CurrentStateTime ?? 0;
 
         /// <summary>
         /// 流程管理器轮询。
