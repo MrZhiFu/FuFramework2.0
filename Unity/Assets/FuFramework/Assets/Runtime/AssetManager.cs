@@ -60,24 +60,22 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 异步初始化资源包。
         /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        /// <param name="downloadURL">下载地址</param>
-        /// <param name="fallbackDownloadURL">备用下载地址</param>
+        /// <param name="packageInfo">资源包信息，包括包名称，下载地址，备用下载地址等</param>
         /// <returns></returns>
-        public UniTask InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null)
+        public UniTask InitPackageAsync(AssetPackageInfo packageInfo)
         {
-            FuGuard.NotNullOrEmpty(packageName, nameof(packageName));
+            FuGuard.NotNull(packageInfo, nameof(packageInfo));
 
             // 创建默认的资源包
-            var resourcePackage = YooAssets.TryGetPackage(packageName);
+            var resourcePackage = YooAssets.TryGetPackage(packageInfo.PackageName);
             if (resourcePackage == null)
             {
-                resourcePackage = YooAssets.CreatePackage(packageName);
-                if (packageName != DefaultPackageName)
+                resourcePackage = YooAssets.CreatePackage(packageInfo.PackageName);
+                if (packageInfo.IsDefaultPackage)
                     YooAssets.SetDefaultPackage(resourcePackage); // 设置资源包默认资源包
             }
 
-            return CreateInitPackageTask(resourcePackage, downloadURL, fallbackDownloadURL).ToUniTask();
+            return CreateInitPackageTask(resourcePackage, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL).ToUniTask();
         }
 
         #region 异步加载子资源对象

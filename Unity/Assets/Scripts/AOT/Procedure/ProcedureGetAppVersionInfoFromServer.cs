@@ -17,7 +17,7 @@ namespace Unity.Startup.Procedure
     /// <summary>
     /// 获取服务端App版本信息流程。
     /// 主要作用是：
-    /// 1. 获取后台服务端App版本信息，包括是否需要更新，是否需要强更，强更地址，更新公共提示信息等。
+    /// 1. 获取后台服务端App版本信息，
     /// 2. 获取成功，判断是否需要更新，如果需要更新，则使用FUI控制器弹出更新提示框，
     /// 3. 再判断是否需要强更，如果需要强更，则打开下载安装的Url。否则，进入获取资源版本流程。如果不需要更新，则进入获取资源版本流程。
     /// 4. 获取失败，则提示网络异常，并延迟3秒后重试。
@@ -30,14 +30,14 @@ namespace Unity.Startup.Procedure
             Log.Info("<color=#43f656>------进入获取服务端App版本信息流程-----</color>");
             
             // 获取App版本信息
-            ReqAppVersionInfo(procedureOwner);
+            GetAppVersionInfo(procedureOwner);
         }
 
         /// <summary>
         /// 获取服务端App版本信息，并根据服务端返回结果进行处理
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async void ReqAppVersionInfo(IFsm<IProcedureManager> procedureOwner)
+        private async void GetAppVersionInfo(IFsm<IProcedureManager> procedureOwner)
         {
             var reqBaseParams = HttpHelper.GetBaseParams();
             try
@@ -55,7 +55,7 @@ namespace Unity.Startup.Procedure
 
                     // 网络异常，延迟3秒后重试
                     await UniTask.Delay(3000);
-                    ReqAppVersionInfo(procedureOwner);
+                    GetAppVersionInfo(procedureOwner);
                 }
                 else
                 {
@@ -103,7 +103,7 @@ namespace Unity.Startup.Procedure
 
                 // 网络异常，延迟3秒后重试
                 await UniTask.Delay(3000);
-                ReqAppVersionInfo(procedureOwner);
+                GetAppVersionInfo(procedureOwner);
             }
         }
     }

@@ -5,7 +5,6 @@ using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ModuleSetting.Runtime;
-using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
@@ -22,24 +21,26 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程--初始化资源包流程-----</color>");
             
-            await InitPackage(procedureOwner);
+            await InitPackage();
             ChangeState<ProcedureUpdateGetPackageVersion>(procedureOwner);
         }
 
         /// <summary>
         /// 获取资源模块配置数据，遍历配置，初始化所有资源包
         /// </summary>
-        private async UniTask InitPackage(IFsm<IProcedureManager> procedureOwner)
+        private async UniTask InitPackage()
         {
-            // 模拟器环境下，直接进入更新完成流程
-            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
+            var assetSetting = ModuleSetting.Instance.AssetSetting;
+            if (!assetSetting) throw new FuException("资源模块配置数据为空!");
+
+            var initTasks = new List<UniTask>();
+            foreach (var packageInfo in assetSetting.AllPackages)
             {
-                AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName);
-                ChangeState<ProcedureUpdateDone>(procedureOwner);
-                return;
+                var initTask = AssetManager.Instance.InitPackageAsync(packageInfo);
+                initTasks.Add(initTask);
             }
-            
-            
+
+            await UniTask.WhenAll(initTasks);
         }
     }
 }

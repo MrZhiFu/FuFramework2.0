@@ -27,19 +27,19 @@ namespace Unity.Startup.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入获取服务端默认资源包的版本信息流程-----</color>");
             
-            ReqPackageVersionInfo(procedureOwner);
+            GetAssetPackageVersionInfo(procedureOwner);
         }
 
         /// <summary>
-        /// 请求服务端获取默认资源包的版本信息。
+        /// 从后台服务端获取默认资源包的版本信息。
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async void ReqPackageVersionInfo(IFsm<IProcedureManager> procedureOwner)
+        private async void GetAssetPackageVersionInfo(IFsm<IProcedureManager> procedureOwner)
         {
             var jsonParams = HttpHelper.GetBaseParams();
             try
             {
-                // 请求服务端，获取默认资源包的版本信息。
+                // 请求后台服务端，获取默认资源包的版本信息。
                 jsonParams["AssetPackageName"] = AssetManager.Instance.DefaultPackageName;
                 var result = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckResourceVersionUrl, jsonParams);
                 
@@ -55,7 +55,7 @@ namespace Unity.Startup.Procedure
                     
                     // 若获取失败，延迟3秒后重试。
                     await UniTask.Delay(3000);
-                    ReqPackageVersionInfo(procedureOwner);
+                    GetAssetPackageVersionInfo(procedureOwner);
                 }
                 else
                 {
@@ -63,7 +63,6 @@ namespace Unity.Startup.Procedure
                     var packageVersion = Utility.Json.ToObject<ResponseGameAssetPackageVersion>(httpJsonResult.Data);
                     
                     // 将资源下载路径保存到流程管理器的Data变量(DefaultPackage)中。
-                    // downloadUrl = 资源下载根路径/资源包名称/平台/App版本号/渠道/资源包名称/资源包版本号
                     var downloadUrl = Path.Combine(packageVersion.RootPath, packageVersion.PackageName, packageVersion.Platform, packageVersion.AppVersion, packageVersion.Channel, packageVersion.AssetPackageName, packageVersion.Version) + Path.DirectorySeparatorChar;
                     var downloadUrlStr = ReferencePool.Acquire<VarString>();
                     downloadUrlStr.SetValue(downloadUrl);
@@ -81,7 +80,7 @@ namespace Unity.Startup.Procedure
                 Log.Error($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
                 LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
                 await UniTask.Delay(3000);
-                ReqPackageVersionInfo(procedureOwner);
+                GetAssetPackageVersionInfo(procedureOwner);
             }
         }
     }

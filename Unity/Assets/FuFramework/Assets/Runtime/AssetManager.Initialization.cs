@@ -68,11 +68,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private IEnumerator InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
-            FuGuard.NotNullOrEmpty(hostServerURL, nameof(hostServerURL));
-            FuGuard.NotNullOrEmpty(fallbackHostServerURL, nameof(fallbackHostServerURL));
-           
             Log.Info("初始化为联机运行模式");
-            
             IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
 
             var cacheFileSystemParams   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
@@ -95,9 +91,6 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private IEnumerator InitAsWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         { 
-            FuGuard.NotNullOrEmpty(hostServerURL, nameof(hostServerURL));
-            FuGuard.NotNullOrEmpty(fallbackHostServerURL, nameof(fallbackHostServerURL));
-            
             Log.Info("初始化为Web运行模式");
             IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
             var webServerFileSystemParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
