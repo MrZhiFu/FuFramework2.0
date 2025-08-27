@@ -5,7 +5,7 @@
 
 using FairyGUI;
 using UnityEngine;
-using GameFrameX.Runtime;
+using FuFramework.Core.Runtime;
 
 namespace #NAMESPACE#
 {
