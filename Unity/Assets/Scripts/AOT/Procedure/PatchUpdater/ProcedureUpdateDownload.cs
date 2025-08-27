@@ -10,7 +10,7 @@ using YooAsset;
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 热更流程--下载热更包。
+    /// 热更流程--下载资源包。
     /// 主要作用是：
     /// 1. 下载热更包
     /// 2. 监听下载进度
@@ -24,6 +24,8 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+            Log.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
+            
             _procedureOwner = procedureOwner;
             
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.DownloadWebFiles));

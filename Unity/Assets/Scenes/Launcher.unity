@@ -999,8 +999,8 @@ MonoBehaviour:
   - Unity.Startup.Procedure.ProcedureUpdateDone
   - Unity.Startup.Procedure.ProcedureUpdateDownload
   - Unity.Startup.Procedure.ProcedureUpdateGetAssetPkgVersion
-  - Unity.Startup.Procedure.ProcedureUpdateInit
-  - Unity.Startup.Procedure.ProcedureUpdateManifest
+  - Unity.Startup.Procedure.ProcedureUpdateInitResPackage
+  - Unity.Startup.Procedure.ProcedureUpdatePackageManifest
   m_EntranceProcedureTypeName: Unity.Startup.Procedure.ProcedureLauncher
 --- !u!114 &1681186185
 MonoBehaviour:

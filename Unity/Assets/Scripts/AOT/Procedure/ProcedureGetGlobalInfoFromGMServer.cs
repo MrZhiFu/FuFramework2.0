@@ -1,21 +1,21 @@
 using System;
+using YooAsset;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
+using FuFramework.Web.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Procedure.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
-using FuFramework.Web.Runtime;
-using YooAsset;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 获取后台服务端全局信息流程。
+    /// 获取服务端全局信息流程。
     /// 主要作用是：
-    /// 1. 获取全局信息，包括：服务器地址、资源版本地址、内容信息
+    /// 1. 获取全局信息，包括：App版本号检查地址、资源版本检查地址、额外内容信息
     /// 2. 获取成功，保存全局信息到globalConfigComponent组件中，并进入获取App版本号流程
     /// 3. 若获取失败，则提示网络异常，并延迟3秒后重试。。 
     ///  </summary>
@@ -29,6 +29,7 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+            Log.Info("<color=#43f656>------进入获取服务端全局信息流程------</color>");
 
             // 编辑器下的模拟模式--直接进入获取App版本号流程
             if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
@@ -42,7 +43,7 @@ namespace Unity.Startup.Procedure
             if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 Log.Info("当前为离线模式，直接进入 ProcedurePatchInit");
-                ChangeState<ProcedureUpdateInit>(procedureOwner);
+                ChangeState<ProcedureUpdateInitResPackage>(procedureOwner);
                 return;
             }
 
@@ -56,12 +57,12 @@ namespace Unity.Startup.Procedure
         /// <param name="procedureOwner"></param>
         private async void GetGlobalInfo(IFsm<IProcedureManager> procedureOwner)
         {
-            // 获取后台服务端全局信息的请求参数
+            // 获取服务端全局信息的请求参数
             var reqBaseParams = HttpHelper.GetBaseParams();
 
             try
             {
-                // 请求后台服务端，获取全局信息。
+                // 请求服务端，获取全局信息。
                 var json = await GameApp.Web.PostToString(GlobalInfoUrl, reqBaseParams);
                 Log.Info(json);
 

@@ -14,9 +14,14 @@ namespace Unity.Startup.Procedure
     /// </summary>
     public class ProcedureUpdateCreateDownloader : ProcedureBase
     {
+        private const int DownloadingMaxNum = 10; // 同时下载的最大文件数
+        private const int FailedTryAgain    = 3;  // 失败后重试次数
+
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+            Log.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
+            
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.CreateDownloader));
             CreateDownloader(procedureOwner);
         }
@@ -29,10 +34,7 @@ namespace Unity.Startup.Procedure
         {
             Log.Info("创建资源下载器.");
 
-            const int downloadingMaxNum = 10;
-            const int failedTryAgain    = 3;
-
-            var downloader = YooAssets.CreateResourceDownloader(downloadingMaxNum, failedTryAgain);
+            var downloader = YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgain);
 
             // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
             var downloaderObj = new VarObject();

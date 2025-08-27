@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
 using FuFramework.Fsm.Runtime;
+using FuFramework.Core.Runtime;
 using FuFramework.Procedure.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -18,6 +19,7 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
+            Log.Info("<color=#43f656>------进入首次启动流程------</color>");
             
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));

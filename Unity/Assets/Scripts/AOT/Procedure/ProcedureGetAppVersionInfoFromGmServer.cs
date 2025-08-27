@@ -1,25 +1,25 @@
 using System;
+using YooAsset;
+using UnityEngine;
 using AOT.UI.View.Launcher;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
+using FuFramework.Web.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
+using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
-using FuFramework.Procedure.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
-using FuFramework.Web.Runtime;
-using UnityEngine;
-using YooAsset;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
-    /// 获取后台服务端App版本信息流程。
+    /// 获取服务端App版本信息流程。
     /// 主要作用是：
-    /// 1. 获取后台服务端App版本信息，
+    /// 1. 获取服务端App版本信息，包括版本号、更新内容、强更标志、下载地址等
     /// 2. 获取成功，判断是否需要更新，如果需要更新，则使用FUI控制器弹出更新提示框，
     /// 3. 再判断是否需要强更，如果需要强更，则打开下载安装的Url。否则，进入获取资源版本流程。如果不需要更新，则进入获取资源版本流程。
     /// 4. 获取失败，则提示网络异常，并延迟3秒后重试。
@@ -29,12 +29,13 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-
+            Log.Info("<color=#43f656>------进入获取服务端App版本信息流程------</color>");
+            
             // 编辑器下的模拟模式
             if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 Log.Info("当前为编辑器模式，直接进入资源更新的初始化流程");
-                ChangeState<ProcedureUpdateInit>(procedureOwner);
+                ChangeState<ProcedureUpdateInitResPackage>(procedureOwner);
                 return;
             }
 
@@ -51,7 +52,7 @@ namespace Unity.Startup.Procedure
             var reqBaseParams = HttpHelper.GetBaseParams();
             try
             {
-                // 请求后台服务端，获取App版本信息。
+                // 请求服务端，获取App版本信息。
                 var json = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckAppVersionUrl, reqBaseParams);
                 Log.Info(json);
 
