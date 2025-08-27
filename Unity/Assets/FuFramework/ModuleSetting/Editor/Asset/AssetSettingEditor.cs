@@ -44,7 +44,7 @@ namespace FuFramework.ModuleSetting.Editor
             // 显示资源运行模式属性（使用枚举弹出菜单）
             EditorGUI.BeginChangeCheck();
             var playMode = (EPlayMode)m_PlayMode.enumValueIndex;
-            playMode = (EPlayMode)EditorGUILayout.EnumPopup(new GUIContent("资源运行模式"), playMode);
+            playMode = (EPlayMode)EditorGUILayout.EnumPopup(new GUIContent("运行模式"), playMode);
             if (EditorGUI.EndChangeCheck())
             {
                 m_PlayMode.enumValueIndex = (int)playMode;

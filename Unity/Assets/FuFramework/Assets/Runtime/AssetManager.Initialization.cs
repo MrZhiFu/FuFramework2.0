@@ -1,7 +1,4 @@
-using System.Collections;
 using YooAsset;
-using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Asset.Runtime
@@ -12,10 +9,10 @@ namespace FuFramework.Asset.Runtime
     public partial class AssetManager
     {
         /// <summary>
-        /// 根据运行模式创建初始化任务
+        /// 根据运行模式创建初始化操作数据
         /// </summary>
         /// <returns></returns>
-        private IEnumerator CreateInitPackageTask(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        private InitializationOperation CreateInitOperationHandler(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
             return PlayMode switch
             {
@@ -32,15 +29,14 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="resourcePackage"></param>
         /// <returns></returns>
-        private IEnumerator InitAsEditorSimulateMode(ResourcePackage resourcePackage)
+        private InitializationOperation InitAsEditorSimulateMode(ResourcePackage resourcePackage)
         {
-            Log.Info("初始化为编辑器下模拟模式");
             var initParameters = new EditorSimulateModeParameters();
             var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
             var packageRoot = simulateBuildResult.PackageRootDirectory;
-            var editorFileSystemParams  = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
-            initParameters.EditorFileSystemParameters = editorFileSystemParams;
-            yield return resourcePackage.InitializeAsync(initParameters);
+            var editorFileSystem  = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
+            initParameters.EditorFileSystemParameters = editorFileSystem;
+            return resourcePackage.InitializeAsync(initParameters);
         }
 
         /// <summary>
@@ -48,15 +44,14 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="resourcePackage"></param>
         /// <returns></returns>
-        private IEnumerator InitAsOfflinePlayMode(ResourcePackage resourcePackage)
+        private InitializationOperation InitAsOfflinePlayMode(ResourcePackage resourcePackage)
         {
-            Log.Info("初始化为单机运行模式");
-            var buildInFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
             var initParameters = new OfflinePlayModeParameters
             {
-                BuildinFileSystemParameters = buildInFileSystemParams
+                BuildinFileSystemParameters = buildInFileSystem
             };
-            yield return resourcePackage.InitializeAsync(initParameters);
+            return resourcePackage.InitializeAsync(initParameters);
         }
 
         /// <summary>
@@ -66,20 +61,19 @@ namespace FuFramework.Asset.Runtime
         /// <param name="hostServerURL"></param>
         /// <param name="fallbackHostServerURL"></param>
         /// <returns></returns>
-        private IEnumerator InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        private InitializationOperation InitAsHostPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
         {
-            Log.Info("初始化为联机运行模式");
             IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
 
-            var cacheFileSystemParams   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-            var buildInFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
 
             var initParameters = new HostPlayModeParameters
             {
-                BuildinFileSystemParameters = buildInFileSystemParams,
-                CacheFileSystemParameters   = cacheFileSystemParams
+                BuildinFileSystemParameters = buildInFileSystem,
+                CacheFileSystemParameters   = cacheFileSystem
             };
-            yield return resourcePackage.InitializeAsync(initParameters);
+            return resourcePackage.InitializeAsync(initParameters);
         }
 
         /// <summary>
@@ -89,20 +83,43 @@ namespace FuFramework.Asset.Runtime
         /// <param name="hostServerURL"></param>
         /// <param name="fallbackHostServerURL"></param>
         /// <returns></returns>
-        private IEnumerator InitAsWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
-        { 
-            Log.Info("初始化为Web运行模式");
-            IRemoteServices remoteServices = new RemoteServices(hostServerURL, fallbackHostServerURL);
-            var webServerFileSystemParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
-            var webRemoteFileSystemParams = FileSystemParameters.CreateDefaultWebRemoteFileSystemParameters(remoteServices); //支持跨域下载
-    
-            var initParameters = new WebPlayModeParameters
-            {
-                WebServerFileSystemParameters = webServerFileSystemParams,
-                WebRemoteFileSystemParameters = webRemoteFileSystemParams
-            };
+        private InitializationOperation InitAsWebPlayMode(ResourcePackage resourcePackage, string hostServerURL, string fallbackHostServerURL)
+        {
+            var initParameters = new WebPlayModeParameters();
 
-            yield return resourcePackage.InitializeAsync(initParameters);
+            FileSystemParameters webFileSystem = null;
+
+#if UNITY_WEBGL
+#if ENABLE_DOUYIN_MINI_GAME
+            // 创建字节小游戏文件系统
+            if (hostServerURL.IsNullOrWhiteSpace())
+            {
+                webFileSystem = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters();
+            }
+            else
+            {
+                webFileSystem = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters(hostServerURL);
+            }
+#elif ENABLE_WECHAT_MINI_GAME
+            WeChatWASM.WXBase.PreloadConcurrent(10);
+            // 创建微信小游戏文件系统
+            if (hostServerURL.IsNullOrWhiteSpace())
+            {
+                webFileSystem = WechatFileSystemCreater.CreateWechatFileSystemParameters();
+            }
+            else
+            {
+                webFileSystem = WechatFileSystemCreater.CreateWechatPathFileSystemParameters(hostServerURL);
+            }
+#else
+            // 创建默认WebGL文件系统
+            webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters();
+#endif
+#else
+            // webFileSystem = FileSystemParameters.CreateDefaultWebFileSystemParameters(); // TODO
+#endif
+            // initParameters.WebFileSystemParameters = webFileSystem;
+            return resourcePackage.InitializeAsync(initParameters);
         }
     }
 }

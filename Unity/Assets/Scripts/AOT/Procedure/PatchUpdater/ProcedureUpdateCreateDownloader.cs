@@ -1,9 +1,9 @@
-﻿using YooAsset;
+﻿using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
+using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
@@ -17,8 +17,6 @@ namespace Unity.Startup.Procedure
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-            Log.Info("<color=#43f656>------进入热更流程--创建资源下载器流程-----</color>");
-            
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.CreateDownloader));
             CreateDownloader(procedureOwner);
         }

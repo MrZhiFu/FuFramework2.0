@@ -990,17 +990,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   componentType: FuFramework.Procedure.Runtime.ProcedureManager
   m_AvailableProcedureTypeNames:
-  - Unity.Startup.Procedure.ProcedureGetAppVersionInfoFromServer
-  - Unity.Startup.Procedure.ProcedureGetGlobalInfoFromServer
-  - Unity.Startup.Procedure.ProcedureGetResVersionInfoFromServer
+  - Unity.Startup.Procedure.ProcedureGetAppVersionInfoFromGmServer
+  - Unity.Startup.Procedure.ProcedureGetAssetPkgVersionInfoFromGmServer
+  - Unity.Startup.Procedure.ProcedureGetGlobalInfoFromGmServer
   - Unity.Startup.Procedure.ProcedureHotfix
   - Unity.Startup.Procedure.ProcedureLauncher
   - Unity.Startup.Procedure.ProcedureUpdateCreateDownloader
   - Unity.Startup.Procedure.ProcedureUpdateDone
   - Unity.Startup.Procedure.ProcedureUpdateDownload
-  - Unity.Startup.Procedure.ProcedureUpdateGetPackageVersion
-  - Unity.Startup.Procedure.ProcedureUpdateInitPackage
-  - Unity.Startup.Procedure.ProcedureUpdatePackageManifest
+  - Unity.Startup.Procedure.ProcedureUpdateGetAssetPkgVersion
+  - Unity.Startup.Procedure.ProcedureUpdateInit
+  - Unity.Startup.Procedure.ProcedureUpdateManifest
   m_EntranceProcedureTypeName: Unity.Startup.Procedure.ProcedureLauncher
 --- !u!114 &1681186185
 MonoBehaviour:

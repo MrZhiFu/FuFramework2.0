@@ -1,34 +1,34 @@
-﻿using YooAsset;
-using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using Cysharp.Threading.Tasks;
+using FuFramework.Asset.Runtime;
 using FuFramework.Fsm.Runtime;
+using FuFramework.Procedure.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using FuFramework.Asset.Runtime;
-using FuFramework.Procedure.Runtime;
+using UnityEngine;
+using YooAsset;
 
 namespace Unity.Startup.Procedure
 {
     /// <summary>
     /// 热更流程--更新资源清单流程。
     /// 主要作用是：
-    /// 1. 更新资源清单
-    /// 2. 完成后创建资源下载器流程
+    /// 1. 下载最新资源清单
+    /// 2. 解析最新资源清单，并下载资源
+    /// 3. 完成后创建资源下载器流程
     /// </summary>
-    public class ProcedureUpdatePackageManifest : ProcedureBase
+    public class ProcedureUpdateManifest : ProcedureBase
     {
         protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
-            Log.Info("<color=#43f656>------热更流程--更新资源清单流程-----</color>");
-            
+
             if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
             {
                 // 离线单机模式下的更新资源清单
-                var pkgVersion = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
+                var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
                 var package    = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
-                var operation  = package.UpdatePackageManifestAsync(pkgVersion.Value);
+                var operation  = package.UpdatePackageManifestAsync(versionStr.Value);
                 await operation.ToUniTask();
                 ChangeState<ProcedureUpdateDone>(procedureOwner);
                 return;
@@ -78,7 +78,7 @@ namespace Unity.Startup.Procedure
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
                 GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
-                ChangeState<ProcedureUpdatePackageManifest>(procedureOwner);
+                ChangeState<ProcedureUpdateManifest>(procedureOwner);
             }
         }
     }
