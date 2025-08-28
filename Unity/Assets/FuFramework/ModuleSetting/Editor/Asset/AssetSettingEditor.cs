@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
+using YooAsset;
 using UnityEditor;
 using UnityEngine;
 using FuFramework.ModuleSetting.Runtime;
-using YooAsset;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ModuleSetting.Editor
