@@ -7,6 +7,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
+// ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
 {
     /// <summary>
@@ -19,19 +20,18 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureDownloadPackage : ProcedureBase
     {
-        private IFsm<IProcedureManager> _procedureOwner;
-
         public override int Priority => 9; // 显示优先级
+        private IFsm<IProcedureManager> m_procedureOwner;
         
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
-            _procedureOwner = procedureOwner;
+            m_procedureOwner = procedureOwner;
 
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.DownloadWebFiles));
-            BeginDownload(procedureOwner).ToUniTask();
+            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.Download));
+            BeginDownload(procedureOwner).ToUniTask().Forget();
         }
 
         /// <summary>
@@ -46,16 +46,16 @@ namespace Launcher.Procedure
 
             downloader.DownloadErrorCallback  = DownloaderOnDownloadErrorCallback;
             downloader.DownloadUpdateCallback = OnDownloadProgressCallback;
+            
+            // 开始下载
             downloader.BeginDownload();
             yield return downloader;
 
-            // 检测下载结果
-            if (downloader.Status != EOperationStatus.Succeed)
-            {
-                yield break;
-            }
-
-            // 下载完成，切换到更新完毕流程
+            // 下载是否成功
+            if (downloader.Status != EOperationStatus.Succeed) yield break;
+            
+            // 下载完成，移除记录的下载器，切换到更新完毕流程
+            procedureOwner.RemoveData("Downloader");
             ChangeState<ProcedureUpdateDone>(procedureOwner);
         }
 
@@ -66,7 +66,7 @@ namespace Launcher.Procedure
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
             GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
-            ChangeState<ProcedureCreateDownloader>(_procedureOwner);
+            ChangeState<ProcedureCreateDownloader>(m_procedureOwner);
         }
 
         /// <summary>

@@ -1,10 +1,10 @@
-﻿using YooAsset;
-using FuFramework.Fsm.Runtime;
+﻿using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
+// ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
 {
     /// <summary>
@@ -14,9 +14,6 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureCreateDownloader : ProcedureBase
     {
-        private const int DownloadingMaxNum = 10; // 同时下载的最大文件数
-        private const int FailedTryAgain    = 3;  // 失败后重试次数
-
         public override int Priority => 8; // 显示优先级
         
         protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
@@ -34,9 +31,8 @@ namespace Launcher.Procedure
         /// <param name="procedureOwner"></param>
         private void CreateDownloader(IFsm<IProcedureManager> procedureOwner)
         {
-            Log.Info("创建资源下载器.");
-
-            var downloader = YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgain);
+            // 创建资源下载器
+            var downloader = AssetManager.Instance.CreateResourceDownloader();
 
             // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
             var downloaderObj = new VarObject();
@@ -45,17 +41,14 @@ namespace Launcher.Procedure
 
             if (downloader.TotalDownloadCount == 0)
             {
-                Log.Info("没有发现需要下载的资源");
+                Log.Info("没有需要下载的资源");
                 ChangeState<ProcedureUpdateDone>(procedureOwner);
             }
             else
             {
-                Log.Info($"一共发现了{downloader.TotalDownloadCount}个资源需要更新下载。");
-
-                // 发现新更新文件后，挂起流程系统
+                Log.Info($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
-
                 GameApp.Event.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
                 ChangeState<ProcedureDownloadPackage>(procedureOwner);
             }

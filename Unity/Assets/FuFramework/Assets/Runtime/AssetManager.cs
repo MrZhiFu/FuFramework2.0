@@ -1,8 +1,8 @@
 using System;
+using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using UnityEngine.SceneManagement;
-using YooAsset;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -22,37 +22,17 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 下载最大并发数量
         /// </summary>
-        public int DownloadingMaxNum { get; set; }
+        public int DownloadingMaxNum { get; set; } = 10;
 
         /// <summary>
         /// 下载失败重试次数
         /// </summary>
-        public int FailedTryAgain { get; set; }
-
-        /// <summary>
-        /// 文件校验等级
-        /// </summary>
-        public EFileVerifyLevel VerifyLevel { get; set; }
-
-        /// <summary>
-        /// 每帧执行消耗的最大时间切片（单位：毫秒）。
-        /// </summary>
-        public long Milliseconds { get; set; }
+        public int FailedTryAgain { get; set; } = 3;
 
         /// <summary>
         /// 获取或设置运行模式。
         /// </summary>
         public EPlayMode PlayMode { get; private set; }
-
-        /// <summary>
-        /// 获取资源只读区路径。
-        /// </summary>
-        public string ReadOnlyPath { get; private set; }
-
-        /// <summary>
-        /// 获取资源读写区路径。
-        /// </summary>
-        public string ReadWritePath { get; private set; }
 
         /// <summary>
         /// 初始化
@@ -81,54 +61,42 @@ namespace FuFramework.Asset.Runtime
             
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(30); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-
-            // // 遍历配置，初始化所有资源包
-            // foreach (var packageInfo in assetSetting.AllPackages)
-            // {
-            //     InitPackageAsync(packageInfo.PackageName, packageInfo.DownloadURL, packageInfo.FallbackDownloadURL, packageInfo.IsDefaultPackage);
-            // }
-
+     
             Log.Info("资源系统初始化完毕！");
         }
 
         /// <summary>
-        /// 初始化操作。
+        /// 初始化资源包。
         /// </summary>
         /// <param name="packageName">包名称</param>
-        /// <param name="hostServerURL">热更链接URL。</param>
-        /// <param name="fallbackHostServerURL">备用热更链接URL</param>
-        /// <param name="isDefaultPackage">是否是默认包</param>
+        /// <param name="downloadURL">热更资源包下载URL</param>
+        /// <param name="fallbackDownloadURL">备用热更资源包下载URL</param>
+        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
         /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string hostServerURL, string fallbackHostServerURL, bool isDefaultPackage = false)
+        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
         {
-            var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            FuGuard.NotNull(packageName,           nameof(packageName));
-            FuGuard.NotNull(hostServerURL,         nameof(hostServerURL));
-            FuGuard.NotNull(fallbackHostServerURL, nameof(fallbackHostServerURL));
-
+            FuGuard.NotNull(packageName, nameof(packageName));
+            
             // 创建默认的资源包
-            var resourcePackage = YooAssets.TryGetPackage(packageName);
+            var resourcePackage = TryGetPackage(packageName);
             if (resourcePackage == null)
             {
-                resourcePackage = YooAssets.CreatePackage(packageName);
-                if (isDefaultPackage)
-                {
-                    // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-                    YooAssets.SetDefaultPackage(resourcePackage);
-                }
+                resourcePackage = CreatePackage(packageName);
+                if (isDefaultPackage) 
+                    SetDefaultPackage(resourcePackage);// 设置该资源包为默认的资源包
             }
 
-            var initializationOperationHandler = CreateInitOperationHandler(resourcePackage, hostServerURL, fallbackHostServerURL);
-            initializationOperationHandler.Completed += asyncOperationBase =>
+            // 新建一个任务，包装初始化操作
+            var taskCompletionSource = new UniTaskCompletionSource<bool>();
+            var initHandler = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
+            if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
+
+            initHandler.Completed += asyncOperationBase =>
             {
                 if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
-                {
                     taskCompletionSource.TrySetResult(true);
-                }
                 else
-                {
                     taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
-                }
             };
             return taskCompletionSource.Task;
         }
@@ -185,10 +153,7 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(AssetInfo assetInfo)
-        {
-            return YooAssets.LoadSubAssetsSync(assetInfo);
-        }
+        public SubAssetsHandle LoadSubAssetSync(AssetInfo assetInfo) => YooAssets.LoadSubAssetsSync(assetInfo);
 
         /// <summary>
         /// 同步加载子资源对象
@@ -196,20 +161,14 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径</param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path, Type type)
-        {
-            return YooAssets.LoadSubAssetsSync(path, type);
-        }
+        public SubAssetsHandle LoadSubAssetSync(string path, Type type) => YooAssets.LoadSubAssetsSync(path, type);
 
         /// <summary>
         /// 同步加载子资源对象
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync<T>(string path) where T : Object
-        {
-            return YooAssets.LoadSubAssetsSync<T>(path);
-        }
+        public SubAssetsHandle LoadSubAssetSync<T>(string path) where T : Object => YooAssets.LoadSubAssetsSync<T>(path);
 
         #endregion
 
@@ -250,20 +209,14 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(AssetInfo assetInfo)
-        {
-            return YooAssets.LoadRawFileSync(assetInfo);
-        }
+        public RawFileHandle LoadRawFileSync(AssetInfo assetInfo) => YooAssets.LoadRawFileSync(assetInfo);
 
         /// <summary>
         /// 同步加载原生文件
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(string path)
-        {
-            return YooAssets.LoadRawFileSync(path);
-        }
+        public RawFileHandle LoadRawFileSync(string path) => YooAssets.LoadRawFileSync(path);
 
         #endregion
 
@@ -351,10 +304,7 @@ namespace FuFramework.Asset.Runtime
         /// 异步加载子资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
-        public SubAssetsHandle LoadSubAssetsAsync(string path)
-        {
-            return YooAssets.LoadSubAssetsAsync(path);
-        }
+        public SubAssetsHandle LoadSubAssetsAsync(string path) => YooAssets.LoadSubAssetsAsync(path);
 
 
         /// <summary>
@@ -390,27 +340,6 @@ namespace FuFramework.Asset.Runtime
             return taskCompletionSource.Task;
         }
 
-        /*
-        public async Task<TObject> LoadAssetTaskAsync<TObject>(string assetPath) where TObject : Object
-        {
-            ResourcePackage assetPackage = YooAssets.TryGetPackage(DefaultPackageName);
-            var handle = assetPackage.LoadAssetAsync<TObject>(assetPath);
-            await handle.Task;
-            if (handle == null || handle.AssetObject == null || handle.Status == EOperationStatus.Failed)
-            {
-                string errorMessage = Utility.Text.Format("Can not load asset '{0}'.", assetPath);
-                throw new GameFrameworkException(errorMessage);
-            }
-
-            var result = handle.AssetObject as TObject;
-            if (result == null)
-            {
-                throw new GameFrameworkException(Utility.Text.Format("TObject '{0}' is invalid.", typeof(TObject).FullName));
-            }
-
-            return result;
-        }*/
-
         #endregion
 
         #region 同步加载资源
@@ -419,60 +348,42 @@ namespace FuFramework.Asset.Runtime
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path)
-        {
-            return YooAssets.LoadAllAssetsSync(path);
-        }
+        public AllAssetsHandle LoadAllAssetsSync(string path) => YooAssets.LoadAllAssetsSync(path);
 
         /// <summary>
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object
-        {
-            return YooAssets.LoadAllAssetsSync<T>(path);
-        }
+        public AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object => YooAssets.LoadAllAssetsSync<T>(path);
 
         /// <summary>
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
         /// <param name="type">子对象类型</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path, Type type)
-        {
-            return YooAssets.LoadAllAssetsSync(path, type);
-        }
+        public AllAssetsHandle LoadAllAssetsSync(string path, Type type) => YooAssets.LoadAllAssetsSync(path, type);
 
         /// <summary>
         /// 同步加载包内全部资源对象
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo)
-        {
-            return YooAssets.LoadAllAssetsSync(assetInfo);
-        }
+        public AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo) => YooAssets.LoadAllAssetsSync(assetInfo);
 
         /// <summary>
         /// 同步加载子资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path)
-        {
-            return YooAssets.LoadSubAssetsSync(path);
-        }
+        public SubAssetsHandle LoadSubAssetSync(string path) => YooAssets.LoadSubAssetsSync(path);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path)
-        {
-            return YooAssets.LoadAssetSync(path);
-        }
+        public AssetHandle LoadAssetSync(string path) => YooAssets.LoadAssetSync(path);
 
         /// <summary>
         /// 同步加载资源
@@ -480,30 +391,21 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径</param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path, Type type)
-        {
-            return YooAssets.LoadAssetSync(path, type);
-        }
+        public AssetHandle LoadAssetSync(string path, Type type) => YooAssets.LoadAssetSync(path, type);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(AssetInfo assetInfo)
-        {
-            return YooAssets.LoadAssetSync(assetInfo);
-        }
+        public AssetHandle LoadAssetSync(AssetInfo assetInfo) => YooAssets.LoadAssetSync(assetInfo);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync<T>(string path) where T : Object
-        {
-            return YooAssets.LoadAssetSync<T>(path);
-        }
+        public AssetHandle LoadAssetSync<T>(string path) where T : Object => YooAssets.LoadAssetSync<T>(path);
 
         #endregion
 
@@ -548,41 +450,42 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage CreateAssetsPackage(string packageName)
-        {
-            return YooAssets.CreatePackage(packageName);
-        }
+        public ResourcePackage CreatePackage(string packageName) => YooAssets.CreatePackage(packageName);
 
         /// <summary>
         /// 尝试获取资源包
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage TryGetAssetsPackage(string packageName)
-        {
-            return YooAssets.TryGetPackage(packageName);
-        }
+        public ResourcePackage TryGetPackage(string packageName) => YooAssets.TryGetPackage(packageName);
 
         /// <summary>
         /// 检查资源包是否存在
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public bool HasAssetsPackage(string packageName)
-        {
-            return YooAssets.TryGetPackage(packageName) != null;
-        }
+        public bool HasPackage(string packageName) => YooAssets.TryGetPackage(packageName) != null;
 
         /// <summary>
         /// 获取资源包
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage GetAssetsPackage(string packageName)
-        {
-            return YooAssets.GetPackage(packageName);
-        }
+        public ResourcePackage GetPackage(string packageName) => YooAssets.GetPackage(packageName);
+        
+        /// <summary>
+        /// 设置默认资源包
+        /// </summary>
+        /// <param name="resourcePackage">资源信息</param>
+        /// <returns></returns>
+        public void SetDefaultPackage(ResourcePackage resourcePackage) => YooAssets.SetDefaultPackage(resourcePackage);
 
+        /// <summary>
+        /// 设置默认资源包
+        /// </summary>
+        /// <returns></returns>
+        public ResourceDownloaderOperation CreateResourceDownloader() => YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgain);
+        
         #endregion
 
         #region 卸载资源
@@ -610,8 +513,7 @@ namespace FuFramework.Asset.Runtime
             var package = YooAssets.GetPackage(packageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
-
-
+        
         /// <summary>
         /// 强制回收所有资源
         /// </summary>
@@ -699,38 +601,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">要检查的资源路径。</param>
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>
         public bool HasAssetPath(string path) => YooAssets.CheckLocationValid(path);
-
-        /// <summary>
-        /// 设置默认资源包
-        /// </summary>
-        /// <param name="resourcePackage">资源信息</param>
-        /// <returns></returns>
-        public void SetDefaultAssetsPackage(ResourcePackage resourcePackage) => YooAssets.SetDefaultPackage(resourcePackage);
-
-        #endregion
-
-        #region Set
-
-        /// <summary>
-        /// 设置资源只读区路径。
-        /// </summary>
-        /// <param name="readOnlyPath">资源只读区路径。</param>
-        public void SetReadOnlyPath(string readOnlyPath)
-        {
-            FuGuard.NotNull(readOnlyPath, nameof(readOnlyPath));
-            ReadOnlyPath = readOnlyPath;
-        }
-
-        /// <summary>
-        /// 设置资源读写区路径。
-        /// </summary>
-        /// <param name="readWritePath">资源读写区路径。</param>
-        public void SetReadWritePath(string readWritePath)
-        {
-            FuGuard.NotNull(readWritePath, nameof(readWritePath));
-            ReadWritePath = readWritePath;
-        }
-
+        
         #endregion
     }
 }

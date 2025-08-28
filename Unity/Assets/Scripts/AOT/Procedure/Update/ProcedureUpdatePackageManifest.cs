@@ -8,6 +8,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
+// ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
 {
     /// <summary>
@@ -20,29 +21,16 @@ namespace Launcher.Procedure
     public class ProcedureUpdatePackageManifest : ProcedureBase
     {
         public override int Priority => 7; // 显示优先级
-        
-        protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
+
+        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
-            
-            if (AssetManager.Instance.PlayMode == EPlayMode.OfflinePlayMode)
-            {
-                // 离线单机模式下的更新资源清单
-                var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
-                var package    = AssetManager.Instance.GetAssetsPackage(AssetManager.Instance.DefaultPackageName);
-                var operation  = package.UpdatePackageManifestAsync(versionStr.Value);
-                await operation.ToUniTask();
-                ChangeState<ProcedureUpdateDone>(procedureOwner);
-                return;
-            }
 
-            // 联机模式下的更新资源清单流程
             GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
-            await UpdateManifest(procedureOwner).ToUniTask();
+            UpdateManifest(procedureOwner).ToUniTask().Forget();
         }
-
-
+        
         /// <summary>
         /// 更新资源清单
         /// </summary>
@@ -52,29 +40,23 @@ namespace Launcher.Procedure
         {
             yield return new WaitForSecondsRealtime(0.1f);
 
-            var defaultPackage = YooAssets.GetPackage(AssetManager.Instance.DefaultPackageName);
-            UpdatePackageManifestOperation operation;
-
-            if (AssetManager.Instance.PlayMode == EPlayMode.EditorSimulateMode)
-            {
-                // 编辑器模拟模式下，强制使用Simulate版本
-                operation = defaultPackage.UpdatePackageManifestAsync("Simulate");
-            }
-            else
-            {
-                // 联机模式下，获取流程中存储的版本数据
-                var versionStr = procedureOwner.GetData<VarString>(AssetManager.Instance.DefaultPackageName + "Version");
-                operation = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
-            }
-
+            var defaultPackage = AssetManager.Instance.GetPackage(AssetManager.Instance.DefaultPackageName);
+            var versionStr = procedureOwner.GetData<VarString>("PackageVersion");
+            var operation = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
             yield return operation;
-
-
+            
             if (operation.Status == EOperationStatus.Succeed)
             {
-                // 更新成功，进入创建资源下载器流程
+                // 更新成功，如果是编辑器模拟模式或离线单机模式，则直接进入更新完成流程
+                if (AssetManager.Instance.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
+                {
+                    ChangeState<ProcedureUpdateDone>(procedureOwner);
+                    yield break;
+                }
+
+                // 热更模式，进入创建资源下载器流程
                 ChangeState<ProcedureCreateDownloader>(procedureOwner);
-                procedureOwner.RemoveData(AssetManager.Instance.DefaultPackageName + "Version");
+                procedureOwner.RemoveData("PackageVersion");
             }
             else
             {

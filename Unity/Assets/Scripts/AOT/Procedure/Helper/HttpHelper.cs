@@ -1,7 +1,7 @@
+using UnityEngine;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.GetChannel.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure

@@ -31,11 +31,11 @@ namespace Launcher.Procedure
                 var assemblies = Utility.Assembly.GetAssemblies();
                 foreach (var assembly in assemblies)
                 {
-                    if (assembly.GetName().Name.Equals(HotfixName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Run(assembly);
-                        break;
-                    }
+                    var assemblyName = assembly.GetName().Name;
+                    var isHotfix = assemblyName.Equals(HotfixName, StringComparison.OrdinalIgnoreCase);
+                    if (!isHotfix) continue;
+                    Run(assembly);
+                    break;
                 }
 
                 return;

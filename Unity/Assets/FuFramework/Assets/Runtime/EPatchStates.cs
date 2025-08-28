@@ -8,9 +8,9 @@ namespace FuFramework.Asset.Runtime
     public enum EPatchStates
     {
         /// <summary>
-        /// 更新静态的资源版本
+        /// 更新资源版本
         /// </summary>
-        UpdateStaticVersion,
+        UpdateVersion,
 
         /// <summary>
         /// 更新补丁清单
@@ -25,11 +25,11 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 下载远端文件
         /// </summary>
-        DownloadWebFiles,
+        Download,
 
         /// <summary>
-        /// 补丁流程完毕
+        /// 更新流程完毕
         /// </summary>
-        PatchDone,
+        UpdateDone,
     }
 }

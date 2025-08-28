@@ -19,7 +19,7 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace Hotfix
 {
     /// <summary>
-    /// 代码热更入口
+    /// 热修复代码入口
     /// </summary>
     public static class HotfixLauncher
     {
@@ -28,7 +28,7 @@ namespace Hotfix
         /// </summary>
         public static void Main()
         {
-            Log.Info("<color=#43f656>------热更逻辑完毕，进入热更代码逻辑入口------</color>");
+            Log.Info("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
             
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
