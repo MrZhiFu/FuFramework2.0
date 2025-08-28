@@ -46,8 +46,8 @@ namespace FuFramework.Scene.Runtime
         {
             var loadSceneUpdateEventArgs = ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
             loadSceneUpdateEventArgs.SceneName = sceneAssetName;
-            loadSceneUpdateEventArgs.Progress = progress;
-            loadSceneUpdateEventArgs.UserData = userData;
+            loadSceneUpdateEventArgs.Progress  = progress;
+            loadSceneUpdateEventArgs.UserData  = userData;
             return loadSceneUpdateEventArgs;
         }
 
@@ -56,9 +56,9 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         public override void Clear()
         {
+            Progress  = 0f;
             SceneName = null;
-            Progress = 0f;
-            UserData = null;
+            UserData  = null;
         }
     }
 }
