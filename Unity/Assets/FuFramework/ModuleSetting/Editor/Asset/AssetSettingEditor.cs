@@ -13,20 +13,22 @@ namespace FuFramework.ModuleSetting.Editor
     [CustomEditor(typeof(AssetSetting))]
     public class AssetSettingEditor : UnityEditor.Editor
     {
-        private SerializedProperty m_PlayModeProp;            // 资源运行模式
-        private SerializedProperty m_DefaultPackagesNameProp; // 所有资源包列表属性
-        private SerializedProperty m_DownloadingMaxNumProp;   // 资源下载最大并发数量
-        private SerializedProperty m_FailedTryAgainNumProp;   // 资源下载失败重试次数
+        private SerializedProperty m_PlayModeProp;                // 资源运行模式
+        private SerializedProperty m_DefaultPackagesNameProp;     // 所有资源包列表属性
+        private SerializedProperty m_DownloadingMaxNumProp;       // 资源下载最大并发数量
+        private SerializedProperty m_FailedTryAgainNumProp;       // 资源下载失败重试次数
+        private SerializedProperty m_AsyncSystemMaxSlicePerFrame; // YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）
 
         /// <summary>
         /// 编辑器启用时调用
         /// </summary>
         private void OnEnable()
         {
-            m_PlayModeProp            = serializedObject.FindProperty("m_PlayMode");
-            m_DefaultPackagesNameProp = serializedObject.FindProperty("m_DefaultPackageName");
-            m_DownloadingMaxNumProp   = serializedObject.FindProperty("m_DownloadingMaxNum");
-            m_FailedTryAgainNumProp   = serializedObject.FindProperty("m_FailedTryAgainNum");
+            m_PlayModeProp                = serializedObject.FindProperty("m_PlayMode");
+            m_DefaultPackagesNameProp     = serializedObject.FindProperty("m_DefaultPackageName");
+            m_DownloadingMaxNumProp       = serializedObject.FindProperty("m_DownloadingMaxNum");
+            m_FailedTryAgainNumProp       = serializedObject.FindProperty("m_FailedTryAgainNum");
+            m_AsyncSystemMaxSlicePerFrame = serializedObject.FindProperty("m_AsyncSystemMaxSlicePerFrame");
         }
 
         /// <summary>
@@ -72,6 +74,15 @@ namespace FuFramework.ModuleSetting.Editor
             failedTryAgainNum = EditorGUILayout.IntField(new GUIContent("下载失败重试次数"), failedTryAgainNum);
             if (EditorGUI.EndChangeCheck()) 
                 m_FailedTryAgainNumProp.intValue = failedTryAgainNum;
+            
+            EditorGUILayout.Space(10);
+            
+            // 显示YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）属性
+            EditorGUI.BeginChangeCheck();
+            var asyncSystemMaxSlicePerFrame = m_AsyncSystemMaxSlicePerFrame.intValue;
+            asyncSystemMaxSlicePerFrame = EditorGUILayout.IntField(new GUIContent("YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）"), asyncSystemMaxSlicePerFrame);
+            if (EditorGUI.EndChangeCheck()) 
+                m_AsyncSystemMaxSlicePerFrame.intValue = asyncSystemMaxSlicePerFrame;
             
             EditorGUILayout.Space(10);
             

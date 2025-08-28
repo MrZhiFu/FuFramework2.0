@@ -10,7 +10,10 @@ using Object = UnityEngine.Object;
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 资源组件。
+    /// 资源管理器。
+    /// 功能：
+    /// 1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
+    /// 2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
     public partial class AssetManager : MonoSingleton<AssetManager>
     {
@@ -35,6 +38,11 @@ namespace FuFramework.Asset.Runtime
         public int FailedTryAgainNum { get; private set; }
 
         /// <summary>
+        /// YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）
+        /// </summary>
+        public int AsyncSystemMaxSlicePerFrame { get; private set; }
+        
+        /// <summary>
         /// 初始化
         /// </summary>
         protected override void Init()
@@ -43,10 +51,11 @@ namespace FuFramework.Asset.Runtime
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
             if (!assetSetting) throw new FuException("资源模块配置数据为空!");
 
-            PlayMode           = assetSetting.PlayMode;
-            DefaultPackageName = assetSetting.DefaultPackageName;
-            DownloadingMaxNum  = assetSetting.DownloadingMaxNum;
-            FailedTryAgainNum   = assetSetting.FailedTryAgainNum;
+            PlayMode                    = assetSetting.PlayMode;
+            DefaultPackageName          = assetSetting.DefaultPackageName;
+            DownloadingMaxNum           = assetSetting.DownloadingMaxNum;
+            FailedTryAgainNum           = assetSetting.FailedTryAgainNum;
+            AsyncSystemMaxSlicePerFrame = assetSetting.AsyncSystemMaxSlicePerFrame;
 
 #if !UNITY_EDITOR
             if (PlayMode == EPlayMode.EditorSimulateMode)
@@ -62,166 +71,11 @@ namespace FuFramework.Asset.Runtime
             BetterStreamingAssets.Initialize();
             
             YooAssets.Initialize();
-            YooAssets.SetOperationSystemMaxTimeSlice(30); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
+            YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
      
             Log.Info("资源系统初始化完毕！");
         }
-
-        /// <summary>
-        /// 初始化资源包。
-        /// </summary>
-        /// <param name="packageName">包名称</param>
-        /// <param name="downloadURL">热更资源包下载URL</param>
-        /// <param name="fallbackDownloadURL">备用热更资源包下载URL</param>
-        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
-        /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
-        {
-            FuGuard.NotNull(packageName, nameof(packageName));
-            
-            // 创建默认的资源包
-            var resourcePackage = TryGetPackage(packageName);
-            if (resourcePackage == null)
-            {
-                resourcePackage = CreatePackage(packageName);
-                if (isDefaultPackage) 
-                    SetDefaultPackage(resourcePackage);// 设置该资源包为默认的资源包
-            }
-
-            // 新建一个任务，包装初始化操作
-            var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            var initHandler = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
-            if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
-
-            initHandler.Completed += asyncOperationBase =>
-            {
-                if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
-                    taskCompletionSource.TrySetResult(true);
-                else
-                    taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
-            };
-            return taskCompletionSource.Task;
-        }
-
-
-        #region 异步加载子资源对象
-
-        /// <summary>
-        /// 异步加载子资源对象
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 异步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(path, type);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 异步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        #endregion
-
-        #region 异步加载子资源对象
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(AssetInfo assetInfo) => YooAssets.LoadSubAssetsSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path, Type type) => YooAssets.LoadSubAssetsSync(path, type);
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync<T>(string path) where T : Object => YooAssets.LoadSubAssetsSync<T>(path);
-
-        #endregion
-
-        #region 异步加载原生文件
-
-        /// <summary>
-        /// 异步加载原生文件
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public UniTask<RawFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(assetInfo);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 异步加载原生文件
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public UniTask<RawFileHandle> LoadRawFileAsync(string path)
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(path);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        #endregion
-
-        #region 同步加载原生文件
-
-        /// <summary>
-        /// 同步加载原生文件
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(AssetInfo assetInfo) => YooAssets.LoadRawFileSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载原生文件
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(string path) => YooAssets.LoadRawFileSync(path);
-
-        #endregion
-
+        
         #region 异步加载资源
 
         /// <summary>
@@ -445,8 +299,162 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
+        #region 异步加载子资源对象
+
+        /// <summary>
+        /// 异步加载子资源对象
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <returns></returns>
+        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
+            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// 异步加载子资源对象
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
+            var assetHandle          = YooAssets.LoadSubAssetsAsync(path, type);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// 异步加载子资源对象
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
+        public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
+            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        #endregion
+
+        #region 异步加载子资源对象
+
+        /// <summary>
+        /// 同步加载子资源对象
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <returns></returns>
+        public SubAssetsHandle LoadSubAssetSync(AssetInfo assetInfo) => YooAssets.LoadSubAssetsSync(assetInfo);
+
+        /// <summary>
+        /// 同步加载子资源对象
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public SubAssetsHandle LoadSubAssetSync(string path, Type type) => YooAssets.LoadSubAssetsSync(path, type);
+
+        /// <summary>
+        /// 同步加载子资源对象
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
+        public SubAssetsHandle LoadSubAssetSync<T>(string path) where T : Object => YooAssets.LoadSubAssetsSync<T>(path);
+
+        #endregion
+
+        #region 异步加载原生文件
+
+        /// <summary>
+        /// 异步加载原生文件
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <returns></returns>
+        public UniTask<RawFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
+            var assetHandle          = YooAssets.LoadRawFileAsync(assetInfo);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// 异步加载原生文件
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
+        public UniTask<RawFileHandle> LoadRawFileAsync(string path)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
+            var assetHandle          = YooAssets.LoadRawFileAsync(path);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        #endregion
+
+        #region 同步加载原生文件
+
+        /// <summary>
+        /// 同步加载原生文件
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <returns></returns>
+        public RawFileHandle LoadRawFileSync(AssetInfo assetInfo) => YooAssets.LoadRawFileSync(assetInfo);
+
+        /// <summary>
+        /// 同步加载原生文件
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
+        public RawFileHandle LoadRawFileSync(string path) => YooAssets.LoadRawFileSync(path);
+
+        #endregion
+        
         #region 资源包
 
+        /// <summary>
+        /// 初始化资源包。
+        /// </summary>
+        /// <param name="packageName">包名称</param>
+        /// <param name="downloadURL">热更资源包下载URL</param>
+        /// <param name="fallbackDownloadURL">备用热更资源包下载URL</param>
+        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
+        /// <returns></returns>
+        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
+        {
+            FuGuard.NotNull(packageName, nameof(packageName));
+            
+            // 创建默认的资源包
+            var resourcePackage = TryGetPackage(packageName);
+            if (resourcePackage == null)
+            {
+                resourcePackage = CreatePackage(packageName);
+                if (isDefaultPackage) 
+                    SetDefaultPackage(resourcePackage);// 设置该资源包为默认的资源包
+            }
+
+            // 新建一个任务，包装初始化操作
+            var taskCompletionSource = new UniTaskCompletionSource<bool>();
+            var initHandler = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
+            if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
+
+            initHandler.Completed += asyncOperationBase =>
+            {
+                if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
+                    taskCompletionSource.TrySetResult(true);
+                else
+                    taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
+            };
+            return taskCompletionSource.Task;
+        }
+        
         /// <summary>
         /// 创建资源包
         /// </summary>

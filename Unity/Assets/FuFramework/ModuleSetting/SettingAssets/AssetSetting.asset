@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: AssetSetting
   m_EditorClassIdentifier: 
   m_PlayMode: 0
-  m_AssetPackages:
-  - m_PackageName: DefaultPackage
-    m_IsDefaultPackage: 1
-    m_DownloadURL: http://default-server.com/assets
-    m_FallbackDownloadURL: http://fallback-server.com/assets
+  m_DefaultPackageName: DefaultPackage
+  m_DownloadingMaxNum: 10
+  m_FailedTryAgainNum: 3
