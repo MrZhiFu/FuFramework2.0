@@ -16,7 +16,6 @@ namespace FuFramework.Asset.Runtime
     /// </summary>
     public class AssetLoadRegister : IReference
     {
-
         /// 缓存已经加载的资源路径列表
         private readonly Dictionary<string, Object> m_resDict = new();
 

@@ -77,18 +77,35 @@ namespace FuFramework.Asset.Runtime
         }
         
         #region 异步加载资源
+        
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns></returns>
+        public UniTask<AssetHandle> LoadAssetAsync(string path)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
+            var assetHandle          = YooAssets.LoadAssetAsync(path);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
 
         /// <summary>
         /// 异步加载资源
         /// </summary>
-        /// <param name="assetInfo">资源信息</param>
+        /// <param name="path">资源路径</param>
+        /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync(AssetInfo assetInfo)
+        public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(assetInfo);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            var assetHandle          = YooAssets.LoadAssetAsync<T>(path);
+
+            assetHandle.Completed += OnAssetHandleOnCompleted;
             return taskCompletionSource.Task;
+
+            void OnAssetHandleOnCompleted(AssetHandle handle) => taskCompletionSource.TrySetResult(handle);
         }
 
         /// <summary>
@@ -101,6 +118,19 @@ namespace FuFramework.Asset.Runtime
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
             var assetHandle          = YooAssets.LoadAssetAsync(path, type);
+            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
+            return taskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <returns></returns>
+        public UniTask<AssetHandle> LoadAssetAsync(AssetInfo assetInfo)
+        {
+            var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
+            var assetHandle          = YooAssets.LoadAssetAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -155,47 +185,7 @@ namespace FuFramework.Asset.Runtime
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
-
-        /// <summary>
-        /// 异步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源的定位地址</param>
-        public SubAssetsHandle LoadSubAssetsAsync(string path) => YooAssets.LoadSubAssetsAsync(path);
-
-
-        /// <summary>
-        /// 异步加载资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync(string path)
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(path);
-            assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
-            return taskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 异步加载资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
-        {
-            var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync<T>(path);
-
-            void OnAssetHandleOnCompleted(AssetHandle handle)
-            {
-                taskCompletionSource.TrySetResult(handle);
-            }
-
-            assetHandle.Completed += OnAssetHandleOnCompleted;
-            return taskCompletionSource.Task;
-        }
-
+        
         #endregion
 
         #region 同步加载资源
@@ -300,16 +290,22 @@ namespace FuFramework.Asset.Runtime
         #endregion
 
         #region 异步加载子资源对象
+        
+        /// <summary>
+        /// 异步加载子资源对象
+        /// </summary>
+        /// <param name="path">资源的定位地址</param>
+        public SubAssetsHandle LoadSubAssetsAsync(string path) => YooAssets.LoadSubAssetsAsync(path);
 
         /// <summary>
         /// 异步加载子资源对象
         /// </summary>
-        /// <param name="assetInfo">资源信息</param>
+        /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
+        public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
+            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -331,41 +327,15 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 异步加载子资源对象
         /// </summary>
-        /// <param name="path">资源路径</param>
+        /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
+        public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
+            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
-
-        #endregion
-
-        #region 异步加载子资源对象
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(AssetInfo assetInfo) => YooAssets.LoadSubAssetsSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path, Type type) => YooAssets.LoadSubAssetsSync(path, type);
-
-        /// <summary>
-        /// 同步加载子资源对象
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync<T>(string path) where T : Object => YooAssets.LoadSubAssetsSync<T>(path);
 
         #endregion
 

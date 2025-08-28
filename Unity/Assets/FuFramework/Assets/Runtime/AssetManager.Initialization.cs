@@ -34,8 +34,8 @@ namespace FuFramework.Asset.Runtime
         {
             FuGuard.NotNull(resourcePackage, nameof(resourcePackage));
             var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
-            var packageRoot = simulateBuildResult.PackageRootDirectory;
-            var editorFileSystem  = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
+            var packageRoot   = simulateBuildResult.PackageRootDirectory;
+            var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
             var initParameters = new EditorSimulateModeParameters
             {
                 EditorFileSystemParameters = editorFileSystem
