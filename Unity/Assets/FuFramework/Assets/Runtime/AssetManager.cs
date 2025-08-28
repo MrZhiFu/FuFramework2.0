@@ -15,24 +15,24 @@ namespace FuFramework.Asset.Runtime
     public partial class AssetManager : MonoSingleton<AssetManager>
     {
         /// <summary>
-        /// 默认资源包名称
-        /// </summary>
-        public string DefaultPackageName { get; private set; } = "DefaultPackage";
-
-        /// <summary>
-        /// 下载最大并发数量
-        /// </summary>
-        public int DownloadingMaxNum { get; set; } = 10;
-
-        /// <summary>
-        /// 下载失败重试次数
-        /// </summary>
-        public int FailedTryAgain { get; set; } = 3;
-
-        /// <summary>
-        /// 获取或设置运行模式。
+        /// 资源运行模式。
         /// </summary>
         public EPlayMode PlayMode { get; private set; }
+
+        /// <summary>
+        /// 默认资源包名称
+        /// </summary>
+        public string DefaultPackageName { get; private set; }
+
+        /// <summary>
+        /// 资源下载最大并发数量
+        /// </summary>
+        public int DownloadingMaxNum { get; private set; }
+
+        /// <summary>
+        /// 资源下载失败重试次数
+        /// </summary>
+        public int FailedTryAgainNum { get; private set; }
 
         /// <summary>
         /// 初始化
@@ -44,7 +44,9 @@ namespace FuFramework.Asset.Runtime
             if (!assetSetting) throw new FuException("资源模块配置数据为空!");
 
             PlayMode           = assetSetting.PlayMode;
-            DefaultPackageName = assetSetting.DefaultPackage.PackageName;
+            DefaultPackageName = assetSetting.DefaultPackageName;
+            DownloadingMaxNum  = assetSetting.DownloadingMaxNum;
+            FailedTryAgainNum   = assetSetting.FailedTryAgainNum;
 
 #if !UNITY_EDITOR
             if (PlayMode == EPlayMode.EditorSimulateMode)
@@ -484,7 +486,7 @@ namespace FuFramework.Asset.Runtime
         /// 设置默认资源包
         /// </summary>
         /// <returns></returns>
-        public ResourceDownloaderOperation CreateResourceDownloader() => YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgain);
+        public ResourceDownloaderOperation CreateResourceDownloader() => YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgainNum);
         
         #endregion
 

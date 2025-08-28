@@ -34,7 +34,6 @@ namespace FuFramework.ModuleSetting.Editor
             EnsureDirectoryExists(AssetPath);
 
             var assetSetting = ScriptableObject.CreateInstance<AssetSetting>();
-            assetSetting.AddDefaultPackage(); // 添加默认资源包
             AssetDatabase.CreateAsset(assetSetting, FullPath);
             AssetDatabase.SaveAssets();
 
