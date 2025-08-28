@@ -7,7 +7,7 @@ namespace FuFramework.Event.Runtime
     /// 事件池模式。
     /// </summary>
     [Flags]
-    public enum EventPoolMode : byte
+    public enum EEventPoolMode : byte
     {
         /// <summary>
         /// 默认事件池模式，即必须存在有且只有一个事件处理函数。

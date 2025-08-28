@@ -10,8 +10,8 @@ namespace FuFramework.Event.Runtime
     /// </summary>
     public sealed class EmptyEventArgs : GameEventArgs
     {
-        public override string Id => _eventId;
-        private static  string _eventId = typeof(EmptyEventArgs).FullName;
+        public override string Id => m_EventId;
+        private static  string m_EventId = typeof(EmptyEventArgs).FullName;
 
         public override void Clear() { }
 
@@ -23,7 +23,7 @@ namespace FuFramework.Event.Runtime
         public static EmptyEventArgs Create(string eventId)
         {
             var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
-            _eventId = eventId;
+            m_EventId = eventId;
             return eventArgs;
         }
     }

@@ -6,7 +6,8 @@ namespace FuFramework.Event.Runtime
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {
         /// <summary>
-        /// 事件定义
+        /// 事件定义。
+        /// 包装了事件发送者和事件参数。
         /// </summary>
         private sealed class Event : IReference
         {

@@ -19,7 +19,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public EventManager()
         {
-            m_EventPool = new EventPool<GameEventArgs>(EventPoolMode.AllowNoHandler | EventPoolMode.AllowMultiHandler);
+            m_EventPool = new EventPool<GameEventArgs>(EEventPoolMode.AllowNoHandler | EEventPoolMode.AllowMultiHandler);
         }
 
         /// <summary>
