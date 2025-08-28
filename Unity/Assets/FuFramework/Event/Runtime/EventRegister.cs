@@ -38,7 +38,6 @@ namespace FuFramework.Event.Runtime
         public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
             if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
-
             m_EventHandlerDict.Add(id, handler);
             EventManager.Subscribe(id, handler);
         }
@@ -58,42 +57,6 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
-        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
-        /// </summary>
-        /// <param name="id">消息ID</param>
-        /// <param name="e">消息对象</param>
-        public void Fire(string id, GameEventArgs e)
-        {
-            if (!m_EventHandlerDict.Contains(id)) return;
-            EventManager.Fire(this, e);
-        }
-        
-        /// <summary>
-        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">消息对象</param>
-        public void Fire(object sender, GameEventArgs e)
-        {
-            if (!m_EventHandlerDict.Contains(e.Id)) return;
-            EventManager.Fire(this, e);
-        }
-
-        /// <summary>
-        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="eventId">事件编号。</param>
-        public void Fire(object sender, string eventId) => EventManager.Fire(sender, EmptyEventArgs.Create(eventId));
-
-        /// <summary>
-        /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">事件内容。</param>
-        public void FireNow(object sender, GameEventArgs e) => EventManager.FireNow(sender, e);
-
-        /// <summary>
         /// 取消所有订阅
         /// </summary>
         public void UnSubscribeAll()
@@ -110,6 +73,27 @@ namespace FuFramework.Event.Runtime
 
             m_EventHandlerDict.Clear();
         }
+
+        /// <summary>
+        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="eventArgs">消息对象</param>
+        public void Fire(object sender, GameEventArgs eventArgs) => EventManager.Fire(sender, eventArgs);
+
+        /// <summary>
+        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="eventId">事件编号。</param>
+        public void Fire(object sender, string eventId) => EventManager.Fire(sender, eventId);
+
+        /// <summary>
+        /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="eventArgs">事件内容。</param>
+        public void FireNow(object sender, GameEventArgs eventArgs) => EventManager.FireNow(sender, eventArgs);
 
         /// <summary>
         /// 清理

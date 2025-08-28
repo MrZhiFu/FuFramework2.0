@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0636f09a855d4726b163b2e795ce5c04, type: 3}
   m_Name: AssetSetting
   m_EditorClassIdentifier: 
-  m_PlayMode: 0
+  m_PlayMode: 1
   m_DefaultPackageName: DefaultPackage
   m_DownloadingMaxNum: 10
   m_FailedTryAgainNum: 3
+  m_AsyncSystemMaxSlicePerFrame: 30

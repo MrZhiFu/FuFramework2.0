@@ -90,7 +90,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
     - GroupName: Sound
-      GroupDesc: 
+      GroupDesc: "\u58F0\u97F3"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
@@ -99,6 +99,19 @@ MonoBehaviour:
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+    - GroupName: Scene
+      GroupDesc: "\u573A\u666F"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Bundles/Scene
+        CollectorGUID: fe0adc9379f308d4ab4759232badb839
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 

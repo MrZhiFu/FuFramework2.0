@@ -9,7 +9,6 @@ namespace FuFramework.Scene.Runtime
         {
             _ = typeof(ActiveSceneChangedEventArgs);
             _ = typeof(GameSceneManager);
-            _ = typeof(IGameSceneManager);
             _ = typeof(LoadSceneFailureEventArgs);
             _ = typeof(LoadSceneSuccessEventArgs);
             _ = typeof(LoadSceneUpdateEventArgs);

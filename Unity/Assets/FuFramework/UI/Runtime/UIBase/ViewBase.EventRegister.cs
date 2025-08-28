@@ -44,14 +44,14 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
-        /// <param name="id">消息ID</param>
-        /// <param name="e">消息对象</param>
-        public void Fire(string id, GameEventArgs e)
+        /// <param name="sender">消息ID</param>
+        /// <param name="eventArgs">消息对象</param>
+        public void Fire(object sender, GameEventArgs eventArgs)
         {
-            FuGuard.NotNull(e, nameof(e));
-            FuGuard.NotNullOrEmpty(id, nameof(id));
+            FuGuard.NotNull(sender, nameof(sender));
+            FuGuard.NotNull(eventArgs, nameof(eventArgs));
             FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
-            EventRegister.Fire(id, e);
+            EventRegister.Fire(sender, eventArgs);
         }
 
         /// <summary>

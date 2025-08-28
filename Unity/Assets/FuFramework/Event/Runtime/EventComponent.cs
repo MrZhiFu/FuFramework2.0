@@ -33,8 +33,8 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         protected override void Awake()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IEventManager);
+            ImplComponentType      = Utility.Assembly.GetType(componentType);
+            InterfaceComponentType = typeof(IEventManager);
 
             base.Awake();
 
@@ -108,10 +108,7 @@ namespace FuFramework.Event.Runtime
         /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
-        /// <param name="e">事件内容。</param>
-        public void FireNow(object sender, GameEventArgs e)
-        {
-            m_EventManager.FireNow(sender, e);
-        }
+        /// <param name="eventArgs">事件内容。</param>
+        public void FireNow(object sender, GameEventArgs eventArgs) => m_EventManager.FireNow(sender, eventArgs);
     }
 }

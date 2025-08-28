@@ -4,8 +4,8 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using System.Collections.Generic;
 using FuFramework.Event.Runtime;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -38,13 +38,13 @@ namespace FuFramework.Scene.Runtime
             public SceneHandleData(SceneHandle sceneHandle, object userData)
             {
                 SceneHandle = sceneHandle;
-                UserData = userData;
+                UserData    = userData;
             }
         }
 
-        private readonly Dictionary<string, SceneHandle> m_LoadedSceneDict = new(); // 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
-        private readonly Dictionary<string, SceneHandleData> m_LoadingSceneDict = new(); // 正在加载的场景字典，Key为场景资源路径，Value为场景加载句柄数据
-        private readonly Dictionary<string, SceneHandle> m_UnloadingSceneDict = new(); // 正在卸载的场景字典，Key为场景资源路径，Value为场景加载句柄
+        private readonly Dictionary<string, SceneHandle>     m_LoadedSceneDict    = new(); // 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
+        private readonly Dictionary<string, SceneHandleData> m_LoadingSceneDict   = new(); // 正在加载的场景字典，Key为场景资源路径，Value为场景加载句柄数据
+        private readonly Dictionary<string, SceneHandle>     m_UnloadingSceneDict = new(); // 正在卸载的场景字典，Key为场景资源路径，Value为场景加载句柄
 
         private EventRegister EventRegister { get; set; } // 事件订阅器
 
@@ -78,7 +78,7 @@ namespace FuFramework.Scene.Runtime
             m_LoadingSceneDict.Clear();
             m_UnloadingSceneDict.Clear();
 
-            EventRegister.Clear();
+            EventRegister.Release();
             EventRegister = null;
         }
 
@@ -102,7 +102,7 @@ namespace FuFramework.Scene.Runtime
                 Log.Error("场景资源路径 '{0}' 格式错误!", sceneAssetPath);
                 return false;
             }
-            
+
             return AssetManager.Instance.LoadSceneAsync(sceneAssetPath, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
         }
 
@@ -221,7 +221,9 @@ namespace FuFramework.Scene.Runtime
         }
 
         #endregion
-        
+
+        #region Set
+
         /// <summary>
         /// 设置活动场景。
         /// </summary>
@@ -235,6 +237,11 @@ namespace FuFramework.Scene.Runtime
             EventRegister.Fire(this, activeSceneChangedEventArgs);
         }
         
+
+        #endregion
+
+        #region 加载场景
+
         /// <summary>
         /// 加载场景。
         /// </summary>
@@ -268,7 +275,7 @@ namespace FuFramework.Scene.Runtime
 
             if (!sceneAssetPath.StartsWith("Assets/", StringComparison.Ordinal) || !sceneAssetPath.EndsWith(".unity", StringComparison.Ordinal))
                 throw new FuException(Utility.Text.Format("场景资源路径 '{0}' 格式错误!", sceneAssetPath));
-            
+
             if (SceneIsUnloading(sceneAssetPath))
                 throw new FuException(Utility.Text.Format("场景资源 '{0}' 正在卸载中!", sceneAssetPath));
 
@@ -283,6 +290,10 @@ namespace FuFramework.Scene.Runtime
             sceneOperationHandle.Completed += OnLoadSceneCompleted;
             return sceneOperationHandle;
         }
+
+        #endregion
+
+        #region 卸载场景
 
         /// <summary>
         /// 卸载场景。
@@ -334,6 +345,9 @@ namespace FuFramework.Scene.Runtime
             }
         }
 
+        #endregion
+
+        #region 加载场景回调
 
         /// <summary>
         /// 加载场景更新回调。
@@ -375,5 +389,7 @@ namespace FuFramework.Scene.Runtime
                 EventRegister.Fire(this, loadSceneFailureEventArgs);
             }
         }
+
+        #endregion
     }
 }
