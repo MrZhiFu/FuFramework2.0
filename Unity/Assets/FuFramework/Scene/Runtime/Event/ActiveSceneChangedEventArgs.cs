@@ -36,12 +36,11 @@ namespace FuFramework.Scene.Runtime
         /// <param name="lastActiveScene">上一个被激活的场景。</param>
         /// <param name="activeScene">被激活的场景。</param>
         /// <returns>创建的激活场景被改变事件。</returns>
-        public static ActiveSceneChangedEventArgs Create(UnityEngine.SceneManagement.Scene lastActiveScene,
-            UnityEngine.SceneManagement.Scene activeScene)
+        public static ActiveSceneChangedEventArgs Create(UnityEngine.SceneManagement.Scene lastActiveScene, UnityEngine.SceneManagement.Scene activeScene)
         {
             var activeSceneChangedEventArgs = ReferencePool.Acquire<ActiveSceneChangedEventArgs>();
             activeSceneChangedEventArgs.LastActiveScene = lastActiveScene;
-            activeSceneChangedEventArgs.ActiveScene = activeScene;
+            activeSceneChangedEventArgs.ActiveScene     = activeScene;
             return activeSceneChangedEventArgs;
         }
 
@@ -51,7 +50,7 @@ namespace FuFramework.Scene.Runtime
         public override void Clear()
         {
             LastActiveScene = default;
-            ActiveScene = default;
+            ActiveScene     = default;
         }
     }
 }

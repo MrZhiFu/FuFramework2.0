@@ -21,7 +21,8 @@
         "FuFramework.Config.Runtime",
         "FuFramework.Network.Runtime",
         "FuFramework.GetChannel.Runtime",
-        "FuFramework.GlobalConfig.Runtime"
+        "FuFramework.GlobalConfig.Runtime",
+        "FuFramework.Scene.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -21,9 +21,9 @@ namespace FuFramework.Scene.Runtime
         public static readonly string EventId = typeof(UnloadSceneSuccessEventArgs).FullName;
 
         /// <summary>
-        /// 获取场景资源名称。
+        /// 场景名称。
         /// </summary>
-        public string SceneAssetName { get; private set; }
+        public string SceneName { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -33,14 +33,14 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 创建卸载场景成功事件。
         /// </summary>
-        /// <param name="sceneAssetName">场景资源名称。</param>
+        /// <param name="sceneName">场景名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的卸载场景成功事件。</returns>
-        public static UnloadSceneSuccessEventArgs Create(string sceneAssetName, object userData)
+        public static UnloadSceneSuccessEventArgs Create(string sceneName, object userData)
         {
             var unloadSceneSuccessEventArgs = ReferencePool.Acquire<UnloadSceneSuccessEventArgs>();
-            unloadSceneSuccessEventArgs.SceneAssetName = sceneAssetName;
-            unloadSceneSuccessEventArgs.UserData = userData;
+            unloadSceneSuccessEventArgs.SceneName = sceneName;
+            unloadSceneSuccessEventArgs.UserData  = userData;
             return unloadSceneSuccessEventArgs;
         }
 
@@ -49,8 +49,8 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         public override void Clear()
         {
-            SceneAssetName = null;
-            UserData = null;
+            SceneName = null;
+            UserData  = null;
         }
     }
 }

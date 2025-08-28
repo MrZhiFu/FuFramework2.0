@@ -22,40 +22,40 @@ namespace FuFramework.Scene.Runtime
         public static readonly string EventId = typeof(LoadSceneFailureEventArgs).FullName;
 
         /// <summary>
-        /// 获取场景资源名称。
+        /// 场景名称。
         /// </summary>
-        public string SceneAssetName { get; private set; }
+        public string SceneName { get; private set; }
 
         /// <summary>
-        /// 获取错误信息。
+        /// 错误信息。
         /// </summary>
         public string ErrorMessage { get; private set; }
 
         /// <summary>
-        /// 获取用户自定义数据。
+        /// 用户自定义数据。
         /// </summary>
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 获取加载场景状态
+        /// 加载场景状态
         /// </summary>
         public EOperationStatus Status { get; private set; }
 
         /// <summary>
         /// 创建加载场景失败事件。
         /// </summary>
-        /// <param name="sceneAssetName">场景资源名称。</param>
+        /// <param name="sceneName">场景名称。</param>
         /// <param name="status">加载场景状态。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的加载场景失败事件。</returns>
-        public static LoadSceneFailureEventArgs Create(string sceneAssetName, EOperationStatus status, string errorMessage, object userData)
+        public static LoadSceneFailureEventArgs Create(string sceneName, EOperationStatus status, string errorMessage, object userData)
         {
             var loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
-            loadSceneFailureEventArgs.SceneAssetName = sceneAssetName;
+            loadSceneFailureEventArgs.SceneName    = sceneName;
             loadSceneFailureEventArgs.ErrorMessage = errorMessage;
-            loadSceneFailureEventArgs.UserData = userData;
-            loadSceneFailureEventArgs.Status = status;
+            loadSceneFailureEventArgs.UserData     = userData;
+            loadSceneFailureEventArgs.Status       = status;
             return loadSceneFailureEventArgs;
         }
 
@@ -64,10 +64,10 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         public override void Clear()
         {
-            SceneAssetName = null;
+            SceneName    = null;
             ErrorMessage = null;
-            UserData = null;
-            Status = EOperationStatus.None;
+            UserData     = null;
+            Status       = EOperationStatus.None;
         }
     }
 }

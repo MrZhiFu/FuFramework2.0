@@ -11,6 +11,7 @@ using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable NotAccessedField.Local
+// ReSharper disable UnusedMember.Global
 namespace FuFramework.Scene.Runtime
 {
     /// <summary>
@@ -50,7 +51,6 @@ namespace FuFramework.Scene.Runtime
 
         protected override void Init()
         {
-            base.Init();
             EventRegister = EventRegister.Create();
         }
 
@@ -67,11 +67,12 @@ namespace FuFramework.Scene.Runtime
 
         protected override void Dispose()
         {
-            base.Dispose();
-            foreach (var (loadedSceneAssetName, _) in m_LoadedSceneDict)
+            // 反向遍历已加载的场景，卸载所有已加载的场景
+            for (var i = m_LoadedSceneDict.Count - 1; i >= 0; i--)
             {
-                if (SceneIsUnloading(loadedSceneAssetName)) continue;
-                UnloadScene(loadedSceneAssetName);
+                var loadedScenePath = m_LoadedSceneDict.Keys.ToArray()[i];
+                if (SceneIsUnloading(loadedScenePath)) continue;
+                UnloadScene(loadedScenePath);
             }
 
             m_LoadedSceneDict.Clear();
@@ -236,7 +237,6 @@ namespace FuFramework.Scene.Runtime
             var activeSceneChangedEventArgs = ActiveSceneChangedEventArgs.Create(lastActiveScene, activeScene);
             EventRegister.Fire(this, activeSceneChangedEventArgs);
         }
-        
 
         #endregion
 
@@ -245,22 +245,16 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 加载场景。
         /// </summary>
-        /// <param name="sceneAssetPath">场景资源路径。</param>
-        public UniTask<SceneHandle> LoadScene(string sceneAssetPath) => LoadScene(sceneAssetPath, LoadSceneMode.Single);
-
-        /// <summary>
-        /// 加载场景。
-        /// </summary>
-        /// <param name="sceneAssetPath">场景资源路径。</param>
-        /// <param name="sceneMode">加载场景的方式。</param>
-        public UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode) => LoadScene(sceneAssetPath, sceneMode, null);
-
-        /// <summary>
-        /// 加载场景。
-        /// </summary>
-        /// <param name="sceneAssetPath">场景资源路径。</param>
+        /// <param name="sceneAssetName">场景资源路径。</param>
+        /// <param name="sceneMode">加载模式。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public UniTask<SceneHandle> LoadScene(string sceneAssetPath, object userData) => LoadScene(sceneAssetPath, LoadSceneMode.Single, userData);
+        public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
+        {
+            if (string.IsNullOrEmpty(sceneAssetName)) throw new FuException("场景资源名称不能为空!.");
+            var sceneAssetPath = Utility.Asset.Path.GetScenePath(sceneAssetName);
+            return LoadScene(sceneAssetPath, sceneMode, userData);
+        }
+
 
         /// <summary>
         /// 加载场景。
@@ -268,7 +262,7 @@ namespace FuFramework.Scene.Runtime
         /// <param name="sceneAssetPath">场景资源路径。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="sceneMode"></param>
-        public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode, object userData)
+        public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetPath))
                 throw new FuException("场景资源路径不能为空!.");
@@ -283,7 +277,7 @@ namespace FuFramework.Scene.Runtime
                 throw new FuException(Utility.Text.Format("场景资源 '{0}' 正在加载中!", sceneAssetPath));
 
             if (SceneIsLoaded(sceneAssetPath))
-                throw new FuException(Utility.Text.Format("场景资源 '{0}' 已被加载过!", sceneAssetPath));
+                throw new FuException(Utility.Text.Format("场景资源 '{0}' 已被加载过，不能重复加载!", sceneAssetPath));
 
             var sceneOperationHandle = await AssetManager.Instance.LoadSceneAsync(sceneAssetPath, sceneMode);
             m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
@@ -328,18 +322,22 @@ namespace FuFramework.Scene.Runtime
                 if (asyncOperationBase.Error.IsNullOrEmpty())
                 {
                     // 卸载成功
+                    m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
+                    if (sceneHandle == null) return;
+                    Log.Info($"卸载场景 '{sceneHandle.SceneName}' 成功！");
+                    var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     m_LoadedSceneDict.Remove(sceneAssetPath);
-                    Log.Info("卸载场景 '{0}' 成功！", sceneAssetPath);
-                    var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneAssetPath, userData);
                     EventRegister.Fire(this, unloadSceneSuccessEventArgs);
                 }
                 else
                 {
                     // 卸载失败
+                    m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
+                    if (sceneHandle == null) return;
+                    Log.Error($"卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
-                    Log.Warning("卸载场景 '{0} 失败！'.", sceneAssetPath);
-                    var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneAssetPath, userData);
+                    var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
                     EventRegister.Fire(this, unloadSceneFailureEventArgs);
                 }
             }
@@ -355,8 +353,11 @@ namespace FuFramework.Scene.Runtime
         /// <param name="sceneHandle"></param>
         private void OnLoadSceneUpdate(SceneHandle sceneHandle)
         {
+            FuGuard.NotNull(sceneHandle, nameof(sceneHandle));
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
             if (!m_LoadingSceneDict.TryGetValue(assetPath, out var value)) return;
+
+            Log.Info($"加载场景中 '{sceneHandle.SceneName}' 进度--{sceneHandle.Progress}.", sceneHandle.SceneName, sceneHandle.Progress);
             var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneHandle.SceneName, sceneHandle.Progress, value.UserData);
             EventRegister.Fire(this, loadSceneUpdateEventArgs);
         }
@@ -377,6 +378,7 @@ namespace FuFramework.Scene.Runtime
             if (sceneHandle.IsDone)
             {
                 // 加载成功
+                Log.Info($"加载场景 '{sceneHandle.SceneName}' 成功！");
                 var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
                 EventRegister.Fire(this, loadSceneSuccessEventArgs);
             }

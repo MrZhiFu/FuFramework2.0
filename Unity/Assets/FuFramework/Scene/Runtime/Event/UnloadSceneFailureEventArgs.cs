@@ -23,7 +23,7 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 获取场景资源名称。
         /// </summary>
-        public string SceneAssetName { get; private set; }
+        public string SceneName { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -33,14 +33,14 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 创建卸载场景失败事件。
         /// </summary>
-        /// <param name="sceneAssetName">场景资源名称。</param>
+        /// <param name="sceneName">场景资源名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的卸载场景失败事件。</returns>
-        public static UnloadSceneFailureEventArgs Create(string sceneAssetName, object userData)
+        public static UnloadSceneFailureEventArgs Create(string sceneName, object userData)
         {
             var unloadSceneFailureEventArgs = ReferencePool.Acquire<UnloadSceneFailureEventArgs>();
-            unloadSceneFailureEventArgs.SceneAssetName = sceneAssetName;
-            unloadSceneFailureEventArgs.UserData = userData;
+            unloadSceneFailureEventArgs.SceneName = sceneName;
+            unloadSceneFailureEventArgs.UserData  = userData;
             return unloadSceneFailureEventArgs;
         }
 
@@ -49,8 +49,8 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         public override void Clear()
         {
-            SceneAssetName = null;
-            UserData = null;
+            SceneName = null;
+            UserData  = null;
         }
     }
 }

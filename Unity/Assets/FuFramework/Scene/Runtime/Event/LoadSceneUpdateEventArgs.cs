@@ -23,7 +23,7 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 获取场景资源名称。
         /// </summary>
-        public string SceneAssetName { get; private set; }
+        public string SceneName { get; private set; }
 
         /// <summary>
         /// 获取加载场景进度。
@@ -45,7 +45,7 @@ namespace FuFramework.Scene.Runtime
         public static LoadSceneUpdateEventArgs Create(string sceneAssetName, float progress, object userData)
         {
             var loadSceneUpdateEventArgs = ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
-            loadSceneUpdateEventArgs.SceneAssetName = sceneAssetName;
+            loadSceneUpdateEventArgs.SceneName = sceneAssetName;
             loadSceneUpdateEventArgs.Progress = progress;
             loadSceneUpdateEventArgs.UserData = userData;
             return loadSceneUpdateEventArgs;
@@ -56,7 +56,7 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         public override void Clear()
         {
-            SceneAssetName = null;
+            SceneName = null;
             Progress = 0f;
             UserData = null;
         }
