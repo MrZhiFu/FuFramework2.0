@@ -16,7 +16,7 @@ namespace #NAMESPACE#
         /// </summary>
         public void InitEvent()
         {
-            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+            // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
         
         #region 交互事件以及ListItem渲染回调处理
