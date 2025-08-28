@@ -73,6 +73,12 @@ namespace FuFramework.ModuleSetting.Editor
             if (EditorGUI.EndChangeCheck()) 
                 m_FailedTryAgainNumProp.intValue = failedTryAgainNum;
             
+            EditorGUILayout.Space(10);
+            
+            // 重置配置
+            if (GUILayout.Button("重置配置")) 
+                assetSetting.Reset();
+
             serializedObject.ApplyModifiedProperties();
         }
     }

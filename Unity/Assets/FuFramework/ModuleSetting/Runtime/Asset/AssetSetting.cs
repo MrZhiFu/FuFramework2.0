@@ -49,5 +49,15 @@ namespace FuFramework.ModuleSetting.Runtime
         /// </summary>
         public int FailedTryAgainNum => m_FailedTryAgainNum;
         
+        /// <summary>
+        /// 重置配置
+        /// </summary>
+        public void Reset()
+        {
+            m_PlayMode = EPlayMode.EditorSimulateMode;
+            m_DefaultPackageName = "DefaultPackage";
+            m_DownloadingMaxNum = 10;    
+            m_FailedTryAgainNum = 3;
+        }
     }
 }
