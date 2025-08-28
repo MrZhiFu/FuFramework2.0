@@ -1,15 +1,12 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Scene.Runtime
 {
-   
     public class GameFrameXSceneCroppingHelper : MonoBehaviour
     {
-       
         private void Start()
         {
-            _ = typeof(SceneComponent);
             _ = typeof(ActiveSceneChangedEventArgs);
             _ = typeof(GameSceneManager);
             _ = typeof(IGameSceneManager);

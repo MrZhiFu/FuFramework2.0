@@ -36,16 +36,6 @@ namespace FuFramework.Scene.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 初始化加载场景更新事件的新实例。
-        /// </summary>
-        public LoadSceneUpdateEventArgs()
-        {
-            SceneAssetName = null;
-            Progress = 0f;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 创建加载场景更新事件。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>

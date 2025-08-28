@@ -42,16 +42,6 @@ namespace FuFramework.Scene.Runtime
         public EOperationStatus Status { get; private set; }
 
         /// <summary>
-        /// 初始化加载场景失败事件的新实例。
-        /// </summary>
-        public LoadSceneFailureEventArgs()
-        {
-            SceneAssetName = null;
-            ErrorMessage = null;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 创建加载场景失败事件。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>

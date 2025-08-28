@@ -31,15 +31,6 @@ namespace FuFramework.Scene.Runtime
         public UnityEngine.SceneManagement.Scene ActiveScene { get; private set; }
 
         /// <summary>
-        /// 初始化激活场景被改变事件的新实例。
-        /// </summary>
-        public ActiveSceneChangedEventArgs()
-        {
-            LastActiveScene = default;
-            ActiveScene = default;
-        }
-
-        /// <summary>
         /// 创建激活场景被改变事件。
         /// </summary>
         /// <param name="lastActiveScene">上一个被激活的场景。</param>

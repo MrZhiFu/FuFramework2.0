@@ -67,6 +67,17 @@ namespace FuFramework.Event.Runtime
             if (!m_EventHandlerDict.Contains(id)) return;
             EventManager.Fire(this, e);
         }
+        
+        /// <summary>
+        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">消息对象</param>
+        public void Fire(object sender, GameEventArgs e)
+        {
+            if (!m_EventHandlerDict.Contains(e.Id)) return;
+            EventManager.Fire(this, e);
+        }
 
         /// <summary>
         /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。

@@ -31,15 +31,6 @@ namespace FuFramework.Scene.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 初始化卸载场景成功事件的新实例。
-        /// </summary>
-        public UnloadSceneSuccessEventArgs()
-        {
-            SceneAssetName = null;
-            UserData = null;
-        }
-
-        /// <summary>
         /// 创建卸载场景成功事件。
         /// </summary>
         /// <param name="sceneAssetName">场景资源名称。</param>
