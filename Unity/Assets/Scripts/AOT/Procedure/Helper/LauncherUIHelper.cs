@@ -22,7 +22,7 @@ namespace Launcher.Procedure
         /// <summary>
         /// 开启热更进度显示UI
         /// </summary>
-        public static async UniTaskVoid Start()
+        public static async UniTask Start()
         {
             m_WinLauncher = await UIManager.Instance.OpenUIAsync<WinLauncher>();
             GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);

@@ -2,6 +2,7 @@
 using HybridCLR;
 using System.Linq;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -23,7 +24,7 @@ namespace Launcher.Procedure
         /// <summary>
         /// 启动代码热修复
         /// </summary>
-        public static async void StartHotfix()
+        public static async UniTask StartHotfix()
         {
             // 编辑器模式下，直接加载程序集
             if (ApplicationHelper.IsEditor)

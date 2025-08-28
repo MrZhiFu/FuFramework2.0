@@ -28,9 +28,9 @@ namespace Launcher.Procedure
         /// </summary>
         private async UniTaskVoid Start()
         {
-            await UniTask.DelayFrame(); // 等待一帧，确保热更完毕
-            HotfixHelper.StartHotfix(); // 开始代码热修复
-            LauncherUIHelper.Dispose(); // 释放启动流程的加载界面
+            await UniTask.DelayFrame();      // 等待一帧，确保热更完毕
+            await HotfixHelper.StartHotfix(); // 开始代码热修复
+            LauncherUIHelper.Dispose();       // 释放启动流程的加载界面
         }
     }
 }
