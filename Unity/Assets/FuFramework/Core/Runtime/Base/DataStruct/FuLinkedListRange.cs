@@ -20,26 +20,24 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 获取链表范围的终结点。
         /// </summary>
-        public LinkedListNode<T> Terminal { get; }
+        public LinkedListNode<T> End { get; }
 
         /// <summary>
         /// 初始化游戏框架链表范围的新实例。
         /// </summary>
         /// <param name="first">链表范围的开始结点。</param>
-        /// <param name="terminal">链表范围的终结点。</param>
-        public FuLinkedListRange(LinkedListNode<T> first, LinkedListNode<T> terminal)
+        /// <param name="end">链表范围的终结点。</param>
+        public FuLinkedListRange(LinkedListNode<T> first, LinkedListNode<T> end)
         {
-            if (first == null || terminal == null || first == terminal)
-                throw new FuException("Range is invalid.");
-
-            First    = first;
-            Terminal = terminal;
+            if (first == null || end == null || first == end) throw new FuException("[FuLinkedListRange]链表范围无效!");
+            First = first;
+            End   = end;
         }
 
         /// <summary>
         /// 获取链表范围是否有效。
         /// </summary>
-        public bool IsValid => First != null && Terminal != null && First != Terminal;
+        public bool IsValid => First != null && End != null && First != End;
 
         /// <summary>
         /// 获取链表范围的结点数量。
@@ -49,9 +47,9 @@ namespace FuFramework.Core.Runtime
             get
             {
                 if (!IsValid) return 0;
-                
+
                 var count = 0;
-                for (var current = First; current != null && current != Terminal; current = current.Next)
+                for (var current = First; current != null && current != End; current = current.Next)
                 {
                     count++;
                 }
@@ -67,7 +65,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>是否包含指定值。</returns>
         public bool Contains(T value)
         {
-            for (var current = First; current != null && current != Terminal; current = current.Next)
+            for (var current = First; current != null && current != End; current = current.Next)
             {
                 if (!current.Value.Equals(value)) continue;
                 return true;
@@ -80,10 +78,7 @@ namespace FuFramework.Core.Runtime
         /// 返回循环访问集合的枚举数。
         /// </summary>
         /// <returns>循环访问集合的枚举数。</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
+        public Enumerator GetEnumerator() => new(this);
 
         /// <summary>
         /// 返回循环访问集合的枚举数。
@@ -103,13 +98,24 @@ namespace FuFramework.Core.Runtime
         [StructLayout(LayoutKind.Auto)]
         public struct Enumerator : IEnumerator<T>
         {
+            /// <summary>
+            /// 链表范围。
+            /// </summary>
             private readonly FuLinkedListRange<T> m_Range;
-            private          LinkedListNode<T>               m_Current;
-            private          T                               m_CurrentValue;
+
+            /// <summary>
+            /// 当前结点。
+            /// </summary>
+            private LinkedListNode<T> m_Current;
+
+            /// <summary>
+            /// 当前结点的值。
+            /// </summary>
+            private T m_CurrentValue;
 
             internal Enumerator(FuLinkedListRange<T> range)
             {
-                if (!range.IsValid) throw new FuException("Range is invalid.");
+                if (!range.IsValid) throw new FuException("[Enumerator]链表范围无效!");
 
                 m_Range        = range;
                 m_CurrentValue = default;
@@ -137,7 +143,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>返回下一个结点。</returns>
             public bool MoveNext()
             {
-                if (m_Current == null || m_Current == m_Range.Terminal)
+                if (m_Current == null || m_Current == m_Range.End)
                     return false;
 
                 m_CurrentValue = m_Current.Value;

@@ -50,17 +50,17 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 获取一个值，该值指示 ICollection`1 是否为只读。
         /// </summary>
-        public bool IsReadOnly => ((ICollection<T>)m_LinkedList).IsReadOnly;
+        public bool IsReadOnly => (m_LinkedList as ICollection<T>).IsReadOnly;
 
         /// <summary>
         /// 获取可用于同步对 ICollection 的访问的对象。
         /// </summary>
-        public object SyncRoot => ((ICollection)m_LinkedList).SyncRoot;
+        public object SyncRoot => (m_LinkedList as ICollection).SyncRoot;
 
         /// <summary>
         /// 获取一个值，该值指示是否同步对 ICollection 的访问（线程安全）。
         /// </summary>
-        public bool IsSynchronized => ((ICollection)m_LinkedList).IsSynchronized;
+        public bool IsSynchronized => (m_LinkedList as ICollection).IsSynchronized;
 
         /// <summary>
         /// 在链表中指定的现有结点后添加包含指定值的新结点。
@@ -224,7 +224,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveFirst()
         {
             var first = m_LinkedList.First;
-            if (first == null) throw new FuException("First is invalid.");
+            if (first == null) throw new FuException("[FuLinkedList]移除开头结点失败，链表开头结点为空!");
 
             m_LinkedList.RemoveFirst();
             _ReleaseNode(first);
@@ -236,7 +236,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveLast()
         {
             var last = m_LinkedList.Last;
-            if (last == null) throw new FuException("Last is invalid.");
+            if (last == null) throw new FuException("[FuLinkedList]移除结尾结点失败，链表结尾结点为空!");
 
             m_LinkedList.RemoveLast();
             _ReleaseNode(last);
@@ -308,9 +308,7 @@ namespace FuFramework.Core.Runtime
 
             internal Enumerator(LinkedList<T> linkedList)
             {
-                if (linkedList == null)
-                    throw new FuException("Linked list is invalid.");
-
+                if (linkedList == null) throw new FuException("[FuLinkedList.Enumerator] 传入的链表为空!");
                 m_Enumerator = linkedList.GetEnumerator();
             }
 

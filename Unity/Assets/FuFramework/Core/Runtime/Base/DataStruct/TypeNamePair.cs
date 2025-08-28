@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -11,11 +10,15 @@ namespace FuFramework.Core.Runtime
     [StructLayout(LayoutKind.Auto)]
     public readonly struct TypeNamePair : IEquatable<TypeNamePair>
     {
-        /// 类型
-        private readonly Type m_Type;
+        /// <summary>
+        /// 类型。
+        /// </summary>
+        public Type Type { get; }
 
-        /// 名称
-        private readonly string m_Name;
+        /// <summary>
+        /// 名称。
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// 初始化类型和名称的组合值的新实例。
@@ -30,19 +33,9 @@ namespace FuFramework.Core.Runtime
         /// <param name="name">名称。</param>
         public TypeNamePair(Type type, string name)
         {
-            m_Type = type ?? throw new FuException("Type is invalid.");
-            m_Name = name ?? string.Empty;
+            Type = type ?? throw new FuException("[TypeNamePair] 类型不能为空!");
+            Name = name ?? string.Empty;
         }
-
-        /// <summary>
-        /// 获取类型。
-        /// </summary>
-        public Type Type => m_Type;
-
-        /// <summary>
-        /// 获取名称。
-        /// </summary>
-        public string Name => m_Name;
 
         /// <summary>
         /// 获取类型和名称的组合值字符串。
@@ -50,16 +43,16 @@ namespace FuFramework.Core.Runtime
         /// <returns>类型和名称的组合值字符串。</returns>
         public override string ToString()
         {
-            if (m_Type == null) throw new FuException("Type is invalid.");
-            var typeName = m_Type.FullName;
-            return (string.IsNullOrEmpty(m_Name) ? typeName : Runtime.Utility.Text.Format("{0}.{1}", typeName, m_Name)) ?? string.Empty;
+            if (Type == null) throw new FuException("[TypeNamePair] 类型不能为空!");
+            var typeName = Type.FullName;
+            return (string.IsNullOrEmpty(Name) ? typeName : Utility.Text.Format("{0}.{1}", typeName, Name)) ?? string.Empty;
         }
 
         /// <summary>
         /// 获取对象的哈希值。
         /// </summary>
         /// <returns>对象的哈希值。</returns>
-        public override int GetHashCode() => m_Type.GetHashCode() ^ m_Name.GetHashCode();
+        public override int GetHashCode() => Type.GetHashCode() ^ Name.GetHashCode();
 
         /// <summary>
         /// 比较对象是否与自身相等。
@@ -73,7 +66,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="value">要比较的对象。</param>
         /// <returns>被比较的对象是否与自身相等。</returns>
-        public bool Equals(TypeNamePair value) => m_Type == value.m_Type && m_Name == value.m_Name;
+        public bool Equals(TypeNamePair value) => Type == value.Type && Name == value.Name;
 
         /// <summary>
         /// 判断两个对象是否相等。

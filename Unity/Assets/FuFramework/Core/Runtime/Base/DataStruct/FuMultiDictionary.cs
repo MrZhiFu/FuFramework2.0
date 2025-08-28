@@ -87,7 +87,7 @@ namespace FuFramework.Core.Runtime
         {
             if (m_Dictionary.TryGetValue(key, out var range))
             {
-                m_LinkedList.AddBefore(range.Terminal, value);
+                m_LinkedList.AddBefore(range.End, value);
                 return;
             }
 
@@ -107,20 +107,22 @@ namespace FuFramework.Core.Runtime
         {
             if (!m_Dictionary.TryGetValue(key, out var range)) return false;
 
-            for (var current = range.First; current != null && current != range.Terminal; current = current.Next)
+            for (var current = range.First; current != null && current != range.End; current = current.Next)
             {
                 if (!current.Value.Equals(value)) continue;
 
                 if (current == range.First)
                 {
                     var next = current.Next;
-                    if (next == range.Terminal)
+                    if (next == range.End)
                     {
-                        m_LinkedList.Remove(next);
+                        m_LinkedList.Remove(range.End);
                         m_Dictionary.Remove(key);
                     }
                     else
-                        m_Dictionary[key] = new FuLinkedListRange<TValue>(next, range.Terminal);
+                    {
+                        m_Dictionary[key] = new FuLinkedListRange<TValue>(next, range.End);
+                    }
                 }
 
                 m_LinkedList.Remove(current);
@@ -142,7 +144,7 @@ namespace FuFramework.Core.Runtime
             var current = range.First;
             while (current != null)
             {
-                var next = current != range.Terminal ? current.Next : null;
+                var next = current != range.End ? current.Next : null;
                 m_LinkedList.Remove(current);
                 current = next;
             }
