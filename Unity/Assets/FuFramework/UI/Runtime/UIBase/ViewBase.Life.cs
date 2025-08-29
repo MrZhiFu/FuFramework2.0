@@ -146,7 +146,7 @@ namespace FuFramework.UI.Runtime
         internal void _OnDispose()
         {
             Log.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            FuiPackageManager.Instance.SubRef(PackageName);
+            FuiPackageManager.Instance?.SubRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器

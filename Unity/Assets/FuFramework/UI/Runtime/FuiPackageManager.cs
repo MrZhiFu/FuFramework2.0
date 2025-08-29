@@ -294,8 +294,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void ReleaseAll()
         {
-            var packagesToRelease = new List<string>(m_loadedPkgDict.Keys);
-            foreach (var pkgName in packagesToRelease)
+            foreach (var pkgName in m_loadedPkgDict.Keys)
             {
                 ReleasePackage(pkgName);
             }
