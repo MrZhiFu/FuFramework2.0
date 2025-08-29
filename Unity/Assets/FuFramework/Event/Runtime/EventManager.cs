@@ -10,6 +10,12 @@ namespace FuFramework.Event.Runtime
     public sealed class EventManager : FuModule, IEventManager
     {
         /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => 7;
+
+        /// <summary>
         /// 事件池。
         /// </summary>
         private readonly EventPool<GameEventArgs> m_EventPool;
@@ -33,17 +39,14 @@ namespace FuFramework.Event.Runtime
         public int EventCount => m_EventPool.EventCount;
 
         /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => 7;
-
-        /// <summary>
         /// 事件管理器轮询。
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds) => m_EventPool.Update(elapseSeconds, realElapseSeconds);
+        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        {
+            m_EventPool.Update(elapseSeconds, realElapseSeconds);
+        }
 
         /// <summary>
         /// 关闭并清理事件管理器。
@@ -58,26 +61,37 @@ namespace FuFramework.Event.Runtime
         public int Count(string id) => m_EventPool.Count(id);
 
         /// <summary>
-        /// 检查是否存在事件处理函数。
+        /// 检查是否已存在指定事件对应的处理函数。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要检查的事件处理函数。</param>
         /// <returns>是否存在事件处理函数。</returns>
-        public bool Check(string id, EventHandler<GameEventArgs> handler) => m_EventPool.Check(id, handler);
+        public bool Check(string id, EventHandler<GameEventArgs> handler)
+        {
+            return m_EventPool.Check(id, handler);
+        }
 
         /// <summary>
         /// 订阅事件处理函数。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要订阅的事件处理函数。</param>
-        public void Subscribe(string id, EventHandler<GameEventArgs> handler) => m_EventPool.Subscribe(id, handler);
+        public void Subscribe(string id, EventHandler<GameEventArgs> handler)
+        {
+            if (Check(id, handler)) return;
+            m_EventPool.Subscribe(id, handler);
+        }
 
         /// <summary>
         /// 取消订阅事件处理函数。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要取消订阅的事件处理函数。</param>
-        public void Unsubscribe(string id, EventHandler<GameEventArgs> handler) => m_EventPool.Unsubscribe(id, handler);
+        public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
+        {
+            if (!Check(id, handler)) return;
+            m_EventPool.Unsubscribe(id, handler);
+        }
 
         /// <summary>
         /// 设置默认事件处理函数。

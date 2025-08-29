@@ -123,7 +123,7 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
-        /// 检查是否存在指定事件对应的处理函数。
+        /// 检查是否已存在指定事件对应的处理函数。
         /// </summary>
         public bool Check(string id, EventHandler<T> handler)
         {
