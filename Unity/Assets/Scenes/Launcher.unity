@@ -553,7 +553,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe5a0a352e493e4887a267e1dc999d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Setting.Runtime.SettingManager
   m_SettingHelperTypeName: FuFramework.Setting.Runtime.DefaultSettingHelper
   m_CustomSettingHelper: {fileID: 0}
 --- !u!114 &1548725358
@@ -568,7 +567,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84be3d5ad3c1cc942ba61bd768ca9177, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Download.Runtime.DownloadManager
   m_InstanceRoot: {fileID: 1146593347797569675}
   m_DownloadAgentHelperTypeName: FuFramework.Download.Runtime.UnityWebRequestDownloadAgentHelper
   m_CustomDownloadAgentHelper: {fileID: 0}
@@ -670,7 +668,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fe517ad76a599343ad89285d1ea969f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Web.Runtime.WebManager
   m_Timeout: 5
 --- !u!114 &1681186163
 MonoBehaviour:
@@ -684,7 +681,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 446d214fa0460ed4d91902528d37b69a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Network.Runtime.NetworkManager
   m_IgnoredSendNetworkIds: 
   m_IgnoredReceiveNetworkIds: 
   m_rpcTimeout: 5000
@@ -700,7 +696,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b92b132742cfba40befc63e8b124faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Localization.Runtime.LocalizationManager
   m_EditorLanguage: 0
   m_DefaultLanguage: 0
   m_EnableLoadDictionaryUpdateEvent: 0
@@ -719,7 +714,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0f0d6a7e45af714480bf40759828ace, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Fsm.Runtime.FsmManager
 --- !u!114 &1681186166
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -732,7 +726,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7d08edf0c02d13468fd2acf63bbc18a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Event.Runtime.EventManager
 --- !u!114 &1681186167
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -745,7 +738,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 198010413be0346448b0952211bacc56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Entity.Runtime.EntityManager
   m_EnableShowEntityUpdateEvent: 1
   m_EnableShowEntityDependencyAssetEvent: 1
   m_InstanceRoot: {fileID: 8708873050020472038}
@@ -766,7 +758,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 733ea0905cc63084c9c5ddac9490bf0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Config.Runtime.ConfigManager
 --- !u!114 &1681186170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -899,7 +890,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41eab607234f77c4382fe477bd1b06d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: 
   m_CheckAppVersionUrl: 
   m_CheckResourceVersionUrl: 
   m_HostServerUrl: 
@@ -942,7 +932,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef831d928c2ce9409f354a23aa0280e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Procedure.Runtime.ProcedureManager
   m_AvailableProcedureTypeNames:
   - Launcher.Procedure.ProcedureLauncher
   - Launcher.Procedure.ProcedureReqGlobalInfo
@@ -1084,7 +1073,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8b6cd5f02c8dee4fbe160e8600a3f94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Timer.Runtime.TimerManager
 --- !u!1 &175056986957474636
 GameObject:
   m_ObjectHideFlags: 0
@@ -1308,7 +1296,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d80d9887d7f80454fb3c9b4f1c15f0f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: 
   m_EnableStrictCheck: 0
 --- !u!4 &5105866444473042000
 Transform:
@@ -1325,36 +1312,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5676027625753040781
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8347106624226656712}
-  - component: {fileID: 5676027625753040782}
-  m_Layer: 0
-  m_Name: Mono
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &5676027625753040782
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5676027625753040781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07de683c80b22a348905d088ee1d2b6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  componentType: FuFramework.Mono.Runtime.MonoManager
 --- !u!1 &6090082196613657399
 GameObject:
   m_ObjectHideFlags: 0
@@ -1383,6 +1340,7 @@ GameObject:
   - component: {fileID: 7148938655606090472}
   - component: {fileID: 7148938655606090473}
   - component: {fileID: 7148938655606090474}
+  - component: {fileID: 7148938655606090475}
   m_Layer: 0
   m_Name: GFX
   m_TagString: Untagged
@@ -1482,7 +1440,6 @@ Transform:
   - {fileID: 2506581721167664985}
   - {fileID: 8613711354764159178}
   - {fileID: 2120699936}
-  - {fileID: 8347106624226656712}
   - {fileID: 787015720}
   - {fileID: 551349809}
   m_Father: {fileID: 0}
@@ -1499,7 +1456,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06c27c703d0028648901edbb999dcde4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: 
   m_TextHelperTypeName: FuFramework.Core.Runtime.DefaultTextHelper
   m_VersionHelperTypeName: FuFramework.Core.Runtime.DefaultVersionHelper
   m_LogHelperTypeName: FuFramework.Core.Runtime.DefaultLogHelper
@@ -1523,6 +1479,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
+--- !u!114 &7148938655606090475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212013545076678542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12556a235f824331ae6c9d1c6d61427e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7149020525938990140
 GameObject:
   m_ObjectHideFlags: 0
@@ -1602,21 +1570,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &8347106624226656712
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5676027625753040781}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &8613711354764159178
 Transform:
   m_ObjectHideFlags: 0
@@ -1659,7 +1612,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0737d1efa343e48b4f5cb924e9b437, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: FuFramework.Core.Runtime.ObjectPoolManager
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

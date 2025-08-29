@@ -22,23 +22,23 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public static class GlobalModule
     {
-        public static BaseComponent BaseModule { get; private set; }
-        public static ConfigComponent ConfigModule { get; private set; }
-        public static CoroutineComponent CoroutineModule { get; private set; }
-        public static DownloadComponent DownloadModule { get; private set; }
-        public static EntityComponent EntityModule { get; private set; }
-        public static EventComponent EventModule { get; private set; }
-        public static FsmComponent FsmModule { get; private set; }
+        public static BaseComponent         BaseModule         { get; private set; }
+        public static ConfigComponent       ConfigModule       { get; private set; }
+        public static CoroutineComponent    CoroutineModule    { get; private set; }
+        public static DownloadComponent     DownloadModule     { get; private set; }
+        public static EntityComponent       EntityModule       { get; private set; }
+        public static EventComponent        EventModule        { get; private set; }
+        public static FsmComponent          FsmModule          { get; private set; }
         public static GlobalConfigComponent GlobalConfigModule { get; private set; }
         public static LocalizationComponent LocalizationModule { get; private set; }
-        public static MonoComponent MonoModule { get; private set; }
-        public static NetworkComponent NetworkModule { get; private set; }
-        public static ObjectPoolComponent ObjectPoolModule { get; private set; }
-        public static ProcedureComponent ProcedureModule { get; private set; }
-        public static SettingComponent SettingModule { get; private set; }
-        public static TimerComponent TimerModule { get; private set; }
-        public static WebComponent WebModule { get; private set; }
-        
+        public static MonoManager           MonoModule         { get; private set; }
+        public static NetworkComponent      NetworkModule      { get; private set; }
+        public static ObjectPoolComponent   ObjectPoolModule   { get; private set; }
+        public static ProcedureComponent    ProcedureModule    { get; private set; }
+        public static SettingComponent      SettingModule      { get; private set; }
+        public static TimerComponent        TimerModule        { get; private set; }
+        public static WebComponent          WebModule          { get; private set; }
+
         // private static SceneComponent SceneModule;
         // private static AdvertisementComponent AdvertisementModule;
         // private static GameAnalyticsComponent GameAnalyticsModule;
@@ -52,22 +52,22 @@ namespace FuFramework.Entry.Runtime
         /// </summary>
         public static void RegisterModule()
         {
-            BaseModule = ModuleManager.RegisterModule<BaseComponent>();
-            ConfigModule = ModuleManager.RegisterModule<ConfigComponent>();
-            CoroutineModule = ModuleManager.RegisterModule<CoroutineComponent>();
-            DownloadModule = ModuleManager.RegisterModule<DownloadComponent>();
-            EntityModule = ModuleManager.RegisterModule<EntityComponent>();
-            EventModule = ModuleManager.RegisterModule<EventComponent>();
-            FsmModule = ModuleManager.RegisterModule<FsmComponent>();
+            BaseModule         = ModuleManager.RegisterModule<BaseComponent>();
+            ConfigModule       = ModuleManager.RegisterModule<ConfigComponent>();
+            CoroutineModule    = ModuleManager.RegisterModule<CoroutineComponent>();
+            DownloadModule     = ModuleManager.RegisterModule<DownloadComponent>();
+            EntityModule       = ModuleManager.RegisterModule<EntityComponent>();
+            EventModule        = ModuleManager.RegisterModule<EventComponent>();
+            FsmModule          = ModuleManager.RegisterModule<FsmComponent>();
             GlobalConfigModule = ModuleManager.RegisterModule<GlobalConfigComponent>();
             LocalizationModule = ModuleManager.RegisterModule<LocalizationComponent>();
-            MonoModule = ModuleManager.RegisterModule<MonoComponent>();
-            NetworkModule = ModuleManager.RegisterModule<NetworkComponent>();
-            ObjectPoolModule = ModuleManager.RegisterModule<ObjectPoolComponent>();
-            ProcedureModule = ModuleManager.RegisterModule<ProcedureComponent>();
-            SettingModule = ModuleManager.RegisterModule<SettingComponent>();
-            TimerModule = ModuleManager.RegisterModule<TimerComponent>();
-            WebModule = ModuleManager.RegisterModule<WebComponent>();
+            MonoModule         = ModuleManager.RegisterModule<MonoManager>();
+            NetworkModule      = ModuleManager.RegisterModule<NetworkComponent>();
+            ObjectPoolModule   = ModuleManager.RegisterModule<ObjectPoolComponent>();
+            ProcedureModule    = ModuleManager.RegisterModule<ProcedureComponent>();
+            SettingModule      = ModuleManager.RegisterModule<SettingComponent>();
+            TimerModule        = ModuleManager.RegisterModule<TimerComponent>();
+            WebModule          = ModuleManager.RegisterModule<WebComponent>();
 
             // SceneModule = GameEntry.RegisterComponent<SceneComponent>();
             // AdvertisementModule = GameEntry.RegisterComponent<AdvertisementComponent>();

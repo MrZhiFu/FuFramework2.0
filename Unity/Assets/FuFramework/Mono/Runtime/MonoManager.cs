@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using FuFramework.Event.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Mono.Runtime
@@ -9,34 +10,67 @@ namespace FuFramework.Mono.Runtime
     /// Mono管理器。
     /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
     /// </summary>
-    public sealed class MonoManager : FuModule, IMonoManager
+    public class MonoManager : FuComponent
     {
-        private readonly List<Action> m_WaitUpdateList = new(); // 等待调用的 Update 回调列表
+        private readonly List<Action> m_WaitUpdateList     = new(); // 等待调用的 Update 回调列表
         private readonly List<Action> m_InvokingUpdateList = new(); // 正在调用的 Update 回调列表
 
-        private readonly List<Action> m_WaitFixedUpdateList = new(); // 等待调用的 FixedUpdate 回调列表
+        private readonly List<Action> m_WaitFixedUpdateList     = new(); // 等待调用的 FixedUpdate 回调列表
         private readonly List<Action> m_InvokingFixedUpdateList = new(); // 正在调用的 FixedUpdate 回调列表
 
-        private readonly List<Action> m_WaitLateUpdateList = new(); // 等待调用的 LateUpdate 回调列表
+        private readonly List<Action> m_WaitLateUpdateList     = new(); // 等待调用的 LateUpdate 回调列表
         private readonly List<Action> m_InvokingLateUpdateList = new(); // 正在调用的 LateUpdate 回调列表
 
-        private readonly List<Action> m_WaitDestroyList = new(); // 等待调用的 Destroy 回调列表
+        private readonly List<Action> m_WaitDestroyList     = new(); // 等待调用的 Destroy 回调列表
         private readonly List<Action> m_InvokingDestroyList = new(); // 正在调用的 Destroy 回调列表
 
-        private List<Action<bool>> m_WaitOnApplicationPauseList = new(); // 等待调用的 OnApplicationPause 回调列表
+        private List<Action<bool>> m_WaitOnApplicationPauseList   = new(); // 等待调用的 OnApplicationPause 回调列表
         private List<Action<bool>> m_InvokeOnApplicationPauseList = new(); // 正在调用的 OnApplicationPause 回调列表
 
-        private List<Action<bool>> m_WaitOnApplicationFocusList = new(); // 等待调用的 OnApplicationFocus 回调列表
+        private List<Action<bool>> m_WaitOnApplicationFocusList   = new(); // 等待调用的 OnApplicationFocus 回调列表
         private List<Action<bool>> m_InvokeOnApplicationFocusList = new(); // 正在调用的 OnApplicationFocus 回调列表
 
+        private EventComponent m_EventComponent; // 事件管理器
+        
         /// <summary>
         /// 静态锁对象，用于同步多线程环境下的操作
         /// </summary>
         private static readonly object s_Lock = new();
 
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInit()
+        {
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            if (m_EventComponent == null)
+            {
+                Log.Fatal("事件管理器为空.");
+            }
+        }
+
+        /// <summary>
+        /// 游戏框架模块轮询。
+        /// </summary>
+        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
+        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
             QueueInvoking(m_InvokingUpdateList, m_WaitUpdateList);
+        }
+
+        /// <summary>
+        /// 关闭并清理游戏框架模块。
+        /// </summary>
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+            m_WaitUpdateList.Clear();
+            m_WaitDestroyList.Clear();
+            m_WaitFixedUpdateList.Clear();
+            m_WaitLateUpdateList.Clear();
+            m_WaitOnApplicationFocusList.Clear();
+            m_WaitOnApplicationPauseList.Clear();
         }
 
         /// <summary>
@@ -70,6 +104,8 @@ namespace FuFramework.Mono.Runtime
         public void OnApplicationFocus(bool focusStatus)
         {
             QueueInvoking(ref m_InvokeOnApplicationFocusList, ref m_WaitOnApplicationFocusList, focusStatus);
+            if (m_EventComponent)
+                m_EventComponent.Fire(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
         }
 
         /// <summary>
@@ -79,6 +115,8 @@ namespace FuFramework.Mono.Runtime
         public void OnApplicationPause(bool pauseStatus)
         {
             QueueInvoking(ref m_InvokeOnApplicationPauseList, ref m_WaitOnApplicationPauseList, pauseStatus);
+            if (m_EventComponent)
+                m_EventComponent.Fire(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
         }
 
 
@@ -88,7 +126,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitUpdateList.Add(action);
         }
 
@@ -98,7 +136,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddLateUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitLateUpdateList.Add(action);
         }
 
@@ -108,7 +146,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveLateUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitLateUpdateList.Remove(action);
         }
 
@@ -118,7 +156,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddFixedUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitFixedUpdateList.Add(action);
         }
 
@@ -128,7 +166,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveFixedUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitFixedUpdateList.Remove(action);
         }
 
@@ -138,7 +176,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveUpdateListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitUpdateList.Remove(action);
         }
 
@@ -149,7 +187,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddDestroyListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitDestroyList.Add(action);
         }
 
@@ -159,7 +197,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveDestroyListener(Action action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitDestroyList.Remove(action);
         }
 
@@ -169,7 +207,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationPauseListener(Action<bool> action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitOnApplicationPauseList.Add(action);
         }
 
@@ -179,7 +217,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationPauseListener(Action<bool> action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitOnApplicationPauseList.Remove(action);
         }
 
@@ -189,7 +227,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationFocusListener(Action<bool> action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitOnApplicationFocusList.Add(action);
         }
 
@@ -199,24 +237,9 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationFocusListener(Action<bool> action)
         {
-            if (action == null) throw new ArgumentNullException(nameof(action));
+            FuGuard.NotNull(action, nameof(action));
             lock (s_Lock) m_WaitOnApplicationFocusList.Remove(action);
         }
-
-        /// <summary>
-        /// 释放
-        /// </summary>
-        public void Release()
-        {
-            m_WaitUpdateList.Clear();
-            m_WaitDestroyList.Clear();
-            m_WaitFixedUpdateList.Clear();
-            m_WaitLateUpdateList.Clear();
-            m_WaitOnApplicationFocusList.Clear();
-            m_WaitOnApplicationPauseList.Clear();
-        }
-
-        protected override void Shutdown() => Release();
 
         /// <summary>
         /// 使用交互引用的形式实现队列调用效果，确保在多线程环境下安全，在执行回调函数时不会发生竞态条件:
