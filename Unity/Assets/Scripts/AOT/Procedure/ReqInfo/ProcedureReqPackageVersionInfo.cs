@@ -5,9 +5,9 @@ using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
+using FuFramework.Entry.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -44,7 +44,7 @@ namespace Launcher.Procedure
             {
                 // 请求服务端，获取默认资源包的版本信息。
                 jsonParams["AssetPackageName"] = AssetManager.Instance.DefaultPackageName;
-                var rstJson = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckResourceVersionUrl, jsonParams);
+                var rstJson = await GlobalModule.WebModule.PostToString(GlobalModule.GlobalConfigModule.CheckResourceVersionUrl, jsonParams);
                 Log.Info(rstJson);
 
                 var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(rstJson.Result);

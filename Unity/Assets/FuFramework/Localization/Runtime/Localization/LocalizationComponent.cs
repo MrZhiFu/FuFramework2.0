@@ -113,35 +113,25 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         public int DictionaryCount => m_LocalizationManager.DictionaryCount;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(ILocalizationManager);
-            base.Awake();
             m_LocalizationManager = FuEntry.GetModule<ILocalizationManager>();
             if (m_LocalizationManager == null) Log.Fatal("Localization manager is invalid.");
-        }
-
-        private void Start()
-        {
-            var baseComp = GameEntry.GetComponent<BaseComponent>();
+            var baseComp = ModuleManager.GetModule<BaseComponent>();
             if (!baseComp)
             {
                 Log.Fatal("Base component is invalid.");
                 return;
             }
 
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
                 return;
             }
 
-            m_SettingComponent = GameEntry.GetComponent<SettingComponent>();
+            m_SettingComponent = ModuleManager.GetModule<SettingComponent>();
             if (!m_SettingComponent)
             {
                 Log.Fatal("Setting component is invalid.");
@@ -176,7 +166,13 @@ namespace FuFramework.Localization.Runtime
 #endif
             DefaultLanguage = m_DefaultLanguage != Language.Unspecified ? m_DefaultLanguage : m_LocalizationManager.SystemLanguage;
         }
-
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+        }
+        
         /*/// <summary>
         /// 根据字典主键获取字典内容字符串。
         /// </summary>

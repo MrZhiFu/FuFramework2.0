@@ -16,6 +16,8 @@ namespace FuFramework.Download.Runtime
     [AddComponentMenu("Game Framework/Download")]
     public sealed class DownloadComponent : FuComponent
     {
+        protected override int Priority => 200000;
+
         /// 下载默认优先级
         private const int DefaultPriority = 0;
 
@@ -133,17 +135,8 @@ namespace FuFramework.Download.Runtime
             }
         }
 
-
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IDownloadManager);
-
-            base.Awake();
-
             m_DownloadManager = FuEntry.GetModule<IDownloadManager>();
             if (m_DownloadManager == null)
             {
@@ -157,11 +150,8 @@ namespace FuFramework.Download.Runtime
             m_DownloadManager.DownloadFailure += OnDownloadFailure;
             m_DownloadManager.FlushSize       =  m_FlushSize;
             m_DownloadManager.Timeout         =  m_Timeout;
-        }
-
-        private void Start()
-        {
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
@@ -180,7 +170,12 @@ namespace FuFramework.Download.Runtime
                 AddDownloadAgentHelper(i);
             }
         }
-
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+        }
 
         #region 获取下载任务信息
 

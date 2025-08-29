@@ -5,10 +5,10 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
+using FuFramework.Entry.Runtime;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -46,7 +46,7 @@ namespace Launcher.Procedure
             try
             {
                 // 请求服务端，获取App版本信息。
-                var json = await GameApp.Web.PostToString(GameApp.GlobalConfig.CheckAppVersionUrl, reqBaseParams);
+                var json = await GlobalModule.WebModule.PostToString(GlobalModule.GlobalConfigModule.CheckAppVersionUrl, reqBaseParams);
                 Log.Info(json);
 
                 var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
@@ -72,8 +72,8 @@ namespace Launcher.Procedure
                         if (winLauncher == null) return;
                         winLauncher.SetUpdateSureUIState(true);
 
-                        var isChinese = GameApp.Localization.SystemLanguage == Language.ChineseSimplified ||
-                                        GameApp.Localization.SystemLanguage == Language.ChineseTraditional;
+                        var isChinese = GlobalModule.LocalizationModule.SystemLanguage == Language.ChineseSimplified ||
+                                        GlobalModule.LocalizationModule.SystemLanguage == Language.ChineseTraditional;
 
                         winLauncher.SetUpdateBtnTitle(isChinese ? "确认" : "Enter");
                         winLauncher.SetUpdateTipText(gameAppVersion.UpdateAnnouncement);

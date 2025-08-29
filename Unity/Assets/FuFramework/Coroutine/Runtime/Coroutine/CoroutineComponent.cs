@@ -23,11 +23,9 @@ namespace FuFramework.Coroutine.Runtime
         /// </summary>
         private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineMap = new();
 
-        protected override void Awake()
-        {
-            IsAutoRegister = false;
-            base.Awake();
-        }
+        protected override void OnInit() { }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        protected override void OnShutdown(ShutdownType shutdownType) { }
 
         /// <summary>
         /// 开启一个协程

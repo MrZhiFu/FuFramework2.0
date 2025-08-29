@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -11,38 +10,27 @@ namespace FuFramework.Core.Runtime
     public abstract class FuComponent : MonoBehaviour
     {
         /// <summary>
-        /// 是否自动注册
+        /// 获取游戏框架模块优先级。
         /// </summary>
-        protected bool IsAutoRegister { get; set; } = true;
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected internal virtual int Priority => 0;
 
         /// <summary>
-        /// 接口类的类型
+        /// 初始化
         /// </summary>
-        protected Type InterfaceComponentType = null;
+        protected internal abstract void OnInit();
+        
+        /// <summary>
+        /// 游戏框架模块轮询。
+        /// </summary>
+        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
+        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        protected internal abstract void OnUpdate(float elapseSeconds, float realElapseSeconds);
 
         /// <summary>
-        /// 实现类的类型
+        /// 关闭并清理游戏框架模块。
         /// </summary>
-        protected Type ImplComponentType = null;
-
-        /// <summary>
-        /// 游戏框架组件类型。
-        /// </summary>
-        [SerializeField] protected string componentType = string.Empty;
-
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected virtual void Awake()
-        {
-            GameEntry.RegisterComponent(this);
-            
-            if (!IsAutoRegister) return;
-            
-            FuGuard.NotNull(ImplComponentType,      nameof(ImplComponentType));
-            FuGuard.NotNull(InterfaceComponentType, nameof(InterfaceComponentType));
-            
-            FuEntry.RegisterModule(InterfaceComponentType, ImplComponentType);
-        }
+        /// <param name="shutdownType"></param>
+        protected internal abstract void OnShutdown(ShutdownType shutdownType);
     }
 }

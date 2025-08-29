@@ -25,7 +25,7 @@ namespace Launcher.Procedure
         public static async UniTask Start()
         {
             m_WinLauncher = await UIManager.Instance.OpenUIAsync<WinLauncher>();
-            GameApp.Event.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
+            GlobalModule.EventModule.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
         /// <summary>

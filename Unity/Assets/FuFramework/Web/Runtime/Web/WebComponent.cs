@@ -38,17 +38,8 @@ namespace FuFramework.Web.Runtime
             set => m_WebManager.Timeout = m_Timeout = value;
         }
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// 在此方法中初始化Web管理器并设置超时时间。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType      = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IWebManager);
-
-            base.Awake();
-
             m_WebManager = FuEntry.GetModule<IWebManager>();
             if (m_WebManager == null)
             {
@@ -57,6 +48,12 @@ namespace FuFramework.Web.Runtime
             }
 
             m_WebManager.Timeout = m_Timeout;
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
 
         /// <summary>

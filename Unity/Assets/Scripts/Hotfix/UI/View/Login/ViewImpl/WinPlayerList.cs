@@ -10,7 +10,6 @@ using FuFramework.Entry.Runtime;
 using Hotfix.Manager;
 using Hotfix.Network;
 using Hotfix.Proto;
-using Hotfix.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI
@@ -90,7 +89,7 @@ namespace Hotfix.UI
         {
 	        // 请求玩家登录
 	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_SelectedPlayerInfo.Id };
-	        var respPlayerLogin = await GameApp.Network.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
+	        var respPlayerLogin = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
@@ -153,12 +152,12 @@ namespace Hotfix.UI
 				return;
 			}
 
-			if (networkChannel != null && GameApp.Network.HasNetworkChannel("network") && !networkChannel.Connected)
+			if (networkChannel != null && GlobalModule.NetworkModule.HasNetworkChannel("network") && !networkChannel.Connected)
 			{
-				GameApp.Network.DestroyNetworkChannel("network");
+				GlobalModule.NetworkModule.DestroyNetworkChannel("network");
 			}
 
-			networkChannel = GameApp.Network.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
+			networkChannel = GlobalModule.NetworkModule.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
 
 			// 注册心跳消息
 			var packetSendHeaderHandler = new DefaultPacketHeartBeatHandler();

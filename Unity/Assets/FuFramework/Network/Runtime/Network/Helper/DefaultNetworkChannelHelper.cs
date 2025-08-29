@@ -22,7 +22,7 @@ namespace FuFramework.Network.Runtime
         {
             get
             {
-                if (!_event) _event = GameEntry.GetComponent<EventComponent>();
+                if (!_event) _event = ModuleManager.GetModule<EventComponent>();
                 return _event;
             }
         }

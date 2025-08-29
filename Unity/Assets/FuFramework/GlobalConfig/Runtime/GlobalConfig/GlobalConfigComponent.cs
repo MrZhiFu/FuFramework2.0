@@ -113,10 +113,14 @@ namespace FuFramework.GlobalConfig.Runtime
             set => m_HostServerUrl = value;
         }
 
-        protected override void Awake()
+        protected override void OnInit()
         {
-            IsAutoRegister = false;
-            base.Awake();
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Hotfix.UI
         {
 	        if (selectBagItem.IsNull()) return;
 	        _selectBagItem = selectBagItem;
-	        var itemConfig = GameApp.Config.GetConfig<TbItemConfig>().Get(selectBagItem.ItemId);
+	        var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>().Get(selectBagItem.ItemId);
 	        txtName.text = itemConfig.Name;
 	        txtDesc.text = itemConfig.Description;
 	        var eIsCanUse = itemConfig.CanUse == ItemCanUse.CanNot? EIsCanUse.No : EIsCanUse.Yes;

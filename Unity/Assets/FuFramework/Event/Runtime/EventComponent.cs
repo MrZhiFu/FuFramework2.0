@@ -28,19 +28,14 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public int EventCount => m_EventManager.EventCount;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType      = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IEventManager);
-
-            base.Awake();
-
             m_EventManager = FuEntry.GetModule<IEventManager>();
             if (m_EventManager == null) Log.Fatal("事件管理器不存在.");
         }
+
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        protected override void OnShutdown(ShutdownType shutdownType) { }
 
         /// <summary>
         /// 获取事件处理函数的数量。

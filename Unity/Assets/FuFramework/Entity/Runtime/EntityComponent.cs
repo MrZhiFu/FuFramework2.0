@@ -85,17 +85,8 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public int EntityGroupCount => m_EntityManager.EntityGroupCount;
 
-
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IEntityManager);
-
-            base.Awake();
-
             m_EntityManager = FuEntry.GetModule<IEntityManager>();
             if (m_EntityManager == null)
             {
@@ -103,21 +94,18 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            m_EntityManager.ShowEntitySuccess  += OnShowEntitySuccess;
-            m_EntityManager.ShowEntityFailure  += OnShowEntityFailure;
+            m_EntityManager.ShowEntitySuccess += OnShowEntitySuccess;
+            m_EntityManager.ShowEntityFailure += OnShowEntityFailure;
             m_EntityManager.HideEntityComplete += OnHideEntityComplete;
-        }
 
-        private void Start()
-        {
-            var baseComponent = GameEntry.GetComponent<BaseComponent>();
+            var baseComponent = ModuleManager.GetModule<BaseComponent>();
             if (!baseComponent)
             {
                 Log.Fatal("Base component is invalid.");
                 return;
             }
 
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
@@ -148,10 +136,14 @@ namespace FuFramework.Entity.Runtime
             // 添加实体组
             foreach (var entityGroup in m_EntityGroups)
             {
-                if (AddEntityGroup(entityGroup.Name, entityGroup.InstanceAutoReleaseInterval, entityGroup.InstanceCapacity, entityGroup.InstanceExpireTime, entityGroup.InstancePriority)) continue;
+                if (AddEntityGroup(entityGroup.Name, entityGroup.InstanceAutoReleaseInterval, entityGroup.InstanceCapacity,
+                        entityGroup.InstanceExpireTime, entityGroup.InstancePriority)) continue;
                 Log.Warning("Add entity group '{0}' failure.", entityGroup.Name);
             }
         }
+
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        protected override void OnShutdown(ShutdownType shutdownType) { }
 
 
         #region 实体组相关方法
@@ -191,7 +183,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="instanceExpireTime">实体实例对象池对象过期秒数。</param>
         /// <param name="instancePriority">实体实例对象池的优先级。</param>
         /// <returns>是否增加实体组成功。</returns>
-        public bool AddEntityGroup(string entityGroupName, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority)
+        public bool AddEntityGroup(string entityGroupName, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime,
+            int instancePriority)
         {
             if (m_EntityManager.HasEntityGroup(entityGroupName)) return false;
 
@@ -206,7 +199,8 @@ namespace FuFramework.Entity.Runtime
             entityGroupHelper.transform.SetParent(m_InstanceRoot);
             entityGroupHelper.transform.localScale = Vector3.one;
 
-            return m_EntityManager.AddEntityGroup(entityGroupName, instanceAutoReleaseInterval, instanceCapacity, instanceExpireTime, instancePriority, entityGroupHelper);
+            return m_EntityManager.AddEntityGroup(entityGroupName, instanceAutoReleaseInterval, instanceCapacity, instanceExpireTime,
+                instancePriority, entityGroupHelper);
         }
 
         #endregion
@@ -248,7 +242,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>要获取的实体。</returns>
         public Entity[] GetEntities(string entityAssetName)
         {
-            var entities    = m_EntityManager.GetEntities(entityAssetName);
+            var entities = m_EntityManager.GetEntities(entityAssetName);
             var entityImpls = new Entity[entities.Length];
             for (var i = 0; i < entities.Length; i++)
             {
@@ -282,7 +276,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>所有已加载的实体。</returns>
         public Entity[] GetAllLoadedEntities()
         {
-            var entities    = m_EntityManager.GetAllLoadedEntities();
+            var entities = m_EntityManager.GetAllLoadedEntities();
             var entityImpls = new Entity[entities.Length];
             for (var i = 0; i < entities.Length; i++)
             {
@@ -412,7 +406,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="priority">加载实体资源的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public Task<IEntity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName, int priority, object userData) where T : EntityLogic
+        public Task<IEntity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName, int priority, object userData)
+            where T : EntityLogic
             => ShowEntityAsync(entityId, typeof(T), entityAssetName, entityGroupName, priority, userData);
 
         /// <summary>
@@ -424,7 +419,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="priority">加载实体资源的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public async Task<IEntity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, int priority, object userData)
+        public async Task<IEntity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, int priority,
+            object userData)
         {
             if (entityLogicType == null)
             {
@@ -432,7 +428,8 @@ namespace FuFramework.Entity.Runtime
                 return null;
             }
 
-            return await m_EntityManager.ShowEntityAsync(entityId, entityAssetName, entityGroupName, priority, ShowEntityInfo.Create(entityLogicType, userData));
+            return await m_EntityManager.ShowEntityAsync(entityId, entityAssetName, entityGroupName, priority,
+                ShowEntityInfo.Create(entityLogicType, userData));
         }
 
         #endregion
@@ -527,7 +524,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>所有子实体。</returns>
         public Entity[] GetChildEntities(int parentEntityId)
         {
-            var entities    = m_EntityManager.GetChildEntities(parentEntityId);
+            var entities = m_EntityManager.GetChildEntities(parentEntityId);
             var entityImpls = new Entity[entities.Length];
             for (var i = 0; i < entities.Length; i++)
             {
@@ -565,7 +562,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>所有子实体。</returns>
         public Entity[] GetChildEntities(Entity parentEntity)
         {
-            var entities    = m_EntityManager.GetChildEntities(parentEntity);
+            var entities = m_EntityManager.GetChildEntities(parentEntity);
             var entityImpls = new Entity[entities.Length];
             for (var i = 0; i < entities.Length; i++)
             {
@@ -802,7 +799,7 @@ namespace FuFramework.Entity.Runtime
                 if (parentTransform == null)
                 {
                     Log.Warning("Can not find transform path '{0}' from parent entity '{1}'.", parentTransformPath,
-                                parentEntity.Logic.Name);
+                        parentEntity.Logic.Name);
                     parentTransform = parentEntity.Logic.CachedTransform;
                 }
             }
@@ -991,8 +988,9 @@ namespace FuFramework.Entity.Runtime
         /// <param name="eventArgs"></param>
         private void OnShowEntityFailure(object sender, ShowEntityFailureEventArgs eventArgs)
         {
-            Log.Warning("Show entity failure, entity id '{0}', asset name '{1}', entity group name '{2}', error message '{3}'.", eventArgs.EntityId, eventArgs.EntityAssetName,
-                        eventArgs.EntityGroupName, eventArgs.ErrorMessage);
+            Log.Warning("Show entity failure, entity id '{0}', asset name '{1}', entity group name '{2}', error message '{3}'.", eventArgs.EntityId,
+                eventArgs.EntityAssetName,
+                eventArgs.EntityGroupName, eventArgs.ErrorMessage);
             m_EventComponent.Fire(this, eventArgs);
         }
 

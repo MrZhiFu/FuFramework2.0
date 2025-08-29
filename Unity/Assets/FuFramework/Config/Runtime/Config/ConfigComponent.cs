@@ -29,17 +29,15 @@ namespace FuFramework.Config.Runtime
         /// </summary>
         public int Count => m_ConfigManager.Count;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
             m_ConfigNameTypeDict.Clear();
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IConfigManager);
-
-            base.Awake();
-
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
             m_ConfigManager = FuEntry.GetModule<IConfigManager>();
             if (m_ConfigManager == null) Log.Fatal("Config manager is invalid.");
         }

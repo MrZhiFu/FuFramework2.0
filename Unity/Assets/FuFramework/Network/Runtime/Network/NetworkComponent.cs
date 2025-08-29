@@ -37,16 +37,8 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         public int NetworkChannelCount => m_NetworkManager.NetworkChannelCount;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(INetworkManager);
-
-            base.Awake();
-
             m_NetworkManager = FuEntry.GetModule<INetworkManager>();
             if (m_NetworkManager == null)
             {
@@ -58,12 +50,15 @@ namespace FuFramework.Network.Runtime
             m_NetworkManager.NetworkClosed += OnNetworkClosed;
             m_NetworkManager.NetworkMissHeartBeat += OnNetworkMissHeartBeat;
             m_NetworkManager.NetworkError += OnNetworkError;
-        }
-
-        private void Start()
-        {
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (!m_EventComponent) Log.Fatal("Event component is invalid.");
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
 
         /// <summary>

@@ -16,15 +16,16 @@ namespace FuFramework.Timer.Runtime
     {
         private ITimerManager m_TimerManager; // 计时器管理器
 
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(ITimerManager);
-
-            base.Awake();
-
             m_TimerManager = FuEntry.GetModule<ITimerManager>();
             if (m_TimerManager == null) Log.Fatal("计时器管理器为空.");
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
 
         /// <summary>

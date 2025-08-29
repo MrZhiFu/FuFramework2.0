@@ -196,7 +196,7 @@ namespace FuFramework.UI.Runtime
                         }
                         else
                         {
-                            var webBufferResult = await GameEntry.GetComponent<WebComponent>().GetToBytes(url, null);
+                            var webBufferResult = await ModuleManager.GetModule<WebComponent>().GetToBytes(url, null);
                             FileHelper.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
                         }

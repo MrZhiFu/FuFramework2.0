@@ -93,7 +93,7 @@ namespace Hotfix.UI
 
             // 创建角色
             var respPlayerCreate =
-                await GameApp.Web.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", _req);
+                await GlobalModule.WebModule.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", _req);
             if (respPlayerCreate.ErrorCode > 0)
             {
                 Log.Error("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -106,7 +106,7 @@ namespace Hotfix.UI
             // 获取角色列表
             var reqPlayerList = new ReqPlayerList { Id = _req.Id };
             var respPlayerList =
-                await GameApp.Web.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+                await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
                     reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {

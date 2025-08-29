@@ -46,7 +46,7 @@ namespace Hotfix
         static async void LoadConfig()
         {
             var tablesComponent = new TablesComponent();
-            tablesComponent.Init(GameApp.Config);
+            tablesComponent.Init(GlobalModule.ConfigModule);
 #if ENABLE_BINARY_CONFIG
             // 使用二进制配置表
             await tablesComponent.LoadAsync(ConfigBufferLoader);
@@ -66,7 +66,7 @@ namespace Hotfix
             
             // 打开登录界面
             UIManager.Instance.OpenUI<WinLogin>();
-            var item = GameApp.Config.GetConfig<TbSoundsConfig>().FirstOrDefault;
+            var item = GlobalModule.ConfigModule.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }
 

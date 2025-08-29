@@ -3,9 +3,9 @@ using System.Collections;
 using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
+using FuFramework.Entry.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateVersion));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateVersion));
             GetVersion(procedureOwner).ToUniTask().Forget();
         }
 
@@ -60,7 +60,7 @@ namespace Launcher.Procedure
             {
                 // 获取失败，再次进入自身流程尝试
                 Log.Error(operation.Error);
-                GameApp.Event.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureGetPackageVersion>(procedureOwner);
             }
         }

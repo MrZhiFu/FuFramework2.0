@@ -29,14 +29,8 @@ namespace FuFramework.Setting.Runtime
         /// </summary>
         public int Count => m_SettingManager.Count;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(ISettingManager);
-            base.Awake();
             m_SettingManager = FuEntry.GetModule<ISettingManager>();
             if (m_SettingManager == null)
             {
@@ -57,12 +51,15 @@ namespace FuFramework.Setting.Runtime
             helperTrs.localScale = Vector3.one;
 
             m_SettingManager.SetSettingHelper(settingHelper);
-        }
-
-        private void Start()
-        {
+            
             if (m_SettingManager.Load()) return;
             Log.Error("加载配置失败.");
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
 
         /// <summary>

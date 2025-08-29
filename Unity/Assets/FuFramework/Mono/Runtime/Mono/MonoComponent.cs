@@ -2,7 +2,6 @@
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Mono.Runtime
@@ -18,13 +17,8 @@ namespace FuFramework.Mono.Runtime
         private IMonoManager m_MonoManager; // Mono管理器
         private EventComponent m_EventComponent; // 事件管理器
 
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IMonoManager);
-
-            base.Awake();
-
             m_MonoManager = FuEntry.GetModule<IMonoManager>();
             if (m_MonoManager == null)
             {
@@ -32,11 +26,17 @@ namespace FuFramework.Mono.Runtime
                 return;
             }
 
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (m_EventComponent == null)
             {
                 Log.Fatal("事件管理器为空.");
             }
+        }
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
         }
 
         /// <summary>

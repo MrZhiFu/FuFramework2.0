@@ -29,15 +29,17 @@ namespace FuFramework.Core.Runtime
             }
         }
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected internal override void OnInit()
         {
-            IsAutoRegister = false;
-            base.Awake();
+            
         }
-        
+        protected internal override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected internal override void OnShutdown(ShutdownType shutdownType)
+        {
+        }
+
         private void Start()
         {
             EnableStrictCheck = m_EnableStrictCheck switch

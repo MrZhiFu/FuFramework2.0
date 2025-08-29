@@ -14,6 +14,8 @@ namespace FuFramework.Core.Runtime
     [AddComponentMenu("Game Framework/ObjectPoolComponent(对象池管理器)")]
     public sealed class ObjectPoolComponent : FuComponent
     {
+        protected internal override int Priority => 20000;
+
         /// 对象池管理器
         private IObjectPoolManager m_ObjectPoolManager;
 
@@ -22,19 +24,18 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public int Count => m_ObjectPoolManager.Count;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected internal override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType      = typeof(IObjectPoolManager);
-
-            base.Awake();
-
             m_ObjectPoolManager = FuEntry.GetModule<IObjectPoolManager>();
             if (m_ObjectPoolManager != null) return;
             Log.Fatal("对象池管理器为空.");
+        }
+        protected internal override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected internal override void OnShutdown(ShutdownType shutdownType)
+        {
+            // throw new NotImplementedException();
         }
 
         #region 获取对象池相关

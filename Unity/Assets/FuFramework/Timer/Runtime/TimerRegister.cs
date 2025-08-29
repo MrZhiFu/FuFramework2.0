@@ -13,7 +13,7 @@ namespace FuFramework.Timer.Runtime
     public class TimerRegister : IReference
     {
         /// 计时器管理器
-        private static TimerComponent TimerManager => GameEntry.GetComponent<TimerComponent>();
+        private static TimerComponent TimerManager => ModuleManager.GetModule<TimerComponent>();
 
         /// <summary>
         /// 记录所有计时器任务的列表

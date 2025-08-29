@@ -31,7 +31,7 @@ namespace Hotfix.UI
         /// <returns></returns>
         public void SetIcon(int itemId)
         {
-            var itemConfig = GameApp.Config.GetConfig<TbItemConfig>().Get(itemId);
+            var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>().Get(itemId);
             if (!itemConfig.IsNotNull()) return;
             loaderGift.icon = Utility.Asset.Path.GetImagePath(itemConfig.Icon);
             loaderBg.icon = Utility.Asset.Path.GetImagePath(itemConfig.BgIcon);

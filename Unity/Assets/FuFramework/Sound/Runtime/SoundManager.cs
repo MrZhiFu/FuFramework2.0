@@ -52,7 +52,7 @@ namespace FuFramework.Sound.Runtime
         {
             m_Serial       = 0;
 
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
             if (!m_EventComponent)
             {
                 Log.Fatal("[SoundManager] 事件组件不存在!");

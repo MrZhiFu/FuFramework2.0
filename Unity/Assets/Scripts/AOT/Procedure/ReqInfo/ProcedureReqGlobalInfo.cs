@@ -3,9 +3,9 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
+using FuFramework.Entry.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -48,7 +48,7 @@ namespace Launcher.Procedure
             try
             {
                 // 请求服务端，获取全局信息。
-                var json = await GameApp.Web.PostToString(GlobalInfoUrl, reqBaseParams);
+                var json = await GlobalModule.WebModule.PostToString(GlobalInfoUrl, reqBaseParams);
                 Log.Info(json);
 
                 var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
@@ -66,7 +66,7 @@ namespace Launcher.Procedure
                 {
                     // 获取成功，保存全局信息到globalConfigComponent组件中，供后续流程使用，特别是获取App版本号流程 与 获取资源版本号流程
                     var repGlobalInfo = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
-                    var globalConfigComponent = GameApp.GlobalConfig;
+                    var globalConfigComponent = GlobalModule.GlobalConfigModule;
                     globalConfigComponent.CheckAppVersionUrl      = repGlobalInfo.CheckAppVersionUrl;
                     globalConfigComponent.CheckResourceVersionUrl = repGlobalInfo.CheckResourceVersionUrl;
                     globalConfigComponent.Content                 = repGlobalInfo.Content;

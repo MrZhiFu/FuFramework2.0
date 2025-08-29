@@ -26,7 +26,7 @@ namespace FuFramework.Core.Runtime
             _ = typeof(DefaultVersionHelper);
             _ = typeof(DistinctHelper);
             _ = typeof(FileHelper);
-            _ = typeof(GameEntry);
+            _ = typeof(ModuleManager);
             _ = typeof(FuComponent);
             _ = typeof(FuEntry);
             _ = typeof(FuException);

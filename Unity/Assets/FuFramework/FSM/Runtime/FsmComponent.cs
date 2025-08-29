@@ -24,20 +24,18 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         public int Count => m_FsmManager.Count;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IFsmManager);
-
-            base.Awake();
-
             m_FsmManager = FuEntry.GetModule<IFsmManager>();
             if (m_FsmManager == null) Log.Fatal("FSM manager is invalid.");
         }
-
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+        }
+        
         #region 获取有限状态机
 
         /// <summary>

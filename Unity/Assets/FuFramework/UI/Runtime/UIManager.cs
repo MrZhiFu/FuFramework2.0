@@ -45,10 +45,10 @@ namespace FuFramework.UI.Runtime
             m_LoadingDict       = new Dictionary<int, string>();
             m_WaitRecycleQueue  = new Queue<ViewBase>();
 
-            m_ObjectPoolManager = GameEntry.GetComponent<ObjectPoolComponent>();
+            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolComponent>();
             m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
-            m_EventComponent = GameEntry.GetComponent<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventComponent>();
 
             m_SerialId   = 0;
             m_IsShutdown = false;

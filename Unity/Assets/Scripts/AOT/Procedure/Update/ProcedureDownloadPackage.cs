@@ -4,8 +4,8 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
+using FuFramework.Entry.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -30,7 +30,7 @@ namespace Launcher.Procedure
 
             m_procedureOwner = procedureOwner;
 
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.Download));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.Download));
             BeginDownload(procedureOwner).ToUniTask().Forget();
         }
 
@@ -65,7 +65,7 @@ namespace Launcher.Procedure
         /// <param name="errorData"></param>
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
-            GameApp.Event.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
+            GlobalModule.EventModule.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
             ChangeState<ProcedureCreateDownloader>(m_procedureOwner);
         }
 
@@ -80,7 +80,7 @@ namespace Launcher.Procedure
             var currentDownloadCount = data.CurrentDownloadCount;
             var totalDownloadBytes   = data.TotalDownloadBytes;
             var currentDownloadBytes = data.CurrentDownloadBytes;
-            GameApp.Event.Fire(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
+            GlobalModule.EventModule.Fire(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
         }
     }
 }

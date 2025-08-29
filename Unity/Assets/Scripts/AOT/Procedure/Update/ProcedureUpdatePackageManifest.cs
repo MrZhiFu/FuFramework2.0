@@ -5,8 +5,8 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
+using FuFramework.Entry.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
-            GameApp.Event.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
             UpdateManifest(procedureOwner).ToUniTask().Forget();
         }
         
@@ -62,7 +62,7 @@ namespace Launcher.Procedure
             {
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GameApp.Event.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdatePackageManifest>(procedureOwner);
             }
         }

@@ -40,19 +40,20 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         public float CurrentProcedureTime => m_ProcedureManager.CurrentProcedureTime;
 
-        /// <summary>
-        /// 游戏框架组件初始化。
-        /// </summary>
-        protected override void Awake()
+        protected override void OnInit()
         {
-            ImplComponentType      = Utility.Assembly.GetType(componentType);
-            InterfaceComponentType = typeof(IProcedureManager);
-            base.Awake();
             m_ProcedureManager = FuEntry.GetModule<IProcedureManager>();
             if (m_ProcedureManager == null) Log.Fatal("Procedure manager is invalid.");
+            StartCoroutine(InitProcedures());
         }
-
-        private IEnumerator Start()
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+        }
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+        }
+        
+        private IEnumerator InitProcedures()
         {
             var procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
             for (var i = 0; i < m_AvailableProcedureTypeNames.Length; i++)

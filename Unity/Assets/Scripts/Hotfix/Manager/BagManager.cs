@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
 using FuFramework.Network.Runtime;
+using FuFramework.Entry.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.Events;
@@ -46,7 +46,7 @@ namespace Hotfix.Manager
                 }
             }
 
-            GameApp.Event.Fire(this, BagChangedEventArgs.Create());
+            GlobalModule.EventModule.Fire(this, BagChangedEventArgs.Create());
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Hotfix.Manager
         /// </summary>
         public async UniTask RequestGetBagInfo()
         {
-            var respBagInfo = await GameApp.Network.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
+            var respBagInfo = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
             if (respBagInfo.ErrorCode != default)
             {
                 return;
@@ -73,7 +73,7 @@ namespace Hotfix.Manager
         /// <param name="count">道具数量</param>
         public async UniTask RequestUseItem(int itemId, long count = 1)
         {
-            var respUseItem = await GameApp.Network.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
+            var respUseItem = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
             if (respUseItem.ErrorCode != default)
             {
                 return;
@@ -88,7 +88,7 @@ namespace Hotfix.Manager
                 }
             }
 
-            GameApp.Event.Fire(this, BagChangedEventArgs.Create());
+            GlobalModule.EventModule.Fire(this, BagChangedEventArgs.Create());
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Hotfix.Manager
         public List<BagItem> GetBagItemsByType(ItemType bagType)
         {
             var result = new List<BagItem>(_itemDic.Count);
-            var tbItemConfig = GameApp.Config.GetConfig<TbItemConfig>();
+            var tbItemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>();
             var itemType = bagType;
             foreach (var bagItem in _itemDic)
             {
