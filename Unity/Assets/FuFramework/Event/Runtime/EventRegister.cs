@@ -13,7 +13,7 @@ namespace FuFramework.Event.Runtime
     public sealed class EventRegister : IReference
     {
         /// 事件管理器
-        private static EventComponent EventManager => ModuleManager.GetModule<EventComponent>();
+        private static EventManager EventManager => ModuleManager.GetModule<EventManager>();
 
         /// <summary>
         /// 事件处理字典，key为消息ID，value为处理对象

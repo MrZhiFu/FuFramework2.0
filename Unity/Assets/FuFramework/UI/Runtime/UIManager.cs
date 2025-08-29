@@ -19,7 +19,7 @@ namespace FuFramework.UI.Runtime
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
 
         private ObjectPoolComponent m_ObjectPoolManager; // 对象池管理器
-        private EventComponent      m_EventComponent;    // 事件组件
+        private EventManager        m_EventComponent;    // 事件组件
 
         private IObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
 
@@ -48,7 +48,7 @@ namespace FuFramework.UI.Runtime
             m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolComponent>();
             m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
 
             m_SerialId   = 0;
             m_IsShutdown = false;

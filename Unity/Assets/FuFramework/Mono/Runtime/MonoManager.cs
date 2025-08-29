@@ -30,7 +30,7 @@ namespace FuFramework.Mono.Runtime
         private List<Action<bool>> m_WaitOnApplicationFocusList   = new(); // 等待调用的 OnApplicationFocus 回调列表
         private List<Action<bool>> m_InvokeOnApplicationFocusList = new(); // 正在调用的 OnApplicationFocus 回调列表
 
-        private EventComponent m_EventComponent; // 事件管理器
+        private EventManager m_EventComponent; // 事件管理器
         
         /// <summary>
         /// 静态锁对象，用于同步多线程环境下的操作
@@ -42,7 +42,7 @@ namespace FuFramework.Mono.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (m_EventComponent == null)
             {
                 Log.Fatal("事件管理器为空.");

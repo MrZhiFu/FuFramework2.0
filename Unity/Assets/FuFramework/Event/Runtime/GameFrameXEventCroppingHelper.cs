@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
-using UnityEngine.Scripting;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Event.Runtime
 {
    
@@ -12,12 +12,10 @@ namespace FuFramework.Event.Runtime
        
         private void Start()
         {
-            m_Types = new Type[]
+            m_Types = new[]
             {
                 typeof(EventManager),
-                typeof(EventComponent),
                 typeof(GameEventArgs),
-                typeof(IEventManager),
             };
         }
     }

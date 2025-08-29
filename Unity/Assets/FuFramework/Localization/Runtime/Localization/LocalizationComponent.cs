@@ -18,7 +18,7 @@ namespace FuFramework.Localization.Runtime
     public sealed class LocalizationComponent : FuComponent
     {
         private ILocalizationManager m_LocalizationManager; // 本地化管理器
-        private EventComponent m_EventComponent; // 事件组件
+        private EventManager m_EventComponent; // 事件组件
         private SettingComponent m_SettingComponent; // Setting组件
         
         //@formatter:off 
@@ -124,7 +124,7 @@ namespace FuFramework.Localization.Runtime
                 return;
             }
 
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");

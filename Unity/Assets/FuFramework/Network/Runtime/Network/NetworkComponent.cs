@@ -15,7 +15,7 @@ namespace FuFramework.Network.Runtime
     public sealed class NetworkComponent : FuComponent
     {
         private INetworkManager m_NetworkManager; // 网络管理器。
-        private EventComponent m_EventComponent; // 事件组件。
+        private EventManager    m_EventComponent; // 事件组件。
 
         /// <summary>
         /// 忽略发送的网络消息ID的日志打印
@@ -51,7 +51,7 @@ namespace FuFramework.Network.Runtime
             m_NetworkManager.NetworkMissHeartBeat += OnNetworkMissHeartBeat;
             m_NetworkManager.NetworkError += OnNetworkError;
             
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent) Log.Fatal("Event component is invalid.");
         }
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)

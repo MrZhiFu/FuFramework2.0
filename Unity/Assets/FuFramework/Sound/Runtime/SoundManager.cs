@@ -28,7 +28,7 @@ namespace FuFramework.Sound.Runtime
         private readonly List<int>    m_LoadingSoundList    = new(); // 记录正在加载的声音ID列表
         private readonly HashSet<int> m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
-        private EventComponent m_EventComponent; // 事件组件
+        private EventManager m_EventComponent; // 事件组件
 
         private int m_Serial;       // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
         
@@ -52,7 +52,7 @@ namespace FuFramework.Sound.Runtime
         {
             m_Serial       = 0;
 
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 Log.Fatal("[SoundManager] 事件组件不存在!");

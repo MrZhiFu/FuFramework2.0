@@ -18,16 +18,16 @@ namespace FuFramework.Network.Runtime
         /// <summary>
         /// 获取事件组件。
         /// </summary>
-        public static EventComponent Event
+        public static EventManager Event
         {
             get
             {
-                if (!_event) _event = ModuleManager.GetModule<EventComponent>();
+                if (!_event) _event = ModuleManager.GetModule<EventManager>();
                 return _event;
             }
         }
 
-        private static EventComponent _event;
+        private static EventManager _event;
 
         /// <summary>
         /// 初始化网络频道帮助器。

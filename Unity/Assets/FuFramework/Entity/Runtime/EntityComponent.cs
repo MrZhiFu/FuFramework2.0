@@ -31,7 +31,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 事件组件
         /// </summary>
-        private EventComponent m_EventComponent;
+        private EventManager m_EventComponent;
 
         private readonly List<IEntity> m_InternalEntityResults = new();
 
@@ -105,7 +105,7 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");

@@ -27,7 +27,7 @@ namespace FuFramework.Entry.Runtime
         public static CoroutineComponent    CoroutineModule    { get; private set; }
         public static DownloadComponent     DownloadModule     { get; private set; }
         public static EntityComponent       EntityModule       { get; private set; }
-        public static EventComponent        EventModule        { get; private set; }
+        public static EventManager          EventModule        { get; private set; }
         public static FsmComponent          FsmModule          { get; private set; }
         public static GlobalConfigComponent GlobalConfigModule { get; private set; }
         public static LocalizationComponent LocalizationModule { get; private set; }
@@ -57,7 +57,7 @@ namespace FuFramework.Entry.Runtime
             CoroutineModule    = ModuleManager.RegisterModule<CoroutineComponent>();
             DownloadModule     = ModuleManager.RegisterModule<DownloadComponent>();
             EntityModule       = ModuleManager.RegisterModule<EntityComponent>();
-            EventModule        = ModuleManager.RegisterModule<EventComponent>();
+            EventModule        = ModuleManager.RegisterModule<EventManager>();
             FsmModule          = ModuleManager.RegisterModule<FsmComponent>();
             GlobalConfigModule = ModuleManager.RegisterModule<GlobalConfigComponent>();
             LocalizationModule = ModuleManager.RegisterModule<LocalizationComponent>();

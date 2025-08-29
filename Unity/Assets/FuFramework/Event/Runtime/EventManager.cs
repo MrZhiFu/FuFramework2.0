@@ -7,7 +7,7 @@ namespace FuFramework.Event.Runtime
     /// <summary>
     /// 事件管理器。
     /// </summary>
-    public sealed class EventManager : FuModule, IEventManager
+    public sealed class EventManager : FuComponent
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -18,15 +18,7 @@ namespace FuFramework.Event.Runtime
         /// <summary>
         /// 事件池。
         /// </summary>
-        private readonly EventPool<GameEventArgs> m_EventPool;
-
-        /// <summary>
-        /// 初始化事件管理器的新实例。
-        /// </summary>
-        public EventManager()
-        {
-            m_EventPool = new EventPool<GameEventArgs>(EEventPoolMode.AllowNoHandler | EEventPoolMode.AllowMultiHandler);
-        }
+        private EventPool<GameEventArgs> m_EventPool;
 
         /// <summary>
         /// 获取事件处理函数的数量。
@@ -39,19 +31,31 @@ namespace FuFramework.Event.Runtime
         public int EventCount => m_EventPool.EventCount;
 
         /// <summary>
-        /// 事件管理器轮询。
+        /// 初始化
+        /// </summary>
+        protected override void OnInit()
+        {
+            m_EventPool = new EventPool<GameEventArgs>(EEventPoolMode.AllowNoHandler | EEventPoolMode.AllowMultiHandler);
+        }
+
+        /// <summary>
+        /// 游戏框架模块轮询。
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
             m_EventPool.Update(elapseSeconds, realElapseSeconds);
         }
 
         /// <summary>
-        /// 关闭并清理事件管理器。
+        /// 关闭并清理游戏框架模块。
         /// </summary>
-        protected override void Shutdown() => m_EventPool.Shutdown();
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+            m_EventPool.Shutdown();
+        }
 
         /// <summary>
         /// 获取事件处理函数的数量。
@@ -106,6 +110,18 @@ namespace FuFramework.Event.Runtime
         /// <param name="e">事件参数。</param>
         public void Fire(object sender, GameEventArgs e) => m_EventPool.Fire(sender, e);
 
+        /// <summary>
+        /// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
+        /// 这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="eventId">事件编号。</param>
+        public void Fire(object sender, string eventId)
+        {
+            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
+            Fire(sender, EmptyEventArgs.Create(eventId));
+        }
+        
         /// <summary>
         /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>

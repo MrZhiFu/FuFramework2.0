@@ -29,7 +29,7 @@ namespace FuFramework.Download.Runtime
         private IDownloadManager m_DownloadManager;
 
         /// GF事件管理器
-        private EventComponent m_EventComponent;
+        private EventManager m_EventComponent;
 
 
         [Header("下载代理实例对象根节点")]
@@ -151,7 +151,7 @@ namespace FuFramework.Download.Runtime
             m_DownloadManager.FlushSize       =  m_FlushSize;
             m_DownloadManager.Timeout         =  m_Timeout;
             
-            m_EventComponent = ModuleManager.GetModule<EventComponent>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 Log.Fatal("Event component is invalid.");
