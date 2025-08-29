@@ -121,7 +121,7 @@ namespace FuFramework.Sound.Runtime
                 soundAgentGo.transform.SetParent(transform);
                 soundAgentGo.transform.localScale = Vector3.one;
                 var soundAgent = soundAgentGo.GetOrAddComponent<SoundAgent>();
-                soundAgent.Init(this, manager);
+                soundAgent.Init(this);
                 m_SoundAgents.Add(soundAgent);
             }
 

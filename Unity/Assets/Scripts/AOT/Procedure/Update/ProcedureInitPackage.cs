@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -33,9 +34,9 @@ namespace Launcher.Procedure
         private async UniTaskVoid InitPackage(IFsm<IProcedureManager> procedureOwner)
         {
             // 编辑器模拟模式/单机离线模式下，初始化完毕后直接进入获取资源版本号流程
-            if (AssetManager.Instance.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
+            if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
             {
-                await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName);
+                await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName);
                 ChangeState<ProcedureGetPackageVersion>(procedureOwner);
                 return;
             }
@@ -45,7 +46,7 @@ namespace Launcher.Procedure
             var downloadURL = procedureOwner.GetData<VarString>("DownloadURL");
             Log.Info($"资源包的下载路径：{downloadURL}");
 
-            await AssetManager.Instance.InitPackageAsync(AssetManager.Instance.DefaultPackageName, downloadURL.Value, downloadURL.Value);
+            await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadURL.Value, downloadURL.Value);
 
             procedureOwner.RemoveData("DownloadURL");
             await UniTask.DelayFrame();

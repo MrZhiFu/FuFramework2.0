@@ -4,6 +4,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -40,7 +41,7 @@ namespace Launcher.Procedure
             await UniTask.NextFrame();
 
             // 编辑器下的模拟模式/单机离线模式--进入初始化资源包流程
-            if (AssetManager.Instance.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
+            if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
             {
                 ChangeState<ProcedureInitPackage>(procedureOwner);
                 return;

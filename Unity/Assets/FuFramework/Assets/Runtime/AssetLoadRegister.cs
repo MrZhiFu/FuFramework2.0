@@ -16,8 +16,11 @@ namespace FuFramework.Asset.Runtime
     /// </summary>
     public class AssetLoadRegister : IReference
     {
+        /// 资源管理器
+        private readonly AssetManager m_AssetManager = ModuleManager.GetModule<AssetManager>();
+
         /// 缓存已经加载的资源路径列表
-        private readonly Dictionary<string, Object> m_resDict = new();
+        private readonly Dictionary<string, Object> m_ResDict = new();
 
         /// <summary>
         /// 创建资源加载器
@@ -34,9 +37,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径。</param>
         public async UniTask<T> Load<T>(string path) where T : Object
         {
-            if (m_resDict.TryGetValue(path, out var obj)) return obj as T;
+            if (m_ResDict.TryGetValue(path, out var obj)) return obj as T;
 
-            var assetHandle = await AssetManager.Instance.LoadAssetAsync<T>(path);
+            var assetHandle = await m_AssetManager.LoadAssetAsync<T>(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
             if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
@@ -45,7 +48,7 @@ namespace FuFramework.Asset.Runtime
 
             Log.Info($"[AssetLoader]加载{path}资源完成.");
 
-            m_resDict.Add(path, assetObject);
+            m_ResDict.Add(path, assetObject);
             return assetObject;
         }
 
@@ -57,10 +60,10 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public async UniTask<Object> Load(string path, Type type)
         {
-            if (m_resDict.TryGetValue(path, out var obj)) return obj;
+            if (m_ResDict.TryGetValue(path, out var obj)) return obj;
 
             // 等待资源文件加载完成
-            var assetHandle = await AssetManager.Instance.LoadAssetAsync(path, type);
+            var assetHandle = await m_AssetManager.LoadAssetAsync(path, type);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
 
             if (!isSuccess)
@@ -71,7 +74,7 @@ namespace FuFramework.Asset.Runtime
 
             Log.Info($"[AssetLoader]加载{path}资源完成.");
 
-            m_resDict.Add(path, assetObject);
+            m_ResDict.Add(path, assetObject);
             return assetObject;
         }
 
@@ -81,9 +84,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径。</param>
         public async UniTask<Object> Load(string path)
         {
-            if (m_resDict.TryGetValue(path, out var obj)) return obj;
+            if (m_ResDict.TryGetValue(path, out var obj)) return obj;
 
-            var assetHandle = await AssetManager.Instance.LoadAssetAsync(path);
+            var assetHandle = await m_AssetManager.LoadAssetAsync(path);
             var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
             if (!isSuccess) throw new FuException($"[AssetLoader]资源{path}加载失败.");
 
@@ -92,7 +95,7 @@ namespace FuFramework.Asset.Runtime
 
             Log.Info($"[AssetLoader]加载{path}资源完成.");
 
-            m_resDict.Add(path, assetObject);
+            m_ResDict.Add(path, assetObject);
             return assetObject;
         }
 
@@ -102,9 +105,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径。</param>
         public void Unload(string path)
         {
-            if (!m_resDict.ContainsKey(path)) return;
-            AssetManager.Instance.UnloadAsset(path);
-            m_resDict.Remove(path);
+            if (!m_ResDict.ContainsKey(path)) return;
+            m_AssetManager.UnloadAsset(path);
+            m_ResDict.Remove(path);
             Log.Info($"[AssetLoader]释放{path}资源完成.");
         }
 
@@ -113,13 +116,13 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         private void UnloadAll()
         {
-            foreach (var path in m_resDict.Keys)
+            foreach (var path in m_ResDict.Keys)
             {
-                AssetManager.Instance.UnloadAsset(path);
+                m_AssetManager.UnloadAsset(path);
                 Log.Info($"[AssetLoader]释放{path}资源完成.");
             }
 
-            m_resDict.Clear();
+            m_ResDict.Clear();
         }
 
         /// <summary>

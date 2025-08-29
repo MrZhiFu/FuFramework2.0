@@ -30,7 +30,7 @@ namespace Launcher.Procedure
 
             m_procedureOwner = procedureOwner;
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.Download));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
             BeginDownload(procedureOwner).ToUniTask().Forget();
         }
 

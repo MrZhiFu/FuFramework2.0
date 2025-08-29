@@ -78,7 +78,7 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<ByteBuf> ConfigBufferLoader(string file)
         {
-            var assetHandle = await AssetManager.Instance.LoadAssetAsync<TextAsset>(Utility.Asset.Path.GetConfigPath(file, Utility.Const.FileNameSuffix.Binary));
+            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(Utility.Asset.Path.GetConfigPath(file, Utility.Const.FileNameSuffix.Binary));
             return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
         }
 #else
@@ -89,7 +89,7 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<JSONNode> ConfigLoader(string file)
         {
-            var assetHandle = await AssetManager.Instance.LoadAssetAsync<TextAsset>(Utility.Asset.Path.GetConfigPath(file, Utility.Const.FileNameSuffix.Json));
+            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(Utility.Asset.Path.GetConfigPath(file, Utility.Const.FileNameSuffix.Json));
             return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
         }
 #endif

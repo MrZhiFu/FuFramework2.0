@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
+using FuFramework.Entry.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -49,7 +49,7 @@ namespace Launcher.Procedure
             foreach (var aotDll in aotDlls)
             {
                 Log.Info("开始加载AOT DLL ==> " + aotDll);
-                var assetHandle = await AssetManager.Instance.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
+                var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
                 var aotBytes    = assetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
                 RuntimeApi.LoadMetadataForAOTAssembly(aotBytes, HomologousImageMode.SuperSet);
             }
@@ -58,7 +58,7 @@ namespace Launcher.Procedure
 
             Log.Info("开始加载Game.Hotfix.dll");
             var assetHotfixDllPath            = Utility.Asset.Path.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
-            var assetHotfixDllOperationHandle = await AssetManager.Instance.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
+            var assetHotfixDllOperationHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
             var assemblyDataHotfixDll         = assetHotfixDllOperationHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 
             Log.Info("开始加载程序集Hotfix");

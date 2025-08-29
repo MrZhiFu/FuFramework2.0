@@ -21,7 +21,7 @@ namespace Launcher.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
             
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.CreateDownloader));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
             CreateDownloader(procedureOwner);
         }
 
@@ -32,7 +32,7 @@ namespace Launcher.Procedure
         private void CreateDownloader(IFsm<IProcedureManager> procedureOwner)
         {
             // 创建资源下载器
-            var downloader = AssetManager.Instance.CreateResourceDownloader();
+            var downloader = GlobalModule.AssetModule.CreateResourceDownloader();
 
             // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
             var downloaderObj = new VarObject();

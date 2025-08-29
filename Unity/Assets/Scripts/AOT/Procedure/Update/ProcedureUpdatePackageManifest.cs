@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateManifest));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateManifest));
             UpdateManifest(procedureOwner).ToUniTask().Forget();
         }
         
@@ -40,7 +40,7 @@ namespace Launcher.Procedure
         {
             yield return new WaitForSecondsRealtime(0.1f);
 
-            var defaultPackage = AssetManager.Instance.GetPackage(AssetManager.Instance.DefaultPackageName);
+            var defaultPackage = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
             var versionStr = procedureOwner.GetData<VarString>("PackageVersion");
             var operation = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
             yield return operation;
@@ -48,7 +48,7 @@ namespace Launcher.Procedure
             if (operation.Status == EOperationStatus.Succeed)
             {
                 // 更新成功，如果是编辑器模拟模式或离线单机模式，则直接进入更新完成流程
-                if (AssetManager.Instance.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
+                if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
                 {
                     ChangeState<ProcedureUpdateDone>(procedureOwner);
                     yield break;
@@ -62,7 +62,7 @@ namespace Launcher.Procedure
             {
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GlobalModule.EventModule.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdatePackageManifest>(procedureOwner);
             }
         }

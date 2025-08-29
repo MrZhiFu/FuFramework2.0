@@ -22,6 +22,11 @@ namespace FuFramework.Sound.Runtime
         public sealed class SoundAgent : MonoBehaviour
         {
             /// <summary>
+            /// 资源管理器。
+            /// </summary>
+            private AssetManager m_AssetManager;
+            
+            /// <summary>
             /// 所在的声音组。
             /// </summary>
             private SoundGroup m_SoundGroup;
@@ -215,11 +220,11 @@ namespace FuFramework.Sound.Runtime
             /// 初始化声音代理的新实例。
             /// </summary>
             /// <param name="soundGroup">所在的声音组。</param>
-            /// <param name="manager">声音管理器</param>
-            public void Init(SoundGroup soundGroup, SoundManager manager)
+            public void Init(SoundGroup soundGroup)
             {
                 FuGuard.NotNull(soundGroup, nameof(soundGroup));
-                FuGuard.NotNull(manager,    nameof(manager));
+                m_AssetManager = ModuleManager.GetModule<AssetManager>();
+                
                 Reset();
                 m_SoundGroup   = soundGroup;
                 SerialId       = 0;
@@ -371,7 +376,7 @@ namespace FuFramework.Sound.Runtime
             {
                 if (m_SoundAsset != null)
                 {
-                    AssetManager.Instance.UnloadAsset(SoundAssetPath);
+                    m_AssetManager.UnloadAsset(SoundAssetPath);
                     m_SoundAsset = null;
                 }
 

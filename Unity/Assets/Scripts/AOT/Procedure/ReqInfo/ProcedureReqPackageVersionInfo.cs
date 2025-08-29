@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Entry.Runtime;
@@ -43,7 +42,7 @@ namespace Launcher.Procedure
             try
             {
                 // 请求服务端，获取默认资源包的版本信息。
-                jsonParams["AssetPackageName"] = AssetManager.Instance.DefaultPackageName;
+                jsonParams["AssetPackageName"] = GlobalModule.AssetModule.DefaultPackageName;
                 var rstJson = await GlobalModule.WebModule.PostToString(GlobalModule.GlobalConfigModule.CheckResourceVersionUrl, jsonParams);
                 Log.Info(rstJson);
 

@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(AssetManager.Instance.DefaultPackageName, EPatchStates.UpdateVersion));
+            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateVersion));
             GetVersion(procedureOwner).ToUniTask().Forget();
         }
 
@@ -38,7 +38,7 @@ namespace Launcher.Procedure
         /// <returns></returns>
         private IEnumerator GetVersion(IFsm<IProcedureManager> procedureOwner)
         {
-            var package = AssetManager.Instance.GetPackage(AssetManager.Instance.DefaultPackageName);
+            var package = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
 
             // 离线单机模式下请求的是应用程序内保存的版本号，一般存放在StreamingAssets目录下，
             // 热更模式下请求的是服务器上的版本号，一般存放在AssetBundle服务器上
@@ -60,7 +60,7 @@ namespace Launcher.Procedure
             {
                 // 获取失败，再次进入自身流程尝试
                 Log.Error(operation.Error);
-                GlobalModule.EventModule.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(AssetManager.Instance.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureGetPackageVersion>(procedureOwner);
             }
         }

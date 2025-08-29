@@ -143,19 +143,30 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// Loader 纹理LRU缓存
         /// </summary>
-        // ReSharper disable once InconsistentNaming
-        private static readonly LRUCache s_Cache = new(100);
+        private static readonly LRUCache Cache = new(100);
 
         /// <summary>
         /// 缓存路径--"Application.persistentDataPath}/{game}/cache/images/"
         /// </summary>
-        private static string _cachePath;
+        private static string m_CachePath;
 
+        /// <summary>
+        /// 资源管理器
+        /// </summary>
+        private readonly AssetManager m_AssetManager;
+        
         public CustomLoader()
         {
-            _cachePath = PathHelper.AppHotfixResPath + "/cache/images/";
-            if (!Directory.Exists(_cachePath)) 
-                Directory.CreateDirectory(_cachePath);
+            m_AssetManager = ModuleManager.GetModule<AssetManager>();
+            if (!m_AssetManager)
+            {
+                Log.Fatal("[CustomLoader] 资源管理器不存在!");
+                return;
+            }
+            
+            m_CachePath = PathHelper.AppHotfixResPath + "/cache/images/";
+            if (!Directory.Exists(m_CachePath)) 
+                Directory.CreateDirectory(m_CachePath);
         }
 
         /// <summary>
@@ -177,7 +188,7 @@ namespace FuFramework.UI.Runtime
                 if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
                 {
                     // 先看缓存中是否有，如果有则直接使用缓存的纹理
-                    var nTexture = s_Cache.Get(url);
+                    var nTexture = Cache.Get(url);
                     if (!nTexture.IsNull())
                     {
                         tempTexture = nTexture;
@@ -185,7 +196,7 @@ namespace FuFramework.UI.Runtime
                     else
                     {
                         var hash = Utility.Hash.MD5.Hash(url);
-                        var path = $"{_cachePath}{hash}.png";
+                        var path = $"{m_CachePath}{hash}.png";
                         var isExists = FileHelper.IsExists(path);
                         var texture2D = Texture2D.whiteTexture;
 
@@ -202,7 +213,7 @@ namespace FuFramework.UI.Runtime
                         }
 
                         tempTexture = new NTexture(texture2D);
-                        s_Cache.Put(url, tempTexture);
+                        Cache.Put(url, tempTexture);
                     }
                 }
 
@@ -216,21 +227,21 @@ namespace FuFramework.UI.Runtime
                 else
                 {
                     // 先看缓存中是否有，有则使用缓存的纹理
-                    var nTexture = s_Cache.Get(url);
+                    var nTexture = Cache.Get(url);
                     if (nTexture.IsNotNull())
                     {
                         tempTexture = nTexture;
                     }
                     else
                     {
-                        var assetInfo = AssetManager.Instance.GetAssetInfo(url);
+                        var assetInfo = m_AssetManager.GetAssetInfo(url);
                         if (assetInfo.IsInvalid == false)
                         {
-                            var assetHandle = await AssetManager.Instance.LoadAssetAsync<Texture2D>(url);
+                            var assetHandle = await m_AssetManager.LoadAssetAsync<Texture2D>(url);
                             if (assetHandle.IsDone)
                             {
                                 tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
-                                s_Cache.Put(url, tempTexture);
+                                Cache.Put(url, tempTexture);
                             }
                         }
                         else
@@ -242,7 +253,7 @@ namespace FuFramework.UI.Runtime
                                 var texture2D = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false, false);
                                 texture2D.LoadImage(buffer);
                                 tempTexture = new NTexture(texture2D);
-                                s_Cache.Put(url, tempTexture);
+                                Cache.Put(url, tempTexture);
                             }
                         }
                     }

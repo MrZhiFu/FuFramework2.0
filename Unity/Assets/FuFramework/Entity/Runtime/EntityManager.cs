@@ -34,6 +34,8 @@ namespace FuFramework.Entity.Runtime
         private int  m_Serial;     // 实体自增编号
         private bool m_IsShutdown; // 是否关闭
 
+        private readonly AssetManager m_AssetManager; // 资源管理器
+
         private EventHandler<ShowEntitySuccessEventArgs>  m_ShowEntitySuccessEventHandler;  // 显示实体成功事件
         private EventHandler<ShowEntityFailureEventArgs>  m_ShowEntityFailureEventHandler;  // 显示实体失败事件
         private EventHandler<HideEntityCompleteEventArgs> m_HideEntityCompleteEventHandler; // 隐藏实体完成事件
@@ -48,6 +50,7 @@ namespace FuFramework.Entity.Runtime
             m_LoadingEntityDict              = new Dictionary<int, int>();
             m_WaitReleaseOnLoadEntitySet     = new HashSet<int>();
             m_RecycleQueue                   = new Queue<EntityInfo>();
+            m_AssetManager                   = ModuleManager.GetModule<AssetManager>();
             m_ObjectPoolManager              = null;
             m_EntityHelper                   = null;
             m_Serial                         = 0;
@@ -459,7 +462,7 @@ namespace FuFramework.Entity.Runtime
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
-                var assetOperationHandle = await AssetManager.Instance.LoadAssetAsync<Object>(entityAssetName);
+                var assetOperationHandle = await m_AssetManager.LoadAssetAsync<Object>(entityAssetName);
                 assetOperationHandle.Completed += handle =>
                 {
                     var newUserData = ShowEntityInfo.Create(serialId, entityId, entityGroup, userData);

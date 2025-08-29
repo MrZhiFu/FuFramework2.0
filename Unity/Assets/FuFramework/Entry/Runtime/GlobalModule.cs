@@ -1,3 +1,4 @@
+using FuFramework.Asset.Runtime;
 using FuFramework.Config.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Coroutine.Runtime;
@@ -23,6 +24,7 @@ namespace FuFramework.Entry.Runtime
     public static class GlobalModule
     {
         public static BaseComponent         BaseModule         { get; private set; }
+        public static AssetManager          AssetModule        { get; private set; }
         public static ConfigComponent       ConfigModule       { get; private set; }
         public static CoroutineComponent    CoroutineModule    { get; private set; }
         public static DownloadComponent     DownloadModule     { get; private set; }
@@ -53,6 +55,7 @@ namespace FuFramework.Entry.Runtime
         public static void RegisterModule()
         {
             BaseModule         = ModuleManager.RegisterModule<BaseComponent>();
+            AssetModule        = ModuleManager.RegisterModule<AssetManager>();
             ConfigModule       = ModuleManager.RegisterModule<ConfigComponent>();
             CoroutineModule    = ModuleManager.RegisterModule<CoroutineComponent>();
             DownloadModule     = ModuleManager.RegisterModule<DownloadComponent>();

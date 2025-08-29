@@ -47,11 +47,13 @@ namespace FuFramework.Scene.Runtime
         private readonly Dictionary<string, SceneHandleData> m_LoadingSceneDict   = new(); // 正在加载的场景字典，Key为场景资源路径，Value为场景加载句柄数据
         private readonly Dictionary<string, SceneHandle>     m_UnloadingSceneDict = new(); // 正在卸载的场景字典，Key为场景资源路径，Value为场景加载句柄
 
+        private AssetManager  m_AssetManager;             // 资源管理器
         private EventRegister EventRegister { get; set; } // 事件订阅器
 
         protected override void Init()
         {
-            EventRegister = EventRegister.Create();
+            EventRegister  = EventRegister.Create();
+            m_AssetManager = ModuleManager.RegisterModule<AssetManager>();
         }
 
         /// <summary>
@@ -104,7 +106,7 @@ namespace FuFramework.Scene.Runtime
                 return false;
             }
 
-            return AssetManager.Instance.LoadSceneAsync(sceneAssetPath, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
+            return m_AssetManager.LoadSceneAsync(sceneAssetPath, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
         }
 
         /// <summary>
@@ -279,7 +281,7 @@ namespace FuFramework.Scene.Runtime
             if (SceneIsLoaded(sceneAssetPath))
                 throw new FuException(Utility.Text.Format("场景资源 '{0}' 已被加载过，不能重复加载!", sceneAssetPath));
 
-            var sceneOperationHandle = await AssetManager.Instance.LoadSceneAsync(sceneAssetPath, sceneMode);
+            var sceneOperationHandle = await m_AssetManager.LoadSceneAsync(sceneAssetPath, sceneMode);
             m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
             sceneOperationHandle.Completed += OnLoadSceneCompleted;
             return sceneOperationHandle;

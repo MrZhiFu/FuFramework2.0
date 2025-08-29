@@ -15,10 +15,10 @@ namespace FuFramework.Asset.Runtime
     /// 1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
     /// 2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
-    public partial class AssetManager : MonoSingleton<AssetManager>
+    public partial class AssetManager : FuComponent
     {
         private const int DefaultPriority = 0; // 模块默认优先级
-        
+
         /// <summary>
         /// 资源运行模式。
         /// </summary>
@@ -43,11 +43,11 @@ namespace FuFramework.Asset.Runtime
         /// YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）
         /// </summary>
         public int AsyncSystemMaxSlicePerFrame { get; private set; }
-        
+
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Init()
+        protected override void OnInit()
         {
             // 获取资源模块配置数据
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
@@ -71,15 +71,29 @@ namespace FuFramework.Asset.Runtime
             Log.Info($"资源系统运行模式：{PlayMode}");
 
             BetterStreamingAssets.Initialize();
-            
+
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-     
+
             Log.Info("资源系统初始化完毕！");
         }
-        
+
+        /// <summary>
+        /// 游戏框架模块轮询。
+        /// </summary>
+        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
+        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+
+        /// <summary>
+        /// 关闭并清理游戏框架模块。
+        /// </summary>
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType) { }
+
+
         #region 异步加载资源
-        
+
         /// <summary>
         /// 异步加载资源
         /// </summary>
@@ -187,7 +201,7 @@ namespace FuFramework.Asset.Runtime
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
-        
+
         #endregion
 
         #region 同步加载资源
@@ -292,7 +306,7 @@ namespace FuFramework.Asset.Runtime
         #endregion
 
         #region 异步加载子资源对象
-        
+
         /// <summary>
         /// 异步加载子资源对象
         /// </summary>
@@ -388,7 +402,7 @@ namespace FuFramework.Asset.Runtime
         public RawFileHandle LoadRawFileSync(string path) => YooAssets.LoadRawFileSync(path);
 
         #endregion
-        
+
         #region 资源包
 
         /// <summary>
@@ -402,19 +416,19 @@ namespace FuFramework.Asset.Runtime
         public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
-            
+
             // 创建默认的资源包
             var resourcePackage = TryGetPackage(packageName);
             if (resourcePackage == null)
             {
                 resourcePackage = CreatePackage(packageName);
-                if (isDefaultPackage) 
-                    SetDefaultPackage(resourcePackage);// 设置该资源包为默认的资源包
+                if (isDefaultPackage)
+                    SetDefaultPackage(resourcePackage); // 设置该资源包为默认的资源包
             }
 
             // 新建一个任务，包装初始化操作
             var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            var initHandler = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
+            var initHandler          = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
             if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
 
             initHandler.Completed += asyncOperationBase =>
@@ -426,7 +440,7 @@ namespace FuFramework.Asset.Runtime
             };
             return taskCompletionSource.Task;
         }
-        
+
         /// <summary>
         /// 创建资源包
         /// </summary>
@@ -454,7 +468,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
         public ResourcePackage GetPackage(string packageName) => YooAssets.GetPackage(packageName);
-        
+
         /// <summary>
         /// 设置默认资源包
         /// </summary>
@@ -467,7 +481,7 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <returns></returns>
         public ResourceDownloaderOperation CreateResourceDownloader() => YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgainNum);
-        
+
         #endregion
 
         #region 卸载资源
@@ -495,7 +509,7 @@ namespace FuFramework.Asset.Runtime
             var package = YooAssets.GetPackage(packageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
-        
+
         /// <summary>
         /// 强制回收所有资源
         /// </summary>
@@ -583,7 +597,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">要检查的资源路径。</param>
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>
         public bool HasAssetPath(string path) => YooAssets.CheckLocationValid(path);
-        
+
         #endregion
     }
 }
