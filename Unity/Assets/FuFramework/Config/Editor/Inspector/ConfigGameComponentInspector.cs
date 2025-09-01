@@ -5,13 +5,14 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Config.Editor
 {
+    /*
     /// <summary>
     /// 自定义配置表Inspector
     /// </summary>
     [CustomEditor(typeof(ConfigComponent))]
     internal sealed class ConfigGameComponentInspector : GameComponentInspector
     {
-        /*
+
         private SerializedProperty m_EnableLoadConfigUpdateEvent = null;
         private SerializedProperty m_CachedBytesSize = null;
 
@@ -65,10 +66,11 @@ namespace FuFramework.Config.Editor
         {
             // m_ConfigHelperInfo.Refresh();
             serializedObject.ApplyModifiedProperties();
-        }*/
+        }
         protected override void RefreshTypeNames()
         {
             RefreshComponentTypeNames(typeof(IConfigManager));
         }
     }
+    */
 }

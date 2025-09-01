@@ -12,24 +12,14 @@ namespace FuFramework.Config.Runtime
     public sealed class LoadConfigFailureEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 加载全局配置失败事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(LoadConfigFailureEventArgs).FullName;
-
-        /// <summary>
         /// 获取加载全局配置失败事件编号。
         /// </summary>
         public override string Id => EventId;
 
         /// <summary>
-        /// 初始化加载全局配置失败事件的新实例。
+        /// 加载全局配置失败事件编号。
         /// </summary>
-        public LoadConfigFailureEventArgs()
-        {
-            ConfigAssetName = null;
-            ErrorMessage    = null;
-            UserData        = null;
-        }
+        public static readonly string EventId = typeof(LoadConfigFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取全局配置资源名称。

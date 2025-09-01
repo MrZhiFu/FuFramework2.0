@@ -12,14 +12,14 @@ namespace FuFramework.Config.Runtime
     public sealed class LoadConfigSuccessEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 加载全局配置成功事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(LoadConfigSuccessEventArgs).FullName;
-
-        /// <summary>
         /// 获取加载全局配置成功事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 加载全局配置成功事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(LoadConfigSuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取全局配置资源名称。
@@ -35,16 +35,6 @@ namespace FuFramework.Config.Runtime
         /// 获取用户自定义数据。
         /// </summary>
         public object UserData { get; private set; }
-
-        /// <summary>
-        /// 初始化加载全局配置成功事件编号的新实例。
-        /// </summary>
-        public LoadConfigSuccessEventArgs()
-        {
-            ConfigAssetName = null;
-            Duration        = 0f;
-            UserData        = null;
-        }
 
         /// <summary>
         /// 创建加载全局配置成功事件。

@@ -12,14 +12,14 @@ namespace FuFramework.Config.Runtime
     public sealed class LoadConfigUpdateEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 加载全局配置失败事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(LoadConfigUpdateEventArgs).FullName;
-
-        /// <summary>
         /// 获取加载全局配置失败事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 加载全局配置失败事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(LoadConfigUpdateEventArgs).FullName;
 
         /// <summary>
         /// 获取全局配置资源名称。
@@ -35,16 +35,6 @@ namespace FuFramework.Config.Runtime
         /// 获取用户自定义数据。
         /// </summary>
         public object UserData { get; private set; }
-
-        /// <summary>
-        /// 初始化加载全局配置更新事件的新实例。
-        /// </summary>
-        public LoadConfigUpdateEventArgs()
-        {
-            ConfigAssetName = null;
-            Progress        = 0f;
-            UserData        = null;
-        }
 
         /// <summary>
         /// 创建加载全局配置更新事件。
@@ -67,8 +57,8 @@ namespace FuFramework.Config.Runtime
         /// </summary>
         public override void Clear()
         {
-            ConfigAssetName = null;
             Progress        = 0f;
+            ConfigAssetName = null;
             UserData        = null;
         }
     }

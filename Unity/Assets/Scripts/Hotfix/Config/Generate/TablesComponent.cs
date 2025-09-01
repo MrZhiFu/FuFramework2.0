@@ -25,9 +25,9 @@ namespace Hotfix.Config
 
         internal Tables.TbSoundsConfig TbSoundsConfig { private set; get; }
 
-        private ConfigComponent m_ConfigComponent;
+        private ConfigManager m_ConfigComponent;
 
-        public void Init(ConfigComponent configComponent)
+        public void Init(ConfigManager configComponent)
         {
             m_ConfigComponent = configComponent;
             configComponent.RemoveAllConfigs();
@@ -54,19 +54,19 @@ namespace Hotfix.Config
     
             TbLocalization = new Local.TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
-            m_ConfigComponent.Add(nameof(Local.TbLocalization), TbLocalization);
+            m_ConfigComponent.AddConfig(nameof(Local.TbLocalization), TbLocalization);
 
             TbAchievementConfig = new Tables.TbAchievementConfig(() => loader("tables_tbachievementconfig"));
             loadTasks.Add(TbAchievementConfig.LoadAsync());
-            m_ConfigComponent.Add(nameof(Tables.TbAchievementConfig), TbAchievementConfig);
+            m_ConfigComponent.AddConfig(nameof(Tables.TbAchievementConfig), TbAchievementConfig);
 
             TbItemConfig = new Tables.TbItemConfig(() => loader("tables_tbitemconfig"));
             loadTasks.Add(TbItemConfig.LoadAsync());
-            m_ConfigComponent.Add(nameof(Tables.TbItemConfig), TbItemConfig);
+            m_ConfigComponent.AddConfig(nameof(Tables.TbItemConfig), TbItemConfig);
 
             TbSoundsConfig = new Tables.TbSoundsConfig(() => loader("tables_tbsoundsconfig"));
             loadTasks.Add(TbSoundsConfig.LoadAsync());
-            m_ConfigComponent.Add(nameof(Tables.TbSoundsConfig), TbSoundsConfig);
+            m_ConfigComponent.AddConfig(nameof(Tables.TbSoundsConfig), TbSoundsConfig);
 
     
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
