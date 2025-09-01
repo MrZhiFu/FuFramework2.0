@@ -7,7 +7,7 @@ namespace FuFramework.GlobalConfig.Runtime
     {
         private void Start()
         {
-            _ = typeof(GlobalConfigComponent);
+            _ = typeof(GlobalConfigManager);
             _ = typeof(ResponseGameAppVersion);
             _ = typeof(ResponseGlobalInfo);
             _ = typeof(ResponseGameAssetPackageVersion);

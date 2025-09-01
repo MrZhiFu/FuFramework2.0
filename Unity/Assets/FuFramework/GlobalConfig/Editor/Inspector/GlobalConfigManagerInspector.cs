@@ -10,8 +10,8 @@ namespace FuFramework.GlobalConfig.Editor
     /// <summary>
     /// 自定义全局配置组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(GlobalConfigComponent))]
-    internal sealed class GlobalConfigComponentInspector : FuFrameworkInspector
+    [CustomEditor(typeof(GlobalConfigManager))]
+    internal sealed class GlobalConfigManagerInspector : FuFrameworkInspector
     {
         private SerializedProperty m_HostServerUrl;
         private SerializedProperty m_Content;

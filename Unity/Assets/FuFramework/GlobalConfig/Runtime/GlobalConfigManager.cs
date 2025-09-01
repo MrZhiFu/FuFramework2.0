@@ -10,7 +10,7 @@ namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
     /// 全局配置组件。
-    /// 功能：提供游戏全局配置。包括：
+    /// 功能：从服务器获取并提供游戏全局配置信息。包括：
     ///    - 检测App版本地址接口
     ///    - 检测资源版本地址接口
     ///    - 主机服务地址
@@ -19,8 +19,7 @@ namespace FuFramework.GlobalConfig.Runtime
     ///    - 附加内容
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/Global Config")]
-    public sealed class GlobalConfigComponent : FuComponent
+    public sealed class GlobalConfigManager : FuComponent
     {
         /// <summary>
         /// 检测App版本地址接口
@@ -45,7 +44,7 @@ namespace FuFramework.GlobalConfig.Runtime
         /// <summary>
         /// AOT补充元数据列表
         /// </summary>
-        [SerializeField] private List<string> m_AOTCodeLists = new List<string>();
+        [SerializeField] private List<string> m_AOTCodeLists = new();
 
         /// <summary>
         /// 附加内容
@@ -113,14 +112,15 @@ namespace FuFramework.GlobalConfig.Runtime
             set => m_HostServerUrl = value;
         }
 
-        protected override void OnInit()
-        {
-        }
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
-        {
-        }
-        protected override void OnShutdown(ShutdownType shutdownType)
-        {
-        }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInit() { }
+
+        /// <summary>
+        /// 关闭并清理游戏框架模块。
+        /// </summary>
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType) { }
     }
 }
