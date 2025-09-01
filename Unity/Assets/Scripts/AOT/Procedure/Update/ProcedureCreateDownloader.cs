@@ -1,5 +1,4 @@
-﻿using FuFramework.Fsm.Runtime;
-using FuFramework.Core.Runtime;
+﻿using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Entry.Runtime;
@@ -15,21 +14,20 @@ namespace Launcher.Procedure
     public class ProcedureCreateDownloader : ProcedureBase
     {
         public override int Priority => 8; // 显示优先级
-        
-        protected override void OnEnter(Fsm procedureOwner)
+
+        protected override void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
-            
+
             GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
-            CreateDownloader(procedureOwner);
+            CreateDownloader();
         }
 
         /// <summary>
         /// 创建资源下载器
         /// </summary>
-        /// <param name="procedureOwner"></param>
-        private void CreateDownloader(Fsm procedureOwner)
+        private void CreateDownloader()
         {
             // 创建资源下载器
             var downloader = GlobalModule.AssetModule.CreateResourceDownloader();
@@ -37,12 +35,12 @@ namespace Launcher.Procedure
             // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
             var downloaderObj = new VarObject();
             downloaderObj.SetValue(downloader);
-            procedureOwner.SetData("Downloader", downloaderObj);
+            Fsm.SetData("Downloader", downloaderObj);
 
             if (downloader.TotalDownloadCount == 0)
             {
                 Log.Info("没有需要下载的资源");
-                ChangeState<ProcedureUpdateDone>(procedureOwner);
+                ChangeState<ProcedureUpdateDone>();
             }
             else
             {
@@ -50,7 +48,7 @@ namespace Launcher.Procedure
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
                 GlobalModule.EventModule.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
-                ChangeState<ProcedureDownloadPackage>(procedureOwner);
+                ChangeState<ProcedureDownloadPackage>();
             }
         }
     }

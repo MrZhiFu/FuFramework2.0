@@ -117,7 +117,7 @@ namespace FuFramework.Fsm.Runtime
 
             return fsm;
         }
-        
+
 
         /// <summary>
         /// 创建有限状态机。
@@ -165,7 +165,7 @@ namespace FuFramework.Fsm.Runtime
 
             m_CurrentStateTime = 0f;
             CurrentStateBase   = stateBase ?? throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.", FullName, typeof(TState).FullName));
-            CurrentStateBase.OnEnter(this);
+            CurrentStateBase.OnEnter();
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace FuFramework.Fsm.Runtime
 
             m_CurrentStateTime = 0f;
             CurrentStateBase   = state ?? throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.", FullName, stateType.FullName));
-            CurrentStateBase.OnEnter(this);
+            CurrentStateBase.OnEnter();
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace FuFramework.Fsm.Runtime
         {
             if (CurrentStateBase == null) return;
             m_CurrentStateTime += elapseSeconds;
-            CurrentStateBase.OnUpdate(this, elapseSeconds, realElapseSeconds);
+            CurrentStateBase.OnUpdate(elapseSeconds, realElapseSeconds);
         }
 
         /// <summary>
@@ -204,11 +204,11 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         public void Clear()
         {
-            CurrentStateBase?.OnLeave(this, true);
+            CurrentStateBase?.OnLeave(true);
 
             foreach (var (_, state) in m_StateDict)
             {
-                state.OnDestroy(this);
+                state.OnDestroy();
             }
 
             Name  = null;
@@ -230,7 +230,7 @@ namespace FuFramework.Fsm.Runtime
             m_CurrentStateTime = 0f;
             m_IsDestroyed      = true;
         }
-        
+
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
@@ -411,10 +411,10 @@ namespace FuFramework.Fsm.Runtime
                 throw new FuException(Utility.Text.Format("FSM '{0}' can not change state to '{1}' which is not exist.", FullName, stateType.FullName));
             }
 
-            CurrentStateBase.OnLeave(this, false);
+            CurrentStateBase.OnLeave(false);
             m_CurrentStateTime = 0f;
             CurrentStateBase   = state;
-            CurrentStateBase.OnEnter(this);
+            CurrentStateBase.OnEnter();
         }
     }
 }

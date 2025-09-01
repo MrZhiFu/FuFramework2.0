@@ -1,11 +1,10 @@
 using System;
 using Cysharp.Threading.Tasks;
-using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
-using FuFramework.Entry.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -27,20 +26,19 @@ namespace Launcher.Procedure
         /// </summary>
         private const string GlobalInfoUrl = "http://127.0.0.1:20808/api/GameGlobalInfo/GetInfo";
 
-        protected override void OnEnter(Fsm procedureOwner)
+        protected override void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入获取服务端全局信息流程------</color>");
             
             // 热更模式
-            GetGlobalInfo(procedureOwner).Forget();
+            GetGlobalInfo().Forget();
         }
 
         /// <summary>
         /// 获取全局信息，包括：服务器地址、资源版本地址、内容信息s
         /// </summary>
-        /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetGlobalInfo(Fsm procedureOwner)
+        private async UniTaskVoid GetGlobalInfo()
         {
             // 获取服务端全局信息的请求参数
             var reqBaseParams = HttpHelper.GetBaseParams();
@@ -60,7 +58,7 @@ namespace Launcher.Procedure
 
                     // 等待3秒后重新获取
                     await UniTask.WaitForSeconds(3);
-                    GetGlobalInfo(procedureOwner).Forget();
+                    GetGlobalInfo().Forget();
                 }
                 else
                 {
@@ -73,7 +71,7 @@ namespace Launcher.Procedure
                     LauncherUIHelper.SetTipText("Loading...");
 
                     // 进入获取App版本号流程
-                    ChangeState<ProcedureReqAppVersionInfo>(procedureOwner);
+                    ChangeState<ProcedureReqAppVersionInfo>();
                 }
             }
             catch (Exception e)
@@ -84,7 +82,7 @@ namespace Launcher.Procedure
 
                 // 等待3秒后重新获取
                 await UniTask.WaitForSeconds(3);
-                GetGlobalInfo(procedureOwner).Forget();
+                GetGlobalInfo().Forget();
             }
         }
     }

@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
-using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
-using FuFramework.Entry.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -23,20 +22,19 @@ namespace Launcher.Procedure
     public class ProcedureReqPackageVersionInfo : ProcedureBase
     {
         public override int Priority => 4; // 优先级。
-        
-        protected override void OnEnter(Fsm procedureOwner)
+
+        protected override void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入获取服务端默认资源包的版本信息流程------</color>");
 
-            GetAssetPackageVersionInfo(procedureOwner).Forget();
+            GetAssetPackageVersionInfo().Forget();
         }
 
         /// <summary>
         /// 从服务端获取默认资源包的版本信息。
         /// </summary>
-        /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetAssetPackageVersionInfo(Fsm procedureOwner)
+        private async UniTaskVoid GetAssetPackageVersionInfo()
         {
             var jsonParams = HttpHelper.GetBaseParams();
             try
@@ -52,27 +50,28 @@ namespace Launcher.Procedure
                     // 获取失败
                     LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
                     Log.Error($"获取资源版本信息异常=> Req:{Utility.Json.ToJson(jsonParams)} Resp:{rstJson}");
-                    
+
                     // 若获取失败，延迟3秒后重试。
                     await UniTask.WaitForSeconds(3);
-                    GetAssetPackageVersionInfo(procedureOwner).Forget();
+                    GetAssetPackageVersionInfo().Forget();
                 }
                 else
                 {
                     // 获取成功
                     var assetPackageVersion = Utility.Json.ToObject<ResponseGameAssetPackageVersion>(httpJsonResult.Data);
-                    
-                    // 将资源下载路径保存到流程管理器的Data变量("DownloadURL")中。
-                    var downloadURL = Path.Combine(assetPackageVersion.RootPath, assetPackageVersion.PackageName, assetPackageVersion.Platform, assetPackageVersion.AppVersion, assetPackageVersion.Channel, assetPackageVersion.AssetPackageName, assetPackageVersion.Version) + Path.DirectorySeparatorChar;
+
+                    // 将资源下载路径保存到流程管理器的Data变量("DownloadURL")中，路径格式为：根路径/资源包名称/平台/版本号/渠道/资源包名称/版本号
+                    var downloadURL = Path.Combine(assetPackageVersion.RootPath, assetPackageVersion.PackageName, assetPackageVersion.Platform, assetPackageVersion.AppVersion,
+                                                   assetPackageVersion.Channel, assetPackageVersion.AssetPackageName, assetPackageVersion.Version) + Path.DirectorySeparatorChar;
                     var downloadURLStr = ReferencePool.Acquire<VarString>();
                     downloadURLStr.SetValue(downloadURL);
-                    procedureOwner.SetData("DownloadURL", downloadURLStr);
+                    Fsm.SetData("DownloadURL", downloadURLStr);
 
                     // 将版本信息保存到流程管理器的Data变量("PackageVersion)中，进入资源更新初始化流程。
                     var versionStr = ReferencePool.Acquire<VarString>();
                     versionStr.SetValue(assetPackageVersion.Version);
-                    procedureOwner.SetData( "PackageVersion", versionStr);
-                    ChangeState<ProcedureInitPackage>(procedureOwner);
+                    Fsm.SetData("PackageVersion", versionStr);
+                    ChangeState<ProcedureInitPackage>();
                 }
             }
             catch (Exception e)
@@ -80,7 +79,7 @@ namespace Launcher.Procedure
                 Log.Error($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
                 LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
                 await UniTask.WaitForSeconds(3);
-                GetAssetPackageVersionInfo(procedureOwner).Forget();
+                GetAssetPackageVersionInfo().Forget();
             }
         }
     }

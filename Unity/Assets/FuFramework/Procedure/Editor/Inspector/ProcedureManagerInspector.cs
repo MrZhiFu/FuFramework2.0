@@ -15,7 +15,7 @@ namespace FuFramework.Procedure.Editor
     /// 自定义流程组件的Inspector
     /// </summary>
     [CustomEditor(typeof(ProcedureManager))]
-    internal sealed class ProcedureGameComponentInspector : GameComponentInspector
+    internal sealed class ProcedureManagerInspector : GameComponentInspector
     {
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
         private SerializedProperty m_EntranceProcedureTypeName;   // 入口流程类型名称

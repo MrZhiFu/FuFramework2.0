@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Procedure.Runtime;
 
@@ -15,9 +14,9 @@ namespace Launcher.Procedure
     {
         public override int Priority => 11; // 显示优先级
 
-        protected override void OnEnter(Fsm procedureOwner)
+        protected override void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入代码热修复流程------</color>");
 
             Start().Forget();
@@ -28,7 +27,7 @@ namespace Launcher.Procedure
         /// </summary>
         private async UniTaskVoid Start()
         {
-            await UniTask.DelayFrame();      // 等待一帧，确保热更完毕
+            await UniTask.DelayFrame();       // 等待一帧，确保热更完毕
             await HotfixHelper.StartHotfix(); // 开始代码热修复
             LauncherUIHelper.Dispose();       // 释放启动流程的加载界面
         }

@@ -1,9 +1,7 @@
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.UI.Runtime;
-using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 
@@ -11,7 +9,7 @@ using FuFramework.Procedure.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 启动流程
+    /// 启动入口流程
     /// 主要作用是：
     /// 1. 设置FairyGUI的Loader加载器为自定义加载器
     /// 2. 启动UI
@@ -21,34 +19,38 @@ namespace Launcher.Procedure
     {
         public override int Priority => 1; // 显示优先级
 
-        protected override async void OnEnter(Fsm procedureOwner)
+        protected override async void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入首次启动流程------</color>");
+
 
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
 
-            await LauncherUIHelper.Start(); // 启动热更进度UI
-            Start(procedureOwner).Forget(); // 启动流程
+            // 启动热更进度UI
+            await LauncherUIHelper.Start();
+
+            // 启动流程
+            Start().Forget();
         }
 
         /// <summary>
         /// 进入获取全局信息流程
         /// </summary>
-        private async UniTaskVoid Start(Fsm procedureOwner)
+        private async UniTaskVoid Start()
         {
             await UniTask.NextFrame();
 
             // 编辑器下的模拟模式/单机离线模式--进入初始化资源包流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
             {
-                ChangeState<ProcedureInitPackage>(procedureOwner);
+                ChangeState<ProcedureInitPackage>();
                 return;
             }
 
             // 热更模式--进入获取服务端全局信息流程
-            ChangeState<ProcedureReqGlobalInfo>(procedureOwner);
+            ChangeState<ProcedureReqGlobalInfo>();
         }
     }
 }

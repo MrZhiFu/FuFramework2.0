@@ -56,10 +56,10 @@ namespace Launcher.Procedure
         private static void SetUpdateProgress(object sender, GameEventArgs gameEventArgs)
         {
             m_WinLauncher.SetUpdateState(false);
-            var message = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
-            var progress = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
+            var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
+            var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
             var currentSizeMb = Utility.File.GetBytesSize(message.CurrentDownloadSizeBytes);
-            var totalSizeMb = Utility.File.GetBytesSize(message.TotalDownloadSizeBytes);
+            var totalSizeMb   = Utility.File.GetBytesSize(message.TotalDownloadSizeBytes);
             m_WinLauncher.SetUpdateProgress(progress * 100);
             m_WinLauncher.SetTipText($"Downloading {currentSizeMb}/{totalSizeMb}");
         }

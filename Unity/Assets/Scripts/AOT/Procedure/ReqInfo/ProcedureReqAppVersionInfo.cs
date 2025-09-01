@@ -2,13 +2,12 @@ using System;
 using UnityEngine;
 using Launcher.UI;
 using Cysharp.Threading.Tasks;
-using FuFramework.Fsm.Runtime;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
-using FuFramework.Entry.Runtime;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -27,20 +26,19 @@ namespace Launcher.Procedure
     {
         public override int Priority => 3; // 显示优先级
         
-        protected override void OnEnter(Fsm procedureOwner)
+        protected override void OnEnter()
         {
-            base.OnEnter(procedureOwner);
+            base.OnEnter();
             Log.Info("<color=#43f656>------进入获取服务端App版本信息流程------</color>");
 
             // 非编辑器模式下，获取版本信息
-            GetAppVersionInfo(procedureOwner).Forget();
+            GetAppVersionInfo().Forget();
         }
 
         /// <summary>
         /// 获取服务端App版本信息，并根据服务端返回结果进行处理
         /// </summary>
-        /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetAppVersionInfo(Fsm procedureOwner)
+        private async UniTaskVoid GetAppVersionInfo()
         {
             var reqBaseParams = HttpHelper.GetBaseParams();
             try
@@ -58,7 +56,7 @@ namespace Launcher.Procedure
 
                     // 网络异常，延迟3秒后重试
                     await UniTask.WaitForSeconds(3);
-                    GetAppVersionInfo(procedureOwner).Forget();
+                    GetAppVersionInfo().Forget();
                 }
                 else
                 {
@@ -89,13 +87,13 @@ namespace Launcher.Procedure
                             {
                                 // 非强更，点击进入获取资源包版本流程
                                 winLauncher.SetUpdateSureUIState(false);
-                                ChangeState<ProcedureReqPackageVersionInfo>(procedureOwner);
+                                ChangeState<ProcedureReqPackageVersionInfo>();
                             }
                         });
                     }
                     else
                     {
-                        ChangeState<ProcedureReqPackageVersionInfo>(procedureOwner);
+                        ChangeState<ProcedureReqPackageVersionInfo>();
                     }
                 }
             }
@@ -106,7 +104,7 @@ namespace Launcher.Procedure
 
                 // 网络异常，延迟3秒后重试
                 await UniTask.WaitForSeconds(3);
-                GetAppVersionInfo(procedureOwner).Forget();
+                GetAppVersionInfo().Forget();
             }
         }
     }

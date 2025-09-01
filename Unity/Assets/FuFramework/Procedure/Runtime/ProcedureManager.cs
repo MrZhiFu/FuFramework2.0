@@ -28,6 +28,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         private Fsm.Runtime.Fsm m_ProcedureFsm;
 
+
         [Header("所有可用的流程类型")]
         [SerializeField] private string[] m_AvailableProcedureTypeNames;
 
@@ -43,7 +44,7 @@ namespace FuFramework.Procedure.Runtime
         /// 入口流程。
         /// </summary>
         private ProcedureBase m_EntranceProcedure;
-        
+
 
         /// <summary>
         /// 获取当前流程。

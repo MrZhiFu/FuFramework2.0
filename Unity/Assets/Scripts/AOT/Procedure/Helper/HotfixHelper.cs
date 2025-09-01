@@ -33,7 +33,7 @@ namespace Launcher.Procedure
                 foreach (var assembly in assemblies)
                 {
                     var assemblyName = assembly.GetName().Name;
-                    var isHotfix = assemblyName.Equals(HotfixName, StringComparison.OrdinalIgnoreCase);
+                    var isHotfix     = assemblyName.Equals(HotfixName, StringComparison.OrdinalIgnoreCase);
                     if (!isHotfix) continue;
                     Run(assembly);
                     break;
@@ -44,7 +44,7 @@ namespace Launcher.Procedure
 
             // 非编辑器模式下，加载AOT DLL，加载Game.Hotfix.dll，运行入口函数
             Log.Info("开始加载AOT DLL");
-           
+
             var aotDlls = AOTGenericReferences.PatchedAOTAssemblyList.ToArray();
             foreach (var aotDll in aotDlls)
             {
