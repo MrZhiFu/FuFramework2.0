@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace FuFramework.Timer.Runtime
 {
@@ -9,8 +8,6 @@ namespace FuFramework.Timer.Runtime
        
         private void Start()
         {
-            _ = typeof(TimerComponent);
-            _ = typeof(ITimerManager);
             _ = typeof(TimerManager);
         }
     }

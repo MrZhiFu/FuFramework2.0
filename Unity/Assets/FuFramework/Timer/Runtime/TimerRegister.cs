@@ -13,7 +13,7 @@ namespace FuFramework.Timer.Runtime
     public class TimerRegister : IReference
     {
         /// 计时器管理器
-        private static TimerComponent TimerManager => ModuleManager.GetModule<TimerComponent>();
+        private readonly TimerManager m_TimerManager = ModuleManager.GetModule<TimerManager>();
 
         /// <summary>
         /// 记录所有计时器任务的列表
@@ -37,7 +37,7 @@ namespace FuFramework.Timer.Runtime
         {
             if (m_TimerHandlerList.Contains(callback)) return;
             m_TimerHandlerList.Add(callback);
-            TimerManager.Add(interval, repeat, callback, callbackParam);
+            m_TimerManager.Add(interval, repeat, callback, callbackParam);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace FuFramework.Timer.Runtime
         {
             if (m_TimerHandlerList.Contains(callback)) return;
             m_TimerHandlerList.Add(callback);
-            TimerManager.AddOnce(interval, callback, callbackParam);
+            m_TimerManager.AddOnce(interval, callback, callbackParam);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace FuFramework.Timer.Runtime
         {
             if (m_TimerHandlerList.Contains(callback)) return;
             m_TimerHandlerList.Add(callback);
-            TimerManager.AddUpdate(callback, callbackParam);
+            m_TimerManager.AddUpdate(callback, callbackParam);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace FuFramework.Timer.Runtime
         /// <returns>存在返回 true，不存在返回 false</returns>
         public bool ExistsTimer(Action<object> callback)
         {
-            return m_TimerHandlerList.Contains(callback) || TimerManager.Exists(callback);
+            return m_TimerHandlerList.Contains(callback) || m_TimerManager.Exists(callback);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace FuFramework.Timer.Runtime
         {
             if (!m_TimerHandlerList.Contains(callback)) return;
             m_TimerHandlerList.Remove(callback);
-            TimerManager.Remove(callback);
+            m_TimerManager.Remove(callback);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace FuFramework.Timer.Runtime
         {
             foreach (var callback in m_TimerHandlerList)
             {
-                TimerManager.Remove(callback);
+                m_TimerManager.Remove(callback);
             }
 
             m_TimerHandlerList.Clear();

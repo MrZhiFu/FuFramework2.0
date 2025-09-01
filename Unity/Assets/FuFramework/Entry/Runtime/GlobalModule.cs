@@ -39,7 +39,7 @@ namespace FuFramework.Entry.Runtime
         public static ObjectPoolComponent   ObjectPoolModule   { get; private set; }
         public static ProcedureManager    ProcedureModule    { get; private set; }
         public static SettingComponent      SettingModule      { get; private set; }
-        public static TimerComponent        TimerModule        { get; private set; }
+        public static TimerManager        TimerModule        { get; private set; }
         public static WebComponent          WebModule          { get; private set; }
 
         // private static SceneComponent SceneModule;
@@ -70,7 +70,7 @@ namespace FuFramework.Entry.Runtime
             ObjectPoolModule   = ModuleManager.RegisterModule<ObjectPoolComponent>();
             ProcedureModule    = ModuleManager.RegisterModule<ProcedureManager>();
             SettingModule      = ModuleManager.RegisterModule<SettingComponent>();
-            TimerModule        = ModuleManager.RegisterModule<TimerComponent>();
+            TimerModule        = ModuleManager.RegisterModule<TimerManager>();
             WebModule          = ModuleManager.RegisterModule<WebComponent>();
 
             // SceneModule = GameEntry.RegisterComponent<SceneComponent>();

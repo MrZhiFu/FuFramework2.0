@@ -9,59 +9,8 @@ namespace FuFramework.Timer.Runtime
     /// 定时器管理器。
     /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
     /// </summary>
-    public sealed class TimerManager : FuModule, ITimerManager
+    public sealed partial class TimerManager : FuComponent
     {
-        /// <summary>
-        /// 定时器项
-        /// </summary>
-        private class TimerItem
-        {
-            /// <summary>
-            /// 间隔时间（以秒为单位）
-            /// </summary>
-            public float Interval;
-
-            /// <summary>
-            /// 重复次数（0 表示无限重复）
-            /// </summary>
-            public int Repeat;
-
-            /// <summary>
-            /// 已过时间（以秒为单位）
-            /// </summary>
-            public float Elapsed;
-
-            /// <summary>
-            /// 是否已删除
-            /// </summary>
-            public bool Deleted;
-
-            /// <summary>
-            /// 回调函数参数
-            /// </summary>
-            public object Param;
-
-            /// <summary>
-            /// 回调函数
-            /// </summary>
-            public Action<object> Callback;
-
-            /// <summary>
-            /// 设置一个定时器
-            /// </summary>
-            /// <param name="interval"> 间隔时间 </param>
-            /// <param name="repeat"> 重复次数 </param>
-            /// <param name="callback"> 回调函数 </param>
-            /// <param name="param"> 回调函数参数 </param>
-            public void Set(float interval, int repeat, Action<object> callback, object param)
-            {
-                Interval = interval;
-                Repeat = repeat;
-                Callback = callback;
-                Param = param;
-            }
-        }
-
         /// <summary>
         /// 正在更新的定时器字典，key为回调函数，value为定时器项
         /// </summary>
@@ -85,17 +34,29 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 静态锁对象，用于同步多线程环境下的操作
         /// </summary>
-        private static readonly object s_Locker = new();
+        private static readonly object Locker = new();
 
         /// <summary>
         /// 触发回调时是否需要捕获异常
         /// </summary>
-        public static bool s_CatchCallbackExceptions = false;
+        public static bool CatchCallbackExceptions = false;
 
 
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInit() { }
+
+        /// <summary>
+        /// 游戏框架模块轮询。
+        /// </summary>
+        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
+        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
-            lock (s_Locker)
+            base.OnUpdate(elapseSeconds, realElapseSeconds);
+
+            lock (Locker)
             {
                 if (m_UpdatingDict.Count > 0)
                 {
@@ -132,7 +93,7 @@ namespace FuFramework.Timer.Runtime
                         // 调用回调函数
                         if (timerItem.Callback != null)
                         {
-                            if (s_CatchCallbackExceptions)
+                            if (CatchCallbackExceptions)
                             {
                                 try
                                 {
@@ -173,9 +134,13 @@ namespace FuFramework.Timer.Runtime
             }
         }
 
-        protected override void Shutdown()
+        /// <summary>
+        /// 关闭并清理游戏框架模块。
+        /// </summary>
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
-            lock (s_Locker)
+            lock (Locker)
             {
                 m_WaitToRemoveList.Clear();
                 m_WaitToAddDict.Clear();
@@ -192,7 +157,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="callbackParam">回调函数的参数（可选）</param>
         public void Add(float interval, int repeat, Action<object> callback, object callbackParam = null)
         {
-            lock (s_Locker)
+            lock (Locker)
             {
                 if (callback == null)
                 {
@@ -251,7 +216,7 @@ namespace FuFramework.Timer.Runtime
         /// <returns>存在返回 true，不存在返回 false</returns>
         public bool Exists(Action<object> callback)
         {
-            lock (s_Locker)
+            lock (Locker)
             {
                 return m_WaitToAddDict.ContainsKey(callback) || (m_UpdatingDict.TryGetValue(callback, out var at) && !at.Deleted);
             }
@@ -263,7 +228,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="callback">要移除的回调函数</param>
         public void Remove(Action<object> callback)
         {
-            lock (s_Locker)
+            lock (Locker)
             {
                 if (m_WaitToAddDict.Remove(callback, out var timerItem))
                 {
@@ -287,14 +252,14 @@ namespace FuFramework.Timer.Runtime
         {
             if (m_PoolList.Count <= 0) return new TimerItem();
 
-            var lastIdx = m_PoolList.Count - 1;
+            var lastIdx   = m_PoolList.Count - 1;
             var lastTimer = m_PoolList[lastIdx];
 
             m_PoolList.RemoveAt(lastIdx);
 
             lastTimer.Deleted = false;
             lastTimer.Elapsed = 0;
-            lastTimer.Param = null;
+            lastTimer.Param   = null;
             return lastTimer;
         }
 
