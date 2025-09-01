@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.GetChannel.Runtime
 {
     /// <summary>
@@ -18,7 +19,7 @@ namespace FuFramework.GetChannel.Runtime
     ///         channel ==> ios_cn_xxx    
     /// 
     /// </summary>
-    public sealed class BlankGetChannel
+    public static class BlankGetChannel
     {
 #if UNITY_IOS
 	[DllImport("__Internal")]
@@ -26,7 +27,7 @@ namespace FuFramework.GetChannel.Runtime
 
 #endif
         /// <summary>
-        /// 获取渠道值
+        /// 获取渠道名称
         /// </summary>
         public static string GetChannelName(string channelKey = "channel")
         {
