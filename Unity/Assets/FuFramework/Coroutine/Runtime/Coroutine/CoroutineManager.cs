@@ -7,25 +7,33 @@ using UnityEngine;
 namespace FuFramework.Coroutine.Runtime
 {
     /// <summary>
-    /// 协程组件
+    /// 协程管理器。
+    /// 用于管理协程，提供一些便捷的方法。推荐还是使用UniTask实现。
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Coroutine")]
-    public class CoroutineComponent : FuComponent
+    public class CoroutineManager : FuComponent
     {
         /// <summary>
         /// 等待帧结束
         /// </summary>
-        private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+        private readonly WaitForEndOfFrame m_waitForEndOfFrame = new();
 
         /// <summary>
-        /// 执行过的迭代器
+        /// 记录执行的协程迭字典，key为迭代器对象，value为Unity的协程对象
         /// </summary>
-        private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineMap = new();
+        private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineDict = new();
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
         protected override void OnInit() { }
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
-        protected override void OnShutdown(ShutdownType shutdownType) { }
+
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType) => StopAllCoroutines();
 
         /// <summary>
         /// 开启一个协程
@@ -35,7 +43,7 @@ namespace FuFramework.Coroutine.Runtime
         public new void StartCoroutine(IEnumerator enumerator)
         {
             var ret = base.StartCoroutine(enumerator);
-            m_CoroutineMap[enumerator] = ret;
+            m_CoroutineDict[enumerator] = ret;
         }
 
         /// <summary>
@@ -44,10 +52,10 @@ namespace FuFramework.Coroutine.Runtime
         /// <param name="enumerator"></param>
         public new void StopCoroutine(IEnumerator enumerator)
         {
-            if (m_CoroutineMap.TryGetValue(enumerator, out var coroutine))
+            if (m_CoroutineDict.TryGetValue(enumerator, out var coroutine))
             {
                 base.StopCoroutine(coroutine);
-                m_CoroutineMap.TryRemove(enumerator, out _);
+                m_CoroutineDict.TryRemove(enumerator, out _);
             }
 
             base.StopCoroutine(enumerator);
@@ -60,11 +68,11 @@ namespace FuFramework.Coroutine.Runtime
         public new void StopCoroutine(UnityEngine.Coroutine coroutine)
         {
             base.StopCoroutine(coroutine);
-            foreach (var item in m_CoroutineMap)
+            foreach (var item in m_CoroutineDict)
             {
                 if (item.Value == coroutine)
                 {
-                    m_CoroutineMap.TryRemove(item.Key, out _);
+                    m_CoroutineDict.TryRemove(item.Key, out _);
                     break;
                 }
             }
@@ -75,23 +83,13 @@ namespace FuFramework.Coroutine.Runtime
         /// </summary>
         public new void StopAllCoroutines()
         {
-            foreach (var coroutine in m_CoroutineMap.Values)
+            foreach (var coroutine in m_CoroutineDict.Values)
             {
                 base.StopCoroutine(coroutine);
             }
 
-            m_CoroutineMap.Clear();
+            m_CoroutineDict.Clear();
             base.StopAllCoroutines();
-        }
-
-        /// <summary>
-        /// 等待当前帧结束
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator _WaitForEndOfFrameFinish(System.Action callback)
-        {
-            yield return _waitForEndOfFrame;
-            callback?.Invoke();
         }
 
         /// <summary>
@@ -101,6 +99,16 @@ namespace FuFramework.Coroutine.Runtime
         public void WaitForEndOfFrameFinish(System.Action callback)
         {
             StartCoroutine(_WaitForEndOfFrameFinish(callback));
+        }
+
+        /// <summary>
+        /// 等待当前帧结束
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator _WaitForEndOfFrameFinish(System.Action callback)
+        {
+            yield return m_waitForEndOfFrame;
+            callback?.Invoke();
         }
     }
 }

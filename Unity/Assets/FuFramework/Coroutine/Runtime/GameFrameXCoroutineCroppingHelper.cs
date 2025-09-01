@@ -9,7 +9,7 @@ namespace FuFramework.Coroutine.Runtime
        
         private void Start()
         {
-            _ = typeof(CoroutineComponent);
+            _ = typeof(CoroutineManager);
         }
     }
 }
