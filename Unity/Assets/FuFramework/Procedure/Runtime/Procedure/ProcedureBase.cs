@@ -5,9 +5,9 @@ namespace FuFramework.Procedure.Runtime
 {
     /// <summary>
     /// 流程基类。
-    /// 功能：继承自有限状态机基类，重新定义了流程的生命周期。
+    /// 功能：继承自有限状态机基类，定义了流程的生命周期。可补充加入只属于流程的自定义逻辑。
     /// </summary>
-    public abstract class ProcedureBase : FsmStateBase<IProcedureManager>
+    public abstract class ProcedureBase : FsmStateBase
     {
         /// <summary>
         /// 显示优先级。
@@ -18,13 +18,19 @@ namespace FuFramework.Procedure.Runtime
         /// 状态初始化时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
-        protected override void OnInit(IFsm<IProcedureManager> procedureOwner) => base.OnInit(procedureOwner);
+        protected override void OnInit(Fsm.Runtime.Fsm procedureOwner)
+        {
+            base.OnInit(procedureOwner);
+        }
 
         /// <summary>
         /// 进入状态时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner) => base.OnEnter(procedureOwner);
+        protected override void OnEnter(Fsm.Runtime.Fsm procedureOwner)
+        {
+            base.OnEnter(procedureOwner);
+        }
 
         /// <summary>
         /// 状态轮询时调用。
@@ -32,20 +38,28 @@ namespace FuFramework.Procedure.Runtime
         /// <param name="procedureOwner">流程持有者。</param>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void OnUpdate(IFsm<IProcedureManager> procedureOwner, float elapseSeconds, float realElapseSeconds) =>
+        protected override void OnUpdate(Fsm.Runtime.Fsm procedureOwner, float elapseSeconds, float realElapseSeconds)
+        {
             base.OnUpdate(procedureOwner, elapseSeconds, realElapseSeconds);
+        }
 
         /// <summary>
         /// 离开状态时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
         /// <param name="isShutdown">是否是关闭状态机时触发。</param>
-        protected override void OnLeave(IFsm<IProcedureManager> procedureOwner, bool isShutdown) => base.OnLeave(procedureOwner, isShutdown);
+        protected override void OnLeave(Fsm.Runtime.Fsm procedureOwner, bool isShutdown)
+        {
+            base.OnLeave(procedureOwner, isShutdown);
+        }
 
         /// <summary>
         /// 状态销毁时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
-        protected override void OnDestroy(IFsm<IProcedureManager> procedureOwner) => base.OnDestroy(procedureOwner);
+        protected override void OnDestroy(Fsm.Runtime.Fsm procedureOwner)
+        {
+            base.OnDestroy(procedureOwner);
+        }
     }
 }

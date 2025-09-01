@@ -19,7 +19,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 5; // 显示优先级
 
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：初始化资源包------</color>");
@@ -31,7 +31,7 @@ namespace Launcher.Procedure
         /// 初始化资源包
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async UniTaskVoid InitPackage(IFsm<IProcedureManager> procedureOwner)
+        private async UniTaskVoid InitPackage(Fsm procedureOwner)
         {
             // 编辑器模拟模式/单机离线模式下，初始化完毕后直接进入获取资源版本号流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)

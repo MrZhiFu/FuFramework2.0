@@ -27,7 +27,7 @@ namespace Launcher.Procedure
         /// </summary>
         private const string GlobalInfoUrl = "http://127.0.0.1:20808/api/GameGlobalInfo/GetInfo";
 
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入获取服务端全局信息流程------</color>");
@@ -40,7 +40,7 @@ namespace Launcher.Procedure
         /// 获取全局信息，包括：服务器地址、资源版本地址、内容信息s
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetGlobalInfo(IFsm<IProcedureManager> procedureOwner)
+        private async UniTaskVoid GetGlobalInfo(Fsm procedureOwner)
         {
             // 获取服务端全局信息的请求参数
             var reqBaseParams = HttpHelper.GetBaseParams();

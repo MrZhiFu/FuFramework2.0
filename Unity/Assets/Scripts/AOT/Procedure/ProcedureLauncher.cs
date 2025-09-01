@@ -21,22 +21,22 @@ namespace Launcher.Procedure
     {
         public override int Priority => 1; // 显示优先级
 
-        protected override async void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override async void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入首次启动流程------</color>");
 
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
-            
+
             await LauncherUIHelper.Start(); // 启动热更进度UI
             Start(procedureOwner).Forget(); // 启动流程
         }
-        
+
         /// <summary>
         /// 进入获取全局信息流程
         /// </summary>
-        private async UniTaskVoid Start(IFsm<IProcedureManager> procedureOwner)
+        private async UniTaskVoid Start(Fsm procedureOwner)
         {
             await UniTask.NextFrame();
 

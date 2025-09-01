@@ -27,7 +27,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 3; // 显示优先级
         
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入获取服务端App版本信息流程------</color>");
@@ -40,7 +40,7 @@ namespace Launcher.Procedure
         /// 获取服务端App版本信息，并根据服务端返回结果进行处理
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetAppVersionInfo(IFsm<IProcedureManager> procedureOwner)
+        private async UniTaskVoid GetAppVersionInfo(Fsm procedureOwner)
         {
             var reqBaseParams = HttpHelper.GetBaseParams();
             try

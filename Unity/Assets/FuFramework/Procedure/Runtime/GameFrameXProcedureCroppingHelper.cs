@@ -7,10 +7,8 @@ namespace FuFramework.Procedure.Runtime
     {
         private void Start()
         {
-            _ = typeof(IProcedureManager);
             _ = typeof(ProcedureBase);
             _ = typeof(ProcedureManager);
-            _ = typeof(ProcedureComponent);
         }
     }
 }

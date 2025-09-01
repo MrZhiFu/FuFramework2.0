@@ -437,58 +437,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 551349808}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &755918133
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 755918134}
-  - component: {fileID: 755918137}
-  m_Layer: 5
-  m_Name: UI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &755918134
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755918133}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &755918137
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755918133}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a723f7fd716aac049aa24e9186f18685, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scaleMode: 1
-  screenMatchMode: 0
-  designResolutionX: 1920
-  designResolutionY: 1080
-  fallbackScreenDPI: 96
-  defaultSpriteDPI: 96
-  constantScaleFactor: 1
-  ignoreOrientation: 0
 --- !u!4 &787015720
 Transform:
   m_ObjectHideFlags: 0
@@ -684,18 +632,6 @@ MonoBehaviour:
   m_IsEnableEditorMode: 0
   m_LocalizationHelperTypeName: FuFramework.Localization.Runtime.DefaultLocalizationHelper
   m_CustomLocalizationHelper: {fileID: 0}
---- !u!114 &1681186165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7854982724925062708}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0f0d6a7e45af714480bf40759828ace, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1681186167
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -878,31 +814,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ef81067df4732c46ac4fb3eb8ebf557, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1681186184
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7149020525938990140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bef831d928c2ce9409f354a23aa0280e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AvailableProcedureTypeNames:
-  - Launcher.Procedure.ProcedureLauncher
-  - Launcher.Procedure.ProcedureReqGlobalInfo
-  - Launcher.Procedure.ProcedureReqAppVersionInfo
-  - Launcher.Procedure.ProcedureReqPackageVersionInfo
-  - Launcher.Procedure.ProcedureInitPackage
-  - Launcher.Procedure.ProcedureCreateDownloader
-  - Launcher.Procedure.ProcedureUpdatePackageManifest
-  - Launcher.Procedure.ProcedureGetPackageVersion
-  - Launcher.Procedure.ProcedureDownloadPackage
-  - Launcher.Procedure.ProcedureUpdateDone
-  - Launcher.Procedure.ProcedureHotfix
-  m_EntranceProcedureTypeName: Launcher.Procedure.ProcedureLauncher
 --- !u!114 &1681186185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1220,21 +1131,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_EnableStrictCheck: 0
---- !u!4 &5105866444473042000
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7854982724925062708}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6212013545076678542
 GameObject:
   m_ObjectHideFlags: 0
@@ -1246,9 +1142,11 @@ GameObject:
   - component: {fileID: 7148938655606090472}
   - component: {fileID: 7148938655606090473}
   - component: {fileID: 7148938655606090474}
+  - component: {fileID: 7148938655606090477}
   - component: {fileID: 7148938655606090475}
+  - component: {fileID: 7148938655606090476}
   m_Layer: 0
-  m_Name: GFX
+  m_Name: Launcher
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1332,14 +1230,11 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8708873050020472038}
-  - {fileID: 5105866444473042000}
   - {fileID: 6529379366163002800}
   - {fileID: 1708891510959030576}
   - {fileID: 7682303427684127993}
-  - {fileID: 7851372025299603068}
   - {fileID: 8145429920746508751}
   - {fileID: 6394611483762413553}
-  - {fileID: 755918134}
   - {fileID: 2506581721167664985}
   - {fileID: 8613711354764159178}
   - {fileID: 2120699936}
@@ -1394,23 +1289,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12556a235f824331ae6c9d1c6d61427e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &7149020525938990140
-GameObject:
+--- !u!114 &7148938655606090476
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7851372025299603068}
-  - component: {fileID: 1681186184}
-  m_Layer: 0
-  m_Name: Procedure
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_GameObject: {fileID: 6212013545076678542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9822a114ea1a9f4f85761d842b00456, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AvailableProcedureTypeNames:
+  - Launcher.Procedure.ProcedureLauncher
+  - Launcher.Procedure.ProcedureReqGlobalInfo
+  - Launcher.Procedure.ProcedureReqAppVersionInfo
+  - Launcher.Procedure.ProcedureReqPackageVersionInfo
+  - Launcher.Procedure.ProcedureInitPackage
+  - Launcher.Procedure.ProcedureGetPackageVersion
+  - Launcher.Procedure.ProcedureUpdatePackageManifest
+  - Launcher.Procedure.ProcedureCreateDownloader
+  - Launcher.Procedure.ProcedureUpdateDone
+  - Launcher.Procedure.ProcedureHotfix
+  - Launcher.Procedure.ProcedureDownloadPackage
+  m_EntranceProcedureTypeName: Launcher.Procedure.ProcedureLauncher
+--- !u!114 &7148938655606090477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212013545076678542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a723f7fd716aac049aa24e9186f18685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleMode: 1
+  screenMatchMode: 0
+  designResolutionX: 1920
+  designResolutionY: 1080
+  fallbackScreenDPI: 96
+  defaultSpriteDPI: 96
+  constantScaleFactor: 1
+  ignoreOrientation: 0
 --- !u!4 &7682303427684127993
 Transform:
   m_ObjectHideFlags: 0
@@ -1426,38 +1349,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &7851372025299603068
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7149020525938990140}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &7854982724925062708
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5105866444473042000}
-  - component: {fileID: 1681186165}
-  m_Layer: 0
-  m_Name: FSM
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!4 &8145429920746508751
 Transform:
   m_ObjectHideFlags: 0

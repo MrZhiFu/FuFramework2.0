@@ -6,18 +6,17 @@ namespace FuFramework.Entry.Runtime
     /// <summary>
     /// 入口类，用于启动游戏
     /// </summary>
-    public class Launcher:MonoBehaviour
+    public class Launcher : MonoBehaviour
     {
         private void Awake()
         {
             GlobalModule.RegisterModule();
-            GlobalModule.InitModule();
         }
 
-        // private void Start()
-        // {
-        //     GlobalModule.InitModule();
-        // }
+        private void Start()
+        {
+            GlobalModule.InitModule();
+        }
 
         private void Update()
         {

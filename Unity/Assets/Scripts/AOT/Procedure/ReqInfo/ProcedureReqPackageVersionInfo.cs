@@ -24,7 +24,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 4; // 优先级。
         
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入获取服务端默认资源包的版本信息流程------</color>");
@@ -36,7 +36,7 @@ namespace Launcher.Procedure
         /// 从服务端获取默认资源包的版本信息。
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private async UniTaskVoid GetAssetPackageVersionInfo(IFsm<IProcedureManager> procedureOwner)
+        private async UniTaskVoid GetAssetPackageVersionInfo(Fsm procedureOwner)
         {
             var jsonParams = HttpHelper.GetBaseParams();
             try

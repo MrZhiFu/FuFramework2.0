@@ -22,7 +22,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 6; // 显示优先级
 
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
@@ -36,7 +36,7 @@ namespace Launcher.Procedure
         /// </summary>
         /// <param name="procedureOwner"></param>
         /// <returns></returns>
-        private IEnumerator GetVersion(IFsm<IProcedureManager> procedureOwner)
+        private IEnumerator GetVersion(Fsm procedureOwner)
         {
             var package = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
 

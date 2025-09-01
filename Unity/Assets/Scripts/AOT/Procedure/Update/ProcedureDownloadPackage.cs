@@ -21,14 +21,14 @@ namespace Launcher.Procedure
     public class ProcedureDownloadPackage : ProcedureBase
     {
         public override int Priority => 9; // 显示优先级
-        private IFsm<IProcedureManager> m_procedureOwner;
+        private Fsm m_ProcedureOwner;
         
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
-            m_procedureOwner = procedureOwner;
+            m_ProcedureOwner = procedureOwner;
 
             GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
             BeginDownload(procedureOwner).ToUniTask().Forget();
@@ -39,7 +39,7 @@ namespace Launcher.Procedure
         /// </summary>
         /// <param name="procedureOwner"></param>
         /// <returns></returns>
-        private IEnumerator BeginDownload(IFsm<IProcedureManager> procedureOwner)
+        private IEnumerator BeginDownload(Fsm procedureOwner)
         {
             var downloader = procedureOwner.GetData<VarObject>("Downloader").GetValue() as ResourceDownloaderOperation;
             if (downloader == null) yield break;
@@ -66,7 +66,7 @@ namespace Launcher.Procedure
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
             GlobalModule.EventModule.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
-            ChangeState<ProcedureCreateDownloader>(m_procedureOwner);
+            ChangeState<ProcedureCreateDownloader>(m_ProcedureOwner);
         }
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 11; // 显示优先级
 
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入代码热修复流程------</color>");

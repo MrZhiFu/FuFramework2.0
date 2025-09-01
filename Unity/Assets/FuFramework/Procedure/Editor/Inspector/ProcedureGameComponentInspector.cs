@@ -14,7 +14,7 @@ namespace FuFramework.Procedure.Editor
     /// <summary>
     /// 自定义流程组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(ProcedureComponent))]
+    [CustomEditor(typeof(ProcedureManager))]
     internal sealed class ProcedureGameComponentInspector : GameComponentInspector
     {
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
@@ -32,7 +32,7 @@ namespace FuFramework.Procedure.Editor
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            var procedureComp = target as ProcedureComponent;
+            var procedureComp = target as ProcedureManager;
             if (!procedureComp) return;
 
             if (string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
@@ -119,7 +119,7 @@ namespace FuFramework.Procedure.Editor
 
         protected override void RefreshTypeNames()
         {
-            RefreshComponentTypeNames(typeof(IProcedureManager));
+            RefreshComponentTypeNames(typeof(ProcedureManager));
         }
 
         /// <summary>

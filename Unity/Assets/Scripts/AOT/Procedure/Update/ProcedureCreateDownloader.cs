@@ -16,7 +16,7 @@ namespace Launcher.Procedure
     {
         public override int Priority => 8; // 显示优先级
         
-        protected override void OnEnter(IFsm<IProcedureManager> procedureOwner)
+        protected override void OnEnter(Fsm procedureOwner)
         {
             base.OnEnter(procedureOwner);
             Log.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
@@ -29,7 +29,7 @@ namespace Launcher.Procedure
         /// 创建资源下载器
         /// </summary>
         /// <param name="procedureOwner"></param>
-        private void CreateDownloader(IFsm<IProcedureManager> procedureOwner)
+        private void CreateDownloader(Fsm procedureOwner)
         {
             // 创建资源下载器
             var downloader = GlobalModule.AssetModule.CreateResourceDownloader();

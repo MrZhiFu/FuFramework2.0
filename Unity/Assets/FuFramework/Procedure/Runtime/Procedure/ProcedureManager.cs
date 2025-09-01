@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Fsm.Runtime;
 
@@ -8,21 +10,40 @@ namespace FuFramework.Procedure.Runtime
     /// <summary>
     /// 流程管理器。
     /// </summary>
-    public sealed class ProcedureManager : FuModule, IProcedureManager
+    public sealed class ProcedureManager : FuComponent
     {
+        /// <summary>
+        /// 游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => -2;
 
-        private IFsmManager m_FsmManager; // 有限状态机管理器
-        private IFsm<IProcedureManager> m_ProcedureFsm; // 流程管理器的有限状态机
+        /// <summary>
+        /// 有限状态机管理器
+        /// </summary>
+        private FsmManager m_FsmManager;
 
         /// <summary>
-        /// 初始化流程管理器的新实例。
+        /// 流程管理器的有限状态机
         /// </summary>
-        public ProcedureManager()
-        {
-            m_FsmManager = null;
-            m_ProcedureFsm = null;
-        }
+        private Fsm.Runtime.Fsm m_ProcedureFsm;
+
+        [Header("所有可用的流程类型")]
+        [SerializeField] private string[] m_AvailableProcedureTypeNames;
+
+        [Header("入口流程类型")]
+        [SerializeField] private string m_EntranceProcedureTypeName;
+
+        /// <summary>
+        /// 流程管理器包含的流程
+        /// </summary>
+        private ProcedureBase[] m_Procedures;
+
+        /// <summary>
+        /// 入口流程。
+        /// </summary>
+        private ProcedureBase m_EntranceProcedure;
+        
 
         /// <summary>
         /// 获取当前流程。
@@ -35,18 +56,25 @@ namespace FuFramework.Procedure.Runtime
         public float CurrentProcedureTime => m_ProcedureFsm?.CurrentStateTime ?? 0;
 
         /// <summary>
-        /// 流程管理器轮询。
+        /// 初始化
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds) { }
+        protected override void OnInit()
+        {
+            m_FsmManager = ModuleManager.GetModule<FsmManager>();
+            if (!m_FsmManager) throw new FuException("You must add FsmManager module to your project.");
+
+            // 初始化所有流程
+            StartCoroutine(InitProcedures());
+        }
 
         /// <summary>
-        /// 关闭并清理流程管理器。
+        /// 关闭并清理游戏框架模块。
         /// </summary>
-        protected override void Shutdown()
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
-            if (m_FsmManager == null) return;
+            if (!m_FsmManager) return;
+
             if (m_ProcedureFsm != null)
             {
                 m_FsmManager.DestroyFsm(m_ProcedureFsm);
@@ -57,17 +85,49 @@ namespace FuFramework.Procedure.Runtime
         }
 
         /// <summary>
-        /// 初始化流程管理器。
+        /// 初始化获取所有流程
         /// </summary>
-        /// <param name="fsmManager">有限状态机管理器。</param>
-        /// <param name="procedures">流程管理器包含的流程。</param>
-        public void Initialize(IFsmManager fsmManager, params ProcedureBase[] procedures)
+        /// <returns></returns>
+        /// <exception cref="FuException"></exception>
+        private IEnumerator InitProcedures()
         {
-            FuGuard.NotNull(fsmManager, nameof(fsmManager));
-            m_FsmManager = fsmManager;
-            
+            var procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
+            for (var i = 0; i < m_AvailableProcedureTypeNames.Length; i++)
+            {
+                var procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
+                if (procedureType == null)
+                {
+                    Log.Error("找不到流程类型 '{0}'.", m_AvailableProcedureTypeNames[i]);
+                    yield break;
+                }
+
+                procedures[i] = (ProcedureBase)Activator.CreateInstance(procedureType);
+                if (procedures[i] == null)
+                {
+                    Log.Error("创建流程实例失败 '{0}'.", m_AvailableProcedureTypeNames[i]);
+                    yield break;
+                }
+
+                if (m_EntranceProcedureTypeName == m_AvailableProcedureTypeNames[i])
+                {
+                    m_EntranceProcedure = procedures[i];
+                }
+            }
+
+            if (m_EntranceProcedure == null)
+            {
+                Log.Error("入口流程类型不存在!.");
+                yield break;
+            }
+
+            if (m_Procedures == null || m_Procedures.Length == 0) throw new FuException("You must add at least one procedure to ProcedureManager.");
+
             // ReSharper disable once CoVariantArrayConversion
-            m_ProcedureFsm = m_FsmManager.CreateFsm(this, procedures);
+            m_ProcedureFsm = m_FsmManager.CreateFsm(this, m_Procedures);
+
+            // 启动入口流程
+            yield return new WaitForEndOfFrame();
+            StartProcedure(m_EntranceProcedure.GetType());
         }
 
         /// <summary>
