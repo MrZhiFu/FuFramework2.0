@@ -9,7 +9,15 @@ namespace FuFramework.Download.Runtime
     /// </summary>
     public sealed class DownloadAgentHelperErrorEventArgs : GameEventArgs
     {
-        private static readonly string s_EventId = typeof(DownloadAgentHelperErrorEventArgs).FullName;
+        /// <summary>
+        /// 下载代理辅助器错误事件编号
+        /// </summary>
+        public override string Id => EventId;
+        
+        /// <summary>
+        /// 下载代理辅助器错误事件编号
+        /// </summary>
+        public static readonly string EventId = typeof(DownloadAgentHelperErrorEventArgs).FullName;
 
         /// <summary>
         /// 获取是否需要删除正在下载的文件。
@@ -20,17 +28,6 @@ namespace FuFramework.Download.Runtime
         /// 获取错误信息。
         /// </summary>
         public string ErrorMessage { get; private set; }
-
-        /// <summary>
-        /// 初始化下载代理辅助器错误事件的新实例。
-        /// </summary>
-        public DownloadAgentHelperErrorEventArgs()
-        {
-            DeleteDownloading = false;
-            ErrorMessage      = null;
-        }
-
-        public override string Id => s_EventId;
 
         /// <summary>
         /// 清理下载代理辅助器错误事件。

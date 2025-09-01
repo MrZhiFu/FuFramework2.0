@@ -555,24 +555,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SettingHelperTypeName: FuFramework.Setting.Runtime.DefaultSettingHelper
   m_CustomSettingHelper: {fileID: 0}
---- !u!114 &1548725358
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3760339349490667614}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84be3d5ad3c1cc942ba61bd768ca9177, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_InstanceRoot: {fileID: 1146593347797569675}
-  m_DownloadAgentHelperTypeName: FuFramework.Download.Runtime.UnityWebRequestDownloadAgentHelper
-  m_CustomDownloadAgentHelper: {fileID: 0}
-  m_DownloadAgentHelperCount: 3
-  m_Timeout: 30
-  m_FlushSize: 1048576
 --- !u!1 &1672025862
 GameObject:
   m_ObjectHideFlags: 0
@@ -1100,21 +1082,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1146593347797569675
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3760339349490667614}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1546777811772524135
 GameObject:
   m_ObjectHideFlags: 0
@@ -1179,23 +1146,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3760339349490667614
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1146593347797569675}
-  - component: {fileID: 1548725358}
-  m_Layer: 0
-  m_Name: Download
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &3845703385406213712
 GameObject:
   m_ObjectHideFlags: 0
@@ -1337,7 +1287,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1146593347797569675}
   - {fileID: 8708873050020472038}
   - {fileID: 5105866444473042000}
   - {fileID: 6529379366163002800}

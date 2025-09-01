@@ -3,7 +3,8 @@
     "rootNamespace": "FuFramework.Download.Runtime",
     "references": [
         "FuFramework.Core.Runtime",
-        "FuFramework.Event.Runtime"
+        "FuFramework.Event.Runtime",
+        "UniTask.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

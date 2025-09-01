@@ -1,6 +1,7 @@
 ﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
 {
@@ -9,8 +10,16 @@ namespace FuFramework.Download.Runtime
     /// </summary>
     public sealed class DownloadUpdateEventArgs : GameEventArgs
     {
-        private static readonly string s_EventId = typeof(DownloadUpdateEventArgs).FullName;
-
+        /// <summary>
+        /// 下载更新事件编号。
+        /// </summary>
+        public override string Id => EventId;
+        
+        /// <summary>
+        /// 下载更新事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(DownloadUpdateEventArgs).FullName;
+        
         /// <summary>
         /// 获取下载任务的序列编号。
         /// </summary>
@@ -37,20 +46,6 @@ namespace FuFramework.Download.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 初始化下载更新事件的新实例。
-        /// </summary>
-        public DownloadUpdateEventArgs()
-        {
-            SerialId      = 0;
-            DownloadPath  = null;
-            DownloadUri   = null;
-            CurrentLength = 0L;
-            UserData      = null;
-        }
-
-        public override string Id => s_EventId;
-
-        /// <summary>
         /// 清理下载更新事件。
         /// </summary>
         public override void Clear()
@@ -73,12 +68,12 @@ namespace FuFramework.Download.Runtime
         /// <returns>创建的下载更新事件。</returns>
         public static DownloadUpdateEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
-            DownloadUpdateEventArgs downloadUpdateEventArgs = ReferencePool.Acquire<DownloadUpdateEventArgs>();
-            downloadUpdateEventArgs.SerialId = serialId;
-            downloadUpdateEventArgs.DownloadPath = downloadPath;
-            downloadUpdateEventArgs.DownloadUri = downloadUri;
+            var downloadUpdateEventArgs = ReferencePool.Acquire<DownloadUpdateEventArgs>();
+            downloadUpdateEventArgs.SerialId      = serialId;
+            downloadUpdateEventArgs.DownloadPath  = downloadPath;
+            downloadUpdateEventArgs.DownloadUri   = downloadUri;
             downloadUpdateEventArgs.CurrentLength = currentLength;
-            downloadUpdateEventArgs.UserData = userData;
+            downloadUpdateEventArgs.UserData      = userData;
             return downloadUpdateEventArgs;
         }
     }

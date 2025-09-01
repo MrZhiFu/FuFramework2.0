@@ -1,6 +1,7 @@
 ﻿using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
 {
@@ -9,7 +10,15 @@ namespace FuFramework.Download.Runtime
     /// </summary>
     public sealed class DownloadFailureEventArgs : GameEventArgs
     {
-        private static readonly string s_EventId = typeof(DownloadFailureEventArgs).FullName;
+        /// <summary>
+        /// 下载失败事件编号。
+        /// </summary>
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 下载失败事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(DownloadFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取下载任务的序列编号。
@@ -37,29 +46,15 @@ namespace FuFramework.Download.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 初始化下载失败事件的新实例。
-        /// </summary>
-        public DownloadFailureEventArgs()
-        {
-            SerialId     = 0;
-            DownloadPath = null;
-            DownloadUri  = null;
-            ErrorMessage = null;
-            UserData     = null;
-        }
-
-        public override string Id => s_EventId;
-
-        /// <summary>
         /// 清理下载失败事件。
         /// </summary>
         public override void Clear()
         {
-            SerialId     = 0;
+            SerialId = 0;
             DownloadPath = null;
-            DownloadUri  = null;
+            DownloadUri = null;
             ErrorMessage = null;
-            UserData     = null;
+            UserData = null;
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace FuFramework.Entry.Runtime
         public static AssetManager          AssetModule        { get; private set; }
         public static ConfigManager       ConfigModule       { get; private set; }
         public static CoroutineManager    CoroutineModule    { get; private set; }
-        public static DownloadComponent     DownloadModule     { get; private set; }
+        public static DownloadManager     DownloadModule     { get; private set; }
         public static EntityComponent       EntityModule       { get; private set; }
         public static EventManager          EventModule        { get; private set; }
         public static FsmComponent          FsmModule          { get; private set; }
@@ -58,7 +58,7 @@ namespace FuFramework.Entry.Runtime
             AssetModule        = ModuleManager.RegisterModule<AssetManager>();
             ConfigModule       = ModuleManager.RegisterModule<ConfigManager>();
             CoroutineModule    = ModuleManager.RegisterModule<CoroutineManager>();
-            DownloadModule     = ModuleManager.RegisterModule<DownloadComponent>();
+            DownloadModule     = ModuleManager.RegisterModule<DownloadManager>();
             EntityModule       = ModuleManager.RegisterModule<EntityComponent>();
             EventModule        = ModuleManager.RegisterModule<EventManager>();
             FsmModule          = ModuleManager.RegisterModule<FsmComponent>();

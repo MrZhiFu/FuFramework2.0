@@ -1,4 +1,3 @@
-using Runtime.FuFramework.Download;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -11,7 +10,6 @@ namespace FuFramework.Download.Runtime
         private void Start()
         {
             _ = typeof(UnityWebRequestDownloadAgentHelper);
-            _ = typeof(Constant);
             _ = typeof(DownloadAgentHelperCompleteEventArgs);
             _ = typeof(DownloadAgentHelperErrorEventArgs);
             _ = typeof(DownloadAgentHelperUpdateBytesEventArgs);
@@ -21,10 +19,6 @@ namespace FuFramework.Download.Runtime
             _ = typeof(DownloadStartEventArgs);
             _ = typeof(DownloadSuccessEventArgs);
             _ = typeof(DownloadUpdateEventArgs);
-            _ = typeof(IDownloadAgentHelper);
-            _ = typeof(IDownloadManager);
-            _ = typeof(DownloadAgentHelperBase);
-            _ = typeof(DownloadComponent);
         }
     }
 }

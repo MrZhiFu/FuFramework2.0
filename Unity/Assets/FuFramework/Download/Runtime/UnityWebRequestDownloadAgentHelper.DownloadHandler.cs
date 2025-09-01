@@ -1,5 +1,6 @@
 ﻿using UnityEngine.Networking;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.Core.Runtime;
+using FuFramework.Event.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -10,6 +11,11 @@ namespace FuFramework.Download.Runtime
         {
             /// 使用 UnityWebRequest 实现的下载代理辅助器
             private readonly UnityWebRequestDownloadAgentHelper m_Owner;
+
+            /// <summary>
+            /// 事件管理器
+            /// </summary>
+            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
 
             /// <summary>
             /// 构造一个下载处理器
@@ -31,15 +37,13 @@ namespace FuFramework.Download.Runtime
                 if (!m_Owner || m_Owner.m_UnityWebRequest == null || dataLength <= 0) 
                     return base.ReceiveData(datas, dataLength);
                 
-                // 调用下载代理辅助器更新数据流事件
+                // 发送更新数据流事件
                 var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(datas, 0, dataLength);
-                m_Owner.m_DownloadAgentHelperUpdateBytesEventHandler(this, downloadAgentHelperUpdateBytesEventArgs);
-                ReferencePool.Release(downloadAgentHelperUpdateBytesEventArgs);
+                m_EventManager.Fire(this, downloadAgentHelperUpdateBytesEventArgs);
 
-                // 调用下载代理辅助器更新数据大小事件
+                // 发送更新数据大小事件
                 var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(dataLength);
-                m_Owner.m_DownloadAgentHelperUpdateLengthEventHandler(this, downloadAgentHelperUpdateLengthEventArgs);
-                ReferencePool.Release(downloadAgentHelperUpdateLengthEventArgs);
+                m_EventManager.Fire(this, downloadAgentHelperUpdateLengthEventArgs);
 
                 return base.ReceiveData(datas, dataLength);
             }

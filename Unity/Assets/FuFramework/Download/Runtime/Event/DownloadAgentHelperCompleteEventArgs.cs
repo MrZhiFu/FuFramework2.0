@@ -10,19 +10,20 @@ namespace FuFramework.Download.Runtime
     /// </summary>
     public sealed class DownloadAgentHelperCompleteEventArgs : GameEventArgs
     {
-        private static readonly string s_EventId = typeof(DownloadAgentHelperCompleteEventArgs).FullName;
+        /// <summary>
+        /// 下载代理辅助器完成事件编号。
+        /// </summary>
+        public override string Id => EventId;
         
+        /// <summary>
+        /// 下载代理辅助器完成事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(DownloadAgentHelperCompleteEventArgs).FullName;
+
         /// <summary>
         /// 获取下载的数据大小。
         /// </summary>
         public long Length { get; private set; }
-
-        /// <summary>
-        /// 初始化下载代理辅助器完成事件的新实例。
-        /// </summary>
-        public DownloadAgentHelperCompleteEventArgs() => Length = 0L;
-
-        public override string Id => s_EventId;
 
         /// <summary>
         /// 清理下载代理辅助器完成事件。

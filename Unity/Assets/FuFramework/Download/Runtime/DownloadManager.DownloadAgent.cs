@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using FuFramework.Core.Runtime;
+using FuFramework.Event.Runtime;
 using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -11,11 +12,12 @@ namespace FuFramework.Download.Runtime
     {
         /// <summary>
         /// 下载代理。
+        /// 使用下载帮助类UnityWebRequest下载文件。
         /// </summary>
         private sealed class DownloadAgent : ITaskAgent<DownloadTask>, IDisposable
         {
             /// 下载代理辅助器
-            private readonly IDownloadAgentHelper m_Helper;
+            private readonly UnityWebRequestDownloadAgentHelper m_Helper;
 
             /// 下载文件流
             private FileStream m_FileStream;
@@ -26,6 +28,9 @@ namespace FuFramework.Download.Runtime
             /// 是否已销毁
             private bool m_Disposed;
 
+            /// 事件管理器
+            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+            
 
             /// 下载开始委托
             public Action<DownloadAgent> DownloadAgentStart;
@@ -44,9 +49,9 @@ namespace FuFramework.Download.Runtime
             /// 构造下载代理的新实例。
             /// </summary>
             /// <param name="downloadAgentHelper">下载代理辅助器。</param>
-            public DownloadAgent(IDownloadAgentHelper downloadAgentHelper)
+            public DownloadAgent(UnityWebRequestDownloadAgentHelper downloadAgentHelper)
             {
-                m_Helper = downloadAgentHelper ?? throw new FuException("Download agent helper is invalid.");
+                m_Helper = downloadAgentHelper ?? throw new FuException("[DownloadAgent]下载代理辅助器为空!");
 
                 Task             = null;
                 m_FileStream     = null;
@@ -98,10 +103,10 @@ namespace FuFramework.Download.Runtime
             /// </summary>
             public void Initialize()
             {
-                m_Helper.DownloadAgentHelperUpdateBytes  += _OnDownloadAgentHelperUpdateBytes;
-                m_Helper.DownloadAgentHelperUpdateLength += _OnDownloadAgentHelperUpdateLength;
-                m_Helper.DownloadAgentHelperComplete     += _OnDownloadAgentHelperComplete;
-                m_Helper.DownloadAgentHelperError        += _OnDownloadAgentHelperError;
+                m_EventManager.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId, _OnDownloadAgentHelperUpdateBytes);
+                m_EventManager.Subscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
+                m_EventManager.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId, _OnDownloadAgentHelperComplete);
+                m_EventManager.Subscribe(DownloadAgentHelperErrorEventArgs.EventId, _OnDownloadAgentHelperError);
             }
 
             /// <summary>
@@ -111,6 +116,8 @@ namespace FuFramework.Download.Runtime
             /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
             public void Update(float elapseSeconds, float realElapseSeconds)
             {
+                m_Helper.OnUpdate();
+                
                 if (Task.Status != DownloadTaskStatus.Doing) return;
 
                 WaitTime += realElapseSeconds;
@@ -129,10 +136,10 @@ namespace FuFramework.Download.Runtime
             {
                 Dispose();
 
-                m_Helper.DownloadAgentHelperUpdateBytes  -= _OnDownloadAgentHelperUpdateBytes;
-                m_Helper.DownloadAgentHelperUpdateLength -= _OnDownloadAgentHelperUpdateLength;
-                m_Helper.DownloadAgentHelperComplete     -= _OnDownloadAgentHelperComplete;
-                m_Helper.DownloadAgentHelperError        -= _OnDownloadAgentHelperError;
+                m_EventManager.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId, _OnDownloadAgentHelperUpdateBytes);
+                m_EventManager.Unsubscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
+                m_EventManager.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId, _OnDownloadAgentHelperComplete);
+                m_EventManager.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId, _OnDownloadAgentHelperError);
             }
 
             /// <summary>
@@ -142,7 +149,7 @@ namespace FuFramework.Download.Runtime
             /// <returns>开始处理任务的状态。</returns>
             public StartTaskStatus Start(DownloadTask task)
             {
-                Task = task ?? throw new FuException("Task is invalid.");
+                Task = task ?? throw new FuException("[DownloadManager.DownloadAgent] 任务不能为空.");
 
                 Task.Status = DownloadTaskStatus.Doing;
                 var downloadFile = Utility.Text.Format("{0}.download", Task.DownloadedPath);
@@ -170,9 +177,9 @@ namespace FuFramework.Download.Runtime
 
                     // 使用帮助类开始下载
                     if (StartLength > 0L)
-                        m_Helper.Download(Task.DownloadUri, StartLength, Task.UserData); // 断点续传
+                        m_Helper.Download(Task.DownloadUri, StartLength); // 断点续传
                     else
-                        m_Helper.Download(Task.DownloadUri, Task.UserData); // 全新下载
+                        m_Helper.Download(Task.DownloadUri); // 全新下载
 
                     return StartTaskStatus.CanResume;
                 }
@@ -211,34 +218,27 @@ namespace FuFramework.Download.Runtime
             /// </summary>
             public void Dispose()
             {
-                Dispose(true);
-                
-                // ReSharper disable once GCSuppressFinalizeForTypeWithoutDestructor
-                GC.SuppressFinalize(this);
-            }
-
-            /// <summary>
-            /// 释放资源。
-            /// </summary>
-            /// <param name="disposing">释放资源标记。</param>
-            private void Dispose(bool disposing)
-            {
                 if (m_Disposed) return;
 
-                if (disposing && m_FileStream != null)
+                if (m_FileStream != null)
                 {
                     m_FileStream.Dispose();
                     m_FileStream = null;
                 }
 
                 m_Disposed = true;
+                
+                // ReSharper disable once GCSuppressFinalizeForTypeWithoutDestructor
+                GC.SuppressFinalize(this);
             }
 
             /// <summary>
             /// 下载代理辅助器更新数据流事件回调。
             /// </summary>
-            private void _OnDownloadAgentHelperUpdateBytes(object sender, DownloadAgentHelperUpdateBytesEventArgs e)
+            private void _OnDownloadAgentHelperUpdateBytes(object sender, GameEventArgs eventArgs)
             {
+                if (eventArgs is not DownloadAgentHelperUpdateBytesEventArgs e) return;
+                
                 WaitTime = 0f;
 
                 try
@@ -264,8 +264,9 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载代理辅助器更新数据大小事件回调。
             /// </summary>
-            private void _OnDownloadAgentHelperUpdateLength(object sender, DownloadAgentHelperUpdateLengthEventArgs e)
+            private void _OnDownloadAgentHelperUpdateLength(object sender, GameEventArgs gameEventArgs)
             {
+                if (gameEventArgs is not DownloadAgentHelperUpdateLengthEventArgs e) return;
                 WaitTime         =  0f;
                 DownloadedLength += e.DeltaLength;
                 DownloadAgentUpdate?.Invoke(this, e.DeltaLength);
@@ -274,8 +275,9 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载代理辅助器完成事件回调。
             /// </summary>
-            private void _OnDownloadAgentHelperComplete(object sender, DownloadAgentHelperCompleteEventArgs e)
+            private void _OnDownloadAgentHelperComplete(object sender, GameEventArgs gameEventArgs)
             {
+                if (gameEventArgs is not DownloadAgentHelperCompleteEventArgs e) return;
                 WaitTime         = 0f;
                 DownloadedLength = e.Length;
 
@@ -299,8 +301,10 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载代理辅助器错误事件回调。
             /// </summary>
-            private void _OnDownloadAgentHelperError(object sender, DownloadAgentHelperErrorEventArgs e)
+            private void _OnDownloadAgentHelperError(object sender, GameEventArgs gameEventArgs)
             {
+                if (gameEventArgs is not DownloadAgentHelperErrorEventArgs e) return;
+                
                 m_Helper.Reset();
                 if (m_FileStream != null)
                 {
