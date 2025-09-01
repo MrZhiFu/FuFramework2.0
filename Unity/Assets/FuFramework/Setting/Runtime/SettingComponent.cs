@@ -2,7 +2,6 @@
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Setting.Runtime

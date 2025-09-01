@@ -11,6 +11,12 @@ namespace FuFramework.ReferencePool.Runtime
     [DisallowMultipleComponent]
     public sealed class ReferencePoolManager : FuComponent
     {
+        /// <summary>
+        /// 游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => 1000;
+
         [Header("是否开启引用类型严格检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类, 同时在 Release 调用时，会检查传入的引用是否已经可以重复归还-EnQueue)")]
         [SerializeField] private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.AlwaysEnable;
 
