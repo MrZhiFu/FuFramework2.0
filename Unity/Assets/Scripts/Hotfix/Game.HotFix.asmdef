@@ -19,11 +19,14 @@
         "FuFramework.Entity.Runtime",
         "FuFramework.Sound.Runtime",
         "FuFramework.Config.Runtime",
+        "FuFramework.Variable.Runtime",
         "FuFramework.Network.Runtime",
         "FuFramework.GetChannel.Runtime",
         "FuFramework.GlobalConfig.Runtime",
         "FuFramework.Scene.Runtime",
-        "FuFramework.Download.Runtime"
+        "FuFramework.Download.Runtime",
+        "FuFramework.ObjectPool.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

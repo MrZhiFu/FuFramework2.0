@@ -1,5 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -33,7 +33,7 @@ namespace FuFramework.UI.Runtime
         public static UIInfo Create(ViewBase view)
         {
             if (view == null) throw new FuException("ui界面逻辑实例为空.");
-            var uiInfo = ReferencePool.Acquire<UIInfo>();
+            var uiInfo = ReferencePool.Runtime.ReferencePool.Acquire<UIInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;

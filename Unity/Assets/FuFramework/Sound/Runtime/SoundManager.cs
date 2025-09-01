@@ -10,7 +10,6 @@ using FuFramework.ModuleSetting.Runtime;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using Utility = FuFramework.Core.Runtime.Utility;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -443,13 +442,13 @@ namespace FuFramework.Sound.Runtime
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
                 if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams);
+                    ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams3D);
+                    ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams3D);
 
                 m_AssetManager.UnloadAsset(playSoundInfo.SoundAssetPath);
-                ReferencePool.Release(playSoundInfo);
+                ReferencePool.Runtime.ReferencePool.Release(playSoundInfo);
                 return;
             }
 
@@ -475,12 +474,12 @@ namespace FuFramework.Sound.Runtime
                 m_EventComponent.Fire(this, successEventArgs);
 
                 if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams);
+                    ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams3D);
+                    ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams3D);
 
-                ReferencePool.Release(playSoundInfo);
+                ReferencePool.Runtime.ReferencePool.Release(playSoundInfo);
                 return;
             }
 
@@ -507,12 +506,12 @@ namespace FuFramework.Sound.Runtime
 
             // 释放播放相关信息，并抛出异常
             if (playSoundInfo.SoundParams != null)
-                ReferencePool.Release(playSoundInfo.SoundParams);
+                ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams);
 
             if (playSoundInfo.SoundParams3D != null)
-                ReferencePool.Release(playSoundInfo.SoundParams3D);
+                ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams3D);
 
-            ReferencePool.Release(playSoundInfo);
+            ReferencePool.Runtime.ReferencePool.Release(playSoundInfo);
             throw new FuException(errorMessage);
         }
 

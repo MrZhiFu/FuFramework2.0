@@ -1,5 +1,4 @@
-﻿using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+﻿using FuFramework.TaskPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -13,7 +12,7 @@ namespace FuFramework.Download.Runtime
         private sealed class DownloadTask : TaskBase
         {
             /// 下载任务的序列编号
-            private static int _serial;
+            private static int m_Serial;
 
             /// <summary>
             /// 初始化下载任务的新实例。
@@ -70,8 +69,8 @@ namespace FuFramework.Download.Runtime
             /// <returns>创建的下载任务。</returns>
             public static DownloadTask Create(string downloadPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
             {
-                var downloadTask = ReferencePool.Acquire<DownloadTask>();
-                downloadTask.Initialize(++_serial, tag, priority, userData);
+                var downloadTask = ReferencePool.Runtime.ReferencePool.Acquire<DownloadTask>();
+                downloadTask.Initialize(++m_Serial, tag, priority, userData);
                 downloadTask.DownloadedPath = downloadPath;
                 downloadTask.DownloadUri    = downloadUri;
                 downloadTask.FlushSize      = flushSize;

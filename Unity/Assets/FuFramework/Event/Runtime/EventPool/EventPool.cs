@@ -81,7 +81,7 @@ namespace FuFramework.Event.Runtime
                 {
                     var tempEvent = m_EventQueue.Dequeue();
                     HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
-                    ReferencePool.Release(tempEvent);
+                    ReferencePool.Runtime.ReferencePool.Release(tempEvent);
                 }
             }
         }
@@ -241,7 +241,7 @@ namespace FuFramework.Event.Runtime
             }
             finally
             {
-                ReferencePool.Release(eArgs);
+                ReferencePool.Runtime.ReferencePool.Release(eArgs);
             }
 
             if (noHandlerException)

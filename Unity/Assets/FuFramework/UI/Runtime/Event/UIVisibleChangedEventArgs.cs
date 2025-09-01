@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -54,7 +53,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>创建的打开界面成功事件。</returns>
         public static UIVisibleChangedEventArgs Create(ViewBase iuiBase, bool visible, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Acquire<UIVisibleChangedEventArgs>();
+            var uiSuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<UIVisibleChangedEventArgs>();
             uiSuccessEventArgs.Base     = iuiBase;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;

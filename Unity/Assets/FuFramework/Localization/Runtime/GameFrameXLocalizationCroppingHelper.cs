@@ -9,12 +9,9 @@ namespace FuFramework.Localization.Runtime
        
         private void Start()
         {
+            _ = typeof(Language);
             _ = typeof(ILocalizationHelper);
             _ = typeof(ILocalizationManager);
-            _ = typeof(Language);
-            _ = typeof(LoadDictionaryFailureEventArgs);
-            _ = typeof(LoadDictionarySuccessEventArgs);
-            _ = typeof(LoadDictionaryUpdateEventArgs);
             _ = typeof(LocalizationManager);
             _ = typeof(DefaultLocalizationHelper);
             _ = typeof(LocalizationComponent);

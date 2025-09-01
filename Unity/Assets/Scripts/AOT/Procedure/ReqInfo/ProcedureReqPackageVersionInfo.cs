@@ -6,7 +6,8 @@ using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
+using FuFramework.Variable.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

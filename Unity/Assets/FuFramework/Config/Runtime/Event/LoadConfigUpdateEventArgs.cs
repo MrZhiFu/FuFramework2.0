@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -45,7 +44,7 @@ namespace FuFramework.Config.Runtime
         /// <returns>创建的加载全局配置更新事件。</returns>
         public static LoadConfigUpdateEventArgs Create(string dataAssetName, float progress, object userData)
         {
-            var loadConfigUpdateEventArgs = ReferencePool.Acquire<LoadConfigUpdateEventArgs>();
+            var loadConfigUpdateEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LoadConfigUpdateEventArgs>();
             loadConfigUpdateEventArgs.ConfigAssetName = dataAssetName;
             loadConfigUpdateEventArgs.Progress        = progress;
             loadConfigUpdateEventArgs.UserData        = userData;

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentNaming
@@ -45,7 +44,7 @@ namespace FuFramework.Config.Runtime
         /// <returns>创建的加载全局配置成功事件。</returns>
         public static LoadConfigSuccessEventArgs Create(string dataAssetName, float duration, object userData)
         {
-            var loadConfigSuccessEventArgs = ReferencePool.Acquire<LoadConfigSuccessEventArgs>();
+            var loadConfigSuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LoadConfigSuccessEventArgs>();
             loadConfigSuccessEventArgs.ConfigAssetName = dataAssetName;
             loadConfigSuccessEventArgs.Duration        = duration;
             loadConfigSuccessEventArgs.UserData        = userData;

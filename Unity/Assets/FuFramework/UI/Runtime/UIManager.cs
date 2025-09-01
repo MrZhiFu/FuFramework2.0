@@ -4,6 +4,7 @@ using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
+using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime

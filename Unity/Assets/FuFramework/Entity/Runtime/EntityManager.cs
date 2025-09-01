@@ -4,6 +4,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
+using FuFramework.ObjectPool.Runtime;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -117,7 +118,7 @@ namespace FuFramework.Entity.Runtime
                 entity.OnRecycle();
                 entityInfo.Status = EntityStatus.Recycled;
                 entityGroup.RecycleEntity(entity);
-                ReferencePool.Release(entityInfo);
+                ReferencePool.Runtime.ReferencePool.Release(entityInfo);
             }
 
             // 遍历每个实体组，驱动每个实体组轮询
@@ -919,7 +920,7 @@ namespace FuFramework.Entity.Runtime
                 {
                     var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, duration, userData);
                     m_ShowEntitySuccessEventHandler(this, showEntitySuccessEventArgs);
-                    ReferencePool.Release(showEntitySuccessEventArgs);
+                    ReferencePool.Runtime.ReferencePool.Release(showEntitySuccessEventArgs);
                 }
 
                 tcs.TrySetResult(entity);
@@ -930,7 +931,7 @@ namespace FuFramework.Entity.Runtime
                 {
                     var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), userData);
                     m_ShowEntityFailureEventHandler(this, showEntityFailureEventArgs);
-                    ReferencePool.Release(showEntityFailureEventArgs);
+                    ReferencePool.Runtime.ReferencePool.Release(showEntityFailureEventArgs);
                     return;
                 }
 
@@ -971,7 +972,7 @@ namespace FuFramework.Entity.Runtime
             {
                 var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entityGroup, userData);
                 m_HideEntityCompleteEventHandler(this, hideEntityCompleteEventArgs);
-                ReferencePool.Release(hideEntityCompleteEventArgs);
+                ReferencePool.Runtime.ReferencePool.Release(hideEntityCompleteEventArgs);
             }
 
             m_RecycleQueue.Enqueue(entityInfo);
@@ -1002,7 +1003,7 @@ namespace FuFramework.Entity.Runtime
             if (m_WaitReleaseOnLoadEntitySet.Contains(showEntityInfo.SerialId))
             {
                 m_WaitReleaseOnLoadEntitySet.Remove(showEntityInfo.SerialId);
-                ReferencePool.Release(showEntityInfo);
+                ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
                 m_EntityHelper.ReleaseEntity(entityAsset, null);
                 return;
             }
@@ -1012,7 +1013,7 @@ namespace FuFramework.Entity.Runtime
             showEntityInfo.EntityGroup.RegisterEntityInstanceObject(entityInstanceObject, true);
 
             InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, duration, showEntityInfo.UserData);
-            ReferencePool.Release(showEntityInfo);
+            ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
         }
 
         /// <summary>
@@ -1049,7 +1050,7 @@ namespace FuFramework.Entity.Runtime
                 var showEntityFailureEventArgs =
                     ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, appendErrorMessage, showEntityInfo.UserData);
                 m_ShowEntityFailureEventHandler(this, showEntityFailureEventArgs);
-                ReferencePool.Release(showEntityFailureEventArgs);
+                ReferencePool.Runtime.ReferencePool.Release(showEntityFailureEventArgs);
             }
 
             tcs.TrySetException(exception);

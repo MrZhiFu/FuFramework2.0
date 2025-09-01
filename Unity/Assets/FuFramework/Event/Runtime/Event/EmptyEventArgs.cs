@@ -1,5 +1,4 @@
-﻿using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
-
+﻿
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Event.Runtime
 {
@@ -22,7 +21,7 @@ namespace FuFramework.Event.Runtime
         /// <returns>空事件对象</returns>
         public static EmptyEventArgs Create(string eventId)
         {
-            var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
+            var eventArgs = ReferencePool.Runtime.ReferencePool.Acquire<EmptyEventArgs>();
             m_EventId = eventId;
             return eventArgs;
         }

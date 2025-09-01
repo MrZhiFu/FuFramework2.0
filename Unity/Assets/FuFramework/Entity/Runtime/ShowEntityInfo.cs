@@ -1,5 +1,5 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -28,7 +28,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns></returns>
         public static ShowEntityInfo Create(Type entityLogicType, object userData)
         {
-            var showEntityInfo = ReferencePool.Acquire<ShowEntityInfo>();
+            var showEntityInfo = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntityInfo>();
             showEntityInfo.EntityLogicType = entityLogicType;
             showEntityInfo.UserData        = userData;
             return showEntityInfo;

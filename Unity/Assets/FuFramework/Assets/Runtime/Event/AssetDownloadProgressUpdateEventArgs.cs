@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentNaming
@@ -59,7 +58,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetDownloadProgressUpdateEventArgs Create(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
         {
-            var assetDownloadProgressUpdate = ReferencePool.Acquire<AssetDownloadProgressUpdateEventArgs>();
+            var assetDownloadProgressUpdate = ReferencePool.Runtime.ReferencePool.Acquire<AssetDownloadProgressUpdateEventArgs>();
             assetDownloadProgressUpdate.TotalDownloadCount       = totalDownloadCount;
             assetDownloadProgressUpdate.CurrentDownloadCount     = currentDownloadCount;
             assetDownloadProgressUpdate.TotalDownloadSizeBytes   = totalDownloadSizeBytes;

@@ -2,7 +2,6 @@
 using System.Linq;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -196,7 +195,7 @@ namespace FuFramework.UI.Runtime
             if (!m_UIInfoList.Remove(uiInfo))
                 throw new FuException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIName));
 
-            ReferencePool.Release(uiInfo);
+            ReferencePool.Runtime.ReferencePool.Release(uiInfo);
         }
 
         /// <summary>

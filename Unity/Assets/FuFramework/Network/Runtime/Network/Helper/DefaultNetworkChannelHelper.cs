@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 
@@ -22,12 +23,12 @@ namespace FuFramework.Network.Runtime
         {
             get
             {
-                if (!_event) _event = ModuleManager.GetModule<EventManager>();
-                return _event;
+                if (!m_Event) m_Event = ModuleManager.GetModule<EventManager>();
+                return m_Event;
             }
         }
 
-        private static EventManager _event;
+        private static EventManager m_Event;
 
         /// <summary>
         /// 初始化网络频道帮助器。

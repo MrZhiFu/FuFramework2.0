@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
+using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime

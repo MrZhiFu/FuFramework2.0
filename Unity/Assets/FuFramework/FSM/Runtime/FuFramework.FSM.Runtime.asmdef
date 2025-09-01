@@ -2,7 +2,9 @@
     "name": "FuFramework.FSM.Runtime",
     "rootNamespace": "FuFramework.FSM.Runtime",
     "references": [
-        "FuFramework.Core.Runtime"
+        "FuFramework.Core.Runtime",
+        "FuFramework.ReferencePool.Runtime",
+        "FuFramework.Variable.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,6 +1,6 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -26,7 +26,7 @@ namespace FuFramework.Event.Runtime
         /// <returns></returns>
         public static EventRegister Create()
         {
-            return ReferencePool.Acquire<EventRegister>();
+            return ReferencePool.Runtime.ReferencePool.Acquire<EventRegister>();
         }
 
         /// <summary>
@@ -103,6 +103,6 @@ namespace FuFramework.Event.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
     }
 }

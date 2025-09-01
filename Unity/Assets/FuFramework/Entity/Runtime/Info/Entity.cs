@@ -221,7 +221,7 @@ namespace FuFramework.Entity.Runtime
                 Log.Error("Entity '[{0}]{1}' OnAttachTo with exception '{2}'.", Id, EntityAssetName, exception);
             }
 
-            ReferencePool.Release(attachEntityInfo);
+            ReferencePool.Runtime.ReferencePool.Release(attachEntityInfo);
         }
 
         /// <summary>

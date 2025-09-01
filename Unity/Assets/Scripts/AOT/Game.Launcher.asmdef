@@ -18,11 +18,14 @@
         "FuFramework.Asset.Runtime",
         "FuFramework.Mono.Runtime",
         "FuFramework.Timer.Runtime",
+        "FuFramework.Variable.Runtime",
         "FuFramework.Procedure.Runtime",
         "FuFramework.GetChannel.Runtime",
         "FuFramework.Localization.Runtime",
         "FuFramework.GlobalConfig.Runtime",
-        "FuFramework.ModuleSetting.Runtime"
+        "FuFramework.ModuleSetting.Runtime",
+        "FuFramework.ObjectPool.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

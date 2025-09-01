@@ -2,7 +2,8 @@
     "name": "FuFramework.Event.Runtime",
     "rootNamespace": "FuFramework.Event.Runtime",
     "references": [
-        "FuFramework.Core.Runtime"
+        "FuFramework.Core.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

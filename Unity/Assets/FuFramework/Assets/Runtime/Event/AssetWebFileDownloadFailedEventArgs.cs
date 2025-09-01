@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -46,7 +45,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetWebFileDownloadFailedEventArgs Create(string packageName, string fileName, string error)
         {
-            var assetWebFileDownloadFailed = ReferencePool.Acquire<AssetWebFileDownloadFailedEventArgs>();
+            var assetWebFileDownloadFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetWebFileDownloadFailedEventArgs>();
             assetWebFileDownloadFailed.FileName    = fileName;
             assetWebFileDownloadFailed.Error       = error;
             assetWebFileDownloadFailed.PackageName = packageName;

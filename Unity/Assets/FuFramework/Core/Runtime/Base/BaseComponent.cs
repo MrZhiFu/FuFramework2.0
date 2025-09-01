@@ -161,7 +161,7 @@ namespace FuFramework.Core.Runtime
             Screen.sleepTimeout         =  m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             Application.targetFrameRate =  m_FrameRate;
             Application.runInBackground =  m_RunInBackground;
-            Application.lowMemory       += OnLowMemory;
+            // Application.lowMemory       += OnLowMemory;
         }
         protected internal override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
@@ -177,7 +177,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         private void OnApplicationQuit()
         {
-            Application.lowMemory -= OnLowMemory;
+            // Application.lowMemory -= OnLowMemory;
             StopAllCoroutines();
         }
 
@@ -186,18 +186,18 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         private void OnDestroy() => FuEntry.Shutdown();
 
-        /// <summary>
-        /// 低内存回调
-        /// </summary>
-        private void OnLowMemory()
-        {
-            Log.Info("低内存警告, 释放对象池资源...");
-
-            // 释放对象池中所有未使用的资源
-            var objectPoolComponent = ModuleManager.GetModule<ObjectPoolComponent>();
-            if (objectPoolComponent != null)
-                objectPoolComponent.ReleaseAllUnused();
-        }
+        // /// <summary>
+        // /// 低内存回调
+        // /// </summary>
+        // private void OnLowMemory()
+        // {
+        //     Log.Info("低内存警告, 释放对象池资源...");
+        //
+        //     // 释放对象池中所有未使用的资源
+        //     var objectPoolComponent = ModuleManager.GetModule<ObjectPoolComponent>();
+        //     if (objectPoolComponent != null)
+        //         objectPoolComponent.ReleaseAllUnused();
+        // }
 
 
         /// <summary>

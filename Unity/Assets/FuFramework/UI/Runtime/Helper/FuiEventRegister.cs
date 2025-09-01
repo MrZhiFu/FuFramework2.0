@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -19,7 +19,7 @@ namespace FuFramework.UI.Runtime
         /// 创建FUI事件注册器
         /// </summary>
         /// <returns></returns>
-        public static FuiEventRegister Create() => ReferencePool.Acquire<FuiEventRegister>();
+        public static FuiEventRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<FuiEventRegister>();
 
         /// <summary>
         /// 添加UI上指定组件的监听事件
@@ -147,6 +147,6 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
     }
 }

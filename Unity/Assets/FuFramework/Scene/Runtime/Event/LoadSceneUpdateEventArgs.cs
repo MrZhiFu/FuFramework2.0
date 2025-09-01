@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -44,7 +43,7 @@ namespace FuFramework.Scene.Runtime
         /// <returns>创建的加载场景更新事件。</returns>
         public static LoadSceneUpdateEventArgs Create(string sceneAssetName, float progress, object userData)
         {
-            var loadSceneUpdateEventArgs = ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
+            var loadSceneUpdateEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
             loadSceneUpdateEventArgs.SceneName = sceneAssetName;
             loadSceneUpdateEventArgs.Progress  = progress;
             loadSceneUpdateEventArgs.UserData  = userData;

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -102,7 +101,7 @@ namespace FuFramework.Download.Runtime
                     var downloadCounterNode = m_DownloadCounterNodeList.First.Value;
                     if (downloadCounterNode.ElapseSeconds < m_RecordInterval) break;
 
-                    ReferencePool.Release(downloadCounterNode);
+                    ReferencePool.Runtime.ReferencePool.Release(downloadCounterNode);
                     m_DownloadCounterNodeList.RemoveFirst();
                 }
 

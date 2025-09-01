@@ -1,6 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -14,7 +13,7 @@ namespace FuFramework.Download.Runtime
         /// 下载代理辅助器更新数据大小事件编号。
         /// </summary>
         public override string Id => EventId;
-        
+
         /// <summary>
         /// 下载代理辅助器更新数据大小事件编号。
         /// </summary>
@@ -39,7 +38,7 @@ namespace FuFramework.Download.Runtime
         {
             if (deltaLength <= 0) throw new FuException("下载的增量数据大小必须大于0.");
 
-            var downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
+            var downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
             downloadAgentHelperUpdateLengthEventArgs.DeltaLength = deltaLength;
             return downloadAgentHelperUpdateLengthEventArgs;
         }

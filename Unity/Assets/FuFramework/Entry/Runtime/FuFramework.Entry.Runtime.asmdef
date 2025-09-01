@@ -20,7 +20,9 @@
         "FuFramework.Entity.Runtime",
         "FuFramework.Localization.Runtime",
         "FuFramework.Config.Runtime",
-        "FuFramework.Network.Runtime"
+        "FuFramework.Network.Runtime",
+        "FuFramework.ReferencePool.Runtime",
+        "FuFramework.ObjectPool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

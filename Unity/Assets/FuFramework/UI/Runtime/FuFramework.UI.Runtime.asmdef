@@ -10,7 +10,9 @@
         "FuFramework.Asset.Runtime",
         "FuFramework.Event.Runtime",
         "FuFramework.Timer.Runtime",
-        "FuFramework.Localization.Runtime"
+        "FuFramework.Localization.Runtime",
+        "FuFramework.ObjectPool.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

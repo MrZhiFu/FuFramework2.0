@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using System.Collections.Generic;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Timer.Runtime
@@ -24,7 +24,7 @@ namespace FuFramework.Timer.Runtime
         /// 创建计时器注册器
         /// </summary>
         /// <returns></returns>
-        public static TimerRegister Create() => ReferencePool.Acquire<TimerRegister>();
+        public static TimerRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
 
         /// <summary>
         /// 添加一个定时调用的任务
@@ -107,6 +107,6 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
     }
 }

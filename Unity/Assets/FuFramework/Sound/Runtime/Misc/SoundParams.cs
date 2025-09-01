@@ -1,5 +1,4 @@
-﻿using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+﻿using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -66,7 +65,7 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         public float DopplerLevel { get; set; }
 
-        
+
         /// <summary>
         /// 初始化播放声音参数的新实例。
         /// </summary>
@@ -89,7 +88,7 @@ namespace FuFramework.Sound.Runtime
         /// 创建播放声音参数。
         /// </summary>
         /// <returns>创建的播放声音参数。</returns>
-        public static SoundParams Create() => ReferencePool.Acquire<SoundParams>();
+        public static SoundParams Create() => ReferencePool.Runtime.ReferencePool.Acquire<SoundParams>();
 
         /// <summary>
         /// 清理播放声音参数。

@@ -1,6 +1,5 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -46,7 +45,7 @@ namespace FuFramework.Sound.Runtime
             /// <summary>
             /// 播放结束时的回调。
             /// </summary>
-            public Action OnPlayEnd{ get; private set; }
+            public Action OnPlayEnd { get; private set; }
 
             /// <summary>
             /// 用户自定义数据。
@@ -68,7 +67,7 @@ namespace FuFramework.Sound.Runtime
             public static PlaySoundInfo Create(int serialId, string soundName, object soundAsset, SoundGroup soundGroup, SoundParams soundParams, SoundParams3D soundParams3D,
                                                object userData, Action onPlayEnd)
             {
-                var playSoundInfo = ReferencePool.Acquire<PlaySoundInfo>();
+                var playSoundInfo = ReferencePool.Runtime.ReferencePool.Acquire<PlaySoundInfo>();
                 playSoundInfo.SerialId       = serialId;
                 playSoundInfo.SoundAssetPath = soundName;
                 playSoundInfo.SoundAsset     = soundAsset;

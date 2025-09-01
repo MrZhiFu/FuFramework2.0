@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -20,7 +20,7 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 记录该有限状态机的所有数据变量的字典。key为变量名，value为变量实例。
         /// </summary>
-        private Dictionary<string, Variable> m_DataDict;
+        private Dictionary<string, Variable.Runtime.Variable> m_DataDict;
 
         /// <summary>
         /// 名称
@@ -97,7 +97,7 @@ namespace FuFramework.Fsm.Runtime
             if (owner == null) throw new FuException("FSM owner is invalid.");
             if (states == null || states.Length < 1) throw new FuException("FSM states is invalid.");
 
-            var fsm = ReferencePool.Acquire<Fsm>();
+            var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
             fsm.Name          = name;
             fsm.Owner         = owner.GetType();
             fsm.m_IsDestroyed = false;
@@ -132,7 +132,7 @@ namespace FuFramework.Fsm.Runtime
             if (owner == null) throw new FuException("FSM owner is invalid.");
             if (states == null || states.Count < 1) throw new FuException("FSM states is invalid.");
 
-            var fsm = ReferencePool.Acquire<Fsm>();
+            var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
             fsm.Name          = name;
             fsm.Owner         = owner.GetType();
             fsm.m_IsDestroyed = false;
@@ -220,7 +220,7 @@ namespace FuFramework.Fsm.Runtime
                 foreach (var (_, data) in m_DataDict)
                 {
                     if (data == null) continue;
-                    ReferencePool.Release(data);
+                    ReferencePool.Runtime.ReferencePool.Release(data);
                 }
 
                 m_DataDict.Clear();
@@ -234,7 +234,7 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
-        internal void Shutdown() => ReferencePool.Release(this);
+        internal void Shutdown() => ReferencePool.Runtime.ReferencePool.Release(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -329,7 +329,7 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TData">要获取的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public TData GetData<TData>(string name) where TData : Variable
+        public TData GetData<TData>(string name) where TData : Variable.Runtime.Variable
         {
             return GetData(name) as TData;
         }
@@ -339,7 +339,7 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public Variable GetData(string name)
+        public Variable.Runtime.Variable GetData(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new FuException("Data name is invalid.");
             return m_DataDict?.GetValueOrDefault(name);
@@ -351,9 +351,9 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TData">要设置的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData<TData>(string name, TData data) where TData : Variable
+        public void SetData<TData>(string name, TData data) where TData : Variable.Runtime.Variable
         {
-            SetData(name, data as Variable);
+            SetData(name, data as Variable.Runtime.Variable);
         }
 
         /// <summary>
@@ -361,15 +361,15 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData(string name, Variable data)
+        public void SetData(string name, Variable.Runtime.Variable data)
         {
             if (string.IsNullOrEmpty(name)) throw new FuException("Data name is invalid.");
 
-            m_DataDict ??= new Dictionary<string, Variable>(StringComparer.Ordinal);
+            m_DataDict ??= new Dictionary<string, Variable.Runtime.Variable>(StringComparer.Ordinal);
 
             var oldData = GetData(name);
             if (oldData != null)
-                ReferencePool.Release(oldData);
+                ReferencePool.Runtime.ReferencePool.Release(oldData);
 
             m_DataDict[name] = data;
         }
@@ -385,7 +385,7 @@ namespace FuFramework.Fsm.Runtime
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
-            if (oldData != null) ReferencePool.Release(oldData);
+            if (oldData != null) ReferencePool.Runtime.ReferencePool.Release(oldData);
             return m_DataDict.Remove(name);
         }
 

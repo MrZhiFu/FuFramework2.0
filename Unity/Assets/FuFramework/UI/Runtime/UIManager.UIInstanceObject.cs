@@ -1,5 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
@@ -20,7 +20,7 @@ namespace FuFramework.UI.Runtime
             /// <returns></returns>
             public static UIInstanceObject Create(string name, ViewBase viewBase)
             {
-                var uiInstanceObject = ReferencePool.Acquire<UIInstanceObject>();
+                var uiInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<UIInstanceObject>();
                 uiInstanceObject.Initialize(name, viewBase);
                 return uiInstanceObject;
             }

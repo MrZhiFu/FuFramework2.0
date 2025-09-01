@@ -1,5 +1,6 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Event.Runtime

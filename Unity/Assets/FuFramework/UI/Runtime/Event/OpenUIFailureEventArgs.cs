@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -54,7 +53,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>创建的打开界面失败事件。</returns>
         public static OpenUIFailureEventArgs Create(int serialId, string uiName, object userData)
         {
-            var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
+            var openUIFailureEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<OpenUIFailureEventArgs>();
             openUIFailureEventArgs.SerialId = serialId;
             openUIFailureEventArgs.UIName   = uiName;
             openUIFailureEventArgs.UserData = userData;

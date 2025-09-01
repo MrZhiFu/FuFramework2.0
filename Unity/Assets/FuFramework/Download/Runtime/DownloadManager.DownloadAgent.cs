@@ -2,7 +2,7 @@
 using System.IO;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.TaskPool.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -126,7 +126,7 @@ namespace FuFramework.Download.Runtime
                 // 调用下载代理辅助器错误事件
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, "Timeout");
                 _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                ReferencePool.Release(downloadAgentHelperErrorEventArgs);
+                ReferencePool.Runtime.ReferencePool.Release(downloadAgentHelperErrorEventArgs);
             }
 
             /// <summary>
@@ -187,7 +187,7 @@ namespace FuFramework.Download.Runtime
                 {
                     var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
                     _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                    ReferencePool.Release(downloadAgentHelperErrorEventArgs);
+                    ReferencePool.Runtime.ReferencePool.Release(downloadAgentHelperErrorEventArgs);
                     return StartTaskStatus.UnknownError;
                 }
             }
@@ -257,7 +257,7 @@ namespace FuFramework.Download.Runtime
                 {
                     var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
                     _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                    ReferencePool.Release(downloadAgentHelperErrorEventArgs);
+                    ReferencePool.Runtime.ReferencePool.Release(downloadAgentHelperErrorEventArgs);
                 }
             }
 

@@ -3,7 +3,8 @@
     "rootNamespace": "FuFramework.Mono.Runtime",
     "references": [
         "FuFramework.Core.Runtime",
-        "FuFramework.Event.Runtime"
+        "FuFramework.Event.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,0 +1,20 @@
+{
+    "name": "FuFramework.ReferencePool.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0a9d5953f93fd5c4f9938a3d5a3e1c3d",
+        "GUID:e4e4d912961bd2b40b157a8b70591522",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

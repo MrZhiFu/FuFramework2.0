@@ -38,7 +38,7 @@ namespace FuFramework.Download.Runtime
         /// <summary>
         /// 下载任务的任务池
         /// </summary>
-        private readonly Core.Runtime.TaskPool<DownloadTask> m_TaskPool = new();
+        private readonly TaskPool.Runtime.TaskPool<DownloadTask> m_TaskPool = new();
 
         /// <summary>
         /// 下载计数器，1秒更新一次，10秒记录一次，用于计算下载速度
@@ -187,33 +187,33 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         /// <param name="serialId">要获取信息的下载任务的序列编号。</param>
         /// <returns>下载任务的信息。</returns>
-        public TaskInfo GetDownloadInfo(int serialId) => m_TaskPool.GetTaskInfo(serialId);
+        public TaskPool.Runtime.TaskInfo GetDownloadInfo(int serialId) => m_TaskPool.GetTaskInfo(serialId);
 
         /// <summary>
         /// 根据下载任务的标签获取下载任务的信息。
         /// </summary>
         /// <param name="taskTag">要获取信息的下载任务的标签。</param>
         /// <returns>下载任务的信息。</returns>
-        public TaskInfo[] GetDownloadInfos(string taskTag) => m_TaskPool.GetTaskInfos(taskTag);
+        public TaskPool.Runtime.TaskInfo[] GetDownloadInfos(string taskTag) => m_TaskPool.GetTaskInfos(taskTag);
 
         /// <summary>
         /// 根据下载任务的标签获取下载任务的信息。
         /// </summary>
         /// <param name="taskTag">要获取信息的下载任务的标签。</param>
         /// <param name="results">下载任务的信息。</param>
-        public void GetDownloadInfos(string taskTag, List<TaskInfo> results) => m_TaskPool.GetTaskInfos(taskTag, results);
+        public void GetDownloadInfos(string taskTag, List<TaskPool.Runtime.TaskInfo> results) => m_TaskPool.GetTaskInfos(taskTag, results);
 
         /// <summary>
         /// 获取所有下载任务的信息。
         /// </summary>
         /// <returns>所有下载任务的信息。</returns>
-        public TaskInfo[] GetAllDownloadInfos() => m_TaskPool.GetAllTaskInfos();
+        public TaskPool.Runtime.TaskInfo[] GetAllDownloadInfos() => m_TaskPool.GetAllTaskInfos();
 
         /// <summary>
         /// 获取所有下载任务的信息。
         /// </summary>
         /// <param name="results">所有下载任务的信息。</param>
-        public void GetAllDownloadInfos(List<TaskInfo> results) => m_TaskPool.GetAllTaskInfos(results);
+        public void GetAllDownloadInfos(List<TaskPool.Runtime.TaskInfo> results) => m_TaskPool.GetAllTaskInfos(results);
 
         #endregion
 

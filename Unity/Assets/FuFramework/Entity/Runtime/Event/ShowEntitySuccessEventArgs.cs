@@ -1,7 +1,7 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
 {
@@ -11,14 +11,14 @@ namespace FuFramework.Entity.Runtime
     public sealed class ShowEntitySuccessEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 显示实体成功事件编号。
-        /// </summary>
-        public static readonly string s_EventId = typeof(ShowEntitySuccessEventArgs).FullName;
-
-        /// <summary>
         /// 获取显示实体成功事件编号。
         /// </summary>
-        public override string Id => s_EventId;
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 显示实体成功事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(ShowEntitySuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取实体逻辑类型。
@@ -40,16 +40,6 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public object UserData { get; private set; }
 
-        /// <summary>
-        /// 初始化显示实体成功事件的新实例。
-        /// </summary>
-        public ShowEntitySuccessEventArgs()
-        {
-            EntityLogicType = null;
-            Entity          = null;
-            Duration        = 0f;
-            UserData        = null;
-        }
 
         /// <summary>
         /// 清理显示实体成功事件。
@@ -71,7 +61,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>创建的显示实体成功事件。</returns>
         public static ShowEntitySuccessEventArgs Create(IEntity entity, float duration, object userData)
         {
-            var showEntitySuccessEventArgs = ReferencePool.Acquire<ShowEntitySuccessEventArgs>();
+            var showEntitySuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntitySuccessEventArgs>();
             showEntitySuccessEventArgs.Entity   = entity;
             showEntitySuccessEventArgs.Duration = duration;
             showEntitySuccessEventArgs.UserData = userData;

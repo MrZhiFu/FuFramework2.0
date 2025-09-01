@@ -9,7 +9,8 @@
         "FuFramework.Event.Runtime",
         "FuFramework.Asset.Runtime",
         "FuFramework.Scene.Runtime",
-        "FuFramework.ModuleSetting.Runtime"
+        "FuFramework.ModuleSetting.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

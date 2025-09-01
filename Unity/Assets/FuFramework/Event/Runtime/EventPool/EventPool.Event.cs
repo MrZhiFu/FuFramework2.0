@@ -1,4 +1,4 @@
-﻿using FuFramework.Core.Runtime;
+﻿using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Event.Runtime
@@ -29,7 +29,7 @@ namespace FuFramework.Event.Runtime
             /// <returns></returns>
             public static Event Create(object sender, T eventArgs)
             {
-                var eventNodeNode = ReferencePool.Acquire<Event>();
+                var eventNodeNode = ReferencePool.Runtime.ReferencePool.Acquire<Event>();
                 eventNodeNode.Sender    = sender;
                 eventNodeNode.EventArgs = eventArgs;
                 return eventNodeNode;

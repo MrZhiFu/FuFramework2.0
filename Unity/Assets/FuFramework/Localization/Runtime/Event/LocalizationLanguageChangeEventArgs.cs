@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -37,7 +36,7 @@ namespace FuFramework.Localization.Runtime
         public LocalizationLanguageChangeEventArgs()
         {
             OldLanguage = Language.Unspecified;
-            Language = Language.Unspecified;
+            Language    = Language.Unspecified;
         }
 
         /// <summary>
@@ -48,9 +47,9 @@ namespace FuFramework.Localization.Runtime
         /// <returns>创建的本地化语言改变事件。</returns>
         public static LocalizationLanguageChangeEventArgs Create(Language oldLanguage, Language language)
         {
-            LocalizationLanguageChangeEventArgs localizationLanguageChangeEventArgs = ReferencePool.Acquire<LocalizationLanguageChangeEventArgs>();
+            var localizationLanguageChangeEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LocalizationLanguageChangeEventArgs>();
             localizationLanguageChangeEventArgs.OldLanguage = oldLanguage;
-            localizationLanguageChangeEventArgs.Language = language;
+            localizationLanguageChangeEventArgs.Language    = language;
             return localizationLanguageChangeEventArgs;
         }
 
@@ -60,7 +59,7 @@ namespace FuFramework.Localization.Runtime
         public override void Clear()
         {
             OldLanguage = Language.Unspecified;
-            Language = Language.Unspecified;
+            Language    = Language.Unspecified;
         }
     }
 }

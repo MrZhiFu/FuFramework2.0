@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -46,7 +45,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetFoundUpdateFilesEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
         {
-            var foundUpdateFiles = ReferencePool.Acquire<AssetFoundUpdateFilesEventArgs>();
+            var foundUpdateFiles = ReferencePool.Runtime.ReferencePool.Acquire<AssetFoundUpdateFilesEventArgs>();
             foundUpdateFiles.TotalCount     = totalCount;
             foundUpdateFiles.TotalSizeBytes = totalSizeBytes;
             foundUpdateFiles.PackageName    = packageName;

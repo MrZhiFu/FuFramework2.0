@@ -30,7 +30,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType"></param>
+        /// <param name="shutdownType">关闭游戏框架类型</param>
         protected internal abstract void OnShutdown(ShutdownType shutdownType);
     }
 }

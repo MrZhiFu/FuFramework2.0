@@ -1,6 +1,5 @@
 ﻿using System.Net.Sockets;
 using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
@@ -11,14 +10,14 @@ namespace FuFramework.Network.Runtime
     public sealed class NetworkErrorEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 网络错误事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(NetworkErrorEventArgs).FullName;
-
-        /// <summary>
         /// 获取网络错误事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 网络错误事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(NetworkErrorEventArgs).FullName;
 
         /// <summary>
         /// 获取网络频道。
@@ -49,13 +48,13 @@ namespace FuFramework.Network.Runtime
         /// <param name="errorMessage">错误信息。</param>
         /// <returns>创建的网络错误事件。</returns>
         public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
-            string errorMessage)
+                                                   string errorMessage)
         {
-            var networkErrorEventArgs = ReferencePool.Acquire<NetworkErrorEventArgs>();
-            networkErrorEventArgs.NetworkChannel = networkChannel;
-            networkErrorEventArgs.ErrorCode = errorCode;
+            var networkErrorEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<NetworkErrorEventArgs>();
+            networkErrorEventArgs.NetworkChannel  = networkChannel;
+            networkErrorEventArgs.ErrorCode       = errorCode;
             networkErrorEventArgs.SocketErrorCode = socketErrorCode;
-            networkErrorEventArgs.ErrorMessage = errorMessage;
+            networkErrorEventArgs.ErrorMessage    = errorMessage;
             return networkErrorEventArgs;
         }
 
@@ -64,9 +63,9 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         public override void Clear()
         {
-            NetworkChannel = null;
-            ErrorMessage = null;
-            ErrorCode = NetworkErrorCode.Unknown;
+            NetworkChannel  = null;
+            ErrorMessage    = null;
+            ErrorCode       = NetworkErrorCode.Unknown;
             SocketErrorCode = SocketError.Success;
         }
     }

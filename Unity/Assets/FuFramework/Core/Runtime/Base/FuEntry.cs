@@ -43,7 +43,6 @@ namespace FuFramework.Core.Runtime
             }
 
             s_AllModuleList.Clear();
-            ReferencePool.ClearAll();
             FuLog.SetLogHelper(null);
         }
 

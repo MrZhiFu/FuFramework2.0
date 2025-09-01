@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -13,7 +12,7 @@ namespace FuFramework.Download.Runtime
         /// 下载代理辅助器错误事件编号
         /// </summary>
         public override string Id => EventId;
-        
+
         /// <summary>
         /// 下载代理辅助器错误事件编号
         /// </summary>
@@ -46,7 +45,7 @@ namespace FuFramework.Download.Runtime
         /// <returns>创建的下载代理辅助器错误事件。</returns>
         public static DownloadAgentHelperErrorEventArgs Create(bool deleteDownloading, string errorMessage)
         {
-            var downloadAgentHelperErrorEventArgs = ReferencePool.Acquire<DownloadAgentHelperErrorEventArgs>();
+            var downloadAgentHelperErrorEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadAgentHelperErrorEventArgs>();
             downloadAgentHelperErrorEventArgs.DeleteDownloading = deleteDownloading;
             downloadAgentHelperErrorEventArgs.ErrorMessage      = errorMessage;
             return downloadAgentHelperErrorEventArgs;

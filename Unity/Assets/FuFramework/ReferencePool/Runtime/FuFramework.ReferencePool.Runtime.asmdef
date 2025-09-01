@@ -1,0 +1,16 @@
+{
+    "name": "FuFramework.ReferencePool.Runtime",
+    "rootNamespace": "FuFramework.ReferencePool.Runtime",
+    "references": [
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

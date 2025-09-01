@@ -1,5 +1,5 @@
-﻿using FuFramework.Core.Runtime;
-using UnityEngine;
+﻿using UnityEngine;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -22,7 +22,7 @@ namespace FuFramework.Entity.Runtime
 
         public static AttachEntityInfo Create(Transform parentTransform, object userData)
         {
-            var attachEntityInfo = ReferencePool.Acquire<AttachEntityInfo>();
+            var attachEntityInfo = ReferencePool.Runtime.ReferencePool.Acquire<AttachEntityInfo>();
             attachEntityInfo.ParentTransform = parentTransform;
             attachEntityInfo.UserData        = userData;
             return attachEntityInfo;

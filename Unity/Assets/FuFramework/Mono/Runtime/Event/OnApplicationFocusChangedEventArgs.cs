@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -40,7 +39,7 @@ namespace FuFramework.Mono.Runtime
         /// <returns>程序前后台切换事件。</returns>
         public static OnApplicationFocusChangedEventArgs Create(bool isFocus)
         {
-            var loadDictionaryUpdateChangedEventArgs = ReferencePool.Acquire<OnApplicationFocusChangedEventArgs>();
+            var loadDictionaryUpdateChangedEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<OnApplicationFocusChangedEventArgs>();
             loadDictionaryUpdateChangedEventArgs.IsFocus = isFocus;
             return loadDictionaryUpdateChangedEventArgs;
         }

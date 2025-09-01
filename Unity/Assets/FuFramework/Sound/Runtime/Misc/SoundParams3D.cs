@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
-using FuFramework.Core.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -29,7 +28,7 @@ namespace FuFramework.Sound.Runtime
         /// <returns>创建的播放声音信息。</returns>
         public static SoundParams3D Create(Entity.Runtime.Entity bindingEntity, Vector3 worldPosition)
         {
-            var playSoundInfo = ReferencePool.Acquire<SoundParams3D>();
+            var playSoundInfo = ReferencePool.Runtime.ReferencePool.Acquire<SoundParams3D>();
             playSoundInfo.BindingEntity = bindingEntity;
             playSoundInfo.WorldPosition = worldPosition;
             return playSoundInfo;

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
@@ -10,14 +9,14 @@ namespace FuFramework.Network.Runtime
     public sealed class NetworkMissHeartBeatEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 网络心跳包丢失事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(NetworkMissHeartBeatEventArgs).FullName;
-
-        /// <summary>
         /// 获取网络心跳包丢失事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 网络心跳包丢失事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(NetworkMissHeartBeatEventArgs).FullName;
 
         /// <summary>
         /// 获取网络频道。
@@ -37,9 +36,9 @@ namespace FuFramework.Network.Runtime
         /// <returns>创建的网络心跳包丢失事件。</returns>
         public static NetworkMissHeartBeatEventArgs Create(INetworkChannel networkChannel, int missCount)
         {
-            var networkMissHeartBeatEventArgs = ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
+            var networkMissHeartBeatEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
             networkMissHeartBeatEventArgs.NetworkChannel = networkChannel;
-            networkMissHeartBeatEventArgs.MissCount = missCount;
+            networkMissHeartBeatEventArgs.MissCount      = missCount;
             return networkMissHeartBeatEventArgs;
         }
 
@@ -49,7 +48,7 @@ namespace FuFramework.Network.Runtime
         public override void Clear()
         {
             NetworkChannel = null;
-            MissCount = 0;
+            MissCount      = 0;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
@@ -10,14 +9,14 @@ namespace FuFramework.Network.Runtime
     public sealed class NetworkConnectedEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 网络连接成功事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(NetworkConnectedEventArgs).FullName;
-
-        /// <summary>
         /// 获取网络连接成功事件编号。
         /// </summary>
         public override string Id => EventId;
+
+        /// <summary>
+        /// 网络连接成功事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(NetworkConnectedEventArgs).FullName;
 
         /// <summary>
         /// 获取网络频道。
@@ -38,7 +37,7 @@ namespace FuFramework.Network.Runtime
         /// <returns>创建的网络连接成功事件。</returns>
         public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel, object userData)
         {
-            var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
+            var networkConnectedEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<NetworkConnectedEventArgs>();
             networkConnectedEventArgs.NetworkChannel = networkChannel;
             networkConnectedEventArgs.UserData = userData;
             return networkConnectedEventArgs;

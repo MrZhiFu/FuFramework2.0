@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -68,7 +67,7 @@ namespace FuFramework.Download.Runtime
         /// <returns>创建的下载成功事件。</returns>
         public static DownloadSuccessEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
-            var downloadSuccessEventArgs = ReferencePool.Acquire<DownloadSuccessEventArgs>();
+            var downloadSuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadSuccessEventArgs>();
             downloadSuccessEventArgs.SerialId = serialId;
             downloadSuccessEventArgs.DownloadPath = downloadPath;
             downloadSuccessEventArgs.DownloadUri = downloadUri;

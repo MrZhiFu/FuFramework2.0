@@ -1,7 +1,7 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
 {
@@ -11,14 +11,14 @@ namespace FuFramework.Entity.Runtime
     public sealed class ShowEntityFailureEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 显示实体失败事件编号。
-        /// </summary>
-        public static readonly string s_EventId = typeof(ShowEntityFailureEventArgs).FullName;
-
-        /// <summary>
         /// 获取显示实体失败事件编号。
         /// </summary>
-        public override string Id => s_EventId;
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 显示实体失败事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(ShowEntityFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取实体编号。
@@ -50,18 +50,6 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public object UserData { get; private set; }
 
-        /// <summary>
-        /// 初始化显示实体失败事件的新实例。
-        /// </summary>
-        public ShowEntityFailureEventArgs()
-        {
-            EntityId        = 0;
-            EntityLogicType = null;
-            EntityAssetName = null;
-            EntityGroupName = null;
-            ErrorMessage    = null;
-            UserData        = null;
-        }
 
         /// <summary>
         /// 清理显示实体失败事件。
@@ -87,7 +75,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>创建的显示实体失败事件。</returns>
         public static ShowEntityFailureEventArgs Create(int entityId, string entityAssetName, string entityGroupName, string errorMessage, object userData)
         {
-            var showEntityFailureEventArgs = ReferencePool.Acquire<ShowEntityFailureEventArgs>();
+            var showEntityFailureEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntityFailureEventArgs>();
             showEntityFailureEventArgs.EntityId        = entityId;
             showEntityFailureEventArgs.EntityAssetName = entityAssetName;
             showEntityFailureEventArgs.EntityGroupName = entityGroupName;

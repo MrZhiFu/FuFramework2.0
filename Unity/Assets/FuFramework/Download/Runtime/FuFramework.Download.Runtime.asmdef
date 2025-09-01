@@ -2,9 +2,11 @@
     "name": "FuFramework.Download.Runtime",
     "rootNamespace": "FuFramework.Download.Runtime",
     "references": [
+        "UniTask.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Event.Runtime",
-        "UniTask.Runtime"
+        "FuFramework.TaskPool.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

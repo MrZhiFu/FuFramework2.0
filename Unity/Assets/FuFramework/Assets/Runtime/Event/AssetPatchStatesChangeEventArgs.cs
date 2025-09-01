@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -39,7 +38,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetPatchStatesChangeEventArgs Create(string packageName, EPatchStates currentStates)
         {
-            var assetPatchStatesChange = ReferencePool.Acquire<AssetPatchStatesChangeEventArgs>();
+            var assetPatchStatesChange = ReferencePool.Runtime.ReferencePool.Acquire<AssetPatchStatesChangeEventArgs>();
             assetPatchStatesChange.PackageName   = packageName;
             assetPatchStatesChange.CurrentStates = currentStates;
             return assetPatchStatesChange;

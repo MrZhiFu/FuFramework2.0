@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -38,7 +37,7 @@ namespace FuFramework.Scene.Runtime
         /// <returns>创建的激活场景被改变事件。</returns>
         public static ActiveSceneChangedEventArgs Create(UnityEngine.SceneManagement.Scene lastActiveScene, UnityEngine.SceneManagement.Scene activeScene)
         {
-            var activeSceneChangedEventArgs = ReferencePool.Acquire<ActiveSceneChangedEventArgs>();
+            var activeSceneChangedEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ActiveSceneChangedEventArgs>();
             activeSceneChangedEventArgs.LastActiveScene = lastActiveScene;
             activeSceneChangedEventArgs.ActiveScene     = activeScene;
             return activeSceneChangedEventArgs;

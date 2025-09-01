@@ -1,6 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -38,7 +37,7 @@ namespace FuFramework.Download.Runtime
         public static DownloadAgentHelperCompleteEventArgs Create(long length)
         {
             if (length < 0L) throw new FuException("Length is invalid.");
-            var downloadAgentHelperCompleteEventArgs = ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();
+            var downloadAgentHelperCompleteEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();
             downloadAgentHelperCompleteEventArgs.Length = length;
             return downloadAgentHelperCompleteEventArgs;
         }

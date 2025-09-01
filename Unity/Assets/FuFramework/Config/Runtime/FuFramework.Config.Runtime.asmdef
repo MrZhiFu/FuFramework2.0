@@ -4,7 +4,8 @@
     "references": [
         "FuFramework.Core.Runtime",
         "FuFramework.Event.Runtime",
-        "FuFramework.Asset.Runtime"
+        "FuFramework.Asset.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

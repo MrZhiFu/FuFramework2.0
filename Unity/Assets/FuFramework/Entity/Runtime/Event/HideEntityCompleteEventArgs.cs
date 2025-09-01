@@ -1,6 +1,6 @@
-﻿using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
+﻿using FuFramework.Event.Runtime;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
 {
@@ -10,14 +10,14 @@ namespace FuFramework.Entity.Runtime
     public sealed class HideEntityCompleteEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 隐藏实体完成事件编号。
-        /// </summary>
-        public static readonly string s_EventId = typeof(HideEntityCompleteEventArgs).FullName;
-
-        /// <summary>
         /// 获取隐藏实体完成事件编号。
         /// </summary>
-        public override string Id => s_EventId;
+        public override string Id => EventId;
+
+        /// <summary>
+        /// 隐藏实体完成事件编号。
+        /// </summary>
+        public static readonly string EventId = typeof(HideEntityCompleteEventArgs).FullName;
 
         /// <summary>
         /// 获取实体编号。
@@ -71,7 +71,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>创建的隐藏实体完成事件。</returns>
         public static HideEntityCompleteEventArgs Create(int entityId, string entityAssetName, IEntityGroup entityGroup, object userData)
         {
-            var hideEntityCompleteEventArgs = ReferencePool.Acquire<HideEntityCompleteEventArgs>();
+            var hideEntityCompleteEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<HideEntityCompleteEventArgs>();
             hideEntityCompleteEventArgs.EntityId        = entityId;
             hideEntityCompleteEventArgs.EntityAssetName = entityAssetName;
             hideEntityCompleteEventArgs.EntityGroup     = entityGroup;

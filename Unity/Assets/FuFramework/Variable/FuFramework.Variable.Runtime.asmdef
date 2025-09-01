@@ -1,0 +1,4 @@
+{
+	"name": "FuFramework.Variable.Runtime",
+	"references":[ "GUID:e4e4d912961bd2b40b157a8b70591522" ]
+}

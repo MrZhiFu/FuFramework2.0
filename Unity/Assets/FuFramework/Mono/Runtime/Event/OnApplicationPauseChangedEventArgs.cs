@@ -1,6 +1,6 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Mono.Runtime
 {
@@ -24,14 +24,7 @@ namespace FuFramework.Mono.Runtime
         /// </summary>
         public bool IsPause { get; private set; }
 
-        /// <summary>
-        /// 初始化程序暂停状态变化事件的新实例。
-        /// </summary>
-        public OnApplicationPauseChangedEventArgs()
-        {
-            IsPause = false;
-        }
-        
+
         /// <summary>
         /// 创建程序暂停状态变化事件。
         /// </summary>
@@ -39,7 +32,7 @@ namespace FuFramework.Mono.Runtime
         /// <returns>创建的程序暂停状态变化事件。</returns>
         public static OnApplicationPauseChangedEventArgs Create(bool isPause)
         {
-            var loadDictionaryUpdateEventArgs = ReferencePool.Acquire<OnApplicationPauseChangedEventArgs>();
+            var loadDictionaryUpdateEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<OnApplicationPauseChangedEventArgs>();
             loadDictionaryUpdateEventArgs.IsPause = isPause;
             return loadDictionaryUpdateEventArgs;
         }

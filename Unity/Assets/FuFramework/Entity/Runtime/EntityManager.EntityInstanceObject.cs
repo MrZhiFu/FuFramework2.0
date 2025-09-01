@@ -1,4 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
+using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -34,7 +35,7 @@ namespace FuFramework.Entity.Runtime
                 if (entityAsset  == null) throw new FuException("Entity asset is invalid.");
                 if (entityHelper == null) throw new FuException("Entity helper is invalid.");
 
-                var entityInstanceObject = ReferencePool.Acquire<EntityInstanceObject>();
+                var entityInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<EntityInstanceObject>();
                 entityInstanceObject.Initialize(name, entityInstance);
                 entityInstanceObject.m_EntityAsset  = entityAsset;
                 entityInstanceObject.m_EntityHelper = entityHelper;

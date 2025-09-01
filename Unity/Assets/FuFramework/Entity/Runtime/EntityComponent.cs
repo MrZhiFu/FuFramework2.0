@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
+using FuFramework.ObjectPool.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Event.Runtime;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -62,7 +61,7 @@ namespace FuFramework.Sound.Runtime
         /// <returns>创建的播放声音失败事件。</returns>
         public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, EPlaySoundErrorCode errorCode)
         {
-            var playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
+            var playSoundFailureEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<PlaySoundFailureEventArgs>();
             playSoundFailureEventArgs.SerialId       = serialId;
             playSoundFailureEventArgs.SoundAssetName = soundAssetName;
             playSoundFailureEventArgs.SoundGroupName = soundGroupName;

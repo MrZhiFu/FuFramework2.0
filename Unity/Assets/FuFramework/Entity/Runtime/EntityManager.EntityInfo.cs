@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -41,7 +42,7 @@ namespace FuFramework.Entity.Runtime
             public static EntityInfo Create(IEntity entity)
             {
                 if (entity == null) throw new FuException("Entity is invalid.");
-                var entityInfo = ReferencePool.Acquire<EntityInfo>();
+                var entityInfo = ReferencePool.Runtime.ReferencePool.Acquire<EntityInfo>();
                 entityInfo.Entity = entity;
                 entityInfo.Status = EntityStatus.WillInit;
                 return entityInfo;

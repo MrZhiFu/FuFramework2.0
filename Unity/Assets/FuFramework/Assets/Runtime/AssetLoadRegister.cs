@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using FuFramework.ReferencePool.Runtime;
 using Object = UnityEngine.Object;
-using ReferencePool = FuFramework.Core.Runtime.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Asset.Runtime
@@ -28,7 +28,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetLoadRegister Create()
         {
-            return ReferencePool.Acquire<AssetLoadRegister>();
+            return ReferencePool.Runtime.ReferencePool.Acquire<AssetLoadRegister>();
         }
 
         /// <summary>
@@ -133,6 +133,6 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
     }
 }

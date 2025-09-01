@@ -6,7 +6,9 @@
         "UniTask.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Asset.Runtime",
-        "FuFramework.Event.Runtime"
+        "FuFramework.Event.Runtime",
+        "FuFramework.ObjectPool.Runtime",
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
