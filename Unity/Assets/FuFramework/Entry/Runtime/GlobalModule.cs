@@ -15,6 +15,7 @@ using FuFramework.Setting.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Web.Runtime;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entry.Runtime
 {
@@ -25,12 +26,12 @@ namespace FuFramework.Entry.Runtime
     {
         public static BaseComponent         BaseModule         { get; private set; }
         public static AssetManager          AssetModule        { get; private set; }
-        public static ConfigManager       ConfigModule       { get; private set; }
-        public static CoroutineManager    CoroutineModule    { get; private set; }
-        public static DownloadManager     DownloadModule     { get; private set; }
+        public static ConfigManager         ConfigModule       { get; private set; }
+        public static CoroutineManager      CoroutineModule    { get; private set; }
+        public static DownloadManager       DownloadModule     { get; private set; }
         public static EntityComponent       EntityModule       { get; private set; }
         public static EventManager          EventModule        { get; private set; }
-        public static FsmComponent          FsmModule          { get; private set; }
+        public static FsmManager            FsmModule          { get; private set; }
         public static GlobalConfigComponent GlobalConfigModule { get; private set; }
         public static LocalizationComponent LocalizationModule { get; private set; }
         public static MonoManager           MonoModule         { get; private set; }
@@ -61,7 +62,7 @@ namespace FuFramework.Entry.Runtime
             DownloadModule     = ModuleManager.RegisterModule<DownloadManager>();
             EntityModule       = ModuleManager.RegisterModule<EntityComponent>();
             EventModule        = ModuleManager.RegisterModule<EventManager>();
-            FsmModule          = ModuleManager.RegisterModule<FsmComponent>();
+            FsmModule          = ModuleManager.RegisterModule<FsmManager>();
             GlobalConfigModule = ModuleManager.RegisterModule<GlobalConfigComponent>();
             LocalizationModule = ModuleManager.RegisterModule<LocalizationComponent>();
             MonoModule         = ModuleManager.RegisterModule<MonoManager>();

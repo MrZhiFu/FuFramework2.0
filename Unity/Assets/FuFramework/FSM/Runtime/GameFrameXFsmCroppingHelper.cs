@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.Scripting;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Fsm.Runtime
 {
    
@@ -9,12 +9,8 @@ namespace FuFramework.Fsm.Runtime
        
         private void Start()
         {
-            _ = typeof(IFsmManager);
-            _ = typeof(IFsm<>);
-            _ = typeof(FsmStateBase<>);
-            _ = typeof(FsmBase);
+            _ = typeof(FsmStateBase);
             _ = typeof(FsmManager);
-            _ = typeof(FsmComponent);
         }
     }
 }

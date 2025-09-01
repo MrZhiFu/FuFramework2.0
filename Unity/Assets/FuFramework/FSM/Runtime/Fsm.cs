@@ -10,18 +10,27 @@ namespace FuFramework.Fsm.Runtime
     /// <summary>
     /// 有限状态机。
     /// </summary>
-    /// <typeparam name="T">有限状态机持有者类型。</typeparam>
-    internal sealed class Fsm<T> : FsmBase, IReference, IFsm<T> where T : class
+    public sealed class Fsm : IReference
     {
         /// <summary>
         /// 记录该有限状态机的所有状态的字典。key为状态类型，value为状态实例。
         /// </summary>
-        private readonly Dictionary<Type, FsmStateBase<T>> m_StateDict = new();
+        private readonly Dictionary<Type, FsmStateBase> m_StateDict = new();
 
         /// <summary>
         /// 记录该有限状态机的所有数据变量的字典。key为变量名，value为变量实例。
         /// </summary>
         private Dictionary<string, Variable> m_DataDict;
+
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name { get; private set; }
+
+        /// <summary>
+        /// 获取有限状态机完整名称。
+        /// </summary>
+        public string FullName => new TypeNamePair(OwnerType, Name).ToString();
 
         /// <summary>
         /// 该有限状态机当前状态持续时间。
@@ -37,43 +46,43 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 获取有限状态机持有者。
         /// </summary>
-        public T Owner { get; private set; }
+        public Type Owner { get; private set; }
 
         /// <summary>
         /// 获取当前有限状态机状态。
         /// </summary>
-        public FsmStateBase<T> CurrentStateBase { get; private set; }
+        public FsmStateBase CurrentStateBase { get; private set; }
 
 
         /// <summary>
         /// 获取有限状态机持有者类型。
         /// </summary>
-        public override Type OwnerType => typeof(T);
+        public Type OwnerType => Owner;
 
         /// <summary>
         /// 获取有限状态机中状态的数量。
         /// </summary>
-        public override int FsmStateCount => m_StateDict.Count;
+        public int FsmStateCount => m_StateDict.Count;
 
         /// <summary>
         /// 获取有限状态机是否正在运行。
         /// </summary>
-        public override bool IsRunning => CurrentStateBase != null;
+        public bool IsRunning => CurrentStateBase != null;
 
         /// <summary>
         /// 获取有限状态机是否被销毁。
         /// </summary>
-        public override bool IsDestroyed => m_IsDestroyed;
+        public bool IsDestroyed => m_IsDestroyed;
 
         /// <summary>
         /// 获取当前有限状态机状态名称。
         /// </summary>
-        public override string CurrentStateName => CurrentStateBase?.GetType().FullName;
+        public string CurrentStateName => CurrentStateBase?.GetType().FullName;
 
         /// <summary>
         /// 获取当前有限状态机状态持续时间。
         /// </summary>
-        public override float CurrentStateTime => m_CurrentStateTime;
+        public float CurrentStateTime => m_CurrentStateTime;
 
 
         /// <summary>
@@ -83,14 +92,14 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
         /// <returns>创建的有限状态机。</returns>
-        public static Fsm<T> Create(string name, T owner, params FsmStateBase<T>[] states)
+        public static Fsm Create<T>(string name, T owner, params FsmStateBase[] states) where T : class
         {
             if (owner == null) throw new FuException("FSM owner is invalid.");
             if (states == null || states.Length < 1) throw new FuException("FSM states is invalid.");
 
-            var fsm = ReferencePool.Acquire<Fsm<T>>();
-            fsm.Name = name;
-            fsm.Owner = owner;
+            var fsm = ReferencePool.Acquire<Fsm>();
+            fsm.Name          = name;
+            fsm.Owner         = owner.GetType();
             fsm.m_IsDestroyed = false;
 
             foreach (var state in states)
@@ -100,7 +109,7 @@ namespace FuFramework.Fsm.Runtime
                 if (!fsm.m_StateDict.TryAdd(stateType, state))
                 {
                     throw new FuException(Utility.Text.Format("FSM '{0}' state '{1}' is already exist.", new TypeNamePair(typeof(T), name),
-                        stateType.FullName));
+                                                              stateType.FullName));
                 }
 
                 state.OnInit(fsm);
@@ -108,6 +117,7 @@ namespace FuFramework.Fsm.Runtime
 
             return fsm;
         }
+        
 
         /// <summary>
         /// 创建有限状态机。
@@ -115,15 +125,16 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="name">有限状态机名称。</param>
         /// <param name="owner">有限状态机持有者。</param>
         /// <param name="states">有限状态机状态集合。</param>
+        /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <returns>创建的有限状态机。</returns>
-        public static Fsm<T> Create(string name, T owner, List<FsmStateBase<T>> states)
+        public static Fsm Create<T>(string name, T owner, List<FsmStateBase> states) where T : class
         {
             if (owner == null) throw new FuException("FSM owner is invalid.");
             if (states == null || states.Count < 1) throw new FuException("FSM states is invalid.");
 
-            var fsm = ReferencePool.Acquire<Fsm<T>>();
-            fsm.Name = name;
-            fsm.Owner = owner;
+            var fsm = ReferencePool.Acquire<Fsm>();
+            fsm.Name          = name;
+            fsm.Owner         = owner.GetType();
             fsm.m_IsDestroyed = false;
 
             foreach (var state in states)
@@ -133,7 +144,7 @@ namespace FuFramework.Fsm.Runtime
                 if (!fsm.m_StateDict.TryAdd(stateType, state))
                 {
                     throw new FuException(Utility.Text.Format("FSM '{0}' state '{1}' is already exist.", new TypeNamePair(typeof(T), name),
-                        stateType.FullName));
+                                                              stateType.FullName));
                 }
 
                 state.OnInit(fsm);
@@ -146,19 +157,14 @@ namespace FuFramework.Fsm.Runtime
         /// 开始有限状态机。
         /// </summary>
         /// <typeparam name="TState">要开始的有限状态机状态类型。</typeparam>
-        public void Start<TState>() where TState : FsmStateBase<T>
+        public void Start<TState>() where TState : FsmStateBase
         {
             if (IsRunning) throw new FuException("FSM is running, can not start again.");
 
-            FsmStateBase<T> stateBase = GetState<TState>();
-            if (stateBase == null)
-            {
-                throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.",
-                    new TypeNamePair(typeof(T), Name), typeof(TState).FullName));
-            }
+            FsmStateBase stateBase = GetState<TState>();
 
             m_CurrentStateTime = 0f;
-            CurrentStateBase = stateBase;
+            CurrentStateBase   = stateBase ?? throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.", FullName, typeof(TState).FullName));
             CurrentStateBase.OnEnter(this);
         }
 
@@ -171,18 +177,13 @@ namespace FuFramework.Fsm.Runtime
             if (IsRunning) throw new FuException("FSM is running, can not start again.");
             if (stateType == null) throw new FuException("State type is invalid.");
 
-            if (!typeof(FsmStateBase<T>).IsAssignableFrom(stateType))
+            if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
                 throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
 
             var state = GetState(stateType);
-            if (state == null)
-            {
-                throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.",
-                    new TypeNamePair(typeof(T), Name), stateType.FullName));
-            }
 
             m_CurrentStateTime = 0f;
-            CurrentStateBase = state;
+            CurrentStateBase   = state ?? throw new FuException(Utility.Text.Format("FSM '{0}' can not start state '{1}' which is not exist.", FullName, stateType.FullName));
             CurrentStateBase.OnEnter(this);
         }
 
@@ -191,7 +192,7 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        internal override void Update(float elapseSeconds, float realElapseSeconds)
+        internal void Update(float elapseSeconds, float realElapseSeconds)
         {
             if (CurrentStateBase == null) return;
             m_CurrentStateTime += elapseSeconds;
@@ -210,7 +211,7 @@ namespace FuFramework.Fsm.Runtime
                 state.OnDestroy(this);
             }
 
-            Name = null;
+            Name  = null;
             Owner = null;
             m_StateDict.Clear();
 
@@ -225,17 +226,25 @@ namespace FuFramework.Fsm.Runtime
                 m_DataDict.Clear();
             }
 
-            CurrentStateBase = null;
+            CurrentStateBase   = null;
             m_CurrentStateTime = 0f;
-            m_IsDestroyed = true;
+            m_IsDestroyed      = true;
         }
+        
+        /// <summary>
+        /// 关闭并清理有限状态机。
+        /// </summary>
+        internal void Shutdown() => ReferencePool.Release(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
         /// </summary>
         /// <typeparam name="TState">要检查的有限状态机状态类型。</typeparam>
         /// <returns>是否存在有限状态机状态。</returns>
-        public bool HasState<TState>() where TState : FsmStateBase<T> => m_StateDict.ContainsKey(typeof(TState));
+        public bool HasState<TState>() where TState : FsmStateBase
+        {
+            return m_StateDict.ContainsKey(typeof(TState));
+        }
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -245,7 +254,7 @@ namespace FuFramework.Fsm.Runtime
         public bool HasState(Type stateType)
         {
             if (stateType == null) throw new FuException("State type is invalid.");
-            if (!typeof(FsmStateBase<T>).IsAssignableFrom(stateType))
+            if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
                 throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
             return m_StateDict.ContainsKey(stateType);
         }
@@ -255,7 +264,7 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <typeparam name="TState">要获取的有限状态机状态类型。</typeparam>
         /// <returns>要获取的有限状态机状态。</returns>
-        public TState GetState<TState>() where TState : FsmStateBase<T>
+        public TState GetState<TState>() where TState : FsmStateBase
         {
             return m_StateDict.TryGetValue(typeof(TState), out var state) ? state as TState : null;
         }
@@ -265,10 +274,10 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="stateType">要获取的有限状态机状态类型。</param>
         /// <returns>要获取的有限状态机状态。</returns>
-        public FsmStateBase<T> GetState(Type stateType)
+        public FsmStateBase GetState(Type stateType)
         {
             if (stateType == null) throw new FuException("State type is invalid.");
-            if (!typeof(FsmStateBase<T>).IsAssignableFrom(stateType))
+            if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
                 throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
             return m_StateDict.GetValueOrDefault(stateType);
         }
@@ -277,10 +286,10 @@ namespace FuFramework.Fsm.Runtime
         /// 获取有限状态机的所有状态。
         /// </summary>
         /// <returns>有限状态机的所有状态。</returns>
-        public FsmStateBase<T>[] GetAllStates()
+        public FsmStateBase[] GetAllStates()
         {
-            var index = 0;
-            var results = new FsmStateBase<T>[m_StateDict.Count];
+            var index   = 0;
+            var results = new FsmStateBase[m_StateDict.Count];
             foreach (var state in m_StateDict)
             {
                 results[index++] = state.Value;
@@ -293,7 +302,7 @@ namespace FuFramework.Fsm.Runtime
         /// 获取有限状态机的所有状态。
         /// </summary>
         /// <param name="results">有限状态机的所有状态。</param>
-        public void GetAllStates(List<FsmStateBase<T>> results)
+        public void GetAllStates(List<FsmStateBase> results)
         {
             if (results == null) throw new FuException("Results is invalid.");
             results.Clear();
@@ -320,7 +329,10 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TData">要获取的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public TData GetData<TData>(string name) where TData : Variable => GetData(name) as TData;
+        public TData GetData<TData>(string name) where TData : Variable
+        {
+            return GetData(name) as TData;
+        }
 
         /// <summary>
         /// 获取有限状态机数据。
@@ -378,15 +390,13 @@ namespace FuFramework.Fsm.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理有限状态机。
-        /// </summary>
-        internal override void Shutdown() => ReferencePool.Release(this);
-
-        /// <summary>
         /// 切换当前有限状态机状态。
         /// </summary>
         /// <typeparam name="TState">要切换到的有限状态机状态类型。</typeparam>
-        internal void ChangeState<TState>() where TState : FsmStateBase<T> => ChangeState(typeof(TState));
+        internal void ChangeState<TState>() where TState : FsmStateBase
+        {
+            ChangeState(typeof(TState));
+        }
 
         /// <summary>
         /// 切换当前有限状态机状态。
@@ -398,13 +408,12 @@ namespace FuFramework.Fsm.Runtime
             var state = GetState(stateType);
             if (state == null)
             {
-                throw new FuException(Utility.Text.Format("FSM '{0}' can not change state to '{1}' which is not exist.",
-                    new TypeNamePair(typeof(T), Name), stateType.FullName));
+                throw new FuException(Utility.Text.Format("FSM '{0}' can not change state to '{1}' which is not exist.", FullName, stateType.FullName));
             }
 
             CurrentStateBase.OnLeave(this, false);
             m_CurrentStateTime = 0f;
-            CurrentStateBase = state;
+            CurrentStateBase   = state;
             CurrentStateBase.OnEnter(this);
         }
     }
