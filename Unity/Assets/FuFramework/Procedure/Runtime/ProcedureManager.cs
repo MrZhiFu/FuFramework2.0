@@ -12,6 +12,22 @@ namespace FuFramework.Procedure.Runtime
     /// </summary>
     public sealed class ProcedureManager : FuComponent
     {
+        [Header("所有可用的流程类型")]
+        [SerializeField] private string[] m_AvailableProcedureTypeNames;
+
+        [Header("入口流程类型")]
+        [SerializeField] private string m_EntranceProcedureTypeName;
+        
+        /// <summary>
+        /// 所有可用的流程类型
+        /// </summary>
+        private ProcedureBase[] m_Procedures;
+
+        /// <summary>
+        /// 入口流程。
+        /// </summary>
+        private ProcedureBase m_EntranceProcedure;
+        
         /// <summary>
         /// 游戏框架模块优先级。
         /// </summary>
@@ -27,23 +43,6 @@ namespace FuFramework.Procedure.Runtime
         /// 流程管理器的有限状态机
         /// </summary>
         private Fsm.Runtime.Fsm m_ProcedureFsm;
-
-
-        [Header("所有可用的流程类型")]
-        [SerializeField] private string[] m_AvailableProcedureTypeNames;
-
-        [Header("入口流程类型")]
-        [SerializeField] private string m_EntranceProcedureTypeName;
-
-        /// <summary>
-        /// 流程管理器包含的流程
-        /// </summary>
-        private ProcedureBase[] m_Procedures;
-
-        /// <summary>
-        /// 入口流程。
-        /// </summary>
-        private ProcedureBase m_EntranceProcedure;
 
 
         /// <summary>
@@ -92,7 +91,7 @@ namespace FuFramework.Procedure.Runtime
         /// <exception cref="FuException"></exception>
         private IEnumerator InitProcedures()
         {
-            var procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
+            m_Procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
             for (var i = 0; i < m_AvailableProcedureTypeNames.Length; i++)
             {
                 var procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
@@ -102,16 +101,17 @@ namespace FuFramework.Procedure.Runtime
                     yield break;
                 }
 
-                procedures[i] = (ProcedureBase)Activator.CreateInstance(procedureType);
-                if (procedures[i] == null)
+                m_Procedures[i] = Activator.CreateInstance(procedureType) as ProcedureBase;
+                if (m_Procedures[i] == null)
                 {
                     Log.Error("创建流程实例失败 '{0}'.", m_AvailableProcedureTypeNames[i]);
                     yield break;
                 }
 
+                // 设置入口流程
                 if (m_EntranceProcedureTypeName == m_AvailableProcedureTypeNames[i])
                 {
-                    m_EntranceProcedure = procedures[i];
+                    m_EntranceProcedure = m_Procedures[i];
                 }
             }
 
