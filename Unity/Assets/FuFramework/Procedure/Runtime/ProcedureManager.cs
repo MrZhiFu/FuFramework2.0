@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using System.Collections;
 using FuFramework.Fsm.Runtime;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Procedure.Runtime
@@ -16,7 +16,7 @@ namespace FuFramework.Procedure.Runtime
         /// 游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => -2;
+        protected override int Priority => 0;
 
         /// <summary>
         /// 有限状态机管理器
@@ -62,7 +62,7 @@ namespace FuFramework.Procedure.Runtime
         protected override void OnInit()
         {
             m_FsmManager = ModuleManager.GetModule<FsmManager>();
-            if (!m_FsmManager) throw new FuException("You must add FsmManager module to your project.");
+            if (!m_FsmManager) throw new FuException("[ProcedureManager] 有限状态机管理器不能为空");
 
             // 初始化所有流程
             StartCoroutine(InitProcedures());
@@ -121,13 +121,25 @@ namespace FuFramework.Procedure.Runtime
                 yield break;
             }
 
-            if (m_Procedures == null || m_Procedures.Length == 0) throw new FuException("You must add at least one procedure to ProcedureManager.");
+            if (m_Procedures == null || m_Procedures.Length == 0) 
+                throw new FuException("[ProcedureManager] 必须至少有一个流程!");
 
-            // ReSharper disable once CoVariantArrayConversion
-            m_ProcedureFsm = m_FsmManager.CreateFsm(this, m_Procedures);
+            var states = new FsmStateBase[m_Procedures.Length];
+            for (var i = 0; i < m_Procedures.Length; i++)
+            {
+                states[i] = m_Procedures[i];
+            }
 
-            // 启动入口流程
+            m_ProcedureFsm = m_FsmManager.CreateFsm(this, states);
+            if (m_ProcedureFsm == null)
+            {
+                Log.Error("创建流程有限状态机失败.");
+                yield break;
+            }
+
             yield return new WaitForEndOfFrame();
+            
+            // 启动入口流程
             StartProcedure(m_EntranceProcedure.GetType());
         }
 
@@ -137,7 +149,7 @@ namespace FuFramework.Procedure.Runtime
         /// <typeparam name="T">要开始的流程类型。</typeparam>
         public void StartProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             m_ProcedureFsm.Start<T>();
         }
 
@@ -147,7 +159,7 @@ namespace FuFramework.Procedure.Runtime
         /// <param name="procedureType">要开始的流程类型。</param>
         public void StartProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             m_ProcedureFsm.Start(procedureType);
         }
 
@@ -158,7 +170,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>是否存在流程。</returns>
         public bool HasProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             return m_ProcedureFsm.HasState<T>();
         }
 
@@ -169,7 +181,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>是否存在流程。</returns>
         public bool HasProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             return m_ProcedureFsm.HasState(procedureType);
         }
 
@@ -180,7 +192,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>要获取的流程。</returns>
         public ProcedureBase GetProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             return m_ProcedureFsm.GetState<T>();
         }
 
@@ -191,7 +203,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>要获取的流程。</returns>
         public ProcedureBase GetProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("You must initialize procedure first.");
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 流程管理器尚未初始化.");
             return (ProcedureBase)m_ProcedureFsm.GetState(procedureType);
         }
     }
