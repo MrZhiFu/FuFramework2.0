@@ -14,7 +14,7 @@ namespace FuFramework.Entity.Runtime
         /// 1.实现实体组的基本操作接口，管理实体组中的实体实例，
         /// 2.对外提供获取实体、获取实体组中实体数量、设置实体实例的优先级等接口。
         /// </summary>
-        private sealed class EntityGroup : IEntityGroup
+        public sealed class EntityGroup
         {
             /// <summary>
             /// 实体实例对象池。
@@ -24,12 +24,12 @@ namespace FuFramework.Entity.Runtime
             /// <summary>
             /// 实体组实体链表。
             /// </summary>
-            private readonly FuLinkedList<IEntity> m_Entities;
+            private readonly FuLinkedList<Entity> m_Entities;
 
             /// <summary>
             /// 缓存实体的链表节点。
             /// </summary>
-            private LinkedListNode<IEntity> m_CachedNode;
+            private LinkedListNode<Entity> m_CachedNode;
 
 
             /// <summary>
@@ -40,7 +40,7 @@ namespace FuFramework.Entity.Runtime
             /// <summary>
             /// 获取实体组辅助器。
             /// </summary>
-            public IEntityGroupHelper Helper { get; }
+            public DefaultEntityGroupHelper Helper { get; }
 
 
             /// <summary>
@@ -53,7 +53,7 @@ namespace FuFramework.Entity.Runtime
             /// <param name="instancePriority">实体实例对象池的优先级。</param>
             /// <param name="entityGroupHelper">实体组辅助器。</param>
             /// <param name="objectPoolManager">对象池管理器。</param>
-            public EntityGroup(string name, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority, IEntityGroupHelper entityGroupHelper,
+            public EntityGroup(string name, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority, DefaultEntityGroupHelper entityGroupHelper,
                                IObjectPoolManager objectPoolManager)
             {
                 if (string.IsNullOrEmpty(name)) throw new FuException("Entity group name is invalid.");
@@ -66,7 +66,7 @@ namespace FuFramework.Entity.Runtime
                 m_InstancePool                     = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, instanceCapacity, instanceExpireTime, instancePriority);
                 m_InstancePool.AutoReleaseInterval = instanceAutoReleaseInterval;
 
-                m_Entities   = new FuLinkedList<IEntity>();
+                m_Entities   = new FuLinkedList<Entity>();
                 m_CachedNode = null;
             }
 
@@ -151,14 +151,14 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             /// <param name="entityId">实体序列编号。</param>
             /// <returns>要获取的实体。</returns>
-            public IEntity GetEntity(int entityId) => m_Entities.FirstOrDefault(entity => entity.Id == entityId);
+            public Entity GetEntity(int entityId) => m_Entities.FirstOrDefault(entity => entity.Id == entityId);
 
             /// <summary>
             /// 从实体组中获取实体。
             /// </summary>
             /// <param name="entityAssetName">实体资源名称。</param>
             /// <returns>要获取的实体。</returns>
-            public IEntity GetEntity(string entityAssetName)
+            public Entity GetEntity(string entityAssetName)
             {
                 if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
                 return m_Entities.FirstOrDefault(entity => entity.EntityAssetName == entityAssetName);
@@ -169,7 +169,7 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             /// <param name="entityAssetName">实体资源名称。</param>
             /// <returns>要获取的实体。</returns>
-            public IEntity[] GetEntities(string entityAssetName)
+            public Entity[] GetEntities(string entityAssetName)
             {
                 if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
                 return m_Entities.Where(entity => entity.EntityAssetName == entityAssetName).ToArray();
@@ -180,7 +180,7 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             /// <param name="entityAssetName">实体资源名称。</param>
             /// <param name="results">要获取的实体。</param>
-            public void GetEntities(string entityAssetName, List<IEntity> results)
+            public void GetEntities(string entityAssetName, List<Entity> results)
             {
                 if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
                 if (results == null) throw new FuException("Results is invalid.");
@@ -192,13 +192,13 @@ namespace FuFramework.Entity.Runtime
             /// 从实体组中获取所有实体。
             /// </summary>
             /// <returns>实体组中的所有实体。</returns>
-            public IEntity[] GetAllEntities() => m_Entities.ToArray();
+            public Entity[] GetAllEntities() => m_Entities.ToArray();
 
             /// <summary>
             /// 从实体组中获取所有实体。
             /// </summary>
             /// <param name="results">实体组中的所有实体。</param>
-            public void GetAllEntities(List<IEntity> results)
+            public void GetAllEntities(List<Entity> results)
             {
                 if (results == null) throw new FuException("Results is invalid.");
                 results.Clear();
@@ -209,13 +209,13 @@ namespace FuFramework.Entity.Runtime
             /// 往实体组增加实体。
             /// </summary>
             /// <param name="entity">要增加的实体。</param>
-            public void AddEntity(IEntity entity) => m_Entities.AddLast(entity);
+            public void AddEntity(Entity entity) => m_Entities.AddLast(entity);
 
             /// <summary>
             /// 从实体组移除实体。
             /// </summary>
             /// <param name="entity">要移除的实体。</param>
-            public void RemoveEntity(IEntity entity)
+            public void RemoveEntity(Entity entity)
             {
                 if (m_CachedNode != null && m_CachedNode.Value == entity)
                     m_CachedNode = m_CachedNode.Next;
@@ -241,7 +241,7 @@ namespace FuFramework.Entity.Runtime
             /// 回收指定实体实例对象。
             /// </summary>
             /// <param name="entity"></param>
-            public void RecycleEntity(IEntity entity) => m_InstancePool.Recycle(entity.Handle);
+            public void RecycleEntity(Entity entity) => m_InstancePool.Recycle(entity.Handle);
 
             /// <summary>
             /// 设置实体实例对象是否被锁定。

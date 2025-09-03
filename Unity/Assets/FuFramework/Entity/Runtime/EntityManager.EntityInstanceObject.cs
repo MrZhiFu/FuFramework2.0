@@ -9,7 +9,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体实例对象。
         /// </summary>
-        private sealed class EntityInstanceObject : ObjectBase
+        public sealed class EntityInstanceObject : ObjectBase
         {
             /// <summary>
             /// 实体资源
@@ -19,7 +19,7 @@ namespace FuFramework.Entity.Runtime
             /// <summary>
             /// 实体帮助器
             /// </summary>
-            private IEntityHelper m_EntityHelper;
+            private DefaultEntityHelper m_EntityHelper;
 
             /// <summary>
             /// 创建实体实例对象
@@ -30,7 +30,7 @@ namespace FuFramework.Entity.Runtime
             /// <param name="entityHelper"></param>
             /// <returns></returns>
             /// <exception cref="FuException"></exception>
-            public static EntityInstanceObject Create(string name, object entityAsset, object entityInstance, IEntityHelper entityHelper)
+            public static EntityInstanceObject Create(string name, object entityAsset, object entityInstance, DefaultEntityHelper entityHelper)
             {
                 if (entityAsset  == null) throw new FuException("Entity asset is invalid.");
                 if (entityHelper == null) throw new FuException("Entity helper is invalid.");

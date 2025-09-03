@@ -28,7 +28,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 获取显示成功的实体。
         /// </summary>
-        public IEntity Entity { get; private set; }
+        public Entity Entity { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -59,7 +59,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="duration">加载持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的显示实体成功事件。</returns>
-        public static ShowEntitySuccessEventArgs Create(IEntity entity, float duration, object userData)
+        public static ShowEntitySuccessEventArgs Create(Entity entity, float duration, object userData)
         {
             var showEntitySuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntitySuccessEventArgs>();
             showEntitySuccessEventArgs.Entity   = entity;

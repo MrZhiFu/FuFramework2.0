@@ -26,14 +26,14 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体管理器
         /// </summary>
-        private IEntityManager m_EntityManager;
+        private EntityManager m_EntityManager;
 
         /// <summary>
         /// 事件组件
         /// </summary>
         private EventManager m_EventComponent;
 
-        private readonly List<IEntity> m_InternalEntityResults = new();
+        private readonly List<Entity> m_InternalEntityResults = new();
 
         /// <summary>
         /// 是否显示实体加载更新事件
@@ -58,7 +58,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 自定义实体帮助器
         /// </summary>
-        [SerializeField] private EntityHelperBase m_CustomEntityHelper;
+        [SerializeField] private DefaultEntityHelper m_CustomEntityHelper;
 
         /// <summary>
         /// 实体组帮助器类型名称
@@ -87,7 +87,7 @@ namespace FuFramework.Entity.Runtime
 
         protected override void OnInit()
         {
-            m_EntityManager = FuEntry.GetModule<IEntityManager>();
+            m_EntityManager = ModuleManager.GetModule<EntityManager>();
             if (m_EntityManager == null)
             {
                 Log.Fatal("Entity manager is invalid.");
@@ -160,19 +160,19 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <returns>要获取的实体组。</returns>
-        public IEntityGroup GetEntityGroup(string entityGroupName) => m_EntityManager.GetEntityGroup(entityGroupName);
+        public EntityManager.EntityGroup GetEntityGroup(string entityGroupName) => m_EntityManager.GetEntityGroup(entityGroupName);
 
         /// <summary>
         /// 获取所有实体组。
         /// </summary>
         /// <returns>所有实体组。</returns>
-        public IEntityGroup[] GetAllEntityGroups() => m_EntityManager.GetAllEntityGroups();
+        public EntityManager.EntityGroup[] GetAllEntityGroups() => m_EntityManager.GetAllEntityGroups();
 
         /// <summary>
         /// 获取所有实体组。
         /// </summary>
         /// <param name="results">所有实体组。</param>
-        public void GetAllEntityGroups(List<IEntityGroup> results) => m_EntityManager.GetAllEntityGroups(results);
+        public void GetAllEntityGroups(List<EntityManager.EntityGroup> results) => m_EntityManager.GetAllEntityGroups(results);
 
         /// <summary>
         /// 增加实体组。
@@ -200,7 +200,7 @@ namespace FuFramework.Entity.Runtime
             entityGroupHelper.transform.localScale = Vector3.one;
 
             return m_EntityManager.AddEntityGroup(entityGroupName, instanceAutoReleaseInterval, instanceCapacity, instanceExpireTime,
-                instancePriority, entityGroupHelper);
+                instancePriority);
         }
 
         #endregion

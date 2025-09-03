@@ -4,7 +4,9 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
+using FuFramework.Event.Runtime;
 using FuFramework.ObjectPool.Runtime;
+using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -21,44 +23,91 @@ namespace FuFramework.Entity.Runtime
     /// 5. 管理实体的对象池。
     /// 6. 管理实体的依赖资源加载。
     /// </summary>
-    public sealed partial class EntityManager : FuModule, IEntityManager
+    public sealed partial class EntityManager : FuComponent
     {
-        private readonly Dictionary<int, EntityInfo>     m_EntityDict;                 // 记录所有实体的字典，Key为实体编号，Value为实体信息
-        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict;            // 记录所有实体组的字典，Key为实体组名称，Value为实体组
-        private readonly Dictionary<int, int>            m_LoadingEntityDict;          // 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
-        private readonly HashSet<int>                    m_WaitReleaseOnLoadEntitySet; // 在加载中但待释放的所有实体编号集合
-        private readonly Queue<EntityInfo>               m_RecycleQueue;               // 待回收的实体信息队列
+        protected override int Priority => 1;
+        
+        private readonly Dictionary<int, EntityInfo>     m_EntityDict = new();                 // 记录所有实体的字典，Key为实体编号，Value为实体信息
+        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new();            // 记录所有实体组的字典，Key为实体组名称，Value为实体组
+        private readonly Dictionary<int, int>            m_LoadingEntityDict = new();          // 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
+        private readonly HashSet<int>                    m_WaitReleaseOnLoadEntitySet = new(); // 在加载中但待释放的所有实体编号集合
+        private readonly Queue<EntityInfo>               m_RecycleQueue = new();               // 待回收的实体信息队列
 
-        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private IEntityHelper      m_EntityHelper;      // 实体辅助器
+        private DefaultEntityHelper m_EntityHelper;      // 实体辅助器
 
         private int  m_Serial;     // 实体自增编号
         private bool m_IsShutdown; // 是否关闭
 
-        private readonly AssetManager m_AssetManager; // 资源管理器
-
+        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
+        private EventManager m_EventManager; // 实体管理器
+        private AssetManager m_AssetManager; // 资源管理器
+        
+        private Transform m_InstanceRoot; // 实体实例对象池根节点
+        private EntityGroup[] m_EntityGroups; // 实体组数组
+        
         private EventHandler<ShowEntitySuccessEventArgs>  m_ShowEntitySuccessEventHandler;  // 显示实体成功事件
         private EventHandler<ShowEntityFailureEventArgs>  m_ShowEntityFailureEventHandler;  // 显示实体失败事件
         private EventHandler<HideEntityCompleteEventArgs> m_HideEntityCompleteEventHandler; // 隐藏实体完成事件
 
-        /// <summary>
-        /// 初始化实体管理器的新实例。
-        /// </summary>
-        public EntityManager()
+        protected override void OnInit()
         {
-            m_EntityDict                     = new Dictionary<int, EntityInfo>();
-            m_EntityGroupDict                = new Dictionary<string, EntityGroup>(StringComparer.Ordinal);
-            m_LoadingEntityDict              = new Dictionary<int, int>();
-            m_WaitReleaseOnLoadEntitySet     = new HashSet<int>();
-            m_RecycleQueue                   = new Queue<EntityInfo>();
-            m_AssetManager                   = ModuleManager.GetModule<AssetManager>();
-            m_ObjectPoolManager              = null;
-            m_EntityHelper                   = null;
-            m_Serial                         = 0;
-            m_IsShutdown                     = false;
-            m_ShowEntitySuccessEventHandler  = null;
-            m_ShowEntityFailureEventHandler  = null;
-            m_HideEntityCompleteEventHandler = null;
+            m_AssetManager = ModuleManager.GetModule<AssetManager>();
+            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_ObjectPoolManager = FuEntry.GetModule<IObjectPoolManager>();
+
+            // 创建实体实例对象池根节点
+            m_InstanceRoot = new GameObject("Entity Instances").transform;
+            m_InstanceRoot.SetParent(gameObject.transform);
+            m_InstanceRoot.localScale = Vector3.one;
+            
+            // 创建实体辅助器
+            var entityHelperGo = new GameObject("Entity Helper");
+            entityHelperGo.transform.SetParent(transform);
+            entityHelperGo.transform.localScale = Vector3.one;
+            var entityHelper = entityHelperGo.AddComponent<DefaultEntityHelper>();
+            m_EntityHelper = entityHelper;
+            
+            // 添加实体组
+            foreach (var entityGroup in m_EntityGroups)
+            {
+                if (AddEntityGroup(entityGroup.Name, entityGroup.InstanceAutoReleaseInterval, entityGroup.InstanceCapacity, entityGroup.InstanceExpireTime, entityGroup.InstancePriority)) continue;
+                Log.Warning("Add entity group '{0}' failure.", entityGroup.Name);
+            }
+        }
+
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+            while (m_RecycleQueue.Count > 0)
+            {
+                EntityInfo  entityInfo  = m_RecycleQueue.Dequeue();
+                Entity     entity      = entityInfo.Entity;
+                EntityGroup entityGroup = entity.EntityGroup;
+
+                if (entityGroup == null)
+                    throw new FuException("Entity group is invalid.");
+
+                entityInfo.Status = EntityStatus.WillRecycle;
+                entity.OnRecycle();
+                entityInfo.Status = EntityStatus.Recycled;
+                entityGroup.RecycleEntity(entity);
+                ReferencePool.Runtime.ReferencePool.Release(entityInfo);
+            }
+
+            // 遍历每个实体组，驱动每个实体组轮询
+            foreach (var (_, entityGroup) in m_EntityGroupDict)
+            {
+                entityGroup.Update(elapseSeconds, realElapseSeconds);
+            }
+        }
+
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+            m_IsShutdown = true;
+            HideAllLoadedEntities();
+            m_EntityGroupDict.Clear();
+            m_LoadingEntityDict.Clear();
+            m_WaitReleaseOnLoadEntitySet.Clear();
+            m_RecycleQueue.Clear();
         }
 
         /// <summary>
@@ -97,70 +146,7 @@ namespace FuFramework.Entity.Runtime
             add => m_HideEntityCompleteEventHandler += value;
             remove => m_HideEntityCompleteEventHandler -= value;
         }
-
-        /// <summary>
-        /// 实体管理器轮询。
-        /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
-        {
-            while (m_RecycleQueue.Count > 0)
-            {
-                EntityInfo  entityInfo  = m_RecycleQueue.Dequeue();
-                IEntity     entity      = entityInfo.Entity;
-                EntityGroup entityGroup = (EntityGroup)entity.EntityGroup;
-
-                if (entityGroup == null)
-                    throw new FuException("Entity group is invalid.");
-
-                entityInfo.Status = EntityStatus.WillRecycle;
-                entity.OnRecycle();
-                entityInfo.Status = EntityStatus.Recycled;
-                entityGroup.RecycleEntity(entity);
-                ReferencePool.Runtime.ReferencePool.Release(entityInfo);
-            }
-
-            // 遍历每个实体组，驱动每个实体组轮询
-            foreach (var (_, entityGroup) in m_EntityGroupDict)
-            {
-                entityGroup.Update(elapseSeconds, realElapseSeconds);
-            }
-        }
-
-        /// <summary>
-        /// 关闭并清理实体管理器。
-        /// </summary>
-        protected override void Shutdown()
-        {
-            m_IsShutdown = true;
-            HideAllLoadedEntities();
-            m_EntityGroupDict.Clear();
-            m_LoadingEntityDict.Clear();
-            m_WaitReleaseOnLoadEntitySet.Clear();
-            m_RecycleQueue.Clear();
-        }
-
-
-        /// <summary>
-        /// 设置对象池管理器。
-        /// </summary>
-        /// <param name="objectPoolManager">对象池管理器。</param>
-        public void SetObjectPoolManager(IObjectPoolManager objectPoolManager)
-        {
-            m_ObjectPoolManager = objectPoolManager ?? throw new FuException("Object pool manager is invalid.");
-        }
-
-        /// <summary>
-        /// 设置实体辅助器。
-        /// </summary>
-        /// <param name="entityHelper">实体辅助器。</param>
-        public void SetEntityHelper(IEntityHelper entityHelper)
-        {
-            m_EntityHelper = entityHelper ?? throw new FuException("Entity helper is invalid.");
-        }
-
-
+        
         #region 实体组相关方法
 
         /// <summary>
@@ -179,7 +165,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <returns>要获取的实体组。</returns>
-        public IEntityGroup GetEntityGroup(string entityGroupName)
+        public EntityGroup GetEntityGroup(string entityGroupName)
         {
             if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("Entity group name is invalid.");
             return m_EntityGroupDict.GetValueOrDefault(entityGroupName);
@@ -189,10 +175,10 @@ namespace FuFramework.Entity.Runtime
         /// 获取所有实体组。
         /// </summary>
         /// <returns>所有实体组。</returns>
-        public IEntityGroup[] GetAllEntityGroups()
+        public EntityGroup[] GetAllEntityGroups()
         {
             var index   = 0;
-            var results = new IEntityGroup[m_EntityGroupDict.Count];
+            var results = new EntityGroup[m_EntityGroupDict.Count];
             foreach (var (_, entityGroup) in m_EntityGroupDict)
             {
                 results[index++] = entityGroup;
@@ -205,7 +191,7 @@ namespace FuFramework.Entity.Runtime
         /// 获取所有实体组。
         /// </summary>
         /// <param name="results">所有实体组。</param>
-        public void GetAllEntityGroups(List<IEntityGroup> results)
+        public void GetAllEntityGroups(List<EntityGroup> results)
         {
             if (results == null) throw new FuException("Results is invalid.");
 
@@ -224,17 +210,18 @@ namespace FuFramework.Entity.Runtime
         /// <param name="instanceCapacity">实体实例对象池容量。</param>
         /// <param name="instanceExpireTime">实体实例对象池对象过期秒数。</param>
         /// <param name="instancePriority">实体实例对象池的优先级。</param>
-        /// <param name="entityGroupHelper">实体组辅助器。</param>
         /// <returns>是否增加实体组成功。</returns>
-        public bool AddEntityGroup(string entityGroupName, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority,
-                                   IEntityGroupHelper entityGroupHelper)
+        public bool AddEntityGroup(string entityGroupName, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority)
         {
             if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("Entity group name is invalid.");
-            if (entityGroupHelper   == null) throw new FuException("Entity group helper is invalid.");
             if (m_ObjectPoolManager == null) throw new FuException("You must set object pool manager first.");
 
             if (HasEntityGroup(entityGroupName)) return false;
-
+            
+            var entityGroupHelperGo = new GameObject($"Entity Group - {entityGroupName}");
+            entityGroupHelperGo.transform.SetParent(m_InstanceRoot);
+            entityGroupHelperGo.transform.localScale = Vector3.one;
+            var entityGroupHelper = entityGroupHelperGo.AddComponent<DefaultEntityGroupHelper>();
             var entityGroup = new EntityGroup(entityGroupName, instanceAutoReleaseInterval, instanceCapacity, instanceExpireTime, instancePriority, entityGroupHelper, m_ObjectPoolManager);
             m_EntityGroupDict.Add(entityGroupName, entityGroup);
 
@@ -271,14 +258,14 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityId">实体编号。</param>
         /// <returns>要获取的实体。</returns>
-        public IEntity GetEntity(int entityId) => GetEntityInfo(entityId)?.Entity;
+        public Entity GetEntity(int entityId) => GetEntityInfo(entityId)?.Entity;
 
         /// <summary>
         /// 获取实体。
         /// </summary>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <returns>要获取的实体。</returns>
-        public IEntity GetEntity(string entityAssetName)
+        public Entity GetEntity(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
 
@@ -296,11 +283,11 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <returns>要获取的实体。</returns>
-        public IEntity[] GetEntities(string entityAssetName)
+        public Entity[] GetEntities(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
 
-            var results = new List<IEntity>();
+            var results = new List<Entity>();
             foreach (var entityInfo in m_EntityDict)
             {
                 if (entityInfo.Value.Entity.EntityAssetName != entityAssetName) continue;
@@ -315,7 +302,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="results">要获取的实体。</param>
-        public void GetEntities(string entityAssetName, List<IEntity> results)
+        public void GetEntities(string entityAssetName, List<Entity> results)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
             if (results == null) throw new FuException("Results is invalid.");
@@ -332,10 +319,10 @@ namespace FuFramework.Entity.Runtime
         /// 获取所有已加载的实体。
         /// </summary>
         /// <returns>所有已加载的实体。</returns>
-        public IEntity[] GetAllLoadedEntities()
+        public Entity[] GetAllLoadedEntities()
         {
             var index   = 0;
-            var results = new IEntity[m_EntityDict.Count];
+            var results = new Entity[m_EntityDict.Count];
             foreach (var (_, entityInfo) in m_EntityDict)
             {
                 results[index++] = entityInfo.Entity;
@@ -348,7 +335,7 @@ namespace FuFramework.Entity.Runtime
         /// 获取所有已加载的实体。
         /// </summary>
         /// <param name="results">所有已加载的实体。</param>
-        public void GetAllLoadedEntities(List<IEntity> results)
+        public void GetAllLoadedEntities(List<Entity> results)
         {
             if (results == null) throw new FuException("Results is invalid.");
 
@@ -401,7 +388,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entity">实体。</param>
         /// <returns>实体是否合法。</returns>
-        public bool IsValidEntity(IEntity entity) => entity != null && HasEntity(entity.Id);
+        public bool IsValidEntity(Entity entity) => entity != null && HasEntity(entity.Id);
 
         #endregion
 
@@ -413,7 +400,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityId">实体编号。</param>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
-        public UniTask<IEntity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName)
+        public UniTask<Entity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName)
             => ShowEntityAsync(entityId, entityAssetName, entityGroupName, 0, null);
 
         /// <summary>
@@ -423,7 +410,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="priority">加载实体资源的优先级。</param>
-        public UniTask<IEntity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, int priority)
+        public UniTask<Entity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, int priority)
             => ShowEntityAsync(entityId, entityAssetName, entityGroupName, priority, null);
 
         /// <summary>
@@ -433,7 +420,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public UniTask<IEntity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, object userData)
+        public UniTask<Entity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, object userData)
             => ShowEntityAsync(entityId, entityAssetName, entityGroupName, 0, userData);
 
         /// <summary>
@@ -444,7 +431,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="priority">加载实体资源的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public async UniTask<IEntity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, int priority, object userData)
+        public async UniTask<Entity> ShowEntityAsync(int entityId, string entityAssetName, string entityGroupName, int priority, object userData)
         {
             if (m_EntityHelper == null) throw new FuException("You must set entity helper first.");
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
@@ -452,10 +439,10 @@ namespace FuFramework.Entity.Runtime
             if (HasEntity(entityId)) throw new FuException(Utility.Text.Format("Entity id '{0}' is already exist.",           entityId));
             if (IsLoadingEntity(entityId)) throw new FuException(Utility.Text.Format("Entity '{0}' is already being loaded.", entityId));
 
-            if (GetEntityGroup(entityGroupName) is not EntityGroup entityGroup)
-                throw new FuException(Utility.Text.Format("Entity group '{0}' is not exist.", entityGroupName));
+            var entityGroup = GetEntityGroup(entityGroupName);
+            if (entityGroup is null) throw new FuException(Utility.Text.Format("Entity group '{0}' is not exist.", entityGroupName));
 
-            var tcs = new UniTaskCompletionSource<IEntity>();
+            var tcs = new UniTaskCompletionSource<Entity>();
 
             var entityInstanceObject = entityGroup.SpawnEntityInstanceObject(entityAssetName);
             if (entityInstanceObject == null)
@@ -514,14 +501,14 @@ namespace FuFramework.Entity.Runtime
         /// 隐藏实体。
         /// </summary>
         /// <param name="entity">实体。</param>
-        public void HideEntity(IEntity entity) => HideEntity(entity, null);
+        public void HideEntity(Entity entity) => HideEntity(entity, null);
 
         /// <summary>
         /// 隐藏实体。
         /// </summary>
         /// <param name="entity">实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void HideEntity(IEntity entity, object userData)
+        public void HideEntity(Entity entity, object userData)
         {
             if (entity == null) throw new FuException("Entity is invalid.");
             HideEntity(entity.Id, userData);
@@ -573,7 +560,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="childEntityId">要获取父实体的子实体的实体编号。</param>
         /// <returns>子实体的父实体。</returns>
-        public IEntity GetParentEntity(int childEntityId)
+        public Entity GetParentEntity(int childEntityId)
         {
             var childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
@@ -585,7 +572,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="childEntity">要获取父实体的子实体。</param>
         /// <returns>子实体的父实体。</returns>
-        public IEntity GetParentEntity(IEntity childEntity)
+        public Entity GetParentEntity(Entity childEntity)
         {
             if (childEntity == null) throw new FuException("Child entity is invalid.");
             return GetParentEntity(childEntity.Id);
@@ -608,7 +595,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntityId">要获取子实体的父实体的实体编号。</param>
         /// <returns>子实体。</returns>
-        public IEntity GetChildEntity(int parentEntityId)
+        public Entity GetChildEntity(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
@@ -620,7 +607,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntity">要获取子实体的父实体。</param>
         /// <returns>子实体。</returns>
-        public IEntity GetChildEntity(IEntity parentEntity)
+        public Entity GetChildEntity(Entity parentEntity)
         {
             if (parentEntity == null) throw new FuException("Parent entity is invalid.");
             return GetChildEntity(parentEntity.Id);
@@ -631,7 +618,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntityId">要获取所有子实体的父实体的实体编号。</param>
         /// <returns>所有子实体。</returns>
-        public IEntity[] GetChildEntities(int parentEntityId)
+        public Entity[] GetChildEntities(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
@@ -643,7 +630,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntityId">要获取所有子实体的父实体的实体编号。</param>
         /// <param name="results">所有子实体。</param>
-        public void GetChildEntities(int parentEntityId, List<IEntity> results)
+        public void GetChildEntities(int parentEntityId, List<Entity> results)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
@@ -655,7 +642,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntity">要获取所有子实体的父实体。</param>
         /// <returns>所有子实体。</returns>
-        public IEntity[] GetChildEntities(IEntity parentEntity)
+        public Entity[] GetChildEntities(Entity parentEntity)
         {
             if (parentEntity == null) throw new FuException("Parent entity is invalid.");
             return GetChildEntities(parentEntity.Id);
@@ -666,7 +653,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntity">要获取所有子实体的父实体。</param>
         /// <param name="results">所有子实体。</param>
-        public void GetChildEntities(IEntity parentEntity, List<IEntity> results)
+        public void GetChildEntities(Entity parentEntity, List<Entity> results)
         {
             if (parentEntity == null) throw new FuException("Parent entity is invalid.");
             GetChildEntities(parentEntity.Id, results);
@@ -682,6 +669,64 @@ namespace FuFramework.Entity.Runtime
         /// <param name="childEntityId">要附加的子实体的实体编号。</param>
         /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
         public void AttachEntity(int childEntityId, int parentEntityId) => AttachEntity(childEntityId, parentEntityId, null);
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntityId">要附加的子实体的实体编号。</param>
+        /// <param name="parentEntity">被附加的父实体。</param>
+        public void AttachEntity(int childEntityId, Entity parentEntity) => AttachEntity(childEntityId, parentEntity, null);
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntityId">要附加的子实体的实体编号。</param>
+        /// <param name="parentEntity">被附加的父实体。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void AttachEntity(int childEntityId, Entity parentEntity, object userData)
+        {
+            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            AttachEntity(childEntityId, parentEntity.Id, userData);
+        }
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntity">要附加的子实体。</param>
+        /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
+        public void AttachEntity(Entity childEntity, int parentEntityId) => AttachEntity(childEntity, parentEntityId, null);
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntity">要附加的子实体。</param>
+        /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void AttachEntity(Entity childEntity, int parentEntityId, object userData)
+        {
+            if (childEntity == null) throw new FuException("Child entity is invalid.");
+            AttachEntity(childEntity.Id, parentEntityId, userData);
+        }
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntity">要附加的子实体。</param>
+        /// <param name="parentEntity">被附加的父实体。</param>
+        public void AttachEntity(Entity childEntity, Entity parentEntity) => AttachEntity(childEntity, parentEntity, null);
+
+        /// <summary>
+        /// 附加子实体。
+        /// </summary>
+        /// <param name="childEntity">要附加的子实体。</param>
+        /// <param name="parentEntity">被附加的父实体。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void AttachEntity(Entity childEntity, Entity parentEntity, object userData)
+        {
+            if (childEntity  == null) throw new FuException("Child entity is invalid.");
+            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            AttachEntity(childEntity.Id, parentEntity.Id, userData);
+        }
 
         /// <summary>
         /// 附加子实体。
@@ -717,64 +762,6 @@ namespace FuFramework.Entity.Runtime
             parentEntityInfo.AddChildEntity(childEntity);
             parentEntity.OnAttached(childEntity, userData);
             childEntity.OnAttachTo(parentEntity, userData);
-        }
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntityId">要附加的子实体的实体编号。</param>
-        /// <param name="parentEntity">被附加的父实体。</param>
-        public void AttachEntity(int childEntityId, IEntity parentEntity) => AttachEntity(childEntityId, parentEntity, null);
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntityId">要附加的子实体的实体编号。</param>
-        /// <param name="parentEntity">被附加的父实体。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void AttachEntity(int childEntityId, IEntity parentEntity, object userData)
-        {
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
-            AttachEntity(childEntityId, parentEntity.Id, userData);
-        }
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntity">要附加的子实体。</param>
-        /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
-        public void AttachEntity(IEntity childEntity, int parentEntityId) => AttachEntity(childEntity, parentEntityId, null);
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntity">要附加的子实体。</param>
-        /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void AttachEntity(IEntity childEntity, int parentEntityId, object userData)
-        {
-            if (childEntity == null) throw new FuException("Child entity is invalid.");
-            AttachEntity(childEntity.Id, parentEntityId, userData);
-        }
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntity">要附加的子实体。</param>
-        /// <param name="parentEntity">被附加的父实体。</param>
-        public void AttachEntity(IEntity childEntity, IEntity parentEntity) => AttachEntity(childEntity, parentEntity, null);
-
-        /// <summary>
-        /// 附加子实体。
-        /// </summary>
-        /// <param name="childEntity">要附加的子实体。</param>
-        /// <param name="parentEntity">被附加的父实体。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void AttachEntity(IEntity childEntity, IEntity parentEntity, object userData)
-        {
-            if (childEntity  == null) throw new FuException("Child entity is invalid.");
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
-            AttachEntity(childEntity.Id, parentEntity.Id, userData);
         }
 
         #endregion
@@ -814,14 +801,14 @@ namespace FuFramework.Entity.Runtime
         /// 解除子实体。
         /// </summary>
         /// <param name="childEntity">要解除的子实体。</param>
-        public void DetachEntity(IEntity childEntity) => DetachEntity(childEntity, null);
+        public void DetachEntity(Entity childEntity) => DetachEntity(childEntity, null);
 
         /// <summary>
         /// 解除子实体。
         /// </summary>
         /// <param name="childEntity">要解除的子实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void DetachEntity(IEntity childEntity, object userData)
+        public void DetachEntity(Entity childEntity, object userData)
         {
             if (childEntity == null) throw new FuException("Child entity is invalid.");
             DetachEntity(childEntity.Id, userData);
@@ -854,14 +841,14 @@ namespace FuFramework.Entity.Runtime
         /// 解除所有子实体。
         /// </summary>
         /// <param name="parentEntity">被解除的父实体。</param>
-        public void DetachChildEntities(IEntity parentEntity) => DetachChildEntities(parentEntity, null);
+        public void DetachChildEntities(Entity parentEntity) => DetachChildEntities(parentEntity, null);
 
         /// <summary>
         /// 解除所有子实体。
         /// </summary>
         /// <param name="parentEntity">被解除的父实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void DetachChildEntities(IEntity parentEntity, object userData)
+        public void DetachChildEntities(Entity parentEntity, object userData)
         {
             if (parentEntity == null) throw new FuException("Parent entity is invalid.");
             DetachChildEntities(parentEntity.Id, userData);
@@ -889,7 +876,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="duration">持续时间。</param>
         /// <param name="userData">用户自定义数据。</param>
-        private void InternalShowEntity(UniTaskCompletionSource<IEntity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewInstance, float duration,
+        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewInstance, float duration,
                                         object userData)
         {
             try
@@ -991,7 +978,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="duration">持续时间。</param>
         /// <param name="userData"></param>
         /// <exception cref="FuException"></exception>
-        private void LoadAssetSuccessCallback(UniTaskCompletionSource<IEntity> tcs, string entityAssetName, object entityAsset, float duration, object userData)
+        private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAsset, float duration, object userData)
         {
             if (userData is not ShowEntityInfo showEntityInfo)
             {
@@ -1024,7 +1011,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="status">加载资源状态。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>
-        private void LoadAssetFailureCallback(UniTaskCompletionSource<IEntity> tcs, string entityAssetName, EOperationStatus status, string errorMessage, object userData)
+        private void LoadAssetFailureCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, EOperationStatus status, string errorMessage, object userData)
         {
             var showEntityInfo = (ShowEntityInfo)userData;
 

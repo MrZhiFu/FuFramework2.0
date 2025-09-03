@@ -9,7 +9,7 @@ namespace FuFramework.Entity.Runtime
     /// 实体显示类。
     /// 功能：定义实体的基本属性和生命周期。并将生命周期的逻辑委托给实体逻辑类去处理。
     /// </summary>
-    public sealed class Entity : MonoBehaviour, IEntity
+    public sealed class Entity : MonoBehaviour
     {
         /// <summary>
         /// 获取实体编号。
@@ -24,7 +24,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 获取实体所属的实体组。
         /// </summary>
-        public IEntityGroup EntityGroup { get; private set; }
+        public EntityManager.EntityGroup EntityGroup { get; private set; }
 
         /// <summary>
         /// 获取实体逻辑。
@@ -44,7 +44,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void OnInit(int entityId, string entityAssetName, IEntityGroup entityGroup, bool isNewInstance, object userData)
+        public void OnInit(int entityId, string entityAssetName, EntityManager.EntityGroup entityGroup, bool isNewInstance, object userData)
         {
             Id              = entityId;
             EntityAssetName = entityAssetName;
@@ -174,7 +174,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="childEntity">附加的子实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void OnAttached(IEntity childEntity, object userData)
+        public void OnAttached(Entity childEntity, object userData)
         {
             var attachEntityInfo = (AttachEntityInfo)userData;
             try
@@ -192,7 +192,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="childEntity">解除的子实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void OnDetached(IEntity childEntity, object userData)
+        public void OnDetached(Entity childEntity, object userData)
         {
             try
             {
@@ -209,7 +209,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntity">被附加的父实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void OnAttachTo(IEntity parentEntity, object userData)
+        public void OnAttachTo(Entity parentEntity, object userData)
         {
             var attachEntityInfo = (AttachEntityInfo)userData;
             try
@@ -229,7 +229,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="parentEntity">被解除的父实体。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void OnDetachFrom(IEntity parentEntity, object userData)
+        public void OnDetachFrom(Entity parentEntity, object userData)
         {
             try
             {

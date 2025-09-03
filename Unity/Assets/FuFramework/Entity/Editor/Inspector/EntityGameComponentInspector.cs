@@ -17,8 +17,8 @@ namespace FuFramework.Entity.Editor
         private SerializedProperty m_InstanceRoot;
         private SerializedProperty m_EntityGroups;
 
-        private readonly HelperInfo<EntityHelperBase>      m_EntityHelperInfo      = new("Entity");
-        private readonly HelperInfo<EntityGroupHelperBase> m_EntityGroupHelperInfo = new("EntityGroup");
+        // private readonly HelperInfo<EntityHelperBase>      m_EntityHelperInfo      = new("Entity");
+        // private readonly HelperInfo<EntityGroupHelperBase> m_EntityGroupHelperInfo = new("EntityGroup");
 
         public override void OnInspectorGUI()
         {
@@ -34,8 +34,8 @@ namespace FuFramework.Entity.Editor
                 EditorGUILayout.PropertyField(m_EnableShowEntityUpdateEvent);
                 EditorGUILayout.PropertyField(m_EnableShowEntityDependencyAssetEvent);
                 EditorGUILayout.PropertyField(m_InstanceRoot);
-                m_EntityHelperInfo.Draw();
-                m_EntityGroupHelperInfo.Draw();
+                // m_EntityHelperInfo.Draw();
+                // m_EntityGroupHelperInfo.Draw();
                 EditorGUILayout.PropertyField(m_EntityGroups, true);
             }
             EditorGUI.EndDisabledGroup();
@@ -63,11 +63,11 @@ namespace FuFramework.Entity.Editor
             m_InstanceRoot                         = serializedObject.FindProperty("m_InstanceRoot");
             m_EntityGroups                         = serializedObject.FindProperty("m_EntityGroups");
 
-            m_EntityHelperInfo.Init(serializedObject);
-            m_EntityGroupHelperInfo.Init(serializedObject);
-
-            m_EntityHelperInfo.Refresh();
-            m_EntityGroupHelperInfo.Refresh();
+            // m_EntityHelperInfo.Init(serializedObject);
+            // m_EntityGroupHelperInfo.Init(serializedObject);
+            //
+            // m_EntityHelperInfo.Refresh();
+            // m_EntityGroupHelperInfo.Refresh();
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -15,17 +15,17 @@ namespace FuFramework.Entity.Runtime
             /// <summary>
             /// 实体。
             /// </summary>
-            public IEntity Entity { get; private set; }
+            public Entity Entity { get; private set; }
 
             /// <summary>
             /// 子实体列表。
             /// </summary>
-            private readonly List<IEntity> m_ChildEntities = new();
+            private readonly List<Entity> m_ChildEntities = new();
 
             /// <summary>
             /// 父实体。
             /// </summary>
-            public IEntity ParentEntity { get; set; }
+            public Entity ParentEntity { get; set; }
 
             /// <summary>
             /// 实体状态。
@@ -39,7 +39,7 @@ namespace FuFramework.Entity.Runtime
             /// <param name="entity"></param>
             /// <returns></returns>
             /// <exception cref="FuException"></exception>
-            public static EntityInfo Create(IEntity entity)
+            public static EntityInfo Create(Entity entity)
             {
                 if (entity == null) throw new FuException("Entity is invalid.");
                 var entityInfo = ReferencePool.Runtime.ReferencePool.Acquire<EntityInfo>();
@@ -68,20 +68,20 @@ namespace FuFramework.Entity.Runtime
             /// 获取第一个子实体。
             /// </summary>
             /// <returns></returns>
-            public IEntity GetChildEntity() => m_ChildEntities.Count > 0 ? m_ChildEntities[0] : null;
+            public Entity GetChildEntity() => m_ChildEntities.Count > 0 ? m_ChildEntities[0] : null;
 
             /// <summary>
             /// 获取所有子实体。
             /// </summary>
             /// <returns></returns>
-            public IEntity[] GetChildEntities() => m_ChildEntities.ToArray();
+            public Entity[] GetChildEntities() => m_ChildEntities.ToArray();
 
             /// <summary>
             /// 获取所有子实体。
             /// </summary>
             /// <param name="results"></param>
             /// <exception cref="FuException"></exception>
-            public void GetChildEntities(List<IEntity> results)
+            public void GetChildEntities(List<Entity> results)
             {
                 if (results == null) throw new FuException("Results is invalid.");
                 results.Clear();
@@ -93,7 +93,7 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             /// <param name="childEntity"></param>
             /// <exception cref="FuException"></exception>
-            public void AddChildEntity(IEntity childEntity)
+            public void AddChildEntity(Entity childEntity)
             {
                 if (m_ChildEntities.Contains(childEntity)) throw new FuException("Can not add child entity which is already exist.");
                 m_ChildEntities.Add(childEntity);
@@ -104,7 +104,7 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             /// <param name="childEntity"></param>
             /// <exception cref="FuException"></exception>
-            public void RemoveChildEntity(IEntity childEntity)
+            public void RemoveChildEntity(Entity childEntity)
             {
                 if (m_ChildEntities.Remove(childEntity)) return;
                 throw new FuException("Can not remove child entity which is not exist.");
