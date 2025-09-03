@@ -1,6 +1,5 @@
 ﻿using System;
 using FuFramework.Core.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Fsm.Runtime
@@ -11,12 +10,12 @@ namespace FuFramework.Fsm.Runtime
     /// </summary>
     public abstract class FsmStateBase
     {
-        #region 生命周期
-
         /// <summary>
         /// 所属有限状态机。
         /// </summary>
         protected Fsm Fsm { get; private set; }
+        
+        #region 生命周期
 
         /// <summary>
         /// 状态初始化
@@ -60,7 +59,7 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TState">要切换到的状态类型。</typeparam>
         protected void ChangeState<TState>() where TState : FsmStateBase
         {
-            if (Fsm is null) throw new FuException("FSM is invalid.");
+            if (Fsm is null) throw new FuException("[FsmStateBase] 有限状态机不能为空。");
             Fsm.ChangeState<TState>();
         }
 
@@ -70,12 +69,14 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="state">要切换到的状态类型。</param>
         protected void ChangeState(Type state)
         {
-            if (state == null) throw new FuException("State type is invalid.");
+            if (state == null) throw new FuException("[FsmStateBase] 状态类型不能为空。");
 
             if (!typeof(FsmStateBase).IsAssignableFrom(state))
-                throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", state.FullName));
+                throw new FuException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
 
-            if (Fsm is null) throw new FuException("FSM is invalid.");
+            if (Fsm is null) 
+                throw new FuException("[FsmStateBase] 有限状态机不能为空。");
+            
             Fsm.ChangeState(state);
         }
 
