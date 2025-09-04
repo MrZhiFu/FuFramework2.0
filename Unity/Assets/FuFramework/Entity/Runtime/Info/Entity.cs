@@ -59,7 +59,7 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            var showEntityInfo  = (ShowEntityInfo)userData;
+            var showEntityInfo  = (ShowEntityInfoEx)userData;
             var entityLogicType = showEntityInfo.EntityLogicType;
             if (entityLogicType == null)
             {
@@ -123,7 +123,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void OnShow(object userData)
         {
-            var showEntityInfo = (ShowEntityInfo)userData;
+            var showEntityInfo = (ShowEntityInfoEx)userData;
             try
             {
                 Logic.OnShow(showEntityInfo.UserData);
@@ -176,10 +176,15 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void OnAttached(Entity childEntity, object userData)
         {
-            var attachEntityInfo = (AttachEntityInfo)userData;
+            if (userData is not AttachEntityInfo attachEntityInfo)
+            {
+                Log.Error("Attach entity info is invalid.");
+                return;
+            }
+            
             try
             {
-                Logic.OnAttached(((Entity)childEntity).Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
+                Logic.OnAttached(childEntity.Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
             }
             catch (Exception exception)
             {
@@ -196,7 +201,7 @@ namespace FuFramework.Entity.Runtime
         {
             try
             {
-                Logic.OnDetached(((Entity)childEntity).Logic, userData);
+                Logic.OnDetached(childEntity.Logic, userData);
             }
             catch (Exception exception)
             {
@@ -214,7 +219,7 @@ namespace FuFramework.Entity.Runtime
             var attachEntityInfo = (AttachEntityInfo)userData;
             try
             {
-                Logic.OnAttachTo(((Entity)parentEntity).Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
+                Logic.OnAttachTo(parentEntity.Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
             }
             catch (Exception exception)
             {
@@ -233,7 +238,7 @@ namespace FuFramework.Entity.Runtime
         {
             try
             {
-                Logic.OnDetachFrom(((Entity)parentEntity).Logic, userData);
+                Logic.OnDetachFrom(parentEntity.Logic, userData);
             }
             catch (Exception exception)
             {

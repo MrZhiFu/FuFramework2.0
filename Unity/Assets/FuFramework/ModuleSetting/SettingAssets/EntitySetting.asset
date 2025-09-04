@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5d34205c46748a59ba2a231f2f1eae1, type: 3}
+  m_Name: EntitySetting
+  m_EditorClassIdentifier: 
+  m_EntityGroups:
+  - m_GroupID: c71cf09a-5787-4f7a-9cb4-b19624bc0735
+    m_Name: Player
+    m_InstanceAutoReleaseInterval: 60
+    m_InstanceCapacity: 16
+    m_InstanceExpireTime: 60
+    m_InstancePriority: 0
+  - m_GroupID: e89ec82b-6c6f-4db5-9b28-1fb0cb84add5
+    m_Name: Enemy
+    m_InstanceAutoReleaseInterval: 60
+    m_InstanceCapacity: 16
+    m_InstanceExpireTime: 60
+    m_InstancePriority: 0
+  - m_GroupID: cf28433f-38fd-48cc-b67b-4b4b2b5a6c1f
+    m_Name: NPC
+    m_InstanceAutoReleaseInterval: 60
+    m_InstanceCapacity: 16
+    m_InstanceExpireTime: 60
+    m_InstancePriority: 0
+  - m_GroupID: d589c871-cfc2-4d6b-ad70-e5dbc11e66b2
+    m_Name: Prop
+    m_InstanceAutoReleaseInterval: 60
+    m_InstanceCapacity: 16
+    m_InstanceExpireTime: 60
+    m_InstancePriority: 0
+  - m_GroupID: 49394c8d-b76c-414d-bc3f-7549510db605
+    m_Name: Effect
+    m_InstanceAutoReleaseInterval: 60
+    m_InstanceCapacity: 16
+    m_InstanceExpireTime: 60
+    m_InstancePriority: 0

@@ -3,7 +3,6 @@ using FuFramework.Config.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Coroutine.Runtime;
 using FuFramework.Download.Runtime;
-using FuFramework.Entity.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
@@ -32,7 +31,7 @@ namespace FuFramework.Entry.Runtime
         public static ConfigManager         ConfigModule         { get; private set; }
         public static CoroutineManager      CoroutineModule      { get; private set; }
         public static DownloadManager       DownloadModule       { get; private set; }
-        public static EntityComponent       EntityModule         { get; private set; }
+        public static EventManager          EntityModule         { get; private set; }
         public static EventManager          EventModule          { get; private set; }
         public static FsmManager            FsmModule            { get; private set; }
         public static GlobalConfigManager   GlobalConfigModule   { get; private set; }
@@ -64,7 +63,7 @@ namespace FuFramework.Entry.Runtime
             ConfigModule         = ModuleManager.RegisterModule<ConfigManager>();
             CoroutineModule      = ModuleManager.RegisterModule<CoroutineManager>();
             DownloadModule       = ModuleManager.RegisterModule<DownloadManager>();
-            EntityModule         = ModuleManager.RegisterModule<EntityComponent>();
+            EntityModule         = ModuleManager.RegisterModule<EventManager>();
             EventModule          = ModuleManager.RegisterModule<EventManager>();
             FsmModule            = ModuleManager.RegisterModule<FsmManager>();
             GlobalConfigModule   = ModuleManager.RegisterModule<GlobalConfigManager>();

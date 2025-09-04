@@ -2,6 +2,7 @@
 using System.Linq;
 using FuFramework.Core.Runtime;
 using FuFramework.ObjectPool.Runtime;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -38,9 +39,9 @@ namespace FuFramework.Entity.Runtime
             public string Name { get; }
 
             /// <summary>
-            /// 获取实体组辅助器。
+            /// 获取实体组对应的GameObject。
             /// </summary>
-            public DefaultEntityGroupHelper Helper { get; }
+            public GameObject GroupGo { get; }
 
 
             /// <summary>
@@ -51,16 +52,16 @@ namespace FuFramework.Entity.Runtime
             /// <param name="instanceCapacity">实体实例对象池容量。</param>
             /// <param name="instanceExpireTime">实体实例对象池对象过期秒数。</param>
             /// <param name="instancePriority">实体实例对象池的优先级。</param>
-            /// <param name="entityGroupHelper">实体组辅助器。</param>
+            /// <param name="entityGroupGo">实体组辅助器。</param>
             /// <param name="objectPoolManager">对象池管理器。</param>
-            public EntityGroup(string name, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority, DefaultEntityGroupHelper entityGroupHelper,
+            public EntityGroup(string name, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority, GameObject entityGroupGo,
                                IObjectPoolManager objectPoolManager)
             {
                 if (string.IsNullOrEmpty(name)) throw new FuException("Entity group name is invalid.");
 
                 Name = name;
 
-                Helper = entityGroupHelper ?? throw new FuException("Entity group helper is invalid.");
+                GroupGo = entityGroupGo ?? throw new FuException("Entity group helper is invalid.");
 
                 var poolName = Utility.Text.Format("Entity Instance Pool ({0})", name);
                 m_InstancePool                     = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, instanceCapacity, instanceExpireTime, instancePriority);

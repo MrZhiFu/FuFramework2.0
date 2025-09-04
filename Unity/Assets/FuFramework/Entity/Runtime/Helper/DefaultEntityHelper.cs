@@ -58,7 +58,7 @@ namespace FuFramework.Entity.Runtime
                 return null;
             }
 
-            go.transform.SetParent(entityGroup.Helper.transform);
+            go.transform.SetParent(entityGroup.GroupGo.transform);
             return go.GetOrAddComponent<Entity>();
         }
 
