@@ -13,31 +13,31 @@ MonoBehaviour:
   m_Name: EntitySetting
   m_EditorClassIdentifier: 
   m_EntityGroups:
-  - m_GroupID: c71cf09a-5787-4f7a-9cb4-b19624bc0735
+  - m_GroupID: 120a6f4d-0021-42ae-98b8-1d8c91f56f9e
     m_Name: Player
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: e89ec82b-6c6f-4db5-9b28-1fb0cb84add5
+  - m_GroupID: 5af7631a-c1a3-4b91-a9d6-dfc0dfda1817
     m_Name: Enemy
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: cf28433f-38fd-48cc-b67b-4b4b2b5a6c1f
+  - m_GroupID: 77e6f0dc-5ad8-4899-8b8e-914665bc384d
     m_Name: NPC
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: d589c871-cfc2-4d6b-ad70-e5dbc11e66b2
-    m_Name: Prop
+  - m_GroupID: 42723675-2830-4804-bf81-02fc0a75e416
+    m_Name: Item
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: 49394c8d-b76c-414d-bc3f-7549510db605
+  - m_GroupID: 624b508b-ef9a-41f9-ba85-e821184f469c
     m_Name: Effect
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
