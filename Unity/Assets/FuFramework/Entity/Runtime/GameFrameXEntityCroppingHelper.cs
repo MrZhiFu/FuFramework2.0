@@ -7,16 +7,14 @@ namespace FuFramework.Entity.Runtime
     {
         private void Start()
         {
-            _ = typeof(EntityManager);
             _ = typeof(HideEntityCompleteEventArgs);
             _ = typeof(ShowEntityFailureEventArgs);
             _ = typeof(ShowEntitySuccessEventArgs);
+            _ = typeof(EntityManager);
             _ = typeof(DefaultEntityHelper);
             _ = typeof(AttachEntityInfo);
             _ = typeof(Entity);
-            _ = typeof(EntityComponent);
             _ = typeof(EntityLogic);
-            _ = typeof(ShowEntityInfoEx);
         }
     }
 }

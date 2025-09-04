@@ -9,7 +9,7 @@ namespace FuFramework.Entity.Runtime
         /// 显示时的实体信息。
         /// 用于在显示时暂时保存实体信息，以便在显示过程中传递实体信息。
         /// </summary>
-        private sealed class ShowEntityInfo : IReference
+        public sealed class ShowEntityInfo : IReference
         {
             /// <summary>
             /// 实体自增编号。
@@ -26,18 +26,27 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             public EntityGroup EntityGroup { get; private set; }
 
+
             /// <summary>
             /// 用户数据
             /// </summary>
             public object UserData { get; private set; }
 
+            /// <summary>
+            /// 创建实体信息。
+            /// </summary>
+            /// <param name="serialId"></param>
+            /// <param name="entityId"></param>
+            /// <param name="entityGroup"></param>
+            /// <param name="userData"></param>
+            /// <returns></returns>
             public static ShowEntityInfo Create(int serialId, int entityId, EntityGroup entityGroup, object userData)
             {
                 var showEntityInfo = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntityInfo>();
-                showEntityInfo.SerialId    = serialId;
-                showEntityInfo.EntityId    = entityId;
-                showEntityInfo.EntityGroup = entityGroup;
-                showEntityInfo.UserData    = userData;
+                showEntityInfo.SerialId        = serialId;
+                showEntityInfo.EntityId        = entityId;
+                showEntityInfo.EntityGroup     = entityGroup;
+                showEntityInfo.UserData        = userData;
                 return showEntityInfo;
             }
 
@@ -46,10 +55,10 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             public void Clear()
             {
-                SerialId    = 0;
-                EntityId    = 0;
-                EntityGroup = null;
-                UserData    = null;
+                SerialId        = 0;
+                EntityId        = 0;
+                EntityGroup     = null;
+                UserData        = null;
             }
         }
     }

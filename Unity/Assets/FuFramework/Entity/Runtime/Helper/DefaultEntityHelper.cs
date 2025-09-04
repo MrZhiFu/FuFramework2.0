@@ -11,32 +11,21 @@ namespace FuFramework.Entity.Runtime
     /// </summary>
     public class DefaultEntityHelper: MonoBehaviour
     {
-        // /// <summary>
-        // /// 资源管理器。
-        // /// </summary>
-        // private IAssetManager _assetManager;
-
         /// <summary>
         /// 资源操作句柄。
         /// </summary>
-        private AssetHandle _assetOperationHandle;
-
-        // private void Start()
-        // {
-        //     _assetManager = FuEntry.GetModule<IAssetManager>();
-        //     if (_assetManager == null) Log.Fatal("Resource component is invalid.");
-        // }
+        private AssetHandle m_AssetOperationHandle;
 
         /// <summary>
         /// 同步实例化实体。
         /// </summary>
-        /// <param name="entityAsset">要实例化的实体资源。</param>
+        /// <param name="entityAssetHandle">要实例化的实体资源句柄。</param>
         /// <returns>实例化后的实体。</returns>
-        public object InstantiateEntity(object entityAsset)
+        public GameObject InstantiateEntity(object entityAssetHandle)
         {
-            _assetOperationHandle = entityAsset as AssetHandle;
-            if (_assetOperationHandle != null)
-                return _assetOperationHandle.InstantiateSync();
+            m_AssetOperationHandle = entityAssetHandle as AssetHandle;
+            if (m_AssetOperationHandle != null)
+                return m_AssetOperationHandle.InstantiateSync();
 
             Log.Error("entityAsset is AssetOperationHandle invalid.");
             return null;
@@ -47,9 +36,8 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityInstance">实体实例。</param>
         /// <param name="entityGroup">实体所属的实体组。</param>
-        /// <param name="userData">用户自定义数据。</param>
         /// <returns>实体。</returns>
-        public Entity CreateEntity(object entityInstance, EntityManager.EntityGroup entityGroup, object userData)
+        public Entity CreateEntity(object entityInstance, EntityManager.EntityGroup entityGroup)
         {
             var go = entityInstance as GameObject;
             if (!go)

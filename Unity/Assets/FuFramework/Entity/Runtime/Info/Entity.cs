@@ -43,8 +43,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public void OnInit(int entityId, string entityAssetName, EntityManager.EntityGroup entityGroup, bool isNewInstance, object userData)
+        /// <param name="showEntityInfoEx">显示的实体信息。</param>
+        public void OnInit(int entityId, string entityAssetName, EntityManager.EntityGroup entityGroup, bool isNewInstance, ShowEntityInfoEx showEntityInfoEx)
         {
             Id              = entityId;
             EntityAssetName = entityAssetName;
@@ -59,9 +59,13 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            var showEntityInfo  = (ShowEntityInfoEx)userData;
-            var entityLogicType = showEntityInfo.EntityLogicType;
-            if (entityLogicType == null)
+            if (showEntityInfoEx is null)
+            {
+                Log.Error("Show entity info is invalid.");
+                return;
+            }
+
+            if (showEntityInfoEx.EntityLogicType == null)
             {
                 Log.Error("Entity logic type is invalid.");
                 return;
@@ -69,7 +73,7 @@ namespace FuFramework.Entity.Runtime
 
             if (Logic)
             {
-                if (Logic.GetType() == entityLogicType)
+                if (Logic.GetType() == showEntityInfoEx.EntityLogicType)
                 {
                     Logic.enabled = true;
                 }
@@ -82,7 +86,7 @@ namespace FuFramework.Entity.Runtime
 
             if (!Logic)
             {
-                Logic = gameObject.AddComponent(entityLogicType) as EntityLogic;
+                Logic = gameObject.AddComponent(showEntityInfoEx.EntityLogicType) as EntityLogic;
                 if (!Logic)
                 {
                     Log.Error("Entity '{0}' can not add entity logic.", entityAssetName);
@@ -92,7 +96,7 @@ namespace FuFramework.Entity.Runtime
 
             try
             {
-                Logic.OnInit(showEntityInfo.UserData);
+                Logic.OnInit(showEntityInfoEx.UserData);
             }
             catch (Exception exception)
             {
@@ -120,13 +124,12 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体显示。
         /// </summary>
-        /// <param name="userData">用户自定义数据。</param>
-        public void OnShow(object userData)
+        /// <param name="entityInfoEx">用户自定义数据。</param>
+        public void OnShow(ShowEntityInfoEx entityInfoEx)
         {
-            var showEntityInfo = (ShowEntityInfoEx)userData;
             try
             {
-                Logic.OnShow(showEntityInfo.UserData);
+                Logic.OnShow(entityInfoEx.UserData);
             }
             catch (Exception exception)
             {

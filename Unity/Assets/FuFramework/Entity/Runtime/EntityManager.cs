@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
+using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using UnityEngine;
 using YooAsset;
@@ -26,57 +27,77 @@ namespace FuFramework.Entity.Runtime
     public sealed partial class EntityManager : FuComponent
     {
         protected override int Priority => 1;
-        
-        private readonly Dictionary<int, EntityInfo>     m_EntityDict = new();                 // 记录所有实体的字典，Key为实体编号，Value为实体信息
-        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new();            // 记录所有实体组的字典，Key为实体组名称，Value为实体组
-        private readonly Dictionary<int, int>            m_LoadingEntityDict = new();          // 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
-        private readonly HashSet<int>                    m_WaitReleaseOnLoadEntitySet = new(); // 在加载中但待释放的所有实体编号集合
-        private readonly Queue<EntityInfo>               m_RecycleQueue = new();               // 待回收的实体信息队列
 
-        private DefaultEntityHelper m_EntityHelper;      // 实体辅助器
+        private readonly Dictionary<int, EntityInfo>     m_EntityDict      = new(); // 记录所有实体的字典，Key为实体编号，Value为实体信息
+        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new(); // 记录所有实体组的字典，Key为实体组名称，Value为实体组
+
+        private readonly Dictionary<int, int> m_LoadingEntityDict   = new(); // 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
+        private readonly HashSet<int>         m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的实体id集合，防止在加载实体过程中被回收的情况
+        private readonly Queue<EntityInfo>    m_RecycleQueue        = new(); // 待回收的实体信息队列
+
+        private DefaultEntityHelper m_EntityHelper; // 实体辅助器
 
         private int  m_Serial;     // 实体自增编号
         private bool m_IsShutdown; // 是否关闭
 
         private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private EventManager m_EventManager; // 实体管理器
-        private AssetManager m_AssetManager; // 资源管理器
-        
+        private EventManager       m_EventManager;      // 实体管理器
+        private AssetManager       m_AssetManager;      // 资源管理器
+
         private Transform m_InstanceRoot; // 实体实例对象池根节点
-        private EntityGroup[] m_EntityGroups; // 实体组数组
-        
+
+        /// <summary>
+        /// 获取实体数量。
+        /// </summary>
+        public int EntityCount => m_EntityDict.Count;
+
+        /// <summary>
+        /// 获取实体组数量。
+        /// </summary>
+        public int EntityGroupCount => m_EntityGroupDict.Count;
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
         protected override void OnInit()
         {
-            m_AssetManager = ModuleManager.GetModule<AssetManager>();
-            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_AssetManager      = ModuleManager.GetModule<AssetManager>();
+            m_EventManager      = ModuleManager.GetModule<EventManager>();
             m_ObjectPoolManager = FuEntry.GetModule<IObjectPoolManager>();
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;
             m_InstanceRoot.SetParent(gameObject.transform);
             m_InstanceRoot.localScale = Vector3.one;
-            
+
             // 创建实体辅助器
             var entityHelperGo = new GameObject("Entity Helper");
             entityHelperGo.transform.SetParent(transform);
             entityHelperGo.transform.localScale = Vector3.one;
             var entityHelper = entityHelperGo.AddComponent<DefaultEntityHelper>();
             m_EntityHelper = entityHelper;
-            
-            // 添加实体组
-            foreach (var entityGroup in m_EntityGroups)
+
+            // 获取所有实体组配置，并创建添加实体组
+            var setting = ModuleSetting.Runtime.ModuleSetting.Instance.EntitySetting;
+            foreach (var entityGroup in setting.AllGroups)
             {
-                if (AddEntityGroup(entityGroup.Name, entityGroup.InstanceAutoReleaseInterval, entityGroup.InstanceCapacity, entityGroup.InstanceExpireTime, entityGroup.InstancePriority)) continue;
+                if (AddEntityGroup(entityGroup)) continue;
                 Log.Warning("Add entity group '{0}' failure.", entityGroup.Name);
             }
         }
 
+        /// <summary>
+        /// 轮询。
+        /// </summary>
+        /// <param name="elapseSeconds"></param>
+        /// <param name="realElapseSeconds"></param>
+        /// <exception cref="FuException"></exception>
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
             while (m_RecycleQueue.Count > 0)
             {
                 EntityInfo  entityInfo  = m_RecycleQueue.Dequeue();
-                Entity     entity      = entityInfo.Entity;
+                Entity      entity      = entityInfo.Entity;
                 EntityGroup entityGroup = entity.EntityGroup;
 
                 if (entityGroup == null)
@@ -96,26 +117,20 @@ namespace FuFramework.Entity.Runtime
             }
         }
 
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        /// <param name="shutdownType"></param>
         protected override void OnShutdown(ShutdownType shutdownType)
         {
             m_IsShutdown = true;
             HideAllLoadedEntities();
             m_EntityGroupDict.Clear();
             m_LoadingEntityDict.Clear();
-            m_WaitReleaseOnLoadEntitySet.Clear();
+            m_LoadingToReleaseSet.Clear();
             m_RecycleQueue.Clear();
         }
 
-        /// <summary>
-        /// 获取实体数量。
-        /// </summary>
-        public int EntityCount => m_EntityDict.Count;
-
-        /// <summary>
-        /// 获取实体组数量。
-        /// </summary>
-        public int EntityGroupCount => m_EntityGroupDict.Count;
-        
         #region 实体组相关方法
 
         /// <summary>
@@ -174,24 +189,23 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 增加实体组。
         /// </summary>
-        /// <param name="entityGroupName">实体组名称。</param>
-        /// <param name="instanceAutoReleaseInterval">实体实例对象池自动释放可释放对象的间隔秒数。</param>
-        /// <param name="instanceCapacity">实体实例对象池容量。</param>
-        /// <param name="instanceExpireTime">实体实例对象池对象过期秒数。</param>
-        /// <param name="instancePriority">实体实例对象池的优先级。</param>
+        /// <param name="entityGroupSetting">实体组信息配置。</param>
         /// <returns>是否增加实体组成功。</returns>
-        public bool AddEntityGroup(string entityGroupName, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority)
+        public bool AddEntityGroup(EntityGroupInfo entityGroupSetting)
         {
-            if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("Entity group name is invalid.");
             if (m_ObjectPoolManager == null) throw new FuException("You must set object pool manager first.");
 
-            if (HasEntityGroup(entityGroupName)) return false;
-            
-            var entityGroupGo = new GameObject($"Entity Group - {entityGroupName}");
+            if (HasEntityGroup(entityGroupSetting.Name))
+            {
+                Log.Warning("Entity group '{0}' already exists.", entityGroupSetting.Name);
+                return false;
+            }
+
+            var entityGroupGo = new GameObject($"Entity Group - {entityGroupSetting.Name}");
             entityGroupGo.transform.SetParent(m_InstanceRoot);
             entityGroupGo.transform.localScale = Vector3.one;
-            var entityGroup = new EntityGroup(entityGroupName, instanceAutoReleaseInterval, instanceCapacity, instanceExpireTime, instancePriority, entityGroupGo, m_ObjectPoolManager);
-            m_EntityGroupDict.Add(entityGroupName, entityGroup);
+            var entityGroup = new EntityGroup(entityGroupSetting, entityGroupGo, m_ObjectPoolManager);
+            m_EntityGroupDict.Add(entityGroupSetting.Name, entityGroup);
 
             return true;
         }
@@ -360,7 +374,7 @@ namespace FuFramework.Entity.Runtime
 
         #endregion
 
-        #region 实体Show
+        #region 显示实体
 
         /// <summary>
         /// 显示实体。
@@ -370,17 +384,9 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroupName">实体组名称。</param>
         /// <typeparam name="T">实体逻辑类型。</typeparam>
         public UniTask<Entity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName) where T : EntityLogic
-            => ShowEntityAsync(entityId, typeof(T), entityAssetName, entityGroupName, null);
-
-        /// <summary>
-        /// 显示实体。
-        /// </summary>
-        /// <param name="entityId">实体编号。</param>
-        /// <param name="entityLogicType">实体逻辑类型。</param>
-        /// <param name="entityAssetName">实体资源名称。</param>
-        /// <param name="entityGroupName">实体组名称。</param>
-        public UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName)
-            => ShowEntityAsync(entityId, entityLogicType, entityAssetName, entityGroupName, null);
+        {
+            return ShowEntityAsync(entityId, typeof(T), entityAssetName, entityGroupName);
+        }
 
         /// <summary>
         /// 显示实体。
@@ -390,7 +396,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, object userData)
+        public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, object userData = null)
         {
             if (m_EntityHelper == null) throw new FuException("You must set entity helper first.");
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
@@ -401,10 +407,12 @@ namespace FuFramework.Entity.Runtime
             var entityGroup = GetEntityGroup(entityGroupName);
             if (entityGroup is null) throw new FuException(Utility.Text.Format("Entity group '{0}' is not exist.", entityGroupName));
 
-            var tcs = new UniTaskCompletionSource<Entity>();
-
-            var entityInstanceObject = entityGroup.SpawnEntityInstanceObject(entityAssetName);
-            if (entityInstanceObject == null)
+            // 创建一个加载实体资源的任务，先从对象池获取实体，没有才从资源加载
+            var tcs               = new UniTaskCompletionSource<Entity>();
+            var entityInstanceObj = entityGroup.SpawnEntityInstanceObject(entityAssetName);
+            var showEntityInfoEx  = ShowEntityInfoEx.Create(entityLogicType, userData);
+            
+            if (entityInstanceObj == null)
             {
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
@@ -412,24 +420,24 @@ namespace FuFramework.Entity.Runtime
                 var assetOperationHandle = await m_AssetManager.LoadAssetAsync<Object>(entityAssetName);
                 assetOperationHandle.Completed += handle =>
                 {
-                    var entityInfoEx = ShowEntityInfoEx.Create(entityLogicType, userData);
-                    var newUserData = ShowEntityInfo.Create(serialId, entityId, entityGroup, entityInfoEx);
+                    var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
                     if (handle.IsDone)
-                        LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, newUserData);
+                        LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
                     else
-                        LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.LastError, newUserData);
+                        LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.LastError, showEntityInfo);
                 };
 
                 return await tcs.Task;
             }
 
-            InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityInstanceObject.Target, false, 0f, userData);
+            // 实体资源已经加载完成，开始显示实体
+            InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityInstanceObj.Target, false, 0f, showEntityInfoEx);
             return await tcs.Task;
         }
 
         #endregion
 
-        #region 实体Hide
+        #region 隐藏实体
 
         /// <summary>
         /// 隐藏实体。
@@ -446,7 +454,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (IsLoadingEntity(entityId))
             {
-                m_WaitReleaseOnLoadEntitySet.Add(m_LoadingEntityDict[entityId]);
+                m_LoadingToReleaseSet.Add(m_LoadingEntityDict[entityId]);
                 m_LoadingEntityDict.Remove(entityId);
                 return;
             }
@@ -505,7 +513,7 @@ namespace FuFramework.Entity.Runtime
         {
             foreach (var (_, entityId) in m_LoadingEntityDict)
             {
-                m_WaitReleaseOnLoadEntitySet.Add(entityId);
+                m_LoadingToReleaseSet.Add(entityId);
             }
 
             m_LoadingEntityDict.Clear();
@@ -636,7 +644,7 @@ namespace FuFramework.Entity.Runtime
             if (parentEntity == null) throw new FuException("Parent entity is invalid.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransform);
         }
-        
+
         /// <summary>
         /// 附加子实体。
         /// </summary>
@@ -676,10 +684,10 @@ namespace FuFramework.Entity.Runtime
 
             if (parentEntityInfo.Status >= EntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
-            
+
             var childEntity  = childEntityInfo.Entity;
             var parentEntity = parentEntityInfo.Entity;
-          
+
             // 相对于父实体的Transform路径为空，则默认附加到父实体的Transform上
             Transform parentTransform;
             if (string.IsNullOrEmpty(parentTransformPath))
@@ -695,9 +703,9 @@ namespace FuFramework.Entity.Runtime
                     parentTransform = parentEntity.Logic.CachedTransform;
                 }
             }
-            
+
             var attachEntityInfo = AttachEntityInfo.Create(parentTransform, userData);
-            
+
             DetachEntity(childEntity.Id, attachEntityInfo);
 
             childEntityInfo.ParentEntity = parentEntity;
@@ -705,7 +713,7 @@ namespace FuFramework.Entity.Runtime
             parentEntity.OnAttached(childEntity, attachEntityInfo);
             childEntity.OnAttachTo(parentEntity, attachEntityInfo);
         }
-        
+
         /// <summary>
         /// 附加子实体。
         /// </summary>
@@ -731,14 +739,14 @@ namespace FuFramework.Entity.Runtime
 
             if (parentEntityInfo.Status >= EntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
-            
+
             var childEntity  = childEntityInfo.Entity;
             var parentEntity = parentEntityInfo.Entity;
-          
+
             if (parentTransform == null)
                 parentTransform = parentEntity.Logic.CachedTransform;
             var attachEntityInfo = AttachEntityInfo.Create(parentTransform, userData);
-            
+
             DetachEntity(childEntity.Id, attachEntityInfo);
 
             childEntityInfo.ParentEntity = parentEntity;
@@ -839,6 +847,88 @@ namespace FuFramework.Entity.Runtime
 
         #endregion
 
+        #region 事件处理
+
+        /// <summary>
+        /// 加载实体资源成功回调。
+        /// </summary>
+        /// <param name="tcs">显示实体的Task。</param>
+        /// <param name="entityAssetName">实体资源名称。</param>
+        /// <param name="entityAsset">实体资源对象。</param>
+        /// <param name="progress">加载进度。</param>
+        /// <param name="showEntityInfo">显示实体信息。</param>
+        /// <exception cref="FuException"></exception>
+        private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAsset, float progress, ShowEntityInfo showEntityInfo)
+        {
+            if (showEntityInfo == null)
+            {
+                var exception = new FuException("Show entity info is invalid.");
+                tcs.TrySetException(exception);
+                throw exception;
+            }
+
+            // 如果实体已经在加载中，则忽略
+            if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
+            {
+                m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
+                ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
+                m_EntityHelper.ReleaseEntity(entityAsset, null);
+                return;
+            }
+
+            m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
+
+            // 实例化实体
+            var entityInstanceGo     = m_EntityHelper.InstantiateEntity(entityAsset);
+            var entityInstanceObject = EntityInstanceObject.Create(entityAssetName, entityAsset, entityInstanceGo, m_EntityHelper);
+            showEntityInfo.EntityGroup.RegisterEntityInstanceObject(entityInstanceObject, true);
+
+            // 实体资源已经加载完成，开始显示实体
+            var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
+            InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, progress, showEntityInfoEx);
+            ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
+        }
+
+        /// <summary>
+        /// 加载实体资源失败回调。
+        /// </summary>
+        /// <param name="tcs">显示实体的Task。</param>
+        /// <param name="entityAssetName">实体资源名称。</param>
+        /// <param name="status">加载资源状态。</param>
+        /// <param name="errorMessage">错误信息。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        private void LoadAssetFailureCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, EOperationStatus status, string errorMessage, object userData)
+        {
+            var showEntityInfo = (ShowEntityInfo)userData;
+
+            FuException exception;
+            if (showEntityInfo == null)
+            {
+                exception = new FuException("Show entity info is invalid.");
+                tcs.TrySetException(exception);
+                throw exception;
+            }
+
+            if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
+            {
+                m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
+                return;
+            }
+
+            m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
+            var appendErrorMessage = Utility.Text.Format("Load entity failure, asset name '{0}', status '{1}', error message '{2}'.", entityAssetName, status, errorMessage);
+            exception = new FuException(appendErrorMessage);
+
+            // 发送显示实体失败事件
+            var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), userData);
+            m_EventManager.Fire(this, showEntityFailureEventArgs);
+
+            tcs.TrySetException(exception);
+            throw exception;
+        }
+
+        #endregion
+
         #region private方法
 
         /// <summary>
@@ -857,37 +947,42 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroup">实体组。</param>
         /// <param name="entityInstance">实体实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
-        /// <param name="duration">持续时间。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewInstance, float duration,
-                                        object userData)
+        /// <param name="progress">加载进度。</param>
+        /// <param name="showEntityInfoEx">显示的实体额外信息。</param>
+        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewInstance, float progress,
+                                        ShowEntityInfoEx showEntityInfoEx)
         {
             try
             {
-                var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup, userData);
+                var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup);
                 if (entity == null)
                 {
-                    var exception = new FuException("Can not create entity in entity helper.");
+                    var exception = new FuException("[EntityManager] 创建实体失败，实体帮助器返回的实体为空!");
                     tcs.TrySetException(exception);
                     throw exception;
                 }
+                
 
                 var entityInfo = EntityInfo.Create(entity);
                 m_EntityDict.Add(entityId, entityInfo);
 
+                // 实体初始化
                 entityInfo.Status = EntityStatus.WillInit;
-                entity.OnInit(entityId, entityAssetName, entityGroup, isNewInstance, userData);
+                entity.OnInit(entityId, entityAssetName, entityGroup, isNewInstance, showEntityInfoEx);
 
+                // 实体初始化完成，加入到实体组
                 entityInfo.Status = EntityStatus.Inited;
                 entityGroup.AddEntity(entity);
 
+                // 实体显示
                 entityInfo.Status = EntityStatus.WillShow;
-                entity.OnShow(userData);
+                entity.OnShow(showEntityInfoEx);
 
+                // 实体显示完成
                 entityInfo.Status = EntityStatus.Showed;
 
                 // 发送显示实体成功事件
-                var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, duration, userData);
+                var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, progress, showEntityInfoEx);
                 m_EventManager.Fire(this, showEntitySuccessEventArgs);
 
                 tcs.TrySetResult(entity);
@@ -895,7 +990,7 @@ namespace FuFramework.Entity.Runtime
             catch (Exception exception)
             {
                 // 发送显示实体失败事件
-                var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), userData);
+                var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), showEntityInfoEx);
                 m_EventManager.Fire(this, showEntityFailureEventArgs);
 
                 tcs.TrySetException(exception);
@@ -925,93 +1020,14 @@ namespace FuFramework.Entity.Runtime
             entity.OnHide(m_IsShutdown, userData);
             entityInfo.Status = EntityStatus.Hidden;
 
-            var entityGroup = (EntityGroup)entity.EntityGroup;
-            if (entityGroup == null) throw new FuException("Entity group is invalid.");
-
-            entityGroup.RemoveEntity(entity);
+            entity.EntityGroup.RemoveEntity(entity);
             if (!m_EntityDict.Remove(entity.Id)) throw new FuException("Entity info is unmanaged.");
 
             // 发送隐藏实体成功事件
-            var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entityGroup, userData);
+            var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entity.EntityGroup, userData);
             m_EventManager.Fire(this, hideEntityCompleteEventArgs);
 
             m_RecycleQueue.Enqueue(entityInfo);
-        }
-
-        #endregion
-
-        #region 事件处理
-
-        /// <summary>
-        /// 加载实体资源成功回调。
-        /// </summary>
-        /// <param name="tcs">显示实体的Task。</param>
-        /// <param name="entityAssetName">实体资源名称。</param>
-        /// <param name="entityAsset">实体资源对象。</param>
-        /// <param name="duration">持续时间。</param>
-        /// <param name="userData"></param>
-        /// <exception cref="FuException"></exception>
-        private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAsset, float duration, object userData)
-        {
-            if (userData is not ShowEntityInfo showEntityInfo)
-            {
-                var exception = new FuException("Show entity info is invalid.");
-                tcs.TrySetException(exception);
-                throw exception;
-            }
-
-            if (m_WaitReleaseOnLoadEntitySet.Contains(showEntityInfo.SerialId))
-            {
-                m_WaitReleaseOnLoadEntitySet.Remove(showEntityInfo.SerialId);
-                ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
-                m_EntityHelper.ReleaseEntity(entityAsset, null);
-                return;
-            }
-
-            m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
-            var entityInstanceObject = EntityInstanceObject.Create(entityAssetName, entityAsset, m_EntityHelper.InstantiateEntity(entityAsset), m_EntityHelper);
-            showEntityInfo.EntityGroup.RegisterEntityInstanceObject(entityInstanceObject, true);
-
-            InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, duration, showEntityInfo.UserData);
-            ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
-        }
-
-        /// <summary>
-        /// 加载实体资源失败回调。
-        /// </summary>
-        /// <param name="tcs">显示实体的Task。</param>
-        /// <param name="entityAssetName">实体资源名称。</param>
-        /// <param name="status">加载资源状态。</param>
-        /// <param name="errorMessage">错误信息。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        private void LoadAssetFailureCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, EOperationStatus status, string errorMessage, object userData)
-        {
-            var showEntityInfo = (ShowEntityInfo)userData;
-
-            FuException exception;
-            if (showEntityInfo == null)
-            {
-                exception = new FuException("Show entity info is invalid.");
-                tcs.TrySetException(exception);
-                throw exception;
-            }
-
-            if (m_WaitReleaseOnLoadEntitySet.Contains(showEntityInfo.SerialId))
-            {
-                m_WaitReleaseOnLoadEntitySet.Remove(showEntityInfo.SerialId);
-                return;
-            }
-
-            m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
-            var appendErrorMessage = Utility.Text.Format("Load entity failure, asset name '{0}', status '{1}', error message '{2}'.", entityAssetName, status, errorMessage);
-            exception = new FuException(appendErrorMessage);
-            
-            // 发送显示实体失败事件
-            var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), userData);
-            m_EventManager.Fire(this, showEntityFailureEventArgs);
-
-            tcs.TrySetException(exception);
-            throw exception;
         }
 
         #endregion

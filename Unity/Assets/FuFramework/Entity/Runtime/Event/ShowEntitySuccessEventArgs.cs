@@ -62,9 +62,10 @@ namespace FuFramework.Entity.Runtime
         public static ShowEntitySuccessEventArgs Create(Entity entity, float duration, object userData)
         {
             var showEntitySuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntitySuccessEventArgs>();
-            showEntitySuccessEventArgs.Entity   = entity;
-            showEntitySuccessEventArgs.Duration = duration;
-            showEntitySuccessEventArgs.UserData = userData;
+            showEntitySuccessEventArgs.Entity          = entity;
+            showEntitySuccessEventArgs.Duration        = duration;
+            showEntitySuccessEventArgs.UserData        = ((ShowEntityInfoEx)userData).UserData;
+            showEntitySuccessEventArgs.EntityLogicType = ((ShowEntityInfoEx)userData).EntityLogicType;
             return showEntitySuccessEventArgs;
         }
     }

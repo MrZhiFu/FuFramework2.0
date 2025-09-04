@@ -632,26 +632,6 @@ MonoBehaviour:
   m_IsEnableEditorMode: 0
   m_LocalizationHelperTypeName: FuFramework.Localization.Runtime.DefaultLocalizationHelper
   m_CustomLocalizationHelper: {fileID: 0}
---- !u!114 &1681186167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874056467052189915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 198010413be0346448b0952211bacc56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_EnableShowEntityUpdateEvent: 1
-  m_EnableShowEntityDependencyAssetEvent: 1
-  m_InstanceRoot: {fileID: 8708873050020472038}
-  m_EntityHelperTypeName: FuFramework.Entity.Runtime.DefaultEntityHelper
-  m_CustomEntityHelper: {fileID: 0}
-  m_EntityGroupHelperTypeName: FuFramework.Entity.Runtime.DefaultEntityGroupHelper
-  m_CustomEntityGroupHelper: {fileID: 0}
-  m_EntityGroups: []
 --- !u!114 &1681186170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1007,23 +987,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1874056467052189915
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8708873050020472038}
-  - component: {fileID: 1681186167}
-  m_Layer: 0
-  m_Name: Entity
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!4 &2506581721167664985
 Transform:
   m_ObjectHideFlags: 0
@@ -1150,7 +1113,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8708873050020472038}
   - {fileID: 6529379366163002800}
   - {fileID: 1708891510959030576}
   - {fileID: 7682303427684127993}
@@ -1196,6 +1158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
+  m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
 --- !u!114 &7148938655606090475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1275,21 +1238,6 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 175056986957474636}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &8708873050020472038
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874056467052189915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}

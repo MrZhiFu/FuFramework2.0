@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using FuFramework.Core.Runtime;
+using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using UnityEngine;
 
@@ -32,7 +33,6 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             private LinkedListNode<Entity> m_CachedNode;
 
-
             /// <summary>
             /// 获取实体组名称。
             /// </summary>
@@ -43,33 +43,6 @@ namespace FuFramework.Entity.Runtime
             /// </summary>
             public GameObject GroupGo { get; }
 
-
-            /// <summary>
-            /// 初始化实体组的新实例。
-            /// </summary>
-            /// <param name="name">实体组名称。</param>
-            /// <param name="instanceAutoReleaseInterval">实体实例对象池自动释放可释放对象的间隔秒数。</param>
-            /// <param name="instanceCapacity">实体实例对象池容量。</param>
-            /// <param name="instanceExpireTime">实体实例对象池对象过期秒数。</param>
-            /// <param name="instancePriority">实体实例对象池的优先级。</param>
-            /// <param name="entityGroupGo">实体组辅助器。</param>
-            /// <param name="objectPoolManager">对象池管理器。</param>
-            public EntityGroup(string name, float instanceAutoReleaseInterval, int instanceCapacity, float instanceExpireTime, int instancePriority, GameObject entityGroupGo,
-                               IObjectPoolManager objectPoolManager)
-            {
-                if (string.IsNullOrEmpty(name)) throw new FuException("Entity group name is invalid.");
-
-                Name = name;
-
-                GroupGo = entityGroupGo ?? throw new FuException("Entity group helper is invalid.");
-
-                var poolName = Utility.Text.Format("Entity Instance Pool ({0})", name);
-                m_InstancePool                     = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, instanceCapacity, instanceExpireTime, instancePriority);
-                m_InstancePool.AutoReleaseInterval = instanceAutoReleaseInterval;
-
-                m_Entities   = new FuLinkedList<Entity>();
-                m_CachedNode = null;
-            }
 
             /// <summary>
             /// 获取实体组中实体数量。
@@ -110,6 +83,29 @@ namespace FuFramework.Entity.Runtime
             {
                 get => m_InstancePool.Priority;
                 set => m_InstancePool.Priority = value;
+            }
+
+            /// <summary>
+            /// 初始化实体组的新实例。
+            /// </summary>
+            /// <param name="groupSetting">实体组设置。</param>
+            /// <param name="groupGo">实体组对应的GameObject。</param>
+            /// <param name="objectPoolManager">对象池管理器。</param>
+            public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, IObjectPoolManager objectPoolManager)
+            {
+                if (groupSetting == null) throw new FuException("Entity group setting is invalid.");
+                if (groupGo      == null) throw new FuException("Entity group GameObject is invalid.");
+
+                Name = groupSetting.Name;
+
+                GroupGo = groupGo;
+
+                var poolName = Utility.Text.Format("Entity Instance Pool ({0})", Name);
+                m_InstancePool                     = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, groupSetting.InstanceCapacity, groupSetting.InstanceExpireTime, groupSetting.InstancePriority);
+                m_InstancePool.AutoReleaseInterval = groupSetting.InstanceAutoReleaseInterval;
+
+                m_Entities   = new FuLinkedList<Entity>();
+                m_CachedNode = null;
             }
 
             /// <summary>

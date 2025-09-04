@@ -80,7 +80,8 @@ namespace FuFramework.Entity.Runtime
             showEntityFailureEventArgs.EntityAssetName = entityAssetName;
             showEntityFailureEventArgs.EntityGroupName = entityGroupName;
             showEntityFailureEventArgs.ErrorMessage    = errorMessage;
-            showEntityFailureEventArgs.UserData        = userData;
+            showEntityFailureEventArgs.UserData        = ((ShowEntityInfoEx)userData).UserData;
+            showEntityFailureEventArgs.EntityLogicType = ((ShowEntityInfoEx)userData).EntityLogicType;
             return showEntityFailureEventArgs;
         }
     }

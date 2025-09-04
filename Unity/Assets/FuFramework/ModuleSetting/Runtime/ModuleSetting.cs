@@ -14,6 +14,9 @@ namespace FuFramework.ModuleSetting.Runtime
 
         [Header("资源系统配置")]
         [SerializeField] private AssetSetting m_AssetSetting;
+        
+        [Header("实体系统配置")]
+        [SerializeField] private EntitySetting m_EntitySetting;
 
         /// <summary>
         /// 获取音频系统配置
@@ -24,5 +27,10 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取资源系统配置
         /// </summary>
         public AssetSetting AssetSetting => m_AssetSetting;
+        
+        /// <summary>
+        /// 获取实体系统配置
+        /// </summary>
+        public EntitySetting EntitySetting => m_EntitySetting;
     }
 }
