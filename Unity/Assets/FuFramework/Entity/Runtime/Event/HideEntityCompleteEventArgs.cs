@@ -32,7 +32,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 获取实体所属的实体组。
         /// </summary>
-        public EntityManager.EntityGroup EntityGroup { get; private set; }
+        public EntityGroup EntityGroup { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -59,7 +59,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的隐藏实体完成事件。</returns>
-        public static HideEntityCompleteEventArgs Create(int entityId, string entityAssetName, EntityManager.EntityGroup entityGroup, object userData)
+        public static HideEntityCompleteEventArgs Create(int entityId, string entityAssetName, EntityGroup entityGroup, object userData)
         {
             var hideEntityCompleteEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<HideEntityCompleteEventArgs>();
             hideEntityCompleteEventArgs.EntityId        = entityId;

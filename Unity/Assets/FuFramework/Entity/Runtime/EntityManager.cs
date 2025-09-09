@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using YooAsset;
+using UnityEngine;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ObjectPool.Runtime;
-using UnityEngine;
-using YooAsset;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -35,7 +35,7 @@ namespace FuFramework.Entity.Runtime
         private readonly HashSet<int>         m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的实体id集合，防止在加载实体过程中被回收的情况
         private readonly Queue<EntityInfo>    m_RecycleQueue        = new(); // 待回收的实体信息队列
 
-        private DefaultEntityHelper m_EntityHelper; // 实体辅助器
+        private EntityHelper m_EntityHelper; // 实体辅助器
 
         private int  m_Serial;     // 实体自增编号
         private bool m_IsShutdown; // 是否关闭
@@ -74,7 +74,7 @@ namespace FuFramework.Entity.Runtime
             var entityHelperGo = new GameObject("Entity Helper");
             entityHelperGo.transform.SetParent(transform);
             entityHelperGo.transform.localScale = Vector3.one;
-            var entityHelper = entityHelperGo.AddComponent<DefaultEntityHelper>();
+            var entityHelper = entityHelperGo.AddComponent<EntityHelper>();
             m_EntityHelper = entityHelper;
 
             // 获取所有实体组配置，并创建添加实体组
@@ -100,12 +100,12 @@ namespace FuFramework.Entity.Runtime
                 Entity      entity      = entityInfo.Entity;
                 EntityGroup entityGroup = entity.EntityGroup;
 
-                if (entityGroup == null)
+                if (entityGroup is null)
                     throw new FuException("Entity group is invalid.");
 
-                entityInfo.Status = EntityStatus.WillRecycle;
+                entityInfo.Status = EEntityStatus.WillRecycle;
                 entity.OnRecycle();
-                entityInfo.Status = EntityStatus.Recycled;
+                entityInfo.Status = EEntityStatus.Recycled;
                 entityGroup.RecycleEntity(entity);
                 ReferencePool.Runtime.ReferencePool.Release(entityInfo);
             }
@@ -177,7 +177,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">所有实体组。</param>
         public void GetAllEntityGroups(List<EntityGroup> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results is null) throw new FuException("Results is invalid.");
 
             results.Clear();
             foreach (var (_, entityGroup) in m_EntityGroupDict)
@@ -193,7 +193,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>是否增加实体组成功。</returns>
         public bool AddEntityGroup(EntityGroupInfo entityGroupSetting)
         {
-            if (m_ObjectPoolManager == null) throw new FuException("You must set object pool manager first.");
+            if (m_ObjectPoolManager is null) throw new FuException("You must set object pool manager first.");
 
             if (HasEntityGroup(entityGroupSetting.Name))
             {
@@ -287,7 +287,7 @@ namespace FuFramework.Entity.Runtime
         public void GetEntities(string entityAssetName, List<Entity> results)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results is null) throw new FuException("Results is invalid.");
 
             results.Clear();
             foreach (var (_, entityInfo) in m_EntityDict)
@@ -319,7 +319,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">所有已加载的实体。</param>
         public void GetAllLoadedEntities(List<Entity> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results is null) throw new FuException("Results is invalid.");
 
             results.Clear();
             foreach (var (_, entityInfo) in m_EntityDict)
@@ -350,7 +350,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">所有正在加载实体的编号。</param>
         public void GetAllLoadingEntityIds(List<int> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results is null) throw new FuException("Results is invalid.");
             results.Clear();
             foreach (var (entityId, _) in m_LoadingEntityDict)
             {
@@ -398,7 +398,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, object userData = null)
         {
-            if (m_EntityHelper == null) throw new FuException("You must set entity helper first.");
+            if (m_EntityHelper is null) throw new FuException("You must set entity helper first.");
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
             if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("Entity group name is invalid.");
             if (HasEntity(entityId)) throw new FuException(Utility.Text.Format("Entity id '{0}' is already exist.",           entityId));
@@ -411,8 +411,8 @@ namespace FuFramework.Entity.Runtime
             var tcs               = new UniTaskCompletionSource<Entity>();
             var entityInstanceObj = entityGroup.SpawnEntityInstanceObject(entityAssetName);
             var showEntityInfoEx  = ShowEntityInfoEx.Create(entityLogicType, userData);
-            
-            if (entityInstanceObj == null)
+
+            if (entityInstanceObj is null)
             {
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
@@ -460,7 +460,7 @@ namespace FuFramework.Entity.Runtime
             }
 
             var entityInfo = GetEntityInfo(entityId);
-            if (entityInfo == null) throw new FuException(Utility.Text.Format("Can not find entity '{0}'.", entityId));
+            if (entityInfo is null) throw new FuException(Utility.Text.Format("Can not find entity '{0}'.", entityId));
 
             InternalHideEntity(entityInfo, userData);
         }
@@ -478,23 +478,15 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void HideEntity(Entity entity, object userData)
         {
-            if (entity == null) throw new FuException("Entity is invalid.");
+            if (entity is null) throw new FuException("Entity is invalid.");
             HideEntity(entity.Id, userData);
         }
 
         /// <summary>
         /// 隐藏所有已加载的实体。
         /// </summary>
-        public void HideAllLoadedEntities()
-        {
-            HideAllLoadedEntities(null);
-        }
-
-        /// <summary>
-        /// 隐藏所有已加载的实体。
-        /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        public void HideAllLoadedEntities(object userData)
+        public void HideAllLoadedEntities(object userData = null)
         {
             while (m_EntityDict.Count > 0)
             {
@@ -531,7 +523,7 @@ namespace FuFramework.Entity.Runtime
         public Entity GetParentEntity(int childEntityId)
         {
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
+            if (childEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
             return childEntityInfo.ParentEntity;
         }
 
@@ -542,7 +534,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>子实体的父实体。</returns>
         public Entity GetParentEntity(Entity childEntity)
         {
-            if (childEntity == null) throw new FuException("Child entity is invalid.");
+            if (childEntity is null) throw new FuException("Child entity is invalid.");
             return GetParentEntity(childEntity.Id);
         }
 
@@ -554,7 +546,7 @@ namespace FuFramework.Entity.Runtime
         public int GetChildEntityCount(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             return parentEntityInfo.ChildEntityCount;
         }
 
@@ -566,7 +558,7 @@ namespace FuFramework.Entity.Runtime
         public Entity GetChildEntity(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             return parentEntityInfo.GetChildEntity();
         }
 
@@ -577,7 +569,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>子实体。</returns>
         public Entity GetChildEntity(Entity parentEntity)
         {
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             return GetChildEntity(parentEntity.Id);
         }
 
@@ -589,7 +581,7 @@ namespace FuFramework.Entity.Runtime
         public Entity[] GetChildEntities(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             return parentEntityInfo.GetChildEntities();
         }
 
@@ -601,7 +593,7 @@ namespace FuFramework.Entity.Runtime
         public void GetChildEntities(int parentEntityId, List<Entity> results)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
             parentEntityInfo.GetChildEntities(results);
         }
 
@@ -612,7 +604,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>所有子实体。</returns>
         public Entity[] GetChildEntities(Entity parentEntity)
         {
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             return GetChildEntities(parentEntity.Id);
         }
 
@@ -623,7 +615,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">所有子实体。</param>
         public void GetChildEntities(Entity parentEntity, List<Entity> results)
         {
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             GetChildEntities(parentEntity.Id, results);
         }
 
@@ -640,8 +632,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentTransform">被附加的父实体的Transform</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, Transform parentTransform = null)
         {
-            if (childEntity  == null) throw new FuException("Child entity is invalid.");
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (childEntity  is null) throw new FuException("Child entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransform);
         }
 
@@ -654,8 +646,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentTransformPath">被附加的父实体的Transform路径</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, string parentTransformPath = "")
         {
-            if (childEntity  == null) throw new FuException("Child entity is invalid.");
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (childEntity  is null) throw new FuException("Child entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransformPath);
         }
 
@@ -672,17 +664,17 @@ namespace FuFramework.Entity.Runtime
                 throw new FuException(Utility.Text.Format("Can not attach entity when child entity id equals to parent entity id '{0}'.", parentEntityId));
 
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo == null)
+            if (childEntityInfo is null)
                 throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
 
-            if (childEntityInfo.Status >= EntityStatus.WillHide)
+            if (childEntityInfo.Status >= EEntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when child entity status is '{0}'.", childEntityInfo.Status));
 
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null)
+            if (parentEntityInfo is null)
                 throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
 
-            if (parentEntityInfo.Status >= EntityStatus.WillHide)
+            if (parentEntityInfo.Status >= EEntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
 
             var childEntity  = childEntityInfo.Entity;
@@ -697,7 +689,7 @@ namespace FuFramework.Entity.Runtime
             else
             {
                 parentTransform = parentEntity.Logic.CachedTransform.Find(parentTransformPath);
-                if (parentTransform == null)
+                if (parentTransform is null)
                 {
                     Log.Warning("Can not find transform path '{0}' from parent entity '{1}'.", parentTransformPath, parentEntity.Logic.Name);
                     parentTransform = parentEntity.Logic.CachedTransform;
@@ -710,6 +702,7 @@ namespace FuFramework.Entity.Runtime
 
             childEntityInfo.ParentEntity = parentEntity;
             parentEntityInfo.AddChildEntity(childEntity);
+            
             parentEntity.OnAttached(childEntity, attachEntityInfo);
             childEntity.OnAttachTo(parentEntity, attachEntityInfo);
         }
@@ -727,23 +720,23 @@ namespace FuFramework.Entity.Runtime
                 throw new FuException(Utility.Text.Format("Can not attach entity when child entity id equals to parent entity id '{0}'.", parentEntityId));
 
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo == null)
+            if (childEntityInfo is null)
                 throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
 
-            if (childEntityInfo.Status >= EntityStatus.WillHide)
+            if (childEntityInfo.Status >= EEntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when child entity status is '{0}'.", childEntityInfo.Status));
 
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null)
+            if (parentEntityInfo is null)
                 throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
 
-            if (parentEntityInfo.Status >= EntityStatus.WillHide)
+            if (parentEntityInfo.Status >= EEntityStatus.WillHide)
                 throw new FuException(Utility.Text.Format("Can not attach entity when parent entity status is '{0}'.", parentEntityInfo.Status));
 
             var childEntity  = childEntityInfo.Entity;
             var parentEntity = parentEntityInfo.Entity;
 
-            if (parentTransform == null)
+            if (parentTransform is null)
                 parentTransform = parentEntity.Logic.CachedTransform;
             var attachEntityInfo = AttachEntityInfo.Create(parentTransform, userData);
 
@@ -751,6 +744,7 @@ namespace FuFramework.Entity.Runtime
 
             childEntityInfo.ParentEntity = parentEntity;
             parentEntityInfo.AddChildEntity(childEntity);
+            
             parentEntity.OnAttached(childEntity, attachEntityInfo);
             childEntity.OnAttachTo(parentEntity, attachEntityInfo);
         }
@@ -773,13 +767,13 @@ namespace FuFramework.Entity.Runtime
         public void DetachEntity(int childEntityId, object userData)
         {
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
+            if (childEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find child entity '{0}'.", childEntityId));
 
             var parentEntity = childEntityInfo.ParentEntity;
-            if (parentEntity == null) return;
+            if (parentEntity is null) return;
 
             var parentEntityInfo = GetEntityInfo(parentEntity.Id);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntity.Id));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntity.Id));
 
             var childEntity = childEntityInfo.Entity;
             childEntityInfo.ParentEntity = null;
@@ -801,7 +795,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void DetachEntity(Entity childEntity, object userData)
         {
-            if (childEntity == null) throw new FuException("Child entity is invalid.");
+            if (childEntity is null) throw new FuException("Child entity is invalid.");
             DetachEntity(childEntity.Id, userData);
         }
 
@@ -819,7 +813,7 @@ namespace FuFramework.Entity.Runtime
         public void DetachChildEntities(int parentEntityId, object userData)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo == null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
+            if (parentEntityInfo is null) throw new FuException(Utility.Text.Format("Can not find parent entity '{0}'.", parentEntityId));
 
             while (parentEntityInfo.ChildEntityCount > 0)
             {
@@ -841,7 +835,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void DetachChildEntities(Entity parentEntity, object userData)
         {
-            if (parentEntity == null) throw new FuException("Parent entity is invalid.");
+            if (parentEntity is null) throw new FuException("Parent entity is invalid.");
             DetachChildEntities(parentEntity.Id, userData);
         }
 
@@ -860,7 +854,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAsset, float progress, ShowEntityInfo showEntityInfo)
         {
-            if (showEntityInfo == null)
+            if (showEntityInfo is null)
             {
                 var exception = new FuException("Show entity info is invalid.");
                 tcs.TrySetException(exception);
@@ -902,7 +896,7 @@ namespace FuFramework.Entity.Runtime
             var showEntityInfo = (ShowEntityInfo)userData;
 
             FuException exception;
-            if (showEntityInfo == null)
+            if (showEntityInfo is null)
             {
                 exception = new FuException("Show entity info is invalid.");
                 tcs.TrySetException(exception);
@@ -955,31 +949,31 @@ namespace FuFramework.Entity.Runtime
             try
             {
                 var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup);
-                if (entity == null)
+                if (entity is null)
                 {
                     var exception = new FuException("[EntityManager] 创建实体失败，实体帮助器返回的实体为空!");
                     tcs.TrySetException(exception);
                     throw exception;
                 }
-                
+
 
                 var entityInfo = EntityInfo.Create(entity);
                 m_EntityDict.Add(entityId, entityInfo);
 
                 // 实体初始化
-                entityInfo.Status = EntityStatus.WillInit;
+                entityInfo.Status = EEntityStatus.WillInit;
                 entity.OnInit(entityId, entityAssetName, entityGroup, isNewInstance, showEntityInfoEx);
 
                 // 实体初始化完成，加入到实体组
-                entityInfo.Status = EntityStatus.Inited;
+                entityInfo.Status = EEntityStatus.Inited;
                 entityGroup.AddEntity(entity);
 
                 // 实体显示
-                entityInfo.Status = EntityStatus.WillShow;
+                entityInfo.Status = EEntityStatus.WillShow;
                 entity.OnShow(showEntityInfoEx);
 
                 // 实体显示完成
-                entityInfo.Status = EntityStatus.Showed;
+                entityInfo.Status = EEntityStatus.Showed;
 
                 // 发送显示实体成功事件
                 var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, progress, showEntityInfoEx);
@@ -1011,14 +1005,14 @@ namespace FuFramework.Entity.Runtime
                 HideEntity(childEntity.Id, userData);
             }
 
-            if (entityInfo.Status == EntityStatus.Hidden) return;
+            if (entityInfo.Status == EEntityStatus.Hidden) return;
 
             var entity = entityInfo.Entity;
             DetachEntity(entity.Id, userData);
-            entityInfo.Status = EntityStatus.WillHide;
+            entityInfo.Status = EEntityStatus.WillHide;
 
             entity.OnHide(m_IsShutdown, userData);
-            entityInfo.Status = EntityStatus.Hidden;
+            entityInfo.Status = EEntityStatus.Hidden;
 
             entity.EntityGroup.RemoveEntity(entity);
             if (!m_EntityDict.Remove(entity.Id)) throw new FuException("Entity info is unmanaged.");

@@ -21,7 +21,7 @@ namespace FuFramework.Entity.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 创建实体显示信息。
+        /// 创建实体显示额外信息。
         /// </summary>
         /// <param name="entityLogicType"></param>
         /// <param name="userData"></param>

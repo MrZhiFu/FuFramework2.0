@@ -43,7 +43,7 @@ namespace FuFramework.Entity.Runtime
         /// 获取或设置已缓存的 Transform。
         /// </summary>
         public Transform CachedTransform { get; private set; }
-        
+
 
         /// <summary>
         /// 获取或设置实体名称。
@@ -64,7 +64,7 @@ namespace FuFramework.Entity.Runtime
             {
                 if (!Available)
                 {
-                    Log.Warning("Entity '{0}' is not available.", Name);
+                    Log.Warning($"[EntityLogic] 设置实体是否可见失败, 实体 '{Name}' 不可用");
                     return;
                 }
 
@@ -145,7 +145,9 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentTransform">被附加父实体的位置。</param>
         /// <param name="userData">用户自定义数据。</param>
         protected internal virtual void OnAttachTo(EntityLogic parentEntity, Transform parentTransform, object userData)
-            => CachedTransform.SetParent(parentTransform);
+        {
+            CachedTransform.SetParent(parentTransform);
+        }
 
         /// <summary>
         /// 实体解除子实体。
@@ -153,13 +155,17 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentEntity">被解除的父实体。</param>
         /// <param name="userData">用户自定义数据。</param>
         protected internal virtual void OnDetachFrom(EntityLogic parentEntity, object userData)
-            => CachedTransform.SetParent(m_OriginalTransform);
+        {
+            CachedTransform.SetParent(m_OriginalTransform);
+        }
 
         /// <summary>
         /// 设置实体的可见性。
         /// </summary>
         /// <param name="visible">实体的可见性。</param>
         protected virtual void InternalSetVisible(bool visible)
-            => gameObject.SetActive(visible);
+        {
+            gameObject.SetActive(visible);
+        }
     }
 }

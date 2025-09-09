@@ -11,7 +11,7 @@ namespace FuFramework.Entity.Runtime
             _ = typeof(ShowEntityFailureEventArgs);
             _ = typeof(ShowEntitySuccessEventArgs);
             _ = typeof(EntityManager);
-            _ = typeof(DefaultEntityHelper);
+            _ = typeof(EntityHelper);
             _ = typeof(AttachEntityInfo);
             _ = typeof(Entity);
             _ = typeof(EntityLogic);

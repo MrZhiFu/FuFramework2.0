@@ -20,6 +20,12 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public object UserData { get; private set; }
 
+        /// <summary>
+        /// 创建附加实体信息实例
+        /// </summary>
+        /// <param name="parentTransform"></param>
+        /// <param name="userData"></param>
+        /// <returns></returns>
         public static AttachEntityInfo Create(Transform parentTransform, object userData)
         {
             var attachEntityInfo = ReferencePool.Runtime.ReferencePool.Acquire<AttachEntityInfo>();
@@ -28,6 +34,9 @@ namespace FuFramework.Entity.Runtime
             return attachEntityInfo;
         }
 
+        /// <summary>
+        /// 清理
+        /// </summary>
         public void Clear()
         {
             ParentTransform = null;

@@ -9,7 +9,7 @@ namespace FuFramework.Entity.Runtime
     /// 默认实体辅助器。
     /// 功能：用于实现实体的实例化、创建、释放等操作。
     /// </summary>
-    public class DefaultEntityHelper: MonoBehaviour
+    public class EntityHelper: MonoBehaviour
     {
         /// <summary>
         /// 资源操作句柄。
@@ -24,11 +24,13 @@ namespace FuFramework.Entity.Runtime
         public GameObject InstantiateEntity(object entityAssetHandle)
         {
             m_AssetOperationHandle = entityAssetHandle as AssetHandle;
-            if (m_AssetOperationHandle != null)
-                return m_AssetOperationHandle.InstantiateSync();
+            if (m_AssetOperationHandle is null)
+            {
+                Log.Error("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
+                return null;
+            }
 
-            Log.Error("entityAsset is AssetOperationHandle invalid.");
-            return null;
+            return m_AssetOperationHandle.InstantiateSync();
         }
 
         /// <summary>
@@ -37,12 +39,12 @@ namespace FuFramework.Entity.Runtime
         /// <param name="entityInstance">实体实例。</param>
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <returns>实体。</returns>
-        public Entity CreateEntity(object entityInstance, EntityManager.EntityGroup entityGroup)
+        public Entity CreateEntity(object entityInstance, EntityGroup entityGroup)
         {
             var go = entityInstance as GameObject;
             if (!go)
             {
-                Log.Error("Entity instance is invalid.");
+                Log.Error("[EntityHelper]创建实体失败，实体实例不是GameObject.");
                 return null;
             }
 
@@ -59,7 +61,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (entityAsset is not AssetHandle assetOperationHandle)
             {
-                Log.Error("entityAsset is AssetOperationHandle invalid.");
+                Log.Error("[EntityHelper]释放实体失败, 实体资源句柄为空!");
                 return;
             }
 
