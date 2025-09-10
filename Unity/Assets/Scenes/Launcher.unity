@@ -614,24 +614,6 @@ MonoBehaviour:
   m_IgnoredSendNetworkIds: 
   m_IgnoredReceiveNetworkIds: 
   m_rpcTimeout: 5000
---- !u!114 &1681186164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3845703385406213712}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b92b132742cfba40befc63e8b124faf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_EditorLanguage: 0
-  m_DefaultLanguage: 0
-  m_EnableLoadDictionaryUpdateEvent: 0
-  m_IsEnableEditorMode: 0
-  m_LocalizationHelperTypeName: FuFramework.Localization.Runtime.DefaultLocalizationHelper
-  m_CustomLocalizationHelper: {fileID: 0}
 --- !u!114 &1681186170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1002,23 +984,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3845703385406213712
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6529379366163002800}
-  - component: {fileID: 1681186164}
-  m_Layer: 0
-  m_Name: Localization
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!114 &4733303594216534158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1068,21 +1033,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7148938655606090472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &6529379366163002800
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3845703385406213712}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7148938655606090472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6654285579481969994
 GameObject:
   m_ObjectHideFlags: 0
@@ -1113,7 +1063,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6529379366163002800}
   - {fileID: 1708891510959030576}
   - {fileID: 7682303427684127993}
   - {fileID: 8145429920746508751}

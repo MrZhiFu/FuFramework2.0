@@ -23,33 +23,25 @@ namespace FuFramework.Localization.Runtime
         /// <summary>
         /// 当前语言。
         /// </summary>
-        public Language Language { get; set; }
+        public ELanguage ELanguage { get; set; } = ELanguage.Unspecified;
 
         /// <summary>
         /// 旧的语言。
         /// </summary>
-        public Language OldLanguage { get; set; }
+        public ELanguage OldELanguage { get; set; } = ELanguage.Unspecified;
 
-        /// <summary>
-        /// 初始化本地化语言改变事件的新实例。
-        /// </summary>
-        public LocalizationLanguageChangeEventArgs()
-        {
-            OldLanguage = Language.Unspecified;
-            Language    = Language.Unspecified;
-        }
 
         /// <summary>
         /// 创建本地化语言改变事件。
         /// </summary>
-        /// <param name="oldLanguage">旧的语言。</param>
-        /// <param name="language">当前语言。</param>
+        /// <param name="oldELanguage">旧的语言。</param>
+        /// <param name="eLanguage">当前语言。</param>
         /// <returns>创建的本地化语言改变事件。</returns>
-        public static LocalizationLanguageChangeEventArgs Create(Language oldLanguage, Language language)
+        public static LocalizationLanguageChangeEventArgs Create(ELanguage oldELanguage, ELanguage eLanguage)
         {
             var localizationLanguageChangeEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LocalizationLanguageChangeEventArgs>();
-            localizationLanguageChangeEventArgs.OldLanguage = oldLanguage;
-            localizationLanguageChangeEventArgs.Language    = language;
+            localizationLanguageChangeEventArgs.OldELanguage = oldELanguage;
+            localizationLanguageChangeEventArgs.ELanguage    = eLanguage;
             return localizationLanguageChangeEventArgs;
         }
 
@@ -58,8 +50,8 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         public override void Clear()
         {
-            OldLanguage = Language.Unspecified;
-            Language    = Language.Unspecified;
+            OldELanguage = ELanguage.Unspecified;
+            ELanguage    = ELanguage.Unspecified;
         }
     }
 }

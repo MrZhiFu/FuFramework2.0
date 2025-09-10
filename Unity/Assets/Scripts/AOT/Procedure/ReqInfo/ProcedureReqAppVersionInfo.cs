@@ -70,8 +70,8 @@ namespace Launcher.Procedure
                         if (winLauncher == null) return;
                         winLauncher.SetUpdateSureUIState(true);
 
-                        var isChinese = GlobalModule.LocalizationModule.SystemLanguage == Language.ChineseSimplified ||
-                                        GlobalModule.LocalizationModule.SystemLanguage == Language.ChineseTraditional;
+                        var isChinese = GlobalModule.LocalizationModule.Language == ELanguage.ChineseSimplified ||
+                                        GlobalModule.LocalizationModule.Language == ELanguage.ChineseTraditional;
 
                         winLauncher.SetUpdateBtnTitle(isChinese ? "确认" : "Enter");
                         winLauncher.SetUpdateTipText(gameAppVersion.UpdateAnnouncement);

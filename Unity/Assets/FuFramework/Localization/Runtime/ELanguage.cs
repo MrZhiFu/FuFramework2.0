@@ -5,7 +5,7 @@ namespace FuFramework.Localization.Runtime
     /// <summary>
     /// 本地化语言。
     /// </summary>
-    public enum Language : byte
+    public enum ELanguage : byte
     {
         /// <summary>
         /// 未指定。

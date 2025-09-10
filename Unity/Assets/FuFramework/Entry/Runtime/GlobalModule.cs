@@ -35,7 +35,7 @@ namespace FuFramework.Entry.Runtime
         public static EventManager          EventModule          { get; private set; }
         public static FsmManager            FsmModule            { get; private set; }
         public static GlobalConfigManager   GlobalConfigModule   { get; private set; }
-        public static LocalizationComponent LocalizationModule   { get; private set; }
+        public static LocalizationManager   LocalizationModule   { get; private set; }
         public static MonoManager           MonoModule           { get; private set; }
         public static NetworkComponent      NetworkModule        { get; private set; }
         public static ObjectPoolComponent   ObjectPoolModule     { get; private set; }
@@ -67,7 +67,7 @@ namespace FuFramework.Entry.Runtime
             EventModule          = ModuleManager.RegisterModule<EventManager>();
             FsmModule            = ModuleManager.RegisterModule<FsmManager>();
             GlobalConfigModule   = ModuleManager.RegisterModule<GlobalConfigManager>();
-            LocalizationModule   = ModuleManager.RegisterModule<LocalizationComponent>();
+            LocalizationModule   = ModuleManager.RegisterModule<LocalizationManager>();
             MonoModule           = ModuleManager.RegisterModule<MonoManager>();
             NetworkModule        = ModuleManager.RegisterModule<NetworkComponent>();
             ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolComponent>();
