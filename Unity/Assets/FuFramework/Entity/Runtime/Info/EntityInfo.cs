@@ -44,7 +44,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public static EntityInfo Create(Entity entity)
         {
-            if (entity is null) throw new FuException("[EntityManager.EntityInfo] 创建实体信息失败，实体显示对象为空!");
+            if (entity is null) throw new FuException("[EntityInfo] 创建实体信息失败，实体显示对象为空!");
             var entityInfo = ReferencePool.Runtime.ReferencePool.Acquire<EntityInfo>();
             entityInfo.Entity = entity;
             entityInfo.Status = EEntityStatus.WillInit;
@@ -81,7 +81,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public void GetChildEntities(List<Entity> results)
         {
-            if (results is null) throw new FuException("[EntityManager.EntityInfo] 结果列表为空!");
+            if (results is null) throw new FuException("[EntityInfo] 结果列表为空!");
             results.Clear();
             results.AddRange(m_ChildEntities);
         }
@@ -93,7 +93,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public void AddChildEntity(Entity childEntity)
         {
-            if (m_ChildEntities.Contains(childEntity)) throw new FuException("[EntityManager.EntityInfo] 子实体已存在, 不能重复添加!");
+            if (m_ChildEntities.Contains(childEntity)) throw new FuException("[EntityInfo]添加子实体失败, 子实体已存在, 不能重复添加!");
             m_ChildEntities.Add(childEntity);
         }
 
@@ -105,7 +105,7 @@ namespace FuFramework.Entity.Runtime
         public void RemoveChildEntity(Entity childEntity)
         {
             if (m_ChildEntities.Remove(childEntity)) return;
-            throw new FuException("[EntityManager.EntityInfo] 子实体不存在, 不能移除!");
+            throw new FuException("[EntityInfo]移除子实体失败, 子实体不存在, 不能移除!");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FuFramework.Core.Runtime;
 using UnityEngine;
+// ReSharper disable NotAccessedField.Local
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedMember.Global
@@ -28,6 +29,10 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         private Transform m_OriginalTransform;
 
+        /// <summary>
+        /// 实体的用户自定义数据。
+        /// </summary>
+        private object m_UserData;
 
         /// <summary>
         /// 获取或设置实体。
@@ -81,6 +86,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         protected internal virtual void OnInit(object userData)
         {
+            m_UserData = userData;
+            
             if (!CachedTransform)
                 CachedTransform = transform;
 

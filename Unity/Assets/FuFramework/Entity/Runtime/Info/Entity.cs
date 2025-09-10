@@ -65,7 +65,7 @@ namespace FuFramework.Entity.Runtime
                 return;
             }
 
-            if (showEntityInfoEx.EntityLogicType == null)
+            if (showEntityInfoEx.EntityLogicType is null)
             {
                 Log.Error("[Entity]初始化实体失败, 显示的实体的逻辑类型为空!");
                 return;

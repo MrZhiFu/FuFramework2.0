@@ -32,8 +32,8 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public static EntityInstanceObject Create(string name, object entityAsset, GameObject entityInstanceGo, EntityHelper entityHelper)
         {
-            if (entityAsset  is null) throw new FuException("Entity asset is invalid.");
-            if (entityHelper is null) throw new FuException("Entity helper is invalid.");
+            if (entityAsset  is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体资源为空.");
+            if (entityHelper is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体辅助器为空.");
 
             var entityInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<EntityInstanceObject>();
             entityInstanceObject.Initialize(name, entityInstanceGo);

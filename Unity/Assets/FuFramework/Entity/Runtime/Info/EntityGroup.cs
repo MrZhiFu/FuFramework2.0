@@ -11,7 +11,7 @@ namespace FuFramework.Entity.Runtime
     /// <summary>
     /// 实体组。
     /// 功能：
-    /// 1.实现实体组的基本操作接口，管理实体组中的实体实例，
+    /// 1.管理实体组中的实体，
     /// 2.对外提供获取实体、获取实体组中实体数量、设置实体实例的优先级等接口。
     /// </summary>
     public sealed class EntityGroup
@@ -84,21 +84,20 @@ namespace FuFramework.Entity.Runtime
         }
 
         /// <summary>
-        /// 初始化实体组的新实例。
+        /// 构造实体组实例。
         /// </summary>
         /// <param name="groupSetting">实体组设置。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
         /// <param name="objectPoolManager">对象池管理器。</param>
         public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, IObjectPoolManager objectPoolManager)
         {
-            if (groupSetting == null) throw new FuException("Entity group setting is invalid.");
-            if (groupGo      == null) throw new FuException("Entity group GameObject is invalid.");
+            if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
+            if (groupGo      is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
             Name = groupSetting.Name;
-
             GroupGo = groupGo;
 
-            var poolName = Utility.Text.Format("Entity Instance Pool ({0})", Name);
+            var poolName = $"Entity Instance Pool ({Name})";
             m_InstancePool = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, groupSetting.InstanceCapacity, groupSetting.InstanceExpireTime, groupSetting.InstancePriority);
             m_InstancePool.AutoReleaseInterval = groupSetting.InstanceAutoReleaseInterval;
 
@@ -137,7 +136,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>实体组中是否存在实体。</returns>
         public bool HasEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
             return m_Entities.Any(entity => entity.EntityAssetName == entityAssetName);
         }
 
@@ -155,7 +154,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>要获取的实体。</returns>
         public Entity GetEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
             return m_Entities.FirstOrDefault(entity => entity.EntityAssetName == entityAssetName);
         }
 
@@ -166,7 +165,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>要获取的实体。</returns>
         public Entity[] GetEntities(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
             return m_Entities.Where(entity => entity.EntityAssetName == entityAssetName).ToArray();
         }
 
@@ -177,8 +176,8 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">要获取的实体。</param>
         public void GetEntities(string entityAssetName, List<Entity> results)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("Entity asset name is invalid.");
-            if (results == null) throw new FuException("Results is invalid.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
+            if (results is null) throw new FuException("[EntityGroup] 结果列表为空.");
             results.Clear();
             results.AddRange(m_Entities.Where(entity => entity.EntityAssetName == entityAssetName));
         }
@@ -195,7 +194,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="results">实体组中的所有实体。</param>
         public void GetAllEntities(List<Entity> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results is null) throw new FuException("[EntityGroup] 结果列表为空.");
             results.Clear();
             results.AddRange(m_Entities);
         }
@@ -215,7 +214,7 @@ namespace FuFramework.Entity.Runtime
             if (m_CachedNode != null && m_CachedNode.Value == entity)
                 m_CachedNode = m_CachedNode.Next;
             if (!m_Entities.Remove(entity))
-                throw new FuException(Utility.Text.Format("Entity group '{0}' not exists specified entity '[{1}]{2}'.", Name, entity.Id, entity.EntityAssetName));
+                throw new FuException($"[EntityGroup] 移除实体失败，实体组 '{Name}' 中不存在指定的实体 '[{entity.Id}]{entity.EntityAssetName}'.");
         }
 
         /// <summary>
@@ -246,7 +245,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public void SetEntityInstanceLocked(object entityInstance, bool locked)
         {
-            if (entityInstance == null) throw new FuException("Entity instance is invalid.");
+            if (entityInstance is null) throw new FuException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
             m_InstancePool.SetLocked(entityInstance, locked);
         }
 
@@ -258,7 +257,7 @@ namespace FuFramework.Entity.Runtime
         /// <exception cref="FuException"></exception>
         public void SetEntityInstancePriority(object entityInstance, int priority)
         {
-            if (entityInstance == null) throw new FuException("Entity instance is invalid.");
+            if (entityInstance is null) throw new FuException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
             m_InstancePool.SetPriority(entityInstance, priority);
         }
     }
