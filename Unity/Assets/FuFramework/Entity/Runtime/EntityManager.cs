@@ -40,9 +40,9 @@ namespace FuFramework.Entity.Runtime
         private int  m_Serial;     // 实体自增编号
         private bool m_IsShutdown; // 是否关闭
 
-        private IObjectPoolManager m_ObjectPoolManager; // 对象池管理器
-        private EventManager       m_EventManager;      // 实体管理器
-        private AssetManager       m_AssetManager;      // 资源管理器
+        private EventManager      m_EventManager;      // 实体管理器
+        private AssetManager      m_AssetManager;      // 资源管理器
+        private ObjectPoolManager m_ObjectPoolManager; // 对象池管理器
 
         private Transform m_InstanceRoot; // 实体实例对象池根节点
 
@@ -63,7 +63,7 @@ namespace FuFramework.Entity.Runtime
         {
             m_AssetManager      = ModuleManager.GetModule<AssetManager>();
             m_EventManager      = ModuleManager.GetModule<EventManager>();
-            m_ObjectPoolManager = FuEntry.GetModule<IObjectPoolManager>();
+            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;

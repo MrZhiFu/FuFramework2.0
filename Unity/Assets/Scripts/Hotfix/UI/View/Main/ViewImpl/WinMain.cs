@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
+using FuFramework.Entry.Runtime;
 using FuFramework.UI.Runtime;
 using Hotfix.Manager;
 using Hotfix.UI;
@@ -70,7 +71,7 @@ namespace Hotfix.UI
         {
             // 请求背包信息
             await BagManager.Instance.RequestGetBagInfo();
-            await UIManager.Instance.OpenUIAsync<WinBag>();
+            await GlobalModule.UIModule.OpenUIAsync<WinBag>();
         }
         
         #region 交互事件与ListItem渲染回调处理

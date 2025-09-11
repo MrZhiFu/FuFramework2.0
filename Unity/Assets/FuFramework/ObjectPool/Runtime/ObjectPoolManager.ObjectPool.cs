@@ -6,13 +6,13 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ObjectPool.Runtime
 {
-    internal sealed partial class ObjectPoolManager
+    public sealed partial class ObjectPoolManager
     {
         /// <summary>
         /// 一个具体存放T类型对象的对象池。继承于ObjectPoolBase，实现了IObjectPool接口
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
-        private sealed class ObjectPool<T> : ObjectPoolBase, IObjectPool<T> where T : ObjectBase
+        public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
         {
             /// 存储对象的多值字典，key为对象名称，value为对象(可为多个)。
             /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用

@@ -65,7 +65,7 @@ namespace Hotfix
             FuiPackageManager.Instance.AddPackageAsync("Common").Forget();
             
             // 打开登录界面
-            UIManager.Instance.OpenUI<WinLogin>();
+            GlobalModule.UIModule.OpenUI<WinLogin>();
             var item = GlobalModule.ConfigModule.GetConfig<TbSoundsConfig>().FirstOrDefault;
             Log.Info(item);
         }

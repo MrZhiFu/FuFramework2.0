@@ -17,6 +17,11 @@ namespace FuFramework.UI.Runtime
         private bool m_IsInit = false;
 
         /// <summary>
+        /// UI管理器
+        /// </summary>
+        private UIManager m_UIManager;
+
+        /// <summary>
         /// 界面序列编号。
         /// </summary>
         public int SerialId { get; private set; }
@@ -74,7 +79,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public UIGroup UIGroup => UIManager.Instance.GetUIGroup(Layer);
+        public UIGroup UIGroup => m_UIManager?.GetUIGroup(Layer);
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -108,6 +113,7 @@ namespace FuFramework.UI.Runtime
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
+            m_UIManager = ModuleManager.GetModule<UIManager>();
             m_IsInit       = true;
             DepthInUIGroup = 0;
 
@@ -186,6 +192,10 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 关闭自身。
         /// </summary>
-        protected void CloseSelf() => UIManager.Instance.CloseUI(this);
+        protected void CloseSelf()
+        {
+            if (m_UIManager is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理器为空。");
+            m_UIManager.CloseUI(this);
+        }
     }
 }

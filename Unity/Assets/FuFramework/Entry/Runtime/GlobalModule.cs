@@ -14,6 +14,7 @@ using FuFramework.Procedure.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.Setting.Runtime;
 using FuFramework.Timer.Runtime;
+using FuFramework.UI.Runtime;
 using FuFramework.Web.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -37,8 +38,9 @@ namespace FuFramework.Entry.Runtime
         public static GlobalConfigManager   GlobalConfigModule   { get; private set; }
         public static LocalizationManager   LocalizationModule   { get; private set; }
         public static MonoManager           MonoModule           { get; private set; }
+        public static UIManager             UIModule             { get; private set; }
         public static NetworkComponent      NetworkModule        { get; private set; }
-        public static ObjectPoolComponent   ObjectPoolModule     { get; private set; }
+        public static ObjectPoolManager     ObjectPoolModule     { get; private set; }
         public static ProcedureManager      ProcedureModule      { get; private set; }
         public static SettingComponent      SettingModule        { get; private set; }
         public static TimerManager          TimerModule          { get; private set; }
@@ -69,8 +71,9 @@ namespace FuFramework.Entry.Runtime
             GlobalConfigModule   = ModuleManager.RegisterModule<GlobalConfigManager>();
             LocalizationModule   = ModuleManager.RegisterModule<LocalizationManager>();
             MonoModule           = ModuleManager.RegisterModule<MonoManager>();
+            UIModule             = ModuleManager.RegisterModule<UIManager>();
             NetworkModule        = ModuleManager.RegisterModule<NetworkComponent>();
-            ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolComponent>();
+            ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolManager>();
             ProcedureModule      = ModuleManager.RegisterModule<ProcedureManager>();
             SettingModule        = ModuleManager.RegisterModule<SettingComponent>();
             TimerModule          = ModuleManager.RegisterModule<TimerManager>();

@@ -5,7 +5,7 @@ using FuFramework.ReferencePool.Runtime;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ObjectPool.Runtime
 {
-    internal sealed partial class ObjectPoolManager
+    public sealed partial class ObjectPoolManager
     {
         /// <summary>
         /// 内部对象。

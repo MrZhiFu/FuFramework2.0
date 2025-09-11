@@ -24,7 +24,7 @@ namespace Launcher.Procedure
         /// </summary>
         public static async UniTask Start()
         {
-            m_WinLauncher = await UIManager.Instance.OpenUIAsync<WinLauncher>();
+            m_WinLauncher = await GlobalModule.UIModule.OpenUIAsync<WinLauncher>();
             GlobalModule.EventModule.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
         }
 
@@ -33,7 +33,7 @@ namespace Launcher.Procedure
         /// </summary>
         public static void Dispose()
         {
-            UIManager.Instance.CloseUI<WinLauncher>();
+            GlobalModule.UIModule.CloseUI<WinLauncher>();
             m_WinLauncher = null;
         }
 

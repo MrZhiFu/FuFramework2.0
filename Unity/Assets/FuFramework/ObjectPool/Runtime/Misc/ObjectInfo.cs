@@ -2,34 +2,15 @@
 using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
-    /// 对象信息。
+    /// 对象信息。用于外部想要获取对象池中的对象信息时使用。
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct ObjectInfo
     {
-        /// <summary>
-        /// 初始化对象信息的新实例。
-        /// </summary>
-        /// <param name="name">对象名称。</param>
-        /// <param name="locked">对象是否被加锁。</param>
-        /// <param name="customCanReleaseFlag">对象自定义释放检查标记。</param>
-        /// <param name="priority">对象的优先级。</param>
-        /// <param name="lastUseTime">对象上次使用时间。</param>
-        /// <param name="spawnCount">对象的获取计数。</param>
-        // Preserve the constructor for Unity's serialization
-        public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int spawnCount)
-        {
-            Name = name;
-            Locked = locked;
-            CustomCanReleaseFlag = customCanReleaseFlag;
-            Priority = priority;
-            LastUseTime = lastUseTime;
-            SpawnCount = spawnCount;
-        }
-
         /// <summary>
         /// 获取对象名称。
         /// </summary>
@@ -71,5 +52,25 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         // Preserve the IsInUse property for Unity's serialization
         public bool IsInUse => SpawnCount > 0;
+
+        /// <summary>
+        /// 初始化对象信息的新实例。
+        /// </summary>
+        /// <param name="name">对象名称。</param>
+        /// <param name="locked">对象是否被加锁。</param>
+        /// <param name="customCanReleaseFlag">对象自定义释放检查标记。</param>
+        /// <param name="priority">对象的优先级。</param>
+        /// <param name="lastUseTime">对象上次使用时间。</param>
+        /// <param name="spawnCount">对象的获取计数。</param>
+        // Preserve the constructor for Unity's serialization
+        public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int spawnCount)
+        {
+            Name = name;
+            Locked = locked;
+            CustomCanReleaseFlag = customCanReleaseFlag;
+            Priority = priority;
+            LastUseTime = lastUseTime;
+            SpawnCount = spawnCount;
+        }
     }
 }

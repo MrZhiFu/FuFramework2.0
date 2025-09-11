@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using UnityEngine;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ObjectPool.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Runtime
@@ -19,7 +19,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体实例对象池。
         /// </summary>
-        private readonly IObjectPool<EntityInstanceObject> m_InstancePool;
+        private readonly ObjectPoolManager.ObjectPool<EntityInstanceObject> m_InstancePool;
 
         /// <summary>
         /// 实体组实体链表。
@@ -89,7 +89,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="groupSetting">实体组设置。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
         /// <param name="objectPoolManager">对象池管理器。</param>
-        public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, IObjectPoolManager objectPoolManager)
+        public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolManager objectPoolManager)
         {
             if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
             if (groupGo      is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");

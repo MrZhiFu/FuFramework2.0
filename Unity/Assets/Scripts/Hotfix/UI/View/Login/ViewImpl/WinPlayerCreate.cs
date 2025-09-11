@@ -121,7 +121,7 @@ namespace Hotfix.UI
             CloseSelf();
 
             // 打开角色列表界面
-            UIManager.Instance.OpenUI<WinPlayerList>();
+            GlobalModule.UIModule.OpenUI<WinPlayerList>();
         }
 
         #region 交互事件与ListItem渲染回调处理

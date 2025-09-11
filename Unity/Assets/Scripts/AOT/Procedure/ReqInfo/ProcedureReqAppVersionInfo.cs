@@ -66,7 +66,7 @@ namespace Launcher.Procedure
                     if (gameAppVersion.IsUpgrade)
                     {
                         // 需要更新，显示更新提示框
-                        var winLauncher = UIManager.Instance.GetUI<WinLauncher>();
+                        var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();
                         if (winLauncher == null) return;
                         winLauncher.SetUpdateSureUIState(true);
 

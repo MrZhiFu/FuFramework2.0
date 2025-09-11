@@ -70,7 +70,7 @@ namespace FuFramework.UI.Runtime
             uiGroup.Refresh();
 
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
-            m_EventComponent.Fire(this, closeUICompleteEventArgs);
+            m_EventManager.Fire(this, closeUICompleteEventArgs);
 
             m_WaitRecycleQueue.Enqueue(view);
         }
@@ -138,7 +138,7 @@ namespace FuFramework.UI.Runtime
             uiGroup.Refresh();
 
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
-            m_EventComponent.Fire(this, closeUICompleteEventArgs);
+            m_EventManager.Fire(this, closeUICompleteEventArgs);
 
             // 立即回收界面实例对象
             RecycleUI(view);
