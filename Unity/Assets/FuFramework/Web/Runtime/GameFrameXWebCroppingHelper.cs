@@ -7,8 +7,6 @@ namespace FuFramework.Web.Runtime
     {
         private void Start()
         {
-            _ = typeof(WebComponent);
-            _ = typeof(IWebManager);
             _ = typeof(WebManager);
             _ = typeof(WebStringResult);
             _ = typeof(WebBufferResult);

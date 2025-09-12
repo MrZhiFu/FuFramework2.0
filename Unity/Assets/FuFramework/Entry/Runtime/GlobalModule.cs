@@ -44,7 +44,7 @@ namespace FuFramework.Entry.Runtime
         public static ProcedureManager      ProcedureModule      { get; private set; }
         public static SettingManager      SettingModule        { get; private set; }
         public static TimerManager          TimerModule          { get; private set; }
-        public static WebComponent          WebModule            { get; private set; }
+        public static WebManager          WebModule            { get; private set; }
 
         // private static SceneComponent SceneModule;
         // private static AdvertisementComponent AdvertisementModule;
@@ -77,7 +77,7 @@ namespace FuFramework.Entry.Runtime
             ProcedureModule      = ModuleManager.RegisterModule<ProcedureManager>();
             SettingModule        = ModuleManager.RegisterModule<SettingManager>();
             TimerModule          = ModuleManager.RegisterModule<TimerManager>();
-            WebModule            = ModuleManager.RegisterModule<WebComponent>();
+            WebModule            = ModuleManager.RegisterModule<WebManager>();
 
             // SceneModule = GameEntry.RegisterComponent<SceneComponent>();
             // AdvertisementModule = GameEntry.RegisterComponent<AdvertisementComponent>();

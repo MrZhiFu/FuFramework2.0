@@ -8,7 +8,6 @@ using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
-using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

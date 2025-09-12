@@ -14,7 +14,7 @@ namespace FuFramework.Web.Runtime
     /// <summary>
     /// Web请求管理器,实现HTTP GET和POST请求功能
     /// </summary>
-    public partial class WebManager : FuModule, IWebManager
+    public partial class WebManager : FuComponent
     {
         /// 用于构建URL的StringBuilder
         private readonly StringBuilder m_StringBuilder = new(256);
@@ -26,23 +26,14 @@ namespace FuFramework.Web.Runtime
         private readonly List<WebJsonData> m_SendingNormalList = new(16);
 
         /// 用于存储请求和响应数据的内存流
-        private readonly MemoryStream m_MemoryStream;
+        private readonly MemoryStream m_MemoryStream = new();
+        
 
         /// JSON内容类型常量
         private const string JsonContentType = "application/json; charset=utf-8";
 
         /// 超时时间(秒)
         private float m_Timeout = 5f;
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public WebManager()
-        {
-            MaxConnectionPerServer = 8;
-            m_MemoryStream         = new MemoryStream();
-            Timeout                = 5f;
-        }
 
         /// <summary>
         /// 获取或设置超时时间(秒)
@@ -60,7 +51,7 @@ namespace FuFramework.Web.Runtime
         /// <summary>
         /// 获取或设置每个服务器的最大连接数
         /// </summary>
-        public int MaxConnectionPerServer { get; set; }
+        public int MaxConnectionPerServer { get; set; } = 8;
 
         /// <summary>
         /// 获取或设置请求超时时间
@@ -68,9 +59,14 @@ namespace FuFramework.Web.Runtime
         public TimeSpan RequestTimeout { get; set; }
 
         /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInit() { }
+
+        /// <summary>
         /// 更新处理请求队列
         /// </summary>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
             lock (m_StringBuilder)
             {
@@ -91,9 +87,11 @@ namespace FuFramework.Web.Runtime
         }
 
         /// <summary>
-        /// 关闭时清理资源
+        /// 关闭
         /// </summary>
-        protected override void Shutdown()
+        /// <param name="shutdownType"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
             while (m_WaitingNormalQueue.Count > 0)
             {
