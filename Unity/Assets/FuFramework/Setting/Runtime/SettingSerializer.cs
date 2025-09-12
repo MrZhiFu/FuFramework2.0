@@ -6,7 +6,7 @@ namespace FuFramework.Setting.Runtime
     /// <summary>
     /// 默认游戏配置序列化器。
     /// </summary>
-    public sealed class DefaultSettingSerializer : FuSerializer<DefaultSetting>
+    public sealed class SettingSerializer : FuSerializer<Setting>
     {
         /// <summary>
         /// 默认游戏配置头标识。

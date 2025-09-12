@@ -12,7 +12,7 @@ namespace FuFramework.Setting.Runtime
     /// <summary>
     /// 默认游戏配置。
     /// </summary>
-    public sealed class DefaultSetting
+    public sealed class Setting
     {
         /// <summary>
         /// 记录所有游戏配置项的字典。key为配置项名称，value为配置项值。
@@ -46,7 +46,7 @@ namespace FuFramework.Setting.Runtime
         /// <param name="results">所有游戏配置项的名称。</param>
         public void GetAllSettingNames(List<string> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results == null) throw new FuException("[DefaultSetting] 结果列表不能为空.");
             results.Clear();
             results.AddRange(m_SettingDict.Select(setting => setting.Key));
         }
@@ -78,7 +78,7 @@ namespace FuFramework.Setting.Runtime
         public bool GetBool(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return int.Parse(value) != 0;
-            Log.Warning("配置项 '{0}' 不存在!", settingName);
+            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace FuFramework.Setting.Runtime
         public int GetInt(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return int.Parse(value);
-            Log.Warning("配置项 '{0}' 不存在!", settingName);
+            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
             return 0;
         }
 
@@ -138,7 +138,7 @@ namespace FuFramework.Setting.Runtime
         public float GetFloat(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return float.Parse(value);
-            Log.Warning("配置项 '{0}' 不存在!", settingName);
+            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
             return 0f;
         }
 
@@ -171,7 +171,7 @@ namespace FuFramework.Setting.Runtime
         public string GetString(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return value;
-            Log.Warning("配置项 '{0}' 不存在!", settingName);
+            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
             return null;
         }
 

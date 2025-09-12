@@ -42,7 +42,7 @@ namespace FuFramework.Entry.Runtime
         public static NetworkComponent      NetworkModule        { get; private set; }
         public static ObjectPoolManager     ObjectPoolModule     { get; private set; }
         public static ProcedureManager      ProcedureModule      { get; private set; }
-        public static SettingComponent      SettingModule        { get; private set; }
+        public static SettingManager      SettingModule        { get; private set; }
         public static TimerManager          TimerModule          { get; private set; }
         public static WebComponent          WebModule            { get; private set; }
 
@@ -75,7 +75,7 @@ namespace FuFramework.Entry.Runtime
             NetworkModule        = ModuleManager.RegisterModule<NetworkComponent>();
             ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolManager>();
             ProcedureModule      = ModuleManager.RegisterModule<ProcedureManager>();
-            SettingModule        = ModuleManager.RegisterModule<SettingComponent>();
+            SettingModule        = ModuleManager.RegisterModule<SettingManager>();
             TimerModule          = ModuleManager.RegisterModule<TimerManager>();
             WebModule            = ModuleManager.RegisterModule<WebComponent>();
 

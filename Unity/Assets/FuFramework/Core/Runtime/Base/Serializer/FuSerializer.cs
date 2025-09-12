@@ -122,7 +122,7 @@ namespace FuFramework.Core.Runtime
             stream.WriteByte(version);
 
             if (!m_SerializeCbDict.TryGetValue(version, out var callback))
-                throw new FuException(Runtime.Utility.Text.Format("序列化回调函数版本 '{0}' 不存在.", version));
+                throw new FuException(Utility.Text.Format("序列化回调函数版本 '{0}' 不存在.", version));
 
             return callback(stream, data);
         }
@@ -141,12 +141,12 @@ namespace FuFramework.Core.Runtime
             var header2 = (byte)stream.ReadByte();
 
             if (header0 != header[0] || header1 != header[1] || header2 != header[2])
-                throw new FuException(Runtime.Utility.Text.Format("标头无效, 需要 '{0}{1}{2}', 当前为 '{3}{4}{5}'.", (char)header[0], (char)header[1], (char)header[2], (char)header0,
+                throw new FuException(Utility.Text.Format("标头无效, 需要 '{0}{1}{2}', 当前为 '{3}{4}{5}'.", (char)header[0], (char)header[1], (char)header[2], (char)header0,
                                                                              (char)header1, (char)header2));
 
             var version = (byte)stream.ReadByte();
             if (!m_DeserializeCbDict.TryGetValue(version, out var callback))
-                throw new FuException(Runtime.Utility.Text.Format("反序列化回调函数版本 '{0}' 不存在.", version));
+                throw new FuException(Utility.Text.Format("反序列化回调函数版本 '{0}' 不存在.", version));
 
             return callback(stream);
         }

@@ -12,8 +12,8 @@ namespace FuFramework.Localization.Runtime
     /// </summary>
     public sealed class LocalizationManager : FuComponent
     {
-        private EventManager m_EventComponent; // 事件组件
-        private SettingComponent m_SettingComponent; // Setting组件
+        private EventManager m_EventManager; // 事件组件
+        private SettingManager m_SettingManager; // Setting组件
 
         private ELanguage m_Language; // 本地化语言
 
@@ -30,12 +30,12 @@ namespace FuFramework.Localization.Runtime
                 m_Language = value;
 
                 // 保存设置
-                m_SettingComponent.SetString("Language", value.ToString());
-                m_SettingComponent.Save();
+                m_SettingManager.SetString("Language", value.ToString());
+                m_SettingManager.Save();
 
                 // 发送本地化语言改变事件
                 var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
-                m_EventComponent.Fire(this, localizationLanguageChangeEventArgs);
+                m_EventManager.Fire(this, localizationLanguageChangeEventArgs);
             }
         }
 
@@ -101,10 +101,10 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventComponent = ModuleManager.GetModule<EventManager>();
-            m_SettingComponent = ModuleManager.GetModule<SettingComponent>();
+            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_SettingManager = ModuleManager.GetModule<SettingManager>();
             
-            var value = m_SettingComponent.GetString("Language");
+            var value = m_SettingManager.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else

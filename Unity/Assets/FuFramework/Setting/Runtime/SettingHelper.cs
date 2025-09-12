@@ -16,12 +16,12 @@ namespace FuFramework.Setting.Runtime
     /// 3. 序列化/反序列化游戏配置。
     /// 注意：对象的序列化和反序列化使用Json字符串作为Value保存。
     /// </summary>
-    public class DefaultSettingHelper : SettingHelperBase
+    public class SettingHelper : MonoBehaviour
     {
         /// <summary>
-        /// Setting配置文件名。
+        /// 配置文件名。
         /// </summary>
-        private const string SettingFileName = "GameFrameworkSetting.dat";
+        private const string FileName = "GameSetting.dat";
 
         /// <summary>
         /// 获取游戏配置存储文件路径。
@@ -31,23 +31,23 @@ namespace FuFramework.Setting.Runtime
         /// <summary>
         /// 获取游戏配置。
         /// </summary>
-        public DefaultSetting Setting { get; private set; }
+        public Setting Setting { get; private set; }
 
         /// <summary>
         /// 获取游戏配置序列化器。
         /// </summary>
-        public DefaultSettingSerializer Serializer { get; private set; }
+        public SettingSerializer Serializer { get; private set; }
 
         /// <summary>
         /// 获取游戏配置项数量。
         /// </summary>
-        public override int Count => Setting?.Count ?? 0;
+        public int Count => Setting?.Count ?? 0;
 
         private void Awake()
         {
-            FilePath   = Utility.Path.GetRegularPath(Path.Combine(Application.persistentDataPath, SettingFileName));
-            Setting    = new DefaultSetting();
-            Serializer = new DefaultSettingSerializer();
+            FilePath   = Utility.Path.GetRegularPath(Path.Combine(Application.persistentDataPath, FileName));
+            Setting    = new Setting();
+            Serializer = new SettingSerializer();
             Serializer.RegisterSerializeCallback(0, SerializeDefaultSettingCallback);
             Serializer.RegisterDeserializeCallback(0, DeserializeDefaultSettingCallback);
         }
@@ -56,7 +56,7 @@ namespace FuFramework.Setting.Runtime
         /// 加载游戏配置。
         /// </summary>
         /// <returns>是否加载游戏配置成功。</returns>
-        public override bool Load()
+        public bool Load()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace FuFramework.Setting.Runtime
             }
             catch (Exception exception)
             {
-                Log.Warning("加载配置失败：'{0}'.", exception);
+                Log.Warning("[DefaultHelper] 加载配置失败：'{0}'.", exception);
                 return false;
             }
         }
@@ -76,7 +76,7 @@ namespace FuFramework.Setting.Runtime
         /// 保存游戏配置。
         /// </summary>
         /// <returns>是否保存游戏配置成功。</returns>
-        public override bool Save()
+        public bool Save()
         {
             try
             {
@@ -85,7 +85,7 @@ namespace FuFramework.Setting.Runtime
             }
             catch (Exception exception)
             {
-                Log.Warning("保存配置失败：'{0}'.", exception);
+                Log.Warning("[DefaultHelper] 保存配置失败：'{0}'.", exception);
                 return false;
             }
         }
@@ -94,39 +94,39 @@ namespace FuFramework.Setting.Runtime
         /// 获取所有游戏配置项的名称。
         /// </summary>
         /// <returns>所有游戏配置项的名称。</returns>
-        public override string[] GetAllSettingNames() => Setting.GetAllSettingNames();
+        public string[] GetAllSettingNames() => Setting.GetAllSettingNames();
 
         /// <summary>
         /// 获取所有游戏配置项的名称。
         /// </summary>
         /// <param name="results">所有游戏配置项的名称。</param>
-        public override void GetAllSettingNames(List<string> results) => Setting.GetAllSettingNames(results);
+        public void GetAllSettingNames(List<string> results) => Setting.GetAllSettingNames(results);
 
         /// <summary>
         /// 检查是否存在指定游戏配置项。
         /// </summary>
         /// <param name="settingName">要检查游戏配置项的名称。</param>
         /// <returns>指定的游戏配置项是否存在。</returns>
-        public override bool HasSetting(string settingName) => Setting.HasSetting(settingName);
+        public bool HasSetting(string settingName) => Setting.HasSetting(settingName);
 
         /// <summary>
         /// 移除指定游戏配置项。
         /// </summary>
         /// <param name="settingName">要移除游戏配置项的名称。</param>
         /// <returns>是否移除指定游戏配置项成功。</returns>
-        public override bool RemoveSetting(string settingName) => Setting.RemoveSetting(settingName);
+        public bool RemoveSetting(string settingName) => Setting.RemoveSetting(settingName);
 
         /// <summary>
         /// 清空所有游戏配置项。
         /// </summary>
-        public override void RemoveAllSettings() => Setting.RemoveAllSettings();
+        public void RemoveAllSettings() => Setting.RemoveAllSettings();
 
         /// <summary>
         /// 从指定游戏配置项中读取布尔值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的布尔值。</returns>
-        public override bool GetBool(string settingName) => Setting.GetBool(settingName);
+        public bool GetBool(string settingName) => Setting.GetBool(settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取布尔值。
@@ -134,21 +134,21 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的布尔值。</returns>
-        public override bool GetBool(string settingName, bool defaultValue) => Setting.GetBool(settingName, defaultValue);
+        public bool GetBool(string settingName, bool defaultValue) => Setting.GetBool(settingName, defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入布尔值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的布尔值。</param>
-        public override void SetBool(string settingName, bool value) => Setting.SetBool(settingName, value);
+        public void SetBool(string settingName, bool value) => Setting.SetBool(settingName, value);
 
         /// <summary>
         /// 从指定游戏配置项中读取整数值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的整数值。</returns>
-        public override int GetInt(string settingName) => Setting.GetInt(settingName);
+        public int GetInt(string settingName) => Setting.GetInt(settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取整数值。
@@ -156,21 +156,21 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的整数值。</returns>
-        public override int GetInt(string settingName, int defaultValue) => Setting.GetInt(settingName, defaultValue);
+        public int GetInt(string settingName, int defaultValue) => Setting.GetInt(settingName, defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入整数值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的整数值。</param>
-        public override void SetInt(string settingName, int value) => Setting.SetInt(settingName, value);
+        public void SetInt(string settingName, int value) => Setting.SetInt(settingName, value);
 
         /// <summary>
         /// 从指定游戏配置项中读取浮点数值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的浮点数值。</returns>
-        public override float GetFloat(string settingName) => Setting.GetFloat(settingName);
+        public float GetFloat(string settingName) => Setting.GetFloat(settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取浮点数值。
@@ -178,21 +178,21 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的浮点数值。</returns>
-        public override float GetFloat(string settingName, float defaultValue) => Setting.GetFloat(settingName, defaultValue);
+        public float GetFloat(string settingName, float defaultValue) => Setting.GetFloat(settingName, defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入浮点数值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的浮点数值。</param>
-        public override void SetFloat(string settingName, float value) => Setting.SetFloat(settingName, value);
+        public void SetFloat(string settingName, float value) => Setting.SetFloat(settingName, value);
 
         /// <summary>
         /// 从指定游戏配置项中读取字符串值。
         /// </summary>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的字符串值。</returns>
-        public override string GetString(string settingName) => Setting.GetString(settingName);
+        public string GetString(string settingName) => Setting.GetString(settingName);
 
         /// <summary>
         /// 从指定游戏配置项中读取字符串值。
@@ -200,14 +200,14 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultValue">当指定的游戏配置项不存在时，返回此默认值。</param>
         /// <returns>读取的字符串值。</returns>
-        public override string GetString(string settingName, string defaultValue) => Setting.GetString(settingName, defaultValue);
+        public string GetString(string settingName, string defaultValue) => Setting.GetString(settingName, defaultValue);
 
         /// <summary>
         /// 向指定游戏配置项写入字符串值。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="value">要写入的字符串值。</param>
-        public override void SetString(string settingName, string value) => Setting.SetString(settingName, value);
+        public void SetString(string settingName, string value) => Setting.SetString(settingName, value);
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -215,7 +215,7 @@ namespace FuFramework.Setting.Runtime
         /// <typeparam name="T">要读取对象的类型。</typeparam>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的对象。</returns>
-        public override T GetObject<T>(string settingName) => Utility.Json.ToObject<T>(GetString(settingName));
+        public T GetObject<T>(string settingName) => Utility.Json.ToObject<T>(GetString(settingName));
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -223,7 +223,7 @@ namespace FuFramework.Setting.Runtime
         /// <param name="objectType">要读取对象的类型。</param>
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <returns>读取的对象。</returns>
-        public override object GetObject(Type objectType, string settingName) => Utility.Json.ToObject(objectType, GetString(settingName));
+        public object GetObject(Type objectType, string settingName) => Utility.Json.ToObject(objectType, GetString(settingName));
 
         /// <summary>
         /// 从指定游戏配置项中读取对象。
@@ -232,7 +232,7 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultObj">当指定的游戏配置项不存在时，返回此默认对象。</param>
         /// <returns>读取的对象。</returns>
-        public override T GetObject<T>(string settingName, T defaultObj)
+        public T GetObject<T>(string settingName, T defaultObj)
         {
             var json = GetString(settingName, null);
             return json.IsNullOrWhiteSpace() ? defaultObj : Utility.Json.ToObject<T>(json);
@@ -245,7 +245,7 @@ namespace FuFramework.Setting.Runtime
         /// <param name="settingName">要获取游戏配置项的名称。</param>
         /// <param name="defaultObj">当指定的游戏配置项不存在时，返回此默认对象。</param>
         /// <returns>读取的对象。</returns>
-        public override object GetObject(Type objectType, string settingName, object defaultObj)
+        public object GetObject(Type objectType, string settingName, object defaultObj)
         {
             var json = GetString(settingName, null);
             return json.IsNullOrWhiteSpace() ? defaultObj : Utility.Json.ToObject(objectType, json);
@@ -257,22 +257,22 @@ namespace FuFramework.Setting.Runtime
         /// <typeparam name="T">要写入对象的类型。</typeparam>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="obj">要写入的对象。</param>
-        public override void SetObject<T>(string settingName, T obj) => SetString(settingName, Utility.Json.ToJson(obj));
+        public void SetObject<T>(string settingName, T obj) => SetString(settingName, Utility.Json.ToJson(obj));
 
         /// <summary>
         /// 向指定游戏配置项写入对象。
         /// </summary>
         /// <param name="settingName">要写入游戏配置项的名称。</param>
         /// <param name="obj">要写入的对象。</param>
-        public override void SetObject(string settingName, object obj) => SetString(settingName, Utility.Json.ToJson(obj));
+        public void SetObject(string settingName, object obj) => SetString(settingName, Utility.Json.ToJson(obj));
 
         /// <summary>
         /// 序列化默认配置回调函数。
         /// </summary>
         /// <param name="stream"></param>
-        /// <param name="defaultSetting"></param>
+        /// <param name="setting"></param>
         /// <returns></returns>
-        private bool SerializeDefaultSettingCallback(Stream stream, DefaultSetting defaultSetting)
+        private bool SerializeDefaultSettingCallback(Stream stream, Setting setting)
         {
             Setting.Serialize(stream);
             return true;
@@ -283,7 +283,7 @@ namespace FuFramework.Setting.Runtime
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        private DefaultSetting DeserializeDefaultSettingCallback(Stream stream)
+        private Setting DeserializeDefaultSettingCallback(Stream stream)
         {
             Setting.Deserialize(stream);
             return Setting;
