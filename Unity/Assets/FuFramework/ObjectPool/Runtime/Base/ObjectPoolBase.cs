@@ -7,17 +7,11 @@ namespace FuFramework.ObjectPool.Runtime
     /// <summary>
     /// 对象池的基类。
     /// 功能：
-    ///     1.记录了对象池的名称、类型、数量、可释放数量、允许多次获取、自动释放间隔、容量、过期秒数、优先级等信息。
+    ///     1.记录了对象池的名称、类型、数量、可释放数量、是否允许多次获取、自动释放间隔、容量、过期秒数、优先级等信息。
     ///     2.定义了对象池轮询、关闭并清理对象池、释放对象池中的可释放对象、尝试释放对象池中的指定数量的对象、获取所有对象信息等接口。
     /// </summary>
     public abstract class ObjectPoolBase
     {
-        /// <summary>
-        /// 初始化对象池基类的新实例。
-        /// </summary>
-        /// <param name="name">对象池名称。</param>
-        protected ObjectPoolBase(string name) => Name = name ?? string.Empty;
-
         /// <summary>
         /// 获取对象池名称。
         /// </summary>
@@ -27,6 +21,17 @@ namespace FuFramework.ObjectPool.Runtime
         /// 获取对象池完整名称。
         /// </summary>
         public string FullName => new TypeNamePair(ObjectType, Name).ToString();
+        
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="name">对象池名称。</param>
+        protected ObjectPoolBase(string name)
+        {
+            Name = name ?? string.Empty;
+        }
+        
+        #region 抽象属性
 
         /// <summary>
         /// 获取对象池对象类型。
@@ -70,6 +75,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public abstract int Priority { get; set; }
 
+        #endregion
+
+        #region 抽象方法
+
         /// <summary>
         /// 对象池轮询。
         /// </summary>
@@ -104,5 +113,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         /// <returns>所有对象信息。</returns>
         public abstract ObjectInfo[] GetAllObjectInfos();
+
+        #endregion
     }
 }

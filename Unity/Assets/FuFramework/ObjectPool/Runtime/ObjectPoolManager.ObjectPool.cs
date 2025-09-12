@@ -9,7 +9,11 @@ namespace FuFramework.ObjectPool.Runtime
     public sealed partial class ObjectPoolManager
     {
         /// <summary>
-        /// 一个具体存放T类型对象的对象池。继承于ObjectPoolBase，实现了IObjectPool接口
+        /// 一个具体存放T类型对象的对象池。继承于ObjectPoolBase。
+        /// 1.单实例池 (AllowSpawnInUse = false)：一个对象每次只能被取出一次。如果未被归还，再次获取时会创建新实例。
+        /// 2.多实例池 (AllowSpawnInUse = true)：一个对象可以被同时取出多次（引用计数）。只有当所有引用都被归还后，对象才会真正回池。
+        /// 3.允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
+        /// 4.设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
         public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
@@ -18,27 +22,27 @@ namespace FuFramework.ObjectPool.Runtime
             /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用
             private readonly FuMultiDictionary<string, Object<T>> m_ObjectMultiDict;
 
-            /// 存储目标对象与其对应的内部对象的字典，key为标对象，value为对应的内部对象.
+            /// 存储目标对象与其对应的内部对象的字典，key为目标对象，value为对应的内部对象.
             private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
 
-            /// 缓存可以释放的对象。
+            /// 缓存当前所有可以释放的对象列表(未使用、未加锁、标记可释放).
             private readonly List<T> m_CachedCanReleaseObjectList;
 
-            /// 缓存经过筛选函数后可以释放的对象
+            /// 缓存经过筛选函数后最终决定要释放的对象列表
             private readonly List<T> m_CachedToReleaseObjectList;
 
-            /// 默认释放对象的筛选函数。
+            /// 默认释放对象的筛选函数(释放策略)。定义了如何从候选列表中选出要释放的对象（基于优先级和最后使用时间）。
             private readonly ReleaseObjectFilterCallback<T> m_DefaultReleaseObjectFilterCallback;
 
 
             /// 对象池的容量。
             private int m_Capacity;
 
-            /// 对象池中的对象过期时间秒数。
+            /// 对象过期时间秒数。一个对象闲置超过这个时间（秒），就会被标记为可释放。
             private float m_ExpireTime;
 
 
-            /// 对象池每次轮询中自动释放可释放对象的计时器。
+            /// 自动释放计时器。用于计时，每隔 AutoReleaseInterval 秒触发一次自动释放检查。
             private float m_AutoReleaseTimer;
 
             /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
@@ -50,7 +54,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 获取对象池中的对象时，是否允许获取正在被使用的对象。一般都为false。
             /// false--对象只能在回收后才能再次被获取，即池中会存在多个同名对象;
-            /// true--对象能在未回收的状态下就能再次被获取，这样会使得池中的对象永远只有一个
+            /// true--对象能在未回收的状态下就能再次被获取，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
             /// </summary>
             public override bool AllowSpawnInUse { get; }
 
@@ -170,39 +174,7 @@ namespace FuFramework.ObjectPool.Runtime
             }
 
             /// <summary>
-            /// 检查对象。
-            /// </summary>
-            /// <returns>要检查的对象是否存在。</returns>
-            public bool CanSpawn() => CanSpawn(string.Empty);
-
-            /// <summary>
-            /// 检查对象。
-            /// </summary>
-            /// <param name="name">对象名称。</param>
-            /// <returns>要检查的对象是否存在。</returns>
-            public bool CanSpawn(string name)
-            {
-                if (name == null) throw new FuException("对象名称不能为空.");
-
-                if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return false;
-
-                foreach (var internalObject in objectRange)
-                {
-                    if (AllowSpawnInUse || !internalObject.IsInUse)
-                        return true;
-                }
-
-                return false;
-            }
-
-            /// <summary>
-            /// 获取对象。
-            /// </summary>
-            /// <returns>要获取的对象。</returns>
-            public T Spawn() => Spawn(string.Empty);
-
-            /// <summary>
-            /// 获取对象。
+            /// 获取已存在的对象。
             /// </summary>
             /// <param name="name">对象名称。</param>
             /// <returns>要获取的对象。</returns>
@@ -241,8 +213,7 @@ namespace FuFramework.ObjectPool.Runtime
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new FuException(Utility.Text.Format("在对象池“{0}”中找不到目标，目标类型为“{1}”，目标值为“{2}'.", new TypeNamePair(typeof(T), Name),
-                                                              target.GetType().FullName, target));
+                    throw new FuException($"在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
                 internalObject.Recycle();
                 if (Count > m_Capacity && internalObject.SpawnCount <= 0)
                 {
@@ -251,62 +222,7 @@ namespace FuFramework.ObjectPool.Runtime
             }
 
             /// <summary>
-            /// 设置对象是否被加锁。
-            /// </summary>
-            /// <param name="obj">要设置被加锁的对象。</param>
-            /// <param name="locked">是否被加锁。</param>
-            public void SetLocked(T obj, bool locked)
-            {
-                if (obj == null) throw new FuException("对象不能为空.");
-                SetLocked(obj.Target, locked);
-            }
-
-            /// <summary>
-            /// 设置对象是否被加锁。
-            /// </summary>
-            /// <param name="target">要设置被加锁的对象。</param>
-            /// <param name="locked">是否被加锁。</param>
-            public void SetLocked(object target, bool locked)
-            {
-                if (target == null) throw new FuException("对象不能为空.");
-
-                var internalObject = _GetObject(target);
-                if (internalObject == null)
-                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”.", new TypeNamePair(typeof(T), Name),
-                                                              target.GetType().FullName, target));
-                internalObject.Locked = locked;
-            }
-
-            /// <summary>
-            /// 设置对象的优先级。
-            /// </summary>
-            /// <param name="obj">要设置优先级的对象。</param>
-            /// <param name="priority">优先级。</param>
-            public void SetPriority(T obj, int priority)
-            {
-                if (obj == null) throw new FuException("对象不能为空.");
-                SetPriority(obj.Target, priority);
-            }
-
-            /// <summary>
-            /// 设置对象的优先级。
-            /// </summary>
-            /// <param name="target">要设置优先级的对象。</param>
-            /// <param name="priority">优先级。</param>
-            public void SetPriority(object target, int priority)
-            {
-                if (target == null) throw new FuException("目标对象不能为空.");
-
-                var internalObject = _GetObject(target);
-                if (internalObject == null)
-                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”..", new TypeNamePair(typeof(T), Name),
-                                                              target.GetType().FullName, target));
-
-                internalObject.Priority = priority;
-            }
-
-            /// <summary>
-            /// 释放对象。
+            /// 释放指定对象。
             /// </summary>
             /// <param name="obj">要释放的对象。</param>
             /// <returns>释放对象是否成功。</returns>
@@ -317,7 +233,7 @@ namespace FuFramework.ObjectPool.Runtime
             }
 
             /// <summary>
-            /// 释放对象。
+            /// 释放指定对象。
             /// </summary>
             /// <param name="target">要释放的对象。</param>
             /// <returns>释放对象是否成功。</returns>
@@ -379,22 +295,28 @@ namespace FuFramework.ObjectPool.Runtime
                 if (releaseObjectFilterCallback == null)
                     throw new FuException("释放对象筛选函数不能为空.");
 
-                if (toReleaseCount < 0)
-                    toReleaseCount = 0;
+                if (toReleaseCount <= 0) return;
 
-                var expireTime = DateTime.MinValue;
-                if (m_ExpireTime < float.MaxValue)
-                    expireTime = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
+                // 找到对象过期时间点，最后使用时间早于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
+                DateTime? expireTimeThreshold = null;
+                if (m_ExpireTime < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
+                {
+                    // 过期时间点 = 当前UTC时间 - 过期时间秒数。例如，如果过期时间设置为10秒，那么过期时间点就是10秒前的时刻。任何超过10秒没被用过的对象都被视为过期。
+                    expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
+                }
 
-
+                // 重置计时器
                 m_AutoReleaseTimer = 0f;
+                
+                // 获取所有可释放的对象
                 _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
                 FuLog.Info("尝试释放对象池中的可释放对象-对象数量: '{0}'", m_CachedCanReleaseObjectList.Count);
 
                 // 筛选需要释放的对象
-                var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTime);
+                var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTimeThreshold);
                 if (toReleaseObjects is not { Count: > 0 }) return;
 
+                // 释放对象
                 foreach (var toReleaseObject in toReleaseObjects)
                 {
                     ReleaseObject(toReleaseObject);
@@ -412,6 +334,87 @@ namespace FuFramework.ObjectPool.Runtime
                 {
                     ReleaseObject(toReleaseObject);
                 }
+            }
+
+            /// <summary>
+            /// 检查对象是否存在。
+            /// </summary>
+            /// <returns>要检查的对象是否存在。</returns>
+            public bool CanSpawn() => CanSpawn(string.Empty);
+
+            /// <summary>
+            /// 检查对象是否存在。
+            /// </summary>
+            /// <param name="name">对象名称。</param>
+            /// <returns>要检查的对象是否存在。</returns>
+            public bool CanSpawn(string name)
+            {
+                if (name == null) throw new FuException("对象名称不能为空.");
+
+                if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return false;
+
+                foreach (var internalObject in objectRange)
+                {
+                    if (AllowSpawnInUse || !internalObject.IsInUse)
+                        return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// 设置对象是否被加锁。
+            /// </summary>
+            /// <param name="obj">要设置被加锁的对象。</param>
+            /// <param name="locked">是否被加锁。</param>
+            public void SetLocked(T obj, bool locked)
+            {
+                if (obj == null) throw new FuException("对象不能为空.");
+                SetLocked(obj.Target, locked);
+            }
+
+            /// <summary>
+            /// 设置对象是否被加锁。
+            /// </summary>
+            /// <param name="target">要设置被加锁的对象。</param>
+            /// <param name="locked">是否被加锁。</param>
+            public void SetLocked(object target, bool locked)
+            {
+                if (target == null) throw new FuException("对象不能为空.");
+
+                var internalObject = _GetObject(target);
+                if (internalObject == null)
+                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”.", new TypeNamePair(typeof(T), Name),
+                                                              target.GetType().FullName, target));
+                internalObject.Locked = locked;
+            }
+
+            /// <summary>
+            /// 设置对象的优先级。
+            /// </summary>
+            /// <param name="obj">要设置优先级的对象。</param>
+            /// <param name="priority">优先级。</param>
+            public void SetPriority(T obj, int priority)
+            {
+                if (obj == null) throw new FuException("对象不能为空.");
+                SetPriority(obj.Target, priority);
+            }
+
+            /// <summary>
+            /// 设置对象的优先级。
+            /// </summary>
+            /// <param name="target">要设置优先级的对象。</param>
+            /// <param name="priority">优先级。</param>
+            public void SetPriority(object target, int priority)
+            {
+                if (target == null) throw new FuException("目标对象不能为空.");
+
+                var internalObject = _GetObject(target);
+                if (internalObject == null)
+                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”..", new TypeNamePair(typeof(T), Name),
+                                                              target.GetType().FullName, target));
+
+                internalObject.Priority = priority;
             }
 
             /// <summary>
@@ -471,19 +474,19 @@ namespace FuFramework.ObjectPool.Runtime
             /// <typeparam name="T">对象类型。</typeparam>
             /// <param name="candidateObjects">要筛选的对象集合。</param>
             /// <param name="toReleaseCount">需要释放的对象数量。</param>
-            /// <param name="expireTime">对象过期参考时间。</param>
+            /// <param name="expireTimeThreshold">对象过期时间点(为空时表示不限制过期时间点)。</param>
             /// <returns>经筛选需要释放的对象集合。</returns>
-            private List<T> _DefaultReleaseObjectFilterCallback(List<T> candidateObjects, int toReleaseCount, DateTime expireTime)
+            private List<T> _DefaultReleaseObjectFilterCallback(List<T> candidateObjects, int toReleaseCount, DateTime? expireTimeThreshold)
             {
                 m_CachedToReleaseObjectList.Clear();
 
                 // 第一阶段：根据最后使用时间筛选过期对象。
-                // 如果对象最后使用时间 > 过期时间，说明了对象存活还不够字段ExpireTime指定的时间，则继续筛选。
-                if (expireTime > DateTime.MinValue)
+                if (expireTimeThreshold.HasValue)
                 {
                     for (var i = candidateObjects.Count - 1; i >= 0; i--)
                     {
-                        if (candidateObjects[i].LastUseTime > expireTime) continue;
+                        // 如果对象最后使用时间 > 过期时间点，说明了对象还没过期，则继续筛选。
+                        if (candidateObjects[i].LastUseTime > expireTimeThreshold.Value) continue;
                         m_CachedToReleaseObjectList.Add(candidateObjects[i]);
                         candidateObjects.RemoveAt(i);
                     }

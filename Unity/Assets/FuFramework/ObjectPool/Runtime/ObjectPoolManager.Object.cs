@@ -9,25 +9,13 @@ namespace FuFramework.ObjectPool.Runtime
     {
         /// <summary>
         /// 内部对象。
-        /// 包装一个对象池内的对象，创建并管理对象生命周期。
+        /// 包装一个对象池内的目标对象，创建并管理对象生命周期。
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         private sealed class Object<T> : IReference where T : ObjectBase
         {
-            /// 对象池内的对象实例
+            /// 对象池内的目标对象
             private T m_Object;
-
-            /// 对象获取计数
-            private int m_SpawnCount;
-
-            /// <summary>
-            /// 初始化内部对象的新实例。
-            /// </summary>
-            public Object()
-            {
-                m_Object     = null;
-                m_SpawnCount = 0;
-            }
 
             /// <summary>
             /// 获取对象名称。
@@ -65,15 +53,15 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 获取对象是否正在使用。
             /// </summary>
-            public bool IsInUse => m_SpawnCount > 0;
+            public bool IsInUse => SpawnCount > 0;
 
             /// <summary>
             /// 获取对象的获取计数。
             /// </summary>
-            public int SpawnCount => m_SpawnCount;
+            public int SpawnCount { get; private set; }
 
             /// <summary>
-            /// 创建内部对象。
+            /// 创建对象。
             /// </summary>
             /// <param name="obj">对象。</param>
             /// <param name="spawned">对象是否提前生成，如果是，则会创建时调用 OnSpawn 事件。</param>
@@ -84,8 +72,9 @@ namespace FuFramework.ObjectPool.Runtime
 
                 var internalObject = ReferencePool.Runtime.ReferencePool.Acquire<Object<T>>();
                 internalObject.m_Object     = obj;
-                internalObject.m_SpawnCount = spawned ? 1 : 0;
-                if (spawned)
+                internalObject.SpawnCount = spawned ? 1 : 0;
+                
+                if (spawned) 
                     obj.OnSpawn();
 
                 return internalObject;
@@ -97,7 +86,7 @@ namespace FuFramework.ObjectPool.Runtime
             public void Clear()
             {
                 m_Object     = null;
-                m_SpawnCount = 0;
+                SpawnCount = 0;
             }
 
             /// <summary>
@@ -107,12 +96,12 @@ namespace FuFramework.ObjectPool.Runtime
             public T Peek() => m_Object;
 
             /// <summary>
-            /// 获取对象。
+            /// 获取已存在的对象。
             /// </summary>
             /// <returns>对象。</returns>
             public T Spawn()
             {
-                m_SpawnCount++;
+                SpawnCount++;
                 m_Object.LastUseTime = DateTime.UtcNow;
                 m_Object.OnSpawn();
                 return m_Object;
@@ -125,8 +114,8 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 m_Object.OnRecycle();
                 m_Object.LastUseTime = DateTime.UtcNow;
-                m_SpawnCount--;
-                if (m_SpawnCount < 0)
+                SpawnCount--;
+                if (SpawnCount < 0)
                     throw new FuException(Utility.Text.Format("对象 '{0}' 生成次数已经小于 0, 回收失败.", Name));
             }
 

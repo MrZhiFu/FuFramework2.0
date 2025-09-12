@@ -33,7 +33,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// 存储所有对象池的字典, Key为对象池的类型+名称，Value为对象池。
         private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
-        /// 缓存所有对象池的列表。
+        /// 缓存所有对象池的列表。释放所有对象池时使用。
         private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
 
 
@@ -700,8 +700,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <param name="priority">对象池的优先级。</param>
         /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime, int priority,
-            bool allowSpawnInUse = false)
+        public ObjectPoolBase CreateObjectPool(Type objectType, string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false)
         {
             return _CreateObjectPool(objectType, poolName, allowSpawnInUse, expireTime, capacity, expireTime, priority);
         }
