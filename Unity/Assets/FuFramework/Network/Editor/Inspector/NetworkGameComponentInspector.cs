@@ -10,7 +10,7 @@ namespace FuFramework.Network.Editor
     /// <summary>
     /// 自定义网络组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(NetworkComponent))]
+    [CustomEditor(typeof(NetworkManager))]
     internal sealed class NetworkGameComponentInspector : GameComponentInspector
     {
         private SerializedProperty m_IgnoredSendNetworkIds;
@@ -41,7 +41,7 @@ namespace FuFramework.Network.Editor
                 return;
             }
 
-            NetworkComponent t = (NetworkComponent)target;
+            NetworkManager t = (NetworkManager)target;
 
             if (IsPrefabInHierarchy(t.gameObject))
             {
@@ -59,7 +59,7 @@ namespace FuFramework.Network.Editor
 
         protected override void RefreshTypeNames()
         {
-            RefreshComponentTypeNames(typeof(INetworkManager));
+            // RefreshComponentTypeNames(typeof(INetworkManager));
         }
 
         private void DrawNetworkChannel(INetworkChannel networkChannel)

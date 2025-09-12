@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using FuFramework.Core.Runtime;
+using FuFramework.Event.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -10,53 +11,29 @@ namespace FuFramework.Network.Runtime
     /// <summary>
     /// 网络管理器。
     /// </summary>
-    public sealed partial class NetworkManager : FuModule, INetworkManager
+    public sealed partial class NetworkManager : FuComponent
     {
-        private readonly Dictionary<string, NetworkChannelBase> m_NetworkChannels = new();
-        private EventHandler<NetworkConnectedEventArgs> m_NetworkConnectedEventHandler = null;
-        private EventHandler<NetworkClosedEventArgs> m_NetworkClosedEventHandler = null;
-        private EventHandler<NetworkMissHeartBeatEventArgs> m_NetworkMissHeartBeatEventHandler = null;
-        private EventHandler<NetworkErrorEventArgs> m_NetworkErrorEventHandler = null;
+        /// <summary>
+        /// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。
+        /// </summary>
+        private readonly Dictionary<string, NetworkChannelBase> m_NetworkChannelDict = new();
+
+        /// <summary>
+        /// 事件组件。
+        /// </summary>
+        private EventManager m_EventManager;
 
         /// <summary>
         /// 获取网络频道数量。
         /// </summary>
-        public int NetworkChannelCount => m_NetworkChannels.Count;
+        public int NetworkChannelCount => m_NetworkChannelDict.Count;
 
         /// <summary>
-        /// 网络连接成功事件。
+        /// 初始化
         /// </summary>
-        public event EventHandler<NetworkConnectedEventArgs> NetworkConnected
+        protected override void OnInit()
         {
-            add => m_NetworkConnectedEventHandler += value;
-            remove => m_NetworkConnectedEventHandler -= value;
-        }
-
-        /// <summary>
-        /// 网络连接关闭事件。
-        /// </summary>
-        public event EventHandler<NetworkClosedEventArgs> NetworkClosed
-        {
-            add => m_NetworkClosedEventHandler += value;
-            remove => m_NetworkClosedEventHandler -= value;
-        }
-
-        /// <summary>
-        /// 网络心跳包丢失事件。
-        /// </summary>
-        public event EventHandler<NetworkMissHeartBeatEventArgs> NetworkMissHeartBeat
-        {
-            add => m_NetworkMissHeartBeatEventHandler += value;
-            remove => m_NetworkMissHeartBeatEventHandler -= value;
-        }
-
-        /// <summary>
-        /// 网络错误事件。
-        /// </summary>
-        public event EventHandler<NetworkErrorEventArgs> NetworkError
-        {
-            add => m_NetworkErrorEventHandler += value;
-            remove => m_NetworkErrorEventHandler -= value;
+            m_EventManager = ModuleManager.GetModule<EventManager>();
         }
 
         /// <summary>
@@ -64,20 +41,21 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void Update(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
-            foreach (var networkChannel in m_NetworkChannels)
+            foreach (var networkChannel in m_NetworkChannelDict)
             {
                 networkChannel.Value.Update(elapseSeconds, realElapseSeconds);
             }
         }
 
         /// <summary>
-        /// 关闭并清理网络管理器。
+        /// 关闭
         /// </summary>
-        protected override void Shutdown()
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
-            foreach (var networkChannel in m_NetworkChannels)
+            foreach (var networkChannel in m_NetworkChannelDict)
             {
                 var networkChannelBase = networkChannel.Value;
                 networkChannelBase.NetworkChannelConnected -= OnNetworkChannelConnected;
@@ -87,7 +65,7 @@ namespace FuFramework.Network.Runtime
                 networkChannelBase.Shutdown();
             }
 
-            m_NetworkChannels.Clear();
+            m_NetworkChannelDict.Clear();
         }
 
         /// <summary>
@@ -97,7 +75,7 @@ namespace FuFramework.Network.Runtime
         /// <returns>是否存在网络频道。</returns>
         public bool HasNetworkChannel(string channelName)
         {
-            return m_NetworkChannels.ContainsKey(channelName ?? string.Empty);
+            return m_NetworkChannelDict.ContainsKey(channelName ?? string.Empty);
         }
 
         /// <summary>
@@ -107,7 +85,7 @@ namespace FuFramework.Network.Runtime
         /// <returns>要获取的网络频道。</returns>
         public INetworkChannel GetNetworkChannel(string channelName)
         {
-            return m_NetworkChannels.GetValueOrDefault(channelName ?? string.Empty);
+            return m_NetworkChannelDict.GetValueOrDefault(channelName ?? string.Empty);
         }
 
         /// <summary>
@@ -117,8 +95,8 @@ namespace FuFramework.Network.Runtime
         public INetworkChannel[] GetAllNetworkChannels()
         {
             var index = 0;
-            var results = new INetworkChannel[m_NetworkChannels.Count];
-            foreach (var networkChannel in m_NetworkChannels)
+            var results = new INetworkChannel[m_NetworkChannelDict.Count];
+            foreach (var networkChannel in m_NetworkChannelDict)
             {
                 results[index++] = networkChannel.Value;
             }
@@ -135,7 +113,7 @@ namespace FuFramework.Network.Runtime
             FuGuard.NotNull(results, nameof(results));
 
             results.Clear();
-            foreach (var networkChannel in m_NetworkChannels)
+            foreach (var networkChannel in m_NetworkChannelDict)
             {
                 results.Add(networkChannel.Value);
             }
@@ -146,9 +124,9 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         /// <param name="channelName">网络频道名称。</param>
         /// <param name="networkChannelHelper">网络频道辅助器。</param>
-        /// <param name="rpcTimeout">RPC超时时间</param>
+        /// <param name="rpcTimeout">RPC超时时间，默认5000毫秒。</param>
         /// <returns>要创建的网络频道。</returns>
-        public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
+        public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             FuGuard.NotNull(networkChannelHelper, nameof(networkChannelHelper));
@@ -166,7 +144,7 @@ namespace FuFramework.Network.Runtime
             networkChannel.NetworkChannelClosed += OnNetworkChannelClosed;
             networkChannel.NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
             networkChannel.NetworkChannelError += OnNetworkChannelError;
-            m_NetworkChannels.Add(channelName, networkChannel);
+            m_NetworkChannelDict.Add(channelName, networkChannel);
             return networkChannel;
         }
 
@@ -178,54 +156,38 @@ namespace FuFramework.Network.Runtime
         public bool DestroyNetworkChannel(string channelName)
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
-            if (!m_NetworkChannels.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
+            if (!m_NetworkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
             networkChannel.NetworkChannelConnected -= OnNetworkChannelConnected;
             networkChannel.NetworkChannelClosed -= OnNetworkChannelClosed;
             networkChannel.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
             networkChannel.NetworkChannelError -= OnNetworkChannelError;
             networkChannel.Shutdown();
-            return channelName != null && m_NetworkChannels.Remove(channelName);
+            return channelName != null && m_NetworkChannelDict.Remove(channelName);
         }
 
         private void OnNetworkChannelConnected(NetworkChannelBase networkChannel, object userData)
         {
-            if (m_NetworkConnectedEventHandler == null) return;
-            lock (m_NetworkConnectedEventHandler)
-            {
-                var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel, userData);
-                m_NetworkConnectedEventHandler(this, networkConnectedEventArgs);
-            }
+            var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel, userData);
+            m_EventManager.Fire(this, networkConnectedEventArgs);
         }
 
         private void OnNetworkChannelClosed(NetworkChannelBase networkChannel)
         {
-            if (m_NetworkClosedEventHandler == null) return;
-            lock (m_NetworkClosedEventHandler)
-            {
-                var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel);
-                m_NetworkClosedEventHandler(this, networkClosedEventArgs);
-            }
+            var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel);
+            m_EventManager.Fire(this, networkClosedEventArgs);
         }
 
         private void OnNetworkChannelMissHeartBeat(NetworkChannelBase networkChannel, int missHeartBeatCount)
         {
-            if (m_NetworkMissHeartBeatEventHandler == null) return;
-            lock (m_NetworkMissHeartBeatEventHandler)
-            {
-                var networkMissHeartBeatEventArgs = NetworkMissHeartBeatEventArgs.Create(networkChannel, missHeartBeatCount);
-                m_NetworkMissHeartBeatEventHandler(this, networkMissHeartBeatEventArgs);
-            }
+            var networkMissHeartBeatEventArgs = NetworkMissHeartBeatEventArgs.Create(networkChannel, missHeartBeatCount);
+            m_EventManager.Fire(this, networkMissHeartBeatEventArgs);
         }
 
         private void OnNetworkChannelError(NetworkChannelBase networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
             string errorMessage)
         {
-            if (m_NetworkErrorEventHandler == null) return;
-            lock (m_NetworkErrorEventHandler)
-            {
-                var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
-                m_NetworkErrorEventHandler(this, networkErrorEventArgs);
-            }
+            var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
+            m_EventManager.Fire(this, networkErrorEventArgs);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace FuFramework.Entry.Runtime
         public static LocalizationManager   LocalizationModule   { get; private set; }
         public static MonoManager           MonoModule           { get; private set; }
         public static UIManager             UIModule             { get; private set; }
-        public static NetworkComponent      NetworkModule        { get; private set; }
+        public static NetworkManager      NetworkModule        { get; private set; }
         public static ObjectPoolManager     ObjectPoolModule     { get; private set; }
         public static ProcedureManager      ProcedureModule      { get; private set; }
         public static SettingManager      SettingModule        { get; private set; }
@@ -72,7 +72,7 @@ namespace FuFramework.Entry.Runtime
             LocalizationModule   = ModuleManager.RegisterModule<LocalizationManager>();
             MonoModule           = ModuleManager.RegisterModule<MonoManager>();
             UIModule             = ModuleManager.RegisterModule<UIManager>();
-            NetworkModule        = ModuleManager.RegisterModule<NetworkComponent>();
+            NetworkModule        = ModuleManager.RegisterModule<NetworkManager>();
             ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolManager>();
             ProcedureModule      = ModuleManager.RegisterModule<ProcedureManager>();
             SettingModule        = ModuleManager.RegisterModule<SettingManager>();

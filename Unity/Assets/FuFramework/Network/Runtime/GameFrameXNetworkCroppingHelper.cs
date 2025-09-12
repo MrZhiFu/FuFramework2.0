@@ -23,7 +23,6 @@ namespace FuFramework.Network.Runtime
             _ = typeof(IMessageHandler);
             _ = typeof(INetworkChannel);
             _ = typeof(INetworkChannelHelper);
-            _ = typeof(INetworkManager);
             _ = typeof(INetworkSocket);
             _ = typeof(INotifyMessage);
             _ = typeof(IPacketHandler);
@@ -39,7 +38,6 @@ namespace FuFramework.Network.Runtime
             _ = typeof(MessageObject);
             _ = typeof(MessageTypeHandlerAttribute);
             _ = typeof(NetworkClosedEventArgs);
-            _ = typeof(NetworkComponent);
             _ = typeof(NetworkConnectedEventArgs);
             _ = typeof(NetworkErrorCode);
             _ = typeof(NetworkErrorEventArgs);
