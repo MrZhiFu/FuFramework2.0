@@ -8,8 +8,7 @@ namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
     /// 对象池管理器。
-    /// "只允许单次获取"代表对象池中的对象只能在回收后才能再次被获取;
-    /// "允许多次获取"代表对象池对中的对象能在未回收的状态下就能再次被获取
+    /// 功能：管理 Unity端的GameObject的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销
     /// </summary>
     public sealed partial class ObjectPoolManager : FuComponent
     {

@@ -7,6 +7,7 @@ namespace FuFramework.ReferencePool.Runtime
     /// <summary>
     /// 引用池管理器。
     /// 功能:主要用于设置是否开启引用池类型的严格检查。
+    /// 开启后会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能。
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ReferencePoolManager : FuComponent
@@ -17,7 +18,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => 1000;
 
-        [Header("是否开启引用类型严格检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类, 同时在 Release 调用时，会检查传入的引用是否已经可以重复归还-EnQueue)")]
+        [Header("是否开启引用类型严格检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类)")]
         [SerializeField] private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.AlwaysEnable;
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace FuFramework.ObjectPool.Runtime
     public sealed partial class ObjectPoolManager
     {
         /// <summary>
-        /// 一个具体存放T类型对象的对象池。继承于ObjectPoolBase。
+        /// 具体存放T类型对象的对象池。继承于ObjectPoolBase。
         /// 1.单实例池 (AllowSpawnInUse = false)：一个对象每次只能被取出一次。如果未被归还，再次获取时会创建新实例。
         /// 2.多实例池 (AllowSpawnInUse = true)：一个对象可以被同时取出多次（引用计数）。只有当所有引用都被归还后，对象才会真正回池。
         /// 3.允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。

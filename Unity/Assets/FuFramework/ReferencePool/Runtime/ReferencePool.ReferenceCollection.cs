@@ -20,12 +20,8 @@ namespace FuFramework.ReferencePool.Runtime
             /// 引用池类型
             public Type RefType { get; }
 
-            /// 引用池队列, 存储未使用闲置的引用对象
-            private readonly Queue<IReference> m_UnusedRefQueue = new();
-
-
-            /// 闲置未使用的引用数量(即引用池中的元素数量)
-            public int UnusedReferenceCount => m_UnusedRefQueue?.Count ?? 0;
+            /// 引用池队列, 存储闲置的引用对象
+            private readonly Queue<IReference> m_FreeQueue = new();
 
 
             /// 正在使用的引用数量(从引用池中获取的 + 引用池中不存在时new创建的引用数量 - 释放归还的引用数量)
@@ -43,29 +39,32 @@ namespace FuFramework.ReferencePool.Runtime
             /// 被移除的引用数量
             public int RemoveReferenceCount { get; private set; }
 
+            /// 闲置未使用的引用数量(即引用池中的元素数量)
+            public int UnusedReferenceCount => m_FreeQueue?.Count ?? 0;
 
+            
             public ReferenceCollection(Type refType)
             {
                 RefType = refType;
             }
 
             /// <summary>
-            /// 从引用池获取引用对象(没有则使用泛型new()创建)
+            /// 从引用池获取引用对象(没有则使用new T()创建)
             /// </summary>
             /// <typeparam name="T"></typeparam>
             /// <returns></returns>
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public T Acquire<T>() where T : class, IReference, new()
             {
-                if (typeof(T) != RefType) throw new FuException("类型无效.");
+                if (typeof(T) != RefType) throw new FuException("[ReferenceCollection] 引用获取失败，引用类型无效.");
 
                 UsingReferenceCount++;
                 AcquireReferenceCount++;
 
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
-                    if (m_UnusedRefQueue.Count > 0)
-                        return m_UnusedRefQueue.Dequeue() as T;
+                    if (m_FreeQueue.Count > 0)
+                        return m_FreeQueue.Dequeue() as T;
                 }
 
                 AddReferenceCount++;
@@ -80,10 +79,11 @@ namespace FuFramework.ReferencePool.Runtime
             {
                 UsingReferenceCount++;
                 AcquireReferenceCount++;
-                lock (m_UnusedRefQueue)
+                
+                lock (m_FreeQueue)
                 {
-                    if (m_UnusedRefQueue.Count > 0)
-                        return m_UnusedRefQueue.Dequeue();
+                    if (m_FreeQueue.Count > 0)
+                        return m_FreeQueue.Dequeue();
                 }
 
                 AddReferenceCount++;
@@ -91,23 +91,23 @@ namespace FuFramework.ReferencePool.Runtime
             }
 
             /// <summary>
-            /// 释放引用, 将引用归还引用池
+            /// 释放引用, 将引用归还到引用池中
             /// </summary>
             /// <param name="reference"></param>
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Release(IReference reference)
             {
-                if (reference == null) throw new FuException("引用释放失败，引用对象为空.");
+                if (reference == null) throw new FuException("[ReferenceCollection] 引用释放失败，引用对象为空.");
 
-                // 清理引用，清除数据后重用该对象
+                // 清理引用，清除数据后方便重用该对象
                 reference.Clear();
 
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
-                    if (EnableStrictCheck && m_UnusedRefQueue.Contains(reference))
-                        throw new FuException($"引用{reference.GetType().Name}释放失败，该对象已经被释放.");
+                    if (m_FreeQueue.Contains(reference))
+                        throw new FuException($"[ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，该对象已经被释放.");
 
-                    m_UnusedRefQueue.Enqueue(reference);
+                    m_FreeQueue.Enqueue(reference);
                 }
 
                 ReleaseReferenceCount++;
@@ -115,37 +115,39 @@ namespace FuFramework.ReferencePool.Runtime
             }
 
             /// <summary>
-            /// 向引用池中追加指定数量的引用
+            /// 向引用池中添加指定数量的引用(使用new T()创建)
             /// </summary>
             /// <param name="count"></param>
             /// <typeparam name="T"></typeparam>
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Add<T>(int count) where T : class, IReference, new()
             {
-                if (typeof(T) != RefType) throw new FuException($"添加引用失败，类型{typeof(T).Name}不是引用池类型.");
+                if (typeof(T) != RefType) throw new FuException($"[ReferenceCollection] 添加引用失败，类型{typeof(T).Name}不是引用池类型.");
 
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
                     AddReferenceCount += count;
                     while (count-- > 0)
                     {
-                        m_UnusedRefQueue.Enqueue(new T());
+                        var reference = new T();
+                        m_FreeQueue.Enqueue(reference);
                     }
                 }
             }
 
             /// <summary>
-            /// 向引用池中追加指定数量的引用
+            /// 向引用池中添加指定数量的引用(使用Activator.CreateInstance()创建)
             /// </summary>
             /// <param name="count"></param>
             public void Add(int count)
             {
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
                     AddReferenceCount += count;
                     while (count-- > 0)
                     {
-                        m_UnusedRefQueue.Enqueue((IReference)Activator.CreateInstance(RefType));
+                        var reference = Activator.CreateInstance(RefType) as IReference;
+                        m_FreeQueue.Enqueue(reference);
                     }
                 }
             }
@@ -156,15 +158,15 @@ namespace FuFramework.ReferencePool.Runtime
             /// <param name="count"></param>
             public void Remove(int count)
             {
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
-                    if (count > m_UnusedRefQueue.Count)
-                        count = m_UnusedRefQueue.Count;
+                    if (count > m_FreeQueue.Count)
+                        count = m_FreeQueue.Count;
 
                     RemoveReferenceCount += count;
                     while (count-- > 0)
                     {
-                        m_UnusedRefQueue.Dequeue();
+                        m_FreeQueue.Dequeue();
                     }
                 }
             }
@@ -174,10 +176,10 @@ namespace FuFramework.ReferencePool.Runtime
             /// </summary>
             public void RemoveAll()
             {
-                lock (m_UnusedRefQueue)
+                lock (m_FreeQueue)
                 {
-                    RemoveReferenceCount += m_UnusedRefQueue.Count;
-                    m_UnusedRefQueue.Clear();
+                    RemoveReferenceCount += m_FreeQueue.Count;
+                    m_FreeQueue.Clear();
                 }
             }
         }

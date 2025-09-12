@@ -7,6 +7,7 @@ namespace FuFramework.ReferencePool.Runtime
 {
     /// <summary>
     /// 引用池。
+    /// 功能：管理纯C#类对象（数据、逻辑）的内存分配和回收，目标是减少GC的频率，提高游戏运行效率。
     /// </summary>
     public static partial class ReferencePool
     {
@@ -17,8 +18,7 @@ namespace FuFramework.ReferencePool.Runtime
 
         /// <summary>
         /// 是否开启引用类型严格检查。
-        /// 当开启时，会检查所有传入的引用类型是否合法，合法的定义为：非空，非抽象类，实现了 IReference 接口，
-        /// 同时，在 Release 调用时，会检查传入的引用对象是否已经可以重复归还, 为false时可允许重复归同类型对象, 为true时不允许重复归还该类型对象。
+        /// 当开启时，会检查传入的引用类型是否合法，合法的定义为：非空，非抽象类，实现了 IReference 接口，
         /// </summary>
         public static bool EnableStrictCheck { get; set; }
 
@@ -29,27 +29,98 @@ namespace FuFramework.ReferencePool.Runtime
         public static int Count => ReferenceCollectionDict?.Count ?? 0;
 
         /// <summary>
-        /// 获取所有引用池的信息。
+        /// 从引用池获取引用。
         /// </summary>
-        /// <returns>所有引用池的信息。</returns>
-        public static ReferencePoolInfo[] GetAllReferencePoolInfos()
+        /// <typeparam name="T">引用类型。</typeparam>
+        /// <returns>引用。</returns>
+        public static T Acquire<T>() where T : class, IReference, new()
         {
-            var index = 0;
+            _CheckReferenceType(typeof(T));
+            return _GetReferenceCollection(typeof(T)).Acquire<T>();
+        }
 
-            ReferencePoolInfo[] results;
+        /// <summary>
+        /// 从引用池获取引用。
+        /// </summary>
+        /// <param name="refType">引用类型。</param>
+        /// <returns>引用。</returns>
+        public static IReference Acquire(Type refType)
+        {
+            _CheckReferenceType(refType);
+            return _GetReferenceCollection(refType).Acquire();
+        }
 
-            lock (ReferenceCollectionDict)
-            {
-                results = new ReferencePoolInfo[ReferenceCollectionDict.Count];
-                foreach (var (type, refCollection) in ReferenceCollectionDict)
-                {
-                    results[index++] = new ReferencePoolInfo(type, refCollection.UnusedReferenceCount, refCollection.UsingReferenceCount,
-                                                             refCollection.AcquireReferenceCount, refCollection.ReleaseReferenceCount,
-                                                             refCollection.AddReferenceCount, refCollection.RemoveReferenceCount);
-                }
-            }
+        /// <summary>
+        /// 将指定类型的引用归还引用池。
+        /// </summary>
+        /// <param name="reference">要归还的引用。</param>
+        public static void Release(IReference reference)
+        {
+            if (reference == null) throw new FuException("要归还的引用对象为空.");
+            var refType = reference.GetType();
+            _CheckReferenceType(refType);
+            _GetReferenceCollection(refType).Release(reference);
+        }
 
-            return results;
+        /// <summary>
+        /// 向指定类型的引用池中追加指定数量的引用。
+        /// </summary>
+        /// <typeparam name="T">引用类型。</typeparam>
+        /// <param name="count">追加数量。</param>
+        public static void Add<T>(int count) where T : class, IReference, new()
+        {
+            _GetReferenceCollection(typeof(T)).Add<T>(count);
+        }
+
+        /// <summary>
+        /// 向指定类型的引用池中追加指定数量的引用。
+        /// </summary>
+        /// <param name="refType">引用类型。</param>
+        /// <param name="count">追加数量。</param>
+        public static void Add(Type refType, int count)
+        {
+            _CheckReferenceType(refType);
+            _GetReferenceCollection(refType).Add(count);
+        }
+
+        /// <summary>
+        /// 从指定类型的引用池中移除指定数量的引用。
+        /// </summary>
+        /// <typeparam name="T">引用类型。</typeparam>
+        /// <param name="count">移除数量。</param>
+        public static void Remove<T>(int count) where T : class, IReference
+        {
+            _GetReferenceCollection(typeof(T)).Remove(count);
+        }
+
+        /// <summary>
+        /// 从指定类型的引用池中移除指定数量的引用。
+        /// </summary>
+        /// <param name="refType">引用类型。</param>
+        /// <param name="count">移除数量。</param>
+        public static void Remove(Type refType, int count)
+        {
+            _CheckReferenceType(refType);
+            _GetReferenceCollection(refType).Remove(count);
+        }
+
+        /// <summary>
+        /// 从指定类型的引用池中移除所有的引用。
+        /// </summary>
+        /// <typeparam name="T">引用类型。</typeparam>
+        public static void RemoveAll<T>() where T : class, IReference
+        {
+            _GetReferenceCollection(typeof(T)).RemoveAll();
+        }
+
+        /// <summary>
+        /// 从指定类型的引用池中移除所有的引用。
+        /// </summary>
+        /// <param name="refType">引用类型。</param>
+        public static void RemoveAll(Type refType)
+        {
+            _CheckReferenceType(refType);
+            _GetReferenceCollection(refType).RemoveAll();
         }
 
         /// <summary>
@@ -69,97 +140,27 @@ namespace FuFramework.ReferencePool.Runtime
         }
 
         /// <summary>
-        /// 从引用池获取引用。
+        /// 获取所有引用池的信息。
         /// </summary>
-        /// <typeparam name="T">引用类型。</typeparam>
-        /// <returns>引用。</returns>
-        public static T Acquire<T>() where T : class, IReference, new()
+        /// <returns>所有引用池的信息。</returns>
+        public static ReferencePoolInfo[] GetAllReferencePoolInfos()
         {
-            return _GetReferenceCollection(typeof(T)).Acquire<T>();
-        }
+            var index = 0;
 
-        /// <summary>
-        /// 从引用池获取引用。
-        /// </summary>
-        /// <param name="refType">引用类型。</param>
-        /// <returns>引用。</returns>
-        public static IReference Acquire(Type refType)
-        {
-            _CheckReferenceType(refType);
-            return _GetReferenceCollection(refType).Acquire();
-        }
+            ReferencePoolInfo[] results;
 
-        /// <summary>
-        /// 将引用归还引用池。
-        /// </summary>
-        /// <param name="reference">要归还的引用。</param>
-        public static void Release(IReference reference)
-        {
-            if (reference == null) throw new FuException("要归还的引用对象为空.");
-            var refType = reference.GetType();
-            _CheckReferenceType(refType);
-            _GetReferenceCollection(refType).Release(reference);
-        }
+            lock (ReferenceCollectionDict)
+            {
+                results = new ReferencePoolInfo[ReferenceCollectionDict.Count];
+                foreach (var (type, refCollection) in ReferenceCollectionDict)
+                {
+                    results[index++] = new ReferencePoolInfo(type, refCollection.UnusedReferenceCount, refCollection.UsingReferenceCount,
+                        refCollection.AcquireReferenceCount, refCollection.ReleaseReferenceCount,
+                        refCollection.AddReferenceCount, refCollection.RemoveReferenceCount);
+                }
+            }
 
-        /// <summary>
-        /// 向引用池中追加指定数量的引用。
-        /// </summary>
-        /// <typeparam name="T">引用类型。</typeparam>
-        /// <param name="count">追加数量。</param>
-        public static void Add<T>(int count) where T : class, IReference, new()
-        {
-            _GetReferenceCollection(typeof(T)).Add<T>(count);
-        }
-
-        /// <summary>
-        /// 向引用池中追加指定数量的引用。
-        /// </summary>
-        /// <param name="refType">引用类型。</param>
-        /// <param name="count">追加数量。</param>
-        public static void Add(Type refType, int count)
-        {
-            _CheckReferenceType(refType);
-            _GetReferenceCollection(refType).Add(count);
-        }
-
-        /// <summary>
-        /// 从引用池中移除指定数量的引用。
-        /// </summary>
-        /// <typeparam name="T">引用类型。</typeparam>
-        /// <param name="count">移除数量。</param>
-        public static void Remove<T>(int count) where T : class, IReference
-        {
-            _GetReferenceCollection(typeof(T)).Remove(count);
-        }
-
-        /// <summary>
-        /// 从引用池中移除指定数量的引用。
-        /// </summary>
-        /// <param name="refType">引用类型。</param>
-        /// <param name="count">移除数量。</param>
-        public static void Remove(Type refType, int count)
-        {
-            _CheckReferenceType(refType);
-            _GetReferenceCollection(refType).Remove(count);
-        }
-
-        /// <summary>
-        /// 从引用池中移除所有的引用。
-        /// </summary>
-        /// <typeparam name="T">引用类型。</typeparam>
-        public static void RemoveAll<T>() where T : class, IReference
-        {
-            _GetReferenceCollection(typeof(T)).RemoveAll();
-        }
-
-        /// <summary>
-        /// 从引用池中移除所有的引用。
-        /// </summary>
-        /// <param name="refType">引用类型。</param>
-        public static void RemoveAll(Type refType)
-        {
-            _CheckReferenceType(refType);
-            _GetReferenceCollection(refType).RemoveAll();
+            return results;
         }
 
         /// <summary>
