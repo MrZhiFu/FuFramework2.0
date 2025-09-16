@@ -23,7 +23,7 @@ namespace FuFramework.Network.Runtime
         {
             get
             {
-                if (!m_Event) m_Event = ModuleManager.GetModule<EventManager>();
+                if (!m_Event) m_Event = ModuleManager.Instance.GetModule<EventManager>();
                 return m_Event;
             }
         }

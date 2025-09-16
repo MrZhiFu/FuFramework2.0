@@ -24,9 +24,11 @@ namespace FuFramework.Entity.Runtime
     /// 5. 管理实体的对象池。
     /// 6. 管理实体的依赖资源加载。
     /// </summary>
+
+    [ModuleDependency(typeof(ObjectPoolManager), typeof(AssetManager), typeof(EventManager))]
     public sealed class EntityManager : FuComponent
     {
-        protected override int Priority => 1;
+        protected override int Priority => ModulePriority.Game;
 
         private readonly Dictionary<int, EntityInfo>     m_EntityDict      = new(); // 记录所有实体的字典，Key为实体编号，Value为实体信息，便于快速查找
         private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new(); // 记录所有实体组的字典，Key为实体组名称，Value为实体组
@@ -61,9 +63,9 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_AssetManager      = ModuleManager.GetModule<AssetManager>();
-            m_EventManager      = ModuleManager.GetModule<EventManager>();
-            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
+            m_AssetManager      = ModuleManager.Instance.GetModule<AssetManager>();
+            m_EventManager      = ModuleManager.Instance.GetModule<EventManager>();
+            m_ObjectPoolManager = ModuleManager.Instance.GetModule<ObjectPoolManager>();
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;

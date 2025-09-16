@@ -14,6 +14,12 @@ namespace FuFramework.Network.Runtime
     public sealed partial class NetworkManager : FuComponent
     {
         /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Core;
+        
+        /// <summary>
         /// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。
         /// </summary>
         private readonly Dictionary<string, NetworkChannelBase> m_NetworkChannelDict = new();
@@ -33,7 +39,7 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
         }
 
         /// <summary>

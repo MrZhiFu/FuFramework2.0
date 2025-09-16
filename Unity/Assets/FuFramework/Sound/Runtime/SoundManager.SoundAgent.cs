@@ -223,13 +223,13 @@ namespace FuFramework.Sound.Runtime
             public void Init(SoundGroup soundGroup)
             {
                 FuGuard.NotNull(soundGroup, nameof(soundGroup));
-                m_AssetManager = ModuleManager.GetModule<AssetManager>();
-                
-                Reset();
+                m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+
                 m_SoundGroup   = soundGroup;
                 SerialId       = 0;
                 SoundAssetPath = null;
                 m_SoundAsset   = null;
+                Reset();
             }
 
             private void Awake()

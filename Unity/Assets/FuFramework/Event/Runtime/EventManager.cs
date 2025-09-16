@@ -13,7 +13,7 @@ namespace FuFramework.Event.Runtime
         /// 获取游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => 7;
+        protected override int Priority => ModulePriority.Core;
 
         /// <summary>
         /// 事件池。

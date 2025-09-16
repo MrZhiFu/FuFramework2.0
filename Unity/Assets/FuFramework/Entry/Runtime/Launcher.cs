@@ -1,4 +1,5 @@
 using UnityEngine;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entry.Runtime
@@ -10,17 +11,7 @@ namespace FuFramework.Entry.Runtime
     {
         private void Awake()
         {
-            GlobalModule.RegisterModule();
-        }
-
-        private void Start()
-        {
-            GlobalModule.InitModule();
-        }
-
-        private void Update()
-        {
-            GlobalModule.UpdateModule(Time.deltaTime, Time.unscaledDeltaTime);
+            ModuleManager.Instance.RegisterAllModules();
         }
     }
 }

@@ -11,6 +11,8 @@ namespace FuFramework.Config.Runtime
     /// </summary>
     public sealed class ConfigManager : FuComponent
     {
+        protected override int Priority => ModulePriority.Game;
+
         /// <summary>
         /// 全局配置类型与名称字典。key为配置类型，value为配置名称。
         /// </summary>

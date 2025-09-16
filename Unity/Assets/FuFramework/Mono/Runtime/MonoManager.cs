@@ -12,6 +12,12 @@ namespace FuFramework.Mono.Runtime
     /// </summary>
     public class MonoManager : FuComponent
     {
+        /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
+        
         private readonly List<Action> m_WaitUpdateList     = new(); // 等待调用的 Update 回调列表
         private readonly List<Action> m_InvokingUpdateList = new(); // 正在调用的 Update 回调列表
 
@@ -42,7 +48,7 @@ namespace FuFramework.Mono.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventComponent = ModuleManager.GetModule<EventManager>();
+            m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
             if (m_EventComponent == null)
             {
                 Log.Fatal("事件管理器为空.");

@@ -12,12 +12,18 @@ namespace FuFramework.Procedure.Runtime
     /// </summary>
     public sealed class ProcedureManager : FuComponent
     {
+        /// <summary>
+        /// 游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
+
         [Header("所有可用的流程类型")]
         [SerializeField] private string[] m_AvailableProcedureTypeNames;
 
         [Header("入口流程类型")]
         [SerializeField] private string m_EntranceProcedureTypeName;
-        
+
         /// <summary>
         /// 所有可用的流程类型
         /// </summary>
@@ -27,12 +33,6 @@ namespace FuFramework.Procedure.Runtime
         /// 入口流程。
         /// </summary>
         private ProcedureBase m_EntranceProcedure;
-        
-        /// <summary>
-        /// 游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => 0;
 
         /// <summary>
         /// 有限状态机管理器
@@ -60,7 +60,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_FsmManager = ModuleManager.GetModule<FsmManager>();
+            m_FsmManager = ModuleManager.Instance.GetModule<FsmManager>();
             if (!m_FsmManager) throw new FuException("[ProcedureManager] 有限状态机管理器不能为空");
 
             // 初始化所有流程

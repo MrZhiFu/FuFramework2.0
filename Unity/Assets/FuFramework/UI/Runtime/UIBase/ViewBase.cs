@@ -113,7 +113,7 @@ namespace FuFramework.UI.Runtime
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_UIManager = ModuleManager.GetModule<UIManager>();
+            m_UIManager = ModuleManager.Instance.GetModule<UIManager>();
             m_IsInit       = true;
             DepthInUIGroup = 0;
 

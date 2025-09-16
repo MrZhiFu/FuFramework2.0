@@ -4,6 +4,7 @@ using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
+using FuFramework.Asset.Runtime;
 using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -12,13 +13,14 @@ namespace FuFramework.UI.Runtime
     /// <summary>
     /// 界面管理器。
     /// </summary>
+    [ModuleDependency(typeof(ObjectPoolManager), typeof(AssetManager), typeof(EventManager))]
     public sealed partial class UIManager : FuComponent
     { 
         /// <summary>
         /// 获取游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        private const int DefaultPriority = 0;
+        protected override int Priority => ModulePriority.UI;
         
         private Dictionary<int, string> m_LoadingDict;       // 正在加载中的界面字典, key为界面Id, value为界面名称
         private Queue<ViewBase>         m_WaitRecycleQueue;  // 关闭后待回收的界面集合
@@ -75,10 +77,10 @@ namespace FuFramework.UI.Runtime
             m_LoadingDict       = new Dictionary<int, string>();
             m_WaitRecycleQueue  = new Queue<ViewBase>();
 
-            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
+            m_ObjectPoolManager = ModuleManager.Instance.GetModule<ObjectPoolManager>();
             m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
-            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
 
             m_SerialId   = 0;
 

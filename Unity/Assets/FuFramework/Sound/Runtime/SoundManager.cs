@@ -18,9 +18,14 @@ namespace FuFramework.Sound.Runtime
     /// 声音管理器。
     /// 功能：实现了声音管理器相关接口，包括声音组、声音播放，暂停，继续，停止等。
     /// </summary>
-    public sealed partial class SoundManager : MonoSingleton<SoundManager>
+    [ModuleDependency(typeof(AssetManager), typeof(EventManager))]
+    public sealed partial class SoundManager : FuComponent
     {
-        private const int DefaultPriority = 0; // 模块默认优先级
+        /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
 
         private readonly Dictionary<string, SoundGroup> m_SoundGroupDict = new(); // 声音组字典，Key为声音组名称，Value为声音组对象
 
@@ -46,20 +51,20 @@ namespace FuFramework.Sound.Runtime
         public AudioMixer AudioMixer => m_AudioMixer;
 
         /// <summary>
-        /// 初始化声音管理器的新实例。
+        /// 初始化声音管理器
         /// </summary>
-        protected override void Init()
+        protected override void OnInit()
         {
             m_Serial = 0;
 
-            m_AssetManager = ModuleManager.GetModule<AssetManager>();
+            m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
             if (!m_AssetManager)
             {
                 Log.Fatal("[SoundManager] 资源管理器不存在!");
                 return;
             }
 
-            m_EventComponent = ModuleManager.GetModule<EventManager>();
+            m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 Log.Fatal("[SoundManager] 事件组件不存在!");
@@ -86,23 +91,15 @@ namespace FuFramework.Sound.Runtime
             SceneManager.sceneLoaded   += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
-
-        protected override void Dispose()
-        {
-            Shutdown();
-            SceneManager.sceneLoaded   -= OnSceneLoaded;
-            SceneManager.sceneUnloaded -= OnSceneUnloaded;
-        }
-
-        /// <summary>
-        /// 关闭并清理声音管理器。
-        /// </summary>
-        private void Shutdown()
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
             StopAllLoadedSounds();
             m_SoundGroupDict.Clear();
             m_LoadingSoundList.Clear();
             m_LoadingToReleaseSet.Clear();
+            
+            SceneManager.sceneLoaded   -= OnSceneLoaded;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
         }
 
         #region 声音组
@@ -531,6 +528,9 @@ namespace FuFramework.Sound.Runtime
         /// <summary>
         /// 刷新AudioListener。
         /// </summary>
-        private void RefreshAudioListener() => m_AudioListener.enabled = FindObjectsOfType<AudioListener>().Length <= 1;
+        private void RefreshAudioListener()
+        {
+            m_AudioListener.enabled = FindObjectsOfType<AudioListener>().Length <= 1;
+        }
     }
 }

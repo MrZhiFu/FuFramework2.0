@@ -15,7 +15,7 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 事件管理器
             /// </summary>
-            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+            private readonly EventManager m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
 
             /// <summary>
             /// 构造一个下载处理器

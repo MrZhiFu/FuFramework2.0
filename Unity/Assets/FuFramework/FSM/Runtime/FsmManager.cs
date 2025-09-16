@@ -14,6 +14,12 @@ namespace FuFramework.Fsm.Runtime
     public sealed class FsmManager : FuComponent
     {
         /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Core;
+        
+        /// <summary>
         /// 有限状态机字典。key为状态机持有者类型和状态机名称的组合，value为有限状态机。
         /// </summary>
         private readonly Dictionary<TypeNamePair, Fsm> m_FsmDict = new();
@@ -22,12 +28,6 @@ namespace FuFramework.Fsm.Runtime
         /// 临时有限状态机列表。用于在轮询中暂存有限状态机。
         /// </summary>
         private readonly List<Fsm> m_TempFsmList = new();
-
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => 1;
 
         /// <summary>
         /// 获取有限状态机数量。

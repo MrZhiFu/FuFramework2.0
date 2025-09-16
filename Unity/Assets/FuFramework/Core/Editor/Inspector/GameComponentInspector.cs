@@ -81,23 +81,23 @@ namespace FuFramework.Core.Editor
         /// <param name="type"></param>
         protected void RefreshComponentTypeNames(System.Type type)
         {
-            var managerTypeNames = new List<string> { NoneOptionName };
-            managerTypeNames.AddRange(Utility.Assembly.GetRuntimeTypeNames(type));
-
-            ComponentTypeNames     = managerTypeNames.ToArray();
-            ComponentTypeNameIndex = 0;
-
-            if (!ComponentType.stringValue.IsNullOrEmpty())
-            {
-                ComponentTypeNameIndex = managerTypeNames.IndexOf(ComponentType.stringValue);
-                if (ComponentTypeNameIndex <= 0)
-                {
-                    ComponentTypeNameIndex    = 0;
-                    ComponentType.stringValue = null;
-                }
-            }
-
-            serializedObject.ApplyModifiedProperties();
+            // var managerTypeNames = new List<string> { NoneOptionName };
+            // managerTypeNames.AddRange(Utility.Assembly.GetRuntimeTypeNames(type));
+            //
+            // ComponentTypeNames     = managerTypeNames.ToArray();
+            // ComponentTypeNameIndex = 0;
+            //
+            // if (!ComponentType.stringValue.IsNullOrEmpty())
+            // {
+            //     ComponentTypeNameIndex = managerTypeNames.IndexOf(ComponentType.stringValue);
+            //     if (ComponentTypeNameIndex <= 0)
+            //     {
+            //         ComponentTypeNameIndex    = 0;
+            //         ComponentType.stringValue = null;
+            //     }
+            // }
+            //
+            // serializedObject.ApplyModifiedProperties();
         }
     }
 }

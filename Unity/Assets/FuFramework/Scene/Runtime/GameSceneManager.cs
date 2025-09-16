@@ -21,9 +21,14 @@ namespace FuFramework.Scene.Runtime
     /// 2. 提供加载、卸载场景的接口。
     /// 3. 提供场景加载进度，加载成功、加载失败，卸载成功、卸载失败的事件。
     /// </summary>
-    public sealed class GameSceneManager : MonoSingleton<GameSceneManager>
+    [ModuleDependency(typeof(AssetManager), typeof(EventManager))]
+    public sealed class GameSceneManager : FuComponent
     {
-        private const int DefaultPriority = 0; // 模块默认优先级
+        /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
 
         /// <summary>
         /// 封装场景加载中的数据
@@ -50,24 +55,12 @@ namespace FuFramework.Scene.Runtime
         private AssetManager  m_AssetManager;             // 资源管理器
         private EventRegister EventRegister { get; set; } // 事件订阅器
 
-        protected override void Init()
+        protected override void OnInit()
         {
             EventRegister  = EventRegister.Create();
-            m_AssetManager = ModuleManager.RegisterModule<AssetManager>();
+            m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
         }
-
-        /// <summary>
-        /// 场景管理器轮询。
-        /// </summary>
-        private void Update()
-        {
-            foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
-            {
-                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
-            }
-        }
-
-        protected override void Dispose()
+        protected override void OnShutdown(ShutdownType shutdownType)
         {
             // 反向遍历已加载的场景，卸载所有已加载的场景
             for (var i = m_LoadedSceneDict.Count - 1; i >= 0; i--)
@@ -83,6 +76,17 @@ namespace FuFramework.Scene.Runtime
 
             EventRegister.Release();
             EventRegister = null;
+        }
+
+        /// <summary>
+        /// 场景管理器轮询。
+        /// </summary>
+        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        {
+            foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
+            {
+                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
+            }
         }
 
         #region Get

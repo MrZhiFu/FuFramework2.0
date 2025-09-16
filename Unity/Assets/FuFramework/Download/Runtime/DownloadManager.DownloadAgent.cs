@@ -29,7 +29,7 @@ namespace FuFramework.Download.Runtime
             private bool m_Disposed;
 
             /// 事件管理器
-            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+            private readonly EventManager m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
             
 
             /// 下载开始委托

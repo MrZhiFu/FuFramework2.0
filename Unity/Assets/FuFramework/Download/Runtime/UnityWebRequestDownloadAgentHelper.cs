@@ -42,7 +42,7 @@ namespace FuFramework.Download.Runtime
         private UnityWebRequest m_UnityWebRequest;
         
         /// 事件管理器
-        private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+        private readonly EventManager m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
 
         /// <summary>
         /// 轮询更新。

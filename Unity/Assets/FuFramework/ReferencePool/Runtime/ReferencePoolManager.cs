@@ -16,7 +16,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// 游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => 1000;
+        protected override int Priority => ModulePriority.Core;
 
         [Header("是否开启引用类型严格检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类)")]
         [SerializeField] private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.AlwaysEnable;

@@ -7,12 +7,9 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 基础组件。
     /// </summary>
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/Base")]
-    [DefaultExecutionOrder(-500)]
     public sealed class BaseComponent : FuComponent
     {
-        protected internal override int Priority => 10000;
+        protected internal override int Priority => ModulePriority.System;
 
         /// 屏幕每英寸点数 默认为windows dpi
         private const int DefaultDpi = 96;
@@ -95,53 +92,16 @@ namespace FuFramework.Core.Runtime
             get => m_NeverSleep;
             set
             {
-                m_NeverSleep        = value;
+                m_NeverSleep = value;
                 Screen.sleepTimeout = value ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             }
         }
 
-
         /// <summary>
-        /// 游戏框架组件初始化。
+        /// 初始化。
         /// </summary>
-        // protected void Awake()
-        // {
-        //     DontDestroyOnLoad(this);
-        //
-        //     // 初始化相关辅助器
-        //     InitTextHelper();
-        //     InitVersionHelper();
-        //     InitLogHelper();
-        //     InitCompressionHelper();
-        //     InitJsonHelper();
-        //
-        //     Log.Info("游戏版本号: {0}, Unity版本号: {1}", Version.GameVersion, Application.unityVersion);
-        //
-        //     // 设置工具类Converter的屏幕dpi, 方便进行屏幕像素和厘米与英寸的转换方法实现
-        //     Utility.Converter.ScreenDpi = Screen.dpi;
-        //     if (Utility.Converter.ScreenDpi <= 0)
-        //         Utility.Converter.ScreenDpi = DefaultDpi;
-        //
-        //     // 设置游戏速度，屏幕休眠，帧率，后台运行等
-        //     Time.timeScale              =  m_GameSpeed;
-        //     Screen.sleepTimeout         =  m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
-        //     Application.targetFrameRate =  m_FrameRate;
-        //     Application.runInBackground =  m_RunInBackground;
-        //     Application.lowMemory       += OnLowMemory;
-        // }
-
-        /// <summary>
-        /// 帧更新，驱动框架入口GFGameEntry更新
-        /// </summary>
-        private void Update()
-        {
-            FuEntry.Update(Time.deltaTime, Time.unscaledDeltaTime);
-        }
-
         protected internal override void OnInit()
         {
-            DontDestroyOnLoad(this);
-
             // 初始化相关辅助器
             InitTextHelper();
             InitVersionHelper();
@@ -157,48 +117,17 @@ namespace FuFramework.Core.Runtime
                 Utility.Converter.ScreenDpi = DefaultDpi;
 
             // 设置游戏速度，屏幕休眠，帧率，后台运行等
-            Time.timeScale              =  m_GameSpeed;
-            Screen.sleepTimeout         =  m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
-            Application.targetFrameRate =  m_FrameRate;
-            Application.runInBackground =  m_RunInBackground;
-            // Application.lowMemory       += OnLowMemory;
-        }
-        protected internal override void OnUpdate(float elapseSeconds, float realElapseSeconds)
-        {
-            FuEntry.Update(Time.deltaTime, Time.unscaledDeltaTime);
-        }
-        protected internal override void OnShutdown(ShutdownType shutdownType)
-        {
-            Destroy(gameObject);
-        }
-        
-        /// <summary>
-        /// 退出游戏。
-        /// </summary>
-        private void OnApplicationQuit()
-        {
-            // Application.lowMemory -= OnLowMemory;
-            StopAllCoroutines();
+            Time.timeScale = m_GameSpeed;
+            Screen.sleepTimeout = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
+            Application.targetFrameRate = m_FrameRate;
+            Application.runInBackground = m_RunInBackground;
         }
 
         /// <summary>
-        /// 销毁。
+        /// 关闭
         /// </summary>
-        private void OnDestroy() => FuEntry.Shutdown();
-
-        // /// <summary>
-        // /// 低内存回调
-        // /// </summary>
-        // private void OnLowMemory()
-        // {
-        //     Log.Info("低内存警告, 释放对象池资源...");
-        //
-        //     // 释放对象池中所有未使用的资源
-        //     var objectPoolComponent = ModuleManager.GetModule<ObjectPoolComponent>();
-        //     if (objectPoolComponent != null)
-        //         objectPoolComponent.ReleaseAllUnused();
-        // }
-
+        /// <param name="shutdownType"></param>
+        protected internal override void OnShutdown(ShutdownType shutdownType) { }
 
         /// <summary>
         /// 暂停游戏。
@@ -207,7 +136,7 @@ namespace FuFramework.Core.Runtime
         {
             if (IsGamePaused) return;
             m_GameSpeedBeforePause = GameSpeed;
-            GameSpeed              = 0f;
+            GameSpeed = 0f;
         }
 
         /// <summary>
@@ -227,12 +156,6 @@ namespace FuFramework.Core.Runtime
             if (IsNormalGameSpeed) return;
             GameSpeed = 1f;
         }
-
-        // /// <summary>
-        // /// 关闭游戏框架组件。
-        // /// </summary>
-        // internal void Shutdown() => Destroy(gameObject);
-
 
         /// <summary>
         /// 初始化文本辅助器

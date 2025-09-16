@@ -3,6 +3,7 @@ using FuFramework.Config.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Coroutine.Runtime;
 using FuFramework.Download.Runtime;
+using FuFramework.Entity.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.GlobalConfig.Runtime;
@@ -12,7 +13,9 @@ using FuFramework.Network.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ReferencePool.Runtime;
+using FuFramework.Scene.Runtime;
 using FuFramework.Setting.Runtime;
+using FuFramework.Sound.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Web.Runtime;
@@ -26,82 +29,30 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public static class GlobalModule
     {
-        public static BaseComponent         BaseModule           { get; private set; }
-        public static ReferencePoolManager  ReferencePoolManager { get; private set; }
-        public static AssetManager          AssetModule          { get; private set; }
-        public static ConfigManager         ConfigModule         { get; private set; }
-        public static CoroutineManager      CoroutineModule      { get; private set; }
-        public static DownloadManager       DownloadModule       { get; private set; }
-        public static EventManager          EntityModule         { get; private set; }
-        public static EventManager          EventModule          { get; private set; }
-        public static FsmManager            FsmModule            { get; private set; }
-        public static GlobalConfigManager   GlobalConfigModule   { get; private set; }
-        public static LocalizationManager   LocalizationModule   { get; private set; }
-        public static MonoManager           MonoModule           { get; private set; }
-        public static UIManager             UIModule             { get; private set; }
-        public static NetworkManager      NetworkModule        { get; private set; }
-        public static ObjectPoolManager     ObjectPoolModule     { get; private set; }
-        public static ProcedureManager      ProcedureModule      { get; private set; }
-        public static SettingManager      SettingModule        { get; private set; }
-        public static TimerManager          TimerModule          { get; private set; }
-        public static WebManager          WebModule            { get; private set; }
-
-        // private static SceneComponent SceneModule;
-        // private static AdvertisementComponent AdvertisementModule;
-        // private static GameAnalyticsComponent GameAnalyticsModule;
-        // private static AssetComponent AssetModule;
-        // private static RedDotComponent RedDotModule;
-        // private static SoundComponent SoundModule;
-        // private static UIComponent UiModule;
-
-        /// <summary>
-        /// 注册所有模块
-        /// </summary>
-        public static void RegisterModule()
-        {
-            BaseModule           = ModuleManager.RegisterModule<BaseComponent>();
-            ReferencePoolManager = ModuleManager.RegisterModule<ReferencePoolManager>();
-            AssetModule          = ModuleManager.RegisterModule<AssetManager>();
-            ConfigModule         = ModuleManager.RegisterModule<ConfigManager>();
-            CoroutineModule      = ModuleManager.RegisterModule<CoroutineManager>();
-            DownloadModule       = ModuleManager.RegisterModule<DownloadManager>();
-            EntityModule         = ModuleManager.RegisterModule<EventManager>();
-            EventModule          = ModuleManager.RegisterModule<EventManager>();
-            FsmModule            = ModuleManager.RegisterModule<FsmManager>();
-            GlobalConfigModule   = ModuleManager.RegisterModule<GlobalConfigManager>();
-            LocalizationModule   = ModuleManager.RegisterModule<LocalizationManager>();
-            MonoModule           = ModuleManager.RegisterModule<MonoManager>();
-            UIModule             = ModuleManager.RegisterModule<UIManager>();
-            NetworkModule        = ModuleManager.RegisterModule<NetworkManager>();
-            ObjectPoolModule     = ModuleManager.RegisterModule<ObjectPoolManager>();
-            ProcedureModule      = ModuleManager.RegisterModule<ProcedureManager>();
-            SettingModule        = ModuleManager.RegisterModule<SettingManager>();
-            TimerModule          = ModuleManager.RegisterModule<TimerManager>();
-            WebModule            = ModuleManager.RegisterModule<WebManager>();
-
-            // SceneModule = GameEntry.RegisterComponent<SceneComponent>();
-            // AdvertisementModule = GameEntry.RegisterComponent<AdvertisementComponent>();
-            // GameAnalyticsModule = GameEntry.RegisterComponent<GameAnalyticsComponent>();
-            // AssetModule = GameEntry.RegisterComponent<AssetComponent>();
-            // RedDotModule = GameEntry.RegisterComponent<RedDotComponent>();
-            // SoundModule = GameEntry.RegisterComponent<SoundComponent>();
-            // UiModule = GameEntry.RegisterComponent<UIComponent>();
-        }
-
-        /// <summary>
-        /// 初始化所有模块
-        /// </summary>
-        public static void InitModule()
-        {
-            ModuleManager.Init();
-        }
-
-        /// <summary>
-        /// 更新所有模块
-        /// </summary>
-        public static void UpdateModule(float elapseSeconds, float realElapseSeconds)
-        {
-            ModuleManager.Update(elapseSeconds, realElapseSeconds);
-        }
+        public static BaseComponent         BaseModule           => ModuleManager.Instance.GetModule<BaseComponent>();
+        public static ReferencePoolManager  ReferencePoolManager => ModuleManager.Instance.GetModule<ReferencePoolManager>();
+        public static AssetManager          AssetModule          => ModuleManager.Instance.GetModule<AssetManager>();
+        public static ConfigManager         ConfigModule         => ModuleManager.Instance.GetModule<ConfigManager>();
+        public static CoroutineManager      CoroutineModule      => ModuleManager.Instance.GetModule<CoroutineManager>();
+        public static DownloadManager       DownloadModule       => ModuleManager.Instance.GetModule<DownloadManager>();
+        public static EntityManager          EntityModule        => ModuleManager.Instance.GetModule<EntityManager>();
+        public static EventManager          EventModule          => ModuleManager.Instance.GetModule<EventManager>();
+        public static FsmManager            FsmModule            => ModuleManager.Instance.GetModule<FsmManager>();
+        public static GlobalConfigManager   GlobalConfigModule   => ModuleManager.Instance.GetModule<GlobalConfigManager>();
+        public static LocalizationManager   LocalizationModule   => ModuleManager.Instance.GetModule<LocalizationManager>();
+        public static MonoManager           MonoModule           => ModuleManager.Instance.GetModule<MonoManager>();
+        public static UIManager             UIModule             => ModuleManager.Instance.GetModule<UIManager>();
+        public static NetworkManager         NetworkModule       => ModuleManager.Instance.GetModule<NetworkManager>();
+        public static ObjectPoolManager     ObjectPoolModule     => ModuleManager.Instance.GetModule<ObjectPoolManager>();
+        public static ProcedureManager      ProcedureModule      => ModuleManager.Instance.GetModule<ProcedureManager>();
+        public static SettingManager      SettingModule          => ModuleManager.Instance.GetModule<SettingManager>();
+        public static TimerManager          TimerModule          => ModuleManager.Instance.GetModule<TimerManager>();
+        public static WebManager          WebModule              => ModuleManager.Instance.GetModule<WebManager>();
+        public static GameSceneManager      SceneModule          => ModuleManager.Instance.GetModule<GameSceneManager>();
+        public static SoundManager SoundModule                   => ModuleManager.Instance.GetModule<SoundManager>();
+        
+        // private static RedDotManager RedDotModule => ModuleManager.GetModule<RedDotManager>();
+        // private static AdvertisementManager AdvertisementModule => ModuleManager.GetModule<AdvertisementManager>();
+        // private static GameAnalyticsManager GameAnalyticsModule => ModuleManager.GetModule<GameAnalyticsManager>();
     }
 }

@@ -17,7 +17,7 @@ namespace FuFramework.Asset.Runtime
     /// </summary>
     public partial class AssetManager : FuComponent
     {
-        private const int DefaultPriority = 0; // 模块默认优先级
+        private const int DefaultPriority = ModulePriority.Default; // 模块默认优先级
 
         /// <summary>
         /// 资源运行模式。

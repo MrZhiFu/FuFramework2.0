@@ -14,6 +14,8 @@ namespace FuFramework.Coroutine.Runtime
     [AddComponentMenu("Game Framework/Coroutine")]
     public class CoroutineManager : FuComponent
     {
+        protected override int Priority => ModulePriority.Game;
+
         /// <summary>
         /// 等待帧结束
         /// </summary>

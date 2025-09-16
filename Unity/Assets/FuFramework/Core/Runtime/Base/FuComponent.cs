@@ -13,7 +13,12 @@ namespace FuFramework.Core.Runtime
         /// 游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected internal virtual int Priority => 0;
+        protected internal virtual int Priority => ModulePriority.Default;
+        
+        /// <summary>
+        /// 获取模块是否已初始化。
+        /// </summary>
+        public bool IsInitialized { get; internal set; }
 
         /// <summary>
         /// 初始化

@@ -12,6 +12,12 @@ namespace FuFramework.Timer.Runtime
     public sealed partial class TimerManager : FuComponent
     {
         /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
+        
+        /// <summary>
         /// 正在更新的定时器字典，key为回调函数，value为定时器项
         /// </summary>
         private readonly Dictionary<Action<object>, TimerItem> m_UpdatingDict = new();
@@ -54,8 +60,6 @@ namespace FuFramework.Timer.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
-            base.OnUpdate(elapseSeconds, realElapseSeconds);
-
             lock (Locker)
             {
                 if (m_UpdatingDict.Count > 0)

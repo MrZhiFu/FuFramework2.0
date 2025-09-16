@@ -12,6 +12,12 @@ namespace FuFramework.Localization.Runtime
     /// </summary>
     public sealed class LocalizationManager : FuComponent
     {
+        /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Game;
+        
         private EventManager m_EventManager; // 事件组件
         private SettingManager m_SettingManager; // Setting组件
 
@@ -101,8 +107,8 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventManager = ModuleManager.GetModule<EventManager>();
-            m_SettingManager = ModuleManager.GetModule<SettingManager>();
+            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
+            m_SettingManager = ModuleManager.Instance.GetModule<SettingManager>();
             
             var value = m_SettingManager.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
