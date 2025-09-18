@@ -27,7 +27,7 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(string message) => Log(ELogLevel.Debug, message);
 
-        
+
         /// <summary>
         /// 打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
@@ -71,7 +71,7 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(string message) => Log(ELogLevel.Warning, message);
 
-        
+
         /// <summary>
         /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
@@ -96,7 +96,7 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(string message) => Log(ELogLevel.Error, message);
 
-        
+
         /// <summary>
         /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
@@ -122,8 +122,8 @@ namespace FuFramework.Core.Runtime
         [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(string message) => Log(ELogLevel.Fatal, message);
-        
-        
+
+
         /// <summary>
         /// 记录日志。
         /// </summary>
