@@ -10,7 +10,7 @@ namespace FuFramework.ReferencePool.Runtime
     /// 开启后会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能。
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class ReferencePoolManager : FuComponent
+    public sealed class ReferencePoolManager : FuModule
     {
         /// <summary>
         /// 游戏框架模块优先级。
@@ -32,7 +32,7 @@ namespace FuFramework.ReferencePool.Runtime
                 ReferencePool.EnableStrictCheck = value;
                 if (value)
                 {
-                    Log.Info("对 Reference Pool 启用了严格检查。它将会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能.");
+                    FuLog.Info("对 Reference Pool 启用了严格检查。它将会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能.");
                 }
             }
         }

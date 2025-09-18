@@ -55,14 +55,14 @@ namespace FuFramework.Core.Editor
 
         public void Init(SerializedObject serializedObject)
         {
-            m_HelperTypeName = serializedObject.FindProperty(Utility.Text.Format("m_{0}HelperTypeName", m_Name));
-            m_CustomHelper = serializedObject.FindProperty(Utility.Text.Format("m_Custom{0}Helper", m_Name));
+            m_HelperTypeName = serializedObject.FindProperty($"m_{m_Name}HelperTypeName");
+            m_CustomHelper = serializedObject.FindProperty($"m_Custom{m_Name}Helper");
         }
 
         public void Draw()
         {
             var displayName = FieldNameForDisplay(m_Name);
-            var selectedIndex = EditorGUILayout.Popup(Utility.Text.Format("{0} Helper", displayName), m_HelperTypeNameIndex, m_HelperTypeNames);
+            var selectedIndex = EditorGUILayout.Popup($"{displayName} Helper", m_HelperTypeNameIndex, m_HelperTypeNames);
             if (selectedIndex != m_HelperTypeNameIndex)
             {
                 m_HelperTypeNameIndex = selectedIndex;
@@ -74,7 +74,7 @@ namespace FuFramework.Core.Editor
             // 使用自定义帮助器
             EditorGUILayout.PropertyField(m_CustomHelper);
             if (m_CustomHelper.objectReferenceValue != null) return;
-            EditorGUILayout.HelpBox(Utility.Text.Format("你必须选择{0}帮助器类型.", displayName), MessageType.Error);
+            EditorGUILayout.HelpBox($"你必须选择{displayName}帮助器类型.",  MessageType.Error);
         }
 
         /// <summary>

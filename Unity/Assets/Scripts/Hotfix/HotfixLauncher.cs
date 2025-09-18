@@ -28,7 +28,7 @@ namespace Hotfix
         /// </summary>
         public static void Main()
         {
-            Log.Info("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
+            FuLog.Info("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
             
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
@@ -67,7 +67,7 @@ namespace Hotfix
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
             var item = GlobalModule.ConfigModule.GetConfig<TbSoundsConfig>().FirstOrDefault;
-            Log.Info(item);
+            FuLog.Info(item);
         }
 
 #if ENABLE_BINARY_CONFIG

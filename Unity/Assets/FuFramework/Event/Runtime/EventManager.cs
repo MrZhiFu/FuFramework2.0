@@ -7,7 +7,7 @@ namespace FuFramework.Event.Runtime
     /// <summary>
     /// 事件管理器。
     /// </summary>
-    public sealed class EventManager : FuComponent
+    public sealed class EventManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。

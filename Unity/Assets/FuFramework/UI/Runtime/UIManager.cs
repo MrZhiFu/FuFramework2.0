@@ -14,7 +14,7 @@ namespace FuFramework.UI.Runtime
     /// 界面管理器。
     /// </summary>
     [ModuleDependency(typeof(ObjectPoolManager), typeof(AssetManager), typeof(EventManager))]
-    public sealed partial class UIManager : FuComponent
+    public sealed partial class UIManager : FuModule
     { 
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -95,7 +95,7 @@ namespace FuFramework.UI.Runtime
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
                 if (AddUIGroup(layer)) continue;
-                Log.Error("[UIManager]添加UI组 '{0}' 失败 .", layer.ToString());
+                FuLog.Error($"[UIManager]添加UI组 '{layer.ToString()}' 失败 .");
             }
         }
 

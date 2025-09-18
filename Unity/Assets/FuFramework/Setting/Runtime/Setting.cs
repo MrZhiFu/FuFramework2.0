@@ -78,7 +78,7 @@ namespace FuFramework.Setting.Runtime
         public bool GetBool(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return int.Parse(value) != 0;
-            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
+            FuLog.Warning($"[DefaultSetting] 配置项 '{settingName}' 不存在!");
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace FuFramework.Setting.Runtime
         public int GetInt(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return int.Parse(value);
-            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
+            FuLog.Warning($"[DefaultSetting] 配置项 '{settingName}' 不存在!");
             return 0;
         }
 
@@ -138,7 +138,7 @@ namespace FuFramework.Setting.Runtime
         public float GetFloat(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return float.Parse(value);
-            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
+            FuLog.Warning($"[DefaultSetting] 配置项 '{settingName}' 不存在!");
             return 0f;
         }
 
@@ -171,7 +171,7 @@ namespace FuFramework.Setting.Runtime
         public string GetString(string settingName)
         {
             if (m_SettingDict.TryGetValue(settingName, out var value)) return value;
-            Log.Warning("[DefaultSetting] 配置项 '{0}' 不存在!", settingName);
+            FuLog.Warning($"[DefaultSetting] 配置项 '{settingName}' 不存在!");
             return null;
         }
 

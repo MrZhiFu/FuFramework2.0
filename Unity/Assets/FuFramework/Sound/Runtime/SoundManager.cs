@@ -19,7 +19,7 @@ namespace FuFramework.Sound.Runtime
     /// 功能：实现了声音管理器相关接口，包括声音组、声音播放，暂停，继续，停止等。
     /// </summary>
     [ModuleDependency(typeof(AssetManager), typeof(EventManager))]
-    public sealed partial class SoundManager : FuComponent
+    public sealed partial class SoundManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -60,14 +60,14 @@ namespace FuFramework.Sound.Runtime
             m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
             if (!m_AssetManager)
             {
-                Log.Fatal("[SoundManager] 资源管理器不存在!");
+                FuLog.Fatal("[SoundManager] 资源管理器不存在!");
                 return;
             }
 
             m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
             if (!m_EventComponent)
             {
-                Log.Fatal("[SoundManager] 事件组件不存在!");
+                FuLog.Fatal("[SoundManager] 事件组件不存在!");
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace FuFramework.Sound.Runtime
             foreach (var group in soundSetting.AllGroups)
             {
                 if (AddSoundGroup(group)) continue;
-                Log.Warning("[SoundManager] 添加声音组 '{0}' 失败!", group.Name);
+                FuLog.Warning($"[SoundManager] 添加声音组 '{group.Name}' 失败!");
             }
 
             // 监听场景加载和卸载事件
@@ -166,7 +166,7 @@ namespace FuFramework.Sound.Runtime
             FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
             if (HasSoundGroup(soundGroupInfo.Name))
             {
-                Log.Info($"[SoundManager]声音组 '{soundGroupInfo.Name}' 已存在，不可重复添加!");
+                FuLog.Info($"[SoundManager]声音组 '{soundGroupInfo.Name}' 已存在，不可重复添加!");
                 return false;
             }
 
@@ -281,17 +281,17 @@ namespace FuFramework.Sound.Runtime
             if (!soundGroup)
             {
                 errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
-                errorMessage = Utility.Text.Format("[SoundManager] 播放声音 '{0}' 失败, 声音组 '{1}' 不存在!", soundAssetPath, groupName);
+                errorMessage = $"[SoundManager] 播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 不存在!";
             }
             else if (soundGroup.SoundAgentCount <= 0)
             {
                 errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
-                errorMessage = Utility.Text.Format("[SoundManager]  播放声音 '{0}' 失败, 声音组 '{1}' 没有声音播放代理!", soundAssetPath, groupName);
+                errorMessage = $"[SoundManager]  播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 没有声音播放代理!";
             }
 
             if (errorCode.HasValue)
             {
-                Log.Error(errorMessage);
+                FuLog.Error(errorMessage);
                 var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
                 m_EventComponent.Fire(this, failureEventArgs);
                 return newSerialId;
@@ -398,7 +398,7 @@ namespace FuFramework.Sound.Runtime
                 if (soundGroup.PauseSound(serialId, fadeOutSeconds)) return;
             }
 
-            throw new FuException(Utility.Text.Format("[SoundManager]找不到声音 '{0}'.", serialId));
+            throw new FuException($"[SoundManager]找不到声音 '{serialId}'.");
         }
 
         /// <summary>
@@ -419,7 +419,7 @@ namespace FuFramework.Sound.Runtime
                 if (soundGroup.ResumeSound(serialId, fadeInSeconds)) return;
             }
 
-            throw new FuException(Utility.Text.Format("[SoundManager]找不到声音 '{0}'.", serialId));
+            throw new FuException($"[SoundManager]找不到声音 '{serialId}'.");
         }
 
         #endregion
@@ -457,7 +457,7 @@ namespace FuFramework.Sound.Runtime
             // 播放声音成功--派发成功事件, 释放播放参数信息对象
             if (soundAgent)
             {
-                Log.Info(Utility.Text.Format("[SoundManager]播放声音 '{0}' 成功, 声音组 '{1}'", playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name));
+                FuLog.Info($"[SoundManager]播放声音 '{playSoundInfo.SoundAssetPath}' 成功, 声音组 '{playSoundInfo.SoundGroup.Name}'");
                 if (playSoundInfo.SoundParams3D != null)
                 {
                     // 播放3D声音设置，如果绑定了实体，则设置的绑定实体，否则设置世界坐标
@@ -488,14 +488,14 @@ namespace FuFramework.Sound.Runtime
             if (errorCode != null)
                 errorCodeValue = errorCode.Value;
 
-            var errorMessage = Utility.Text.Format("[SoundManager]播放声音 '{0}' 失败, 声音组 '{1}', 错误类型 '{2}'.", playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
+            var errorMessage = $"[SoundManager]播放声音 '{playSoundInfo.SoundAssetPath}' 失败, 声音组 '{playSoundInfo.SoundGroup.Name}', 错误类型 '{ errorCodeValue}'.";
             if (errorCodeValue == EPlaySoundErrorCode.IgnoredBecauseLowPriority)
             {
-                Log.Info(errorMessage);
+                FuLog.Info(errorMessage);
                 return;
             }
 
-            Log.Error(errorMessage);
+            FuLog.Error(errorMessage);
 
             // 派发播放失败事件
             var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);

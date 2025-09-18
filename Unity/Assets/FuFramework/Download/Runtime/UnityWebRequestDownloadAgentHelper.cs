@@ -87,7 +87,7 @@ namespace FuFramework.Download.Runtime
             m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
             m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
             m_UnityWebRequest.downloadHandler    = new DownloadHandler(this);
-            m_UnityWebRequest.SetRequestHeader("Range", Utility.Text.Format("bytes={0}-", fromPosition));
+            m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}-");
             m_UnityWebRequest.SendWebRequest();
         }
 
@@ -101,7 +101,7 @@ namespace FuFramework.Download.Runtime
         {
             m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
             m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
-            m_UnityWebRequest.SetRequestHeader("Range", Utility.Text.Format("bytes={0}-{1}", fromPosition, toPosition));
+            m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}-{toPosition}");
             m_UnityWebRequest.downloadHandler = new DownloadHandler(this);
             m_UnityWebRequest.SendWebRequest();
         }

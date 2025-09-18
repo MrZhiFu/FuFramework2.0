@@ -51,7 +51,7 @@ namespace FuFramework.Event.Runtime
         public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
         {
             if (!m_EventHandlerDict.Remove(id, handler))
-                throw new Exception(Utility.Text.Format("[EventRegister]事件订阅器中不存在指定消息ID '{0}' 的处理对象.", id));
+                throw new Exception($"[EventRegister]事件订阅器中不存在指定消息ID '{id}' 的处理对象.");
 
             EventManager.Unsubscribe(id, handler);
         }

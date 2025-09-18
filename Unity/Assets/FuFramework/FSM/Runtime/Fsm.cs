@@ -158,7 +158,7 @@ namespace FuFramework.Fsm.Runtime
             if (stateType == null) throw new FuException("[Fsm] 有限状态机开始失败，需要开始的状态不能为空。");
 
             if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
-                throw new FuException(Utility.Text.Format("State type '{0}' is invalid.", stateType.FullName));
+                throw new FuException($"State type '{stateType.FullName}' is invalid.");
 
             var state = GetState(stateType);
 

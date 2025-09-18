@@ -10,7 +10,7 @@ namespace FuFramework.Mono.Runtime
     /// Mono管理器。
     /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
     /// </summary>
-    public class MonoManager : FuComponent
+    public class MonoManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -51,7 +51,7 @@ namespace FuFramework.Mono.Runtime
             m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
             if (m_EventComponent == null)
             {
-                Log.Fatal("事件管理器为空.");
+                FuLog.Fatal("事件管理器为空.");
             }
         }
 
@@ -269,7 +269,7 @@ namespace FuFramework.Mono.Runtime
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e);
+                        FuLog.Error(e);
                     }
                 }
             }
@@ -289,7 +289,7 @@ namespace FuFramework.Mono.Runtime
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e);
+                        FuLog.Error(e);
                     }
                 }
             }

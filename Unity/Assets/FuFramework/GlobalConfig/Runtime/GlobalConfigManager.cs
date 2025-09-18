@@ -19,7 +19,7 @@ namespace FuFramework.GlobalConfig.Runtime
     ///    - 附加内容
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class GlobalConfigManager : FuComponent
+    public sealed class GlobalConfigManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -95,7 +95,7 @@ namespace FuFramework.GlobalConfig.Runtime
                 }
                 catch (Exception e)
                 {
-                    Log.Fatal(e);
+                    FuLog.Fatal(e);
                 }
             }
         }

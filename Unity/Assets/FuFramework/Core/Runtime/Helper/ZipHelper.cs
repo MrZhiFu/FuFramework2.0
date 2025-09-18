@@ -27,8 +27,7 @@ namespace FuFramework.Core.Runtime
         {
             return CompressDirectoryToZipStream(folderToZip, stream, password) != null;
         }
-
-
+        
         /// <summary> 
         /// 压缩文件夹  
         /// </summary> 
@@ -292,7 +291,7 @@ namespace FuFramework.Core.Runtime
             }
             catch (Exception e)
             {
-                Log.Fatal(e);
+                FuLog.Fatal(e);
             }
             finally
             {
@@ -334,7 +333,7 @@ namespace FuFramework.Core.Runtime
             }
             catch (Exception e)
             {
-                Log.Fatal(e);
+                FuLog.Fatal(e);
             }
             finally
             {

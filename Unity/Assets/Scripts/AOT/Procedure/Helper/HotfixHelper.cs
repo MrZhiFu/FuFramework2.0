@@ -43,27 +43,27 @@ namespace Launcher.Procedure
             }
 
             // 非编辑器模式下，加载AOT DLL，加载Game.Hotfix.dll，运行入口函数
-            Log.Info("开始加载AOT DLL");
+            FuLog.Info("开始加载AOT DLL");
 
             var aotDlls = AOTGenericReferences.PatchedAOTAssemblyList.ToArray();
             foreach (var aotDll in aotDlls)
             {
-                Log.Info("开始加载AOT DLL ==> " + aotDll);
+                FuLog.Info("开始加载AOT DLL ==> " + aotDll);
                 var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
                 var aotBytes    = assetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
                 RuntimeApi.LoadMetadataForAOTAssembly(aotBytes, HomologousImageMode.SuperSet);
             }
 
-            Log.Info("结束加载AOT DLL");
+            FuLog.Info("结束加载AOT DLL");
 
-            Log.Info("开始加载Game.Hotfix.dll");
+            FuLog.Info("开始加载Game.Hotfix.dll");
             var assetHotfixDllPath            = Utility.Asset.Path.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
             var assetHotfixDllOperationHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
             var assemblyDataHotfixDll         = assetHotfixDllOperationHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 
-            Log.Info("开始加载程序集Hotfix");
+            FuLog.Info("开始加载程序集Hotfix");
             var hotfixAssembly = Assembly.Load(assemblyDataHotfixDll, null);
-            Log.Info("加载程序集Hotfix 结束 Assembly " + hotfixAssembly.FullName);
+            FuLog.Info("加载程序集Hotfix 结束 Assembly " + hotfixAssembly.FullName);
 
             // 运行热修复程序集入口函数
             Run(hotfixAssembly);
@@ -77,10 +77,10 @@ namespace Launcher.Procedure
         {
             var entryType = assembly.GetType("Hotfix.HotfixLauncher");
 
-            Log.Info("获取程序集Hotfix的入口类型 ==>" + entryType.FullName);
+            FuLog.Info("获取程序集Hotfix的入口类型 ==>" + entryType.FullName);
             var method = entryType.GetMethod("Main");
 
-            Log.Info("获取程序集Hotfix的入口类型的入口方法 ==>" + method?.Name);
+            FuLog.Info("获取程序集Hotfix的入口类型的入口方法 ==>" + method?.Name);
             method?.Invoke(null, null);
         }
     }

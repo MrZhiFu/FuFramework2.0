@@ -248,7 +248,7 @@ namespace FuFramework.ObjectPool.Runtime
                 if (internalObject.IsInUse || internalObject.Locked || !internalObject.CustomCanReleaseFlag)
                     return false;
 
-                FuLog.Info("真正释放对象池中的可释放对象 '{0}'", internalObject.Name);
+                FuLog.Info($"真正释放对象池中的可释放对象 '{internalObject.Name}'");
 
                 m_ObjectMultiDict.Remove(internalObject.Name, internalObject);
                 m_TargetObjectDict.Remove(internalObject.Peek().Target);
@@ -310,7 +310,7 @@ namespace FuFramework.ObjectPool.Runtime
                 
                 // 获取所有可释放的对象
                 _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                FuLog.Info("尝试释放对象池中的可释放对象-对象数量: '{0}'", m_CachedCanReleaseObjectList.Count);
+                FuLog.Info($"尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
 
                 // 筛选需要释放的对象
                 var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTimeThreshold);
@@ -384,8 +384,7 @@ namespace FuFramework.ObjectPool.Runtime
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”.", new TypeNamePair(typeof(T), Name),
-                                                              target.GetType().FullName, target));
+                    throw new FuException($"在对象池“{ new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
                 internalObject.Locked = locked;
             }
 
@@ -411,8 +410,7 @@ namespace FuFramework.ObjectPool.Runtime
 
                 var internalObject = _GetObject(target);
                 if (internalObject == null)
-                    throw new FuException(Utility.Text.Format("在对象池“{0}”中未找到目标，目标类型为“{1}”，目标值为“{2}”..", new TypeNamePair(typeof(T), Name),
-                                                              target.GetType().FullName, target));
+                    throw new FuException($"在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
 
                 internalObject.Priority = priority;
             }

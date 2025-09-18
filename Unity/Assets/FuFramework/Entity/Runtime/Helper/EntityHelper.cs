@@ -26,7 +26,7 @@ namespace FuFramework.Entity.Runtime
             m_AssetOperationHandle = entityAssetHandle as AssetHandle;
             if (m_AssetOperationHandle is null)
             {
-                Log.Error("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
+                FuLog.Error("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
                 return null;
             }
 
@@ -44,7 +44,7 @@ namespace FuFramework.Entity.Runtime
             var go = entityInstance as GameObject;
             if (!go)
             {
-                Log.Error("[EntityHelper]创建实体失败，实体实例不是GameObject.");
+                FuLog.Error("[EntityHelper]创建实体失败，实体实例不是GameObject.");
                 return null;
             }
 
@@ -61,7 +61,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (entityAsset is not AssetHandle assetOperationHandle)
             {
-                Log.Error("[EntityHelper]释放实体失败, 实体资源句柄为空!");
+                FuLog.Error("[EntityHelper]释放实体失败, 实体资源句柄为空!");
                 return;
             }
 

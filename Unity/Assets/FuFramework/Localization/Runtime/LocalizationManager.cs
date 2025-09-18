@@ -10,7 +10,7 @@ namespace FuFramework.Localization.Runtime
     /// <summary>
     /// 本地化管理器。
     /// </summary>
-    public sealed class LocalizationManager : FuComponent
+    public sealed class LocalizationManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。

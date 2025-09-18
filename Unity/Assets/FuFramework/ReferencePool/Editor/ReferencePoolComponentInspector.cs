@@ -97,7 +97,7 @@ namespace FuFramework.ReferencePool.Editor
                         if (GUILayout.Button("导出数据到CSV"))
                         {
                             var exportFileName = EditorUtility.SaveFilePanel("导出数据到CSV", string.Empty,
-                                                                             Utility.Text.Format("引用池数据-{0}.csv", assemblyReferencePoolInfo.Key), string.Empty);
+                                                                             $"引用池数据-{assemblyReferencePoolInfo.Key}.csv", string.Empty);
                             if (!string.IsNullOrEmpty(exportFileName))
                             {
                                 try
@@ -107,17 +107,18 @@ namespace FuFramework.ReferencePool.Editor
                                     data[index++] = "Class Name,Full Class Name,Unused,Using,Acquire,Release,Add,Remove";
                                     foreach (var referencePoolInfo in assemblyReferencePoolInfo.Value)
                                     {
-                                        data[index++] = Utility.Text.Format("{0},{1},{2},{3},{4},{5},{6},{7}", referencePoolInfo.Type.Name, referencePoolInfo.Type.FullName,
-                                                                            referencePoolInfo.UnusedReferenceCount, referencePoolInfo.UsingReferenceCount, referencePoolInfo.AcquireReferenceCount,
-                                                                            referencePoolInfo.ReleaseReferenceCount, referencePoolInfo.AddReferenceCount, referencePoolInfo.RemoveReferenceCount);
+                                        data[index++] = $"{referencePoolInfo.Type.Name},{referencePoolInfo.Type.FullName}," +
+                                                        $"{referencePoolInfo.UnusedReferenceCount}," + $"{referencePoolInfo.UsingReferenceCount}," +
+                                                        $"{referencePoolInfo.AcquireReferenceCount}," + $"{referencePoolInfo.ReleaseReferenceCount}," +
+                                                        $"{referencePoolInfo.AddReferenceCount}," + $"{referencePoolInfo.RemoveReferenceCount}";
                                     }
 
                                     File.WriteAllLines(exportFileName, data, Encoding.UTF8);
-                                    Debug.Log(Utility.Text.Format("导出引用池数据到CSV '{0}' 成功.", exportFileName));
+                                    Debug.Log($"导出引用池数据到CSV '{exportFileName}' 成功.");
                                 }
                                 catch (Exception exception)
                                 {
-                                    Debug.LogError(Utility.Text.Format("导出引用池数据到CSV '{0}' 失败, 异常：'{1}'.", exportFileName, exception));
+                                    Debug.LogError($"导出引用池数据到CSV '{exportFileName}' 失败, 异常：'{exception}'.");
                                 }
                             }
                         }
@@ -149,9 +150,9 @@ namespace FuFramework.ReferencePool.Editor
         private void DrawReferencePoolInfo(ReferencePoolInfo referencePoolInfo)
         {
             EditorGUILayout.LabelField(m_ShowFullClassName ? referencePoolInfo.Type.FullName : referencePoolInfo.Type.Name,
-                                       Utility.Text.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", referencePoolInfo.UnusedReferenceCount, referencePoolInfo.UsingReferenceCount,
-                                                           referencePoolInfo.AcquireReferenceCount, referencePoolInfo.ReleaseReferenceCount, referencePoolInfo.AddReferenceCount,
-                                                           referencePoolInfo.RemoveReferenceCount));
+                                       $"{ referencePoolInfo.UnusedReferenceCount}\t{referencePoolInfo.UsingReferenceCount}" +
+                                       $"\t{referencePoolInfo.AcquireReferenceCount}\t{referencePoolInfo.ReleaseReferenceCount}" +
+                                       $"\t{referencePoolInfo.AddReferenceCount}\t{referencePoolInfo.RemoveReferenceCount}");
         }
 
         private int Comparison(ReferencePoolInfo a, ReferencePoolInfo b)

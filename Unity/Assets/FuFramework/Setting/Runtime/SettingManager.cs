@@ -10,7 +10,7 @@ namespace FuFramework.Setting.Runtime
     /// 游戏配置管理器。
     /// 功能：通过游戏配置辅助器，管理游戏相关的本地存储配置项。
     /// </summary>
-    public sealed class SettingManager : FuComponent
+    public sealed class SettingManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -46,7 +46,7 @@ namespace FuFramework.Setting.Runtime
             }
             
             var isLoadSuccess = Load();
-            if (!isLoadSuccess) Log.Error("[SettingManager] 加载配置数据失败.");
+            if (!isLoadSuccess) FuLog.Error("[SettingManager] 加载配置数据失败.");
         }
         
         /// <summary>

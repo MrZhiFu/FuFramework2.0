@@ -12,7 +12,8 @@ namespace FuFramework.Download.Runtime
     /// 下载管理器。
     /// 负责管理下载任务，核心实现是任务池，用来存储执行下载任务
     /// </summary>
-    public sealed partial class DownloadManager : FuComponent
+    [ModuleDependency(typeof(EventManager))]
+    public sealed partial class DownloadManager : FuModule
     {
         /// <summary>
         /// 游戏框架模块优先级。
@@ -112,7 +113,7 @@ namespace FuFramework.Download.Runtime
             m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
             if (!m_EventManager)
             {
-                Log.Fatal("[DownloadManager] 事件管理器为空!");
+                FuLog.Fatal("[DownloadManager] 事件管理器为空!");
                 return;
             }
             
@@ -162,7 +163,7 @@ namespace FuFramework.Download.Runtime
             helpObject.name = $"[DownloadAgentHelper]_{index}";
             if (downloadAgentHelper == null)
             {
-                Log.Error("[DownloadManager]创建下载代理辅助器失败!");
+                FuLog.Error("[DownloadManager]创建下载代理辅助器失败!");
                 return;
             }
 
@@ -428,7 +429,7 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         private void _OnDownloadAgentFailure(DownloadAgent sender, string errorMessage)
         {
-            Log.Warning($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
+            FuLog.Warning($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
             var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
             m_EventManager.Fire(this, downloadFailureEventArgs);
             if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))

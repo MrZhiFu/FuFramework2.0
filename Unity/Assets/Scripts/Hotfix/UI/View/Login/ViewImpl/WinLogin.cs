@@ -95,7 +95,7 @@ namespace Hotfix.UI
             var respLogin = await GlobalModule.WebModule.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
             if (respLogin.ErrorCode > 0)
             {
-                Log.Error("登录失败，错误信息:" + respLogin.ErrorCode);
+                FuLog.Error("登录失败，错误信息:" + respLogin.ErrorCode);
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace Hotfix.UI
             var respPlayerList = await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
-                Log.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);
+                FuLog.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);
                 return;
             }
 

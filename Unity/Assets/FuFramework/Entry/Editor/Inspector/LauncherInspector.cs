@@ -1,41 +1,48 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using System.Linq;
-using FuFramework.Core.Editor;
-using System.Collections.Generic;
-using FuFramework.Procedure.Runtime;
-using System;
 using System.Reflection;
+using System.Collections.Generic;
+using FuFramework.Core.Editor;
+using FuFramework.Entry.Runtime;
+using FuFramework.Procedure.Runtime;
 using Type = FuFramework.Core.Editor.Type;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Procedure.Editor
+namespace FuFramework.Entry.Editor
 {
     /// <summary>
     /// 自定义流程组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(ProcedureManager))]
-    internal sealed class ProcedureManagerInspector : GameComponentInspector
+    [CustomEditor(typeof(Launcher))]
+    internal sealed class LauncherInspector : FuFrameworkInspector
     {
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
-        private SerializedProperty m_EntranceProcedureTypeName;   // 入口流程类型名称
+        private SerializedProperty m_EntryProcedureTypeName;   // 入口流程类型名称
 
         private string[]     m_ProcedureTypeNames;          // 所有流程类型名称列表
         private List<string> m_SelectedProcedureTypeNames;  // 已选择的流程类型名称列表
-        private int          m_EntranceProcedureIndex = -1; // 入口流程索引
-
-
+        private int          m_EntryProcedureIndex = -1; // 入口流程索引
+        
         private readonly Dictionary<string, int> m_ProcedurePriorityCache = new(); // 缓存类型和类型显示优先级的映射
+
+        private void OnEnable()
+        {
+            m_AvailableProcedureTypeNames = serializedObject.FindProperty("m_AvailableProcedureTypeNames");
+            m_EntryProcedureTypeName   = serializedObject.FindProperty("m_EntryProcedureTypeName");
+            _RefreshTypeNames();
+        }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            var procedureComp = target as ProcedureManager;
+            var procedureComp = target as Launcher;
             if (!procedureComp) return;
 
-            if (string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
+            if (string.IsNullOrEmpty(m_EntryProcedureTypeName.stringValue))
             {
                 EditorGUILayout.HelpBox("入口流程不能为空!.", MessageType.Error);
             }
@@ -64,7 +71,7 @@ namespace FuFramework.Procedure.Editor
                                 m_SelectedProcedureTypeNames.Add(procedureTypeName);
                                 WriteAvailableProcedureTypeNames();
                             }
-                            else if (procedureTypeName != m_EntranceProcedureTypeName.stringValue)
+                            else if (procedureTypeName != m_EntryProcedureTypeName.stringValue)
                             {
                                 m_SelectedProcedureTypeNames.Remove(procedureTypeName);
                                 WriteAvailableProcedureTypeNames();
@@ -86,11 +93,11 @@ namespace FuFramework.Procedure.Editor
                     var sortedAvailableProcedureNames = GetSortedProcedureNamesByPriority(m_ProcedureTypeNames.ToList());
                     var displayOptions                = sortedAvailableProcedureNames.Select(typeName => $"{typeName}").ToArray();
 
-                    var currentEntranceIndex = sortedAvailableProcedureNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
+                    var currentEntranceIndex = sortedAvailableProcedureNames.IndexOf(m_EntryProcedureTypeName.stringValue);
                     var selectedIndex        = EditorGUILayout.Popup("入口流程", currentEntranceIndex, displayOptions);
                     if (selectedIndex != currentEntranceIndex && selectedIndex >= 0)
                     {
-                        m_EntranceProcedureTypeName.stringValue = sortedAvailableProcedureNames[selectedIndex];
+                        m_EntryProcedureTypeName.stringValue = sortedAvailableProcedureNames[selectedIndex];
                     }
                 }
                 else
@@ -108,18 +115,6 @@ namespace FuFramework.Procedure.Editor
         {
             base.OnCompileComplete();
             _RefreshTypeNames();
-        }
-
-        protected override void Enable()
-        {
-            m_AvailableProcedureTypeNames = serializedObject.FindProperty("m_AvailableProcedureTypeNames");
-            m_EntranceProcedureTypeName   = serializedObject.FindProperty("m_EntranceProcedureTypeName");
-            _RefreshTypeNames();
-        }
-
-        protected override void RefreshTypeNames()
-        {
-            RefreshComponentTypeNames(typeof(ProcedureManager));
         }
 
         /// <summary>
@@ -204,11 +199,11 @@ namespace FuFramework.Procedure.Editor
             {
                 WriteAvailableProcedureTypeNames();
             }
-            else if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
+            else if (!string.IsNullOrEmpty(m_EntryProcedureTypeName.stringValue))
             {
-                m_EntranceProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
-                if (m_EntranceProcedureIndex < 0)
-                    m_EntranceProcedureTypeName.stringValue = null;
+                m_EntryProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntryProcedureTypeName.stringValue);
+                if (m_EntryProcedureIndex < 0)
+                    m_EntryProcedureTypeName.stringValue = null;
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -243,12 +238,12 @@ namespace FuFramework.Procedure.Editor
             }
 
             // 更新入口流程索引
-            if (!string.IsNullOrEmpty(m_EntranceProcedureTypeName.stringValue))
+            if (!string.IsNullOrEmpty(m_EntryProcedureTypeName.stringValue))
             {
-                m_EntranceProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntranceProcedureTypeName.stringValue);
-                if (m_EntranceProcedureIndex < 0)
+                m_EntryProcedureIndex = m_SelectedProcedureTypeNames.IndexOf(m_EntryProcedureTypeName.stringValue);
+                if (m_EntryProcedureIndex < 0)
                 {
-                    m_EntranceProcedureTypeName.stringValue = null;
+                    m_EntryProcedureTypeName.stringValue = null;
                 }
             }
         }

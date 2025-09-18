@@ -21,7 +21,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            Log.Info("<color=#43f656>------进入热更流程：初始化资源包------</color>");
+            FuLog.Info("<color=#43f656>------进入热更流程：初始化资源包------</color>");
 
             InitPackage().Forget();
         }
@@ -42,7 +42,7 @@ namespace Launcher.Procedure
             // 热更模式下
             // 获取资源包的下载地址，并将下载地址传入初始化资源包方法中，同时移除流程中的下载地址数据，初始化完毕后直接进入获取资源版本号流程
             var downloadURL = Fsm.GetData<VarString>("DownloadURL");
-            Log.Info($"资源包的下载路径：{downloadURL}");
+            FuLog.Info($"资源包的下载路径：{downloadURL}");
 
             await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadURL.Value, downloadURL.Value);
 

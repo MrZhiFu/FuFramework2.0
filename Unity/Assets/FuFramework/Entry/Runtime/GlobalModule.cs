@@ -29,7 +29,6 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public static class GlobalModule
     {
-        public static BaseComponent         BaseModule           => ModuleManager.Instance.GetModule<BaseComponent>();
         public static ReferencePoolManager  ReferencePoolManager => ModuleManager.Instance.GetModule<ReferencePoolManager>();
         public static AssetManager          AssetModule          => ModuleManager.Instance.GetModule<AssetManager>();
         public static ConfigManager         ConfigModule         => ModuleManager.Instance.GetModule<ConfigManager>();

@@ -179,7 +179,7 @@ namespace FuFramework.ReferencePool.Runtime
                 throw new FuException("引用类型不是非抽象类类型.");
 
             if (!typeof(IReference).IsAssignableFrom(refType))
-                throw new FuException(Utility.Text.Format("引用类型 '{0}' 不是 IReference 类型.", refType.FullName));
+                throw new FuException($"引用类型 '{refType.FullName}' 不是 IReference 类型.");
         }
 
         /// <summary>

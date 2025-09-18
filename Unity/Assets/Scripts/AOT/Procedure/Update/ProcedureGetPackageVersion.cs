@@ -25,7 +25,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            Log.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
+            FuLog.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
             GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateVersion));
             GetVersion().ToUniTask().Forget();
@@ -52,13 +52,13 @@ namespace Launcher.Procedure
                 Fsm.SetData("PackageVersion", versionStr);
 
                 // 进入更新资源清单流程
-                Log.Info($"获取资源版本号成功 : {operation.PackageVersion}");
+                FuLog.Info($"获取资源版本号成功 : {operation.PackageVersion}");
                 ChangeState<ProcedureUpdatePackageManifest>();
             }
             else
             {
                 // 获取失败，再次进入自身流程尝试
-                Log.Error(operation.Error);
+                FuLog.Error(operation.Error);
                 GlobalModule.EventModule.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureGetPackageVersion>();
             }

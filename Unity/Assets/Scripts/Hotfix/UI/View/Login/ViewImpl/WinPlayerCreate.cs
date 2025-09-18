@@ -96,12 +96,12 @@ namespace Hotfix.UI
                 await GlobalModule.WebModule.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", _req);
             if (respPlayerCreate.ErrorCode > 0)
             {
-                Log.Error("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
+                FuLog.Error("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
                 return;
             }
 
             if (respPlayerCreate.PlayerInfo != null)
-                Log.Info("创建角色成功");
+                FuLog.Info("创建角色成功");
 
             // 获取角色列表
             var reqPlayerList = new ReqPlayerList { Id = _req.Id };
@@ -110,7 +110,7 @@ namespace Hotfix.UI
                     reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
-                Log.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);
+                FuLog.Error("登录失败，错误信息:" + respPlayerList.ErrorCode);
                 return;
             }
 

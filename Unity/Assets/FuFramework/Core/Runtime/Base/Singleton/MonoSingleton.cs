@@ -26,7 +26,7 @@ namespace FuFramework.Core.Runtime
             {
                 if (m_IsApplicationQuitting)
                 {
-                    Log.Warning($"[MonoSingleton] 应用程序退出，{typeof(T)} 已被销毁，返回null");
+                    FuLog.Warning($"[MonoSingleton] 应用程序退出，{typeof(T)} 已被销毁，返回null");
                     return null;
                 }
 
@@ -68,7 +68,7 @@ namespace FuFramework.Core.Runtime
                 // 防止在场景中手动放置了多个单例组件而导致创建重复实例
                 if (m_Instance != null && m_Instance != this)
                 {
-                    Log.Warning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
+                    FuLog.Warning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
                     DestroyImmediate(gameObject);
                     return;
                 }

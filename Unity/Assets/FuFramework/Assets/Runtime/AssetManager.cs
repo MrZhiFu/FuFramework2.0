@@ -15,9 +15,13 @@ namespace FuFramework.Asset.Runtime
     /// 1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
     /// 2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
-    public partial class AssetManager : FuComponent
+    public partial class AssetManager : FuModule
     {
-        private const int DefaultPriority = ModulePriority.Default; // 模块默认优先级
+        /// <summary>
+        /// 获取游戏框架模块优先级。
+        /// </summary>
+        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
+        protected override int Priority => ModulePriority.Core;
 
         /// <summary>
         /// 资源运行模式。
@@ -68,14 +72,14 @@ namespace FuFramework.Asset.Runtime
             PlayMode = EPlayMode.WebPlayMode;
 #endif
 #endif
-            Log.Info($"资源系统运行模式：{PlayMode}");
+            FuLog.Info($"资源系统运行模式：{PlayMode}");
 
             BetterStreamingAssets.Initialize();
 
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 
-            Log.Info("资源系统初始化完毕！");
+            FuLog.Info("资源系统初始化完毕！");
         }
 
         /// <summary>

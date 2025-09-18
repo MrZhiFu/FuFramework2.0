@@ -12,7 +12,7 @@ namespace FuFramework.Coroutine.Runtime
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Game Framework/Coroutine")]
-    public class CoroutineManager : FuComponent
+    public class CoroutineManager : FuModule
     {
         protected override int Priority => ModulePriority.Game;
 

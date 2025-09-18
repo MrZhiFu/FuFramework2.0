@@ -44,7 +44,7 @@ namespace FuFramework.UI.Runtime
             var uiName = typeof(T).Name;
             if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
             {
-                Log.Warning($"[UIManager]已经有序号为 {m_SerialId} 的界面正在加载.");
+                FuLog.Warning($"[UIManager]已经有序号为 {m_SerialId} 的界面正在加载.");
                 return null;
             }
 
@@ -121,7 +121,7 @@ namespace FuFramework.UI.Runtime
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(m_SerialId, typeof(T).Name, userData);
                 m_EventManager.Fire(this, openUIFailureEventArgs);
-                Log.Error($"[UIManager]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
+                FuLog.Error($"[UIManager]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
                 return GetUI(openUIFailureEventArgs.SerialId) as T;
             }
         }

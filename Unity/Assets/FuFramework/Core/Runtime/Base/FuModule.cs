@@ -1,27 +1,41 @@
-﻿// ReSharper disable once CheckNamespace
+﻿using UnityEngine;
+
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架模块抽象类。
+    /// 游戏框架组件抽象基类。
+    /// 实现了组件的自动注册功能。
     /// </summary>
-    public abstract class FuModule
+    public abstract class FuModule : MonoBehaviour
     {
         /// <summary>
-        /// 获取游戏框架模块优先级。
+        /// 游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected internal virtual int Priority => 0;
+        protected internal virtual int Priority => ModulePriority.Default;
+        
+        /// <summary>
+        /// 获取模块是否已初始化。
+        /// </summary>
+        public bool IsInitialized { get; internal set; }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected internal abstract void OnInit();
 
         /// <summary>
         /// 游戏框架模块轮询。
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected internal abstract void Update(float elapseSeconds, float realElapseSeconds);
+        protected internal virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
 
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        protected internal abstract void Shutdown();
+        /// <param name="shutdownType">关闭游戏框架类型</param>
+        protected internal abstract void OnShutdown(ShutdownType shutdownType);
     }
 }

@@ -27,7 +27,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            Log.Info("<color=#43f656>------进入获取服务端默认资源包的版本信息流程------</color>");
+            FuLog.Info("<color=#43f656>------进入获取服务端默认资源包的版本信息流程------</color>");
 
             GetAssetPackageVersionInfo().Forget();
         }
@@ -43,14 +43,14 @@ namespace Launcher.Procedure
                 // 请求服务端，获取默认资源包的版本信息。
                 jsonParams["AssetPackageName"] = GlobalModule.AssetModule.DefaultPackageName;
                 var rstJson = await GlobalModule.WebModule.PostToString(GlobalModule.GlobalConfigModule.CheckResourceVersionUrl, jsonParams);
-                Log.Info(rstJson);
+                FuLog.Info(rstJson);
 
                 var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(rstJson.Result);
                 if (httpJsonResult.Code > 0)
                 {
                     // 获取失败
                     LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
-                    Log.Error($"获取资源版本信息异常=> Req:{Utility.Json.ToJson(jsonParams)} Resp:{rstJson}");
+                    FuLog.Error($"获取资源版本信息异常=> Req:{Utility.Json.ToJson(jsonParams)} Resp:{rstJson}");
 
                     // 若获取失败，延迟3秒后重试。
                     await UniTask.WaitForSeconds(3);
@@ -77,7 +77,7 @@ namespace Launcher.Procedure
             }
             catch (Exception e)
             {
-                Log.Error($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
+                FuLog.Error($"获取资源版本信息异常=>Error:{e.Message}   Req:{Utility.Json.ToJson(jsonParams)}");
                 LauncherUIHelper.SetTipText("获取资源版本信息异常, 正在重试...");
                 await UniTask.WaitForSeconds(3);
                 GetAssetPackageVersionInfo().Forget();

@@ -187,13 +187,13 @@ namespace FuFramework.UI.Runtime
         {
             var uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new FuException(Utility.Text.Format("无法找到界面id为 '{0}' ，资源名称为 '{1}' 的UI界面信息.", view.SerialId, view.UIName));
+                throw new FuException($"无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
 
             if (m_CachedNode != null && m_CachedNode.Value.View == view)
                 m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new FuException(Utility.Text.Format("UI组 '{0}' 中不存在UI界面 '[{1}]{2}'.", Layer.ToString(), view.SerialId, view.UIName));
+                throw new FuException($"UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
             ReferencePool.Runtime.ReferencePool.Release(uiInfo);
         }

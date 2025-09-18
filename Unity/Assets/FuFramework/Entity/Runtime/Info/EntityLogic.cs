@@ -69,7 +69,7 @@ namespace FuFramework.Entity.Runtime
             {
                 if (!Available)
                 {
-                    Log.Warning($"[EntityLogic] 设置实体是否可见失败, 实体 '{Name}' 不可用");
+                    FuLog.Warning($"[EntityLogic] 设置实体是否可见失败, 实体 '{Name}' 不可用");
                     return;
                 }
 

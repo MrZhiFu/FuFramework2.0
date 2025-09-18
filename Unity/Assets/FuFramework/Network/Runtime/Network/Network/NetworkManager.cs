@@ -11,7 +11,7 @@ namespace FuFramework.Network.Runtime
     /// <summary>
     /// 网络管理器。
     /// </summary>
-    public sealed partial class NetworkManager : FuComponent
+    public sealed partial class NetworkManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -139,7 +139,7 @@ namespace FuFramework.Network.Runtime
 
             if (HasNetworkChannel(channelName))
             {
-                throw new FuException(Utility.Text.Format("Already exist network channel '{0}'.", channelName ?? string.Empty));
+                throw new FuException($"Already exist network channel '{channelName ?? string.Empty}'.");
             }
 #if (ENABLE_GAME_FRAME_X_WEB_SOCKET && UNITY_WEBGL) || FORCE_ENABLE_GAME_FRAME_X_WEB_SOCKET
             NetworkChannelBase networkChannel = new WebSocketNetworkChannel(channelName, networkChannelHelper, rpcTimeout);

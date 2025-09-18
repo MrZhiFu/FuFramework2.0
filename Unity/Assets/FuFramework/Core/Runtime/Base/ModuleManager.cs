@@ -21,12 +21,12 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 记录所有模块组件的链表集合
         /// </summary>
-        private static readonly FuLinkedList<FuComponent> ModuleList = new();
+        private static readonly FuLinkedList<FuModule> ModuleList = new();
 
         /// <summary>
         /// 模块缓存字典。
         /// </summary>
-        private static readonly Dictionary<Type, FuComponent> ModuleCacheDict = new();
+        private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new();
         
 
         /// <summary>
@@ -34,14 +34,14 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <typeparam name="T">要获取的游戏框架组件类型。</typeparam>
         /// <returns>要获取的游戏框架组件。</returns>
-        public T GetModule<T>() where T : FuComponent => GetModule(typeof(T)) as T;
+        public T GetModule<T>() where T : FuModule => GetModule(typeof(T)) as T;
 
         /// <summary>
         /// 获取游戏框架组件，如果不存在则自动注册
         /// </summary>
         /// <param name="type">要获取的游戏框架组件类型。</param>
         /// <returns>要获取的游戏框架组件。</returns>
-        public FuComponent GetModule(Type type)
+        public FuModule GetModule(Type type)
         {
             // 先从缓存查找
             if (ModuleCacheDict.TryGetValue(type, out var cachedModule))
@@ -68,25 +68,25 @@ namespace FuFramework.Core.Runtime
         /// 获取所有已注册的模块。
         /// </summary>
         /// <returns>模块列表。</returns>
-        public List<FuComponent> GetAllModules() => ModuleList.ToList();
+        public List<FuModule> GetAllModules() => ModuleList.ToList();
         
         /// <summary>
         /// 注册游戏框架模块
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T RegisterModule<T>() where T : FuComponent => RegisterModule(typeof(T)) as T;
+        public T RegisterModule<T>() where T : FuModule => RegisterModule(typeof(T)) as T;
 
         /// <summary>
         /// 注册游戏框架模块
         /// </summary>
         /// <param name="moduleType">要注册的模块类型。</param>
         /// <returns>注册的模块实例。</returns>
-        public FuComponent RegisterModule(Type moduleType)
+        public FuModule RegisterModule(Type moduleType)
         {
-            if (!typeof(FuComponent).IsAssignableFrom(moduleType))
+            if (!typeof(FuModule).IsAssignableFrom(moduleType))
             {
-                Debug.LogError($"类型 {moduleType.Name} 不是有效的FuComponent类型!");
+                Debug.LogError($"类型 {moduleType.Name} 不是有效的FuModule类型!");
                 return null;
             }
 
@@ -100,12 +100,12 @@ namespace FuFramework.Core.Runtime
                 CheckModuleDependencies(moduleType);
 
                 // 查找现有模块或创建新模块
-                module = FindObjectOfType(moduleType, true) as FuComponent;
+                module = FindObjectOfType(moduleType, true) as FuModule;
                 if (module is null)
                 {
                     // 创建模块的GameObject
                     var moduleObject = new GameObject();
-                    module = moduleObject.AddComponent(moduleType) as FuComponent;
+                    module = moduleObject.AddComponent(moduleType) as FuModule;
                     moduleObject.name = $"[Module]-{moduleType.Name}";
 
                     // 设置父对象到框架根节点
@@ -130,11 +130,44 @@ namespace FuFramework.Core.Runtime
             }
         }
 
-          /// <summary>
+        /// <summary>
+        /// 查找并注册所有继承于FuModule的组件
+        /// </summary>
+        public void RegisterAllModules()
+        {
+            Debug.Log("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
+
+            try
+            {
+                // 获取所有继承自FuModule的类型
+                var moduleTypes = GetAllFuModuleTypes();
+
+                if (moduleTypes.Count == 0)
+                {
+                    Debug.LogWarning("未找到任何继承自FuModule的类型");
+                    return;
+                }
+
+                Debug.Log($"找到<color=#00FBD5> {moduleTypes.Count} </color>个FuModule类型");
+
+                foreach (var fuModuleType in moduleTypes)
+                {
+                    RegisterModule(fuModuleType);
+                }
+
+                Debug.Log("<color=#00FBD5>------所有模块注册完成------</color>");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"查找并注册所有继承于FuModule的模块失败: {e.Message}\n{e.StackTrace}");
+            }
+        }
+
+        /// <summary>
         /// 卸载指定模块。
         /// </summary>
         /// <typeparam name="T">模块类型。</typeparam>
-        public void UnregisterModule<T>() where T : FuComponent
+        public void UnregisterModule<T>() where T : FuModule
         {
             var module = GetModule<T>();
             if (module is null) return;
@@ -174,39 +207,6 @@ namespace FuFramework.Core.Runtime
                 Debug.LogError($"卸载模块 {typeof(T).Name} 失败: {e.Message}");
             }
         }
-        
-        /// <summary>
-        /// 查找并注册所有继承于FuComponent的组件
-        /// </summary>
-        public void RegisterAllModules()
-        {
-            Debug.Log("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
-
-            try
-            {
-                // 获取所有继承自FuComponent的类型
-                var fuComponentTypes = GetAllFuComponentTypes();
-
-                if (fuComponentTypes.Count == 0)
-                {
-                    Debug.LogWarning("未找到任何继承自FuComponent的类型");
-                    return;
-                }
-
-                Debug.Log($"找到 {fuComponentTypes.Count} 个FuComponent类型");
-
-                foreach (var fuComponentType in fuComponentTypes)
-                {
-                    RegisterModule(fuComponentType);
-                }
-
-                Debug.Log("<color=#00FBD5>------所有模块注册完成------</color>");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"查找并注册所有继承于FuComponent的模块失败: {e.Message}\n{e.StackTrace}");
-            }
-        }
 
         /// <summary>
         /// 检查模块依赖。
@@ -219,9 +219,9 @@ namespace FuFramework.Core.Runtime
             {
                 foreach (var depType in dependency.DependentTypes)
                 {
-                    if (!typeof(FuComponent).IsAssignableFrom(depType))
+                    if (!typeof(FuModule).IsAssignableFrom(depType))
                     {
-                        Debug.LogError($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuComponent类型!");
+                        Debug.LogError($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuModule类型!");
                         continue;
                     }
         
@@ -238,7 +238,7 @@ namespace FuFramework.Core.Runtime
         /// 内部注册模块。
         /// </summary>
         /// <param name="module">要注册的模块。</param>
-        private void RegisterModuleInternal(FuComponent module)
+        private void RegisterModuleInternal(FuModule module)
         {
             // 确保框架模块在场景切换时不被销毁
             if (Application.isPlaying)
@@ -271,11 +271,11 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 获取所有继承自FuComponent的类型
+        /// 获取所有继承自FuModule的类型
         /// </summary>
-        private List<Type> GetAllFuComponentTypes()
+        private List<Type> GetAllFuModuleTypes()
         {
-            var fuComponentType = typeof(FuComponent);
+            var fuModuleType = typeof(FuModule);
             var allTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(assembly =>
                 {
@@ -288,8 +288,8 @@ namespace FuFramework.Core.Runtime
                         return Array.Empty<Type>();
                     }
                 })
-                .Where(type => type != fuComponentType &&
-                               fuComponentType.IsAssignableFrom(type) &&
+                .Where(type => type != fuModuleType &&
+                               fuModuleType.IsAssignableFrom(type) &&
                                !type.IsAbstract &&
                                !type.IsInterface)
                 .ToList();
@@ -297,6 +297,15 @@ namespace FuFramework.Core.Runtime
             return allTypes;
         }
 
+        /// <summary>
+        /// 初始化游戏框架。
+        /// </summary>
+        public void Initialize()
+        {
+            // 自动注册所有框架模块
+            RegisterAllModules();
+        }
+        
         /// <summary>
         /// 所有游戏框架模块轮询
         /// </summary>

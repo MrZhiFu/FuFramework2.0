@@ -9,7 +9,7 @@ namespace FuFramework.Config.Runtime
     /// <summary>
     /// 全局配置管理器。
     /// </summary>
-    public sealed class ConfigManager : FuComponent
+    public sealed class ConfigManager : FuModule
     {
         protected override int Priority => ModulePriority.Game;
 

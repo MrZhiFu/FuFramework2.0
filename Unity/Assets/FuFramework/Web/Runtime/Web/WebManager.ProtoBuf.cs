@@ -168,7 +168,7 @@ namespace FuFramework.Web.Runtime
             var messageType = ProtoMessageIdHandler.GetRespTypeById(messageObjectHttp.Id);
             if (messageType != typeof(T))
             {
-                Log.Error($"Response message type is invalid. Expected '{typeof(T).FullName}', actual '{messageType.FullName}'.");
+                FuLog.Error($"Response message type is invalid. Expected '{typeof(T).FullName}', actual '{messageType.FullName}'.");
                 return default;
             }
 

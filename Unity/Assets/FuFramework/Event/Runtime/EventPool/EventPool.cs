@@ -245,7 +245,7 @@ namespace FuFramework.Event.Runtime
             }
 
             if (noHandlerException)
-                throw new FuException(Utility.Text.Format("[EventPool]事件 '{0}' 没有对应的处理函数!", eArgs.Id));
+                throw new FuException($"[EventPool]事件 '{eArgs.Id}' 没有对应的处理函数!");
         }
 
         /// <summary>

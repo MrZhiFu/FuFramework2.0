@@ -30,7 +30,7 @@ namespace FuFramework.UI.Runtime
         {
             if (listener == null)
             {
-                Log.Error("[FuiEventRegister]添加FUI监听事件失败, 监听器为空");
+                FuLog.Error("[FuiEventRegister]添加FUI监听事件失败, 监听器为空");
                 return;
             }
 
@@ -52,7 +52,7 @@ namespace FuFramework.UI.Runtime
         {
             if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
             {
-                Log.Error($"[FuiEventRegister]移除FUI监听事件失败, 监听器 {listener} 不存在");
+                FuLog.Error($"[FuiEventRegister]移除FUI监听事件失败, 监听器 {listener} 不存在");
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace FuFramework.UI.Runtime
         {
             if (listener == null)
             {
-                Log.Error("[FuiEventRegister]设置FUI监听事件失败, 监听器为空");
+                FuLog.Error("[FuiEventRegister]设置FUI监听事件失败, 监听器为空");
                 return;
             }
 
@@ -108,13 +108,13 @@ namespace FuFramework.UI.Runtime
         {
             if (listener == null)
             {
-                Log.Error("[FuiEventRegister]清理FUI监听事件失败, 监听器为空");
+                FuLog.Error("[FuiEventRegister]清理FUI监听事件失败, 监听器为空");
                 return;
             }
 
             if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
             {
-                Log.Error($"[FuiEventRegister]清理FUI监听事件失败, 监听器 {listener} 不存在");
+                FuLog.Error($"[FuiEventRegister]清理FUI监听事件失败, 监听器 {listener} 不存在");
                 return;
             }
 

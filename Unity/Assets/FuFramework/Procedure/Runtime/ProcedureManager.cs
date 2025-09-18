@@ -1,6 +1,4 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 
@@ -10,30 +8,15 @@ namespace FuFramework.Procedure.Runtime
     /// <summary>
     /// 流程管理器。
     /// </summary>
-    public sealed class ProcedureManager : FuComponent
+    [ModuleDependency(typeof(FsmManager))]
+    public sealed class ProcedureManager : FuModule
     {
         /// <summary>
         /// 游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Game;
-
-        [Header("所有可用的流程类型")]
-        [SerializeField] private string[] m_AvailableProcedureTypeNames;
-
-        [Header("入口流程类型")]
-        [SerializeField] private string m_EntranceProcedureTypeName;
-
-        /// <summary>
-        /// 所有可用的流程类型
-        /// </summary>
-        private ProcedureBase[] m_Procedures;
-
-        /// <summary>
-        /// 入口流程。
-        /// </summary>
-        private ProcedureBase m_EntranceProcedure;
-
+        
         /// <summary>
         /// 有限状态机管理器
         /// </summary>
@@ -43,7 +26,6 @@ namespace FuFramework.Procedure.Runtime
         /// 流程管理器的有限状态机
         /// </summary>
         private Fsm.Runtime.Fsm m_ProcedureFsm;
-
 
         /// <summary>
         /// 获取当前流程。
@@ -62,9 +44,6 @@ namespace FuFramework.Procedure.Runtime
         {
             m_FsmManager = ModuleManager.Instance.GetModule<FsmManager>();
             if (!m_FsmManager) throw new FuException("[ProcedureManager] 有限状态机管理器不能为空");
-
-            // 初始化所有流程
-            StartCoroutine(InitProcedures());
         }
 
         /// <summary>
@@ -85,62 +64,17 @@ namespace FuFramework.Procedure.Runtime
         }
 
         /// <summary>
-        /// 初始化获取所有流程
+        /// 初始化流程状态机。
         /// </summary>
-        /// <returns></returns>
+        /// <param name="procedure"></param>
         /// <exception cref="FuException"></exception>
-        private IEnumerator InitProcedures()
+        public void InitProcedures(ProcedureBase[] procedure)
         {
-            m_Procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
-            for (var i = 0; i < m_AvailableProcedureTypeNames.Length; i++)
-            {
-                var procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
-                if (procedureType == null)
-                {
-                    Log.Error("找不到流程类型 '{0}'.", m_AvailableProcedureTypeNames[i]);
-                    yield break;
-                }
-
-                m_Procedures[i] = Activator.CreateInstance(procedureType) as ProcedureBase;
-                if (m_Procedures[i] == null)
-                {
-                    Log.Error("创建流程实例失败 '{0}'.", m_AvailableProcedureTypeNames[i]);
-                    yield break;
-                }
-
-                // 设置入口流程
-                if (m_EntranceProcedureTypeName == m_AvailableProcedureTypeNames[i])
-                {
-                    m_EntranceProcedure = m_Procedures[i];
-                }
-            }
-
-            if (m_EntranceProcedure == null)
-            {
-                Log.Error("入口流程类型不存在!.");
-                yield break;
-            }
-
-            if (m_Procedures == null || m_Procedures.Length == 0) 
-                throw new FuException("[ProcedureManager] 必须至少有一个流程!");
-
-            var states = new FsmStateBase[m_Procedures.Length];
-            for (var i = 0; i < m_Procedures.Length; i++)
-            {
-                states[i] = m_Procedures[i];
-            }
-
-            m_ProcedureFsm = m_FsmManager.CreateFsm(this, states);
-            if (m_ProcedureFsm == null)
-            {
-                Log.Error("创建流程有限状态机失败.");
-                yield break;
-            }
-
-            yield return new WaitForEndOfFrame();
+            if (!m_FsmManager) throw new FuException("[ProcedureManager] 有限状态机管理器不能为空");
             
-            // 启动入口流程
-            StartProcedure(m_EntranceProcedure.GetType());
+            // ReSharper disable once CoVariantArrayConversion
+            m_ProcedureFsm ??= m_FsmManager.CreateFsm(this, procedure);
+            if (m_ProcedureFsm == null) throw new FuException("[ProcedureManager] 创建流程管理器失败.");
         }
 
         /// <summary>

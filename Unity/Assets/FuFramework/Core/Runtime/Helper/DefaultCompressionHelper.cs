@@ -8,7 +8,7 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 默认压缩解压缩辅助器。
     /// </summary>
-    public class DefaultCompressionHelper : Utility.Compression.ICompressionHelper
+    public class DefaultCompressionHelper
     {
         private const    int    CachedBytesLength = 0x1000;
         private readonly byte[] m_CachedBytes     = new byte[CachedBytesLength];

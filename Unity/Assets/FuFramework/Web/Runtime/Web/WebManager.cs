@@ -14,7 +14,7 @@ namespace FuFramework.Web.Runtime
     /// <summary>
     /// Web请求管理器,实现HTTP GET和POST请求功能
     /// </summary>
-    public partial class WebManager : FuComponent
+    public partial class WebManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -189,7 +189,7 @@ namespace FuFramework.Web.Runtime
         /// </summary>
         private async void MakeJsonStringRequest(WebJsonData webJsonData)
         {
-            Log.Info($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
+            FuLog.Info($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
 
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
 
@@ -216,12 +216,12 @@ namespace FuFramework.Web.Runtime
                 m_SendingNormalList.Remove(webJsonData);
                 if (unityWebRequest.result != UnityWebRequest.Result.Success && unityWebRequest.error != null)
                 {
-                    Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
+                    FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
                     webJsonData.UniTaskCompletionStringSource.TrySetException(new Exception(unityWebRequest.error));
                     return;
                 }
 
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
                 webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
             };
 
@@ -255,7 +255,7 @@ namespace FuFramework.Web.Runtime
 
                 using var reader  = new StreamReader(responseStream);
                 var       content = await reader.ReadToEndAsync();
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {content}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {content}");
                 webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, content));
             }
             catch (WebException e)
@@ -267,17 +267,17 @@ namespace FuFramework.Web.Runtime
                     return;
                 }
 
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             catch (IOException e)
             {
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             catch (Exception e)
             {
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             finally
@@ -291,7 +291,7 @@ namespace FuFramework.Web.Runtime
         /// </summary>
         private async void MakeJsonBytesRequest(WebJsonData webJsonData)
         {
-            Log.Info($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
+            FuLog.Info($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
 
 #if UNITY_WEBGL
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
@@ -319,12 +319,12 @@ namespace FuFramework.Web.Runtime
                 m_SendingNormalList.Remove(webJsonData);
                 if (unityWebRequest.result != UnityWebRequest.Result.Success || unityWebRequest.error != null)
                 {
-                    Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
+                    FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
                     webJsonData.UniTaskCompletionBytesSource.TrySetException(new Exception(unityWebRequest.error));
                     return;
                 }
 
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
                 webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, unityWebRequest.downloadHandler.data));
             };
 #else
@@ -359,12 +359,12 @@ namespace FuFramework.Web.Runtime
                 m_MemoryStream.Position = 0;
                 await responseStream.CopyToAsync(m_MemoryStream);
                 var resultData = m_MemoryStream.ToArray();
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {resultData}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {resultData}");
                 webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, resultData)); // 将流的内容复制到内存流中并转换为byte数组 
             }
             catch (WebException e)
             {
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
 
                 // 捕获超时异常
                 if (e.Status == WebExceptionStatus.Timeout)
@@ -377,12 +377,12 @@ namespace FuFramework.Web.Runtime
             }
             catch (IOException e)
             {
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionBytesSource.SetException(e);
             }
             catch (Exception e)
             {
-                Log.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLog.Info($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionBytesSource.SetException(e);
             }
             finally

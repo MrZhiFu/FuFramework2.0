@@ -208,7 +208,7 @@ namespace FuFramework.Core.Runtime
             int length = Utility.Converter.GetBytes(value, s_CachedBytes);
             if (length > byte.MaxValue)
             {
-                throw new FuException(Utility.Text.Format("String '{0}' is too long.", value));
+                throw new FuException($"String '{value}' is too long.");
             }
 
             Utility.Encryption.GetSelfXorBytes(s_CachedBytes, encryptBytes);

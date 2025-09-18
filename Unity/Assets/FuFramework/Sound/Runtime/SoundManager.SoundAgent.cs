@@ -244,7 +244,7 @@ namespace FuFramework.Sound.Runtime
                 // 应用没有暂停，且声音没有播放，且声音资源存在，且播放位置大于等于声音长度，说明播放完成，则重置声音相关设置
                 if (!m_IsAppPause && !IsPlaying && m_AudioSource.clip && Time >= Length)
                 {
-                    Log.Info($"声音 '{m_AudioSource.clip.name}' 播放完成!");
+                    FuLog.Info($"声音 '{m_AudioSource.clip.name}' 播放完成!");
                     m_OnPlayEnd?.Invoke();
                     Reset();
                     return;

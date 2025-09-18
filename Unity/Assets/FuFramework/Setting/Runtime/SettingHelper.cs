@@ -67,7 +67,7 @@ namespace FuFramework.Setting.Runtime
             }
             catch (Exception exception)
             {
-                Log.Warning("[DefaultHelper] 加载配置失败：'{0}'.", exception);
+                FuLog.Warning($"[DefaultHelper] 加载配置失败：'{exception}'.");
                 return false;
             }
         }
@@ -85,7 +85,7 @@ namespace FuFramework.Setting.Runtime
             }
             catch (Exception exception)
             {
-                Log.Warning("[DefaultHelper] 保存配置失败：'{0}'.", exception);
+                FuLog.Warning($"[DefaultHelper] 保存配置失败：'{exception}'.");
                 return false;
             }
         }

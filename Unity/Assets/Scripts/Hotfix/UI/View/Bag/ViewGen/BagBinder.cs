@@ -21,7 +21,7 @@ namespace Hotfix.UI
         [RuntimeInitializeOnLoadMethod]
         public static void BindAll()
         {
-            Log.Info("绑定包-{Bag}下的所有自定义组件");
+            FuLog.Info("绑定包-{Bag}下的所有自定义组件");
 			UIObjectFactory.SetPackageItemExtension(CompGoodItem.URL, typeof(CompGoodItem));
 			UIObjectFactory.SetPackageItemExtension(CompBagContent.URL, typeof(CompBagContent));
 			UIObjectFactory.SetPackageItemExtension(CompBagItemInfo.URL, typeof(CompBagItemInfo));

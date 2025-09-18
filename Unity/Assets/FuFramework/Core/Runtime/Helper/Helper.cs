@@ -28,13 +28,13 @@ namespace FuFramework.Core.Runtime
                 var helperType = Utility.Assembly.GetType(helperTypeName);
                 if (helperType == null)
                 {
-                    Log.Warning("当前域中不存在类型 '{0}'.", helperTypeName);
+                    FuLog.Warning($"当前域中不存在类型 '{helperTypeName}'.");
                     return null;
                 }
 
                 if (!typeof(T).IsAssignableFrom(helperType))
                 {
-                    Log.Warning("类型 '{0}' 不能赋值给 '{1}'.", typeof(T).FullName, helperType.FullName);
+                    FuLog.Warning($"类型 '{typeof(T).FullName}' 不能赋值给 '{helperType.FullName}'.");
                     return null;
                 }
 
@@ -44,7 +44,7 @@ namespace FuFramework.Core.Runtime
             // 使用自定义的辅助器对象创建
             if (!customHelper)
             {
-                Log.Warning("你必须设置自定义辅助器 '{0}' 类型.", typeof(T).FullName);
+                FuLog.Warning($"你必须设置自定义辅助器 '{typeof(T).FullName}' 类型.");
                 return null;
             }
 

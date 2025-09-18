@@ -2,12 +2,12 @@
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 关闭游戏框架类型。
+    /// 关闭游戏框架模块时的类型。
     /// </summary>
     public enum ShutdownType : byte
     {
         /// <summary>
-        /// 手动反注册。
+        /// 模块手动反注册。
         /// </summary>
         Unregister,
         

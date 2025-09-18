@@ -45,7 +45,7 @@ namespace FuFramework.Core.Runtime
         {
             if (Type == null) throw new FuException("[TypeNamePair] 类型不能为空!");
             var typeName = Type.FullName;
-            return (string.IsNullOrEmpty(Name) ? typeName : Utility.Text.Format("{0}.{1}", typeName, Name)) ?? string.Empty;
+            return (string.IsNullOrEmpty(Name) ? typeName : $"{typeName}.{Name}") ?? string.Empty;
         }
 
         /// <summary>

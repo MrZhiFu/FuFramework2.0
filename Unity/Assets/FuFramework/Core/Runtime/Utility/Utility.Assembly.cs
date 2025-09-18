@@ -88,7 +88,7 @@ namespace FuFramework.Core.Runtime
 
                 foreach (var assembly in s_Assemblies)
                 {
-                    type = Type.GetType(Text.Format("{0}, {1}", typeName, assembly.FullName));
+                    type = Type.GetType($"{typeName}, {assembly.FullName}");
                     if (type == null) continue;
                     s_CachedDict.Add(typeName, type);
                     return type;

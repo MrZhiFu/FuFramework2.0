@@ -116,7 +116,7 @@ namespace FuFramework.ObjectPool.Runtime
                 m_Object.LastUseTime = DateTime.UtcNow;
                 SpawnCount--;
                 if (SpawnCount < 0)
-                    throw new FuException(Utility.Text.Format("对象 '{0}' 生成次数已经小于 0, 回收失败.", Name));
+                    throw new FuException($"对象 '{Name}' 生成次数已经小于 0, 回收失败.");
             }
 
             /// <summary>

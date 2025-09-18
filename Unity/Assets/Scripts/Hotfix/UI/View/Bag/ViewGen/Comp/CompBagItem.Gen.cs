@@ -48,10 +48,10 @@ namespace Hotfix.UI
         {
 	        if (view == null)
 	        {
-		        Log.Error($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
+		        FuLog.Error($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
 		        return;
 	        }
-	        Log.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
+	        FuLog.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
 	        uiView = view;
 	        InitUIEvent();
 	        InitEvent();
@@ -82,7 +82,7 @@ namespace Hotfix.UI
         /// </summary>
         public override void Dispose()
         {
-            Log.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
+            FuLog.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
             uiView = null;
             base.Dispose();
         }

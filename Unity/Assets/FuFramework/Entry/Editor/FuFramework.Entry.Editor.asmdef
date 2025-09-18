@@ -1,11 +1,12 @@
 {
-    "name": "FuFramework.Procedure.Editor",
-    "rootNamespace": "FuFramework.Procedure.Editor",
+    "name": "FuFramework.Entry.Editor",
+    "rootNamespace": "FuFramework.Entry.Editor",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",
         "FuFramework.FSM.Runtime",
-        "FuFramework.Procedure.Runtime"
+        "FuFramework.Procedure.Runtime",
+        "FuFramework.Entry.Runtime"
     ],
     "includePlatforms": [
         "Editor"

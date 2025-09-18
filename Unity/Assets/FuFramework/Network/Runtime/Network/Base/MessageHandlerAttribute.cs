@@ -76,7 +76,7 @@ namespace FuFramework.Network.Runtime
 
             if (m_MessageObjects.Count <= 0)
             {
-                Log.Warning($"没有消息对象转发到方法：{m_InvokeMethodName}");
+                FuLog.Warning($"没有消息对象转发到方法：{m_InvokeMethodName}");
                 return;
             }
 

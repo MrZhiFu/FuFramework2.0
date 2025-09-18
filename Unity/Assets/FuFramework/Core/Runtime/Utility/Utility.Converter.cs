@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -17,6 +18,9 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static class Converter
         {
+            /// 屏幕每英寸点数 默认为windows dpi
+            private const int DefaultDpi = 96;
+
             /// 英寸到厘米(1英寸 = 2.54厘米)
             private const float InchesToCentimeters = 2.54f;
 
@@ -29,9 +33,9 @@ namespace FuFramework.Core.Runtime
             public static bool IsLittleEndian => BitConverter.IsLittleEndian;
 
             /// <summary>
-            /// 获取或设置屏幕每英寸点数。
+            /// 获取屏幕每英寸点数。
             /// </summary>
-            public static float ScreenDpi { get; set; }
+            public static float ScreenDpi => Screen.dpi <= 0 ? DefaultDpi : Screen.dpi;
 
             /// <summary>
             /// 将像素转换为厘米。
@@ -561,7 +565,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>用于存放结果的字节数组。</returns>
             public static byte[] GetBytes(string value, Encoding encoding)
             {
-                if (value    == null) throw new FuException("传入的字符串为空.");
+                if (value == null) throw new FuException("传入的字符串为空.");
                 if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetBytes(value);
@@ -586,7 +590,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>buffer 内实际填充了多少字节。</returns>
             public static int GetBytes(string value, Encoding encoding, byte[] buffer, int startIndex)
             {
-                if (value    == null) throw new FuException("传入的字符串为空.");
+                if (value == null) throw new FuException("传入的字符串为空.");
                 if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetBytes(value, 0, value.Length, buffer, startIndex);
@@ -607,7 +611,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>转换后的字符串。</returns>
             public static string GetString(byte[] value, Encoding encoding)
             {
-                if (value    == null) throw new FuException("传入的字节数组为空.");
+                if (value == null) throw new FuException("传入的字节数组为空.");
                 if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetString(value);
@@ -632,7 +636,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>转换后的字符串。</returns>
             public static string GetString(byte[] value, int startIndex, int length, Encoding encoding)
             {
-                if (value    == null) throw new FuException("传入的字节数组为空.");
+                if (value == null) throw new FuException("传入的字节数组为空.");
                 if (encoding == null) throw new FuException("传入的编码为空.");
 
                 return encoding.GetString(value, startIndex, length);

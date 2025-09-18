@@ -10,7 +10,7 @@ namespace FuFramework.ObjectPool.Runtime
     /// 对象池管理器。
     /// 功能：管理 Unity端的GameObject的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销
     /// </summary>
-    public sealed partial class ObjectPoolManager : FuComponent
+    public sealed partial class ObjectPoolManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -84,7 +84,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         private void OnLowMemory()
         {
-            Log.Info("低内存警告, 释放对象池资源...");
+            FuLog.Info("低内存警告, 释放对象池资源...");
 
             // 释放对象池中所有未使用的资源
             ReleaseAllUnused();
@@ -112,7 +112,7 @@ namespace FuFramework.ObjectPool.Runtime
             if (objectType == null) throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _HasObjectPool(new TypeNamePair(objectType));
         }
@@ -139,7 +139,7 @@ namespace FuFramework.ObjectPool.Runtime
             if (objectType == null) throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _HasObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -183,7 +183,7 @@ namespace FuFramework.ObjectPool.Runtime
             if (objectType == null) throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _GetObjectPool(new TypeNamePair(objectType));
         }
@@ -210,7 +210,7 @@ namespace FuFramework.ObjectPool.Runtime
             if (objectType == null) throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _GetObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -763,7 +763,7 @@ namespace FuFramework.ObjectPool.Runtime
                 throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _DestroyObjectPool(new TypeNamePair(objectType));
         }
@@ -791,7 +791,7 @@ namespace FuFramework.ObjectPool.Runtime
                 throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _DestroyObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -828,7 +828,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void Release()
         {
-            Log.Info("[ObjectPoolComponent]释放所有对象池中可释放对象...");
+            FuLog.Info("[ObjectPoolComponent]释放所有对象池中可释放对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
@@ -841,7 +841,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void ReleaseAllUnused()
         {
-            Log.Info("[ObjectPoolComponent]释放所有对象池中的所有未使用对象...");
+            FuLog.Info("[ObjectPoolComponent]释放所有对象池中的所有未使用对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
@@ -887,7 +887,7 @@ namespace FuFramework.ObjectPool.Runtime
         {
             var typeNamePair = new TypeNamePair(typeof(T), poolName);
             if (HasObjectPool<T>(poolName))
-                throw new FuException(Utility.Text.Format("对象池 '{0}' 已存在.", typeNamePair));
+                throw new FuException($"对象池 '{typeNamePair}' 已存在, 不可重复创建.");
 
             var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoReleaseInterval, capacity, expireTime, priority);
             m_ObjPoolDict.Add(typeNamePair, objectPool);
@@ -912,11 +912,11 @@ namespace FuFramework.ObjectPool.Runtime
             if (objectType == null) throw new FuException("对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException(Utility.Text.Format("对象类型 '{0}' 不是 ObjectBase 的子类.", objectType.FullName));
+                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             var typeNamePair = new TypeNamePair(objectType, poolName);
             if (HasObjectPool(objectType, poolName))
-                throw new FuException(Utility.Text.Format("对象池 '{0}' 已存在.", typeNamePair));
+                throw new FuException($"对象池 '{typeNamePair}' 已存在, 不可重复创建");
 
             var objectPoolType = typeof(ObjectPool<>).MakeGenericType(objectType);
             var objectPool = (ObjectPoolBase)Activator.CreateInstance(objectPoolType, poolName, allowSpawnInUse, autoReleaseInterval, capacity,

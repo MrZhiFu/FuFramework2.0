@@ -17,7 +17,7 @@ namespace FuFramework.UI.Runtime
             var view = GetUI(serialId);
             if (view == null)
             {
-                Log.Error($"[UIManager]需要关闭的UI界面View为空 '{serialId}'.");
+                FuLog.Error($"[UIManager]需要关闭的UI界面View为空 '{serialId}'.");
                 return;
             }
 
@@ -46,13 +46,13 @@ namespace FuFramework.UI.Runtime
         {
             if (view == null)
             {
-                Log.Error("[UIManager]需要关闭的UI界面为空");
+                FuLog.Error("[UIManager]需要关闭的UI界面为空");
                 return;
             }
 
             if (view.UIGroup == null)
             {
-                Log.Error("[UIManager]需要关闭的UI界面组为空");
+                FuLog.Error("[UIManager]需要关闭的UI界面组为空");
                 return;
             }
 
@@ -85,7 +85,7 @@ namespace FuFramework.UI.Runtime
             var view = GetUI(serialId);
             if (view == null)
             {
-                Log.Error($"[UIManager]找不到界面 '{serialId}'");
+                FuLog.Error($"[UIManager]找不到界面 '{serialId}'");
                 return;
             }
 
@@ -114,13 +114,13 @@ namespace FuFramework.UI.Runtime
         {
             if (view == null)
             {
-                Log.Error("[UIManager]需要关闭的UI界面View为空");
+                FuLog.Error("[UIManager]需要关闭的UI界面View为空");
                 return;
             }
 
             if (view.UIGroup == null)
             {
-                Log.Error("[UIManager]需要关闭的UI界面组为空");
+                FuLog.Error("[UIManager]需要关闭的UI界面组为空");
                 return;
             }
 

@@ -2,7 +2,6 @@
 using FuFramework.Core.Runtime;
 using UnityEditor;
 using UnityEngine;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Editor
@@ -48,7 +47,7 @@ namespace FuFramework.Core.Editor
         /// <param name="folder">要打开的文件夹的路径。</param>
         public static void Execute(string folder)
         {
-            folder = Utility.Text.Format("\"{0}\"", folder);
+            folder = $"\"{folder}\"";
             switch (Application.platform)
             {
                 case RuntimePlatform.WindowsEditor:
@@ -60,7 +59,7 @@ namespace FuFramework.Core.Editor
                     break;
 
                 default:
-                    throw new FuException(Utility.Text.Format("Not support open folder on '{0}' platform.", Application.platform));
+                    throw new FuException($"在 '{Application.platform}' 平台不支持打开文件夹.");
             }
         }
     }

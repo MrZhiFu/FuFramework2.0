@@ -9,7 +9,7 @@ namespace FuFramework.Timer.Runtime
     /// 定时器管理器。
     /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
     /// </summary>
-    public sealed partial class TimerManager : FuComponent
+    public sealed partial class TimerManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
@@ -106,7 +106,7 @@ namespace FuFramework.Timer.Runtime
                                 catch (Exception e)
                                 {
                                     timerItem.Deleted = true;
-                                    Log.Error($"计时器：timer(internal={timerItem.Interval}, repeat={timerItem.Repeat}) 调用错误：{e.Message}");
+                                    FuLog.Error($"计时器：timer(internal={timerItem.Interval}, repeat={timerItem.Repeat}) 调用错误：{e.Message}");
                                 }
                             }
                             else
@@ -165,7 +165,7 @@ namespace FuFramework.Timer.Runtime
             {
                 if (callback == null)
                 {
-                    Log.Error($"计时器添加失败, 回调函数为空, 间隔时间={interval}, 重复次数={repeat}");
+                    FuLog.Error($"计时器添加失败, 回调函数为空, 间隔时间={interval}, 重复次数={repeat}");
                     return;
                 }
 

@@ -10,11 +10,6 @@ namespace FuFramework.Core.Editor
     public abstract class FuFrameworkInspector : UnityEditor.Editor
     {
         /// <summary>
-        /// 空选项名称。
-        /// </summary>
-        protected const string NoneOptionName = "<None>";
-
-        /// <summary>
         /// 是否处于编译状态。
         /// </summary>
         private bool m_IsCompiling;
@@ -45,8 +40,7 @@ namespace FuFramework.Core.Editor
         /// 编译完成事件。
         /// </summary>
         protected virtual void OnCompileComplete() { }
-
-
+        
         /// <summary>
         /// 判断游戏对象是否是预制体。
         /// </summary>

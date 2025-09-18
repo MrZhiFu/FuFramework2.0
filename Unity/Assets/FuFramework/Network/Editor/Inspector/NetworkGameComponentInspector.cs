@@ -11,7 +11,7 @@ namespace FuFramework.Network.Editor
     /// 自定义网络组件的Inspector
     /// </summary>
     [CustomEditor(typeof(NetworkManager))]
-    internal sealed class NetworkGameComponentInspector : GameComponentInspector
+    internal sealed class NetworkGameComponentInspector : FuFrameworkInspector
     {
         private SerializedProperty m_IgnoredSendNetworkIds;
         private SerializedProperty m_IgnoredReceiveNetworkIds;
@@ -20,6 +20,13 @@ namespace FuFramework.Network.Editor
         private readonly GUIContent m_IgnoredSendNetworkIdsGUIContent = new("忽略发送消息ID的日志打印");
         private readonly GUIContent m_IgnoredReceiveNetworkIdsGUIContent = new("忽略接收消息ID的日志打印");
         private readonly GUIContent m_rpcTimeoutGUIContent = new("RPC超时时间,单位:毫秒");
+
+        private void OnEnable()
+        {
+            m_IgnoredSendNetworkIds = serializedObject.FindProperty("m_IgnoredSendNetworkIds");
+            m_IgnoredReceiveNetworkIds = serializedObject.FindProperty("m_IgnoredReceiveNetworkIds");
+            m_rpcTimeout = serializedObject.FindProperty("m_rpcTimeout");
+        }
 
         public override void OnInspectorGUI()
         {
@@ -57,11 +64,6 @@ namespace FuFramework.Network.Editor
             Repaint();
         }
 
-        protected override void RefreshTypeNames()
-        {
-            // RefreshComponentTypeNames(typeof(INetworkManager));
-        }
-
         private void DrawNetworkChannel(INetworkChannel networkChannel)
         {
             EditorGUILayout.BeginVertical("box");
@@ -71,9 +73,9 @@ namespace FuFramework.Network.Editor
                 EditorGUILayout.LabelField("Address Family", networkChannel.EAddressFamily.ToString());
                 EditorGUILayout.LabelField("Local Address", networkChannel.Connected ? networkChannel.Socket.LocalEndPoint.ToString() : "Unavailable");
                 EditorGUILayout.LabelField("Remote Address", networkChannel.Connected ? networkChannel.Socket.RemoteEndPoint.ToString() : "Unavailable");
-                EditorGUILayout.LabelField("Send Packet", Utility.Text.Format("{0} / {1}", networkChannel.SendPacketCount, networkChannel.SentPacketCount));
+                EditorGUILayout.LabelField("Send Packet", $"{networkChannel.SendPacketCount} / {networkChannel.SentPacketCount}");
                 EditorGUILayout.LabelField("Miss Heart Beat Count", networkChannel.MissHeartBeatCount.ToString());
-                EditorGUILayout.LabelField("Heart Beat", Utility.Text.Format("{0:F2} / {1:F2}", networkChannel.HeartBeatElapseSeconds, networkChannel.HeartBeatInterval));
+                EditorGUILayout.LabelField("Heart Beat", $"{networkChannel.HeartBeatElapseSeconds:F2} / {networkChannel.HeartBeatInterval:F2}");
                 EditorGUI.BeginDisabledGroup(!networkChannel.Connected);
                 {
                     if (GUILayout.Button("Disconnect"))
@@ -86,14 +88,6 @@ namespace FuFramework.Network.Editor
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.Separator();
-        }
-
-        protected override void Enable()
-        {
-            base.Enable();
-            m_IgnoredSendNetworkIds = serializedObject.FindProperty("m_IgnoredSendNetworkIds");
-            m_IgnoredReceiveNetworkIds = serializedObject.FindProperty("m_IgnoredReceiveNetworkIds");
-            m_rpcTimeout = serializedObject.FindProperty("m_rpcTimeout");
         }
     }
 }

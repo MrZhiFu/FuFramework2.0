@@ -11,7 +11,7 @@ namespace FuFramework.Fsm.Runtime
     /// 功能；
     /// 1. 管理多个有限状态机，包括创建、销毁、轮询等；
     /// </summary>
-    public sealed class FsmManager : FuComponent
+    public sealed class FsmManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。

@@ -323,13 +323,13 @@ namespace FuFramework.Network.Runtime
                             }
                             catch (Exception e)
                             {
-                                Log.Fatal(e);
+                                FuLog.Fatal(e);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        Log.Fatal(e);
+                        FuLog.Fatal(e);
                     }
                     finally
                     {
@@ -549,7 +549,7 @@ namespace FuFramework.Network.Runtime
                         else
                         {
                             // 获取IP失败
-                            Log.Error($"IP address is invalid.{address.Host}");
+                            FuLog.Error($"IP address is invalid.{address.Host}");
                             IsVerifyAddress = false;
                             Close();
                             PSocket = null;
@@ -557,7 +557,7 @@ namespace FuFramework.Network.Runtime
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"IP address is invalid.{address.Host} {e.Message}");
+                        FuLog.Error($"IP address is invalid.{address.Host} {e.Message}");
                         IsVerifyAddress = false;
                         Close();
                         PSocket = null;
@@ -577,7 +577,7 @@ namespace FuFramework.Network.Runtime
                             break;
 
                         default:
-                            var errorMessage = Utility.Text.Format("Not supported address family '{0}'.", ConnectEndPoint.AddressFamily);
+                            var errorMessage = $"Not supported address family '{ConnectEndPoint.AddressFamily}'.";
                             if (NetworkChannelError == null) throw new FuException(errorMessage);
                             NetworkChannelError(this, NetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
                             return;
@@ -784,7 +784,7 @@ namespace FuFramework.Network.Runtime
 #if ENABLE_GAMEFRAMEX_NETWORK_SEND_LOG
                 if (!IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
                 {
-                    Log.Debug($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLog.Debug($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
                 }
 #endif
             }
@@ -794,7 +794,7 @@ namespace FuFramework.Network.Runtime
 #if ENABLE_GAMEFRAMEX_NETWORK_RECEIVE_LOG
                 if (!IgnoreReceiveIds.Contains(PacketReceiveHeaderHandler.Id))
                 {
-                    Log.Debug($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLog.Debug($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
                 }
 #endif
             }

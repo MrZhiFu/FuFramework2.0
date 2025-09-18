@@ -7,14 +7,14 @@ namespace FuFramework.Core.Runtime
     /// <summary>
     /// 默认游戏框架日志辅助器。
     /// </summary>
-    public class DefaultLogHelper : FuLog.ILogHelper
+    public static class LogHelper
     {
         /// <summary>
         /// 记录日志。
         /// </summary>
         /// <param name="level">日志等级。</param>
         /// <param name="message">日志内容。</param>
-        public void Log(LogLevel level, object message)
+        public static void Log(LogLevel level, object message)
         {
             var time = $"[Unity]:[{DateTime.Now:HH:mm:ss.fff}]:";
 

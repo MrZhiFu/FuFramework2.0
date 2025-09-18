@@ -25,7 +25,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            Log.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
+            FuLog.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
             GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateManifest));
             UpdateManifest().ToUniTask().Forget();

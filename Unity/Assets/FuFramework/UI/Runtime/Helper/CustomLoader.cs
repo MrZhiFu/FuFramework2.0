@@ -160,7 +160,7 @@ namespace FuFramework.UI.Runtime
             m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
             if (!m_AssetManager)
             {
-                Log.Fatal("[CustomLoader] 资源管理器不存在!");
+                FuLog.Fatal("[CustomLoader] 资源管理器不存在!");
                 return;
             }
             
@@ -267,7 +267,7 @@ namespace FuFramework.UI.Runtime
             catch (Exception e)
             {
                 onExternalLoadFailed();
-                Log.Error(e);
+                FuLog.Error(e);
             }
         }
     }

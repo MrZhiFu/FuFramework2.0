@@ -12,17 +12,10 @@ namespace FuFramework.Core.Runtime
         /// 1. 使用压缩辅助器压缩二进制数据为字节流，或压缩字节流为二进制数据。
         /// 2. 使用压缩辅助器解压二进制数据为字节流，或解压字节流为二进制数据。
         /// </summary>
-        public static partial class Compression
+        public static class Compression
         {
             /// 解压缩辅助器
-            private static ICompressionHelper _compressionHelper;
-
-            /// <summary>
-            /// 设置解压缩辅助器。
-            /// </summary>
-            /// <param name="compressionHelper">要设置的压缩解压缩辅助器。</param>
-            public static void SetCompressionHelper(ICompressionHelper compressionHelper)
-                => _compressionHelper = compressionHelper;
+            private static readonly DefaultCompressionHelper m_CompressionHelper = new();
 
             /// <summary>
             /// 压缩二进制数据。
@@ -64,7 +57,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否压缩成功。</returns>
             public static bool Compress(byte[] bytes, int offset, int length, Stream compressedStream)
             {
-                if (_compressionHelper == null) throw new FuException("压缩辅助器为空.");
+                if (m_CompressionHelper == null) throw new FuException("压缩辅助器为空.");
                 if (bytes               == null) throw new FuException("要压缩的二进制数据为空.");
 
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
@@ -75,12 +68,12 @@ namespace FuFramework.Core.Runtime
 
                 try
                 {
-                    return _compressionHelper.Compress(bytes, offset, length, compressedStream);
+                    return m_CompressionHelper.Compress(bytes, offset, length, compressedStream);
                 }
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException(Text.Format("无法压缩，出现异常 '{0}'.", exception), exception);
+                    throw new FuException($"无法压缩，出现异常 '{exception}'.", exception);
                 }
             }
 
@@ -103,18 +96,18 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否压缩成功。</returns>
             public static bool Compress(Stream stream, Stream compressedStream)
             {
-                if (_compressionHelper == null) throw new FuException("压缩辅助器为空.");
+                if (m_CompressionHelper == null) throw new FuException("压缩辅助器为空.");
                 if (stream              == null) throw new FuException("要压缩的字节流为空.");
                 if (compressedStream    == null) throw new FuException("压缩后的字节流为空.");
 
                 try
                 {
-                    return _compressionHelper.Compress(stream, compressedStream);
+                    return m_CompressionHelper.Compress(stream, compressedStream);
                 }
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException(Text.Format("无法压缩，出现异常 '{0}'.", exception), exception);
+                    throw new FuException($"无法压缩，出现异常 '{exception}'.", exception);
                 }
             }
 
@@ -158,7 +151,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否解压成功。</returns>
             public static bool Decompress(byte[] bytes, int offset, int length, Stream decompressedStream)
             {
-                if (_compressionHelper == null) throw new FuException("压缩辅助器为空.");
+                if (m_CompressionHelper == null) throw new FuException("压缩辅助器为空.");
                 if (bytes               == null) throw new FuException("要压缩的二进制数据为空.");
 
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
@@ -169,12 +162,12 @@ namespace FuFramework.Core.Runtime
 
                 try
                 {
-                    return _compressionHelper.Decompress(bytes, offset, length, decompressedStream);
+                    return m_CompressionHelper.Decompress(bytes, offset, length, decompressedStream);
                 }
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException(Text.Format("无法解压，出现异常 '{0}'.", exception), exception);
+                    throw new FuException($"无法压缩，出现异常 '{exception}'.", exception);
                 }
             }
 
@@ -197,18 +190,18 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否解压成功。</returns>
             public static bool Decompress(Stream stream, Stream decompressedStream)
             {
-                if (_compressionHelper == null) throw new FuException("压缩辅助器为空.");
+                if (m_CompressionHelper == null) throw new FuException("压缩辅助器为空.");
                 if (stream              == null) throw new FuException("要解压的字节流为空.");
                 if (decompressedStream  == null) throw new FuException("解压后的字节流为空.");
 
                 try
                 {
-                    return _compressionHelper.Decompress(stream, decompressedStream);
+                    return m_CompressionHelper.Decompress(stream, decompressedStream);
                 }
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException(Text.Format("无法解压，出现异常 '{0}'.", exception), exception);
+                    throw new FuException($"无法压缩，出现异常 '{exception}'.", exception);
                 }
             }
         }
