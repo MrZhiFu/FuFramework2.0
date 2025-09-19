@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Config.Runtime
 {
+    /// <summary>
+    /// 数据表基础接口
+    /// </summary>
     public interface IDataTable
     {
         /// <summary>
@@ -21,7 +24,7 @@ namespace FuFramework.Config.Runtime
     }
 
     /// <summary>
-    /// 数据表基础接口
+    /// 数据表泛型基础接口
     /// </summary>
     public interface IDataTable<T> : IDataTable where T : class
     {

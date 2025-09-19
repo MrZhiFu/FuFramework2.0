@@ -7,19 +7,19 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Config.Runtime
 {
     /// <summary>
-    /// 全局配置管理器。
+    /// 配置管理器。
     /// </summary>
     public sealed class ConfigManager : FuModule
     {
         protected override int Priority => ModulePriority.Game;
 
         /// <summary>
-        /// 全局配置类型与名称字典。key为配置类型，value为配置名称。
+        /// 配置表类型与名称字典。key为配置类型，value为配置名称。
         /// </summary>
         private readonly ConcurrentDictionary<Type, string> m_ConfigNameTypeDict = new();
 
         /// <summary>
-        /// 全局配置表字典。key为配置表名称，value为配置表数据。
+        /// 配置表字典。key为配置表名称，value为配置表数据。
         /// </summary>
         private readonly ConcurrentDictionary<string, IDataTable> m_ConfigDataDict = new(StringComparer.Ordinal);
 
@@ -87,7 +87,10 @@ namespace FuFramework.Config.Runtime
         /// </summary>
         /// <param name="configName">要获取全局配置项的名称。</param>
         /// <returns>要获取全局配置项的全局配置项。</returns>
-        public IDataTable GetConfig(string configName) => m_ConfigDataDict.GetValueOrDefault(configName);
+        public IDataTable GetConfig(string configName)
+        {
+            return m_ConfigDataDict.GetValueOrDefault(configName);
+        }
 
         /// <summary>
         /// 检查是否存在指定全局配置项。

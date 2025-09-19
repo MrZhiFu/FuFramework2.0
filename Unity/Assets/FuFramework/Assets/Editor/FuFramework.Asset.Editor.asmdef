@@ -2,6 +2,7 @@
     "name": "FuFramework.Asset.Editor",
     "rootNamespace": "FuFramework.Asset.Editor",
     "references": [
+        "YooAsset",
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",
         "FuFramework.Asset.Runtime"
