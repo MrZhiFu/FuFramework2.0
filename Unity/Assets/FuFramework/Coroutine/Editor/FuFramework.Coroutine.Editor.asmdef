@@ -3,6 +3,7 @@
     "rootNamespace": "FuFramework.Coroutine.Editor",
     "references": [
         "FuFramework.Core.Editor",
+        "FuFramework.Core.Runtime",
         "FuFramework.Coroutine.Runtime"
     ],
     "includePlatforms": [

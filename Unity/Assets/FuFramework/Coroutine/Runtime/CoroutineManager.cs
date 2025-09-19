@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 
@@ -26,6 +28,17 @@ namespace FuFramework.Coroutine.Runtime
         /// </summary>
         private readonly ConcurrentDictionary<IEnumerator, UnityEngine.Coroutine> m_CoroutineDict = new();
 
+        /// <summary>
+        /// 协程数量
+        /// </summary>
+        public int Count => m_CoroutineDict.Count;
+        
+        /// <summary>
+        /// 获取协程的key
+        /// </summary>
+        /// <returns></returns>
+        public List<UnityEngine.Coroutine> AllCoroutines => m_CoroutineDict.Values.ToList();
+        
         /// <summary>
         /// 初始化
         /// </summary>
