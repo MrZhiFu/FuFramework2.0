@@ -24,12 +24,17 @@ namespace FuFramework.Config.Runtime
         private readonly ConcurrentDictionary<string, IDataTable> m_ConfigDataDict = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// 获取全局配置项数量。
+        /// 获取配置表数量。
         /// </summary>
         public int Count => m_ConfigDataDict.Count;
+        
+        /// <summary>
+        /// 获取所有配置表名称。
+        /// </summary>
+        public IEnumerable<string> ConfigNames => m_ConfigDataDict.Keys;
 
         /// <summary>
-        /// 全局配置管理器初始化。
+        /// 配置表管理器初始化。
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
         protected override void OnInit()
@@ -39,7 +44,7 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 全局配置管理器轮询。
+        /// 配置表管理器轮询。
         /// </summary>
         /// <param name="elapseSeconds"></param>
         /// <param name="realElapseSeconds"></param>
@@ -47,7 +52,7 @@ namespace FuFramework.Config.Runtime
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
 
         /// <summary>
-        /// 全局配置管理器关闭。
+        /// 配置表管理器关闭。
         /// </summary>
         /// <param name="shutdownType"></param>
         /// <exception cref="NotImplementedException"></exception>
@@ -57,7 +62,7 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 获取指定类型的全局配置项名称。
+        /// 获取指定类型的配置表名称。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>返回类型名称</returns>
@@ -70,7 +75,7 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 获取指定全局配置项。
+        /// 获取指定配置表。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -83,19 +88,19 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 获取指定全局配置项。
+        /// 获取指定配置表。
         /// </summary>
-        /// <param name="configName">要获取全局配置项的名称。</param>
-        /// <returns>要获取全局配置项的全局配置项。</returns>
+        /// <param name="configName">要获取配置表的名称。</param>
+        /// <returns>要获取配置表的配置表。</returns>
         public IDataTable GetConfig(string configName)
         {
             return m_ConfigDataDict.GetValueOrDefault(configName);
         }
 
         /// <summary>
-        /// 检查是否存在指定全局配置项。
+        /// 检查是否存在指定配置表。
         /// </summary>
-        /// <returns>指定的全局配置项是否存在。</returns>
+        /// <returns>指定的配置表是否存在。</returns>
         public bool HasConfig<T>() where T : IDataTable
         {
             var configName = GetTypeName<T>();
@@ -103,21 +108,21 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 检查是否存在指定全局配置项。
+        /// 检查是否存在指定配置表。
         /// </summary>
-        /// <param name="configName">要检查全局配置项的名称。</param>
-        /// <returns>指定的全局配置项是否存在。</returns>
+        /// <param name="configName">要检查配置表的名称。</param>
+        /// <returns>指定的配置表是否存在。</returns>
         public bool HasConfig(string configName)
         {
             return m_ConfigDataDict.TryGetValue(configName, out _);
         }
 
         /// <summary>
-        /// 增加指定全局配置项。
+        /// 增加指定配置表。
         /// </summary>
-        /// <param name="configName">要增加全局配置项的名称。</param>
-        /// <param name="configValue">全局配置项的值。</param>
-        /// <returns>是否增加全局配置项成功。</returns>
+        /// <param name="configName">要增加配置表的名称。</param>
+        /// <param name="configValue">配置表的值。</param>
+        /// <returns>是否增加配置表成功。</returns>
         public void AddConfig(string configName, IDataTable configValue)
         {
             var isExist = m_ConfigDataDict.TryGetValue(configName, out _);
@@ -126,9 +131,9 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 移除指定全局配置项。
+        /// 移除指定配置表。
         /// </summary>
-        /// <returns>是否移除全局配置项成功。</returns>
+        /// <returns>是否移除配置表成功。</returns>
         public bool RemoveConfig<T>() where T : IDataTable
         {
             var configName = GetTypeName<T>();
@@ -136,16 +141,16 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 移除指定全局配置项。
+        /// 移除指定配置表。
         /// </summary>
-        /// <param name="configName">要移除全局配置项的名称。</param>
+        /// <param name="configName">要移除配置表的名称。</param>
         public bool RemoveConfig(string configName)
         {
             return HasConfig(configName) && m_ConfigDataDict.TryRemove(configName, out _);
         }
 
         /// <summary>
-        /// 清空所有全局配置项。
+        /// 清空所有配置表。
         /// </summary>
         public void RemoveAllConfigs()
         {

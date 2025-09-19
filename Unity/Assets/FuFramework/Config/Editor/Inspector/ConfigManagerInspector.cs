@@ -22,6 +22,10 @@ namespace FuFramework.Config.Editor
             if (EditorApplication.isPlaying)
             {
                 EditorGUILayout.LabelField("配置表个数：", t.Count.ToString());
+                foreach (var configName in t.ConfigNames)
+                {
+                    EditorGUILayout.LabelField(configName);
+                }
             }
 
             Repaint();
