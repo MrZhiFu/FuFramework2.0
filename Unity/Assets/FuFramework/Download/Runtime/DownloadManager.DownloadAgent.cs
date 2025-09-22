@@ -3,7 +3,6 @@ using System.IO;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.TaskPool.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime

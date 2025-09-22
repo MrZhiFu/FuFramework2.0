@@ -4,7 +4,8 @@
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",
-        "FuFramework.Download.Runtime"
+        "FuFramework.Download.Runtime",
+        "FuFramework.TaskPool.Runtime"
     ],
     "includePlatforms": [
         "Editor"

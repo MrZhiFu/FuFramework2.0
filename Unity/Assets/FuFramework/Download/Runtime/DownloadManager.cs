@@ -429,7 +429,7 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         private void _OnDownloadAgentFailure(DownloadAgent sender, string errorMessage)
         {
-            FuLog.Warning($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
+            FuLog.Error($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
             var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
             m_EventManager.Fire(this, downloadFailureEventArgs);
             if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))

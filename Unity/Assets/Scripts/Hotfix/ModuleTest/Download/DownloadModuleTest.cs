@@ -8,7 +8,7 @@ using FuFramework.Download.Runtime;
 /// </summary>
 public class DownloadModuleTest : MonoBehaviour
 {
-    private void OnEnable()
+    private void Start()
     {
         GlobalModule.EventModule.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
         GlobalModule.EventModule.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
@@ -16,7 +16,7 @@ public class DownloadModuleTest : MonoBehaviour
         GlobalModule.EventModule.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         GlobalModule.EventModule.Unsubscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
         GlobalModule.EventModule.Unsubscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);

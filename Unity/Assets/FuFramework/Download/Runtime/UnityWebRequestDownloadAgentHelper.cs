@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -23,7 +22,7 @@ namespace FuFramework.Download.Runtime
     /// <summary>
     /// 使用 UnityWebRequest 实现的下载代理辅助器。
     /// </summary>
-    public partial class UnityWebRequestDownloadAgentHelper : MonoBehaviour
+    public sealed partial class UnityWebRequestDownloadAgentHelper : MonoBehaviour
     {
         /// 范围不适用错误码。
         private const int RangeNotSatisfiableErrorCode = 416;
@@ -87,7 +86,7 @@ namespace FuFramework.Download.Runtime
             m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
             m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
             m_UnityWebRequest.downloadHandler    = new DownloadHandler(this);
-            m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}-");
+            m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}");
             m_UnityWebRequest.SendWebRequest();
         }
 
@@ -127,14 +126,13 @@ namespace FuFramework.Download.Runtime
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>
         /// 释放资源。
         /// </summary>
         /// <param name="disposing">释放资源标记。</param>
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (m_Disposed) return;
 

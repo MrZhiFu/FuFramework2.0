@@ -25,7 +25,7 @@ namespace FuFramework.Download.Runtime
             /// 剩余时间(秒)
             private float m_TimeLeft;
 
-            /// 当前下载速度
+            /// 当前下载进度
             public float CurrentSpeed { get; private set; }
 
             /// 更新间隔(秒)

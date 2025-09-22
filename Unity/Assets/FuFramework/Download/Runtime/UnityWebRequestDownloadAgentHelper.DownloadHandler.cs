@@ -5,7 +5,7 @@ using FuFramework.Event.Runtime;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
 {
-    public partial class UnityWebRequestDownloadAgentHelper
+    public sealed partial class UnityWebRequestDownloadAgentHelper
     {
         private sealed class DownloadHandler : DownloadHandlerScript
         {

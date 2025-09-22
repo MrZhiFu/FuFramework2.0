@@ -107,7 +107,10 @@ namespace FuFramework.Core.Runtime
                     var moduleObject = new GameObject();
                     module = moduleObject.AddComponent(moduleType) as FuModule;
                     moduleObject.name = $"[Module]-{moduleType.Name}";
-
+                    
+                    // 确保框架模块在场景切换时不被销毁
+                    DontDestroyOnLoad(moduleObject);
+                    
                     // 设置父对象到框架根节点
                     moduleObject.transform.SetParent(transform);
                 }
@@ -240,10 +243,6 @@ namespace FuFramework.Core.Runtime
         /// <param name="module">要注册的模块。</param>
         private void RegisterModuleInternal(FuModule module)
         {
-            // 确保框架模块在场景切换时不被销毁
-            if (Application.isPlaying)
-                DontDestroyOnLoad(module.gameObject);
-
             // 优先级大的组件注册在链表的前面
             var current = ModuleList.First;
             while (current is not null)
