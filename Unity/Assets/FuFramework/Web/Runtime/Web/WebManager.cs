@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -38,21 +38,10 @@ namespace FuFramework.Web.Runtime
         /// JSON内容类型常量
         private const string JsonContentType = "application/json; charset=utf-8";
 
-        /// 超时时间(秒)
-        private float m_Timeout = 5f;
-
         /// <summary>
         /// 获取或设置超时时间(秒)
         /// </summary>
-        public float Timeout
-        {
-            get => m_Timeout;
-            set
-            {
-                m_Timeout      = value;
-                RequestTimeout = TimeSpan.FromSeconds(value);
-            }
-        }
+        public float Timeout { get; set; } = 5f;
 
         /// <summary>
         /// 获取或设置每个服务器的最大连接数
@@ -62,7 +51,7 @@ namespace FuFramework.Web.Runtime
         /// <summary>
         /// 获取或设置请求超时时间
         /// </summary>
-        public TimeSpan RequestTimeout { get; set; }
+        public TimeSpan RequestTimeout => TimeSpan.FromSeconds(Timeout);
 
         /// <summary>
         /// 初始化
