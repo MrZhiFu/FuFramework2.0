@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using FuFramework.Core.Runtime;
@@ -41,7 +41,7 @@ namespace FuFramework.Download.Runtime
         private UnityWebRequest m_UnityWebRequest;
         
         /// 事件管理器
-        private readonly EventManager m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
+        private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
 
         /// <summary>
         /// 轮询更新。

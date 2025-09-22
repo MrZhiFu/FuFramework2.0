@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using FuFramework.Core.Runtime;
@@ -39,7 +39,7 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
+            m_EventManager = ModuleManager.GetModule<EventManager>();
         }
 
         /// <summary>

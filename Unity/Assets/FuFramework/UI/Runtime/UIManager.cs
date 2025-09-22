@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
@@ -77,10 +77,10 @@ namespace FuFramework.UI.Runtime
             m_LoadingDict       = new Dictionary<int, string>();
             m_WaitRecycleQueue  = new Queue<ViewBase>();
 
-            m_ObjectPoolManager = ModuleManager.Instance.GetModule<ObjectPoolManager>();
+            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
             m_InstancePool      = m_ObjectPoolManager.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
-            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
+            m_EventManager = ModuleManager.GetModule<EventManager>();
 
             m_SerialId   = 0;
 

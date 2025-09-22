@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections;
 using FuFramework.Asset.Runtime;
@@ -223,7 +223,7 @@ namespace FuFramework.Sound.Runtime
             public void Init(SoundGroup soundGroup)
             {
                 FuGuard.NotNull(soundGroup, nameof(soundGroup));
-                m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+                m_AssetManager = ModuleManager.GetModule<AssetManager>();
 
                 m_SoundGroup   = soundGroup;
                 SerialId       = 0;

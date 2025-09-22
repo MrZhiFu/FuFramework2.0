@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using YooAsset;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -58,7 +58,7 @@ namespace FuFramework.Scene.Runtime
         protected override void OnInit()
         {
             EventRegister  = EventRegister.Create();
-            m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+            m_AssetManager = ModuleManager.GetModule<AssetManager>();
         }
         protected override void OnShutdown(ShutdownType shutdownType)
         {

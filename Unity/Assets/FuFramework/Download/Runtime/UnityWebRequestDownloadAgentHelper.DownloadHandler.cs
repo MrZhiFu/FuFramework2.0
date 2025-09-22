@@ -1,4 +1,4 @@
-﻿using UnityEngine.Networking;
+using UnityEngine.Networking;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 
@@ -15,7 +15,7 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 事件管理器
             /// </summary>
-            private readonly EventManager m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
+            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
 
             /// <summary>
             /// 构造一个下载处理器

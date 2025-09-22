@@ -14,11 +14,9 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public class Launcher : MonoBehaviour
     {
-        [Header("所有可用的流程类型")]
-        [SerializeField] private string[] m_AvailableProcedureTypeNames;
+        [Header("所有可用的流程类型")] [SerializeField] private string[] m_AvailableProcedureTypeNames;
 
-        [Header("入口流程类型")]
-        [SerializeField] private string m_EntryProcedureTypeName;
+        [Header("入口流程类型")] [SerializeField] private string m_EntryProcedureTypeName;
 
         /// <summary>
         /// 所有可用的流程类型
@@ -29,23 +27,34 @@ namespace FuFramework.Entry.Runtime
         /// 入口流程
         /// </summary>
         private ProcedureBase m_EntryProcedure;
-        
+
         /// <summary>
         /// 获取当前流程
         /// </summary>
-        public ProcedureBase CurrentProcedure => ModuleManager.Instance.GetModule<ProcedureManager>().CurrentProcedure;
+        public ProcedureBase CurrentProcedure => ModuleManager.GetModule<ProcedureManager>().CurrentProcedure;
 
-        
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
         private void Awake()
         {
             // 初始化模块管理器
-            ModuleManager.Instance.Initialize();
-            
+            ModuleManager.Initialize();
+
             // 初始化启动流程
             StartCoroutine(InitProcedures());
         }
-        
-                /// <summary>
+
+        /// <summary>
+        /// 帧更新
+        /// </summary>
+        private void Update()
+        {
+            ModuleManager.Update(Time.deltaTime, Time.unscaledDeltaTime);            
+        }
+
+        /// <summary>
         /// 初始化获取所有流程
         /// </summary>
         /// <returns></returns>
@@ -83,7 +92,7 @@ namespace FuFramework.Entry.Runtime
                 yield break;
             }
 
-            if (m_Procedures is null || m_Procedures.Length == 0) 
+            if (m_Procedures is null || m_Procedures.Length == 0)
                 throw new FuException("[ProcedureManager] 必须至少有一个流程!");
 
             var states = new ProcedureBase[m_Procedures.Length];
@@ -93,11 +102,11 @@ namespace FuFramework.Entry.Runtime
             }
 
             // 初始化流程管理器
-            var procedureManager = ModuleManager.Instance.GetModule<ProcedureManager>();
+            var procedureManager = ModuleManager.GetModule<ProcedureManager>();
             procedureManager.InitProcedures(states);
-            
+
             yield return new WaitForEndOfFrame();
-            
+
             // 启动入口流程
             procedureManager.StartProcedure(m_EntryProcedure.GetType());
         }

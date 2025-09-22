@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
@@ -107,8 +107,8 @@ namespace FuFramework.Localization.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventManager = ModuleManager.Instance.GetModule<EventManager>();
-            m_SettingManager = ModuleManager.Instance.GetModule<SettingManager>();
+            m_EventManager = ModuleManager.GetModule<EventManager>();
+            m_SettingManager = ModuleManager.GetModule<SettingManager>();
             
             var value = m_SettingManager.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))

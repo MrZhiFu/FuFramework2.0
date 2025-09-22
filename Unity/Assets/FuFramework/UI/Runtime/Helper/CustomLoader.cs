@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FairyGUI;
 using System.IO;
 using UnityEngine;
@@ -157,7 +157,7 @@ namespace FuFramework.UI.Runtime
         
         public CustomLoader()
         {
-            m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+            m_AssetManager = ModuleManager.GetModule<AssetManager>();
             if (!m_AssetManager)
             {
                 FuLog.Fatal("[CustomLoader] 资源管理器不存在!");
@@ -207,7 +207,7 @@ namespace FuFramework.UI.Runtime
                         }
                         else
                         {
-                            var webBufferResult = await ModuleManager.Instance.GetModule<WebManager>().GetToBytes(url, null);
+                            var webBufferResult = await ModuleManager.GetModule<WebManager>().GetToBytes(url, null);
                             FileHelper.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
                         }

@@ -48,7 +48,7 @@ namespace FuFramework.Mono.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (m_EventComponent == null)
             {
                 FuLog.Fatal("事件管理器为空.");

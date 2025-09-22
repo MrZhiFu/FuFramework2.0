@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using YooAsset;
 using UnityEngine;
 using System.Linq;
@@ -63,9 +63,9 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_AssetManager      = ModuleManager.Instance.GetModule<AssetManager>();
-            m_EventManager      = ModuleManager.Instance.GetModule<EventManager>();
-            m_ObjectPoolManager = ModuleManager.Instance.GetModule<ObjectPoolManager>();
+            m_AssetManager      = ModuleManager.GetModule<AssetManager>();
+            m_EventManager      = ModuleManager.GetModule<EventManager>();
+            m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;

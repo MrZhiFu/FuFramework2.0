@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
 using FuFramework.ReferencePool.Runtime;
@@ -13,7 +13,7 @@ namespace FuFramework.Timer.Runtime
     public class TimerRegister : IReference
     {
         /// 计时器管理器
-        private readonly TimerManager m_TimerManager = ModuleManager.Instance.GetModule<TimerManager>();
+        private readonly TimerManager m_TimerManager = ModuleManager.GetModule<TimerManager>();
 
         /// <summary>
         /// 记录所有计时器任务的列表

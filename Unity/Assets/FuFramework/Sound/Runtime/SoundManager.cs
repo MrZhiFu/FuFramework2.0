@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -57,14 +57,14 @@ namespace FuFramework.Sound.Runtime
         {
             m_Serial = 0;
 
-            m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+            m_AssetManager = ModuleManager.GetModule<AssetManager>();
             if (!m_AssetManager)
             {
                 FuLog.Fatal("[SoundManager] 资源管理器不存在!");
                 return;
             }
 
-            m_EventComponent = ModuleManager.Instance.GetModule<EventManager>();
+            m_EventComponent = ModuleManager.GetModule<EventManager>();
             if (!m_EventComponent)
             {
                 FuLog.Fatal("[SoundManager] 事件组件不存在!");

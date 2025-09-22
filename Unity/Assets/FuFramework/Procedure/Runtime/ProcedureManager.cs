@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Core.Runtime;
 
@@ -42,7 +42,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_FsmManager = ModuleManager.Instance.GetModule<FsmManager>();
+            m_FsmManager = ModuleManager.GetModule<FsmManager>();
             if (!m_FsmManager) throw new FuException("[ProcedureManager] 有限状态机管理器不能为空");
         }
 

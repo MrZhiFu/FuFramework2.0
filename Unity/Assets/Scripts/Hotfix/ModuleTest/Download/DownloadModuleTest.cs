@@ -28,8 +28,8 @@ public class DownloadModuleTest : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.D))
         {
-            DownloadTest("https://ns-strategy.cdn.bcebos.com/ns-strategy/upload/fc_big_pic/part-00573-3457.jpg", "Test.jpg");
-            // DownloadTest("http://xxxx.TestAudio.mp3", "TestAudio.mp3");
+            DownloadTest("https://img.icons8.com/?size=100&id=108638&format=png&color=000000", "Test.png");
+            // DownloadTest("https://goodies.icons8.com/web/landings/home/landing-main_icons.mp4", "TestVedio.mp4");
             // DownloadTest("http://xxxx.TestDat.dat", "TestDat.dat");
         }
     }

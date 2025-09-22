@@ -17,7 +17,7 @@ namespace FuFramework.Asset.Runtime
     public class AssetLoadRegister : IReference
     {
         /// 资源管理器
-        private readonly AssetManager m_AssetManager = ModuleManager.Instance.GetModule<AssetManager>();
+        private readonly AssetManager m_AssetManager = ModuleManager.GetModule<AssetManager>();
 
         /// 缓存已经加载的资源路径列表
         private readonly Dictionary<string, Object> m_ResDict = new();
