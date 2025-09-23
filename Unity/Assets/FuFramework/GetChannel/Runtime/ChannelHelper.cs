@@ -19,7 +19,7 @@ namespace FuFramework.GetChannel.Runtime
     ///         channel ==> ios_cn_xxx    
     /// 
     /// </summary>
-    public static class BlankGetChannel
+    public static class ChannelHelper
     {
 #if UNITY_IOS
 	[DllImport("__Internal")]

@@ -1,70 +1,51 @@
-﻿// using FuFramework.Core.Editor;
-// using FuFramework.Scene.Runtime;
-// using UnityEditor;
-// using UnityEngine;
-//
-// // ReSharper disable once CheckNamespace
-// namespace FuFramework.Scene.Editor
-// {
-//     /// <summary>
-//     /// 自定义场景组件的Inspector
-//     /// </summary>
-//     [CustomEditor(typeof(SceneComponent))]
-//     internal sealed class SceneGameComponentInspector : GameComponentInspector
-//     {
-//         private SerializedProperty m_EnableLoadSceneUpdateEvent;
-//         private SerializedProperty m_EnableLoadSceneDependencyAssetEvent;
-//
-//         public override void OnInspectorGUI()
-//         {
-//             base.OnInspectorGUI();
-//
-//             serializedObject.Update();
-//
-//             var sceneComp = (SceneComponent)target;
-//
-//             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
-//             {
-//                 EditorGUILayout.PropertyField(m_EnableLoadSceneUpdateEvent);
-//                 EditorGUILayout.PropertyField(m_EnableLoadSceneDependencyAssetEvent);
-//             }
-//             EditorGUI.EndDisabledGroup();
-//
-//             serializedObject.ApplyModifiedProperties();
-//
-//             if (!EditorApplication.isPlaying || !IsPrefabInHierarchy(sceneComp.gameObject)) return;
-//             
-//             EditorGUILayout.LabelField("Loaded Scene Asset Names", GetSceneNameString(sceneComp.GetLoadedSceneAssetNames()));
-//             EditorGUILayout.LabelField("Loading Scene Asset Names", GetSceneNameString(sceneComp.GetLoadingSceneAssetNames()));
-//             EditorGUILayout.LabelField("Unloading Scene Asset Names", GetSceneNameString(sceneComp.GetUnloadingSceneAssetNames()));
-//             EditorGUILayout.ObjectField("Main Camera", sceneComp.MainCamera, typeof(Camera), true);
-//
-//             Repaint();
-//         }
-//
-//         protected override void Enable()
-//         {
-//             m_EnableLoadSceneUpdateEvent = serializedObject.FindProperty("m_EnableLoadSceneUpdateEvent");
-//             m_EnableLoadSceneDependencyAssetEvent = serializedObject.FindProperty("m_EnableLoadSceneDependencyAssetEvent");
-//         }
-//
-//         protected override void RefreshTypeNames()
-//         {
-//             RefreshComponentTypeNames(typeof(IGameSceneManager));
-//         }
-//
-//         private string GetSceneNameString(string[] sceneAssetNames)
-//         {
-//             if (sceneAssetNames is not { Length: > 0 }) return "<Empty>";
-//
-//             var sceneNameString = string.Empty;
-//             foreach (var sceneAssetName in sceneAssetNames)
-//             {
-//                 if (!string.IsNullOrEmpty(sceneNameString)) sceneNameString += ", ";
-//                 sceneNameString += SceneComponent.GetSceneName(sceneAssetName);
-//             }
-//
-//             return sceneNameString;
-//         }
-//     }
-// }
+﻿using UnityEditor;
+using FuFramework.Core.Editor;
+using FuFramework.Scene.Runtime;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Scene.Editor
+{
+    /// <summary>
+    /// 自定义场景管理器的Inspector
+    /// </summary>
+    [CustomEditor(typeof(GameSceneManager))]
+    internal sealed class SceneGameComponentInspector : FuFrameworkInspector
+    {
+        private GameSceneManager m_SceneManager;
+
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            serializedObject.Update();
+
+            m_SceneManager = target as GameSceneManager;
+            if (m_SceneManager == null) return;
+
+            if (!EditorApplication.isPlaying) return;
+
+            EditorGUILayout.LabelField("所有已加载的场景名称：", GetSceneNameString(m_SceneManager.GetAllLoadedSceneAssetPaths()));
+            EditorGUILayout.LabelField("正在加载的场景名称：", GetSceneNameString(m_SceneManager.GetAllLoadingSceneAssetPaths()));
+            EditorGUILayout.LabelField("正在卸载的场景名称：", GetSceneNameString(m_SceneManager.GetAllUnloadingSceneAssetPaths()));
+        }
+
+        /// <summary>
+        /// 获取场景名称字符串
+        /// </summary>
+        /// <param name="sceneAssetNames"></param>
+        /// <returns></returns>
+        private string GetSceneNameString(string[] sceneAssetNames)
+        {
+            if (sceneAssetNames is not { Length: > 0 }) return "<Empty>";
+
+            var sceneNameString = string.Empty;
+            foreach (var sceneAssetName in sceneAssetNames)
+            {
+                if (!string.IsNullOrEmpty(sceneNameString)) sceneNameString += ", ";
+                sceneNameString += m_SceneManager?.GetSceneName(sceneAssetName);
+            }
+
+            return sceneNameString;
+        }
+    }
+}

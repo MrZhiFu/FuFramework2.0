@@ -1,7 +1,8 @@
-﻿using FuFramework.Core.Runtime;
-using UnityEditor;
+﻿using UnityEditor;
+using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Editor
 {
     /// <summary>
@@ -15,7 +16,8 @@ namespace FuFramework.UI.Editor
             var isResourceUI = assetPath.Contains(PathHelper.Combine("Resources", "UI"));
             if (!isBundleUI && !isResourceUI) return;
             
-            var textureImporter = (TextureImporter)assetImporter;
+            var textureImporter = assetImporter as TextureImporter;
+            if (textureImporter == null) return;
            
             if (textureImporter.textureType != TextureImporterType.Default)
                 textureImporter.textureType = TextureImporterType.Default;

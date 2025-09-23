@@ -1,10 +1,10 @@
+using System.IO;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.IO;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Runtime
@@ -33,6 +33,11 @@ namespace FuFramework.Download.Runtime
         private const int OneMegaBytes = 1024 * 1024;
 
         /// <summary>
+        /// 下载代理辅助器个数
+        /// </summary>
+        private const int DownloadAgentHelperCount = 3;
+
+        /// <summary>
         /// 事件管理器
         /// </summary>
         private EventManager m_EventManager;
@@ -52,13 +57,12 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         private readonly ConcurrentDictionary<int, DownloadData> m_DownloadingTaskDict = new();
 
-        [Header("下载代理实例对象根节点")]
-        [SerializeField] private Transform m_InstanceRoot;
+        /// <summary>
+        /// 下载代理实例对象根节点
+        /// </summary>
+        private Transform m_InstanceRoot;
 
-        [Header("下载代理辅助器个数")]
-        [SerializeField] private int m_DownloadAgentHelperCount = 3;
 
-        
         /// <summary>
         /// 获取或设置下载是否被暂停。
         /// </summary>
@@ -126,7 +130,7 @@ namespace FuFramework.Download.Runtime
             }
             
             // 添加下载任务处理器
-            for (var i = 0; i < m_DownloadAgentHelperCount; i++)
+            for (var i = 0; i < DownloadAgentHelperCount; i++)
             {
                 AddDownloadAgentHelper(i);
             }

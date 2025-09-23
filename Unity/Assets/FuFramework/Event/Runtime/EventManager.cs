@@ -128,5 +128,15 @@ namespace FuFramework.Event.Runtime
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>
         public void FireNow(object sender, GameEventArgs e) => m_EventPool.FireNow(sender, e);
+        
+        /// <summary>
+        /// 遍历所有事件处理函数。
+        /// </summary>
+        public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_EventPool.ForEachHandler(action);
+
+        /// <summary>
+        /// 遍历所有事件。
+        /// </summary>
+        public void ForEachEvent(Action<object, GameEventArgs> action) => m_EventPool.ForEachEvent(action);
     }
 }

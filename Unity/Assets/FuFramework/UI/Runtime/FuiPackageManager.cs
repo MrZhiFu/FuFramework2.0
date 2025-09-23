@@ -15,7 +15,7 @@ namespace FuFramework.UI.Runtime
     /// FGui的包管理器，
     /// 主要处理包的资源加载，缓存，卸载等
     /// </summary>
-    public class FuiPackageManager : MonoSingleton<FuiPackageManager>
+    public class FuiPackageManager : FuModule
     {
         /// 缓存已加载的包的字典，key:包名，value：包
         private readonly Dictionary<string, UIPackage> m_loadedPkgDict = new();
@@ -35,19 +35,22 @@ namespace FuFramework.UI.Runtime
         /// 不会被释放的包名
         private readonly List<string> m_notReleasePackages = new() { "Common" };
 
-
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Init()
+        protected override void OnInit()
         {
             UIPackage.unloadBundleByFGUI = false; // 手动管理资源
         }
-
+        
         /// <summary>
-        /// 清空所有包
+        /// 释放所有包
         /// </summary>
-        protected override void Dispose() => ReleaseAll();
+        /// <param name="shutdownType"></param>
+        protected override void OnShutdown(ShutdownType shutdownType)
+        {
+            ReleaseAll();
+        }
 
         /// <summary>
         /// 是否存在指定包

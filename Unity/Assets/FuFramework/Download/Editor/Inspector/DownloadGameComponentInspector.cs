@@ -14,17 +14,6 @@ namespace FuFramework.Download.Editor
     [CustomEditor(typeof(DownloadManager))]
     internal sealed class DownloadGameComponentInspector : FuFrameworkInspector
     {
-        private SerializedProperty m_InstanceRoot;
-        private SerializedProperty m_DownloadAgentHelperCount;
-        private SerializedProperty m_Timeout;
-        private SerializedProperty m_FlushSize;
-
-        private void OnEnable()
-        {
-            m_InstanceRoot             = serializedObject.FindProperty("m_InstanceRoot");
-            m_DownloadAgentHelperCount = serializedObject.FindProperty("m_DownloadAgentHelperCount");
-        }
-
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -33,14 +22,6 @@ namespace FuFramework.Download.Editor
 
             var downloadManager = target as DownloadManager;
             if (!downloadManager) return;
-
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
-            {
-                EditorGUILayout.PropertyField(m_InstanceRoot);
-                m_DownloadAgentHelperCount.intValue = EditorGUILayout.IntSlider("下载代理辅助器个数：", m_DownloadAgentHelperCount.intValue, 1, 16);
-            }
-            EditorGUI.EndDisabledGroup();
-
 
             if (EditorApplication.isPlaying)
             {
@@ -62,7 +43,7 @@ namespace FuFramework.Download.Editor
                     }
                     else
                     {
-                        GUILayout.Label("Download Task is Empty ...");
+                        GUILayout.Label("当前下载任务为空...");
                     }
                 }
                 EditorGUILayout.EndVertical();
@@ -73,6 +54,10 @@ namespace FuFramework.Download.Editor
             Repaint();
         }
 
+        /// <summary>
+        /// 绘制下载任务信息
+        /// </summary>
+        /// <param name="downloadInfo"></param>
         private void DrawDownloadInfo(TaskInfo downloadInfo)
         {
             var taskDesc = $"[Id]{downloadInfo.SerialId} [Tag]{downloadInfo.Tag ?? "<None>"} [优先级]{downloadInfo.Priority} [状态]{downloadInfo.Status}";

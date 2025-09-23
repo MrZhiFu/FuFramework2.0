@@ -12,7 +12,7 @@ namespace FuFramework.Event.Runtime
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {
         /// 该事件池模式
-        private readonly EEventPoolMode m_EEventPoolMode;
+        private readonly EEventPoolMode m_PoolMode;
 
         /// 事件默认处理器
         private EventHandler<T> m_DefaultHandler;
@@ -20,7 +20,7 @@ namespace FuFramework.Event.Runtime
         /// 事件队列
         private readonly Queue<Event> m_EventQueue;
 
-        /// 事件处理器多值字典
+        /// 事件处理器多值字典，key为事件Id，value为事件处理函数列表
         private readonly FuMultiDictionary<string, EventHandler<T>> m_EventHandlerMultiDict;
 
         /// 待删除的事件处理器列表（线程安全的取消订阅方案，确保事件处理时使用的是最新的处理函数handler列表）
@@ -35,7 +35,7 @@ namespace FuFramework.Event.Runtime
         /// <param name="mode">事件池模式。</param>
         public EventPool(EEventPoolMode mode)
         {
-            m_EEventPoolMode        = mode;
+            m_PoolMode        = mode;
             m_DefaultHandler        = null;
             m_EventQueue            = new Queue<Event>();
             m_EventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<T>>();
@@ -150,10 +150,10 @@ namespace FuFramework.Event.Runtime
                     return;
                 }
 
-                if ((m_EEventPoolMode & EEventPoolMode.AllowMultiHandler) != EEventPoolMode.AllowMultiHandler)
+                if ((m_PoolMode & EEventPoolMode.AllowMultiHandler) != EEventPoolMode.AllowMultiHandler)
                     throw new FuException($"[EventPool]事件 '{id}' 不允许多次注册处理函数!");
 
-                if ((m_EEventPoolMode & EEventPoolMode.AllowDuplicateHandler) != EEventPoolMode.AllowDuplicateHandler && Check(id, handler))
+                if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) != EEventPoolMode.AllowDuplicateHandler && Check(id, handler))
                     throw new FuException($"[EventPool]事件 '{id}' 不允许重复注册处理函数!");
 
                 m_EventHandlerMultiDict.Add(id, handler);
@@ -209,6 +209,37 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
+        /// 遍历所有事件处理函数。
+        /// </summary>
+        public void ForEachHandler(Action<string, EventHandler<T>> action)
+        {
+            lock (m_EventHandlerLock)
+            {
+                foreach (var (id, handlers) in m_EventHandlerMultiDict)
+                {
+                    foreach (var handler in handlers)
+                    {
+                        action(id, handler);
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 遍历所有事件。
+        /// </summary>
+        public void ForEachEvent(Action<object, T> action)
+        {
+            lock (m_EventQueue)
+            {
+                foreach (var tempEvent in m_EventQueue)
+                {
+                    action(tempEvent.Sender, tempEvent.EventArgs);
+                }
+            }
+        }
+
+        /// <summary>
         /// 处理事件结点。
         /// </summary>
         private void HandleEvent(object sender, T eArgs)
@@ -234,7 +265,7 @@ namespace FuFramework.Event.Runtime
                 {
                     m_DefaultHandler.Invoke(sender, eArgs);
                 }
-                else if ((m_EEventPoolMode & EEventPoolMode.AllowNoHandler) == 0)
+                else if ((m_PoolMode & EEventPoolMode.AllowNoHandler) == 0)
                 {
                     noHandlerException = true;
                 }

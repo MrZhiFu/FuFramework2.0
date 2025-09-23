@@ -19,11 +19,11 @@ namespace FuFramework.Entry.Editor
     internal sealed class LauncherInspector : FuFrameworkInspector
     {
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
-        private SerializedProperty m_EntryProcedureTypeName;   // 入口流程类型名称
+        private SerializedProperty m_EntryProcedureTypeName;      // 入口流程类型名称
 
         private string[]     m_ProcedureTypeNames;          // 所有流程类型名称列表
         private List<string> m_SelectedProcedureTypeNames;  // 已选择的流程类型名称列表
-        private int          m_EntryProcedureIndex = -1; // 入口流程索引
+        private int          m_EntryProcedureIndex = -1;    // 入口流程索引
         
         private readonly Dictionary<string, int> m_ProcedurePriorityCache = new(); // 缓存类型和类型显示优先级的映射
 

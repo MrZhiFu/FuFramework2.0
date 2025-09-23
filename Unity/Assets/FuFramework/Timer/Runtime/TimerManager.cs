@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -47,6 +48,19 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         public static bool CatchCallbackExceptions = false;
 
+        /// <summary>
+        /// 获取当前定时器数量
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                lock (Locker)
+                {
+                    return m_WaitToAddDict.Count + m_UpdatingDict.Count;
+                }
+            }
+        }
 
         /// <summary>
         /// 初始化
@@ -244,6 +258,18 @@ namespace FuFramework.Timer.Runtime
                 {
                     timerItem.Deleted = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 获取当前所有定时器的名称
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetAllTimerNames()
+        {
+            lock (Locker)
+            {
+                return m_WaitToAddDict.Keys.Concat(m_UpdatingDict.Keys).Select(x => x.Method.Name).ToArray();
             }
         }
 

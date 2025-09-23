@@ -10,6 +10,7 @@ namespace FuFramework.Localization.Runtime
     /// <summary>
     /// 本地化管理器。
     /// </summary>
+    [ModuleDependency(typeof(EventManager), typeof(SettingManager))]
     public sealed class LocalizationManager : FuModule
     {
         /// <summary>

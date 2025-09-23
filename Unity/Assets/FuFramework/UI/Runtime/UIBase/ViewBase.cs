@@ -22,6 +22,11 @@ namespace FuFramework.UI.Runtime
         private UIManager m_UIManager;
 
         /// <summary>
+        /// FGui的包管理器。
+        /// </summary>
+        private FuiPackageManager m_PackageManager;
+        
+        /// <summary>
         /// 界面序列编号。
         /// </summary>
         public int SerialId { get; private set; }
@@ -114,6 +119,8 @@ namespace FuFramework.UI.Runtime
             if (m_IsInit) return;
 
             m_UIManager = ModuleManager.GetModule<UIManager>();
+            m_PackageManager = ModuleManager.GetModule<FuiPackageManager>();
+            
             m_IsInit       = true;
             DepthInUIGroup = 0;
 

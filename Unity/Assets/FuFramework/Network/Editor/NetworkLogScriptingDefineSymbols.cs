@@ -1,6 +1,7 @@
 ﻿using FuFramework.Core.Editor;
 using UnityEditor;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Editor
 {
     /// <summary>
@@ -8,9 +9,9 @@ namespace FuFramework.Network.Editor
     /// </summary>
     public static class NetworkLogScriptingDefineSymbols
     {
-        public const string EnableNetworkReceiveLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_RECEIVE_LOG";
-        public const string EnableNetworkSendLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_SEND_LOG";
-        public const string ForceEnableNetworkSendLogScriptingDefineSymbol = "FORCE_ENABLE_GAME_FRAME_X_WEB_SOCKET";
+        private const string EnableNetworkReceiveLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_RECEIVE_LOG";
+        private const string EnableNetworkSendLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_SEND_LOG";
+        private const string ForceEnableNetworkSendLogScriptingDefineSymbol = "FORCE_ENABLE_GAME_FRAME_X_WEB_SOCKET";
 
         /// <summary>
         /// 禁用网络强制为WebSocket脚本宏定义。

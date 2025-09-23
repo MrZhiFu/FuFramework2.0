@@ -57,8 +57,8 @@ namespace Launcher.Procedure
             DictionaryParams["PackageName"] = Application.identifier;
     #endif
 
-            s_ParamDict["Channel"]    = BlankGetChannel.GetChannelName();
-            s_ParamDict["SubChannel"] = BlankGetChannel.GetChannelName();
+            s_ParamDict["Channel"]    = ChannelHelper.GetChannelName();
+            s_ParamDict["SubChannel"] = ChannelHelper.GetChannelName();
 #endif
             return s_ParamDict;
 

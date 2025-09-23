@@ -259,11 +259,11 @@ namespace FuFramework.ObjectPool.Runtime
             }
 
             /// <summary>
-            /// 释放对象池中的可释放对象。
+            /// 释放对象池中的可释放对象(超过容量的数量为尝试释放的对象数量)
             /// </summary>
             public override void Release()
             {
-                var overCapacity = Count - m_Capacity; // 指定超过容量的数量为尝试释放的对象数量
+                var overCapacity = Count - m_Capacity;
                 Release(overCapacity, m_DefaultReleaseObjectFilterCallback);
             }
 

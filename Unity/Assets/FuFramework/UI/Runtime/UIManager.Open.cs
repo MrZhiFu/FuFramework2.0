@@ -64,7 +64,10 @@ namespace FuFramework.UI.Runtime
             m_InstancePool.Register(uiInstanceObject, true);
 
             // UI包已经加载过，则直接通过回调创建界面
-            if (FuiPackageManager.Instance.HasPackage(view.PackageName))
+            var fuiPackageManager = ModuleManager.GetModule<FuiPackageManager>();
+            if (fuiPackageManager == null) throw new FuException("[UIManager]FuiPackageManager模块不存在.");
+            
+            if (fuiPackageManager.HasPackage(view.PackageName))
             {
                 // 从正在加载的字典中移除，并创建FUI界面
                 m_LoadingDict.Remove(m_SerialId);
@@ -72,7 +75,7 @@ namespace FuFramework.UI.Runtime
             }
 
             // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
-            await FuiPackageManager.Instance.AddPackageAsync(view.PackageName);
+            await fuiPackageManager.AddPackageAsync(view.PackageName);
 
             // 从正在加载的字典中移除，并创建FUI界面
             m_LoadingDict.Remove(m_SerialId);

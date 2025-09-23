@@ -1,14 +1,14 @@
 using System;
 using YooAsset;
 using UnityEngine;
+using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Event.Runtime;
 using FuFramework.ModuleSetting.Runtime;
-using UnityEngine.Audio;
-using UnityEngine.SceneManagement;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -33,7 +33,7 @@ namespace FuFramework.Sound.Runtime
         private readonly HashSet<int> m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
         private AssetManager m_AssetManager;   // 资源管理器
-        private EventManager m_EventComponent; // 事件组件
+        private EventManager m_EventManager; // 事件组件
 
         private int m_Serial; // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
 
@@ -64,8 +64,8 @@ namespace FuFramework.Sound.Runtime
                 return;
             }
 
-            m_EventComponent = ModuleManager.GetModule<EventManager>();
-            if (!m_EventComponent)
+            m_EventManager = ModuleManager.GetModule<EventManager>();
+            if (!m_EventManager)
             {
                 FuLog.Fatal("[SoundManager] 事件组件不存在!");
                 return;
@@ -293,7 +293,7 @@ namespace FuFramework.Sound.Runtime
             {
                 FuLog.Error(errorMessage);
                 var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-                m_EventComponent.Fire(this, failureEventArgs);
+                m_EventManager.Fire(this, failureEventArgs);
                 return newSerialId;
             }
 
@@ -468,7 +468,7 @@ namespace FuFramework.Sound.Runtime
                 }
 
                 var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
-                m_EventComponent.Fire(this, successEventArgs);
+                m_EventManager.Fire(this, successEventArgs);
 
                 if (playSoundInfo.SoundParams != null)
                     ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams);
@@ -499,7 +499,7 @@ namespace FuFramework.Sound.Runtime
 
             // 派发播放失败事件
             var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
-            m_EventComponent.Fire(this, failureEventArgs);
+            m_EventManager.Fire(this, failureEventArgs);
 
             // 释放播放相关信息，并抛出异常
             if (playSoundInfo.SoundParams != null)

@@ -14,9 +14,11 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public class Launcher : MonoBehaviour
     {
-        [Header("所有可用的流程类型")] [SerializeField] private string[] m_AvailableProcedureTypeNames;
+        [Header("所有可用的流程类型")] 
+        [SerializeField] private string[] m_AvailableProcedureTypeNames;
 
-        [Header("入口流程类型")] [SerializeField] private string m_EntryProcedureTypeName;
+        [Header("入口流程类型")] 
+        [SerializeField] private string m_EntryProcedureTypeName;
 
         /// <summary>
         /// 所有可用的流程类型

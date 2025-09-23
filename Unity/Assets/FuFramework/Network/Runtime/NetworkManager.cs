@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
@@ -11,6 +9,7 @@ namespace FuFramework.Network.Runtime
     /// <summary>
     /// 网络管理器。
     /// </summary>
+    [ModuleDependency(typeof(EventManager))]
     public sealed partial class NetworkManager : FuModule
     {
         /// <summary>

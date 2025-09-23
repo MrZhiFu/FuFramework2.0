@@ -18,7 +18,7 @@ namespace FuFramework.UI.Runtime
         private void _OnInit()
         {
             FuLog.Info($"UI界面[{SerialId}]{UIName}]初始化-OnInit().");
-            FuiPackageManager.Instance.AddRef(PackageName);
+            m_PackageManager.AddRef(PackageName);
             OnInit();
         }
 
@@ -146,7 +146,7 @@ namespace FuFramework.UI.Runtime
         internal void _OnDispose()
         {
             FuLog.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            FuiPackageManager.Instance?.SubRef(PackageName);
+            m_PackageManager.SubRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器

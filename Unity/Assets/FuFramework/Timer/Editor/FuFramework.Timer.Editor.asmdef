@@ -3,7 +3,8 @@
     "rootNamespace": "FuFramework.Timer.Editor",
     "references": [
         "FuFramework.Core.Editor",
-        "FuFramework.Timer.Runtime"
+        "FuFramework.Timer.Runtime",
+        "FuFramework.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

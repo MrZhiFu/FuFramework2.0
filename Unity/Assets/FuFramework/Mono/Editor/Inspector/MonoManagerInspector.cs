@@ -8,12 +8,9 @@
 //     /// <summary>
 //     /// 自定义Mono组件Inspector
 //     /// </summary>
-//     [CustomEditor(typeof(MonoComponent))]
-//     internal sealed class MonoGameComponentInspector : GameComponentInspector
+//     [CustomEditor(typeof(MonoManager))]
+//     internal sealed class MonoManagerInspector : FuFrameworkInspector
 //     {
-//         protected override void RefreshTypeNames()
-//         {
-//             RefreshComponentTypeNames(typeof(IMonoManager));
-//         }
+//         
 //     }
 // }
