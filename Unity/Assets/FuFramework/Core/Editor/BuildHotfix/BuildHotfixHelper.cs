@@ -16,10 +16,9 @@ namespace FuFramework.Core.Editor
     public static class BuildHotfixHelper
     {
         // Unity代码生成dll位置
-        private const           string HotFixAssembliesDir = "Library/ScriptAssemblies";
-        private static readonly string ScriptAssembliesDir = $"HybridCLRData/HotUpdateDlls/{EditorUserBuildSettings.activeBuildTarget}";
+        private const string HotFixAssembliesDir = "Library/ScriptAssemblies";
 
-        // 热更DLL名称
+        // 热更DLL名称数组
         private static readonly string[] HotfixDlls = { "Game.Hotfix.dll" };
 
         // 热更代码存放位置
@@ -42,9 +41,9 @@ namespace FuFramework.Core.Editor
         }
 
         /// <summary>
-        /// 复制热更新代码
+        /// 复制热更新代码Dll到Assets/Bundles/Code目录
         /// </summary>
-        [MenuItem("GameFrameX/Build/Copy Hotfix Code(复制热更新代码到Assets>Bundles>Code)", false, 10)]
+        [MenuItem("FuFramework/Build/Copy Hotfix Code(复制热更新代码DLL到Assets>Bundles>Code)", false, 10)]
         public static void CopyHotfixCode()
         {
             if (!Directory.Exists(CodeDir))
@@ -54,18 +53,20 @@ namespace FuFramework.Core.Editor
 
             foreach (var hotfix in HotfixDlls)
             {
-                var srcPath = Path.Combine(HotFixAssembliesDir, hotfix);
-                File.Copy(srcPath, Path.Combine(CodeDir, hotfix + Utility.Const.FileNameSuffix.Binary), true);
+                // 源DLL相对路径，相对于Unity工程根目录。Unity编辑器运行时，当前工作目录自动设置为项目根目录。
+                var srcRelativePath = Path.Combine(HotFixAssembliesDir, hotfix);
+                File.Copy(srcRelativePath, Path.Combine(CodeDir, hotfix + Utility.Const.FileNameSuffix.Binary), true);
+                Debug.Log($"复制热更代码DLL--{srcRelativePath}到{CodeDir}完成");
             }
 
-            Debug.Log($"复制Hotfix DLL到{CodeDir}完成");
             AssetDatabase.Refresh();
         }
 
         /// <summary>
-        /// 复制AOT代码
+        /// 复制AOT代码DLL到Assets/Bundles/AOTCode目录。
+        /// "AssembliesPostIl2CppStrip": IL2CPP裁剪后的AOT程序集目录
         /// </summary>
-        [MenuItem("GameFrameX/Build/Copy AOT Code(复制AOT代码到Assets>Bundles>AOTCode)", false, 11)]
+        [MenuItem("FuFramework/Build/Copy AOT Code(复制AOT代码DLL到Assets>Bundles>AOTCode)", false, 11)]
         public static void CopyAOTCode()
         {
             if (!Directory.Exists(AOTCodeDir))

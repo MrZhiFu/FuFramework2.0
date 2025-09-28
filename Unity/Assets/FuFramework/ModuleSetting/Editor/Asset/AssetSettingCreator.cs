@@ -17,7 +17,7 @@ namespace FuFramework.ModuleSetting.Editor
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
 
-        [MenuItem("FuFramework/框架模块配置/资源配置/创建")]
+        [MenuItem("FuFramework/框架模块配置/资源配置/创建", false, 1)]
         public static void CreateDefaultAssetSetting()
         {
             // 检查资源是否已存在
@@ -57,7 +57,7 @@ namespace FuFramework.ModuleSetting.Editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FuFramework/框架模块配置/资源配置/查找")]
+        [MenuItem("FuFramework/框架模块配置/资源配置/查找", false, 2)]
         public static void FindAssetSetting()
         {
             var guids = AssetDatabase.FindAssets("t:AssetSetting");

@@ -7,7 +7,9 @@ using UnityEngine;
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 当使用HybridCLR发布到WEBGL的时候执行
+    /// 当使用HybridCLR发布到WEBGL的时候执行。
+    /// 为HybridCLR热更新在WebGL平台上创建符号链接，替换Unity默认的il2cpp目录。
+    /// HybridCLR需要修改Unity的il2cpp后端来支持热更新，因此需要执行生成的3条命令来完成这项工作。
     /// </summary>
     public static class BuildWebGLToolsWithHybridCLR
     {
@@ -20,7 +22,7 @@ namespace FuFramework.Core.Editor
             return Application.dataPath.Replace("Assets", string.Empty);
         }
 
-        [MenuItem("GameFrameX/Print WEBGL Environment Command Line")]
+        [MenuItem("FuFramework/输出 WEBGL 平台的 HybridCLR il2cpp目录设置命令行")]
         private static void Print()
         {
 #if UNITY_EDITOR_OSX
