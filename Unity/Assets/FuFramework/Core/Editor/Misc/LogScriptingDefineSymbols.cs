@@ -5,6 +5,7 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 日志脚本宏定义。
+    /// 配合日志系统使用，在编译阶段控制日志的输出级别。
     /// </summary>
     public static class LogScriptingDefineSymbols
     {
@@ -49,7 +50,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 禁用所有日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Disable All Logs(禁用所有日志脚本宏定义)", false, 30)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Disable All Logs(禁用所有日志脚本宏定义)", false, 30)]
         public static void DisableAllLogs()
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogScriptingDefineSymbol);
@@ -68,7 +69,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启所有日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable All Logs(开启所有日志脚本宏定义)", false, 31)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable All Logs(开启所有日志脚本宏定义)", false, 31)]
         public static void EnableAllLogs()
         {
             DisableAllLogs();
@@ -78,7 +79,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启调试及以上级别的日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Debug And Above Logs(开启调试及以上级别的日志脚本宏定义)", false, 32)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Debug And Above Logs(开启调试及以上级别的日志脚本宏定义)", false, 32)]
         public static void EnableDebugAndAboveLogs()
         {
             SetAboveLogScriptingDefineSymbol(EnableDebugAndAboveLogScriptingDefineSymbol);
@@ -87,7 +88,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启信息及以上级别的日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Info And Above Logs(开启信息及以上级别的日志脚本宏定义)", false, 33)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Info And Above Logs(开启信息及以上级别的日志脚本宏定义)", false, 33)]
         public static void EnableInfoAndAboveLogs()
         {
             SetAboveLogScriptingDefineSymbol(EnableInfoAndAboveLogScriptingDefineSymbol);
@@ -96,7 +97,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启警告及以上级别的日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Warning And Above Logs(开启警告及以上级别的日志脚本宏定义)", false, 34)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Warning And Above Logs(开启警告及以上级别的日志脚本宏定义)", false, 34)]
         public static void EnableWarningAndAboveLogs()
         {
             SetAboveLogScriptingDefineSymbol(EnableWarningAndAboveLogScriptingDefineSymbol);
@@ -105,7 +106,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启错误及以上级别的日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Error And Above Logs(开启错误及以上级别的日志脚本宏定义)", false, 35)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Error And Above Logs(开启错误及以上级别的日志脚本宏定义)", false, 35)]
         public static void EnableErrorAndAboveLogs()
         {
             SetAboveLogScriptingDefineSymbol(EnableErrorAndAboveLogScriptingDefineSymbol);
@@ -114,7 +115,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启严重错误及以上级别的日志脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Fatal And Above Logs(开启严重错误及以上级别的日志脚本宏定义)", false, 36)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Fatal And Above Logs(开启严重错误及以上级别的日志脚本宏定义)", false, 36)]
         public static void EnableFatalAndAboveLogs()
         {
             SetAboveLogScriptingDefineSymbol(EnableFatalAndAboveLogScriptingDefineSymbol);

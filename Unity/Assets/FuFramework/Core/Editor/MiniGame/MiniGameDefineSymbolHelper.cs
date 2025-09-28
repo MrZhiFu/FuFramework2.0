@@ -18,7 +18,7 @@ namespace FuFramework.Core.Editor
         /// 开启微信小游戏的适配
         /// </summary>
 #if UNITY_WEBGL
-        [MenuItem("GameFrameX/MiniGame/WeChat/Open", false, 10)]
+        [MenuItem("FuFramework/MiniGame/WeChat/Open", false, 10)]
 #endif
         public static void OpenWeChatMiniGame()
         {
@@ -36,7 +36,7 @@ namespace FuFramework.Core.Editor
         /// 关闭微信小游戏的适配
         /// </summary>
 #if UNITY_WEBGL
-        [MenuItem("GameFrameX/MiniGame/WeChat/Close", false, 11)]
+        [MenuItem("FuFramework/MiniGame/WeChat/Close", false, 11)]
 #endif
         public static void CloseWeChatMiniGame()
         {
@@ -49,7 +49,7 @@ namespace FuFramework.Core.Editor
         /// 开启抖音小游戏的适配
         /// </summary>
 #if UNITY_WEBGL
-        [MenuItem("GameFrameX/MiniGame/DouYin/Open", false, 20)]
+        [MenuItem("FuFramework/MiniGame/DouYin/Open", false, 20)]
 #endif
         public static void OpenDouYinMiniGame()
         {
@@ -67,7 +67,7 @@ namespace FuFramework.Core.Editor
         /// 关闭抖音小游戏的适配
         /// </summary>
 #if UNITY_WEBGL
-        [MenuItem("GameFrameX/MiniGame/DouYin/Close", false, 21)]
+        [MenuItem("FuFramework/MiniGame/DouYin/Close", false, 21)]
 #endif
         public static void CloseDouYinMiniGame()
         {

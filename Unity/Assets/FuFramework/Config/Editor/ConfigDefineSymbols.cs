@@ -13,7 +13,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 禁用配置表为二进制的脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Disable Binary Config(关闭二进制配置表)", false, 500)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Disable Binary Config(关闭二进制配置表)", false, 500)]
         public static void DisableBinaryConfig()
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableBinaryConfigScriptingDefineSymbol);
@@ -22,7 +22,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 开启配置表为二进制的脚本宏定义。
         /// </summary>
-        [MenuItem("GameFrameX/Scripting Define Symbols/Enable Binary Config(开启二进制配置表)", false, 501)]
+        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Binary Config(开启二进制配置表)", false, 501)]
         public static void EnableBinaryConfig()
         {
             ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableBinaryConfigScriptingDefineSymbol);

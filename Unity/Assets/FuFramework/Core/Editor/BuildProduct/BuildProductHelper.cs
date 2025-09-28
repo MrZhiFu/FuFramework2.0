@@ -48,7 +48,7 @@ namespace FuFramework.Core.Editor
             Debug.Log(EditorUserBuildSettings.activeBuildTarget);
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows64)
             {
-                Debug.LogError("当前构建目标平台不是 Windows");
+                Debug.LogError("当前构建目标平台不是 Windows, 请先手动切换到 Windows 平台!");
                 return;
             }
 
@@ -115,7 +115,7 @@ namespace FuFramework.Core.Editor
             Debug.Log(EditorUserBuildSettings.activeBuildTarget);
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows)
             {
-                Debug.LogError("当前构建目标平台不是 Windows");
+                Debug.LogError("当前构建目标平台不是 Windows, 请先手动切换到 Windows 平台!");
                 return;
             }
 
@@ -180,7 +180,7 @@ namespace FuFramework.Core.Editor
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
             {
-                Debug.LogError("当前构建目标平台不是 MacOS");
+                Debug.LogError("当前构建目标平台不是 MacOS, 请先手动切换到 MacOS 平台!");
                 return;
             }
 
@@ -244,7 +244,7 @@ namespace FuFramework.Core.Editor
             PlayerSettings.SplashScreen.show = false;
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
             {
-                Debug.LogError("当前构建目标平台不是 Android");
+                Debug.LogError("当前构建目标平台不是 Android, 请先手动切换到 Android 平台!");
                 return;
             }
 
@@ -298,7 +298,7 @@ namespace FuFramework.Core.Editor
             
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
             {
-                Debug.LogError("当前构建目标平台不是 Android");
+                Debug.LogError("当前构建目标平台不是 Android, 请先手动切换到 Android 平台!");
                 return;
             }
             
@@ -353,7 +353,7 @@ namespace FuFramework.Core.Editor
 
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
             {
-                Debug.LogError("当前构建目标平台不是 WebGL");
+                Debug.LogError("当前构建目标平台不是 WebGL, 请先手动切换到 WebGL 平台!");
                 return;
             }
 
@@ -394,7 +394,7 @@ namespace FuFramework.Core.Editor
 
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL)
             {
-                Debug.LogError("当前构建目标平台不是 WebGL");
+                Debug.LogError("当前构建目标平台不是 WebGL, 请先手动切换到 WebGL 平台!");
                 return;
             }
 
