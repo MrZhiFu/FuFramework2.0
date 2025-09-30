@@ -264,7 +264,7 @@ namespace FuFramework.Sound.Runtime
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int serialId = -1, SoundParams soundParams = null,
                                             SoundParams3D soundParams3D = null, object userData = null, Action onPlayEnd = null)
         {
-            var soundAssetPath = Utility.Asset.Path.GetSoundPath(soundAssetName, extension);
+            var soundAssetPath = Utility.AssetPath.GetSoundPath(soundAssetName, extension);
             soundParams ??= SoundParams.Create();
 
             int newSerialId;

@@ -27,7 +27,7 @@ namespace Launcher.Procedure
         public static async UniTask StartHotfix()
         {
             // 编辑器模式下，直接加载程序集
-            if (ApplicationHelper.IsEditor)
+            if (Utility.Application.IsEditor)
             {
                 var assemblies = Utility.Assembly.GetAssemblies();
                 foreach (var assembly in assemblies)
@@ -49,7 +49,7 @@ namespace Launcher.Procedure
             foreach (var aotDll in aotDlls)
             {
                 FuLog.Info("开始加载AOT DLL ==> " + aotDll);
-                var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(Utility.Asset.Path.GetAOTCodePath(aotDll));
+                var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(Utility.AssetPath.GetAOTCodePath(aotDll));
                 var aotBytes    = assetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
                 RuntimeApi.LoadMetadataForAOTAssembly(aotBytes, HomologousImageMode.SuperSet);
             }
@@ -57,7 +57,7 @@ namespace Launcher.Procedure
             FuLog.Info("结束加载AOT DLL");
 
             FuLog.Info("开始加载Game.Hotfix.dll");
-            var assetHotfixDllPath            = Utility.Asset.Path.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
+            var assetHotfixDllPath            = Utility.AssetPath.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
             var assetHotfixDllOperationHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(assetHotfixDllPath);
             var assemblyDataHotfixDll         = assetHotfixDllOperationHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 

@@ -129,7 +129,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         /// <param name="level">日志等级。</param>
         /// <param name="message">日志内容。</param>
-        public static void Log(ELogLevel level, object message)
+        private static void Log(ELogLevel level, object message)
         {
             var time = $"[Unity]:[{DateTime.Now:HH:mm:ss.fff}]:";
 

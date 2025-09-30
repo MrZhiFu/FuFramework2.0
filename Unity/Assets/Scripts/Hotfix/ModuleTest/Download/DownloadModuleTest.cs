@@ -1,3 +1,5 @@
+using System;
+using FuFramework.Core.Runtime;
 using UnityEngine;
 using FuFramework.Entry.Runtime;
 using FuFramework.Event.Runtime;

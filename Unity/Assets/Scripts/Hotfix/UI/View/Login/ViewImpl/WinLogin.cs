@@ -89,7 +89,7 @@ namespace Hotfix.UI
                 UserName = txtUsername.text,
                 Password = txtPassword.text,
                 Device = SystemInfo.deviceUniqueIdentifier,
-                Platform = PathHelper.GetPlatformName
+                Platform = Utility.Application.PlatformName
             };
 
             var respLogin = await GlobalModule.WebModule.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);

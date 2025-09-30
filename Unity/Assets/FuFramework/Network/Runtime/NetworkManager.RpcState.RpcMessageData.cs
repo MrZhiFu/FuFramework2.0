@@ -79,7 +79,7 @@ namespace FuFramework.Network.Runtime
 
                 private RpcMessageData(IRequestMessage requestMessage, int timeout)
                 {
-                    CreatedTime = TimeHelper.UnixTimeMilliseconds();
+                    CreatedTime = Utility.Time.ClientNow();
                     RequestMessage = requestMessage;
                     Timeout = timeout;
                     UniqueId = ((MessageObject)requestMessage).UniqueId;

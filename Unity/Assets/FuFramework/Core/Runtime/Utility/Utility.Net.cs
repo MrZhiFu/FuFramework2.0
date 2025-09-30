@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -167,6 +168,51 @@ namespace FuFramework.Core.Runtime
                 }
 
                 return (AddressFamily.InterNetwork, host);
+            }
+            
+            /// <summary>
+            /// 获取本地的所有IP地址列表
+            /// </summary>
+            /// <returns></returns>
+            public static string[] GetAddressIPs()
+            {
+                //获取本地的IP地址
+                var list       = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
+                var addressIPs = new string[list.Length];
+                for (var index = 0; index < list.Length; index++)
+                {
+                    IPAddress address = list[index];
+                    addressIPs[index] = address.ToString();
+                }
+
+                return addressIPs;
+            }
+
+            /// <summary>
+            /// 是否有网络
+            /// </summary>
+            /// <returns></returns>
+            public static bool IsReachable()
+            {
+                return UnityEngine.Application.internetReachability != NetworkReachability.NotReachable;
+            }
+
+            /// <summary>
+            /// 是否是WIFI
+            /// </summary>
+            /// <returns></returns>
+            public static bool IsWifi()
+            {
+                return UnityEngine.Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork;
+            }
+
+            /// <summary>
+            /// 是否是移动网络
+            /// </summary>
+            /// <returns></returns>
+            public static bool IsViaCarrierData()
+            {
+                return UnityEngine.Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork;
             }
         }
     }

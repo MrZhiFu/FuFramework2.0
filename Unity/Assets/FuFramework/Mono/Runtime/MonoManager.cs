@@ -260,7 +260,7 @@ namespace FuFramework.Mono.Runtime
         {
             lock (Locker)
             {
-                ObjectHelper.Swap(ref invokeList, ref waitInvokeList);
+                Utility.Object.Swap(ref invokeList, ref waitInvokeList);
 
                 foreach (var action in invokeList)
                 {
@@ -289,7 +289,7 @@ namespace FuFramework.Mono.Runtime
         {
             lock (Locker)
             {
-                ObjectHelper.Swap(ref a, ref b);
+                Utility.Object.Swap(ref a, ref b);
 
                 foreach (var action in a)
                 {

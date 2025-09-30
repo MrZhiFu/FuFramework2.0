@@ -1,0 +1,182 @@
+using UnityEngine;
+
+// ReSharper disable once CheckNamespace
+namespace FuFramework.Core.Runtime
+{
+    public static partial class Utility
+    {
+        /// <summary>
+        /// 坐标相关的实用函数。
+        /// 1. 二维坐标转换为三维坐标。
+        /// 2. 三维坐标转换为二维坐标。
+        /// 3. 角度转换为四元数。
+        /// 4. 计算二维距离。
+        /// 5. 计算从一个向量到另一个向量的360度角度。
+        /// 6. 求点到直线的距离。
+        /// 7. 判断射线是否碰撞到球体。
+        /// 8. 去掉三维向量的Y轴，把向量投射到xz平面。
+        /// 9. 判断目标点是否位于向量的左边。
+        /// </summary>
+        public static class Position
+        {
+            /// <summary>
+            /// 将二维坐标转换为三维坐标，Y轴设为0。
+            /// </summary>
+            /// <param name="pos">二维坐标</param>
+            /// <returns>三维坐标</returns>
+            public static Vector3 RayCastV2ToV3(Vector2 pos) => new(pos.x, 0, pos.y);
+
+            /// <summary>
+            /// 将X和Y坐标转换为三维坐标，Y轴设为0。
+            /// </summary>
+            /// <param name="x">X坐标</param>
+            /// <param name="y">Y坐标</param>
+            /// <returns>三维坐标</returns>
+            public static Vector3 RayCastXYToV3(float x, float y) => new(x, 0, y);
+
+            /// <summary>
+            /// 将三维坐标的Y轴设为0。
+            /// </summary>
+            /// <param name="pos">三维坐标</param>
+            /// <returns>修改后的三维坐标</returns>
+            public static Vector3 RayCastV3ToV3(Vector3 pos) => new(pos.x, 0, pos.z);
+
+            /// <summary>
+            /// 将角度转换为四元数。
+            /// </summary>
+            /// <param name="angle">角度</param>
+            /// <returns>对应的四元数</returns>
+            public static Quaternion AngleToQuaternion(int angle)
+            {
+                return Quaternion.AngleAxis(-angle, Vector3.up) * Quaternion.AngleAxis(90, Vector3.up);
+            }
+
+            /// <summary>
+            /// 根据源向量和目标向量计算四元数。
+            /// </summary>
+            /// <param name="source">源向量</param>
+            /// <param name="dire">目标向量</param>
+            /// <returns>对应的四元数</returns>
+            public static Quaternion GetVector3ToQuaternion(Vector3 source, Vector3 dire)
+            {
+                var nowPos = source;
+                if (nowPos == dire) return new Quaternion();
+
+                Vector3 direction = (dire - nowPos).normalized;
+                return Quaternion.LookRotation(direction, Vector3.up);
+            }
+
+            /// <summary>
+            /// 计算二维距离。
+            /// </summary>
+            /// <param name="v1">第一个三维坐标</param>
+            /// <param name="v2">第二个三维坐标</param>
+            /// <returns>两点之间的二维距离</returns>
+            public static float Distance2D(Vector3 v1, Vector3 v2)
+            {
+                Vector2 d1 = new Vector2(v1.x, v1.z);
+                Vector2 d2 = new Vector2(v2.x, v2.z);
+                return Vector2.Distance(d1, d2);
+            }
+
+            /// <summary>
+            /// 根据角度获取四元数。
+            /// </summary>
+            /// <param name="angle">角度</param>
+            /// <returns>对应的四元数</returns>
+            public static Quaternion GetAngleToQuaternion(float angle)
+            {
+                return Quaternion.AngleAxis(-angle, Vector3.up) * Quaternion.AngleAxis(90, Vector3.up);
+            }
+
+            /// <summary>
+            /// 计算从一个向量到另一个向量的360度角度。
+            /// </summary>
+            /// <param name="from">起始向量</param>
+            /// <param name="to">目标向量</param>
+            /// <returns>360度角度</returns>
+            public static float Vector3ToAngle360(Vector3 from, Vector3 to)
+            {
+                float angle = Vector3.Angle(from, to);
+                Vector3 cross = Vector3.Cross(from, to);
+                return cross.y > 0 ? angle : 360 - angle;
+            }
+
+            /// <summary>
+            /// 求点到直线的距离，采用数学公式Ax+By+C = 0; d = A*p.x + B * p.y + C / sqrt(A^2 + B ^ 2)
+            /// </summary>
+            /// <param name="startPoint">线的起点</param>
+            /// <param name="endPoint">线的终点</param>
+            /// <param name="point">点</param>
+            /// <returns>点到直线的距离</returns>
+            public static float DistanceOfPointToVector(Vector3 startPoint, Vector3 endPoint, Vector3 point)
+            {
+                Vector2 startVe2 = IgnoreYAxis(startPoint);
+                Vector2 endVe2 = IgnoreYAxis(endPoint);
+
+                float a = endVe2.y - startVe2.y;
+                float b = startVe2.x - endVe2.x;
+                float c = endVe2.x * startVe2.y - startVe2.x * endVe2.y;
+
+                float denominator = Mathf.Sqrt(a * a + b * b);
+                Vector2 pointVe2 = IgnoreYAxis(point);
+
+                return Mathf.Abs((a * pointVe2.x + b * pointVe2.y + c) / denominator);
+            }
+
+            /// <summary>
+            /// 判断射线是否碰撞到球体，如果碰撞到，返回射线起点到碰撞点之间的距离
+            /// </summary>
+            /// <param name="ray">射线</param>
+            /// <param name="center">中心点</param>
+            /// <param name="redis">半径</param>
+            /// <param name="dist">距离</param>
+            /// <returns>是否碰撞</returns>
+            public static bool RayCastSphere(Ray ray, Vector3 center, float redis, out float dist)
+            {
+                dist = 0;
+                Vector3 ma = center - ray.origin;
+                float distance = Vector3.Cross(ma, ray.direction).magnitude / ray.direction.magnitude;
+                if (distance < redis)
+                {
+                    float op = Utility.Math.PythagoreanTheorem(Vector3.Distance(center, ray.origin), distance);
+                    float rp = Utility.Math.PythagoreanTheorem(redis, distance);
+                    dist = op - rp;
+                    return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// 去掉三维向量的Y轴，把向量投射到xz平面。
+            /// </summary>
+            /// <param name="vector3">三维向量</param>
+            /// <returns>投影后的二维向量</returns>
+            public static Vector2 IgnoreYAxis(Vector3 vector3)
+            {
+                return new Vector2(vector3.x, vector3.z);
+            }
+
+            /// <summary>
+            /// 判断目标点是否位于向量的左边
+            /// </summary>
+            /// <param name="vector3">向量</param>
+            /// <param name="originPoint">原点</param>
+            /// <param name="point">目标点</param>
+            /// <returns>True if on left, false if on right</returns>
+            public static bool PointOnLeftSideOfVector(Vector3 vector3, Vector3 originPoint, Vector3 point)
+            {
+                Vector2 originVec2 =IgnoreYAxis( originPoint);
+                Vector2 pointVec2 = (IgnoreYAxis(point) - originVec2).normalized;
+                Vector2 vector2 = IgnoreYAxis(vector3);
+                float verticalX = originVec2.x;
+                float verticalY = (-verticalX * vector2.x) / vector2.y;
+                Vector2 norVertical = (new Vector2(verticalX, verticalY)).normalized;
+                float dotValue = Vector2.Dot(norVertical, pointVec2);
+
+                return dotValue < 0f;
+            }
+        }
+    }
+}

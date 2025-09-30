@@ -164,7 +164,7 @@ namespace FuFramework.UI.Runtime
                 return;
             }
             
-            m_CachePath = PathHelper.AppHotfixResPath + "/cache/images/";
+            m_CachePath = Utility.Path.AppHotfixResPath + "/cache/images/";
             if (!Directory.Exists(m_CachePath)) 
                 Directory.CreateDirectory(m_CachePath);
         }
@@ -197,18 +197,18 @@ namespace FuFramework.UI.Runtime
                     {
                         var hash = Utility.Hash.MD5.Hash(url);
                         var path = $"{m_CachePath}{hash}.png";
-                        var isExists = FileHelper.IsExists(path);
+                        var isExists = Utility.File.IsExists(path);
                         var texture2D = Texture2D.whiteTexture;
 
                         if (isExists)
                         {
-                            var buffer = FileHelper.ReadAllBytes(path);
+                            var buffer = Utility.File.ReadAllBytes(path);
                             texture2D.LoadImage(buffer);
                         }
                         else
                         {
                             var webBufferResult = await ModuleManager.GetModule<WebManager>().GetToBytes(url, null);
-                            FileHelper.WriteAllBytes(path, webBufferResult.Result);
+                            Utility.File.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
                         }
 
@@ -246,9 +246,9 @@ namespace FuFramework.UI.Runtime
                         }
                         else
                         {
-                            if (FileHelper.IsExists(url))
+                            if (Utility.File.IsExists(url))
                             {
-                                var buffer = FileHelper.ReadAllBytes(url);
+                                var buffer = Utility.File.ReadAllBytes(url);
 
                                 var texture2D = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false, false);
                                 texture2D.LoadImage(buffer);

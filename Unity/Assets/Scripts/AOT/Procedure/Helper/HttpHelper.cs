@@ -49,7 +49,7 @@ namespace Launcher.Procedure
 
 #else
             // 其他平台参数
-            s_ParamDict["Platform"] = PathHelper.GetPlatformName;
+            s_ParamDict["Platform"] = Utility.Application.PlatformName;
 
     #if UNITY_STANDALONE_WIN
             s_ParamDict["PackageName"] = Application.productName;

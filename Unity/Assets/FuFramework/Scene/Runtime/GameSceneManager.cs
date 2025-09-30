@@ -257,7 +257,7 @@ namespace FuFramework.Scene.Runtime
         public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetName)) throw new FuException("场景资源名称不能为空!.");
-            var sceneAssetPath = Utility.Asset.Path.GetScenePath(sceneAssetName);
+            var sceneAssetPath = Utility.AssetPath.GetScenePath(sceneAssetName);
             return LoadScene(sceneAssetPath, sceneMode, userData);
         }
 

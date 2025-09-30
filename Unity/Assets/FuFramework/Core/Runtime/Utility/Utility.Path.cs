@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -15,7 +16,38 @@ namespace FuFramework.Core.Runtime
         public static class Path
         {
             /// <summary>
+            /// 合并路径的StringBuilder
+            /// </summary>
+            private static readonly StringBuilder CombinePathSb = new();
+            
+            /// <summary>
+            /// 热更新资源路径(应用程序外部资源路径存放路径)
+            /// </summary>
+            public static string AppHotfixResPath => $"{UnityEngine.Application.persistentDataPath}/{UnityEngine.Application.productName}/";
+
+            /// <summary>
+            /// 应用程序内部资源路径存放路径
+            /// </summary>
+            public static string AppResPath => GetRegularPath(UnityEngine.Application.streamingAssetsPath);
+            
+            /// <summary>
+            /// 应用程序内部资源路径存放路径(www/webrequest专用)
+            /// </summary>
+            public static string AppResPath4Web
+            {
+                get
+                {
+#if UNITY_IOS || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN || UNITY_EDITOR
+                    return $"file://{UnityEngine.Application.streamingAssetsPath}";
+#else
+                return GetRegularPath(UnityEngine.Application.streamingAssetsPath);
+#endif
+                }
+            }
+            
+            /// <summary>
             /// 获取规范的路径。如果路径中包含 \，则会自动替换为 /。
+            /// 如将"C:\test\test.txt"转化为"C:/test/test.txt"
             /// </summary>
             /// <param name="path">需要规范的路径。</param>
             /// <returns>规范的路径。</returns>
@@ -33,6 +65,31 @@ namespace FuFramework.Core.Runtime
                 return regularPath.Contains("://") ? regularPath : ("file:///" + regularPath).Replace("file:////", "file:///");
             }
 
+            /// <summary>
+            /// 拼接路径，如："Assets/Resources/", "test.txt" => Assets/Resources/test.txt
+            /// </summary>
+            /// <param name="paths"></param>
+            /// <returns></returns>
+            public static string Combine(params string[] paths)
+            {
+                const string separatorA = "/";
+                const string separatorB = "\\";
+
+                CombinePathSb.Clear();
+
+                for (var index = 0; index < paths.Length - 1; index++)
+                {
+                    var path = paths[index];
+                    CombinePathSb.Append(path);
+                    if (path.EndsWithFast(separatorA) || path.EndsWithFast(separatorB)) continue;
+                    if (path.StartsWithFast(separatorA) || path.StartsWithFast(separatorB)) continue;
+                    CombinePathSb.Append(separatorA);
+                }
+
+                CombinePathSb.Append(paths[^1]); // ^1表示最后一个元素
+                return CombinePathSb.ToString();
+            }
+            
             /// <summary>
             /// 移除空文件夹。
             /// </summary>

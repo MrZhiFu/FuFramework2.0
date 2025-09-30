@@ -164,7 +164,7 @@ namespace FuFramework.UI.Runtime
             if (string.IsNullOrEmpty(pkgName)) throw new FuException("[FuiPackageManager]包名不能为空.");
 
             //"Assets/Bundles/UI/";
-            var rootPath = Utility.Asset.Path.GetUIRootPath();
+            var rootPath = Utility.AssetPath.GetUIRootPath();
             var descPath = $"{rootPath}{pkgName}/{pkgName}_fui.bytes";
 
             m_pkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
@@ -188,7 +188,7 @@ namespace FuFramework.UI.Runtime
         private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem packageItem)
         {
             var pkgName  = packageItem.owner.name;
-            var rootPath = Utility.Asset.Path.GetUIRootPath(); //"Assets/Bundles/UI/";
+            var rootPath = Utility.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
             var itemPath = $"{rootPath}{pkgName}/{pkgName}_{assetName}";
             var extPath  = $"{itemPath}{extension}";
 
