@@ -13,6 +13,6 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         /// <param name="message">消息未压缩内容</param>
         /// <returns></returns>
-        public byte[] Handler(byte[] message) => ZipHelper.Compress(message);
+        public byte[] Handler(byte[] message) => Utility.Zip.Compress(message);
     }
 }
