@@ -40,7 +40,7 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     public static class BinaryEx
     {
-        private static readonly byte[] s_CachedBytes = new byte[byte.MaxValue + 1];
+        private static readonly byte[] m_CachedBytes = new byte[byte.MaxValue + 1];
 
         /// <summary>
         /// 从二进制流读取编码后的 32 位有符号整数。
@@ -182,12 +182,12 @@ namespace FuFramework.Core.Runtime
 
             for (byte i = 0; i < length; i++)
             {
-                s_CachedBytes[i] = binaryReader.ReadByte();
+                m_CachedBytes[i] = binaryReader.ReadByte();
             }
 
-            Utility.Encryption.GetSelfXorBytes(s_CachedBytes, 0, length, encryptBytes);
-            var value = Utility.Converter.GetString(s_CachedBytes, 0, length);
-            Array.Clear(s_CachedBytes, 0, length);
+            Utility.Encryption.GetSelfXorBytes(m_CachedBytes, 0, length, encryptBytes);
+            var value = Utility.Converter.GetString(m_CachedBytes, 0, length);
+            Array.Clear(m_CachedBytes, 0, length);
             return value;
         }
 
@@ -205,15 +205,15 @@ namespace FuFramework.Core.Runtime
                 return;
             }
 
-            int length = Utility.Converter.GetBytes(value, s_CachedBytes);
+            int length = Utility.Converter.GetBytes(value, m_CachedBytes);
             if (length > byte.MaxValue)
             {
                 throw new FuException($"String '{value}' is too long.");
             }
 
-            Utility.Encryption.GetSelfXorBytes(s_CachedBytes, encryptBytes);
+            Utility.Encryption.GetSelfXorBytes(m_CachedBytes, encryptBytes);
             binaryWriter.Write((byte)length);
-            binaryWriter.Write(s_CachedBytes, 0, length);
+            binaryWriter.Write(m_CachedBytes, 0, length);
         }
     }
 }

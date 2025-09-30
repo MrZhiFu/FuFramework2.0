@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
@@ -31,12 +32,9 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key, Func<TKey, TValue> valueGetter)
         {
-            if (!self.TryGetValue(key, out var value))
-            {
-                value     = valueGetter(key);
-                self[key] = value;
-            }
-
+            if (self.TryGetValue(key, out var value)) return value;
+            value     = valueGetter(key);
+            self[key] = value;
             return value;
         }
 
@@ -53,15 +51,12 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static int RemoveIf<TKey, TValue>(this Dictionary<TKey, TValue> self, Func<TKey, TValue, bool> predict)
         {
-            int count  = 0;
+            var count  = 0;
             var remove = new HashSet<TKey>();
-            foreach (var kv in self)
+            foreach (var kv in self.Where(kv => predict(kv.Key, kv.Value)))
             {
-                if (predict(kv.Key, kv.Value))
-                {
-                    remove.Add(kv.Key);
-                    count++;
-                }
+                remove.Add(kv.Key);
+                count++;
             }
 
             foreach (var key in remove)
@@ -85,6 +80,27 @@ namespace FuFramework.Core.Runtime
         public static bool IsNullOrEmpty<T>(this ICollection<T> self)
         {
             return self is not { Count: > 0 };
+        }
+        
+        /// <summary>
+        /// 根据条件去重集合内的元素
+        /// </summary>
+        /// <param name="source">源集合</param>
+        /// <param name="keySelector">元素条件选择器</param>
+        /// <typeparam name="TSource">元素类型</typeparam>
+        /// <typeparam name="TKey">元素条件类型</typeparam>
+        /// <returns>去重后的集合</returns>
+        /// <example> DistinctBy(new[] { new { Id = 1, Name = "Alice" }, new { Id = 2, Name = "Bob" }, new { Id = 1, Name = "Charlie" } }, x => x.Id) => new[] { new { Id = 1, Name = "Alice" }, new { Id = 2, Name = "Bob" } } </example>
+        public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        {
+            var identifiedKeys = new HashSet<TKey>();
+            foreach (var item in source)
+            {
+                if (identifiedKeys.Add(keySelector(item)))
+                {
+                    yield return item;
+                }
+            }
         }
 
         #endregion

@@ -11,23 +11,88 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 压缩相关的实用函数。
-        /// 1. 压缩文件夹、压缩文件、解压文件
+        /// 压缩与解压缩(文件/文件夹)相关的实用函数。
         /// </summary>
         public static class Zip
         {
             private static readonly Crc32 CRC = new();
 
+            /// <summary>
+            /// 用于压缩和解压缩内存数据的缓冲区大小（以字节为单位）
+            /// </summary>
+            private const int BufferSize = 8192;
+
+            /// <summary>
+            /// 压缩级别
+            /// </summary>
+            public const int CompressionLevel = 6;
+
+            /// <summary> 
+            /// 压缩文件
+            /// </summary> 
+            /// <param name="fileToZip">要压缩的文件完整路径</param> 
+            /// <param name="zipedPath">压缩后的文件完整路径</param> 
+            /// <param name="password">密码</param> 
+            /// <returns>是否成功</returns> 
+            public static bool CompressFile(string fileToZip, string zipedPath, string password = null)
+            {
+                if (!System.IO.File.Exists(fileToZip))
+                {
+                    FuLog.Fatal($"要压缩的文件不存在: {fileToZip}");
+                    return false;
+                }
+
+                using (var readStream = System.IO.File.OpenRead(fileToZip))
+                {
+                    byte[] buffer = new byte[readStream.Length];
+                    // ReSharper disable once UnusedVariable
+                    var read = readStream.Read(buffer, 0, buffer.Length);
+                    using (var writeStream = System.IO.File.Create(zipedPath))
+                    {
+                        var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
+                        {
+                            DateTime = DateTime.Now,
+                            Size = readStream.Length
+                        };
+                        CRC.Reset();
+                        CRC.Update(buffer);
+                        entry.Crc = CRC.Value;
+                        using (var zipStream = new ZipOutputStream(writeStream))
+                        {
+                            if (!string.IsNullOrEmpty(password))
+                                zipStream.Password = password;
+
+                            zipStream.PutNextEntry(entry);
+                            zipStream.SetLevel(Deflater.BEST_COMPRESSION);
+                            zipStream.Write(buffer, 0, buffer.Length);
+                        }
+                    }
+                }
+
+                GC.Collect(1);
+                return true;
+            }
+
             /// <summary> 
             /// 压缩文件夹  
             /// </summary> 
-            /// <param name="folderToZip">要压缩的文件夹路径</param> 
-            /// <param name="stream">压缩前的Stream,方法执行后变为压缩完成后的文件</param> 
+            /// <param name="folderToZip">要压缩的文件夹完整路径</param> 
+            /// <param name="zipedPath">压缩后的文件完整路径</param> 
             /// <param name="password">密码</param> 
             /// <returns>是否成功</returns> 
-            public static bool CompressDirectoryToStream(string folderToZip, Stream stream, string password = null)
+            public static bool CompressDirectory(string folderToZip, string zipedPath, string password = null)
             {
-                return CompressDirectoryToZipStream(folderToZip, stream, password) != null;
+                if (folderToZip.EndsWithFast(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWithFast("/"))
+                {
+                    folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
+                }
+
+                var zipedFileStream = new FileStream(zipedPath, FileMode.Create, FileAccess.Write, FileShare.Write);
+                var zipStream = CompressDirectoryToZipStream(folderToZip, zipedFileStream, password);
+                if (zipStream == null) return false;
+
+                zipStream.Close();
+                return true;
             }
 
             /// <summary> 
@@ -42,7 +107,7 @@ namespace FuFramework.Core.Runtime
                 if (!Directory.Exists(folderToZip)) return null;
 
                 var zipStream = new ZipOutputStream(stream);
-                zipStream.SetLevel(6);
+                zipStream.SetLevel(CompressionLevel);
 
                 if (!string.IsNullOrEmpty(password))
                     zipStream.Password = password;
@@ -58,6 +123,145 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary> 
+            /// 解压功能(解压文件/文件夹到指定文件夹) 
+            /// </summary> 
+            /// <param name="fileToUnZip">待解压的文件夹</param> 
+            /// <param name="zipedPath">压缩后的文件完整路径</param> 
+            /// <param name="password">密码</param> 
+            /// <returns>是否成功</returns> 
+            public static bool DecompressFile(string fileToUnZip, string zipedPath, string password = null)
+            {
+                if (!System.IO.File.Exists(fileToUnZip)) return false;
+                if (!Directory.Exists(zipedPath)) Directory.CreateDirectory(zipedPath);
+
+                if (!zipedPath.EndsWith("\\"))
+                {
+                    zipedPath += "\\";
+                }
+
+                using (var zipStream = new ZipInputStream(System.IO.File.OpenRead(fileToUnZip)))
+                {
+                    if (!string.IsNullOrEmpty(password))
+                    {
+                        zipStream.Password = password;
+                    }
+
+                    ZipEntry zipEntry;
+                    while ((zipEntry = zipStream.GetNextEntry()) != null)
+                    {
+                        if (zipEntry.IsDirectory) continue;
+                        if (string.IsNullOrEmpty(zipEntry.Name)) continue;
+
+                        string fileName = Path.Combine(zipedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                        var index = zipEntry.Name.LastIndexOf('/');
+                        if (index != -1)
+                        {
+                            string path = zipedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
+                            Directory.CreateDirectory(path);
+                        }
+
+                        var bytes = new byte[zipEntry.Size];
+                        // ReSharper disable once UnusedVariable
+                        var read = zipStream.Read(bytes, 0, bytes.Length);
+                        System.IO.File.WriteAllBytes(fileName, bytes);
+                    }
+                }
+
+                GC.Collect(1);
+                return true;
+            }
+
+            /// <summary>
+            /// 压缩数据到内存中。使用Deflate算法将原始字节数组压缩成更小的字节数组。
+            /// </summary>
+            /// <param name="content">要压缩的原始字节数组。不能为null。</param>
+            /// <returns>压缩后的字节数组。如果输入为空数组，则直接返回该空数组。如果压缩过程中发生异常，则返回原始数组。</returns>
+            /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
+            public static byte[] Compress(byte[] content)
+            {
+                content.CheckNull(nameof(content));
+                if (content.Length == 0) return content;
+
+                var compressor = new Deflater();
+                compressor.SetLevel(Deflater.BEST_COMPRESSION);
+                compressor.SetInput(content);
+                compressor.Finish();
+
+                using var compressorMemoryStream = new MemoryStream();
+
+                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+                try
+                {
+                    while (!compressor.IsFinished)
+                    {
+                        var count = compressor.Deflate(buffer);
+                        
+                        // 压缩进度停滞但未完成，可能是异常情况
+                        if (count == 0 && !compressor.IsNeedingInput) 
+                            throw new InvalidOperationException("压缩过程异常停滞");
+                        
+                        compressorMemoryStream.Write(buffer, 0, count);
+                    }
+
+                    return compressorMemoryStream.ToArray();
+                }
+                catch (Exception e)
+                {
+                    FuLog.Fatal($"数据压缩失败: {e.Message}");
+                    throw new InvalidOperationException("数据压缩失败", e);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
+
+            /// <summary>
+            /// 解压数据到内存中。使用Inflate算法将压缩的字节数组还原成原始字节数组。
+            /// </summary>
+            /// <param name="content">要解压的压缩字节数组。不能为null。</param>
+            /// <returns>解压后的原始字节数组。如果输入为空数组，则直接返回该空数组。如果解压过程中发生异常，则返回原始数组。</returns>
+            /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
+            /// <exception cref="InvalidDataException">当压缩数据格式无效或已损坏时抛出。</exception>
+            public static byte[] Decompress(byte[] content)
+            {
+                content.CheckNull(nameof(content));
+                if (content.Length == 0) return content;
+
+                var decompressor = new Inflater();
+                decompressor.SetInput(content, 0, content.Length);
+                using var decompressMemoryStream = new MemoryStream();
+
+                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+                try
+                {
+                    while (!decompressor.IsFinished)
+                    {
+                        var countLength = decompressor.Inflate(buffer);
+                        if (countLength == 0)
+                        {
+                            if (decompressor.IsNeedingInput)
+                                throw new InvalidDataException("解压缩需要更多输入数据");
+                            break;
+                        }
+                        decompressMemoryStream.Write(buffer, 0, countLength);
+                    }
+
+                    return decompressMemoryStream.ToArray();
+                }
+                catch (Exception e)
+                {
+                    // 记录日志后重新抛出，让调用方处理
+                    FuLog.Fatal($"解压缩失败: {e.Message}");
+                    throw new InvalidOperationException("数据解压缩失败", e);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer, true);
+                }
+            }
+
+            /// <summary> 
             /// 递归压缩文件夹的内部方法 
             /// </summary> 
             /// <param name="folderToZip">要压缩的文件夹路径</param> 
@@ -66,7 +270,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否成功</returns> 
             private static bool CompressDirectory(string folderToZip, ZipOutputStream zipStream, string parentFolderName)
             {
-                //这段是创建空文件夹,注释掉可以去掉空文件夹(因为在写入文件的时候也会创建文件夹)
+                // 这段是创建空文件夹,注释掉可以去掉空文件夹(因为在写入文件的时候也会创建文件夹)
                 if (parentFolderName.IsNotNullOrWhiteSpace())
                 {
                     var ent = new ZipEntry(parentFolderName + "/");
@@ -116,227 +320,6 @@ namespace FuFramework.Core.Runtime
                 }
 
                 return true;
-            }
-
-            /// <summary> 
-            /// 压缩文件夹  
-            /// </summary> 
-            /// <param name="folderToZip">要压缩的文件夹路径</param> 
-            /// <param name="zipFile">压缩文件完整路径</param> 
-            /// <param name="password">密码</param> 
-            /// <returns>是否成功</returns> 
-            public static bool CompressDirectory(string folderToZip, string zipFile, string password = null)
-            {
-                if (folderToZip.EndsWithFast(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWithFast("/"))
-                {
-                    folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
-                }
-
-                var zipStream = CompressDirectoryToZipStream(folderToZip, new FileStream(zipFile, FileMode.Create, FileAccess.Write, FileShare.Write),
-                    password);
-                if (zipStream == null)
-                {
-                    return false;
-                }
-
-                zipStream.Close();
-                return true;
-            }
-
-            /// <summary> 
-            /// 压缩文件 
-            /// </summary> 
-            /// <param name="fileToZip">要压缩的文件全名</param> 
-            /// <param name="zipFile">压缩后的文件名</param> 
-            /// <param name="password">密码</param> 
-            /// <returns>是否成功</returns> 
-            public static bool CompressFile(string fileToZip, string zipFile, string password = null)
-            {
-                if (!System.IO.File.Exists(fileToZip))
-                {
-                    return false;
-                }
-
-                using (var readStream = System.IO.File.OpenRead(fileToZip))
-                {
-                    byte[] buffer = new byte[readStream.Length];
-                    // ReSharper disable once UnusedVariable
-                    var read = readStream.Read(buffer, 0, buffer.Length);
-                    using (var writeStream = System.IO.File.Create(zipFile))
-                    {
-                        var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
-                        {
-                            DateTime = DateTime.Now,
-                            Size = readStream.Length
-                        };
-                        CRC.Reset();
-                        CRC.Update(buffer);
-                        entry.Crc = CRC.Value;
-                        using (var zipStream = new ZipOutputStream(writeStream))
-                        {
-                            if (!string.IsNullOrEmpty(password))
-                            {
-                                zipStream.Password = password;
-                            }
-
-                            zipStream.PutNextEntry(entry);
-                            zipStream.SetLevel(Deflater.BEST_COMPRESSION);
-                            zipStream.Write(buffer, 0, buffer.Length);
-                        }
-                    }
-                }
-
-                GC.Collect(1);
-
-                return true;
-            }
-
-            /// <summary> 
-            /// 解压功能(解压压缩文件到指定目录) 
-            /// </summary> 
-            /// <param name="fileToUnZip">待解压的文件</param> 
-            /// <param name="zipFolder">指定解压目标目录</param> 
-            /// <param name="password">密码</param> 
-            /// <returns>是否成功</returns> 
-            public static bool DecompressFile(string fileToUnZip, string zipFolder, string password = null)
-            {
-                if (!System.IO.File.Exists(fileToUnZip))
-                {
-                    return false;
-                }
-
-                if (!Directory.Exists(zipFolder))
-                {
-                    Directory.CreateDirectory(zipFolder);
-                }
-
-                if (!zipFolder.EndsWith("\\"))
-                {
-                    zipFolder += "\\";
-                }
-
-                using (var zipStream = new ZipInputStream(System.IO.File.OpenRead(fileToUnZip)))
-                {
-                    if (!string.IsNullOrEmpty(password))
-                    {
-                        zipStream.Password = password;
-                    }
-
-                    ZipEntry zipEntry;
-                    while ((zipEntry = zipStream.GetNextEntry()) != null)
-                    {
-                        if (zipEntry.IsDirectory) continue;
-                        if (string.IsNullOrEmpty(zipEntry.Name)) continue;
-
-                        string fileName = zipFolder + zipEntry.Name.Replace('/', '\\');
-                        var index = zipEntry.Name.LastIndexOf('/');
-                        if (index != -1)
-                        {
-                            string path = zipFolder + zipEntry.Name.Substring(0, index).Replace('/', '\\');
-                            Directory.CreateDirectory(path);
-                        }
-
-                        var bytes = new byte[zipEntry.Size];
-                        // ReSharper disable once UnusedVariable
-                        var read = zipStream.Read(bytes, 0, bytes.Length);
-                        System.IO.File.WriteAllBytes(fileName, bytes);
-                    }
-                }
-
-                GC.Collect(1);
-                return true;
-            }
-
-            /// <summary>
-            /// 用于压缩和解压缩操作的缓冲区大小（以字节为单位）
-            /// </summary>
-            private const int BufferSize = 8192;
-
-            /// <summary>
-            /// 压缩数据。使用Deflate算法将原始字节数组压缩成更小的字节数组。
-            /// </summary>
-            /// <param name="content">要压缩的原始字节数组。不能为null。</param>
-            /// <returns>压缩后的字节数组。如果输入为空数组，则直接返回该空数组。如果压缩过程中发生异常，则返回原始数组。</returns>
-            /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
-            public static byte[] Compress(byte[] content)
-            {
-                content.CheckNull(nameof(content));
-                if (content.Length == 0)
-                {
-                    return content;
-                }
-
-                var compressor = new Deflater();
-                compressor.SetLevel(Deflater.BEST_COMPRESSION);
-
-                compressor.SetInput(content);
-                compressor.Finish();
-
-                using var compressorMemoryStream = new MemoryStream(content.Length);
-
-                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-                try
-                {
-                    while (!compressor.IsFinished)
-                    {
-                        var count = compressor.Deflate(buffer);
-                        compressorMemoryStream.Write(buffer, 0, count);
-                    }
-
-                    return compressorMemoryStream.ToArray();
-                }
-                catch (Exception e)
-                {
-                    FuLog.Fatal(e);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                }
-
-                return content;
-            }
-
-            /// <summary>
-            /// 解压数据。使用Inflate算法将压缩的字节数组还原成原始字节数组。
-            /// </summary>
-            /// <param name="content">要解压的压缩字节数组。不能为null。</param>
-            /// <returns>解压后的原始字节数组。如果输入为空数组，则直接返回该空数组。如果解压过程中发生异常，则返回原始数组。</returns>
-            /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
-            /// <exception cref="InvalidDataException">当压缩数据格式无效或已损坏时抛出。</exception>
-            public static byte[] Decompress(byte[] content)
-            {
-                content.CheckNull(nameof(content));
-                if (content.Length == 0)
-                {
-                    return content;
-                }
-
-                var decompressor = new Inflater();
-                decompressor.SetInput(content, 0, content.Length);
-                using var decompressMemoryStream = new MemoryStream(content.Length);
-
-                var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-                try
-                {
-                    while (!decompressor.IsFinished)
-                    {
-                        var countLength = decompressor.Inflate(buffer);
-                        decompressMemoryStream.Write(buffer, 0, countLength);
-                    }
-
-                    return decompressMemoryStream.ToArray();
-                }
-                catch (Exception e)
-                {
-                    FuLog.Fatal(e);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer, true);
-                }
-
-                return content;
             }
         }
     }
