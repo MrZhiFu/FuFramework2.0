@@ -59,7 +59,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>反序列化后的对象。</returns>
             public static object ToObject(Type objectType, string json)
             {
-                if (objectType   == null) throw new FuException("目标对象类型为空.");
+                if (objectType == null) throw new FuException("目标对象类型为空.");
 
                 try
                 {

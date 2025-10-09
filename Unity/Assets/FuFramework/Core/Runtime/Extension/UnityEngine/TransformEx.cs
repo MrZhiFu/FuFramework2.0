@@ -38,7 +38,7 @@ namespace FuFramework.Core.Runtime
         public static void SetPositionX(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.x                = newValue;
+            v.x = newValue;
             transform.position = v;
         }
 
@@ -50,7 +50,7 @@ namespace FuFramework.Core.Runtime
         public static void SetPositionY(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.y                = newValue;
+            v.y = newValue;
             transform.position = v;
         }
 
@@ -62,7 +62,7 @@ namespace FuFramework.Core.Runtime
         public static void SetPositionZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.position;
-            v.z                = newValue;
+            v.z = newValue;
             transform.position = v;
         }
 
@@ -74,8 +74,8 @@ namespace FuFramework.Core.Runtime
         public static void AddPositionX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.x                += deltaValue;
-            transform.position =  v;
+            v.x += deltaValue;
+            transform.position = v;
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace FuFramework.Core.Runtime
         public static void AddPositionY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.y                += deltaValue;
-            transform.position =  v;
+            v.y += deltaValue;
+            transform.position = v;
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace FuFramework.Core.Runtime
         public static void AddPositionZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.position;
-            v.z                += deltaValue;
-            transform.position =  v;
+            v.z += deltaValue;
+            transform.position = v;
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalPositionX(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.x                     = newValue;
+            v.x = newValue;
             transform.localPosition = v;
         }
 
@@ -122,7 +122,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalPositionY(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.y                     = newValue;
+            v.y = newValue;
             transform.localPosition = v;
         }
 
@@ -134,7 +134,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalPositionZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.localPosition;
-            v.z                     = newValue;
+            v.z = newValue;
             transform.localPosition = v;
         }
 
@@ -146,8 +146,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalPositionX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.x                     += deltaValue;
-            transform.localPosition =  v;
+            v.x += deltaValue;
+            transform.localPosition = v;
         }
 
         /// <summary>
@@ -158,8 +158,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalPositionY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.y                     += deltaValue;
-            transform.localPosition =  v;
+            v.y += deltaValue;
+            transform.localPosition = v;
         }
 
         /// <summary>
@@ -170,8 +170,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalPositionZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localPosition;
-            v.z                     += deltaValue;
-            transform.localPosition =  v;
+            v.z += deltaValue;
+            transform.localPosition = v;
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalScaleX(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.x                  = newValue;
+            v.x = newValue;
             transform.localScale = v;
         }
 
@@ -194,7 +194,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalScaleY(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.y                  = newValue;
+            v.y = newValue;
             transform.localScale = v;
         }
 
@@ -206,7 +206,7 @@ namespace FuFramework.Core.Runtime
         public static void SetLocalScaleZ(this Transform transform, float newValue)
         {
             Vector3 v = transform.localScale;
-            v.z                  = newValue;
+            v.z = newValue;
             transform.localScale = v;
         }
 
@@ -218,8 +218,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalScaleX(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.x                  += deltaValue;
-            transform.localScale =  v;
+            v.x += deltaValue;
+            transform.localScale = v;
         }
 
         /// <summary>
@@ -230,8 +230,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalScaleY(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.y                  += deltaValue;
-            transform.localScale =  v;
+            v.y += deltaValue;
+            transform.localScale = v;
         }
 
         /// <summary>
@@ -242,8 +242,8 @@ namespace FuFramework.Core.Runtime
         public static void AddLocalScaleZ(this Transform transform, float deltaValue)
         {
             Vector3 v = transform.localScale;
-            v.z                  += deltaValue;
-            transform.localScale =  v;
+            v.z += deltaValue;
+            transform.localScale = v;
         }
 
         /// <summary>

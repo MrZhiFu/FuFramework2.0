@@ -104,7 +104,7 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static List<string> GetRuntimeTypeNames(Type type)
             {
-                var types   = GetTypes();
+                var types = GetTypes();
                 var results = new List<string>();
                 foreach (var t in types)
                 {

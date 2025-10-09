@@ -20,17 +20,17 @@ namespace FuFramework.Core.Runtime
                 get
                 {
 #if UNITY_ANDROID
-                return "Android";
+                    return "Android";
 #elif UNITY_STANDALONE_OSX
-                return "MacOs";
+                    return "MacOs";
 #elif UNITY_IOS || UNITY_IPHONE
-                return "iOS";
+                    return "iOS";
 #elif UNITY_WEBGL
-                return "WebGL";
+                    return "WebGL";
 #elif UNITY_STANDALONE_WIN
                     return "Windows";
 #else
-                return string.Empty;
+                    return string.Empty;
 #endif
                 }
             }
@@ -45,7 +45,7 @@ namespace FuFramework.Core.Runtime
 #if UNITY_EDITOR
                     return true;
 #else
-                return false;
+                    return false;
 #endif
                 }
             }
@@ -58,7 +58,7 @@ namespace FuFramework.Core.Runtime
                 get
                 {
 #if UNITY_ANDROID
-                return true;
+                    return true;
 #else
                     return false;
 #endif
@@ -73,7 +73,7 @@ namespace FuFramework.Core.Runtime
                 get
                 {
 #if UNITY_WEBGL
-                return true;
+                    return true;
 #else
                     return UnityEngine.Application.platform == RuntimePlatform.WebGLPlayer;
 #endif
@@ -107,7 +107,7 @@ namespace FuFramework.Core.Runtime
                 get
                 {
 #if UNITY_STANDALONE_OSX
-                return true;
+                    return true;
 #endif
                     return UnityEngine.Application.platform == RuntimePlatform.OSXPlayer;
                 }
@@ -121,7 +121,7 @@ namespace FuFramework.Core.Runtime
                 get
                 {
 #if UNITY_IOS
-                return true;
+                    return true;
 #else
                     return false;
 #endif
@@ -154,7 +154,7 @@ namespace FuFramework.Core.Runtime
                 return;
 #endif
 #if UNITY_IOS
-            open_url(url);
+                open_url(url);
 #else
                 UnityEngine.Application.OpenURL(url);
 #endif

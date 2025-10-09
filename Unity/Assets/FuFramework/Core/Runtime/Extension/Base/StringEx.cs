@@ -79,18 +79,7 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 字符串转字符数组
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
-        public static IEnumerable<byte> ToBytes(this string self)
-        {
-            byte[] byteArray = Encoding.Default.GetBytes(self);
-            return byteArray;
-        }
-
-        /// <summary>
-        /// 字符串转字符数组
+        /// 字符串转字节数组
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
@@ -101,7 +90,7 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 字符串转UTF8字符数组
+        /// 字符串转UTF8字节数组
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>

@@ -29,8 +29,6 @@ namespace FuFramework.UI.Runtime
             _ = typeof(CustomLoader);
             _ = typeof(FuiEventRegister);
             _ = typeof(FuiPackageManager);
-            _ = typeof(FuiPathFinderHelper);
-            _ = typeof(GObjectExtensions);
             _ = typeof(ICustomComp);
             _ = typeof(LRUCache);
             _ = typeof(OpenUIFailureEventArgs);

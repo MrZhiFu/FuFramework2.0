@@ -33,7 +33,7 @@ namespace FuFramework.Core.Runtime
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key, Func<TKey, TValue> valueGetter)
         {
             if (self.TryGetValue(key, out var value)) return value;
-            value     = valueGetter(key);
+            value = valueGetter(key);
             self[key] = value;
             return value;
         }
@@ -51,7 +51,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static int RemoveIf<TKey, TValue>(this Dictionary<TKey, TValue> self, Func<TKey, TValue, bool> predict)
         {
-            var count  = 0;
+            var count = 0;
             var remove = new HashSet<TKey>();
             foreach (var kv in self.Where(kv => predict(kv.Key, kv.Value)))
             {
@@ -81,7 +81,7 @@ namespace FuFramework.Core.Runtime
         {
             return self is not { Count: > 0 };
         }
-        
+
         /// <summary>
         /// 根据条件去重集合内的元素
         /// </summary>
@@ -108,20 +108,26 @@ namespace FuFramework.Core.Runtime
         #region List<T>
 
         /// <summary>
-        /// 打乱
+        /// 打乱一个列表(洗牌算法)
         /// </summary>
-        public static void Shuffer<T>(this List<T> list)
+        public static void Shuffle<T>(this List<T> list)
         {
-            int n = list.Count;
-            var r = ThreadLocalRandomEx.Current;
-            for (int i = 0; i < n; i++)
+            if (list.Count <= 1) return; // 0个或1个元素不需要洗牌
+
+            var random = ThreadLocalRandomEx.Current;
+            for (var i = 0; i < list.Count; i++)
             {
-                int rand = r.Next(i, n);
-                (list[i], list[rand]) = (list[rand], list[i]);
+                var randomIdx = random.Next(i, list.Count);
+                (list[i], list[randomIdx]) = (list[randomIdx], list[i]);
             }
         }
 
-
+        /// <summary>
+        /// 根据条件移除列表内的元素
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="condition"></param>
+        /// <typeparam name="T"></typeparam>
         public static void RemoveIf<T>(this List<T> list, Predicate<T> condition)
         {
             var idx = list.FindIndex(condition);
@@ -132,7 +138,7 @@ namespace FuFramework.Core.Runtime
             }
         }
 
-        private static readonly StringBuilder ListToStringBuilder = new StringBuilder();
+        private static readonly StringBuilder ListToStringBuilder = new();
 
         /// <summary>
         /// 将列表转换为以指定字符串分割的字符串

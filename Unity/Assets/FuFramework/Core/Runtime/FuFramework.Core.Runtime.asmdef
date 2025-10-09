@@ -4,7 +4,8 @@
     "references": [
         "BetterStreamingAssets",
         "UniTask.Runtime",
-        "FuFramework.ReadAssets.Runtime"
+        "FuFramework.ReadAssets.Runtime",
+        "FairyGUI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
