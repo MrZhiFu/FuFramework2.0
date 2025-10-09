@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using FuFramework.ReadAssets.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -141,12 +142,11 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static bool IsExists(string path)
             {
-#if ENABLE_GAME_FRAME_X_READ_ASSETS
-            if (IsAndroidReadOnlyPath(path, out var readPath))
-            {
-                return BlankReadAssets.BlankReadAssets.IsFileExists(readPath);
-            }
-#endif
+                if (IsAndroidReadOnlyPath(path, out var readPath))
+                {
+                    return BlankReadAssets.IsFileExists(readPath);
+                }
+
                 return System.IO.File.Exists(path);
             }
 
@@ -190,7 +190,7 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static byte[] ReadAllBytes(string path)
             {
-#if ENABLE_GAME_FRAME_X_READ_ASSETS
+#if ENABLE_FU_FRAMEWORK_READ_ASSETS
             if (IsAndroidReadOnlyPath((path), out var readPath))
             {
                 return BlankReadAssets.BlankReadAssets.Read(readPath);

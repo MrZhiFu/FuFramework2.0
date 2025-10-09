@@ -9,7 +9,7 @@ namespace FuFramework.Core.Runtime
     public static class ModulePriority
     {
         /// <summary>
-        /// 系统级：输入、网络
+        /// 系统级：输入
         /// </summary>
         public const int System = 100;
 

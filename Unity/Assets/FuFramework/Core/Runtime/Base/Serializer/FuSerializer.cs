@@ -6,6 +6,12 @@ namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 游戏框架序列化器基类。
+    /// 功能：
+    /// 1.定义序列化和反序列化的回调函数。
+    /// 2.提供注册序列化和反序列化的回调函数的接口。
+    /// 3.提供序列化和反序列化的接口。
+    /// 4.提供尝试从指定流获取指定键的值的接口。
+    /// 5.提供数据头标识的接口，子类必须实现，用于区分不同的数据。
     /// </summary>
     /// <typeparam name="T">要序列化的数据类型。</typeparam>
     public abstract class FuSerializer<T>
@@ -14,11 +20,37 @@ namespace FuFramework.Core.Runtime
         private byte m_LatestSerializeCbVersion;
 
 
+        /// <summary>
+        /// 序列化回调函数。
+        /// </summary>
+        /// <param name="stream">目标流。</param>
+        /// <param name="data">要序列化的数据。</param>
+        /// <returns>是否序列化数据成功。</returns>
+        public delegate bool SerializeCallback(Stream stream, T data);
+        
         /// 序列化回调函数的字典, key:回调函数的版本--Value:回调函数
         private readonly Dictionary<byte, SerializeCallback> m_SerializeCbDict;
+        
+
+        /// <summary>
+        /// 反序列化回调函数。
+        /// </summary>
+        /// <param name="stream">指定流。</param>
+        /// <returns>反序列化的数据。</returns>
+        public delegate T DeserializeCallback(Stream stream);
 
         /// 反序列化回调函数的字典, key:回调函数的版本--Value:回调函数
         private readonly Dictionary<byte, DeserializeCallback> m_DeserializeCbDict;
+
+
+        /// <summary>
+        /// 尝试从指定流获取指定键的值回调函数。
+        /// </summary>
+        /// <param name="stream">指定流。</param>
+        /// <param name="key">指定键。</param>
+        /// <param name="value">指定键的值。</param>
+        /// <returns>是否从指定流获取指定键的值成功。</returns>
+        public delegate bool TryGetValueCallback(Stream stream, string key, out object value);
 
         /// 取值回调函数的字典, key:回调函数的版本--Value:回调函数
         private readonly Dictionary<byte, TryGetValueCallback> m_TryGetValueCbDict;
@@ -36,29 +68,6 @@ namespace FuFramework.Core.Runtime
             m_TryGetValueCbDict = new Dictionary<byte, TryGetValueCallback>();
         }
 
-        /// <summary>
-        /// 序列化回调函数。
-        /// </summary>
-        /// <param name="stream">目标流。</param>
-        /// <param name="data">要序列化的数据。</param>
-        /// <returns>是否序列化数据成功。</returns>
-        public delegate bool SerializeCallback(Stream stream, T data);
-
-        /// <summary>
-        /// 反序列化回调函数。
-        /// </summary>
-        /// <param name="stream">指定流。</param>
-        /// <returns>反序列化的数据。</returns>
-        public delegate T DeserializeCallback(Stream stream);
-
-        /// <summary>
-        /// 尝试从指定流获取指定键的值回调函数。
-        /// </summary>
-        /// <param name="stream">指定流。</param>
-        /// <param name="key">指定键。</param>
-        /// <param name="value">指定键的值。</param>
-        /// <returns>是否从指定流获取指定键的值成功。</returns>
-        public delegate bool TryGetValueCallback(Stream stream, string key, out object value);
 
         /// <summary>
         /// 注册序列化时采用的回调函数。

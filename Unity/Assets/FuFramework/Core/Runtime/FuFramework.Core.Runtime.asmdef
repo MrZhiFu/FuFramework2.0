@@ -14,17 +14,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.gameframex.unity.demigiant.dotween",
-            "expression": "",
-            "define": "ENABLE_GAME_FRAME_X_DO_TWEEN"
-        },
-        {
-            "name": "com.gameframex.unity.readassets",
-            "expression": "",
-            "define": "ENABLE_GAME_FRAME_X_READ_ASSETS"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
