@@ -366,6 +366,8 @@ namespace FuFramework.Core.Runtime
             /// <returns>跨越的天数。</returns>
             public static int GetCrossDays(DateTime startTime, DateTime endTime, int hour = 0)
             {
+                if (hour is < 0 or > 23)
+                    throw new ArgumentOutOfRangeException(nameof(hour), "小时必须在0-23之间");
                 var days = (int)(endTime.Date - startTime.Date).TotalDays;
                 if (startTime.Hour < hour) days++;
                 if (endTime.Hour < hour) days--;
