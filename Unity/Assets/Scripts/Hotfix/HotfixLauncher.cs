@@ -11,6 +11,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
+using LuBan.Runtime;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_BINARY_CONFIG
@@ -78,7 +79,8 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<ByteBuf> ConfigBufferLoader(string file)
         {
-            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(Utility.Asset.Path.GetConfigPath(file, Utility.Const.FileNameSuffix.Binary));
+            var configPath = Utility.AssetPath.GetConfigPath(file, Utility.Const.FileNameSuffix.Binary);
+            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
             return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
         }
 #else

@@ -14,7 +14,7 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 #endif
 
-namespace KungPuCore
+namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 防止时间作弊系统。
