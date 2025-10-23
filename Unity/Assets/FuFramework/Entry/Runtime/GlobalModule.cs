@@ -18,6 +18,7 @@ using FuFramework.Coroutine.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
+using FuFramework.Model.Runtime;
 using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -134,6 +135,11 @@ namespace FuFramework.Entry.Runtime
         /// 获取本地持久化管理模块。
         /// </summary>
         public static SettingManager SettingModule => ModuleManager.GetModule<SettingManager>();
+        
+        /// <summary>
+        /// 获取数据模型管理模块。
+        /// </summary>
+        public static ModelManager ModelModule => ModuleManager.GetModule<ModelManager>();
 
         ///// <summary>
         ///// 获取红点管理模块。

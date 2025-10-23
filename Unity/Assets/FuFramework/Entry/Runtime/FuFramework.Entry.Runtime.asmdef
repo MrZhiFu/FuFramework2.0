@@ -22,7 +22,8 @@
         "FuFramework.Config.Runtime",
         "FuFramework.Network.Runtime",
         "FuFramework.ReferencePool.Runtime",
-        "FuFramework.ObjectPool.Runtime"
+        "FuFramework.ObjectPool.Runtime",
+        "FuFramework.Model.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
