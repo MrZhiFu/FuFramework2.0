@@ -1,2 +1,9 @@
-dotnet.exe ./Tools/Luban.dll --target server --dataTarget bin --codeTarget cs-dotnet-bin --xargs outputDataDir=../Server/GameFrameX.Config/Json --xargs tableImporter.name=gameframex --xargs outputCodeDir=../Server/GameFrameX.Config/Config --conf ./Luban.conf
+dotnet.exe ./Tools/Luban.dll ^
+    -t server ^
+    -d bin ^
+    -c cs-dotnet-bin ^
+    -x outputDataDir=../Server/GameFrameX.Config/Json ^
+    -x outputCodeDir=../Server/GameFrameX.Config/Config ^
+    -x tableImporter.name=gameframex ^
+    --conf ./Luban.conf
 pause
