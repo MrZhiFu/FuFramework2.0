@@ -133,7 +133,21 @@ namespace FuFramework.Core.Runtime
             /// 删除文件
             /// </summary>
             /// <param name="path">文件路径</param>
-            public static void Delete(string path) => System.IO.File.Delete(path);
+            public static void Delete(string path)
+            {
+                if (!System.IO.File.Exists(path)) return;
+                System.IO.File.Delete(path);
+            }
+
+            /// <summary>
+            /// 删除文件夹
+            /// </summary>
+            /// <param name="path">文件路径</param>
+            public static void DeleteDir(string path)
+            {
+                if (!Directory.Exists(path)) return;
+                Directory.Delete(path, true);
+            }
 
             /// <summary>
             /// 判断文件是否存在

@@ -21,7 +21,7 @@ namespace FuFramework.Model.Runtime
         protected override int Priority => ModulePriority.Game;
 
         /// 存储所有的Model字典。Key：Model类型， value：Model
-        private readonly Dictionary<Type, BaseModel> m_ModelDic = new();
+        private readonly Dictionary<Type, BaseModel> m_ModelDict = new();
 
         /// <summary>
         /// 初始化。
@@ -42,12 +42,12 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         public void Clear()
         {
-            foreach (var (_, model) in m_ModelDic)
+            foreach (var (_, model) in m_ModelDict)
             {
                 model.OnDispose();
             }
 
-            m_ModelDic.Clear();
+            m_ModelDict.Clear();
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace FuFramework.Model.Runtime
         {
             var key = typeof(T);
 
-            if (m_ModelDic.TryGetValue(key, out var model))
+            if (m_ModelDict.TryGetValue(key, out var model))
                 return model as T;
             return CreateModel<T>();
         }
@@ -72,12 +72,12 @@ namespace FuFramework.Model.Runtime
         {
             var key = typeof(T);
 
-            if (!m_ModelDic.ContainsKey(key))
+            if (!m_ModelDict.ContainsKey(key))
                 FuLog.Error($"删除Model失败! '{key.Name}' 不存在");
 
-            var model = m_ModelDic[key];
+            var model = m_ModelDict[key];
 
-            if (m_ModelDic.Remove(key))
+            if (m_ModelDict.Remove(key))
                 model.OnDispose();
         }
 
@@ -90,13 +90,13 @@ namespace FuFramework.Model.Runtime
         {
             var key = typeof(T);
 
-            if (m_ModelDic.ContainsKey(key))
+            if (m_ModelDict.ContainsKey(key))
                 FuLog.Error($"创建Model失败! '{key.Name}' 已存在");
 
             var model = new T();
             model.Init();
 
-            m_ModelDic.Add(key, model);
+            m_ModelDict.Add(key, model);
             return model;
         }
     }

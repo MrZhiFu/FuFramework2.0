@@ -9,7 +9,6 @@
         "FuFramework.Timer.Runtime",
         "FuFramework.FSM.Runtime",
         "FuFramework.Procedure.Runtime",
-        "FuFramework.Setting.Runtime",
         "FuFramework.Mono.Runtime",
         "FuFramework.Coroutine.Runtime",
         "FuFramework.Download.Runtime",
@@ -23,7 +22,8 @@
         "FuFramework.Network.Runtime",
         "FuFramework.ReferencePool.Runtime",
         "FuFramework.ObjectPool.Runtime",
-        "FuFramework.Model.Runtime"
+        "FuFramework.Model.Runtime",
+        "FuFramework.Save.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

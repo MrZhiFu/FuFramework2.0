@@ -175,8 +175,7 @@ namespace FuFramework.Core.Runtime
             var header1 = (byte)stream.ReadByte();
             var header2 = (byte)stream.ReadByte();
 
-            if (header0 != header[0] || header1 != header[1] || header2 != header[2])
-                return false;
+            if (header0 != header[0] || header1 != header[1] || header2 != header[2]) return false;
 
             var version = (byte)stream.ReadByte(); // 版本号
             return m_TryGetValueCbDict.TryGetValue(version, out var callback) && callback(stream, key, out value);

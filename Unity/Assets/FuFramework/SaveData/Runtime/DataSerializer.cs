@@ -1,22 +1,22 @@
 ﻿using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Setting.Runtime
+namespace FuFramework.SaveData.Runtime
 {
     /// <summary>
-    /// 默认游戏配置序列化器。
+    /// 数据序列化器。
     /// </summary>
-    public sealed class SettingSerializer : FuSerializer<Setting>
+    public sealed class DataSerializer : FuSerializer<Data>
     {
         /// <summary>
-        /// 默认游戏配置头标识。
+        /// 默认游戏数据头标识。
         /// </summary>
         private static readonly byte[] Header = { (byte)'G', (byte)'F', (byte)'S' };
 
         /// <summary>
-        /// 获取默认游戏配置头标识。
+        /// 获取默认游戏数据头标识。
         /// </summary>
-        /// <returns>默认游戏配置头标识。</returns>
+        /// <returns>默认游戏数据头标识。</returns>
         protected override byte[] GetHeader() => Header;
     }
 }

@@ -1,10 +1,10 @@
 {
-    "name": "FuFramework.Setting.Editor",
-    "rootNamespace": "FuFramework.Setting.Editor",
+    "name": "FuFramework.Save.Editor",
+    "rootNamespace": "FuFramework.Save.Editor",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",
-        "FuFramework.Setting.Runtime"
+        "FuFramework.Save.Runtime"
     ],
     "includePlatforms": [
         "Editor"

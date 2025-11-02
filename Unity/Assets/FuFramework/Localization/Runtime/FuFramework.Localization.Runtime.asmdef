@@ -5,7 +5,7 @@
         "FuFramework.Core.Runtime",
         "FuFramework.Event.Runtime",
         "FuFramework.Asset.Runtime",
-        "FuFramework.Setting.Runtime",
+        "FuFramework.Save.Runtime",
         "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],

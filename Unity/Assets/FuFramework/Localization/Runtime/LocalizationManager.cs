@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.Setting.Runtime;
+using FuFramework.SaveData.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Localization.Runtime
@@ -10,7 +10,7 @@ namespace FuFramework.Localization.Runtime
     /// <summary>
     /// 本地化管理器。
     /// </summary>
-    [ModuleDependency(typeof(EventManager), typeof(SettingManager))]
+    [ModuleDependency(typeof(EventManager), typeof(SaveManager))]
     public sealed class LocalizationManager : FuModule
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace FuFramework.Localization.Runtime
         protected override int Priority => ModulePriority.Game;
         
         private EventManager m_EventManager; // 事件组件
-        private SettingManager m_SettingManager; // Setting组件
+        private SaveManager m_saveManager; // Setting组件
 
         private ELanguage m_Language; // 本地化语言
 
@@ -37,8 +37,8 @@ namespace FuFramework.Localization.Runtime
                 m_Language = value;
 
                 // 保存设置
-                m_SettingManager.SetString("Language", value.ToString());
-                m_SettingManager.Save();
+                m_saveManager.SetString(SaveManager.GameSettingName, "Language", value.ToString());
+                m_saveManager.Save(SaveManager.GameSettingName);
 
                 // 发送本地化语言改变事件
                 var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
@@ -109,9 +109,9 @@ namespace FuFramework.Localization.Runtime
         protected override void OnInit()
         {
             m_EventManager = ModuleManager.GetModule<EventManager>();
-            m_SettingManager = ModuleManager.GetModule<SettingManager>();
+            m_saveManager = ModuleManager.GetModule<SaveManager>();
             
-            var value = m_SettingManager.GetString("Language");
+            var value = m_saveManager.GetString(SaveManager.GameSettingName, "Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else

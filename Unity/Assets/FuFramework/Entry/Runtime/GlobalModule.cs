@@ -11,7 +11,7 @@ using FuFramework.Asset.Runtime;
 using FuFramework.Config.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Network.Runtime;
-using FuFramework.Setting.Runtime;
+using FuFramework.SaveData.Runtime;
 using FuFramework.Download.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Coroutine.Runtime;
@@ -134,7 +134,7 @@ namespace FuFramework.Entry.Runtime
         /// <summary>
         /// 获取本地持久化管理模块。
         /// </summary>
-        public static SettingManager SettingModule => ModuleManager.GetModule<SettingManager>();
+        public static SaveManager SaveModule => ModuleManager.GetModule<SaveManager>();
         
         /// <summary>
         /// 获取数据模型管理模块。

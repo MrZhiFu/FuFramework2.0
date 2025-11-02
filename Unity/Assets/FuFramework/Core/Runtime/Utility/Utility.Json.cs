@@ -12,7 +12,7 @@ namespace FuFramework.Core.Runtime
         /// 1. 使用Json辅助器序列化对象为 JSON 字符串。
         /// 2. 使用Json辅助器反序列化 JSON 字符串为对象。
         /// </summary>
-        public static partial class Json
+        public static class Json
         {
             /// <summary>
             /// 将对象序列化为 JSON 字符串。

@@ -188,7 +188,7 @@ namespace FuFramework.Core.Runtime
                     return;
                 }
 
-                Debug.Log($"找到<color=#00FBD5> {moduleTypes.Count} </color>个FuModule类型");
+                Debug.Log($"找到<color=#00FBD5> {moduleTypes.Count} </color>个框架模块");
 
                 foreach (var fuModuleType in moduleTypes)
                 {

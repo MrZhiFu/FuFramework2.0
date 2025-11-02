@@ -1,14 +1,14 @@
 ﻿## HOMEPAGE
 
-GameFrameX 的 Setting 配置信息组件
+框架本地数据管理组件, 负责管理游戏的本地数据，包括游戏存档、设置等。
 
-**Setting 配置信息组件 (Setting Component)** - 负责管理游戏的配置信息，允许您保存和获取各种类型的配置数据。
+**SavaManager 本地数据管理器** - 负责管理游戏的本地数据，允许您保存和获取各种类型的本地数据。
 
 # 使用文档(文档编写于GPT4)
 
-# SettingComponent 类说明文档
+# SavaManager 类说明文档
 
-**SettingComponent** 是游戏框架的一个核心组件，它负责管理游戏的配置信息，允许您保存和获取各种类型的配置数据。
+**SavaManager** 是游戏框架的一个核心组件，它负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
 
 ## 功能概述
 
@@ -78,48 +78,48 @@ GameFrameX 的 Setting 配置信息组件
 
 ## 使用示例
 
-通过 **SettingComponent**，您可以轻松地管理游戏设置。以下是一些使用示例：
+通过 **SavaManager**，您可以轻松地管理游戏设置。以下是一些使用示例：
 
 ### 保存和加载设置
 
 ```cs
-// 创建SettingComponent实例
-SettingComponent settingComponent = new SettingComponent();
+// 创建SavaManager实例
+SavaManager SavaManager = new SavaManager();
 
 // 加载设置
-settingComponent.Start();
+SavaManager.Start();
 
 // 修改一些设置
-settingComponent.SetBool("IsFullScreen", true);
-settingComponent.SetInt("ResolutionWidth", 1920);
-settingComponent.SetFloat("Volume", 0.8f);
-settingComponent.SetString("PlayerName", "PlayerOne");
+SavaManager.SetBool("IsFullScreen", true);
+SavaManager.SetInt("ResolutionWidth", 1920);
+SavaManager.SetFloat("Volume", 0.8f);
+SavaManager.SetString("PlayerName", "PlayerOne");
 
 // 保存修改后的设置
-settingComponent.Save();
+SavaManager.Save();
 ```
 
 ### 查询和获取设置值
 
 ```cs
 // 检查是否存在某个设置
-bool hasVolumeSetting = settingComponent.HasSetting("Volume");
+bool hasVolumeSetting = SavaManager.HasSetting("Volume");
 
 // 获取设置项的值
-float volume = settingComponent.GetFloat("Volume", 0.5f); // 如果不存在，则返回0.5f
+float volume = SavaManager.GetFloat("Volume", 0.5f); // 如果不存在，则返回0.5f
 ```
 
 ### 删除设置
 
 ```cs
 // 移除某个设置
-settingComponent.RemoveSetting("PlayerName");
+SavaManager.RemoveSetting("PlayerName");
 
 // 移除所有设置
-settingComponent.RemoveAllSettings();
+SavaManager.RemoveAllSettings();
 ```
 
-请注意，本示例仅用于演示目的，实际使用时您需要将 **SettingComponent** 添加到您的游戏对象中，并通过Unity的生命周期管理其状态。
+请注意，本示例仅用于演示目的，实际使用时您需要将 **SavaManager** 添加到您的游戏对象中，并通过Unity的生命周期管理其状态。
 
 # 使用方式(任选其一)
 
