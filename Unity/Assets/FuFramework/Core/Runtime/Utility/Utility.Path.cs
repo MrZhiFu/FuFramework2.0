@@ -23,7 +23,7 @@ namespace FuFramework.Core.Runtime
             /// <summary>
             /// 热更新资源路径(应用程序外部资源路径存放路径)
             /// </summary>
-            public static string AppHotfixResPath => $"{UnityEngine.Application.persistentDataPath}/{UnityEngine.Application.productName}/";
+            public static string AppHotfixResPath => GetRegularPath(UnityEngine.Application.persistentDataPath);
 
             /// <summary>
             /// 应用程序内部资源路径存放路径
