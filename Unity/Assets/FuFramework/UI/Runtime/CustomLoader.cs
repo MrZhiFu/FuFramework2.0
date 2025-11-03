@@ -36,15 +36,15 @@ namespace FuFramework.UI.Runtime
             }
         }
 
-        private readonly int m_maxCapacity; // 最大容量
-        private readonly Dictionary<string, CacheItem> m_cacheDict; // 缓存字典，Key为资源路径，Value为缓存项
-        private readonly LinkedList<CacheItem> m_lruList; // 最近使用列表
+        private readonly int m_MaxCapacity; // 最大容量
+        private readonly Dictionary<string, CacheItem> m_CacheDict; // 缓存字典，Key为资源路径，Value为缓存项
+        private readonly LinkedList<CacheItem> m_LruList; // 最近使用列表
 
         public LRUCache(int maxCapacity)
         {
-            m_maxCapacity = maxCapacity;
-            m_cacheDict = new Dictionary<string, CacheItem>();
-            m_lruList = new LinkedList<CacheItem>();
+            m_MaxCapacity = maxCapacity;
+            m_CacheDict = new Dictionary<string, CacheItem>();
+            m_LruList = new LinkedList<CacheItem>();
         }
 
         /// <summary>
@@ -55,11 +55,11 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         public NTexture Get(string key)
         {
-            if (!m_cacheDict.TryGetValue(key, out var item)) return null; // 纹理未找到
+            if (!m_CacheDict.TryGetValue(key, out var item)) return null; // 纹理未找到
 
             // 移动到最近使用的位置
-            m_lruList.Remove(item);
-            m_lruList.AddFirst(item);
+            m_LruList.Remove(item);
+            m_LruList.AddFirst(item);
             return item.Texture;
         }
 
@@ -72,23 +72,23 @@ namespace FuFramework.UI.Runtime
         {
             if (key == null) return;
 
-            if (m_cacheDict.TryGetValue(key, out var cacheItem))
+            if (m_CacheDict.TryGetValue(key, out var cacheItem))
             {
                 // 更新已有项并移动到最近使用位置
-                m_lruList.Remove(cacheItem);
+                m_LruList.Remove(cacheItem);
                 cacheItem.Texture = texture;
-                m_lruList.AddFirst(cacheItem);
+                m_LruList.AddFirst(cacheItem);
             }
             else
             {
                 // 如果超过最大数量，则移除最少使用的项
-                if (m_cacheDict.Count >= m_maxCapacity)
+                if (m_CacheDict.Count >= m_MaxCapacity)
                     RemoveLeastRecentlyUsed();
 
                 // 添加新项
                 var newItem = new CacheItem(key, texture);
-                m_cacheDict[key] = newItem;
-                m_lruList.AddFirst(newItem);
+                m_CacheDict[key] = newItem;
+                m_LruList.AddFirst(newItem);
             }
         }
 
@@ -97,12 +97,12 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private void RemoveLeastRecentlyUsed()
         {
-            if (m_lruList.Count <= 0) return;
+            if (m_LruList.Count <= 0) return;
 
-            var leastUsedItem = m_lruList.Last.Value;
+            var leastUsedItem = m_LruList.Last.Value;
 
-            m_lruList.RemoveLast();
-            m_cacheDict.Remove(leastUsedItem.Key);
+            m_LruList.RemoveLast();
+            m_CacheDict.Remove(leastUsedItem.Key);
             leastUsedItem.Texture.Dispose();
 
             if (leastUsedItem.Texture.nativeTexture.IsNotNull())
@@ -117,7 +117,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void Clear()
         {
-            foreach (var item in m_lruList)
+            foreach (var item in m_LruList)
             {
                 item.Texture.Dispose();
                 if (item.Texture.nativeTexture.IsNotNull())
@@ -127,8 +127,8 @@ namespace FuFramework.UI.Runtime
                     Object.Destroy(item.Texture.alphaTexture); // 释放纹理资源
             }
 
-            m_cacheDict.Clear();
-            m_lruList.Clear();
+            m_CacheDict.Clear();
+            m_LruList.Clear();
         }
     }
 
@@ -146,7 +146,7 @@ namespace FuFramework.UI.Runtime
         private static readonly LRUCache Cache = new(100);
 
         /// <summary>
-        /// 缓存路径--"Application.persistentDataPath}/{game}/cache/images/"
+        /// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
         /// </summary>
         private static string m_CachePath;
 
@@ -164,9 +164,7 @@ namespace FuFramework.UI.Runtime
                 return;
             }
             
-            m_CachePath = Utility.Path.AppHotfixResPath + "/cache/images/";
-            if (!Directory.Exists(m_CachePath)) 
-                Directory.CreateDirectory(m_CachePath);
+            m_CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
         }
 
         /// <summary>
@@ -207,6 +205,9 @@ namespace FuFramework.UI.Runtime
                         }
                         else
                         {
+                            if (!Directory.Exists(m_CachePath)) 
+                                Directory.CreateDirectory(m_CachePath);
+                            
                             var webBufferResult = await ModuleManager.GetModule<WebManager>().GetToBytes(url, null);
                             Utility.File.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
