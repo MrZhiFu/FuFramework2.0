@@ -25,7 +25,7 @@ namespace FuFramework.Download.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取下载后存放路径。
+        /// 获取下载后存放全路径。
         /// </summary>
         public string DownloadPath { get; private set; }
 
@@ -49,18 +49,18 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId = 0;
+            SerialId     = 0;
             DownloadPath = null;
-            DownloadUri = null;
+            DownloadUri  = null;
             ErrorMessage = null;
-            UserData = null;
+            UserData     = null;
         }
 
         /// <summary>
         /// 创建下载失败事件。
         /// </summary>
         /// <param name="serialId">下载任务的序列编号。</param>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadPath">下载后存放全路径。</param>
         /// <param name="downloadUri">下载地址。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <param name="userData">用户自定义数据。</param>

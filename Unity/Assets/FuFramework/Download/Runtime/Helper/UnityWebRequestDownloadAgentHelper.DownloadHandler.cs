@@ -34,9 +34,9 @@ namespace FuFramework.Download.Runtime
             /// <returns></returns>
             protected override bool ReceiveData(byte[] datas, int dataLength)
             {
-                if (!m_Owner || m_Owner.m_UnityWebRequest == null || dataLength <= 0) 
+                if (!m_Owner || m_Owner.m_UnityWebRequest == null || dataLength <= 0)
                     return base.ReceiveData(datas, dataLength);
-                
+
                 // 发送更新数据流事件
                 var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(datas, 0, dataLength);
                 m_EventManager.Fire(this, downloadAgentHelperUpdateBytesEventArgs);

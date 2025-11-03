@@ -13,7 +13,7 @@ namespace FuFramework.Download.Runtime
         /// 下载代理辅助器完成事件编号。
         /// </summary>
         public override string Id => EventId;
-        
+
         /// <summary>
         /// 下载代理辅助器完成事件编号。
         /// </summary>
@@ -36,7 +36,7 @@ namespace FuFramework.Download.Runtime
         /// <returns>创建的下载代理辅助器完成事件。</returns>
         public static DownloadAgentHelperCompleteEventArgs Create(long length)
         {
-            if (length < 0L) throw new FuException("Length is invalid.");
+            if (length < 0L) throw new FuException("下载的数据大小无效，不能为负数.");
             var downloadAgentHelperCompleteEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();
             downloadAgentHelperCompleteEventArgs.Length = length;
             return downloadAgentHelperCompleteEventArgs;

@@ -18,6 +18,10 @@ namespace FuFramework.Download.Runtime
                 /// 下载逻辑流逝时间，无时间缩放效果，以秒为单位
                 public float ElapseSeconds { get; private set; }
 
+                /// <summary>
+                /// 创建一个下载计数器节点
+                /// </summary>
+                /// <returns></returns>
                 public static DownloadCounterNode Create()
                 {
                     return ReferencePool.Runtime.ReferencePool.Acquire<DownloadCounterNode>();

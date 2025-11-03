@@ -52,17 +52,17 @@ namespace FuFramework.Download.Runtime
             {
                 m_Helper = downloadAgentHelper ?? throw new FuException("[DownloadAgent]下载代理辅助器为空!");
 
-                Task = null;
-                m_FileStream = null;
-                m_WaitFlushSize = 0;
-                WaitTime = 0f;
-                StartLength = 0L;
+                Task             = null;
+                m_FileStream     = null;
+                m_WaitFlushSize  = 0;
+                WaitTime         = 0f;
+                StartLength      = 0L;
                 DownloadedLength = 0L;
-                SavedLength = 0L;
-                m_Disposed = false;
+                SavedLength      = 0L;
+                m_Disposed       = false;
 
-                DownloadAgentStart = null;
-                DownloadAgentUpdate = null;
+                DownloadAgentStart   = null;
+                DownloadAgentUpdate  = null;
                 DownloadAgentSuccess = null;
                 DownloadAgentFailure = null;
             }
@@ -102,10 +102,10 @@ namespace FuFramework.Download.Runtime
             /// </summary>
             public void Initialize()
             {
-                m_EventManager.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId, _OnDownloadAgentHelperUpdateBytes);
+                m_EventManager.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
                 m_EventManager.Subscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-                m_EventManager.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId, _OnDownloadAgentHelperComplete);
-                m_EventManager.Subscribe(DownloadAgentHelperErrorEventArgs.EventId, _OnDownloadAgentHelperError);
+                m_EventManager.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
+                m_EventManager.Subscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
             }
 
             /// <summary>
@@ -136,10 +136,10 @@ namespace FuFramework.Download.Runtime
             {
                 Dispose();
 
-                m_EventManager.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId, _OnDownloadAgentHelperUpdateBytes);
+                m_EventManager.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
                 m_EventManager.Unsubscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-                m_EventManager.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId, _OnDownloadAgentHelperComplete);
-                m_EventManager.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId, _OnDownloadAgentHelperError);
+                m_EventManager.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
+                m_EventManager.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
             }
 
             /// <summary>
@@ -152,7 +152,7 @@ namespace FuFramework.Download.Runtime
                 Task = task ?? throw new FuException("[DownloadManager.DownloadAgent] 任务不能为空.");
 
                 Task.Status = DownloadTaskStatus.Doing;
-                var downloadFile = $"{Task.DownloadedPath}.download";
+                var downloadFile = $"{Task.DownloadedFullPath}.download";
 
                 try
                 {
@@ -160,17 +160,17 @@ namespace FuFramework.Download.Runtime
                     {
                         m_FileStream = File.OpenWrite(downloadFile);
                         m_FileStream.Seek(0L, SeekOrigin.End);
-                        StartLength = SavedLength = m_FileStream.Length;
+                        StartLength      = SavedLength = m_FileStream.Length;
                         DownloadedLength = 0L;
                     }
                     else
                     {
-                        var directory = Path.GetDirectoryName(Task.DownloadedPath);
+                        var directory = Path.GetDirectoryName(Task.DownloadedFullPath);
                         if (directory != null && !Directory.Exists(directory))
                             Directory.CreateDirectory(directory);
 
                         m_FileStream = new FileStream(downloadFile, FileMode.Create, FileAccess.Write);
-                        StartLength = SavedLength = DownloadedLength = 0L;
+                        StartLength  = SavedLength = DownloadedLength = 0L;
                     }
 
                     DownloadAgentStart?.Invoke(this);
@@ -205,12 +205,12 @@ namespace FuFramework.Download.Runtime
                     m_FileStream = null;
                 }
 
-                Task = null;
-                m_WaitFlushSize = 0;
-                WaitTime = 0f;
-                StartLength = 0L;
+                Task             = null;
+                m_WaitFlushSize  = 0;
+                WaitTime         = 0f;
+                StartLength      = 0L;
                 DownloadedLength = 0L;
-                SavedLength = 0L;
+                SavedLength      = 0L;
             }
 
             /// <summary>
@@ -245,10 +245,10 @@ namespace FuFramework.Download.Runtime
                 {
                     // 检查Task是否为null，避免空引用异常
                     if (Task == null) return;
-                    
+
                     m_FileStream.Write(e.GetBytes(), e.Offset, e.Length);
                     m_WaitFlushSize += e.Length;
-                    SavedLength += e.Length;
+                    SavedLength     += e.Length;
 
                     if (m_WaitFlushSize >= Task.FlushSize)
                     {
@@ -270,11 +270,11 @@ namespace FuFramework.Download.Runtime
             private void _OnDownloadAgentHelperUpdateLength(object sender, GameEventArgs gameEventArgs)
             {
                 if (gameEventArgs is not DownloadAgentHelperUpdateLengthEventArgs e) return;
-                
+
                 // 检查Task是否为null，避免空引用异常
                 if (Task == null) return;
-                
-                WaitTime = 0f;
+
+                WaitTime         =  0f;
                 DownloadedLength += e.DeltaLength;
                 DownloadAgentUpdate?.Invoke(this, e.DeltaLength);
             }
@@ -285,11 +285,11 @@ namespace FuFramework.Download.Runtime
             private void _OnDownloadAgentHelperComplete(object sender, GameEventArgs gameEventArgs)
             {
                 if (gameEventArgs is not DownloadAgentHelperCompleteEventArgs e) return;
-                
+
                 // 检查Task是否为null，避免空引用异常
                 if (Task == null) return;
-                
-                WaitTime = 0f;
+
+                WaitTime         = 0f;
                 DownloadedLength = e.Length;
 
                 if (SavedLength != CurrentLength)
@@ -299,14 +299,14 @@ namespace FuFramework.Download.Runtime
                 m_FileStream.Close();
                 m_FileStream = null;
 
-                if (File.Exists(Task.DownloadedPath))
-                    File.Delete(Task.DownloadedPath);
+                if (File.Exists(Task.DownloadedFullPath))
+                    File.Delete(Task.DownloadedFullPath);
 
-                File.Move($"{Task.DownloadedPath}.download", Task.DownloadedPath);
+                File.Move($"{Task.DownloadedFullPath}.download", Task.DownloadedFullPath);
 
                 Task.Status = DownloadTaskStatus.Done;
-                Task.Done = true;
-                
+                Task.Done   = true;
+
                 // 只在Task不为null时触发成功事件
                 DownloadAgentSuccess?.Invoke(this, e.Length);
             }
@@ -317,7 +317,7 @@ namespace FuFramework.Download.Runtime
             private void _OnDownloadAgentHelperError(object sender, GameEventArgs gameEventArgs)
             {
                 if (gameEventArgs is not DownloadAgentHelperErrorEventArgs e) return;
-                
+
                 m_Helper.Reset();
                 if (m_FileStream != null)
                 {
@@ -329,11 +329,11 @@ namespace FuFramework.Download.Runtime
                 if (Task != null)
                 {
                     if (e.DeleteDownloading)
-                        File.Delete($"{Task.DownloadedPath}.download");
+                        File.Delete($"{Task.DownloadedFullPath}.download");
 
                     Task.Status = DownloadTaskStatus.Error;
-                    Task.Done = true;
-                    
+                    Task.Done   = true;
+
                     // 只在Task不为null时触发失败事件
                     DownloadAgentFailure?.Invoke(this, e.ErrorMessage);
                 }

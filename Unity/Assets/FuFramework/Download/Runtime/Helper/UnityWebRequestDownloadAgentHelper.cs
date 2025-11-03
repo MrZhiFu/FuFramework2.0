@@ -26,10 +26,10 @@ namespace FuFramework.Download.Runtime
     {
         /// 范围不适用错误码。
         private const int RangeNotSatisfiableErrorCode = 416;
-        
+
         /// 缓存目标数据的字节数组的长度(0x1000 = 4096)
         private const int CachedBytesLength = 0x1000;
-        
+
 
         /// 缓存目标数据的字节数组
         private readonly byte[] m_CachedBytes = new byte[CachedBytesLength];
@@ -39,7 +39,7 @@ namespace FuFramework.Download.Runtime
 
         /// Unity WebRequest
         private UnityWebRequest m_UnityWebRequest;
-        
+
         /// 事件管理器
         private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
 

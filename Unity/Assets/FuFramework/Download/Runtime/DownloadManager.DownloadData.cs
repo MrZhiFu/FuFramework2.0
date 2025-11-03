@@ -14,17 +14,17 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载任务的标签。
             /// </summary>
-            public string Tag      { get; private set; }
+            public string Tag { get; private set; }
 
             /// <summary>
             /// 下载任务的URL。
             /// </summary>
-            public string Url      { get; private set; }
+            public string Url { get; private set; }
 
             /// <summary>
             /// 下载任务的序列编号。
             /// </summary>
-            public int    SerialId { get; private set; }
+            public int SerialId { get; private set; }
 
             /// <summary>
             /// 用户自定义数据。
@@ -38,8 +38,12 @@ namespace FuFramework.Download.Runtime
 
 
             /// <summary>
-            /// 初始化下载数据的新实例。
+            /// 初始化下载数据的新实例
             /// </summary>
+            /// <param name="url">下载任务的URL。</param>
+            /// <param name="tag">下载任务的标签。</param>
+            /// <param name="serialId">下载任务的序列编号。</param>
+            /// <param name="userData">用户自定义数据。</param>
             public DownloadData(string url, string tag, int serialId, object userData)
             {
                 Url      = url;

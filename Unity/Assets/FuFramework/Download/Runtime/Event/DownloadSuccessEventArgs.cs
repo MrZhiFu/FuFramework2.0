@@ -25,7 +25,7 @@ namespace FuFramework.Download.Runtime
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取下载后存放路径。
+        /// 获取下载后存放全路径。
         /// </summary>
         public string DownloadPath { get; private set; }
 
@@ -60,7 +60,7 @@ namespace FuFramework.Download.Runtime
         /// 创建下载成功事件。
         /// </summary>
         /// <param name="serialId">下载任务的序列编号。</param>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadPath">下载后存放全路径。</param>
         /// <param name="downloadUri">下载地址。</param>
         /// <param name="currentLength">当前大小。</param>
         /// <param name="userData">用户自定义数据。</param>

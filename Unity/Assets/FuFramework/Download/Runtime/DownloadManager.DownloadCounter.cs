@@ -23,7 +23,7 @@ namespace FuFramework.Download.Runtime
             private float m_Accumulator;
 
             /// 剩余时间(秒)
-            private float m_TimeLeft;
+            private float m_LeftTime;
 
             /// 当前下载进度
             public float CurrentSpeed { get; private set; }
@@ -35,7 +35,7 @@ namespace FuFramework.Download.Runtime
                 get => m_UpdateInterval;
                 set
                 {
-                    if (value <= 0f) throw new FuException("Update interval is invalid.");
+                    if (value <= 0f) throw new FuException("更新间隔无效，必须大于0.");
                     m_UpdateInterval = value;
                     Reset();
                 }
@@ -48,7 +48,7 @@ namespace FuFramework.Download.Runtime
                 get => m_RecordInterval;
                 set
                 {
-                    if (value <= 0f) throw new FuException("Record interval is invalid.");
+                    if (value <= 0f) throw new FuException("记录间隔无效，必须大于0.");
                     m_RecordInterval = value;
                     Reset();
                 }
@@ -61,8 +61,8 @@ namespace FuFramework.Download.Runtime
             /// <param name="recordInterval">记录间隔(秒，默认为10秒1次)</param>
             public DownloadCounter(float updateInterval, float recordInterval)
             {
-                if (updateInterval <= 0f) throw new FuException("Update interval is invalid.");
-                if (recordInterval <= 0f) throw new FuException("Record interval is invalid.");
+                if (updateInterval <= 0f) throw new FuException("更新间隔无效，必须大于0.");
+                if (recordInterval <= 0f) throw new FuException("记录间隔无效，必须大于0.");
 
                 m_DownloadCounterNodeList = new FuLinkedList<DownloadCounterNode>();
 
@@ -90,7 +90,7 @@ namespace FuFramework.Download.Runtime
                 if (m_Accumulator > m_RecordInterval)
                     m_Accumulator = m_RecordInterval;
 
-                m_TimeLeft -= realElapseSeconds;
+                m_LeftTime -= realElapseSeconds;
                 foreach (var downloadCounterNode in m_DownloadCounterNodeList)
                 {
                     downloadCounterNode.Update(elapseSeconds, realElapseSeconds);
@@ -111,7 +111,7 @@ namespace FuFramework.Download.Runtime
                     return;
                 }
 
-                if (m_TimeLeft <= 0f)
+                if (m_LeftTime <= 0f)
                 {
                     var totalDeltaLength = 0L;
                     foreach (var downloadCounterNode in m_DownloadCounterNodeList)
@@ -120,7 +120,7 @@ namespace FuFramework.Download.Runtime
                     }
 
                     CurrentSpeed =  m_Accumulator > 0f ? totalDeltaLength / m_Accumulator : 0f;
-                    m_TimeLeft   += m_UpdateInterval;
+                    m_LeftTime   += m_UpdateInterval;
                 }
             }
 
@@ -153,7 +153,7 @@ namespace FuFramework.Download.Runtime
                 m_DownloadCounterNodeList.Clear();
                 CurrentSpeed  = 0f;
                 m_Accumulator = 0f;
-                m_TimeLeft    = 0f;
+                m_LeftTime    = 0f;
             }
         }
     }

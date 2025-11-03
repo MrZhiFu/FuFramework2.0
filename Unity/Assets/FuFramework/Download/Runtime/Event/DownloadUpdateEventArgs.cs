@@ -13,21 +13,21 @@ namespace FuFramework.Download.Runtime
         /// 下载更新事件编号。
         /// </summary>
         public override string Id => EventId;
-        
+
         /// <summary>
         /// 下载更新事件编号。
         /// </summary>
         public static readonly string EventId = typeof(DownloadUpdateEventArgs).FullName;
-        
+
         /// <summary>
         /// 获取下载任务的序列编号。
         /// </summary>
         public int SerialId { get; private set; }
 
         /// <summary>
-        /// 获取下载后存放路径。
+        /// 获取下载后存放全路径。
         /// </summary>
-        public string DownloadPath { get; private set; }
+        public string DownloadedFullPath { get; private set; }
 
         /// <summary>
         /// 获取下载地址。
@@ -49,18 +49,18 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         public override void Clear()
         {
-            SerialId      = 0;
-            DownloadPath  = null;
-            DownloadUri   = null;
-            CurrentLength = 0L;
-            UserData      = null;
+            SerialId           = 0;
+            CurrentLength      = 0L;
+            DownloadUri        = null;
+            UserData           = null;
+            DownloadedFullPath = null;
         }
 
         /// <summary>
         /// 创建下载更新事件。
         /// </summary>
         /// <param name="serialId">下载任务的序列编号。</param>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadPath">下载后存放全路径。</param>
         /// <param name="downloadUri">下载地址。</param>
         /// <param name="currentLength">当前大小。</param>
         /// <param name="userData">用户自定义数据。</param>
@@ -68,11 +68,11 @@ namespace FuFramework.Download.Runtime
         public static DownloadUpdateEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
             var downloadUpdateEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<DownloadUpdateEventArgs>();
-            downloadUpdateEventArgs.SerialId      = serialId;
-            downloadUpdateEventArgs.DownloadPath  = downloadPath;
-            downloadUpdateEventArgs.DownloadUri   = downloadUri;
-            downloadUpdateEventArgs.CurrentLength = currentLength;
-            downloadUpdateEventArgs.UserData      = userData;
+            downloadUpdateEventArgs.SerialId           = serialId;
+            downloadUpdateEventArgs.DownloadedFullPath = downloadPath;
+            downloadUpdateEventArgs.DownloadUri        = downloadUri;
+            downloadUpdateEventArgs.CurrentLength      = currentLength;
+            downloadUpdateEventArgs.UserData           = userData;
             return downloadUpdateEventArgs;
         }
     }

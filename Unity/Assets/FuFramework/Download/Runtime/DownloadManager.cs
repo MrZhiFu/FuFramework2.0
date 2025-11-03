@@ -21,12 +21,12 @@ namespace FuFramework.Download.Runtime
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Core;
-        
+
         /// <summary>
         /// 默认下载任务优先级。
         /// </summary>
         internal const int DefaultPriority = 0;
-        
+
         /// <summary>
         ///  1 兆字节: 1M(Megabyte）= 1024KB = 1024*1024byte
         /// </summary>
@@ -106,7 +106,8 @@ namespace FuFramework.Download.Runtime
         /// 获取当前下载速度。
         /// </summary>
         public float CurrentSpeed => m_DownloadCounter.CurrentSpeed;
-        
+
+
         /// <summary>
         /// 下载管理器初始化。
         /// </summary>
@@ -121,14 +122,14 @@ namespace FuFramework.Download.Runtime
                 FuLog.Fatal("[DownloadManager] 事件管理器为空!");
                 return;
             }
-            
+
             if (!m_InstanceRoot)
             {
                 m_InstanceRoot = new GameObject("Download Agent Instances").transform;
                 m_InstanceRoot.SetParent(gameObject.transform);
                 m_InstanceRoot.localScale = Vector3.one;
             }
-            
+
             // 添加下载任务处理器
             for (var i = 0; i < DownloadAgentHelperCount; i++)
             {
@@ -156,7 +157,7 @@ namespace FuFramework.Download.Runtime
             m_TaskPool.Shutdown();
             m_DownloadCounter.Shutdown();
         }
-        
+
         /// <summary>
         /// 增加下载代理辅助器。
         /// </summary>
@@ -164,9 +165,10 @@ namespace FuFramework.Download.Runtime
         private void AddDownloadAgentHelper(int index)
         {
             var helpObject = new GameObject();
+
             var downloadAgentHelper = helpObject.AddComponent<UnityWebRequestDownloadAgentHelper>();
             helpObject.name = $"[DownloadAgentHelper]_{index}";
-            if (downloadAgentHelper == null)
+            if (!downloadAgentHelper)
             {
                 FuLog.Error("[DownloadManager]创建下载代理辅助器失败!");
                 return;
@@ -175,16 +177,17 @@ namespace FuFramework.Download.Runtime
             var trs = downloadAgentHelper.transform;
             trs.SetParent(m_InstanceRoot);
             trs.localScale = Vector3.one;
-            
+
             var agent = new DownloadAgent(downloadAgentHelper);
             agent.DownloadAgentStart   += _OnDownloadAgentStart;
             agent.DownloadAgentUpdate  += _OnDownloadAgentUpdate;
             agent.DownloadAgentSuccess += _OnDownloadAgentSuccess;
             agent.DownloadAgentFailure += _OnDownloadAgentFailure;
-            
+
             // 向任务池中加入下载任务执行代理
             m_TaskPool.AddAgent(agent);
         }
+
 
         #region 获取下载任务信息
 
@@ -228,12 +231,12 @@ namespace FuFramework.Download.Runtime
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri)
+        public int AddDownload(string downloadedFullPath, string downloadUri)
         {
-            return AddDownload(downloadPath, downloadUri, null, DefaultPriority, null);
+            return AddDownload(downloadedFullPath, downloadUri, null, DefaultPriority, null);
         }
 
         /// <summary>
@@ -247,102 +250,102 @@ namespace FuFramework.Download.Runtime
             var serialId = AddDownload(downloadPath, downloadUri, null, DefaultPriority, null);
             return m_DownloadingTaskDict.TryGetValue(serialId, out var downloadData) ? downloadData.Tcs.Task : default;
         }
-        
+
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="taskTag">下载任务的标签。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, string taskTag)
+        public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag)
         {
-            return AddDownload(downloadPath, downloadUri, taskTag, DefaultPriority, null);
+            return AddDownload(downloadedFullPath, downloadUri, taskTag, DefaultPriority, null);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="priority">下载任务的优先级。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, int priority)
+        public int AddDownload(string downloadedFullPath, string downloadUri, int priority)
         {
-            return AddDownload(downloadPath, downloadUri, null, priority, null);
+            return AddDownload(downloadedFullPath, downloadUri, null, priority, null);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, object userData)
+        public int AddDownload(string downloadedFullPath, string downloadUri, object userData)
         {
-            return AddDownload(downloadPath, downloadUri, null, DefaultPriority, userData);
+            return AddDownload(downloadedFullPath, downloadUri, null, DefaultPriority, userData);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="taskTag">下载任务的标签。</param>
         /// <param name="priority">下载任务的优先级。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, string taskTag, int priority)
+        public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority)
         {
-            return AddDownload(downloadPath, downloadUri, taskTag, priority, null);
+            return AddDownload(downloadedFullPath, downloadUri, taskTag, priority, null);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="taskTag">下载任务的标签。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, string taskTag, object userData)
+        public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, object userData)
         {
-            return AddDownload(downloadPath, downloadUri, taskTag, DefaultPriority, userData);
+            return AddDownload(downloadedFullPath, downloadUri, taskTag, DefaultPriority, userData);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="priority">下载任务的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, int priority, object userData)
+        public int AddDownload(string downloadedFullPath, string downloadUri, int priority, object userData)
         {
-            return AddDownload(downloadPath, downloadUri, null, priority, userData);
+            return AddDownload(downloadedFullPath, downloadUri, null, priority, userData);
         }
 
         /// <summary>
         /// 增加下载任务。
         /// </summary>
-        /// <param name="downloadPath">下载后存放路径。</param>
+        /// <param name="downloadedFullPath">下载后存放全路径。</param>
         /// <param name="downloadUri">原始下载地址。</param>
         /// <param name="taskTag">下载任务的标签。</param>
         /// <param name="priority">下载任务的优先级。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>新增下载任务的序列编号。</returns>
-        public int AddDownload(string downloadPath, string downloadUri, string taskTag, int priority, object userData)
+        public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority, object userData)
         {
-            if (string.IsNullOrEmpty(downloadPath)) throw new FuException("下载路径不能为空.");
+            if (string.IsNullOrEmpty(downloadedFullPath)) throw new FuException("下载路径不能为空.");
             if (string.IsNullOrEmpty(downloadUri)) throw new FuException("下载地址不能为空.");
 
             if (TotalAgentCount <= 0) throw new FuException("可用的下载代理个数为0.");
 
             // 创建下载任务
-            var downloadTask = DownloadTask.Create(downloadPath, downloadUri, taskTag, priority, FlushSize, Timeout, userData);
+            var downloadTask = DownloadTask.Create(downloadedFullPath, downloadUri, taskTag, priority, FlushSize, Timeout, userData);
             m_TaskPool.AddTask(downloadTask);
-            
+
             // 记录下载任务信息
             var downloadData = new DownloadData(downloadUri, taskTag, downloadTask.SerialId, userData);
             m_DownloadingTaskDict.TryAdd(downloadTask.SerialId, downloadData);
@@ -408,8 +411,8 @@ namespace FuFramework.Download.Runtime
                 FuLog.Warning("[DownloadManager]下载开始事件被触发，但下载任务为null。");
                 return;
             }
-            
-            var downloadStartEventArgs = DownloadStartEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
+
+            var downloadStartEventArgs = DownloadStartEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
             m_EventManager.Fire(this, downloadStartEventArgs);
         }
 
@@ -424,9 +427,9 @@ namespace FuFramework.Download.Runtime
                 FuLog.Warning("[DownloadManager]下载更新事件被触发，但下载任务为null。");
                 return;
             }
-            
+
             m_DownloadCounter.RecordDeltaLength(deltaLength);
-            var downloadUpdateEventArgs = DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
+            var downloadUpdateEventArgs = DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
             m_EventManager.Fire(this, downloadUpdateEventArgs);
         }
 
@@ -441,8 +444,8 @@ namespace FuFramework.Download.Runtime
                 FuLog.Warning("[DownloadManager]下载成功事件被触发，但下载任务为null。");
                 return;
             }
-            
-            var downloadSuccessEventArgs = DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
+
+            var downloadSuccessEventArgs = DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
             m_EventManager.Fire(this, downloadSuccessEventArgs);
             if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))
             {
@@ -461,35 +464,35 @@ namespace FuFramework.Download.Runtime
                 FuLog.Error($"[DownloadManager]下载失败! 下载任务为null，错误信息 '{errorMessage}'.");
                 return;
             }
-            
+
             // 检查是否为416 Range Not Satisfiable错误
             if (errorMessage.Contains("416") || errorMessage.Contains("Range Not Satisfiable"))
             {
-                FuLog.Warning($"[DownloadManager]检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}'.");
-                
+                FuLog.Warning($"[DownloadManager]检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载后存放全路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}'.");
+
                 // 删除损坏的下载文件
-                var downloadFile = $"{sender.Task.DownloadedPath}.download";
+                var downloadFile = $"{sender.Task.DownloadedFullPath}.download";
                 if (File.Exists(downloadFile))
                 {
                     File.Delete(downloadFile);
                 }
-                
+
                 // 从当前任务中移除，但保留任务信息以便重新添加
                 if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData01))
                 {
                     // 重新添加下载任务，从头开始下载
-                    var newSerialId = AddDownload(sender.Task.DownloadedPath, sender.Task.DownloadUri, sender.Task.Tag, sender.Task.Priority, sender.Task.UserData);
+                    var newSerialId = AddDownload(sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.Task.Tag, sender.Task.Priority, sender.Task.UserData);
                     FuLog.Info($"[DownloadManager]已重新添加下载任务，新的序列编号为 '{newSerialId}'。");
-                    
+
                     // 完成原任务（返回false表示失败，但新任务会继续）
                     downloadData01.Tcs.TrySetResult(false);
                 }
-                
+
                 return;
             }
-            
-            FuLog.Error($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
-            var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
+
+            FuLog.Error($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
+            var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
             m_EventManager.Fire(this, downloadFailureEventArgs);
             if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))
             {

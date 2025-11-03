@@ -35,6 +35,11 @@ namespace FuFramework.Download.Runtime
         public int Length { get; private set; }
 
         /// <summary>
+        /// 获取下载的数据流。
+        /// </summary>
+        public byte[] GetBytes() => m_Bytes;
+
+        /// <summary>
         /// 清理下载代理辅助器更新数据流事件。
         /// </summary>
         public override void Clear()
@@ -43,11 +48,6 @@ namespace FuFramework.Download.Runtime
             Offset  = 0;
             Length  = 0;
         }
-
-        /// <summary>
-        /// 获取下载的数据流。
-        /// </summary>
-        public byte[] GetBytes() => m_Bytes;
 
         /// <summary>
         /// 创建下载代理辅助器更新数据流事件。
