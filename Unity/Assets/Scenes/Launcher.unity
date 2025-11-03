@@ -146,7 +146,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1887675307}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33fd13a47b584572b610b4d7d69b1bad, type: 3}
   m_Name: 
@@ -219,6 +219,7 @@ MonoBehaviour:
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
   m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
+  m_DataSaveSetting: {fileID: 11400000, guid: c0c1f85a9ceacb344888ccc274fb5ab1, type: 2}
 --- !u!114 &7148938655606090475
 MonoBehaviour:
   m_ObjectHideFlags: 0

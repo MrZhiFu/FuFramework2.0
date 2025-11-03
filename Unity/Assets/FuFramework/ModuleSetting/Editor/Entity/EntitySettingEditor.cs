@@ -14,8 +14,8 @@ namespace FuFramework.ModuleSetting.Editor
     {
         private SerializedProperty m_EntityGroupsProperty; // 所有实体组列表属性
 
-        private bool[] m_GroupFoldouts;                    // 实体组折叠状态数组，true表示展开，false表示折叠
-        private bool   m_ShowTools;                        // 是否显示工具区域
+        private bool[] m_GroupFoldouts;                     // 实体组折叠状态数组，true表示展开，false表示折叠
+        private bool   m_ShowTools;                         // 是否显示工具区域
         private string m_NewGroupName = "New Entity Group"; // 新实体组名称
 
         /// <summary>
@@ -79,11 +79,11 @@ namespace FuFramework.ModuleSetting.Editor
         /// <param name="setting">实体配置</param>
         private void DisplayEntityGroup(int index, SerializedProperty groupProperty, EntitySetting setting)
         {
-            var nameProperty = groupProperty.FindPropertyRelative("m_Name");
+            var nameProperty                = groupProperty.FindPropertyRelative("m_Name");
             var autoReleaseIntervalProperty = groupProperty.FindPropertyRelative("m_InstanceAutoReleaseInterval");
-            var capacityProperty = groupProperty.FindPropertyRelative("m_InstanceCapacity");
-            var expireTimeProperty = groupProperty.FindPropertyRelative("m_InstanceExpireTime");
-            var priorityProperty = groupProperty.FindPropertyRelative("m_InstancePriority");
+            var capacityProperty            = groupProperty.FindPropertyRelative("m_InstanceCapacity");
+            var expireTimeProperty          = groupProperty.FindPropertyRelative("m_InstanceExpireTime");
+            var priorityProperty            = groupProperty.FindPropertyRelative("m_InstancePriority");
 
             // 确保折叠状态数组足够大
             if (m_GroupFoldouts == null || m_GroupFoldouts.Length <= index)
@@ -112,11 +112,11 @@ namespace FuFramework.ModuleSetting.Editor
             {
                 EditorGUILayout.Space(5);
 
-                EditorGUILayout.PropertyField(nameProperty, new GUIContent("名称"));
-                EditorGUILayout.PropertyField(capacityProperty, new GUIContent("对象池容量"));
-                EditorGUILayout.PropertyField(expireTimeProperty, new GUIContent("对象过期时间(秒)"));
+                EditorGUILayout.PropertyField(nameProperty,                new GUIContent("名称"));
+                EditorGUILayout.PropertyField(capacityProperty,            new GUIContent("对象池容量"));
+                EditorGUILayout.PropertyField(expireTimeProperty,          new GUIContent("对象过期时间(秒)"));
                 EditorGUILayout.PropertyField(autoReleaseIntervalProperty, new GUIContent("自动释放间隔(秒)"));
-                EditorGUILayout.PropertyField(priorityProperty, new GUIContent("对象优先级"));
+                EditorGUILayout.PropertyField(priorityProperty,            new GUIContent("对象优先级"));
 
                 EditorGUILayout.Space(5);
 
@@ -248,9 +248,9 @@ namespace FuFramework.ModuleSetting.Editor
         private void ResetEntityGroup(SerializedProperty groupProperty)
         {
             groupProperty.FindPropertyRelative("m_InstanceAutoReleaseInterval").floatValue = 60f;
-            groupProperty.FindPropertyRelative("m_InstanceCapacity").intValue = 16;
-            groupProperty.FindPropertyRelative("m_InstanceExpireTime").floatValue = 60f;
-            groupProperty.FindPropertyRelative("m_InstancePriority").intValue = 0;
+            groupProperty.FindPropertyRelative("m_InstanceCapacity").intValue              = 16;
+            groupProperty.FindPropertyRelative("m_InstanceExpireTime").floatValue          = 60f;
+            groupProperty.FindPropertyRelative("m_InstancePriority").intValue              = 0;
             serializedObject.ApplyModifiedProperties();
         }
 

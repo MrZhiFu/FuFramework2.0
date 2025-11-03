@@ -29,6 +29,9 @@ namespace FuFramework.ModuleSetting.Runtime
         
         [Header("实体系统配置")]
         [SerializeField] private EntitySetting m_EntitySetting;
+        
+        [Header("本地数据存储系统配置")]
+        [SerializeField] private DataSaveSetting m_DataSaveSetting;
 
         /// <summary>
         /// 获取音频系统配置
@@ -44,6 +47,11 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取实体系统配置
         /// </summary>
         public EntitySetting EntitySetting => m_EntitySetting;
+        
+        /// <summary>
+        /// 获取本地存储系统配置
+        /// </summary>
+        public DataSaveSetting DataSaveSetting => m_DataSaveSetting;
         
 
         /// 游戏暂停之前的速度

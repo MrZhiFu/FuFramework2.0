@@ -2,7 +2,8 @@
     "name": "FuFramework.DataSave.Runtime",
     "rootNamespace": "FuFramework.DataSave.Runtime",
     "references": [
-        "FuFramework.Core.Runtime"
+        "FuFramework.Core.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

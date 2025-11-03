@@ -12,7 +12,7 @@ namespace FuFramework.ModuleSetting.Editor
     /// </summary>
     public static class EntitySettingCreator
     {
-        private const string AssetName = "EntitySetting.asset";                             // 资源名称
+        private const string AssetName = "EntitySetting.asset";                            // 资源名称
         private const string AssetPath = "Assets/FuFramework/ModuleSetting/SettingAssets"; // 配置路径
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
@@ -64,7 +64,7 @@ namespace FuFramework.ModuleSetting.Editor
             var guids = AssetDatabase.FindAssets("t:EntitySetting");
             if (guids.Length > 0)
             {
-                var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                var path          = AssetDatabase.GUIDToAssetPath(guids[0]);
                 var entitySetting = AssetDatabase.LoadAssetAtPath<EntitySetting>(path);
                 Selection.activeObject = entitySetting;
                 EditorUtility.FocusProjectWindow();

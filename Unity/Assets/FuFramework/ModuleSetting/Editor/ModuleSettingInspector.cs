@@ -22,10 +22,11 @@ namespace FuFramework.ModuleSetting.Editor
         private SerializedProperty m_RunInBackground; // 是否后台运行
         private SerializedProperty m_NeverSleep;      // 是否禁止休眠
 
-        
-        private SerializedProperty m_SoundSetting;   // 音频系统配置
-        private SerializedProperty m_AssetSetting;   // 资源系统配置
-        private SerializedProperty m_EntitySetting;  // 实体系统配置
+
+        private SerializedProperty m_SoundSetting;    // 音频系统配置
+        private SerializedProperty m_AssetSetting;    // 资源系统配置
+        private SerializedProperty m_EntitySetting;   // 实体系统配置
+        private SerializedProperty m_DataSaveSetting; // 本地数据存储系统配置
 
         private void OnEnable()
         {
@@ -33,9 +34,10 @@ namespace FuFramework.ModuleSetting.Editor
             m_GameSpeed       = serializedObject.FindProperty("m_GameSpeed");
             m_RunInBackground = serializedObject.FindProperty("m_RunInBackground");
             m_NeverSleep      = serializedObject.FindProperty("m_NeverSleep");
-            m_SoundSetting     = serializedObject.FindProperty("m_SoundSetting");
-            m_AssetSetting     = serializedObject.FindProperty("m_AssetSetting");    
-            m_EntitySetting    = serializedObject.FindProperty("m_EntitySetting");
+            m_SoundSetting    = serializedObject.FindProperty("m_SoundSetting");
+            m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
+            m_EntitySetting   = serializedObject.FindProperty("m_EntitySetting");
+            m_DataSaveSetting = serializedObject.FindProperty("m_DataSaveSetting");
         }
 
         public override void OnInspectorGUI()
@@ -102,7 +104,8 @@ namespace FuFramework.ModuleSetting.Editor
             EditorGUILayout.PropertyField(m_SoundSetting);
             EditorGUILayout.PropertyField(m_AssetSetting);
             EditorGUILayout.PropertyField(m_EntitySetting);
-        
+            EditorGUILayout.PropertyField(m_DataSaveSetting);
+
             serializedObject.ApplyModifiedProperties();
         }
 

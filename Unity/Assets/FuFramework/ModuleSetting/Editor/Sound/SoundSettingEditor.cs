@@ -254,9 +254,9 @@ namespace FuFramework.ModuleSetting.Editor
         /// <param name="groupProperty">声音组序列化属性</param>
         private void ResetSoundGroup(SerializedProperty groupProperty)
         {
-            groupProperty.FindPropertyRelative("m_IsMute").boolValue                           = false;
-            groupProperty.FindPropertyRelative("m_Volume").floatValue                          = 1f;
-            groupProperty.FindPropertyRelative("m_AgentCount").intValue                  = 1;
+            groupProperty.FindPropertyRelative("m_IsMute").boolValue                        = false;
+            groupProperty.FindPropertyRelative("m_Volume").floatValue                       = 1f;
+            groupProperty.FindPropertyRelative("m_AgentCount").intValue                     = 1;
             groupProperty.FindPropertyRelative("m_AllowBeReplacedBySamePriority").boolValue = true;
             serializedObject.ApplyModifiedProperties();
         }

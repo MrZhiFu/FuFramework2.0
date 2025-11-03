@@ -45,49 +45,49 @@ namespace FuFramework.ModuleSetting.Editor
             EditorGUI.BeginChangeCheck();
             var playMode = (EPlayMode)m_PlayModeProp.enumValueIndex;
             playMode = (EPlayMode)EditorGUILayout.EnumPopup(new GUIContent("资源运行模式"), playMode);
-            if (EditorGUI.EndChangeCheck()) 
+            if (EditorGUI.EndChangeCheck())
                 m_PlayModeProp.enumValueIndex = (int)playMode;
-            
+
             EditorGUILayout.Space(10);
-            
+
             // 显示默认资源包属性
             EditorGUI.BeginChangeCheck();
             var defaultPackageName = m_DefaultPackagesNameProp.stringValue;
             defaultPackageName = EditorGUILayout.TextField(new GUIContent("默认资源包名称"), defaultPackageName);
-            if (EditorGUI.EndChangeCheck()) 
+            if (EditorGUI.EndChangeCheck())
                 m_DefaultPackagesNameProp.stringValue = defaultPackageName;
 
             EditorGUILayout.Space(10);
-            
+
             // 显示资源下载最大并发数量属性
             EditorGUI.BeginChangeCheck();
             var downloadingMaxNum = m_DownloadingMaxNumProp.intValue;
             downloadingMaxNum = EditorGUILayout.IntField(new GUIContent("下载最大并发数量"), downloadingMaxNum);
-            if (EditorGUI.EndChangeCheck()) 
+            if (EditorGUI.EndChangeCheck())
                 m_DownloadingMaxNumProp.intValue = downloadingMaxNum;
 
             EditorGUILayout.Space(10);
-            
+
             // 显示资源下载失败重试次数属性
             EditorGUI.BeginChangeCheck();
             var failedTryAgainNum = m_FailedTryAgainNumProp.intValue;
             failedTryAgainNum = EditorGUILayout.IntField(new GUIContent("下载失败重试次数"), failedTryAgainNum);
-            if (EditorGUI.EndChangeCheck()) 
+            if (EditorGUI.EndChangeCheck())
                 m_FailedTryAgainNumProp.intValue = failedTryAgainNum;
-            
+
             EditorGUILayout.Space(10);
-            
+
             // 显示YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）属性
             EditorGUI.BeginChangeCheck();
             var asyncSystemMaxSlicePerFrame = m_AsyncSystemMaxSlicePerFrame.intValue;
             asyncSystemMaxSlicePerFrame = EditorGUILayout.IntField(new GUIContent("YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）"), asyncSystemMaxSlicePerFrame);
-            if (EditorGUI.EndChangeCheck()) 
+            if (EditorGUI.EndChangeCheck())
                 m_AsyncSystemMaxSlicePerFrame.intValue = asyncSystemMaxSlicePerFrame;
-            
+
             EditorGUILayout.Space(10);
-            
+
             // 重置配置
-            if (GUILayout.Button("重置配置")) 
+            if (GUILayout.Button("重置配置"))
                 assetSetting.Reset();
 
             serializedObject.ApplyModifiedProperties();

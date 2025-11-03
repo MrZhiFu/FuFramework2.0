@@ -48,12 +48,12 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 是否启用自动保存
         /// </summary>
-        public bool EnableAutoSave { get; set; } = true;
+        private bool m_EnableAutoSave;
 
         /// <summary>
         /// 自动保存间隔(秒, 默认5分钟)
         /// </summary>
-        public float AutoSaveInterval { get; set; } = 300f;
+        private float m_AutoSaveInterval;
         
         /// <summary>
         /// 初始化
@@ -62,11 +62,15 @@ namespace FuFramework.SaveData.Runtime
         {
             LoadAll();
             
+            // 读取系统配置
+            m_EnableAutoSave = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting.EnableAutoSave;
+            m_AutoSaveInterval = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting.AutoSaveInterval;
+            
             // 初始化所有Helper的自动保存配置
             foreach (var helper in m_Helpers.Values)
             {
-                helper.EnableAutoSave = EnableAutoSave;
-                helper.AutoSaveInterval = AutoSaveInterval;
+                helper.EnableAutoSave = m_EnableAutoSave;
+                helper.AutoSaveInterval = m_AutoSaveInterval;
             }
         }
 
@@ -77,7 +81,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
-            if (!EnableAutoSave) return;
+            if (!m_EnableAutoSave) return;
 
             // 驱动所有Helper的自动保存逻辑
             foreach (var helper in m_Helpers.Values)
@@ -109,7 +113,7 @@ namespace FuFramework.SaveData.Runtime
             helperGo.transform.localScale = Vector3.one;
 
             helper = helperGo.AddComponent<SaveHelper>();
-            helper.Init(fileName, EnableAutoSave, AutoSaveInterval);
+            helper.Init(fileName, m_EnableAutoSave, m_AutoSaveInterval);
 
             m_Helpers[fileName] = helper;
             return helper;

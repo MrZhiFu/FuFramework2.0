@@ -13,31 +13,31 @@ MonoBehaviour:
   m_Name: EntitySetting
   m_EditorClassIdentifier: 
   m_EntityGroups:
-  - m_GroupID: 120a6f4d-0021-42ae-98b8-1d8c91f56f9e
+  - m_GroupID: 8cb68db3-d820-4d02-8140-64684ac472e5
     m_Name: Player
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: 5af7631a-c1a3-4b91-a9d6-dfc0dfda1817
+  - m_GroupID: 24fd2d77-8c94-4314-abfa-1f743be13488
     m_Name: Enemy
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: 77e6f0dc-5ad8-4899-8b8e-914665bc384d
+  - m_GroupID: 2ab49694-8d66-41bc-86e8-07a059796e89
     m_Name: NPC
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: 42723675-2830-4804-bf81-02fc0a75e416
+  - m_GroupID: 8cb61793-3be3-44a3-87ff-275f3588261f
     m_Name: Item
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
     m_InstanceExpireTime: 60
     m_InstancePriority: 0
-  - m_GroupID: 624b508b-ef9a-41f9-ba85-e821184f469c
+  - m_GroupID: e0dd71da-5ea0-47ef-a0ae-ba216d883ef5
     m_Name: Effect
     m_InstanceAutoReleaseInterval: 60
     m_InstanceCapacity: 16
