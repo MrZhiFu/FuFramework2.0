@@ -311,6 +311,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value">要写入的布尔值。</param>
         public void SetBool(string dataName, bool value)
         {
+            var oldValue = Data.GetBool(dataName);
+            if (oldValue == value) return;
             Data.SetBool(dataName, value);
             IsDirty = true;
         }
@@ -322,6 +324,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value">要写入的整数值。</param>
         public void SetInt(string dataName, int value)
         {
+            var oldValue = Data.GetInt(dataName);
+            if (oldValue == value) return;
             Data.SetInt(dataName, value);
             IsDirty = true;
         }
@@ -333,6 +337,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value"></param>
         public void SetLong(string dataName, long value)
         {
+            var oldValue = Data.GetLong(dataName);
+            if (oldValue == value) return;
             Data.SetLong(dataName, value);
             IsDirty = true;
         }
@@ -344,6 +350,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value">要写入的浮点数值。</param>
         public void SetFloat(string dataName, float value)
         {
+            var oldValue = Data.GetFloat(dataName);
+            if (Math.Abs(oldValue - value) < float.Epsilon) return;
             Data.SetFloat(dataName, value);
             IsDirty = true;
         }
@@ -355,6 +363,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value"></param>
         public void SetDouble(string dataName, double value)
         {
+            var oldValue = Data.GetDouble(dataName);
+            if (Math.Abs(oldValue - value) < double.Epsilon) return;
             Data.SetDouble(dataName, value);
             IsDirty = true;
         }
@@ -366,6 +376,8 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="value">要写入的字符串值。</param>
         public void SetString(string dataName, string value)
         {
+            var oldValue = Data.GetString(dataName);
+            if (oldValue == value) return;
             Data.SetString(dataName, value);
             IsDirty = true;
         }
