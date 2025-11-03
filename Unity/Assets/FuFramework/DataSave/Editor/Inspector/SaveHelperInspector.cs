@@ -22,6 +22,8 @@ namespace FuFramework.SaveData.Editor
             if (!EditorApplication.isPlaying) return;
 
             EditorGUILayout.LabelField("当前数据数量", saveHelper.Count >= 0 ? saveHelper.Count.ToString() : "<Unknown>");
+            EditorGUILayout.LabelField("是否有未保存的数据", saveHelper.IsDirty? "Yes" : "No");
+            
             if (saveHelper.Count > 0)
             {
                 var dataNames = saveHelper.GetAllDataNames();

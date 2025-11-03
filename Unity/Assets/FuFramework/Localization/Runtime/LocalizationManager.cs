@@ -37,8 +37,8 @@ namespace FuFramework.Localization.Runtime
                 m_Language = value;
 
                 // 保存设置
-                m_saveManager.SetString(SaveManager.GameSettingName, "Language", value.ToString());
-                m_saveManager.Save(SaveManager.GameSettingName);
+                m_saveManager.SetString("Language", value.ToString());
+                m_saveManager.Save();
 
                 // 发送本地化语言改变事件
                 var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
@@ -111,7 +111,7 @@ namespace FuFramework.Localization.Runtime
             m_EventManager = ModuleManager.GetModule<EventManager>();
             m_saveManager = ModuleManager.GetModule<SaveManager>();
             
-            var value = m_saveManager.GetString(SaveManager.GameSettingName, "Language");
+            var value = m_saveManager.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else

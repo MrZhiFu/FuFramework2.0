@@ -23,7 +23,7 @@
         "FuFramework.ReferencePool.Runtime",
         "FuFramework.ObjectPool.Runtime",
         "FuFramework.Model.Runtime",
-        "FuFramework.Save.Runtime"
+        "FuFramework.DataSave.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

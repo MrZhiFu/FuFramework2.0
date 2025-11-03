@@ -1,6 +1,6 @@
 {
-    "name": "FuFramework.Save.Runtime",
-    "rootNamespace": "FuFramework.Save.Runtime",
+    "name": "FuFramework.DataSave.Runtime",
+    "rootNamespace": "FuFramework.DataSave.Runtime",
     "references": [
         "FuFramework.Core.Runtime"
     ],

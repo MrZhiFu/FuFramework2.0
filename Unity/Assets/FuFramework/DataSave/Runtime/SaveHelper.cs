@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using FuFramework.Core.Runtime;
@@ -39,6 +39,26 @@ namespace FuFramework.SaveData.Runtime
         public FuSerializer<Data> Serializer { get; private set; }
 
         /// <summary>
+        /// 数据是否被修改（脏数据标记）
+        /// </summary>
+        public bool IsDirty { get; private set; }
+
+        /// <summary>
+        /// 是否启用自动保存
+        /// </summary>
+        public bool EnableAutoSave { get; set; } = true;
+
+        /// <summary>
+        /// 自动保存间隔时间（秒）
+        /// </summary>
+        public float AutoSaveInterval { get; set; } = 300f; // 默认5分钟
+
+        /// <summary>
+        /// 最后保存时间
+        /// </summary>
+        private float m_LastSaveTime;
+
+        /// <summary>
         /// 获取数据项数量。
         /// </summary>
         public int Count => Data?.Count ?? 0;
@@ -47,16 +67,39 @@ namespace FuFramework.SaveData.Runtime
         /// 初始化数据辅助器
         /// </summary>
         /// <param name="fileName">文件名</param>
-        public void Init(string fileName)
+        /// <param name="enableAutoSave">是否启用自动保存</param>
+        /// <param name="autoSaveInterval">自动保存间隔时间（秒）</param>
+        public void Init(string fileName, bool enableAutoSave, float autoSaveInterval)
         {
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[SaveHelper] 文件名不能为空");
+
             FileName = fileName;
             var path = Path.Combine(Application.persistentDataPath, SaveManager.DirRoot, fileName);
-            FilePath = Utility.Path.GetRegularPath(path);
-            Data = new Data();
+            FilePath   = Utility.Path.GetRegularPath(path);
+            Data       = new Data();
             Serializer = new DataSerializer();
             Serializer.RegisterSerializeCallback(0, DefaultSerializeCallback);
             Serializer.RegisterDeserializeCallback(0, DefaultDeserializeCallback);
+
+            m_LastSaveTime   = Time.realtimeSinceStartup;
+            IsDirty          = false;
+            EnableAutoSave   = enableAutoSave;
+            AutoSaveInterval = autoSaveInterval;
+        }
+
+        /// <summary>
+        /// 更新自动保存逻辑
+        /// </summary>
+        public void OnUpdate()
+        {
+            if (!EnableAutoSave || !IsDirty) return;
+
+            var currentTime = Time.realtimeSinceStartup;
+            if (currentTime - m_LastSaveTime >= AutoSaveInterval)
+            {
+                FuLog.Info($"[SaveHelper] 自动保存数据文件: {FileName}");
+                Save();
+            }
         }
 
         /// <summary>
@@ -111,6 +154,8 @@ namespace FuFramework.SaveData.Runtime
         {
             try
             {
+                if (!IsDirty) return true;
+
                 // 确保目录存在
                 var directory = Path.GetDirectoryName(FilePath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -119,10 +164,13 @@ namespace FuFramework.SaveData.Runtime
                 }
 
                 using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+
                 var result = Serializer.Serialize(fileStream, Data);
                 if (result)
                 {
                     FuLog.Info($"[SaveHelper] 保存数据文件成功: {FileName}");
+                    IsDirty        = false;                     // 清除脏数据标记
+                    m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
                 }
 
                 return result;
@@ -161,7 +209,8 @@ namespace FuFramework.SaveData.Runtime
         public bool RemoveData(string dataName)
         {
             var result = Data.RemoveData(dataName);
-            Save();
+            if (result)
+                IsDirty = true;
             return result;
         }
 
@@ -171,8 +220,9 @@ namespace FuFramework.SaveData.Runtime
         public void RemoveAllData()
         {
             Data.RemoveAllData();
-            Save();
+            IsDirty = true;
         }
+
 
         #region Get
 
@@ -259,42 +309,66 @@ namespace FuFramework.SaveData.Runtime
         /// </summary>
         /// <param name="dataName">要写入数据项的名称。</param>
         /// <param name="value">要写入的布尔值。</param>
-        public void SetBool(string dataName, bool value) => Data.SetBool(dataName, value);
+        public void SetBool(string dataName, bool value)
+        {
+            Data.SetBool(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入整数值。
         /// </summary>
         /// <param name="dataName">要写入数据项的名称。</param>
         /// <param name="value">要写入的整数值。</param>
-        public void SetInt(string dataName, int value) => Data.SetInt(dataName, value);
+        public void SetInt(string dataName, int value)
+        {
+            Data.SetInt(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入长整数值。
         /// </summary>
         /// <param name="dataName"></param>
         /// <param name="value"></param>
-        public void SetLong(string dataName, long value) => Data.SetLong(dataName, value);
+        public void SetLong(string dataName, long value)
+        {
+            Data.SetLong(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入浮点数值。
         /// </summary>
         /// <param name="dataName">要写入数据项的名称。</param>
         /// <param name="value">要写入的浮点数值。</param>
-        public void SetFloat(string dataName, float value) => Data.SetFloat(dataName, value);
+        public void SetFloat(string dataName, float value)
+        {
+            Data.SetFloat(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入双精度浮点数值。
         /// </summary>
         /// <param name="dataName"></param>
         /// <param name="value"></param>
-        public void SetDouble(string dataName, double value) => Data.SetDouble(dataName, value);
+        public void SetDouble(string dataName, double value)
+        {
+            Data.SetDouble(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入字符串值。
         /// </summary>
         /// <param name="dataName">要写入数据项的名称。</param>
         /// <param name="value">要写入的字符串值。</param>
-        public void SetString(string dataName, string value) => Data.SetString(dataName, value);
+        public void SetString(string dataName, string value)
+        {
+            Data.SetString(dataName, value);
+            IsDirty = true;
+        }
 
         /// <summary>
         /// 向指定数据项写入对象。
@@ -303,17 +377,6 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="dataName">要写入数据项的名称。</param>
         /// <param name="obj">要写入的对象。</param>
         public void SetObject<T>(string dataName, T obj)
-        {
-            var json = Utility.Json.ToJson(obj);
-            SetString(dataName, json);
-        }
-
-        /// <summary>
-        /// 向指定数据项写入对象。
-        /// </summary>
-        /// <param name="dataName">要写入数据项的名称。</param>
-        /// <param name="obj">要写入的对象。</param>
-        public void SetObject(string dataName, object obj)
         {
             var json = Utility.Json.ToJson(obj);
             SetString(dataName, json);
