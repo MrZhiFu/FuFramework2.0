@@ -15,14 +15,14 @@ namespace Unity.Editor
         [InitializeOnLoadMethod]
         private static void Start()
         {
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.blank.gfx");
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS,     "com.blank.gfx");
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.fustudio.frameworkDemo");
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS,     "com.fustudio.frameworkDemo");
 
             PlayerSettings.SplashScreen.show          = false;
             PlayerSettings.SplashScreen.showUnityLogo = false;
 
-            PlayerSettings.productName = "GFX";
-            PlayerSettings.companyName = "ALianBlank";
+            PlayerSettings.productName = "FuFrameworkDemo";
+            PlayerSettings.companyName = "FuStudio";
 
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
 
