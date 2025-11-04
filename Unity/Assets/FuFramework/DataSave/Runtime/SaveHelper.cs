@@ -54,6 +54,16 @@ namespace FuFramework.SaveData.Runtime
         public float AutoSaveInterval { get; set; } = 300f; // 默认5分钟
 
         /// <summary>
+        /// 是否启用加密
+        /// </summary>
+        public bool EnableEncryption { get; private set; }
+
+        /// <summary>
+        /// 加密密钥
+        /// </summary>
+        public string EncryptKey { get; private set; }
+
+        /// <summary>
         /// 最后保存时间
         /// </summary>
         private float m_LastSaveTime;
@@ -69,14 +79,18 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">文件名</param>
         /// <param name="enableAutoSave">是否启用自动保存</param>
         /// <param name="autoSaveInterval">自动保存间隔时间（秒）</param>
-        public void Init(string fileName, bool enableAutoSave, float autoSaveInterval)
+        /// <param name="enableEncryption">是否启用加密</param>
+        /// <param name="encryptKey">加密密钥</param>
+        public void Init(string fileName, bool enableAutoSave, float autoSaveInterval, bool enableEncryption = false, string encryptKey = null)
         {
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[SaveHelper] 文件名不能为空");
 
             FileName = fileName;
             var path = Path.Combine(Application.persistentDataPath, SaveManager.DirRoot, fileName);
-            FilePath   = Utility.Path.GetRegularPath(path);
-            Data       = new Data();
+            FilePath = Utility.Path.GetRegularPath(path);
+
+            Data = new Data();
+
             Serializer = new DataSerializer();
             Serializer.RegisterSerializeCallback(0, DefaultSerializeCallback);
             Serializer.RegisterDeserializeCallback(0, DefaultDeserializeCallback);
@@ -85,6 +99,8 @@ namespace FuFramework.SaveData.Runtime
             IsDirty          = false;
             EnableAutoSave   = enableAutoSave;
             AutoSaveInterval = autoSaveInterval;
+            EnableEncryption = enableEncryption;
+            EncryptKey       = encryptKey;
         }
 
         /// <summary>
@@ -135,13 +151,34 @@ namespace FuFramework.SaveData.Runtime
                 }
 
                 using var fileStream = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
-                Serializer.Deserialize(fileStream);
+
+                // 如果启用加密，先解密数据
+                if (EnableEncryption && !string.IsNullOrEmpty(EncryptKey))
+                {
+                    // 读取加密的字节数据
+                    using var memoryStream = new MemoryStream();
+                    fileStream.CopyTo(memoryStream);
+                    var encryptedBytes = memoryStream.ToArray();
+
+                    // 解密数据
+                    var decryptedBytes = Utility.Encryption.Aes.AesDecrypt(encryptedBytes, EncryptKey);
+
+                    // 使用解密后的数据创建新的流进行反序列化
+                    using var decryptedStream = new MemoryStream(decryptedBytes);
+                    Serializer.Deserialize(decryptedStream);
+                }
+                else
+                {
+                    // 未启用加密，直接反序列化
+                    Serializer.Deserialize(fileStream);
+                }
+
                 FuLog.Info($"[SaveHelper] 加载数据文件成功: {FileName}");
                 return true;
             }
             catch (Exception exception)
             {
-                FuLog.Warning($"[SaveHelper] 加载数据文件失败 {FileName}：'{exception}'.");
+                FuLog.Error($"[SaveHelper] 加载数据文件失败 {FileName}：'{exception}'.");
                 return false;
             }
         }
@@ -163,17 +200,47 @@ namespace FuFramework.SaveData.Runtime
                     Directory.CreateDirectory(directory);
                 }
 
-                using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
-
-                var result = Serializer.Serialize(fileStream, Data);
-                if (result)
+                // 如果启用加密，先序列化到内存流，然后加密
+                if (EnableEncryption && !string.IsNullOrEmpty(EncryptKey))
                 {
-                    FuLog.Info($"[SaveHelper] 保存数据文件成功: {FileName}");
+                    // 先序列化到内存流
+                    using var memoryStream = new MemoryStream();
+                    var       result       = Serializer.Serialize(memoryStream, Data);
+                    if (!result)
+                    {
+                        FuLog.Warning($"[SaveHelper] 序列化数据失败: {FileName}");
+                        return false;
+                    }
+
+                    // 获取序列化后的字节数据
+                    var dataBytes = memoryStream.ToArray();
+
+                    // 加密数据
+                    var encryptedBytes = Utility.Encryption.Aes.AesEncrypt(dataBytes, EncryptKey);
+
+                    // 将加密后的数据写入文件
+                    using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+                    fileStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+
+                    FuLog.Info($"[SaveHelper] 保存数据文件成功（已加密）: {FileName}");
                     IsDirty        = false;                     // 清除脏数据标记
                     m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
+                    return true;
                 }
+                else
+                {
+                    // 未启用加密，直接保存
+                    using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
+                    var       result     = Serializer.Serialize(fileStream, Data);
+                    if (result)
+                    {
+                        FuLog.Info($"[SaveHelper] 保存数据文件成功: {FileName}");
+                        IsDirty        = false;                     // 清除脏数据标记
+                        m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
+                    }
 
-                return result;
+                    return result;
+                }
             }
             catch (Exception exception)
             {

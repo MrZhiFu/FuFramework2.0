@@ -14,6 +14,8 @@ namespace FuFramework.ModuleSetting.Editor
     {
         private SerializedProperty m_EnableAutoSave;   // 自动保存开关
         private SerializedProperty m_AutoSaveInterval; // 自动保存间隔
+        private SerializedProperty m_EnableEncrypt;    // 加密开关
+        private SerializedProperty m_EncryptKey;       // 加密密钥
 
         /// <summary>
         /// 编辑器启用时调用
@@ -22,6 +24,8 @@ namespace FuFramework.ModuleSetting.Editor
         {
             m_EnableAutoSave   = serializedObject.FindProperty("m_EnableAutoSave");
             m_AutoSaveInterval = serializedObject.FindProperty("m_AutoSaveInterval");
+            m_EnableEncrypt    = serializedObject.FindProperty("m_EnableEncrypt");
+            m_EncryptKey       = serializedObject.FindProperty("m_EncryptKey");
         }
 
         /// <summary>
@@ -33,7 +37,7 @@ namespace FuFramework.ModuleSetting.Editor
 
             var dataSaveSetting = target as DataSaveSetting;
             if (!dataSaveSetting) return;
-            
+
             // 自动保存开关
             EditorGUI.BeginChangeCheck();
             var isAutoSave = m_EnableAutoSave.boolValue;
@@ -42,9 +46,10 @@ namespace FuFramework.ModuleSetting.Editor
             {
                 m_EnableAutoSave.boolValue = isAutoSave;
             }
-            
+
             EditorGUILayout.Space(20);
-            
+
+
             // 自动保存间隔
             EditorGUI.BeginChangeCheck();
             var interval = m_AutoSaveInterval.floatValue;
@@ -53,11 +58,31 @@ namespace FuFramework.ModuleSetting.Editor
             {
                 m_AutoSaveInterval.floatValue = interval;
             }
-            
+
+            EditorGUILayout.Space(20);
+
+            // 加密开关
+            EditorGUI.BeginChangeCheck();
+            var isAutoEncrypt = m_EnableEncrypt.boolValue;
+            isAutoEncrypt = EditorGUILayout.Toggle("是否加密", isAutoEncrypt);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_EnableEncrypt.boolValue = isAutoEncrypt;
+            }
+
             EditorGUILayout.Space(20);
             
+            // 加密密钥
+            EditorGUI.BeginChangeCheck();
+            var key = m_EncryptKey.stringValue;
+            key = EditorGUILayout.TextField("加密密钥", key);
+            if (EditorGUI.EndChangeCheck())
+            {
+                m_EncryptKey.stringValue = key;
+            }
+
             // 重置配置
-            if (GUILayout.Button("重置配置")) 
+            if (GUILayout.Button("重置配置"))
                 dataSaveSetting.Reset();
 
             serializedObject.ApplyModifiedProperties();

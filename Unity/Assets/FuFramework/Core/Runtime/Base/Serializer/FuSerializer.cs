@@ -150,7 +150,7 @@ namespace FuFramework.Core.Runtime
             var header2 = (byte)stream.ReadByte();
 
             if (header0 != header[0] || header1 != header[1] || header2 != header[2])
-                throw new FuException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 当前为 '{ (char)header0}{(char)header1}{(char)header2}'.");
+                throw new FuException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 文件中为 '{ (char)header0}{(char)header1}{(char)header2}'.");
 
             var version = (byte)stream.ReadByte();
             if (!m_DeserializeCbDict.TryGetValue(version, out var callback))

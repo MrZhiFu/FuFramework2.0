@@ -18,6 +18,7 @@
 - **多数据类型支持**：`bool`, `int`, `long`, `float`, `double`, `string`及任意对象类型
 - **多文件管理**：支持按数据文件分离存储，避免单文件过大
 - **二进制序列化**：高效紧凑的二进制存储格式，包含文件头验证
+- **数据加密支持**：基于AES算法的文件级加密，保护敏感数据安全
 - **框架集成**：完美融入FuFramework的模块化和生命周期管理体系
 - **开发工具**：提供Inspector扩展，便于调试和数据管理
 - **定时自动保存**：支持配置化的自动保存功能，每个Helper独立管理自己的保存状态
@@ -103,18 +104,83 @@ saveManager.LoadAll();
 int fileCount = saveManager.Count;
 ```
 
+## 数据加密功能
+
+### 启用加密
+
+数据保存模块支持基于AES算法的数据文件加密，可通过配置或代码启用：
+
+```csharp
+// 通过配置文件启用加密（推荐）
+var dataSaveSetting = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting;
+dataSaveSetting.EnableEncrypt = true;  // 启用加密功能
+
+// 代码中启用加密（针对特定文件）
+var helper = saveManager.GetOrCreateHelper("SensitiveData");
+helper.EnableEncryption = true;
+helper.EncryptKey = "YourSecretKey123";  // 设置加密密钥
+```
+
+### 加密配置
+
+```csharp
+// 获取加密状态
+bool isEncrypted = helper.EnableEncryption;
+
+// 修改加密密钥
+helper.EncryptKey = "NewSecretKey456";
+
+// 禁用加密（已加密的数据将无法正确读取）
+helper.EnableEncryption = false;
+```
+
+### 加密最佳实践
+
+1. **密钥管理**：使用足够复杂的密钥，建议长度不少于16个字符
+2. **重要数据加密**：仅对敏感数据（用户信息、配置设置等）启用加密
+3. **性能考虑**：加密会增加少量性能开销，普通数据无需加密
+4. **向后兼容**：新功能默认不启用加密，确保与现有数据兼容
+
+```csharp
+// 示例：加密用户设置数据
+var settingsHelper = saveManager.GetOrCreateHelper("UserSettings");
+settingsHelper.EnableEncryption = true;
+settingsHelper.EncryptKey = "UserSettingsKey_2024";
+
+// 保存敏感数据
+settingsHelper.SetString("UserEmail", "user@example.com");
+settingsHelper.SetString("AccessToken", "encrypted_token_value");
+settingsHelper.SetBool("RememberPassword", true);
+settingsHelper.Save();
+
+// 读取加密数据（自动解密）
+settingsHelper.Load();
+string email = settingsHelper.GetString("UserEmail");
+string token = settingsHelper.GetString("AccessToken");
+bool rememberPwd = settingsHelper.GetBool("RememberPassword");
+```
+
+### 安全注意事项
+
+- 加密后的数据文件将无法直接查看内容
+- 修改加密状态会导致已有数据无法读取
+- 密钥变更会使原有加密数据失效
+- 建议定期备份重要数据
+```
+
 ## 文件结构
 
 ### 默认配置
 - **根目录**: `GameData`
-- **文件扩展名**: `.dat`
-- **默认文件**: `DefaultData.dat`
+- **文件扩展名**: 无扩展名（纯文件名）
+- **默认文件**: `DefaultData`
 - **存储位置**: `Application.persistentDataPath/GameData/`
 
 ### 文件格式
 - 二进制序列化，包含自定义文件头验证
 - 7位编码整数压缩，优化文件大小
 - UTF-8编码，支持字符串数据
+- 可选AES加密，保护敏感数据安全
 
 ## 框架集成
 
@@ -174,10 +240,12 @@ public override void OnUpdate(float elapseSeconds, float realElapseSeconds)
 - 基于字典的快速数据项查找
 - SortedDictionary保持数据有序性
 
-### 存储优化
+### 性能优化
+
 - 二进制格式最小化文件大小
 - 数值类型的7位编码
 - 批量操作减少I/O开销
+- 加密功能按需启用，避免不必要的性能开销
 
 ### 最佳实践
 1. **分组相关数据**: 为不同数据类别使用单独的文件
@@ -185,6 +253,8 @@ public override void OnUpdate(float elapseSeconds, float realElapseSeconds)
 3. **使用合适类型**: 选择最适合的数据类型
 4. **处理默认值**: 始终提供有意义的默认值
 5. **清理数据**: 删除未使用的数据以保持文件紧凑
+6. **加密策略**: 仅对敏感数据启用加密，平衡安全性与性能
+7. **密钥管理**: 使用强密钥并妥善保管，避免硬编码在代码中
 
 ## 错误处理
 
@@ -199,6 +269,8 @@ public override void OnUpdate(float elapseSeconds, float realElapseSeconds)
 - **类型不匹配**: 清晰的错误消息和转换详情
 - **文件缺失**: 自动创建新的数据文件
 - **权限问题**: 适当的异常处理和用户反馈
+- **加密错误**: 密钥错误或不匹配时提供详细错误信息
+- **加密状态变更**: 修改加密配置时自动处理兼容性问题
 
 ## 安装
 
@@ -207,6 +279,7 @@ public override void OnUpdate(float elapseSeconds, float realElapseSeconds)
 ## 依赖项
 
 - **FuFramework.Core**: 框架核心模块
+- **FuFramework.Core.Utility.Encryption**: 加密功能模块（AES加密支持）
 - **Unity Engine**: 2019.4 LTS或更高版本
 - **.NET Standard 2.0**: 兼容的脚本运行时
 

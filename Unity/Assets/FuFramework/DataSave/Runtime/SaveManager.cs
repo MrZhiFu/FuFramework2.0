@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using FuFramework.Core.Runtime;
+using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.SaveData.Runtime
@@ -21,11 +22,6 @@ namespace FuFramework.SaveData.Runtime
         protected override int Priority => ModulePriority.Core;
 
         /// <summary>
-        /// 数据文件后缀
-        /// </summary>
-        public const string Suffix = ".dat";
-
-        /// <summary>
         /// 数据根目录
         /// </summary>
         public const string DirRoot = "GameData";
@@ -33,17 +29,12 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 默认数据存档文件名
         /// </summary>
-        public const string DefaultFileName = "DefaultData" + Suffix;
+        public const string DefaultFileName = "DefaultData";
 
         /// <summary>
         /// 所有辅助器字典，key为文件名，value为数据辅助器实例
         /// </summary>
         private readonly Dictionary<string, SaveHelper> m_Helpers = new();
-
-        /// <summary>
-        /// 获取所有本地存储数据项的数量。
-        /// </summary>
-        public int Count => m_Helpers.Count;
 
         /// <summary>
         /// 是否启用自动保存
@@ -54,18 +45,39 @@ namespace FuFramework.SaveData.Runtime
         /// 自动保存间隔(秒, 默认5分钟)
         /// </summary>
         private float m_AutoSaveInterval;
+
+        /// <summary>
+        /// 是否启用加密
+        /// </summary>
+        private bool m_EnableEncryption;
+
+        /// <summary>
+        /// 加密密钥
+        /// </summary>
+        private string m_EncryptKey;
+
+        /// <summary>
+        /// 获取所有本地存储数据项的数量。
+        /// </summary>
+        public int Count => m_Helpers.Count;
         
+
         /// <summary>
         /// 初始化
         /// </summary>
         protected override void OnInit()
         {
-            LoadAll();
-            
             // 读取系统配置
-            m_EnableAutoSave = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting.EnableAutoSave;
-            m_AutoSaveInterval = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting.AutoSaveInterval;
+            var dataSaveSetting = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting;
+            m_EnableAutoSave   = dataSaveSetting.EnableAutoSave;
+            m_AutoSaveInterval = dataSaveSetting.AutoSaveInterval;
+            m_EnableEncryption = dataSaveSetting.EnableEncrypt;
+            m_EncryptKey       = dataSaveSetting.EncryptKey;
             
+            // 加载所有本地存储数据
+            LoadAll();
+
+
             // 初始化所有Helper的自动保存配置
             foreach (var helper in m_Helpers.Values)
             {
@@ -96,6 +108,7 @@ namespace FuFramework.SaveData.Runtime
         /// </summary>
         /// <param name="shutdownType"></param>
         protected override void OnShutdown(ShutdownType shutdownType) => SaveAll();
+        
 
         /// <summary>
         /// 获取或创建指定文件的数据辅助器
@@ -113,7 +126,7 @@ namespace FuFramework.SaveData.Runtime
             helperGo.transform.localScale = Vector3.one;
 
             helper = helperGo.AddComponent<SaveHelper>();
-            helper.Init(fileName, m_EnableAutoSave, m_AutoSaveInterval);
+            helper.Init(fileName, m_EnableAutoSave, m_AutoSaveInterval, m_EnableEncryption, m_EncryptKey);
 
             m_Helpers[fileName] = helper;
             return helper;
@@ -135,6 +148,7 @@ namespace FuFramework.SaveData.Runtime
         /// </summary>
         /// <returns>辅助器字典</returns>
         public Dictionary<string, SaveHelper> GetAllHelpers() => m_Helpers;
+        
 
         /// <summary>
         /// 加载本地存储数据。
@@ -168,8 +182,8 @@ namespace FuFramework.SaveData.Runtime
             // 检查目录是否存在
             if (!Directory.Exists(path)) return;
 
-            // 加载所有.dat数据文件
-            var files = Directory.GetFiles(path, $"*{Suffix}", SearchOption.AllDirectories);
+            // 加载所有数据文件
+            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
             foreach (var filePath in files)
             {
                 var fileName = Path.GetFileName(filePath);
@@ -190,6 +204,7 @@ namespace FuFramework.SaveData.Runtime
                 helper.Save();
             }
         }
+        
 
         /// <summary>
         /// 获取所有数据本地存储项的名称。
@@ -292,6 +307,7 @@ namespace FuFramework.SaveData.Runtime
             }
         }
 
+        
         #region Get
 
         /// <summary>

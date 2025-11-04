@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_EnableAutoSave: 1
   m_AutoSaveInterval: 300
+  m_EnableEncrypt: 0
+  m_EncryptKey: FuFrameworkDataSaveKey

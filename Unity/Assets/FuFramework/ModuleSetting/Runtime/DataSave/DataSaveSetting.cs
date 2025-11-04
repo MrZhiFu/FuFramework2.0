@@ -9,7 +9,7 @@ namespace FuFramework.ModuleSetting.Runtime
     public class DataSaveSetting : ScriptableObject
     {
         /// <summary>
-        /// 资源下载最大并发数量
+        /// 是否启用自动保存
         /// </summary>
         [SerializeField] private bool m_EnableAutoSave = true;
 
@@ -18,7 +18,17 @@ namespace FuFramework.ModuleSetting.Runtime
         /// </summary>
         [SerializeField] private float m_AutoSaveInterval = 300f;
 
-        
+        /// <summary>
+        /// 是否启用加密
+        /// </summary>
+        [SerializeField] private bool m_EnableEncrypt = false;
+
+        /// <summary>
+        /// 加密密钥
+        /// </summary>
+        [SerializeField] private string m_EncryptKey = "FuFrameworkDataSaveKey";
+
+
         /// <summary>
         /// 获取是否启用自动保存
         /// </summary>
@@ -28,7 +38,17 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取自动保存间隔(秒, 默认5分钟)
         /// </summary>
         public float AutoSaveInterval => m_AutoSaveInterval;
+
+        /// <summary>
+        /// 获取是否启用加密
+        /// </summary>
+        public bool EnableEncrypt => m_EnableEncrypt;
         
+        /// <summary>
+        /// 获取加密密钥
+        /// </summary>
+        public string EncryptKey => m_EncryptKey;   
+
         /// <summary>
         /// 重置配置
         /// </summary>
@@ -36,6 +56,8 @@ namespace FuFramework.ModuleSetting.Runtime
         {
             m_EnableAutoSave   = true;
             m_AutoSaveInterval = 300f;
+            m_EnableEncrypt    = false;
+            m_EncryptKey       = "FuFrameworkDataSaveKey";
         }
     }
 }

@@ -10,8 +10,9 @@ namespace FuFramework.SaveData.Runtime
     {
         /// <summary>
         /// 默认游戏数据头标识。
+        /// G M D : GameData 表示游戏数据文件夹
         /// </summary>
-        private static readonly byte[] Header = { (byte)'G', (byte)'F', (byte)'S' };
+        private static readonly byte[] Header = { (byte)'G', (byte)'M', (byte)'D' };
 
         /// <summary>
         /// 获取默认游戏数据头标识。
