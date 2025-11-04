@@ -1,7 +1,6 @@
 using System;
-using System.IO;
-using System.Security.Cryptography;
 using System.Text;
+using System.Security.Cryptography;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -19,6 +18,20 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             public static class Aes
             {
+                /// <summary>
+                /// 用于密钥派生的盐值(Salt)
+                /// - 作用：增加密钥推导的复杂度，防止彩虹表攻击
+                /// - 要求：固定值，长度为16字节(128位)
+                /// </summary>
+                private static readonly byte[] Salt = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
+
+                /// <summary>
+                /// 初始化向量(Initialization Vector - IV)
+                /// - 作用：确保即使相同的明文使用相同的密钥加密，也会产生不同的密文
+                /// - 要求：固定值，长度为16字节(128位)，与AES块大小一致
+                /// </summary>
+                private static readonly byte[] BtIv = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
+
                 #region 加密
 
                 /// <summary>
@@ -38,60 +51,19 @@ namespace FuFramework.Core.Runtime
                 /// <param name="encryptKey">加密密钥</param>
                 public static byte[] AesEncrypt(byte[] encryptByte, string encryptKey)
                 {
-                    if (encryptByte.Length == 0)
-                    {
-                        throw (new Exception("明文不得为空"));
-                    }
+                    if (encryptByte == null || encryptByte.Length == 0) throw new FuException("明文不得为空");
+                    if (string.IsNullOrEmpty(encryptKey)) throw new FuException("密钥不得为空");
 
-                    if (string.IsNullOrEmpty(encryptKey))
-                    {
-                        throw (new Exception("密钥不得为空"));
-                    }
+                    using var aes          = System.Security.Cryptography.Aes.Create();
+                    using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
 
-                    byte[]   strEncrypt;
-                    byte[]   btIv        = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
-                    byte[]   salt        = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
-                    Rijndael aesProvider = Rijndael.Create();
-                    try
-                    {
-                        MemoryStream        mStream   = new MemoryStream();
-                        PasswordDeriveBytes pdb       = new PasswordDeriveBytes(encryptKey, salt);
-                        ICryptoTransform    transform = aesProvider.CreateEncryptor(pdb.GetBytes(32), btIv);
-                        CryptoStream        cStream   = new CryptoStream(mStream, transform, CryptoStreamMode.Write);
-                        cStream.Write(encryptByte, 0, encryptByte.Length);
-                        cStream.FlushFinalBlock();
-                        strEncrypt = mStream.ToArray();
-                        mStream.Close();
-                        mStream.Dispose();
-                        cStream.Close();
-                        cStream.Dispose();
-                    }
-                    catch (IOException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (CryptographicException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (Exception ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    finally
-                    {
-                        aesProvider.Clear();
-                    }
+                    aes.Key     = derivedBytes.GetBytes(32);
+                    aes.IV      = BtIv;
+                    aes.Mode    = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
-                    return strEncrypt;
+                    using var encryptor = aes.CreateEncryptor();
+                    return encryptor.TransformFinalBlock(encryptByte, 0, encryptByte.Length);
                 }
 
                 #endregion
@@ -115,53 +87,19 @@ namespace FuFramework.Core.Runtime
                 /// <param name="decryptKey">解密密钥</param>
                 public static byte[] AesDecrypt(byte[] decryptByte, string decryptKey)
                 {
-                    if (decryptByte.Length == 0) throw (new Exception("密文不得为空"));
-                    if (string.IsNullOrEmpty(decryptKey)) throw (new Exception("密钥不得为空"));
+                    if (decryptByte == null || decryptByte.Length == 0) throw new FuException("密文不得为空");
+                    if (string.IsNullOrEmpty(decryptKey)) throw new FuException("密钥不得为空");
 
-                    byte[]   strDecrypt;
-                    byte[]   btIv        = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
-                    byte[]   salt        = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
-                    Rijndael aesProvider = Rijndael.Create();
-                    try
-                    {
-                        MemoryStream        mStream   = new MemoryStream();
-                        PasswordDeriveBytes pdb       = new PasswordDeriveBytes(decryptKey, salt);
-                        ICryptoTransform    transform = aesProvider.CreateDecryptor(pdb.GetBytes(32), btIv);
-                        CryptoStream        cStream   = new CryptoStream(mStream, transform, CryptoStreamMode.Write);
-                        cStream.Write(decryptByte, 0, decryptByte.Length);
-                        cStream.FlushFinalBlock();
-                        strDecrypt = mStream.ToArray();
-                        mStream.Close();
-                        mStream.Dispose();
-                        cStream.Close();
-                        cStream.Dispose();
-                    }
-                    catch (IOException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (CryptographicException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    catch (Exception ex)
-                    {
-                        // ReSharper disable once PossibleIntendedRethrow
-                        throw ex;
-                    }
-                    finally
-                    {
-                        aesProvider.Clear();
-                    }
+                    using var aes          = System.Security.Cryptography.Aes.Create();
+                    using var derivedBytes = new Rfc2898DeriveBytes(decryptKey, Salt, 10000, HashAlgorithmName.SHA256);
 
-                    return strDecrypt;
+                    aes.Key     = derivedBytes.GetBytes(32);
+                    aes.IV      = BtIv;
+                    aes.Mode    = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var decryptor = aes.CreateDecryptor();
+                    return decryptor.TransformFinalBlock(decryptByte, 0, decryptByte.Length);
                 }
 
                 #endregion
