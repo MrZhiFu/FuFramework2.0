@@ -56,7 +56,7 @@ namespace FuFramework.Model.Runtime
         protected sealed override void OnInitData()
         {
             base.OnInitData();
-            m_FileName = GetFileName();
+            m_FileName        = GetFileName();
             m_DataSaveManager = ModuleManager.GetModule<DataSaveManager>();
 
             if (!m_DataSaveManager)
@@ -66,14 +66,6 @@ namespace FuFramework.Model.Runtime
             }
 
             Load();
-        }
-
-        /// <summary>
-        /// 首次初始化(在数据文件不存在时调用）
-        /// </summary>
-        protected virtual void OnFirstInitDate()
-        {
-            FuLog.Info($"首次初始化Model: {m_FileName}");
         }
 
         /// <summary>
@@ -123,7 +115,7 @@ namespace FuFramework.Model.Runtime
             try
             {
                 var dataJson = JsonConvert.SerializeObject(this, Formatting.None);
-                m_DataSaveManager.SetString(m_FileName, dataJson);
+                m_DataSaveManager.SetString(m_FileName, dataJson, m_FileName);
                 m_DataSaveManager.Save(m_FileName);
                 FuLog.Info($"Model数据保存成功: {m_FileName}");
             }
@@ -134,19 +126,11 @@ namespace FuFramework.Model.Runtime
         }
 
         /// <summary>
-        /// 清除本地存储的数据
+        /// 首次初始化(在数据文件不存在时调用）
         /// </summary>
-        public void ClearData()
+        protected virtual void OnFirstInitDate()
         {
-            if (!m_DataSaveManager)
-            {
-                FuLog.Warning($"无法清除{m_FileName}，数据保存管理器未找到!");
-                return;
-            }
-
-            m_DataSaveManager.RemoveData(m_FileName, m_FileName);
-            m_DataSaveManager.Save(m_FileName);
-            FuLog.Info($"Model数据已清除: {m_FileName}");
+            FuLog.Info($"首次初始化Model: {m_FileName}");
         }
     }
 }

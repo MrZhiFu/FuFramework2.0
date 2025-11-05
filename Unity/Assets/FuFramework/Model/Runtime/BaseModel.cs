@@ -17,7 +17,7 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        public void Init()
+        internal void Init()
         {
             OnInitData();
             RegisterEvents();
@@ -26,11 +26,12 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 释放
         /// </summary>
-        public void Dispose()
+        internal void Dispose()
         {
             OnDispose();
             UnRegisterEvents();
         }
+        
         
         /// <summary>
         /// 用于初始化Model数据
@@ -47,6 +48,7 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         protected virtual void RegisterEvents() { }
 
+        
         /// <summary>
         /// 反注册(清理)所有注册的事件
         /// </summary>
@@ -57,7 +59,7 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         /// <param name="eventId">事件Id</param>
         /// <param name="handler">事件处理方法</param>
-        public void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
+        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
         {
             m_EventRegister.Subscribe(eventId, handler);
         }

@@ -10,7 +10,7 @@ namespace FuFramework.Model.Runtime
     /// <summary>
     /// Model管理器
     /// 1.将所有的Model存到字典里统一管理
-    /// 2.提供创建、获取、删除指定Model的方法
+    /// 2.提供获取、删除指定Model的方法
     /// </summary>
     [ModuleDependency(typeof(EventManager), typeof(DataSaveManager))]
     public class ModelManager : FuModule
@@ -38,19 +38,6 @@ namespace FuFramework.Model.Runtime
         protected override void OnShutdown(ShutdownType shutdownType) => Clear();
 
         /// <summary>
-        /// 清理所有的Model(一般在游戏登出时才调用)
-        /// </summary>
-        private void Clear()
-        {
-            foreach (var (_, model) in m_ModelDict)
-            {
-                model.Dispose();
-            }
-
-            m_ModelDict.Clear();
-        }
-
-        /// <summary>
         /// 获取指定类型的Model
         /// </summary>
         /// <typeparam name="T">指定类型</typeparam>
@@ -69,11 +56,24 @@ namespace FuFramework.Model.Runtime
         public void RemoveModel<T>()
         {
             var key = typeof(T);
-            if (!m_ModelDict.ContainsKey(key)) FuLog.Error($"删除Model失败! '{key.Name}' 不存在");
+            if (!m_ModelDict.ContainsKey(key)) FuLog.Error($"[ModelManager] 删除Model失败! '{key.Name}' 不存在");
 
             var model = m_ModelDict[key];
             if (m_ModelDict.Remove(key)) 
                 model.Dispose();
+        }
+
+        /// <summary>
+        /// 清理所有的Model(一般在游戏登出时才调用)
+        /// </summary>
+        private void Clear()
+        {
+            foreach (var (_, model) in m_ModelDict)
+            {
+                model.Dispose();
+            }
+
+            m_ModelDict.Clear();
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace FuFramework.Model.Runtime
         private T CreateModel<T>() where T : BaseModel, new()
         {
             var key = typeof(T);
-            if (m_ModelDict.ContainsKey(key)) FuLog.Error($"创建Model失败! '{key.Name}' 已存在");
+            if (m_ModelDict.ContainsKey(key)) FuLog.Error($"[ModelManager] 创建Model失败! '{key.Name}' 已存在");
 
             var model = new T();
             model.Init();
