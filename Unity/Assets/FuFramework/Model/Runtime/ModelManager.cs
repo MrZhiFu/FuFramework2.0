@@ -21,7 +21,9 @@ namespace FuFramework.Model.Runtime
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Game;
 
-        /// 存储所有的Model字典。Key：Model类型， value：Model
+        /// <summary>
+        /// 存储所有的Model字典。Key：Model类型， value：Model实例
+        /// </summary>
         private readonly Dictionary<Type, BaseModel> m_ModelDict = new();
 
         /// <summary>
@@ -38,11 +40,11 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 清理所有的Model(一般在游戏登出时才调用)
         /// </summary>
-        public void Clear()
+        private void Clear()
         {
             foreach (var (_, model) in m_ModelDict)
             {
-                model.OnDispose();
+                model.Dispose();
             }
 
             m_ModelDict.Clear();
@@ -61,19 +63,17 @@ namespace FuFramework.Model.Runtime
         }
 
         /// <summary>
-        /// 删除指定的Model
+        /// 移除指定的Model
         /// </summary>
         /// <typeparam name="T">指定类型</typeparam>
-        public void DeleteModel<T>()
+        public void RemoveModel<T>()
         {
             var key = typeof(T);
-            if (!m_ModelDict.ContainsKey(key))
-                FuLog.Error($"删除Model失败! '{key.Name}' 不存在");
+            if (!m_ModelDict.ContainsKey(key)) FuLog.Error($"删除Model失败! '{key.Name}' 不存在");
 
             var model = m_ModelDict[key];
-
-            if (m_ModelDict.Remove(key))
-                model.OnDispose();
+            if (m_ModelDict.Remove(key)) 
+                model.Dispose();
         }
 
         /// <summary>

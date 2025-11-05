@@ -19,19 +19,28 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         public void Init()
         {
-            InitData();
+            OnInitData();
             RegisterEvents();
         }
 
         /// <summary>
+        /// 释放
+        /// </summary>
+        public void Dispose()
+        {
+            OnDispose();
+            UnRegisterEvents();
+        }
+        
+        /// <summary>
         /// 用于初始化Model数据
         /// </summary>
-        protected virtual void InitData() { }
+        protected virtual void OnInitData() { }
 
         /// <summary>
         /// 被删除时调用(游戏退出时)
         /// </summary>
-        public virtual void OnDispose() => UnRegisterEvents();
+        protected virtual void OnDispose() { }
 
         /// <summary>
         /// 在此方法中注册所有事件

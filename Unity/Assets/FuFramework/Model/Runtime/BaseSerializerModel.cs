@@ -48,17 +48,14 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 获取存储的文件名（可重写以自定义）
         /// </summary>
-        protected virtual string GetFileName()
-        {
-            return GetType().Name;
-        }
+        protected virtual string GetFileName() => GetType().Name;
 
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void InitData()
+        protected sealed override void OnInitData()
         {
-            base.InitData();
+            base.OnInitData();
             m_FileName = GetFileName();
             m_DataSaveManager = ModuleManager.GetModule<DataSaveManager>();
 
@@ -68,10 +65,39 @@ namespace FuFramework.Model.Runtime
                 return;
             }
 
+            Load();
+        }
+
+        /// <summary>
+        /// 首次初始化(在数据文件不存在时调用）
+        /// </summary>
+        protected virtual void OnFirstInitDate()
+        {
+            FuLog.Info($"首次初始化Model: {m_FileName}");
+        }
+
+        /// <summary>
+        /// 释放(自动保存数据)
+        /// </summary>
+        protected override void OnDispose()
+        {
+            Save();
+            base.OnDispose();
+        }
+
+        /// <summary>
+        /// 加载数据到自身对象
+        /// </summary>
+        private void Load()
+        {
             try
             {
                 var dataJson = m_DataSaveManager.GetString(m_FileName, m_FileName);
-                if (string.IsNullOrEmpty(dataJson)) return;
+                if (string.IsNullOrEmpty(dataJson))
+                {
+                    OnFirstInitDate();
+                    return;
+                }
 
                 // JSON 字符串中的数据填充到自身对象中
                 JsonConvert.PopulateObject(dataJson, this);
@@ -83,17 +109,10 @@ namespace FuFramework.Model.Runtime
             }
         }
 
-        public override void OnDispose()
-        {
-            // 自动保存数据
-            Save();
-            base.OnDispose();
-        }
-
         /// <summary>
-        /// 保存数据到本地
+        /// 保存自身数据到本地
         /// </summary>
-        public void Save()
+        private void Save()
         {
             if (!m_DataSaveManager)
             {
