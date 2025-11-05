@@ -1,10 +1,9 @@
 using System;
 using System.IO;
 using UnityEngine;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.SaveData.Runtime
@@ -27,12 +26,12 @@ namespace FuFramework.SaveData.Runtime
         public const string DirRoot = "GameData";
         
         /// <summary>
-        /// 默认数据存档文件名
+        /// 默认数据存储文件名
         /// </summary>
         public const string DefaultFileName = "DefaultData";
 
         /// <summary>
-        /// 所有辅助器字典，key为文件名，value为数据辅助器实例
+        /// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例
         /// </summary>
         private readonly Dictionary<string, DataSaveHelper> m_Helpers = new();
 
@@ -76,8 +75,7 @@ namespace FuFramework.SaveData.Runtime
             
             // 加载所有本地存储数据
             LoadAll();
-
-
+            
             // 初始化所有Helper的自动保存配置
             foreach (var helper in m_Helpers.Values)
             {
@@ -117,7 +115,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>数据辅助器实例</returns>
         public DataSaveHelper GetOrCreateHelper(string fileName)
         {
-            if (string.IsNullOrEmpty(fileName)) throw new FuException("[SavaManager] 文件名不能为空");
+            if (string.IsNullOrEmpty(fileName)) throw new FuException("[DataSaveManager] 文件名不能为空");
             if (m_Helpers.TryGetValue(fileName, out var helper)) return helper;
 
             // 创建新的辅助器实例
@@ -139,7 +137,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>数据辅助器</returns>
         public DataSaveHelper GetHelper(string fileName)
         {
-            if (string.IsNullOrEmpty(fileName)) throw new FuException("[SavaManager] 文件名不能为空");
+            if (string.IsNullOrEmpty(fileName)) throw new FuException("[DataSaveManager] 文件名不能为空");
             return m_Helpers.GetValueOrDefault(fileName);
         }
 
@@ -223,7 +221,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="results">所有数据本地存储项的名称。</param>
         public void GetAllHelperNames(List<string> results)
         {
-            if (results is null) throw new FuException("结果列表不能为空.");
+            if (results is null) throw new FuException("[DataSaveManager] 结果列表不能为空.");
             results.AddRange(m_Helpers.Select(helper => helper.Key));
         }
 
@@ -278,7 +276,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>指定的数据本地存储项是否存在。</returns>
         public bool HasData(string dataName, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) && helper.HasData(dataName);
         }
 
@@ -290,7 +288,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>是否移除指定数据本地存储项成功。</returns>
         public bool RemoveData(string dataName, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) && helper.RemoveData(dataName);
         }
 
@@ -316,7 +314,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的布尔值。</returns>
         public bool GetBool(string dataName, string fileName = DefaultFileName ,bool defaultValue = false)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) && helper.GetBool(dataName, defaultValue);
         }
 
@@ -329,7 +327,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的整数值。</returns>
         public int GetInt(string dataName, string fileName = DefaultFileName, int defaultValue = 0)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetInt(dataName, defaultValue) : defaultValue;
         }
 
@@ -343,7 +341,7 @@ namespace FuFramework.SaveData.Runtime
         /// <exception cref="FuException"></exception>
         public long GetLong(string dataName, string fileName = DefaultFileName, long defaultValue = 0)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetLong(dataName, defaultValue) : defaultValue;
         }
 
@@ -356,7 +354,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的浮点数值。</returns>
         public float GetFloat(string dataName, string fileName = DefaultFileName, float defaultValue = 0)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetFloat(dataName, defaultValue) : defaultValue;
         }
 
@@ -370,7 +368,7 @@ namespace FuFramework.SaveData.Runtime
         /// <exception cref="FuException"></exception>
         public double GetDouble(string dataName, string fileName = DefaultFileName, double defaultValue = 0)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetDouble(dataName, defaultValue) : defaultValue;
         }
 
@@ -383,7 +381,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的字符串值。</returns>
         public string GetString(string dataName, string fileName = DefaultFileName, string defaultValue = null)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetString(dataName, defaultValue) : defaultValue;
         }
 
@@ -396,7 +394,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的对象。</returns>
         public T GetObject<T>(string dataName, string fileName = DefaultFileName) where T : class, new()
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetObject<T>(dataName) : null;
         }
 
@@ -409,8 +407,8 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>读取的对象。</returns>
         public object GetObject(string dataName, Type objectType, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
-            if (objectType is null) throw new FuException("要存储的数据对象不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
+            if (objectType is null) throw new FuException("[DataSaveManager] 要存储的数据对象不能为空.");
             return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetObject(objectType, dataName) : null;
         }
 
@@ -426,7 +424,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">要写入数据本地存储项的文件名。</param>
         public void SetBool(string dataName, bool value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetBool(dataName, value);
         }
@@ -439,7 +437,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">要写入数据本地存储项的文件名。</param>
         public void SetInt(string dataName, int value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetInt(dataName, value);
         }
@@ -453,7 +451,7 @@ namespace FuFramework.SaveData.Runtime
         /// <exception cref="FuException"></exception>
         public void SetLong(string dataName, long value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetLong(dataName, value);
         }
@@ -466,7 +464,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">要写入数据本地存储项的文件名。</param>
         public void SetFloat(string dataName, float value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetFloat(dataName, value);
         }
@@ -480,7 +478,7 @@ namespace FuFramework.SaveData.Runtime
         /// <exception cref="FuException"></exception>
         public void SetDouble(string dataName, double value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetDouble(dataName, value);
         }
@@ -493,7 +491,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">要写入数据本地存储项的文件名。</param>
         public void SetString(string dataName, string value, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetString(dataName, value);
         }
@@ -507,7 +505,7 @@ namespace FuFramework.SaveData.Runtime
         /// <typeparam name="T">要写入对象的类型。</typeparam>
         public void SetObject<T>(string dataName, T obj, string fileName = DefaultFileName) where T : class, new()
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetObject(dataName, obj);
         }
@@ -520,7 +518,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="fileName">要写入数据本地存储项的文件名。</param>
         public void SetObject(string dataName, object obj, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrEmpty(dataName)) throw new FuException("数据名称不能为空.");
+            if (string.IsNullOrEmpty(dataName)) throw new FuException("[DataSaveManager] 数据名称不能为空.");
             if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
             helper.SetObject(dataName, obj);
         }
