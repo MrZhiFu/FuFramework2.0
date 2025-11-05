@@ -31,6 +31,12 @@ namespace FuFramework.Core.Runtime
         private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new();
 
         /// <summary>
+        /// 记录正在注册的模块类型，用于检测循环依赖
+        /// </summary>
+        private static readonly HashSet<Type> RegisteringSet = new();
+
+
+        /// <summary>
         /// 模块根节点
         /// </summary>
         private static Transform m_ModuleRoot;
@@ -92,11 +98,6 @@ namespace FuFramework.Core.Runtime
         public static List<FuModule> GetAllModules() => ModuleList.ToList();
 
         /// <summary>
-        /// 记录正在注册的模块类型，用于检测循环依赖
-        /// </summary>
-        private static readonly HashSet<Type> m_RegisteringSet = new();
-
-        /// <summary>
         /// 注册游戏框架模块
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -112,7 +113,7 @@ namespace FuFramework.Core.Runtime
         {
             if (!typeof(FuModule).IsAssignableFrom(moduleType))
             {
-                Debug.LogError($"类型 {moduleType.Name} 不是有效的FuModule类型!");
+                FuLog.Error($"类型 {moduleType.Name} 不是有效的FuModule类型!");
                 return null;
             }
 
@@ -123,7 +124,7 @@ namespace FuFramework.Core.Runtime
                 if (module is not null) return module;
 
                 // 添加到正在注册集合，防止循环依赖
-                m_RegisteringSet.Add(moduleType);
+                RegisteringSet.Add(moduleType);
 
                 try
                 {
@@ -136,7 +137,7 @@ namespace FuFramework.Core.Runtime
                     {
                         // 创建模块的GameObject
                         var moduleObject = new GameObject();
-                        module = moduleObject.AddComponent(moduleType) as FuModule;
+                        module            = moduleObject.AddComponent(moduleType) as FuModule;
                         moduleObject.name = $"[Module]-{moduleType.Name}";
 
                         // 确保框架模块在场景切换时不被销毁
@@ -148,11 +149,11 @@ namespace FuFramework.Core.Runtime
 
                     if (module is null)
                     {
-                        Debug.LogError($"注册模块 {moduleType.Name} 失败: 无法创建模块组件!");
+                        FuLog.Error($"注册模块 {moduleType.Name} 失败: 无法创建模块组件!");
                         return null;
                     }
 
-                    // 注册模块到链表和缓存
+                    // 注册模块到链表和缓存中
                     RegisterModuleInternal(module);
 
                     return module;
@@ -160,12 +161,12 @@ namespace FuFramework.Core.Runtime
                 finally
                 {
                     // 从正在注册集合中移除
-                    m_RegisteringSet.Remove(moduleType);
+                    RegisteringSet.Remove(moduleType);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"注册模块 {moduleType.Name} 失败: {e.Message}");
+                FuLog.Error($"注册模块 {moduleType.Name} 失败: {e.Message}");
                 return null;
             }
         }
@@ -175,7 +176,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void RegisterAllModules()
         {
-            Debug.Log("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
+            FuLog.Info("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
 
             try
             {
@@ -184,22 +185,22 @@ namespace FuFramework.Core.Runtime
 
                 if (moduleTypes.Count == 0)
                 {
-                    Debug.LogWarning("未找到任何继承自FuModule的类型");
+                    FuLog.Warning("未找到任何继承自FuModule的类型");
                     return;
                 }
 
-                Debug.Log($"找到<color=#00FBD5> {moduleTypes.Count} </color>个框架模块");
+                FuLog.Info($"找到<color=#00FBD5> {moduleTypes.Count} </color>个框架模块");
 
                 foreach (var fuModuleType in moduleTypes)
                 {
                     RegisterModule(fuModuleType);
                 }
 
-                Debug.Log("<color=#00FBD5>------所有模块注册完成------</color>");
+                FuLog.Info("<color=#00FBD5>------所有模块注册完成------</color>");
             }
             catch (Exception e)
             {
-                Debug.LogError($"查找并注册所有继承于FuModule的模块失败: {e.Message}\n{e.StackTrace}");
+                FuLog.Error($"查找并注册所有继承于FuModule的模块失败: {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -236,11 +237,11 @@ namespace FuFramework.Core.Runtime
                 else
                     Object.DestroyImmediate(module.gameObject);
 
-                Debug.Log($"<color=#00FBD5>------卸载模块: {typeof(T).Name}</color>");
+                FuLog.Info($"<color=#00FBD5>------卸载模块: {typeof(T).Name}</color>");
             }
             catch (Exception e)
             {
-                Debug.LogError($"卸载模块 {typeof(T).Name} 失败: {e.Message}");
+                FuLog.Error($"卸载模块 {typeof(T).Name} 失败: {e.Message}");
             }
         }
 
@@ -257,13 +258,13 @@ namespace FuFramework.Core.Runtime
                 {
                     if (!typeof(FuModule).IsAssignableFrom(depType))
                     {
-                        Debug.LogError($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuModule类型!");
+                        FuLog.Error($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuModule类型!");
                         continue;
                     }
 
                     if (GetModule(depType) is null)
                     {
-                        Debug.Log($"框架模块 {moduleType.Name} 依赖 {depType.Name}，自动注册依赖模块...");
+                        FuLog.Info($"框架模块 {moduleType.Name} 依赖 {depType.Name}，自动注册依赖模块...");
                         RegisterModule(depType);
                     }
                 }
@@ -299,7 +300,7 @@ namespace FuFramework.Core.Runtime
                 module.IsInitialized = true;
             }
 
-            Debug.Log($"<color=#00FBD5>注册框架模块:{module.gameObject.name}, 优先级:{module.Priority}</color>");
+            FuLog.Info($"<color=#00FBD5>注册框架模块:{module.gameObject.name}, 优先级:{module.Priority}</color>");
         }
 
         /// <summary>
@@ -309,7 +310,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>依赖链字符串</returns>
         private static string GetDependencyChainString(Type currentType)
         {
-            var chain = string.Join(" → ", m_RegisteringSet.Select(t => t.Name));
+            var chain = string.Join(" → ", RegisteringSet.Select(t => t.Name));
             return $"{chain} → {currentType.Name}";
         }
 
@@ -320,22 +321,22 @@ namespace FuFramework.Core.Runtime
         {
             var fuModuleType = typeof(FuModule);
             var allTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly =>
-                {
-                    try
-                    {
-                        return assembly.GetTypes();
-                    }
-                    catch
-                    {
-                        return Array.Empty<Type>();
-                    }
-                })
-                .Where(type => type != fuModuleType &&
-                               fuModuleType.IsAssignableFrom(type) &&
-                               !type.IsAbstract &&
-                               !type.IsInterface)
-                .ToList();
+                                    .SelectMany(assembly =>
+                                    {
+                                        try
+                                        {
+                                            return assembly.GetTypes();
+                                        }
+                                        catch
+                                        {
+                                            return Array.Empty<Type>();
+                                        }
+                                    })
+                                    .Where(type => type != fuModuleType                &&
+                                                   fuModuleType.IsAssignableFrom(type) &&
+                                                   !type.IsAbstract                    &&
+                                                   !type.IsInterface)
+                                    .ToList();
 
             return allTypes;
         }
@@ -361,34 +362,61 @@ namespace FuFramework.Core.Runtime
             }
         }
 
+
         /// <summary>
         /// 关闭游戏框架，退出游戏时调用。由外部代码调用，如设置界面的重启/退出按钮。
         /// </summary>
         /// <param name="shutdownType">关闭游戏框架类型。</param>
         public static void Shutdown(ShutdownType shutdownType)
         {
-            // 按注册顺序逆序关闭模块
-            var current = ModuleList.Last;
-            while (current is not null)
+            FuLog.Info($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {ModuleList.Count} ====</color>");
+
+            // 使用栈来存储需要关闭的模块（逆序关闭）
+            var shutdownStack = new Stack<FuModule>();
+
+            // 将模块按关闭顺序压入栈中
+            var current = ModuleList.First;
+            while (current != null)
             {
+                if (current.Value.IsInitialized)
+                {
+                    shutdownStack.Push(current.Value);
+                }
+
+                current = current.Next;
+            }
+
+            // 从栈中弹出并关闭模块（逆序关闭）
+            while (shutdownStack.Count > 0)
+            {
+                var module = shutdownStack.Pop();
                 try
                 {
-                    var module = current.Value;
-                    Debug.Log($"<color=#00FBD5>------关闭框架模块: {module.gameObject.name}, 关闭类型: {shutdownType}---</color>");
+                    FuLog.Info($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
                     module.OnShutdown(shutdownType);
                     module.IsInitialized = false;
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"框架模块关闭失败: {e.Message}");
+                    FuLog.Error($"模块 {module.GetType().Name} 关闭失败: {e.Message}");
+                    FuLog.Error($"异常类型: {e.GetType().Name}");
+                    FuLog.Error($"堆栈跟踪: {e.StackTrace}");
                 }
-
-                current = current.Previous;
             }
 
+            // 清空管理器的集合
             ModuleList.Clear();
             ModuleCacheDict.Clear();
+            RegisteringSet.Clear();
 
+            ExecuteShutdown(shutdownType);
+        }
+
+        /// <summary>
+        /// 执行具体的关闭操作
+        /// </summary>
+        private static void ExecuteShutdown(ShutdownType shutdownType)
+        {
             switch (shutdownType)
             {
                 case ShutdownType.Restart:
@@ -401,6 +429,7 @@ namespace FuFramework.Core.Runtime
 #endif
                     break;
                 case ShutdownType.Unregister:
+                    // 不需要额外操作
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shutdownType), shutdownType, null);

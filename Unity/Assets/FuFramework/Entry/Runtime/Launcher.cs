@@ -31,7 +31,7 @@ namespace FuFramework.Entry.Runtime
         /// <summary>
         /// 获取当前流程
         /// </summary>
-        public ProcedureBase CurrentProcedure => ModuleManager.GetModule<ProcedureManager>().CurrentProcedure;
+        public ProcedureBase CurrentProcedure => ModuleManager.GetModule<ProcedureManager>()?.CurrentProcedure ?? m_EntryProcedure;
 
 
         /// <summary>
