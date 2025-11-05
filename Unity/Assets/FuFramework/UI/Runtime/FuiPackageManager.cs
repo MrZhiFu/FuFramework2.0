@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
+using System.Linq;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -297,7 +298,8 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void ReleaseAll()
         {
-            foreach (var pkgName in m_loadedPkgDict.Keys)
+            var pkgsToRemove = m_loadedPkgDict.Keys.ToList();
+            foreach (var pkgName in pkgsToRemove)
             {
                 ReleasePackage(pkgName);
             }
