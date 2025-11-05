@@ -134,7 +134,7 @@ namespace FuFramework.Entry.Runtime
         /// <summary>
         /// 获取本地持久化管理模块。
         /// </summary>
-        public static SaveManager SaveModule => ModuleManager.GetModule<SaveManager>();
+        public static DataSaveManager DataSaveModule => ModuleManager.GetModule<DataSaveManager>();
         
         /// <summary>
         /// 获取数据模型管理模块。

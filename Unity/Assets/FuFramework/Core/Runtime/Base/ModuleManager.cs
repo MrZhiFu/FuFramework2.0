@@ -292,7 +292,7 @@ namespace FuFramework.Core.Runtime
             // 添加到缓存
             ModuleCacheDict[module.GetType()] = module;
 
-            // 如果已经初始化过，立即初始化新模块
+            // 如果模块没有初始化过，立即初始化新模块
             if (module is { IsInitialized: false } && Application.isPlaying)
             {
                 module.OnInit();

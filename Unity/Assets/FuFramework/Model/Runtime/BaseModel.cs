@@ -5,8 +5,8 @@ using FuFramework.Event.Runtime;
 namespace FuFramework.Model.Runtime
 {
     /// <summary>
-    /// 所有Model基类
-    /// 1.提供该Model事件的注册，广播
+    /// Model基类
+    /// 1.提供事件的注册，广播
     /// 2.提供一些初始化接口
     /// </summary>
     public abstract class BaseModel
@@ -24,17 +24,14 @@ namespace FuFramework.Model.Runtime
         }
 
         /// <summary>
-        /// 被删除时调用(游戏退出时)
-        /// </summary>
-        public virtual void OnDispose()
-        {
-            UnRegisterEvents();
-        }
-
-        /// <summary>
         /// 用于初始化Model数据
         /// </summary>
         protected virtual void InitData() { }
+
+        /// <summary>
+        /// 被删除时调用(游戏退出时)
+        /// </summary>
+        public virtual void OnDispose() => UnRegisterEvents();
 
         /// <summary>
         /// 在此方法中注册所有事件
@@ -44,10 +41,7 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 反注册(清理)所有注册的事件
         /// </summary>
-        private void UnRegisterEvents()
-        {
-            m_EventRegister.Clear();
-        }
+        private void UnRegisterEvents() => m_EventRegister.Clear();
 
         /// <summary>
         /// 订阅事件

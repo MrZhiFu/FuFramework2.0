@@ -16,7 +16,7 @@ namespace FuFramework.SaveData.Runtime
     /// 3. 序列化/反序列化数据。
     /// 注意：每个实例对应一个特定的数据文件。
     /// </summary>
-    public class SaveHelper : MonoBehaviour
+    public class DataSaveHelper : MonoBehaviour
     {
         /// <summary>
         /// 文件名
@@ -86,7 +86,7 @@ namespace FuFramework.SaveData.Runtime
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[SaveHelper] 文件名不能为空");
 
             FileName = fileName;
-            var path = Path.Combine(Application.persistentDataPath, SaveManager.DirRoot, fileName);
+            var path = Path.Combine(Application.persistentDataPath, DataSaveManager.DirRoot, fileName);
             FilePath = Utility.Path.GetRegularPath(path);
 
             Data = new Data();

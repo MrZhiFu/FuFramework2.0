@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
+using FuFramework.SaveData.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Model.Runtime
@@ -11,7 +12,7 @@ namespace FuFramework.Model.Runtime
     /// 1.将所有的Model存到字典里统一管理
     /// 2.提供创建、获取、删除指定Model的方法
     /// </summary>
-    [ModuleDependency(typeof(EventManager))]
+    [ModuleDependency(typeof(EventManager), typeof(DataSaveManager))]
     public class ModelManager : FuModule
     {
         /// <summary>
@@ -32,10 +33,7 @@ namespace FuFramework.Model.Runtime
         /// 关闭并清理游戏框架模块。
         /// </summary>
         /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
-        {
-            Clear();
-        }
+        protected override void OnShutdown(ShutdownType shutdownType) => Clear();
 
         /// <summary>
         /// 清理所有的Model(一般在游戏登出时才调用)
@@ -58,9 +56,7 @@ namespace FuFramework.Model.Runtime
         public T GetModel<T>() where T : BaseModel, new()
         {
             var key = typeof(T);
-
-            if (m_ModelDict.TryGetValue(key, out var model))
-                return model as T;
+            if (m_ModelDict.TryGetValue(key, out var model)) return model as T;
             return CreateModel<T>();
         }
 
@@ -71,7 +67,6 @@ namespace FuFramework.Model.Runtime
         public void DeleteModel<T>()
         {
             var key = typeof(T);
-
             if (!m_ModelDict.ContainsKey(key))
                 FuLog.Error($"删除Model失败! '{key.Name}' 不存在");
 
@@ -89,9 +84,7 @@ namespace FuFramework.Model.Runtime
         private T CreateModel<T>() where T : BaseModel, new()
         {
             var key = typeof(T);
-
-            if (m_ModelDict.ContainsKey(key))
-                FuLog.Error($"创建Model失败! '{key.Name}' 已存在");
+            if (m_ModelDict.ContainsKey(key)) FuLog.Error($"创建Model失败! '{key.Name}' 已存在");
 
             var model = new T();
             model.Init();

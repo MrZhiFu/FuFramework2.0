@@ -9,14 +9,14 @@ namespace FuFramework.SaveData.Editor
     /// <summary>
     /// 自定义本地数据存储管理器的Inspector
     /// </summary>
-    [CustomEditor(typeof(SaveManager))]
+    [CustomEditor(typeof(DataSaveManager))]
     internal sealed class SaveManagerInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            var saveManager = target as SaveManager;
+            var saveManager = target as DataSaveManager;
             if (!saveManager) return;
 
             if (!EditorApplication.isPlaying) return;
