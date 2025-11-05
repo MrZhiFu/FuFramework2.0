@@ -10,18 +10,24 @@ public class DownloadModuleTest : MonoBehaviour
 {
     private void Start()
     {
-        GlobalModule.EventModule.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
-        GlobalModule.EventModule.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
-        GlobalModule.EventModule.Subscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
-        GlobalModule.EventModule.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
+        var eventModule = GlobalModule.EventModule;
+        if (eventModule== null) return;
+        
+        eventModule.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
+        eventModule.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
+        eventModule.Subscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
+        eventModule.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
     }
 
     private void OnDestroy()
     {
-        GlobalModule.EventModule.Unsubscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
-        GlobalModule.EventModule.Unsubscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
-        GlobalModule.EventModule.Unsubscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
-        GlobalModule.EventModule.Unsubscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
+        var eventModule = GlobalModule.EventModule;
+        if (eventModule== null) return;
+        
+        eventModule.Unsubscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
+        eventModule.Unsubscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
+        eventModule.Unsubscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
+        eventModule.Unsubscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
     }
 
     private void Update()
