@@ -62,7 +62,7 @@ namespace FuFramework.Entry.Runtime
         public static CoroutineManager CoroutineModule => ModuleManager.GetModule<CoroutineManager>();
 
         /// <summary>
-        /// 获取定时器管理模块。
+        /// 获取计时器管理模块。
         /// </summary>
         public static TimerManager TimerModule => ModuleManager.GetModule<TimerManager>();
 

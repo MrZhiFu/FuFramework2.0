@@ -1,66 +1,34 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Timer.Runtime
 {
     /// <summary>
-    /// 定时器管理器。
-    /// 用于管理定时器任务，提供添加、移除、检查定时器等功能。
+    /// 基于 UniTask 的计时器系统。
+    /// 用于管理计时器任务，提供启动计时器、暂停计时器、恢复计时器、停止计时器、获取计时器状态等功能。
     /// </summary>
-    public sealed partial class TimerManager : FuModule
+    public sealed class TimerManager : FuModule
     {
         /// <summary>
         /// 获取游戏框架模块优先级。
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Game;
-        
-        /// <summary>
-        /// 正在更新的定时器字典，key为回调函数，value为定时器项
-        /// </summary>
-        private readonly Dictionary<Action<object>, TimerItem> m_UpdatingDict = new();
 
         /// <summary>
-        /// 待添加的定时器字典，key为回调函数，value为定时器项
+        /// 计时器字典，key为计时器Id，value为计时器项
         /// </summary>
-        private readonly Dictionary<Action<object>, TimerItem> m_WaitToAddDict = new();
+        private readonly Dictionary<int, TimerInfo> m_TimerDict = new();
+
 
         /// <summary>
-        /// 待移除的定时器列表
+        /// 获取当前计时器数量
         /// </summary>
-        private readonly List<TimerItem> m_WaitToRemoveList = new();
-
-        /// <summary>
-        /// 定时器池，用于复用定时器项
-        /// </summary>
-        private readonly List<TimerItem> m_PoolList = new(100);
-
-        /// <summary>
-        /// 静态锁对象，用于同步多线程环境下的操作
-        /// </summary>
-        private static readonly object Locker = new();
-
-        /// <summary>
-        /// 触发回调时是否需要捕获异常
-        /// </summary>
-        public static bool CatchCallbackExceptions = false;
-
-        /// <summary>
-        /// 获取当前定时器数量
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                lock (Locker)
-                {
-                    return m_WaitToAddDict.Count + m_UpdatingDict.Count;
-                }
-            }
-        }
+        public int Count => m_TimerDict.Count;
 
         /// <summary>
         /// 初始化
@@ -68,239 +36,275 @@ namespace FuFramework.Timer.Runtime
         protected override void OnInit() { }
 
         /// <summary>
-        /// 游戏框架模块轮询。
-        /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
-        {
-            lock (Locker)
-            {
-                if (m_UpdatingDict.Count > 0)
-                {
-                    // 遍历正在更新的定时器字典，执行/更新/删除每个定时器
-                    foreach (var (_, timerItem) in m_UpdatingDict)
-                    {
-                        if (timerItem.Deleted)
-                        {
-                            m_WaitToRemoveList.Add(timerItem);
-                            continue;
-                        }
-
-                        // 计算已过时间是否大于间隔时间
-                        timerItem.Elapsed += realElapseSeconds;
-                        if (timerItem.Elapsed < timerItem.Interval) continue;
-
-                        // 已过时间大于间隔时间，已过时间减去间隔时间，理论上应该等于0，为了防止误差出现负数和超过一帧的时间，即小于0或大于0.03f，则重置为0
-                        // 0.03f是参考30Fps的一帧的时间，防止出现超过一帧的时间
-                        timerItem.Elapsed -= timerItem.Interval;
-                        if (timerItem.Elapsed is < 0 or > 0.03f)
-                            timerItem.Elapsed = 0;
-
-                        // 重复次数大于0，则重复次数减1，如果等于0，则添加到待移除列表中
-                        if (timerItem.Repeat > 0)
-                        {
-                            timerItem.Repeat--;
-                            if (timerItem.Repeat == 0)
-                            {
-                                timerItem.Deleted = true;
-                                m_WaitToRemoveList.Add(timerItem);
-                            }
-                        }
-
-                        // 调用回调函数
-                        if (timerItem.Callback != null)
-                        {
-                            if (CatchCallbackExceptions)
-                            {
-                                try
-                                {
-                                    timerItem.Callback(timerItem.Param);
-                                }
-                                catch (Exception e)
-                                {
-                                    timerItem.Deleted = true;
-                                    FuLog.Error($"计时器：timer(internal={timerItem.Interval}, repeat={timerItem.Repeat}) 调用错误：{e.Message}");
-                                }
-                            }
-                            else
-                            {
-                                timerItem.Callback(timerItem.Param);
-                            }
-                        }
-                    }
-                }
-
-                // 处理待移除的定时器:从正在更新的字典中移除,并返回到池中，待下次使用，并清理待移除列表
-                foreach (var timerItem in m_WaitToRemoveList)
-                {
-                    if (!timerItem.Deleted) continue;
-                    if (timerItem.Callback == null) continue;
-                    m_UpdatingDict.Remove(timerItem.Callback);
-                    RecycleTimerItem(timerItem);
-                }
-
-                m_WaitToRemoveList.Clear();
-
-                // 处理待添加的定时器:从待添加列表中取出，添加到正在更新的字典中，并清理待添加列表
-                foreach (var (action, timerItem) in m_WaitToAddDict)
-                {
-                    m_UpdatingDict.Add(action, timerItem);
-                }
-
-                m_WaitToAddDict.Clear();
-            }
-        }
-
-        /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
         /// <param name="shutdownType"></param>
         protected override void OnShutdown(ShutdownType shutdownType)
         {
-            lock (Locker)
+            foreach (var timerInfo in m_TimerDict.Values)
             {
-                m_WaitToRemoveList.Clear();
-                m_WaitToAddDict.Clear();
-                m_UpdatingDict.Clear();
+                timerInfo.Cts.Cancel();
+                ReferencePool.Runtime.ReferencePool.Release(timerInfo);
             }
+
+            m_TimerDict.Clear();
+        }
+
+        #region Public Methods
+
+        /// <summary>
+        /// 启动计时器
+        /// </summary>
+        /// <param name="duration">持续时间</param>
+        /// <param name="updateCallBack">每帧/每秒回调(如果loopTiming为Update，则每帧回调；如果loopTiming为TimeUpdate，则每秒回调)</param>
+        /// <param name="playerLoopTiming">计时器执行时机</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        /// <param name="finishCallBack">计时器执行回调</param>
+        /// <returns>计时器ID，用于停止指定计时器</returns>
+        public int StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        {
+            if (duration <= 0)
+            {
+                FuLog.Error("[TimerManager] 计时器持续时间必须大于0");
+                return -1;
+            }
+
+            var timerId   = Guid.NewGuid().GetHashCode();
+            
+            FuLog.Info($"[TimerManager] 启动计时器{timerId}:{updateCallBack?.Method.Name}，持续时间:{duration}秒，执行时机:{playerLoopTiming}，是否忽略时间缩放:{ignoreTimeScale}");
+            
+            var timerInfo = TimerInfo.Create(timerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            if (timerInfo == null)
+            {
+                FuLog.Error("[TimerManager] 启动计时器失败，计时器创建失败！");
+                return -1;
+            }
+
+            m_TimerDict[timerId] = timerInfo;
+
+            // 执行计时器
+            ExecuteTimerAsync(timerId, timerInfo).Forget();
+            return timerId;
         }
 
         /// <summary>
-        /// 添加一个定时调用的任务
+        /// 启动一个指定时间间隔的循环计时器
         /// </summary>
         /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="repeat">重复次数（0 表示无限重复）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void Add(float interval, int repeat, Action<object> callback, object callbackParam = null)
+        /// <param name="intervalCallback">每次间隔时间执行的回调函数</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        public int StartTimerInterval(float interval, Action intervalCallback, bool ignoreTimeScale = false)
         {
-            lock (Locker)
+            if (interval <= 0)
             {
-                if (callback == null)
-                {
-                    FuLog.Error($"计时器添加失败, 回调函数为空, 间隔时间={interval}, 重复次数={repeat}");
-                    return;
-                }
+                FuLog.Error("[TimerManager] 间隔时间必须大于0");
+                return -1;
+            }
 
-                // 如果回调函数已经存在，则更新定时器项
-                if (m_UpdatingDict.TryGetValue(callback, out var timerItem))
-                {
-                    timerItem.Set(interval, repeat, callback, callbackParam);
-                    timerItem.Elapsed = 0;
-                    timerItem.Deleted = false;
-                    return;
-                }
+            var elapsedTime = 0f;
+            return StartTimer(float.MaxValue, null, UpdateCallBack, PlayerLoopTiming.Update, ignoreTimeScale);
 
-                // 如果回调函数已经在待添加列表中，则更新定时器项
-                if (m_WaitToAddDict.TryGetValue(callback, out timerItem))
-                {
-                    timerItem.Set(interval, repeat, callback, callbackParam);
-                    return;
-                }
-
-                // 如果回调函数不存在，则创建定时器项并添加到待添加列表中
-                timerItem = GetTimerItem();
-                timerItem.Set(interval, repeat, callback, callbackParam);
-                m_WaitToAddDict[callback] = timerItem;
+            void UpdateCallBack()
+            {
+                elapsedTime += ignoreTimeScale ? UnityEngine.Time.unscaledDeltaTime : UnityEngine.Time.deltaTime;
+                if (elapsedTime < interval) return;
+                elapsedTime = 0f;
+                intervalCallback?.Invoke();
             }
         }
 
         /// <summary>
-        /// 添加一个只执行一次的任务
+        /// 暂停计时器
         /// </summary>
-        /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddOnce(float interval, Action<object> callback, object callbackParam = null)
+        /// <param name="timerId"></param>
+        public void PauseTimer(int timerId)
         {
-            Add(interval, 1, callback, callbackParam);
-        }
-
-        /// <summary>
-        /// 添加一个每帧更新执行的任务
-        /// </summary>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数</param>
-        public void AddUpdate(Action<object> callback, object callbackParam = null)
-        {
-            Add(0.001f, 0, callback, callbackParam);
-        }
-
-        /// <summary>
-        /// 检查指定的任务是否存在
-        /// </summary>
-        /// <param name="callback">要检查的回调函数</param>
-        /// <returns>存在返回 true，不存在返回 false</returns>
-        public bool Exists(Action<object> callback)
-        {
-            lock (Locker)
+            if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
             {
-                return m_WaitToAddDict.ContainsKey(callback) || (m_UpdatingDict.TryGetValue(callback, out var at) && !at.Deleted);
+                FuLog.Warning($"[TimerManager] 暂停计时器{timerId}失败，不存在该计时器！");
+                return;
+            }
+
+            if (timerInfo.IsPaused)
+            {
+                FuLog.Warning($"[TimerManager] 暂停计时器{timerId}:{timerInfo.FinishCallBack.Method.Name}失败，该计时器已处于暂停状态！");
+                return;
+            }
+
+            timerInfo.IsPaused = true;
+            FuLog.Info($"[TimerManager] 暂停计时器{timerId}:{timerInfo.FinishCallBack.Method.Name}成功，剩余时间:{timerInfo.RemainingTime}秒");
+        }
+
+        /// <summary>
+        /// 恢复计时器
+        /// </summary>
+        /// <param name="timerId"></param>
+        public void ResumeTimer(int timerId)
+        {
+            if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+            {
+                FuLog.Warning($"[TimerManager] 恢复计时器{timerId}失败，不存在该计时器！");
+                return;
+            }
+
+            if (!timerInfo.IsPaused)
+            {
+                FuLog.Warning($"[TimerManager] 恢复计时器{timerId}:{timerInfo.FinishCallBack.Method.Name}失败，该计时器已处于运行状态！");
+                return;
+            }
+
+            timerInfo.IsPaused = false;
+            FuLog.Info($"[TimerManager] 恢复计时器{timerId}:{timerInfo.FinishCallBack.Method.Name}成功，剩余时间:{timerInfo.RemainingTime}秒");
+        }
+
+        /// <summary>
+        /// 停止计时器
+        /// </summary>
+        /// <param name="timerId">计时器ID</param>
+        public void StopTimer(int timerId)
+        {
+            if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+            {
+                FuLog.Warning($"[TimerManager] 停止计时器{timerId}失败，不存在该计时器！");
+                return;
+            }
+
+            timerInfo.Cts.Cancel();
+        }
+
+        /// <summary>
+        /// 暂停所有计时器
+        /// </summary>
+        public void PauseAllTimers()
+        {
+            foreach (var (_, timerInfo) in m_TimerDict)
+            {
+                timerInfo.IsPaused = true;
             }
         }
 
         /// <summary>
-        /// 移除指定的任务
+        /// 恢复所有计时器
         /// </summary>
-        /// <param name="callback">要移除的回调函数</param>
-        public void Remove(Action<object> callback)
+        public void ResumeAllTimers()
         {
-            lock (Locker)
+            foreach (var (_, timerInfo) in m_TimerDict)
             {
-                if (m_WaitToAddDict.Remove(callback, out var timerItem))
-                {
-                    RecycleTimerItem(timerItem);
-                    return;
-                }
-
-                if (m_UpdatingDict.TryGetValue(callback, out timerItem))
-                {
-                    timerItem.Deleted = true;
-                }
+                timerInfo.IsPaused = false;
             }
         }
 
         /// <summary>
-        /// 获取当前所有定时器的名称
+        /// 停止所有计时器
+        /// </summary>
+        public void StopAllTimers()
+        {
+            var timerIds = m_TimerDict.Keys.ToArray();
+            foreach (var timerId in timerIds)
+            {
+                StopTimer(timerId);
+            }
+        }
+
+        /// <summary>
+        /// 检查计时器是否存在
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerExist(int timerId) => m_TimerDict.ContainsKey(timerId);
+
+        /// <summary>
+        /// 检查计时器是否处于暂停状态
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerPaused(int timerId) => m_TimerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
+
+        /// <summary>
+        /// 获取所有计时器名称
         /// </summary>
         /// <returns></returns>
-        public string[] GetAllTimerNames()
+        public IEnumerable<string> GetAllTimerNames() => m_TimerDict.Values.Select(x => x.FinishCallBack.Method.Name);
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// 执行计时器的异步方法
+        /// </summary>
+        private async UniTaskVoid ExecuteTimerAsync(int timerId, TimerInfo timerInfo)
         {
-            lock (Locker)
+            var totalElapsedTime = 0f;
+            var lastUpdateTime   = GetCurrentTime(timerInfo.IgnoreTimeScale);
+
+            try
             {
-                return m_WaitToAddDict.Keys.Concat(m_UpdatingDict.Keys).Select(x => x.Method.Name).ToArray();
+                // 等待计时器结束，或计时器被取消(计时器被取消时，会抛出OperationCanceledException异常，Finally块会清理资源)
+                while (totalElapsedTime < timerInfo.DurationTime)
+                {
+                    if (timerInfo.IsPaused)
+                    {
+                        // 暂停时等待恢复
+                        await UniTask.WaitUntil(() => !timerInfo.IsPaused, cancellationToken: timerInfo.Cts.Token);
+                        lastUpdateTime = GetCurrentTime(timerInfo.IgnoreTimeScale);
+                        continue;
+                    }
+
+                    // 计算时间间隔
+                    var currentTime = GetCurrentTime(timerInfo.IgnoreTimeScale);
+                    var deltaTime   = currentTime - lastUpdateTime;
+
+                    // 限制最大 deltaTime 防止卡顿后的时间跳跃
+                    deltaTime      = Math.Min(deltaTime, 0.1f);
+                    lastUpdateTime = currentTime;
+
+                    totalElapsedTime        += deltaTime;
+                    timerInfo.RemainingTime =  timerInfo.DurationTime - totalElapsedTime;
+
+                    // 执行每帧回调
+                    timerInfo.UpdateCallBack?.Invoke();
+
+                    await UniTask.Yield(timerInfo.PlayerLoopTiming, timerInfo.Cts.Token);
+                }
+
+                // 执行完成回调
+                timerInfo.FinishCallBack?.Invoke();
+            }
+            finally
+            {
+                // 计时器结束/取消时清理资源
+                CleanupTimer(timerId);
             }
         }
 
         /// <summary>
-        /// 获取一个定时器项。
-        /// 如果池中有可用的定时器项，则从池中取出，否则创建一个新的定时器项
+        /// 获取当前时间
         /// </summary>
+        /// <param name="ignoreTimeScale"></param>
         /// <returns></returns>
-        private TimerItem GetTimerItem()
+        private float GetCurrentTime(bool ignoreTimeScale)
         {
-            if (m_PoolList.Count <= 0) return new TimerItem();
-
-            var lastIdx   = m_PoolList.Count - 1;
-            var lastTimer = m_PoolList[lastIdx];
-
-            m_PoolList.RemoveAt(lastIdx);
-
-            lastTimer.Deleted = false;
-            lastTimer.Elapsed = 0;
-            lastTimer.Param   = null;
-            return lastTimer;
+            return ignoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
         }
 
         /// <summary>
-        /// 回收定时器项到池中
+        /// 清理计时器资源
         /// </summary>
-        /// <param name="timer"></param>
-        private void RecycleTimerItem(TimerItem timer)
+        /// <param name="timerId"></param>
+        private void CleanupTimer(int timerId)
         {
-            timer.Callback = null;
-            m_PoolList.Add(timer);
+            if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+            {
+                FuLog.Warning($"[TimerManager] 清理计时器{timerId}失败，不存在该计时器！");
+                return;
+            }
+
+            FuLog.Info($"[TimerManager] 清理计时器{timerId}");
+            ReferencePool.Runtime.ReferencePool.Release(timerInfo);
+            m_TimerDict.Remove(timerId);
         }
+
+        #endregion
     }
 }

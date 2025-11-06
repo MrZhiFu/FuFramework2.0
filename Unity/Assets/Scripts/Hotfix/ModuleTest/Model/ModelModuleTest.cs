@@ -9,6 +9,7 @@ public class ModelModuleTest : MonoBehaviour
     {
         var playerModel = GlobalModule.ModelModule.GetModel<PlayerModel>();
         FuLog.Info($"Level1: {playerModel.Level}");
+        
         playerModel.Level = 10;
         FuLog.Info($"Level2: {playerModel.Level}");
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Timer.Runtime;
 
@@ -15,64 +16,90 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private TimerRegister TimerRegister { get; set; }
 
+
         /// <summary>
-        /// 添加一个定时调用的任务
+        /// 启动一个计时器
+        /// </summary>
+        /// <param name="duration">持续时间(以秒为单位)</param>
+        /// <param name="updateCallBack">每帧/每秒回调(如果loopTiming为Update，则每帧回调；如果loopTiming为TimeUpdate，则每秒回调)</param>
+        /// <param name="playerLoopTiming">计时器执行时机</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        /// <param name="finishCallBack">计时器执行回调</param>
+        /// <returns>计时器ID，用于停止指定计时器</returns>
+        public void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        {
+            TimerRegister?.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+        }
+
+        /// <summary>
+        /// 启动一个只执行一次的计时器(即延时操作)
+        /// </summary>
+        /// <param name="duration">持续时间（以秒为单位）</param>
+        /// <param name="callback">要执行的回调函数</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        public void StartTimerOnce(float duration, Action callback, bool ignoreTimeScale = false)
+        {
+            TimerRegister?.StartTimerOnce(duration, callback, ignoreTimeScale);
+        }
+
+        /// <summary>
+        /// 启动一个指定时间间隔的循环计时器
         /// </summary>
         /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="repeat">重复次数（0 表示无限重复）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddTimer(float interval, int repeat, Action<object> callback, object callbackParam = null)
+        /// <param name="intervalCallback">每次间隔时间执行的回调函数</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        public void StartTimerInterval(float interval, Action intervalCallback, bool ignoreTimeScale = false)
         {
-            FuGuard.NotNull(callback,      nameof(callback));
-            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.AddTimer(interval, repeat, callback, callbackParam);
+            TimerRegister?.StartTimerInterval(interval, intervalCallback, ignoreTimeScale);
         }
 
         /// <summary>
-        /// 添加一个只执行一次的任务
+        /// 暂停计时器
         /// </summary>
-        /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddTimerOnce(float interval, Action<object> callback, object callbackParam = null)
-        {
-            FuGuard.NotNull(callback,      nameof(callback));
-            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.AddTimerOnce(interval, callback, callbackParam);
-        }
+        /// <param name="timerId"></param>
+        public void PauseTimer(int timerId) => TimerRegister?.PauseTimer(timerId);
 
         /// <summary>
-        /// 添加一个每帧更新执行的任务
+        /// 恢复计时器
         /// </summary>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数</param>
-        public void AddTimerUpdate(Action<object> callback, object callbackParam = null)
-        {
-            FuGuard.NotNull(callback,      nameof(callback));
-            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.AddTimerUpdate(callback, callbackParam);
-        }
+        /// <param name="timerId"></param>
+        public void ResumeTimer(int timerId) => TimerRegister?.ResumeTimer(timerId);
 
         /// <summary>
-        /// 移除指定的任务
+        /// 停止计时器
         /// </summary>
-        /// <param name="callback">要移除的回调函数</param>
-        public void RemoveTimer(Action<object> callback)
-        {
-            FuGuard.NotNull(callback,      nameof(callback));
-            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.RemoveTimer(callback);
-        }
+        /// <param name="timerId"></param>
+        public void StopTimer(int timerId) => TimerRegister.StopTimer(timerId);
 
         /// <summary>
-        /// 移除所有计时任务
+        /// 暂停所有计时器
         /// </summary>
-        public void RemoveAllTimer()
-        {
-            FuGuard.NotNull(TimerRegister, "计时器订阅器为空, 请先初始化TimerRegister.");
-            TimerRegister.RemoveAllTimer();
-        }
+        public void PauseAllTimers() => TimerRegister?.PauseAllTimers();
+
+        /// <summary>
+        /// 恢复所有计时器
+        /// </summary>
+        public void ResumeAllTimers() => TimerRegister?.ResumeAllTimers();
+
+        /// <summary>
+        /// 停止所有计时器
+        /// </summary>
+        public void StopAllTimers() => TimerRegister?.StopAllTimers();
+        
+        /// <summary>
+        /// 检查计时器是否存在
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerExist(int timerId) => TimerRegister != null && TimerRegister.IsTimerExist(timerId);
+
+        /// <summary>
+        /// 检查计时器是否处于暂停状态
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerPaused(int timerId) => TimerRegister != null && TimerRegister.IsTimerPaused(timerId);
+
 
         /// <summary>
         /// 释放事件注册器

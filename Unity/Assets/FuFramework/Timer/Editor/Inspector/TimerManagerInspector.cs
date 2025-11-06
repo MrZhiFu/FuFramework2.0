@@ -16,12 +16,13 @@ namespace FuFramework.Timer.Editor
             base.OnInspectorGUI();
 
             var timerManager = target as TimerManager;
-            if (timerManager == null) return;
+            if (!timerManager) return;
 
             if (!EditorApplication.isPlaying) return;
 
             EditorGUILayout.LabelField("当前计时器数量：", timerManager.Count.ToString());
             EditorGUILayout.Space(10);
+            
             foreach (var timerName in timerManager.GetAllTimerNames())
             {
                 EditorGUILayout.LabelField(timerName);

@@ -126,7 +126,7 @@ namespace FuFramework.UI.Runtime
 
             if (!isNewInstance) return;
 
-            // 创建UI事件注册器，事件注册器，定时器注册器
+            // 创建UI事件注册器，事件注册器，计时器注册器
             UIEventRegister = FuiEventRegister.Create();
             EventRegister   = Event.Runtime.EventRegister.Create();
             TimerRegister   = Timer.Runtime.TimerRegister.Create();

@@ -1,6 +1,7 @@
 using System;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -18,7 +19,7 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 记录所有计时器任务的列表
         /// </summary>
-        private readonly List<Action<object>> m_TimerHandlerList = new();
+        private readonly List<int> m_TimerList = new();
 
         /// <summary>
         /// 创建计时器注册器
@@ -26,83 +27,138 @@ namespace FuFramework.Timer.Runtime
         /// <returns></returns>
         public static TimerRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
 
+       
         /// <summary>
-        /// 添加一个定时调用的任务
+        /// 启动一个计时器
+        /// </summary>
+        /// <param name="duration">持续时间(以秒为单位)</param>
+        /// <param name="updateCallBack">每帧/每秒回调(如果loopTiming为Update，则每帧回调；如果loopTiming为TimeUpdate，则每秒回调)</param>
+        /// <param name="playerLoopTiming">计时器执行时机</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        /// <param name="finishCallBack">计时器执行回调</param>
+        /// <returns>计时器ID，用于停止指定计时器</returns>
+        public void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        {
+            var timerId = m_TimerManager.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            if (m_TimerList.Contains(timerId)) return;
+            m_TimerList.Add(timerId);
+        }
+
+        /// <summary>
+        /// 启动一个只执行一次的计时器(即延时操作)
+        /// </summary>
+        /// <param name="duration">持续时间（以秒为单位）</param>
+        /// <param name="callback">要执行的回调函数</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        public void StartTimerOnce(float duration, Action callback, bool ignoreTimeScale = false)
+        {
+            var timerId = m_TimerManager.StartTimer(duration, callback, null, PlayerLoopTiming.Update, ignoreTimeScale);
+            if (m_TimerList.Contains(timerId)) return;
+            m_TimerList.Add(timerId);
+        }
+
+        /// <summary>
+        /// 启动一个指定时间间隔的循环计时器
         /// </summary>
         /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="repeat">重复次数（0 表示无限重复）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddTimer(float interval, int repeat, Action<object> callback, object callbackParam = null)
+        /// <param name="intervalCallback">每次间隔时间执行的回调函数</param>
+        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+        public void StartTimerInterval(float interval, Action intervalCallback, bool ignoreTimeScale = false)
         {
-            if (m_TimerHandlerList.Contains(callback)) return;
-            m_TimerHandlerList.Add(callback);
-            m_TimerManager.Add(interval, repeat, callback, callbackParam);
+            var timerId = m_TimerManager.StartTimerInterval(interval, intervalCallback, ignoreTimeScale);
+            if (m_TimerList.Contains(timerId)) return;
+            m_TimerList.Add(timerId);
         }
 
         /// <summary>
-        /// 添加一个只执行一次的任务
+        /// 暂停计时器
         /// </summary>
-        /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数（可选）</param>
-        public void AddTimerOnce(float interval, Action<object> callback, object callbackParam = null)
+        /// <param name="timerId"></param>
+        public void PauseTimer(int timerId)
         {
-            if (m_TimerHandlerList.Contains(callback)) return;
-            m_TimerHandlerList.Add(callback);
-            m_TimerManager.AddOnce(interval, callback, callbackParam);
+            if (!m_TimerList.Contains(timerId)) return;
+            m_TimerManager.PauseTimer(timerId);
         }
 
         /// <summary>
-        /// 添加一个每帧更新执行的任务
+        /// 恢复计时器
         /// </summary>
-        /// <param name="callback">要执行的回调函数</param>
-        /// <param name="callbackParam">回调函数的参数</param>
-        public void AddTimerUpdate(Action<object> callback, object callbackParam = null)
+        /// <param name="timerId"></param>
+        public void ResumeTimer(int timerId)
         {
-            if (m_TimerHandlerList.Contains(callback)) return;
-            m_TimerHandlerList.Add(callback);
-            m_TimerManager.AddUpdate(callback, callbackParam);
+            if (!m_TimerList.Contains(timerId)) return;
+            m_TimerManager.ResumeTimer(timerId);
         }
 
         /// <summary>
-        /// 检查指定的任务是否存在
+        /// 停止计时器
         /// </summary>
-        /// <param name="callback">要检查的回调函数</param>
-        /// <returns>存在返回 true，不存在返回 false</returns>
-        public bool ExistsTimer(Action<object> callback)
+        /// <param name="timerId"></param>
+        public void StopTimer(int timerId)
         {
-            return m_TimerHandlerList.Contains(callback) || m_TimerManager.Exists(callback);
+            if (!m_TimerList.Contains(timerId)) return;
+            m_TimerManager.StopTimer(timerId);
+            m_TimerList.Remove(timerId);
         }
 
         /// <summary>
-        /// 移除指定的任务
+        /// 暂停所有计时器
         /// </summary>
-        /// <param name="callback">要移除的回调函数</param>
-        public void RemoveTimer(Action<object> callback)
+        public void PauseAllTimers()
         {
-            if (!m_TimerHandlerList.Contains(callback)) return;
-            m_TimerHandlerList.Remove(callback);
-            m_TimerManager.Remove(callback);
-        }
-
-        /// <summary>
-        /// 移除所有计时任务
-        /// </summary>
-        public void RemoveAllTimer()
-        {
-            foreach (var callback in m_TimerHandlerList)
+            foreach (var timerId in m_TimerList)
             {
-                m_TimerManager.Remove(callback);
+                m_TimerManager.PauseTimer(timerId);
             }
-
-            m_TimerHandlerList.Clear();
         }
+
+        /// <summary>
+        /// 恢复所有计时器
+        /// </summary>
+        public void ResumeAllTimers()
+        {
+            foreach (var timerId in m_TimerList)
+            {
+                m_TimerManager.ResumeTimer(timerId);
+            }
+        }
+
+        /// <summary>
+        /// 停止所有计时器
+        /// </summary>
+        public void StopAllTimers()
+        {
+            var timerIds = m_TimerList.ToArray();
+            foreach (var timerId in timerIds)
+            {
+                StopTimer(timerId);
+            }
+        }
+
+
+        /// <summary>
+        /// 检查计时器是否存在
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerExist(int timerId) => m_TimerManager.IsTimerExist(timerId);
+
+        /// <summary>
+        /// 检查计时器是否处于暂停状态
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public bool IsTimerPaused(int timerId) => m_TimerManager.IsTimerPaused(timerId);
+
 
         /// <summary>
         /// 清理
         /// </summary>
-        public void Clear() => RemoveAllTimer();
+        public void Clear()
+        {
+            StopAllTimers();
+            m_TimerList.Clear();
+        }
 
         /// <summary>
         /// 将引用归还引用池-释放资源
