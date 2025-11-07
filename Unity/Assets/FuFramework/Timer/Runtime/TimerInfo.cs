@@ -56,7 +56,11 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         public Action UpdateCallBack { get; private set; }
 
-
+        /// <summary>
+        /// 当前进度
+        /// </summary>
+        public float Progress => 1f - RemainingTime / DurationTime;
+        
         /// <summary>
         /// 清理引用。
         /// </summary>

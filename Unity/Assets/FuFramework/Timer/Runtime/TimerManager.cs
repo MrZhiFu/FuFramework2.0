@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable AccessToModifiedClosure
 namespace FuFramework.Timer.Runtime
 {
     /// <summary>
@@ -44,6 +45,7 @@ namespace FuFramework.Timer.Runtime
             foreach (var timerInfo in m_TimerDict.Values)
             {
                 timerInfo.Cts.Cancel();
+                timerInfo.Cts.Dispose();
                 ReferencePool.Runtime.ReferencePool.Release(timerInfo);
             }
 
@@ -53,7 +55,7 @@ namespace FuFramework.Timer.Runtime
         #region Public Methods
 
         /// <summary>
-        /// 启动计时器
+        /// 启动一个基础计时器
         /// </summary>
         /// <param name="duration">持续时间</param>
         /// <param name="updateCallBack">每帧/每秒回调(如果loopTiming为Update，则每帧回调；如果loopTiming为TimeUpdate，则每秒回调)</param>
@@ -88,31 +90,143 @@ namespace FuFramework.Timer.Runtime
         }
 
         /// <summary>
-        /// 启动一个指定时间间隔的循环计时器
+        /// 启动一个时间间隔计时器
         /// </summary>
         /// <param name="interval">间隔时间（以秒为单位）</param>
         /// <param name="intervalCallback">每次间隔时间执行的回调函数</param>
+        /// <param name="repeatCount">循环次数，小于等于0表示无限循环</param>
+        /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public int StartTimerInterval(float interval, Action intervalCallback, bool ignoreTimeScale = false)
+        public int StartTimerInterval(float interval, Action intervalCallback, int repeatCount = -1,  bool immediate = false, bool ignoreTimeScale = false)
         {
             if (interval <= 0)
             {
                 FuLog.Error("[TimerManager] 间隔时间必须大于0");
                 return -1;
             }
+   
+            if (intervalCallback == null)
+            {
+                FuLog.Error("[TimerManager] 时间间隔计时器回调函数不能为null");
+                return -1;
+            }
 
             var elapsedTime = 0f;
-            return StartTimer(float.MaxValue, null, UpdateCallBack, PlayerLoopTiming.Update, ignoreTimeScale);
+            var executedCount = 0;
+            var maxCount = repeatCount <= 0 ? int.MaxValue : repeatCount;
 
+            // 立即执行第一次回调
+            if (immediate)
+            {
+                intervalCallback();
+                executedCount = 1;
+        
+                if (executedCount >= maxCount) return -1;
+            }
+            var timerId = -1;
+            timerId = StartTimer(float.MaxValue, null, UpdateCallBack, PlayerLoopTiming.Update, ignoreTimeScale);
+            return timerId;
+
+            // 每帧更新回调
             void UpdateCallBack()
             {
+                // 检查是否已完成
+                if (executedCount >= maxCount) return;
+
                 elapsedTime += ignoreTimeScale ? UnityEngine.Time.unscaledDeltaTime : UnityEngine.Time.deltaTime;
-                if (elapsedTime < interval) return;
-                elapsedTime = 0f;
-                intervalCallback?.Invoke();
+        
+                // 处理可能的时间跳跃（如卡顿）
+                while (elapsedTime >= interval && executedCount < maxCount)
+                {
+                    elapsedTime -= interval;
+                    executedCount++;
+                    intervalCallback();
+                }
+
+                // 检查是否达到执行次数
+                if (executedCount < maxCount) return;
+                
+                FuLog.Info($"[TimerManager] 间隔计时器{timerId}已完成，共执行{executedCount}次");
+                
+                // 使用下一帧来停止，避免在当前回调中操作
+                UniTask.DelayFrame(1).ContinueWith(() =>
+                {
+                    if (IsTimerExist(timerId)) // 额外检查是否存在
+                        StopTimer(timerId);
+                }).Forget();
             }
         }
 
+        /// <summary>
+        /// 启动一个帧间隔计时器
+        /// </summary>
+        /// <param name="frameInterval">间隔帧数</param>
+        /// <param name="intervalCallback">每次间隔帧数执行的回调函数</param>
+        /// <param name="repeatCount">循环次数，小于等于0表示无限循环</param>
+        /// <param name="immediate">是否立即执行第一次回调</param>
+        /// <param name="playerLoopTiming">计时器执行时机</param>
+        /// <returns>计时器ID</returns>
+        public int StartTimerFrameInterval(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        {
+            if (frameInterval <= 0)
+            {
+                FuLog.Error("[TimerManager] 帧间隔必须大于0");
+                return -1;
+            }
+
+            if (intervalCallback == null)
+            {
+                FuLog.Error("[TimerManager] 帧间隔计时器回调函数不能为null");
+                return -1;
+            }
+
+            var elapsedFrames = 0;
+            var executedCount = 0;
+            var maxCount = repeatCount <= 0 ? int.MaxValue : repeatCount;
+
+            // 立即执行第一次回调
+            if (immediate)
+            {
+                intervalCallback();
+                executedCount = 1;
+        
+                // 如果只需要执行一次且立即执行了，直接返回
+                if (maxCount == 1) return -1;
+            }
+
+            // 使用局部变量避免闭包问题
+            var timerId = -1;
+            timerId = StartTimer(float.MaxValue, null, UpdateCallback, playerLoopTiming, true);
+            return timerId;
+
+            // 每帧更新回调
+            void UpdateCallback()
+            {
+                // 先检查是否已经完成（防御性检查）
+                if (executedCount >= maxCount) return;
+
+                elapsedFrames++;
+                if (elapsedFrames < frameInterval) return;
+
+                elapsedFrames = 0;
+                executedCount++;
+                intervalCallback();
+
+                // 检查是否达到执行次数
+                if (executedCount < maxCount) return;
+                
+                FuLog.Info($"[TimerManager] 间隔计时器{timerId}已完成，共执行{executedCount}次");
+                
+                // 使用下一帧来停止，避免在当前回调中操作
+                UniTask.DelayFrame(1).ContinueWith(() =>
+                    {
+                        if (IsTimerExist(timerId)) // 额外检查
+                            StopTimer(timerId);
+                    })
+                    .Forget();
+            }
+        }
+        
         /// <summary>
         /// 暂停计时器
         /// </summary>
@@ -170,6 +284,7 @@ namespace FuFramework.Timer.Runtime
             }
 
             timerInfo.Cts.Cancel();
+            timerInfo.Cts.Dispose();
         }
 
         /// <summary>
@@ -220,6 +335,18 @@ namespace FuFramework.Timer.Runtime
         /// <returns></returns>
         public bool IsTimerPaused(int timerId) => m_TimerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
 
+        /// <summary>
+        /// 获取计时器进度
+        /// </summary>
+        /// <param name="timerId"></param>
+        /// <returns></returns>
+        public float GetProgress(int timerId)
+        {
+            if (m_TimerDict.TryGetValue(timerId, out var timerInfo)) return timerInfo.Progress;
+            FuLog.Warning($"[TimerManager] 获取计时器{timerId}进度失败，不存在该计时器！");
+            return 0;
+        }
+        
         /// <summary>
         /// 获取所有计时器名称
         /// </summary>
