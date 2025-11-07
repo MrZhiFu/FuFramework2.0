@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Entry.Runtime;
 using FuFramework.Timer.Runtime;
@@ -10,38 +13,42 @@ public class TimerModuleTest : MonoBehaviour
     private int m_TimerId2;
     private int m_IntervalTimerId;
 
-    private void Start()
+    public static readonly Action EmptyFinish = () => { };
+    public static readonly Action EmptyUpdate = () => { };
+
+    private IEnumerator Start()
     {
         // 获取 TimerManager 实例（假设通过框架的模块系统获取）
         m_TimerManager = GlobalModule.TimerModule;
         
-        // // 示例1：基本计时器使用
+        // 示例1：基本计时器使用
         // TestBasicTimer();
         
         // 示例2：带更新回调的计时器
-        TestTimerWithUpdate();
+        // TestTimerWithUpdate();
         
-        // // 示例3：循环间隔计时器
+        // 示例3：循环间隔计时器
         // TestIntervalTimer();
-        //
-        // // 示例4：计时器控制操作
+        
+        // 示例4：计时器控制操作
         // TestTimerControl();
+        
+        yield return new WaitForSeconds(5f);
     }
+    
 
     /// <summary>
     /// 示例1：基本计时器使用
     /// </summary>
     private void TestBasicTimer()
     {
-        m_TimerId1 = m_TimerManager.StartTimer(
-            duration: 3f,
-            finishCallBack: () =>
-            {
-                Debug.Log("3秒计时器完成！");
-            }
-        );
-        
+        m_TimerId1 = m_TimerManager.StartTimer(5f, FinishCallBack);
         Debug.Log($"启动基本计时器，ID: {m_TimerId1}");
+    }
+
+    private void FinishCallBack()
+    {
+        Debug.Log("5秒计时器完成！");
     }
 
     /// <summary>
@@ -58,7 +65,7 @@ public class TimerModuleTest : MonoBehaviour
             updateCallBack: () =>
             {
                 // 每帧更新时调用
-                Debug.Log($"计时器更新中...");
+                Debug.Log("计时器更新中...");
             },
             playerLoopTiming: PlayerLoopTiming.Update,
             ignoreTimeScale: false
@@ -79,14 +86,9 @@ public class TimerModuleTest : MonoBehaviour
             {
                 counter++;
                 Debug.Log($"间隔计时器触发，第{counter}次");
-                
-                // 执行5次后停止
-                if (counter >= 5)
-                {
-                    m_TimerManager.StopTimer(m_IntervalTimerId);
-                    Debug.Log("间隔计时器已停止");
-                }
             },
+            10,
+            immediate: true,
             ignoreTimeScale: false
         );
         

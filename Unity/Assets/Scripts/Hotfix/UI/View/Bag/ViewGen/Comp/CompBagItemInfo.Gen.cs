@@ -98,7 +98,7 @@ namespace Hotfix.UI
             base.Dispose();
         }
 
-                #region UI事件处理
+	    #region UI事件处理
 
         /// <summary>
         /// 添加UI上指定组件的监听事件
@@ -181,39 +181,42 @@ namespace Hotfix.UI
         #region 计时器
 
         /// <summary>
-        /// 启动一个计时器
+        /// 启动一个基础计时器
         /// </summary>
-        /// <param name="duration">持续时间(以秒为单位)</param>
-        /// <param name="updateCallBack">每帧/每秒回调(如果loopTiming为Update，则每帧回调；如果loopTiming为TimeUpdate，则每秒回调)</param>
-        /// <param name="playerLoopTiming">计时器执行时机</param>
+        /// <param name="duration">计时器持续时间</param>
+        /// <param name="finishCallBack">计时器结束回调</param>
+        /// <param name="updateCallBack">计时器更新回调</param>
+        /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        /// <param name="finishCallBack">计时器执行回调</param>
-        /// <returns>计时器ID，用于停止指定计时器</returns>
         public void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
-	        uiView?.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            uiView?.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }
 
         /// <summary>
-        /// 启动一个只执行一次的计时器(即延时操作)
+        /// 启动一个基础的一次性计时器
         /// </summary>
-        /// <param name="duration">持续时间（以秒为单位）</param>
-        /// <param name="callback">要执行的回调函数</param>
+        /// <param name="interval">计时器间隔时间</param>
+        /// <param name="intervalCallback">计时器每次间隔回调</param>
+        /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
+        /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimerOnce(float duration, Action callback, bool ignoreTimeScale = false)
+        public void StartTimerInterval(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-	        uiView?.StartTimerOnce(duration, callback, ignoreTimeScale);
+	        uiView?.StartTimerInterval(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
 
         /// <summary>
-        /// 启动一个指定时间间隔的循环计时器
+        /// 启动一个帧间隔计时器
         /// </summary>
-        /// <param name="interval">间隔时间（以秒为单位）</param>
-        /// <param name="intervalCallback">每次间隔时间执行的回调函数</param>
-        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimerInterval(float interval, Action intervalCallback, bool ignoreTimeScale = false)
+        /// <param name="frameInterval">计时器帧间隔</param>
+        /// <param name="intervalCallback">计时器每次帧间隔回调</param>
+        /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
+        /// <param name="immediate">是否立即执行第一次回调</param>
+        /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
+        public void StartTimerFrameInterval(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-	        uiView?.StartTimerInterval(interval, intervalCallback, ignoreTimeScale);
+	        uiView?.StartTimerFrameInterval(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
         }
 
         /// <summary>
