@@ -25,7 +25,7 @@ namespace FuFramework.Fsm.Runtime
         /// 名称
         /// </summary>
         public string Name { get; private set; }
-        
+
         /// <summary>
         /// 获取有限状态机持有者。
         /// </summary>
@@ -81,8 +81,8 @@ namespace FuFramework.Fsm.Runtime
             if (states == null || states.Length < 1) throw new FuException("[Fsm] 有限状态机状态不能为空.");
 
             var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
-            fsm.Name          = name;
-            fsm.Owner         = owner.GetType();
+            fsm.Name        = name;
+            fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
 
             foreach (var state in states)
@@ -114,8 +114,8 @@ namespace FuFramework.Fsm.Runtime
             if (states == null || states.Count < 1) throw new FuException("[Fsm] 有限状态机状态不能为空.");
 
             var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
-            fsm.Name          = name;
-            fsm.Owner         = owner.GetType();
+            fsm.Name        = name;
+            fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
 
             foreach (var state in states)
@@ -124,7 +124,7 @@ namespace FuFramework.Fsm.Runtime
                 var stateType = state.GetType();
                 if (!fsm.m_StateDict.TryAdd(stateType, state))
                     throw new FuException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
-                
+
                 // 初始化状态
                 state.OnInit(fsm);
             }
@@ -143,7 +143,7 @@ namespace FuFramework.Fsm.Runtime
             FsmStateBase stateBase = GetState<TState>();
 
             CurrentStateTime = 0f;
-            CurrentStateBase   = stateBase ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在。");
+            CurrentStateBase = stateBase ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在。");
             CurrentStateBase.OnEnter();
         }
 
@@ -162,7 +162,7 @@ namespace FuFramework.Fsm.Runtime
             var state = GetState(stateType);
 
             CurrentStateTime = 0f;
-            CurrentStateBase   = state ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在。");
+            CurrentStateBase = state ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在。");
             CurrentStateBase.OnEnter();
         }
 
@@ -205,7 +205,7 @@ namespace FuFramework.Fsm.Runtime
                 m_DataDict.Clear();
             }
 
-            CurrentStateBase   = null;
+            CurrentStateBase = null;
             CurrentStateTime = 0f;
             IsDestroyed      = true;
         }
@@ -389,7 +389,7 @@ namespace FuFramework.Fsm.Runtime
 
             CurrentStateBase.OnLeave(false);
             CurrentStateTime = 0f;
-            CurrentStateBase   = state;
+            CurrentStateBase = state;
             CurrentStateBase.OnEnter();
         }
     }
