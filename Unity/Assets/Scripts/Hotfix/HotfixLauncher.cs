@@ -44,10 +44,11 @@ namespace Hotfix
         /// <summary>
         /// 加载配置表
         /// </summary>
-        static async void LoadConfig()
+        private static async void LoadConfig()
         {
             var tablesComponent = new TablesComponent();
             tablesComponent.Init(GlobalModule.ConfigModule);
+            
 #if ENABLE_BINARY_CONFIG
             // 使用二进制配置表
             await tablesComponent.LoadAsync(ConfigBufferLoader);
@@ -67,8 +68,6 @@ namespace Hotfix
             
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
-            var item = GlobalModule.ConfigModule.GetConfig<TbSoundsConfig>().FirstOrDefault;
-            FuLog.Info(item);
         }
 
 #if ENABLE_BINARY_CONFIG
