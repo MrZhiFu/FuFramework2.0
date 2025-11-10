@@ -46,16 +46,16 @@ namespace FuFramework.Timer.Runtime
         }
 
         /// <summary>
-        /// 启动一个基础的一次性计时器
+        /// 启动一个时间间隔计时器
         /// </summary>
         /// <param name="interval">计时器间隔时间</param>
         /// <param name="intervalCallback">计时器每次间隔回调</param>
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimerInterval(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        public void StartTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            var timerId = m_TimerManager.StartTimerInterval(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            var timerId = m_TimerManager.StartTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -68,9 +68,9 @@ namespace FuFramework.Timer.Runtime
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-        public void StartTimerFrameInterval(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        public void StartTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-            var timerId = m_TimerManager.StartTimerFrameInterval(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            var timerId = m_TimerManager.StartTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }

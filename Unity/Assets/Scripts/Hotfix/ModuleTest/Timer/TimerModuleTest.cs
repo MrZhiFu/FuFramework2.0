@@ -42,7 +42,7 @@ public class TimerModuleTest : MonoBehaviour
     /// </summary>
     private void TestBasicTimer()
     {
-        m_TimerId1 = m_TimerManager.StartTimer(5f, FinishCallBack);
+        m_TimerId1 = m_TimerManager.StartTimer(duration:5f, FinishCallBack);
         Debug.Log($"启动基本计时器，ID: {m_TimerId1}");
     }
 
@@ -80,7 +80,7 @@ public class TimerModuleTest : MonoBehaviour
     private void TestIntervalTimer()
     {
         int counter = 0;
-        m_IntervalTimerId = m_TimerManager.StartTimerInterval(
+        m_IntervalTimerId = m_TimerManager.StartTimer(
             interval: 2f,
             intervalCallback: () =>
             {
@@ -101,7 +101,7 @@ public class TimerModuleTest : MonoBehaviour
     private void TestTimerControl()
     {
         // 3秒后暂停第一个计时器
-        m_TimerManager.StartTimer(3f, () =>
+        m_TimerManager.StartTimer(3f, finishCallBack: () =>
         {
             if (m_TimerManager.IsTimerExist(m_TimerId1))
             {
@@ -109,7 +109,7 @@ public class TimerModuleTest : MonoBehaviour
                 Debug.Log($"计时器 {m_TimerId1} 已暂停");
                 
                 // 2秒后恢复计时器
-                m_TimerManager.StartTimer(2f, () =>
+                m_TimerManager.StartTimer(2f, finishCallBack: () =>
                 {
                     m_TimerManager.ResumeTimer(m_TimerId1);
                     Debug.Log($"计时器 {m_TimerId1} 已恢复");
@@ -118,7 +118,7 @@ public class TimerModuleTest : MonoBehaviour
         });
 
         // 10秒后停止所有计时器
-        m_TimerManager.StartTimer(10f, () =>
+        m_TimerManager.StartTimer(10f, finishCallBack: () =>
         {
             Debug.Log("10秒后停止所有计时器");
             m_TimerManager.StopAllTimers();
