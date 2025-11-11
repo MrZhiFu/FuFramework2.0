@@ -21,6 +21,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 是否禁止休眠。
         [SerializeField] private bool m_NeverSleep = true;
 
+        
         [Header("音频系统配置")]
         [SerializeField] private SoundSetting m_SoundSetting;
 
@@ -33,6 +34,10 @@ namespace FuFramework.ModuleSetting.Runtime
         [Header("本地数据存储系统配置")]
         [SerializeField] private DataSaveSetting m_DataSaveSetting;
 
+        [Header("红点模块配置")]
+        [SerializeField] private RedPointSetting m_RedPointSetting;
+        
+        
         /// <summary>
         /// 获取音频系统配置
         /// </summary>
@@ -52,6 +57,12 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取本地存储系统配置
         /// </summary>
         public DataSaveSetting DataSaveSetting => m_DataSaveSetting;
+        
+        /// <summary>
+        /// 获取红点模块配置
+        /// </summary>
+        public RedPointSetting RedPointSetting => m_RedPointSetting;
+        
         
 
         /// 游戏暂停之前的速度
