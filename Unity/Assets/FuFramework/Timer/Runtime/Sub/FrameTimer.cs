@@ -14,7 +14,7 @@ namespace FuFramework.Timer.Runtime
     /// - 抗帧率波动：通过累计帧数机制处理帧率波动，确保执行准确性
     /// 适用场景：帧动画控制、物理模拟、与渲染相关的周期性操作
     /// </summary>
-    internal class TimerFrameIntervalInfo : TimerInfoBase
+    internal class FrameTimer : TimerBase
     {
         /// <summary>
         /// 执行间隔帧数
@@ -101,9 +101,9 @@ namespace FuFramework.Timer.Runtime
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <returns></returns>
-        public static TimerFrameIntervalInfo Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
+        public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
         {
-            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<TimerFrameIntervalInfo>();
+            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<FrameTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id                = timerId;

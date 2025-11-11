@@ -8,7 +8,7 @@ namespace FuFramework.Timer.Runtime
     /// <summary>
     /// 计时器基础信息类
     /// </summary>
-    internal abstract class TimerInfoBase : IReference
+    internal abstract class TimerBase : IReference
     {
         /// <summary>
         /// 计时器ID

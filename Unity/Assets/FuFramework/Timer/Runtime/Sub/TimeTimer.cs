@@ -14,7 +14,7 @@ namespace FuFramework.Timer.Runtime
     /// - 实时性保障：在时间累积超过间隔时，会连续执行直到追赶上进度
     /// 适用场景：心跳包发送、定期数据保存、周期性状态检查等
     /// </summary>
-    internal class TimerTimeIntervalInfo : TimerInfoBase
+    internal class TimeTimer : TimerBase
     {
         /// <summary>
         /// 执行间隔时间（秒）
@@ -99,9 +99,9 @@ namespace FuFramework.Timer.Runtime
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         /// <returns></returns>
-        public static TimerTimeIntervalInfo Create(int timerId, float interval, Action intervalCallback, int repeatCount, bool immediate, bool ignoreTimeScale)
+        public static TimeTimer Create(int timerId, float interval, Action intervalCallback, int repeatCount, bool immediate, bool ignoreTimeScale)
         {
-            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<TimerTimeIntervalInfo>();
+            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<TimeTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id               = timerId;

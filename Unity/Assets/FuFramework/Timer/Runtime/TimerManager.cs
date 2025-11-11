@@ -22,7 +22,7 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 计时器字典，key为计时器Id，value为计时器项
         /// </summary>
-        private readonly Dictionary<int, TimerInfoBase> m_TimerDict = new();
+        private readonly Dictionary<int, TimerBase> m_TimerDict = new();
 
         /// <summary>
         /// 异步锁，防止多个协程可能同时操作字典导致异常
@@ -75,7 +75,7 @@ namespace FuFramework.Timer.Runtime
             }
 
             var timerId   = Guid.NewGuid().GetHashCode();
-            var timerInfo = TimerOnceInfo.Create(timerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            var timerInfo = NormalTimer.Create(timerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
 
             if (timerInfo == null)
             {
@@ -98,7 +98,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         /// <returns></returns>
-        public int StartTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        public int StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
             if (interval <= 0)
             {
@@ -113,7 +113,7 @@ namespace FuFramework.Timer.Runtime
             }
 
             var timerId   = Guid.NewGuid().GetHashCode();
-            var timerInfo = TimerTimeIntervalInfo.Create(timerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            var timerInfo = TimeTimer.Create(timerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
 
             if (timerInfo == null)
             {
@@ -136,7 +136,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <returns></returns>
-        public int StartTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
             if (frameInterval <= 0)
             {
@@ -151,7 +151,7 @@ namespace FuFramework.Timer.Runtime
             }
 
             var timerId   = Guid.NewGuid().GetHashCode();
-            var timerInfo = TimerFrameIntervalInfo.Create(timerId, frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            var timerInfo = FrameTimer.Create(timerId, frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
 
             if (timerInfo == null)
             {
@@ -286,27 +286,27 @@ namespace FuFramework.Timer.Runtime
         /// 执行计时器的异步方法(统一处理所有类型的计时器)
         /// </summary>
         /// <param name="timerId">计时器ID</param>
-        /// <param name="timerInfo">计时器对象</param>
-        private async UniTaskVoid ExecuteTimerAsync(int timerId, TimerInfoBase timerInfo)
+        /// <param name="timer">计时器对象</param>
+        private async UniTaskVoid ExecuteTimerAsync(int timerId, TimerBase timer)
         {
-            var lastUpdateTime = GetCurrentTime(timerInfo.IgnoreTimeScale);
+            var lastUpdateTime = GetCurrentTime(timer.IgnoreTimeScale);
             var lastFrameCount = UnityEngine.Time.frameCount;
 
             try
             {
-                while (!timerInfo.IsCompleted)
+                while (!timer.IsCompleted)
                 {
-                    if (timerInfo.IsPaused)
+                    if (timer.IsPaused)
                     {
                         // 暂停时等待恢复，如果等待过程中被取消，则跳出循环，执行 finally 块，清理资源
-                        await UniTask.WaitUntil(() => !timerInfo.IsPaused, cancellationToken: timerInfo.Cts.Token);
-                        lastUpdateTime = GetCurrentTime(timerInfo.IgnoreTimeScale);
+                        await UniTask.WaitUntil(() => !timer.IsPaused, cancellationToken: timer.Cts.Token);
+                        lastUpdateTime = GetCurrentTime(timer.IgnoreTimeScale);
                         lastFrameCount = UnityEngine.Time.frameCount;
                         continue;
                     }
 
                     // 计算时间间隔和帧间隔
-                    var currentTime       = GetCurrentTime(timerInfo.IgnoreTimeScale);
+                    var currentTime       = GetCurrentTime(timer.IgnoreTimeScale);
                     var currentFrameCount = UnityEngine.Time.frameCount;
 
                     var deltaTime   = currentTime       - lastUpdateTime;
@@ -319,16 +319,16 @@ namespace FuFramework.Timer.Runtime
                     lastFrameCount = currentFrameCount;
 
                     // 更新计时器
-                    timerInfo.Update(deltaTime, deltaFrames);
+                    timer.Update(deltaTime, deltaFrames);
 
                     // 检查普通计时器是否完成
-                    if (timerInfo is TimerOnceInfo { IsCompleted: true } normalTimer)
+                    if (timer is NormalTimer { IsCompleted: true } normalTimer)
                     {
                         normalTimer.FinishCallBack?.Invoke();
                         break;
                     }
 
-                    await UniTask.Yield(timerInfo.PlayerLoopTiming, timerInfo.Cts.Token);
+                    await UniTask.Yield(timer.PlayerLoopTiming, timer.Cts.Token);
                 }
             }
             finally
@@ -347,7 +347,7 @@ namespace FuFramework.Timer.Runtime
         {
             return ignoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
         }
-        
+
         /// <summary>
         /// 清理计时器资源
         /// </summary>

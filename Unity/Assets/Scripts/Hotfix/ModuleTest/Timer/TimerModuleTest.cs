@@ -22,7 +22,7 @@ public class TimerModuleTest : MonoBehaviour
         m_TimerManager = GlobalModule.TimerModule;
         
         // 示例1：基本计时器使用
-        // TestBasicTimer();
+        TestBasicTimer();
         
         // 示例2：带更新回调的计时器
         // TestTimerWithUpdate();
@@ -42,7 +42,7 @@ public class TimerModuleTest : MonoBehaviour
     /// </summary>
     private void TestBasicTimer()
     {
-        m_TimerId1 = m_TimerManager.StartTimer(duration:5f, FinishCallBack);
+        m_TimerId1 = m_TimerManager.StartTimer(duration:5f, TestBasicTimer);
         Debug.Log($"启动基本计时器，ID: {m_TimerId1}");
     }
 
@@ -80,7 +80,7 @@ public class TimerModuleTest : MonoBehaviour
     private void TestIntervalTimer()
     {
         int counter = 0;
-        m_IntervalTimerId = m_TimerManager.StartTimer(
+        m_IntervalTimerId = m_TimerManager.StartTimeTimer(
             interval: 2f,
             intervalCallback: () =>
             {

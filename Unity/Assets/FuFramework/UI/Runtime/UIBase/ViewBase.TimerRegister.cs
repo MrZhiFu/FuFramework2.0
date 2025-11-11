@@ -37,9 +37,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        public void StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            TimerRegister?.StartTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            TimerRegister?.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-        public void StartTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-            TimerRegister?.StartTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            TimerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
         }
 
         /// <summary>
