@@ -188,7 +188,7 @@ namespace FuFramework.Event.Runtime
         /// <summary>
         /// 抛出事件（线程安全，延迟处理）。
         /// </summary>
-        public void Fire(object sender, T eArgs)
+        public void Broadcast(object sender, T eArgs)
         {
             if (eArgs == null) throw new FuException("[EventPool]事件参数不能为空!");
 
@@ -200,9 +200,9 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
-        /// 抛出事件立即模式（非线程安全，立即处理）。
+        /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
-        public void FireNow(object sender, T eArgs)
+        public void BroadcastNow(object sender, T eArgs)
         {
             if (eArgs == null) throw new FuException("[EventPool]事件参数不能为空!");
             HandleEvent(sender, eArgs);

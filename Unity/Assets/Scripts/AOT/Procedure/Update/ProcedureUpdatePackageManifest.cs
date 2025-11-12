@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLog.Info("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateManifest));
+            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateManifest));
             UpdateManifest().ToUniTask().Forget();
         }
 
@@ -61,7 +61,7 @@ namespace Launcher.Procedure
             {
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GlobalModule.EventModule.Fire(this, AssetPatchManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Broadcast(this, AssetPatchManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdatePackageManifest>();
             }
         }

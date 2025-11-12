@@ -46,7 +46,7 @@ namespace Hotfix.Manager
                 }
             }
 
-            GlobalModule.EventModule.Fire(this, BagChangedEventArgs.Create());
+            GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Hotfix.Manager
                 }
             }
 
-            GlobalModule.EventModule.Fire(this, BagChangedEventArgs.Create());
+            GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
         }
 
         /// <summary>

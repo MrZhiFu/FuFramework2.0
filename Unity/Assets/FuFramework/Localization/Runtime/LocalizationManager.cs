@@ -42,7 +42,7 @@ namespace FuFramework.Localization.Runtime
 
                 // 发送本地化语言改变事件
                 var localizationLanguageChangeEventArgs = LocalizationLanguageChangeEventArgs.Create(oldLanguage, value);
-                m_EventManager.Fire(this, localizationLanguageChangeEventArgs);
+                m_EventManager.Broadcast(this, localizationLanguageChangeEventArgs);
             }
         }
 

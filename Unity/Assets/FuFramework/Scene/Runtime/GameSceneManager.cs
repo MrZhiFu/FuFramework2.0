@@ -241,7 +241,7 @@ namespace FuFramework.Scene.Runtime
             if (lastActiveScene == activeScene) return;
             SceneManager.SetActiveScene(activeScene);
             var activeSceneChangedEventArgs = ActiveSceneChangedEventArgs.Create(lastActiveScene, activeScene);
-            EventRegister.Fire(this, activeSceneChangedEventArgs);
+            EventRegister.Broadcast(this, activeSceneChangedEventArgs);
         }
 
         #endregion
@@ -334,7 +334,7 @@ namespace FuFramework.Scene.Runtime
                     var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     m_LoadedSceneDict.Remove(sceneAssetPath);
-                    EventRegister.Fire(this, unloadSceneSuccessEventArgs);
+                    EventRegister.Broadcast(this, unloadSceneSuccessEventArgs);
                 }
                 else
                 {
@@ -344,7 +344,7 @@ namespace FuFramework.Scene.Runtime
                     FuLog.Error($"卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
-                    EventRegister.Fire(this, unloadSceneFailureEventArgs);
+                    EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
                 }
             }
         }
@@ -365,7 +365,7 @@ namespace FuFramework.Scene.Runtime
 
             FuLog.Info($"加载场景中 '{sceneHandle.SceneName}' 进度--{sceneHandle.Progress}.");
             var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneHandle.SceneName, sceneHandle.Progress, value.UserData);
-            EventRegister.Fire(this, loadSceneUpdateEventArgs);
+            EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
         }
 
         /// <summary>
@@ -386,7 +386,7 @@ namespace FuFramework.Scene.Runtime
                 // 加载成功
                 FuLog.Info($"加载场景 '{sceneHandle.SceneName}' 成功！");
                 var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
-                EventRegister.Fire(this, loadSceneSuccessEventArgs);
+                EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
             }
             else
             {
@@ -394,7 +394,7 @@ namespace FuFramework.Scene.Runtime
                 var errorMessage = $"加载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.";
                 FuLog.Error(errorMessage);
                 var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneHandle.SceneName, sceneHandle.Status, errorMessage, sceneHandleData.UserData);
-                EventRegister.Fire(this, loadSceneFailureEventArgs);
+                EventRegister.Broadcast(this, loadSceneFailureEventArgs);
             }
         }
 

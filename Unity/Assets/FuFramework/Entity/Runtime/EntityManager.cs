@@ -909,7 +909,7 @@ namespace FuFramework.Entity.Runtime
 
             // 发送显示实体失败事件
             var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), userData);
-            m_EventManager.Fire(this, showEntityFailureEventArgs);
+            m_EventManager.Broadcast(this, showEntityFailureEventArgs);
 
             tcs.TrySetException(exception);
             throw exception;
@@ -971,7 +971,7 @@ namespace FuFramework.Entity.Runtime
 
                 // 发送显示实体成功事件
                 var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, progress, showEntityInfoEx);
-                m_EventManager.Fire(this, showEntitySuccessEventArgs);
+                m_EventManager.Broadcast(this, showEntitySuccessEventArgs);
 
                 tcs.TrySetResult(entity);
             }
@@ -979,7 +979,7 @@ namespace FuFramework.Entity.Runtime
             {
                 // 发送显示实体失败事件
                 var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), showEntityInfoEx);
-                m_EventManager.Fire(this, showEntityFailureEventArgs);
+                m_EventManager.Broadcast(this, showEntityFailureEventArgs);
 
                 tcs.TrySetException(exception);
                 throw;
@@ -1013,7 +1013,7 @@ namespace FuFramework.Entity.Runtime
 
             // 发送隐藏实体成功事件
             var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entity.EntityGroup, userData);
-            m_EventManager.Fire(this, hideEntityCompleteEventArgs);
+            m_EventManager.Broadcast(this, hideEntityCompleteEventArgs);
 
             // 加入待回收队列
             m_WaitRecycleQueue.Enqueue(entityInfo);

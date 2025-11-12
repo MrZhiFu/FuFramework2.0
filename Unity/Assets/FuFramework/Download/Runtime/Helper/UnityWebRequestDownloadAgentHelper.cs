@@ -55,12 +55,12 @@ namespace FuFramework.Download.Runtime
             if (isError)
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(m_UnityWebRequest.responseCode == RangeNotSatisfiableErrorCode, m_UnityWebRequest.error);
-                m_EventManager.Fire(this, downloadAgentHelperErrorEventArgs);
+                m_EventManager.Broadcast(this, downloadAgentHelperErrorEventArgs);
             }
             else
             {
                 var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create((long)m_UnityWebRequest.downloadedBytes);
-                m_EventManager.Fire(this, downloadAgentHelperCompleteEventArgs);
+                m_EventManager.Broadcast(this, downloadAgentHelperCompleteEventArgs);
             }
         }
 

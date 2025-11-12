@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLog.Info("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateVersion));
+            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateVersion));
             GetVersion().ToUniTask().Forget();
         }
 
@@ -59,7 +59,7 @@ namespace Launcher.Procedure
             {
                 // 获取失败，再次进入自身流程尝试
                 FuLog.Error(operation.Error);
-                GlobalModule.EventModule.Fire(this, AssetStaticVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Broadcast(this, AssetStaticVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureGetPackageVersion>();
             }
         }

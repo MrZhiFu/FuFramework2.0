@@ -115,7 +115,7 @@ namespace FuFramework.UI.Runtime
 
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);
-                m_EventManager.Fire(this, openUISuccessEventArgs);
+                m_EventManager.Broadcast(this, openUISuccessEventArgs);
 
                 m_SerialId++;
                 return view;
@@ -123,7 +123,7 @@ namespace FuFramework.UI.Runtime
             catch (Exception exception)
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(m_SerialId, typeof(T).Name, userData);
-                m_EventManager.Fire(this, openUIFailureEventArgs);
+                m_EventManager.Broadcast(this, openUIFailureEventArgs);
                 FuLog.Error($"[UIManager]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
                 return GetUI(openUIFailureEventArgs.SerialId) as T;
             }

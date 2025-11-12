@@ -98,7 +98,7 @@ namespace FuFramework.RedDot.Runtime
             if (TotalCount == total) return;
 
             TotalCount = total;
-            OnCountChanged?.Invoke(TotalCount);// 触发事件
+            OnCountChanged?.Invoke(TotalCount);// 触发数量改变事件
             Parent?.UpdateTotalCount();
         }
 

@@ -21,7 +21,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLog.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
+            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
             CreateDownloader();
         }
 
@@ -48,7 +48,7 @@ namespace Launcher.Procedure
                 FuLog.Info($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
-                GlobalModule.EventModule.Fire(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
+                GlobalModule.EventModule.Broadcast(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
                 ChangeState<ProcedureDownloadPackage>();
             }
         }

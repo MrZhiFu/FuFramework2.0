@@ -173,26 +173,26 @@ namespace FuFramework.Network.Runtime
         private void OnNetworkChannelConnected(NetworkChannelBase networkChannel, object userData)
         {
             var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel, userData);
-            m_EventManager.Fire(this, networkConnectedEventArgs);
+            m_EventManager.Broadcast(this, networkConnectedEventArgs);
         }
 
         private void OnNetworkChannelClosed(NetworkChannelBase networkChannel)
         {
             var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel);
-            m_EventManager.Fire(this, networkClosedEventArgs);
+            m_EventManager.Broadcast(this, networkClosedEventArgs);
         }
 
         private void OnNetworkChannelMissHeartBeat(NetworkChannelBase networkChannel, int missHeartBeatCount)
         {
             var networkMissHeartBeatEventArgs = NetworkMissHeartBeatEventArgs.Create(networkChannel, missHeartBeatCount);
-            m_EventManager.Fire(this, networkMissHeartBeatEventArgs);
+            m_EventManager.Broadcast(this, networkMissHeartBeatEventArgs);
         }
 
         private void OnNetworkChannelError(NetworkChannelBase networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
             string errorMessage)
         {
             var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
-            m_EventManager.Fire(this, networkErrorEventArgs);
+            m_EventManager.Broadcast(this, networkErrorEventArgs);
         }
     }
 }

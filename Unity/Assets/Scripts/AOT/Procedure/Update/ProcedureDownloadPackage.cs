@@ -27,7 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLog.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
-            GlobalModule.EventModule.Fire(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
+            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
             BeginDownload().ToUniTask().Forget();
         }
 
@@ -61,7 +61,7 @@ namespace Launcher.Procedure
         /// <param name="errorData"></param>
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
-            GlobalModule.EventModule.Fire(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
+            GlobalModule.EventModule.Broadcast(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
             ChangeState<ProcedureCreateDownloader>();
         }
 
@@ -76,7 +76,7 @@ namespace Launcher.Procedure
             var currentDownloadCount = data.CurrentDownloadCount;
             var totalDownloadBytes   = data.TotalDownloadBytes;
             var currentDownloadBytes = data.CurrentDownloadBytes;
-            GlobalModule.EventModule.Fire(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
+            GlobalModule.EventModule.Broadcast(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
         }
     }
 }

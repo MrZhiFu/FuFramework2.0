@@ -293,7 +293,7 @@ namespace FuFramework.Sound.Runtime
             {
                 FuLog.Error(errorMessage);
                 var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-                m_EventManager.Fire(this, failureEventArgs);
+                m_EventManager.Broadcast(this, failureEventArgs);
                 return newSerialId;
             }
 
@@ -468,7 +468,7 @@ namespace FuFramework.Sound.Runtime
                 }
 
                 var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
-                m_EventManager.Fire(this, successEventArgs);
+                m_EventManager.Broadcast(this, successEventArgs);
 
                 if (playSoundInfo.SoundParams != null)
                     ReferencePool.Runtime.ReferencePool.Release(playSoundInfo.SoundParams);
@@ -499,7 +499,7 @@ namespace FuFramework.Sound.Runtime
 
             // 派发播放失败事件
             var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
-            m_EventManager.Fire(this, failureEventArgs);
+            m_EventManager.Broadcast(this, failureEventArgs);
 
             // 释放播放相关信息，并抛出异常
             if (playSoundInfo.SoundParams != null)

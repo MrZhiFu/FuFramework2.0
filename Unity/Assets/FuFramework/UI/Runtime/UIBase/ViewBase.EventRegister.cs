@@ -42,16 +42,16 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 触发事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件ID</param>
         /// <param name="eventArgs">事件对象</param>
-        public void Fire(object sender, GameEventArgs eventArgs)
+        public void Broadcast(object sender, GameEventArgs eventArgs)
         {
             FuGuard.NotNull(sender, nameof(sender));
             FuGuard.NotNull(eventArgs, nameof(eventArgs));
             FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
-            EventRegister.Fire(sender, eventArgs);
+            EventRegister.Broadcast(sender, eventArgs);
         }
 
         /// <summary>
@@ -59,25 +59,25 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="sender">事件发送者</param>
         /// <param name="eventId">事件ID</param>
-        public void Fire(object sender, string eventId)
+        public void Broadcast(object sender, string eventId)
         {
             FuGuard.NotNull(sender, nameof(sender));
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
             FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
-            EventRegister.Fire(sender, eventId);
+            EventRegister.Broadcast(sender, eventId);
         }
 
         /// <summary>
-        /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
+        /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者</param>
         /// <param name="eventArgs">事件对象</param>
-        public void FireNow(object sender, GameEventArgs eventArgs)
+        public void BroadcastNow(object sender, GameEventArgs eventArgs)
         {
             FuGuard.NotNull(sender,        nameof(sender));
             FuGuard.NotNull(eventArgs,     nameof(eventArgs));
             FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
-            EventRegister.FireNow(sender, eventArgs);
+            EventRegister.BroadcastNow(sender, eventArgs);
         }
 
         /// <summary>

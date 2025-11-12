@@ -108,7 +108,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>
-        public void Fire(object sender, GameEventArgs e) => m_EventPool.Fire(sender, e);
+        public void Broadcast(object sender, GameEventArgs e) => m_EventPool.Broadcast(sender, e);
 
         /// <summary>
         /// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
@@ -116,18 +116,18 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        public void Fire(object sender, string eventId)
+        public void Broadcast(object sender, string eventId)
         {
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            Fire(sender, EmptyEventArgs.Create(eventId));
+            m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
         }
         
         /// <summary>
-        /// 抛出事件立即模式，这个操作不是线程安全的，事件会立刻分发。
+        /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>
-        public void FireNow(object sender, GameEventArgs e) => m_EventPool.FireNow(sender, e);
+        public void BroadcastNow(object sender, GameEventArgs e) => m_EventPool.BroadcastNow(sender, e);
         
         /// <summary>
         /// 遍历所有事件处理函数。

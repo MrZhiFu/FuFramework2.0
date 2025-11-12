@@ -39,11 +39,11 @@ namespace FuFramework.Download.Runtime
 
                 // 发送更新数据流事件
                 var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(datas, 0, dataLength);
-                m_EventManager.Fire(this, downloadAgentHelperUpdateBytesEventArgs);
+                m_EventManager.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
 
                 // 发送更新数据大小事件
                 var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(dataLength);
-                m_EventManager.Fire(this, downloadAgentHelperUpdateLengthEventArgs);
+                m_EventManager.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
 
                 return base.ReceiveData(datas, dataLength);
             }

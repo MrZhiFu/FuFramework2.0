@@ -112,7 +112,7 @@ namespace FuFramework.Mono.Runtime
         {
             QueueInvoking(ref m_DoOnApplicationFocusList, ref m_WaitOnApplicationFocusList, focusStatus);
             if (m_EventManager)
-                m_EventManager.Fire(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
+                m_EventManager.Broadcast(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace FuFramework.Mono.Runtime
         {
             QueueInvoking(ref m_DoOnApplicationPauseList, ref m_WaitOnApplicationPauseList, pauseStatus);
             if (m_EventManager)
-                m_EventManager.Fire(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
+                m_EventManager.Broadcast(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
         }
 
 
