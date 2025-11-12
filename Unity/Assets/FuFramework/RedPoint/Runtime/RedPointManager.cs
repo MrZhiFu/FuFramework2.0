@@ -5,6 +5,21 @@ using FuFramework.ModuleSetting.Runtime;
 
 namespace FuFramework.RedPoint.Runtime
 {
+    /// <summary>
+    /// 红点系统管理器
+    /// 
+    /// 主要功能：
+    /// 1. 树形结构管理 - 支持父子节点层级关系，自动计算总计数
+    /// 2. 事件通知机制 - 计数变化时自动通知所有监听者
+    /// 3. 对象池管理 - 使用引用池减少GC分配
+    /// 4. 配置化驱动 - 通过配置RedPointSetting(ScriptableObject)初始化红点树结构
+    /// 
+    /// 使用流程：
+    /// 1. 在配置RedPointSetting(ScriptableObject)中定义红点树结构
+    /// 2. 系统启动时自动构建节点树
+    /// 3. 业务逻辑调用接口设置红点计数，如：RedPointManager.Instance.SetCount("node1", 10)
+    /// 4. UI组件注册监听并更新显示状态，如：RedPointManager.Instance.Register("node1", (count) => { ui.SetText(count); })
+    /// </summary>
     public class RedPointManager : FuModule
     {
         /// <summary>
@@ -19,12 +34,6 @@ namespace FuFramework.RedPoint.Runtime
         private static readonly Dictionary<string, RedPointNode> NodeDict = new();
 
         /// <summary>
-        /// 存储节点状态变化的回调函数字典，key：节点的key，value：回调函数列表()
-        /// </summary>
-        private static readonly Dictionary<string, List<Action<int>>> BindingDict = new();
-
-
-        /// <summary>
         /// 初始化
         /// </summary>
         protected override void OnInit()
@@ -33,13 +42,12 @@ namespace FuFramework.RedPoint.Runtime
             var redPointSetting = ModuleSetting.Runtime.ModuleSetting.Instance.RedPointSetting;
 
             NodeDict.Clear();
-            BindingDict.Clear();
             foreach (var root in redPointSetting.m_RootNodes)
             {
                 BuildNodeRecursive(null, root);
             }
-            
-            FuLog.Info("RedPointManager init success.");
+
+            FuLog.Info($"[RedPointManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
         }
 
         /// <summary>
@@ -48,94 +56,186 @@ namespace FuFramework.RedPoint.Runtime
         /// <param name="shutdownType">关闭游戏框架类型</param>
         protected override void OnShutdown(ShutdownType shutdownType)
         {
+            // 释放所有节点回对象池
+            foreach (var node in NodeDict.Values)
+            {
+                ReferencePool.Runtime.ReferencePool.Release(node);
+            }
+
             NodeDict.Clear();
-            BindingDict.Clear();
         }
-        
+
+
         /// <summary>
-        /// 递归构建节点树
+        /// 递归构建节点
         /// </summary>
         /// <param name="parent">父节点</param>
         /// <param name="data">节点数据</param>
-        private static void BuildNodeRecursive(RedPointNode parent, RedPointNodeData data)
+        private void BuildNodeRecursive(RedPointNode parent, RedPointNodeData data)
         {
-            var node = new RedPointNode(data.m_Key, parent);
+            var node = RedPointNode.Create(data.m_Key, parent);
 
-            NodeDict[data.m_Key] = node;
+            if (!NodeDict.TryAdd(data.m_Key, node))
+            {
+                FuLog.Error($"RedPointManager: 重复的节点key: {data.m_Key}");
+                ReferencePool.Runtime.ReferencePool.Release(node);
+                return;
+            }
+
             parent?.AddChild(node);
-
             if (data.m_Children == null) return;
-            
-            // 递归构建子节点
+
             foreach (var child in data.m_Children)
             {
                 BuildNodeRecursive(node, child);
             }
         }
 
-        /// <summary>
-        /// 设置节点的红点数量
-        /// </summary>
-        /// <param name="key">节点key</param>
-        /// <param name="count">红点数量</param>
-        public static void SetCount(string key, int count)
-        {
-            if (!NodeDict.TryGetValue(key, out var node)) return;
-            node.SetCount(count);
-        }
         
         /// <summary>
         /// 注册节点状态变化的回调函数
         /// </summary>
-        /// <param name="key">节点key</param>
-        /// <param name="onChange">回调函数</param>
-        public static void Register(string key, Action<int> onChange)
+        /// <param name="key">节点的key</param>
+        /// <param name="onChange">节点状态变化的回调函数</param>
+        /// <param name="immediateNotify">是否立即通知当前状态</param>
+        public void Register(string key, Action<int> onChange, bool immediateNotify = true)
         {
-            if (!BindingDict.TryGetValue(key, out var actions))
+            if (!NodeDict.TryGetValue(key, out var node))
             {
-                actions = new List<Action<int>>();
-                BindingDict[key] = actions;
+                FuLog.Warning($"RedPointManager: 注册监听时未找到节点: {key}");
+                return;
             }
 
-            if (!actions.Contains(onChange))
-            {
-                actions.Add(onChange);
-            }
+            node.OnCountChanged += onChange;
 
-            // 如果节点已经存在，则通知回调函数节点状态变化
-            if (NodeDict.TryGetValue(key, out var node))
-            {
-                var count = node.GetCount();
-                onChange?.Invoke(count);
-            }
+            // 可选立即通知当前状态
+            if (immediateNotify)
+                onChange?.Invoke(node.TotalCount);
         }
 
         /// <summary>
         /// 注销节点状态变化的回调函数
         /// </summary>
-        /// <param name="key">节点key</param>
-        /// <param name="onChange">回调函数</param>
-        public static void Unregister(string key, Action<int> onChange)
+        /// <param name="key">节点的key</param>
+        /// <param name="onChange">节点状态变化的回调函数</param>
+        public void Unregister(string key, Action<int> onChange)
         {
-            if (BindingDict.TryGetValue(key, out var actions))
+            if (!NodeDict.TryGetValue(key, out var node))
             {
-                actions.Remove(onChange);
+                FuLog.Warning($"RedPointManager: 移除监听时未找到节点: {key}");
+                return;
+            }
+
+            node.OnCountChanged -= onChange;
+        }
+
+        /// <summary>
+        /// 注销指定key的所有回调函数
+        /// </summary>
+        public void UnregisterAll(string key)
+        {
+            if (NodeDict.TryGetValue(key, out var node))
+            {
+                node.ClearAllListeners();
             }
         }
 
         /// <summary>
-        /// 通知节点状态变化
+        /// 清理所有节点的监听器
         /// </summary>
-        /// <param name="node">状态变化的节点对象</param>
-        public static void NotifyStateChanged(RedPointNode node)
+        public void ClearAllListeners()
         {
-            if (!BindingDict.TryGetValue(node.Key, out var list)) return;
-            
-            foreach (var onChange in list)
+            foreach (var node in NodeDict.Values)
             {
-                var count = node.GetCount();
-                onChange?.Invoke(count);
+                node.ClearAllListeners();
             }
         }
+
+        #region Get
+
+        /// <summary>
+        /// 获取节点
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        public RedPointNode GetNode(string key) => NodeDict.GetValueOrDefault(key);
+
+        /// <summary>
+        /// 获取节点的红点数量
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        public int GetCount(string key) => NodeDict.TryGetValue(key, out var node) ? node.TotalCount : 0;
+
+        /// <summary>
+        /// 是否存在节点
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        public bool HasNode(string key) => NodeDict.ContainsKey(key);
+
+        #endregion
+
+        #region Set
+
+        /// <summary>
+        /// 设置节点的红点数量
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        /// <param name="count">红点数量</param>
+        public void SetCount(string key, int count)
+        {
+            if (!NodeDict.TryGetValue(key, out var node))
+            {
+                FuLog.Warning($"RedPointManager: 未找到节点: {key}");
+                return;
+            }
+
+            node.SetCount(count);
+        }
+
+        /// <summary>
+        /// 递增节点的红点数量
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        /// <param name="value">递增的数量</param>
+        public void IncrementCount(string key, int value = 1)
+        {
+            if (!NodeDict.TryGetValue(key, out var node)) return;
+            node.SetCount(node.RawCount + value);
+        }
+
+        /// <summary>
+        /// 递减节点的红点数量
+        /// </summary>
+        /// <param name="key">节点的key</param>
+        /// <param name="value">递减的数量</param>
+        public void DecrementCount(string key, int value = 1)
+        {
+            if (!NodeDict.TryGetValue(key, out var node)) return;
+            node.SetCount(Math.Max(0, node.RawCount - value));
+        }
+
+        /// <summary>
+        /// 重置节点的红点数量为0
+        /// 适用于清除红点状态，如阅读所有邮件后
+        /// </summary>
+        /// <param name="key">节点路径</param>
+        /// <example>
+        /// // 阅读所有系统邮件后重置
+        /// RedPointManager.ResetCount(PredefinedKeys.MailSystem);
+        /// </example>
+        public void ResetCount(string key) => SetCount(key, 0);
+
+        /// <summary>
+        /// 批量重置多个节点的红点数量
+        /// 适用于同时清除多个相关红点
+        /// </summary>
+        public void ResetCounts(params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                ResetCount(key);
+            }
+        }
+
+        #endregion
     }
 }
