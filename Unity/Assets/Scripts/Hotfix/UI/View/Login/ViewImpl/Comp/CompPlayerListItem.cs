@@ -10,10 +10,10 @@ namespace Hotfix.UI
         /// 初始化
         /// </summary>
         private void OnInit()
-        { 
+        {
             // DoSomething
         }
-        
+
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
@@ -21,16 +21,22 @@ namespace Hotfix.UI
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
-        
+
+        /// <summary>
+        /// 销毁。
+        /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
+        /// </summary>
+        private void OnDispose() { }
+
         #region 交互事件以及ListItem渲染回调处理
-        
-		private void OnBtnLoginClick(EventContext ctx)
-		{
-			// todo
-		}
+
+        private void OnBtnLoginClick(EventContext ctx)
+        {
+            // todo
+        }
 
         #endregion
-        
+
         /// <summary>
         /// 设置组件显示数据
         /// </summary>
@@ -38,8 +44,8 @@ namespace Hotfix.UI
         public void SetData(PlayerInfo playerInfo)
         {
             txtLevel.text = "当前等级:" + playerInfo.Level;
-            txtName.text = playerInfo.Name;
-            imgIcon.icon = UIPackage.GetItemURL("Common", "wrap_1");
+            txtName.text  = playerInfo.Name;
+            imgIcon.icon  = UIPackage.GetItemURL("Common", "wrap_1");
         }
     }
 }

@@ -88,6 +88,7 @@ namespace Hotfix.UI
         public override void Dispose()
         {
             FuLog.Info($"销毁{uiView.UIName}界面组件-{GetType().Name}");
+            OnDispose();
             uiView = null;
             base.Dispose();
         }
