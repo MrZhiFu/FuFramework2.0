@@ -1,0 +1,51 @@
+using FuFramework.Core.Runtime;
+using FuFramework.UI.Runtime;
+
+// ReSharper disable once CheckNamespace 禁用命名空间检查
+namespace Hotfix.UI
+{
+    public partial class CompRedDot
+    {
+        /// <summary>
+        /// 红点显示模式
+        /// </summary>
+        public enum RedDotDisplayMode
+        {
+            DotOnly,   // 只显示红点
+            DotNumber, // 红点+数字
+            Auto       // 根据数量自动显示，=1显示红点，>1显示数字
+        }
+
+        /// <summary>
+        /// 红点Key
+        /// </summary>
+        private string m_RedDotKey;
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void OnInit() { }
+
+        /// <summary>
+        /// 注册相关逻辑事件
+        /// </summary>
+        private void InitEvent() { }
+
+        
+        /// <summary>
+        /// 设置所属界面
+        /// </summary>
+        /// <param name="view"></param>
+        public void SetView(ViewBase view) => uiView = view;
+
+        /// <summary>
+        /// 设置红点Key
+        /// </summary>
+        /// <param name="redDotKey"></param>
+        public void SetRedDotKey(string redDotKey)
+        {
+            if (string.IsNullOrEmpty(redDotKey)) return;
+            m_RedDotKey = redDotKey;
+        }
+    }
+}
