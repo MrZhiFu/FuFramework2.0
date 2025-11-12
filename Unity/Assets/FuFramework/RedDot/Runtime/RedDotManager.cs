@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 
-namespace FuFramework.RedPoint.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.RedDot.Runtime
 {
     /// <summary>
     /// 红点系统管理器
@@ -12,15 +13,15 @@ namespace FuFramework.RedPoint.Runtime
     /// 1. 树形结构管理 - 支持父子节点层级关系，自动计算总计数
     /// 2. 事件通知机制 - 计数变化时自动通知所有监听者
     /// 3. 对象池管理 - 使用引用池减少GC分配
-    /// 4. 配置化驱动 - 通过配置RedPointSetting(ScriptableObject)初始化红点树结构
+    /// 4. 配置化驱动 - 通过配置RedDotSetting(ScriptableObject)初始化红点树结构
     /// 
     /// 使用流程：
-    /// 1. 在配置RedPointSetting(ScriptableObject)中定义红点树结构
+    /// 1. 在配置RedDotSetting(ScriptableObject)中定义红点树结构
     /// 2. 系统启动时自动构建节点树
-    /// 3. 业务逻辑调用接口设置红点计数，如：RedPointManager.Instance.SetCount("node1", 10)
-    /// 4. UI组件注册监听并更新显示状态，如：RedPointManager.Instance.Register("node1", (count) => { ui.SetText(count); })
+    /// 3. 业务逻辑调用接口设置红点计数，如：RedDotManager.Instance.SetCount("node1", 10)
+    /// 4. UI组件注册监听并更新显示状态，如：RedDotManager.Instance.Register("node1", (count) => { ui.SetText(count); })
     /// </summary>
-    public class RedPointManager : FuModule
+    public class RedDotManager : FuModule
     {
         /// <summary>
         /// 游戏框架模块优先级。
@@ -31,7 +32,7 @@ namespace FuFramework.RedPoint.Runtime
         /// <summary>
         /// 存储所有节点的字典，key：节点的key，value：节点对象
         /// </summary>
-        private static readonly Dictionary<string, RedPointNode> NodeDict = new();
+        private static readonly Dictionary<string, RedDotNode> NodeDict = new();
 
         /// <summary>
         /// 初始化
@@ -39,15 +40,15 @@ namespace FuFramework.RedPoint.Runtime
         protected override void OnInit()
         {
             // 读取红点树配置
-            var redPointSetting = ModuleSetting.Runtime.ModuleSetting.Instance.RedPointSetting;
+            var redDotSetting = ModuleSetting.Runtime.ModuleSetting.Instance.RedDotSetting;
 
             NodeDict.Clear();
-            foreach (var root in redPointSetting.m_RootNodes)
+            foreach (var root in redDotSetting.m_RootNodes)
             {
                 BuildNodeRecursive(null, root);
             }
 
-            FuLog.Info($"[RedPointManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
+            FuLog.Info($"[RedDotManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
         }
 
         /// <summary>
@@ -71,13 +72,13 @@ namespace FuFramework.RedPoint.Runtime
         /// </summary>
         /// <param name="parent">父节点</param>
         /// <param name="data">节点数据</param>
-        private void BuildNodeRecursive(RedPointNode parent, RedPointNodeData data)
+        private void BuildNodeRecursive(RedDotNode parent, RedDotNodeData data)
         {
-            var node = RedPointNode.Create(data.m_Key, parent);
+            var node = RedDotNode.Create(data.m_Key, parent);
 
             if (!NodeDict.TryAdd(data.m_Key, node))
             {
-                FuLog.Error($"RedPointManager: 重复的节点key: {data.m_Key}");
+                FuLog.Error($"RedDotManager: 重复的节点key: {data.m_Key}");
                 ReferencePool.Runtime.ReferencePool.Release(node);
                 return;
             }
@@ -102,7 +103,7 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedPointManager: 注册监听时未找到节点: {key}");
+                FuLog.Warning($"RedDotManager: 注册监听时未找到节点: {key}");
                 return;
             }
 
@@ -122,7 +123,7 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedPointManager: 移除监听时未找到节点: {key}");
+                FuLog.Warning($"RedDotManager: 移除监听时未找到节点: {key}");
                 return;
             }
 
@@ -157,7 +158,7 @@ namespace FuFramework.RedPoint.Runtime
         /// 获取节点
         /// </summary>
         /// <param name="key">节点的key</param>
-        public RedPointNode GetNode(string key) => NodeDict.GetValueOrDefault(key);
+        public RedDotNode GetNode(string key) => NodeDict.GetValueOrDefault(key);
 
         /// <summary>
         /// 获取节点的红点数量
@@ -184,7 +185,7 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedPointManager: 未找到节点: {key}");
+                FuLog.Warning($"RedDotManager: 未找到节点: {key}");
                 return;
             }
 
@@ -220,7 +221,7 @@ namespace FuFramework.RedPoint.Runtime
         /// <param name="key">节点路径</param>
         /// <example>
         /// // 阅读所有系统邮件后重置
-        /// RedPointManager.ResetCount(PredefinedKeys.MailSystem);
+        /// RedDotManager.ResetCount(PredefinedKeys.MailSystem);
         /// </example>
         public void ResetCount(string key) => SetCount(key, 0);
 

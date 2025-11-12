@@ -246,7 +246,7 @@ MonoBehaviour:
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
   m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
   m_DataSaveSetting: {fileID: 11400000, guid: c0c1f85a9ceacb344888ccc274fb5ab1, type: 2}
-  m_RedPointSetting: {fileID: 11400000, guid: 222e56f619ad60146ad0eb754f923af9, type: 2}
+  m_RedDotSetting: {fileID: 11400000, guid: d021efe837b25bc4db387c9acd2e195d, type: 2}
 --- !u!114 &7148938655606090475
 MonoBehaviour:
   m_ObjectHideFlags: 0

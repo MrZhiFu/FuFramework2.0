@@ -27,7 +27,7 @@ namespace FuFramework.ModuleSetting.Editor
         private SerializedProperty m_AssetSetting;    // 资源模块配置
         private SerializedProperty m_EntitySetting;   // 实体模块配置
         private SerializedProperty m_DataSaveSetting; // 本地数据存储模块配置
-        private SerializedProperty m_RedPointSetting; // 红点模块配置
+        private SerializedProperty m_RedDotSetting; // 红点模块配置
 
         private void OnEnable()
         {
@@ -39,7 +39,7 @@ namespace FuFramework.ModuleSetting.Editor
             m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
             m_EntitySetting   = serializedObject.FindProperty("m_EntitySetting");
             m_DataSaveSetting = serializedObject.FindProperty("m_DataSaveSetting");
-            m_RedPointSetting = serializedObject.FindProperty("m_RedPointSetting");
+            m_RedDotSetting = serializedObject.FindProperty("m_RedDotSetting");
         }
 
         public override void OnInspectorGUI()
@@ -107,7 +107,7 @@ namespace FuFramework.ModuleSetting.Editor
             EditorGUILayout.PropertyField(m_AssetSetting);
             EditorGUILayout.PropertyField(m_EntitySetting);
             EditorGUILayout.PropertyField(m_DataSaveSetting);
-            EditorGUILayout.PropertyField(m_RedPointSetting);
+            EditorGUILayout.PropertyField(m_RedDotSetting);
 
             serializedObject.ApplyModifiedProperties();
         }

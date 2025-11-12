@@ -3,18 +3,19 @@ using FuFramework.Core.Runtime;
 using System.Collections.Generic;
 using FuFramework.ReferencePool.Runtime;
 
-namespace FuFramework.RedPoint.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.RedDot.Runtime
 {
     /// <summary>
     /// 红点注册器。
     /// 可用于单独管理属于自己模块的相关红点
     /// </summary>
-    public class RedPointRegister : IReference
+    public class RedDotRegister : IReference
     {
         /// <summary>
         /// 红点管理器
         /// </summary>
-        private readonly RedPointManager m_redPointManager = ModuleManager.GetModule<RedPointManager>();
+        private readonly RedDotManager m_RedDotManager = ModuleManager.GetModule<RedDotManager>();
 
         /// <summary>
         /// 记录所有红点节点key的列表
@@ -25,7 +26,7 @@ namespace FuFramework.RedPoint.Runtime
         /// 创建红点注册器
         /// </summary>
         /// <returns></returns>
-        public static RedPointRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<RedPointRegister>();
+        public static RedDotRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<RedDotRegister>();
 
         /// <summary>
         /// 注册节点状态变化的回调函数
@@ -37,11 +38,11 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 注册监听时已存在节点: {key}, 请勿重复注册!");
+                FuLog.Warning($"RedDotRegister: 注册监听时已存在节点: {key}, 请勿重复注册!");
                 return;
             }
             m_RedNodeKeyList.Add(key);
-            m_redPointManager.Register(key, onChange, immediateNotify);
+            m_RedDotManager.Register(key, onChange, immediateNotify);
         }
 
         /// <summary>
@@ -64,10 +65,10 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 注销监听时未找到节点: {key}, 请检查是否已注册!");
+                FuLog.Warning($"RedDotRegister: 注销监听时未找到节点: {key}, 请检查是否已注册!");
                 return;
             }
-            m_redPointManager.Unregister(key, onChange);
+            m_RedDotManager.Unregister(key, onChange);
             m_RedNodeKeyList.Remove(key);
         }
 
@@ -78,10 +79,10 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 注销监听时未找到节点: {key}, 请检查是否已注册!");
+                FuLog.Warning($"RedDotRegister: 注销监听时未找到节点: {key}, 请检查是否已注册!");
                 return;
             }
-            m_redPointManager.UnregisterAll(key);
+            m_RedDotManager.UnregisterAll(key);
             m_RedNodeKeyList.Remove(key);
         }
 
@@ -92,7 +93,7 @@ namespace FuFramework.RedPoint.Runtime
         {
             foreach (var key in m_RedNodeKeyList)
             {
-                m_redPointManager.UnregisterAll(key);
+                m_RedDotManager.UnregisterAll(key);
             }
             m_RedNodeKeyList.Clear();
         }
@@ -103,9 +104,9 @@ namespace FuFramework.RedPoint.Runtime
         /// 获取节点
         /// </summary>
         /// <param name="key">节点的key</param>
-        public RedPointNode GetNode(string key)
+        public RedDotNode GetNode(string key)
         {
-            return !m_RedNodeKeyList.Contains(key) ? null : m_redPointManager.GetNode(key);
+            return !m_RedNodeKeyList.Contains(key) ? null : m_RedDotManager.GetNode(key);
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace FuFramework.RedPoint.Runtime
         /// <param name="key">节点的key</param>
         public int GetCount(string key)
         {
-            return !m_RedNodeKeyList.Contains(key) ? 0 : m_redPointManager.GetCount(key);
+            return !m_RedNodeKeyList.Contains(key) ? 0 : m_RedDotManager.GetCount(key);
         }
 
         /// <summary>
@@ -139,10 +140,10 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 设置红点数量时未找到节点: {key}, 请检查是否已注册!");
+                FuLog.Warning($"RedDotRegister: 设置红点数量时未找到节点: {key}, 请检查是否已注册!");
                 return;
             }
-            m_redPointManager.SetCount(key, count);
+            m_RedDotManager.SetCount(key, count);
         }
 
         /// <summary>
@@ -154,10 +155,10 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 递增红点数量时未找到节点: {key}, 请检查是否已注册!");
+                FuLog.Warning($"RedDotRegister: 递增红点数量时未找到节点: {key}, 请检查是否已注册!");
                 return;
             }
-            m_redPointManager.IncrementCount(key, value);
+            m_RedDotManager.IncrementCount(key, value);
         }
 
         /// <summary>
@@ -169,10 +170,10 @@ namespace FuFramework.RedPoint.Runtime
         {
             if (!m_RedNodeKeyList.Contains(key))
             {
-                FuLog.Warning($"RedPointRegister: 递减红点数量时未找到节点: {key}, 请检查是否已注册!");
+                FuLog.Warning($"RedDotRegister: 递减红点数量时未找到节点: {key}, 请检查是否已注册!");
                 return;
             }
-            m_redPointManager.DecrementCount(key, value);
+            m_RedDotManager.DecrementCount(key, value);
         }
 
         /// <summary>

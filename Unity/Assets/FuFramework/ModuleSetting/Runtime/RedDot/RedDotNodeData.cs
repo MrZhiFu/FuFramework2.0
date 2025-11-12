@@ -9,7 +9,7 @@ namespace FuFramework.ModuleSetting.Runtime
     /// 红点节点数据
     /// </summary>
     [Serializable]
-    public class RedPointNodeData
+    public class RedDotNodeData
     {
         /// <summary>
         /// 红点key
@@ -19,6 +19,6 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 该红点子下的子节点数据
         /// </summary>
-        [SerializeReference] public List<RedPointNodeData> m_Children = new();
+        [SerializeReference] public List<RedDotNodeData> m_Children = new();
     }
 }

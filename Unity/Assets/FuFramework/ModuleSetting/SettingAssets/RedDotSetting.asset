@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 549fb0e9aeec41fea44a6f298e6472a9, type: 3}
+  m_Name: RedDotSetting
+  m_EditorClassIdentifier: 
+  m_RootNodes:
+  - rid: 3618476560769089536
+  - rid: 3618476560769089540
+  - rid: 3618476560769089543
+  references:
+    version: 2
+    RefIds:
+    - rid: 3618476560769089536
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Bag
+        m_Children:
+        - rid: 3618476560769089537
+        - rid: 3618476560769089539
+    - rid: 3618476560769089537
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Bag.Item
+        m_Children: []
+    - rid: 3618476560769089539
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Bag.Skill
+        m_Children: []
+    - rid: 3618476560769089540
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Shop
+        m_Children:
+        - rid: 3618476560769089541
+        - rid: 3618476560769089542
+    - rid: 3618476560769089541
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Shop.Res
+        m_Children: []
+    - rid: 3618476560769089542
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Shop.Gift
+        m_Children: []
+    - rid: 3618476560769089543
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Hero
+        m_Children:
+        - rid: 3618476560769089544
+        - rid: 3618476560769089545
+        - rid: 3618476560769089546
+    - rid: 3618476560769089544
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Hero.Equip
+        m_Children: []
+    - rid: 3618476560769089545
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Hero.Skill
+        m_Children: []
+    - rid: 3618476560769089546
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Hero.Skin
+        m_Children: []

@@ -35,7 +35,7 @@ namespace FuFramework.ModuleSetting.Runtime
         [SerializeField] private DataSaveSetting m_DataSaveSetting;
 
         [Header("红点模块配置")]
-        [SerializeField] private RedPointSetting m_RedPointSetting;
+        [SerializeField] private RedDotSetting m_RedDotSetting;
         
         
         /// <summary>
@@ -61,7 +61,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 获取红点模块配置
         /// </summary>
-        public RedPointSetting RedPointSetting => m_RedPointSetting;
+        public RedDotSetting RedDotSetting => m_RedDotSetting;
         
         
 

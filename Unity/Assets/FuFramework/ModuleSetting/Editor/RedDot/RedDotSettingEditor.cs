@@ -10,8 +10,8 @@ namespace FuFramework.ModuleSetting.Editor
     /// <summary>
     /// 红点模块配置Inspector
     /// </summary>
-    [CustomEditor(typeof(RedPointSetting))]
-    public class RedPointSettingEditor : UnityEditor.Editor
+    [CustomEditor(typeof(RedDotSetting))]
+    public class RedDotSettingEditor : UnityEditor.Editor
     {
         /// <summary>
         /// 根节点列表属性
@@ -21,7 +21,7 @@ namespace FuFramework.ModuleSetting.Editor
         /// <summary>
         /// 用于跟踪节点展开状态的字典
         /// </summary>
-        private readonly Dictionary<RedPointNodeData, bool> m_NodeExpanded = new();
+        private readonly Dictionary<RedDotNodeData, bool> m_NodeExpanded = new();
 
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace FuFramework.ModuleSetting.Editor
         private void DrawNodeProperty(SerializedProperty nodeProperty, int indent, int index, SerializedProperty parentListProperty)
         {
             // 获取节点数据引用
-            if (nodeProperty?.managedReferenceValue is not RedPointNodeData nodeData) return;
+            if (nodeProperty?.managedReferenceValue is not RedDotNodeData nodeData) return;
 
             // 确保节点在字典中存在
             m_NodeExpanded.TryAdd(nodeData, false);
@@ -176,7 +176,7 @@ namespace FuFramework.ModuleSetting.Editor
         {
             m_RootNodesProperty.arraySize++;
             var newElement = m_RootNodesProperty.GetArrayElementAtIndex(m_RootNodesProperty.arraySize - 1);
-            newElement.managedReferenceValue = new RedPointNodeData { m_Key = "NewRootNode" };
+            newElement.managedReferenceValue = new RedDotNodeData { m_Key = "NewRootNode" };
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace FuFramework.ModuleSetting.Editor
             {
                 childrenProperty.arraySize++;
                 var newElement = childrenProperty.GetArrayElementAtIndex(childrenProperty.arraySize - 1);
-                newElement.managedReferenceValue = new RedPointNodeData { m_Key = "NewChildNode" };
+                newElement.managedReferenceValue = new RedDotNodeData { m_Key = "NewChildNode" };
             }
         }
 
