@@ -75,7 +75,7 @@ function GenReady:GetClsArray(handler)
         if Tool:StrFind(clsInfo.resName, 'Win') == 1 then
             table.insert(winClsArray, clsInfo)
         elseif Tool:StrFind(clsInfo.resName, 'Comp') == 1 then
-            if Tool:StrFind(clsInfo.res.path, "Comps") ~= nil then
+            if Tool:StrFind(clsInfo.res.path, "Comp") ~= nil then
                 table.insert(compClsArray, clsInfo)
             end
         end

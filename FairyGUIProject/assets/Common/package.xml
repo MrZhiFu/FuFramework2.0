@@ -9,7 +9,7 @@
     <image id="flr49" name="dialog_bg.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="208,188,420,91"/>
     <image id="flr4b" name="content_bg1.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="102,44,11,17"/>
     <image id="flr4c" name="图层1_409.png" path="/Res/button/" exported="true"/>
-    <component id="flr4d" name="BtnClose.xml" path="/Comps/Btns/" exported="true"/>
+    <component id="flr4d" name="BtnClose.xml" path="/Comp/Btn/" exported="true"/>
     <image id="flr4e" name="treasure1.png" path="/Res/treasure/" exported="true"/>
     <image id="flr4f" name="treasure1.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="161,54,14,108"/>
     <image id="flr4g" name="treaitembg.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="36,23,72,18"/>
@@ -49,11 +49,11 @@
     <image id="flr41h" name="code_normal.png" path="/Res/button/" exported="true"/>
     <image id="flr41i" name="code_select.png" path="/Res/button/" exported="true"/>
     <image id="flr41j" name="dialog_bg2.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="210,130,370,21"/>
-    <component id="flr41k" name="BtnYellowCheck.xml" path="/Comps/Btns/" exported="true"/>
+    <component id="flr41k" name="BtnYellowCheck.xml" path="/Comp/Btn/" exported="true"/>
     <image id="e6bx1l" name="cup1.png" path="/Res/cup/" exported="true"/>
     <image id="e6bx1m" name="bar.png" path="/Res/slider/" exported="true" scale="9grid" scale9grid="21,9,42,8"/>
     <image id="e6bx1n" name="bg.png" path="/Res/slider/" exported="true" scale="9grid" scale9grid="45,17,90,34"/>
-    <component id="e6bx1o" name="ProgresssBarYellow.xml" path="/Comps/ProgressBar/" exported="true"/>
+    <component id="e6bx1o" name="ProgresssBarYellow.xml" path="/Comp/ProgressBar/" exported="true"/>
     <image id="e6bx1p" name="list_item_bg.png" path="/Res/list/" exported="true" scale="9grid" scale9grid="63,45,126,90"/>
     <image id="e6bx1q" name="button1.png" path="/Res/button/" exported="true" scale="9grid" scale9grid="27,29,54,58"/>
     <image id="e6bx1r" name="goods_bg1.png" path="/Res/goods/" exported="true"/>
@@ -61,26 +61,28 @@
     <image id="w4oz1y" name="pointer.png" path="/Res/icon/" exported="true"/>
     <image id="w4oz1z" name="button_2.png" path="/Res/button/" exported="true"/>
     <image id="rnzi20" name="back.png" path="/Res/icon/" exported="true"/>
-    <component id="rnzid" name="BtnBack.xml" path="/Comps/Btns/" exported="true"/>
+    <component id="rnzid" name="BtnBack.xml" path="/Comp/Btn/" exported="true"/>
     <image id="hpg422" name="fight.png" path="/Res/icon/" exported="true"/>
     <image id="hpg425" name="start.png" path="/Res/icon/" exported="true"/>
     <image id="hpg426" name="water.png" path="/Res/hero/" exported="true"/>
-    <component id="hpg42c" name="BtnSwitch.xml" path="/Comps/Btns/" exported="true"/>
+    <component id="hpg42c" name="BtnSwitch.xml" path="/Comp/Btn/" exported="true"/>
     <image id="hpg42f" name="switch_no.png" path="/Res/button/" exported="true"/>
     <image id="hpg42g" name="switch_yes.png" path="/Res/button/" exported="true"/>
     <image id="dsha2h" name="图层1_636.png" path="/Res/button/" exported="true" scale="9grid" scale9grid="31,19,62,38"/>
     <image id="dsha2i" name="图层1_697.png" path="/Res/button/" scale="9grid" scale9grid="33,25,46,22"/>
     <image id="dsha2j" name="图层1_6.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="27,16,54,32"/>
     <image id="dsha2k" name="图层1_54.png" path="/Res/bg/" exported="true" scale="9grid" scale9grid="26,16,52,32"/>
-    <component id="iopl2m" name="BtnWhiteCheck.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="iopl2n" name="BtnBlueCheck.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2o" name="BtnYellowSingle.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2p" name="BtnYellowNormal.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2q" name="BtnBlueSingle.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2r" name="BtnBlueNormal.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2s" name="BtnWhiteSingle.xml" path="/Comps/Btns/" exported="true"/>
-    <component id="oo3b2t" name="BtnWhiteNormal.xml" path="/Comps/Btns/" exported="true"/>
+    <component id="iopl2m" name="BtnWhiteCheck.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="iopl2n" name="BtnBlueCheck.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2o" name="BtnYellowSingle.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2p" name="BtnYellowNormal.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2q" name="BtnBlueSingle.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2r" name="BtnBlueNormal.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2s" name="BtnWhiteSingle.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="oo3b2t" name="BtnWhiteNormal.xml" path="/Comp/Btn/" exported="true"/>
     <image id="l50q8" name="图层1_2.png" path="/Res/goods/" exported="true"/>
+    <component id="ubwa2u" name="CompRedDot.xml" path="/Comp/" exported="true"/>
+    <image id="ubwa2w" name="img_red_dot.png" path="/Res/"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

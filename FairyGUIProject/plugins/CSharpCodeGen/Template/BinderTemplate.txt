@@ -19,9 +19,9 @@ namespace #NAMESPACE#
         /// 绑定所有自定义组件
         /// </summary>
         [RuntimeInitializeOnLoadMethod]
-        public static void BindAll()
+        private static void BindAll()
         {
-            Log.Info("绑定包-{#PKGNAME#}下的所有自定义组件");
+            FuLog.Info("绑定包-{#PKGNAME#}下的所有自定义组件");
 #BinderComps#
         }
     }

@@ -14,7 +14,7 @@ namespace #NAMESPACE#
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        public void InitEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
