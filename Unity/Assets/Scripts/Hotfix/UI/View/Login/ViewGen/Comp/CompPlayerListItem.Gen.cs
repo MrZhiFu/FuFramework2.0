@@ -6,8 +6,8 @@
 using System;
 using FairyGUI;
 using FairyGUI.Utils;
-using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
+using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using Cysharp.Threading.Tasks;
 
@@ -56,7 +56,7 @@ namespace Hotfix.UI
         /// <summary>
         /// UI组件初始化
         /// </summary>
-        public void InitUIComp()
+        private void InitUIComp()
         {
 			imgIcon = (GLoader)GetChild("_imgIcon");
 			txtName = (GRichTextField)GetChild("_txtName");
@@ -69,7 +69,7 @@ namespace Hotfix.UI
         /// <summary>
         /// UI组件事件初始化
         /// </summary>
-        public void InitUIEvent()
+        private void InitUIEvent()
         {
 			AddUIListener(btnLogin.onClick, OnBtnLoginClick);
 
@@ -85,8 +85,8 @@ namespace Hotfix.UI
             base.Dispose();
         }
 
-	    #region UI事件处理
-
+        #region UI事件处理
+        
         /// <summary>
         /// 添加UI上指定组件的监听事件
         /// </summary>
@@ -118,11 +118,11 @@ namespace Hotfix.UI
         /// 清理UI上所有组件的所有监听事件
         /// </summary>
         protected void ClearAllUIListener() => uiView?.ClearAllUIListener();
-
+        
         #endregion
-
+        
         #region 业务逻辑事件处理
-
+        
         /// <summary>
         /// 订阅事件
         /// </summary>
@@ -162,12 +162,12 @@ namespace Hotfix.UI
         /// 取消所有订阅
         /// </summary>
         protected void UnSubscribeAll() => uiView?.UnSubscribeAll();
-
-        #endregion
         
-        #region 计时器
+        #endregion
 
-	    /// <summary>
+        #region 计时器
+        
+        /// <summary>
         /// 启动一个基础的一次性计时器
         /// </summary>
         /// <param name="duration">计时器持续时间</param>
@@ -175,11 +175,11 @@ namespace Hotfix.UI
         /// <param name="updateCallBack">计时器更新回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        protected void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
             uiView?.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }
-
+        
         /// <summary>
         /// 启动一个时间间隔计时器
         /// </summary>
@@ -188,11 +188,11 @@ namespace Hotfix.UI
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        protected void StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-	        uiView?.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            uiView?.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
-
+        
         /// <summary>
         /// 启动一个帧间隔计时器
         /// </summary>
@@ -201,58 +201,58 @@ namespace Hotfix.UI
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-        public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-	        uiView?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            uiView?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
         }
-
+        
         /// <summary>
         /// 暂停计时器
         /// </summary>
         /// <param name="timerId"></param>
-        public void PauseTimer(int timerId) => uiView?.PauseTimer(timerId);
-
+        protected void PauseTimer(int timerId) => uiView?.PauseTimer(timerId);
+        
         /// <summary>
         /// 恢复计时器
         /// </summary>
         /// <param name="timerId"></param>
-        public void ResumeTimer(int timerId) => uiView?.ResumeTimer(timerId);
-
+        protected void ResumeTimer(int timerId) => uiView?.ResumeTimer(timerId);
+        
         /// <summary>
         /// 停止计时器
         /// </summary>
         /// <param name="timerId"></param>
-        public void StopTimer(int timerId) => uiView.StopTimer(timerId);
-
+        protected void StopTimer(int timerId) => uiView.StopTimer(timerId);
+        
         /// <summary>
         /// 暂停所有计时器
         /// </summary>
-        public void PauseAllTimers() => uiView?.PauseAllTimers();
-
+        protected void PauseAllTimers() => uiView?.PauseAllTimers();
+        
         /// <summary>
         /// 恢复所有计时器
         /// </summary>
-        public void ResumeAllTimers() => uiView?.ResumeAllTimers();
-
+        protected void ResumeAllTimers() => uiView?.ResumeAllTimers();
+        
         /// <summary>
         /// 停止所有计时器
         /// </summary>
-        public void StopAllTimers() => uiView?.StopAllTimers();
+        protected void StopAllTimers() => uiView?.StopAllTimers();
         
         /// <summary>
         /// 检查计时器是否存在
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerExist(int timerId) => uiView != null && uiView.IsTimerExist(timerId);
-
+        protected bool IsTimerExist(int timerId) => uiView != null && uiView.IsTimerExist(timerId);
+        
         /// <summary>
         /// 检查计时器是否处于暂停状态
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerPaused(int timerId) => uiView != null && uiView.IsTimerPaused(timerId);
-
+        protected bool IsTimerPaused(int timerId) => uiView != null && uiView.IsTimerPaused(timerId);
+        
         #endregion
     }
 }

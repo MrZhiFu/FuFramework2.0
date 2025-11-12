@@ -19,7 +19,7 @@ namespace Hotfix.UI
         /// 绑定所有自定义组件
         /// </summary>
         [RuntimeInitializeOnLoadMethod]
-        public static void BindAll()
+        private static void BindAll()
         {
             FuLog.Info("绑定包-{Login}下的所有自定义组件");
 			UIObjectFactory.SetPackageItemExtension(CompPlayerListItem.URL, typeof(CompPlayerListItem));
