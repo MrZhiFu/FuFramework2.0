@@ -1,5 +1,8 @@
-using FuFramework.Core.Runtime;
+using System;
+using FairyGUI;
+using UnityEngine;
 using FuFramework.UI.Runtime;
+using FuFramework.Entry.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI
@@ -9,7 +12,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 红点显示模式
         /// </summary>
-        public enum RedDotDisplayMode
+        public enum DisplayMode
         {
             DotOnly,   // 只显示红点
             DotNumber, // 红点+数字
@@ -19,12 +22,17 @@ namespace Hotfix.UI
         /// <summary>
         /// 红点Key
         /// </summary>
-        private string m_RedDotKey;
+        private string m_Key;
 
         /// <summary>
         /// 红点显示模式
         /// </summary>
-        private RedDotDisplayMode m_RedDotDisplayMode = RedDotDisplayMode.DotOnly;
+        private DisplayMode m_DisplayMode = DisplayMode.DotOnly;
+
+        /// <summary>
+        /// 缓存目标组件
+        /// </summary>
+        private GComponent m_Target;
 
         /// <summary>
         /// 初始化
@@ -40,31 +48,94 @@ namespace Hotfix.UI
         /// 销毁。
         /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
         /// </summary>
-        private void OnDispose() { }
-
-        /// <summary>
-        /// 设置所属界面
-        /// </summary>
-        /// <param name="view"></param>
-        public void SetView(ViewBase view) => uiView = view;
-
-        /// <summary>
-        /// 设置红点Key
-        /// </summary>
-        /// <param name="redDotKey"></param>
-        public void SetRedDotKey(string redDotKey)
+        private void OnDispose()
         {
-            if (string.IsNullOrEmpty(redDotKey)) return;
-            m_RedDotKey = redDotKey;
+            GlobalModule.RedDotModule.Unregister(m_Key, OnRedDotChanged);
         }
 
         /// <summary>
-        /// 设置红点显示模式
+        /// 初始化红点
         /// </summary>
-        /// <param name="redDotDisplayMode"></param>
-        public void SetRedDotDisplayMode(RedDotDisplayMode redDotDisplayMode)
+        /// <param name="view">所属界面</param>
+        /// <param name="target">红点依附的目标组件</param>
+        /// <param name="redKey">红点Key</param>
+        /// <param name="displayMode">红点显示模式</param>
+        public void InitRedDot(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
         {
-            m_RedDotDisplayMode = redDotDisplayMode;
+            if (view   == null) return;
+            if (target == null) return;
+            if (string.IsNullOrEmpty(redKey)) return;
+
+            uiView        = view;
+            m_Target      = target;
+            m_Key         = redKey;
+            m_DisplayMode = displayMode;
+
+            // 注册红点变化事件
+            GlobalModule.RedDotModule.Register(m_Key, OnRedDotChanged);
+        }
+
+        /// <summary>
+        /// 设置红点位置，默认在组件的右上角
+        /// </summary>
+        /// <param name="offset">位置偏移</param>
+        public void SetRedDotPos(Vector2 offset = default)
+        {
+            if (m_Target == null) return;
+            
+            // 计算在父容器内的相对位置
+            var posX = m_Target.width - width + offset.x;
+            var posY = offset.y;                         
+    
+            SetXY(posX, posY);
+        }
+
+        /// <summary>
+        /// 手动设置红点。
+        /// 如在滑动列表的Item上显示红点，红点数量变化时，需要手动调用此方法刷新红点显示。
+        /// </summary>
+        public void SetRedDot(int redCount) => OnRedDotChanged(redCount);
+
+        /// <summary>
+        /// 红点变化事件回调
+        /// </summary>
+        /// <param name="redCount">红点数量</param>
+        private void OnRedDotChanged(int redCount)
+        {
+            switch (m_DisplayMode)
+            {
+                case DisplayMode.DotOnly:
+                    txtCount.visible  = false;
+                    imgRedDot.visible = redCount > 0;
+                    break;
+                case DisplayMode.DotNumber:
+                    txtCount.visible  = true;
+                    txtCount.text     = FormatRedDotCount(redCount);
+                    imgRedDot.visible = redCount > 0;
+                    break;
+                case DisplayMode.Auto:
+                    txtCount.visible  = redCount > 1;
+                    imgRedDot.visible = redCount > 0;
+                    txtCount.text     = FormatRedDotCount(redCount);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        /// <summary>
+        /// 格式化红点数量显示
+        /// </summary>
+        /// <param name="count">数量</param>
+        /// <returns>格式化后的字符串</returns>
+        private string FormatRedDotCount(int count)
+        {
+            return count switch
+            {
+                <= 0 => "0",
+                > 99 => "99+",
+                _    => count.ToString()
+            };
         }
     }
 }

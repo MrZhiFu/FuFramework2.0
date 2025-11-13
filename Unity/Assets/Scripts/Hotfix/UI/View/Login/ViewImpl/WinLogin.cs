@@ -34,6 +34,8 @@ namespace Hotfix.UI
             InitUIComp();
             InitUIEvent();
             InitEvent();
+
+            FuiUtility.RegisterRedDot(this, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
 
         /// <summary>
@@ -84,11 +86,11 @@ namespace Hotfix.UI
             // 请求登录
             var req = new ReqLogin
             {
-                SdkType = 0,
+                SdkType  = 0,
                 SdkToken = "",
                 UserName = txtUsername.text,
                 Password = txtPassword.text,
-                Device = SystemInfo.deviceUniqueIdentifier,
+                Device   = SystemInfo.deviceUniqueIdentifier,
                 Platform = Utility.Application.PlatformName
             };
 
@@ -100,7 +102,7 @@ namespace Hotfix.UI
             }
 
             // 获取角色列表
-            var reqPlayerList = new ReqPlayerList { Id = respLogin.Id };
+            var reqPlayerList  = new ReqPlayerList { Id = respLogin.Id };
             var respPlayerList = await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
@@ -114,7 +116,7 @@ namespace Hotfix.UI
             if (respPlayerList.PlayerList.Count > 0)
                 GlobalModule.UIModule.OpenUI<WinPlayerList>(); // 有角色，打开角色列表界面
             else
-                GlobalModule.UIModule.OpenUI<WinPlayerCreate>();// 无角色，打开角色创建界面
+                GlobalModule.UIModule.OpenUI<WinPlayerCreate>(); // 无角色，打开角色创建界面
 
             // 关闭当前界面
             CloseSelf();
@@ -129,33 +131,33 @@ namespace Hotfix.UI
 
         private void OnBtnLoginClick(EventContext ctx)
         {
-            Login().Forget();
+            // Login().Forget();
             // PlayBgm().Forget();
+            GlobalModule.RedDotModule.IncrementCount("Bag.Item");
         }
-    
+
         private void OnInputUserNameChanged(EventContext ctx)
         {
             // todo
         }
-    
+
         private void OnInputUserNameFocusOut(EventContext ctx)
         {
             // if (_soundId != -1)
-                // SoundManager.Instance.PauseSound(_soundId);
+            // SoundManager.Instance.PauseSound(_soundId);
         }
-    
+
         private void OnInputPasswordChanged(EventContext ctx)
         {
             // todo
         }
-    
+
         private void OnInputPasswordFocusOut(EventContext ctx)
         {
             // if (_soundId != -1)
-                // SoundManager.Instance.ResumeSound(_soundId);
+            // SoundManager.Instance.ResumeSound(_soundId);
         }
-    
-    #endregion
-}
 
+        #endregion
+    }
 }

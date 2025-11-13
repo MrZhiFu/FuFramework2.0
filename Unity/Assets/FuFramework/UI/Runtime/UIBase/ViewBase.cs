@@ -25,7 +25,7 @@ namespace FuFramework.UI.Runtime
         /// FGui的包管理器。
         /// </summary>
         private FuiPackageManager m_PackageManager;
-        
+
         /// <summary>
         /// 界面序列编号。
         /// </summary>
@@ -118,9 +118,9 @@ namespace FuFramework.UI.Runtime
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_UIManager = ModuleManager.GetModule<UIManager>();
+            m_UIManager      = ModuleManager.GetModule<UIManager>();
             m_PackageManager = ModuleManager.GetModule<FuiPackageManager>();
-            
+
             m_IsInit       = true;
             DepthInUIGroup = 0;
 
@@ -190,7 +190,7 @@ namespace FuFramework.UI.Runtime
         protected GObject GetChild(string childName) => UIView.GetChild(childName);
 
         /// <summary>
-        /// 获取界面子对象。
+        /// 添加界面子对象。
         /// </summary>
         /// <param name="child"></param>
         /// <returns></returns>

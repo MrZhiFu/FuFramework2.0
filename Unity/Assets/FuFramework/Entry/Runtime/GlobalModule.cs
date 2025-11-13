@@ -18,6 +18,7 @@ using FuFramework.ObjectPool.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Localization.Runtime;
 using FuFramework.Model.Runtime;
+using FuFramework.RedDot.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.SaveData.Runtime;
 
@@ -144,7 +145,7 @@ namespace FuFramework.Entry.Runtime
         ///// <summary>
         ///// 获取红点管理模块。
         ///// </summary>
-        // private static RedDotManager RedDotModule => ModuleManager.GetModule<RedDotManager>();
+        public static RedDotManager RedDotModule => ModuleManager.GetModule<RedDotManager>();
 
         ///// <summary>
         ///// 获取广告管理模块。
