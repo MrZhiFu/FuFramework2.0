@@ -8,17 +8,26 @@ namespace Hotfix.UI
         /// </summary>
         private void OnInit()
         { 
-            // DoSomething
+            InitEvent();
+            InitRedDot();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        public void InitEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
 
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this.uiView, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+        }
+        
         /// <summary>
         /// 销毁。
         /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。

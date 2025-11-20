@@ -39,6 +39,30 @@ namespace Hotfix.UI
         /// </summary>
         private void OnInit()
         {
+            InitEvent();
+            InitRedDot();
+            
+            InitData();
+        }
+
+        /// <summary>
+        /// 注册相关逻辑事件
+        /// </summary>
+        private void InitEvent()
+        {
+            Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
+        }
+
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this.uiView, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+        }
+
+        private void InitData()
+        {
             _bagItems = new List<BagItem>();
             _tabs = new List<ItemTypeData>
             {
@@ -48,14 +72,6 @@ namespace Hotfix.UI
                 new(ItemType.Material, "材料"),
                 new(ItemType.Expendable, "消耗品"),
             };
-        }
-
-        /// <summary>
-        /// 注册相关逻辑事件
-        /// </summary>
-        public void InitEvent()
-        {
-            Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
         }
 
         /// <summary>

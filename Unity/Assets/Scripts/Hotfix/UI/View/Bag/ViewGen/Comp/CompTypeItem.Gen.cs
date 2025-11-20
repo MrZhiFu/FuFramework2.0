@@ -54,7 +54,6 @@ namespace Hotfix.UI
 	        FuLog.Info($"初始化{view.UIName}界面组件-{GetType().Name}");
 	        uiView = view;
 	        InitUIEvent();
-	        InitEvent();
 	        OnInit();
         }
         

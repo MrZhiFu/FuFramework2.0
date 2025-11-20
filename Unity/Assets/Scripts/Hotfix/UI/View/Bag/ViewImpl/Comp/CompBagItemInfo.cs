@@ -12,24 +12,33 @@ namespace Hotfix.UI
 {
     public partial class CompBagItemInfo
     {
-	    private BagItem _selectBagItem;
+        private BagItem _selectBagItem;
 
-	    /// <summary>
-	    /// 初始化
-	    /// </summary>
-	    private void OnInit()
-	    { 
-		    // DoSomething
-	    }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void OnInit()
+        {
+            InitEvent();
+            InitRedDot();
+        }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        public void InitEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
-        
+
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this.uiView, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+        }
+
         /// <summary>
         /// 销毁。
         /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
@@ -42,28 +51,28 @@ namespace Hotfix.UI
         /// <param name="selectBagItem"></param>
         public void SetData(BagItem selectBagItem)
         {
-	        if (selectBagItem.IsNull()) return;
-	        _selectBagItem = selectBagItem;
-	        var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>().Get(selectBagItem.ItemId);
-	        txtName.text = itemConfig.Name;
-	        txtDesc.text = itemConfig.Description;
-	        var eIsCanUse = itemConfig.CanUse == ItemCanUse.CanNot? EIsCanUse.No : EIsCanUse.Yes;
-	        SetController(eIsCanUse);
+            if (selectBagItem.IsNull()) return;
+            _selectBagItem = selectBagItem;
+            var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>().Get(selectBagItem.ItemId);
+            txtName.text = itemConfig.Name;
+            txtDesc.text = itemConfig.Description;
+            var eIsCanUse = itemConfig.CanUse == ItemCanUse.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
+            SetController(eIsCanUse);
         }
 
         #region 交互事件以及ListItem渲染回调处理
-        
-		private void OnBtnUseClick(EventContext ctx)
-		{
-			if (_selectBagItem.IsNull()) return;
-			BagManager.Instance.RequestUseItem(_selectBagItem.ItemId, _selectBagItem.Count).Forget();
-		}
 
-		private void OnBtnGetClick(EventContext ctx)
-		{
-			// todo
-			FuLog.Info("获取道具 TODO");
-		}
+        private void OnBtnUseClick(EventContext ctx)
+        {
+            if (_selectBagItem.IsNull()) return;
+            BagManager.Instance.RequestUseItem(_selectBagItem.ItemId, _selectBagItem.Count).Forget();
+        }
+
+        private void OnBtnGetClick(EventContext ctx)
+        {
+            // todo
+            FuLog.Info("获取道具 TODO");
+        }
 
         #endregion
     }

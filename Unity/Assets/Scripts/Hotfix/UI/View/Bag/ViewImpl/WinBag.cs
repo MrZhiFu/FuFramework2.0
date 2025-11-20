@@ -25,12 +25,21 @@ namespace Hotfix.UI
             InitUIComp();
             InitUIEvent();
             InitEvent();
+            InitRedDot();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
         private void InitEvent() { }
+        
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+        }
 
         /// <summary>
         /// 界面打开

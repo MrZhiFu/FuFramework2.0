@@ -12,16 +12,25 @@ namespace Hotfix.UI
         /// 初始化
         /// </summary>
         private void OnInit()
-        { 
-            // DoSomething
+        {
+            InitEvent();
+            InitRedDot();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        public void InitEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+        }
+
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this.uiView, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
 
         /// <summary>
@@ -29,7 +38,7 @@ namespace Hotfix.UI
         /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
         /// </summary>
         private void OnDispose() { }
-        
+
         /// <summary>
         /// 设置物品的图标
         /// </summary>
@@ -40,7 +49,7 @@ namespace Hotfix.UI
             var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>().Get(itemId);
             if (!itemConfig.IsNotNull()) return;
             loaderGift.icon = Utility.AssetPath.GetImagePath(itemConfig.Icon);
-            loaderBg.icon = Utility.AssetPath.GetImagePath(itemConfig.BgIcon);
+            loaderBg.icon   = Utility.AssetPath.GetImagePath(itemConfig.BgIcon);
         }
 
         /// <summary>

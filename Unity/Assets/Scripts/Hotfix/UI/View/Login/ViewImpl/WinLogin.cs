@@ -34,8 +34,7 @@ namespace Hotfix.UI
             InitUIComp();
             InitUIEvent();
             InitEvent();
-
-            FuiUtility.RegisterRedDot(this, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            InitRedDot();
         }
 
         /// <summary>
@@ -44,6 +43,14 @@ namespace Hotfix.UI
         private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+        }
+
+        /// <summary>
+        /// 注册界面相关红点
+        /// </summary>
+        private void InitRedDot()
+        {
+            // Example: FuiUtility.RegisterRedDot(this, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
 
         /// <summary>

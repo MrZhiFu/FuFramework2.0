@@ -29,7 +29,7 @@ namespace Hotfix.UI
             foreach (var child in children)
             {
                 if (child is not CompRedDot comp) continue;
-                comp.InitRedDot(view, target, redDotKey, displayMode);
+                comp.SetRedDot(view, target, redDotKey, displayMode);
                 return;
             }
 
@@ -41,7 +41,7 @@ namespace Hotfix.UI
             }
 
             target.AddChild(compRedDot);
-            compRedDot.InitRedDot(view, target, redDotKey, displayMode);
+            compRedDot.SetRedDot(view, target, redDotKey, displayMode);
             compRedDot.SetRedDotPos(offset);
         }
     }

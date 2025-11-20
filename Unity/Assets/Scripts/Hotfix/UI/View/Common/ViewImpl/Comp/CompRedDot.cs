@@ -14,9 +14,20 @@ namespace Hotfix.UI
         /// </summary>
         public enum DisplayMode
         {
-            DotOnly,   // 只显示红点
-            DotNumber, // 红点+数字
-            Auto       // 根据数量自动显示，=1显示红点，>1显示数字
+            /// <summary>
+            /// 只显示红点
+            /// </summary>
+            DotOnly,
+            
+            /// <summary>
+            /// 红点+数字
+            /// </summary>
+            DotNumber,
+            
+            /// <summary>
+            /// 根据数量自动显示，=1显示红点，>1显示数字
+            /// </summary>
+            Auto
         }
 
         /// <summary>
@@ -37,7 +48,10 @@ namespace Hotfix.UI
         /// <summary>
         /// 初始化
         /// </summary>
-        private void OnInit() { }
+        private void OnInit()
+        {
+            InitEvent();
+        }
 
         /// <summary>
         /// 注册相关逻辑事件
@@ -54,13 +68,13 @@ namespace Hotfix.UI
         }
 
         /// <summary>
-        /// 初始化红点
+        /// 设置红点
         /// </summary>
         /// <param name="view">所属界面</param>
         /// <param name="target">红点依附的目标组件</param>
         /// <param name="redKey">红点Key</param>
         /// <param name="displayMode">红点显示模式</param>
-        public void InitRedDot(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
+        public void SetRedDot(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
         {
             if (view   == null) return;
             if (target == null) return;
@@ -74,6 +88,12 @@ namespace Hotfix.UI
             // 注册红点变化事件
             GlobalModule.RedDotModule.Register(m_Key, OnRedDotChanged);
         }
+
+        /// <summary>
+        /// 手动设置红点。
+        /// 如在滑动列表的Item上显示红点，红点数量变化时，需要手动调用此方法刷新红点显示。
+        /// </summary>
+        public void SetRedDot(int redCount) => OnRedDotChanged(redCount);
 
         /// <summary>
         /// 设置红点位置，默认在组件的右上角
@@ -91,12 +111,6 @@ namespace Hotfix.UI
         }
 
         /// <summary>
-        /// 手动设置红点。
-        /// 如在滑动列表的Item上显示红点，红点数量变化时，需要手动调用此方法刷新红点显示。
-        /// </summary>
-        public void SetRedDot(int redCount) => OnRedDotChanged(redCount);
-
-        /// <summary>
         /// 红点变化事件回调
         /// </summary>
         /// <param name="redCount">红点数量</param>
@@ -109,9 +123,9 @@ namespace Hotfix.UI
                     imgRedDot.visible = redCount > 0;
                     break;
                 case DisplayMode.DotNumber:
-                    txtCount.visible  = true;
-                    txtCount.text     = FormatRedDotCount(redCount);
+                    txtCount.visible  = redCount >= 1;
                     imgRedDot.visible = redCount > 0;
+                    txtCount.text     = FormatRedDotCount(redCount);
                     break;
                 case DisplayMode.Auto:
                     txtCount.visible  = redCount > 1;
@@ -128,7 +142,7 @@ namespace Hotfix.UI
         /// </summary>
         /// <param name="count">数量</param>
         /// <returns>格式化后的字符串</returns>
-        private string FormatRedDotCount(int count)
+        private static string FormatRedDotCount(int count)
         {
             return count switch
             {
