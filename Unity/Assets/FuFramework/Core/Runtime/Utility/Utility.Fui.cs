@@ -8,9 +8,9 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// UI相关的实用函数
+        /// FUI相关的实用函数
         /// </summary>
-        public static class UI
+        public static class Fui
         {
             /// <summary>
             /// 根据UI对象获取UI路径,
