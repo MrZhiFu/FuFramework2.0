@@ -16,6 +16,7 @@ MonoBehaviour:
   - rid: 3618476560769089536
   - rid: 3618476560769089540
   - rid: 3618476560769089543
+  - rid: 3618476781636681807
   references:
     version: 2
     RefIds:
@@ -75,4 +76,15 @@ MonoBehaviour:
       type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
       data:
         m_Key: Hero.Skin
+        m_Children: []
+    - rid: 3618476781636681807
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Battle
+        m_Children:
+        - rid: 3618476781636681809
+    - rid: 3618476781636681809
+      type: {class: RedDotNodeData, ns: FuFramework.ModuleSetting.Runtime, asm: FuFramework.ModuleSetting.Runtime}
+      data:
+        m_Key: Battle.Team
         m_Children: []

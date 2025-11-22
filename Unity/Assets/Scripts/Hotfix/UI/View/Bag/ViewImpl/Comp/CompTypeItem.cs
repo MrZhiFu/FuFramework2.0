@@ -25,7 +25,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: FuiUtility.RegisterRedDot(this.uiView, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
         
         /// <summary>

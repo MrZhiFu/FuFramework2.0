@@ -50,7 +50,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: FuiUtility.RegisterRedDot(this, "Bag.Item", btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
 
         /// <summary>
@@ -79,6 +79,39 @@ namespace Hotfix.UI
             // TODO：刷新逻辑
         }
 
+        #region 交互事件与ListItem渲染回调处理
+
+        private void OnBtnLoginClick(EventContext ctx)
+        {
+            // Login().Forget();
+            // PlayBgm().Forget();
+            // GlobalModule.RedDotModule.IncrementCount(RedDotKeys.BagItem);
+        }
+
+        private void OnInputUserNameChanged(EventContext ctx)
+        {
+            // todo
+        }
+
+        private void OnInputUserNameFocusOut(EventContext ctx)
+        {
+            // if (_soundId != -1)
+            // SoundManager.Instance.PauseSound(_soundId);
+        }
+
+        private void OnInputPasswordChanged(EventContext ctx)
+        {
+            // todo
+        }
+
+        private void OnInputPasswordFocusOut(EventContext ctx)
+        {
+            // if (_soundId != -1)
+            // SoundManager.Instance.ResumeSound(_soundId);
+        }
+
+        #endregion
+        
         /// <summary>
         /// 执行登录
         /// </summary>
@@ -133,38 +166,5 @@ namespace Hotfix.UI
         // {
         //     _soundId = await SoundManager.Instance.PlaySound("sfx_lose", "UI", ".ogg");
         // }
-
-        #region 交互事件与ListItem渲染回调处理
-
-        private void OnBtnLoginClick(EventContext ctx)
-        {
-            // Login().Forget();
-            // PlayBgm().Forget();
-            GlobalModule.RedDotModule.IncrementCount("Bag.Item");
-        }
-
-        private void OnInputUserNameChanged(EventContext ctx)
-        {
-            // todo
-        }
-
-        private void OnInputUserNameFocusOut(EventContext ctx)
-        {
-            // if (_soundId != -1)
-            // SoundManager.Instance.PauseSound(_soundId);
-        }
-
-        private void OnInputPasswordChanged(EventContext ctx)
-        {
-            // todo
-        }
-
-        private void OnInputPasswordFocusOut(EventContext ctx)
-        {
-            // if (_soundId != -1)
-            // SoundManager.Instance.ResumeSound(_soundId);
-        }
-
-        #endregion
     }
 }

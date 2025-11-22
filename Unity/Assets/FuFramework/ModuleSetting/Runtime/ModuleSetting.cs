@@ -5,7 +5,15 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.ModuleSetting.Runtime
 {
     /// <summary>
-    /// 系统模块配置
+    /// 系统模块配置。
+    /// 功能：
+    /// 1. 管理游戏基本设置信息，包括游戏帧率，游戏速度，是否允许后台运行，是否禁止休眠等。
+    /// 2. 管理游戏基础模块的配置信息，包括音频模块设置，资源模块设置，实体模块设置，本地数据存储模块设置，红点模块模块设置等。
+    /// 3. 提供游戏暂停，恢复，重置正常速度等功能。
+    ///
+    /// 注意：
+    /// 1. 该类为单例类，请不要在代码中创建多个实例。
+    /// 2. 该类需要挂载到首个初始化场景的 GameObject 上，否则其他模块无法正确初始化。
     /// </summary>
     public class ModuleSetting : MonoSingleton<ModuleSetting>
     {

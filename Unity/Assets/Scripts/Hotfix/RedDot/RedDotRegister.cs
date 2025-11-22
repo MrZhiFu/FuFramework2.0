@@ -3,12 +3,13 @@ using UnityEngine;
 using FuFramework.UI.Runtime;
 using FuFramework.Core.Runtime;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.UI
 {
     /// <summary>
-    /// FUI工具类
+    /// 红点UI注册器
     /// </summary>
-    public class FuiUtility
+    public class RedDotRegister
     {
         /// <summary>
         /// 注册红点到指定组件

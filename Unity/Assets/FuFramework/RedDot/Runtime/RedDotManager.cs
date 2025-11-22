@@ -42,6 +42,12 @@ namespace FuFramework.RedDot.Runtime
             // 读取红点树配置
             var redDotSetting = ModuleSetting.Runtime.ModuleSetting.Instance.RedDotSetting;
 
+            if (redDotSetting == null)
+            {
+                FuLog.Error("[RedDotManager] 红点树配置文件不存在.");
+                return;
+            }
+            
             NodeDict.Clear();
             foreach (var root in redDotSetting.m_RootNodes)
             {
