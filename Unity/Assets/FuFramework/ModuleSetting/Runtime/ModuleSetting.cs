@@ -45,6 +45,8 @@ namespace FuFramework.ModuleSetting.Runtime
         [Header("红点模块配置")]
         [SerializeField] private RedDotSetting m_RedDotSetting;
         
+        [Header("引导模块配置")]
+        [SerializeField] private GuideSetting m_GuideSetting;
         
         /// <summary>
         /// 获取音频系统配置
@@ -70,6 +72,11 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取红点模块配置
         /// </summary>
         public RedDotSetting RedDotSetting => m_RedDotSetting;
+        
+        /// <summary>
+        /// 获取引导模块配置
+        /// </summary>
+        public GuideSetting GuideSetting => m_GuideSetting;
         
         
 

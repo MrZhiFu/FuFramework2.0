@@ -30,7 +30,8 @@
         "FuFramework.Model.Runtime",
         "FuFramework.DataSave.Runtime",
         "FuFramework.Timer.Runtime",
-        "FuFramework.RedDot.Runtime"
+        "FuFramework.RedDot.Runtime",
+        "FuFramework.Guide.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

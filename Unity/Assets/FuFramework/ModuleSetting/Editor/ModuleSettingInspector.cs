@@ -12,10 +12,10 @@ namespace FuFramework.ModuleSetting.Editor
     internal sealed class ModuleSettingInspector : FuFrameworkInspector
     {
         /// 游戏速度数组
-        private static readonly float[] m_SGameSpeed = { 0f, 0.01f, 0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 4f, 8f };
+        private static readonly float[] GameSpeed = { 0f, 0.01f, 0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 4f, 8f };
 
         /// 游戏速度显示名称数组
-        private static readonly string[] m_SGameSpeedForDisplay = { "0x", "0.01x", "0.1x", "0.25x", "0.5x", "1x", "1.5x", "2x", "4x", "8x" };
+        private static readonly string[] GameSpeedForDisplay = { "0x", "0.01x", "0.1x", "0.25x", "0.5x", "1x", "1.5x", "2x", "4x", "8x" };
 
         private SerializedProperty m_FrameRate;       // 帧率
         private SerializedProperty m_GameSpeed;       // 游戏速度
@@ -27,7 +27,8 @@ namespace FuFramework.ModuleSetting.Editor
         private SerializedProperty m_AssetSetting;    // 资源模块配置
         private SerializedProperty m_EntitySetting;   // 实体模块配置
         private SerializedProperty m_DataSaveSetting; // 本地数据存储模块配置
-        private SerializedProperty m_RedDotSetting; // 红点模块配置
+        private SerializedProperty m_RedDotSetting;   // 红点模块配置
+        private SerializedProperty m_GuideSetting;    // 引导模块配置
 
         private void OnEnable()
         {
@@ -39,7 +40,8 @@ namespace FuFramework.ModuleSetting.Editor
             m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
             m_EntitySetting   = serializedObject.FindProperty("m_EntitySetting");
             m_DataSaveSetting = serializedObject.FindProperty("m_DataSaveSetting");
-            m_RedDotSetting = serializedObject.FindProperty("m_RedDotSetting");
+            m_RedDotSetting   = serializedObject.FindProperty("m_RedDotSetting");
+            m_GuideSetting    = serializedObject.FindProperty("m_GuideSetting");
         }
 
         public override void OnInspectorGUI()
@@ -65,7 +67,7 @@ namespace FuFramework.ModuleSetting.Editor
             EditorGUILayout.BeginVertical("box");
             {
                 var gameSpeed         = EditorGUILayout.Slider("游戏速度设置：", m_GameSpeed.floatValue, 0f, 8f);
-                var selectedGameSpeed = GUILayout.SelectionGrid(GetSelectedGameSpeed(gameSpeed), m_SGameSpeedForDisplay, 5);
+                var selectedGameSpeed = GUILayout.SelectionGrid(GetSelectedGameSpeed(gameSpeed), GameSpeedForDisplay, 5);
                 if (selectedGameSpeed >= 0)
                 {
                     gameSpeed = GetGameSpeed(selectedGameSpeed);
@@ -108,6 +110,7 @@ namespace FuFramework.ModuleSetting.Editor
             EditorGUILayout.PropertyField(m_EntitySetting);
             EditorGUILayout.PropertyField(m_DataSaveSetting);
             EditorGUILayout.PropertyField(m_RedDotSetting);
+            EditorGUILayout.PropertyField(m_GuideSetting);
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -117,10 +120,10 @@ namespace FuFramework.ModuleSetting.Editor
         /// </summary>
         /// <param name="selectedGameSpeed"></param>
         /// <returns></returns>
-        private float GetGameSpeed(int selectedGameSpeed)
+        private static float GetGameSpeed(int selectedGameSpeed)
         {
-            if (selectedGameSpeed < 0) return m_SGameSpeed[0];
-            return selectedGameSpeed >= m_SGameSpeed.Length ? m_SGameSpeed[m_SGameSpeed.Length - 1] : m_SGameSpeed[selectedGameSpeed];
+            if (selectedGameSpeed < 0) return GameSpeed[0];
+            return selectedGameSpeed >= GameSpeed.Length ? GameSpeed[^1] : GameSpeed[selectedGameSpeed];
         }
 
         /// <summary>
@@ -128,11 +131,11 @@ namespace FuFramework.ModuleSetting.Editor
         /// </summary>
         /// <param name="gameSpeed"></param>
         /// <returns></returns>
-        private int GetSelectedGameSpeed(float gameSpeed)
+        private static int GetSelectedGameSpeed(float gameSpeed)
         {
-            for (var i = 0; i < m_SGameSpeed.Length; i++)
+            for (var i = 0; i < GameSpeed.Length; i++)
             {
-                if (Mathf.Approximately(gameSpeed, m_SGameSpeed[i]))
+                if (Mathf.Approximately(gameSpeed, GameSpeed[i]))
                     return i;
             }
 
