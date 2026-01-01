@@ -127,7 +127,14 @@ namespace FuFramework.Guide.Runtime
         /// <param name="shutdownType">关闭游戏框架类型</param>
         protected override void OnShutdown(ShutdownType shutdownType)
         {
+            // 中断当前引导
             InterruptGuide();
+
+            // 回收当前引导的所有步骤到引用池中
+            foreach (var (_, step) in m_AllStepDict)
+            {
+                ReferencePool.Runtime.ReferencePool.Release(step);
+            }
 
             m_AllStepDict.Clear();
             m_StepHistoryStack.Clear();
@@ -607,6 +614,7 @@ namespace FuFramework.Guide.Runtime
 
             if (!string.IsNullOrEmpty(nextStepId) && m_AllStepDict.TryGetValue(nextStepId, out var nextStep))
             {
+                ReferencePool.Runtime.ReferencePool.Release(m_CurrentStep); // 回收当前步骤到引用池中
                 m_CurrentStep = nextStep;
                 ExecuteCurrentStep();
             }
@@ -638,6 +646,12 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         private void ClearGuideData()
         {
+            // 回收当前引导的所有步骤到引用池中
+            foreach (var (_, step) in m_AllStepDict)
+            {
+                ReferencePool.Runtime.ReferencePool.Release(step);
+            }
+
             m_AllStepDict.Clear();
             m_CurrentStep  = null;
             m_CurrentGuide = null;
