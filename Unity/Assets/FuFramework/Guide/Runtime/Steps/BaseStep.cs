@@ -50,6 +50,11 @@ namespace FuFramework.Guide.Runtime
         public StepInfo StepInfo { get; protected set; }
 
         /// <summary>
+        /// 步骤执行动作对象
+        /// </summary>
+        public IGuideAction GuideAction { get; protected set; }
+        
+        /// <summary>
         /// 步骤执行时间
         /// </summary>
         public float ExecutionTime { get; private set; }
@@ -131,22 +136,22 @@ namespace FuFramework.Guide.Runtime
         protected virtual void OnExecute() { }
 
         /// <summary>
-        /// 更新步骤（每帧调用）
+        /// 步骤更新（每帧调用）
         /// </summary>
         protected virtual void OnUpdate(float deltaTime) { }
 
         /// <summary>
-        /// 完成处理
+        /// 步骤完成
         /// </summary>
         protected virtual void OnComplete() { }
 
         /// <summary>
-        /// 取消处理
+        /// 步骤取消
         /// </summary>
         protected virtual void OnCancel() { }
 
         /// <summary>
-        /// 失败处理
+        /// 步骤失败
         /// </summary>
         protected virtual void OnFail(string reason = "")
         {

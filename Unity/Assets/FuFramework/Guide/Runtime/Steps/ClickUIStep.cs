@@ -1,5 +1,7 @@
+using FairyGUI;
+using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
-using UnityEngine;
+using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Guide.Runtime
@@ -9,24 +11,44 @@ namespace FuFramework.Guide.Runtime
     /// </summary>
     public class ClickUIStep : BaseStep
     {
+        /// <summary>
+        /// 点击目标UI组件
+        /// </summary>
+        private GComponent targetUI;
+        
         protected override void OnExecute()
         {
-            // 查找目标UI并添加监听
-            var target = GameObject.Find(StepInfo.m_TargetUI);
-            if (target != null)
+            var uiManager = ModuleManager.GetModule<UIManager>();
+            if (uiManager == null) return;
+
+            // 查找目标界面
+            var targetWin = uiManager.GetUI(StepInfo.m_TargetWindow);
+            if (targetWin == null)
             {
-                // var clickHandler = target.AddComponent<GuideClickHandler>();
-                // clickHandler.OnClicked += OnTargetClicked;
-            }
-            else
-            {
-                Debug.LogError($"[WeakGuideStep] 找不到目标UI: {StepInfo.m_TargetUI}");
-                OnFail($"找不到目标UI: {StepInfo.m_TargetUI}");
+                FuLog.Warning($"[ClickUIStep] 找不到目标界面: {StepInfo.m_TargetWindow}");
                 return;
             }
 
-            // 显示高亮
-            // GuideManager.Instance.ShowHighlight(targetUI, Vector2.zero);
+            // 查找目标点击UI
+            if (targetWin.UIView.GetChild(StepInfo.m_TargetUI) is not GComponent targetClickUI)
+            {
+                FuLog.Warning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.m_TargetUI}");
+                return;
+            }
+            
+            targetUI = targetClickUI;
+            
+            // 添加目标UI点击回调
+            targetUI.onClick.Add(OnTargetClicked);
+            
+            // 执行点击UI引导
+            if (GuideAction == null)
+            {
+                FuLog.Warning("[ClickUIStep] 无法执行引导，引导动作执行器为null");
+                return;
+            }
+
+            GuideAction.DoClickUIGuide(targetUI);
         }
 
         private void OnTargetClicked() => Complete();
@@ -40,20 +62,11 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         private void Cleanup()
         {
-            // 移除监听器
-            var target = GameObject.Find(StepInfo.m_TargetUI);
-            if (target != null)
-            {
-                // var clickHandler = target.GetComponent<GuideClickHandler>();
-                // if (clickHandler != null)
-                // {
-                // clickHandler.OnClicked -= OnTargetClicked;
-                // Object.Destroy(clickHandler);
-                // }
-            }
-
-            // 隐藏高亮
-            // GuideManager.Instance.HideHighlight();
+            // 移除监听器，结束点击UI引导
+            targetUI?.onClick.Remove(OnTargetClicked);
+            GuideAction?.EndClickUIGuide();
+            targetUI = null;
+            GuideAction = null;
         }
 
         /// <summary>
@@ -65,6 +78,9 @@ namespace FuFramework.Guide.Runtime
         {
             var step = ReferencePool.Runtime.ReferencePool.Acquire<ClickUIStep>();
             step.StepInfo = stepInfo;
+            var guideManger = ModuleManager.GetModule<GuideManager>();
+            if (guideManger == null) return null;
+            step.GuideAction = guideManger.GuideAction;
             return step;
         }
     }

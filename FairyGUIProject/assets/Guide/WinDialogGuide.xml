@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="1136,640">
+  <displayList>
+    <graph id="n0" name="maskBg" xy="0,0" size="1136,640" type="rect" lineSize="0" fillColor="#5c000000">
+      <relation target="" sidePair="height-height,width-width"/>
+    </graph>
+    <graph id="n15_pb2x" name="dialogBg" xy="97,499" size="947,100" type="rect">
+      <relation target="" sidePair="center-center,bottom-bottom"/>
+    </graph>
+    <text id="n16_pb2x" name="_txtContent" xy="113,505" size="923,87" fontSize="30" autoSize="none" text="这是一个对话测试">
+      <relation target="n15_pb2x" sidePair="width-width,height-height"/>
+    </text>
+    <component id="n20_pb2x" name="_btnNext" src="pb2x9" fileName="Comp/BtnNext.xml" xy="0,0" size="1136,640" alpha="0"/>
+    <loader id="n21_pb2x" name="_loaderIcon" xy="119,221" size="176,253"/>
+  </displayList>
+</component>

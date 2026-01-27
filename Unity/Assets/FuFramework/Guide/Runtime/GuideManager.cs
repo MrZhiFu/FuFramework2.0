@@ -101,6 +101,11 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         public BaseStep CurrentStep => m_CurrentStep;
 
+        /// <summary>
+        /// 执行引导动作接口
+        /// </summary>
+        public IGuideAction GuideAction { get; set; }
+
         #endregion
 
         #region 生命周期
@@ -164,7 +169,7 @@ namespace FuFramework.Guide.Runtime
         #endregion
 
         #region 公开方法
-
+        
         /// <summary>
         /// 开始引导流程(通过引导ID)
         /// </summary>

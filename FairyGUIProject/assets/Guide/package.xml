@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="q3l7vvj0">
+  <resources>
+    <movieclip id="rpol3" name="CycleLight.jta" path="/Res/"/>
+    <component id="rpol4" name="WinDialogGuide.xml" path="/" exported="true"/>
+    <movieclip id="xcfj6" name="Arrow.jta" path="/Res/"/>
+    <component id="pb2x7" name="WinClickGuide.xml" path="/" exported="true"/>
+    <component id="pb2x9" name="BtnNext.xml" path="/Comp/"/>
+  </resources>
+  <publish name="Guide" genCode="true">
+    <atlas name="默认" index="0"/>
+  </publish>
+</packageDescription>

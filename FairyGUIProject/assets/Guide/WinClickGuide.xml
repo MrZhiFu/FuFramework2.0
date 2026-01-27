@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="1136,640" mask="n11" reversedMask="true">
+  <displayList>
+    <graph id="n0" name="maskBg" xy="0,0" size="1136,640" type="rect" lineSize="0" fillColor="#5c000000">
+      <relation target="" sidePair="height-height,width-width"/>
+    </graph>
+    <graph id="n11" name="_graphClickArea" xy="409,221" size="200,200" touchable="false" type="eclipse" lineSize="0"/>
+    <movieclip id="n12" name="arrow" src="xcfj6" fileName="Res/Arrow.jta" xy="330,297">
+      <relation target="n11" sidePair="left-left,middle-middle"/>
+    </movieclip>
+    <movieclip id="n13_i0vf" name="cycleLight" src="rpol3" fileName="Res/CycleLight.jta" xy="343,157" size="334,331" aspect="true"/>
+  </displayList>
+</component>
