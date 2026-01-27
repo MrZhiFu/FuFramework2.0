@@ -41,10 +41,11 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         private async UniTask<T> _OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
         {
+            m_SerialId++;
             var uiName = typeof(T).Name;
             if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
             {
-                FuLog.Warning($"[UIManager]已经有序号为 {m_SerialId} 的界面正在加载.");
+                FuLog.Warning($"[UIManager]界面 {uiName} 已经正在加载.");
                 return null;
             }
 
@@ -116,8 +117,7 @@ namespace FuFramework.UI.Runtime
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);
                 m_EventManager.Broadcast(this, openUISuccessEventArgs);
-
-                m_SerialId++;
+                
                 return view;
             }
             catch (Exception exception)
