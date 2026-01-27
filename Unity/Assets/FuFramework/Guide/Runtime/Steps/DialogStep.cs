@@ -11,26 +11,13 @@ namespace FuFramework.Guide.Runtime
         protected override void OnExecute()
         {
             base.OnExecute();
-
-            // 通过GuideManager显示对话
-            // GuideManager.Instance.ShowDialog(dialogContent);
+            GuideAction.DoDialogGuide(StepInfo.m_DialogContent, Complete);
         }
 
         protected override void OnComplete()
         {
             base.OnComplete();
-            // GuideManager.Instance.HideDialog();
-        }
-
-        protected override void OnCancel()
-        {
-            // GuideManager.Instance.HideDialog();
-            base.OnCancel();
-        }
-
-        private void OnDialogConfirmed()
-        {
-            Complete();
+            GuideAction.EndDialogGuide();
         }
 
         /// <summary>

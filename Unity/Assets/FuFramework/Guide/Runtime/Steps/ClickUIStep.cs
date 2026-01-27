@@ -39,7 +39,7 @@ namespace FuFramework.Guide.Runtime
             targetUI = targetClickUI;
             
             // 添加目标UI点击回调
-            targetUI.onClick.Add(OnTargetClicked);
+            targetUI.onClick.Add(Complete);
             
             // 执行点击UI引导
             if (GuideAction == null)
@@ -51,22 +51,12 @@ namespace FuFramework.Guide.Runtime
             GuideAction.DoClickUIGuide(targetUI);
         }
 
-        private void OnTargetClicked() => Complete();
-
-        protected override void OnComplete() => Cleanup();
-
-        protected override void OnCancel() => Cleanup();
-
-        /// <summary>
-        /// 清理监听器
-        /// </summary>
-        private void Cleanup()
+        protected override void OnComplete()
         {
             // 移除监听器，结束点击UI引导
-            targetUI?.onClick.Remove(OnTargetClicked);
+            targetUI?.onClick.Remove(Complete);
             GuideAction?.EndClickUIGuide();
             targetUI = null;
-            GuideAction = null;
         }
 
         /// <summary>
@@ -78,9 +68,6 @@ namespace FuFramework.Guide.Runtime
         {
             var step = ReferencePool.Runtime.ReferencePool.Acquire<ClickUIStep>();
             step.StepInfo = stepInfo;
-            var guideManger = ModuleManager.GetModule<GuideManager>();
-            if (guideManger == null) return null;
-            step.GuideAction = guideManger.GuideAction;
             return step;
         }
     }

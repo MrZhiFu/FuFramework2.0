@@ -20,13 +20,15 @@ namespace FuFramework.Guide.Runtime
         public void EndClickUIGuide();
 
         /// <summary>
-        /// 显示对话
+        /// 执行对话引导
         /// </summary>
-        public void ShowDialog(string content, Action onConfirm = null);
+        /// <param name="content">对话内容</param>
+        /// <param name="onConfirm">对话提交回调</param>
+        public void DoDialogGuide(string content, Action onConfirm = null);
 
         /// <summary>
-        /// 隐藏对话
+        /// 结束对话引导
         /// </summary>
-        public void HideDialog();
+        public void EndDialogGuide();
     }
 }

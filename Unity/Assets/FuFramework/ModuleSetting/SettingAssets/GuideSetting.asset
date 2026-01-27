@@ -29,8 +29,8 @@ MonoBehaviour:
       m_StepType: 1
       m_NextStepId: "Step_\u7B49\u5F852\u79D2"
       m_IsCanJump: 0
-      m_TargetWindow: WinMain
-      m_TargetUI: btn_start
+      m_TargetWindow: WinLogin
+      m_TargetUI: _btnLogin
       m_DialogContent: 
       m_WaitTime: 0
     - m_StepId: "Step_\u7B49\u5F852\u79D2"

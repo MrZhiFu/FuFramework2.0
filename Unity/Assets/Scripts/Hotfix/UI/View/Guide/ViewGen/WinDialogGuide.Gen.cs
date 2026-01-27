@@ -13,8 +13,8 @@ namespace Hotfix.UI
         public override string PackageName => "Guide"; // 包名
         
 		private GTextField txtContent;
-		private GButton btnNext;
 		private GLoader loaderIcon;
+		private GButton btnNext;
 
         /// <summary>
         /// 界面组件初始化
@@ -22,8 +22,8 @@ namespace Hotfix.UI
         private void InitUIComp()
         {
 			txtContent = (GTextField)GetChild("_txtContent");
-			btnNext = (GButton)GetChild("_btnNext");
 			loaderIcon = (GLoader)GetChild("_loaderIcon");
+			btnNext = (GButton)GetChild("_btnNext");
 
 
         }

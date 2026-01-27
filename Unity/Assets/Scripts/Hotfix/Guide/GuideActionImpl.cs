@@ -21,6 +21,28 @@ namespace Hotfix.Guide
         public void DoClickUIGuide(GComponent targetUI) => _DoClickUIGuide(targetUI).Forget();
 
         /// <summary>
+        /// 结束点击UI引导
+        /// </summary>
+        public void EndClickUIGuide()
+        {
+            FuLog.Info("结束点击UI引导");
+            GlobalModule.UIModule.CloseUI<WinClickGuide>();
+        }
+
+        /// <summary>
+        /// 显示对话引导
+        /// </summary>
+        public void DoDialogGuide(string content, Action onConfirm) => _DoDialogGuide(content, onConfirm).Forget();
+
+        /// <summary>
+        /// 结束对话引导
+        /// </summary>
+        public void EndDialogGuide()
+        {
+            GlobalModule.UIModule.CloseUI<WinDialogGuide>();
+        }
+
+        /// <summary>
         /// 执行点击UI引导
         /// </summary>
         /// <param name="targetUI">目标点击UI区域</param>
@@ -35,28 +57,15 @@ namespace Hotfix.Guide
         }
 
         /// <summary>
-        /// 结束点击UI引导
+        /// 执行对话引导
         /// </summary>
-        public void EndClickUIGuide()
+        /// <param name="content">对话内容</param>
+        /// <param name="onConfirm">对话提交回调</param>
+        private async UniTaskVoid _DoDialogGuide(string content, Action onConfirm)
         {
-            FuLog.Info("结束点击UI引导");
-            GlobalModule.UIModule.CloseUI<WinClickGuide>();
-        }
-
-        /// <summary>
-        /// 显示对话引导
-        /// </summary>
-        public void ShowDialog(string content, Action onConfirm = null)
-        {
-            FuLog.Info("显示对话引导");
-        }
-
-        /// <summary>
-        /// 隐藏对话引导
-        /// </summary>
-        public void HideDialog()
-        {
-            FuLog.Info("隐藏对话引导");
+            FuLog.Info("执行对话引导");
+            var winDialogGuide = await GlobalModule.UIModule.OpenUIAsync<WinDialogGuide>();
+            winDialogGuide.ShowDialog(content, onConfirm);
         }
     }
 }

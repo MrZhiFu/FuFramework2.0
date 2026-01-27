@@ -41,8 +41,9 @@ namespace Hotfix
             // 加载初始UI
             LoadUI();
 
-            // 指定引导模块的动作执行器
+            // 指定引导模块的动作执行器，并开始首个引导
             GlobalModule.GuideModule.GuideAction = new GuideActionImpl();
+            GlobalModule.GuideModule.StartFirstGuide();
         }
 
         /// <summary>

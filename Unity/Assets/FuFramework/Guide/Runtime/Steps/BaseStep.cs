@@ -52,7 +52,7 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 步骤执行动作对象
         /// </summary>
-        public IGuideAction GuideAction { get; protected set; }
+        public IGuideAction GuideAction => ModuleManager.GetModule<GuideManager>().GuideAction;
         
         /// <summary>
         /// 步骤执行时间
@@ -115,6 +115,10 @@ namespace FuFramework.Guide.Runtime
         {
             State = StepState.Completed;
             OnComplete();
+            
+            // 执行下一个步骤
+            if (!string.IsNullOrEmpty(StepInfo.m_NextStepId))
+                ModuleManager.GetModule<GuideManager>().JumpToStep(StepInfo.m_NextStepId);
         }
 
         /// <summary>
