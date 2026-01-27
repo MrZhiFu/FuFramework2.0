@@ -60,7 +60,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-	        // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
         
         /// <summary>

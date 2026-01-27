@@ -137,27 +137,6 @@ function GenCommon:GenCompInit(dataList, compArray, AllClsMap)
     end
 end
 
---- 生成自定义组件的初始化Init函数C#代码：compXXX.Init(this.uiView)，注入该组件所属的界面
-function GenCommon:GenCustomCompInit(dataList, compArray, AllClsMap, isComp)
-    if #compArray <= 0 then
-        return
-    end
-
-    Tool:Log("生成自定义组件的初始化Init函数C#代码")
-    for _, comp in ipairs(compArray) do
-        local comType = Tool:GetCompType(comp.comp, AllClsMap)
-        local paramName = Tool:FormatVarName(comp.comp.name)
-        if Tool:StartWith(comType, "Comp") then
-            local comDef = string.format("\t\t\t%s.Init(this);", paramName)
-            if isComp then
-                -- 如果是自定义组件里面的自定义组件，传递uiView到Init方法中
-                comDef = string.format("\t\t\t%s.Init(uiView);", paramName)
-            end
-            table.insert(dataList, comDef)
-        end
-    end
-end
-
 --- 生成动效的初始化赋值C#代码：testAnim = UIView.GetTransition("TestAnim");
 function GenCommon:GenTransitionInit(dataList, compCls)
     local handler = Tool:Handler()
@@ -315,12 +294,12 @@ function GenCommon:GenListOnRenderHandler(dataList, resName, upName)
     table.insert(dataList, "Item(int idx, GObject item)\n")
     table.insert(dataList, "\t\t{\n")
     table.insert(dataList, "\t\t\tif (item is not ")
-    table.insert(dataList, upName)
-    table.insert(dataList, " compItem) return;")
+    table.insert(dataList, resName)
+    table.insert(dataList, " compItem) return;\n")
     table.insert(dataList, "\t\t\t//var data = xxxModel:Get")
     table.insert(dataList, upName)
     table.insert(dataList, "DataByIdx(idx);\n")
-    table.insert(dataList, "\t\t\tcompItem.Init(uiView);\n")
+    table.insert(dataList, "\t\t\tcompItem.Init(this);\n")
     table.insert(dataList, "\t\t\t//compItem.SetData(data);\n")
     table.insert(dataList, "\t\t\t// todo\n")
     table.insert(dataList, "\t\t}\n\n")
@@ -397,7 +376,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
     elseif type == "GList" then
         local dataList = {}
         
-        local lowerName = Tool:FirstCharLower("%s")
+        local lowerName = Tool:FirstCharLower(Tool:StrSub(comp.name, 2, -1))
         table.insert(dataList, Tool:StrFormat("\t\t\tvar idx = %s.GetChildIndex((GObject)ctx.data);\n", lowerName))
         table.insert(dataList, Tool:StrFormat("\t\t\tif (%s.isVirtual) idx = %s.ChildIndexToItemIndex(idx);\n", lowerName, lowerName))
         table.insert(dataList, "\t\t\t//var data = xxxModel:Get")

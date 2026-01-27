@@ -53,7 +53,6 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         GenCommon:GenControllerInit(dataTable['#CompInit#'], winCls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
         GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
         GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
-        --GenCommon:GenCustomCompInit(dataTable['#CustomCompInit#'], compArray, AllClsMap, false)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的界面View
 
         GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
@@ -77,44 +76,42 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
         targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winCls.resName)
 
-        -- 如果界面逻辑代码文件存在，则不再生成
-        if Tool:IsFileExists(targetPath) then
-            Tool:Log("界面代码文件%s已存在，不再生成", winCls.resName)
-            return
-        end
+        -- 如果界面逻辑代码文件不存在，则生成
+        if not Tool:IsFileExists(targetPath) then
+            
+            -- 创建存放代码的文件夹=>.../ViewImpl
+            Tool:CreateDirectory(targetDir)
 
-        -- 创建存放代码的文件夹=>.../ViewImpl
-        Tool:CreateDirectory(targetDir)
+            -- 如果设置为导出，则生成界面代码文件WinXxx.cs
+            if winCls.res.exported then
+                local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
+                local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
 
-        -- 如果设置为导出，则生成界面代码文件WinXxx.cs
-        if winCls.res.exported then
-            local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
-            local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
+                local dataKeys1 = {
+                    '#HANDLER#', -- 交互事件处理函数关键子
+                }
 
-            local dataKeys1 = {
-                '#HANDLER#', -- 交互事件处理函数关键子
-            }
+                local dataTable1 = {}
+                for _, key in ipairs(dataKeys1) do
+                    dataTable1[key] = {}
+                end
 
-            local dataTable1 = {}
-            for _, key in ipairs(dataKeys1) do
-                dataTable1[key] = {}
+                -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
+                GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
+
+                -- 使用生成的代码替换模板代码中各个关键字
+                for k, v in pairs(dataTable1) do
+                    templateCode = templateCode:gsub(k, table.concat(v))
+                end
+
+                -- 替换命名空间，包名，界面名
+                templateCode = templateCode:gsub('#NAMESPACE#', namespace)
+                templateCode = templateCode:gsub('#PKGNAME#', pkgName)
+                templateCode = templateCode:gsub('#WINNAME#', winCls.resName)
+
+                -- 写入替换完成后的代码文件WinXxx.cs
+                Tool:WriteTxt(targetPath, templateCode)
             end
-
-            -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
-
-            -- 使用生成的代码替换模板代码中各个关键字
-            for k, v in pairs(dataTable1) do
-                templateCode = templateCode:gsub(k, table.concat(v))
-            end
-
-            -- 替换命名空间，包名，界面名
-            templateCode = templateCode:gsub('#NAMESPACE#', namespace)
-            templateCode = templateCode:gsub('#PKGNAME#', pkgName)
-            templateCode = templateCode:gsub('#WINNAME#', winCls.resName)
-
-            -- 写入替换完成后的代码文件WinXxx.cs
-            Tool:WriteTxt(targetPath, templateCode)
         end
     end
 end

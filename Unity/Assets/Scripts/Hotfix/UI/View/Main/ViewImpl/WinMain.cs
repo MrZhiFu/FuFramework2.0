@@ -37,7 +37,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitEvent()
         {
-            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+            // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
 
         /// <summary>

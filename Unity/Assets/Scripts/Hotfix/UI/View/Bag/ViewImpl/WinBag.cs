@@ -16,7 +16,7 @@ namespace Hotfix.UI
          //@formatter:on
          
          #endregion
-         
+        
         /// <summary>
         /// 初始化
         /// </summary>  
@@ -31,8 +31,11 @@ namespace Hotfix.UI
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent() { }
-        
+        private void InitEvent()
+        {
+            // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
+        }
+
         /// <summary>
         /// 注册界面相关红点
         /// </summary>
@@ -40,7 +43,7 @@ namespace Hotfix.UI
         {
             // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
-
+        
         /// <summary>
         /// 界面打开
         /// </summary>
@@ -67,9 +70,13 @@ namespace Hotfix.UI
         	compContent.Refresh();
         }
 
-        private void OnBtnCloseClick(EventContext context)
-        {
-            CloseSelf();
-        }
+        #region 交互事件与ListItem渲染回调处理
+        
+		private void OnBtnCloseClick(EventContext ctx)
+		{
+			// todo
+		}
+
+        #endregion
     }
 }

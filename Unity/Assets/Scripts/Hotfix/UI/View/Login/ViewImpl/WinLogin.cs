@@ -13,19 +13,17 @@ namespace Hotfix.UI
 {
     public partial class WinLogin : ViewBase
     {
-        private int _soundId = -1;
-
-        #region 界面基本属性(无特殊需求，可不做修改)
+         #region 界面基本属性(无特殊需求，可不做修改)
  
          //@formatter:off
          protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
          protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
          protected override bool IsFullScreen     => true;             // 是否是全屏界面。
          public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
-        //@formatter:on
-
-        #endregion
-
+         //@formatter:on
+         
+         #endregion
+        
         /// <summary>
         /// 初始化
         /// </summary>  
@@ -42,7 +40,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitEvent()
         {
-            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+            // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
 
         /// <summary>
@@ -52,7 +50,7 @@ namespace Hotfix.UI
         {
             RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
         }
-
+        
         /// <summary>
         /// 界面打开
         /// </summary>
@@ -60,7 +58,7 @@ namespace Hotfix.UI
         {
             Refresh();
         }
-
+        
         /// <summary>
         /// 界面关闭
         /// </summary>
