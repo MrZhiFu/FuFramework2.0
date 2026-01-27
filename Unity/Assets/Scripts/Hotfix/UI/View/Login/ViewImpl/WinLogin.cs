@@ -81,7 +81,7 @@ namespace Hotfix.UI
 
         private void OnBtnLoginClick(EventContext ctx)
         {
-            // Login().Forget();
+            Login().Forget();
             // PlayBgm().Forget();
             // GlobalModule.RedDotModule.IncrementCount(RedDotKeys.BagItem);
         }
