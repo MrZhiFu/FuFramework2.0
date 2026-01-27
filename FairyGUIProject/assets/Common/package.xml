@@ -83,6 +83,7 @@
     <image id="l50q8" name="图层1_2.png" path="/Res/goods/" exported="true"/>
     <component id="ubwa2u" name="CompRedDot.xml" path="/Comp/" exported="true"/>
     <image id="ubwa2w" name="img_red_dot.png" path="/Res/"/>
+    <component id="pb2xa" name="WinGlobalMask.xml" path="/" exported="true"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

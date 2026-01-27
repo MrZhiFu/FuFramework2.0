@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="1136,640">
+  <displayList>
+    <graph id="n0" name="maskBg" xy="0,0" size="1136,640" alpha="0" type="rect" lineSize="0" fillColor="#5c000000">
+      <relation target="" sidePair="height-height,width-width"/>
+    </graph>
+  </displayList>
+</component>
