@@ -11,6 +11,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
+using Hotfix.Guide;
 using LuBan.Runtime;
 using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -30,25 +31,28 @@ namespace Hotfix
         public static void Main()
         {
             FuLog.Info("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
-            
+
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
-            
+
             // 加载配置表
-            LoadConfig();
-            
+            LoadConfig().Forget();
+
             // 加载初始UI
             LoadUI();
+
+            // 指定引导模块的动作执行器
+            GlobalModule.GuideModule.GuideAction = new GuideActionImpl();
         }
 
         /// <summary>
         /// 加载配置表
         /// </summary>
-        private static async void LoadConfig()
+        private static async UniTaskVoid LoadConfig()
         {
             var tablesComponent = new TablesComponent();
             tablesComponent.Init(GlobalModule.ConfigModule);
-            
+
 #if ENABLE_BINARY_CONFIG
             // 使用二进制配置表
             await tablesComponent.LoadAsync(ConfigBufferLoader);
@@ -65,7 +69,7 @@ namespace Hotfix
         {
             // 添加通用UI资源包
             GlobalModule.FuiPackageManagerModule.AddPackageAsync("Common").Forget();
-            
+
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
         }
