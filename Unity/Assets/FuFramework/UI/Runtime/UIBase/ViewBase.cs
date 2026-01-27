@@ -155,8 +155,8 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 递归初始化子组件，传递自身实例给子组件。
-        /// 如果子组件实现了ICustomComp接口，则递归初始化子组件。
+        /// 递归初始化自定义子组件，传递自身实例给子组件。
+        /// 注：自定义子组件实现ICustomComp接口(已在导出FUI时自动实现了)
         /// </summary>
         private void InitChildrenView(GComponent curComp)
         {
