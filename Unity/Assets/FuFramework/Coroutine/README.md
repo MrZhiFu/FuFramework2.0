@@ -1,82 +1,63 @@
-﻿## HOMEPAGE
+﻿# FuFramework Coroutine Module
 
-GameFrameX 的 Coroutine 协程组件
+## 简介
+FuFramework Coroutine 模块是对 Unity 原生协程机制的增强封装。它提供了一个中心化的管理器 `CoroutineManager`，用于更安全、更可控地启动和停止协程。该模块解决了原生协程难以追踪、难以批量管理以及容易造成内存泄漏的问题。
 
-**Coroutine 协程组件 (Coroutine Component)** - 提供扩展了Unity的内建协程管理功能的接口。
+## 特性
+- **统一管理**：所有协程由 `CoroutineManager` 统一托管，模块销毁时自动清理。
+- **双向映射**：内部维护了 `IEnumerator` 到 `Coroutine` 的映射，支持通过原始迭代器停止协程。
+- **可视化调试**：在 Inspector 面板实时显示当前运行的协程数量及详细信息，方便排查泄漏。
+- **便捷接口**：提供了 `WaitForEndOfFrameFinish` 等常用功能的封装。
 
-# 使用文档(文档编写于GPT4)
+## 核心类说明
 
-## 说明
+### CoroutineManager
+协程管理器，继承自 `FuModule`。
+- **StartCoroutine**: 启动协程并记录。
+- **StopCoroutine**: 停止指定协程（支持通过 `IEnumerator` 或 `Coroutine` 对象停止）。
+- **StopAllCoroutines**: 停止所有由管理器启动的协程。
+- **WaitForEndOfFrameFinish**: 在当前帧渲染结束后执行回调。
 
-`CoroutineComponent` 类是游戏开发框架的一部分，用于管理和执行Unity协程。该类扩展了Unity的内建协程管理功能，允许开发者更容易地控制协程的生命周期。通过使用并发字典来跟踪执行的协程，它为停止和清理协程提供了更好的控制。
+## 使用示例
 
-## 主要功能
-
-1. **启动协程**
-   使用`StartCoroutine(IEnumerator enumerator)`方法来启动一个协程。这将迭代器和Unity的协程对象存储在一个并发字典中，确保可以随时访问和管理它们。
-
-2. **停止协程**
-   可以通过`StopCoroutine(IEnumerator enumerator)`或`StopCoroutine(UnityEngine.Coroutine coroutine)`方法停止单个协程。这些方法确保同时从Unity和内部字典中移除协程，防止内存泄漏。
-
-3. **停止所有协程**
-   通过`StopAllCoroutines()`方法停止所有正在运行的协程。该方法确保所有协程的干净停止，并清空内部跟踪字典。
-
-4. **帧结束时回调**
-   `WaitForEndOfFrameFinish(System.Action callback)`方法允许在当前帧渲染结束后执行一个回调。这对于在帧的最后进行计算或更新状态非常有用。
-
-## 如何使用
-
-### 启动一个协程
-
+### 1. 获取管理器
 ```csharp
-IEnumerator YourCoroutine()
+var coroutineMgr = ModuleManager.GetModule<CoroutineManager>();
+```
+
+### 2. 启动协程
+```csharp
+IEnumerator MyTask()
 {
-    // 协程执行的内容
-    yield return null;
+    FuLogger.LogInfo("Task Started");
+    yield return new WaitForSeconds(1.0f);
+    FuLogger.LogInfo("Task Finished");
 }
 
-// ...
-
-CoroutineComponent coroutineComponent = gameObject.AddComponent<CoroutineComponent>();
-coroutineComponent.StartCoroutine(YourCoroutine());
+// 启动并保存引用（如果需要后续停止）
+var enumerator = MyTask();
+coroutineMgr.StartCoroutine(enumerator);
 ```
 
-### 停止一个协程
-
+### 3. 停止协程
 ```csharp
-// 假设您已经启动了一个协程，并且您有它的引用
-IEnumerator yourCoroutine = YourCoroutine();
-coroutineComponent.StopCoroutine(yourCoroutine);
+// 方式一：通过迭代器引用停止（推荐）
+coroutineMgr.StopCoroutine(enumerator);
+
+// 方式二：通过 Coroutine 对象停止
+// var coroutine = coroutineMgr.StartCoroutine(enumerator); // 注意：当前接口暂未直接返回 Coroutine 对象，需自行封装或使用方式一
 ```
 
-### 停止所有协程
-
+### 4. 帧结束回调
+常用于截屏或需要等待渲染完成的操作。
 ```csharp
-// 停止该组件上所有正在运行的协程
-coroutineComponent.StopAllCoroutines();
-```
-
-### 帧结束时执行回调
-
-```csharp
-void YourCallback()
+coroutineMgr.WaitForEndOfFrameFinish(() =>
 {
-    // 回调执行的内容
-}
-
-// ...
-
-coroutineComponent.WaitForEndOfFrameFinish(YourCallback);
+    FuLogger.LogInfo("当前帧渲染结束，可以进行截屏操作");
+});
 ```
 
-请注意，在添加`CoroutineComponent`到您的游戏对象时，确保您的场景中没有其他相同类型的组件，因为该类使用了`[DisallowMultipleComponent]`属性。
-
-# 使用方式(任选其一)
-
-1. 直接在 `manifest.json` 的文件中的 `dependencies` 节点下添加以下内容
-   ```json
-      {"com.gameframex.unity.coroutine": "https://github.com/AlianBlank/com.gameframex.unity.coroutine.git"}
-    ```
-2. 在Unity 的`Packages Manager` 中使用`Git URL` 的方式添加库,地址为：https://github.com/AlianBlank/com.gameframex.unity.coroutine.git
-
-3. 直接下载仓库放置到Unity 项目的`Packages` 目录下。会自动加载识别
+## 编辑器扩展
+选中场景中的 `[ModuleManager]` 节点（运行时自动创建），在 Inspector 面板中找到 `CoroutineManager` 组件：
+- **Count**: 当前正在运行的协程总数。
+- **列表**: 展示每个协程对象的详细信息（ToString）。

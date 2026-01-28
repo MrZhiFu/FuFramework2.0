@@ -1,73 +1,185 @@
-﻿## HOMEPAGE
+﻿# FuFramework Event Module
 
-GameFrameX 的 Event 游戏事件系统的组件
+## 简介
+FuFramework Event 模块是一个高性能、线程安全的事件管理系统。它提供了灵活的事件订阅/发布机制，支持多种事件池模式，并集成了对象池技术以提高性能。
 
-**Event 游戏事件系统的组件 (Event Component)** - 提供游戏事件系统的组件相关的接口。
+## 核心类说明
 
-# 使用文档(文档编写于GPT4)
+### EventManager
+全局事件管理器，继承自 `FuModule`。
+- **职责**：
+  1. 管理所有事件的订阅和发布
+  2. 提供线程安全的事件处理机制
+  3. 支持延迟处理和立即处理两种模式
+  4. 集成对象池管理事件参数生命周期
 
-EventComponent 类是一个游戏事件系统的组件，用于管理游戏事件的订阅与派发。
+### EventRegister
+模块级事件注册器，实现 `IReference` 接口。
+- **职责**：
+  1. 为特定模块（如UI界面）提供独立的事件管理
+  2. 自动管理事件订阅的生命周期
+  3. 简化事件订阅和取消订阅操作
 
-## 功能
+### BaseEventArgs / GameEventArgs
+事件参数基类，继承自 `EventArgs` 并实现 `IReference` 接口。
+- **职责**：
+  1. 定义事件的基本结构和行为
+  2. 支持对象池重用机制
+  3. 提供事件ID标识功能
 
-- **事件订阅与取消订阅：** 允许你根据事件ID来订阅或取消订阅事件处理回调函数。
-- **事件派发：** 提供了线程安全的事件派发方法 `Fire`，即使在非主线程也能保证在主线程回调事件处理函数，以及立即派发的方法 `FireNow`。
-- **处理函数统计：** 可以获取当前已订阅的事件处理函数数量和事件数量。
-- **默认事件处理函数设置：** 允许设置默认事件处理函数来捕获未明确订阅的事件。
+### EmptyEventArgs
+轻量级空事件，用于不需要携带数据的事件通信。
+- **职责**：
+  1. 避免创建不必要的事件参数对象
+  2. 通过事件ID进行简单的事件通信
 
-## 使用方法
+### EventPool<T>
+事件处理的核心容器，管理事件的订阅、发布和处理。
+- **职责**：
+  1. 实现线程安全的事件队列
+  2. 支持多种事件池模式配置
+  3. 提供延迟事件处理机制
 
-1. **获取事件数量和事件处理函数的数量：**
+## 事件池模式 (EEventPoolMode)
+```csharp
+[Flags]
+public enum EEventPoolMode : byte
+{
+    Default = 0,                    // 必须存在有且只有一个事件处理函数
+    AllowNoHandler = 1,            // 允许不存在事件处理函数
+    AllowMultiHandler = 2,          // 允许存在多个事件处理函数
+    AllowDuplicateHandler = 4       // 允许存在重复的事件处理函数
+}
+```
 
-   ```csharp
-   int eventHandlerCount = eventComponent.EventHandlerCount;
-   int eventCount = eventComponent.EventCount;
-   ```
+## 使用指南
 
-2. **订阅事件：**
+### 1. 定义事件
+```csharp
+// 定义事件ID
+public static class EventIds
+{
+    public const string PlayerDamage = "PlayerDamage";
+    public const string PlayerLevelUp = "PlayerLevelUp";
+}
 
-   ```csharp
-   eventComponent.Subscribe("game_start", OnGameStart);
-   ```
+// 创建自定义事件参数
+public class PlayerDamageEventArgs : GameEventArgs
+{
+    public override string Id => EventIds.PlayerDamage;
+    public int Damage { get; private set; }
+    public GameObject Attacker { get; private set; }
+    
+    public override void Clear()
+    {
+        Damage = 0;
+        Attacker = null;
+    }
+    
+    public static PlayerDamageEventArgs Create(int damage, GameObject attacker)
+    {
+        var args = ReferencePool.Runtime.ReferencePool.Acquire<PlayerDamageEventArgs>();
+        args.Damage = damage;
+        args.Attacker = attacker;
+        return args;
+    }
+}
+```
 
-   其中 `OnGameStart` 是遵循 `EventHandler<GameEventArgs>` 委托的方法。
+### 2. 订阅事件
+```csharp
+public class PlayerController : MonoBehaviour
+{
+    private void Start()
+    {
+        // 订阅自定义事件
+        GlobalModule.EventModule.Subscribe(EventIds.PlayerDamage, OnPlayerDamage);
+        
+        // 订阅空事件
+        GlobalModule.EventModule.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
+    }
+    
+    private void OnPlayerDamage(object sender, GameEventArgs e)
+    {
+        if (e is PlayerDamageEventArgs damageArgs)
+        {
+            Debug.Log($"玩家受到 {damageArgs.Damage} 点伤害");
+        }
+    }
+    
+    private void OnPlayerLevelUp(object sender, GameEventArgs e)
+    {
+        Debug.Log("玩家升级了！");
+    }
+    
+    private void OnDestroy()
+    {
+        // 取消订阅
+        GlobalModule.EventModule.Unsubscribe(EventIds.PlayerDamage, OnPlayerDamage);
+        GlobalModule.EventModule.Unsubscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
+    }
+}
+```
 
-3. **取消订阅事件：**
+### 3. 发布事件
+```csharp
+public class EnemyController : MonoBehaviour
+{
+    private void AttackPlayer()
+    {
+        // 发布自定义事件
+        var damageArgs = PlayerDamageEventArgs.Create(10, gameObject);
+        GlobalModule.EventModule.Broadcast(this, damageArgs);
+        
+        // 发布空事件
+        GlobalModule.EventModule.Broadcast(this, EventIds.PlayerLevelUp);
+    }
+}
+```
 
-   ```csharp
-   eventComponent.Unsubscribe("game_start", OnGameStart);
-   ```
+### 4. 使用 EventRegister 进行模块级事件管理
+```csharp
+public class UIManager : MonoBehaviour
+{
+    private EventRegister m_EventRegister;
+    
+    private void Start()
+    {
+        m_EventRegister = EventRegister.Create();
+        
+        // 使用EventRegister订阅事件
+        m_EventRegister.Subscribe(EventIds.PlayerDamage, OnPlayerDamageUI);
+        m_EventRegister.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUpUI);
+    }
+    
+    private void OnPlayerDamageUI(object sender, GameEventArgs e)
+    {
+        // 更新UI显示伤害信息
+    }
+    
+    private void OnDestroy()
+    {
+        // 自动取消所有订阅
+        m_EventRegister.UnSubscribeAll();
+        ReferencePool.Runtime.ReferencePool.Release(m_EventRegister);
+    }
+}
+```
 
-4. **抛出事件：**
+## 编辑器扩展
+`EventManagerInspector` 提供了可视化的事件监控功能：
+- **实时统计**：显示已注册的事件处理函数数量和当前帧触发的事件数量
+- **详细列表**：展示所有已注册的事件处理函数和当前帧触发的事件
+- **调试信息**：显示事件发送者和处理函数的详细信息
 
-    - 线程安全的方式（在下一帧分发）:
+## 性能优化建议
+1. **使用 EmptyEventArgs**：对于不需要数据的事件，使用空事件避免创建不必要的对象
+2. **合理使用 EventRegister**：对于模块级事件管理，使用EventRegister自动管理订阅生命周期
+3. **避免频繁创建事件对象**：重用事件参数对象，利用对象池机制
+4. **及时取消订阅**：在对象销毁时及时取消事件订阅，避免内存泄漏
 
-      ```csharp
-      eventComponent.Fire(this, new GameEventArgs());
-      ```
-
-    - 立即模式（立刻分发）:
-
-      ```csharp
-      eventComponent.FireNow(this, new GameEventArgs());
-      ```
-
-5. **设置默认事件处理函数：**
-
-   ```csharp
-   eventComponent.SetDefaultHandler(OnDefaultEvent);
-   ```
-
-   其中 `OnDefaultEvent` 是遵循 `EventHandler<GameEventArgs>` 委托的方法。
-
-通过上述步骤，可以在游戏中有效地使用事件组件进行事件的订阅、取消订阅和派发，从而实现游戏中的事件驱动编程。
-
-# 使用方式(任选其一)
-
-1. 直接在 `manifest.json` 的文件中的 `dependencies` 节点下添加以下内容
-   ```json
-      {"com.gameframex.unity.event": "https://github.com/AlianBlank/com.gameframex.unity.event.git"}
-    ```
-2. 在Unity 的`Packages Manager` 中使用`Git URL` 的方式添加库,地址为：https://github.com/AlianBlank/com.gameframex.unity.event.git
-
-3. 直接下载仓库放置到Unity 项目的`Packages` 目录下。会自动加载识别
+## 注意事项
+- **事件处理顺序**：事件处理函数的调用顺序与订阅顺序一致
+- **异常处理**：事件处理函数中的异常会被捕获并记录，不会影响其他事件处理
+- **内存管理**：事件参数对象会自动通过对象池管理，无需手动释放
+- **线程安全**：`Broadcast` 方法是线程安全的，`BroadcastNow` 方法是非线程安全的

@@ -1,121 +1,103 @@
-﻿## HOMEPAGE
+﻿# FuFramework Download Module
 
-GameFrameX 的 Download 下载任务组件
+## 简介
+FuFramework Download 模块是一个功能强大的文件下载管理系统。它基于任务池（TaskPool）架构设计，支持多任务并发下载、断点续传、速度监控以及流式写入。该模块旨在为游戏提供稳定、高效的资源下载服务，特别适用于热更新、DLC 下载等场景。
 
-**Download 下载任务组件 (Download Component)** - 提供管理下载队列、处理下载任务，并提供下载状态的实时更新。相关的接口。
+## 特性
+- **并发下载**：支持同时下载多个文件（默认并发数 3，可配置）。
+- **断点续传**：自动检测本地已下载的文件大小，从断点处继续下载，节省流量。
+- **流式写入**：下载数据实时写入磁盘，内存占用极低，支持大文件下载。
+- **速度监控**：内置下载速度统计，方便 UI 实时显示。
+- **健壮性**：支持超时重试、错误处理和自动恢复。
 
-# 使用文档(文档编写于GPT4)
+## 核心类说明
 
-`DownloadComponent` 是一个用于处理下载任务的游戏框架组件。它负责管理下载队列、处理下载任务，并提供下载状态的实时更新。
+### DownloadManager
+下载管理器，继承自 `FuModule`。
+- **AddDownloadTask**: 添加一个下载任务。
+- **RemoveDownloadTask**: 移除一个下载任务。
+- **RemoveAllDownloadTasks**: 移除所有下载任务。
+- **Paused**: 全局暂停/恢复下载。
+- **CurrentSpeed**: 获取当前实时下载速度（字节/秒）。
 
-## 功能概述
+### 事件系统
+模块通过 `EventManager` 抛出以下事件：
+- `DownloadStartEventArgs`: 任务开始。
+- `DownloadUpdateEventArgs`: 进度更新（包含已下载大小、总大小、当前速度）。
+- `DownloadSuccessEventArgs`: 任务成功。
+- `DownloadFailureEventArgs`: 任务失败。
 
-- 管理多个下载任务
-- 支持断点续传功能
-- 提供下载任务的优先级设置
-- 实时更新下载进度和下载速度
-- 可以通过事件接收下载的各个阶段状态
+## 使用示例
 
-## 基础用法
-
-要开始使用 `DownloadComponent`，需要在游戏对象上添加此组件。以下是一些核心属性的解释：
-
-- `Paused`: 获取或设置下载是否被暂停。
-- `TotalAgentCount`: 获取下载代理总数量。
-- `FreeAgentCount`: 获取可用下载代理数量。
-- `WorkingAgentCount`: 获取工作中下载代理数量。
-- `WaitingTaskCount`: 获取等待下载任务数量。
-- `Timeout`: 获取或设置下载超时时长。
-- `FlushSize`: 获取或设置写入磁盘的临界大小。
-- `CurrentSpeed`: 获取当前下载速度。
-
-## 如何增加下载任务
-
-以下是添加下载任务的几种方法：
-
+### 1. 添加下载任务
 ```csharp
-// 根据指定的下载路径和URI增加下载任务
-public int AddDownload(string downloadPath, string downloadUri);
+// 获取下载管理器
+var downloadMgr = ModuleManager.GetModule<DownloadManager>();
 
-// 根据指定的下载路径、URI和任务标签增加下载任务
-public int AddDownload(string downloadPath, string downloadUri, string tag);
+// 定义下载地址和本地保存路径
+string url = "https://example.com/file.zip";
+string savePath = Path.Combine(Application.persistentDataPath, "file.zip");
 
-// 根据指定的下载路径、URI和优先级增加下载任务
-public int AddDownload(string downloadPath, string downloadUri, int priority);
-
-// 根据指定的下载路径、URI和用户自定义数据增加下载任务
-public int AddDownload(string downloadPath, string downloadUri, object userData);
+// 添加任务 (返回任务序列ID)
+// 参数: 下载地址, 本地路径, 优先级(默认0), 用户自定义数据(可选)
+int serialId = downloadMgr.AddDownloadTask(url, savePath, 0, "MyUserData");
 ```
 
-## 如何移除下载任务
-
-可以通过任务的序列编号或者标签来移除下载任务：
-
-```csharp
-// 根据序列编号移除下载任务
-public bool RemoveDownload(int serialId);
-
-// 根据标签移除下载任务
-public int RemoveDownloads(string tag);
-
-// 移除所有下载任务
-public int RemoveAllDownloads();
-```
-
-## 事件通知
-
-`DownloadComponent` 提供事件，以便于当下载任务开始、更新、成功、失败时接收通知。
-
-- `DownloadStart`: 当下载开始时触发。
-- `DownloadUpdate`: 当下载更新时触发。
-- `DownloadSuccess`: 当下载成功时触发。
-- `DownloadFailure`: 当下载失败时触发。
-
-## 初始化
-
-组件初始化时，它会设置其内部管理器，并为每个下载代理辅助器注册相应的事件。
+### 2. 监听下载事件
+建议创建一个专门的控制器来处理下载事件。
 
 ```csharp
-protected override void Awake()
+using FuFramework.Event.Runtime;
+using FuFramework.Download.Runtime;
+
+public class DownloadController : MonoBehaviour
 {
-    base.Awake();
-    // ...初始化代码...
-}
-```
-
-## 示例
-
-要添加一个新的下载任务并接收其进度：
-
-```csharp
-// 假设已经存在 downloadComponent 实例
-int serialId = downloadComponent.AddDownload("本地存储路径", "下载链接");
-
-// 通过事件组件订阅下载成功事件
-eventComponent.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
-
-// 下载成功回调
-void OnDownloadSuccess(object sender, GameEventArgs e)
-{
-    DownloadSuccessEventArgs ne = (DownloadSuccessEventArgs)e;
-    if (ne.SerialId == serialId)
+    private void Start()
     {
-        // 处理下载成功
+        var eventMgr = ModuleManager.GetModule<EventManager>();
+        eventMgr.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
+        eventMgr.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
+        eventMgr.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
+        eventMgr.Subscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
     }
+
+    private void OnDownloadUpdate(object sender, GameEventArgs e)
+    {
+        var args = (DownloadUpdateEventArgs)e;
+        // 打印进度：任务ID - 进度百分比 - 当前速度
+        float progress = (float)args.CurrentLength / args.TotalLength;
+        Debug.Log($"Task {args.SerialId}: {progress:P} Speed: {args.DownloadSpeed / 1024f:F2} KB/s");
+    }
+
+    private void OnDownloadSuccess(object sender, GameEventArgs e)
+    {
+        var args = (DownloadSuccessEventArgs)e;
+        Debug.Log($"Task {args.SerialId} Finished! Saved to: {args.DownloadPath}");
+    }
+    
+    // ... 其他事件处理
 }
 ```
 
-注意：此组件依赖于Event 组件：https://github.com/AlianBlank/com.gameframex.unity.event
+### 3. 控制下载
+```csharp
+// 暂停所有下载
+downloadMgr.Paused = true;
 
-# 使用方式(任选其一)
+// 恢复下载
+downloadMgr.Paused = false;
 
-1. 直接在 `manifest.json` 的文件中的 `dependencies` 节点下添加以下内容
-   ```json
-   {
-      "com.gameframex.unity.event": "https://github.com/AlianBlank/com.gameframex.unity.event.git",
-      "com.gameframex.unity.download": "https://github.com/AlianBlank/com.gameframex.unity.download.git"
-   }
-    ```
-2. 在Unity 的`Packages Manager` 中使用`Git URL` 的方式添加库,地址为：https://github.com/AlianBlank/com.gameframex.unity.download.git,
+// 取消指定任务
+downloadMgr.RemoveDownloadTask(serialId);
+```
 
-3. 直接下载仓库放置到Unity 项目的`Packages` 目录下。会自动加载识别
+## 配置说明
+在 `DownloadManager` 初始化时（或运行时）可以调整以下参数：
+- **Timeout**: 下载超时时间（默认 30秒）。
+- **FlushSize**: 缓冲区写入磁盘的阈值（默认 1MB）。
+
+## 编辑器扩展
+选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `DownloadManager` 组件中可以查看：
+- **实时状态**：总代理数、工作代理数、等待任务数。
+- **下载速度**：当前全局下载速度。
+- **任务列表**：所有正在进行的任务详情（ID、优先级、状态）。
