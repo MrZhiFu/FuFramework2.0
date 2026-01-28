@@ -116,7 +116,7 @@ namespace Hotfix.UI
         private void OnNetworkConnected(object sender, GameEventArgs e)
         {
 	        Login().Forget();
-	        FuLog.Info(nameof(OnNetworkConnected));
+	        FuLogger.LogInfo(nameof(OnNetworkConnected));
         }
         
         /// <summary>
@@ -126,7 +126,7 @@ namespace Hotfix.UI
         /// <param name="e"></param>
         private static void OnNetworkClosed(object sender, GameEventArgs e)
         {
-	        FuLog.Info(nameof(OnNetworkClosed));
+	        FuLogger.LogInfo(nameof(OnNetworkClosed));
         }
         
         #region 交互事件与ListItem渲染回调处理

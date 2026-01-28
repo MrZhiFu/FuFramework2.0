@@ -113,7 +113,7 @@ namespace FuFramework.SaveData.Runtime
             var currentTime = Time.realtimeSinceStartup;
             if (currentTime - m_LastSaveTime >= AutoSaveInterval)
             {
-                FuLog.Info($"[[DataSaveHelper] 自动保存数据文件: {FileName}");
+                FuLogger.LogInfo($"[[DataSaveHelper] 自动保存数据文件: {FileName}");
                 Save();
             }
         }
@@ -146,7 +146,7 @@ namespace FuFramework.SaveData.Runtime
             {
                 if (!File.Exists(FilePath))
                 {
-                    FuLog.Warning($"[[DataSaveHelper] 加载数据文件失败，文件不存在: {FileName}");
+                    FuLogger.LogWarning($"[[DataSaveHelper] 加载数据文件失败，文件不存在: {FileName}");
                     return false;
                 }
 
@@ -173,12 +173,12 @@ namespace FuFramework.SaveData.Runtime
                     Serializer.Deserialize(fileStream);
                 }
 
-                FuLog.Info($"[[DataSaveHelper] 加载数据文件成功: {FileName}");
+                FuLogger.LogInfo($"[[DataSaveHelper] 加载数据文件成功: {FileName}");
                 return true;
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[[DataSaveHelper] 加载数据文件失败 {FileName}：'{exception}'.");
+                FuLogger.LogError($"[[DataSaveHelper] 加载数据文件失败 {FileName}：'{exception}'.");
                 return false;
             }
         }
@@ -208,7 +208,7 @@ namespace FuFramework.SaveData.Runtime
                     var       result       = Serializer.Serialize(memoryStream, Data);
                     if (!result)
                     {
-                        FuLog.Warning($"[[DataSaveHelper] 序列化数据失败: {FileName}");
+                        FuLogger.LogWarning($"[[DataSaveHelper] 序列化数据失败: {FileName}");
                         return false;
                     }
 
@@ -222,7 +222,7 @@ namespace FuFramework.SaveData.Runtime
                     using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
                     fileStream.Write(encryptedBytes, 0, encryptedBytes.Length);
 
-                    FuLog.Info($"[[DataSaveHelper] 保存数据文件成功（已加密）: {FileName}");
+                    FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功（已加密）: {FileName}");
                     IsDirty        = false;                     // 清除脏数据标记
                     m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
                     return true;
@@ -234,7 +234,7 @@ namespace FuFramework.SaveData.Runtime
                     var       result     = Serializer.Serialize(fileStream, Data);
                     if (result)
                     {
-                        FuLog.Info($"[[DataSaveHelper] 保存数据文件成功: {FileName}");
+                        FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功: {FileName}");
                         IsDirty        = false;                     // 清除脏数据标记
                         m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
                     }
@@ -244,7 +244,7 @@ namespace FuFramework.SaveData.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Warning($"[[DataSaveHelper] 保存数据文件失败 {FileName}：'{exception}'.");
+                FuLogger.LogWarning($"[[DataSaveHelper] 保存数据文件失败 {FileName}：'{exception}'.");
                 return false;
             }
         }

@@ -19,7 +19,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
 
             GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
             CreateDownloader();
@@ -40,12 +40,12 @@ namespace Launcher.Procedure
 
             if (downloader.TotalDownloadCount == 0)
             {
-                FuLog.Info("没有需要下载的资源");
+                FuLogger.LogInfo("没有需要下载的资源");
                 ChangeState<ProcedureUpdateDone>();
             }
             else
             {
-                FuLog.Info($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
+                FuLogger.LogInfo($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
                 GlobalModule.EventModule.Broadcast(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));

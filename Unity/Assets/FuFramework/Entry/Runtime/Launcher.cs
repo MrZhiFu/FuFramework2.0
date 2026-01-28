@@ -68,14 +68,14 @@ namespace FuFramework.Entry.Runtime
                 var procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
                 if (procedureType is null)
                 {
-                    FuLog.Error($"[ProcedureManager] 找不到流程类型 '{m_AvailableProcedureTypeNames[i]}'.");
+                    FuLogger.LogError($"[ProcedureManager] 找不到流程类型 '{m_AvailableProcedureTypeNames[i]}'.");
                     yield break;
                 }
 
                 m_Procedures[i] = Activator.CreateInstance(procedureType) as ProcedureBase;
                 if (m_Procedures[i] is null)
                 {
-                    FuLog.Error($"[ProcedureManager] 创建流程实例'{m_AvailableProcedureTypeNames[i]}' 失败.");
+                    FuLogger.LogError($"[ProcedureManager] 创建流程实例'{m_AvailableProcedureTypeNames[i]}' 失败.");
                     yield break;
                 }
 
@@ -88,7 +88,7 @@ namespace FuFramework.Entry.Runtime
 
             if (m_EntryProcedure is null)
             {
-                FuLog.Error("[ProcedureManager] 入口流程类型不存在!.");
+                FuLogger.LogError("[ProcedureManager] 入口流程类型不存在!.");
                 yield break;
             }
 

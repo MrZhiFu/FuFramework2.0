@@ -24,7 +24,7 @@ namespace FuFramework.Network.Runtime
         {
             if (ReqDictionary.Count <= 0)
             {
-                FuLog.Warning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
+                FuLogger.LogWarning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
                 return null;
             }
 
@@ -41,7 +41,7 @@ namespace FuFramework.Network.Runtime
         {
             if (ReqDictionary.Count <= 0)
             {
-                FuLog.Warning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
+                FuLogger.LogWarning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
                 return 0;
             }
 
@@ -58,7 +58,7 @@ namespace FuFramework.Network.Runtime
         {
             if (RespDictionary.Count <= 0)
             {
-                FuLog.Warning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
+                FuLogger.LogWarning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
                 return null;
             }
 
@@ -75,7 +75,7 @@ namespace FuFramework.Network.Runtime
         {
             if (RespDictionary.Count <= 0)
             {
-                FuLog.Warning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
+                FuLogger.LogWarning("请先确认是否初始化 调用 ProtoMessageIdHandler.Init()");
                 return 0;
             }
 

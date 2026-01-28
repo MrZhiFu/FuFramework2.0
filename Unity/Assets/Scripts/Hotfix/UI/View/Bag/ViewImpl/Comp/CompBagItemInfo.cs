@@ -71,7 +71,7 @@ namespace Hotfix.UI
         private void OnBtnGetClick(EventContext ctx)
         {
             // todo
-            FuLog.Info("获取道具 TODO");
+            FuLogger.LogInfo("获取道具 TODO");
         }
 
         #endregion

@@ -7,11 +7,6 @@ namespace FuFramework.Core.Runtime
     public enum ELogLevel : byte
     {
         /// <summary>
-        /// 调试。
-        /// </summary>
-        Debug = 0,
-
-        /// <summary>
         /// 信息。
         /// </summary>
         Info,

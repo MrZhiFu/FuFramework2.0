@@ -61,7 +61,7 @@ namespace FuFramework.Model.Runtime
 
             if (!m_DataSaveManager)
             {
-                FuLog.Error($"初始化Model-{m_FileName}时，数据保存管理器未找到!");
+                FuLogger.LogError($"初始化Model-{m_FileName}时，数据保存管理器未找到!");
                 return;
             }
 
@@ -93,11 +93,11 @@ namespace FuFramework.Model.Runtime
 
                 // JSON 字符串中的数据填充到自身对象中
                 JsonConvert.PopulateObject(dataJson, this);
-                FuLog.Info($"Model数据加载成功: {m_FileName}");
+                FuLogger.LogInfo($"Model数据加载成功: {m_FileName}");
             }
             catch (System.Exception ex)
             {
-                FuLog.Error($"读取Model数据{m_FileName}出错：{ex.Message}");
+                FuLogger.LogError($"读取Model数据{m_FileName}出错：{ex.Message}");
             }
         }
 
@@ -108,7 +108,7 @@ namespace FuFramework.Model.Runtime
         {
             if (!m_DataSaveManager)
             {
-                FuLog.Warning($"无法保存{m_FileName}，数据保存管理器未找到!");
+                FuLogger.LogWarning($"无法保存{m_FileName}，数据保存管理器未找到!");
                 return;
             }
 
@@ -117,11 +117,11 @@ namespace FuFramework.Model.Runtime
                 var dataJson = JsonConvert.SerializeObject(this, Formatting.None);
                 m_DataSaveManager.SetString(m_FileName, dataJson, m_FileName);
                 m_DataSaveManager.Save(m_FileName);
-                FuLog.Info($"Model数据保存成功: {m_FileName}");
+                FuLogger.LogInfo($"Model数据保存成功: {m_FileName}");
             }
             catch (System.Exception ex)
             {
-                FuLog.Error($"存储Model数据{m_FileName}出错：{ex.Message}");
+                FuLogger.LogError($"存储Model数据{m_FileName}出错：{ex.Message}");
             }
         }
 
@@ -130,7 +130,7 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         protected virtual void OnFirstInitDate()
         {
-            FuLog.Info($"首次初始化Model: {m_FileName}");
+            FuLogger.LogInfo($"首次初始化Model: {m_FileName}");
         }
     }
 }

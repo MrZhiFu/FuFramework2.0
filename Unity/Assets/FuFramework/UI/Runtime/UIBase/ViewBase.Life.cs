@@ -17,7 +17,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private void _OnInit()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]初始化-OnInit().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]初始化-OnInit().");
             m_PackageManager.AddRef(PackageName);
             OnInit();
         }
@@ -27,7 +27,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnOpen()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]打开-OnOpen().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]打开-OnOpen().");
             Visible      = true;
             UIView.alpha = 0;
 
@@ -67,7 +67,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnPause()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]暂停-OnPause().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]暂停-OnPause().");
             Visible = false;
             OnPause();
         }
@@ -77,7 +77,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnResume()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]恢复-OnResume().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]恢复-OnResume().");
             Visible = true;
             OnResume();
         }
@@ -87,7 +87,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnBeCover()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
             if (IsFullScreen) Visible = false;
             OnBeCover();
         }
@@ -97,7 +97,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnReveal()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]被遮挡恢复-OnReveal().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]被遮挡恢复-OnReveal().");
             Visible = true;
             OnReveal();
         }
@@ -107,7 +107,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnClose()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]关闭-OnClose().");
             Visible = false;
 
             // 界面关闭动画
@@ -133,7 +133,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnRecycle()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
 
             SerialId       = 0;
             DepthInUIGroup = 0;
@@ -145,7 +145,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         internal void _OnDispose()
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
             m_PackageManager.SubRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器
@@ -161,7 +161,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="depthInUIGroup">界面在界面组中的深度。</param>
         internal void _OnDepthChanged(int depthInUIGroup)
         {
-            FuLog.Info($"UI界面[{SerialId}]{UIName}]深度被改变为'{depthInUIGroup}'-OnDepthChanged().");
+            FuLogger.LogInfo($"UI界面[{SerialId}]{UIName}]深度被改变为'{depthInUIGroup}'-OnDepthChanged().");
             DepthInUIGroup = depthInUIGroup;
         }
 

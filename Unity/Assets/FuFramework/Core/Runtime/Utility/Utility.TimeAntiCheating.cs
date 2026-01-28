@@ -527,7 +527,7 @@ namespace FuFramework.Core.Runtime
         /// 显示日志
         /// </summary>
         /// <param name="str"></param>
-        private static void Log(string str) => FuLog.Info($"TimeAntiCheating: {str}");
+        private static void Log(string str) => FuLogger.LogInfo($"TimeAntiCheating: {str}");
 
         #endregion
     }

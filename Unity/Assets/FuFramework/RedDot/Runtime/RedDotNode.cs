@@ -65,7 +65,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (m_Children.Contains(child))
             {
-                FuLog.Warning($"RedDotNode: 无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
+                FuLogger.LogWarning($"RedDotNode: 无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
                 return;
             }
 

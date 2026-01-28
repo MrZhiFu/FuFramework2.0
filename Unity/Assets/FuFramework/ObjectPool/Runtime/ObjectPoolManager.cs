@@ -84,7 +84,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         private void OnLowMemory()
         {
-            FuLog.Info("低内存警告, 释放对象池资源...");
+            FuLogger.LogInfo("低内存警告, 释放对象池资源...");
 
             // 释放对象池中所有未使用的资源
             ReleaseAllUnused();
@@ -828,7 +828,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void Release()
         {
-            FuLog.Info("[ObjectPoolComponent]释放所有对象池中可释放对象...");
+            FuLogger.LogInfo("[ObjectPoolComponent]释放所有对象池中可释放对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
@@ -841,7 +841,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void ReleaseAllUnused()
         {
-            FuLog.Info("[ObjectPoolComponent]释放所有对象池中的所有未使用对象...");
+            FuLogger.LogInfo("[ObjectPoolComponent]释放所有对象池中的所有未使用对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {

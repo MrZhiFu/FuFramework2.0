@@ -44,7 +44,7 @@ namespace FuFramework.RedDot.Runtime
 
             if (redDotSetting == null)
             {
-                FuLog.Error("[RedDotManager] 红点树配置文件不存在.");
+                FuLogger.LogError("[RedDotManager] 红点树配置文件不存在.");
                 return;
             }
             
@@ -54,7 +54,7 @@ namespace FuFramework.RedDot.Runtime
                 BuildNodeRecursive(null, root);
             }
 
-            FuLog.Info($"[RedDotManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
+            FuLogger.LogInfo($"[RedDotManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace FuFramework.RedDot.Runtime
 
             if (!NodeDict.TryAdd(data.m_Key, node))
             {
-                FuLog.Error($"RedDotManager: 重复的节点key: {data.m_Key}");
+                FuLogger.LogError($"RedDotManager: 重复的节点key: {data.m_Key}");
                 ReferencePool.Runtime.ReferencePool.Release(node);
                 return;
             }
@@ -109,7 +109,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedDotManager: 注册监听时未找到节点: {key}");
+                FuLogger.LogWarning($"RedDotManager: 注册监听时未找到节点: {key}");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedDotManager: 移除监听时未找到节点: {key}");
+                FuLogger.LogWarning($"RedDotManager: 移除监听时未找到节点: {key}");
                 return;
             }
 
@@ -191,7 +191,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLog.Warning($"RedDotManager: 未找到节点: {key}");
+                FuLogger.LogWarning($"RedDotManager: 未找到节点: {key}");
                 return;
             }
 

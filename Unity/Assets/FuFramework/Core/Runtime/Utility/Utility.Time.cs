@@ -68,12 +68,12 @@ namespace FuFramework.Core.Runtime
                 if (m_IsSecLevel)
                 {
                     m_DiffTime = serverTimestamp - currentSeconds;
-                    FuLog.Info($"检测为秒级时间戳，服务器与客户端时间差: {m_DiffTime}秒");
+                    FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {m_DiffTime}秒");
                 }
                 else
                 {
                     m_DiffTime = serverTimestamp - currentMilliseconds;
-                    FuLog.Info($"检测为毫秒级时间戳，服务器与客户端时间差: {m_DiffTime}毫秒");
+                    FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {m_DiffTime}毫秒");
                 }
             }
 

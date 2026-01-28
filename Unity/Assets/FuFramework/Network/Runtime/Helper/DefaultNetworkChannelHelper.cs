@@ -164,25 +164,25 @@ namespace FuFramework.Network.Runtime
         private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
         {
             if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
-            FuLog.Debug($"网络连接成功......{ne.NetworkChannel.Name}");
+            FuLogger.LogInfo($"网络连接成功......{ne.NetworkChannel.Name}");
         }
 
         private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
         {
             if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
-            FuLog.Debug($"网络连接关闭......{ne.NetworkChannel.Name}");
+            FuLogger.LogInfo($"网络连接关闭......{ne.NetworkChannel.Name}");
         }
 
         private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
         {
             if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
-            FuLog.Warning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ ne.MissCount}' times.");
+            FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ ne.MissCount}' times.");
         }
 
         private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
         {
             if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
-            FuLog.Error($"Network channel '{ne.NetworkChannel.Name}' error, error code is '{ne.ErrorCode}', error message is '{ne.ErrorMessage}'.");
+            FuLogger.LogError($"Network channel '{ne.NetworkChannel.Name}' error, error code is '{ne.ErrorCode}', error message is '{ne.ErrorMessage}'.");
             ne.NetworkChannel.Close();
         }
     }

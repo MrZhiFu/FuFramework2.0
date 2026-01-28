@@ -22,7 +22,7 @@ namespace Launcher.Procedure
         protected override async void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入首次启动流程------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入首次启动流程------</color>");
 
 
             // 设置FairyGUI的Loader加载器为自定义加载器

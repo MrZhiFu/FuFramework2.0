@@ -55,19 +55,19 @@ namespace FuFramework.Entity.Runtime
             }
             else if (EntityGroup != entityGroup)
             {
-                FuLog.Error("[Entity]初始化实体失败, 非新实例实体的实体组不一致!");
+                FuLogger.LogError("[Entity]初始化实体失败, 非新实例实体的实体组不一致!");
                 return;
             }
 
             if (showEntityInfoEx is null)
             {
-                FuLog.Error("[Entity]初始化实体失败, 显示的实体额外信息为空!");
+                FuLogger.LogError("[Entity]初始化实体失败, 显示的实体额外信息为空!");
                 return;
             }
 
             if (showEntityInfoEx.EntityLogicType is null)
             {
-                FuLog.Error("[Entity]初始化实体失败, 显示的实体的逻辑类型为空!");
+                FuLogger.LogError("[Entity]初始化实体失败, 显示的实体的逻辑类型为空!");
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace FuFramework.Entity.Runtime
                 Logic = gameObject.AddComponent(showEntityInfoEx.EntityLogicType) as EntityLogic;
                 if (Logic is null)
                 {
-                    FuLog.Error($"[Entity]初始化实体失败, 添加实体{entityAssetName}逻辑组件失败!");
+                    FuLogger.LogError($"[Entity]初始化实体失败, 添加实体{entityAssetName}逻辑组件失败!");
                     return;
                 }
             }
@@ -100,7 +100,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]初始化实体失败, 实体'[{Id}]-{entityAssetName}逻辑组件(OnInit)时发生异常: {exception}");
+                FuLogger.LogError($"[Entity]初始化实体失败, 实体'[{Id}]-{entityAssetName}逻辑组件(OnInit)时发生异常: {exception}");
             }
         }
 
@@ -117,7 +117,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 轮询(OnUpdate)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 轮询(OnUpdate)时发生异常: {exception}'.");
             }
         }
 
@@ -133,7 +133,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 显示(OnShow)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 显示(OnShow)时发生异常: {exception}'.");
             }
         }
 
@@ -150,7 +150,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 隐藏(OnHide)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 隐藏(OnHide)时发生异常: {exception}'.");
             }
         }
 
@@ -166,7 +166,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 回收(OnRecycle)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 回收(OnRecycle)时发生异常: {exception}'.");
             }
 
             Id = 0;
@@ -181,7 +181,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (userData is not AttachEntityInfo attachEntityInfo)
             {
-                FuLog.Error("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
+                FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
                 return;
             }
             
@@ -191,7 +191,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 附加子实体(OnAttached)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 附加子实体(OnAttached)时发生异常: {exception}'.");
             }
         }
 
@@ -208,7 +208,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 解除附加的子实体(OnDetached)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 解除附加的子实体(OnDetached)时发生异常: {exception}'.");
             }
         }
 
@@ -221,7 +221,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (userData is not AttachEntityInfo attachEntityInfo)
             {
-                FuLog.Error("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
+                FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
                 return;
             }
             
@@ -231,7 +231,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
             }
 
             ReferencePool.Runtime.ReferencePool.Release(attachEntityInfo);
@@ -250,7 +250,7 @@ namespace FuFramework.Entity.Runtime
             }
             catch (Exception exception)
             {
-                FuLog.Error($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被从父实体上解除时触发(OnDetachFrom)时发生异常: {exception}'.");
+                FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被从父实体上解除时触发(OnDetachFrom)时发生异常: {exception}'.");
             }
         }
     }

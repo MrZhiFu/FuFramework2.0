@@ -37,7 +37,7 @@ namespace Hotfix.UI
             // 如果没有，则创建红点组件CompRedDot，并调用InitRedDot方法
             if (UIPackage.CreateObject("Common", "CompRedDot") is not CompRedDot compRedDot)
             {
-                FuLog.Error("创建红点组件失败!");
+                FuLogger.LogError("创建红点组件失败!");
                 return;
             }
 

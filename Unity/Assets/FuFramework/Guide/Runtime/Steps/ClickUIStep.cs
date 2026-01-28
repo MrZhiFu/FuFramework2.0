@@ -26,14 +26,14 @@ namespace FuFramework.Guide.Runtime
             var targetWin = uiManager.GetUI(StepInfo.m_TargetWindow);
             if (targetWin == null)
             {
-                FuLog.Warning($"[ClickUIStep] 找不到目标界面: {StepInfo.m_TargetWindow}");
+                FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.m_TargetWindow}");
                 return;
             }
 
             // 查找目标点击UI
             if (targetWin.UIView.GetChild(StepInfo.m_TargetUI) is not GComponent targetClickUI)
             {
-                FuLog.Warning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.m_TargetUI}");
+                FuLogger.LogWarning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.m_TargetUI}");
                 return;
             }
 
@@ -45,7 +45,7 @@ namespace FuFramework.Guide.Runtime
             // 执行点击UI引导
             if (GuideAction == null)
             {
-                FuLog.Warning("[ClickUIStep] 无法执行引导，引导动作执行器为null");
+                FuLogger.LogWarning("[ClickUIStep] 无法执行引导，引导动作执行器为null");
                 return;
             }
 

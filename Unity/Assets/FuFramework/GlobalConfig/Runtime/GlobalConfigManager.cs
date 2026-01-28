@@ -95,7 +95,7 @@ namespace FuFramework.GlobalConfig.Runtime
                 }
                 catch (Exception e)
                 {
-                    FuLog.Fatal(e);
+                    FuLogger.LogFatal(e);
                 }
             }
         }

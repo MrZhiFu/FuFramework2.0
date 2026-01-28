@@ -17,7 +17,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入代码热修复流程------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入代码热修复流程------</color>");
 
             Start().Forget();
         }

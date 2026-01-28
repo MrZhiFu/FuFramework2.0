@@ -38,7 +38,7 @@ namespace FuFramework.Core.Runtime
             {
                 if (!System.IO.File.Exists(fileToZip))
                 {
-                    FuLog.Fatal($"要压缩的文件不存在: {fileToZip}");
+                    FuLogger.LogFatal($"要压缩的文件不存在: {fileToZip}");
                     return false;
                 }
 
@@ -207,7 +207,7 @@ namespace FuFramework.Core.Runtime
                 }
                 catch (Exception e)
                 {
-                    FuLog.Fatal($"数据压缩失败: {e.Message}");
+                    FuLogger.LogFatal($"数据压缩失败: {e.Message}");
                     throw new InvalidOperationException("数据压缩失败", e);
                 }
                 finally
@@ -252,7 +252,7 @@ namespace FuFramework.Core.Runtime
                 catch (Exception e)
                 {
                     // 记录日志后重新抛出，让调用方处理
-                    FuLog.Fatal($"解压缩失败: {e.Message}");
+                    FuLogger.LogFatal($"解压缩失败: {e.Message}");
                     throw new InvalidOperationException("数据解压缩失败", e);
                 }
                 finally

@@ -51,7 +51,7 @@ namespace Hotfix.Guide
         /// <param name="targetUI">目标点击UI区域</param>
         private async UniTaskVoid _DoClickUIGuide(GComponent targetUI)
         {
-            FuLog.Info($"执行点击UI引导, 目标UI：{targetUI.name}");
+            FuLogger.LogInfo($"执行点击UI引导, 目标UI：{targetUI.name}");
             var winClickGuide = await GlobalModule.UIModule.OpenUIAsync<WinClickGuide>();
             var targetRect = targetUI.TransformRect(new Rect(0, 0, targetUI.width, targetUI.height), winClickGuide.UIView);
             var clickArea = winClickGuide.GetClickArea();
@@ -66,7 +66,7 @@ namespace Hotfix.Guide
         /// <param name="onConfirm">对话提交回调</param>
         private async UniTaskVoid _DoDialogGuide(string content, Action onConfirm)
         {
-            FuLog.Info("执行对话引导");
+            FuLogger.LogInfo("执行对话引导");
             var winDialogGuide = await GlobalModule.UIModule.OpenUIAsync<WinDialogGuide>();
             winDialogGuide.ShowDialog(content, onConfirm);
         }

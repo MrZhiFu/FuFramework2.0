@@ -113,7 +113,7 @@ namespace FuFramework.Core.Runtime
         {
             if (!typeof(FuModule).IsAssignableFrom(moduleType))
             {
-                FuLog.Error($"类型 {moduleType.Name} 不是有效的FuModule类型!");
+                FuLogger.LogError($"类型 {moduleType.Name} 不是有效的FuModule类型!");
                 return null;
             }
 
@@ -149,7 +149,7 @@ namespace FuFramework.Core.Runtime
 
                     if (module is null)
                     {
-                        FuLog.Error($"注册模块 {moduleType.Name} 失败: 无法创建模块组件!");
+                        FuLogger.LogError($"注册模块 {moduleType.Name} 失败: 无法创建模块组件!");
                         return null;
                     }
 
@@ -166,7 +166,7 @@ namespace FuFramework.Core.Runtime
             }
             catch (Exception e)
             {
-                FuLog.Error($"注册模块 {moduleType.Name} 失败: {e.Message}");
+                FuLogger.LogError($"注册模块 {moduleType.Name} 失败: {e.Message}");
                 return null;
             }
         }
@@ -176,7 +176,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void RegisterAllModules()
         {
-            FuLog.Info("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
+            FuLogger.LogInfo("<color=#00FBD5>------开始自动注册所有框架模块------</color>");
 
             try
             {
@@ -185,22 +185,22 @@ namespace FuFramework.Core.Runtime
 
                 if (moduleTypes.Count == 0)
                 {
-                    FuLog.Warning("未找到任何继承自FuModule的类型");
+                    FuLogger.LogWarning("未找到任何继承自FuModule的类型");
                     return;
                 }
 
-                FuLog.Info($"找到<color=#00FBD5> {moduleTypes.Count} </color>个框架模块");
+                FuLogger.LogInfo($"找到<color=#00FBD5> {moduleTypes.Count} </color>个框架模块");
 
                 foreach (var fuModuleType in moduleTypes)
                 {
                     RegisterModule(fuModuleType);
                 }
 
-                FuLog.Info("<color=#00FBD5>------所有模块注册完成------</color>");
+                FuLogger.LogInfo("<color=#00FBD5>------所有模块注册完成------</color>");
             }
             catch (Exception e)
             {
-                FuLog.Error($"查找并注册所有继承于FuModule的模块失败: {e.Message}\n{e.StackTrace}");
+                FuLogger.LogError($"查找并注册所有继承于FuModule的模块失败: {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -237,11 +237,11 @@ namespace FuFramework.Core.Runtime
                 else
                     Object.DestroyImmediate(module.gameObject);
 
-                FuLog.Info($"<color=#00FBD5>------卸载模块: {typeof(T).Name}</color>");
+                FuLogger.LogInfo($"<color=#00FBD5>------卸载模块: {typeof(T).Name}</color>");
             }
             catch (Exception e)
             {
-                FuLog.Error($"卸载模块 {typeof(T).Name} 失败: {e.Message}");
+                FuLogger.LogError($"卸载模块 {typeof(T).Name} 失败: {e.Message}");
             }
         }
 
@@ -258,13 +258,13 @@ namespace FuFramework.Core.Runtime
                 {
                     if (!typeof(FuModule).IsAssignableFrom(depType))
                     {
-                        FuLog.Error($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuModule类型!");
+                        FuLogger.LogError($"框架模块 {moduleType.Name} 的依赖 {depType.Name} 不是有效的FuModule类型!");
                         continue;
                     }
 
                     if (GetModule(depType) is null)
                     {
-                        FuLog.Info($"框架模块 {moduleType.Name} 依赖 {depType.Name}，自动注册依赖模块...");
+                        FuLogger.LogInfo($"框架模块 {moduleType.Name} 依赖 {depType.Name}，自动注册依赖模块...");
                         RegisterModule(depType);
                     }
                 }
@@ -300,7 +300,7 @@ namespace FuFramework.Core.Runtime
                 module.IsInitialized = true;
             }
 
-            FuLog.Info($"<color=#00FBD5>注册框架模块:{module.gameObject.name}, 优先级:{module.Priority}</color>");
+            FuLogger.LogInfo($"<color=#00FBD5>注册框架模块:{module.gameObject.name}, 优先级:{module.Priority}</color>");
         }
 
         /// <summary>
@@ -369,7 +369,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="shutdownType">关闭游戏框架类型。</param>
         public static void Shutdown(ShutdownType shutdownType)
         {
-            FuLog.Info($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {ModuleList.Count} ====</color>");
+            FuLogger.LogInfo($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {ModuleList.Count} ====</color>");
 
             // 使用栈来存储需要关闭的模块（逆序关闭）
             var shutdownStack = new Stack<FuModule>();
@@ -392,15 +392,15 @@ namespace FuFramework.Core.Runtime
                 var module = shutdownStack.Pop();
                 try
                 {
-                    FuLog.Info($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
+                    FuLogger.LogInfo($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
                     module.OnShutdown(shutdownType);
                     module.IsInitialized = false;
                 }
                 catch (Exception e)
                 {
-                    FuLog.Error($"模块 {module.GetType().Name} 关闭失败: {e.Message}");
-                    FuLog.Error($"异常类型: {e.GetType().Name}");
-                    FuLog.Error($"堆栈跟踪: {e.StackTrace}");
+                    FuLogger.LogError($"模块 {module.GetType().Name} 关闭失败: {e.Message}");
+                    FuLogger.LogError($"异常类型: {e.GetType().Name}");
+                    FuLogger.LogError($"堆栈跟踪: {e.StackTrace}");
                 }
             }
 

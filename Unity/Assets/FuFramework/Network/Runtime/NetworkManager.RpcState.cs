@@ -68,7 +68,7 @@ namespace FuFramework.Network.Runtime
                 }
                 catch (Exception e)
                 {
-                    FuLog.Fatal(e);
+                    FuLogger.LogFatal(e);
                 }
 
                 return true;
@@ -97,7 +97,7 @@ namespace FuFramework.Network.Runtime
                 }
                 catch (Exception e)
                 {
-                    FuLog.Fatal(e);
+                    FuLogger.LogFatal(e);
                 }
 
                 return defaultMessageActorObject.Task;
@@ -125,7 +125,7 @@ namespace FuFramework.Network.Runtime
                         }
                         catch (Exception e)
                         {
-                            FuLog.Fatal(e);
+                            FuLogger.LogFatal(e);
                         }
                     }
                 }

@@ -42,7 +42,7 @@ namespace FuFramework.Web.Runtime
             catch (Exception e)
             {
                 // 捕获并输出异常信息
-                FuLog.Error(e);
+                FuLogger.LogError(e);
             }
 
             return resultData; // 返回结果数据

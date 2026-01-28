@@ -35,7 +35,7 @@ namespace FuFramework.Network.Runtime
                 var isAddSuccess = messageHandlerAttribute.Add(messageHandler);
                 if (!isAddSuccess)
                 {
-                    FuLog.Error("初始化消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
+                    FuLogger.LogError("初始化消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
                     continue;
                 }
 
@@ -49,7 +49,7 @@ namespace FuFramework.Network.Runtime
                 if (!list.Contains(messageHandlerAttribute))
                     list.Add(messageHandlerAttribute);
                 else
-                    FuLog.Error("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                    FuLogger.LogError("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
             }
         }
 
@@ -72,7 +72,7 @@ namespace FuFramework.Network.Runtime
                 var isRemoveSuccess = messageHandlerAttribute.Remove(messageHandler);
                 if (!isRemoveSuccess)
                 {
-                    FuLog.Error("移除消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
+                    FuLogger.LogError("移除消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
                     continue;
                 }
 
@@ -89,7 +89,7 @@ namespace FuFramework.Network.Runtime
                     continue;
                 }
 
-                FuLog.Error("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
             }
         }
 
@@ -102,7 +102,7 @@ namespace FuFramework.Network.Runtime
         internal static List<MessageHandlerAttribute> GetHandlers(Type messageType)
         {
             if (MessageHandlerDictionary.TryGetValue(messageType, out var list)) return list?.ToList();
-            FuLog.Warning("没有找到消息处理器消息类型：" + messageType.Name);
+            FuLogger.LogWarning("没有找到消息处理器消息类型：" + messageType.Name);
             return EmptyList;
         }
     }

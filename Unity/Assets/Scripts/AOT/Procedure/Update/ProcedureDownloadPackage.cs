@@ -25,7 +25,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入热更流程：下载资源包------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
             GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
             BeginDownload().ToUniTask().Forget();

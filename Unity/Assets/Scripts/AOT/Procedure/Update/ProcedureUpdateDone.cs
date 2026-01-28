@@ -16,7 +16,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入热更流程：更新完毕------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入热更流程：更新完毕------</color>");
 
             GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateDone));
 

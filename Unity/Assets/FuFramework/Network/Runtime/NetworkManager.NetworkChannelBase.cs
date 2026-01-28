@@ -323,13 +323,13 @@ namespace FuFramework.Network.Runtime
                             }
                             catch (Exception e)
                             {
-                                FuLog.Fatal(e);
+                                FuLogger.LogFatal(e);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        FuLog.Fatal(e);
+                        FuLogger.LogFatal(e);
                     }
                     finally
                     {
@@ -549,7 +549,7 @@ namespace FuFramework.Network.Runtime
                         else
                         {
                             // 获取IP失败
-                            FuLog.Error($"IP address is invalid.{address.Host}");
+                            FuLogger.LogError($"IP address is invalid.{address.Host}");
                             IsVerifyAddress = false;
                             Close();
                             PSocket = null;
@@ -557,7 +557,7 @@ namespace FuFramework.Network.Runtime
                     }
                     catch (Exception e)
                     {
-                        FuLog.Error($"IP address is invalid.{address.Host} {e.Message}");
+                        FuLogger.LogError($"IP address is invalid.{address.Host} {e.Message}");
                         IsVerifyAddress = false;
                         Close();
                         PSocket = null;
@@ -784,7 +784,7 @@ namespace FuFramework.Network.Runtime
 #if ENABLE_GAMEFRAMEX_NETWORK_SEND_LOG
                 if (!IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
                 {
-                    FuLog.Debug($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
                 }
 #endif
             }
@@ -794,7 +794,7 @@ namespace FuFramework.Network.Runtime
 #if ENABLE_GAMEFRAMEX_NETWORK_RECEIVE_LOG
                 if (!IgnoreReceiveIds.Contains(PacketReceiveHeaderHandler.Id))
                 {
-                    FuLog.Debug($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLogger.LogInfo($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
                 }
 #endif
             }

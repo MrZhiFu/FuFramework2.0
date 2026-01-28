@@ -69,7 +69,7 @@ namespace FuFramework.Core.Runtime
                 }
                 catch (Exception exception)
                 {
-                    FuLog.Error($"路径错误 : 找不到指定路径下 {path} 的UI对象, error : " + exception);
+                    FuLogger.LogError($"路径错误 : 找不到指定路径下 {path} 的UI对象, error : " + exception);
                 }
 
                 return null;

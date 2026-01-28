@@ -160,7 +160,7 @@ namespace FuFramework.Guide.Runtime
         protected virtual void OnFail(string reason = "")
         {
             State = StepState.Failed;
-            FuLog.Warning($"引导步骤{StepInfo.m_StepId}执行失败，失败原因：{reason}");
+            FuLogger.LogWarning($"引导步骤{StepInfo.m_StepId}执行失败，失败原因：{reason}");
         }
 
         /// <summary>

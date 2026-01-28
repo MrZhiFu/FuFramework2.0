@@ -84,7 +84,7 @@ namespace FuFramework.Entity.Runtime
             foreach (var entityGroup in setting.AllGroups)
             {
                 if (AddEntityGroup(entityGroup)) continue;
-                FuLog.Warning($"[EntityManager] 添加实体组 '{entityGroup.Name}' 失败.");
+                FuLogger.LogWarning($"[EntityManager] 添加实体组 '{entityGroup.Name}' 失败.");
             }
         }
 
@@ -201,7 +201,7 @@ namespace FuFramework.Entity.Runtime
 
             if (HasEntityGroup(entityGroupSetting.Name))
             {
-                FuLog.Warning($"[EntityManager] 添加实体组'{entityGroupSetting.Name}'失败, 实体组已存在.");
+                FuLogger.LogWarning($"[EntityManager] 添加实体组'{entityGroupSetting.Name}'失败, 实体组已存在.");
                 return false;
             }
 
@@ -688,7 +688,7 @@ namespace FuFramework.Entity.Runtime
                 parentTransform = parentEntity.Logic.CachedTransform.Find(parentTransformPath);
                 if (parentTransform is null)
                 {
-                    FuLog.Warning($"[EntityManager] 找不到父实体 '{parentEntity.Logic.Name}' 下的Transform路径 '{parentTransformPath}', 将直接附加到父实体的Transform上.");
+                    FuLogger.LogWarning($"[EntityManager] 找不到父实体 '{parentEntity.Logic.Name}' 下的Transform路径 '{parentTransformPath}', 将直接附加到父实体的Transform上.");
                     parentTransform = parentEntity.Logic.CachedTransform;
                 }
             }

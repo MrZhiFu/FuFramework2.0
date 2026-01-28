@@ -52,7 +52,7 @@ namespace FuFramework.Mono.Runtime
             m_EventManager = ModuleManager.GetModule<EventManager>();
             if (m_EventManager is null)
             {
-                FuLog.Fatal("事件管理器为空.");
+                FuLogger.LogFatal("事件管理器为空.");
             }
         }
 
@@ -270,7 +270,7 @@ namespace FuFramework.Mono.Runtime
                     }
                     catch (Exception e)
                     {
-                        FuLog.Error(e);
+                        FuLogger.LogError(e);
                     }
                 }
             }
@@ -299,7 +299,7 @@ namespace FuFramework.Mono.Runtime
                     }
                     catch (Exception e)
                     {
-                        FuLog.Error(e);
+                        FuLogger.LogError(e);
                     }
                 }
             }

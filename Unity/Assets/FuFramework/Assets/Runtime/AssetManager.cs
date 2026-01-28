@@ -72,14 +72,14 @@ namespace FuFramework.Asset.Runtime
             PlayMode = EPlayMode.WebPlayMode;
 #endif
 #endif
-            FuLog.Info($"资源系统运行模式：{PlayMode}");
+            FuLogger.LogInfo($"资源系统运行模式：{PlayMode}");
 
             BetterStreamingAssets.Initialize();
 
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 
-            FuLog.Info("资源系统初始化完毕！");
+            FuLogger.LogInfo("资源系统初始化完毕！");
         }
 
         /// <summary>

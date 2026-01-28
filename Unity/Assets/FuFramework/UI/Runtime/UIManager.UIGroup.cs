@@ -77,7 +77,7 @@ namespace FuFramework.UI.Runtime
         {
             if (HasUIGroup(layer))
             {
-                FuLog.Warning($"[UIManager]UI界面组{layer}已存在!");
+                FuLogger.LogWarning($"[UIManager]UI界面组{layer}已存在!");
                 return false;
             }
 

@@ -21,7 +21,7 @@ namespace Hotfix.UI
         [RuntimeInitializeOnLoadMethod]
         private static void BindAll()
         {
-            FuLog.Info("绑定包-{Common}下的所有自定义组件");
+            FuLogger.LogInfo("绑定包-{Common}下的所有自定义组件");
 			UIObjectFactory.SetPackageItemExtension(CompRedDot.URL, typeof(CompRedDot));
 
         }

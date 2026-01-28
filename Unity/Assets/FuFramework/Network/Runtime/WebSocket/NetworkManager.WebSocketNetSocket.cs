@@ -58,7 +58,7 @@ namespace FuFramework.Network.Runtime
                     // 非连接错误
                 }
 
-                FuLog.Error(e.Message);
+                FuLogger.LogError(e.Message);
                 m_connectTask.TrySetResult(false);
             }
 

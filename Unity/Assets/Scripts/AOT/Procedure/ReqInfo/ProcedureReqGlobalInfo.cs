@@ -29,7 +29,7 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLog.Info("<color=#43f656>------进入获取服务端全局信息流程------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入获取服务端全局信息流程------</color>");
             
             // 热更模式
             GetGlobalInfo().Forget();
@@ -47,14 +47,14 @@ namespace Launcher.Procedure
             {
                 // 请求服务端，获取全局信息。
                 var json = await GlobalModule.WebModule.PostToString(GlobalInfoUrl, reqBaseParams);
-                FuLog.Info(json);
+                FuLogger.LogInfo(json);
 
                 var httpJsonResult = Utility.Json.ToObject<HttpJsonResult>(json.Result);
                 if (httpJsonResult.Code > 0)
                 {
                     // 获取失败
                     LauncherUIHelper.SetTipText("Server error, retrying...");
-                    FuLog.Error($"获取全局信息返回异常=> Req:{reqBaseParams} Resp:{json}");
+                    FuLogger.LogError($"获取全局信息返回异常=> Req:{reqBaseParams} Resp:{json}");
 
                     // 等待3秒后重新获取
                     await UniTask.WaitForSeconds(3);
@@ -76,9 +76,9 @@ namespace Launcher.Procedure
             }
             catch (Exception e)
             {
-                FuLog.Error(e);
+                FuLogger.LogError(e);
                 LauncherUIHelper.SetTipText("Network error, retrying...");
-                FuLog.Error($"获取全局信息异常=>Error:{e.Message}   Req:{reqBaseParams}");
+                FuLogger.LogError($"获取全局信息异常=>Error:{e.Message}   Req:{reqBaseParams}");
 
                 // 等待3秒后重新获取
                 await UniTask.WaitForSeconds(3);

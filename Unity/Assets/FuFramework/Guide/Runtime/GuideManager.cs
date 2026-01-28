@@ -119,11 +119,11 @@ namespace FuFramework.Guide.Runtime
             m_Setting = ModuleSetting.Runtime.ModuleSetting.Instance.GuideSetting;
             if (m_Setting == null)
             {
-                FuLog.Error("[GuideManager] 配置文件不存在.");
+                FuLogger.LogError("[GuideManager] 配置文件不存在.");
                 return;
             }
 
-            FuLog.Info("[GuideManager] 引导管理器初始化完成");
+            FuLogger.LogInfo("[GuideManager] 引导管理器初始化完成");
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace FuFramework.Guide.Runtime
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 加载引导配置失败: {e.Message}");
+                FuLogger.LogError($"[GuideManager] 加载引导配置失败: {e.Message}");
                 return false;
             }
         }
@@ -202,7 +202,7 @@ namespace FuFramework.Guide.Runtime
                 var guide = m_Setting.GetGuideByName(guideName);
                 if (guide == null)
                 {
-                    FuLog.Error($"[GuideManager] 找不到引导: {guideName}");
+                    FuLogger.LogError($"[GuideManager] 找不到引导: {guideName}");
                     return false;
                 }
 
@@ -210,7 +210,7 @@ namespace FuFramework.Guide.Runtime
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 加载引导配置失败: {e.Message}");
+                FuLogger.LogError($"[GuideManager] 加载引导配置失败: {e.Message}");
                 return false;
             }
         }
@@ -225,7 +225,7 @@ namespace FuFramework.Guide.Runtime
                 var firstGuide = m_Setting.AllGuides.FirstOrDefault();
                 if (firstGuide == null)
                 {
-                    FuLog.Error("[GuideManager] 没有可用的引导");
+                    FuLogger.LogError("[GuideManager] 没有可用的引导");
                     return false;
                 }
 
@@ -233,7 +233,7 @@ namespace FuFramework.Guide.Runtime
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 开始引导失败: {e.Message}");
+                FuLogger.LogError($"[GuideManager] 开始引导失败: {e.Message}");
                 return false;
             }
         }
@@ -249,7 +249,7 @@ namespace FuFramework.Guide.Runtime
             var guideInfo = m_Setting.GetGuide(guideId);
             if (guideInfo == null)
             {
-                FuLog.Error($"[GuideManager] 找不到引导: {guideId}");
+                FuLogger.LogError($"[GuideManager] 找不到引导: {guideId}");
                 return false;
             }
 
@@ -266,7 +266,7 @@ namespace FuFramework.Guide.Runtime
         {
             if (guideInfo == null)
             {
-                FuLog.Error("[GuideManager] 引导信息为空");
+                FuLogger.LogError("[GuideManager] 引导信息为空");
                 return false;
             }
 
@@ -274,17 +274,17 @@ namespace FuFramework.Guide.Runtime
             {
                 if (CurrentGuideId == guideInfo.m_GuideId && !forceRestart)
                 {
-                    FuLog.Warning($"[GuideManager] 引导 {guideInfo.m_GuideId} 已在运行中");
+                    FuLogger.LogWarning($"[GuideManager] 引导 {guideInfo.m_GuideId} 已在运行中");
                     return false;
                 }
 
-                FuLog.Warning($"[GuideManager] 中断当前引导 {CurrentGuideId}，开始新引导 {guideInfo.m_GuideId}");
+                FuLogger.LogWarning($"[GuideManager] 中断当前引导 {CurrentGuideId}，开始新引导 {guideInfo.m_GuideId}");
                 InterruptGuide();
             }
 
             if (IsGuideCompleted(guideInfo.m_GuideId) && !forceRestart)
             {
-                FuLog.Info($"[GuideManager] 引导 {guideInfo.m_GuideId} 已完成，跳过");
+                FuLogger.LogInfo($"[GuideManager] 引导 {guideInfo.m_GuideId} 已完成，跳过");
                 return false;
             }
 
@@ -311,13 +311,13 @@ namespace FuFramework.Guide.Runtime
                 ExecuteCurrentStep();
 
                 OnGuideStarted?.Invoke(guideInfo.m_GuideId);
-                FuLog.Info($"[GuideManager] 开始引导: {guideInfo.m_GuideName} ({guideInfo.m_GuideId})");
+                FuLogger.LogInfo($"[GuideManager] 开始引导: {guideInfo.m_GuideName} ({guideInfo.m_GuideId})");
 
                 return true;
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 开始引导失败 {guideInfo.m_GuideId}: {e.Message}\n{e.StackTrace}");
+                FuLogger.LogError($"[GuideManager] 开始引导失败 {guideInfo.m_GuideId}: {e.Message}\n{e.StackTrace}");
                 ClearGuideData();
                 return false;
             }
@@ -332,7 +332,7 @@ namespace FuFramework.Guide.Runtime
 
             if (!m_CurrentStep.CanComplete())
             {
-                FuLog.Warning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 当前无法完成");
+                FuLogger.LogWarning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 当前无法完成");
                 return;
             }
 
@@ -346,7 +346,7 @@ namespace FuFramework.Guide.Runtime
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 完成步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
+                FuLogger.LogError($"[GuideManager] 完成步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
                 ForceNextStep();
             }
         }
@@ -360,14 +360,14 @@ namespace FuFramework.Guide.Runtime
 
             if (m_CurrentStep.StepInfo.m_IsCanJump)
             {
-                FuLog.Info($"[GuideManager] 跳过可选步骤: {m_CurrentStep.StepInfo.m_StepId}");
+                FuLogger.LogInfo($"[GuideManager] 跳过可选步骤: {m_CurrentStep.StepInfo.m_StepId}");
                 m_CurrentStep.Cancel();
                 m_StepHistoryStack.Push(m_CurrentStep);
                 MoveToNextStep();
             }
             else
             {
-                FuLog.Warning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 不可跳过");
+                FuLogger.LogWarning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 不可跳过");
             }
         }
 
@@ -378,7 +378,7 @@ namespace FuFramework.Guide.Runtime
         {
             if (m_StepHistoryStack.Count == 0)
             {
-                FuLog.Warning("[GuideManager] 没有历史步骤可返回");
+                FuLogger.LogWarning("[GuideManager] 没有历史步骤可返回");
                 return;
             }
 
@@ -388,7 +388,7 @@ namespace FuFramework.Guide.Runtime
             m_CurrentStep = previousStep;
             ExecuteCurrentStep();
 
-            FuLog.Info($"[GuideManager] 返回步骤: {previousStep.StepInfo.m_StepId}");
+            FuLogger.LogInfo($"[GuideManager] 返回步骤: {previousStep.StepInfo.m_StepId}");
         }
 
         /// <summary>
@@ -400,7 +400,7 @@ namespace FuFramework.Guide.Runtime
         {
             if (!m_AllStepDict.ContainsKey(stepId))
             {
-                FuLog.Error($"[GuideManager] 步骤ID不存在: {stepId}");
+                FuLogger.LogError($"[GuideManager] 步骤ID不存在: {stepId}");
                 return false;
             }
 
@@ -413,7 +413,7 @@ namespace FuFramework.Guide.Runtime
             m_CurrentStep = m_AllStepDict[stepId];
             ExecuteCurrentStep();
 
-            FuLog.Info($"[GuideManager] 跳转到步骤: {stepId}");
+            FuLogger.LogInfo($"[GuideManager] 跳转到步骤: {stepId}");
             return true;
         }
 
@@ -435,7 +435,7 @@ namespace FuFramework.Guide.Runtime
             }
 
             OnGuideInterrupted?.Invoke(guideId, markAsCompleted);
-            FuLog.Info($"[GuideManager] 引导中断: {guideId}, 标记完成: {markAsCompleted}");
+            FuLogger.LogInfo($"[GuideManager] 引导中断: {guideId}, 标记完成: {markAsCompleted}");
 
             ClearGuideData();
         }
@@ -489,7 +489,7 @@ namespace FuFramework.Guide.Runtime
             PlayerPrefs.Save();
             m_GuideCompletionCacheDict[guideId] = true;
 
-            FuLog.Info($"[GuideManager] 标记引导为已完成: {guideId}");
+            FuLogger.LogInfo($"[GuideManager] 标记引导为已完成: {guideId}");
         }
 
         /// <summary>
@@ -501,7 +501,7 @@ namespace FuFramework.Guide.Runtime
             PlayerPrefs.DeleteKey($"Guide_Completed_{guideId}");
             m_GuideCompletionCacheDict.Remove(guideId);
 
-            FuLog.Info($"[GuideManager] 重置引导状态: {guideId}");
+            FuLogger.LogInfo($"[GuideManager] 重置引导状态: {guideId}");
         }
 
         /// <summary>
@@ -572,7 +572,7 @@ namespace FuFramework.Guide.Runtime
             {
                 if (!string.IsNullOrEmpty(step.StepInfo.m_NextStepId) && !m_AllStepDict.ContainsKey(step.StepInfo.m_StepId))
                 {
-                    FuLog.Warning($"[GuideManager] 步骤 {step.StepInfo.m_StepId} 的下一步ID无效: {step.StepInfo.m_NextStepId}");
+                    FuLogger.LogWarning($"[GuideManager] 步骤 {step.StepInfo.m_StepId} 的下一步ID无效: {step.StepInfo.m_NextStepId}");
                 }
             }
         }
@@ -590,7 +590,7 @@ namespace FuFramework.Guide.Runtime
 
             if (!m_CurrentStep.CanExecute())
             {
-                FuLog.Warning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 条件不满足，尝试跳过");
+                FuLogger.LogWarning($"[GuideManager] 步骤 {m_CurrentStep.StepInfo.m_StepId} 条件不满足，尝试跳过");
                 ForceNextStep();
                 return;
             }
@@ -601,11 +601,11 @@ namespace FuFramework.Guide.Runtime
                 OnStepExecuting?.Invoke(m_CurrentStep);
                 OnStepChanged?.Invoke(CurrentGuideId, m_CurrentStep.StepInfo.m_StepId);
 
-                FuLog.Info($"[GuideManager] 执行步骤: {m_CurrentStep.StepInfo.m_StepId} ({m_CurrentStep.StepInfo.m_StepType})");
+                FuLogger.LogInfo($"[GuideManager] 执行步骤: {m_CurrentStep.StepInfo.m_StepId} ({m_CurrentStep.StepInfo.m_StepType})");
             }
             catch (Exception e)
             {
-                FuLog.Error($"[GuideManager] 执行步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
+                FuLogger.LogError($"[GuideManager] 执行步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
                 ForceNextStep();
             }
         }
@@ -640,7 +640,7 @@ namespace FuFramework.Guide.Runtime
             {
                 MarkGuideAsCompleted(finishedGuideId);
                 OnGuideFinished?.Invoke(finishedGuideId);
-                FuLog.Info($"[GuideManager] 引导完成: {finishedGuideId}");
+                FuLogger.LogInfo($"[GuideManager] 引导完成: {finishedGuideId}");
             }
 
             ClearGuideData();

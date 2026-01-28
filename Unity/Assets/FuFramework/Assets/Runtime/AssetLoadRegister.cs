@@ -46,7 +46,7 @@ namespace FuFramework.Asset.Runtime
             var assetObject = assetHandle.GetAssetObject<T>();
             assetHandle.Release();
 
-            FuLog.Info($"[AssetLoader]加载{path}资源完成.");
+            FuLogger.LogInfo($"[AssetLoader]加载{path}资源完成.");
 
             m_ResDict.Add(path, assetObject);
             return assetObject;
@@ -72,7 +72,7 @@ namespace FuFramework.Asset.Runtime
             var assetObject = assetHandle.AssetObject;
             assetHandle.Release();
 
-            FuLog.Info($"[AssetLoader]加载{path}资源完成.");
+            FuLogger.LogInfo($"[AssetLoader]加载{path}资源完成.");
 
             m_ResDict.Add(path, assetObject);
             return assetObject;
@@ -93,7 +93,7 @@ namespace FuFramework.Asset.Runtime
             var assetObject = assetHandle.AssetObject;
             assetHandle.Release();
 
-            FuLog.Info($"[AssetLoader]加载{path}资源完成.");
+            FuLogger.LogInfo($"[AssetLoader]加载{path}资源完成.");
 
             m_ResDict.Add(path, assetObject);
             return assetObject;
@@ -108,7 +108,7 @@ namespace FuFramework.Asset.Runtime
             if (!m_ResDict.ContainsKey(path)) return;
             m_AssetManager.UnloadAsset(path);
             m_ResDict.Remove(path);
-            FuLog.Info($"[AssetLoader]释放{path}资源完成.");
+            FuLogger.LogInfo($"[AssetLoader]释放{path}资源完成.");
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace FuFramework.Asset.Runtime
             foreach (var path in m_ResDict.Keys)
             {
                 m_AssetManager.UnloadAsset(path);
-                FuLog.Info($"[AssetLoader]释放{path}资源完成.");
+                FuLogger.LogInfo($"[AssetLoader]释放{path}资源完成.");
             }
 
             m_ResDict.Clear();

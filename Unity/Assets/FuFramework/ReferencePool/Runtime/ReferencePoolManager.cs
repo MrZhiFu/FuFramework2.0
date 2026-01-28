@@ -32,7 +32,7 @@ namespace FuFramework.ReferencePool.Runtime
                 ReferencePool.EnableStrictCheck = value;
                 if (value)
                 {
-                    FuLog.Info("对 Reference Pool 启用了严格检查。它将会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能.");
+                    FuLogger.LogInfo("对 Reference Pool 启用了严格检查。它将会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能.");
                 }
             }
         }

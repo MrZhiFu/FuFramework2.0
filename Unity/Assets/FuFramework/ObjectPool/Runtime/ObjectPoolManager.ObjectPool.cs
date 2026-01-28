@@ -248,7 +248,7 @@ namespace FuFramework.ObjectPool.Runtime
                 if (internalObject.IsInUse || internalObject.Locked || !internalObject.CustomCanReleaseFlag)
                     return false;
 
-                FuLog.Info($"真正释放对象池中的可释放对象 '{internalObject.Name}'");
+                FuLogger.LogInfo($"真正释放对象池中的可释放对象 '{internalObject.Name}'");
 
                 m_ObjectMultiDict.Remove(internalObject.Name, internalObject);
                 m_TargetObjectDict.Remove(internalObject.Peek().Target);
@@ -310,7 +310,7 @@ namespace FuFramework.ObjectPool.Runtime
                 
                 // 获取所有可释放的对象
                 _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                FuLog.Info($"尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
+                FuLogger.LogInfo($"尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
 
                 // 筛选需要释放的对象
                 var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTimeThreshold);

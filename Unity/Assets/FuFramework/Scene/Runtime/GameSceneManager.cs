@@ -100,13 +100,13 @@ namespace FuFramework.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetPath))
             {
-                FuLog.Error("场景资源路径无效!");
+                FuLogger.LogError("场景资源路径无效!");
                 return false;
             }
 
             if (!sceneAssetPath.StartsWith("Assets/", StringComparison.Ordinal) || !sceneAssetPath.EndsWith(".unity", StringComparison.Ordinal))
             {
-                FuLog.Error($"场景资源路径 '{sceneAssetPath}' 格式错误!");
+                FuLogger.LogError($"场景资源路径 '{sceneAssetPath}' 格式错误!");
                 return false;
             }
 
@@ -155,14 +155,14 @@ namespace FuFramework.Scene.Runtime
         {
             if (string.IsNullOrEmpty(sceneAssetPath))
             {
-                FuLog.Error("场景资源路径无效!");
+                FuLogger.LogError("场景资源路径无效!");
                 return null;
             }
 
             var sceneNamePosition = sceneAssetPath.LastIndexOf('/');
             if (sceneNamePosition + 1 >= sceneAssetPath.Length)
             {
-                FuLog.Error($"场景资源路径 '{sceneAssetPath}' 格式错误!");
+                FuLogger.LogError($"场景资源路径 '{sceneAssetPath}' 格式错误!");
                 return null;
             }
 
@@ -330,7 +330,7 @@ namespace FuFramework.Scene.Runtime
                     // 卸载成功
                     m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
                     if (sceneHandle == null) return;
-                    FuLog.Info($"卸载场景 '{sceneHandle.SceneName}' 成功！");
+                    FuLogger.LogInfo($"卸载场景 '{sceneHandle.SceneName}' 成功！");
                     var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     m_LoadedSceneDict.Remove(sceneAssetPath);
@@ -341,7 +341,7 @@ namespace FuFramework.Scene.Runtime
                     // 卸载失败
                     m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
                     if (sceneHandle == null) return;
-                    FuLog.Error($"卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.");
+                    FuLogger.LogError($"卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
                     EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
@@ -363,7 +363,7 @@ namespace FuFramework.Scene.Runtime
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
             if (!m_LoadingSceneDict.TryGetValue(assetPath, out var value)) return;
 
-            FuLog.Info($"加载场景中 '{sceneHandle.SceneName}' 进度--{sceneHandle.Progress}.");
+            FuLogger.LogInfo($"加载场景中 '{sceneHandle.SceneName}' 进度--{sceneHandle.Progress}.");
             var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneHandle.SceneName, sceneHandle.Progress, value.UserData);
             EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
         }
@@ -384,7 +384,7 @@ namespace FuFramework.Scene.Runtime
             if (sceneHandle.IsDone)
             {
                 // 加载成功
-                FuLog.Info($"加载场景 '{sceneHandle.SceneName}' 成功！");
+                FuLogger.LogInfo($"加载场景 '{sceneHandle.SceneName}' 成功！");
                 var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
                 EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
             }
@@ -392,7 +392,7 @@ namespace FuFramework.Scene.Runtime
             {
                 // 加载失败
                 var errorMessage = $"加载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.";
-                FuLog.Error(errorMessage);
+                FuLogger.LogError(errorMessage);
                 var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneHandle.SceneName, sceneHandle.Status, errorMessage, sceneHandleData.UserData);
                 EventRegister.Broadcast(this, loadSceneFailureEventArgs);
             }
