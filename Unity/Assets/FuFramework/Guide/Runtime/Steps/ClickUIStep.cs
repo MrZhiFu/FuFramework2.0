@@ -15,9 +15,10 @@ namespace FuFramework.Guide.Runtime
         /// 点击目标UI组件
         /// </summary>
         private GComponent targetUI;
-        
+
         protected override void OnExecute()
         {
+            base.OnExecute();
             var uiManager = ModuleManager.GetModule<UIManager>();
             if (uiManager == null) return;
 
@@ -35,12 +36,12 @@ namespace FuFramework.Guide.Runtime
                 FuLog.Warning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.m_TargetUI}");
                 return;
             }
-            
+
             targetUI = targetClickUI;
-            
+
             // 添加目标UI点击回调
             targetUI.onClick.Add(Complete);
-            
+
             // 执行点击UI引导
             if (GuideAction == null)
             {
@@ -57,6 +58,7 @@ namespace FuFramework.Guide.Runtime
             targetUI?.onClick.Remove(Complete);
             GuideAction?.EndClickUIGuide();
             targetUI = null;
+            base.OnComplete();
         }
 
         /// <summary>

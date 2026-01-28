@@ -15,7 +15,9 @@ namespace FuFramework.Guide.Runtime
 
         protected override void OnExecute()
         {
+            base.OnExecute();
             m_WaitTimer = 0f;
+            GuideAction?.ShowGlobalMask(); // 打开全局遮罩窗口
         }
 
         protected override void OnUpdate(float deltaTime)
@@ -28,6 +30,12 @@ namespace FuFramework.Guide.Runtime
                     Complete();
                 }
             }
+        }
+
+        protected override void OnComplete()
+        {
+            GuideAction?.HideGlobalMask(); // 隐藏全局遮罩窗口
+            base.OnComplete();
         }
 
         /// <summary>

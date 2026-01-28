@@ -43,6 +43,22 @@ namespace Hotfix.Guide
         }
 
         /// <summary>
+        /// 显示全局遮罩窗口
+        /// </summary>
+        public void ShowGlobalMask()
+        {
+            GlobalModule.UIModule.OpenUI<WinGlobalMask>();
+        }
+        
+        /// <summary>
+        /// 隐藏全局遮罩窗口
+        /// </summary>
+        public void HideGlobalMask()
+        {
+            GlobalModule.UIModule.CloseUI<WinGlobalMask>();
+        }
+
+        /// <summary>
         /// 执行点击UI引导
         /// </summary>
         /// <param name="targetUI">目标点击UI区域</param>

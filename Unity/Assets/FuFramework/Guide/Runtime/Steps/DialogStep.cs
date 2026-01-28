@@ -16,8 +16,8 @@ namespace FuFramework.Guide.Runtime
 
         protected override void OnComplete()
         {
-            base.OnComplete();
             GuideAction.EndDialogGuide();
+            base.OnComplete();
         }
 
         /// <summary>

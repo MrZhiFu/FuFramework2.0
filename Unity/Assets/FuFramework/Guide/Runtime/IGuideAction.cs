@@ -30,5 +30,15 @@ namespace FuFramework.Guide.Runtime
         /// 结束对话引导
         /// </summary>
         public void EndDialogGuide();
+
+        /// <summary>
+        /// 显示全局遮罩窗口
+        /// </summary>
+        public void ShowGlobalMask();
+        
+        /// <summary>
+        /// 隐藏全局遮罩窗口
+        /// </summary>
+        public void HideGlobalMask();
     }
 }
