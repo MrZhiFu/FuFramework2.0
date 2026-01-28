@@ -23,11 +23,7 @@ namespace Hotfix.Guide
         /// <summary>
         /// 结束点击UI引导
         /// </summary>
-        public void EndClickUIGuide()
-        {
-            FuLog.Info("结束点击UI引导");
-            GlobalModule.UIModule.CloseUI<WinClickGuide>();
-        }
+        public void EndClickUIGuide() => GlobalModule.UIModule.CloseUI<WinClickGuide>();
 
         /// <summary>
         /// 显示对话引导
@@ -37,26 +33,17 @@ namespace Hotfix.Guide
         /// <summary>
         /// 结束对话引导
         /// </summary>
-        public void EndDialogGuide()
-        {
-            GlobalModule.UIModule.CloseUI<WinDialogGuide>();
-        }
+        public void EndDialogGuide() => GlobalModule.UIModule.CloseUI<WinDialogGuide>();
 
         /// <summary>
         /// 显示全局遮罩窗口
         /// </summary>
-        public void ShowGlobalMask()
-        {
-            GlobalModule.UIModule.OpenUI<WinGlobalMask>();
-        }
-        
+        public void ShowGlobalMask() => GlobalModule.UIModule.OpenUI<WinGlobalMask>();
+
         /// <summary>
         /// 隐藏全局遮罩窗口
         /// </summary>
-        public void HideGlobalMask()
-        {
-            GlobalModule.UIModule.CloseUI<WinGlobalMask>();
-        }
+        public void HideGlobalMask() => GlobalModule.UIModule.CloseUI<WinGlobalMask>();
 
         /// <summary>
         /// 执行点击UI引导
