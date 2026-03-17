@@ -6,16 +6,16 @@ local File = CS.System.IO.File
 local Directory = CS.System.IO.Directory
 
 --- 导出界面View的C#代码AOT路径
-Tool.ExportViewAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewImpl"
+Tool.ExportViewAOTPath = "%s/Scripts/AOT/UI/%s/Impl"
 
 --- 导出界面View的C#代码路径
-Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/View/%s/ViewImpl"
+Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/%s/Impl"
 
 --- 导出界面ViewGen的C#代码AOT路径
-Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/View/%s/ViewGen/"
+Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/%s/Gen/"
 
 --- 导出界面ViewGen的C#代码路径
-Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/View/%s/ViewGen/"
+Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/%s/Gen/"
 
 --- 导出界面View的命名空间
 Tool.ExportViewNamespace = "Hotfix.UI"
