@@ -2,7 +2,6 @@
 using System.Linq;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
