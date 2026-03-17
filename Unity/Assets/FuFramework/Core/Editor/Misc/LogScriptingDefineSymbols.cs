@@ -9,161 +9,216 @@ namespace FuFramework.Core.Editor
     /// </summary>
     public static class LogScriptingDefineSymbols
     {
-        private const string EnableLogScriptingDefineSymbol                = "ENABLE_LOG";
-        
-        private const string EnableDebugAndAboveLogScriptingDefineSymbol   = "ENABLE_DEBUG_AND_ABOVE_LOG";
-        private const string EnableInfoAndAboveLogScriptingDefineSymbol    = "ENABLE_INFO_AND_ABOVE_LOG";
-        private const string EnableWarningAndAboveLogScriptingDefineSymbol = "ENABLE_WARNING_AND_ABOVE_LOG";
-        private const string EnableErrorAndAboveLogScriptingDefineSymbol   = "ENABLE_ERROR_AND_ABOVE_LOG";
-        private const string EnableFatalAndAboveLogScriptingDefineSymbol   = "ENABLE_FATAL_AND_ABOVE_LOG";
-        
-        private const string EnableDebugLogScriptingDefineSymbol           = "ENABLE_DEBUG_LOG";
-        private const string EnableInfoLogScriptingDefineSymbol            = "ENABLE_INFO_LOG";
-        private const string EnableWarningLogScriptingDefineSymbol         = "ENABLE_WARNING_LOG";
-        private const string EnableErrorLogScriptingDefineSymbol           = "ENABLE_ERROR_LOG";
-        private const string EnableFatalLogScriptingDefineSymbol           = "ENABLE_FATAL_LOG";
+        private const string EnableLogSymbol = "ENABLE_LOG"; // 开启所有级别日志(预定义符号)
+
+        private const string EnableInfoAndAboveLogSymbol    = "ENABLE_INFO_AND_ABOVE_LOG";    // 开启信息(Info)及以上级别的日志(预定义符号)
+        private const string EnableDebugAndAboveLogSymbol   = "ENABLE_DEBUG_AND_ABOVE_LOG";   // 开启调试(Debug)及以上级别的日志(预定义符号)
+        private const string EnableWarningAndAboveLogSymbol = "ENABLE_WARNING_AND_ABOVE_LOG"; // 开启警告(Warning)及以上级别的日志(预定义符号)
+        private const string EnableErrorAndAboveLogSymbol   = "ENABLE_ERROR_AND_ABOVE_LOG";   // 开启错误(Error)及以上级别的日志(预定义符号)
+        private const string EnableFatalAndAboveLogSymbol   = "ENABLE_FATAL_AND_ABOVE_LOG";   // 开启严重错误(Fatal)及以上级别的日志(预定义符号)
+
+        private const string EnableInfoLogSymbol    = "ENABLE_INFO_LOG";    // 仅开启信息(Info)级别的日志(预定义符号)
+        private const string EnableDebugLogSymbol   = "ENABLE_DEBUG_LOG";   // 仅开启调试(Debug)级别的日志(预定义符号)
+        private const string EnableWarningLogSymbol = "ENABLE_WARNING_LOG"; // 仅开启警告(Warning)级别的日志(预定义符号)
+        private const string EnableErrorLogSymbol   = "ENABLE_ERROR_LOG";   // 仅开启错误(Error)级别的日志(预定义符号)
+        private const string EnableFatalLogSymbol   = "ENABLE_FATAL_LOG";   // 仅开启严重错误(Fatal)级别的日志(预定义符号)
 
         /// <summary>
-        /// Log 及以上级别的日志脚本宏定义。
+        /// 指定级别及以上级别的日志预定义符号。
         /// </summary>
-        private static readonly string[] AboveLogScriptingDefineSymbols =
+        private static readonly string[] AboveLogSymbols =
         {
-            EnableDebugAndAboveLogScriptingDefineSymbol,
-            EnableInfoAndAboveLogScriptingDefineSymbol,
-            EnableWarningAndAboveLogScriptingDefineSymbol,
-            EnableErrorAndAboveLogScriptingDefineSymbol,
-            EnableFatalAndAboveLogScriptingDefineSymbol
+            EnableInfoAndAboveLogSymbol,
+            EnableDebugAndAboveLogSymbol,
+            EnableWarningAndAboveLogSymbol,
+            EnableErrorAndAboveLogSymbol,
+            EnableFatalAndAboveLogSymbol
         };
 
         /// <summary>
-        /// 特殊指定的级别的日志脚本宏定义。
+        /// 指定的级别的日志预定义符号。
         /// </summary>
-        private static readonly string[] SpecifyLogScriptingDefineSymbols =
+        private static readonly string[] SpecifyLogSymbols =
         {
-            EnableDebugLogScriptingDefineSymbol,
-            EnableInfoLogScriptingDefineSymbol,
-            EnableWarningLogScriptingDefineSymbol,
-            EnableErrorLogScriptingDefineSymbol,
-            EnableFatalLogScriptingDefineSymbol
+            EnableInfoLogSymbol,
+            EnableDebugLogSymbol,
+            EnableWarningLogSymbol,
+            EnableErrorLogSymbol,
+            EnableFatalLogSymbol
         };
 
         /// <summary>
-        /// 禁用所有日志脚本宏定义。
+        /// 开启所有日志。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Disable All Logs(禁用所有日志脚本宏定义)", false, 30)]
+        [MenuItem("FuFramework/日志设置/开启所有日志", false, 600)]
+        public static void EnableAllLogs()
+        {
+            DisableAllLogs();
+            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableLogSymbol);
+        }
+
+        /// <summary>
+        /// 禁用所有日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/禁用所有日志", false, 601)]
         public static void DisableAllLogs()
         {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogScriptingDefineSymbol);
+            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogSymbol);
 
-            foreach (var specifyLogScriptingDefineSymbol in SpecifyLogScriptingDefineSymbols)
+            foreach (var specifyLogScriptingDefineSymbol in SpecifyLogSymbols)
             {
                 ScriptingDefineSymbols.RemoveScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
             }
 
-            foreach (var aboveLogScriptingDefineSymbol in AboveLogScriptingDefineSymbols)
+            foreach (var aboveLogScriptingDefineSymbol in AboveLogSymbols)
             {
                 ScriptingDefineSymbols.RemoveScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
             }
         }
 
         /// <summary>
-        /// 开启所有日志脚本宏定义。
+        /// 开启信息及以上级别的日志。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable All Logs(开启所有日志脚本宏定义)", false, 31)]
-        public static void EnableAllLogs()
-        {
-            DisableAllLogs();
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 开启调试及以上级别的日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Debug And Above Logs(开启调试及以上级别的日志脚本宏定义)", false, 32)]
-        public static void EnableDebugAndAboveLogs()
-        {
-            SetAboveLogScriptingDefineSymbol(EnableDebugAndAboveLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 开启信息及以上级别的日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Info And Above Logs(开启信息及以上级别的日志脚本宏定义)", false, 33)]
+        [MenuItem("FuFramework/日志设置/开启信息(Info)及以上级别的日志", false, 700)]
         public static void EnableInfoAndAboveLogs()
         {
-            SetAboveLogScriptingDefineSymbol(EnableInfoAndAboveLogScriptingDefineSymbol);
+            SetAboveLogScriptingDefineSymbol(EnableInfoAndAboveLogSymbol);
         }
 
         /// <summary>
-        /// 开启警告及以上级别的日志脚本宏定义。
+        /// 开启调试及以上级别的日志。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Warning And Above Logs(开启警告及以上级别的日志脚本宏定义)", false, 34)]
+        [MenuItem("FuFramework/日志设置/开启调试(Debug)及以上级别的日志", false, 701)]
+        public static void EnableDebugAndAboveLogs()
+        {
+            SetAboveLogScriptingDefineSymbol(EnableDebugAndAboveLogSymbol);
+        }
+
+        /// <summary>
+        /// 开启警告及以上级别的日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/开启警告(Warning)及以上级别的日志", false, 702)]
         public static void EnableWarningAndAboveLogs()
         {
-            SetAboveLogScriptingDefineSymbol(EnableWarningAndAboveLogScriptingDefineSymbol);
+            SetAboveLogScriptingDefineSymbol(EnableWarningAndAboveLogSymbol);
         }
 
         /// <summary>
-        /// 开启错误及以上级别的日志脚本宏定义。
+        /// 开启错误及以上级别的日志。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Error And Above Logs(开启错误及以上级别的日志脚本宏定义)", false, 35)]
+        [MenuItem("FuFramework/日志设置/开启错误(Error)及以上级别的日志", false, 703)]
         public static void EnableErrorAndAboveLogs()
         {
-            SetAboveLogScriptingDefineSymbol(EnableErrorAndAboveLogScriptingDefineSymbol);
+            SetAboveLogScriptingDefineSymbol(EnableErrorAndAboveLogSymbol);
         }
 
         /// <summary>
-        /// 开启严重错误及以上级别的日志脚本宏定义。
+        /// 开启严重错误及以上级别的日志。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Fatal And Above Logs(开启严重错误及以上级别的日志脚本宏定义)", false, 36)]
+        [MenuItem("FuFramework/日志设置/开启严重错误(Fatal)及以上级别的日志", false, 704)]
         public static void EnableFatalAndAboveLogs()
         {
-            SetAboveLogScriptingDefineSymbol(EnableFatalAndAboveLogScriptingDefineSymbol);
+            SetAboveLogScriptingDefineSymbol(EnableFatalAndAboveLogSymbol);
         }
 
         /// <summary>
-        /// 设置日志脚本宏定义。
+        /// 仅开启信息级别的日志。
         /// </summary>
-        /// <param name="aboveLogScriptingDefineSymbol">要设置的日志脚本宏定义。</param>
-        public static void SetAboveLogScriptingDefineSymbol(string aboveLogScriptingDefineSymbol)
+        [MenuItem("FuFramework/日志设置/仅开启信息(Info)级别日志", false, 800)]
+        public static void EnableInfoLogOnly()
         {
-            if (string.IsNullOrEmpty(aboveLogScriptingDefineSymbol)) return;
+            SetSpecifyLogScriptingDefineSymbols(new[] { EnableInfoLogSymbol });
+        }
 
-            foreach (var i in AboveLogScriptingDefineSymbols)
+        /// <summary>
+        /// 仅开启调试级别的日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/仅开启调试(Debug)级别日志", false, 801)]
+        public static void EnableDebugLogOnly()
+        {
+            SetSpecifyLogScriptingDefineSymbols(new[] { EnableDebugLogSymbol });
+        }
+
+        /// <summary>
+        /// 仅开启警告级别的日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/仅开启警告(Warning)级别日志", false, 802)]
+        public static void EnableWarningLogOnly()
+        {
+            SetSpecifyLogScriptingDefineSymbols(new[] { EnableWarningLogSymbol });
+        }
+
+        /// <summary>
+        /// 仅开启错误级别的日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/仅开启错误(Error)级别日志", false, 803)]
+        public static void EnableErrorLogOnly()
+        {
+            SetSpecifyLogScriptingDefineSymbols(new[] { EnableErrorLogSymbol });
+        }
+
+        /// <summary>
+        /// 仅开启严重错误级别的日志。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/仅开启严重错误(Fatal)级别日志", false, 804)]
+        public static void EnableFatalLogOnly()
+        {
+            SetSpecifyLogScriptingDefineSymbols(new[] { EnableFatalLogSymbol });
+        }
+
+
+        /// <summary>
+        /// 设置日志预定义符号。
+        /// </summary>
+        /// <param name="logSymbol">要设置的日志预定义符号。</param>
+        private static void SetAboveLogScriptingDefineSymbol(string logSymbol)
+        {
+            if (string.IsNullOrEmpty(logSymbol)) return;
+
+            foreach (var i in AboveLogSymbols)
             {
-                if (i != aboveLogScriptingDefineSymbol) continue;
+                if (i != logSymbol) continue;
                 DisableAllLogs();
-                ScriptingDefineSymbols.AddScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
+                ScriptingDefineSymbols.AddScriptingDefineSymbol(logSymbol);
                 return;
             }
         }
 
         /// <summary>
-        /// 设置特殊指定的日志脚本宏定义。
+        /// 设置特殊指定的日志预定义符号。
         /// </summary>
-        /// <param name="specifyLogScriptingDefineSymbols">要设置的日志脚本宏定义。</param>
-        public static void SetSpecifyLogScriptingDefineSymbols(string[] specifyLogScriptingDefineSymbols)
+        /// <param name="logSymbols">要设置的日志预定义符号数组。</param>
+        private static void SetSpecifyLogScriptingDefineSymbols(string[] logSymbols)
         {
-            if (specifyLogScriptingDefineSymbols == null || specifyLogScriptingDefineSymbols.Length <= 0) return;
+            if (logSymbols is not { Length: > 0 }) return;
 
-            var removed = false;
-            foreach (var specifyLogScriptingDefineSymbol in specifyLogScriptingDefineSymbols)
+            // 先禁用所有日志
+            DisableAllLogs();
+
+            // 添加指定的日志符号
+            foreach (var logSymbol in logSymbols)
             {
-                if (string.IsNullOrEmpty(specifyLogScriptingDefineSymbol)) continue;
+                if (string.IsNullOrEmpty(logSymbol)) continue;
 
-                foreach (var i in SpecifyLogScriptingDefineSymbols)
+                // 验证是否是有效的指定级别日志符号
+                if (IsValidSpecifyLogSymbol(logSymbol))
                 {
-                    if (i != specifyLogScriptingDefineSymbol) continue;
-                    if (!removed)
-                    {
-                        removed = true;
-                        DisableAllLogs();
-                    }
-
-                    ScriptingDefineSymbols.AddScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
-                    break;
+                    ScriptingDefineSymbols.AddScriptingDefineSymbol(logSymbol);
                 }
             }
+        }
+
+        /// <summary>
+        /// 验证是否是有效的指定级别日志符号。
+        /// </summary>
+        private static bool IsValidSpecifyLogSymbol(string symbol)
+        {
+            foreach (var validSymbol in SpecifyLogSymbols)
+            {
+                if (validSymbol == symbol) return true;
+            }
+
+            return false;
         }
     }
 }

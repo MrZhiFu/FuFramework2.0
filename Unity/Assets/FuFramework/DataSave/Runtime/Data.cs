@@ -52,7 +52,7 @@ namespace FuFramework.SaveData.Runtime
         {
             m_DataDict.Clear();
             using var binaryReader = new BinaryReader(stream, Encoding.UTF8);
-            var settingCount = binaryReader.Read7BitEncodedInt32();
+            var       settingCount = binaryReader.Read7BitEncodedInt32();
             for (var i = 0; i < settingCount; i++)
             {
                 m_DataDict.Add(binaryReader.ReadString(), binaryReader.ReadString());
@@ -65,7 +65,7 @@ namespace FuFramework.SaveData.Runtime
         /// <returns>所有本地存储的数据项的名称。</returns>
         public string[] GetAllDataNames()
         {
-            var index = 0;
+            var index    = 0;
             var allNames = new string[m_DataDict.Count];
             foreach (var setting in m_DataDict)
             {
@@ -132,7 +132,7 @@ namespace FuFramework.SaveData.Runtime
             if (int.TryParse(value, out var result)) return result;
             throw new FuException($"[Data] 无法将 {value} 转换为整数值.");
         }
-        
+
         /// <summary>
         /// 从指定本地存储的数据项中读取长整数值。
         /// </summary>
@@ -173,7 +173,7 @@ namespace FuFramework.SaveData.Runtime
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)) return result;
             throw new FuException($"[Data] 无法将 {value} 转换为双精度浮点数值.");
         }
-        
+
         /// <summary>
         /// 从指定本地存储的数据项中读取字符串值。
         /// </summary>
@@ -209,7 +209,7 @@ namespace FuFramework.SaveData.Runtime
         /// <param name="dataName"></param>
         /// <param name="value"></param>
         public void SetLong(string dataName, long value) => m_DataDict[dataName] = value.ToString();
-        
+
         /// <summary>
         /// 向指定本地存储的数据项写入浮点数值。
         /// </summary>
@@ -221,7 +221,7 @@ namespace FuFramework.SaveData.Runtime
         /// 向指定本地存储的数据项写入双精度浮点数值。
         /// </summary>
         public void SetDouble(string dataName, double value) => m_DataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
-        
+
         /// <summary>
         /// 向指定本地存储的数据项写入字符串值。
         /// </summary>

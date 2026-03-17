@@ -7,7 +7,7 @@ using UnityWebSocket;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
 {
-    public partial class NetworkManager
+    public partial class NetworkModule
     {
         /// <summary>
         /// WebSocket 网络套接字

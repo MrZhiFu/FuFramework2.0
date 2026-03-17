@@ -89,7 +89,7 @@ using FuFramework.Core.Runtime;
 using UnityEngine;
 
 // 1. 继承 FuModule
-public class NetworkManager : FuModule
+public class NetworkModule : FuModule
 {
     // 2. 设置优先级 (网络模块属于核心基础设施，优先级较高)
     protected override int Priority => ModulePriority.Core;
@@ -97,7 +97,7 @@ public class NetworkManager : FuModule
     // 3. 初始化
     protected override void OnInit()
     {
-        FuLogger.LogInfo("NetworkManager 初始化...");
+        FuLogger.LogInfo("NetworkModule 初始化...");
         // 初始化网络连接、协议注册等...
     }
 
@@ -110,7 +110,7 @@ public class NetworkManager : FuModule
     // 5. 关闭清理
     protected override void OnShutdown(ShutdownType shutdownType)
     {
-        FuLogger.LogInfo("NetworkManager 关闭...");
+        FuLogger.LogInfo("NetworkModule 关闭...");
         // 断开连接、清理资源...
     }
     
@@ -124,7 +124,7 @@ public class NetworkManager : FuModule
 
 ```csharp
 // 获取模块实例（如果未创建会自动创建）
-var netMgr = ModuleManager.GetModule<NetworkManager>();
+var netMgr = ModuleManager.GetModule<NetworkModule>();
 
 // 调用模块方法
 netMgr.Connect("127.0.0.1", 8888);

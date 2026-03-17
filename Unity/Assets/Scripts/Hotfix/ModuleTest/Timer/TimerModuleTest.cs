@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class TimerModuleTest : MonoBehaviour
 {
-    private TimerManager m_TimerManager;
+    private TimerModule m_TimerModule;
     private int m_TimerId1;
     private int m_TimerId2;
     private int m_IntervalTimerId;
@@ -19,7 +19,7 @@ public class TimerModuleTest : MonoBehaviour
     private IEnumerator Start()
     {
         // 获取 TimerManager 实例（假设通过框架的模块系统获取）
-        m_TimerManager = GlobalModule.TimerModule;
+        m_TimerModule = GlobalModule.TimerModule;
         
         // 示例1：基本计时器使用
         TestBasicTimer();
@@ -42,7 +42,7 @@ public class TimerModuleTest : MonoBehaviour
     /// </summary>
     private void TestBasicTimer()
     {
-        m_TimerId1 = m_TimerManager.StartTimer(duration:5f, TestBasicTimer);
+        m_TimerId1 = m_TimerModule.StartTimer(duration:5f, TestBasicTimer);
         Debug.Log($"启动基本计时器，ID: {m_TimerId1}");
     }
 
@@ -56,7 +56,7 @@ public class TimerModuleTest : MonoBehaviour
     /// </summary>
     private void TestTimerWithUpdate()
     {
-        m_TimerId2 = m_TimerManager.StartTimer(
+        m_TimerId2 = m_TimerModule.StartTimer(
             duration: 5f,
             finishCallBack: () =>
             {
@@ -80,7 +80,7 @@ public class TimerModuleTest : MonoBehaviour
     private void TestIntervalTimer()
     {
         int counter = 0;
-        m_IntervalTimerId = m_TimerManager.StartTimeTimer(
+        m_IntervalTimerId = m_TimerModule.StartTimeTimer(
             interval: 2f,
             intervalCallback: () =>
             {
@@ -101,27 +101,27 @@ public class TimerModuleTest : MonoBehaviour
     private void TestTimerControl()
     {
         // 3秒后暂停第一个计时器
-        m_TimerManager.StartTimer(3f, finishCallBack: () =>
+        m_TimerModule.StartTimer(3f, finishCallBack: () =>
         {
-            if (m_TimerManager.IsTimerExist(m_TimerId1))
+            if (m_TimerModule.IsTimerExist(m_TimerId1))
             {
-                m_TimerManager.PauseTimer(m_TimerId1);
+                m_TimerModule.PauseTimer(m_TimerId1);
                 Debug.Log($"计时器 {m_TimerId1} 已暂停");
                 
                 // 2秒后恢复计时器
-                m_TimerManager.StartTimer(2f, finishCallBack: () =>
+                m_TimerModule.StartTimer(2f, finishCallBack: () =>
                 {
-                    m_TimerManager.ResumeTimer(m_TimerId1);
+                    m_TimerModule.ResumeTimer(m_TimerId1);
                     Debug.Log($"计时器 {m_TimerId1} 已恢复");
                 });
             }
         });
 
         // 10秒后停止所有计时器
-        m_TimerManager.StartTimer(10f, finishCallBack: () =>
+        m_TimerModule.StartTimer(10f, finishCallBack: () =>
         {
             Debug.Log("10秒后停止所有计时器");
-            m_TimerManager.StopAllTimers();
+            m_TimerModule.StopAllTimers();
         });
     }
 
@@ -131,29 +131,29 @@ public class TimerModuleTest : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             // 暂停所有计时器
-            m_TimerManager.PauseAllTimers();
+            m_TimerModule.PauseAllTimers();
             Debug.Log("暂停所有计时器");
         }
         
         if (Input.GetKeyDown(KeyCode.R))
         {
             // 恢复所有计时器
-            m_TimerManager.ResumeAllTimers();
+            m_TimerModule.ResumeAllTimers();
             Debug.Log("恢复所有计时器");
         }
         
         if (Input.GetKeyDown(KeyCode.C))
         {
             // 检查计时器状态
-            Debug.Log($"计时器 {m_TimerId1} 是否存在: {m_TimerManager.IsTimerExist(m_TimerId1)}");
-            Debug.Log($"计时器 {m_TimerId1} 是否暂停: {m_TimerManager.IsTimerPaused(m_TimerId1)}");
-            Debug.Log($"当前活跃计时器数量: {m_TimerManager.Count}");
+            Debug.Log($"计时器 {m_TimerId1} 是否存在: {m_TimerModule.IsTimerExist(m_TimerId1)}");
+            Debug.Log($"计时器 {m_TimerId1} 是否暂停: {m_TimerModule.IsTimerPaused(m_TimerId1)}");
+            Debug.Log($"当前活跃计时器数量: {m_TimerModule.Count}");
         }
         
         if (Input.GetKeyDown(KeyCode.T))
         {
             // 获取所有计时器名称
-            var timerNames = m_TimerManager.GetAllTimerNames();
+            var timerNames = m_TimerModule.GetAllTimerNames();
             foreach (var name in timerNames)
             {
                 Debug.Log($"活跃计时器: {name}");
@@ -164,9 +164,9 @@ public class TimerModuleTest : MonoBehaviour
     private void OnDestroy()
     {
         // 清理计时器
-        if (m_TimerManager != null)
+        if (m_TimerModule != null)
         {
-            m_TimerManager.StopAllTimers();
+            m_TimerModule.StopAllTimers();
         }
     }
 }

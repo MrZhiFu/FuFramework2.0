@@ -19,12 +19,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// UI管理器
         /// </summary>
-        private UIManager m_UIManager;
-
-        /// <summary>
-        /// FGui的包管理器。
-        /// </summary>
-        private FuiPackageManager m_PackageManager;
+        private UIModule m_UIModule;
 
         /// <summary>
         /// 界面序列编号。
@@ -84,7 +79,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public UIGroup UIGroup => m_UIManager?.GetUIGroup(Layer);
+        public UIGroup UIGroup => m_UIModule?.GetUIGroup(Layer);
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -118,9 +113,7 @@ namespace FuFramework.UI.Runtime
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_UIManager      = ModuleManager.GetModule<UIManager>();
-            m_PackageManager = ModuleManager.GetModule<FuiPackageManager>();
-
+            m_UIModule     = ModuleManager.GetModule<UIModule>();
             m_IsInit       = true;
             DepthInUIGroup = 0;
 
@@ -140,7 +133,7 @@ namespace FuFramework.UI.Runtime
                 if (IsFullScreen) UIView?.MakeFullScreen();
 
                 // 注册本地化语言改变事件
-                Subscribe(LocalizationLanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
+                Subscribe(LanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
 
                 // 初始化
                 _OnInit();
@@ -201,8 +194,8 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected void CloseSelf()
         {
-            if (m_UIManager is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理器为空。");
-            m_UIManager.CloseUI(this);
+            if (m_UIModule is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理器为空。");
+            m_UIModule.CloseUI(this);
         }
     }
 }

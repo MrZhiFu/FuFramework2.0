@@ -43,7 +43,7 @@ namespace FuFramework.Model.Runtime
         /// <summary>
         /// 本地存储管理器。
         /// </summary>
-        private DataSaveManager m_DataSaveManager;
+        private DataSaveModule m_DataSaveModule;
 
         /// <summary>
         /// 获取存储的文件名（可重写以自定义）
@@ -56,10 +56,10 @@ namespace FuFramework.Model.Runtime
         protected sealed override void OnInitData()
         {
             base.OnInitData();
-            m_FileName        = GetFileName();
-            m_DataSaveManager = ModuleManager.GetModule<DataSaveManager>();
+            m_FileName       = GetFileName();
+            m_DataSaveModule = ModuleManager.GetModule<DataSaveModule>();
 
-            if (!m_DataSaveManager)
+            if (!m_DataSaveModule)
             {
                 FuLogger.LogError($"初始化Model-{m_FileName}时，数据保存管理器未找到!");
                 return;
@@ -84,7 +84,7 @@ namespace FuFramework.Model.Runtime
         {
             try
             {
-                var dataJson = m_DataSaveManager.GetString(m_FileName, m_FileName);
+                var dataJson = m_DataSaveModule.GetString(m_FileName, m_FileName);
                 if (string.IsNullOrEmpty(dataJson))
                 {
                     OnFirstInitDate();
@@ -106,7 +106,7 @@ namespace FuFramework.Model.Runtime
         /// </summary>
         private void Save()
         {
-            if (!m_DataSaveManager)
+            if (!m_DataSaveModule)
             {
                 FuLogger.LogWarning($"无法保存{m_FileName}，数据保存管理器未找到!");
                 return;
@@ -115,8 +115,8 @@ namespace FuFramework.Model.Runtime
             try
             {
                 var dataJson = JsonConvert.SerializeObject(this, Formatting.None);
-                m_DataSaveManager.SetString(m_FileName, dataJson, m_FileName);
-                m_DataSaveManager.Save(m_FileName);
+                m_DataSaveModule.SetString(m_FileName, dataJson, m_FileName);
+                m_DataSaveModule.Save(m_FileName);
                 FuLogger.LogInfo($"Model数据保存成功: {m_FileName}");
             }
             catch (System.Exception ex)

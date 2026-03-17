@@ -8,7 +8,7 @@
 
 ### 核心组件
 
-- **SaveManager** - 全局数据管理器，继承自`FuModule`，统筹管理所有数据文件
+- **SaveModule** - 全局数据管理器，继承自`FuModule`，统筹管理所有数据文件
 - **SaveHelper** - 单个数据文件辅助器，处理具体的数据读写操作
 - **Data** - 数据容器，内部使用`SortedDictionary<string, string>`存储键值对
 - **DataSerializer** - 自定义序列化器，采用二进制格式存储数据
@@ -28,20 +28,20 @@
 ### 基础操作
 
 ```csharp
-// 获取SaveManager实例（通过框架模块管理器）
-var saveManager = ModuleManager.GetModule<SaveManager>();
+// 获取SaveModule实例（通过框架模块管理器）
+var saveModule = ModuleManager.GetModule<SaveModule>();
 
 // 保存基础类型数据
-saveManager.SetInt("PlayerLevel", 10);
-saveManager.SetBool("IsFirstTime", false);
-saveManager.SetFloat("Volume", 0.8f);
-saveManager.SetString("PlayerName", "Hero");
+saveModule.SetInt("PlayerLevel", 10);
+saveModule.SetBool("IsFirstTime", false);
+saveModule.SetFloat("Volume", 0.8f);
+saveModule.SetString("PlayerName", "Hero");
 
 // 读取基础类型数据
-int level = saveManager.GetInt("PlayerLevel");
-bool isFirstTime = saveManager.GetBool("IsFirstTime", true); // 带默认值
-float volume = saveManager.GetFloat("Volume", 1.0f);
-string playerName = saveManager.GetString("PlayerName", "Guest");
+int level = saveModule.GetInt("PlayerLevel");
+bool isFirstTime = saveModule.GetBool("IsFirstTime", true); // 带默认值
+float volume = saveModule.GetFloat("Volume", 1.0f);
+string playerName = saveModule.GetString("PlayerName", "Guest");
 ```
 
 ### 对象序列化
@@ -54,33 +54,33 @@ PlayerData playerInfo = new PlayerData
     Level = 10, 
     Experience = 1250 
 };
-saveManager.SetObject("PlayerData", playerInfo);
+saveModule.SetObject("PlayerData", playerInfo);
 
 // 读取复杂对象
-PlayerData data = saveManager.GetObject<PlayerData>("PlayerData");
+PlayerData data = saveModule.GetObject<PlayerData>("PlayerData");
 ```
 
 ### 数据管理
 
 ```csharp
 // 检查数据是否存在
-bool hasLevel = saveManager.HasData("PlayerLevel");
+bool hasLevel = saveModule.HasData("PlayerLevel");
 
 // 删除指定数据
-bool removed = saveManager.RemoveData("TempData");
+bool removed = saveModule.RemoveData("TempData");
 
 // 清空所有数据
-saveManager.RemoveAllData();
+saveModule.RemoveAllData();
 
 // 获取所有数据项名称
-string[] allKeys = saveManager.GetAllDataNames();
+string[] allKeys = saveModule.GetAllDataNames();
 ```
 
 ### 多文件支持
 
 ```csharp
 // 创建指定文件名的数据管理器（自动创建对应的SaveHelper）
-var customHelper = saveManager.GetOrCreateHelper("UserSettings");
+var customHelper = saveModule.GetOrCreateHelper("UserSettings");
 
 // 对特定文件进行操作
 customHelper.SetInt("GraphicsQuality", 2);
@@ -88,20 +88,20 @@ customHelper.SetBool("Fullscreen", true);
 int quality = customHelper.GetInt("GraphicsQuality");
 
 // 获取所有已加载的Helper名称
-string[] helperNames = saveManager.GetAllHelperNames();
+string[] helperNames = saveModule.GetAllHelperNames();
 ```
 
 ### 批量操作
 
 ```csharp
 // 保存所有数据到磁盘
-saveManager.SaveAll();
+saveModule.SaveAll();
 
 // 加载所有数据文件
-saveManager.LoadAll();
+saveModule.LoadAll();
 
 // 获取当前数据文件数量
-int fileCount = saveManager.Count;
+int fileCount = saveModule.Count;
 ```
 
 ## 数据加密功能
@@ -116,7 +116,7 @@ var dataSaveSetting = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetti
 dataSaveSetting.EnableEncrypt = true;  // 启用加密功能
 
 // 代码中启用加密（针对特定文件）
-var helper = saveManager.GetOrCreateHelper("SensitiveData");
+var helper = saveModule.GetOrCreateHelper("SensitiveData");
 helper.EnableEncryption = true;
 helper.EncryptKey = "YourSecretKey123";  // 设置加密密钥
 ```
@@ -143,7 +143,7 @@ helper.EnableEncryption = false;
 
 ```csharp
 // 示例：加密用户设置数据
-var settingsHelper = saveManager.GetOrCreateHelper("UserSettings");
+var settingsHelper = saveModule.GetOrCreateHelper("UserSettings");
 settingsHelper.EnableEncryption = true;
 settingsHelper.EncryptKey = "UserSettingsKey_2024";
 
@@ -187,7 +187,7 @@ bool rememberPwd = settingsHelper.GetBool("RememberPassword");
 ### 模块依赖
 ```csharp
 [ModuleDependency] // 无外部依赖，可独立使用
-public sealed class SaveManager : FuModule
+public sealed class SaveModule : FuModule
 ```
 
 ### 生命周期管理
@@ -291,17 +291,17 @@ public override void OnUpdate(float elapseSeconds, float realElapseSeconds)
 
 ```csharp
 // 配置自动保存（默认启用，间隔5分钟）
-saveManager.EnableAutoSave = true;
-saveManager.AutoSaveInterval = 300f; // 5分钟
+saveModule.EnableAutoSave = true;
+saveModule.AutoSaveInterval = 300f; // 5分钟
 
 // 获取有未保存数据的Helper数量
-int dirtyCount = saveManager.GetDirtyHelperCount();
+int dirtyCount = saveModule.GetDirtyHelperCount();
 
 // 强制保存所有有未保存数据的Helper
-saveManager.ForceSaveAllDirty();
+saveModule.ForceSaveAllDirty();
 
 // 检查指定Helper是否有未保存数据
-var helper = saveManager.GetHelper("UserSettings");
+var helper = saveModule.GetHelper("UserSettings");
 if (helper != null && helper.IsDirty)
 {
     Debug.Log("UserSettings 有未保存的数据");

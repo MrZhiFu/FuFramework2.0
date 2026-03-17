@@ -77,7 +77,7 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 步骤执行动作对象
         /// </summary>
-        public IGuideAction GuideAction => ModuleManager.GetModule<GuideManager>().GuideAction;
+        public IGuideAction GuideAction => ModuleManager.GetModule<GuideModule>().GuideAction;
 
         #endregion
 
@@ -118,7 +118,7 @@ namespace FuFramework.Guide.Runtime
             
             // 执行下一个步骤
             if (!string.IsNullOrEmpty(StepInfo.m_NextStepId))
-                ModuleManager.GetModule<GuideManager>().JumpToStep(StepInfo.m_NextStepId);
+                ModuleManager.GetModule<GuideModule>().JumpToStep(StepInfo.m_NextStepId);
         }
 
         /// <summary>

@@ -25,9 +25,9 @@ namespace Hotfix.Config
 
         internal Tables.TbSoundsConfig TbSoundsConfig { private set; get; }
 
-        private ConfigManager m_ConfigComponent;
+        private ConfigModule m_ConfigComponent;
 
-        public void Init(ConfigManager configComponent)
+        public void Init(ConfigModule configComponent)
         {
             m_ConfigComponent = configComponent;
             configComponent.RemoveAllConfigs();

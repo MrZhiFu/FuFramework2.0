@@ -15,7 +15,7 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 事件管理器
             /// </summary>
-            private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+            private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
 
             /// <summary>
             /// 构造一个下载处理器
@@ -39,11 +39,11 @@ namespace FuFramework.Download.Runtime
 
                 // 发送更新数据流事件
                 var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(datas, 0, dataLength);
-                m_EventManager.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
+                m_EventModule.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
 
                 // 发送更新数据大小事件
                 var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(dataLength);
-                m_EventManager.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
+                m_EventModule.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
 
                 return base.ReceiveData(datas, dataLength);
             }

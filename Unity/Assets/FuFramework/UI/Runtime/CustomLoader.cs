@@ -153,12 +153,12 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 资源管理器
         /// </summary>
-        private readonly AssetManager m_AssetManager;
+        private readonly AssetModule m_AssetModule;
         
         public CustomLoader()
         {
-            m_AssetManager = ModuleManager.GetModule<AssetManager>();
-            if (!m_AssetManager)
+            m_AssetModule = ModuleManager.GetModule<AssetModule>();
+            if (!m_AssetModule)
             {
                 FuLogger.LogFatal("[CustomLoader] 资源管理器不存在!");
                 return;
@@ -208,7 +208,7 @@ namespace FuFramework.UI.Runtime
                             if (!Directory.Exists(m_CachePath)) 
                                 Directory.CreateDirectory(m_CachePath);
                             
-                            var webBufferResult = await ModuleManager.GetModule<WebManager>().GetToBytes(url, null);
+                            var webBufferResult = await ModuleManager.GetModule<WebModule>().GetToBytes(url, null);
                             Utility.File.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);
                         }
@@ -235,10 +235,10 @@ namespace FuFramework.UI.Runtime
                     }
                     else
                     {
-                        var assetInfo = m_AssetManager.GetAssetInfo(url);
+                        var assetInfo = m_AssetModule.GetAssetInfo(url);
                         if (assetInfo.IsInvalid == false)
                         {
-                            var assetHandle = await m_AssetManager.LoadAssetAsync<Texture2D>(url);
+                            var assetHandle = await m_AssetModule.LoadAssetAsync<Texture2D>(url);
                             if (assetHandle.IsDone)
                             {
                                 tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());

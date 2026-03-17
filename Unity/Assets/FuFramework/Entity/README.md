@@ -21,7 +21,7 @@ FuFramework Entity 模块是一个功能强大的实体管理系统，旨在统�
 
 ## 核心类说明
 
-### EntityManager
+### EntityModule
 实体管理器，继承自 `FuModule`。
 - **ShowEntity**: 显示（加载）一个实体。
 - **HideEntity**: 隐藏（回收）一个实体。
@@ -72,20 +72,20 @@ public class MyHeroLogic : EntityLogic
 ### 2. 显示实体
 ```csharp
 // 获取实体管理器
-var entityMgr = ModuleManager.GetModule<EntityManager>();
+var entityModule = ModuleManager.GetModule<EntityModule>();
 
 // 显示实体
 // 参数: 实体ID(需唯一), 资源路径, 实体组名称, 优先级, 自定义数据
-entityMgr.ShowEntity(1001, "Assets/Game/Heroes/HeroA.prefab", "PlayerGroup", 0, "MyUserData");
+entityModule.ShowEntity(1001, "Assets/Game/Heroes/HeroA.prefab", "PlayerGroup", 0, "MyUserData");
 ```
 
 ### 3. 隐藏实体
 ```csharp
 // 通过实体ID隐藏
-entityMgr.HideEntity(1001);
+entityModule.HideEntity(1001);
 
 // 或者在 EntityLogic 内部调用
-// entityMgr.HideEntity(this.Entity.Id);
+// entityModule.HideEntity(this.Entity.Id);
 ```
 
 ### 4. 附加子实体
@@ -93,13 +93,13 @@ entityMgr.HideEntity(1001);
 ```csharp
 // 假设 1001 是角色，2001 是武器
 // 参数: 子实体ID, 父实体ID, 父节点路径(相对于父实体), 自定义数据
-entityMgr.AttachEntity(2001, 1001, "Bone/RightHand", null);
+entityModule.AttachEntity(2001, 1001, "Bone/RightHand", null);
 ```
 
 ## 配置说明
 实体组的配置位于 `EntitySetting` (ScriptableObject) 中，需在编辑器中预先配置好所有用到的实体组（如 `PlayerGroup`, `EffectGroup` 等）。
 
 ## 编辑器扩展
-选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `EntityManager` 组件中可以查看：
+选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `EntityModule` 组件中可以查看：
 - **统计信息**：当前实体总数、实体组数量。
 - **分组详情**：每个实体组内当前的实体数量。

@@ -16,7 +16,7 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 计时器管理器
         /// </summary>
-        private readonly TimerManager m_TimerManager = ModuleManager.GetModule<TimerManager>();
+        private readonly TimerModule m_TimerModule = ModuleManager.GetModule<TimerModule>();
 
         /// <summary>
         /// 记录所有计时器任务的列表
@@ -40,7 +40,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         public void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
-            var timerId = m_TimerManager.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            var timerId = m_TimerModule.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -55,7 +55,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         public void StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            var timerId = m_TimerManager.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            var timerId = m_TimerModule.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -70,7 +70,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-            var timerId = m_TimerManager.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            var timerId = m_TimerModule.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -82,7 +82,7 @@ namespace FuFramework.Timer.Runtime
         public void PauseTimer(int timerId)
         {
             if (!m_TimerList.Contains(timerId)) return;
-            m_TimerManager.PauseTimer(timerId);
+            m_TimerModule.PauseTimer(timerId);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace FuFramework.Timer.Runtime
         public void ResumeTimer(int timerId)
         {
             if (!m_TimerList.Contains(timerId)) return;
-            m_TimerManager.ResumeTimer(timerId);
+            m_TimerModule.ResumeTimer(timerId);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace FuFramework.Timer.Runtime
         public void StopTimer(int timerId)
         {
             if (!m_TimerList.Contains(timerId)) return;
-            m_TimerManager.StopTimer(timerId);
+            m_TimerModule.StopTimer(timerId);
             m_TimerList.Remove(timerId);
         }
 
@@ -113,7 +113,7 @@ namespace FuFramework.Timer.Runtime
         {
             foreach (var timerId in m_TimerList)
             {
-                m_TimerManager.PauseTimer(timerId);
+                m_TimerModule.PauseTimer(timerId);
             }
         }
 
@@ -124,7 +124,7 @@ namespace FuFramework.Timer.Runtime
         {
             foreach (var timerId in m_TimerList)
             {
-                m_TimerManager.ResumeTimer(timerId);
+                m_TimerModule.ResumeTimer(timerId);
             }
         }
 
@@ -146,14 +146,14 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerExist(int timerId) => m_TimerManager.IsTimerExist(timerId);
+        public bool IsTimerExist(int timerId) => m_TimerModule.IsTimerExist(timerId);
 
         /// <summary>
         /// 检查计时器是否处于暂停状态
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerPaused(int timerId) => m_TimerManager.IsTimerPaused(timerId);
+        public bool IsTimerPaused(int timerId) => m_TimerModule.IsTimerPaused(timerId);
 
 
         /// <summary>

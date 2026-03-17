@@ -12,7 +12,7 @@ FuFramework Download 模块是一个功能强大的文件下载管理系统。�
 
 ## 核心类说明
 
-### DownloadManager
+### DownloadModule
 下载管理器，继承自 `FuModule`。
 - **AddDownloadTask**: 添加一个下载任务。
 - **RemoveDownloadTask**: 移除一个下载任务。
@@ -21,7 +21,7 @@ FuFramework Download 模块是一个功能强大的文件下载管理系统。�
 - **CurrentSpeed**: 获取当前实时下载速度（字节/秒）。
 
 ### 事件系统
-模块通过 `EventManager` 抛出以下事件：
+模块通过 `EventModule` 抛出以下事件：
 - `DownloadStartEventArgs`: 任务开始。
 - `DownloadUpdateEventArgs`: 进度更新（包含已下载大小、总大小、当前速度）。
 - `DownloadSuccessEventArgs`: 任务成功。
@@ -32,7 +32,7 @@ FuFramework Download 模块是一个功能强大的文件下载管理系统。�
 ### 1. 添加下载任务
 ```csharp
 // 获取下载管理器
-var downloadMgr = ModuleManager.GetModule<DownloadManager>();
+var downloadModule = ModuleManager.GetModule<DownloadModule>();
 
 // 定义下载地址和本地保存路径
 string url = "https://example.com/file.zip";
@@ -40,7 +40,7 @@ string savePath = Path.Combine(Application.persistentDataPath, "file.zip");
 
 // 添加任务 (返回任务序列ID)
 // 参数: 下载地址, 本地路径, 优先级(默认0), 用户自定义数据(可选)
-int serialId = downloadMgr.AddDownloadTask(url, savePath, 0, "MyUserData");
+int serialId = downloadModule.AddDownloadTask(url, savePath, 0, "MyUserData");
 ```
 
 ### 2. 监听下载事件
@@ -54,11 +54,11 @@ public class DownloadController : MonoBehaviour
 {
     private void Start()
     {
-        var eventMgr = ModuleManager.GetModule<EventManager>();
-        eventMgr.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
-        eventMgr.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
-        eventMgr.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
-        eventMgr.Subscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
+        var eventModule = ModuleManager.GetModule<EventModule>();
+        eventModule.Subscribe(DownloadStartEventArgs.EventId, OnDownloadStart);
+        eventModule.Subscribe(DownloadUpdateEventArgs.EventId, OnDownloadUpdate);
+        eventModule.Subscribe(DownloadSuccessEventArgs.EventId, OnDownloadSuccess);
+        eventModule.Subscribe(DownloadFailureEventArgs.EventId, OnDownloadFailure);
     }
 
     private void OnDownloadUpdate(object sender, GameEventArgs e)
@@ -82,22 +82,22 @@ public class DownloadController : MonoBehaviour
 ### 3. 控制下载
 ```csharp
 // 暂停所有下载
-downloadMgr.Paused = true;
+downloadModule.Paused = true;
 
 // 恢复下载
-downloadMgr.Paused = false;
+downloadModule.Paused = false;
 
 // 取消指定任务
-downloadMgr.RemoveDownloadTask(serialId);
+downloadModule.RemoveDownloadTask(serialId);
 ```
 
 ## 配置说明
-在 `DownloadManager` 初始化时（或运行时）可以调整以下参数：
+在 `DownloadModule` 初始化时（或运行时）可以调整以下参数：
 - **Timeout**: 下载超时时间（默认 30秒）。
 - **FlushSize**: 缓冲区写入磁盘的阈值（默认 1MB）。
 
 ## 编辑器扩展
-选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `DownloadManager` 组件中可以查看：
+选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `DownloadModule` 组件中可以查看：
 - **实时状态**：总代理数、工作代理数、等待任务数。
 - **下载速度**：当前全局下载速度。
 - **任务列表**：所有正在进行的任务详情（ID、优先级、状态）。

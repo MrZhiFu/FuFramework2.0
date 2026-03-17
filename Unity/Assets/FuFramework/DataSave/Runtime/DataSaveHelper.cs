@@ -86,7 +86,7 @@ namespace FuFramework.SaveData.Runtime
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[[DataSaveHelper] 文件名不能为空");
 
             FileName = fileName;
-            var path = Path.Combine(Application.persistentDataPath, DataSaveManager.DirRoot, fileName);
+            var path = Path.Combine(Application.persistentDataPath, DataSaveModule.DirRoot, fileName);
             FilePath = Utility.Path.GetRegularPath(path);
 
             Data = new Data();

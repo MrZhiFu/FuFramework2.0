@@ -1,5 +1,4 @@
 ﻿using UnityEditor;
-using FuFramework.Core.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace

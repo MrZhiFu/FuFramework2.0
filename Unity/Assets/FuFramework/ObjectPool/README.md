@@ -16,12 +16,12 @@ ObjectPool 模块是 FuFramework 的对象池管理系统，专门用于管理 U
 
 ## 核心类说明
 
-### ObjectPoolManager
+### ObjectPoolModule
 
 对象池管理器，负责管理所有对象池和对象生命周期。
 
 ```csharp
-public sealed partial class ObjectPoolManager : FuModule
+public sealed partial class ObjectPoolModule : FuModule
 ```
 
 **主要功能：**
@@ -77,8 +77,8 @@ public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 ### 依赖关系
 
 ```
-ObjectPoolManager → ObjectPoolBase → ObjectBase
-ObjectPoolManager → ReferencePool (IReference接口)
+ObjectPoolModule → ObjectPoolBase → ObjectBase
+ObjectPoolModule → ReferencePool (IReference接口)
 ```
 
 ### 对象生命周期
@@ -169,10 +169,10 @@ public class BulletObject : ObjectBase
 
 ```csharp
 // 获取对象池管理器
-var objectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
+var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
 
 // 创建对象池（单实例池）
-var bulletPool = objectPoolManager.CreateObjectPool<BulletObject>("BulletPool", false);
+var bulletPool = objectPoolModule.CreateObjectPool<BulletObject>("BulletPool", false);
 
 // 配置对象池参数
 bulletPool.Capacity = 100;           // 最大容量100
@@ -210,7 +210,7 @@ using (var tempBullet = bulletPool.Spawn("Bullet_002"))
 
 ```csharp
 // 创建多实例池（允许同一个对象被多次获取）
-var effectPool = objectPoolManager.CreateObjectPool<EffectObject>("EffectPool", true);
+var effectPool = objectPoolModule.CreateObjectPool<EffectObject>("EffectPool", true);
 
 // 配置多实例池参数
 effectPool.Capacity = 50;
@@ -273,16 +273,16 @@ bulletPool.SetReleaseObjectFilterCallback(customFilter);
 
 ```csharp
 // 检查对象池是否存在
-bool hasPool = objectPoolManager.HasObjectPool<BulletObject>("BulletPool");
+bool hasPool = objectPoolModule.HasObjectPool<BulletObject>("BulletPool");
 
 // 获取对象池
-var pool = objectPoolManager.GetObjectPool<BulletObject>("BulletPool");
+var pool = objectPoolModule.GetObjectPool<BulletObject>("BulletPool");
 
 // 获取所有对象池
-var allPools = objectPoolManager.GetAllObjectPools();
+var allPools = objectPoolModule.GetAllObjectPools();
 
 // 获取特定条件的对象池
-var highPriorityPools = objectPoolManager.GetObjectPools(pool => pool.Priority > 5);
+var highPriorityPools = objectPoolModule.GetObjectPools(pool => pool.Priority > 5);
 ```
 
 #### 手动释放控制
@@ -295,17 +295,17 @@ bulletPool.Release();
 bulletPool.Release(10); // 释放10个对象
 
 // 释放所有对象池中的可释放对象
-objectPoolManager.ReleaseAllUnused();
+objectPoolModule.ReleaseAllUnused();
 
 // 强制释放所有对象（包括正在使用的）
-objectPoolManager.ReleaseAll();
+objectPoolModule.ReleaseAll();
 ```
 
 #### 统计信息获取
 
 ```csharp
 // 获取对象池统计信息
-var poolCount = objectPoolManager.Count;
+var poolCount = objectPoolModule.Count;
 var bulletCount = bulletPool.Count;
 var canReleaseCount = bulletPool.CanReleaseCount;
 
@@ -366,8 +366,8 @@ public class EntityManager
     
     public void Initialize()
     {
-        var objectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
-        m_EntityPool = objectPoolManager.CreateObjectPool<EntityObject>("EntityPool", false);
+        var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+        m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>("EntityPool", false);
         m_EntityPool.Capacity = 200;
         m_EntityPool.ExpireTime = 60f;
     }
@@ -431,22 +431,22 @@ public class HierarchicalObjectPool
     
     public void Initialize()
     {
-        var objectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
+        var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
         
         // 高优先级池（重要对象）
-        var highPriorityPool = objectPoolManager.CreateObjectPool<BulletObject>("HighPriorityBullets", false);
+        var highPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("HighPriorityBullets", false);
         highPriorityPool.Priority = 10;
         highPriorityPool.ExpireTime = 300f; // 5分钟
         m_PriorityPools[10] = highPriorityPool;
         
         // 中优先级池（普通对象）
-        var mediumPriorityPool = objectPoolManager.CreateObjectPool<BulletObject>("MediumPriorityBullets", false);
+        var mediumPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("MediumPriorityBullets", false);
         mediumPriorityPool.Priority = 5;
         mediumPriorityPool.ExpireTime = 60f; // 1分钟
         m_PriorityPools[5] = mediumPriorityPool;
         
         // 低优先级池（临时对象）
-        var lowPriorityPool = objectPoolManager.CreateObjectPool<BulletObject>("LowPriorityBullets", true);
+        var lowPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("LowPriorityBullets", true);
         lowPriorityPool.Priority = 1;
         lowPriorityPool.ExpireTime = 10f; // 10秒
         m_PriorityPools[1] = lowPriorityPool;
@@ -471,16 +471,16 @@ public class HierarchicalObjectPool
 // 对象池监控器
 public class ObjectPoolMonitor
 {
-    private ObjectPoolManager m_ObjectPoolManager;
+    private ObjectPoolModule m_ObjectPoolModule;
     
     public void Initialize()
     {
-        m_ObjectPoolManager = ModuleManager.GetModule<ObjectPoolManager>();
+        m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
     }
     
     public void LogMemoryUsage()
     {
-        var allPools = m_ObjectPoolManager.GetAllObjectPools();
+        var allPools = m_ObjectPoolModule.GetAllObjectPools();
         
         Debug.Log("=== 对象池内存使用报告 ===");
         foreach (var pool in allPools)
@@ -504,7 +504,7 @@ public class ObjectPoolMonitor
         Debug.LogWarning("系统低内存，强制释放对象池资源");
         
         // 按优先级从低到高释放对象
-        var pools = m_ObjectPoolManager.GetAllObjectPools(true); // 按优先级排序
+        var pools = m_ObjectPoolModule.GetAllObjectPools(true); // 按优先级排序
         
         foreach (var pool in pools)
         {
@@ -643,7 +643,7 @@ public class BatchObjectOperator
 
 ## API 参考
 
-### ObjectPoolManager 主要方法
+### ObjectPoolModule 主要方法
 
 | 方法 | 说明 |
 |------|------|

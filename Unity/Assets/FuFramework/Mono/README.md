@@ -14,7 +14,7 @@ FuFramework Mono 模块是游戏框架的 MonoBehaviour 生命周期事件管理
 
 ## 核心类说明
 
-### MonoManager
+### MonoModule
 MonoBehaviour 生命周期管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理所有生命周期事件的监听器列表
@@ -40,11 +40,11 @@ MonoBehaviour 生命周期管理器，继承自 `FuModule`。
 
 ### 依赖关系
 - **FuFramework.Core**：基础框架模块（FuModule、FuGuard、Utility）
-- **FuFramework.Event**：事件管理模块（EventManager、GameEventArgs）
+- **FuFramework.Event**：事件管理模块（EventModule、GameEventArgs）
 - **ReferencePool**：对象池管理系统
 
 ### 模块优先级
-MonoManager 的优先级为 `ModulePriority.Game`，确保在游戏逻辑模块中正确初始化。
+MonoModule 的优先级为 `ModulePriority.Game`，确保在游戏逻辑模块中正确初始化。
 
 ### 双缓冲队列机制
 模块采用双缓冲队列设计，确保在多线程环境下安全执行回调函数：
@@ -64,19 +64,19 @@ public class LifecycleExample : MonoBehaviour
     private void Start()
     {
         // 获取 Mono 管理器
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
         // 添加 Update 监听器
-        monoManager.AddUpdateListener(OnUpdate);
+        monoModule.AddUpdateListener(OnUpdate);
         
         // 添加 FixedUpdate 监听器
-        monoManager.AddFixedUpdateListener(OnFixedUpdate);
+        monoModule.AddFixedUpdateListener(OnFixedUpdate);
         
         // 添加 LateUpdate 监听器
-        monoManager.AddLateUpdateListener(OnLateUpdate);
+        monoModule.AddLateUpdateListener(OnLateUpdate);
         
         // 添加 Destroy 监听器
-        monoManager.AddDestroyListener(OnDestroyed);
+        monoModule.AddDestroyListener(OnDestroyed);
     }
     
     private void OnUpdate()
@@ -110,11 +110,11 @@ public class LifecycleExample : MonoBehaviour
     private void OnDestroy()
     {
         // 移除监听器（可选，管理器会自动清理）
-        var monoManager = GlobalModule.MonoModule;
-        monoManager.RemoveUpdateListener(OnUpdate);
-        monoManager.RemoveFixedUpdateListener(OnFixedUpdate);
-        monoManager.RemoveLateUpdateListener(OnLateUpdate);
-        monoManager.RemoveDestroyListener(OnDestroyed);
+        var monoModule = GlobalModule.MonoModule;
+        monoModule.RemoveUpdateListener(OnUpdate);
+        monoModule.RemoveFixedUpdateListener(OnFixedUpdate);
+        monoModule.RemoveLateUpdateListener(OnLateUpdate);
+        monoModule.RemoveDestroyListener(OnDestroyed);
     }
 }
 ```
@@ -128,13 +128,13 @@ public class ApplicationEventExample : MonoBehaviour
 {
     private void Start()
     {
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
         // 添加应用程序暂停/恢复监听器
-        monoManager.AddOnApplicationPauseListener(OnApplicationPauseChanged);
+        monoModule.AddOnApplicationPauseListener(OnApplicationPauseChanged);
         
         // 添加应用程序焦点变化监听器
-        monoManager.AddOnApplicationFocusListener(OnApplicationFocusChanged);
+        monoModule.AddOnApplicationFocusListener(OnApplicationFocusChanged);
     }
     
     private void OnApplicationPauseChanged(bool isPaused)
@@ -216,9 +216,9 @@ public class ApplicationEventExample : MonoBehaviour
     private void OnDestroy()
     {
         // 移除监听器
-        var monoManager = GlobalModule.MonoModule;
-        monoManager.RemoveOnApplicationPauseListener(OnApplicationPauseChanged);
-        monoManager.RemoveOnApplicationFocusListener(OnApplicationFocusChanged);
+        var monoModule = GlobalModule.MonoModule;
+        monoModule.RemoveOnApplicationPauseListener(OnApplicationPauseChanged);
+        monoModule.RemoveOnApplicationFocusListener(OnApplicationFocusChanged);
     }
 }
 ```
@@ -231,19 +231,19 @@ using UnityEngine;
 
 public class EventSystemIntegration : MonoBehaviour
 {
-    private EventManager eventManager;
+    private EventModule eventModule;
     
     private void Start()
     {
-        eventManager = GlobalModule.EventModule;
+        eventModule = GlobalModule.EventModule;
         
         // 订阅应用程序焦点变化事件
-        eventManager.Subscribe<OnApplicationFocusChangedEventArgs>(
+        eventModule.Subscribe<OnApplicationFocusChangedEventArgs>(
             OnApplicationFocusChangedEventArgs.EventId, 
             OnAppFocusChanged);
         
         // 订阅应用程序暂停变化事件
-        eventManager.Subscribe<OnApplicationPauseChangedEventArgs>(
+        eventModule.Subscribe<OnApplicationPauseChangedEventArgs>(
             OnApplicationPauseChangedEventArgs.EventId, 
             OnAppPauseChanged);
     }
@@ -311,13 +311,13 @@ public class EventSystemIntegration : MonoBehaviour
     private void OnDestroy()
     {
         // 取消订阅事件
-        if (eventManager != null)
+        if (eventModule != null)
         {
-            eventManager.Unsubscribe<OnApplicationFocusChangedEventArgs>(
+            eventModule.Unsubscribe<OnApplicationFocusChangedEventArgs>(
                 OnApplicationFocusChangedEventArgs.EventId, 
                 OnAppFocusChanged);
             
-            eventManager.Unsubscribe<OnApplicationPauseChangedEventArgs>(
+            eventModule.Unsubscribe<OnApplicationPauseChangedEventArgs>(
                 OnApplicationPauseChangedEventArgs.EventId, 
                 OnAppPauseChanged);
         }
@@ -345,12 +345,12 @@ public class GameLogicManager
     {
         if (isInitialized) return;
         
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
         // 注册生命周期事件监听器
-        monoManager.AddUpdateListener(OnUpdate);
-        monoManager.AddFixedUpdateListener(OnFixedUpdate);
-        monoManager.AddDestroyListener(OnDestroy);
+        monoModule.AddUpdateListener(OnUpdate);
+        monoModule.AddFixedUpdateListener(OnFixedUpdate);
+        monoModule.AddDestroyListener(OnDestroy);
         
         isInitialized = true;
         Console.WriteLine("GameLogicManager 初始化完成，已注册生命周期监听器");
@@ -398,10 +398,10 @@ public class GameLogicManager
     private void Cleanup()
     {
         // 资源清理逻辑
-        var monoManager = GlobalModule.MonoModule;
-        monoManager.RemoveUpdateListener(OnUpdate);
-        monoManager.RemoveFixedUpdateListener(OnFixedUpdate);
-        monoManager.RemoveDestroyListener(OnDestroy);
+        var monoModule = GlobalModule.MonoModule;
+        monoModule.RemoveUpdateListener(OnUpdate);
+        monoModule.RemoveFixedUpdateListener(OnFixedUpdate);
+        monoModule.RemoveDestroyListener(OnDestroy);
         
         isInitialized = false;
     }
@@ -451,11 +451,11 @@ public class PerformanceMonitor
     
     public PerformanceMonitor()
     {
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
-        monoManager.AddUpdateListener(OnUpdateWithTiming);
-        monoManager.AddFixedUpdateListener(OnFixedUpdateWithTiming);
-        monoManager.AddLateUpdateListener(OnLateUpdate);
+        monoModule.AddUpdateListener(OnUpdateWithTiming);
+        monoModule.AddFixedUpdateListener(OnFixedUpdateWithTiming);
+        monoModule.AddLateUpdateListener(OnLateUpdate);
     }
     
     private void OnUpdateWithTiming()
@@ -539,13 +539,13 @@ public class ConditionalEventListener : MonoBehaviour
     
     private void Start()
     {
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
         // 添加条件性 Update 监听
-        monoManager.AddUpdateListener(ConditionalUpdate);
+        monoModule.AddUpdateListener(ConditionalUpdate);
         
         // 添加条件性 FixedUpdate 监听
-        monoManager.AddFixedUpdateListener(ConditionalFixedUpdate);
+        monoModule.AddFixedUpdateListener(ConditionalFixedUpdate);
     }
     
     private void ConditionalUpdate()
@@ -605,10 +605,10 @@ public class ThreadSafeOperations : MonoBehaviour
     
     private void Start()
     {
-        var monoManager = GlobalModule.MonoModule;
+        var monoModule = GlobalModule.MonoModule;
         
         // 在主线程中注册 Update 监听
-        monoManager.AddUpdateListener(ThreadSafeUpdate);
+        monoModule.AddUpdateListener(ThreadSafeUpdate);
         
         // 启动后台任务
         StartBackgroundTask();

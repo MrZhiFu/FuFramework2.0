@@ -64,7 +64,7 @@ namespace FuFramework.Core.Editor
         private string m_targetNamespace = "";
 
 
-        [MenuItem("FuFramework/代码防裁剪工具", false, 2001)]
+        [MenuItem("FuFramework/代码防裁剪工具", false, 1200)]
         public static void ShowWindow()
         {
             var window = GetWindow<CroppingWindow>("Cropping");

@@ -80,7 +80,7 @@ namespace FuFramework.Model.Runtime
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
         public void Broadcast(object sender, string eventId) => EventRegister?.Broadcast(sender, eventId);
-        
+
         /// <summary>
         /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>

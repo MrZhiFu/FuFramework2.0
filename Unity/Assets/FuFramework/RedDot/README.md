@@ -16,7 +16,7 @@ RedDot 模块是 FuFramework 中的红点管理系统，专门用于管理游戏
 
 ### 核心类说明
 
-#### 1. RedDotManager
+#### 1. RedDotModule
 红点系统管理器，继承自 FuModule，负责整个红点系统的生命周期管理。
 
 **主要职责：**
@@ -38,7 +38,7 @@ RedDot 模块是 FuFramework 中的红点管理系统，专门用于管理游戏
 ### 技术架构
 
 ```
-RedDotManager (管理器)
+RedDotModule (管理器)
     ↓
 RedDotNode (节点树)
     ├── 父节点
@@ -80,16 +80,16 @@ public class RedDotExample : MonoBehaviour
     private void Start()
     {
         // 注册红点变化监听
-        RedDotManager.Instance.Register("mail_system", OnMailCountChanged);
+        RedDotModule.Instance.Register("mail_system", OnMailCountChanged);
         
         // 设置红点数量
-        RedDotManager.Instance.SetCount("mail_system", 5);
+        RedDotModule.Instance.SetCount("mail_system", 5);
         
         // 递增红点数量
-        RedDotManager.Instance.IncrementCount("mail_system", 2);
+        RedDotModule.Instance.IncrementCount("mail_system", 2);
         
         // 重置红点数量
-        RedDotManager.Instance.ResetCount("mail_system");
+        RedDotModule.Instance.ResetCount("mail_system");
     }
     
     private void OnMailCountChanged(int count)
@@ -102,7 +102,7 @@ public class RedDotExample : MonoBehaviour
     private void OnDestroy()
     {
         // 注销监听
-        RedDotManager.Instance.Unregister("mail_system", OnMailCountChanged);
+        RedDotModule.Instance.Unregister("mail_system", OnMailCountChanged);
     }
 }
 ```
@@ -153,37 +153,37 @@ public class MailSystemManager : MonoBehaviour
     private void OnEnable()
     {
         // 注册所有邮件相关红点监听
-        RedDotManager.Instance.Register(RedDotKeys.MailSystem, OnSystemMailCountChanged);
-        RedDotManager.Instance.Register(RedDotKeys.MailFriend, OnFriendMailCountChanged);
-        RedDotManager.Instance.Register(RedDotKeys.MailGuild, OnGuildMailCountChanged);
-        RedDotManager.Instance.Register(RedDotKeys.Mail, OnTotalMailCountChanged);
+        RedDotModule.Instance.Register(RedDotKeys.MailSystem, OnSystemMailCountChanged);
+        RedDotModule.Instance.Register(RedDotKeys.MailFriend, OnFriendMailCountChanged);
+        RedDotModule.Instance.Register(RedDotKeys.MailGuild, OnGuildMailCountChanged);
+        RedDotModule.Instance.Register(RedDotKeys.Mail, OnTotalMailCountChanged);
     }
     
     private void OnDisable()
     {
         // 注销所有监听
-        RedDotManager.Instance.Unregister(RedDotKeys.MailSystem, OnSystemMailCountChanged);
-        RedDotManager.Instance.Unregister(RedDotKeys.MailFriend, OnFriendMailCountChanged);
-        RedDotManager.Instance.Unregister(RedDotKeys.MailGuild, OnGuildMailCountChanged);
-        RedDotManager.Instance.Unregister(RedDotKeys.Mail, OnTotalMailCountChanged);
+        RedDotModule.Instance.Unregister(RedDotKeys.MailSystem, OnSystemMailCountChanged);
+        RedDotModule.Instance.Unregister(RedDotKeys.MailFriend, OnFriendMailCountChanged);
+        RedDotModule.Instance.Unregister(RedDotKeys.MailGuild, OnGuildMailCountChanged);
+        RedDotModule.Instance.Unregister(RedDotKeys.Mail, OnTotalMailCountChanged);
     }
     
     // 收到新系统邮件
     public void OnReceiveSystemMail()
     {
-        RedDotManager.Instance.IncrementCount(RedDotKeys.MailSystem);
+        RedDotModule.Instance.IncrementCount(RedDotKeys.MailSystem);
     }
     
     // 阅读所有系统邮件
     public void OnReadAllSystemMails()
     {
-        RedDotManager.Instance.ResetCount(RedDotKeys.MailSystem);
+        RedDotModule.Instance.ResetCount(RedDotKeys.MailSystem);
     }
     
     // 批量重置所有邮件红点
     public void ResetAllMailCounts()
     {
-        RedDotManager.Instance.ResetCounts(
+        RedDotModule.Instance.ResetCounts(
             RedDotKeys.MailSystem, 
             RedDotKeys.MailFriend, 
             RedDotKeys.MailGuild
@@ -227,9 +227,9 @@ public class TaskSystemManager : MonoBehaviour
         var achievementTasks = GetAchievementTasks();
         
         // 设置红点数量
-        RedDotManager.Instance.SetCount(RedDotKeys.TaskDaily, dailyTasks.Count);
-        RedDotManager.Instance.SetCount(RedDotKeys.TaskWeekly, weeklyTasks.Count);
-        RedDotManager.Instance.SetCount(RedDotKeys.TaskAchievement, achievementTasks.Count);
+        RedDotModule.Instance.SetCount(RedDotKeys.TaskDaily, dailyTasks.Count);
+        RedDotModule.Instance.SetCount(RedDotKeys.TaskWeekly, weeklyTasks.Count);
+        RedDotModule.Instance.SetCount(RedDotKeys.TaskAchievement, achievementTasks.Count);
     }
     
     // 完成任务
@@ -238,13 +238,13 @@ public class TaskSystemManager : MonoBehaviour
         switch (taskType)
         {
             case "daily":
-                RedDotManager.Instance.DecrementCount(RedDotKeys.TaskDaily);
+                RedDotModule.Instance.DecrementCount(RedDotKeys.TaskDaily);
                 break;
             case "weekly":
-                RedDotManager.Instance.DecrementCount(RedDotKeys.TaskWeekly);
+                RedDotModule.Instance.DecrementCount(RedDotKeys.TaskWeekly);
                 break;
             case "achievement":
-                RedDotManager.Instance.DecrementCount(RedDotKeys.TaskAchievement);
+                RedDotModule.Instance.DecrementCount(RedDotKeys.TaskAchievement);
                 break;
         }
     }
@@ -253,7 +253,7 @@ public class TaskSystemManager : MonoBehaviour
     public void RefreshTasks()
     {
         var newDailyTasks = GetDailyTasks();
-        RedDotManager.Instance.SetCount(RedDotKeys.TaskDaily, newDailyTasks.Count);
+        RedDotModule.Instance.SetCount(RedDotKeys.TaskDaily, newDailyTasks.Count);
     }
 }
 ```
@@ -270,7 +270,7 @@ public class RedDotUIComponent : MonoBehaviour
     private void Start()
     {
         // 注册红点监听
-        RedDotManager.Instance.Register(m_RedDotKey, OnRedDotCountChanged, true);
+        RedDotModule.Instance.Register(m_RedDotKey, OnRedDotCountChanged, true);
     }
     
     private void OnRedDotCountChanged(int count)
@@ -289,16 +289,16 @@ public class RedDotUIComponent : MonoBehaviour
     private void OnDestroy()
     {
         // 注销监听
-        if (RedDotManager.HasInstance)
+        if (RedDotModule.HasInstance)
         {
-            RedDotManager.Instance.Unregister(m_RedDotKey, OnRedDotCountChanged);
+            RedDotModule.Instance.Unregister(m_RedDotKey, OnRedDotCountChanged);
         }
     }
     
     // 点击红点区域（如阅读所有邮件）
     public void OnClickRedDotArea()
     {
-        RedDotManager.Instance.ResetCount(m_RedDotKey);
+        RedDotModule.Instance.ResetCount(m_RedDotKey);
     }
 }
 ```
@@ -310,10 +310,10 @@ public class RedDotUIComponent : MonoBehaviour
 ```csharp
 public class DynamicRedDotManager : MonoBehaviour
 {
-    // 动态创建红点节点（需要扩展 RedDotManager）
+    // 动态创建红点节点（需要扩展 RedDotModule）
     public void CreateDynamicNode(string parentKey, string newNodeKey)
     {
-        var parentNode = RedDotManager.Instance.GetNode(parentKey);
+        var parentNode = RedDotModule.Instance.GetNode(parentKey);
         if (parentNode != null)
         {
             // 动态创建节点逻辑（需要扩展现有系统）
@@ -346,11 +346,11 @@ public class ConditionalRedDotManager : MonoBehaviour
         
         if (shouldShowRedDot)
         {
-            RedDotManager.Instance.SetCount(m_RedDotKey, 1);
+            RedDotModule.Instance.SetCount(m_RedDotKey, 1);
         }
         else
         {
-            RedDotManager.Instance.ResetCount(m_RedDotKey);
+            RedDotModule.Instance.ResetCount(m_RedDotKey);
         }
     }
     
@@ -386,7 +386,7 @@ public class RedDotGroupManager : MonoBehaviour
     {
         foreach (var key in m_MailGroup)
         {
-            RedDotManager.Instance.ResetCount(key);
+            RedDotModule.Instance.ResetCount(key);
         }
     }
     
@@ -396,7 +396,7 @@ public class RedDotGroupManager : MonoBehaviour
         int total = 0;
         foreach (var key in groupKeys)
         {
-            total += RedDotManager.Instance.GetCount(key);
+            total += RedDotModule.Instance.GetCount(key);
         }
         return total;
     }
@@ -417,7 +417,7 @@ public class OptimizedRedDotUsage : MonoBehaviour
     {
         foreach (var key in keys)
         {
-            RedDotManager.Instance.Register(key, callback);
+            RedDotModule.Instance.Register(key, callback);
             m_RegisteredCallbacks[key] = callback;
         }
     }
@@ -429,7 +429,7 @@ public class OptimizedRedDotUsage : MonoBehaviour
         {
             if (m_RegisteredCallbacks.TryGetValue(key, out var callback))
             {
-                RedDotManager.Instance.Unregister(key, callback);
+                RedDotModule.Instance.Unregister(key, callback);
                 m_RegisteredCallbacks.Remove(key);
             }
         }
@@ -440,7 +440,7 @@ public class OptimizedRedDotUsage : MonoBehaviour
         // 清理所有注册的监听
         foreach (var kvp in m_RegisteredCallbacks)
         {
-            RedDotManager.Instance.Unregister(kvp.Key, kvp.Value);
+            RedDotModule.Instance.Unregister(kvp.Key, kvp.Value);
         }
         m_RegisteredCallbacks.Clear();
     }
@@ -480,7 +480,7 @@ public class ThrottledRedDotUpdater : MonoBehaviour
     {
         foreach (var kvp in m_PendingUpdates)
         {
-            RedDotManager.Instance.SetCount(kvp.Key, kvp.Value);
+            RedDotModule.Instance.SetCount(kvp.Key, kvp.Value);
         }
         
         m_PendingUpdates.Clear();
@@ -512,13 +512,13 @@ public class ThrottledRedDotUpdater : MonoBehaviour
 
 ## API 参考
 
-### RedDotManager 类
+### RedDotModule 类
 
 #### 静态属性
 
 ##### Instance
 ```csharp
-public static RedDotManager Instance { get; }
+public static RedDotModule Instance { get; }
 ```
 **功能**：获取红点管理器单例实例
 
@@ -537,7 +537,7 @@ public void Register(string key, Action<int> onChange, bool immediateNotify = tr
 
 **示例**：
 ```csharp
-RedDotManager.Instance.Register("mail_system", OnMailCountChanged);
+RedDotModule.Instance.Register("mail_system", OnMailCountChanged);
 ```
 
 ##### Unregister(string key, Action<int> onChange)
@@ -552,7 +552,7 @@ public void Unregister(string key, Action<int> onChange)
 
 **示例**：
 ```csharp
-RedDotManager.Instance.Unregister("mail_system", OnMailCountChanged);
+RedDotModule.Instance.Unregister("mail_system", OnMailCountChanged);
 ```
 
 ##### SetCount(string key, int count)
@@ -567,7 +567,7 @@ public void SetCount(string key, int count)
 
 **示例**：
 ```csharp
-RedDotManager.Instance.SetCount("mail_system", 5);
+RedDotModule.Instance.SetCount("mail_system", 5);
 ```
 
 ##### GetCount(string key)
@@ -584,7 +584,7 @@ public int GetCount(string key)
 
 **示例**：
 ```csharp
-int count = RedDotManager.Instance.GetCount("mail_system");
+int count = RedDotModule.Instance.GetCount("mail_system");
 ```
 
 ## 常见问题解答

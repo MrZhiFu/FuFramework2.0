@@ -39,7 +39,7 @@ ReferencePool 模块是 FuFramework 中的引用池管理系统，专门用于�
 - `AcquireReferenceCount`：已获取的引用总数
 - `ReleaseReferenceCount`：已释放的引用总数
 
-#### 4. ReferencePoolManager 管理器
+#### 4. ReferencePoolModule 管理器
 引用池管理器，继承自 FuModule，负责模块的生命周期管理。
 
 **主要功能：**
@@ -49,7 +49,7 @@ ReferencePool 模块是 FuFramework 中的引用池管理系统，专门用于�
 ### 技术架构
 
 ```
-ReferencePoolManager (管理器)
+ReferencePoolModule (管理器)
     ↓
 ReferencePool (静态池)
     ↓

@@ -18,8 +18,8 @@ Web 模块是 FuFramework 中的网络请求管理系统，提供基于 UnityWeb
 
 ### 核心类说明
 
-#### 1. WebManager (网络请求管理器)
-位于 `Runtime/Web/WebManager.cs`，是 Web 模块的核心管理类，继承自 `FuModule`。
+#### 1. WebModule (网络请求管理器)
+位于 `Runtime/Web/WebModule.cs`，是 Web 模块的核心管理类，继承自 `FuModule`。
 
 **主要功能：**
 - 管理请求队列和并发连接
@@ -67,15 +67,15 @@ Web 模块是 FuFramework 中的网络请求管理系统，提供基于 UnityWeb
 ```csharp
 using FuFramework.Web.Runtime;
 
-// 获取 WebManager 实例
-var webManager = ModuleManager.GetModule<WebManager>();
+// 获取 WebModule 实例
+var webModule = ModuleManager.GetModule<WebModule>();
 
 // 发送 GET 请求获取字符串结果
-var result = await webManager.GetToString("https://api.example.com/data");
+var result = await webModule.GetToString("https://api.example.com/data");
 Debug.Log($"响应结果: {result.Result}");
 
 // 发送 GET 请求获取字节数组结果
-var bytesResult = await webManager.GetToBytes("https://api.example.com/image");
+var bytesResult = await webModule.GetToBytes("https://api.example.com/image");
 Debug.Log($"响应数据长度: {bytesResult.Result.Length}");
 ```
 
@@ -89,7 +89,7 @@ var queryParams = new Dictionary<string, string>
     ["limit"] = "10"
 };
 
-var result = await webManager.GetToString("https://api.example.com/users", queryParams);
+var result = await webModule.GetToString("https://api.example.com/users", queryParams);
 
 // 带请求头的请求
 var headers = new Dictionary<string, string>
@@ -98,7 +98,7 @@ var headers = new Dictionary<string, string>
     ["User-Agent"] = "MyApp/1.0"
 };
 
-var result = await webManager.GetToString("https://api.example.com/protected", null, headers);
+var result = await webModule.GetToString("https://api.example.com/protected", null, headers);
 ```
 
 ## 详细使用指南
@@ -108,7 +108,7 @@ var result = await webManager.GetToString("https://api.example.com/protected", n
 #### 获取字符串结果
 ```csharp
 // 简单 GET 请求
-var result = await webManager.GetToString("https://api.example.com/data");
+var result = await webModule.GetToString("https://api.example.com/data");
 
 // 带查询参数的 GET 请求
 var queryParams = new Dictionary<string, string>
@@ -116,7 +116,7 @@ var queryParams = new Dictionary<string, string>
     ["category"] = "games",
     ["sort"] = "popular"
 };
-var result = await webManager.GetToString("https://api.example.com/products", queryParams);
+var result = await webModule.GetToString("https://api.example.com/products", queryParams);
 
 // 带请求头的 GET 请求
 var headers = new Dictionary<string, string>
@@ -124,13 +124,13 @@ var headers = new Dictionary<string, string>
     ["Accept"] = "application/json",
     ["X-API-Key"] = "your-api-key"
 };
-var result = await webManager.GetToString("https://api.example.com/data", null, headers);
+var result = await webModule.GetToString("https://api.example.com/data", null, headers);
 ```
 
 #### 获取字节数组结果
 ```csharp
 // 下载文件或二进制数据
-var result = await webManager.GetToBytes("https://api.example.com/file.pdf");
+var result = await webModule.GetToBytes("https://api.example.com/file.pdf");
 
 // 保存文件
 File.WriteAllBytes("downloaded.pdf", result.Result);
@@ -149,7 +149,7 @@ var formData = new Dictionary<string, object>
 };
 
 // 发送 POST 请求
-var result = await webManager.PostToString("https://api.example.com/register", formData);
+var result = await webModule.PostToString("https://api.example.com/register", formData);
 ```
 
 #### 发送 JSON 数据
@@ -163,7 +163,7 @@ var jsonData = new Dictionary<string, object>
 };
 
 // 发送 POST 请求
-var result = await webManager.PostToString("https://api.example.com/posts", jsonData);
+var result = await webModule.PostToString("https://api.example.com/posts", jsonData);
 ```
 
 ### 3. 用户自定义数据
@@ -171,7 +171,7 @@ var result = await webManager.PostToString("https://api.example.com/posts", json
 ```csharp
 // 发送请求时附带用户数据
 var userData = new { RequestId = Guid.NewGuid(), Timestamp = DateTime.Now };
-var result = await webManager.GetToString("https://api.example.com/data", userData: userData);
+var result = await webModule.GetToString("https://api.example.com/data", userData: userData);
 
 // 在结果中获取用户数据
 Debug.Log($"请求ID: {result.UserData}");
@@ -183,7 +183,7 @@ Debug.Log($"请求ID: {result.UserData}");
 using FuFramework.Web.Runtime;
 
 // 发送请求获取 JSON 响应
-var result = await webManager.GetToString("https://api.example.com/users/1");
+var result = await webModule.GetToString("https://api.example.com/users/1");
 
 // 使用辅助方法处理 JSON 响应
 var userData = result.Result.ToHttpJsonResultData<UserInfo>();
@@ -214,16 +214,16 @@ public class UserInfo
 ```csharp
 public class UserService
 {
-    private readonly WebManager _webManager;
+    private readonly WebModule _webModule;
     
     public UserService()
     {
-        _webManager = ModuleManager.GetModule<WebManager>();
+        _webModule = ModuleManager.GetModule<WebModule>();
     }
     
     public async Task<UserInfo> GetUserInfo(int userId)
     {
-        var result = await _webManager.GetToString($"https://api.example.com/users/{userId}");
+        var result = await _webModule.GetToString($"https://api.example.com/users/{userId}");
         var userData = result.Result.ToHttpJsonResultData<UserInfo>();
         
         if (userData.IsSuccess)
@@ -242,7 +242,7 @@ public class UserService
             ["limit"] = limit.ToString()
         };
         
-        var result = await _webManager.GetToString("https://api.example.com/users", queryParams);
+        var result = await _webModule.GetToString("https://api.example.com/users", queryParams);
         var usersData = result.Result.ToHttpJsonResultData<UserListResponse>();
         
         if (usersData.IsSuccess)
@@ -266,18 +266,18 @@ public class UserListResponse
 ```csharp
 public class FileDownloader
 {
-    private readonly WebManager _webManager;
+    private readonly WebModule _webModule;
     
     public FileDownloader()
     {
-        _webManager = ModuleManager.GetModule<WebManager>();
+        _webModule = ModuleManager.GetModule<WebModule>();
     }
     
     public async Task DownloadFile(string url, string savePath)
     {
         try
         {
-            var result = await _webManager.GetToBytes(url);
+            var result = await _webModule.GetToBytes(url);
             
             // 保存文件
             await File.WriteAllBytesAsync(savePath, result.Result);
@@ -293,7 +293,7 @@ public class FileDownloader
     
     public async Task<Texture2D> DownloadImage(string imageUrl)
     {
-        var result = await _webManager.GetToBytes(imageUrl);
+        var result = await _webModule.GetToBytes(imageUrl);
         
         // 创建纹理
         var texture = new Texture2D(1, 1);
@@ -309,11 +309,11 @@ public class FileDownloader
 ```csharp
 public class FormSubmitService
 {
-    private readonly WebManager _webManager;
+    private readonly WebModule _webModule;
     
     public FormSubmitService()
     {
-        _webManager = ModuleManager.GetModule<WebManager>();
+        _webModule = ModuleManager.GetModule<WebModule>();
     }
     
     public async Task<bool> SubmitContactForm(string name, string email, string message)
@@ -332,7 +332,7 @@ public class FormSubmitService
             ["X-Requested-With"] = "XMLHttpRequest"
         };
         
-        var result = await _webManager.PostToString("https://api.example.com/contact", formData, headers);
+        var result = await _webModule.PostToString("https://api.example.com/contact", formData, headers);
         var response = result.Result.ToHttpJsonResultData<ContactResponse>();
         
         return response.IsSuccess;
@@ -351,11 +351,11 @@ public class ContactResponse
 ```csharp
 public class RealTimeDataService
 {
-    private readonly WebManager _webManager;
+    private readonly WebModule _webModule;
     
     public RealTimeDataService()
     {
-        _webManager = ModuleManager.GetModule<WebManager>();
+        _webModule = ModuleManager.GetModule<WebModule>();
     }
     
     public async Task<StockData> GetStockPrice(string symbol)
@@ -366,7 +366,7 @@ public class RealTimeDataService
             ["interval"] = "1min"
         };
         
-        var result = await _webManager.GetToString("https://api.example.com/stocks", queryParams);
+        var result = await _webModule.GetToString("https://api.example.com/stocks", queryParams);
         var stockData = result.Result.ToHttpJsonResultData<StockData>();
         
         if (stockData.IsSuccess)
@@ -413,19 +413,19 @@ public class StockData
 ### 1. 模块配置
 
 ```csharp
-// 获取 WebManager 实例
-var webManager = ModuleManager.GetModule<WebManager>();
+// 获取 WebModule 实例
+var webModule = ModuleManager.GetModule<WebModule>();
 
 // 配置超时时间（秒）
-webManager.Timeout = 10f;
+webModule.Timeout = 10f;
 
 // 配置最大连接数
-webManager.MaxConnectionPerServer = 16;
+webModule.MaxConnectionPerServer = 16;
 
 // 获取当前配置
-Debug.Log($"超时时间: {webManager.Timeout}秒");
-Debug.Log($"最大连接数: {webManager.MaxConnectionPerServer}");
-Debug.Log($"请求超时: {webManager.RequestTimeout}");
+Debug.Log($"超时时间: {webModule.Timeout}秒");
+Debug.Log($"最大连接数: {webModule.MaxConnectionPerServer}");
+Debug.Log($"请求超时: {webModule.RequestTimeout}");
 ```
 
 ### 2. 性能优化建议
@@ -433,13 +433,13 @@ Debug.Log($"请求超时: {webManager.RequestTimeout}");
 #### 合理设置超时时间
 ```csharp
 // 根据网络状况设置合适的超时时间
-webManager.Timeout = 15f; // 15秒超时
+webModule.Timeout = 15f; // 15秒超时
 ```
 
 #### 控制并发连接数
 ```csharp
 // 根据服务器承受能力设置连接数
-webManager.MaxConnectionPerServer = 8; // 默认值，适合大多数场景
+webModule.MaxConnectionPerServer = 8; // 默认值，适合大多数场景
 ```
 
 #### 使用异步编程模式
@@ -447,14 +447,14 @@ webManager.MaxConnectionPerServer = 8; // 默认值，适合大多数场景
 // 推荐：使用 async/await
 public async Task<List<User>> GetUsersAsync()
 {
-    var result = await webManager.GetToString("https://api.example.com/users");
+    var result = await webModule.GetToString("https://api.example.com/users");
     return JsonUtility.FromJson<List<User>>(result.Result);
 }
 
 // 不推荐：阻塞线程
 public List<User> GetUsers()
 {
-    var task = webManager.GetToString("https://api.example.com/users");
+    var task = webModule.GetToString("https://api.example.com/users");
     task.Wait(); // 阻塞线程
     return JsonUtility.FromJson<List<User>>(task.Result.Result);
 }
@@ -462,7 +462,7 @@ public List<User> GetUsers()
 
 ## API 参考
 
-### WebManager 类
+### WebModule 类
 
 #### 属性
 | 属性 | 类型 | 说明 |
@@ -526,7 +526,7 @@ public List<User> GetUsers()
 ```csharp
 try
 {
-    var result = await webManager.GetToString("https://api.example.com/data");
+    var result = await webModule.GetToString("https://api.example.com/data");
     
     if (string.IsNullOrEmpty(result.Result))
     {
@@ -571,7 +571,7 @@ Form: {"param1":"value1"}
 ## 注意事项
 
 ### 1. 线程安全
-- WebManager 是线程安全的，可以在多线程环境中使用
+- WebModule 是线程安全的，可以在多线程环境中使用
 - 但建议在 Unity 的主线程中处理响应结果
 
 ### 2. 内存管理
@@ -598,7 +598,7 @@ Form: {"param1":"value1"}
 A: 使用带 `header` 参数的方法，传入 `Dictionary<string, string>` 对象。
 
 ### Q: 如何处理请求超时？
-A: 设置 `webManager.Timeout` 属性，并捕获 `TimeoutException`。
+A: 设置 `webModule.Timeout` 属性，并捕获 `TimeoutException`。
 
 ### Q: 如何下载大文件？
 A: 使用 `GetToBytes` 方法获取字节数组，然后保存到文件。

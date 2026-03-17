@@ -5,7 +5,7 @@ using System.Net.Sockets;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
 {
-    public partial class NetworkManager
+    public partial class NetworkModule
     {
         /// <summary>
         /// 系统套接字实现

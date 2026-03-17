@@ -9,62 +9,62 @@ namespace FuFramework.Network.Editor
     /// </summary>
     public static class NetworkLogScriptingDefineSymbols
     {
-        private const string EnableNetworkReceiveLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_RECEIVE_LOG";
-        private const string EnableNetworkSendLogScriptingDefineSymbol = "ENABLE_GAMEFRAMEX_NETWORK_SEND_LOG";
-        private const string ForceEnableNetworkSendLogScriptingDefineSymbol = "FORCE_ENABLE_GAME_FRAME_X_WEB_SOCKET";
+        private const string EnableNetworkRspLogSymbol  = "ENABLE_NETWORK_RSP_LOG";  // 开启网络响应日志(预定义符号)
+        private const string EnableNetworkReqLogSymbol  = "ENABLE_NETWORK_REQ_LOG";  // 开启网络请求日志(预定义符号)
+        private const string ForceEnableWebSocketSymbol = "FORCE_ENABLE_WEB_SOCKET"; // 强制使用WebSocket网络(预定义符号)
 
         /// <summary>
-        /// 禁用网络强制为WebSocket脚本宏定义。
+        /// 开启网络响应日志打印。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Disable Force WebSocket(关闭强制使用WebSocket网络)", false, 400)]
+        [MenuItem("FuFramework/日志设置/开启网络响应日志打印", false, 900)]
+        public static void EnableNetworkRspLog()
+        {
+            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkRspLogSymbol);
+        }
+
+        /// <summary>
+        /// 关闭网络响应日志打印。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/关闭网络响应日志打印", false, 901)]
+        public static void DisableNetworkRspLog()
+        {
+            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkRspLogSymbol);
+        }
+
+        /// <summary>
+        /// 开启网络请求日志打印。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/开启网络请求日志打印", false, 903)]
+        public static void EnableNetworkReqLog()
+        {
+            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkReqLogSymbol);
+        }
+
+        /// <summary>
+        /// 关闭网络请求日志打印。
+        /// </summary>
+        [MenuItem("FuFramework/日志设置/关闭网络请求日志打印", false, 904)]
+        public static void DisableNetworkReqLog()
+        {
+            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkReqLogSymbol);
+        }
+
+        /// <summary>
+        /// 不强制使用WebSocket网络。
+        /// </summary>
+        [MenuItem("FuFramework/网络类型设置/不强制使用WebSocket网络", false, 1100)]
         public static void DisableForceWebSocketNetwork()
         {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ForceEnableNetworkSendLogScriptingDefineSymbol);
+            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ForceEnableWebSocketSymbol);
         }
 
         /// <summary>
-        /// 开启网络强制为WebSocket脚本宏定义。
+        /// 不强制使用WebSocket网络。
         /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Force WebSocket(开启强制使用WebSocket网络)", false, 401)]
+        [MenuItem("FuFramework/网络类型设置/强制使用WebSocket网络", false, 1101)]
         public static void EnableForceWebSocketNetwork()
         {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(ForceEnableNetworkSendLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 禁用网络接收日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Disable Network Receive Logs(关闭网络接收日志打印)", false, 300)]
-        public static void DisableNetworkReceiveLogs()
-        {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkReceiveLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 开启网络接收日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Network Receive Logs(开启网络接收日志打印)", false, 301)]
-        public static void EnableNetworkReceiveLogs()
-        {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkReceiveLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 禁用网络发送日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Disable Network Send Logs(关闭网络发送日志打印)", false, 200)]
-        public static void DisableNetworkSendLogs()
-        {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkSendLogScriptingDefineSymbol);
-        }
-
-        /// <summary>
-        /// 开启网络发送日志脚本宏定义。
-        /// </summary>
-        [MenuItem("FuFramework/脚本编译宏定义设置/Enable Network Send Logs(开启网络发送日志打印)", false, 201)]
-        public static void EnableNetworkSendLogs()
-        {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkSendLogScriptingDefineSymbol);
+            ScriptingDefineSymbols.AddScriptingDefineSymbol(ForceEnableWebSocketSymbol);
         }
     }
 }

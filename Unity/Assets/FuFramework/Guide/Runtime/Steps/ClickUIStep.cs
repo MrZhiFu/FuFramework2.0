@@ -19,7 +19,7 @@ namespace FuFramework.Guide.Runtime
         protected override void OnExecute()
         {
             base.OnExecute();
-            var uiManager = ModuleManager.GetModule<UIManager>();
+            var uiManager = ModuleManager.GetModule<UIModule>();
             if (uiManager == null) return;
 
             // 查找目标界面

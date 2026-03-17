@@ -16,7 +16,7 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 ## 核心类说明
 
-### AssetManager
+### AssetModule
 核心管理器，继承自 `FuModule`。负责整个系统的初始化、配置读取以及全局资源操作。
 
 - **初始化**：根据 `AssetSetting` 配置自动选择运行模式。
@@ -32,11 +32,11 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 ### 1. 异步加载资源
 ```csharp
-// 获取 AssetManager 模块
-var assetManager = ModuleManager.GetModule<AssetManager>();
+// 获取 AssetModule 模块
+var assetModule = ModuleManager.GetModule<AssetModule>();
 
 // 异步加载 GameObject
-var assetHandle = await assetManager.LoadAssetAsync<GameObject>("Assets/Game/Prefabs/MyCube.prefab");
+var assetHandle = await assetModule.LoadAssetAsync<GameObject>("Assets/Game/Prefabs/MyCube.prefab");
 if (assetHandle.AssetObject != null)
 {
     var go = assetHandle.InstantiateSync();
@@ -52,7 +52,7 @@ loader.Release(); // 会自动卸载通过此 loader 加载的所有资源
 
 ### 2. 加载场景
 ```csharp
-await assetManager.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadSceneMode.Single);
+await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadSceneMode.Single);
 ```
 
 ### 3. 监听热更新事件
@@ -71,6 +71,6 @@ await assetManager.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScen
 ## 目录结构
 - `Runtime/`: 核心运行时代码。
   - `Event/`: 事件定义。
-  - `AssetManager.cs`: 主逻辑。
+  - `AssetModule.cs`: 主逻辑。
   - `AssetLoadRegister.cs`: 资源注册器。
 - `Editor/`: 编辑器扩展代码。

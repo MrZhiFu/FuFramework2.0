@@ -14,13 +14,13 @@ Procedure 模块是 FuFramework 的流程管理系统，基于有限状态机（
 
 ## 核心类说明
 
-### ProcedureManager
+### ProcedureModule
 
 流程管理器，负责管理所有流程和流程状态转换。
 
 ```csharp
-[ModuleDependency(typeof(FsmManager))]
-public sealed class ProcedureManager : FuModule
+[ModuleDependency(typeof(FsmModule))]
+public sealed class ProcedureModule : FuModule
 ```
 
 **主要功能：**
@@ -57,7 +57,7 @@ public abstract class ProcedureBase : FsmStateBase
 ### 依赖关系
 
 ```
-ProcedureManager → FsmManager
+ProcedureModule → FsmModule
 ProcedureBase → FsmStateBase
 ```
 
@@ -334,12 +334,12 @@ using FuFramework.Procedure.Runtime;
 
 public class GameApplication : MonoBehaviour
 {
-    private ProcedureManager m_ProcedureManager;
+    private ProcedureModule m_ProcedureModule;
     
     private void Start()
     {
         // 获取流程管理器
-        m_ProcedureManager = ModuleManager.GetModule<ProcedureManager>();
+        m_ProcedureModule = ModuleManager.GetModule<ProcedureModule>();
         
         // 创建流程数组
         ProcedureBase[] procedures = new ProcedureBase[]
@@ -351,19 +351,19 @@ public class GameApplication : MonoBehaviour
         };
         
         // 初始化流程
-        m_ProcedureManager.InitProcedures(procedures);
+        m_ProcedureModule.InitProcedures(procedures);
         
         // 启动第一个流程
-        m_ProcedureManager.StartProcedure<LaunchProcedure>();
+        m_ProcedureModule.StartProcedure<LaunchProcedure>();
     }
     
     private void Update()
     {
         // 监控当前流程状态
-        if (m_ProcedureManager != null && m_ProcedureManager.CurrentProcedure != null)
+        if (m_ProcedureModule != null && m_ProcedureModule.CurrentProcedure != null)
         {
-            string currentProcedure = m_ProcedureManager.CurrentProcedure.GetType().Name;
-            float procedureTime = m_ProcedureManager.CurrentProcedureTime;
+            string currentProcedure = m_ProcedureModule.CurrentProcedure.GetType().Name;
+            float procedureTime = m_ProcedureModule.CurrentProcedureTime;
             
             // Debug.Log($"当前流程: {currentProcedure}, 持续时间: {procedureTime:F2}秒");
         }
@@ -377,16 +377,16 @@ public class GameApplication : MonoBehaviour
 
 ```csharp
 // 检查流程是否存在
-bool hasLaunchProcedure = m_ProcedureManager.HasProcedure<LaunchProcedure>();
-bool hasLoginProcedure = m_ProcedureManager.HasProcedure(typeof(LoginProcedure));
+bool hasLaunchProcedure = m_ProcedureModule.HasProcedure<LaunchProcedure>();
+bool hasLoginProcedure = m_ProcedureModule.HasProcedure(typeof(LoginProcedure));
 
 // 获取特定流程
-var launchProcedure = m_ProcedureManager.GetProcedure<LaunchProcedure>();
-var loginProcedure = m_ProcedureManager.GetProcedure(typeof(LoginProcedure));
+var launchProcedure = m_ProcedureModule.GetProcedure<LaunchProcedure>();
+var loginProcedure = m_ProcedureModule.GetProcedure(typeof(LoginProcedure));
 
 // 获取当前流程信息
-var currentProcedure = m_ProcedureManager.CurrentProcedure;
-var currentProcedureTime = m_ProcedureManager.CurrentProcedureTime;
+var currentProcedure = m_ProcedureModule.CurrentProcedure;
+var currentProcedureTime = m_ProcedureModule.CurrentProcedureTime;
 
 if (currentProcedure != null)
 {
@@ -400,10 +400,10 @@ if (currentProcedure != null)
 
 ```csharp
 // 直接切换到指定流程
-m_ProcedureManager.StartProcedure<GameProcedure>();
+m_ProcedureModule.StartProcedure<GameProcedure>();
 
 // 使用类型切换流程
-m_ProcedureManager.StartProcedure(typeof(ExitProcedure));
+m_ProcedureModule.StartProcedure(typeof(ExitProcedure));
 
 // 在流程内部切换（推荐方式）
 public class CustomProcedure : ProcedureBase
@@ -433,13 +433,13 @@ public class CustomProcedure : ProcedureBase
 
 ```csharp
 // 基于条件的流程管理
-public class ConditionalProcedureManager
+public class ConditionalProcedureModule
 {
-    private ProcedureManager m_ProcedureManager;
+    private ProcedureModule m_ProcedureModule;
     
     public void Initialize()
     {
-        m_ProcedureManager = ModuleManager.GetModule<ProcedureManager>();
+        m_ProcedureModule = ModuleManager.GetModule<ProcedureModule>();
     }
     
     // 根据游戏状态切换流程
@@ -448,22 +448,22 @@ public class ConditionalProcedureManager
         switch (gameState)
         {
             case GameState.Launch:
-                m_ProcedureManager.StartProcedure<LaunchProcedure>();
+                m_ProcedureModule.StartProcedure<LaunchProcedure>();
                 break;
             case GameState.Login:
-                m_ProcedureManager.StartProcedure<LoginProcedure>();
+                m_ProcedureModule.StartProcedure<LoginProcedure>();
                 break;
             case GameState.MainMenu:
-                m_ProcedureManager.StartProcedure<MainMenuProcedure>();
+                m_ProcedureModule.StartProcedure<MainMenuProcedure>();
                 break;
             case GameState.Gameplay:
-                m_ProcedureManager.StartProcedure<GameplayProcedure>();
+                m_ProcedureModule.StartProcedure<GameplayProcedure>();
                 break;
             case GameState.Paused:
-                m_ProcedureManager.StartProcedure<PauseProcedure>();
+                m_ProcedureModule.StartProcedure<PauseProcedure>();
                 break;
             case GameState.Exit:
-                m_ProcedureManager.StartProcedure<ExitProcedure>();
+                m_ProcedureModule.StartProcedure<ExitProcedure>();
                 break;
         }
     }
@@ -473,11 +473,11 @@ public class ConditionalProcedureManager
     {
         if (isConnected)
         {
-            m_ProcedureManager.StartProcedure<OnlineProcedure>();
+            m_ProcedureModule.StartProcedure<OnlineProcedure>();
         }
         else
         {
-            m_ProcedureManager.StartProcedure<OfflineProcedure>();
+            m_ProcedureModule.StartProcedure<OfflineProcedure>();
         }
     }
 }
@@ -540,7 +540,7 @@ public class AsyncProcedure : ProcedureBase
     private void StartAsyncLoading()
     {
         // 开始异步场景加载
-        m_LoadingOperation = SceneManager.LoadSceneAsync("GameScene");
+        m_LoadingOperation = SceneModule.LoadSceneAsync("GameScene");
         m_LoadingOperation.allowSceneActivation = false;
         
         // 监听加载进度
@@ -581,10 +581,10 @@ public class ProcedureEventManager
     
     public void Initialize()
     {
-        var procedureManager = ModuleManager.GetModule<ProcedureManager>();
+        var procedureModule = ModuleManager.GetModule<ProcedureModule>();
         
         // 监听流程变化
-        // 注意：这里需要扩展 ProcedureManager 来支持事件通知
+        // 注意：这里需要扩展 ProcedureModule 来支持事件通知
         // 或者通过自定义方式监控流程变化
     }
     
@@ -795,21 +795,21 @@ public class SafeProcedureManager
     {
         try
         {
-            var procedureManager = ModuleManager.GetModule<ProcedureManager>();
+            var procedureModule = ModuleManager.GetModule<ProcedureModule>();
             
-            if (procedureManager == null)
+            if (procedureModule == null)
             {
                 Debug.LogError("流程管理器未找到");
                 return false;
             }
             
-            if (!procedureManager.HasProcedure<T>())
+            if (!procedureModule.HasProcedure<T>())
             {
                 Debug.LogError($"流程 {typeof(T).Name} 不存在");
                 return false;
             }
             
-            procedureManager.StartProcedure<T>();
+            procedureModule.StartProcedure<T>();
             return true;
         }
         catch (System.Exception ex)
@@ -823,7 +823,7 @@ public class SafeProcedureManager
 
 ## API 参考
 
-### ProcedureManager 主要方法
+### ProcedureModule 主要方法
 
 | 方法 | 说明 | 参数 | 返回值 |
 |------|------|------|--------|

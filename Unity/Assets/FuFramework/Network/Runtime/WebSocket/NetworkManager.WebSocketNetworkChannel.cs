@@ -7,7 +7,7 @@ using FuFramework.Core.Runtime;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Runtime
 {
-    public sealed partial class NetworkManager
+    public sealed partial class NetworkModule
     {
         /// <summary>
         /// Web Socket 网络频道。

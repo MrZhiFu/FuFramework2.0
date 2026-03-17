@@ -1,7 +1,6 @@
 using System;
 using FuFramework.Core.Runtime;
 using FuFramework.ReferencePool.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Event.Runtime
@@ -13,7 +12,7 @@ namespace FuFramework.Event.Runtime
     public sealed class EventRegister : IReference
     {
         /// 事件管理器
-        private static EventManager EventManager => ModuleManager.GetModule<EventManager>();
+        private static EventModule EventModule => ModuleManager.GetModule<EventModule>();
 
         /// <summary>
         /// 事件处理字典，key为消息ID，value为处理对象
@@ -39,7 +38,7 @@ namespace FuFramework.Event.Runtime
         {
             if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
             m_EventHandlerDict.Add(id, handler);
-            EventManager.Subscribe(id, handler);
+            EventModule.Subscribe(id, handler);
         }
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace FuFramework.Event.Runtime
             if (!m_EventHandlerDict.Remove(id, handler))
                 throw new Exception($"[EventRegister]事件订阅器中不存在指定消息ID '{id}' 的处理对象.");
 
-            EventManager.Unsubscribe(id, handler);
+            EventModule.Unsubscribe(id, handler);
         }
 
         /// <summary>
@@ -67,7 +66,7 @@ namespace FuFramework.Event.Runtime
             {
                 foreach (var eventHandler in eventHandlers)
                 {
-                    EventManager.Unsubscribe(id, eventHandler);
+                    EventModule.Unsubscribe(id, eventHandler);
                 }
             }
 
@@ -79,21 +78,21 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventArgs">消息对象</param>
-        public void Broadcast(object sender, GameEventArgs eventArgs) => EventManager.Broadcast(sender, eventArgs);
+        public void Broadcast(object sender, GameEventArgs eventArgs) => EventModule.Broadcast(sender, eventArgs);
 
         /// <summary>
         /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        public void Broadcast(object sender, string eventId) => EventManager.Broadcast(sender, eventId);
+        public void Broadcast(object sender, string eventId) => EventModule.Broadcast(sender, eventId);
 
         /// <summary>
         /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventArgs">事件内容。</param>
-        public void BroadcastNow(object sender, GameEventArgs eventArgs) => EventManager.BroadcastNow(sender, eventArgs);
+        public void BroadcastNow(object sender, GameEventArgs eventArgs) => EventModule.BroadcastNow(sender, eventArgs);
 
         /// <summary>
         /// 清理

@@ -41,7 +41,7 @@ namespace FuFramework.Download.Runtime
         private UnityWebRequest m_UnityWebRequest;
 
         /// 事件管理器
-        private readonly EventManager m_EventManager = ModuleManager.GetModule<EventManager>();
+        private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
 
         /// <summary>
         /// 轮询更新。
@@ -55,12 +55,12 @@ namespace FuFramework.Download.Runtime
             if (isError)
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(m_UnityWebRequest.responseCode == RangeNotSatisfiableErrorCode, m_UnityWebRequest.error);
-                m_EventManager.Broadcast(this, downloadAgentHelperErrorEventArgs);
+                m_EventModule.Broadcast(this, downloadAgentHelperErrorEventArgs);
             }
             else
             {
                 var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create((long)m_UnityWebRequest.downloadedBytes);
-                m_EventManager.Broadcast(this, downloadAgentHelperCompleteEventArgs);
+                m_EventModule.Broadcast(this, downloadAgentHelperCompleteEventArgs);
             }
         }
 

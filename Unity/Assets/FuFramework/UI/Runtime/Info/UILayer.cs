@@ -30,7 +30,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 提示
         /// </summary>
-        Tip = 3000,
+        Tips = 3000,
 
         /// <summary>
         /// 引导

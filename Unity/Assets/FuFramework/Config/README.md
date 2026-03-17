@@ -4,7 +4,7 @@
 FuFramework Config 模块是用于管理游戏静态配置表（DataTable）的核心模块。它提供了一套泛型基础架构，支持高效的数据加载、索引构建以及多样化的查询操作（ID 查找、LINQ 查询等）。
 
 ## 特性
-- **统一管理**：通过 `ConfigManager` 集中管理所有配置表，支持运行时动态增删。
+- **统一管理**：通过 `ConfigModule` 集中管理所有配置表，支持运行时动态增删。
 - **泛型基类**：`BaseDataTable<T>` 提供了开箱即用的数据存储和索引功能。
 - **多重索引**：内置支持 `int`、`long` 和 `string` 类型的主键索引，实现 O(log n) 级的高效查找。
 - **丰富查询**：支持 `Get`（按 ID 获取）、`Find`（按条件查找）、`Max/Min/Sum`（聚合运算）等操作。
@@ -12,7 +12,7 @@ FuFramework Config 模块是用于管理游戏静态配置表（DataTable）的�
 
 ## 核心类说明
 
-### ConfigManager
+### ConfigModule
 配置管理器，继承自 `FuModule`。
 - **功能**：维护所有 `IDataTable` 实例，提供全局访问点。
 - **接口**：
@@ -71,15 +71,15 @@ public class ItemTable : BaseDataTable<ItemConfig>
 ### 2. 注册与获取
 ```csharp
 // 获取管理器
-var configManager = ModuleManager.GetModule<ConfigManager>();
+var configModule = ModuleManager.GetModule<ConfigModule>();
 
 // 注册配置表 (通常在游戏初始化流程中完成)
 var itemTable = new ItemTable();
 await itemTable.LoadAsync();
-configManager.AddConfig("ItemTable", itemTable);
+configModule.AddConfig("ItemTable", itemTable);
 
 // 获取配置表
-var table = configManager.GetConfig<ItemTable>();
+var table = configModule.GetConfig<ItemTable>();
 ```
 
 ### 3. 数据查询
@@ -96,5 +96,5 @@ var totalPrice = table.Sum(item => item.Price);
 ```
 
 ## 编辑器扩展
-- **Inspector**: 选中场景中的 `ConfigManager` (挂载在 FuFramework 节点下)，可在 Inspector 面板查看当前已加载的配置表列表。
+- **Inspector**: 选中场景中的 `ConfigModule` (挂载在 FuFramework 节点下)，可在 Inspector 面板查看当前已加载的配置表列表。
 - **宏定义**: 菜单栏 `FuFramework/脚本编译宏定义设置` 提供了 `Enable Binary Config` 选项，用于开启二进制配置表支持（需配合具体业务实现）。

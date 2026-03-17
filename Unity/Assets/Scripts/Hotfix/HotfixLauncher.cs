@@ -13,7 +13,6 @@ using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using Hotfix.Guide;
 using LuBan.Runtime;
-using UIManager = FuFramework.UI.Runtime.UIManager;
 using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_BINARY_CONFIG
 #endif
@@ -68,11 +67,13 @@ namespace Hotfix
         /// </summary>
         private static void LoadUI()
         {
+            var uiModule = GlobalModule.UIModule;
+            
             // 添加通用UI资源包
-            GlobalModule.FuiPackageManagerModule.AddPackageAsync("Common").Forget();
+            uiModule.PkgManger.AddPackageAsync("Common").Forget();
 
             // 打开登录界面
-            GlobalModule.UIModule.OpenUI<WinLogin>();
+            uiModule.OpenUI<WinLogin>();
         }
 
 #if ENABLE_BINARY_CONFIG

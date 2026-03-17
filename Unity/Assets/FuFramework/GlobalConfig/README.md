@@ -13,7 +13,7 @@ FuFramework GlobalConfig 模块是一个全局配置管理系统。它提供了�
 
 ## 核心类说明
 
-### GlobalConfigManager
+### GlobalConfigModule
 全局配置管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理游戏全局配置信息的存储和访问
@@ -39,7 +39,7 @@ FuFramework GlobalConfig 模块是一个全局配置管理系统。它提供了�
 
 ### 核心配置项
 ```csharp
-public class GlobalConfigManager : FuModule
+public class GlobalConfigModule : FuModule
 {
     // 检测App版本地址接口
     public string CheckAppVersionUrl { get; set; }
@@ -85,19 +85,19 @@ public class GameInitializer : MonoBehaviour
     private void Start()
     {
         // 获取全局配置管理器
-        var configManager = GlobalModule.GlobalConfigModule;
+        var configModule = GlobalModule.GlobalConfigModule;
         
         // 设置配置信息
-        configManager.HostServerUrl = "https://api.yourgame.com";
-        configManager.CheckAppVersionUrl = "https://api.yourgame.com/check_version";
-        configManager.CheckResourceVersionUrl = "https://api.yourgame.com/check_resource";
+        configModule.HostServerUrl = "https://api.yourgame.com";
+        configModule.CheckAppVersionUrl = "https://api.yourgame.com/check_version";
+        configModule.CheckResourceVersionUrl = "https://api.yourgame.com/check_resource";
         
         // 设置AOT代码列表
-        configManager.AOTCodeList = "[\"System.Core\",\"System.Linq\",\"System.Collections\"]";
+        configModule.AOTCodeList = "[\"System.Core\",\"System.Linq\",\"System.Collections\"]";
         
         // 获取配置信息
-        Debug.Log($"主机地址：{configManager.HostServerUrl}");
-        Debug.Log($"AOT代码列表：{configManager.AOTCodeList}");
+        Debug.Log($"主机地址：{configModule.HostServerUrl}");
+        Debug.Log($"AOT代码列表：{configModule.AOTCodeList}");
     }
 }
 ```
@@ -128,11 +128,11 @@ public class ConfigService : MonoBehaviour
             );
             
             // 更新本地配置
-            var configManager = GlobalModule.GlobalConfigModule;
-            configManager.CheckAppVersionUrl = response.CheckAppVersionUrl;
-            configManager.CheckResourceVersionUrl = response.CheckResourceVersionUrl;
-            configManager.AOTCodeList = response.AOTCodeList;
-            configManager.Content = response.Content;
+            var configModule = GlobalModule.GlobalConfigModule;
+            configModule.CheckAppVersionUrl = response.CheckAppVersionUrl;
+            configModule.CheckResourceVersionUrl = response.CheckResourceVersionUrl;
+            configModule.AOTCodeList = response.AOTCodeList;
+            configModule.Content = response.Content;
             
             Debug.Log("全局配置更新成功");
         }
@@ -150,7 +150,7 @@ public class VersionChecker : MonoBehaviour
 {
     public async Task<bool> CheckAppVersion()
     {
-        var configManager = GlobalModule.GlobalConfigModule;
+        var configModule = GlobalModule.GlobalConfigModule;
         
         // 创建版本检测请求
         var request = new RequestGameAppVersion
@@ -164,7 +164,7 @@ public class VersionChecker : MonoBehaviour
         {
             // 发送版本检测请求
             var response = await HttpService.PostAsync<ResponseGameAppVersion>(
-                configManager.CheckAppVersionUrl, 
+                configModule.CheckAppVersionUrl, 
                 request
             );
             
@@ -215,10 +215,10 @@ public class AOTConfigManager : MonoBehaviour
 {
     private void Start()
     {
-        var configManager = GlobalModule.GlobalConfigModule;
+        var configModule = GlobalModule.GlobalConfigModule;
         
         // 获取AOT代码列表
-        var aotCodeLists = configManager.AOTCodeLists;
+        var aotCodeLists = configModule.AOTCodeLists;
         
         if (aotCodeLists != null && aotCodeLists.Count > 0)
         {
@@ -233,9 +233,9 @@ public class AOTConfigManager : MonoBehaviour
         }
         
         // 处理附加内容
-        if (!string.IsNullOrEmpty(configManager.Content))
+        if (!string.IsNullOrEmpty(configModule.Content))
         {
-            var extraConfig = Utility.Json.ToObject<Dictionary<string, object>>(configManager.Content);
+            var extraConfig = Utility.Json.ToObject<Dictionary<string, object>>(configModule.Content);
             ProcessExtraConfig(extraConfig);
         }
     }
@@ -267,7 +267,7 @@ public class AOTConfigManager : MonoBehaviour
 
 ## 编辑器集成
 
-### GlobalConfigManagerInspector
+### GlobalConfigModuleInspector
 提供可视化的配置界面：
 - **主机服务地址**：配置游戏服务器地址
 - **版本检测接口**：配置App和资源版本检测地址
@@ -276,7 +276,7 @@ public class AOTConfigManager : MonoBehaviour
 
 ### 使用方式
 1. 在Unity编辑器中创建GameObject
-2. 添加 `GlobalConfigManager` 组件
+2. 添加 `GlobalConfigModule` 组件
 3. 在Inspector面板中配置各项参数
 4. 运行时通过 `GlobalModule.GlobalConfigModule` 访问配置
 
@@ -413,12 +413,12 @@ public class MultiEnvironmentConfig
     
     public static void ApplyEnvironmentConfig()
     {
-        var configManager = GlobalModule.GlobalConfigModule;
+        var configModule = GlobalModule.GlobalConfigModule;
         var hostUrl = HostUrls[CurrentEnvironment];
         
-        configManager.HostServerUrl = hostUrl;
-        configManager.CheckAppVersionUrl = $"{hostUrl}/check_version";
-        configManager.CheckResourceVersionUrl = $"{hostUrl}/check_resource";
+        configModule.HostServerUrl = hostUrl;
+        configModule.CheckAppVersionUrl = $"{hostUrl}/check_version";
+        configModule.CheckResourceVersionUrl = $"{hostUrl}/check_resource";
         
         Debug.Log($"应用 {CurrentEnvironment} 环境配置");
     }

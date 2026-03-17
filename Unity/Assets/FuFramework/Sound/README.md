@@ -17,7 +17,7 @@ Sound 模块是 FuFramework 中的音频管理系统，专门用于管理游戏�
 
 ### 核心类说明
 
-#### 1. SoundManager
+#### 1. SoundModule
 音频管理器，继承自 FuModule，负责整个音频系统的生命周期管理。
 
 **主要职责：**
@@ -50,7 +50,7 @@ Sound 模块是 FuFramework 中的音频管理系统，专门用于管理游戏�
 ### 技术架构
 
 ```
-SoundManager (管理器)
+SoundModule (管理器)
     ↓
 SoundGroup (声音组)
     ↓
@@ -72,13 +72,13 @@ public class SoundPlayer : MonoBehaviour
     private async void Start()
     {
         // 获取音频管理器
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 播放背景音乐
-        var bgmSerialId = await soundManager.PlaySound("BGM_Main", "Music");
+        var bgmSerialId = await soundModule.PlaySound("BGM_Main", "Music");
         
         // 播放UI音效
-        var uiSerialId = await soundManager.PlaySound("UI_Click", "UI");
+        var uiSerialId = await soundModule.PlaySound("UI_Click", "UI");
         
         Debug.Log($"背景音乐序列号: {bgmSerialId}, UI音效序列号: {uiSerialId}");
     }
@@ -96,10 +96,10 @@ public class SoundEventListener : MonoBehaviour
     private void Start()
     {
         // 注册音频播放成功事件
-        EventManager.Instance.Subscribe<PlaySoundSuccessEventArgs>(OnSoundPlaySuccess);
+        EventModule.Instance.Subscribe<PlaySoundSuccessEventArgs>(OnSoundPlaySuccess);
         
         // 注册音频播放失败事件
-        EventManager.Instance.Subscribe<PlaySoundFailureEventArgs>(OnSoundPlayFailed);
+        EventModule.Instance.Subscribe<PlaySoundFailureEventArgs>(OnSoundPlayFailed);
     }
     
     private void OnSoundPlaySuccess(object sender, PlaySoundSuccessEventArgs e)
@@ -115,8 +115,8 @@ public class SoundEventListener : MonoBehaviour
     private void OnDestroy()
     {
         // 注销事件监听
-        EventManager.Instance.Unsubscribe<PlaySoundSuccessEventArgs>(OnSoundPlaySuccess);
-        EventManager.Instance.Unsubscribe<PlaySoundFailureEventArgs>(OnSoundPlayFailed);
+        EventModule.Instance.Unsubscribe<PlaySoundSuccessEventArgs>(OnSoundPlaySuccess);
+        EventModule.Instance.Unsubscribe<PlaySoundFailureEventArgs>(OnSoundPlayFailed);
     }
 }
 ```
@@ -156,7 +156,7 @@ public class GameAudioManager : MonoBehaviour
     // 初始化音频系统
     private async UniTask InitializeAudioSystem()
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 播放主菜单背景音乐
         await PlayBackgroundMusic(BGM_MAIN);
@@ -165,12 +165,12 @@ public class GameAudioManager : MonoBehaviour
     // 播放背景音乐
     public async UniTask PlayBackgroundMusic(string bgmName)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 停止当前背景音乐
         if (m_CurrentBgmSerialId > 0)
         {
-            soundManager.StopSound(m_CurrentBgmSerialId);
+            soundModule.StopSound(m_CurrentBgmSerialId);
         }
         
         // 配置背景音乐参数
@@ -180,7 +180,7 @@ public class GameAudioManager : MonoBehaviour
         soundParams.FadeInSeconds = 2f; // 2秒淡入
         
         // 播放新的背景音乐
-        m_CurrentBgmSerialId = await soundManager.PlaySound(bgmName, MUSIC_GROUP, ".mp3", -1, soundParams);
+        m_CurrentBgmSerialId = await soundModule.PlaySound(bgmName, MUSIC_GROUP, ".mp3", -1, soundParams);
         
         Debug.Log($"播放背景音乐: {bgmName}, 序列号: {m_CurrentBgmSerialId}");
     }
@@ -188,7 +188,7 @@ public class GameAudioManager : MonoBehaviour
     // 播放3D音效（在指定位置）
     public async UniTask<int> Play3DSoundAtPosition(string soundName, Vector3 position)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 配置3D音效参数
         var soundParams = SoundParams.Create();
@@ -196,7 +196,7 @@ public class GameAudioManager : MonoBehaviour
         soundParams.Priority = 10; // 较高优先级
         
         // 在指定位置播放3D音效
-        var serialId = await soundManager.PlaySound3DPos(soundName, SFX_GROUP, position, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySound3DPos(soundName, SFX_GROUP, position, ".wav", -1, soundParams);
         
         Debug.Log($"播放3D音效: {soundName} 在位置 {position}, 序列号: {serialId}");
         return serialId;
@@ -205,12 +205,12 @@ public class GameAudioManager : MonoBehaviour
     // 播放UI音效
     public async UniTask<int> PlayUISound(string soundName)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Volume = 0.7f;
         
-        var serialId = await soundManager.PlaySound(soundName, UI_GROUP, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySound(soundName, UI_GROUP, ".wav", -1, soundParams);
         
         Debug.Log($"播放UI音效: {soundName}, 序列号: {serialId}");
         return serialId;
@@ -219,24 +219,24 @@ public class GameAudioManager : MonoBehaviour
     // 暂停所有音频
     public void PauseAllAudio()
     {
-        var soundManager = SoundManager.Instance;
-        soundManager.PauseAllSounds();
+        var soundModule = SoundModule.Instance;
+        soundModule.PauseAllSounds();
         Debug.Log("暂停所有音频");
     }
     
     // 恢复所有音频
     public void ResumeAllAudio()
     {
-        var soundManager = SoundManager.Instance;
-        soundManager.ResumeAllSounds();
+        var soundModule = SoundModule.Instance;
+        soundModule.ResumeAllSounds();
         Debug.Log("恢复所有音频");
     }
     
     // 设置声音组音量
     public void SetGroupVolume(string groupName, float volume)
     {
-        var soundManager = SoundManager.Instance;
-        var soundGroup = soundManager.GetSoundGroup(groupName);
+        var soundModule = SoundModule.Instance;
+        var soundGroup = soundModule.GetSoundGroup(groupName);
         
         if (soundGroup != null)
         {
@@ -248,8 +248,8 @@ public class GameAudioManager : MonoBehaviour
     // 设置声音组静音
     public void SetGroupMute(string groupName, bool mute)
     {
-        var soundManager = SoundManager.Instance;
-        var soundGroup = soundManager.GetSoundGroup(groupName);
+        var soundModule = SoundModule.Instance;
+        var soundGroup = soundModule.GetSoundGroup(groupName);
         
         if (soundGroup != null)
         {
@@ -274,12 +274,12 @@ public class AdvancedAudioController : MonoBehaviour
     // 播放带回调的音效
     public async UniTask<int> PlaySoundWithCallback(string soundName, string groupName, System.Action onPlayEnd = null)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Volume = 1.0f;
         
-        var serialId = await soundManager.PlaySound(soundName, groupName, ".wav", -1, soundParams, null, null, onPlayEnd);
+        var serialId = await soundModule.PlaySound(soundName, groupName, ".wav", -1, soundParams, null, null, onPlayEnd);
         
         // 记录正在播放的声音
         m_PlayingSounds[soundName] = serialId;
@@ -290,13 +290,13 @@ public class AdvancedAudioController : MonoBehaviour
     // 播放循环音效并设置停止条件
     public async UniTask<int> PlayLoopSoundWithCondition(string soundName, string groupName, System.Func<bool> stopCondition)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Loop = true;
         soundParams.Volume = 0.5f;
         
-        var serialId = await soundManager.PlaySound(soundName, groupName, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySound(soundName, groupName, ".wav", -1, soundParams);
         
         // 启动条件检查协程
         StartCoroutine(CheckStopCondition(serialId, stopCondition));
@@ -306,13 +306,13 @@ public class AdvancedAudioController : MonoBehaviour
     
     private System.Collections.IEnumerator CheckStopCondition(int serialId, System.Func<bool> stopCondition)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
-        while (soundManager.IsSoundValid(serialId))
+        while (soundModule.IsSoundValid(serialId))
         {
             if (stopCondition())
             {
-                soundManager.StopSound(serialId);
+                soundModule.StopSound(serialId);
                 yield break;
             }
             
@@ -323,13 +323,13 @@ public class AdvancedAudioController : MonoBehaviour
     // 渐入渐出音效切换
     public async UniTask CrossFadeBackgroundMusic(string fromBgm, string toBgm, float fadeDuration = 3f)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 渐出当前背景音乐
         if (m_PlayingSounds.ContainsKey(fromBgm))
         {
             var fromSerialId = m_PlayingSounds[fromBgm];
-            soundManager.StopSound(fromSerialId, fadeDuration);
+            soundModule.StopSound(fromSerialId, fadeDuration);
             m_PlayingSounds.Remove(fromBgm);
         }
         
@@ -339,7 +339,7 @@ public class AdvancedAudioController : MonoBehaviour
         soundParams.Volume = 0f; // 初始音量为0
         soundParams.FadeInSeconds = fadeDuration;
         
-        var toSerialId = await soundManager.PlaySound(toBgm, "Music", ".mp3", -1, soundParams);
+        var toSerialId = await soundModule.PlaySound(toBgm, "Music", ".mp3", -1, soundParams);
         m_PlayingSounds[toBgm] = toSerialId;
         
         Debug.Log($"背景音乐切换: {fromBgm} -> {toBgm}, 淡入淡出时间: {fadeDuration}秒");
@@ -348,13 +348,13 @@ public class AdvancedAudioController : MonoBehaviour
     // 批量停止音效
     public void StopMultipleSounds(List<int> serialIds)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         foreach (var serialId in serialIds)
         {
-            if (soundManager.IsSoundValid(serialId))
+            if (soundModule.IsSoundValid(serialId))
             {
-                soundManager.StopSound(serialId);
+                soundModule.StopSound(serialId);
             }
         }
         
@@ -377,14 +377,14 @@ public class Sound3DManager : MonoBehaviour
     // 播放3D音效在指定位置
     public async UniTask<int> PlayExplosionAtPosition(Vector3 explosionPosition)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Volume = 1.0f;
         soundParams.Priority = 100; // 最高优先级
         
         // 在爆炸位置播放3D音效
-        var serialId = await soundManager.PlaySound3DPos("Explosion_Large", "SFX", explosionPosition, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySound3DPos("Explosion_Large", "SFX", explosionPosition, ".wav", -1, soundParams);
         
         Debug.Log($"播放爆炸音效在位置: {explosionPosition}, 序列号: {serialId}");
         return serialId;
@@ -393,14 +393,14 @@ public class Sound3DManager : MonoBehaviour
     // 播放跟随玩家的脚步声
     public async UniTask<int> PlayFootstepSound(Transform playerTransform)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Volume = 0.3f;
         soundParams.Pitch = Random.Range(0.9f, 1.1f); // 随机音调增加真实感
         
         // 在玩家位置播放脚步声
-        var serialId = await soundManager.PlaySound3DPos("Footstep_Grass", "SFX", playerTransform.position, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySound3DPos("Footstep_Grass", "SFX", playerTransform.position, ".wav", -1, soundParams);
         
         return serialId;
     }
@@ -408,7 +408,7 @@ public class Sound3DManager : MonoBehaviour
     // 播放环境音效（如风声、水流声）
     public async UniTask<int> PlayAmbientSound(Vector3 position, string ambientSound, float maxDistance = 50f)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Loop = true;
@@ -417,7 +417,7 @@ public class Sound3DManager : MonoBehaviour
         var soundParams3D = SoundParams3D.Create(null, position);
         // 可以设置3D音效参数，如最大距离等
         
-        var serialId = await soundManager.PlaySound(ambientSound, "Ambient", ".wav", -1, soundParams, soundParams3D);
+        var serialId = await soundModule.PlaySound(ambientSound, "Ambient", ".wav", -1, soundParams, soundParams3D);
         
         Debug.Log($"播放环境音效: {ambientSound} 在位置 {position}, 最大距离: {maxDistance}");
         return serialId;
@@ -426,14 +426,14 @@ public class Sound3DManager : MonoBehaviour
     // 根据距离调整音量（模拟距离衰减）
     public void AdjustVolumeByDistance(int serialId, Vector3 listenerPosition, Vector3 soundPosition, float maxDistance)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
-        if (!soundManager.IsSoundValid(serialId)) return;
+        if (!soundModule.IsSoundValid(serialId)) return;
         
         var distance = Vector3.Distance(listenerPosition, soundPosition);
         var volume = Mathf.Clamp01(1f - (distance / maxDistance));
         
-        soundManager.SetSoundVolume(serialId, volume);
+        soundModule.SetSoundVolume(serialId, volume);
     }
 }
 ```
@@ -451,14 +451,14 @@ public class EntitySoundSystem : MonoBehaviour
     // 为实体绑定音效
     public async UniTask<int> BindSoundToEntity(EntityLogic entity, string soundName, string groupName)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Loop = true;
         soundParams.Volume = 0.6f;
         
         // 将音效绑定到实体
-        var serialId = await soundManager.PlaySoundToEntity(soundName, groupName, entity, ".wav", -1, soundParams);
+        var serialId = await soundModule.PlaySoundToEntity(soundName, groupName, entity, ".wav", -1, soundParams);
         
         Debug.Log($"为实体 {entity.name} 绑定音效: {soundName}, 序列号: {serialId}");
         return serialId;
@@ -484,53 +484,53 @@ public class EntitySoundSystem : MonoBehaviour
         
         private async UniTask<int> BindEngineSound()
         {
-            var soundManager = SoundManager.Instance;
+            var soundModule = SoundModule.Instance;
             
             var soundParams = SoundParams.Create();
             soundParams.Loop = true;
             soundParams.Volume = 0f; // 初始音量为0
             
-            return await soundManager.PlaySoundToEntity("Engine_Idle", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
+            return await soundModule.PlaySoundToEntity("Engine_Idle", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
         }
         
         private async UniTask<int> BindTireSound()
         {
-            var soundManager = SoundManager.Instance;
+            var soundModule = SoundModule.Instance;
             
             var soundParams = SoundParams.Create();
             soundParams.Loop = true;
             soundParams.Volume = 0f; // 初始音量为0
             
-            return await soundManager.PlaySoundToEntity("Tire_Skid", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
+            return await soundModule.PlaySoundToEntity("Tire_Skid", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
         }
         
         // 根据车速调整引擎声音音调
         public void UpdateEngineSound(float speed, float maxSpeed)
         {
-            var soundManager = SoundManager.Instance;
+            var soundModule = SoundModule.Instance;
             
-            if (m_EngineSoundId > 0 && soundManager.IsSoundValid(m_EngineSoundId))
+            if (m_EngineSoundId > 0 && soundModule.IsSoundValid(m_EngineSoundId))
             {
                 // 根据速度计算音调（0.8到1.2范围）
                 var pitch = 0.8f + (speed / maxSpeed) * 0.4f;
-                soundManager.SetSoundPitch(m_EngineSoundId, pitch);
+                soundModule.SetSoundPitch(m_EngineSoundId, pitch);
                 
                 // 根据速度调整音量
                 var volume = Mathf.Clamp01(speed / maxSpeed) * 0.8f;
-                soundManager.SetSoundVolume(m_EngineSoundId, volume);
+                soundModule.SetSoundVolume(m_EngineSoundId, volume);
             }
         }
         
         // 播放刹车音效
         public async void PlayBrakeSound()
         {
-            var soundManager = SoundManager.Instance;
+            var soundModule = SoundModule.Instance;
             
             var soundParams = SoundParams.Create();
             soundParams.Volume = 0.7f;
             soundParams.Priority = 50;
             
-            await soundManager.PlaySoundToEntity("Brake_Squeal", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
+            await soundModule.PlaySoundToEntity("Brake_Squeal", "Vehicle", m_VehicleEntity, ".wav", -1, soundParams);
         }
     }
 }
@@ -564,7 +564,7 @@ public class AdvancedSoundPlayer : MonoBehaviour
     // 带配置的音频播放
     public async UniTask<int> PlaySoundWithConfig(SoundPlayConfig config)
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         var soundParams = SoundParams.Create();
         soundParams.Volume = config.Volume;
@@ -575,13 +575,13 @@ public class AdvancedSoundPlayer : MonoBehaviour
         if (config.Position3D.HasValue)
         {
             // 3D音效播放
-            return await soundManager.PlaySound3DPos(config.SoundName, config.GroupName, 
+            return await soundModule.PlaySound3DPos(config.SoundName, config.GroupName, 
                 config.Position3D.Value, ".wav", -1, soundParams, null, config.OnPlayEnd);
         }
         else
         {
             // 2D音效播放
-            return await soundManager.PlaySound(config.SoundName, config.GroupName, ".wav", 
+            return await soundModule.PlaySound(config.SoundName, config.GroupName, ".wav", 
                 -1, soundParams, null, null, config.OnPlayEnd);
         }
     }
@@ -628,8 +628,8 @@ public class SoundResourceManager : MonoBehaviour
     
     private void MonitorSoundResources()
     {
-        var soundManager = SoundManager.Instance;
-        var soundGroups = soundManager.GetAllSoundGroups();
+        var soundModule = SoundModule.Instance;
+        var soundGroups = soundModule.GetAllSoundGroups();
         
         int totalPlayingSounds = 0;
         int totalLoadingSounds = 0;
@@ -640,7 +640,7 @@ public class SoundResourceManager : MonoBehaviour
             totalPlayingSounds += soundGroup.SoundAgentCount;
         }
         
-        var loadingSounds = soundManager.GetAllLoadingSoundSerialIds();
+        var loadingSounds = soundModule.GetAllLoadingSoundSerialIds();
         totalLoadingSounds = loadingSounds.Length;
         
         Debug.Log($"音频资源统计: 播放中={totalPlayingSounds}, 加载中={totalLoadingSounds}");
@@ -656,7 +656,7 @@ public class SoundResourceManager : MonoBehaviour
     
     private void OptimizeSoundResources()
     {
-        var soundManager = SoundManager.Instance;
+        var soundModule = SoundModule.Instance;
         
         // 停止长时间播放但音量很小的音效
         // 这里可以实现具体的优化逻辑
@@ -708,8 +708,8 @@ public class SoundOptimizationManager : MonoBehaviour
     
     private void CleanupSoundResources()
     {
-        var soundManager = SoundManager.Instance;
-        var soundGroups = soundManager.GetAllSoundGroups();
+        var soundModule = SoundModule.Instance;
+        var soundGroups = soundModule.GetAllSoundGroups();
         
         int totalStopped = 0;
         
@@ -728,12 +728,12 @@ public class SoundOptimizationManager : MonoBehaviour
     // 限制同时播放的音效数量
     public bool CanPlayNewSound()
     {
-        var soundManager = SoundManager.Instance;
-        var loadingSounds = soundManager.GetAllLoadingSoundSerialIds();
+        var soundModule = SoundModule.Instance;
+        var loadingSounds = soundModule.GetAllLoadingSoundSerialIds();
         
         // 计算当前播放中的音效数量
         int currentPlayingCount = 0;
-        var soundGroups = soundManager.GetAllSoundGroups();
+        var soundGroups = soundModule.GetAllSoundGroups();
         foreach (var soundGroup in soundGroups)
         {
             currentPlayingCount += soundGroup.SoundAgentCount;
@@ -770,8 +770,8 @@ public class SoundMemoryMonitor : MonoBehaviour
     
     private void CheckSoundMemoryUsage()
     {
-        var soundManager = SoundManager.Instance;
-        var soundGroups = soundManager.GetAllSoundGroups();
+        var soundModule = SoundModule.Instance;
+        var soundGroups = soundModule.GetAllSoundGroups();
         
         Debug.Log($"当前声音组数量: {soundGroups.Length}");
         
@@ -811,13 +811,13 @@ public class SoundMemoryMonitor : MonoBehaviour
 
 ## API 参考
 
-### SoundManager 类
+### SoundModule 类
 
 #### 静态属性
 
 ##### Instance
 ```csharp
-public static SoundManager Instance { get; }
+public static SoundModule Instance { get; }
 ```
 **功能**：获取音频管理器单例实例
 
@@ -844,7 +844,7 @@ public UniTask<int> PlaySound(string soundAssetName, string groupName, string ex
 
 **示例**：
 ```csharp
-var serialId = await SoundManager.Instance.PlaySound("BGM_Main", "Music");
+var serialId = await SoundModule.Instance.PlaySound("BGM_Main", "Music");
 ```
 
 ##### PlaySound3DPos(string soundAssetName, string groupName, Vector3 worldPosition, string extension, int serialId, SoundParams soundParams, object userData, Action onPlayEnd)
@@ -858,7 +858,7 @@ public UniTask<int> PlaySound3DPos(string soundAssetName, string groupName, Vect
 
 **示例**：
 ```csharp
-var serialId = await SoundManager.Instance.PlaySound3DPos("Explosion", "SFX", explosionPosition);
+var serialId = await SoundModule.Instance.PlaySound3DPos("Explosion", "SFX", explosionPosition);
 ```
 
 ##### StopSound(int serialId, float fadeOutSeconds)
@@ -873,7 +873,7 @@ public void StopSound(int serialId, float fadeOutSeconds = 0f)
 
 **示例**：
 ```csharp
-SoundManager.Instance.StopSound(serialId, 2f); // 2秒淡出停止
+SoundModule.Instance.StopSound(serialId, 2f); // 2秒淡出停止
 ```
 
 ## 常见问题解答

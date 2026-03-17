@@ -31,7 +31,7 @@ namespace FuFramework.Entry.Runtime
         /// <summary>
         /// 获取当前流程
         /// </summary>
-        public ProcedureBase CurrentProcedure => ModuleManager.GetModule<ProcedureManager>()?.CurrentProcedure ?? m_EntryProcedure;
+        public ProcedureBase CurrentProcedure => ModuleManager.GetModule<ProcedureModule>()?.CurrentProcedure ?? m_EntryProcedure;
 
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace FuFramework.Entry.Runtime
             }
 
             // 初始化流程管理器
-            var procedureManager = ModuleManager.GetModule<ProcedureManager>();
+            var procedureManager = ModuleManager.GetModule<ProcedureModule>();
             procedureManager.InitProcedures(states);
 
             yield return new WaitForEndOfFrame();

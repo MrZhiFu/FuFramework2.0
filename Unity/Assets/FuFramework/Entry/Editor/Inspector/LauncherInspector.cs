@@ -21,16 +21,16 @@ namespace FuFramework.Entry.Editor
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
         private SerializedProperty m_EntryProcedureTypeName;      // 入口流程类型名称
 
-        private string[]     m_ProcedureTypeNames;          // 所有流程类型名称列表
-        private List<string> m_SelectedProcedureTypeNames;  // 已选择的流程类型名称列表
-        private int          m_EntryProcedureIndex = -1;    // 入口流程索引
-        
+        private string[]     m_ProcedureTypeNames;         // 所有流程类型名称列表
+        private List<string> m_SelectedProcedureTypeNames; // 已选择的流程类型名称列表
+        private int          m_EntryProcedureIndex = -1;   // 入口流程索引
+
         private readonly Dictionary<string, int> m_ProcedurePriorityCache = new(); // 缓存类型和类型显示优先级的映射
 
         private void OnEnable()
         {
             m_AvailableProcedureTypeNames = serializedObject.FindProperty("m_AvailableProcedureTypeNames");
-            m_EntryProcedureTypeName   = serializedObject.FindProperty("m_EntryProcedureTypeName");
+            m_EntryProcedureTypeName      = serializedObject.FindProperty("m_EntryProcedureTypeName");
             _RefreshTypeNames();
         }
 
@@ -39,8 +39,7 @@ namespace FuFramework.Entry.Editor
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            var procedureComp = target as Launcher;
-            if (!procedureComp) return;
+            if (target is not Launcher launcher) return;
 
             if (string.IsNullOrEmpty(m_EntryProcedureTypeName.stringValue))
             {
@@ -48,7 +47,7 @@ namespace FuFramework.Entry.Editor
             }
             else if (EditorApplication.isPlaying)
             {
-                EditorGUILayout.LabelField("当前流程：", procedureComp.CurrentProcedure == null ? "None" : procedureComp.CurrentProcedure.GetType().ToString());
+                EditorGUILayout.LabelField("当前流程：", launcher.CurrentProcedure == null ? "None" : launcher.CurrentProcedure.GetType().ToString());
             }
 
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);

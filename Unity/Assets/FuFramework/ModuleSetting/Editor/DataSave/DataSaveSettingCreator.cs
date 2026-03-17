@@ -17,7 +17,7 @@ namespace FuFramework.ModuleSetting.Editor
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
 
-        [MenuItem("FuFramework/框架模块配置/本地数据存储配置/创建", false, 1)]
+        [MenuItem("FuFramework/框架模块配置/本地数据存储配置/创建", false, 11)]
         public static void CreateDefaultAssetSetting()
         {
             // 检查资源是否已存在
@@ -57,7 +57,7 @@ namespace FuFramework.ModuleSetting.Editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FuFramework/框架模块配置/本地数据存储配置/查找", false, 2)]
+        [MenuItem("FuFramework/框架模块配置/本地数据存储配置/查找", false, 12)]
         public static void FindAssetSetting()
         {
             var guids = AssetDatabase.FindAssets("t:DataSaveSetting");

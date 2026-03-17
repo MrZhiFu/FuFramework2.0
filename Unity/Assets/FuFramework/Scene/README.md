@@ -16,7 +16,7 @@ Scene 模块是 FuFramework 中的场景管理系统，专门用于管理 Unity 
 
 ### 核心类说明
 
-#### 1. GameSceneManager
+#### 1. SceneModule
 场景管理器，继承自 FuModule，负责整个场景系统的生命周期管理。
 
 **主要职责：**
@@ -38,13 +38,13 @@ Scene 模块是 FuFramework 中的场景管理系统，专门用于管理 Unity 
 ### 技术架构
 
 ```
-GameSceneManager (管理器)
+SceneModule (管理器)
     ↓
 SceneHandle (场景句柄)
     ↓
-事件系统 (EventManager)
+事件系统 (EventModule)
     ↓
-资源系统 (AssetManager)
+资源系统 (AssetModule)
 ```
 
 ## 快速开始
@@ -60,10 +60,10 @@ public class SceneLoader : MonoBehaviour
     private async void Start()
     {
         // 获取场景管理器
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         // 异步加载场景
-        var sceneHandle = await sceneManager.LoadSceneByName("MainScene", LoadSceneMode.Single);
+        var sceneHandle = await sceneModule.LoadSceneByName("MainScene", LoadSceneMode.Single);
         
         if (sceneHandle.IsDone)
         {
@@ -84,13 +84,13 @@ public class SceneEventListener : MonoBehaviour
     private void Start()
     {
         // 注册场景加载成功事件
-        EventManager.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        EventModule.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
         
         // 注册场景加载进度事件
-        EventManager.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
+        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
         
         // 注册场景加载失败事件
-        EventManager.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        EventModule.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
     }
     
     private void OnSceneLoadSuccess(object sender, LoadSceneSuccessEventArgs e)
@@ -111,9 +111,9 @@ public class SceneEventListener : MonoBehaviour
     private void OnDestroy()
     {
         // 注销事件监听
-        EventManager.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventManager.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventManager.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        EventModule.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
+        EventModule.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
     }
 }
 ```
@@ -129,7 +129,7 @@ using FuFramework.Scene.Runtime;
 using Cysharp.Threading.Tasks;
 using FuFramework.Event.Runtime;
 
-public class GameSceneManager : MonoBehaviour
+public class SceneModule : MonoBehaviour
 {
     private const string MAIN_MENU_SCENE = "MainMenu";
     private const string GAME_SCENE = "GameScene";
@@ -148,7 +148,7 @@ public class GameSceneManager : MonoBehaviour
         await UnloadCurrentScene();
         
         // 加载主菜单场景
-        await GameSceneManager.Instance.LoadSceneByName(MAIN_MENU_SCENE, LoadSceneMode.Single);
+        await SceneModule.Instance.LoadSceneByName(MAIN_MENU_SCENE, LoadSceneMode.Single);
     }
     
     // 开始游戏
@@ -170,15 +170,15 @@ public class GameSceneManager : MonoBehaviour
     // 加载游戏场景（带进度显示）
     private async UniTask LoadGameScene()
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         // 注册进度事件
-        EventManager.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
+        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
         
         try
         {
             // 异步加载游戏场景
-            var sceneHandle = await sceneManager.LoadSceneByName(GAME_SCENE, LoadSceneMode.Single);
+            var sceneHandle = await sceneModule.LoadSceneByName(GAME_SCENE, LoadSceneMode.Single);
             
             if (!sceneHandle.IsDone)
             {
@@ -191,7 +191,7 @@ public class GameSceneManager : MonoBehaviour
         finally
         {
             // 注销进度事件
-            EventManager.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
+            EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
         }
     }
     
@@ -204,26 +204,26 @@ public class GameSceneManager : MonoBehaviour
     // 卸载指定场景
     private async UniTask UnloadScene(string sceneName)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
-        if (sceneManager.SceneIsLoaded(sceneName))
+        if (sceneModule.SceneIsLoaded(sceneName))
         {
-            sceneManager.UnloadScene(sceneName);
+            sceneModule.UnloadScene(sceneName);
             
             // 等待场景卸载完成
-            await UniTask.WaitUntil(() => !sceneManager.SceneIsLoaded(sceneName));
+            await UniTask.WaitUntil(() => !sceneModule.SceneIsLoaded(sceneName));
         }
     }
     
     // 卸载当前场景
     private async UniTask UnloadCurrentScene()
     {
-        var sceneManager = GameSceneManager.Instance;
-        var loadedScenes = sceneManager.GetAllLoadedSceneAssetPaths();
+        var sceneModule = SceneModule.Instance;
+        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
         
         foreach (var scenePath in loadedScenes)
         {
-            var sceneName = sceneManager.GetSceneName(scenePath);
+            var sceneName = sceneModule.GetSceneName(scenePath);
             if (sceneName != MAIN_MENU_SCENE && sceneName != GAME_SCENE)
             {
                 await UnloadScene(sceneName);
@@ -264,10 +264,10 @@ public class MultiSceneManager : MonoBehaviour
     private async void Start()
     {
         // 加载基础场景（单例模式）
-        await GameSceneManager.Instance.LoadSceneByName(BASE_SCENE, LoadSceneMode.Single);
+        await SceneModule.Instance.LoadSceneByName(BASE_SCENE, LoadSceneMode.Single);
         
         // 叠加加载 UI 场景
-        await GameSceneManager.Instance.LoadSceneByName(UI_SCENE, LoadSceneMode.Additive);
+        await SceneModule.Instance.LoadSceneByName(UI_SCENE, LoadSceneMode.Additive);
         
         // 加载第一关场景
         await LoadLevel(LEVEL_1_SCENE);
@@ -276,45 +276,45 @@ public class MultiSceneManager : MonoBehaviour
     // 切换关卡
     public async UniTask SwitchLevel(string newLevel)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         // 卸载当前关卡场景（如果有）
-        if (sceneManager.SceneIsLoaded(LEVEL_1_SCENE))
+        if (sceneModule.SceneIsLoaded(LEVEL_1_SCENE))
         {
-            sceneManager.UnloadScene(LEVEL_1_SCENE);
+            sceneModule.UnloadScene(LEVEL_1_SCENE);
         }
-        if (sceneManager.SceneIsLoaded(LEVEL_2_SCENE))
+        if (sceneModule.SceneIsLoaded(LEVEL_2_SCENE))
         {
-            sceneManager.UnloadScene(LEVEL_2_SCENE);
+            sceneModule.UnloadScene(LEVEL_2_SCENE);
         }
         
         // 加载新关卡
-        await sceneManager.LoadSceneByName(newLevel, LoadSceneMode.Additive);
+        await sceneModule.LoadSceneByName(newLevel, LoadSceneMode.Additive);
     }
     
     // 加载关卡（带错误处理）
     private async UniTask LoadLevel(string levelName)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         try
         {
             // 检查场景是否存在
-            if (!sceneManager.HasScene(levelName))
+            if (!sceneModule.HasScene(levelName))
             {
                 Debug.LogError($"场景 {levelName} 不存在");
                 return;
             }
             
             // 检查场景是否正在加载或卸载
-            if (sceneManager.SceneIsLoading(levelName) || sceneManager.SceneIsUnloading(levelName))
+            if (sceneModule.SceneIsLoading(levelName) || sceneModule.SceneIsUnloading(levelName))
             {
                 Debug.LogWarning($"场景 {levelName} 正在操作中，请稍后重试");
                 return;
             }
             
             // 加载场景
-            var sceneHandle = await sceneManager.LoadSceneByName(levelName, LoadSceneMode.Additive);
+            var sceneHandle = await sceneModule.LoadSceneByName(levelName, LoadSceneMode.Additive);
             
             if (sceneHandle.IsDone)
             {
@@ -330,11 +330,11 @@ public class MultiSceneManager : MonoBehaviour
     // 获取当前加载的所有场景信息
     private void LogSceneInfo()
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
-        var loadedScenes = sceneManager.GetAllLoadedSceneAssetPaths();
-        var loadingScenes = sceneManager.GetAllLoadingSceneAssetPaths();
-        var unloadingScenes = sceneManager.GetAllUnloadingSceneAssetPaths();
+        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
+        var loadingScenes = sceneModule.GetAllLoadingSceneAssetPaths();
+        var unloadingScenes = sceneModule.GetAllUnloadingSceneAssetPaths();
         
         Debug.Log($"已加载场景: {string.Join(", ", loadedScenes)}");
         Debug.Log($"正在加载场景: {string.Join(", ", loadingScenes)}");
@@ -383,7 +383,7 @@ public class ScenePreloader : MonoBehaviour
     // 预加载单个场景
     private async UniTask PreloadScene(string sceneName)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         if (m_PreloadedScenes.ContainsKey(sceneName))
         {
@@ -394,7 +394,7 @@ public class ScenePreloader : MonoBehaviour
         try
         {
             // 异步加载场景但不激活
-            var sceneHandle = await sceneManager.LoadSceneByName(sceneName, LoadSceneMode.Additive);
+            var sceneHandle = await sceneModule.LoadSceneByName(sceneName, LoadSceneMode.Additive);
             
             if (sceneHandle.IsDone)
             {
@@ -426,14 +426,14 @@ public class ScenePreloader : MonoBehaviour
     // 清理预加载的场景
     public void CleanupPreloadedScenes()
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         foreach (var kvp in m_PreloadedScenes)
         {
             var sceneName = kvp.Key;
-            if (sceneManager.SceneIsLoaded(sceneName))
+            if (sceneModule.SceneIsLoaded(sceneName))
             {
-                sceneManager.UnloadScene(sceneName);
+                sceneModule.UnloadScene(sceneName);
             }
         }
         
@@ -463,9 +463,9 @@ public class SceneLoadingProgressUI : MonoBehaviour
     private void Start()
     {
         // 注册场景加载事件
-        EventManager.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventManager.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventManager.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
+        EventModule.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        EventModule.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
         
         HideLoadingUI();
     }
@@ -540,9 +540,9 @@ public class SceneLoadingProgressUI : MonoBehaviour
     private void OnDestroy()
     {
         // 注销事件监听
-        EventManager.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventManager.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventManager.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
+        EventModule.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        EventModule.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
     }
 }
 ```
@@ -573,7 +573,7 @@ public class AdvancedSceneLoader : MonoBehaviour
     // 带配置的异步场景加载
     public async UniTask<SceneHandle> LoadSceneWithConfig(SceneLoadConfig config)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         var startTime = Time.time;
         
         // 显示加载界面
@@ -585,7 +585,7 @@ public class AdvancedSceneLoader : MonoBehaviour
         try
         {
             // 开始加载场景
-            var sceneHandle = await sceneManager.LoadSceneByName(config.SceneName, config.LoadMode);
+            var sceneHandle = await sceneModule.LoadSceneByName(config.SceneName, config.LoadMode);
             
             // 等待最小加载时间（避免加载过快导致的视觉跳跃）
             var elapsedTime = Time.time - startTime;
@@ -664,10 +664,10 @@ public class SceneDependencyManager : MonoBehaviour
     // 检查并加载场景依赖
     public async UniTask<bool> LoadSceneWithDependencies(string targetScene)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         // 检查目标场景是否已加载
-        if (sceneManager.SceneIsLoaded(targetScene))
+        if (sceneModule.SceneIsLoaded(targetScene))
         {
             Debug.LogWarning($"场景 {targetScene} 已经加载");
             return true;
@@ -677,21 +677,21 @@ public class SceneDependencyManager : MonoBehaviour
         if (!m_SceneDependencies.TryGetValue(targetScene, out var dependencies))
         {
             // 没有依赖，直接加载目标场景
-            await sceneManager.LoadSceneByName(targetScene, LoadSceneMode.Additive);
+            await sceneModule.LoadSceneByName(targetScene, LoadSceneMode.Additive);
             return true;
         }
         
         // 加载所有依赖场景
         foreach (var dependency in dependencies)
         {
-            if (!sceneManager.SceneIsLoaded(dependency))
+            if (!sceneModule.SceneIsLoaded(dependency))
             {
-                await sceneManager.LoadSceneByName(dependency, LoadSceneMode.Additive);
+                await sceneModule.LoadSceneByName(dependency, LoadSceneMode.Additive);
             }
         }
         
         // 加载目标场景
-        await sceneManager.LoadSceneByName(targetScene, LoadSceneMode.Additive);
+        await sceneModule.LoadSceneByName(targetScene, LoadSceneMode.Additive);
         
         return true;
     }
@@ -699,16 +699,16 @@ public class SceneDependencyManager : MonoBehaviour
     // 卸载场景及其依赖（如果没有其他场景使用）
     public void UnloadSceneWithDependencies(string targetScene)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
-        if (!sceneManager.SceneIsLoaded(targetScene))
+        if (!sceneModule.SceneIsLoaded(targetScene))
         {
             Debug.LogWarning($"场景 {targetScene} 未加载，无需卸载");
             return;
         }
         
         // 卸载目标场景
-        sceneManager.UnloadScene(targetScene);
+        sceneModule.UnloadScene(targetScene);
         
         // 检查依赖场景是否可以卸载
         if (m_SceneDependencies.TryGetValue(targetScene, out var dependencies))
@@ -717,7 +717,7 @@ public class SceneDependencyManager : MonoBehaviour
             {
                 if (CanUnloadDependency(dependency))
                 {
-                    sceneManager.UnloadScene(dependency);
+                    sceneModule.UnloadScene(dependency);
                 }
             }
         }
@@ -726,7 +726,7 @@ public class SceneDependencyManager : MonoBehaviour
     // 检查依赖场景是否可以被卸载
     private bool CanUnloadDependency(string dependencyScene)
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         
         // 检查是否有其他场景依赖于此场景
         foreach (var kvp in m_SceneDependencies)
@@ -735,7 +735,7 @@ public class SceneDependencyManager : MonoBehaviour
             var dependencies = kvp.Value;
             
             // 如果其他已加载的场景依赖于此场景，则不能卸载
-            if (sceneManager.SceneIsLoaded(scene) && 
+            if (sceneModule.SceneIsLoaded(scene) && 
                 System.Array.IndexOf(dependencies, dependencyScene) >= 0)
             {
                 return false;
@@ -769,15 +769,15 @@ public class SceneOptimizationManager : MonoBehaviour
     // 预加载常用场景
     public async UniTask PreloadFrequentScenes()
     {
-        var sceneManager = GameSceneManager.Instance;
+        var sceneModule = SceneModule.Instance;
         var preloadTasks = new List<UniTask>();
         
         foreach (var sceneName in m_FrequentlyUsedScenes)
         {
-            if (!sceneManager.SceneIsLoaded(sceneName) && 
-                !sceneManager.SceneIsLoading(sceneName))
+            if (!sceneModule.SceneIsLoaded(sceneName) && 
+                !sceneModule.SceneIsLoading(sceneName))
             {
-                preloadTasks.Add(sceneManager.LoadSceneByName(sceneName, LoadSceneMode.Additive));
+                preloadTasks.Add(sceneModule.LoadSceneByName(sceneName, LoadSceneMode.Additive));
             }
         }
         
@@ -791,18 +791,18 @@ public class SceneOptimizationManager : MonoBehaviour
     // 定期清理不常用的场景
     public void CleanupUnusedScenes()
     {
-        var sceneManager = GameSceneManager.Instance;
-        var loadedScenes = sceneManager.GetAllLoadedSceneAssetPaths();
+        var sceneModule = SceneModule.Instance;
+        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
         
         foreach (var scenePath in loadedScenes)
         {
-            var sceneName = sceneManager.GetSceneName(scenePath);
+            var sceneName = sceneModule.GetSceneName(scenePath);
             
             // 如果不是常用场景，且不是当前活动场景，则卸载
             if (!m_FrequentlyUsedScenes.Contains(sceneName) && 
                 !IsActiveScene(sceneName))
             {
-                sceneManager.UnloadScene(scenePath);
+                sceneModule.UnloadScene(scenePath);
                 Debug.Log($"清理不常用场景: {sceneName}");
             }
         }
@@ -842,8 +842,8 @@ public class SceneMemoryMonitor : MonoBehaviour
     
     private void CheckSceneMemoryUsage()
     {
-        var sceneManager = GameSceneManager.Instance;
-        var loadedScenes = sceneManager.GetAllLoadedSceneAssetPaths();
+        var sceneModule = SceneModule.Instance;
+        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
         
         Debug.Log($"当前加载场景数量: {loadedScenes.Length}");
         
@@ -884,13 +884,13 @@ public class SceneMemoryMonitor : MonoBehaviour
 
 ## API 参考
 
-### GameSceneManager 类
+### SceneModule 类
 
 #### 静态属性
 
 ##### Instance
 ```csharp
-public static GameSceneManager Instance { get; }
+public static SceneModule Instance { get; }
 ```
 **功能**：获取场景管理器单例实例
 
@@ -912,7 +912,7 @@ public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode
 
 **示例**：
 ```csharp
-var sceneHandle = await GameSceneManager.Instance.LoadSceneByName("MainScene");
+var sceneHandle = await SceneModule.Instance.LoadSceneByName("MainScene");
 ```
 
 ##### UnloadScene(string sceneAssetPath, object userData)
@@ -927,7 +927,7 @@ public void UnloadScene(string sceneAssetPath, object userData = null)
 
 **示例**：
 ```csharp
-GameSceneManager.Instance.UnloadScene("Assets/Scenes/MainScene.unity");
+SceneModule.Instance.UnloadScene("Assets/Scenes/MainScene.unity");
 ```
 
 ##### SceneIsLoaded(string sceneAssetPath)
@@ -944,7 +944,7 @@ public bool SceneIsLoaded(string sceneAssetPath)
 
 **示例**：
 ```csharp
-bool isLoaded = GameSceneManager.Instance.SceneIsLoaded("MainScene");
+bool isLoaded = SceneModule.Instance.SceneIsLoaded("MainScene");
 ```
 
 ## 常见问题解答

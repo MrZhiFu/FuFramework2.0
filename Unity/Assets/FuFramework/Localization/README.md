@@ -14,7 +14,7 @@ FuFramework Localization 模块是一个功能完善的游戏本地化系统。�
 
 ## 核心类说明
 
-### LocalizationManager
+### LocalizationModule
 本地化管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理当前语言设置和切换
@@ -105,18 +105,18 @@ public class GameLanguageController : MonoBehaviour
     private void Start()
     {
         // 获取本地化管理器
-        var localizationManager = GlobalModule.LocalizationModule;
+        var localizationModule = GlobalModule.LocalizationModule;
         
         // 获取当前语言
-        ELanguage currentLanguage = localizationManager.Language;
+        ELanguage currentLanguage = localizationModule.Language;
         Debug.Log($"当前语言：{currentLanguage}");
         
         // 获取系统语言
-        ELanguage systemLanguage = localizationManager.SystemELanguage;
+        ELanguage systemLanguage = localizationModule.SystemELanguage;
         Debug.Log($"系统语言：{systemLanguage}");
         
         // 设置语言
-        localizationManager.Language = ELanguage.ChineseSimplified;
+        localizationModule.Language = ELanguage.ChineseSimplified;
     }
 }
 ```
@@ -128,14 +128,14 @@ using FuFramework.Event.Runtime;
 
 public class LanguageChangeHandler : MonoBehaviour
 {
-    private EventManager m_EventManager;
+    private EventModule m_EventModule;
     
     private void Start()
     {
-        m_EventManager = GlobalModule.EventModule;
+        m_EventModule = GlobalModule.EventModule;
         
         // 订阅语言改变事件
-        m_EventManager.Subscribe<LocalizationLanguageChangeEventArgs>(
+        m_EventModule.Subscribe<LocalizationLanguageChangeEventArgs>(
             LocalizationLanguageChangeEventArgs.EventId, 
             OnLanguageChanged);
     }
@@ -172,9 +172,9 @@ public class LanguageChangeHandler : MonoBehaviour
     private void OnDestroy()
     {
         // 取消订阅事件
-        if (m_EventManager != null)
+        if (m_EventModule != null)
         {
-            m_EventManager.Unsubscribe<LocalizationLanguageChangeEventArgs>(
+            m_EventModule.Unsubscribe<LocalizationLanguageChangeEventArgs>(
                 LocalizationLanguageChangeEventArgs.EventId, 
                 OnLanguageChanged);
         }
@@ -226,8 +226,8 @@ public class GameTextController : MonoBehaviour
     
     private void Start()
     {
-        var localizationManager = GlobalModule.LocalizationModule;
-        UpdateTextForCurrentLanguage(localizationManager.Language);
+        var localizationModule = GlobalModule.LocalizationModule;
+        UpdateTextForCurrentLanguage(localizationModule.Language);
     }
     
     private void UpdateTextForCurrentLanguage(ELanguage language)
@@ -261,22 +261,22 @@ public class AutoLanguageDetector : MonoBehaviour
 {
     private void Start()
     {
-        var localizationManager = GlobalModule.LocalizationModule;
+        var localizationModule = GlobalModule.LocalizationModule;
         
         // 如果用户没有手动设置过语言，则使用系统语言
-        if (localizationManager.Language == ELanguage.Unspecified)
+        if (localizationModule.Language == ELanguage.Unspecified)
         {
             // 根据系统语言设置默认语言
-            ELanguage systemLang = localizationManager.SystemELanguage;
+            ELanguage systemLang = localizationModule.SystemELanguage;
             
             // 如果系统语言不在支持列表中，使用英语作为默认
             if (systemLang == ELanguage.Unspecified)
             {
-                localizationManager.Language = ELanguage.English;
+                localizationModule.Language = ELanguage.English;
             }
             else
             {
-                localizationManager.Language = systemLang;
+                localizationModule.Language = systemLang;
             }
         }
     }
@@ -409,10 +409,10 @@ public class LanguageSpecificLogic : MonoBehaviour
 {
     private void Start()
     {
-        var localizationManager = GlobalModule.LocalizationModule;
+        var localizationModule = GlobalModule.LocalizationModule;
         
         // 根据语言执行特定逻辑
-        switch (localizationManager.Language)
+        switch (localizationModule.Language)
         {
             case ELanguage.ChineseSimplified:
                 // 中文特定逻辑
@@ -454,14 +454,14 @@ public class LanguageSpecificLogic : MonoBehaviour
 
 ## 编辑器集成
 
-### LocalizationManager Inspector
-在Unity编辑器中，LocalizationManager组件提供了自定义的Inspector界面：
+### LocalizationModule Inspector
+在Unity编辑器中，LocalizationModule组件提供了自定义的Inspector界面：
 
 1. **显示当前语言**：在Inspector中显示当前设置的语言
 2. **实时预览**：可以在编辑模式下预览语言设置效果
 
 ### 使用方法
-1. 在场景中添加LocalizationManager组件
+1. 在场景中添加LocalizationModule组件
 2. 在Inspector中查看当前语言状态
 3. 通过代码设置语言，Inspector会实时更新显示
 

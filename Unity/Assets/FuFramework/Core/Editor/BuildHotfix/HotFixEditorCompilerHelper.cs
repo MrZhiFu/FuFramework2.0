@@ -11,7 +11,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 移除热更新程序集的编辑器编译指令
         /// </summary>
-        [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集在Editor环境下也可使用", false, 15)]
+        [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集在Editor环境下也可使用", false, 400)]
         public static void RemoveEditorInExcludePlatforms()
         {
             const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";
@@ -21,7 +21,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 增加热更新程序集的编辑器编译指令
         /// </summary>
-        [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用", false, 16)]
+        [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用", false, 401)]
         public static void AddEditorInExcludePlatforms()
         {
             const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";

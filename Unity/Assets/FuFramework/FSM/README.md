@@ -5,7 +5,7 @@ FuFramework FSM 模块是一个高性能的有限状态机系统，专为Unity�
 
 ## 核心类说明
 
-### FsmManager
+### FsmModule
 有限状态机管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理多个有限状态机的创建、销毁和轮询
@@ -237,7 +237,7 @@ public class BattleState : FsmStateBase
 ```
 
 ## 编辑器扩展
-`FsmManagerInspector` 提供了可视化的状态机监控功能：
+`FsmModuleInspector` 提供了可视化的状态机监控功能：
 - **实时统计**：显示当前管理的状态机数量
 - **状态信息**：展示每个状态机的名称、当前状态和运行时间
 - **运行状态**：清晰标识状态机的运行、未运行或被销毁状态

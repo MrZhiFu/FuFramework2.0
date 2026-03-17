@@ -14,7 +14,7 @@ FuFramework Guide 模块是一个功能强大的游戏引导系统，专为Unity
 
 ## 核心类说明
 
-### GuideManager
+### GuideModule
 引导管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理引导的启动、执行、中断和完成
@@ -109,20 +109,20 @@ public class GameGuideController : MonoBehaviour
     private void Start()
     {
         // 获取引导管理器
-        var guideManager = GlobalModule.GuideModule;
+        var guideModule = GlobalModule.GuideModule;
         
         // 设置引导动作执行器（需要实现IGuideAction接口）
-        guideManager.GuideAction = new CustomGuideAction();
+        guideModule.GuideAction = new CustomGuideAction();
         
         // 订阅引导事件
-        guideManager.OnGuideStarted += OnGuideStarted;
-        guideManager.OnGuideFinished += OnGuideFinished;
-        guideManager.OnStepChanged += OnStepChanged;
+        guideModule.OnGuideStarted += OnGuideStarted;
+        guideModule.OnGuideFinished += OnGuideFinished;
+        guideModule.OnStepChanged += OnStepChanged;
         
         // 启动引导
-        if (!guideManager.IsGuideCompleted("new_user_guide"))
+        if (!guideModule.IsGuideCompleted("new_user_guide"))
         {
-            guideManager.StartGuide("new_user_guide");
+            guideModule.StartGuide("new_user_guide");
         }
     }
     
@@ -229,11 +229,11 @@ public class CustomGuideAction : IGuideAction
 ```csharp
 public class AdvancedGuideController : MonoBehaviour
 {
-    private GuideManager m_GuideManager;
+    private GuideModule m_GuideModule;
     
     private void Start()
     {
-        m_GuideManager = GlobalModule.GuideModule;
+        m_GuideModule = GlobalModule.GuideModule;
         
         // 检查引导条件
         if (ShouldShowBattleGuide())
@@ -249,15 +249,15 @@ public class AdvancedGuideController : MonoBehaviour
         var hasCompletedTutorial = PlayerPrefs.GetInt("tutorial_completed", 0) == 1;
         
         return playerLevel >= 5 && hasCompletedTutorial && 
-               !m_GuideManager.IsGuideCompleted("battle_guide");
+               !m_GuideModule.IsGuideCompleted("battle_guide");
     }
     
     private void StartBattleGuide()
     {
-        m_GuideManager.StartGuide("battle_guide");
+        m_GuideModule.StartGuide("battle_guide");
         
         // 订阅步骤事件进行特殊处理
-        m_GuideManager.OnStepExecuting += OnStepExecuting;
+        m_GuideModule.OnStepExecuting += OnStepExecuting;
     }
     
     private void OnStepExecuting(BaseStep step)
@@ -279,10 +279,10 @@ public class AdvancedGuideController : MonoBehaviour
     private void PrepareUIForGuide(string targetWindow)
     {
         // 确保目标窗口已打开
-        var uiManager = GlobalModule.UIModule;
-        if (!uiManager.IsOpen(targetWindow))
+        var uiModule = GlobalModule.UIModule;
+        if (!uiModule.IsOpen(targetWindow))
         {
-            uiManager.Open(targetWindow);
+            uiModule.Open(targetWindow);
         }
     }
 }
@@ -352,11 +352,11 @@ public class ConditionalGuideManager : MonoBehaviour
 {
     public void CheckAndStartGuide(string guideId, Func<bool> condition)
     {
-        var guideManager = GlobalModule.GuideModule;
+        var guideModule = GlobalModule.GuideModule;
         
-        if (condition() && !guideManager.IsGuideCompleted(guideId))
+        if (condition() && !guideModule.IsGuideCompleted(guideId))
         {
-            guideManager.StartGuide(guideId);
+            guideModule.StartGuide(guideId);
         }
     }
     
@@ -380,16 +380,16 @@ public class InterruptibleGuideController : MonoBehaviour
     
     public void OnGamePaused()
     {
-        var guideManager = GlobalModule.GuideModule;
+        var guideModule = GlobalModule.GuideModule;
         
-        if (guideManager.IsGuiding)
+        if (guideModule.IsGuiding)
         {
             // 记录中断状态
-            m_InterruptedGuideId = guideManager.CurrentGuideId;
-            m_InterruptedStepId = guideManager.CurrentStepId;
+            m_InterruptedGuideId = guideModule.CurrentGuideId;
+            m_InterruptedStepId = guideModule.CurrentStepId;
             
             // 中断引导
-            guideManager.InterruptGuide();
+            guideModule.InterruptGuide();
         }
     }
     
@@ -398,12 +398,12 @@ public class InterruptibleGuideController : MonoBehaviour
         if (!string.IsNullOrEmpty(m_InterruptedGuideId))
         {
             // 恢复引导
-            var guideManager = GlobalModule.GuideModule;
-            guideManager.StartGuide(m_InterruptedGuideId);
+            var guideModule = GlobalModule.GuideModule;
+            guideModule.StartGuide(m_InterruptedGuideId);
             
             if (!string.IsNullOrEmpty(m_InterruptedStepId))
             {
-                guideManager.JumpToStep(m_InterruptedStepId);
+                guideModule.JumpToStep(m_InterruptedStepId);
             }
             
             // 清除中断记录

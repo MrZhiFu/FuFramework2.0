@@ -19,7 +19,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体实例对象池。
         /// </summary>
-        private readonly ObjectPoolManager.ObjectPool<EntityInstanceObject> m_InstancePool;
+        private readonly ObjectPoolModule.ObjectPool<EntityInstanceObject> m_InstancePool;
 
         /// <summary>
         /// 实体组实体链表。
@@ -88,8 +88,8 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="groupSetting">实体组设置。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
-        /// <param name="objectPoolManager">对象池管理器。</param>
-        public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolManager objectPoolManager)
+        /// <param name="objectPoolModule">对象池管理器。</param>
+        public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
             if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
             if (groupGo      is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
@@ -98,7 +98,7 @@ namespace FuFramework.Entity.Runtime
             GroupGo = groupGo;
 
             var poolName = $"Entity Instance Pool ({Name})";
-            m_InstancePool = objectPoolManager.CreateObjectPool<EntityInstanceObject>(poolName, groupSetting.InstanceCapacity, groupSetting.InstanceExpireTime, groupSetting.InstancePriority);
+            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, groupSetting.InstanceCapacity, groupSetting.InstanceExpireTime, groupSetting.InstancePriority);
             m_InstancePool.AutoReleaseInterval = groupSetting.InstanceAutoReleaseInterval;
 
             m_Entities   = new FuLinkedList<Entity>();

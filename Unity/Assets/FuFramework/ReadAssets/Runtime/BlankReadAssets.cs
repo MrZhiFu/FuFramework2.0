@@ -8,7 +8,7 @@ namespace FuFramework.ReadAssets.Runtime
     /// </summary>
     public static class BlankReadAssets
     {
-        private static AndroidJavaClass _androidJavaClass;
+        private static AndroidJavaClass m_AndroidJavaClass;
 
         /// <summary>
         /// 读取文件
@@ -18,7 +18,7 @@ namespace FuFramework.ReadAssets.Runtime
         public static byte[] Read(string path)
         {
             Guard();
-            return _androidJavaClass.CallStatic<byte[]>("readFile", path);
+            return m_AndroidJavaClass.CallStatic<byte[]>("readFile", path);
         }
 
         /// <summary>
@@ -29,12 +29,12 @@ namespace FuFramework.ReadAssets.Runtime
         public static bool IsFileExists(string path)
         {
             Guard();
-            return _androidJavaClass.CallStatic<bool>("isFileExists", path);
+            return m_AndroidJavaClass.CallStatic<bool>("isFileExists", path);
         }
 
         private static void Guard()
         {
-            _androidJavaClass ??= new AndroidJavaClass("com.alianblank.readassets.MainActivity");
+            m_AndroidJavaClass ??= new AndroidJavaClass("com.alianblank.readassets.MainActivity");
         }
     }
 }

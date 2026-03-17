@@ -17,7 +17,7 @@ namespace FuFramework.ModuleSetting.Editor
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
 
-        [MenuItem("FuFramework/框架模块配置/音频配置/创建")]
+        [MenuItem("FuFramework/框架模块配置/音频配置/创建", false, 9)]
         public static void CreateDefaultSoundSetting()
         {
             // 检查资源是否已存在
@@ -58,7 +58,7 @@ namespace FuFramework.ModuleSetting.Editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FuFramework/框架模块配置/音频配置/查找")]
+        [MenuItem("FuFramework/框架模块配置/音频配置/查找", false, 10)]
         public static void FindSoundSetting()
         {
             var guids = AssetDatabase.FindAssets("t:SoundSetting");

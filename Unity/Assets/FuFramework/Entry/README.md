@@ -15,11 +15,11 @@ FuFramework Entry 模块是整个游戏框架的启动入口。它负责初始�
 
 ### GlobalModule
 全局模块访问入口，静态类。
-- **职责**：提供对框架所有核心模块（如 `AssetManager`, `UIManager`, `EventManager` 等）的静态访问属性，简化代码编写。
+- **职责**：提供对框架所有核心模块（如 `AssetModule`, `UIModule`, `EventModule` 等）的静态访问属性，简化代码编写。
 - **示例**：
   ```csharp
   // 以前可能需要这样写：
-  // ModuleManager.GetModule<AssetManager>().LoadAssetAsync(...)
+  // ModuleManager.GetModule<AssetModule>().LoadAssetAsync(...)
   
   // 现在可以直接这样写：
   GlobalModule.AssetModule.LoadAssetAsync(...)
@@ -42,7 +42,7 @@ FuFramework Entry 模块是整个游戏框架的启动入口。它负责初始�
 ```csharp
 public class ProcedureLaunch : ProcedureBase
 {
-    protected override void OnEnter(IFsm<ProcedureManager> procedureOwner)
+    protected override void OnEnter(IFsm<ProcedureModule> procedureOwner)
     {
         base.OnEnter(procedureOwner);
         FuLogger.LogInfo("进入启动流程");

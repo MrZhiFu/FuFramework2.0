@@ -5,7 +5,7 @@ FuFramework Event 模块是一个高性能、线程安全的事件管理系统�
 
 ## 核心类说明
 
-### EventManager
+### EventModule
 全局事件管理器，继承自 `FuModule`。
 - **职责**：
   1. 管理所有事件的订阅和发布
@@ -139,7 +139,7 @@ public class EnemyController : MonoBehaviour
 
 ### 4. 使用 EventRegister 进行模块级事件管理
 ```csharp
-public class UIManager : MonoBehaviour
+public class UIModule : MonoBehaviour
 {
     private EventRegister m_EventRegister;
     
@@ -167,7 +167,7 @@ public class UIManager : MonoBehaviour
 ```
 
 ## 编辑器扩展
-`EventManagerInspector` 提供了可视化的事件监控功能：
+`EventModuleInspector` 提供了可视化的事件监控功能：
 - **实时统计**：显示已注册的事件处理函数数量和当前帧触发的事件数量
 - **详细列表**：展示所有已注册的事件处理函数和当前帧触发的事件
 - **调试信息**：显示事件发送者和处理函数的详细信息

@@ -41,7 +41,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布WindowsX64平台
         /// </summary>
-        [MenuItem("FuFramework/Build/Windows X64", false, 100)]
+        [MenuItem("FuFramework/Build/Windows X64", false, 200)]
         public static void BuildToWindows64()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -106,76 +106,9 @@ namespace FuFramework.Core.Editor
         }
 
         /// <summary>
-        /// 发布WindowsX32平台
-        /// </summary>
-        [MenuItem("FuFramework/Build/Windows X32", false, 100)]
-        public static void BuildToWindows32()
-        {
-            PlayerSettings.SplashScreen.show = false;
-            Debug.Log(EditorUserBuildSettings.activeBuildTarget);
-            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneWindows)
-            {
-                Debug.LogError("当前构建目标平台不是 Windows, 请先手动切换到 Windows 平台!");
-                return;
-            }
-
-            try
-            {
-                // 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用
-                HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
-
-                // 构建相关设置
-                PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-                PlayerSettings.defaultScreenHeight = 720;
-                PlayerSettings.defaultScreenWidth = 1280;
-                EditorUserBuildSettings.selectedStandaloneTarget = BuildTarget.StandaloneWindows;
-                AssetDatabase.SaveAssets();
-
-                // 更新构建时间
-                UpdateBuildTime();
-
-                // 构建输出路径
-                var outputPath = BuildOutputPath() + Path.DirectorySeparatorChar;
-                var exePath = outputPath + PlayerSettings.productName + ".exe";
-                
-                // 执行构建
-                var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, exePath, EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
-                if (buildReport.summary.result != BuildResult.Succeeded) return;
-
-                // 删除 BackUpThisFolder_ButDontShipItWithYourGame备份文件夹。
-                // 该文件夹是IL2CPP中中间生成结果，包含C#翻译成的cpp文件，以及cpp文件编译后生成的dll文件，存在只是为了下次打包时减少编译时间
-                var buildDirectory = new DirectoryInfo(outputPath);
-                foreach (var directoryInfo in buildDirectory.GetDirectories())
-                {
-                    if (directoryInfo.Name.Contains("BackUpThisFolder_ButDontShipItWithYourGame"))
-                    {
-                        directoryInfo.Delete(true);
-                        break;
-                    }
-                }
-
-                // 复制 Steam AppId.txt 配置 到 构建目录
-                CopySteamWorksConfig(buildDirectory);
-
-                // 压缩文件
-                // var pathName = Path.GetDirectoryName(resultDirectory);
-                // ZipHelper.CompressDirectory(resultDirectory, pathName + ".zip");
-                
-                Debug.Log("构建成功:" + outputPath);
-
-                // 构建完成后自动打开文件夹
-                EditorUtility.RevealInFinder(exePath);
-            }
-            finally
-            {
-                HotFixEditorCompilerHelper.RemoveEditorInExcludePlatforms();
-            }
-        }
-
-        /// <summary>
         /// 发布MacOS平台
         /// </summary>
-        [MenuItem("FuFramework/Build/MacOS", false, 200)]
+        [MenuItem("FuFramework/Build/MacOS", false, 201)]
         public static void BuildToMacOS()
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
@@ -238,7 +171,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 APK
         /// </summary>
-        [MenuItem("FuFramework/Build/Apk", false, 250)]
+        [MenuItem("FuFramework/Build/Apk", false, 202)]
         private static void BuildPlayerToAndroid()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -291,7 +224,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 AAB
         /// </summary>
-        [MenuItem("FuFramework/Build/AAB", false, 250)]
+        [MenuItem("FuFramework/Build/AAB", false, 203)]
         private static void BuildAppBundleForAndroid()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -346,7 +279,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 WebGL
         /// </summary>
-        [MenuItem("FuFramework/Build/WebGL", false, 300)]
+        [MenuItem("FuFramework/Build/WebGL", false, 204)]
         private static void BuildPlayerToWebGL()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -387,7 +320,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 微信小游戏 WebGL
         /// </summary>
-        [MenuItem("FuFramework/Build/WeChat MiniGame WebGL", false, 300)]
+        [MenuItem("FuFramework/Build/WeChat MiniGame WebGL", false, 205)]
         private static void BuildPlayerToWeChatMiniGameWebGL()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -424,7 +357,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 Xcode Debug 版本
         /// </summary>
-        [MenuItem("FuFramework/Build/Xcode Project Debug", false, 400)]
+        [MenuItem("FuFramework/Build/Xcode Project Debug", false, 206)]
         private static void ExportToXcodeToDevelop()
         {
             try
@@ -459,7 +392,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 Xcode Release 版本
         /// </summary>
-        [MenuItem("FuFramework/Build/Xcode Project Release", false, 400)]
+        [MenuItem("FuFramework/Build/Xcode Project Release", false, 207)]
         private static void ExportToXcodeToRelease()
         {
             try

@@ -27,7 +27,7 @@ FuFramework Model 模块是游戏数据模型的管理系统。该模块提供�
   2. 支持本地数据存储和加载
   3. 管理模型数据的持久化
 
-### ModelManager
+### ModelModule
 模型管理器，继承自 `FuModule`，统一管理所有模型实例。
 - **职责**：
   1. 管理模型实例的创建、获取和销毁
@@ -43,7 +43,7 @@ FuFramework Model 模块是游戏数据模型的管理系统。该模块提供�
 - **Newtonsoft.Json**：JSON 序列化支持
 
 ### 模块优先级
-ModelManager 的优先级为 `ModulePriority.Game`，确保在游戏逻辑模块中正确初始化。
+ModelModule 的优先级为 `ModulePriority.Game`，确保在游戏逻辑模块中正确初始化。
 
 ## 使用指南
 
@@ -119,10 +119,10 @@ public class GameController : MonoBehaviour
     private void Start()
     {
         // 获取模型管理器
-        var modelManager = GlobalModule.ModelModule;
+        var modelModule = GlobalModule.ModelModule;
         
         // 获取或创建玩家模型
-        var playerModel = modelManager.GetModel<PlayerModel>();
+        var playerModel = modelModule.GetModel<PlayerModel>();
         
         // 修改模型数据
         playerModel.PlayerName = "Hero";
@@ -410,12 +410,12 @@ public class AdvancedModelManagement : MonoBehaviour
 {
     private void Start()
     {
-        var modelManager = GlobalModule.ModelModule;
+        var modelModule = GlobalModule.ModelModule;
         
         // 1. 获取多个模型
-        var playerModel = modelManager.GetModel<PlayerModel>();
-        var settingsModel = modelManager.GetModel<GameSettingsModel>();
-        var gameDataModel = modelManager.GetModel<GameDataModel>();
+        var playerModel = modelModule.GetModel<PlayerModel>();
+        var settingsModel = modelModule.GetModel<GameSettingsModel>();
+        var gameDataModel = modelModule.GetModel<GameDataModel>();
         
         // 2. 模型间通信示例
         playerModel.Subscribe("PlayerLevelUp", OnAnyPlayerLevelUp);
@@ -439,12 +439,12 @@ public class AdvancedModelManagement : MonoBehaviour
         if (sceneName == "MainMenu")
         {
             // 主菜单场景，可以移除一些游戏内模型以节省内存
-            // modelManager.RemoveModel<BattleModel>();
+            // modelModule.RemoveModel<BattleModel>();
         }
         else if (sceneName == "Battle")
         {
             // 战斗场景，创建战斗相关模型
-            // var battleModel = modelManager.GetModel<BattleModel>();
+            // var battleModel = modelModule.GetModel<BattleModel>();
         }
     }
 }
@@ -553,20 +553,20 @@ public class ModelCommunicationExample
 ```csharp
 public class OptimizedModelUsage : MonoBehaviour
 {
-    private ModelManager modelManager;
+    private ModelModule modelModule;
     
     private void Start()
     {
-        modelManager = GlobalModule.ModelModule;
+        modelModule = GlobalModule.ModelModule;
         
         // 按需加载模型，避免不必要的内存占用
         if (NeedsPlayerData())
         {
-            var playerModel = modelManager.GetModel<PlayerModel>();
+            var playerModel = modelModule.GetModel<PlayerModel>();
         }
         
         // 及时清理不再需要的模型
-        if (SceneManager.GetActiveScene().name == "MainMenu")
+        if (SceneModule.GetActiveScene().name == "MainMenu")
         {
             // 在主菜单场景，移除战斗相关模型
             RemoveBattleModels();
@@ -582,8 +582,8 @@ public class OptimizedModelUsage : MonoBehaviour
     private void RemoveBattleModels()
     {
         // 注意：在实际项目中需要谨慎使用，确保模型不再被需要
-        // modelManager.RemoveModel<BattleModel>();
-        // modelManager.RemoveModel<EnemyModel>();
+        // modelModule.RemoveModel<BattleModel>();
+        // modelModule.RemoveModel<EnemyModel>();
     }
     
     private void OnDestroy()
@@ -623,8 +623,8 @@ public class OptimizedModelUsage : MonoBehaviour
 - 大型二进制数据不适合使用 JSON 序列化
 
 ### 3. 模块依赖
-- ModelManager 依赖 EventManager 和 DataSaveManager
-- 确保这些模块在 ModelManager 之前正确初始化
+- ModelModule 依赖 EventModule 和 DataSaveModule
+- 确保这些模块在 ModelModule 之前正确初始化
 - 使用 `GlobalModule.ModelModule` 访问模型管理器
 
 ### 4. 错误处理

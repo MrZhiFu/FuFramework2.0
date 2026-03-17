@@ -18,7 +18,7 @@ namespace FuFramework.ModuleSetting.Editor
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
 
 
-        [MenuItem("FuFramework/框架模块配置/引导配置/创建")]
+        [MenuItem("FuFramework/框架模块配置/引导配置/创建", false, 5)]
         public static void CreateDefaultGuideSetting()
         {
             // 检查资源是否已存在，如果存在则提示用户并选中聚焦到资源
@@ -69,7 +69,7 @@ namespace FuFramework.ModuleSetting.Editor
             }
         }
 
-        [MenuItem("FuFramework/框架模块配置/引导配置/查找")]
+        [MenuItem("FuFramework/框架模块配置/引导配置/查找", false, 6)]
         public static void FindGuideSetting()
         {
             var guids = AssetDatabase.FindAssets("t:GuideSetting");
