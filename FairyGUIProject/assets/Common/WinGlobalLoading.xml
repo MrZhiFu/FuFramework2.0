@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="1920,1080">
+  <displayList>
+    <graph id="n0" name="maskBg" xy="0,0" size="1920,1080" alpha="0" type="rect" lineSize="0" fillColor="#5c000000">
+      <relation target="" sidePair="height-height,width-width"/>
+    </graph>
+    <image id="n1_n0aj" name="icon_loading" src="n0aj2y" fileName="Res/icon_loading.png" xy="959,539" pivot="0.5,0.5" anchor="true" size="118,118" aspect="true">
+      <relation target="" sidePair="center-center,middle-middle"/>
+    </image>
+  </displayList>
+  <transition name="rotation" autoPlay="true" autoPlayRepeat="-1">
+    <item time="0" type="Rotation" target="n1_n0aj" tween="true" startValue="0" endValue="360" duration="36" repeat="-1"/>
+  </transition>
+</component>
