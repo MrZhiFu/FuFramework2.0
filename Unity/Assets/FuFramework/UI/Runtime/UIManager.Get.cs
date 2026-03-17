@@ -211,20 +211,6 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUI(string uiName)
-        {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            return m_LoadingDict.ContainsValue(uiName);
-        }
-
-        /// <summary>
-        /// 是否是合法的界面。
-        /// </summary>
-        /// <param name="iuiBase">界面。</param>
-        /// <returns>界面是否合法。</returns>
-        public bool IsValidUI(ViewBase iuiBase)
-        {
-            return iuiBase != null && HasUI(iuiBase.SerialId);
-        }
+        public bool IsLoadingUI(string uiName) => m_LoadingDict.ContainsValue(uiName);
     }
 }

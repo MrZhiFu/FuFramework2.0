@@ -21,8 +21,7 @@ namespace FuFramework.UI.Runtime
         /// 界面组内的界面列表
         private readonly FuLinkedList<UIInfo> m_UIInfoList = new();
 
-        /// 临时缓存界面节点
-        private LinkedListNode<UIInfo> m_CachedNode;
+
 
         /// <summary>
         /// 获取或设置界面组是否暂停。
@@ -57,7 +56,6 @@ namespace FuFramework.UI.Runtime
             Layer   = layer;
             m_Pause = false;
             m_UIInfoList.Clear();
-            m_CachedNode = null;
             sortingOrder = (int)layer;
         }
 
@@ -69,14 +67,16 @@ namespace FuFramework.UI.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
         public void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
+            if (m_Pause) return;
             var current = m_UIInfoList.First;
             while (current != null)
             {
-                if (current.Value.Paused) break;
-                m_CachedNode = current.Next;
-                current.Value.View._OnUpdate(elapseSeconds, realElapseSeconds);
-                current      = m_CachedNode;
-                m_CachedNode = null;
+                if (!current.Value.Paused && current.Value.View.Visible)  // 只更新未暂停且可见的界面
+                {
+                    current.Value.View._OnUpdate(elapseSeconds, realElapseSeconds);
+                }
+                
+                current = current.Next;  // 继续处理下一个界面
             }
         }
 
@@ -188,9 +188,6 @@ namespace FuFramework.UI.Runtime
             var uiInfo = GetUIInfo(view);
             if (uiInfo == null)
                 throw new FuException($"无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
-
-            if (m_CachedNode != null && m_CachedNode.Value.View == view)
-                m_CachedNode = m_CachedNode.Next;
 
             if (!m_UIInfoList.Remove(uiInfo))
                 throw new FuException($"UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");

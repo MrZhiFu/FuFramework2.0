@@ -41,56 +41,72 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         private async UniTask<T> _OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
         {
-            m_SerialId++;
             var uiName = typeof(T).Name;
-            if (!m_LoadingDict.TryAdd(m_SerialId, uiName))
+            
+            // 检查是否已经在加载中（考虑isMultiple参数）
+            if (!isMultiple && IsLoadingUI(uiName))
             {
                 FuLogger.LogWarning($"[UIManager]界面 {uiName} 已经正在加载.");
                 return null;
             }
 
-            T view;
-
-            // 获取界面实例对象，如果对象池中存在并且不允许使用多个实例，则直接使用对象池中的对象
-            var uiInstanceObject = m_InstancePool.Spawn(uiName);
-            if (uiInstanceObject != null && isMultiple == false)
-            {
-                view = uiInstanceObject.Target as T;
-                return CreateUIView(view, false, userData);
-            }
-
-            // 创建界面实例对象
-            view             = new T();
-            uiInstanceObject = UIInstanceObject.Create(view.UIName, view);
-            m_InstancePool.Register(uiInstanceObject, true);
-
-            // UI包已经加载过，则直接通过回调创建界面
-            var fuiPackageManager = ModuleManager.GetModule<FuiPackageManager>();
-            if (fuiPackageManager == null) throw new FuException("[UIManager]FuiPackageManager模块不存在.");
+            // 分配临时序列号，用于管理加载状态
+            var tempSerialId = ++m_SerialId;
             
-            if (fuiPackageManager.HasPackage(view.PackageName))
+            // 添加到加载字典
+            m_LoadingDict.TryAdd(tempSerialId, uiName);
+
+            try
             {
-                // 从正在加载的字典中移除，并创建FUI界面
-                m_LoadingDict.Remove(m_SerialId);
-                return CreateUIView(view, true, userData);
+                T view;
+
+                // 获取界面实例对象，如果对象池中存在并且不允许使用多个实例，则直接使用对象池中的对象
+                var uiInstanceObject = m_InstancePool.Spawn(uiName);
+                if (uiInstanceObject != null && isMultiple == false)
+                {
+                    view = uiInstanceObject.Target as T;
+                   
+                    // 使用临时序列号创建界面
+                    return CreateUIView(view, tempSerialId, false, userData);
+                }
+
+                // 创建界面实例对象
+                view             = new T();
+                uiInstanceObject = UIInstanceObject.Create(view.UIName, view);
+                m_InstancePool.Register(uiInstanceObject, true);
+
+                // UI包已经加载过，则直接创建界面
+                var fuiPackageManager = ModuleManager.GetModule<FuiPackageManager>();
+                if (fuiPackageManager == null) throw new FuException("[UuiPackageManager模块不存在.");
+                
+                if (fuiPackageManager.HasPackage(view.PackageName))
+                {
+                    // 使用临时序列号创建界面
+                    return CreateUIView(view, tempSerialId, true, userData);
+                }
+
+                // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
+                await fuiPackageManager.AddPackageAsync(view.PackageName);
+
+                // 使用临时序列号创建界面
+                return CreateUIView(view, tempSerialId, true, userData);
             }
-
-            // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
-            await fuiPackageManager.AddPackageAsync(view.PackageName);
-
-            // 从正在加载的字典中移除，并创建FUI界面
-            m_LoadingDict.Remove(m_SerialId);
-            return CreateUIView(view, true, userData);
+            finally
+            {
+                // 确保从加载字典中移除
+                m_LoadingDict.Remove(tempSerialId);
+            }
         }
 
         /// <summary>
         /// 创建FUI界面
         /// </summary>
         /// <param name="view">界面实例。</param>
+        /// <param name="serialId">界面序列号。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateUIView<T>(T view, bool isNewInstance, object userData = null) where T : ViewBase, new()
+        private T CreateUIView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : ViewBase, new()
         {
             try
             {
@@ -100,7 +116,7 @@ namespace FuFramework.UI.Runtime
                 var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;
 
                 // 初始化界面
-                view.Init(m_SerialId, uiView, isNewInstance, userData);
+                view.Init(serialId, uiView, isNewInstance, userData);
 
                 // FUI界面加入界面组
                 var uiGroup = view.UIGroup;
@@ -122,10 +138,10 @@ namespace FuFramework.UI.Runtime
             }
             catch (Exception exception)
             {
-                var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(m_SerialId, typeof(T).Name, userData);
+                var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
                 m_EventManager.Broadcast(this, openUIFailureEventArgs);
                 FuLogger.LogError($"[UIManager]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
-                return GetUI(openUIFailureEventArgs.SerialId) as T;
+                return GetUI(serialId) as T;
             }
         }
 

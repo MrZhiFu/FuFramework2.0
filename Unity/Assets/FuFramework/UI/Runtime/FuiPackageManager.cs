@@ -24,8 +24,14 @@ namespace FuFramework.UI.Runtime
         /// 正在异步加载的包的字典，key:包名，value：异步加载任务
         private readonly Dictionary<string, UniTask<UIPackage>> m_LoadingTasks = new();
 
+        /// 包加载的取消令牌源字典，用于正确取消加载任务
+        private readonly Dictionary<string, CancellationTokenSource> m_LoadingCts = new();
+
         /// 包对应的资源加载器字典，key:包名，value：资源加载器，一个包对应一个资源加载器，用于加载包的描述文件和资源文件
         private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
+
+        /// 并发加载锁，防止重复创建加载任务
+        private readonly object m_LoadingLock = new object();
 
         /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
@@ -71,30 +77,51 @@ namespace FuFramework.UI.Runtime
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPackage))
                 return UniTask.FromResult(loadedPackage);
 
-            // 如果已有正在加载的任务（无论是否加载完成），直接返回任务
-            if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
-                return loadingTask;
-
-            FuLogger.LogInfo($"[FuiPackageManager]添加UIPackage包: {pkgName}");
-
-            // 没有缓存时，创建新的加载任务（延迟执行）
-            var newTask = UniTask.Defer(async () =>
+            // 使用锁防止并发创建重复任务
+            lock (m_LoadingLock)
             {
-                try
-                {
-                    var package = await LoadPackageAsync_(pkgName);
-                    m_LoadedPkgDict[pkgName] = package; // 缓存结果
-                    package.ReloadAssets();
-                    return package;
-                }
-                finally
-                {
-                    m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
-                }
-            });
+                // 双重检查：如果已有正在加载的任务，直接返回任务
+                if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
+                    return loadingTask;
 
-            m_LoadingTasks[pkgName] = newTask; // 记录正在加载的任务
-            return newTask;
+                FuLogger.LogInfo($"[FuiPackageManager]添加UIPackage包: {pkgName}");
+
+                // 创建取消令牌源
+                var cts = new CancellationTokenSource();
+                lock (m_LoadingCts)
+                {
+                    m_LoadingCts[pkgName] = cts;
+                }
+
+                // 创建新的加载任务（延迟执行）
+                var newTask = UniTask.Defer(async () =>
+                {
+                    try
+                    {
+                        // 检查是否被取消
+                        cts.Token.ThrowIfCancellationRequested();
+                        
+                        var package = await LoadPackageAsync_(pkgName);
+                        m_LoadedPkgDict[pkgName] = package; // 缓存结果
+                        package.ReloadAssets();
+                        return package;
+                    }
+                    finally
+                    {
+                        lock (m_LoadingLock)
+                        {
+                            m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
+                        }
+                        lock (m_LoadingCts)
+                        {
+                            m_LoadingCts.Remove(pkgName); // 移除取消令牌源
+                        }
+                    }
+                });
+
+                m_LoadingTasks[pkgName] = newTask; // 记录正在加载的任务
+                return newTask;
+            }
         }
 
         /// <summary>
@@ -116,20 +143,41 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         private async UniTask<UIPackage> LoadPackageAsync__(string pkgName)
         {
-            // 加载Resources中的包
-            if (IsFromResources(pkgName))
+            try
             {
-                UIPackage.AddPackage($"UI/{pkgName}/{pkgName}");
-                return UIPackage.GetByName(pkgName);
+                // 检查是否被取消
+                if (m_LoadingCts.TryGetValue(pkgName, out var cts))
+                    cts.Token.ThrowIfCancellationRequested();
+
+                // 加载Resources中的包
+                if (IsFromResources(pkgName))
+                {
+                    UIPackage.AddPackage($"UI/{pkgName}/{pkgName}");
+                    return UIPackage.GetByName(pkgName);
+                }
+
+                // 加载包的描述文件
+                var pkgDesc = await LoadDesc(pkgName);
+
+                // 检查是否被取消
+                if (m_LoadingCts.TryGetValue(pkgName, out cts))
+                    cts.Token.ThrowIfCancellationRequested();
+
+                // 加载完成后，添加到UIPackage中，并加载pkg中的资源
+                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
+
+                return loadedPackage;
             }
-
-            // 加载包的描述文件
-            var pkgDesc = await LoadDesc(pkgName);
-
-            // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-            var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
-
-            return loadedPackage;
+            catch (OperationCanceledException)
+            {
+                FuLogger.LogInfo($"[FuiPackageManager]包加载被取消: {pkgName}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                FuLogger.LogError($"[FuiPackageManager]加载包失败: {pkgName}, 错误: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -234,11 +282,10 @@ namespace FuFramework.UI.Runtime
             if (!m_LoadedPkgDict.TryGetValue(pkgName, out var pkg)) return;
 
             // 减少该包依赖的其他包引用
-            foreach (var depPkgDict in pkg.dependencies)
+            foreach (var dep in pkg.dependencies)
             {
-                foreach (var (_, depPkgName) in depPkgDict)
+                if (dep.TryGetValue("name", out var depPkgName))
                 {
-                    if (depPkgName != "name") continue;
                     SubRef(depPkgName);
                 }
             }
@@ -267,11 +314,10 @@ namespace FuFramework.UI.Runtime
             }
 
             // 4.如果是正在加载的包，取消正在加载的任务
-            if (m_LoadingTasks.TryGetValue(pkgName, out _))
+            if (m_LoadingCts.TryGetValue(pkgName, out var cts))
             {
-                var cts = new CancellationTokenSource();
-                cts.Cancel();
-                m_LoadingTasks[pkgName] = UniTask.FromCanceled<UIPackage>(cts.Token);
+                cts.Cancel(); // 真正取消正在进行的加载任务
+                m_LoadingCts.Remove(pkgName);
                 FuLogger.LogInfo($"[FuiPackageManager]取消正在加载的UIPackage: {pkgName}");
                 return;
             }
@@ -295,13 +341,27 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void ReleaseAll()
         {
+            // 先取消所有正在加载的任务
+            lock (m_LoadingCts)
+            {
+                foreach (var cts in m_LoadingCts.Values)
+                {
+                    cts.Cancel();
+                }
+                m_LoadingCts.Clear();
+            }
+
+            // 释放所有已加载的包
             var pkgsToRemove = m_LoadedPkgDict.Keys.ToList();
             foreach (var pkgName in pkgsToRemove)
             {
                 ReleasePackage(pkgName);
             }
 
-            m_LoadingTasks.Clear();
+            lock (m_LoadingLock)
+            {
+                m_LoadingTasks.Clear();
+            }
             m_PkgRefCountDict.Clear();
             m_LoadedPkgDict.Clear();
         }
