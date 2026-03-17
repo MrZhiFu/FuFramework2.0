@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <packageDescription id="a3awyna7">
   <resources>
-    <image id="l50q0" name="bg.png" path="/"/>
     <component id="l50q1" name="WinBag.xml" path="/" exported="true"/>
     <component id="l50q2" name="CompBagContent.xml" path="/Comp/" exported="true"/>
     <component id="l50q3" name="CompBagItemInfo.xml" path="/Comp/" exported="true"/>

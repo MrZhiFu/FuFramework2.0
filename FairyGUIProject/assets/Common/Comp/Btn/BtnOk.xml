@@ -2,6 +2,9 @@
 <component size="120,76" pivot="0.5,0.5" extention="Button">
   <controller name="button" pages="0,up,1,down,2,over,3,selectedOver" selected="0"/>
   <displayList>
+    <text id="n1_flr4" name="title" xy="0,0" size="120,76" fontSize="30" align="center" vAlign="middle" autoSize="none" singleLine="true" text="">
+      <relation target="" sidePair="width-width,height-height"/>
+    </text>
     <loader id="n2_flr4" name="icon" xy="0,0" size="120,76" align="center" vAlign="middle">
       <relation target="" sidePair="width-width,height-height"/>
     </loader>

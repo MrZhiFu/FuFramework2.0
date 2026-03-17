@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component size="1080,1920" bgColor="#00ff00">
+<component size="1920,1080" bgColor="#00ff00">
   <displayList>
-    <graph id="n0_jfft" name="n0" xy="0,0" size="1080,1920" type="rect" fillColor="#3899ccff"/>
-    <richtext id="n1_jfft" name="LoadingTxt" xy="290,1860" size="500,60" fontSize="35" align="center" vAlign="middle" autoSize="none" text="Loading..."/>
+    <graph id="n0_jfft" name="n0" xy="0,0" size="1920,1080" type="rect" fillColor="#3899ccff">
+      <relation target="" sidePair="width-width,height-height"/>
+    </graph>
+    <richtext id="n1_jfft" name="LoadingTxt" xy="710,960" size="500,60" fontSize="35" align="center" vAlign="middle" autoSize="none" text="Loading..."/>
   </displayList>
 </component>

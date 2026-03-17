@@ -13,7 +13,7 @@ namespace Hotfix.UI
         public override string PackageName => "Bag"; // 包名
         
 		private CompBagContent compContent;
-		private GButton btnClose;
+		private GComponent btnClose;
 
         /// <summary>
         /// 界面组件初始化
@@ -21,7 +21,7 @@ namespace Hotfix.UI
         private void InitUIComp()
         {
 			compContent = (CompBagContent)GetChild("_compContent");
-			btnClose = (GButton)GetChild("_btnClose");
+			btnClose = (GComponent)GetChild("_btnClose");
 
 
         }
@@ -31,7 +31,6 @@ namespace Hotfix.UI
         /// </summary>
         private void InitUIEvent()
         {
-			AddUIListener(btnClose.onClick, OnBtnCloseClick);
 
         }
     }
