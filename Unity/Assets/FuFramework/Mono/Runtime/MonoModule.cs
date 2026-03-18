@@ -52,7 +52,7 @@ namespace FuFramework.Mono.Runtime
             m_EventModule = ModuleManager.GetModule<EventModule>();
             if (m_EventModule is null)
             {
-                FuLogger.LogFatal("事件管理器为空.");
+                FuLogger.LogFatal("[MonoModule]事件管理器为空.");
             }
         }
 

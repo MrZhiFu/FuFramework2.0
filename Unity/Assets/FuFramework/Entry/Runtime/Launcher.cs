@@ -68,14 +68,14 @@ namespace FuFramework.Entry.Runtime
                 var procedureType = Utility.Assembly.GetType(m_AvailableProcedureTypeNames[i]);
                 if (procedureType is null)
                 {
-                    FuLogger.LogError($"[ProcedureManager] 找不到流程类型 '{m_AvailableProcedureTypeNames[i]}'.");
+                    FuLogger.LogError($"[ProcedureModule] 找不到流程类型 '{m_AvailableProcedureTypeNames[i]}'.");
                     yield break;
                 }
 
                 m_Procedures[i] = Activator.CreateInstance(procedureType) as ProcedureBase;
                 if (m_Procedures[i] is null)
                 {
-                    FuLogger.LogError($"[ProcedureManager] 创建流程实例'{m_AvailableProcedureTypeNames[i]}' 失败.");
+                    FuLogger.LogError($"[ProcedureModule] 创建流程实例'{m_AvailableProcedureTypeNames[i]}' 失败.");
                     yield break;
                 }
 
@@ -88,12 +88,12 @@ namespace FuFramework.Entry.Runtime
 
             if (m_EntryProcedure is null)
             {
-                FuLogger.LogError("[ProcedureManager] 入口流程类型不存在!.");
+                FuLogger.LogError("[ProcedureModule] 入口流程类型不存在!.");
                 yield break;
             }
 
             if (m_Procedures is null || m_Procedures.Length == 0)
-                throw new FuException("[ProcedureManager] 必须至少有一个流程!");
+                throw new FuException("[ProcedureModule] 必须至少有一个流程!");
 
             var states = new ProcedureBase[m_Procedures.Length];
             for (var i = 0; i < m_Procedures.Length; i++)
@@ -102,13 +102,13 @@ namespace FuFramework.Entry.Runtime
             }
 
             // 初始化流程管理器
-            var procedureManager = ModuleManager.GetModule<ProcedureModule>();
-            procedureManager.InitProcedures(states);
+            var procedureModule = ModuleManager.GetModule<ProcedureModule>();
+            procedureModule.InitProcedures(states);
 
             yield return new WaitForEndOfFrame();
 
             // 启动入口流程
-            procedureManager.StartProcedure(m_EntryProcedure.GetType());
+            procedureModule.StartProcedure(m_EntryProcedure.GetType());
         }
     }
 }

@@ -56,7 +56,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// <param name="reference">要归还的引用。</param>
         public static void Release(IReference reference)
         {
-            if (reference == null) throw new FuException("要归还的引用对象为空.");
+            if (reference == null) throw new FuException("[ReferencePool] 要归还的引用对象为空.");
             var refType = reference.GetType();
             _CheckReferenceType(refType);
             _GetReferenceCollection(refType).Release(reference);
@@ -173,13 +173,13 @@ namespace FuFramework.ReferencePool.Runtime
             if (!EnableStrictCheck) return;
 
             if (refType == null)
-                throw new FuException("引用类型为空.");
+                throw new FuException("[ReferencePool] 引用类型为空.");
 
             if (!refType.IsClass || refType.IsAbstract)
-                throw new FuException("引用类型不是非抽象类类型.");
+                throw new FuException("[ReferencePool] 引用类型不是非抽象类类型.");
 
             if (!typeof(IReference).IsAssignableFrom(refType))
-                throw new FuException($"引用类型 '{refType.FullName}' 不是 IReference 类型.");
+                throw new FuException($"[ReferencePool] 引用类型 '{refType.FullName}' 不是 IReference 类型.");
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// <returns>引用信息集合</returns>
         private static ReferenceCollection _GetReferenceCollection(Type refType)
         {
-            if (refType == null) throw new FuException("引用类型为空.");
+            if (refType == null) throw new FuException("[ReferencePool] 引用类型为空.");
 
             ReferenceCollection referenceCollection;
             lock (ReferenceCollectionDict)

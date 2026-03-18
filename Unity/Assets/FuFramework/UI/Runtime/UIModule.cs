@@ -99,7 +99,7 @@ namespace FuFramework.UI.Runtime
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
                 if (AddUIGroup(layer)) continue;
-                FuLogger.LogError($"[UIManager]添加UI组 '{layer.ToString()}' 失败 .");
+                FuLogger.LogError($"[UIModule]添加UI组 '{layer.ToString()}' 失败 .");
             }
         }
 

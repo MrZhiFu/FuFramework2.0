@@ -68,7 +68,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns>创建的内部对象。</returns>
             public static Object<T> Create(T obj, bool spawned)
             {
-                if (obj == null) throw new FuException("要创建的对象不能为空.");
+                if (obj == null) throw new FuException("[ObjectPoolModule] 要创建的对象不能为空.");
 
                 var internalObject = ReferencePool.Runtime.ReferencePool.Acquire<Object<T>>();
                 internalObject.m_Object     = obj;
@@ -116,7 +116,7 @@ namespace FuFramework.ObjectPool.Runtime
                 m_Object.LastUseTime = DateTime.UtcNow;
                 SpawnCount--;
                 if (SpawnCount < 0)
-                    throw new FuException($"对象 '{Name}' 生成次数已经小于 0, 回收失败.");
+                    throw new FuException($"[ObjectPoolModule] 对象 '{Name}' 生成次数已经小于 0, 回收失败.");
             }
 
             /// <summary>

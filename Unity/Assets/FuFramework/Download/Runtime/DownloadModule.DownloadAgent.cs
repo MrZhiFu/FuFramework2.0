@@ -149,7 +149,7 @@ namespace FuFramework.Download.Runtime
             /// <returns>开始处理任务的状态。</returns>
             public StartTaskStatus Start(DownloadTask task)
             {
-                Task = task ?? throw new FuException("[DownloadManager.DownloadAgent] 任务不能为空.");
+                Task = task ?? throw new FuException("[DownloadModule.DownloadAgent] 任务不能为空.");
 
                 Task.Status = DownloadTaskStatus.Doing;
                 var downloadFile = $"{Task.DownloadedFullPath}.download";
@@ -293,7 +293,7 @@ namespace FuFramework.Download.Runtime
                 DownloadedLength = e.Length;
 
                 if (SavedLength != CurrentLength)
-                    throw new FuException("[DownloadManager.DownloadAgent] 已存储的大小和当前大小不一致");
+                    throw new FuException("[DownloadModule.DownloadAgent] 已存储的大小和当前大小不一致");
 
                 m_Helper.Reset();
                 m_FileStream.Close();

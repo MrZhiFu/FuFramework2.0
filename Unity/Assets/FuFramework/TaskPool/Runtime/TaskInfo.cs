@@ -59,31 +59,31 @@ namespace FuFramework.TaskPool.Runtime
         /// <summary>
         /// 获取任务的序列编号。
         /// </summary>
-        public int SerialId => m_IsValid ? m_SerialId : throw new FuException("Data is invalid.");
+        public int SerialId => m_IsValid ? m_SerialId : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务的标签。
         /// </summary>
-        public string Tag => m_IsValid ? m_Tag : throw new FuException("Data is invalid.");
+        public string Tag => m_IsValid ? m_Tag : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务的优先级。
         /// </summary>
-        public int Priority => m_IsValid ? m_Priority : throw new FuException("Data is invalid.");
+        public int Priority => m_IsValid ? m_Priority : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务的用户自定义数据。
         /// </summary>
-        public object UserData => m_IsValid ? m_UserData : throw new FuException("Data is invalid.");
+        public object UserData => m_IsValid ? m_UserData : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务状态。
         /// </summary>
-        public TaskStatus Status => m_IsValid ? m_Status : throw new FuException("Data is invalid.");
+        public TaskStatus Status => m_IsValid ? m_Status : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务描述。
         /// </summary>
-        public string Description => m_IsValid ? m_Description : throw new FuException("Data is invalid.");
+        public string Description => m_IsValid ? m_Description : throw new FuException("[TaskPool] 任务信息无效.");
     }
 }

@@ -169,16 +169,16 @@ namespace Hotfix.UI
         #region 计时器
         
         /// <summary>
-        /// 启动一个基础的一次性计时器
+        /// 启动一个倒计时计时器
         /// </summary>
         /// <param name="duration">计时器持续时间</param>
         /// <param name="finishCallBack">计时器结束回调</param>
         /// <param name="updateCallBack">计时器更新回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        protected void StartTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
-            uiView?.StartTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            uiView?.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }
         
         /// <summary>
@@ -189,9 +189,9 @@ namespace Hotfix.UI
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        protected void StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        protected void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            uiView?.StartTimeTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            uiView?.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
         
         /// <summary>

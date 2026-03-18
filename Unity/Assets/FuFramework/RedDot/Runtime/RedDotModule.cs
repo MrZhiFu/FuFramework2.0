@@ -18,8 +18,8 @@ namespace FuFramework.RedDot.Runtime
     /// 使用流程：
     /// 1. 在配置RedDotSetting(ScriptableObject)中定义红点树结构
     /// 2. 系统启动时自动构建节点树
-    /// 3. 业务逻辑调用接口设置红点计数，如：RedDotManager.Instance.SetCount("node1", 10)
-    /// 4. UI组件注册监听并更新显示状态，如：RedDotManager.Instance.Register("node1", (count) => { ui.SetText(count); })
+    /// 3. 业务逻辑调用接口设置红点计数，如：RedDotModule.Instance.SetCount("node1", 10)
+    /// 4. UI组件注册监听并更新显示状态，如：RedDotModule.Instance.Register("node1", (count) => { ui.SetText(count); })
     /// </summary>
     public class RedDotModule : FuModule
     {
@@ -44,7 +44,7 @@ namespace FuFramework.RedDot.Runtime
 
             if (redDotSetting == null)
             {
-                FuLogger.LogError("[RedDotManager] 红点树配置文件不存在.");
+                FuLogger.LogError("[RedDotModule] 红点树配置文件不存在.");
                 return;
             }
             
@@ -54,7 +54,7 @@ namespace FuFramework.RedDot.Runtime
                 BuildNodeRecursive(null, root);
             }
 
-            FuLogger.LogInfo($"[RedDotManager] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
+            FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace FuFramework.RedDot.Runtime
 
             if (!NodeDict.TryAdd(data.m_Key, node))
             {
-                FuLogger.LogError($"RedDotManager: 重复的节点key: {data.m_Key}");
+                FuLogger.LogError($"[RedDotModule] 重复的节点key: {data.m_Key}");
                 ReferencePool.Runtime.ReferencePool.Release(node);
                 return;
             }
@@ -109,7 +109,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLogger.LogWarning($"RedDotManager: 注册监听时未找到节点: {key}");
+                FuLogger.LogWarning($"[RedDotModule] 注册监听时未找到节点: {key}");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLogger.LogWarning($"RedDotManager: 移除监听时未找到节点: {key}");
+                FuLogger.LogWarning($"[RedDotModule] 移除监听时未找到节点: {key}");
                 return;
             }
 
@@ -191,7 +191,7 @@ namespace FuFramework.RedDot.Runtime
         {
             if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLogger.LogWarning($"RedDotManager: 未找到节点: {key}");
+                FuLogger.LogWarning($"[RedDotModule] 未找到节点: {key}");
                 return;
             }
 
@@ -227,7 +227,7 @@ namespace FuFramework.RedDot.Runtime
         /// <param name="key">节点路径</param>
         /// <example>
         /// // 阅读所有系统邮件后重置
-        /// RedDotManager.ResetCount(PredefinedKeys.MailSystem);
+        /// RedDotModule.ResetCount(PredefinedKeys.MailSystem);
         /// </example>
         public void ResetCount(string key) => SetCount(key, 0);
 

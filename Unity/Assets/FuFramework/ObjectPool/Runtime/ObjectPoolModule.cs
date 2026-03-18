@@ -84,7 +84,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         private void OnLowMemory()
         {
-            FuLogger.LogInfo("低内存警告, 释放对象池资源...");
+            FuLogger.LogInfo("[ObjectPoolModule] 低内存警告, 释放对象池中所有未使用的资源...");
 
             // 释放对象池中所有未使用的资源
             ReleaseAllUnused();
@@ -109,10 +109,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>是否存在对象池。</returns>
         public bool HasObjectPool(Type objectType)
         {
-            if (objectType == null) throw new FuException("对象类型不能为空.");
+            if (objectType == null) throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _HasObjectPool(new TypeNamePair(objectType));
         }
@@ -136,10 +136,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>是否存在对象池。</returns>
         public bool HasObjectPool(Type objectType, string poolName)
         {
-            if (objectType == null) throw new FuException("对象类型不能为空.");
+            if (objectType == null) throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _HasObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -152,7 +152,7 @@ namespace FuFramework.ObjectPool.Runtime
         public bool HasObjectPool(Predicate<ObjectPoolBase> condition)
         {
             if (condition == null)
-                throw new FuException("检查条件不能为空.");
+                throw new FuException("[ObjectPoolModule] 检查条件不能为空.");
 
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
@@ -180,10 +180,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>要获取的对象池。</returns>
         public ObjectPoolBase GetObjectPool(Type objectType)
         {
-            if (objectType == null) throw new FuException("对象类型不能为空.");
+            if (objectType == null) throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _GetObjectPool(new TypeNamePair(objectType));
         }
@@ -207,10 +207,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>要获取的对象池。</returns>
         public ObjectPoolBase GetObjectPool(Type objectType, string poolName)
         {
-            if (objectType == null) throw new FuException("对象类型不能为空.");
+            if (objectType == null) throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _GetObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -222,7 +222,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>要获取的对象池。</returns>
         public ObjectPoolBase GetObjectPool(Predicate<ObjectPoolBase> condition)
         {
-            if (condition == null) throw new FuException("检查条件不能为空.");
+            if (condition == null) throw new FuException("[ObjectPoolModule] 检查条件不能为空.");
 
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
@@ -240,7 +240,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>要获取的对象池。</returns>
         public ObjectPoolBase[] GetObjectPools(Predicate<ObjectPoolBase> condition)
         {
-            if (condition == null) throw new FuException("检查条件不能为空.");
+            if (condition == null) throw new FuException("[ObjectPoolModule] 检查条件不能为空.");
 
             var results = new List<ObjectPoolBase>();
             foreach (var (_, objPool) in m_ObjPoolDict)
@@ -259,8 +259,8 @@ namespace FuFramework.ObjectPool.Runtime
         /// <param name="results">要获取的对象池。</param>
         public void GetObjectPools(Predicate<ObjectPoolBase> condition, List<ObjectPoolBase> results)
         {
-            if (condition == null) throw new FuException("检查条件不能为空.");
-            if (results   == null) throw new FuException("结果列表不能为空.");
+            if (condition == null) throw new FuException("[ObjectPoolModule] 检查条件不能为空.");
+            if (results   == null) throw new FuException("[ObjectPoolModule] 结果列表不能为空.");
 
             results.Clear();
             foreach (var (_, objPool) in m_ObjPoolDict)
@@ -320,7 +320,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <param name="results">所有对象池。</param>
         public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results)
         {
-            if (results == null) throw new FuException("结果列表不能为空.");
+            if (results == null) throw new FuException("[ObjectPoolModule] 结果列表不能为空.");
 
             results.Clear();
             foreach (var (_, objPool) in m_ObjPoolDict)
@@ -760,10 +760,10 @@ namespace FuFramework.ObjectPool.Runtime
         public bool DestroyObjectPool(Type objectType)
         {
             if (objectType == null)
-                throw new FuException("对象类型不能为空.");
+                throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _DestroyObjectPool(new TypeNamePair(objectType));
         }
@@ -788,10 +788,10 @@ namespace FuFramework.ObjectPool.Runtime
         public bool DestroyObjectPool(Type objectType, string poolName)
         {
             if (objectType == null)
-                throw new FuException("对象类型不能为空.");
+                throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             return _DestroyObjectPool(new TypeNamePair(objectType, poolName));
         }
@@ -804,7 +804,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>是否销毁对象池成功。</returns>
         public bool DestroyObjectPool<T>(ObjectPool<T> objectPool) where T : ObjectBase
         {
-            if (objectPool == null) throw new FuException("对象池为不能为空.");
+            if (objectPool == null) throw new FuException("[ObjectPoolModule] 对象池为不能为空.");
             return _DestroyObjectPool(new TypeNamePair(typeof(T), objectPool.Name));
         }
 
@@ -815,7 +815,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <returns>是否销毁对象池成功。</returns>
         public bool DestroyObjectPool(ObjectPoolBase objectPool)
         {
-            if (objectPool == null) throw new FuException("对象池为不能为空.");
+            if (objectPool == null) throw new FuException("[ObjectPoolModule] 对象池为不能为空.");
             return _DestroyObjectPool(new TypeNamePair(objectPool.ObjectType, objectPool.Name));
         }
 
@@ -828,7 +828,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void Release()
         {
-            FuLogger.LogInfo("[ObjectPoolComponent]释放所有对象池中可释放对象...");
+            FuLogger.LogInfo("[ObjectPoolModule] 释放所有对象池中可释放对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
@@ -841,7 +841,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         public void ReleaseAllUnused()
         {
-            FuLogger.LogInfo("[ObjectPoolComponent]释放所有对象池中的所有未使用对象...");
+            FuLogger.LogInfo("[ObjectPoolModule] 释放所有对象池中的所有未使用对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
@@ -887,7 +887,7 @@ namespace FuFramework.ObjectPool.Runtime
         {
             var typeNamePair = new TypeNamePair(typeof(T), poolName);
             if (HasObjectPool<T>(poolName))
-                throw new FuException($"对象池 '{typeNamePair}' 已存在, 不可重复创建.");
+                throw new FuException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");
 
             var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoReleaseInterval, capacity, expireTime, priority);
             m_ObjPoolDict.Add(typeNamePair, objectPool);
@@ -909,14 +909,14 @@ namespace FuFramework.ObjectPool.Runtime
         private ObjectPoolBase _CreateObjectPool(Type objectType, string poolName, bool allowSpawnInUse, float autoReleaseInterval, int capacity,
                                                  float expireTime, int priority)
         {
-            if (objectType == null) throw new FuException("对象类型不能为空.");
+            if (objectType == null) throw new FuException("[ObjectPoolModule] 对象类型不能为空.");
 
             if (!typeof(ObjectBase).IsAssignableFrom(objectType))
-                throw new FuException($"对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
+                throw new FuException($"[ObjectPoolModule] 对象类型 '{objectType.FullName}' 不是 ObjectBase 的子类.");
 
             var typeNamePair = new TypeNamePair(objectType, poolName);
             if (HasObjectPool(objectType, poolName))
-                throw new FuException($"对象池 '{typeNamePair}' 已存在, 不可重复创建");
+                throw new FuException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建");
 
             var objectPoolType = typeof(ObjectPool<>).MakeGenericType(objectType);
             var objectPool = (ObjectPoolBase)Activator.CreateInstance(objectPoolType, poolName, allowSpawnInUse, autoReleaseInterval, capacity,

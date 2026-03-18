@@ -56,7 +56,7 @@ namespace FuFramework.Model.Runtime
         public void RemoveModel<T>()
         {
             var key = typeof(T);
-            if (!m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelManager] 删除Model失败! '{key.Name}' 不存在");
+            if (!m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
 
             var model = m_ModelDict[key];
             if (m_ModelDict.Remove(key))
@@ -84,7 +84,7 @@ namespace FuFramework.Model.Runtime
         private T CreateModel<T>() where T : BaseModel, new()
         {
             var key = typeof(T);
-            if (m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelManager] 创建Model失败! '{key.Name}' 已存在");
+            if (m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
 
             var model = new T();
             model.Init();

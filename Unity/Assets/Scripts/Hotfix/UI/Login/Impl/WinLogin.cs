@@ -94,7 +94,7 @@ namespace Hotfix.UI
         private void OnInputUserNameFocusOut(EventContext ctx)
         {
             // if (_soundId != -1)
-            // SoundManager.Instance.PauseSound(_soundId);
+            // SoundModule.Instance.PauseSound(_soundId);
         }
 
         private void OnInputPasswordChanged(EventContext ctx)
@@ -105,7 +105,7 @@ namespace Hotfix.UI
         private void OnInputPasswordFocusOut(EventContext ctx)
         {
             // if (_soundId != -1)
-            // SoundManager.Instance.ResumeSound(_soundId);
+            // SoundModule.Instance.ResumeSound(_soundId);
         }
 
         #endregion
@@ -162,7 +162,7 @@ namespace Hotfix.UI
 
         // public async UniTaskVoid PlayBgm()
         // {
-        //     _soundId = await SoundManager.Instance.PlaySound("sfx_lose", "UI", ".ogg");
+        //     _soundId = await SoundModule.Instance.PlaySound("sfx_lose", "UI", ".ogg");
         // }
     }
 }

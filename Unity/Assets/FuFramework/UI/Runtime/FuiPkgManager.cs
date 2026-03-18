@@ -72,7 +72,7 @@ namespace FuFramework.UI.Runtime
                 if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
                     return loadingTask;
 
-                FuLogger.LogInfo($"[FuiPackageManager]添加UIPackage包: {pkgName}");
+                FuLogger.LogInfo($"[FuiPkgManager]添加UIPackage包: {pkgName}");
 
                 // 创建取消令牌源
                 var cts = new CancellationTokenSource();
@@ -158,12 +158,12 @@ namespace FuFramework.UI.Runtime
             }
             catch (OperationCanceledException)
             {
-                FuLogger.LogInfo($"[FuiPackageManager]包加载被取消: {pkgName}");
+                FuLogger.LogInfo($"[FuiPkgManager]包加载被取消: {pkgName}");
                 throw;
             }
             catch (Exception ex)
             {
-                FuLogger.LogError($"[FuiPackageManager]加载包失败: {pkgName}, 错误: {ex.Message}");
+                FuLogger.LogError($"[FuiPkgManager]加载包失败: {pkgName}, 错误: {ex.Message}");
                 throw;
             }
         }
@@ -195,7 +195,7 @@ namespace FuFramework.UI.Runtime
         /// <exception cref="FuException"></exception>
         private async UniTask<TextAsset> LoadDesc(string pkgName)
         {
-            if (string.IsNullOrEmpty(pkgName)) throw new FuException("[FuiPackageManager]包名不能为空.");
+            if (string.IsNullOrEmpty(pkgName)) throw new FuException("[FuiPkgManager]包名不能为空.");
 
             //"Assets/Bundles/UI/";
             var rootPath = Utility.AssetPath.GetUIRootPath();
@@ -251,7 +251,7 @@ namespace FuFramework.UI.Runtime
                 m_PkgRefCountDict[pkgName] += 1;
             }
 
-            FuLogger.LogInfo($"[FuiPackageManager]增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+            FuLogger.LogInfo($"[FuiPkgManager]增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace FuFramework.UI.Runtime
             if (m_PkgRefCountDict.ContainsKey(pkgName))
             {
                 m_PkgRefCountDict[pkgName] -= 1;
-                FuLogger.LogInfo($"[FuiPackageManager]减少UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+                FuLogger.LogInfo($"[FuiPkgManager]减少UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
                 if (m_PkgRefCountDict[pkgName] > 0) return; // 引用计数大于0，不释放
             }
 
@@ -297,7 +297,7 @@ namespace FuFramework.UI.Runtime
             // 3.如果是从Resources中加载的包，直接移除包，Resources加载的包会在UIPackage.RemovePackage中自动释放
             if (IsFromResources(pkgName))
             {
-                FuLogger.LogInfo($"[FuiPackageManager]释放从Resources中加载的UIPackage包: {pkgName}.");
+                FuLogger.LogInfo($"[FuiPkgManager]释放从Resources中加载的UIPackage包: {pkgName}.");
                 return;
             }
 
@@ -306,7 +306,7 @@ namespace FuFramework.UI.Runtime
             {
                 cts.Cancel(); // 真正取消正在进行的加载任务
                 m_LoadingCts.Remove(pkgName);
-                FuLogger.LogInfo($"[FuiPackageManager]取消正在加载的UIPackage: {pkgName}");
+                FuLogger.LogInfo($"[FuiPkgManager]取消正在加载的UIPackage: {pkgName}");
                 return;
             }
 
@@ -317,7 +317,7 @@ namespace FuFramework.UI.Runtime
             if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var assetLoader))
             {
                 assetLoader.Release();
-                FuLogger.LogInfo($"[FuiPackageManager]释放UIPackage-{pkgName}内的资源完成.");
+                FuLogger.LogInfo($"[FuiPkgManager]释放UIPackage-{pkgName}内的资源完成.");
             }
 
             // 7. 移除引用计数

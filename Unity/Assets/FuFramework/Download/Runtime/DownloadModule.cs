@@ -119,7 +119,7 @@ namespace FuFramework.Download.Runtime
             m_EventModule = ModuleManager.GetModule<EventModule>();
             if (!m_EventModule)
             {
-                FuLogger.LogFatal("[DownloadManager] 事件管理器为空!");
+                FuLogger.LogFatal("[DownloadModule] 事件管理器为空!");
                 return;
             }
 
@@ -170,7 +170,7 @@ namespace FuFramework.Download.Runtime
             helpObject.name = $"[DownloadAgentHelper]_{index}";
             if (!downloadAgentHelper)
             {
-                FuLogger.LogError("[DownloadManager]创建下载代理辅助器失败!");
+                FuLogger.LogError("[DownloadModule]创建下载代理辅助器失败!");
                 return;
             }
 
@@ -408,7 +408,7 @@ namespace FuFramework.Download.Runtime
             // 检查sender.Task是否为null，避免空引用异常
             if (sender.Task == null)
             {
-                FuLogger.LogWarning("[DownloadManager]下载开始事件被触发，但下载任务为null。");
+                FuLogger.LogWarning("[DownloadModule]下载开始事件被触发，但下载任务为null。");
                 return;
             }
 
@@ -424,7 +424,7 @@ namespace FuFramework.Download.Runtime
             // 检查sender.Task是否为null，避免空引用异常
             if (sender.Task == null)
             {
-                FuLogger.LogWarning("[DownloadManager]下载更新事件被触发，但下载任务为null。");
+                FuLogger.LogWarning("[DownloadModule]下载更新事件被触发，但下载任务为null。");
                 return;
             }
 
@@ -441,7 +441,7 @@ namespace FuFramework.Download.Runtime
             // 检查sender.Task是否为null，避免空引用异常
             if (sender.Task == null)
             {
-                FuLogger.LogWarning("[DownloadManager]下载成功事件被触发，但下载任务为null。");
+                FuLogger.LogWarning("[DownloadModule]下载成功事件被触发，但下载任务为null。");
                 return;
             }
 
@@ -461,14 +461,14 @@ namespace FuFramework.Download.Runtime
             // 检查sender.Task是否为null，避免空引用异常
             if (sender.Task == null)
             {
-                FuLogger.LogError($"[DownloadManager]下载失败! 下载任务为null，错误信息 '{errorMessage}'.");
+                FuLogger.LogError($"[DownloadModule]下载失败! 下载任务为null，错误信息 '{errorMessage}'.");
                 return;
             }
 
             // 检查是否为416 Range Not Satisfiable错误
             if (errorMessage.Contains("416") || errorMessage.Contains("Range Not Satisfiable"))
             {
-                FuLogger.LogWarning($"[DownloadManager]检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载后存放全路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}'.");
+                FuLogger.LogWarning($"[DownloadModule]检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载后存放全路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}'.");
 
                 // 删除损坏的下载文件
                 var downloadFile = $"{sender.Task.DownloadedFullPath}.download";
@@ -482,7 +482,7 @@ namespace FuFramework.Download.Runtime
                 {
                     // 重新添加下载任务，从头开始下载
                     var newSerialId = AddDownload(sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.Task.Tag, sender.Task.Priority, sender.Task.UserData);
-                    FuLogger.LogInfo($"[DownloadManager]已重新添加下载任务，新的序列编号为 '{newSerialId}'。");
+                    FuLogger.LogInfo($"[DownloadModule]已重新添加下载任务，新的序列编号为 '{newSerialId}'。");
 
                     // 完成原任务（返回false表示失败，但新任务会继续）
                     downloadData01.Tcs.TrySetResult(false);
@@ -491,7 +491,7 @@ namespace FuFramework.Download.Runtime
                 return;
             }
 
-            FuLogger.LogError($"[DownloadManager]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
+            FuLogger.LogError($"[DownloadModule]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
             var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
             m_EventModule.Broadcast(this, downloadFailureEventArgs);
             if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))

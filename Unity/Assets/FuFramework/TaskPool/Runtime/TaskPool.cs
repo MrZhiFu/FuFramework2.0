@@ -101,7 +101,7 @@ namespace FuFramework.TaskPool.Runtime
         /// <param name="agent">要增加的任务代理。</param>
         public void AddAgent(ITaskAgent<T> agent)
         {
-            if (agent == null) throw new FuException("任务代理为空.");
+            if (agent == null) throw new FuException("[TaskPool] 任务代理为空.");
 
             agent.Initialize();
             m_FreeAgentStack.Push(agent);
@@ -149,7 +149,7 @@ namespace FuFramework.TaskPool.Runtime
         /// <param name="results">任务的信息。</param>
         public void GetTaskInfos(string tag, List<TaskInfo> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results == null) throw new FuException("[TaskPool] 结果列表为空.");
 
             results.Clear();
 
@@ -199,7 +199,7 @@ namespace FuFramework.TaskPool.Runtime
         /// <param name="results">所有任务的信息。</param>
         public void GetAllTaskInfos(List<TaskInfo> results)
         {
-            if (results == null) throw new FuException("Results is invalid.");
+            if (results == null) throw new FuException("[TaskPool] 结果列表为空.");
 
             results.Clear();
 

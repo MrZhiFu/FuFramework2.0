@@ -58,28 +58,28 @@ namespace FuFramework.Timer.Runtime
         #region Public Methods
 
         /// <summary>
-        /// 启动一个基础的一次性计时器
+        /// 启动一个倒计时计时器
         /// </summary>
         /// <param name="duration">计时器持续时间</param>
         /// <param name="finishCallBack">计时器结束回调</param>
         /// <param name="updateCallBack">计时器更新回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        /// <returns></returns>
-        public int StartTimer(float duration, Action finishCallBack, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        /// <returns>倒计时Id</returns>
+        public int StartCountdownTimer(float duration, Action finishCallBack, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
             if (duration <= 0)
             {
-                FuLogger.LogError("[TimerManager] 计时器持续时间必须大于0");
+                FuLogger.LogError("[TimerModule] 计时器持续时间必须大于0");
                 return -1;
             }
 
             var timerId   = Guid.NewGuid().GetHashCode();
-            var timerInfo = NormalTimer.Create(timerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            var timerInfo = CountdownTimer.Create(timerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
 
             if (timerInfo == null)
             {
-                FuLogger.LogError("[TimerManager] 启动计时器失败，计时器创建失败！");
+                FuLogger.LogError("[TimerModule] 启动计时器失败，计时器创建失败！");
                 return -1;
             }
 
@@ -97,27 +97,27 @@ namespace FuFramework.Timer.Runtime
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        /// <returns></returns>
-        public int StartTimeTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        /// <returns>倒计时Id</returns>
+        public int StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
             if (interval <= 0)
             {
-                FuLogger.LogError("[TimerManager] 间隔时间必须大于0");
+                FuLogger.LogError("[TimerModule] 间隔时间必须大于0");
                 return -1;
             }
 
             if (intervalCallback == null)
             {
-                FuLogger.LogError("[TimerManager] 时间间隔计时器回调函数不能为null");
+                FuLogger.LogError("[TimerModule] 时间间隔计时器回调函数不能为null");
                 return -1;
             }
 
             var timerId   = Guid.NewGuid().GetHashCode();
-            var timerInfo = TimeTimer.Create(timerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            var timerInfo = IntervalTimer.Create(timerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
 
             if (timerInfo == null)
             {
-                FuLogger.LogError("[TimerManager] 启动间隔计时器失败，计时器创建失败！");
+                FuLogger.LogError("[TimerModule] 启动间隔计时器失败，计时器创建失败！");
                 return -1;
             }
 
@@ -135,18 +135,18 @@ namespace FuFramework.Timer.Runtime
         /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
         /// <param name="immediate">是否立即执行第一次回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-        /// <returns></returns>
+        /// <returns>倒计时Id</returns>
         public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
             if (frameInterval <= 0)
             {
-                FuLogger.LogError("[TimerManager] 帧间隔必须大于0");
+                FuLogger.LogError("[TimerModule] 帧间隔必须大于0");
                 return -1;
             }
 
             if (intervalCallback == null)
             {
-                FuLogger.LogError("[TimerManager] 帧间隔计时器回调函数不能为null");
+                FuLogger.LogError("[TimerModule] 帧间隔计时器回调函数不能为null");
                 return -1;
             }
 
@@ -155,7 +155,7 @@ namespace FuFramework.Timer.Runtime
 
             if (timerInfo == null)
             {
-                FuLogger.LogError("[TimerManager] 启动帧间隔计时器失败，计时器创建失败！");
+                FuLogger.LogError("[TimerModule] 启动帧间隔计时器失败，计时器创建失败！");
                 return -1;
             }
 
@@ -173,18 +173,18 @@ namespace FuFramework.Timer.Runtime
         {
             if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
             {
-                FuLogger.LogWarning($"[TimerManager] 暂停计时器{timerId}失败，不存在该计时器！");
+                FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}失败，不存在该计时器！");
                 return;
             }
 
             if (timerInfo.IsPaused)
             {
-                FuLogger.LogWarning($"[TimerManager] 暂停计时器{timerId}:{timerInfo.Name}失败，该计时器已处于暂停状态！");
+                FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}:{timerInfo.Name}失败，该计时器已处于暂停状态！");
                 return;
             }
 
             timerInfo.IsPaused = true;
-            FuLogger.LogInfo($"[TimerManager] 暂停计时器{timerId}:{timerInfo.Name}成功");
+            FuLogger.LogInfo($"[TimerModule] 暂停计时器{timerId}:{timerInfo.Name}成功");
         }
 
         /// <summary>
@@ -195,18 +195,18 @@ namespace FuFramework.Timer.Runtime
         {
             if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
             {
-                FuLogger.LogWarning($"[TimerManager] 恢复计时器{timerId}失败，不存在该计时器！");
+                FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}失败，不存在该计时器！");
                 return;
             }
 
             if (!timerInfo.IsPaused)
             {
-                FuLogger.LogWarning($"[TimerManager] 恢复计时器{timerId}:{timerInfo.Name}失败，该计时器已处于运行状态！");
+                FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}:{timerInfo.Name}失败，该计时器已处于运行状态！");
                 return;
             }
 
             timerInfo.IsPaused = false;
-            FuLogger.LogInfo($"[TimerManager] 恢复计时器{timerId}:{timerInfo.Name}成功");
+            FuLogger.LogInfo($"[TimerModule] 恢复计时器{timerId}:{timerInfo.Name}成功");
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace FuFramework.Timer.Runtime
         {
             if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
             {
-                FuLogger.LogWarning($"[TimerManager] 停止计时器{timerId}失败，不存在该计时器！");
+                FuLogger.LogWarning($"[TimerModule] 停止计时器{timerId}失败，不存在该计时器！");
                 return;
             }
 
@@ -322,7 +322,7 @@ namespace FuFramework.Timer.Runtime
                     timer.Update(deltaTime, deltaFrames);
 
                     // 检查普通计时器是否完成
-                    if (timer is NormalTimer { IsCompleted: true } normalTimer)
+                    if (timer is CountdownTimer { IsCompleted: true } normalTimer)
                     {
                         normalTimer.FinishCallBack?.Invoke();
                         break;
@@ -358,7 +358,7 @@ namespace FuFramework.Timer.Runtime
             {
                 if (!m_TimerDict.Remove(timerId, out var timerInfo)) return;
                 if (timerInfo == null) return;
-                FuLogger.LogInfo($"[TimerManager] 清理计时器{timerId}");
+                FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
                 ReferencePool.Runtime.ReferencePool.Release(timerInfo);
             }
         }

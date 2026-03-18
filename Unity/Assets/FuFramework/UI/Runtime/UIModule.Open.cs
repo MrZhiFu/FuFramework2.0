@@ -46,7 +46,7 @@ namespace FuFramework.UI.Runtime
             // 检查是否已经在加载中（考虑isMultiple参数）
             if (!isMultiple && IsLoadingUI(uiName))
             {
-                FuLogger.LogWarning($"[UIManager]界面 {uiName} 已经正在加载.");
+                FuLogger.LogWarning($"[UIModule]界面 {uiName} 已经正在加载.");
                 return null;
             }
 
@@ -76,7 +76,7 @@ namespace FuFramework.UI.Runtime
                 m_InstancePool.Register(uiInstanceObject, true);
 
                 // UI包已经加载过，则直接创建界面
-                if (PkgManger == null) throw new FuException("[UuiPackageManager模块不存在.");
+                if (PkgManger == null) throw new FuException("[UIModule]FuiPkgManager不存在.");
                 
                 if (PkgManger.HasPackage(view.PackageName))
                 {
@@ -109,7 +109,7 @@ namespace FuFramework.UI.Runtime
         {
             try
             {
-                if (view == null) throw new FuException($"[UIManager]创建界面实例{typeof(T).Name}失败.");
+                if (view == null) throw new FuException($"[UIModule]创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
                 var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;
@@ -139,7 +139,7 @@ namespace FuFramework.UI.Runtime
             {
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
                 m_EventModule.Broadcast(this, openUIFailureEventArgs);
-                FuLogger.LogError($"[UIManager]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
+                FuLogger.LogError($"[UIModule]打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
                 return GetUI(serialId) as T;
             }
         }

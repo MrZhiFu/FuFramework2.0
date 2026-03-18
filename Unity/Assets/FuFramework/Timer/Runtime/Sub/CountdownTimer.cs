@@ -6,14 +6,14 @@ using Cysharp.Threading.Tasks;
 namespace FuFramework.Timer.Runtime
 {
     /// <summary>
-    /// 普通一次性计时器
+    /// 倒计时计时器
     /// 功能：在指定的持续时间结束后触发完成回调，期间可接收每帧更新回调
     /// 特点：
     /// - 精确控制执行时长，支持进度查询
     /// - 可配置是否忽略时间缩放，适用于UI动画、游戏逻辑延时等场景
     /// - 提供更新回调，便于实现进度条、倒计时显示等需求
     /// </summary>
-    internal class NormalTimer : TimerBase
+    internal class CountdownTimer : TimerBase
     {
         /// <summary>
         /// 总持续时间（秒）
@@ -89,9 +89,9 @@ namespace FuFramework.Timer.Runtime
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         /// <returns></returns>
-        public static NormalTimer Create(int timerId, float duration, Action finishCallBack, Action updateCallBack, PlayerLoopTiming playerLoopTiming, bool ignoreTimeScale)
+        public static CountdownTimer Create(int timerId, float duration, Action finishCallBack, Action updateCallBack, PlayerLoopTiming playerLoopTiming, bool ignoreTimeScale)
         {
-            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<NormalTimer>();
+            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<CountdownTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id               = timerId;

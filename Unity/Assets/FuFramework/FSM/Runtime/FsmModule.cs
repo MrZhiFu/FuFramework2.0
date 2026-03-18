@@ -95,7 +95,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否存在有限状态机。</returns>
         public bool HasFsm(Type owner)
         {
-            if (owner == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (owner == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return m_FsmDict.ContainsKey(new TypeNamePair(owner));
         }
 
@@ -118,7 +118,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否存在有限状态机。</returns>
         public bool HasFsm(Type owner, string fsmName)
         {
-            if (owner == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (owner == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return m_FsmDict.ContainsKey(new TypeNamePair(owner, fsmName));
         }
 
@@ -139,7 +139,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>要获取的有限状态机。</returns>
         public Fsm GetFsm(Type ownerType)
         {
-            if (ownerType == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (ownerType == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return m_FsmDict.GetValueOrDefault(new TypeNamePair(ownerType));
         }
 
@@ -162,7 +162,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>要获取的有限状态机。</returns>
         public Fsm GetFsm(Type ownerType, string fsmName)
         {
-            if (ownerType == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (ownerType == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return m_FsmDict.GetValueOrDefault(new TypeNamePair(ownerType, fsmName));
         }
 
@@ -188,7 +188,7 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="results">所有有限状态机。</param>
         public void GetAllFsms(List<Fsm> results)
         {
-            if (results == null) throw new FuException("[FsmManager] 结果列表不能为空。");
+            if (results == null) throw new FuException("[FsmModule] 结果列表不能为空。");
             results.Clear();
             foreach (var (_, fsmBase) in m_FsmDict)
             {
@@ -219,7 +219,7 @@ namespace FuFramework.Fsm.Runtime
             var typeNamePair = new TypeNamePair(ownerType, fsmName);
             
             if (HasFsm(ownerType)) 
-                throw new FuException($"[FsmManager] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
+                throw new FuException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
 
             var fsm = Fsm.Create(fsmName, owner, states);
             m_FsmDict.Add(typeNamePair, fsm);
@@ -250,7 +250,7 @@ namespace FuFramework.Fsm.Runtime
         {
             var typeNamePair = new TypeNamePair(typeof(T), fsmName);
             if (HasFsm<T>(fsmName))
-                throw new FuException($"[FsmManager] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
+                throw new FuException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
 
             var fsm = Fsm.Create(fsmName, owner, states);
             m_FsmDict.Add(typeNamePair, fsm);
@@ -275,7 +275,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否销毁有限状态机成功。</returns>
         public bool DestroyFsm(Type ownerType)
         {
-            if (ownerType == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (ownerType == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return InternalDestroyFsm(new TypeNamePair(ownerType));
         }
 
@@ -298,7 +298,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否销毁有限状态机成功。</returns>
         public bool DestroyFsm(Type ownerType, string fsmName)
         {
-            if (ownerType == null) throw new FuException("[FsmManager] 有限状态机持有者类型不能为空。");
+            if (ownerType == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
             return InternalDestroyFsm(new TypeNamePair(ownerType, name));
         }
 
@@ -310,7 +310,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否销毁有限状态机成功。</returns>
         public bool DestroyFsm<T>(Fsm fsm) where T : class
         {
-            if (fsm == null) throw new FuException("[FsmManager] 有限状态机不能为空。");
+            if (fsm == null) throw new FuException("[FsmModule] 有限状态机不能为空。");
             return InternalDestroyFsm(new TypeNamePair(typeof(T), fsm.Name));
         }
 
@@ -321,7 +321,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否销毁有限状态机成功。</returns>
         public bool DestroyFsm(Fsm fsm)
         {
-            if (fsm == null) throw new FuException("[FsmManager] 有限状态机不能为空。");
+            if (fsm == null) throw new FuException("[FsmModule] 有限状态机不能为空。");
             return InternalDestroyFsm(new TypeNamePair(fsm.Owner, fsm.Name));
         }
 
