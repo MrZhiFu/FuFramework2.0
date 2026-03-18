@@ -23,7 +23,7 @@ namespace FuFramework.Web.Runtime
         protected override int Priority => ModulePriority.Core;
         
         /// 用于构建URL的StringBuilder
-        private readonly StringBuilder m_StringBuilder = new(256);
+        private readonly StringBuilder m_UrlStr = new(256);
 
         /// 等待处理的普通请求队列
         private readonly Queue<WebJsonData> m_WaitingNormalQueue = new(256);
@@ -34,7 +34,6 @@ namespace FuFramework.Web.Runtime
         /// 用于存储请求和响应数据的内存流
         private readonly MemoryStream m_MemoryStream = new();
         
-
         /// JSON内容类型常量
         private const string JsonContentType = "application/json; charset=utf-8";
 
@@ -63,7 +62,7 @@ namespace FuFramework.Web.Runtime
         /// </summary>
         protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
         {
-            lock (m_StringBuilder)
+            lock (m_UrlStr)
             {
                 if (m_SendingNormalList.Count < MaxConnectionPerServer && m_WaitingNormalQueue.Count > 0)
                 {
@@ -488,21 +487,21 @@ namespace FuFramework.Web.Runtime
         /// <returns>标准化后的URL</returns>
         private string UrlHandler(string url, Dictionary<string, string> queryString)
         {
-            m_StringBuilder.Clear();
-            m_StringBuilder.Append(url);
+            m_UrlStr.Clear();
+            m_UrlStr.Append(url);
 
             if (queryString is not { Count: > 0 }) return url;
 
             if (!url.EndsWithFast("?"))
-                m_StringBuilder.Append("?");
+                m_UrlStr.Append("?");
 
             foreach (var kv in queryString)
             {
-                m_StringBuilder.AppendFormat("{0}={1}&", kv.Key, kv.Value);
+                m_UrlStr.AppendFormat("{0}={1}&", kv.Key, kv.Value);
             }
 
-            url = m_StringBuilder.ToString(0, m_StringBuilder.Length - 1);
-            m_StringBuilder.Clear();
+            url = m_UrlStr.ToString(0, m_UrlStr.Length - 1);
+            m_UrlStr.Clear();
 
             return url;
         }

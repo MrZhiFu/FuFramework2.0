@@ -41,7 +41,7 @@ namespace FuFramework.Web.Runtime
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位</param>
         private void UpdateProtoBuf(float elapseSeconds, float realElapseSeconds)
         {
-            lock (m_StringBuilder)
+            lock (m_UrlStr)
             {
                 if (m_SendingProtoBufList.Count >= MaxConnectionPerServer || m_WaitingProtoBufQueue.Count <= 0) return;
                 var webProtoBufData = m_WaitingProtoBufQueue.Dequeue();
