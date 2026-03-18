@@ -140,12 +140,12 @@ namespace FuFramework.Download.Runtime
         /// <summary>
         /// 下载管理器轮询
         /// </summary>
-        /// <param name="elapseSeconds"></param>
-        /// <param name="realElapseSeconds"></param>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime"></param>
+        /// <param name="unscaledDeltaTime"></param>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            m_TaskPool.Update(elapseSeconds, realElapseSeconds);
-            m_DownloadCounter.Update(elapseSeconds, realElapseSeconds);
+            m_TaskPool.Update(deltaTime, unscaledDeltaTime);
+            m_DownloadCounter.Update(deltaTime, unscaledDeltaTime);
         }
 
         /// <summary>

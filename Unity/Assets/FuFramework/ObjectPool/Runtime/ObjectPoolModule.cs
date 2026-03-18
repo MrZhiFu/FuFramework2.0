@@ -52,13 +52,13 @@ namespace FuFramework.ObjectPool.Runtime
         /// <summary>
         /// 对象池管理器轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
-                objPool.Update(elapseSeconds, realElapseSeconds);
+                objPool.Update(deltaTime, unscaledDeltaTime);
             }
         }
 

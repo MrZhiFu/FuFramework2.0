@@ -72,13 +72,13 @@ namespace FuFramework.TaskPool.Runtime
         /// <summary>
         /// 任务池轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
-        public void Update(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">逻辑帧间隔流逝时间，以秒为单位。</param>
+        /// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
+        public void Update(float deltaTime, float unscaledDeltaTime)
         {
             if (Paused) return;
 
-            _ProcessRunningTasks(elapseSeconds, realElapseSeconds); // 处理正在运行的任务
+            _ProcessRunningTasks(deltaTime, unscaledDeltaTime); // 处理正在运行的任务
             _ProcessWaitingTasks();                                 // 处理正在等待的任务
         }
 
@@ -349,9 +349,9 @@ namespace FuFramework.TaskPool.Runtime
         /// <summary>
         /// 处理正在运行的任务
         /// </summary>
-        /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
-        private void _ProcessRunningTasks(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">逻辑帧间隔流逝时间，以秒为单位。</param>
+        /// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
+        private void _ProcessRunningTasks(float deltaTime, float unscaledDeltaTime)
         {
             var current = m_WorkingAgentList.First;
             while (current != null)
@@ -359,7 +359,7 @@ namespace FuFramework.TaskPool.Runtime
                 var task = current.Value.Task;
                 if (!task.Done)
                 {
-                    current.Value.Update(elapseSeconds, realElapseSeconds);
+                    current.Value.Update(deltaTime, unscaledDeltaTime);
                     current = current.Next;
                     continue;
                 }

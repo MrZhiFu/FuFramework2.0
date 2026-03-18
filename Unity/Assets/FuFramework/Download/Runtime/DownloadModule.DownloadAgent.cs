@@ -111,16 +111,16 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载代理轮询。
             /// </summary>
-            /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-            /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
-            public void Update(float elapseSeconds, float realElapseSeconds)
+            /// <param name="deltaTime">逻辑帧间隔流逝时间，以秒为单位。</param>
+            /// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
+            public void Update(float deltaTime, float unscaledDeltaTime)
             {
                 m_Helper.OnUpdate();
 
                 // 检查Task是否为null，避免空引用异常
                 if (Task == null || Task.Status != DownloadTaskStatus.Doing) return;
 
-                WaitTime += realElapseSeconds;
+                WaitTime += unscaledDeltaTime;
                 if (WaitTime < Task.Timeout) return;
 
                 // 调用下载代理辅助器错误事件

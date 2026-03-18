@@ -73,7 +73,7 @@ namespace FuFramework.Event.Runtime
         /// <summary>
         /// 事件池轮询。
         /// </summary>
-        public void Update(float elapseSeconds, float realElapseSeconds)
+        public void Update(float deltaTime, float unscaledDeltaTime)
         {
             lock (m_EventQueue)
             {

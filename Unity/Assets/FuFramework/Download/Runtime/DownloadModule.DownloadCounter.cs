@@ -80,20 +80,20 @@ namespace FuFramework.Download.Runtime
             /// <summary>
             /// 下载计数器轮询
             /// </summary>
-            /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-            /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
-            public void Update(float elapseSeconds, float realElapseSeconds)
+            /// <param name="deltaTime">逻辑帧间隔流逝时间，以秒为单位。</param>
+            /// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
+            public void Update(float deltaTime, float unscaledDeltaTime)
             {
                 if (m_DownloadCounterNodeList.Count <= 0) return;
 
-                m_Accumulator += realElapseSeconds;
+                m_Accumulator += unscaledDeltaTime;
                 if (m_Accumulator > m_RecordInterval)
                     m_Accumulator = m_RecordInterval;
 
-                m_LeftTime -= realElapseSeconds;
+                m_LeftTime -= unscaledDeltaTime;
                 foreach (var downloadCounterNode in m_DownloadCounterNodeList)
                 {
-                    downloadCounterNode.Update(elapseSeconds, realElapseSeconds);
+                    downloadCounterNode.Update(deltaTime, unscaledDeltaTime);
                 }
 
                 while (m_DownloadCounterNodeList.Count > 0)

@@ -93,10 +93,10 @@ namespace FuFramework.Entity.Runtime
         /// 1.回收待回收的实体
         /// 2.驱动每个实体组轮询
         /// </summary>
-        /// <param name="elapseSeconds"></param>
-        /// <param name="realElapseSeconds"></param>
+        /// <param name="deltaTime"></param>
+        /// <param name="unscaledDeltaTime"></param>
         /// <exception cref="FuException"></exception>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             // 回收待回收的实体
             while (m_WaitRecycleQueue.Count > 0)
@@ -117,7 +117,7 @@ namespace FuFramework.Entity.Runtime
             // 遍历每个实体组，驱动每个实体组轮询
             foreach (var (_, entityGroup) in m_EntityGroupDict)
             {
-                entityGroup.Update(elapseSeconds, realElapseSeconds);
+                entityGroup.Update(deltaTime, unscaledDeltaTime);
             }
         }
 

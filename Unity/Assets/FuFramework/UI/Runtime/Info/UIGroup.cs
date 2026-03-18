@@ -62,9 +62,9 @@ namespace FuFramework.UI.Runtime
         /// 界面组轮询。
         /// 遍历界面组中所有界面，驱动每个界面Update。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        public void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        public void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             if (m_Pause) return;
             var current = m_UIInfoList.First;
@@ -72,7 +72,7 @@ namespace FuFramework.UI.Runtime
             {
                 if (!current.Value.Paused && current.Value.View.Visible)  // 只更新未暂停且可见的界面
                 {
-                    current.Value.View._OnUpdate(elapseSeconds, realElapseSeconds);
+                    current.Value.View._OnUpdate(deltaTime, unscaledDeltaTime);
                 }
                 
                 current = current.Next;  // 继续处理下一个界面

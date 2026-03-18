@@ -106,7 +106,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 界面管理器轮询。
         /// </summary>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             while (m_WaitRecycleQueue.Count > 0)
             {

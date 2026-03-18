@@ -108,15 +108,15 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体组轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        public void Update(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        public void Update(float deltaTime, float unscaledDeltaTime)
         {
             var current = m_Entities.First;
             while (current != null)
             {
                 m_CachedNode = current.Next;
-                current.Value.OnUpdate(elapseSeconds, realElapseSeconds);
+                current.Value.OnUpdate(deltaTime, unscaledDeltaTime);
                 current      = m_CachedNode;
                 m_CachedNode = null;
             }

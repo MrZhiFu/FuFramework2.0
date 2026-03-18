@@ -90,7 +90,7 @@ namespace FuFramework.Scene.Runtime
         /// <summary>
         /// 场景管理器轮询。
         /// </summary>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
             {

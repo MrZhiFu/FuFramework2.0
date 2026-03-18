@@ -42,9 +42,9 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 游戏框架模块轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             m_TempFsmList.Clear();
             if (m_FsmDict.Count <= 0) return;
@@ -56,7 +56,7 @@ namespace FuFramework.Fsm.Runtime
 
             foreach (var fsm in m_TempFsmList.Where(fsm => !fsm.IsDestroyed))
             {
-                fsm.Update(elapseSeconds, realElapseSeconds);
+                fsm.Update(deltaTime, unscaledDeltaTime);
             }
         }
 

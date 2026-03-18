@@ -55,7 +55,7 @@ namespace FuFramework.Asset.Runtime
         {
             // 获取资源模块配置数据
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
-            if (!assetSetting) throw new FuException("资源模块配置数据为空!");
+            if (!assetSetting) throw new FuException("[AssetModule]资源模块配置数据为空!");
 
             PlayMode                    = assetSetting.PlayMode;
             DefaultPackageName          = assetSetting.DefaultPackageName;
@@ -72,22 +72,22 @@ namespace FuFramework.Asset.Runtime
             PlayMode = EPlayMode.WebPlayMode;
 #endif
 #endif
-            FuLogger.LogInfo($"资源系统运行模式：{PlayMode}");
+            FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
             BetterStreamingAssets.Initialize();
 
             YooAssets.Initialize();
             YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
 
-            FuLogger.LogInfo("资源系统初始化完毕！");
+            FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
         }
 
         /// <summary>
         /// 游戏框架模块轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 关闭并清理游戏框架模块。

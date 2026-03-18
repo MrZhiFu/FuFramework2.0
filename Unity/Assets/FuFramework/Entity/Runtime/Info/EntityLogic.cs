@@ -99,9 +99,9 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected internal virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected internal virtual void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 实体显示。

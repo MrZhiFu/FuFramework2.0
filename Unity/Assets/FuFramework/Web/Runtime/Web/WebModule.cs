@@ -60,7 +60,7 @@ namespace FuFramework.Web.Runtime
         /// <summary>
         /// 更新处理请求队列
         /// </summary>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             lock (m_UrlStr)
             {
@@ -76,7 +76,7 @@ namespace FuFramework.Web.Runtime
                     m_SendingNormalList.Add(webJsonData);
                 }
 
-                UpdateProtoBuf(elapseSeconds, realElapseSeconds);
+                UpdateProtoBuf(deltaTime, unscaledDeltaTime);
             }
         }
 

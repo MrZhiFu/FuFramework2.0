@@ -21,20 +21,19 @@ namespace FuFramework.Core.Runtime
         private const int GameFrameworkSceneId = 0;
 
         /// <summary>
-        /// 记录所有模块组件的链表集合
+        /// 记录所有已注册的模块的链表集合
         /// </summary>
-        private static readonly FuLinkedList<FuModule> ModuleList = new();
-
-        /// <summary>
-        /// 模块缓存字典。
-        /// </summary>
-        private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new();
+        private static readonly FuLinkedList<FuModule> RegisteredModuleList = new();
 
         /// <summary>
         /// 记录正在注册的模块类型，用于检测循环依赖
         /// </summary>
         private static readonly HashSet<Type> RegisteringSet = new();
 
+        /// <summary>
+        /// 模块缓存的字典，key:模块类型，value:模块对象。
+        /// </summary>
+        private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new();
 
         /// <summary>
         /// 模块根节点
@@ -48,12 +47,85 @@ namespace FuFramework.Core.Runtime
         {
             get
             {
-                if (m_ModuleRoot is not null) return m_ModuleRoot;
-                var rootObj = new GameObject("[ModuleManager]");
+                if (m_ModuleRoot is not null)
+                    return m_ModuleRoot;
+
+                var rootObj = new GameObject("[FrameworkModule]");
                 Object.DontDestroyOnLoad(rootObj);
                 m_ModuleRoot = rootObj.transform;
                 return m_ModuleRoot;
             }
+        }
+
+        /// <summary>
+        /// 初始化游戏框架。
+        /// </summary>
+        public static void Initialize()
+        {
+            // 自动注册所有框架模块
+            RegisterAllModules();
+        }
+
+        /// <summary>
+        /// 框架模块轮询
+        /// </summary>
+        public static void Update(float deltaTime, float unscaledDeltaTime)
+        {
+            foreach (var module in RegisteredModuleList)
+            {
+                if (!module.IsInitialized) continue;
+                module.OnUpdate(deltaTime, unscaledDeltaTime);
+            }
+        }
+
+        /// <summary>
+        /// 关闭游戏框架，退出游戏时调用。由外部代码调用，如设置界面的重启/退出按钮。
+        /// </summary>
+        /// <param name="shutdownType">关闭游戏框架类型。</param>
+        public static void Shutdown(ShutdownType shutdownType)
+        {
+            FuLogger.LogInfo($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {RegisteredModuleList.Count} ====</color>");
+
+            // 使用栈来存储需要关闭的模块（逆序关闭）
+            var shutdownStack = new Stack<FuModule>();
+
+            // 将模块按关闭顺序压入栈中
+            var current = RegisteredModuleList.First;
+            while (current != null)
+            {
+                if (current.Value.IsInitialized)
+                {
+                    shutdownStack.Push(current.Value);
+                }
+
+                current = current.Next;
+            }
+
+            // 从栈中弹出并关闭模块（逆序关闭）
+            while (shutdownStack.Count > 0)
+            {
+                var module = shutdownStack.Pop();
+                try
+                {
+                    FuLogger.LogInfo($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
+                    module.OnShutdown(shutdownType);
+                    module.IsInitialized = false;
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogError($"模块 {module.GetType().Name} 关闭失败: {e.Message}");
+                    FuLogger.LogError($"异常类型: {e.GetType().Name}");
+                    FuLogger.LogError($"堆栈跟踪: {e.StackTrace}");
+                }
+            }
+
+            // 清空管理器的集合
+            RegisteredModuleList.Clear();
+            ModuleCacheDict.Clear();
+            RegisteringSet.Clear();
+
+            // 执行具体的关闭操作
+            ExecuteShutdown(shutdownType);
         }
 
         /// <summary>
@@ -64,7 +136,7 @@ namespace FuFramework.Core.Runtime
         public static T GetModule<T>() where T : FuModule => GetModule(typeof(T)) as T;
 
         /// <summary>
-        /// 获取游戏框架组件，如果不存在则自动注册
+        /// 获取游戏框架组件
         /// </summary>
         /// <param name="type">要获取的游戏框架组件类型。</param>
         /// <returns>要获取的游戏框架组件。</returns>
@@ -75,7 +147,7 @@ namespace FuFramework.Core.Runtime
                 return cachedModule;
 
             // 从链表查找
-            var current = ModuleList.First;
+            var current = RegisteredModuleList.First;
             while (current is not null)
             {
                 var module = current.Value;
@@ -95,7 +167,7 @@ namespace FuFramework.Core.Runtime
         /// 获取所有已注册的模块。
         /// </summary>
         /// <returns>模块列表。</returns>
-        public static List<FuModule> GetAllModules() => ModuleList.ToList();
+        public static List<FuModule> GetAllModules() => RegisteredModuleList.ToList();
 
         /// <summary>
         /// 注册游戏框架模块
@@ -172,7 +244,7 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 查找并注册所有继承于FuModule的组件
+        /// 查找并注册所有继承于FuModule的模块
         /// </summary>
         public static void RegisterAllModules()
         {
@@ -222,10 +294,10 @@ namespace FuFramework.Core.Runtime
                 }
 
                 // 从链表中移除
-                var node = ModuleList.Find(module);
+                var node = RegisteredModuleList.Find(module);
                 if (node is not null)
                 {
-                    ModuleList.Remove(node);
+                    RegisteredModuleList.Remove(node);
                 }
 
                 // 从缓存中移除
@@ -278,7 +350,7 @@ namespace FuFramework.Core.Runtime
         private static void RegisterModuleInternal(FuModule module)
         {
             // 优先级大的组件注册在链表的前面
-            var current = ModuleList.First;
+            var current = RegisteredModuleList.First;
             while (current is not null)
             {
                 if (module.Priority > current.Value.Priority) break;
@@ -286,9 +358,9 @@ namespace FuFramework.Core.Runtime
             }
 
             if (current is not null)
-                ModuleList.AddBefore(current, module);
+                RegisteredModuleList.AddBefore(current, module);
             else
-                ModuleList.AddLast(module);
+                RegisteredModuleList.AddLast(module);
 
             // 添加到缓存
             ModuleCacheDict[module.GetType()] = module;
@@ -341,76 +413,6 @@ namespace FuFramework.Core.Runtime
             return allTypes;
         }
 
-        /// <summary>
-        /// 初始化游戏框架。
-        /// </summary>
-        public static void Initialize()
-        {
-            // 自动注册所有框架模块
-            RegisterAllModules();
-        }
-
-        /// <summary>
-        /// 所有游戏框架模块轮询
-        /// </summary>
-        public static void Update(float elapseSeconds, float realElapseSeconds)
-        {
-            foreach (var module in ModuleList)
-            {
-                if (!module.IsInitialized) continue;
-                module.OnUpdate(elapseSeconds, realElapseSeconds);
-            }
-        }
-
-
-        /// <summary>
-        /// 关闭游戏框架，退出游戏时调用。由外部代码调用，如设置界面的重启/退出按钮。
-        /// </summary>
-        /// <param name="shutdownType">关闭游戏框架类型。</param>
-        public static void Shutdown(ShutdownType shutdownType)
-        {
-            FuLogger.LogInfo($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {ModuleList.Count} ====</color>");
-
-            // 使用栈来存储需要关闭的模块（逆序关闭）
-            var shutdownStack = new Stack<FuModule>();
-
-            // 将模块按关闭顺序压入栈中
-            var current = ModuleList.First;
-            while (current != null)
-            {
-                if (current.Value.IsInitialized)
-                {
-                    shutdownStack.Push(current.Value);
-                }
-
-                current = current.Next;
-            }
-
-            // 从栈中弹出并关闭模块（逆序关闭）
-            while (shutdownStack.Count > 0)
-            {
-                var module = shutdownStack.Pop();
-                try
-                {
-                    FuLogger.LogInfo($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
-                    module.OnShutdown(shutdownType);
-                    module.IsInitialized = false;
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogError($"模块 {module.GetType().Name} 关闭失败: {e.Message}");
-                    FuLogger.LogError($"异常类型: {e.GetType().Name}");
-                    FuLogger.LogError($"堆栈跟踪: {e.StackTrace}");
-                }
-            }
-
-            // 清空管理器的集合
-            ModuleList.Clear();
-            ModuleCacheDict.Clear();
-            RegisteringSet.Clear();
-
-            ExecuteShutdown(shutdownType);
-        }
 
         /// <summary>
         /// 执行具体的关闭操作

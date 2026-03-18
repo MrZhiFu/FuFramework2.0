@@ -4,8 +4,8 @@
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架组件抽象基类。
-    /// 实现了组件的自动注册功能。
+    /// 游戏框架模块抽象基类。
+    /// 定义了模块的相关生命周期。
     /// </summary>
     public abstract class FuModule : MonoBehaviour
     {
@@ -28,9 +28,9 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 游戏框架模块轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        protected internal virtual void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected internal virtual void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 关闭并清理游戏框架模块。

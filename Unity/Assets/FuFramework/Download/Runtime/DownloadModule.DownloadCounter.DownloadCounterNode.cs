@@ -30,10 +30,10 @@ namespace FuFramework.Download.Runtime
                 /// <summary>
                 /// 帧更新
                 /// </summary>
-                /// <param name="elapseSeconds">逻辑帧间隔流逝时间，以秒为单位。</param>
-                /// <param name="realElapseSeconds">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
+                /// <param name="deltaTime">逻辑帧间隔流逝时间，以秒为单位。</param>
+                /// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
                 // ReSharper disable once UnusedParameter.Local
-                public void Update(float elapseSeconds, float realElapseSeconds) => ElapseSeconds += realElapseSeconds;
+                public void Update(float deltaTime, float unscaledDeltaTime) => ElapseSeconds += unscaledDeltaTime;
 
                 /// <summary>
                 /// 累加差值大小

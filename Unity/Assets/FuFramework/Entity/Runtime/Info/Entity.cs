@@ -107,13 +107,13 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体轮询时触发。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        public void OnUpdate(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        public void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             try
             {
-                Logic.OnUpdate(elapseSeconds, realElapseSeconds);
+                Logic.OnUpdate(deltaTime, unscaledDeltaTime);
             }
             catch (Exception exception)
             {

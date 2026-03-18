@@ -106,13 +106,13 @@ namespace FuFramework.Network.Runtime
             /// <summary>
             /// 逻辑更新，处理计时和超时移除任务
             /// </summary>
-            /// <param name="elapseSeconds"></param>
-            /// <param name="realElapseSeconds"></param>
-            public void Update(float elapseSeconds, float realElapseSeconds)
+            /// <param name="deltaTime"></param>
+            /// <param name="unscaledDeltaTime"></param>
+            public void Update(float deltaTime, float unscaledDeltaTime)
             {
                 if (m_waitingReplyHandlingObjects.Count > 0)
                 {
-                    var elapseSecondsTime = (long)(elapseSeconds * 1000);
+                    var elapseSecondsTime = (long)(deltaTime * 1000);
                     m_removeReplyHandlingObjectIds.Clear();
                     foreach (var handlingObject in m_waitingReplyHandlingObjects)
                     {

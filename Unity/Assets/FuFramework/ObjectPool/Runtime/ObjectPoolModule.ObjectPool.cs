@@ -130,11 +130,11 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 对象池轮询。
             /// </summary>
-            /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-            /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-            internal override void Update(float elapseSeconds, float realElapseSeconds)
+            /// <param name="deltaTime">帧间隔时间。</param>
+            /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+            internal override void Update(float deltaTime, float unscaledDeltaTime)
             {
-                m_AutoReleaseTimer += realElapseSeconds;
+                m_AutoReleaseTimer += unscaledDeltaTime;
                 if (m_AutoReleaseTimer < AutoReleaseInterval) return;
                 Release();
             }

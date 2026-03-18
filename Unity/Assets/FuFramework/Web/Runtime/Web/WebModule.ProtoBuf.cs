@@ -37,9 +37,9 @@ namespace FuFramework.Web.Runtime
         /// <summary>
         /// 更新处理ProtoBuf请求队列
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位</param>
-        private void UpdateProtoBuf(float elapseSeconds, float realElapseSeconds)
+        /// <param name="deltaTime">帧间隔时间</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间</param>
+        private void UpdateProtoBuf(float deltaTime, float unscaledDeltaTime)
         {
             lock (m_UrlStr)
             {

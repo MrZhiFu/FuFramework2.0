@@ -19,9 +19,9 @@
         /// <summary>
         /// 任务代理轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-        void Update(float elapseSeconds, float realElapseSeconds);
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        void Update(float deltaTime, float unscaledDeltaTime);
 
         /// <summary>
         /// 关闭并清理任务代理。

@@ -282,9 +282,9 @@ namespace FuFramework.Network.Runtime
             /// <summary>
             /// 网络频道轮询。
             /// </summary>
-            /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-            /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
-            public virtual void Update(float elapseSeconds, float realElapseSeconds)
+            /// <param name="deltaTime">帧间隔时间。</param>
+            /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+            public virtual void Update(float deltaTime, float unscaledDeltaTime)
             {
                 if (PSocket == null || !PActive) return;
 
@@ -293,9 +293,9 @@ namespace FuFramework.Network.Runtime
                 
                 if (PSocket == null || !PActive) return;
 
-                ProcessHeartBeat(realElapseSeconds);
+                ProcessHeartBeat(unscaledDeltaTime);
                 ProcessReceivedMessage();
-                PRpcState.Update(elapseSeconds, realElapseSeconds);
+                PRpcState.Update(deltaTime, unscaledDeltaTime);
             }
 
             /// <summary>
@@ -341,8 +341,8 @@ namespace FuFramework.Network.Runtime
             /// <summary>
             /// 处理心跳
             /// </summary>
-            /// <param name="realElapseSeconds"></param>
-            private void ProcessHeartBeat(float realElapseSeconds)
+            /// <param name="unscaledDeltaTime"></param>
+            private void ProcessHeartBeat(float unscaledDeltaTime)
             {
                 if (PHeartBeatInterval <= 0f) return;
                 var sendHeartBeat = false;
@@ -351,7 +351,7 @@ namespace FuFramework.Network.Runtime
                 {
                     if (PSocket == null || !PActive) return;
 
-                    PHeartBeatState.HeartBeatElapseSeconds += realElapseSeconds;
+                    PHeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
                     if (PHeartBeatState.HeartBeatElapseSeconds >= PHeartBeatInterval)
                     {
                         sendHeartBeat = true;

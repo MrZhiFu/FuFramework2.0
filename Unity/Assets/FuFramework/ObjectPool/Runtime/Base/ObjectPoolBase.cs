@@ -82,10 +82,10 @@ namespace FuFramework.ObjectPool.Runtime
         /// <summary>
         /// 对象池轮询。
         /// </summary>
-        /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
-        /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         
-        internal abstract void Update(float elapseSeconds, float realElapseSeconds);
+        internal abstract void Update(float deltaTime, float unscaledDeltaTime);
 
         /// <summary>
         /// 关闭并清理对象池。

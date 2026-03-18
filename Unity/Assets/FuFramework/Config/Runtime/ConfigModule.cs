@@ -36,7 +36,6 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 配置表管理器初始化。
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
         protected override void OnInit()
         {
             m_ConfigNameTypeDict.Clear();
@@ -46,16 +45,14 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 配置表管理器轮询。
         /// </summary>
-        /// <param name="elapseSeconds"></param>
-        /// <param name="realElapseSeconds"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        protected override void OnUpdate(float elapseSeconds, float realElapseSeconds) { }
+        /// <param name="deltaTime"></param>
+        /// <param name="unscaledDeltaTime"></param>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 配置表管理器关闭。
         /// </summary>
         /// <param name="shutdownType"></param>
-        /// <exception cref="NotImplementedException"></exception>
         protected override void OnShutdown(ShutdownType shutdownType)
         {
             RemoveAllConfigs();
