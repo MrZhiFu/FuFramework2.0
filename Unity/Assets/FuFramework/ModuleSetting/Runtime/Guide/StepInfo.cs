@@ -50,7 +50,7 @@ namespace FuFramework.ModuleSetting.Runtime
         public string m_NextStepId;
 
         /// <summary>
-        /// 是否是可选步骤，表示该步骤是否可以跳过
+        /// 是否可以跳过
         /// </summary>
         public bool m_IsCanJump;
 
