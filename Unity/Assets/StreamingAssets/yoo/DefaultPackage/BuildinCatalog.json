@@ -1,47 +1,67 @@
 {
     "FileVersion": "1.0.0",
     "PackageName": "DefaultPackage",
-    "PackageVersion": "2025-08-26-1050",
+    "PackageVersion": "2026-03-18-1100",
     "Wrappers": [
         {
-            "BundleGUID": "73184e0def5139bb73d7bb0de9a3d737",
+            "BundleGUID": "4d40a5a3b6fcf5eaca8c60bd6676e2a3",
+            "FileName": "defaultpackage_assets_bundles_aotcode.bundle"
+        },
+        {
+            "BundleGUID": "dfcbff2cf1033981cc98494ed73e483f",
             "FileName": "defaultpackage_assets_bundles_code.bundle"
         },
         {
-            "BundleGUID": "4178c85c606fad3e205bbd745a203952",
+            "BundleGUID": "5f75b50cdda6ce1a4637a0138c41cf4c",
             "FileName": "defaultpackage_assets_bundles_config.bundle"
         },
         {
-            "BundleGUID": "7519a95819fc6738ecbdf663bdcb5cf1",
+            "BundleGUID": "64ab7c3e6e8716d7fce3590c01aa247f",
+            "FileName": "defaultpackage_assets_bundles_scene_test.bundle"
+        },
+        {
+            "BundleGUID": "7ff8ce81924b51b07418894ee449082a",
             "FileName": "defaultpackage_assets_bundles_sound.bundle"
         },
         {
-            "BundleGUID": "d651899ff6e947798c59949c9b4fba66",
+            "BundleGUID": "21d6c5d41f26304311e2d95701dae36c",
             "FileName": "defaultpackage_assets_bundles_sprites_avatar.bundle"
         },
         {
-            "BundleGUID": "8e63f7aed9f36402b97eec4f0027a243",
+            "BundleGUID": "6aaecba4c535c003e1a310ee63681086",
             "FileName": "defaultpackage_assets_bundles_ui_bag.bundle"
         },
         {
-            "BundleGUID": "8b16407c30db105fd39093ea6629694c",
+            "BundleGUID": "7c273d90c5da6d95d4c5cd15e79766e0",
             "FileName": "defaultpackage_assets_bundles_ui_common.bundle"
         },
         {
-            "BundleGUID": "d9a0c9c5691c6cf11b21aea22a4107eb",
+            "BundleGUID": "60ffd08d9c26ff920b3b604132f731a6",
+            "FileName": "defaultpackage_assets_bundles_ui_guide.bundle"
+        },
+        {
+            "BundleGUID": "ffab159299239589378d090acb9a36b0",
             "FileName": "defaultpackage_assets_bundles_ui_loading.bundle"
         },
         {
-            "BundleGUID": "364ab4ba07b5766ca7663c101ea321e1",
+            "BundleGUID": "f8183a7b5e51c9712b46f3b9868e184d",
             "FileName": "defaultpackage_assets_bundles_ui_login.bundle"
         },
         {
-            "BundleGUID": "29c6a18972cb501034b8dacc26538eaa",
+            "BundleGUID": "c09b559d1445715536e255b56e2420b3",
             "FileName": "defaultpackage_assets_bundles_ui_main.bundle"
         },
         {
-            "BundleGUID": "41102080eed36193acfe31a9a8668cb1",
+            "BundleGUID": "74dc6bdc6c12a0cd03d7d623b412f6ef",
             "FileName": "defaultpackage_assets_bundles_ui_popwin.bundle"
+        },
+        {
+            "BundleGUID": "25d20a01a7e002681d709e9da5a832f6",
+            "FileName": "defaultpackage_assets_bundles_ui_tips.bundle"
+        },
+        {
+            "BundleGUID": "c8431f7c618cd9ab55431020eca28d83",
+            "FileName": "defaultpackage_unityshaders.bundle"
         }
     ]
 }
