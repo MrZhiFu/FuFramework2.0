@@ -93,7 +93,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            if (string.IsNullOrEmpty(uiName)) throw new FuException("传入的UI界面资源名称为空.");
+            if (string.IsNullOrEmpty(uiName)) throw new FuException("[UIGroup] 传入的UI界面资源名称为空.");
             return m_UIInfoList.Any(uiInfo => uiInfo.View.UIName == uiName);
         }
 
@@ -186,10 +186,10 @@ namespace FuFramework.UI.Runtime
         {
             var uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new FuException($"无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
+                throw new FuException($"[UIGroup] 无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new FuException($"UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+                throw new FuException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
             ReferencePool.Runtime.ReferencePool.Release(uiInfo);
         }

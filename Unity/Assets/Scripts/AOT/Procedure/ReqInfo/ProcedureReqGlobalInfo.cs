@@ -54,7 +54,7 @@ namespace Launcher.Procedure
                 {
                     // 获取失败
                     LauncherUIHelper.SetTipText("Server error, retrying...");
-                    FuLogger.LogError($"获取全局信息返回异常=> Req:{reqBaseParams} Resp:{json}");
+                    FuLogger.LogError($"获取全局信息返回异常=> Req:{reqBaseParams} Rsp:{json}");
 
                     // 等待3秒后重新获取
                     await UniTask.WaitForSeconds(3);
@@ -78,7 +78,7 @@ namespace Launcher.Procedure
             {
                 FuLogger.LogError(e);
                 LauncherUIHelper.SetTipText("Network error, retrying...");
-                FuLogger.LogError($"获取全局信息异常=>Error:{e.Message}   Req:{reqBaseParams}");
+                FuLogger.LogError($"获取全局信息异常=>Error:{e.Message} Req:{reqBaseParams}");
 
                 // 等待3秒后重新获取
                 await UniTask.WaitForSeconds(3);

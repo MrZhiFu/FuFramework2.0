@@ -24,7 +24,7 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(handler, nameof(handler));
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.Subscribe(eventId, handler);
         }
 
@@ -37,7 +37,7 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(handler, nameof(handler));
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.UnSubscribe(eventId, handler);
         }
 
@@ -50,7 +50,7 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(sender, nameof(sender));
             FuGuard.NotNull(eventArgs, nameof(eventArgs));
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.Broadcast(sender, eventArgs);
         }
 
@@ -63,7 +63,7 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(sender, nameof(sender));
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.Broadcast(sender, eventId);
         }
 
@@ -76,7 +76,7 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(sender,        nameof(sender));
             FuGuard.NotNull(eventArgs,     nameof(eventArgs));
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.BroadcastNow(sender, eventArgs);
         }
 
@@ -85,7 +85,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void UnSubscribeAll()
         {
-            FuGuard.NotNull(EventRegister, "事件订阅器为空, 请先初始化EventRegister.");
+            FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.UnSubscribeAll();
         }
 

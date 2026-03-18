@@ -34,7 +34,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面组。</returns>
         public UIGroup GetUIGroup(UILayer layer)
         {
-            return m_UIGroupDict.TryGetValue(layer, out var uiGroup) ? uiGroup : null;
+            return m_UIGroupDict.GetValueOrDefault(layer);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace FuFramework.UI.Runtime
         {
             if (HasUIGroup(layer))
             {
-                FuLogger.LogWarning($"[UIModule]UI界面组{layer}已存在!");
+                FuLogger.LogWarning($"[UIModule] UI界面组{layer}已存在!");
                 return false;
             }
 

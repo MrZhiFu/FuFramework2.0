@@ -143,7 +143,7 @@ namespace FuFramework.UI.Runtime
             }
             catch (Exception exception)
             {
-                FuLogger.LogError($"UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
+                FuLogger.LogError($"[ViewBase] UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
             }
         }
 
