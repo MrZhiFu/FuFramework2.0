@@ -5,6 +5,7 @@ obj
 *.csproj
 Sandbox
 Temp
+Assets/Bundles/AOTCode/*
 Assets/Bundles/Code
 .cache.meta
 Packages/packages-lock.json
@@ -16,4 +17,3 @@ Android_Symbols
 Assets/StreamingAssets/build_info
 Assets/StreamingAssets/build_info.meta
 .DS_Store
-Assets/Bundles/AOTCode/*
