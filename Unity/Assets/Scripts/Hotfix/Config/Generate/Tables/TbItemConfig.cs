@@ -24,15 +24,15 @@ namespace Hotfix.Config.Tables
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             var jsonNode = await _loadFunc();
-            StringDataMaps.Clear();
+            StrKeyDataDict.Clear();
             DataList.Clear();
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.ItemConfig _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Tables.ItemConfig.DeserializeItemConfig(_ele);  }
                 DataList.Add(_v);
-                LongDataMaps.Add(_v.Id, _v);
-                StringDataMaps.Add(_v.Id.ToString(), _v);
+                LongKeyDataDict.Add(_v.Id, _v);
+                StrKeyDataDict.Add(_v.Id.ToString(), _v);
             }
             PostInit();
         }

@@ -16,38 +16,31 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 配置表类型与名称字典。key为配置类型，value为配置名称。
         /// </summary>
-        private readonly ConcurrentDictionary<Type, string> m_ConfigNameTypeDict = new();
+        private readonly ConcurrentDictionary<Type, string> m_CfgNameTypeDict = new();
 
         /// <summary>
         /// 配置表字典。key为配置表名称，value为配置表数据。
         /// </summary>
-        private readonly ConcurrentDictionary<string, IDataTable> m_ConfigDataDict = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, IDataTable> m_CfgDataDict = new(StringComparer.Ordinal);
 
         /// <summary>
         /// 获取配置表数量。
         /// </summary>
-        public int Count => m_ConfigDataDict.Count;
+        public int Count => m_CfgDataDict.Count;
         
         /// <summary>
         /// 获取所有配置表名称。
         /// </summary>
-        public IEnumerable<string> ConfigNames => m_ConfigDataDict.Keys;
+        public IEnumerable<string> CfgNames => m_CfgDataDict.Keys;
 
         /// <summary>
         /// 配置表管理器初始化。
         /// </summary>
         protected override void OnInit()
         {
-            m_ConfigNameTypeDict.Clear();
-            m_ConfigDataDict.Clear();
+            m_CfgNameTypeDict.Clear();
+            m_CfgDataDict.Clear();
         }
-
-        /// <summary>
-        /// 配置表管理器轮询。
-        /// </summary>
-        /// <param name="deltaTime"></param>
-        /// <param name="unscaledDeltaTime"></param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 配置表管理器关闭。
@@ -65,10 +58,10 @@ namespace FuFramework.Config.Runtime
         /// <returns>返回类型名称</returns>
         private string GetTypeName<T>()
         {
-            if (m_ConfigNameTypeDict.TryGetValue(typeof(T), out var configName)) return configName;
-            configName = typeof(T).Name;
-            m_ConfigNameTypeDict.TryAdd(typeof(T), configName);
-            return configName;
+            if (m_CfgNameTypeDict.TryGetValue(typeof(T), out var cfgName)) return cfgName;
+            cfgName = typeof(T).Name;
+            m_CfgNameTypeDict.TryAdd(typeof(T), cfgName);
+            return cfgName;
         }
 
         /// <summary>
@@ -79,19 +72,19 @@ namespace FuFramework.Config.Runtime
         public T GetConfig<T>() where T : IDataTable
         {
             if (!HasConfig<T>()) return default;
-            var configName = GetTypeName<T>();
-            var config = GetConfig(configName);
-            return config != null ? (T)config : default;
+            var cfgName = GetTypeName<T>();
+            var cfg = GetConfig(cfgName);
+            return cfg != null ? (T)cfg : default;
         }
 
         /// <summary>
         /// 获取指定配置表。
         /// </summary>
-        /// <param name="configName">要获取配置表的名称。</param>
+        /// <param name="cfgName">要获取配置表的名称。</param>
         /// <returns>要获取配置表的配置表。</returns>
-        public IDataTable GetConfig(string configName)
+        public IDataTable GetConfig(string cfgName)
         {
-            return m_ConfigDataDict.GetValueOrDefault(configName);
+            return m_CfgDataDict.GetValueOrDefault(cfgName);
         }
 
         /// <summary>
@@ -100,31 +93,31 @@ namespace FuFramework.Config.Runtime
         /// <returns>指定的配置表是否存在。</returns>
         public bool HasConfig<T>() where T : IDataTable
         {
-            var configName = GetTypeName<T>();
-            return HasConfig(configName);
+            var cfgName = GetTypeName<T>();
+            return HasConfig(cfgName);
         }
 
         /// <summary>
         /// 检查是否存在指定配置表。
         /// </summary>
-        /// <param name="configName">要检查配置表的名称。</param>
+        /// <param name="cfgName">要检查配置表的名称。</param>
         /// <returns>指定的配置表是否存在。</returns>
-        public bool HasConfig(string configName)
+        public bool HasConfig(string cfgName)
         {
-            return m_ConfigDataDict.TryGetValue(configName, out _);
+            return m_CfgDataDict.TryGetValue(cfgName, out _);
         }
 
         /// <summary>
         /// 增加指定配置表。
         /// </summary>
-        /// <param name="configName">要增加配置表的名称。</param>
-        /// <param name="configValue">配置表的值。</param>
+        /// <param name="cfgName">要增加配置表的名称。</param>
+        /// <param name="cfgValue">配置表的值。</param>
         /// <returns>是否增加配置表成功。</returns>
-        public void AddConfig(string configName, IDataTable configValue)
+        public void AddConfig(string cfgName, IDataTable cfgValue)
         {
-            var isExist = m_ConfigDataDict.TryGetValue(configName, out _);
+            var isExist = m_CfgDataDict.TryGetValue(cfgName, out _);
             if (isExist) return;
-            m_ConfigDataDict.TryAdd(configName, configValue);
+            m_CfgDataDict.TryAdd(cfgName, cfgValue);
         }
 
         /// <summary>
@@ -133,17 +126,17 @@ namespace FuFramework.Config.Runtime
         /// <returns>是否移除配置表成功。</returns>
         public bool RemoveConfig<T>() where T : IDataTable
         {
-            var configName = GetTypeName<T>();
-            return RemoveConfig(configName);
+            var cfgName = GetTypeName<T>();
+            return RemoveConfig(cfgName);
         }
 
         /// <summary>
         /// 移除指定配置表。
         /// </summary>
-        /// <param name="configName">要移除配置表的名称。</param>
-        public bool RemoveConfig(string configName)
+        /// <param name="cfgName">要移除配置表的名称。</param>
+        public bool RemoveConfig(string cfgName)
         {
-            return HasConfig(configName) && m_ConfigDataDict.TryRemove(configName, out _);
+            return HasConfig(cfgName) && m_CfgDataDict.TryRemove(cfgName, out _);
         }
 
         /// <summary>
@@ -151,8 +144,8 @@ namespace FuFramework.Config.Runtime
         /// </summary>
         public void RemoveAllConfigs()
         {
-            m_ConfigNameTypeDict.Clear();
-            m_ConfigDataDict.Clear();
+            m_CfgNameTypeDict.Clear();
+            m_CfgDataDict.Clear();
         }
     }
 }

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 namespace FuFramework.Config.Runtime
 {
     /// <summary>
-    /// 数据表基础接口
+    /// 数据表基础接口.
+    /// 功能：定义数据表的异步加载与数据行数量接口。
     /// </summary>
     public interface IDataTable
     {
@@ -24,7 +25,8 @@ namespace FuFramework.Config.Runtime
     }
 
     /// <summary>
-    /// 数据表泛型基础接口
+    /// 数据表泛型基础接口。
+    /// 功能：定义数据表的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
     /// </summary>
     public interface IDataTable<T> : IDataTable where T : class
     {

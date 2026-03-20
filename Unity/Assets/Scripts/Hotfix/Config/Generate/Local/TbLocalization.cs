@@ -24,14 +24,14 @@ namespace Hotfix.Config.Local
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             var jsonNode = await _loadFunc();
-            StringDataMaps.Clear();
+            StrKeyDataDict.Clear();
             DataList.Clear();
             foreach(var _ele in jsonNode.Children)
             {
                 Local.Localization _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Local.Localization.DeserializeLocalization(_ele);  }
                 DataList.Add(_v);
-                StringDataMaps.Add(_v.Key.ToString(), _v);
+                StrKeyDataDict.Add(_v.Key.ToString(), _v);
             }
             PostInit();
         }

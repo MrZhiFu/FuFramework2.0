@@ -9,9 +9,8 @@ namespace FuFramework.Config.Runtime
     /// <summary>
     /// 数据表基类。
     /// 功能：
-    /// 1. 维护数据表的字典映射关系。
-    /// 2. 提供数据表的基本操作方法，如获取数据，遍历数据等。
-    /// 3. 提供数据表的扩展方法，如求最大值，求最小值，求和等。
+    /// 1. 维护数据表的key与数据的映射关系。
+    /// 2. 实现数据表的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
     /// </summary>
     /// <typeparam name="T">具体数据表类型</typeparam>
     public abstract class BaseDataTable<T> : IDataTable<T> where T : class
@@ -19,12 +18,12 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 数据表的字典映射关系。key为long类型的id，value为具体的数据表类型。
         /// </summary>
-        protected readonly SortedDictionary<long, T>   LongDataMaps   = new();
-        
+        protected readonly SortedDictionary<long, T> LongKeyDataDict = new();
+
         /// <summary>
         /// 数据表的字典映射关系。key为string类型的id，value为具体的数据表类型。
         /// </summary>
-        protected readonly SortedDictionary<string, T> StringDataMaps = new();
+        protected readonly SortedDictionary<string, T> StrKeyDataDict = new();
 
         /// <summary>
         /// 数据表的数据列表。
@@ -44,7 +43,7 @@ namespace FuFramework.Config.Runtime
         /// <returns></returns>
         public T Get(int id)
         {
-            LongDataMaps.TryGetValue(id, out var value);
+            LongKeyDataDict.TryGetValue(id, out var value);
             return value;
         }
 
@@ -55,7 +54,7 @@ namespace FuFramework.Config.Runtime
         /// <returns></returns>
         public T Get(long id)
         {
-            LongDataMaps.TryGetValue(id, out var value);
+            LongKeyDataDict.TryGetValue(id, out var value);
             return value;
         }
 
@@ -66,7 +65,7 @@ namespace FuFramework.Config.Runtime
         /// <returns></returns>
         public T Get(string id)
         {
-            StringDataMaps.TryGetValue(id, out var value);
+            StrKeyDataDict.TryGetValue(id, out var value);
             return value;
         }
 
@@ -79,7 +78,7 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 获取数据表的数量。
         /// </summary>
-        public int Count => Math.Max(LongDataMaps.Count, StringDataMaps.Count);
+        public int Count => Math.Max(LongKeyDataDict.Count, StrKeyDataDict.Count);
 
         /// <summary>
         /// 获取数据表的第一个数据。
@@ -164,21 +163,21 @@ namespace FuFramework.Config.Runtime
         /// <param name="func"></param>
         /// <returns></returns>
         public long Sum(Func<T, long> func) => DataList.Sum(func);
-        
+
         /// <summary>
         /// 获取数据表的和。
         /// </summary>
         /// <param name="func"></param>
         /// <returns></returns>
         public float Sum(Func<T, float> func) => DataList.Sum(func);
-        
+
         /// <summary>
         /// 获取数据表的和。
         /// </summary>
         /// <param name="func"></param>
         /// <returns></returns>
         public double Sum(Func<T, double> func) => DataList.Sum(func);
-        
+
         /// <summary>
         /// 获取数据表的和。
         /// </summary>

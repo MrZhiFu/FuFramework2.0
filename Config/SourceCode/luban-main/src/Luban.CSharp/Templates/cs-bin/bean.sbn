@@ -1,5 +1,4 @@
 ﻿using LuBan.Runtime;
-using GameFrameX.Config;
 {{
     parent_def_type = __bean.parent_def_type
     export_fields = __bean.export_fields

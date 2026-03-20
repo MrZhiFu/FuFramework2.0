@@ -24,8 +24,8 @@ FuFramework Config 模块是用于管理游戏静态配置表（DataTable）的�
 数据表抽象基类，所有具体的配置表都应继承此类。
 - **存储**：
   - `DataList`: 原始数据列表，用于遍历和 LINQ 查询。
-  - `LongDataMaps`: `SortedDictionary<long, T>`，用于 int/long ID 查找。
-  - `StringDataMaps`: `SortedDictionary<string, T>`，用于 string ID 查找。
+  - `LongKeyDataDict`: `SortedDictionary<long, T>`，用于 int/long ID 查找。
+  - `StrKeyDataDict`: `SortedDictionary<string, T>`，用于 string ID 查找。
 - **抽象方法**：
   - `LoadAsync()`: 子类需实现具体的加载逻辑（如解析 CSV、JSON 或二进制文件）。
 
@@ -60,7 +60,8 @@ public class ItemTable : BaseDataTable<ItemConfig>
         foreach (var item in items)
         {
             DataList.Add(item);
-            LongDataMaps.Add(item.Id, item); // 构建索引
+            LongKeyDataDict.Add(item.Id, item);
+            StrKeyDataDict.Add(item.Id.ToString(), item);
         }
         
         await Task.CompletedTask;
