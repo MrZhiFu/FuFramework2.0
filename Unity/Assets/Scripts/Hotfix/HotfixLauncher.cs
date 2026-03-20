@@ -70,7 +70,7 @@ namespace Hotfix
             var uiModule = GlobalModule.UIModule;
             
             // 添加通用UI资源包
-            uiModule.PkgManger.AddPackageAsync("Common").Forget();
+            uiModule.PkgManager.AddPackageAsync("Common").Forget();
 
             // 打开登录界面
             uiModule.OpenUI<WinLogin>();

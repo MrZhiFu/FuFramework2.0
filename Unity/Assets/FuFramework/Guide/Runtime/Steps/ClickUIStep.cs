@@ -19,11 +19,11 @@ namespace FuFramework.Guide.Runtime
         protected override void OnExecute()
         {
             base.OnExecute();
-            var uiManager = ModuleManager.GetModule<UIModule>();
-            if (uiManager == null) return;
+            var uiModule = ModuleManager.GetModule<UIModule>();
+            if (uiModule == null) return;
 
             // 查找目标界面
-            var targetWin = uiManager.GetUI(StepInfo.m_TargetWindow);
+            var targetWin = uiModule.GetUI(StepInfo.m_TargetWindow);
             if (targetWin == null)
             {
                 FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.m_TargetWindow}");

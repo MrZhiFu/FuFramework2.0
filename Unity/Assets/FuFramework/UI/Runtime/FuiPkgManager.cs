@@ -16,7 +16,7 @@ namespace FuFramework.UI.Runtime
     /// FGui的包管理器，
     /// 主要处理包的资源加载，缓存，卸载等
     /// </summary>
-    public class FuiPkgManger
+    public class FuiPkgManager
     {
         /// 缓存已加载的包的字典，key:包名，value：包
         private readonly Dictionary<string, UIPackage> m_LoadedPkgDict = new();
@@ -42,7 +42,7 @@ namespace FuFramework.UI.Runtime
         /// 不会被释放的包名
         private readonly List<string> m_NotReleasePackages = new() { "Common" };
 
-        public FuiPkgManger()
+        public FuiPkgManager()
         {
             UIPackage.unloadBundleByFGUI = false; // 手动管理资源
         }

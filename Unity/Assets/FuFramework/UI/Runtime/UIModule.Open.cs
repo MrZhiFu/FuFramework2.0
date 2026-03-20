@@ -76,16 +76,16 @@ namespace FuFramework.UI.Runtime
                 m_InstancePool.Register(uiInstanceObject, true);
 
                 // UI包已经加载过，则直接创建界面
-                if (PkgManger == null) throw new FuException("[UIModule] FuiPkgManager不存在.");
+                if (PkgManager == null) throw new FuException("[UIModule] FuiPkgManager不存在.");
                 
-                if (PkgManger.HasPackage(view.PackageName))
+                if (PkgManager.HasPackage(view.PackageName))
                 {
                     // 使用临时序列号创建界面
                     return CreateUIView(view, tempSerialId, true, userData);
                 }
 
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
-                await PkgManger.AddPackageAsync(view.PackageName);
+                await PkgManager.AddPackageAsync(view.PackageName);
 
                 // 使用临时序列号创建界面
                 return CreateUIView(view, tempSerialId, true, userData);

@@ -30,7 +30,7 @@ namespace FuFramework.UI.Runtime
 
         private ObjectPoolModule.ObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
 
-        public FuiPkgManger PkgManger { get; private set; } // FGui的包管理器
+        public FuiPkgManager PkgManager { get; private set; } // FGui的包管理器
 
         private int m_SerialId; // 界面序列号，每打开一个界面就加1
 
@@ -84,7 +84,7 @@ namespace FuFramework.UI.Runtime
             m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            PkgManger     = new FuiPkgManger();
+            PkgManager     = new FuiPkgManager();
 
             m_SerialId = 0;
 
@@ -129,7 +129,7 @@ namespace FuFramework.UI.Runtime
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
             m_WaitRecycleQueue.Clear();
-            PkgManger.ReleaseAll();
+            PkgManager.ReleaseAll();
         }
     }
 }
