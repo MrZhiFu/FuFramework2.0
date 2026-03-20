@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using System;
-using LuBan.Runtime;
 using FuFramework.Config.Runtime;
 using SimpleJSON;
 
@@ -25,12 +24,12 @@ namespace Hotfix.Config
 
         internal Tables.TbSoundsConfig TbSoundsConfig { private set; get; }
 
-        private ConfigModule m_ConfigComponent;
+        private ConfigModule m_ConfigModule;
 
-        public void Init(ConfigModule configComponent)
+        public void Init(ConfigModule configModule)
         {
-            m_ConfigComponent = configComponent;
-            configComponent.RemoveAllConfigs();
+            m_ConfigModule = configModule;
+            configModule.RemoveAllConfigs();
         }
 
         /// <summary>
@@ -49,24 +48,24 @@ namespace Hotfix.Config
                 return;
             }
             IsLoaded = false;
-            m_ConfigComponent.RemoveAllConfigs();
+            m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
     
             TbLocalization = new Local.TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
-            m_ConfigComponent.AddConfig(nameof(Local.TbLocalization), TbLocalization);
+            m_ConfigModule.AddConfig(nameof(Local.TbLocalization), TbLocalization);
 
             TbAchievementConfig = new Tables.TbAchievementConfig(() => loader("tables_tbachievementconfig"));
             loadTasks.Add(TbAchievementConfig.LoadAsync());
-            m_ConfigComponent.AddConfig(nameof(Tables.TbAchievementConfig), TbAchievementConfig);
+            m_ConfigModule.AddConfig(nameof(Tables.TbAchievementConfig), TbAchievementConfig);
 
             TbItemConfig = new Tables.TbItemConfig(() => loader("tables_tbitemconfig"));
             loadTasks.Add(TbItemConfig.LoadAsync());
-            m_ConfigComponent.AddConfig(nameof(Tables.TbItemConfig), TbItemConfig);
+            m_ConfigModule.AddConfig(nameof(Tables.TbItemConfig), TbItemConfig);
 
             TbSoundsConfig = new Tables.TbSoundsConfig(() => loader("tables_tbsoundsconfig"));
             loadTasks.Add(TbSoundsConfig.LoadAsync());
-            m_ConfigComponent.AddConfig(nameof(Tables.TbSoundsConfig), TbSoundsConfig);
+            m_ConfigModule.AddConfig(nameof(Tables.TbSoundsConfig), TbSoundsConfig);
 
     
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
