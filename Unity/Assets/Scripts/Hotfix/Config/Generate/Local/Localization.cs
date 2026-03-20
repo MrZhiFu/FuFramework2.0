@@ -7,12 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config.Local
 {
-    public sealed partial class Localization : LuBan.Runtime.BeanBase
+    public sealed partial class Localization : BeanBase
     {
         public Localization(string Key, string ChineseSimplified, string ChineseTraditional, string English, string Japanese, string Korean, string Thai, string Indonesian, string French, string German, string Russian, string Italian, string PortuguesePortugal, string Spanish, string Vietnamese) 
         {

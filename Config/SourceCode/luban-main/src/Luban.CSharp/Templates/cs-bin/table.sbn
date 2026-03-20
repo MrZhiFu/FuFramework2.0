@@ -1,4 +1,4 @@
-using LuBan.Runtime;
+using Luban;
 using FuFramework.Config.Runtime;
 {{
     key_type = __table.key_ttype

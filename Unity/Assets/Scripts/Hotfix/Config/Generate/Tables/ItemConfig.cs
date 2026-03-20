@@ -7,12 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class ItemConfig : LuBan.Runtime.BeanBase
+    public sealed partial class ItemConfig : BeanBase
     {
         public ItemConfig(int Id, string Name, ItemType Type, ItemSubType SubType, ItemEPrompt EPrompt, ItemCanUse CanUse, bool IsDecompose, int MaxNum, string Description, System.Collections.Generic.List<int> ComeLink, string Icon, string BgIcon, ItemLevelColor LevelColor, bool CanAnnounce, string LinkInfo, int FunctionID, ItemUseLimiteType UseLimiteType, bool Abandon, bool DoubleCheckDesc, bool CanTrade, int TradeCD, int TradeItemsLimit, int UseLinmit, long? ExpireTime, bool IsRecordLog) 
         {

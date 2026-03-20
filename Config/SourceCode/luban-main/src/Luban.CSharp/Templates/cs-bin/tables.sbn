@@ -1,5 +1,4 @@
 using System;
-using LuBan.Runtime;
 using FuFramework.Config.Runtime;
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}

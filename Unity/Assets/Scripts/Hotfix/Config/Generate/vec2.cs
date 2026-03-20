@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config

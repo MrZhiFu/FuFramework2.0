@@ -85,7 +85,7 @@ end
 {{~if __bean.is_value_type~}}
 public partial struct {{__name}}
 {{~else~}}
-public {{class_modifier __bean}} partial class {{__name}} : {{if parent_def_type}}{{__bean.parent}}{{else}}Luban.BeanBase{{end}}
+public {{class_modifier __bean}} partial class {{__name}} : {{if parent_def_type}}{{__bean.parent}}{{else}}LubanBeanBase{{end}}
 {{~end~}}
 {
     public {{__name}}({{get_param_def_list(__bean)}}) {{if parent_def_type}} : base({{get_param_name_list(__bean.parent_def_type)}}) {{end}}

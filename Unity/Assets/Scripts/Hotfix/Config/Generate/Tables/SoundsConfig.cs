@@ -7,12 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class SoundsConfig : LuBan.Runtime.BeanBase
+    public sealed partial class SoundsConfig : BeanBase
     {
         public SoundsConfig(int Id, string GroupName, string Path, string Title, string CharacterName) 
         {

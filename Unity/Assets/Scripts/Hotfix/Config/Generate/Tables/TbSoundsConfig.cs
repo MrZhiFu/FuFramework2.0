@@ -7,10 +7,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
-using FuFramework.Config.Runtime;
+using Luban;
 using SimpleJSON;
-
+using FuFramework.Config.Runtime;
 
 namespace Hotfix.Config.Tables
 {

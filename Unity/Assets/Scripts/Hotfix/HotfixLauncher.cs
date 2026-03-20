@@ -1,18 +1,15 @@
-﻿using SimpleJSON;
+﻿using Luban;
 using UnityEngine;
 using Hotfix.Proto;
 using Hotfix.Config;
 using Hotfix.UI;
-using Hotfix.Config.Tables;
+using Hotfix.Guide;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using FuFramework.Asset.Runtime;
-using FuFramework.UI.Runtime;
 using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using Hotfix.Guide;
-using LuBan.Runtime;
+using SimpleJSON;
 using Utility = FuFramework.Core.Runtime.Utility;
 #if ENABLE_BINARY_CONFIG
 #endif
@@ -76,7 +73,7 @@ namespace Hotfix
             uiModule.OpenUI<WinLogin>();
         }
 
-#if ENABLE_BINARY_CONFIG
+// #if ENABLE_BINARY_CONFIG
         /// <summary>
         /// 加载二进制配置表
         /// </summary>
@@ -84,11 +81,11 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<ByteBuf> ConfigBufferLoader(string file)
         {
-            var configPath = Utility.AssetPath.GetConfigPath(file, Utility.Const.FileNameSuffix.Binary);
+            var configPath = Utility.AssetPath.GetConfigPath(file);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
             return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
         }
-#else
+// #else
         /// <summary>
         /// 加载json配置表
         /// </summary>
@@ -100,6 +97,6 @@ namespace Hotfix
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
             return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
         }
-#endif
+// #endif
     }
 }

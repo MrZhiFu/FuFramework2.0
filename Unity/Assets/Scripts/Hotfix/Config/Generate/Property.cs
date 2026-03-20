@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config
@@ -15,7 +15,7 @@ namespace Hotfix.Config
     /// <summary>
     /// 属性
     /// </summary>
-    public sealed partial class Property : LuBan.Runtime.BeanBase
+    public sealed partial class Property : BeanBase
     {
         public Property(int PhysicalAttack, int MagicAttack, int PhysicalDefense, int MagicDefense, int Life, int Crit, int BurstDamage, int Precise, int Block) 
         {

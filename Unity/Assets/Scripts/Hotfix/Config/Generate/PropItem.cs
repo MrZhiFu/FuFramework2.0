@@ -7,12 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config
 {
-    public sealed partial class PropItem : LuBan.Runtime.BeanBase
+    public sealed partial class PropItem : BeanBase
     {
         public PropItem(int Id, int Count) 
         {

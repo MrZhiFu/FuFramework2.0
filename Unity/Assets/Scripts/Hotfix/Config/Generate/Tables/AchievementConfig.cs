@@ -7,12 +7,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using LuBan.Runtime;
+using Luban;
 using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class AchievementConfig : LuBan.Runtime.BeanBase
+    public sealed partial class AchievementConfig : BeanBase
     {
         public AchievementConfig(int Id, int Image, string Name, string AchievementContent, string LockText, System.Collections.Generic.List<int> AchievementUnlockCondition) 
         {

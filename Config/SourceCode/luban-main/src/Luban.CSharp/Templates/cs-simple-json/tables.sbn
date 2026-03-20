@@ -1,7 +1,6 @@
 using System;
-using FuFramework.Config.Runtime;
 using SimpleJSON;
-
+using FuFramework.Config.Runtime;
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}
     {

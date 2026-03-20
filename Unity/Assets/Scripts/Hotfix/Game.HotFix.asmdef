@@ -4,12 +4,11 @@
     "references": [
         "FairyGUI",
         "YooAsset",
-        "LuBan.Runtime",
         "UniTask.Runtime",
         "LitJSON.Runtime",
         "HybridCLR.Runtime",
+        "Luban.Runtime",
         "ProtoBuffer.Runtime",
-        "SimpleJSON.Runtime",
         "FuFramework.UI.Runtime",
         "FuFramework.Web.Runtime",
         "FuFramework.Core.Runtime",

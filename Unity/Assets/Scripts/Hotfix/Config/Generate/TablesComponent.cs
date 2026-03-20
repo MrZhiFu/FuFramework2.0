@@ -8,9 +8,8 @@
 //------------------------------------------------------------------------------
 
 using System;
-using FuFramework.Config.Runtime;
 using SimpleJSON;
-
+using FuFramework.Config.Runtime;
 namespace Hotfix.Config
 {
     public partial class TablesComponent
