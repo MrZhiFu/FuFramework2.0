@@ -29,14 +29,7 @@ namespace Hotfix.Config.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.AchievementConfig _v;
-                {
-                    if (!_ele.IsObject)
-                    {
-                        throw new SerializationException(); 
-                        
-                    } 
-                    _v = Tables.AchievementConfig.DeserializeAchievementConfig(_ele);
-                }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Tables.AchievementConfig.DeserializeAchievementConfig(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);
