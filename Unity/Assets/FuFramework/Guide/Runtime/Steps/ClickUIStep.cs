@@ -14,7 +14,7 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 点击目标UI组件
         /// </summary>
-        private GComponent targetUI;
+        private GComponent m_TargetUI;
 
         protected override void OnExecute()
         {
@@ -37,10 +37,10 @@ namespace FuFramework.Guide.Runtime
                 return;
             }
 
-            targetUI = targetClickUI;
+            m_TargetUI = targetClickUI;
 
             // 添加目标UI点击回调
-            targetUI.onClick.Add(Complete);
+            m_TargetUI.onClick.Add(Complete);
 
             // 执行点击UI引导
             if (GuideAction == null)
@@ -49,15 +49,15 @@ namespace FuFramework.Guide.Runtime
                 return;
             }
 
-            GuideAction.DoClickUIGuide(targetUI);
+            GuideAction.DoClickUIGuide(m_TargetUI);
         }
 
         protected override void OnComplete()
         {
             // 移除监听器，结束点击UI引导
-            targetUI?.onClick.Remove(Complete);
+            m_TargetUI?.onClick.Remove(Complete);
             GuideAction?.EndClickUIGuide();
-            targetUI = null;
+            m_TargetUI = null;
             base.OnComplete();
         }
 

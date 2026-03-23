@@ -155,15 +155,6 @@ namespace FuFramework.Guide.Runtime
         protected virtual void OnCancel() { }
 
         /// <summary>
-        /// 步骤失败
-        /// </summary>
-        protected virtual void OnFail(string reason = "")
-        {
-            State = StepState.Failed;
-            FuLogger.LogWarning($"引导步骤{StepInfo.m_StepId}执行失败，失败原因：{reason}");
-        }
-
-        /// <summary>
         /// 检查步骤是否可以执行
         /// </summary>
         public virtual bool CanExecute() => true;
