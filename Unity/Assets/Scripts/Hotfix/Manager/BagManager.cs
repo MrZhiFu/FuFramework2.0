@@ -99,7 +99,7 @@ namespace Hotfix.Manager
         public List<BagItem> GetBagItemsByType(ItemType bagType)
         {
             var result = new List<BagItem>(_itemDic.Count);
-            var tbItemConfig = GlobalModule.ConfigModule.GetConfig<TbItemConfig>();
+            var tbItemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>();
             var itemType = bagType;
             foreach (var bagItem in _itemDic)
             {

@@ -12,9 +12,9 @@ using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class SoundsConfig : BeanBase
+    public sealed partial class Sound : BeanBase
     {
-        public SoundsConfig(int Id, string GroupName, string Path, string Title, string CharacterName) 
+        public Sound(int Id, string GroupName, string Path, string Title, string CharacterName) 
         {
             this.Id = Id;
             this.GroupName = GroupName;
@@ -24,7 +24,7 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public SoundsConfig(JSONNode _buf)
+        public Sound(JSONNode _buf)
         {
             { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
             { if(!_buf["groupName"].IsString) { throw new SerializationException(); }  GroupName = _buf["groupName"]; }
@@ -39,9 +39,9 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public static SoundsConfig DeserializeSoundsConfig(JSONNode _buf)
+        public static Sound DeserializeSound(JSONNode _buf)
         {
-            return new Tables.SoundsConfig(_buf);
+            return new Tables.Sound(_buf);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Hotfix.Config.Tables
         private readonly string Title_Localization_Key;
         public string CharacterName { private set; get; }
         private readonly string CharacterName_Localization_Key;
-        public const int __ID__ = 4070031;
+        public const int __ID__ = 343291974;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)

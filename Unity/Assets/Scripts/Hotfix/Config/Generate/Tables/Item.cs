@@ -12,9 +12,9 @@ using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class ItemConfig : BeanBase
+    public sealed partial class Item : BeanBase
     {
-        public ItemConfig(int Id, string Name, ItemType Type, ItemSubType SubType, ItemEPrompt EPrompt, ItemCanUse CanUse, bool IsDecompose, int MaxNum, string Description, System.Collections.Generic.List<int> ComeLink, string Icon, string BgIcon, ItemLevelColor LevelColor, bool CanAnnounce, string LinkInfo, int FunctionID, ItemUseLimiteType UseLimiteType, bool Abandon, bool DoubleCheckDesc, bool CanTrade, int TradeCD, int TradeItemsLimit, int UseLinmit, long? ExpireTime, bool IsRecordLog) 
+        public Item(int Id, string Name, ItemType Type, ItemSubType SubType, ItemEPrompt EPrompt, ItemCanUse CanUse, bool IsDecompose, int MaxNum, string Description, System.Collections.Generic.List<int> ComeLink, string Icon, string BgIcon, ItemLevelColor LevelColor, bool CanAnnounce, string LinkInfo, int FunctionID, ItemUseLimiteType UseLimiteType, bool Abandon, bool DoubleCheckDesc, bool CanTrade, int TradeCD, int TradeItemsLimit, int UseLinmit, long? ExpireTime, bool IsRecordLog) 
         {
             this.Id = Id;
             this.Name = Name;
@@ -44,7 +44,7 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public ItemConfig(JSONNode _buf)
+        public Item(JSONNode _buf)
         {
             { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
             { if(!_buf["Name"].IsString) { throw new SerializationException(); }  Name = _buf["Name"]; }
@@ -79,9 +79,9 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public static ItemConfig DeserializeItemConfig(JSONNode _buf)
+        public static Item DeserializeItem(JSONNode _buf)
         {
-            return new Tables.ItemConfig(_buf);
+            return new Tables.Item(_buf);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Hotfix.Config.Tables
         /// 是否记录日志
         /// </summary>
         public bool IsRecordLog { private set; get; }
-        public const int __ID__ = -1046574242;
+        public const int __ID__ = -1513240324;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)

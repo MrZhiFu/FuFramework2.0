@@ -12,9 +12,9 @@ using SimpleJSON;
 
 namespace Hotfix.Config.Tables
 {
-    public sealed partial class AchievementConfig : BeanBase
+    public sealed partial class Achievement : BeanBase
     {
-        public AchievementConfig(int Id, int Image, string Name, string AchievementContent, string LockText, System.Collections.Generic.List<int> AchievementUnlockCondition) 
+        public Achievement(int Id, int Image, string Name, string AchievementContent, string LockText, System.Collections.Generic.List<int> AchievementUnlockCondition) 
         {
             this.Id = Id;
             this.Image = Image;
@@ -25,7 +25,7 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public AchievementConfig(JSONNode _buf)
+        public Achievement(JSONNode _buf)
         {
             { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
             { if(!_buf["image"].IsNumber) { throw new SerializationException(); }  Image = _buf["image"]; }
@@ -42,9 +42,9 @@ namespace Hotfix.Config.Tables
             PostInit();
         }
 
-        public static AchievementConfig DeserializeAchievementConfig(JSONNode _buf)
+        public static Achievement DeserializeAchievement(JSONNode _buf)
         {
-            return new Tables.AchievementConfig(_buf);
+            return new Tables.Achievement(_buf);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Hotfix.Config.Tables
         /// 成就解锁条件
         /// </summary>
         public System.Collections.Generic.List<int> AchievementUnlockCondition { private set; get; }
-        public const int __ID__ = -1961757688;
+        public const int __ID__ = -1048610522;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)

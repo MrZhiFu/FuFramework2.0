@@ -13,10 +13,10 @@ using FuFramework.Config.Runtime;
 
 namespace Hotfix.Config.Tables
 {
-    public partial class TbItemConfig : BaseDataTable<Tables.ItemConfig>
+    public partial class TbAchievement : BaseDataTable<Tables.Achievement>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
-        public TbItemConfig(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
+        public TbAchievement(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
         {
             _loadFunc = loadFunc;
         }
@@ -27,8 +27,8 @@ namespace Hotfix.Config.Tables
             DataList.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Tables.ItemConfig _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Tables.ItemConfig.DeserializeItemConfig(_ele);  }
+                Tables.Achievement _v;
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Tables.Achievement.DeserializeAchievement(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);

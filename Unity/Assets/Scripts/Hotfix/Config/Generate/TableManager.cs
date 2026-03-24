@@ -17,11 +17,11 @@ namespace Hotfix.Config
 
         internal Local.TbLocalization TbLocalization { private set; get; }
 
-        internal Tables.TbAchievementConfig TbAchievementConfig { private set; get; }
+        internal Tables.TbAchievement TbAchievement { private set; get; }
 
-        internal Tables.TbItemConfig TbItemConfig { private set; get; }
+        internal Tables.TbItem TbItem { private set; get; }
 
-        internal Tables.TbSoundsConfig TbSoundsConfig { private set; get; }
+        internal Tables.TbSound TbSound { private set; get; }
 
         private ConfigModule m_ConfigModule;
 
@@ -54,17 +54,17 @@ namespace Hotfix.Config
             loadTasks.Add(TbLocalization.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Local.TbLocalization), TbLocalization);
 
-            TbAchievementConfig = new Tables.TbAchievementConfig(() => loader("tables_tbachievementconfig"));
-            loadTasks.Add(TbAchievementConfig.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbAchievementConfig), TbAchievementConfig);
+            TbAchievement = new Tables.TbAchievement(() => loader("tables_tbachievement"));
+            loadTasks.Add(TbAchievement.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbAchievement), TbAchievement);
 
-            TbItemConfig = new Tables.TbItemConfig(() => loader("tables_tbitemconfig"));
-            loadTasks.Add(TbItemConfig.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbItemConfig), TbItemConfig);
+            TbItem = new Tables.TbItem(() => loader("tables_tbitem"));
+            loadTasks.Add(TbItem.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbItem), TbItem);
 
-            TbSoundsConfig = new Tables.TbSoundsConfig(() => loader("tables_tbsoundsconfig"));
-            loadTasks.Add(TbSoundsConfig.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbSoundsConfig), TbSoundsConfig);
+            TbSound = new Tables.TbSound(() => loader("tables_tbsound"));
+            loadTasks.Add(TbSound.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbSound), TbSound);
 
     
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
@@ -85,17 +85,17 @@ namespace Hotfix.Config
                 throw new InvalidOperationException("Table is not loaded!");
             }
             TbLocalization.TranslateText(translator);
-            TbAchievementConfig.TranslateText(translator);
-            TbItemConfig.TranslateText(translator);
-            TbSoundsConfig.TranslateText(translator);
+            TbAchievement.TranslateText(translator);
+            TbItem.TranslateText(translator);
+            TbSound.TranslateText(translator);
         }
 
         private void ResolveRef()
         {
             TbLocalization.ResolveRef(this);
-            TbAchievementConfig.ResolveRef(this);
-            TbItemConfig.ResolveRef(this);
-            TbSoundsConfig.ResolveRef(this);
+            TbAchievement.ResolveRef(this);
+            TbItem.ResolveRef(this);
+            TbSound.ResolveRef(this);
         }
     
         public void Refresh()
