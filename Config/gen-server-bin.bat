@@ -1,4 +1,4 @@
-dotnet.exe ./Tools/Luban.dll ^
+dotnet.exe ./Tools/Luban/Luban.dll ^
     -t server ^
     -d bin ^
     -c cs-dotnet-bin ^

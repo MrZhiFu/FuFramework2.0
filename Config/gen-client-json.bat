@@ -1,4 +1,4 @@
-dotnet ./Tools/Luban.dll ^
+dotnet ./Tools/Luban/Luban.dll ^
     -t client ^
     -d json ^
     -c cs-simple-json ^
