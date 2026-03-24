@@ -34,18 +34,18 @@ luban标准化了游戏配置开发工作流，可以极大提升策划和程序
 
 #### 示例配置
 
-- l10n.provider=`gameframex`
+- l10n.provider=`fuframework`
 
-这里必须为 `gameframex` 否则会导致本地化文件识别失败。
+这里必须为 `fuframework` 否则会导致本地化文件识别失败。
 
-- l10n.textFile.path=`./Excels/Tables/Localization/`
+- l10n.textFile.path=`./Excels/Local/`
 
 这里值必须为 文件夹路径 否则会导致本地化文件识别失败。
 
 导出参数参考
 
 ```
---xargs l10n.provider=gameframex --xargs l10n.textFile.keyFieldName=key  --xargs l10n.textFile.path=./Excels/Tables/Localization/
+--xargs l10n.provider=fuframework --xargs l10n.textFile.keyFieldName=key  --xargs l10n.textFile.path=./Excels/Local/
 ```
 
 ### 增加自动导表的文件名称扩展识别
@@ -53,7 +53,7 @@ luban标准化了游戏配置开发工作流，可以极大提升策划和程序
 #### 导出参数(必须配置)
 
 ```
---xargs tableImporter.name=gameframex
+--xargs tableImporter.name=fuframework
 ```
 
 #### 说明
