@@ -1,5 +1,4 @@
 using System;
-using Luban;
 using FuFramework.Config.Runtime;
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}
@@ -17,7 +16,7 @@ using FuFramework.Config.Runtime;
         public void Init(ConfigModule configModule)
         {
             m_ConfigModule = configModule;
-            configModule.RemoveAllConfigs();
+            m_ConfigModule.RemoveAllConfigs();
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ using FuFramework.Config.Runtime;
             {{~for table in __tables ~}}
             {{format_property_name __code_style table.name}} = new {{table.full_name}}(() => loader("{{table.output_data_file}}"));
             loadTasks.Add({{format_property_name __code_style table.name}}.LoadAsync());
-            m_ConfigModule.AddConfig(nameof({{table.full_name}}), {{format_property_name __code_style table.name}});
+            m_configModule.AddConfig(nameof({{table.full_name}}), {{format_property_name __code_style table.name}});
 
             {{~end~}}
 
