@@ -39,7 +39,6 @@
 
     <ItemGroup>
       <Folder Include="Templates\common\" />
-      <Folder Include="Templates\cs-editor-json\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -95,6 +94,15 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Templates\cs-editor-json\enum.sbn">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Templates\cs-dotnet-bin\bean.sbn">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Templates\cs-dotnet-bin\table.sbn">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Templates\cs-dotnet-bin\tables.sbn">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
