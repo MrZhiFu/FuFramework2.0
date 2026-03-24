@@ -1,7 +1,7 @@
 dotnet ./Tools/Luban/Luban.dll \
     -t server \
     -d bin \
-    -c cs-bin \
+    -c cs-dotnet-bin \
     -x outputDataDir=../Server/GameFrameX.Config/Json \
     -x outputCodeDir=../Server/GameFrameX.Config/Config \
     -x tableImporter.name=fuframework \
