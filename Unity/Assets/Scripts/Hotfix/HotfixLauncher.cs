@@ -47,15 +47,15 @@ namespace Hotfix
         /// </summary>
         private static async UniTaskVoid LoadConfig()
         {
-            var tablesComponent = new TablesComponent();
-            tablesComponent.Init(GlobalModule.ConfigModule);
+            var tableManager = new TableManager();
+            tableManager.Init(GlobalModule.ConfigModule);
 
 #if ENABLE_BINARY_CONFIG
             // 使用二进制配置表
-            await tablesComponent.LoadAsync(ConfigBufferLoader);
+            await tableManager.LoadAsync(ConfigBufferLoader);
 #else
             // 使用JSON配置表
-            await tablesComponent.LoadAsync(ConfigLoader);
+            await tableManager.LoadAsync(ConfigLoader);
 #endif
         }
 
