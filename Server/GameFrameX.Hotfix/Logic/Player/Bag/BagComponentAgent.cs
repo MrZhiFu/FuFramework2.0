@@ -25,7 +25,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
         // 校验物品是否存在
         foreach (var item in message.ItemDic)
         {
-            var hasItem = ConfigComponent.Instance.GetConfig<TbItemConfig>().Get((int)item.Key);
+            var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get((int)item.Key);
             if (hasItem.IsNull())
             {
                 response.ErrorCode = (int)OperationStatusCode.NotFound;
@@ -82,7 +82,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
         // 校验物品是否存在
         foreach (var item in message.ItemDic)
         {
-            var hasItem = ConfigComponent.Instance.GetConfig<TbItemConfig>().Get((int)item.Key);
+            var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get((int)item.Key);
             if (hasItem.IsNull())
             {
                 response.ErrorCode = (int)OperationStatusCode.NotFound;
@@ -126,7 +126,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     public async Task OnUseBagItem(INetWorkChannel netWorkChannel, ReqUseItem message, RespUseItem response)
     {
         // 校验物品是否存在
-        var hasItem = ConfigComponent.Instance.GetConfig<TbItemConfig>().Get(message.ItemId);
+        var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get(message.ItemId);
         if (hasItem.IsNull())
         {
             response.ErrorCode = (int)OperationStatusCode.NotFound;

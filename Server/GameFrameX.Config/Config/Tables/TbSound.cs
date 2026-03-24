@@ -12,16 +12,16 @@ using GameFrameX.Core.Config;
 
 namespace GameFrameX.Config.Tables
 {
-    public partial class TbSoundsConfig : BaseDataTable<Tables.SoundsConfig>
+    public partial class TbSound : BaseDataTable<Tables.Sound>
     {
-        //private readonly System.Collections.Generic.Dictionary<int, Tables.SoundsConfig> _dataMap;
-        //private readonly System.Collections.Generic.List<Tables.SoundsConfig> _dataList;
+        //private readonly System.Collections.Generic.Dictionary<int, Tables.Sound> _dataMap;
+        //private readonly System.Collections.Generic.List<Tables.Sound> _dataList;
     
-        //public System.Collections.Generic.Dictionary<int, Tables.SoundsConfig> DataMap => _dataMap;
-        //public System.Collections.Generic.List<Tables.SoundsConfig> DataList => _dataList;
-        //public Tables.SoundsConfig GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-        //public Tables.SoundsConfig Get(int key) => _dataMap[key];
-        //public Tables.SoundsConfig this[int key] => _dataMap[key];
+        //public System.Collections.Generic.Dictionary<int, Tables.Sound> DataMap => _dataMap;
+        //public System.Collections.Generic.List<Tables.Sound> DataList => _dataList;
+        //public Tables.Sound GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+        //public Tables.Sound Get(int key) => _dataMap[key];
+        //public Tables.Sound this[int key] => _dataMap[key];
     
         public override async System.Threading.Tasks.Task LoadAsync()
         {
@@ -31,8 +31,8 @@ namespace GameFrameX.Config.Tables
             StringDataMaps.Clear();
             foreach(var element in jsonElement.EnumerateArray())
             {
-                Tables.SoundsConfig _v;
-                _v = Tables.SoundsConfig.DeserializeSoundsConfig(element);
+                Tables.Sound _v;
+                _v = Tables.Sound.DeserializeSound(element);
                 DataList.Add(_v);
                 LongDataMaps.Add(_v.Id, _v);
                 StringDataMaps.Add(_v.Id.ToString(), _v);
@@ -51,7 +51,7 @@ namespace GameFrameX.Config.Tables
     
         partial void PostInit();
 
-        public TbSoundsConfig(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
+        public TbSound(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
         {
         }
     }

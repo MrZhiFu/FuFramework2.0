@@ -12,10 +12,10 @@ using GameFrameX.Core.Config;
 
 namespace GameFrameX.Config.Tables
 {
-    public sealed partial class ItemConfig : BeanBase
+    public sealed partial class Item : BeanBase
     {
         /*
-        public ItemConfig(int Id, string Name, ItemType Type, ItemSubType SubType, ItemEPrompt EPrompt, ItemCanUse CanUse, bool IsDecompose, int MaxNum, string Description, System.Collections.Generic.List<int> ComeLink, string Icon, string BgIcon, ItemLevelColor LevelColor, bool CanAnnounce, string LinkInfo, int FunctionID, ItemUseLimiteType UseLimiteType, bool Abandon, bool DoubleCheckDesc, bool CanTrade, int TradeCD, int TradeItemsLimit, int UseLinmit, long? ExpireTime, bool IsRecordLog) 
+        public Item(int Id, string Name, ItemType Type, ItemSubType SubType, ItemEPrompt EPrompt, ItemCanUse CanUse, bool IsDecompose, int MaxNum, string Description, System.Collections.Generic.List<int> ComeLink, string Icon, string BgIcon, ItemLevelColor LevelColor, bool CanAnnounce, string LinkInfo, int FunctionID, ItemUseLimiteType UseLimiteType, bool Abandon, bool DoubleCheckDesc, bool CanTrade, int TradeCD, int TradeItemsLimit, int UseLinmit, long? ExpireTime, bool IsRecordLog) 
         {
             this.Id = Id;
             this.Name = Name;
@@ -46,7 +46,7 @@ namespace GameFrameX.Config.Tables
         }        
         */
 
-        public ItemConfig(JsonElement _buf) 
+        public Item(JsonElement _buf) 
         {
             Id = _buf.GetProperty("id").GetInt32();
             Name = _buf.GetProperty("Name").GetString();
@@ -75,9 +75,9 @@ namespace GameFrameX.Config.Tables
             IsRecordLog = _buf.GetProperty("IsRecordLog").GetBoolean();
         }
     
-        public static ItemConfig DeserializeItemConfig(JsonElement _buf)
+        public static Item DeserializeItem(JsonElement _buf)
         {
-            return new Tables.ItemConfig(_buf);
+            return new Tables.Item(_buf);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace GameFrameX.Config.Tables
         /// </summary>
         public bool IsRecordLog { private set; get; }
 
-        private const int __ID__ = -1046574242;
+        private const int __ID__ = -1513240324;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)

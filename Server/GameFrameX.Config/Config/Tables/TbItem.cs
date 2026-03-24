@@ -12,16 +12,16 @@ using GameFrameX.Core.Config;
 
 namespace GameFrameX.Config.Tables
 {
-    public partial class TbItemConfig : BaseDataTable<Tables.ItemConfig>
+    public partial class TbItem : BaseDataTable<Tables.Item>
     {
-        //private readonly System.Collections.Generic.Dictionary<int, Tables.ItemConfig> _dataMap;
-        //private readonly System.Collections.Generic.List<Tables.ItemConfig> _dataList;
+        //private readonly System.Collections.Generic.Dictionary<int, Tables.Item> _dataMap;
+        //private readonly System.Collections.Generic.List<Tables.Item> _dataList;
     
-        //public System.Collections.Generic.Dictionary<int, Tables.ItemConfig> DataMap => _dataMap;
-        //public System.Collections.Generic.List<Tables.ItemConfig> DataList => _dataList;
-        //public Tables.ItemConfig GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-        //public Tables.ItemConfig Get(int key) => _dataMap[key];
-        //public Tables.ItemConfig this[int key] => _dataMap[key];
+        //public System.Collections.Generic.Dictionary<int, Tables.Item> DataMap => _dataMap;
+        //public System.Collections.Generic.List<Tables.Item> DataList => _dataList;
+        //public Tables.Item GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+        //public Tables.Item Get(int key) => _dataMap[key];
+        //public Tables.Item this[int key] => _dataMap[key];
     
         public override async System.Threading.Tasks.Task LoadAsync()
         {
@@ -31,8 +31,8 @@ namespace GameFrameX.Config.Tables
             StringDataMaps.Clear();
             foreach(var element in jsonElement.EnumerateArray())
             {
-                Tables.ItemConfig _v;
-                _v = Tables.ItemConfig.DeserializeItemConfig(element);
+                Tables.Item _v;
+                _v = Tables.Item.DeserializeItem(element);
                 DataList.Add(_v);
                 LongDataMaps.Add(_v.Id, _v);
                 StringDataMaps.Add(_v.Id.ToString(), _v);
@@ -51,7 +51,7 @@ namespace GameFrameX.Config.Tables
     
         partial void PostInit();
 
-        public TbItemConfig(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
+        public TbItem(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
         {
         }
     }

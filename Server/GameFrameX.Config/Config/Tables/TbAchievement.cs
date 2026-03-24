@@ -12,16 +12,16 @@ using GameFrameX.Core.Config;
 
 namespace GameFrameX.Config.Tables
 {
-    public partial class TbAchievementConfig : BaseDataTable<Tables.AchievementConfig>
+    public partial class TbAchievement : BaseDataTable<Tables.Achievement>
     {
-        //private readonly System.Collections.Generic.Dictionary<int, Tables.AchievementConfig> _dataMap;
-        //private readonly System.Collections.Generic.List<Tables.AchievementConfig> _dataList;
+        //private readonly System.Collections.Generic.Dictionary<int, Tables.Achievement> _dataMap;
+        //private readonly System.Collections.Generic.List<Tables.Achievement> _dataList;
     
-        //public System.Collections.Generic.Dictionary<int, Tables.AchievementConfig> DataMap => _dataMap;
-        //public System.Collections.Generic.List<Tables.AchievementConfig> DataList => _dataList;
-        //public Tables.AchievementConfig GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-        //public Tables.AchievementConfig Get(int key) => _dataMap[key];
-        //public Tables.AchievementConfig this[int key] => _dataMap[key];
+        //public System.Collections.Generic.Dictionary<int, Tables.Achievement> DataMap => _dataMap;
+        //public System.Collections.Generic.List<Tables.Achievement> DataList => _dataList;
+        //public Tables.Achievement GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+        //public Tables.Achievement Get(int key) => _dataMap[key];
+        //public Tables.Achievement this[int key] => _dataMap[key];
     
         public override async System.Threading.Tasks.Task LoadAsync()
         {
@@ -31,8 +31,8 @@ namespace GameFrameX.Config.Tables
             StringDataMaps.Clear();
             foreach(var element in jsonElement.EnumerateArray())
             {
-                Tables.AchievementConfig _v;
-                _v = Tables.AchievementConfig.DeserializeAchievementConfig(element);
+                Tables.Achievement _v;
+                _v = Tables.Achievement.DeserializeAchievement(element);
                 DataList.Add(_v);
                 LongDataMaps.Add(_v.Id, _v);
                 StringDataMaps.Add(_v.Id.ToString(), _v);
@@ -51,7 +51,7 @@ namespace GameFrameX.Config.Tables
     
         partial void PostInit();
 
-        public TbAchievementConfig(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
+        public TbAchievement(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
         {
         }
     }

@@ -28,7 +28,7 @@ public sealed class ReqPlayerSendItemHttpHandler : BaseHttpHandler
         var playerSession = SessionManager.GetByRoleId(request.RoleId);
         Dictionary<int, long> itemDic = new Dictionary<int, long>();
 
-        var tbItemConfig = ConfigComponent.Instance.GetConfig<TbItemConfig>();
+        var tbItemConfig = ConfigComponent.Instance.GetConfig<TbItem>();
         if (tbItemConfig != null)
         {
             foreach (var item in request.Items)
