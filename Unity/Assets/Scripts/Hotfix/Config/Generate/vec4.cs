@@ -45,7 +45,7 @@ namespace Hotfix.Config
         public float Z { private set; get; }
         public float W { private set; get; }
 
-        public  void ResolveRef(TablesComponent tables)
+        public  void ResolveRef(TableManager tables)
         {
             
             

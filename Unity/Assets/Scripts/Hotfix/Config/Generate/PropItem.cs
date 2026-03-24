@@ -47,7 +47,7 @@ namespace Hotfix.Config
         public const int __ID__ = -929329866;
         public override int GetTypeId() => __ID__;
 
-        public  void ResolveRef(TablesComponent tables)
+        public  void ResolveRef(TableManager tables)
         {
             
             

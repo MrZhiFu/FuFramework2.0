@@ -12,7 +12,7 @@ using SimpleJSON;
 using FuFramework.Config.Runtime;
 namespace Hotfix.Config
 {
-    public partial class TablesComponent
+    public partial class TableManager
     {
 
         internal Local.TbLocalization TbLocalization { private set; get; }

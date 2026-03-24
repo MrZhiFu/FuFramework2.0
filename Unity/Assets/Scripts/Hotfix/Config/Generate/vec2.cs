@@ -39,7 +39,7 @@ namespace Hotfix.Config
         public float X { private set; get; }
         public float Y { private set; get; }
 
-        public  void ResolveRef(TablesComponent tables)
+        public  void ResolveRef(TableManager tables)
         {
             
             
