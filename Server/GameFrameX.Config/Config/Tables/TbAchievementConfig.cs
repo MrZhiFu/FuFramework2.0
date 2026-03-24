@@ -40,7 +40,7 @@ namespace GameFrameX.Config.Tables
             PostInit();
         }
 
-        public void ResolveRef(TablesComponent tables)
+        public void ResolveRef(TableManager tables)
         {
             foreach(var element in DataList)
             {

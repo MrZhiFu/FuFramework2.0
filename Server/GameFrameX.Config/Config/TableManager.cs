@@ -13,7 +13,7 @@ using GameFrameX.Config;
 
 namespace GameFrameX.Config
 {
-    public partial class TablesComponent
+    public partial class TableManager
     {
         internal Local.TbLocalization TbLocalization { private set; get; }
         internal Tables.TbAchievementConfig TbAchievementConfig { private set; get; }
@@ -55,7 +55,7 @@ namespace GameFrameX.Config
             Refresh();
         }
 
-        public TablesComponent()
+        public TableManager()
         {
             //TablesMemory.BeginRecord();
     

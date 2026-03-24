@@ -39,7 +39,7 @@ namespace GameFrameX.Config.Local
             PostInit();
         }
 
-        public void ResolveRef(TablesComponent tables)
+        public void ResolveRef(TableManager tables)
         {
             foreach(var element in DataList)
             {

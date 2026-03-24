@@ -11,12 +11,12 @@ public class ConfigComponent
     private ConfigComponent()
     {
         _configManager = new ConfigManager();
-        Tables = new TablesComponent();
+        Tables = new TableManager();
     }
 
     public static ConfigComponent Instance { get; } = new();
 
-    private TablesComponent Tables { get; }
+    private TableManager Tables { get; }
 
     public async Task LoadConfig()
     {

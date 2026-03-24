@@ -38,7 +38,7 @@ namespace GameFrameX.Config
         public float Y { private set; get; }
 
 
-        public  void ResolveRef(TablesComponent tables)
+        public  void ResolveRef(TableManager tables)
         {
             
             
