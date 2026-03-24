@@ -1,3 +1,4 @@
+using Luban;
 using System;
 using FuFramework.Config.Runtime;
 {{namespace_with_grace_begin __namespace}}
@@ -41,7 +42,7 @@ using FuFramework.Config.Runtime;
             {{~for table in __tables ~}}
             {{format_property_name __code_style table.name}} = new {{table.full_name}}(() => loader("{{table.output_data_file}}"));
             loadTasks.Add({{format_property_name __code_style table.name}}.LoadAsync());
-            m_configModule.AddConfig(nameof({{table.full_name}}), {{format_property_name __code_style table.name}});
+            m_ConfigModule.AddConfig(nameof({{table.full_name}}), {{format_property_name __code_style table.name}});
 
             {{~end~}}
 
