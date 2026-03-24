@@ -28,7 +28,7 @@ namespace Hotfix.Config
         public void Init(ConfigModule configModule)
         {
             m_ConfigModule = configModule;
-            configModule.RemoveAllConfigs();
+            m_ConfigModule.RemoveAllConfigs();
         }
 
         /// <summary>
