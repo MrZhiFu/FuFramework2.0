@@ -7,8 +7,8 @@ using Luban.Utils;
 
 namespace Luban.L10N;
 
-[TextProvider("gameframex")]
-public class GameFrameXTextProvider : ITextProvider
+[TextProvider("fuframework")]
+public class FuFrameworkTextProvider : ITextProvider
 {
     private static readonly NLog.Logger s_logger = NLog.LogManager.GetCurrentClassLogger();
 

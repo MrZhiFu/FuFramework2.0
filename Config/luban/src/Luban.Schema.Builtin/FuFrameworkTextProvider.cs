@@ -5,8 +5,8 @@ using System.Text.RegularExpressions;
 
 namespace Luban.Schema.Builtin;
 
-[TableImporter("gameframex")]
-public class GameFrameXTableImporter : ITableImporter
+[TableImporter("fuframework")]
+public class FuFrameworkTableImporter : ITableImporter
 {
     private static readonly NLog.Logger s_logger = NLog.LogManager.GetCurrentClassLogger();
 
