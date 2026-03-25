@@ -1,5 +1,4 @@
-using Luban;
-using FuFramework.Config.Runtime;
+using GameFrameX.Core.Config;
 {{
     key_type = __table.key_ttype
     value_type =  __table.value_ttype
@@ -47,7 +46,7 @@ using FuFramework.Config.Runtime;
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             ByteBuf _buf = await _loadFunc();
-            StrKeyDataDict.Clear();
+            StringDataMaps.Clear();
             DataList.Clear();
             for(int n = _buf.ReadSize() ; n > 0 ; --n)
             {
@@ -55,9 +54,9 @@ using FuFramework.Config.Runtime;
                 {{deserialize '_buf' '_v' value_type}}
                 DataList.Add(_v);
                 {{~if __key_type.type_name != 'string' ~}}
-                LongKeyDataDict.Add(_v.{{format_property_name __code_style __table.index_field.name}}, _v);
+                LongDataMaps.Add(_v.{{format_property_name __code_style __table.index_field.name}}, _v);
                 {{~end~}}
-                StrKeyDataDict.Add(_v.{{format_property_name __code_style __table.index_field.name}}.ToString(), _v);
+                StringDataMaps.Add(_v.{{format_property_name __code_style __table.index_field.name}}.ToString(), _v);
             }
             PostInit();
         }
