@@ -11,18 +11,18 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 代码热修复辅助类。
-    /// 用于加载热修复程序集，并运行热修复程序集入口函数。
+    /// 代码热更辅助类。
+    /// 用于加载热更程序集，并运行热更程序集入口函数。
     /// </summary>
     public static class HotfixHelper
     {
         /// <summary>
-        /// 热修复程序集名称
+        /// 热更程序集名称
         /// </summary>
         private const string HotfixName = "Game.Hotfix";
 
         /// <summary>
-        /// 启动代码热修复
+        /// 启动代码热更
         /// </summary>
         public static async UniTask StartHotfix()
         {
@@ -35,7 +35,9 @@ namespace Launcher.Procedure
                     var assemblyName = assembly.GetName().Name;
                     var isHotfix     = assemblyName.Equals(HotfixName, StringComparison.OrdinalIgnoreCase);
                     if (!isHotfix) continue;
-                    Run(assembly);
+
+                    // 等待热更程序集入口函数运行完毕
+                    await Run(assembly);
                     break;
                 }
 
@@ -65,23 +67,30 @@ namespace Launcher.Procedure
             var hotfixAssembly = Assembly.Load(assemblyDataHotfixDll, null);
             FuLogger.LogInfo("加载程序集Hotfix 结束 Assembly " + hotfixAssembly.FullName);
 
-            // 运行热修复程序集入口函数
-            Run(hotfixAssembly);
+            // 等待热更程序集入口函数运行完毕
+            await Run(hotfixAssembly);
         }
 
         /// <summary>
-        /// 运行热修复程序集入口函数
+        /// 运行热更程序集入口函数
         /// </summary>
-        /// <param name="assembly"></param>
-        private static void Run(Assembly assembly)
+        private static async UniTask Run(Assembly assembly)
         {
             var entryType = assembly.GetType("Hotfix.HotfixLauncher");
-
             FuLogger.LogInfo("获取程序集Hotfix的入口类型 ==>" + entryType.FullName);
-            var method = entryType.GetMethod("Main");
 
-            FuLogger.LogInfo("获取程序集Hotfix的入口类型的入口方法 ==>" + method?.Name);
-            method?.Invoke(null, null);
+            var mainMethod = entryType.GetMethod("Main");
+            FuLogger.LogInfo("获取程序集Hotfix的入口类型的入口方法 ==>" + mainMethod?.Name);
+
+            // 调用异步入口函数并等待完成
+            var result = mainMethod?.Invoke(null, null);
+            if (result is not UniTask mainTask)
+            {
+                FuLogger.LogError("[HotfixHelper] 入口函数不是异步可等待的");
+                return;
+            }
+
+            await mainTask;
         }
     }
 }

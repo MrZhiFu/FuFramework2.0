@@ -30,7 +30,9 @@
         "FuFramework.DataSave.Runtime",
         "FuFramework.Timer.Runtime",
         "FuFramework.RedDot.Runtime",
-        "FuFramework.Guide.Runtime"
+        "FuFramework.Guide.Runtime",
+        "FuFramework.ModuleSetting.Runtime",
+        "Game.AOT"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

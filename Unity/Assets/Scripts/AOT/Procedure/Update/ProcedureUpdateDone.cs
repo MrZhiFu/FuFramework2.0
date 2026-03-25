@@ -24,7 +24,7 @@ namespace Launcher.Procedure
             LauncherUIHelper.SetProgressUpdateFinish();
             LauncherUIHelper.SetTipText(string.Empty);
 
-            // 资源热更流程更新完毕，进入代码热修复流程;
+            // 资源热更流程更新完毕，进入代码热更流程;
             ChangeState<ProcedureHotfix>();
         }
     }

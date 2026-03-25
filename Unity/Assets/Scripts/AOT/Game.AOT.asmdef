@@ -1,10 +1,9 @@
 {
-    "name": "Game.Launcher",
+    "name": "Game.AOT",
     "rootNamespace": "",
     "references": [
         "FairyGUI",
         "YooAsset",
-        "LuBan.Runtime",
         "HybridCLRData",
         "UniTask.Runtime",
         "HybridCLR.Runtime",

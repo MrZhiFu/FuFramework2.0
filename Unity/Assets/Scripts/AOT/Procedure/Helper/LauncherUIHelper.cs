@@ -1,6 +1,5 @@
 ﻿using Launcher.UI;
 using Cysharp.Threading.Tasks;
-using FuFramework.UI.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Entry.Runtime;
@@ -25,7 +24,7 @@ namespace Launcher.Procedure
         public static async UniTask Start()
         {
             m_WinLauncher = await GlobalModule.UIModule.OpenUIAsync<WinLauncher>();
-            GlobalModule.EventModule.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, SetUpdateProgress);
+            GlobalModule.EventModule.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, OnAssetDownloadProgressUpdate);
         }
 
         /// <summary>
@@ -49,11 +48,11 @@ namespace Launcher.Procedure
         public static void SetProgressUpdateFinish() => m_WinLauncher.SetUpdateState(true);
 
         /// <summary>
-        /// 设置Asset下载进度更新事件
+        /// 资源下载进度更新事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="gameEventArgs"></param>
-        private static void SetUpdateProgress(object sender, GameEventArgs gameEventArgs)
+        private static void OnAssetDownloadProgressUpdate(object sender, GameEventArgs gameEventArgs)
         {
             m_WinLauncher.SetUpdateState(false);
             var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;

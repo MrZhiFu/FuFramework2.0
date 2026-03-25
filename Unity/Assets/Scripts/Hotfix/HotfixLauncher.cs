@@ -1,4 +1,4 @@
-﻿using Luban;
+﻿using System;
 using UnityEngine;
 using Hotfix.Proto;
 using Hotfix.Config;
@@ -9,22 +9,27 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
-using SimpleJSON;
+using FuFramework.ModuleSetting.Runtime;
+using Launcher.Procedure;
 using Utility = FuFramework.Core.Runtime.Utility;
+
 #if ENABLE_BINARY_CONFIG
+using Luban;
+#else
+using SimpleJSON;
 #endif
 
 namespace Hotfix
 {
     /// <summary>
-    /// 热修复代码入口
+    /// 热更代码入口
     /// </summary>
     public static class HotfixLauncher
     {
         /// <summary>
         /// 启动入口
         /// </summary>
-        public static void Main()
+        public static async UniTask Main()
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
@@ -32,20 +37,28 @@ namespace Hotfix
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
             // 加载配置表
-            LoadConfig().Forget();
+            LauncherUIHelper.SetTipText("LoadConfig...");
+            await LoadConfig();
 
-            // 加载初始UI
-            LoadUI();
+            // 加载初始必要的UI资源
+            LauncherUIHelper.SetTipText("LoadInitUIAsset...");
+            await LoadUI();
 
-            // 指定引导模块的动作执行器，并开始首个引导
-            GlobalModule.GuideModule.GuideAction = new GuideActionImpl();
-            GlobalModule.GuideModule.StartFirstGuide();
+            // 打开登录界面
+            GlobalModule.UIModule.OpenUI<WinLogin>();
+
+            // 如果开启引导，则指定引导模块的动作执行器，并开始首个引导
+            if (ModuleSetting.Instance.OpenGuide)
+            {
+                GlobalModule.GuideModule.GuideAction = new GuideActionImpl();
+                GlobalModule.GuideModule.StartFirstGuide();
+            }
         }
 
         /// <summary>
         /// 加载配置表
         /// </summary>
-        private static async UniTaskVoid LoadConfig()
+        private static async UniTask LoadConfig()
         {
             var tableManager = new TableManager();
             tableManager.Init(GlobalModule.ConfigModule);
@@ -60,20 +73,15 @@ namespace Hotfix
         }
 
         /// <summary>
-        /// 加载UI
+        /// 加载初始必要的UI
         /// </summary>
-        private static void LoadUI()
+        private static async UniTask LoadUI()
         {
-            var uiModule = GlobalModule.UIModule;
-            
             // 添加通用UI资源包
-            uiModule.PkgManager.AddPackageAsync("Common").Forget();
-
-            // 打开登录界面
-            uiModule.OpenUI<WinLogin>();
+            await GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
         }
 
-// #if ENABLE_BINARY_CONFIG
+#if ENABLE_BINARY_CONFIG
         /// <summary>
         /// 加载二进制配置表
         /// </summary>
@@ -85,7 +93,7 @@ namespace Hotfix
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
             return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
         }
-// #else
+#else
         /// <summary>
         /// 加载json配置表
         /// </summary>
@@ -93,10 +101,10 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<JSONNode> ConfigLoader(string file)
         {
-            var cfgPath = Utility.AssetPath.GetConfigPath(file, Utility.Const.FileNameSuffix.Json);
+            var cfgPath     = Utility.AssetPath.GetConfigPath(file, Utility.Const.FileNameSuffix.Json);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
             return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
         }
-// #endif
+#endif
     }
 }
