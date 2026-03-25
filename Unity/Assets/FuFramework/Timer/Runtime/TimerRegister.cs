@@ -27,7 +27,21 @@ namespace FuFramework.Timer.Runtime
         /// 创建计时器注册器
         /// </summary>
         /// <returns></returns>
-        public static TimerRegister Create() => ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
+        public static TimerRegister Create()
+        {
+            var register = ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
+            register.m_TimerModule.OnTimerFinished += register.OnTimerFinished;
+            return register;
+        }
+
+        /// <summary>
+        /// 计时器完成时的回调
+        /// </summary>
+        /// <param name="timerId">计时器ID</param>
+        private void OnTimerFinished(int timerId)
+        {
+            m_TimerList.Remove(timerId);
+        }
 
 
         /// <summary>
@@ -38,9 +52,11 @@ namespace FuFramework.Timer.Runtime
         /// <param name="updateCallBack">计时器更新回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update,
+                                        bool ignoreTimeScale = false)
         {
             var timerId = m_TimerModule.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            if (timerId < 0) return;
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -56,6 +72,7 @@ namespace FuFramework.Timer.Runtime
         public void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
             var timerId = m_TimerModule.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            if (timerId < 0) return;
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -71,6 +88,7 @@ namespace FuFramework.Timer.Runtime
         public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
             var timerId = m_TimerModule.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            if (timerId < 0) return;
             if (m_TimerList.Contains(timerId)) return;
             m_TimerList.Add(timerId);
         }
@@ -111,7 +129,8 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         public void PauseAllTimers()
         {
-            foreach (var timerId in m_TimerList)
+            var timerIds = m_TimerList.ToArray();
+            foreach (var timerId in timerIds)
             {
                 m_TimerModule.PauseTimer(timerId);
             }
@@ -122,7 +141,8 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         public void ResumeAllTimers()
         {
-            foreach (var timerId in m_TimerList)
+            var timerIds = m_TimerList.ToArray();
+            foreach (var timerId in timerIds)
             {
                 m_TimerModule.ResumeTimer(timerId);
             }
@@ -139,8 +159,7 @@ namespace FuFramework.Timer.Runtime
                 StopTimer(timerId);
             }
         }
-
-
+        
         /// <summary>
         /// 检查计时器是否存在
         /// </summary>
@@ -154,8 +173,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="timerId"></param>
         /// <returns></returns>
         public bool IsTimerPaused(int timerId) => m_TimerModule.IsTimerPaused(timerId);
-
-
+        
         /// <summary>
         /// 清理
         /// </summary>
@@ -168,6 +186,10 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
+        public void Release()
+        {
+            m_TimerModule.OnTimerFinished -= OnTimerFinished;
+            ReferencePool.Runtime.ReferencePool.Release(this);
+        }
     }
 }

@@ -46,13 +46,13 @@ namespace FuFramework.Timer.Runtime
         /// 计时器名称
         /// </summary>
         public override string Name => $"类型：时间间隔计时器, Id：{Id}, 间隔更新回调：{IntervalCallback?.Method.Name}";
-        
+
         /// <summary>
         /// 是否已完成（执行次数达到最大值）
         /// </summary>
         public override bool IsCompleted => ExecutedCount >= MaxCount;
 
-        
+
         /// <summary>
         /// 清理计时器
         /// </summary>
@@ -107,7 +107,7 @@ namespace FuFramework.Timer.Runtime
             timerInfo.Id               = timerId;
             timerInfo.Interval         = interval;
             timerInfo.IntervalCallback = intervalCallback;
-            timerInfo.MaxCount         = repeatCount <= 0 ? int.MaxValue : repeatCount;
+            timerInfo.MaxCount         = repeatCount < 0 ? int.MaxValue : repeatCount;
             timerInfo.ExecutedCount    = 0;
             timerInfo.AccumulatedTime  = 0;
             timerInfo.IgnoreTimeScale  = ignoreTimeScale;

@@ -39,19 +39,19 @@ namespace FuFramework.Timer.Runtime
         /// 当前进度（0到1的归一化值）
         /// </summary>
         public float Progress => 1f - RemainingTime / DurationTime;
-        
+
 
         /// <summary>
         /// 计时器名称
         /// </summary>
-        public override string Name => $"类型：一次性计时器, Id：{Id}, 完成回调：{FinishCallBack?.Method.Name}, 更新回调：{UpdateCallBack?.Method.Name}";
-        
+        public override string Name => $"类型：一次性计时器, Id：{Id}, 完成回调：{FinishCallBack?.Method.Name}, 帧更新回调：{UpdateCallBack.Method.Name}";
+
         /// <summary>
         /// 是否已完成（剩余时间小于等于0）
         /// </summary>
         public override bool IsCompleted => RemainingTime <= 0;
-        
-        
+
+
         /// <summary>
         /// 清理计时器
         /// </summary>
@@ -77,6 +77,11 @@ namespace FuFramework.Timer.Runtime
             RemainingTime -= deltaTime;
             UpdateCallBack?.Invoke();
         }
+
+        /// <summary>
+        /// 当计时器完成时调用
+        /// </summary>
+        public override void OnComplete() => FinishCallBack?.Invoke();
 
         /// <summary>
         /// 创建一次性计时器

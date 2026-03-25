@@ -52,7 +52,7 @@ namespace FuFramework.Timer.Runtime
         /// </summary>
         public override bool IsCompleted => ExecutedCount >= MaxCount;
 
-        
+
         /// <summary>
         /// 清理计时器
         /// </summary>
@@ -79,7 +79,6 @@ namespace FuFramework.Timer.Runtime
 
             // 确保至少增加1帧
             AccumulatedFrames += Math.Max(deltaFrames, 1);
-            ;
 
             while (AccumulatedFrames >= FrameInterval && ExecutedCount < MaxCount)
             {
@@ -109,7 +108,7 @@ namespace FuFramework.Timer.Runtime
             timerInfo.Id                = timerId;
             timerInfo.FrameInterval     = frameInterval;
             timerInfo.IntervalCallback  = intervalCallback;
-            timerInfo.MaxCount          = repeatCount <= 0 ? int.MaxValue : repeatCount;
+            timerInfo.MaxCount          = repeatCount < 0 ? int.MaxValue : repeatCount;
             timerInfo.ExecutedCount     = 0;
             timerInfo.AccumulatedFrames = 0;
             timerInfo.IgnoreTimeScale   = true; // 帧间隔计时器总是忽略时间缩放

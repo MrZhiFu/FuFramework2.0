@@ -66,5 +66,10 @@ namespace FuFramework.Timer.Runtime
         /// <param name="deltaTime">时间增量</param>
         /// <param name="deltaFrames">帧增量</param>
         public abstract void Update(float deltaTime, int deltaFrames);
+
+        /// <summary>
+        /// 当计时器完成时调用
+        /// </summary>
+        public virtual void OnComplete() { }
     }
 }
