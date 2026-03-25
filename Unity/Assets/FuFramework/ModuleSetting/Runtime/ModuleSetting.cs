@@ -29,60 +29,63 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 是否禁止休眠。
         [SerializeField] private bool m_NeverSleep = true;
 
-        
+        /// 是否开启引导。
+        [SerializeField] private bool m_OpenGuide = true;
+
+
         [Header("音频系统配置")]
         [SerializeField] private SoundSetting m_SoundSetting;
 
         [Header("资源系统配置")]
         [SerializeField] private AssetSetting m_AssetSetting;
-        
+
         [Header("实体系统配置")]
         [SerializeField] private EntitySetting m_EntitySetting;
-        
+
         [Header("本地数据存储系统配置")]
         [SerializeField] private DataSaveSetting m_DataSaveSetting;
 
         [Header("红点模块配置")]
         [SerializeField] private RedDotSetting m_RedDotSetting;
-        
+
         [Header("引导模块配置")]
         [SerializeField] private GuideSetting m_GuideSetting;
-        
+
+
         /// <summary>
         /// 获取音频系统配置
         /// </summary>
         public SoundSetting SoundSetting => m_SoundSetting;
-        
+
         /// <summary>
         /// 获取资源系统配置
         /// </summary>
         public AssetSetting AssetSetting => m_AssetSetting;
-        
+
         /// <summary>
         /// 获取实体系统配置
         /// </summary>
         public EntitySetting EntitySetting => m_EntitySetting;
-        
+
         /// <summary>
         /// 获取本地存储系统配置
         /// </summary>
         public DataSaveSetting DataSaveSetting => m_DataSaveSetting;
-        
+
         /// <summary>
         /// 获取红点模块配置
         /// </summary>
         public RedDotSetting RedDotSetting => m_RedDotSetting;
-        
+
         /// <summary>
         /// 获取引导模块配置
         /// </summary>
         public GuideSetting GuideSetting => m_GuideSetting;
-        
-        
+
 
         /// 游戏暂停之前的速度
         private float m_GameSpeedBeforePause = 1f;
-        
+
         /// <summary>
         /// 获取或设置游戏帧率。
         /// </summary>
@@ -128,9 +131,18 @@ namespace FuFramework.ModuleSetting.Runtime
             get => m_NeverSleep;
             set
             {
-                m_NeverSleep = value;
+                m_NeverSleep        = value;
                 Screen.sleepTimeout = value ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             }
+        }
+
+        /// <summary>
+        /// 获取或设置是否开启引导。
+        /// </summary>
+        public bool OpenGuide
+        {
+            get => m_OpenGuide;
+            set => m_OpenGuide = value;
         }
 
         /// <summary>
@@ -141,8 +153,8 @@ namespace FuFramework.ModuleSetting.Runtime
             FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
 
             // 设置游戏速度，屏幕休眠，帧率，后台运行等
-            Time.timeScale = m_GameSpeed;
-            Screen.sleepTimeout = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
+            Time.timeScale              = m_GameSpeed;
+            Screen.sleepTimeout         = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
             Application.targetFrameRate = m_FrameRate;
             Application.runInBackground = m_RunInBackground;
         }
@@ -154,7 +166,7 @@ namespace FuFramework.ModuleSetting.Runtime
         {
             if (IsGamePaused) return;
             m_GameSpeedBeforePause = GameSpeed;
-            GameSpeed = 0f;
+            GameSpeed              = 0f;
         }
 
         /// <summary>

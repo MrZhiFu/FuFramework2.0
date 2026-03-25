@@ -242,6 +242,7 @@ MonoBehaviour:
   m_GameSpeed: 1
   m_RunInBackground: 1
   m_NeverSleep: 1
+  m_OpenGuide: 0
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
   m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
