@@ -30,9 +30,6 @@ namespace FuFramework.UI.Runtime
         /// 包对应的资源加载器字典，key:包名，value：资源加载器，一个包对应一个资源加载器，用于加载包的描述文件和资源文件
         private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
 
-        /// 并发加载锁，防止重复创建加载任务
-        private readonly object m_LoadingLock = new object();
-
         /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
@@ -65,51 +62,38 @@ namespace FuFramework.UI.Runtime
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPackage))
                 return UniTask.FromResult(loadedPackage);
 
-            // 使用锁防止并发创建重复任务
-            lock (m_LoadingLock)
+            // 如果已有正在加载的任务，直接返回任务
+            if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
+                return loadingTask;
+
+            FuLogger.LogInfo($"[FuiPkgManager] 添加UIPackage包: {pkgName}");
+
+            // 创建取消令牌源
+            var cts = new CancellationTokenSource();
+            m_LoadingCts[pkgName] = cts;
+
+            // 创建新的加载任务（延迟执行）
+            var newTask = UniTask.Defer(async () =>
             {
-                // 双重检查：如果已有正在加载的任务，直接返回任务
-                if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
-                    return loadingTask;
-
-                FuLogger.LogInfo($"[FuiPkgManager] 添加UIPackage包: {pkgName}");
-
-                // 创建取消令牌源
-                var cts = new CancellationTokenSource();
-                lock (m_LoadingCts)
+                try
                 {
-                    m_LoadingCts[pkgName] = cts;
+                    // 检查是否被取消
+                    cts.Token.ThrowIfCancellationRequested();
+                    
+                    var package = await LoadPackageAsync_(pkgName);
+                    m_LoadedPkgDict[pkgName] = package; // 缓存结果
+                    package.ReloadAssets();
+                    return package;
                 }
-
-                // 创建新的加载任务（延迟执行）
-                var newTask = UniTask.Defer(async () =>
+                finally
                 {
-                    try
-                    {
-                        // 检查是否被取消
-                        cts.Token.ThrowIfCancellationRequested();
-                        
-                        var package = await LoadPackageAsync_(pkgName);
-                        m_LoadedPkgDict[pkgName] = package; // 缓存结果
-                        package.ReloadAssets();
-                        return package;
-                    }
-                    finally
-                    {
-                        lock (m_LoadingLock)
-                        {
-                            m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
-                        }
-                        lock (m_LoadingCts)
-                        {
-                            m_LoadingCts.Remove(pkgName); // 移除取消令牌源
-                        }
-                    }
-                });
+                    m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
+                    m_LoadingCts.Remove(pkgName); // 移除取消令牌源
+                }
+            });
 
-                m_LoadingTasks[pkgName] = newTask; // 记录正在加载的任务
-                return newTask;
-            }
+            m_LoadingTasks[pkgName] = newTask; // 记录正在加载的任务
+            return newTask;
         }
 
         /// <summary>
@@ -330,14 +314,11 @@ namespace FuFramework.UI.Runtime
         public void ReleaseAll()
         {
             // 先取消所有正在加载的任务
-            lock (m_LoadingCts)
+            foreach (var cts in m_LoadingCts.Values)
             {
-                foreach (var cts in m_LoadingCts.Values)
-                {
-                    cts.Cancel();
-                }
-                m_LoadingCts.Clear();
+                cts.Cancel();
             }
+            m_LoadingCts.Clear();
 
             // 释放所有已加载的包
             var pkgsToRemove = m_LoadedPkgDict.Keys.ToList();
@@ -346,10 +327,7 @@ namespace FuFramework.UI.Runtime
                 ReleasePackage(pkgName);
             }
 
-            lock (m_LoadingLock)
-            {
-                m_LoadingTasks.Clear();
-            }
+            m_LoadingTasks.Clear();
             m_PkgRefCountDict.Clear();
             m_LoadedPkgDict.Clear();
         }
