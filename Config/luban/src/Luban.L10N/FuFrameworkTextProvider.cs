@@ -52,10 +52,11 @@ public class FuFrameworkTextProvider : ITextProvider
     public void Load()
     {
         // 获取环境变量管理器
-        EnvManager env = EnvManager.Current;
+        var env = EnvManager.Current;
 
         // 获取文本键字段名，一般为 "Key"
         _keyFieldName = env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFileKeyFieldName, false, "");
+
         // 检查键字段名是否为空
         if (string.IsNullOrWhiteSpace(_keyFieldName))
         {
@@ -64,10 +65,12 @@ public class FuFrameworkTextProvider : ITextProvider
 
         // 获取是否转换文本键为值的配置
         _convertTextKeyToValue = DataUtil.ParseBool(env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NConvertTextKeyToValue, false, "false"));
+
         // 如果需要转换，获取值字段名
         if (_convertTextKeyToValue)
         {
             _ValueFieldName = env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFileLanguageFieldName, false, "");
+
             // 检查值字段名称是否为空
             if (string.IsNullOrWhiteSpace(_ValueFieldName))
             {
@@ -76,8 +79,8 @@ public class FuFrameworkTextProvider : ITextProvider
         }
 
         // 获取文本提供器文件路径
-        string textProviderFile = env.GetOption(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFilePath, false);
-       
+        var textProviderFile = env.GetOption(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFilePath, false);
+
         // 从文件加载文本列表
         LoadTextListFromFile(textProviderFile);
     }
@@ -115,44 +118,41 @@ public class FuFrameworkTextProvider : ITextProvider
     private void LoadTextListFromFile(string path)
     {
         // 创建定义程序集
-          var ass = new DefAssembly(new RawAssembly()
-        {
-            Targets = new List<RawTarget> { new() { Name = "default", Manager = "Tables" } },
-        }, "default", new List<string>(), null, null);
+        var ass = new DefAssembly(new RawAssembly { Targets = [new RawTarget { Name = "default", Manager = "Tables" }], }, "default", [], null, null);
 
         // 创建原始字段列表
         var rawFields = new List<RawField> { new() { Name = _keyFieldName, Type = "string" }, };
-       
+
         // 如果需要转换文本键为值，添加值字段
         if (_convertTextKeyToValue)
         {
-            rawFields.Add(new() { Name = _ValueFieldName, Type = "string" });
+            rawFields.Add(new RawField { Name = _ValueFieldName, Type = "string" });
         }
 
         // 创建文本记录类型定义
-        var defTableRecordType = new DefBean(new RawBean()
+        var defTableRecordType = new DefBean(new RawBean
         {
-            Namespace = "__intern__",            // 内部命名空间
-            Name = "__TextInfo__",               // 类型名称
-            Parent = "",                         // 父类型
-            Alias = "",                          // 别名
-            IsValueType = false,                 // 不是值类型
-            Sep = "",                            // 分隔符
-            Fields = rawFields,                  // 字段列表
+            Namespace   = "__intern__",   // 内部命名空间
+            Name        = "__TextInfo__", // 类型名称
+            Parent      = "",             // 父类型
+            Alias       = "",             // 别名
+            IsValueType = false,          // 不是值类型
+            Sep         = "",             // 分隔符
+            Fields      = rawFields,      // 字段列表
         }) { Assembly = ass, };
 
-        
-        ass.AddType(defTableRecordType); // 将类型添加到程序集
-        defTableRecordType.PreCompile(); // 预编译
-        defTableRecordType.Compile();    // 编译
-        defTableRecordType.PostCompile();// 编译后处理
-        
+
+        ass.AddType(defTableRecordType);  // 将类型添加到程序集
+        defTableRecordType.PreCompile();  // 预编译
+        defTableRecordType.Compile();     // 编译
+        defTableRecordType.PostCompile(); // 编译后处理
+
         // 创建表格记录类型
         var tableRecordType = TBean.Create(false, defTableRecordType, null);
 
         // 获取目录信息
-        DirectoryInfo directoryInfo = new DirectoryInfo(path);
-        
+        var directoryInfo = new DirectoryInfo(path);
+
         // 检查目录是否存在
         if (!directoryInfo.Exists)
         {
@@ -165,7 +165,7 @@ public class FuFrameworkTextProvider : ITextProvider
 
         // 获取目录下的所有文件
         var fileInfos = directoryInfo.GetFiles("*", SearchOption.AllDirectories);
-        
+
         // 遍历所有文件
         foreach (var fileInfo in fileInfos)
         {
@@ -175,10 +175,10 @@ public class FuFrameworkTextProvider : ITextProvider
                 continue;
             }
 
-            
-            string fileName = Path.GetFileName(fileInfo.Name);// 获取文件名
-            string ext = Path.GetExtension(fileName).TrimStart('.');// 获取文件扩展名
-            
+
+            var fileName = Path.GetFileName(fileInfo.Name);            // 获取文件名
+            var ext      = Path.GetExtension(fileName).TrimStart('.'); // 获取文件扩展名
+
             // 检查是否为支持的 Excel 文件类型
             if (!excelExts.Contains(ext))
             {
@@ -186,8 +186,8 @@ public class FuFrameworkTextProvider : ITextProvider
             }
 
             // 分割文件名和工作表名称
-            (var actualFile, var sheetName) = FileUtil.SplitFileAndSheetName(FileUtil.Standardize(fileInfo.FullName));
-           
+            var (actualFile, sheetName) = FileUtil.SplitFileAndSheetName(FileUtil.Standardize(fileInfo.FullName));
+
             // 加载表格文件数据
             var records = DataLoaderManager.Ins.LoadTableFile(tableRecordType, actualFile, sheetName, new Dictionary<string, string>());
 
@@ -198,11 +198,11 @@ public class FuFrameworkTextProvider : ITextProvider
                 DBean data = r.Data;
 
                 // 获取键值
-                string key = ((DString)data.GetField(_keyFieldName)).Value;
-               
+                var key = ((DString)data.GetField(_keyFieldName)).Value;
+
                 // 获取值（如果需要转换则获取值字段，否则使用键作为值）
-                string value = _convertTextKeyToValue ? ((DString)data.GetField(_ValueFieldName)).Value : key;
-               
+                var value = _convertTextKeyToValue ? ((DString)data.GetField(_ValueFieldName)).Value : key;
+
                 // 检查键是否为空
                 if (string.IsNullOrEmpty(key))
                 {
@@ -238,7 +238,7 @@ public class FuFrameworkTextProvider : ITextProvider
         {
             // 创建文本键到值的转换器
             var trans = new TextKeyToValueTransformer(this);
-            
+
             // 遍历所有表格
             foreach (var table in GenerationContext.Current.Tables)
             {
