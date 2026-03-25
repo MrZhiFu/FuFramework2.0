@@ -68,9 +68,9 @@ namespace FuFramework.Asset.Runtime
             {
                 PlayMode = EPlayMode.HostPlayMode;
             }
-#if UNITY_WEBGL
-            PlayMode = EPlayMode.WebPlayMode;
-#endif
+    #if UNITY_WEBGL
+                PlayMode = EPlayMode.WebPlayMode;
+    #endif
 #endif
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
