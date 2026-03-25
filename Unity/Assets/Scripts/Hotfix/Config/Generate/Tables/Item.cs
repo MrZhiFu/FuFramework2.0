@@ -236,7 +236,7 @@ namespace Hotfix.Config.Tables
             + "IsDecompose:" + IsDecompose + ","
             + "MaxNum:" + MaxNum + ","
             + "description:" + Description + ","
-            + "ComeLink:" + StringUtil.CollectionToString(ComeLink) + ","
+            + "ComeLink:" + Luban.StringUtil.CollectionToString(ComeLink) + ","
             + "Icon:" + Icon + ","
             + "BgIcon:" + BgIcon + ","
             + "LevelColor:" + LevelColor + ","

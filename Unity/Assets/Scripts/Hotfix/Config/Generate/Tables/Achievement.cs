@@ -111,7 +111,7 @@ namespace Hotfix.Config.Tables
             + "name:" + Name + ","
             + "achievementContent:" + AchievementContent + ","
             + "LockText:" + LockText + ","
-            + "achievementUnlockCondition:" + StringUtil.CollectionToString(AchievementUnlockCondition) + ","
+            + "achievementUnlockCondition:" + Luban.StringUtil.CollectionToString(AchievementUnlockCondition) + ","
             + "}";
         }
 

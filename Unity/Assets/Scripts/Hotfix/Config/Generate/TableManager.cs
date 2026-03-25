@@ -15,12 +15,24 @@ namespace Hotfix.Config
     public partial class TableManager
     {
 
+        /// <summary>
+        /// 本地化多语言表
+        /// </summary>
         internal Local.TbLocalization TbLocalization { private set; get; }
 
+        /// <summary>
+        /// 成就表
+        /// </summary>
         internal Tables.TbAchievement TbAchievement { private set; get; }
 
+        /// <summary>
+        /// 道具表
+        /// </summary>
         internal Tables.TbItem TbItem { private set; get; }
 
+        /// <summary>
+        /// 声音表
+        /// </summary>
         internal Tables.TbSound TbSound { private set; get; }
 
         private ConfigModule m_ConfigModule;

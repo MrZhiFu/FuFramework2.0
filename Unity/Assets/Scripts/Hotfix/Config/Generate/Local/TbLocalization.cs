@@ -13,6 +13,9 @@ using FuFramework.Config.Runtime;
 
 namespace Hotfix.Config.Local
 {
+    /// <summary>
+    /// 本地化多语言表
+    /// </summary>
     public partial class TbLocalization : BaseDataTable<Local.Localization>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
@@ -28,7 +31,7 @@ namespace Hotfix.Config.Local
             foreach(var _ele in jsonNode.Children)
             {
                 Local.Localization _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = Local.Localization.DeserializeLocalization(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Local.Localization.DeserializeLocalization(_ele);  }
                 DataList.Add(_v);
                 StrKeyDataDict.Add(_v.Key.ToString(), _v);
             }
