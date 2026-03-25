@@ -434,7 +434,7 @@ namespace FuFramework.Sound.Runtime
             if (playSoundInfo is null)
                 throw new FuException("[SoundModule]要播放的声音信息为空!");
 
-            // 如果正在加载但是又被标记为要释放的声音，则播放参数信息对象和释放资源后直接返回
+            // 如果正在加载但是又被标记为要释放的声音，则释放资源后和释放播放参数信息对象直接返回
             if (m_LoadingToReleaseSet.Contains(playSoundInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
