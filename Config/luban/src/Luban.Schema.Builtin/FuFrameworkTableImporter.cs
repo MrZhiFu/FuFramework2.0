@@ -30,14 +30,17 @@ public class FuFrameworkTableImporter : ITableImporter
     /// <returns>原始表格列表</returns>
     public List<RawTable> LoadImportTables()
     {
-        var dataDir = GenerationContext.GlobalConf.InputDataDir;     // 获取数据输入目录
-        var groups  = GenerationContext.GlobalConf.Groups;  // 获取所有分组配置
-        var targets = GenerationContext.GlobalConf.Targets; // 获取所有目标配置
+        var dataDir = GenerationContext.GlobalConf.InputDataDir; // 获取数据输入目录
+        var groups  = GenerationContext.GlobalConf.Groups;       // 获取所有分组配置
+        var targets = GenerationContext.GlobalConf.Targets;      // 获取所有目标配置
 
         // 获取排除路径列表，从环境变量中读取，多个路径用逗号分隔
         var excludePaths = EnvManager.Current.GetOptionOrDefault("tableImporter", "excludePaths", false, "").Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s))
                                      .ToList();
-        s_logger.Info("exclude paths: " + string.Join(",", excludePaths));
+        if (excludePaths.Count > 0)
+        {
+            s_logger.Info("exclude paths: " + string.Join(",", excludePaths));
+        }
 
         // 获取目标名称
         var targetName = EnvManager.Current.GetOptionOrDefault("tableImporter", "target", false, "");
