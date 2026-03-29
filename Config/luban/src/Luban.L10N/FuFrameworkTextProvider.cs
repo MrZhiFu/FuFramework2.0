@@ -8,9 +8,13 @@ using Luban.Utils;
 namespace Luban.L10N;
 
 /// <summary>
-/// FuFramework 文本提供器
+/// FuFramework 多语言文本提供器
+///
+/// 主要功能：
+/// 将所有多语言表的key都加载缓存到texts字典中，方便在需要将多语言键转换值时，直接使用texts字典的值替换key
+///
 /// 自定义功能：
-/// 1. 支持多文件批量加载
+/// 1. 支持多个多语言表批量加载，默认的DefaultTextProvider只支持一个。支持多个后方便进行多个模块的多语言表分别工作
 /// 2. 显式检查 Excel 扩展名是否正确
 /// </summary>
 [TextProvider("fuframework")]
@@ -22,39 +26,39 @@ public class FuFrameworkTextProvider : ITextProvider
     private static readonly NLog.Logger s_logger = NLog.LogManager.GetCurrentClassLogger();
 
     /// <summary>
-    /// 文本键字段名
+    /// 多语言键字段名
     /// </summary>
     private string _keyFieldName;
 
     /// <summary>
-    /// 文本值字段名
+    /// 多语言值字段名
     /// </summary>
-    private string _ValueFieldName;
+    private string _valueFieldName;
 
     /// <summary>
-    /// 是否将文本键转换为值
-    /// </summary>
-    private bool _convertTextKeyToValue;
-
-    /// <summary>
-    /// 文本字典，存储键值对
+    /// 多语言字典，存储键值对，key：多语言key，value：多语言内容
     /// </summary>
     private readonly Dictionary<string, string> _texts = new();
 
     /// <summary>
-    /// 未知的文本键集合
+    /// 未知的多语言键集合
     /// </summary>
-    private readonly HashSet<string> _unknownTextKeys = new();
+    private readonly HashSet<string> _unknownTextKeys = [];
 
     /// <summary>
-    /// 加载文本配置
+    /// 是否将多语言键转换为值
+    /// </summary>
+    public bool ConvertTextKeyToValue { get; private set; }
+
+    /// <summary>
+    /// 加载多语言配置
     /// </summary>
     public void Load()
     {
         // 获取环境变量管理器
         var env = EnvManager.Current;
 
-        // 获取文本键字段名，一般为 "Key"
+        // 从命令行中获取多语言键字段名，一般为 "key"
         _keyFieldName = env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFileKeyFieldName, false, "");
 
         // 检查键字段名是否为空
@@ -63,56 +67,45 @@ public class FuFrameworkTextProvider : ITextProvider
             throw new Exception($"'-x {BuiltinOptionNames.L10NFamily}.{BuiltinOptionNames.L10NTextFileKeyFieldName}=xxx' missing");
         }
 
-        // 获取是否转换文本键为值的配置
-        _convertTextKeyToValue = DataUtil.ParseBool(env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NConvertTextKeyToValue, false, "false"));
+        // 获取是否转换多语言键为值的配置
+        ConvertTextKeyToValue = DataUtil.ParseBool(env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NConvertTextKeyToValue, false, "false"));
 
         // 如果需要转换，获取值字段名
-        if (_convertTextKeyToValue)
+        if (ConvertTextKeyToValue)
         {
-            _ValueFieldName = env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFileLanguageFieldName, false, "");
+            _valueFieldName = env.GetOptionOrDefault(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFileLanguageFieldName, false, "");
 
             // 检查值字段名称是否为空
-            if (string.IsNullOrWhiteSpace(_ValueFieldName))
+            if (string.IsNullOrWhiteSpace(_valueFieldName))
             {
                 throw new Exception($"'-x {BuiltinOptionNames.L10NFamily}.{BuiltinOptionNames.L10NTextFileLanguageFieldName}=xxx' missing");
             }
         }
 
-        // 获取文本提供器文件路径
+        // 从命令行中获取多语言提供器文件路径
         var textProviderFile = env.GetOption(BuiltinOptionNames.L10NFamily, BuiltinOptionNames.L10NTextFilePath, false);
 
-        // 从文件加载文本列表
+        // 从文件加载多语言列表
         LoadTextListFromFile(textProviderFile);
     }
 
     /// <summary>
-    /// 是否将文本键转换为值
+    /// 检查多语言键是否有效
     /// </summary>
-    public bool ConvertTextKeyToValue => _convertTextKeyToValue;
-
-    /// <summary>
-    /// 检查键是否有效
-    /// </summary>
-    /// <param name="key">文本键</param>
+    /// <param name="key">多语言键</param>
     /// <returns>如果键存在返回 true，否则返回 false</returns>
-    public bool IsValidKey(string key)
-    {
-        return _texts.ContainsKey(key);
-    }
+    public bool IsValidKey(string key) => _texts.ContainsKey(key);
 
     /// <summary>
-    /// 尝试获取文本
+    /// 尝试获取多语言
     /// </summary>
-    /// <param name="key">文本键</param>
-    /// <param name="text">输出文本值</param>
+    /// <param name="key">多语言键</param>
+    /// <param name="text">输出多语言值</param>
     /// <returns>如果获取成功返回 true，否则返回 false</returns>
-    public bool TryGetText(string key, out string text)
-    {
-        return _texts.TryGetValue(key, out text);
-    }
+    public bool TryGetText(string key, out string text) => _texts.TryGetValue(key, out text);
 
     /// <summary>
-    /// 从文件路径下加载文本列表
+    /// 从文件路径下加载多语言列表，并添加到
     /// </summary>
     /// <param name="path">文件路径</param>
     private void LoadTextListFromFile(string path)
@@ -123,13 +116,13 @@ public class FuFrameworkTextProvider : ITextProvider
         // 创建原始字段列表
         var rawFields = new List<RawField> { new() { Name = _keyFieldName, Type = "string" }, };
 
-        // 如果需要转换文本键为值，添加值字段
-        if (_convertTextKeyToValue)
+        // 如果需要转换多语言键为值，添加值字段
+        if (ConvertTextKeyToValue)
         {
-            rawFields.Add(new RawField { Name = _ValueFieldName, Type = "string" });
+            rawFields.Add(new RawField { Name = _valueFieldName, Type = "string" });
         }
 
-        // 创建文本记录类型定义
+        // 创建多语言记录类型定义
         var defTableRecordType = new DefBean(new RawBean
         {
             Namespace   = "__intern__",   // 内部命名空间
@@ -140,7 +133,6 @@ public class FuFrameworkTextProvider : ITextProvider
             Sep         = "",             // 分隔符
             Fields      = rawFields,      // 字段列表
         }) { Assembly = ass, };
-
 
         ass.AddType(defTableRecordType);  // 将类型添加到程序集
         defTableRecordType.PreCompile();  // 预编译
@@ -156,28 +148,21 @@ public class FuFrameworkTextProvider : ITextProvider
         // 检查目录是否存在
         if (!directoryInfo.Exists)
         {
-            s_logger.Error($"path:{path} is not a directory. ignore it! return");
+            s_logger.Error($"路径:{path} 不存在！");
             return;
         }
 
         // 定义支持的 Excel 文件扩展名集合
         var excelExts = new HashSet<string> { "xlsx", "xls", "xlsm", "csv" };
 
-        // 获取目录下的所有文件
+        // 获取目录下的所有配置表文件
         var fileInfos = directoryInfo.GetFiles("*", SearchOption.AllDirectories);
 
-        // 遍历所有文件
+        // 遍历目录下的所有多语言表文件，将各个多语言表的key与value添加到多语言字典中
         foreach (var fileInfo in fileInfos)
         {
-            // 检查是否为需要忽略的文件
-            if (FileUtil.IsIgnoreFile(path, fileInfo.Name))
-            {
-                continue;
-            }
-
-
-            var fileName = Path.GetFileName(fileInfo.Name);            // 获取文件名
-            var ext      = Path.GetExtension(fileName).TrimStart('.'); // 获取文件扩展名
+            string fileName = Path.GetFileName(fileInfo.Name);            // 获取文件名
+            string ext      = Path.GetExtension(fileName).TrimStart('.'); // 获取文件扩展名
 
             // 检查是否为支持的 Excel 文件类型
             if (!excelExts.Contains(ext))
@@ -201,19 +186,19 @@ public class FuFrameworkTextProvider : ITextProvider
                 var key = ((DString)data.GetField(_keyFieldName)).Value;
 
                 // 获取值（如果需要转换则获取值字段，否则使用键作为值）
-                var value = _convertTextKeyToValue ? ((DString)data.GetField(_ValueFieldName)).Value : key;
+                var value = ConvertTextKeyToValue ? ((DString)data.GetField(_valueFieldName)).Value : key;
 
                 // 检查键是否为空
                 if (string.IsNullOrEmpty(key))
                 {
-                    s_logger.Error("textFile:{} key:{} is empty. ignore it!", fileName, key);
+                    s_logger.Error("多语言表:{} key:{} 为空,已被丢弃.", fileName, key);
                     continue;
                 }
 
-                // 尝试添加到文本字典
+                // 尝试添加到多语言字典
                 if (!_texts.TryAdd(key, value))
                 {
-                    s_logger.Error("textFile:{} key:{} is duplicated", fileName, key);
+                    s_logger.Error("多语言表:{} key:{} 重复，请检查多语言表.", fileName, key);
                 }
             }
         }
@@ -222,32 +207,28 @@ public class FuFrameworkTextProvider : ITextProvider
     /// <summary>
     /// 添加未知键
     /// </summary>
-    /// <param name="key">未知的文本键</param>
-    public void AddUnknownKey(string key)
-    {
-        _unknownTextKeys.Add(key);
-    }
+    /// <param name="key">未知的多语言键</param>
+    public void AddUnknownKey(string key) => _unknownTextKeys.Add(key);
 
     /// <summary>
     /// 处理数据
     /// </summary>
     public void ProcessDatas()
     {
-        // 如果需要转换文本键为值
-        if (_convertTextKeyToValue)
-        {
-            // 创建文本键到值的转换器
-            var trans = new TextKeyToValueTransformer(this);
+        // 如果不需要转换多语言键为值，直接返回
+        if (!ConvertTextKeyToValue) return;
 
-            // 遍历所有表格
-            foreach (var table in GenerationContext.Current.Tables)
+        // 创建多语言键到值的转换器
+        var trans = new TextKeyToValueTransformer(this);
+
+        // 遍历所有表格
+        foreach (var table in GenerationContext.Current.Tables)
+        {
+            // 遍历表格中的所有数据
+            foreach (var record in GenerationContext.Current.GetTableAllDataList(table))
             {
-                // 遍历表格中的所有数据
-                foreach (var record in GenerationContext.Current.GetTableAllDataList(table))
-                {
-                    // 应用转换器转换数据
-                    record.Data = (DBean)record.Data.Apply(trans, table.ValueTType);
-                }
+                // 转换多语言值到数据中
+                record.Data = (DBean)record.Data.Apply(trans, table.ValueTType);
             }
         }
     }
