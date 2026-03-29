@@ -1,0 +1,17 @@
+{{namespace_with_grace_begin __namespace}}
+    /// <summary>
+    /// 本地化多语言Key列表
+    /// </summary>
+    public static class {{__class_name}}
+    {
+{{~for key_info in __keys~}}
+{{~if key_info.comment != ''~}}
+        /// <summary>
+        /// {{escape_comment key_info.comment}}
+        /// </summary>
+{{~end~}}
+        public const string {{format_key_name key_info.key}} = "{{key_info.key}}";
+
+{{~end~}}
+    }
+{{namespace_with_grace_end __namespace}}
