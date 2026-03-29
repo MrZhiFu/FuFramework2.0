@@ -20,7 +20,14 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     /// </summary>
     public class L10NKeyInfo
     {
-        public string Key     { get; set; } = "";
+        /// <summary>
+        /// 多语言 Key
+        /// </summary>
+        public string Key { get; set; } = "";
+
+        /// <summary>
+        /// 多语言 Key 注释
+        /// </summary>  
         public string Comment { get; set; } = "";
     }
 
@@ -45,7 +52,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
 
     /// <summary>
     /// 处理代码生成
-    /// 重写以生成单个 LanguageKey.cs 文件
+    /// 重写以生成LanguageKey.cs静态类
     /// </summary>
     public override void Handle(GenerationContext ctx, OutputFileManifest manifest)
     {
@@ -58,7 +65,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     }
 
     /// <summary>
-    /// 生成LanguageKey.cs
+    /// 生成多语言LanguageKey.cs静态类
     /// </summary>
     /// <param name="ctx">生成时的上下文</param>
     /// <param name="writer">代码写入器</param>
@@ -102,9 +109,9 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
             CollectKeysFromTable(table, keys, keySet);
         }
 
-        s_logger.Info("CollectKeys: 总共收集到 {Count} 个多语言Key", keys.Count);
+        s_logger.Info("多语言key收集: 总共收集到 {Count} 个多语言Key", keys.Count);
 
-        // 按 Key 排序
+        // 按 Key 按照字母进行 排序
         return keys.OrderBy(k => k.Key, StringComparer.Ordinal).ToList();
     }
 
@@ -153,15 +160,17 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
         var key = keyStr.Value.Trim();
         if (!keySet.Add(key)) return;
 
-        // 提取注释
+        // 提取注释，并添加到结果key列表中
         var comment = ExtractComment(bean, commentField);
-
         resultKeys.Add(new L10NKeyInfo { Key = key, Comment = comment });
     }
 
     /// <summary>
     /// 提取注释
     /// </summary>
+    /// <param name="bean">目标类</param>
+    /// <param name="commentField">目标类的注释字段</param>
+    /// <returns>注释</returns>
     private string ExtractComment(DBean bean, DefField commentField)
     {
         if (commentField == null) return "";
