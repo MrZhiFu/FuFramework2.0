@@ -1,4 +1,4 @@
-dotnet.exe ./Tools/Luban/Luban.dll ^
+dotnet ./Tools/Luban/Luban.dll ^
     -t server ^
     -d json ^
     -c cs-dotnet-json ^
