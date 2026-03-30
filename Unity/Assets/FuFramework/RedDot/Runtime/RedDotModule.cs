@@ -199,22 +199,22 @@ namespace FuFramework.RedDot.Runtime
         }
 
         /// <summary>
-        /// 递增节点的红点数量
+        /// 增加节点的红点数量
         /// </summary>
         /// <param name="key">节点的key</param>
         /// <param name="value">递增的数量</param>
-        public void IncrementCount(string key, int value = 1)
+        public void AddCount(string key, int value = 1)
         {
             if (!NodeDict.TryGetValue(key, out var node)) return;
             node.SetCount(node.RawCount + value);
         }
 
         /// <summary>
-        /// 递减节点的红点数量
+        /// 减少节点的红点数量
         /// </summary>
         /// <param name="key">节点的key</param>
         /// <param name="value">递减的数量</param>
-        public void DecrementCount(string key, int value = 1)
+        public void SubCount(string key, int value = 1)
         {
             if (!NodeDict.TryGetValue(key, out var node)) return;
             node.SetCount(Math.Max(0, node.RawCount - value));

@@ -83,7 +83,7 @@ namespace Hotfix.UI
         {
             Login().Forget();
             // PlayBgm().Forget();
-            // GlobalModule.RedDotModule.IncrementCount(RedDotKeys.BagItem);
+            // GlobalModule.RedDotModule.AddCount(RedDotKeys.BagItem);
         }
 
         private void OnInputUserNameChanged(EventContext ctx)
