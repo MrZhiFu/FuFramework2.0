@@ -222,13 +222,9 @@ namespace FuFramework.RedDot.Runtime
 
         /// <summary>
         /// 重置节点的红点数量为0
-        /// 适用于清除红点状态，如阅读所有邮件后
+        /// 适用于清除红点状态，如阅读所有邮件后重置
         /// </summary>
         /// <param name="key">节点路径</param>
-        /// <example>
-        /// // 阅读所有系统邮件后重置
-        /// RedDotModule.ResetCount(PredefinedKeys.MailSystem);
-        /// </example>
         public void ResetCount(string key) => SetCount(key, 0);
 
         /// <summary>
