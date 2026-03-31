@@ -55,8 +55,8 @@ namespace Hotfix.UI
             _selectBagItem = selectBagItem;
             var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>().Get(selectBagItem.ItemId);
             txtName.text = itemConfig.Name;
-            txtDesc.text = itemConfig.Description;
-            var eIsCanUse = itemConfig.CanUse == ItemCanUse.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
+            txtDesc.text = itemConfig.Desc;
+            var eIsCanUse = itemConfig.CanUse == ItemUseType.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
             SetController(eIsCanUse);
         }
 

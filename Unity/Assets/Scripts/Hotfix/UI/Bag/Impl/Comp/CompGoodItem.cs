@@ -49,7 +49,7 @@ namespace Hotfix.UI
             var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>().Get(itemId);
             if (!itemConfig.IsNotNull()) return;
             loaderGift.icon = Utility.AssetPath.GetImagePath(itemConfig.Icon);
-            loaderBg.icon   = Utility.AssetPath.GetImagePath(itemConfig.BgIcon);
+            loaderBg.icon   = Utility.AssetPath.GetImagePath(itemConfig.Bg);
         }
 
         /// <summary>
