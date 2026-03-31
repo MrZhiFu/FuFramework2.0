@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
-    /// 对象信息。用于外部想要获取对象池中的对象信息时使用。
+    /// 对象信息。用于外部想要获取对象池中的对象信息时使用。如编辑器的Inspector面板
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct ObjectInfo

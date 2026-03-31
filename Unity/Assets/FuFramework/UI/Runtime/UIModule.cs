@@ -84,7 +84,7 @@ namespace FuFramework.UI.Runtime
             m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            PkgManager     = new FuiPkgManager();
+            PkgManager    = new FuiPkgManager();
 
             m_SerialId = 0;
 

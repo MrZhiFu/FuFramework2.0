@@ -84,7 +84,6 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        
         internal abstract void Update(float deltaTime, float unscaledDeltaTime);
 
         /// <summary>

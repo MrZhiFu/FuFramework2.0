@@ -56,7 +56,7 @@ namespace FuFramework.ObjectPool.Runtime
             public bool IsInUse => SpawnCount > 0;
 
             /// <summary>
-            /// 获取对象的获取计数。
+            /// 获取对象的生成计数。
             /// </summary>
             public int SpawnCount { get; private set; }
 
@@ -64,7 +64,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// 创建对象。
             /// </summary>
             /// <param name="obj">对象。</param>
-            /// <param name="spawned">对象是否提前生成，如果是，则会创建时调用 OnSpawn 事件。</param>
+            /// <param name="spawned">对象是否已被提前生成，如果是，则会调用OnSpawn。</param>
             /// <returns>创建的内部对象。</returns>
             public static Object<T> Create(T obj, bool spawned)
             {
