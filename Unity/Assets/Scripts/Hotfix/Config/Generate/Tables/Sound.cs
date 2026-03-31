@@ -14,13 +14,11 @@ namespace Hotfix.Config.Tables
 {
     public sealed partial class Sound : BeanBase
     {
-        public Sound(int Id, string GroupName, string Path, string Title, string CharacterName) 
+        public Sound(int Id, string GroupName, string Path) 
         {
             this.Id = Id;
             this.GroupName = GroupName;
             this.Path = Path;
-            this.Title = Title;
-            this.CharacterName = CharacterName;
             PostInit();
         }
 
@@ -29,12 +27,8 @@ namespace Hotfix.Config.Tables
             { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
             { if(!_buf["groupName"].IsString) { throw new SerializationException(); }  GroupName = _buf["groupName"]; }
             { if(!_buf["path"].IsString) { throw new SerializationException(); }  Path = _buf["path"]; }
-            { if(!_buf["title"].IsString) { throw new SerializationException(); }  Title = _buf["title"]; }
-            { if(!_buf["characterName"].IsString) { throw new SerializationException(); }  CharacterName = _buf["characterName"]; }
 
             // Localization Key Begin
-            Title_Localization_Key = Title;
-            CharacterName_Localization_Key = CharacterName;
             // Localization Key End
             PostInit();
         }
@@ -56,16 +50,6 @@ namespace Hotfix.Config.Tables
         /// 声音所在的路径
         /// </summary>
         public string Path { private set; get; }
-        /// <summary>
-        /// 声音标题Key
-        /// </summary>
-        public string Title { private set; get; }
-        /// <summary>
-        /// 声音标题Key 的多语言Key
-        /// </summary>
-        private readonly string Title_Localization_Key;
-        public string CharacterName { private set; get; }
-        private readonly string CharacterName_Localization_Key;
         public const int __ID__ = 343291974;
         public override int GetTypeId() => __ID__;
 
@@ -74,14 +58,10 @@ namespace Hotfix.Config.Tables
             
             
             
-            
-            
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
         {
-            Title = translator(Title_Localization_Key, Title);
-            CharacterName = translator(CharacterName_Localization_Key, CharacterName);
         }
 
         public override string ToString()
@@ -90,8 +70,6 @@ namespace Hotfix.Config.Tables
             + "id:" + Id + ","
             + "groupName:" + GroupName + ","
             + "path:" + Path + ","
-            + "title:" + Title + ","
-            + "characterName:" + CharacterName + ","
             + "}";
         }
 

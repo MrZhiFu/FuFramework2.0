@@ -11,20 +11,28 @@
 
 namespace Hotfix.Config
 { 
-    public enum ItemCanUse
+    public enum EQuality
     {
         /// <summary>
-        /// 不能使用
+        /// 白
         /// </summary>
-        CanNot = 0,
+        White = 1,
         /// <summary>
-        /// 只能单个使用
+        /// 蓝
         /// </summary>
-        UseOne = 1,
+        Blue = 2,
         /// <summary>
-        /// 可以一键使用全部
+        /// 紫
         /// </summary>
-        UseTotal = 2,
+        Purple = 3,
+        /// <summary>
+        /// 红
+        /// </summary>
+        Red = 4,
+        /// <summary>
+        /// 橙
+        /// </summary>
+        Orange = 5,
     }
 
 } 

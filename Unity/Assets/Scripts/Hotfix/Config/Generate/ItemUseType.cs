@@ -11,28 +11,20 @@
 
 namespace Hotfix.Config
 { 
-    public enum GiftModelType
+    public enum ItemUseType
     {
         /// <summary>
-        /// 不可预览
+        /// 不可使用
         /// </summary>
-        Non = 0,
+        CanNot = 0,
         /// <summary>
-        /// 单一预览
+        /// 可单个使用
         /// </summary>
-        Single = 1,
+        UseOne = 1,
         /// <summary>
-        /// 整套预览
+        /// 可一键全部使用
         /// </summary>
-        Complete = 2,
-        /// <summary>
-        /// 分开预览
-        /// </summary>
-        Enumeration = 3,
-        /// <summary>
-        /// 组合预览
-        /// </summary>
-        Combination = 4,
+        UseTotal = 2,
     }
 
 } 

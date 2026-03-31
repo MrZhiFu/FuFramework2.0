@@ -31,6 +31,11 @@ namespace Hotfix.Config
         internal Tables.TbItem TbItem { private set; get; }
 
         /// <summary>
+        /// 全局常量定义表
+        /// </summary>
+        internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
+
+        /// <summary>
         /// 声音表
         /// </summary>
         internal Tables.TbSound TbSound { private set; get; }
@@ -74,6 +79,10 @@ namespace Hotfix.Config
             loadTasks.Add(TbItem.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbItem), TbItem);
 
+            TbGlobalDefine = new Tables.TbGlobalDefine(() => loader("tables_tbglobaldefine"));
+            loadTasks.Add(TbGlobalDefine.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbGlobalDefine), TbGlobalDefine);
+
             TbSound = new Tables.TbSound(() => loader("tables_tbsound"));
             loadTasks.Add(TbSound.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbSound), TbSound);
@@ -99,6 +108,7 @@ namespace Hotfix.Config
             TbLocalization.TranslateText(translator);
             TbAchievement.TranslateText(translator);
             TbItem.TranslateText(translator);
+            TbGlobalDefine.TranslateText(translator);
             TbSound.TranslateText(translator);
         }
 
@@ -107,6 +117,7 @@ namespace Hotfix.Config
             TbLocalization.ResolveRef(this);
             TbAchievement.ResolveRef(this);
             TbItem.ResolveRef(this);
+            TbGlobalDefine.ResolveRef(this);
             TbSound.ResolveRef(this);
         }
     

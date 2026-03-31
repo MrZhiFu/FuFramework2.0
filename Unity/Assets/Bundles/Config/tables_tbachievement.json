@@ -1,21 +1,19 @@
 [
   {
     "id": 90000001,
-    "image": 6230001,
+    "icon": "item/diamond1.png",
     "name": "",
-    "achievement_content": "",
-    "LockText": "",
-    "achievement_unlock_condition": [
+    "desc": "",
+    "unlock_condition": [
       10001
     ]
   },
   {
     "id": 90000002,
-    "image": 6230002,
+    "icon": "item/diamond2.png",
     "name": "",
-    "achievement_content": "",
-    "LockText": "",
-    "achievement_unlock_condition": [
+    "desc": "",
+    "unlock_condition": [
       10002
     ]
   }

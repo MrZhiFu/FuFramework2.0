@@ -16,27 +16,23 @@ namespace Hotfix.Config
         /// <summary>
         /// 道具
         /// </summary>
-        Item = 0,
+        Item = 1,
         /// <summary>
         /// 消耗品
         /// </summary>
-        Expendable = 1,
+        Expendable = 2,
         /// <summary>
         /// 装备
         /// </summary>
-        Equip = 2,
+        Equip = 3,
         /// <summary>
         /// 碎片
         /// </summary>
-        Fragment = 3,
+        Fragment = 4,
         /// <summary>
         /// 材料
         /// </summary>
-        Material = 4,
-        /// <summary>
-        /// 任务
-        /// </summary>
-        Task = 5,
+        Material = 5,
     }
 
 } 

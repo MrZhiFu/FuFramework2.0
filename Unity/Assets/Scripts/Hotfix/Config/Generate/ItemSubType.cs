@@ -16,27 +16,27 @@ namespace Hotfix.Config
         /// <summary>
         /// 无
         /// </summary>
-        NONE = 0,
+        None = 0,
         /// <summary>
         /// 武器
         /// </summary>
-        WEAPON = 1,
+        Weapon = 1,
         /// <summary>
         /// 胸
         /// </summary>
-        CHEST = 2,
+        Chest = 2,
         /// <summary>
         /// 腰带
         /// </summary>
-        BELT = 3,
+        Belt = 3,
         /// <summary>
         /// 鞋子
         /// </summary>
-        BOOT = 4,
+        Boot = 4,
         /// <summary>
         /// 戒指
         /// </summary>
-        RING = 5,
+        Ring = 5,
     }
 
 } 

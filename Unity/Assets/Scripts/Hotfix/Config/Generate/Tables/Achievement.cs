@@ -14,30 +14,27 @@ namespace Hotfix.Config.Tables
 {
     public sealed partial class Achievement : BeanBase
     {
-        public Achievement(int Id, int Image, string Name, string AchievementContent, string LockText, System.Collections.Generic.List<int> AchievementUnlockCondition) 
+        public Achievement(int Id, string Icon, string Name, string Desc, System.Collections.Generic.List<int> UnlockCondition) 
         {
             this.Id = Id;
-            this.Image = Image;
+            this.Icon = Icon;
             this.Name = Name;
-            this.AchievementContent = AchievementContent;
-            this.LockText = LockText;
-            this.AchievementUnlockCondition = AchievementUnlockCondition;
+            this.Desc = Desc;
+            this.UnlockCondition = UnlockCondition;
             PostInit();
         }
 
         public Achievement(JSONNode _buf)
         {
             { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
-            { if(!_buf["image"].IsNumber) { throw new SerializationException(); }  Image = _buf["image"]; }
+            { if(!_buf["icon"].IsString) { throw new SerializationException(); }  Icon = _buf["icon"]; }
             { if(!_buf["name"].IsString) { throw new SerializationException(); }  Name = _buf["name"]; }
-            { if(!_buf["achievement_content"].IsString) { throw new SerializationException(); }  AchievementContent = _buf["achievement_content"]; }
-            { if(!_buf["LockText"].IsString) { throw new SerializationException(); }  LockText = _buf["LockText"]; }
-            { var __json0 = _buf["achievement_unlock_condition"]; if(!__json0.IsArray) { throw new SerializationException(); } AchievementUnlockCondition = new System.Collections.Generic.List<int>(__json0.Count); foreach(JSONNode __e0 in __json0.Children) { int __v0;  { if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0; }  AchievementUnlockCondition.Add(__v0); }   }
+            { if(!_buf["desc"].IsString) { throw new SerializationException(); }  Desc = _buf["desc"]; }
+            { var __json0 = _buf["unlock_condition"]; if(!__json0.IsArray) { throw new SerializationException(); } UnlockCondition = new System.Collections.Generic.List<int>(__json0.Count); foreach(JSONNode __e0 in __json0.Children) { int __v0;  { if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0; }  UnlockCondition.Add(__v0); }   }
 
             // Localization Key Begin
             Name_Localization_Key = Name;
-            AchievementContent_Localization_Key = AchievementContent;
-            LockText_Localization_Key = LockText;
+            Desc_Localization_Key = Desc;
             // Localization Key End
             PostInit();
         }
@@ -52,37 +49,29 @@ namespace Hotfix.Config.Tables
         /// </summary>
         public int Id { private set; get; }
         /// <summary>
-        /// 成就对应的图标id
+        /// 图标
         /// </summary>
-        public int Image { private set; get; }
+        public string Icon { private set; get; }
         /// <summary>
-        /// 成就Key
+        /// 成就名称
         /// </summary>
         public string Name { private set; get; }
         /// <summary>
-        /// 成就Key 的多语言Key
+        /// 成就名称 的多语言Key
         /// </summary>
         private readonly string Name_Localization_Key;
         /// <summary>
-        /// 成就内容Key
+        /// 描述信息
         /// </summary>
-        public string AchievementContent { private set; get; }
+        public string Desc { private set; get; }
         /// <summary>
-        /// 成就内容Key 的多语言Key
+        /// 描述信息 的多语言Key
         /// </summary>
-        private readonly string AchievementContent_Localization_Key;
-        /// <summary>
-        /// 未解锁文字key
-        /// </summary>
-        public string LockText { private set; get; }
-        /// <summary>
-        /// 未解锁文字key 的多语言Key
-        /// </summary>
-        private readonly string LockText_Localization_Key;
+        private readonly string Desc_Localization_Key;
         /// <summary>
         /// 成就解锁条件
         /// </summary>
-        public System.Collections.Generic.List<int> AchievementUnlockCondition { private set; get; }
+        public System.Collections.Generic.List<int> UnlockCondition { private set; get; }
         public const int __ID__ = -1048610522;
         public override int GetTypeId() => __ID__;
 
@@ -93,25 +82,22 @@ namespace Hotfix.Config.Tables
             
             
             
-            
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
         {
             Name = translator(Name_Localization_Key, Name);
-            AchievementContent = translator(AchievementContent_Localization_Key, AchievementContent);
-            LockText = translator(LockText_Localization_Key, LockText);
+            Desc = translator(Desc_Localization_Key, Desc);
         }
 
         public override string ToString()
         {
             return "{ "
             + "id:" + Id + ","
-            + "image:" + Image + ","
+            + "icon:" + Icon + ","
             + "name:" + Name + ","
-            + "achievementContent:" + AchievementContent + ","
-            + "LockText:" + LockText + ","
-            + "achievementUnlockCondition:" + Luban.StringUtil.CollectionToString(AchievementUnlockCondition) + ","
+            + "desc:" + Desc + ","
+            + "unlockCondition:" + Luban.StringUtil.CollectionToString(UnlockCondition) + ","
             + "}";
         }
 
