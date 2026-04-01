@@ -12,10 +12,10 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public class Launcher : MonoBehaviour
     {
-        [Header("所有可用的流程类型")] 
+        [Header("所有可用的流程类型")]
         [SerializeField] private string[] m_AvailableProcedureTypeNames;
 
-        [Header("入口流程类型")] 
+        [Header("入口流程类型")]
         [SerializeField] private string m_EntryProcedureTypeName;
 
         /// <summary>
@@ -51,7 +51,23 @@ namespace FuFramework.Entry.Runtime
         /// </summary>
         private void Update()
         {
-            ModuleManager.Update(Time.deltaTime, Time.unscaledDeltaTime);            
+            ModuleManager.Update(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+
+        /// <summary>
+        /// 延迟帧更新
+        /// </summary>
+        private void LateUpdate()
+        {
+            ModuleManager.LateUpdate(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+
+        /// <summary>
+        /// 固定帧更新
+        /// </summary>
+        private void FixedUpdate()
+        {
+            ModuleManager.FixedUpdate();
         }
 
         /// <summary>
@@ -61,7 +77,7 @@ namespace FuFramework.Entry.Runtime
         /// <exception cref="FuException"></exception>
         private IEnumerator InitProcedures()
         {
-            m_Procedures = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
+            m_Procedures     = new ProcedureBase[m_AvailableProcedureTypeNames.Length];
             m_EntryProcedure = null;
             for (var i = 0; i < m_AvailableProcedureTypeNames.Length; i++)
             {

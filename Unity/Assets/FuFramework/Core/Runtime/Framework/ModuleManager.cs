@@ -67,7 +67,7 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 框架模块轮询
+        /// 框架模块帧更新
         /// </summary>
         public static void Update(float deltaTime, float unscaledDeltaTime)
         {
@@ -75,6 +75,30 @@ namespace FuFramework.Core.Runtime
             {
                 if (!module.IsInitialized) continue;
                 module.OnUpdate(deltaTime, unscaledDeltaTime);
+            }
+        }
+        
+        /// <summary>
+        /// 框架模块延迟帧更新
+        /// </summary>
+        public static void LateUpdate(float deltaTime, float unscaledDeltaTime)
+        {
+            foreach (var module in ModuleList)
+            {
+                if (!module.IsInitialized) continue;
+                module.OnLateUpdate(deltaTime, unscaledDeltaTime);
+            }
+        }
+        
+        /// <summary>
+        /// 框架模块固定帧更新
+        /// </summary>
+        public static void FixedUpdate()
+        {
+            foreach (var module in ModuleList)
+            {
+                if (!module.IsInitialized) continue;
+                module.OnFixedUpdate();
             }
         }
 
