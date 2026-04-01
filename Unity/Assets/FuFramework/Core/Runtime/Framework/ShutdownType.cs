@@ -7,11 +7,6 @@ namespace FuFramework.Core.Runtime
     public enum ShutdownType : byte
     {
         /// <summary>
-        /// 模块手动反注册。
-        /// </summary>
-        Unregister,
-        
-        /// <summary>
         /// 关闭游戏框架并重启游戏。
         /// </summary>
         Restart,
