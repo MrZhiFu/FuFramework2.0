@@ -3,12 +3,13 @@
 using System.Runtime.InteropServices;
 #endif
 
-namespace FuFramework.OperationClipboard.Runtime
+// ReSharper disable once CheckNamespace
+namespace FuFramework.ClipboardUtility.Runtime
 {
     /// <summary>
     /// 粘贴板的读写
     /// </summary>
-    public static class BlankOperationClipboard
+    public static class ClipboardUtility
     {
 #if UNITY_IOS
 	[DllImport("__Internal")]
