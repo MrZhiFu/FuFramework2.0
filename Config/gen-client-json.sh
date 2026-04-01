@@ -5,7 +5,7 @@ dotnet ./Tools/Luban/Luban.dll \
     -c cs-l10n-key \
     -x outputDataDir=../Unity/Assets/Bundles/Config \
     -x cs-simple-json.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Config/Generate \
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Config/Generate/LanguageKey \
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Config/LanguageKey \
     -x tableImporter.name=fuframework \
     -x l10n.provider=fuframework \
     -x l10n.textFile.keyFieldName=key \
