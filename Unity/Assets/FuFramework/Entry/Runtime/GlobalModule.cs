@@ -33,129 +33,156 @@ namespace FuFramework.Entry.Runtime
     /// </summary>
     public static class GlobalModule
     {
+        private static ReferencePoolModule m_ReferencePoolModule; // 引用池模块
+        private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
+        private static EventModule         m_EventModule;         // 事件管理模块
+        private static AssetModule         m_AssetModule;         // 资源管理模块
+        private static ConfigModule        m_ConfigModule;        // 配置管理模块
+        private static CoroutineModule     m_CoroutineModule;     // 协程管理模块
+        private static TimerModule         m_TimerModule;         // 计时器管理模块
+        private static DownloadModule      m_DownloadModule;      // 下载管理模块
+        private static EntityModule        m_EntityModule;        // 实体管理模块
+        private static FsmModule           m_FsmModule;           // 有限状态机管理模块
+        private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
+        private static UIModule            m_UIModule;            // UI管理模块
+        private static GlobalConfigModule  m_GlobalConfigModule;  // 全局配置管理模块
+        private static LocalizationModule  m_LocalizationModule;  // 本地化管理模块
+        private static MonoModule          m_MonoModule;          // Mono管理模块
+        private static SceneModule         m_SceneModule;         // 场景管理模块
+        private static SoundModule         m_SoundModule;         // 声音管理模块
+        private static NetworkModule       m_NetworkModule;       // 网络管理模块
+        private static WebModule           m_WebModule;           // Web管理模块
+        private static DataSaveModule      m_DataSaveModule;      // 本地持久化管理模块
+        private static ModelModule         m_ModelModule;         // 数据模型管理模块
+        private static RedDotModule        m_RedDotModule;        // 红点管理模块
+        private static GuideModule         m_GuideModule;         // 新手引导管理模块
+
+        // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
+        // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
+
         /// <summary>
         /// 获取引用池模块。
         /// </summary>
-        public static ReferencePoolModule ReferencePoolModule => ModuleManager.GetModule<ReferencePoolModule>();
+        public static ReferencePoolModule ReferencePoolModule => m_ReferencePoolModule ??= ModuleManager.GetModule<ReferencePoolModule>();
 
         /// <summary>
         /// 获取对象池模块。
         /// </summary>
-        public static ObjectPoolModule ObjectPoolModule => ModuleManager.GetModule<ObjectPoolModule>();
+        public static ObjectPoolModule ObjectPoolModule => m_ObjectPoolModule ??= ModuleManager.GetModule<ObjectPoolModule>();
 
         /// <summary>
         /// 获取事件管理模块。
         /// </summary>
-        public static EventModule EventModule => ModuleManager.GetModule<EventModule>();
+        public static EventModule EventModule => m_EventModule ??= ModuleManager.GetModule<EventModule>();
 
         /// <summary>
         /// 获取资源管理模块。
         /// </summary>
-        public static AssetModule AssetModule => ModuleManager.GetModule<AssetModule>();
+        public static AssetModule AssetModule => m_AssetModule ??= ModuleManager.GetModule<AssetModule>();
 
         /// <summary>
         /// 获取配置管理模块。
         /// </summary>
-        public static ConfigModule ConfigModule => ModuleManager.GetModule<ConfigModule>();
+        public static ConfigModule ConfigModule => m_ConfigModule ??= ModuleManager.GetModule<ConfigModule>();
 
         /// <summary>
         /// 获取协程管理模块。
         /// </summary>
-        public static CoroutineModule CoroutineModule => ModuleManager.GetModule<CoroutineModule>();
+        public static CoroutineModule CoroutineModule => m_CoroutineModule ??= ModuleManager.GetModule<CoroutineModule>();
 
         /// <summary>
         /// 获取计时器管理模块。
         /// </summary>
-        public static TimerModule TimerModule => ModuleManager.GetModule<TimerModule>();
+        public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
 
         /// <summary>
         /// 获取下载管理模块。
         /// </summary>
-        public static DownloadModule DownloadModule => ModuleManager.GetModule<DownloadModule>();
+        public static DownloadModule DownloadModule => m_DownloadModule ??= ModuleManager.GetModule<DownloadModule>();
 
         /// <summary>
         /// 获取实体管理模块。
         /// </summary>
-        public static EntityModule EntityModule => ModuleManager.GetModule<EntityModule>();
+        public static EntityModule EntityModule => m_EntityModule ??= ModuleManager.GetModule<EntityModule>();
 
         /// <summary>
         /// 获取有限状态机管理模块。
         /// </summary>
-        public static FsmModule FsmModule => ModuleManager.GetModule<FsmModule>();
+        public static FsmModule FsmModule => m_FsmModule ??= ModuleManager.GetModule<FsmModule>();
 
         /// <summary>
         /// 获取流程管理模块。
         /// </summary>
-        public static ProcedureModule ProcedureModule => ModuleManager.GetModule<ProcedureModule>();
+        public static ProcedureModule ProcedureModule => m_ProcedureModule ??= ModuleManager.GetModule<ProcedureModule>();
 
         /// <summary>
         /// 获取UI管理模块。
         /// </summary>
-        public static UIModule UIModule => ModuleManager.GetModule<UIModule>();
+        public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
 
         /// <summary>
         /// 获取服务器相关全局配置管理模块。
         /// </summary>
-        public static GlobalConfigModule GlobalConfigModule => ModuleManager.GetModule<GlobalConfigModule>();
+        public static GlobalConfigModule GlobalConfigModule => m_GlobalConfigModule ??= ModuleManager.GetModule<GlobalConfigModule>();
 
         /// <summary>
         /// 获取本地化管理模块。
         /// </summary>
-        public static LocalizationModule LocalizationModule => ModuleManager.GetModule<LocalizationModule>();
+        public static LocalizationModule LocalizationModule => m_LocalizationModule ??= ModuleManager.GetModule<LocalizationModule>();
 
         /// <summary>
         /// 获取Mono管理模块。
         /// </summary>
-        public static MonoModule MonoModule => ModuleManager.GetModule<MonoModule>();
+        public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
 
         /// <summary>
         /// 获取场景管理模块。
         /// </summary>
-        public static SceneModule SceneModule => ModuleManager.GetModule<SceneModule>();
+        public static SceneModule SceneModule => m_SceneModule ??= ModuleManager.GetModule<SceneModule>();
 
         /// <summary>
         /// 获取声音管理模块。
         /// </summary>
-        public static SoundModule SoundModule => ModuleManager.GetModule<SoundModule>();
+        public static SoundModule SoundModule => m_SoundModule ??= ModuleManager.GetModule<SoundModule>();
 
         /// <summary>
         /// 获取网络管理模块。
         /// </summary>
-        public static NetworkModule NetworkModule => ModuleManager.GetModule<NetworkModule>();
+        public static NetworkModule NetworkModule => m_NetworkModule ??= ModuleManager.GetModule<NetworkModule>();
 
         /// <summary>
         /// 获取Web管理模块。
         /// </summary>
-        public static WebModule WebModule => ModuleManager.GetModule<WebModule>();
+        public static WebModule WebModule => m_WebModule ??= ModuleManager.GetModule<WebModule>();
 
         /// <summary>
         /// 获取本地持久化管理模块。
         /// </summary>
-        public static DataSaveModule DataSaveModule => ModuleManager.GetModule<DataSaveModule>();
+        public static DataSaveModule DataSaveModule => m_DataSaveModule ??= ModuleManager.GetModule<DataSaveModule>();
 
         /// <summary>
         /// 获取数据模型管理模块。
         /// </summary>
-        public static ModelModule ModelModule => ModuleManager.GetModule<ModelModule>();
+        public static ModelModule ModelModule => m_ModelModule ??= ModuleManager.GetModule<ModelModule>();
+
+        /// <summary>
+        /// 获取红点管理模块。
+        /// </summary>
+        public static RedDotModule RedDotModule => m_RedDotModule ??= ModuleManager.GetModule<RedDotModule>();
+
+        /// <summary>
+        /// 获取新手引导管理模块。
+        /// </summary>
+        public static GuideModule GuideModule => m_GuideModule ??= ModuleManager.GetModule<GuideModule>();
 
         ///// <summary>
-        ///// 获取红点管理模块。
+        ///// 获取广告管理模块。// TODO
         ///// </summary>
-        public static RedDotModule RedDotModule => ModuleManager.GetModule<RedDotModule>();
+        // private static AdvertisementModule AdvertisementModule => m_AdvertisementModule ??= ModuleManager.GetModule<AdvertisementModule>();
 
         ///// <summary>
-        ///// 获取红点管理模块。
+        ///// 获取游戏分析管理模块。// TODO
         ///// </summary>
-        public static GuideModule GuideModule => ModuleManager.GetModule<GuideModule>();
-
-        ///// <summary>
-        ///// 获取广告管理模块。
-        ///// </summary>
-        // private static AdvertisementModule AdvertisementModule => ModuleManager.GetModule<AdvertisementModule>();
-
-        ///// <summary>
-        ///// 获取游戏分析管理模块。
-        ///// </summary>
-        // private static GameAnalyticsModule GameAnalyticsModule => ModuleManager.GetModule<GameAnalyticsModule>();
+        // private static GameAnalyticsModule GameAnalyticsModule => m_GameAnalyticsModule ?? ModuleManager.GetModule<GameAnalyticsModule>();
     }
 }
