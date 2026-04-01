@@ -17,7 +17,7 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Core;
-        
+
         /// <summary>
         /// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。
         /// </summary>
@@ -34,7 +34,7 @@ namespace FuFramework.Network.Runtime
         public int NetworkChannelCount => m_NetworkChannelDict.Count;
 
         /// <summary>
-        /// 初始化
+        /// 初始化。
         /// </summary>
         protected override void OnInit()
         {
@@ -42,7 +42,7 @@ namespace FuFramework.Network.Runtime
         }
 
         /// <summary>
-        /// 网络管理器轮询。
+        /// 帧更新。
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
@@ -55,17 +55,17 @@ namespace FuFramework.Network.Runtime
         }
 
         /// <summary>
-        /// 关闭
+        /// 释放。
         /// </summary>
         protected override void OnDispose()
         {
             foreach (var networkChannel in m_NetworkChannelDict)
             {
                 var networkChannelBase = networkChannel.Value;
-                networkChannelBase.NetworkChannelConnected -= OnNetworkChannelConnected;
-                networkChannelBase.NetworkChannelClosed -= OnNetworkChannelClosed;
+                networkChannelBase.NetworkChannelConnected     -= OnNetworkChannelConnected;
+                networkChannelBase.NetworkChannelClosed        -= OnNetworkChannelClosed;
                 networkChannelBase.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
-                networkChannelBase.NetworkChannelError -= OnNetworkChannelError;
+                networkChannelBase.NetworkChannelError         -= OnNetworkChannelError;
                 networkChannelBase.Shutdown();
             }
 
@@ -98,7 +98,7 @@ namespace FuFramework.Network.Runtime
         /// <returns>所有网络频道。</returns>
         public INetworkChannel[] GetAllNetworkChannels()
         {
-            var index = 0;
+            var index   = 0;
             var results = new INetworkChannel[m_NetworkChannelDict.Count];
             foreach (var networkChannel in m_NetworkChannelDict)
             {
@@ -144,10 +144,10 @@ namespace FuFramework.Network.Runtime
 #else
             NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(channelName, networkChannelHelper, rpcTimeout);
 #endif
-            networkChannel.NetworkChannelConnected += OnNetworkChannelConnected;
-            networkChannel.NetworkChannelClosed += OnNetworkChannelClosed;
+            networkChannel.NetworkChannelConnected     += OnNetworkChannelConnected;
+            networkChannel.NetworkChannelClosed        += OnNetworkChannelClosed;
             networkChannel.NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
-            networkChannel.NetworkChannelError += OnNetworkChannelError;
+            networkChannel.NetworkChannelError         += OnNetworkChannelError;
             m_NetworkChannelDict.Add(channelName, networkChannel);
             return networkChannel;
         }
@@ -161,10 +161,10 @@ namespace FuFramework.Network.Runtime
         {
             FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
             if (!m_NetworkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
-            networkChannel.NetworkChannelConnected -= OnNetworkChannelConnected;
-            networkChannel.NetworkChannelClosed -= OnNetworkChannelClosed;
+            networkChannel.NetworkChannelConnected     -= OnNetworkChannelConnected;
+            networkChannel.NetworkChannelClosed        -= OnNetworkChannelClosed;
             networkChannel.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
-            networkChannel.NetworkChannelError -= OnNetworkChannelError;
+            networkChannel.NetworkChannelError         -= OnNetworkChannelError;
             networkChannel.Shutdown();
             return channelName != null && m_NetworkChannelDict.Remove(channelName);
         }
@@ -188,7 +188,7 @@ namespace FuFramework.Network.Runtime
         }
 
         private void OnNetworkChannelError(NetworkChannelBase networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
-            string errorMessage)
+                                           string errorMessage)
         {
             var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
             m_EventModule.Broadcast(this, networkErrorEventArgs);

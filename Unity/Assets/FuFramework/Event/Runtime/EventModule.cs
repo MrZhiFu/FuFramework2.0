@@ -31,7 +31,7 @@ namespace FuFramework.Event.Runtime
         public int EventCount => m_EventPool.EventCount;
 
         /// <summary>
-        /// 初始化
+        /// 初始化。
         /// </summary>
         protected override void OnInit()
         {
@@ -39,7 +39,7 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
-        /// 游戏框架模块轮询。
+        /// 帧更新。
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
@@ -49,7 +49,7 @@ namespace FuFramework.Event.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理游戏框架模块。
+        /// 释放。
         /// </summary>
         protected override void OnDispose()
         {
@@ -120,14 +120,14 @@ namespace FuFramework.Event.Runtime
             FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
             m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
         }
-        
+
         /// <summary>
         /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>
         public void BroadcastNow(object sender, GameEventArgs e) => m_EventPool.BroadcastNow(sender, e);
-        
+
         /// <summary>
         /// 遍历所有事件处理函数。
         /// </summary>

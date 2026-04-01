@@ -133,7 +133,7 @@ namespace FuFramework.UI.Runtime
                 if (IsFullScreen) UIView?.MakeFullScreen();
 
                 // 注册本地化语言改变事件
-                Subscribe(LanguageChangeEventArgs.EventId, _OnLocalizationLanguageChanged);
+                Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
 
                 // 初始化
                 _OnInit();

@@ -58,7 +58,7 @@ namespace FuFramework.Web.Runtime
         protected override void OnInit() { }
 
         /// <summary>
-        /// 更新处理请求队列
+        /// 帧更新处理请求队列
         /// </summary>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
@@ -81,9 +81,8 @@ namespace FuFramework.Web.Runtime
         }
 
         /// <summary>
-        /// 关闭
+        /// 释放
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
         protected override void OnDispose()
         {
             while (m_WaitingNormalQueue.Count > 0)

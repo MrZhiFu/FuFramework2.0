@@ -170,7 +170,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void _OnLocalizationLanguageChanged(object sender, GameEventArgs e)
+        private void _OnLanguageChanged(object sender, GameEventArgs e)
         {
             UpdateLocalization();
         }

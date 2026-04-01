@@ -72,7 +72,7 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 初始化界面管理器。
+        /// 初始化。
         /// </summary>
         protected override void OnInit()
         {
@@ -104,7 +104,7 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 界面管理器轮询。
+        /// 帧更新。
         /// </summary>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
@@ -122,7 +122,7 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理界面管理器。
+        /// 释放。
         /// </summary>
         protected override void OnDispose()
         {

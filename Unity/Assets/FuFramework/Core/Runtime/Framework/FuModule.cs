@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+// ReSharper disable Unity.RedundantEventFunction
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
@@ -22,7 +23,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public bool IsInitialized { get; internal set; }
 
-        #region 框架生命周期方法（必须由子类实现）
+        #region 框架生命周期方法(由子类实现)
 
         /// <summary>
         /// 初始化
@@ -39,6 +40,8 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 延迟帧更新
         /// </summary>
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected internal virtual void OnLateUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
@@ -47,29 +50,29 @@ namespace FuFramework.Core.Runtime
         protected internal virtual void OnFixedUpdate() { }
 
         /// <summary>
-        /// 销毁
+        /// 释放
         /// </summary>
         protected internal abstract void OnDispose();
 
         #endregion
 
-        #region Unity 生命周期方法（隐藏，禁止子类使用）
+        #region 隐藏Unity生命周期方法(禁止子类使用)
 
-        private new void Awake() { }
+        private void Awake() { }
 
-        private new void Start() { }
+        private void Start() { }
 
-        private new void Update() { }
+        private void Update() { }
 
-        private new void OnDestroy() { }
+        private void OnDestroy() { }
 
-        private new void OnEnable() { }
+        private void OnEnable() { }
 
-        private new void OnDisable() { }
+        private void OnDisable() { }
 
-        private new void FixedUpdate() { }
+        private void FixedUpdate() { }
 
-        private new void LateUpdate() { }
+        private void LateUpdate() { }
 
         #endregion
     }

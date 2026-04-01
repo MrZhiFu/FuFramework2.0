@@ -85,7 +85,7 @@ namespace FuFramework.SaveData.Runtime
         }
 
         /// <summary>
-        /// 轮询
+        /// 帧更新
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
@@ -102,7 +102,7 @@ namespace FuFramework.SaveData.Runtime
         }
 
         /// <summary>
-        /// 关闭并清理数据本地存储管理器
+        /// 释放，释放时保存所有数据
         /// </summary>
         protected override void OnDispose() => SaveAll();
 

@@ -89,7 +89,7 @@ namespace FuFramework.Entity.Runtime
         }
 
         /// <summary>
-        /// 轮询。
+        /// 帧更新。
         /// 1.回收待回收的实体
         /// 2.驱动每个实体组轮询
         /// </summary>
@@ -122,7 +122,7 @@ namespace FuFramework.Entity.Runtime
         }
 
         /// <summary>
-        /// 关闭
+        /// 释放
         /// </summary>
         protected override void OnDispose()
         {

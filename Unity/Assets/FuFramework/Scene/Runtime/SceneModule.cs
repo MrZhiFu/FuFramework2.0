@@ -63,12 +63,29 @@ namespace FuFramework.Scene.Runtime
         /// 事件订阅器
         private EventRegister EventRegister { get; set; }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
         protected override void OnInit()
         {
             EventRegister = EventRegister.Create();
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
         }
 
+        /// <summary>
+        /// 帧更新
+        /// </summary>
+        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        {
+            foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
+            {
+                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
+            }
+        }
+
+        /// <summary>
+        /// 释放
+        /// </summary>
         protected override void OnDispose()
         {
             // 反向遍历已加载的场景，卸载所有已加载的场景
@@ -85,17 +102,6 @@ namespace FuFramework.Scene.Runtime
 
             EventRegister.Release();
             EventRegister = null;
-        }
-
-        /// <summary>
-        /// 场景管理器轮询。
-        /// </summary>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-        {
-            foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
-            {
-                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
-            }
         }
 
         #region Get

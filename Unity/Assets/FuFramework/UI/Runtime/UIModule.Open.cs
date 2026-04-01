@@ -42,7 +42,7 @@ namespace FuFramework.UI.Runtime
         private async UniTask<T> _OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
         {
             var uiName = typeof(T).Name;
-            
+
             // 检查是否已经在加载中（考虑isMultiple参数）
             if (!isMultiple && IsLoadingUI(uiName))
             {
@@ -52,7 +52,7 @@ namespace FuFramework.UI.Runtime
 
             // 分配临时序列号，用于管理加载状态
             var tempSerialId = ++m_SerialId;
-            
+
             // 添加到加载字典
             m_LoadingDict.TryAdd(tempSerialId, uiName);
 
@@ -65,7 +65,7 @@ namespace FuFramework.UI.Runtime
                 if (uiInstanceObject != null && isMultiple == false)
                 {
                     view = uiInstanceObject.Target as T;
-                   
+
                     // 使用临时序列号创建界面
                     return CreateUIView(view, tempSerialId, false, userData);
                 }
@@ -77,7 +77,7 @@ namespace FuFramework.UI.Runtime
 
                 // UI包已经加载过，则直接创建界面
                 if (PkgManager == null) throw new FuException("[UIModule] FuiPkgManager不存在.");
-                
+
                 if (PkgManager.HasPackage(view.PackageName))
                 {
                     // 使用临时序列号创建界面
@@ -125,14 +125,13 @@ namespace FuFramework.UI.Runtime
                     uiGroup.AddUI(view);
                 }
 
-                view._OnOpen();            // 界面打开回调
-                view.UpdateLocalization(); // 更新本地化文本
-                uiGroup.Refresh();         // 刷新界面组
+                view._OnOpen();    // 界面打开回调
+                uiGroup.Refresh(); // 刷新界面组
 
                 // 广播界面打开成功事件
                 var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);
                 m_EventModule.Broadcast(this, openUISuccessEventArgs);
-                
+
                 return view;
             }
             catch (Exception exception)

@@ -51,7 +51,7 @@ namespace FuFramework.Sound.Runtime
         public AudioMixer AudioMixer => m_AudioMixer;
 
         /// <summary>
-        /// 初始化声音管理器
+        /// 初始化
         /// </summary>
         protected override void OnInit()
         {
@@ -91,6 +91,10 @@ namespace FuFramework.Sound.Runtime
             SceneManager.sceneLoaded   += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
+        
+        /// <summary>
+        /// 释放
+        /// </summary>
         protected override void OnDispose()
         {
             StopAllLoadedSounds();

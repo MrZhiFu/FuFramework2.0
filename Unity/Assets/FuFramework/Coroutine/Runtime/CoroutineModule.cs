@@ -45,7 +45,7 @@ namespace FuFramework.Coroutine.Runtime
         protected override void OnInit() { }
 
         /// <summary>
-        /// 关闭
+        /// 释放
         /// </summary>
         protected override void OnDispose() => StopAllCoroutines();
 

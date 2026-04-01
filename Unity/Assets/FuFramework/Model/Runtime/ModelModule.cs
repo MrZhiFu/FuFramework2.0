@@ -32,7 +32,7 @@ namespace FuFramework.Model.Runtime
         protected override void OnInit() { }
 
         /// <summary>
-        /// 关闭并清理游戏框架模块。
+        /// 释放。
         /// </summary>
         protected override void OnDispose() => Clear();
 

@@ -83,14 +83,14 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 游戏框架模块轮询。
+        /// 帧更新。
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
-        /// 关闭并清理游戏框架模块。
+        /// 释放
         /// </summary>
         protected override void OnDispose() { }
 

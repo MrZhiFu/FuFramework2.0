@@ -109,7 +109,7 @@ namespace FuFramework.Download.Runtime
 
 
         /// <summary>
-        /// 下载管理器初始化。
+        /// 初始化。
         /// </summary>
         protected override void OnInit()
         {
@@ -138,7 +138,7 @@ namespace FuFramework.Download.Runtime
         }
 
         /// <summary>
-        /// 下载管理器轮询
+        /// 帧更新
         /// </summary>
         /// <param name="deltaTime"></param>
         /// <param name="unscaledDeltaTime"></param>
@@ -149,7 +149,7 @@ namespace FuFramework.Download.Runtime
         }
 
         /// <summary>
-        /// 下载管理器关闭。
+        /// 释放
         /// </summary>
         protected override void OnDispose()
         {

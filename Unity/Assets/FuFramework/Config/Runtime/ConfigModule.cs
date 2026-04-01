@@ -34,7 +34,7 @@ namespace FuFramework.Config.Runtime
         public IEnumerable<string> CfgNames => m_CfgDataDict.Keys;
 
         /// <summary>
-        /// 配置表管理器初始化。
+        /// 初始化。
         /// </summary>
         protected override void OnInit()
         {
@@ -43,24 +43,11 @@ namespace FuFramework.Config.Runtime
         }
 
         /// <summary>
-        /// 配置表管理器关闭。
+        /// 释放。
         /// </summary>
         protected override void OnDispose()
         {
             RemoveAllConfigs();
-        }
-
-        /// <summary>
-        /// 获取指定类型的配置表名称。
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>返回类型名称</returns>
-        private string GetTypeName<T>()
-        {
-            if (m_CfgNameTypeDict.TryGetValue(typeof(T), out var cfgName)) return cfgName;
-            cfgName = typeof(T).Name;
-            m_CfgNameTypeDict.TryAdd(typeof(T), cfgName);
-            return cfgName;
         }
 
         /// <summary>
@@ -145,6 +132,19 @@ namespace FuFramework.Config.Runtime
         {
             m_CfgNameTypeDict.Clear();
             m_CfgDataDict.Clear();
+        }
+
+        /// <summary>
+        /// 获取指定类型的配置表名称。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>返回类型名称</returns>
+        private string GetTypeName<T>()
+        {
+            if (m_CfgNameTypeDict.TryGetValue(typeof(T), out var cfgName)) return cfgName;
+            cfgName = typeof(T).Name;
+            m_CfgNameTypeDict.TryAdd(typeof(T), cfgName);
+            return cfgName;
         }
     }
 }
