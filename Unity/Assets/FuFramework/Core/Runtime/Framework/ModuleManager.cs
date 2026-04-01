@@ -18,7 +18,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 游戏框架所在的场景编号。
         /// </summary>
-        private const int GameFrameworkSceneId = 0;
+        private const int FrameworkSceneId = 0;
 
         /// <summary>
         /// 记录所有已注册的模块的链表集合
@@ -420,16 +420,13 @@ namespace FuFramework.Core.Runtime
             switch (shutdownType)
             {
                 case ShutdownType.Restart:
-                    SceneManager.LoadScene(GameFrameworkSceneId);
+                    SceneManager.LoadScene(FrameworkSceneId);
                     break;
                 case ShutdownType.Quit:
                     Application.Quit();
 #if UNITY_EDITOR
                     UnityEditor.EditorApplication.isPlaying = false;
 #endif
-                    break;
-                case ShutdownType.Unregister:
-                    // 不需要额外操作
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shutdownType), shutdownType, null);
