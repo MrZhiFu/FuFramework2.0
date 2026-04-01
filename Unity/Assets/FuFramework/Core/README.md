@@ -15,7 +15,7 @@
 框架采用**单例模块化**设计，所有核心功能（如资源管理、UI管理、网络管理）都必须继承自 `FuModule`。
 
 #### FuModule (模块基类)
-继承自 `MonoBehaviour`，但被框架接管了生命周期，继承`MonoBehaviour`只是为了更好的模块可视化。
+继承自 `MonoBehaviour`，但被框架接管了生命周期，继承`MonoBehaviour`只是为了更好的在模块属性面板中显示模块信息。
 - **`Priority` (优先级)**：
   - 类型：`int`
   - 作用：决定模块的初始化 (`OnInit`)、轮询 (`OnUpdate`) 和销毁 (`OnShutdown`) 的顺序。

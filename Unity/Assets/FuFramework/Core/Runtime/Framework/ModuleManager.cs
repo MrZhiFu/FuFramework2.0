@@ -392,24 +392,23 @@ namespace FuFramework.Core.Runtime
         private static List<Type> GetAllFuModuleTypes()
         {
             var fuModuleType = typeof(FuModule);
-            var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly =>
-                                    {
-                                        try
-                                        {
-                                            return assembly.GetTypes();
-                                        }
-                                        catch
-                                        {
-                                            return Array.Empty<Type>();
-                                        }
-                                    })
-                                    .Where(type => type != fuModuleType                &&
-                                                   fuModuleType.IsAssignableFrom(type) &&
-                                                   !type.IsAbstract                    &&
-                                                   !type.IsInterface)
-                                    .ToList();
+            var result = new List<Type>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            return allTypes;
+            foreach (var assembly in assemblies)
+            {
+                Type[] types= assembly.GetTypes();
+                foreach (var type in types)
+                {
+                    if (type == fuModuleType) continue;
+                    if (!fuModuleType.IsAssignableFrom(type)) continue;
+                    if (type.IsAbstract) continue;
+                    if (type.IsInterface) continue;
+                    result.Add(type);
+                }
+            }
+
+            return result;
         }
 
 

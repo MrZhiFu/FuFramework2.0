@@ -18,23 +18,23 @@ namespace FuFramework.Core.Runtime
             /// <summary>
             /// 当前域中已加载的所有程序集
             /// </summary>
-            private static readonly System.Reflection.Assembly[] m_Assemblies;
+            private static readonly System.Reflection.Assembly[] Assemblies;
 
             /// <summary>
             /// 缓存类型的字典，key为类型名，value为类型
             /// </summary>
-            private static readonly Dictionary<string, Type> m_CachedDict = new(StringComparer.Ordinal);
+            private static readonly Dictionary<string, Type> CachedDict = new(StringComparer.Ordinal);
 
             static Assembly()
             {
-                m_Assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                Assemblies = AppDomain.CurrentDomain.GetAssemblies();
             }
 
             /// <summary>
             /// 获取已加载的程序集。
             /// </summary>
             /// <returns>已加载的程序集。</returns>
-            public static System.Reflection.Assembly[] GetAssemblies() => m_Assemblies;
+            public static System.Reflection.Assembly[] GetAssemblies() => Assemblies;
 
             /// <summary>
             /// 获取已加载的程序集中的所有类型。
@@ -43,7 +43,7 @@ namespace FuFramework.Core.Runtime
             public static Type[] GetTypes()
             {
                 var results = new List<Type>();
-                foreach (var assembly in m_Assemblies)
+                foreach (var assembly in Assemblies)
                 {
                     results.AddRange(assembly.GetTypes());
                 }
@@ -61,7 +61,7 @@ namespace FuFramework.Core.Runtime
                     throw new FuException("传入的结果列表为空，请检查参数是否正确.");
 
                 results.Clear();
-                foreach (var assembly in m_Assemblies)
+                foreach (var assembly in Assemblies)
                 {
                     results.AddRange(assembly.GetTypes());
                 }
@@ -77,20 +77,20 @@ namespace FuFramework.Core.Runtime
                 if (string.IsNullOrEmpty(typeName))
                     throw new FuException("传入的类型名为空，请检查参数是否正确.");
 
-                if (m_CachedDict.TryGetValue(typeName, out var type)) return type;
+                if (CachedDict.TryGetValue(typeName, out var type)) return type;
 
                 type = Type.GetType(typeName);
                 if (type != null)
                 {
-                    m_CachedDict.Add(typeName, type);
+                    CachedDict.Add(typeName, type);
                     return type;
                 }
 
-                foreach (var assembly in m_Assemblies)
+                foreach (var assembly in Assemblies)
                 {
                     type = Type.GetType($"{typeName}, {assembly.FullName}");
                     if (type == null) continue;
-                    m_CachedDict.Add(typeName, type);
+                    CachedDict.Add(typeName, type);
                     return type;
                 }
 

@@ -127,18 +127,7 @@ namespace FuFramework.Core.Runtime
 #endif
                 }
             }
-
-            /// <summary>
-            /// 退出
-            /// </summary>
-            public static void Quit()
-            {
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-                return;
-#endif
-                UnityEngine.Application.Quit();
-            }
+            
 #if UNITY_IOS
         [System.Runtime.InteropServices.DllImport("__Internal")]
         private static extern void open_url(string url);
