@@ -11,6 +11,7 @@ FuFramework Localization 模块是一个功能完善的游戏本地化系统。�
 - **事件驱动**：提供语言改变事件通知机制
 - **编辑器集成**：提供可视化的编辑器界面
 - **模块化设计**：依赖事件和数据保存模块，架构清晰
+- **获取本地化多语言接口**：可直接获取本地化多语言文本
 
 ## 核心类说明
 
@@ -21,6 +22,7 @@ FuFramework Localization 模块是一个功能完善的游戏本地化系统。�
   2. 提供系统语言检测功能
   3. 处理语言设置的持久化存储
   4. 发送语言改变事件通知
+  5. 可直接获取本地化多语言文本
 
 ### ELanguage
 语言枚举类型，定义支持的所有语言。
@@ -182,58 +184,17 @@ public class LanguageChangeHandler : MonoBehaviour
 }
 ```
 
-### 3. 多语言文本管理
+### 3. 获取本地化多语言文本
 ```csharp
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LocalizedTextManager : MonoBehaviour
-{
-    [System.Serializable]
-    public class LocalizedText
-    {
-        public ELanguage language;
-        public string text;
-    }
-    
-    [SerializeField] private List<LocalizedText> localizedTexts = new();
-    
-    public string GetLocalizedText(ELanguage language, string defaultText = "")
-    {
-        var textEntry = localizedTexts.Find(t => t.language == language);
-        return textEntry != null ? textEntry.text : defaultText;
-    }
-    
-    public void AddLocalizedText(ELanguage language, string text)
-    {
-        var existingEntry = localizedTexts.Find(t => t.language == language);
-        if (existingEntry != null)
-        {
-            existingEntry.text = text;
-        }
-        else
-        {
-            localizedTexts.Add(new LocalizedText { language = language, text = text });
-        }
-    }
-}
-
 // 使用示例
 public class GameTextController : MonoBehaviour
 {
-    [SerializeField] private LocalizedTextManager textManager;
-    [SerializeField] private TMPro.TextMeshProUGUI titleText;
-    
     private void Start()
     {
-        var localizationModule = GlobalModule.LocalizationModule;
-        UpdateTextForCurrentLanguage(localizationModule.Language);
-    }
-    
-    private void UpdateTextForCurrentLanguage(ELanguage language)
-    {
-        string title = textManager.GetLocalizedText(language, "Default Title");
-        titleText.text = title;
+       txtXxx.text = GlobalModule.LocalizationModule.GetLanguageText(LanguageKey.xxx);
     }
 }
 ```
@@ -351,59 +312,7 @@ public class LanguageSelectionUI : MonoBehaviour
 }
 ```
 
-### 3. 多语言资源管理
-```csharp
-using UnityEngine;
-
-public class LocalizedAssetManager : MonoBehaviour
-{
-    [System.Serializable]
-    public class LocalizedAsset
-    {
-        public ELanguage language;
-        public Sprite sprite;
-        public AudioClip audioClip;
-        public GameObject prefab;
-    }
-    
-    [SerializeField] private List<LocalizedAsset> localizedAssets = new();
-    
-    public Sprite GetLocalizedSprite(ELanguage language)
-    {
-        return localizedAssets.Find(a => a.language == language)?.sprite;
-    }
-    
-    public AudioClip GetLocalizedAudio(ELanguage language)
-    {
-        return localizedAssets.Find(a => a.language == language)?.audioClip;
-    }
-    
-    public void UpdateUIForLanguage(ELanguage language)
-    {
-        var image = GetComponent<UnityEngine.UI.Image>();
-        if (image != null)
-        {
-            var sprite = GetLocalizedSprite(language);
-            if (sprite != null)
-            {
-                image.sprite = sprite;
-            }
-        }
-        
-        var audioSource = GetComponent<AudioSource>();
-        if (audioSource != null)
-        {
-            var audioClip = GetLocalizedAudio(language);
-            if (audioClip != null)
-            {
-                audioSource.clip = audioClip;
-            }
-        }
-    }
-}
-```
-
-### 4. 条件编译和语言特定逻辑
+### 3. 条件编译和语言特定逻辑
 ```csharp
 public class LanguageSpecificLogic : MonoBehaviour
 {
@@ -456,22 +365,7 @@ public class LanguageSpecificLogic : MonoBehaviour
 
 ### LocalizationModule Inspector
 在Unity编辑器中，LocalizationModule组件提供了自定义的Inspector界面：
-
 1. **显示当前语言**：在Inspector中显示当前设置的语言
-2. **实时预览**：可以在编辑模式下预览语言设置效果
-
-### 使用方法
-1. 在场景中添加LocalizationModule组件
-2. 在Inspector中查看当前语言状态
-3. 通过代码设置语言，Inspector会实时更新显示
-
-## 性能优化建议
-
-1. **事件管理**：及时取消订阅语言改变事件，避免内存泄漏
-2. **资源管理**：按需加载语言特定的资源，避免一次性加载所有语言资源
-3. **缓存机制**：对频繁访问的本地化文本进行缓存
-4. **异步加载**：对于大量本地化资源，使用异步加载避免卡顿
-5. **内存优化**：及时释放不再使用的语言资源
 
 ## 注意事项
 
@@ -487,13 +381,3 @@ public class LanguageSpecificLogic : MonoBehaviour
 - **FuFramework.Core**：基础框架模块
 - **FuFramework.Event**：事件管理模块
 - **FuFramework.SaveData**：数据保存模块
-- **Unity引擎**：基础运行环境
-
-## 技术支持
-
-如遇到本地化问题，请检查：
-1. 语言设置是否正确保存和加载
-2. 事件订阅是否正确设置和清理
-3. 系统语言检测是否正常工作
-4. 目标语言是否在支持列表中
-5. 资源路径和命名是否正确

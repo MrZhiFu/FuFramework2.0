@@ -48,6 +48,7 @@ namespace FuFramework.Localization.Runtime
             set
             {
                 if (value == ELanguage.Unspecified) throw new FuException("[LocalizationModule]设置本地化语言失败，语言未指定.");
+                if (value == m_Language) return;
                 var oldLanguage = m_Language;
                 m_Language = value;
 

@@ -172,7 +172,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="e"></param>
         private void _OnLanguageChanged(object sender, GameEventArgs e)
         {
-            UpdateLocalization();
+            if (Visible) 
+                OnOpen();
         }
 
         /// <summary>
@@ -260,11 +261,6 @@ namespace FuFramework.UI.Runtime
         /// 界面销毁.
         /// </summary>
         protected virtual void OnDispose() { }
-
-        /// <summary>
-        /// 界面更新本地化。
-        /// </summary>
-        public virtual void UpdateLocalization() { }
 
         /// <summary>
         /// 自定义界面打开动画(可重写实现属于自身自定义动画)

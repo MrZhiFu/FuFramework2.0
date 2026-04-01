@@ -1,4 +1,5 @@
-﻿using FuFramework.Entry.Runtime;
+﻿using FuFramework.Core.Runtime;
+using FuFramework.Entry.Runtime;
 using FuFramework.Localization.Runtime;
 using Hotfix.Config.Local;
 
@@ -6,9 +7,15 @@ namespace Hotfix.Localization
 {
     /// <summary>
     /// 本地化多语言提供着
+    /// 负责根据当前语言环境返回对应的本地化文本
     /// </summary>
     public class LocalizationProvider : ILocalizationProvider
     {
+        /// <summary>
+        /// 缓存配置表
+        /// </summary>
+        private TbLocalization m_TbLocalization;
+
         /// <summary>
         /// 获取本地化多语言
         /// </summary>
@@ -16,12 +23,16 @@ namespace Hotfix.Localization
         /// <returns></returns>
         public string GetLanguage(string key)
         {
-            if (string.IsNullOrEmpty(key)) return "";
+            if (string.IsNullOrEmpty(key)) return string.Empty;
 
-            var tbLocalization = GlobalModule.ConfigModule.GetConfig<TbLocalization>();
+            m_TbLocalization ??= GlobalModule.ConfigModule.GetConfig<TbLocalization>();
 
-            var localization = tbLocalization?.Get(key);
-            if (localization is null) return "";
+            var localization = m_TbLocalization?.Get(key);
+            if (localization == null)
+            {
+                FuLogger.LogWarning($"多语言key '{key}' 没找到，请检查多语言配置表!");
+                return string.Empty;
+            }
 
             var language = GlobalModule.LocalizationModule.Language;
             return language switch
