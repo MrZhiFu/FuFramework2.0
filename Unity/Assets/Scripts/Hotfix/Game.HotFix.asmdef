@@ -32,7 +32,8 @@
         "FuFramework.RedDot.Runtime",
         "FuFramework.Guide.Runtime",
         "FuFramework.ModuleSetting.Runtime",
-        "Game.AOT"
+        "Game.AOT",
+        "FuFramework.Localization.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

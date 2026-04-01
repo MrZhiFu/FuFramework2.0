@@ -10,6 +10,7 @@ using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.ModuleSetting.Runtime;
+using Hotfix.Localization;
 using Launcher.Procedure;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -44,6 +45,9 @@ namespace Hotfix
             LauncherUIHelper.SetTipText("LoadInitUIAsset...");
             await LoadUI();
 
+            // 指定获取多语言的接口
+            GlobalModule.LocalizationModule.LocalizationProvider = new LocalizationProvider();
+            
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
 

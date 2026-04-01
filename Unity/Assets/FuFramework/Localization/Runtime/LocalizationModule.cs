@@ -19,13 +19,28 @@ namespace FuFramework.Localization.Runtime
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.Game;
 
-        private EventModule    m_EventModule;    // 事件组件
-        private DataSaveModule m_DataSaveModule; // Setting组件
-
-        private ELanguage m_Language; // 本地化语言
+        /// <summary>
+        /// 事件组件
+        /// </summary>
+        private EventModule m_EventModule;
 
         /// <summary>
-        /// 获取或设置本地化语言。
+        /// Setting组件
+        /// </summary>
+        private DataSaveModule m_DataSaveModule;
+
+        /// <summary>
+        /// 当前使用的语言
+        /// </summary>
+        private ELanguage m_Language;
+
+        /// <summary>
+        /// 本地化多语言提供者
+        /// </summary>
+        public ILocalizationProvider LocalizationProvider { get; set; }
+
+        /// <summary>
+        /// 获取或设置当前使用的语言。
         /// </summary>
         public ELanguage Language
         {
@@ -49,57 +64,57 @@ namespace FuFramework.Localization.Runtime
         /// <summary>
         /// 获取系统语言。
         /// </summary>
-        public ELanguage SystemELanguage
+        public static ELanguage SystemLanguage
         {
             get
             {
                 return Application.systemLanguage switch
                 {
                     // @formatter:off
-                    SystemLanguage.Afrikaans          => ELanguage.Afrikaans,
-                    SystemLanguage.Arabic             => ELanguage.Arabic,
-                    SystemLanguage.Basque             => ELanguage.Basque,
-                    SystemLanguage.Belarusian         => ELanguage.Belarusian,
-                    SystemLanguage.Bulgarian          => ELanguage.Bulgarian,
-                    SystemLanguage.Catalan            => ELanguage.Catalan,
-                    SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
-                    SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
-                    SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
-                    SystemLanguage.Czech              => ELanguage.Czech,
-                    SystemLanguage.Danish             => ELanguage.Danish,
-                    SystemLanguage.Dutch              => ELanguage.Dutch,
-                    SystemLanguage.English            => ELanguage.English,
-                    SystemLanguage.Estonian           => ELanguage.Estonian,
-                    SystemLanguage.Faroese            => ELanguage.Faroese,
-                    SystemLanguage.Finnish            => ELanguage.Finnish,
-                    SystemLanguage.French             => ELanguage.French,
-                    SystemLanguage.German             => ELanguage.German,
-                    SystemLanguage.Greek              => ELanguage.Greek,
-                    SystemLanguage.Hebrew             => ELanguage.Hebrew,
-                    SystemLanguage.Hungarian          => ELanguage.Hungarian,
-                    SystemLanguage.Icelandic          => ELanguage.Icelandic,
-                    SystemLanguage.Indonesian         => ELanguage.Indonesian,
-                    SystemLanguage.Italian            => ELanguage.Italian,
-                    SystemLanguage.Japanese           => ELanguage.Japanese,
-                    SystemLanguage.Korean             => ELanguage.Korean,
-                    SystemLanguage.Latvian            => ELanguage.Latvian,
-                    SystemLanguage.Lithuanian         => ELanguage.Lithuanian,
-                    SystemLanguage.Norwegian          => ELanguage.Norwegian,
-                    SystemLanguage.Polish             => ELanguage.Polish,
-                    SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
-                    SystemLanguage.Romanian           => ELanguage.Romanian,
-                    SystemLanguage.Russian            => ELanguage.Russian,
-                    SystemLanguage.SerboCroatian      => ELanguage.SerboCroatian,
-                    SystemLanguage.Slovak             => ELanguage.Slovak,
-                    SystemLanguage.Slovenian          => ELanguage.Slovenian,
-                    SystemLanguage.Spanish            => ELanguage.Spanish,
-                    SystemLanguage.Swedish            => ELanguage.Swedish,
-                    SystemLanguage.Thai               => ELanguage.Thai,
-                    SystemLanguage.Turkish            => ELanguage.Turkish,
-                    SystemLanguage.Ukrainian          => ELanguage.Ukrainian,
-                    SystemLanguage.Unknown            => ELanguage.Unspecified,
-                    SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
-                    _                                 => ELanguage.Unspecified
+                    UnityEngine.SystemLanguage.Afrikaans          => ELanguage.Afrikaans,
+                    UnityEngine.SystemLanguage.Arabic             => ELanguage.Arabic,
+                    UnityEngine.SystemLanguage.Basque             => ELanguage.Basque,
+                    UnityEngine.SystemLanguage.Belarusian         => ELanguage.Belarusian,
+                    UnityEngine.SystemLanguage.Bulgarian          => ELanguage.Bulgarian,
+                    UnityEngine.SystemLanguage.Catalan            => ELanguage.Catalan,
+                    UnityEngine.SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
+                    UnityEngine.SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
+                    UnityEngine.SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
+                    UnityEngine.SystemLanguage.Czech              => ELanguage.Czech,
+                    UnityEngine.SystemLanguage.Danish             => ELanguage.Danish,
+                    UnityEngine.SystemLanguage.Dutch              => ELanguage.Dutch,
+                    UnityEngine.SystemLanguage.English            => ELanguage.English,
+                    UnityEngine.SystemLanguage.Estonian           => ELanguage.Estonian,
+                    UnityEngine.SystemLanguage.Faroese            => ELanguage.Faroese,
+                    UnityEngine.SystemLanguage.Finnish            => ELanguage.Finnish,
+                    UnityEngine.SystemLanguage.French             => ELanguage.French,
+                    UnityEngine.SystemLanguage.German             => ELanguage.German,
+                    UnityEngine.SystemLanguage.Greek              => ELanguage.Greek,
+                    UnityEngine.SystemLanguage.Hebrew             => ELanguage.Hebrew,
+                    UnityEngine.SystemLanguage.Hungarian          => ELanguage.Hungarian,
+                    UnityEngine.SystemLanguage.Icelandic          => ELanguage.Icelandic,
+                    UnityEngine.SystemLanguage.Indonesian         => ELanguage.Indonesian,
+                    UnityEngine.SystemLanguage.Italian            => ELanguage.Italian,
+                    UnityEngine.SystemLanguage.Japanese           => ELanguage.Japanese,
+                    UnityEngine.SystemLanguage.Korean             => ELanguage.Korean,
+                    UnityEngine.SystemLanguage.Latvian            => ELanguage.Latvian,
+                    UnityEngine.SystemLanguage.Lithuanian         => ELanguage.Lithuanian,
+                    UnityEngine.SystemLanguage.Norwegian          => ELanguage.Norwegian,
+                    UnityEngine.SystemLanguage.Polish             => ELanguage.Polish,
+                    UnityEngine.SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
+                    UnityEngine.SystemLanguage.Romanian           => ELanguage.Romanian,
+                    UnityEngine.SystemLanguage.Russian            => ELanguage.Russian,
+                    UnityEngine.SystemLanguage.SerboCroatian      => ELanguage.SerboCroatian,
+                    UnityEngine.SystemLanguage.Slovak             => ELanguage.Slovak,
+                    UnityEngine.SystemLanguage.Slovenian          => ELanguage.Slovenian,
+                    UnityEngine.SystemLanguage.Spanish            => ELanguage.Spanish,
+                    UnityEngine.SystemLanguage.Swedish            => ELanguage.Swedish,
+                    UnityEngine.SystemLanguage.Thai               => ELanguage.Thai,
+                    UnityEngine.SystemLanguage.Turkish            => ELanguage.Turkish,
+                    UnityEngine.SystemLanguage.Ukrainian          => ELanguage.Ukrainian,
+                    UnityEngine.SystemLanguage.Unknown            => ELanguage.Unspecified,
+                    UnityEngine.SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
+                    _                                             => ELanguage.Unspecified
                     // @formatter:on
                 };
             }
@@ -117,12 +132,22 @@ namespace FuFramework.Localization.Runtime
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else
-                m_Language = SystemELanguage;
+                m_Language = SystemLanguage;
         }
 
         /// <summary>
-        /// 关闭
+        /// 释放
         /// </summary>
         protected override void OnDispose() { }
+
+        /// <summary>
+        /// 获取当前语言下的多语言文本
+        /// </summary>
+        /// <param name="key">多语言key</param>
+        /// <returns></returns>
+        public string GetLanguageText(string key)
+        {
+            return LocalizationProvider is null ? "" : LocalizationProvider.GetLanguage(key);
+        }
     }
 }
