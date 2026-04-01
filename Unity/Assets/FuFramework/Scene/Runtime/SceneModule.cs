@@ -69,7 +69,7 @@ namespace FuFramework.Scene.Runtime
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
         }
 
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             // 反向遍历已加载的场景，卸载所有已加载的场景
             for (var i = m_LoadedSceneDict.Count - 1; i >= 0; i--)

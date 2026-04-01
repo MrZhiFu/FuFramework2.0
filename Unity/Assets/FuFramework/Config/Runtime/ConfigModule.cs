@@ -45,8 +45,7 @@ namespace FuFramework.Config.Runtime
         /// <summary>
         /// 配置表管理器关闭。
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             RemoveAllConfigs();
         }

@@ -83,9 +83,8 @@ namespace FuFramework.Web.Runtime
         /// <summary>
         /// 关闭
         /// </summary>
-        /// <param name="shutdownType"></param>
         /// <exception cref="NotImplementedException"></exception>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             while (m_WaitingNormalQueue.Count > 0)
             {

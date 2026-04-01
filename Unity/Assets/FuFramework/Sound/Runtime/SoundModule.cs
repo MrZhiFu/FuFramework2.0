@@ -91,7 +91,7 @@ namespace FuFramework.Sound.Runtime
             SceneManager.sceneLoaded   += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             StopAllLoadedSounds();
             m_SoundGroupDict.Clear();

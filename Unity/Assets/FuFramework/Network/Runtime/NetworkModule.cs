@@ -57,8 +57,7 @@ namespace FuFramework.Network.Runtime
         /// <summary>
         /// 关闭
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             foreach (var networkChannel in m_NetworkChannelDict)
             {

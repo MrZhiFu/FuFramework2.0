@@ -129,8 +129,7 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType">关闭游戏框架类型</param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             // 中断当前引导
             InterruptGuide();

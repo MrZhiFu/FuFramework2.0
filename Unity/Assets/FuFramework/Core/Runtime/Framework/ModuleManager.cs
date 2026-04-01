@@ -23,7 +23,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 记录所有已注册的模块的链表集合
         /// </summary>
-        private static readonly FuLinkedList<FuModule> RegisteredModuleList = new();
+        private static readonly FuLinkedList<FuModule> ModuleList = new();
 
         /// <summary>
         /// 记录正在注册的模块类型，用于检测循环依赖
@@ -33,7 +33,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 模块缓存的字典，key:模块类型，value:模块对象。
         /// </summary>
-        private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new();
+        private static readonly Dictionary<Type, FuModule> ModuleCacheDict = new(30);
 
         /// <summary>
         /// 模块根节点
@@ -71,7 +71,7 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void Update(float deltaTime, float unscaledDeltaTime)
         {
-            foreach (var module in RegisteredModuleList)
+            foreach (var module in ModuleList)
             {
                 if (!module.IsInitialized) continue;
                 module.OnUpdate(deltaTime, unscaledDeltaTime);
@@ -79,18 +79,18 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 关闭游戏框架，退出游戏时调用。由外部代码调用，如设置界面的重启/退出按钮。
+        /// 关闭游戏框架，退出游戏时调用。如设置界面的重启/退出按钮。
         /// </summary>
         /// <param name="shutdownType">关闭游戏框架类型。</param>
         public static void Shutdown(ShutdownType shutdownType)
         {
-            FuLogger.LogInfo($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {RegisteredModuleList.Count} ====</color>");
+            FuLogger.LogInfo($"<color=#FF6B6B>=====开始关闭框架，类型: {shutdownType}，需要关闭的模块数量: {ModuleList.Count} ====</color>");
 
             // 使用栈来存储需要关闭的模块（逆序关闭）
             var shutdownStack = new Stack<FuModule>();
 
             // 将模块按关闭顺序压入栈中
-            var current = RegisteredModuleList.First;
+            var current = ModuleList.First;
             while (current != null)
             {
                 if (current.Value.IsInitialized)
@@ -108,7 +108,7 @@ namespace FuFramework.Core.Runtime
                 try
                 {
                     FuLogger.LogInfo($"<color=#00FBD5>关闭模块: {module.GetType().Name}</color>");
-                    module.OnShutdown(shutdownType);
+                    module.OnDispose();
                     module.IsInitialized = false;
                 }
                 catch (Exception e)
@@ -120,7 +120,7 @@ namespace FuFramework.Core.Runtime
             }
 
             // 清空管理器的集合
-            RegisteredModuleList.Clear();
+            ModuleList.Clear();
             ModuleCacheDict.Clear();
             RegisteringSet.Clear();
 
@@ -147,7 +147,7 @@ namespace FuFramework.Core.Runtime
                 return cachedModule;
 
             // 从链表查找
-            var current = RegisteredModuleList.First;
+            var current = ModuleList.First;
             while (current is not null)
             {
                 var module = current.Value;
@@ -167,7 +167,7 @@ namespace FuFramework.Core.Runtime
         /// 获取所有已注册的模块。
         /// </summary>
         /// <returns>模块列表。</returns>
-        public static List<FuModule> GetAllModules() => RegisteredModuleList.ToList();
+        public static List<FuModule> GetAllModules() => ModuleList.ToList();
 
         /// <summary>
         /// 注册游戏框架模块
@@ -289,15 +289,15 @@ namespace FuFramework.Core.Runtime
             {
                 if (module.IsInitialized)
                 {
-                    module.OnShutdown(ShutdownType.Unregister);
+                    module.OnDispose();
                     module.IsInitialized = false;
                 }
 
                 // 从链表中移除
-                var node = RegisteredModuleList.Find(module);
+                var node = ModuleList.Find(module);
                 if (node is not null)
                 {
-                    RegisteredModuleList.Remove(node);
+                    ModuleList.Remove(node);
                 }
 
                 // 从缓存中移除
@@ -350,7 +350,7 @@ namespace FuFramework.Core.Runtime
         private static void RegisterModuleInternal(FuModule module)
         {
             // 优先级大的组件注册在链表的前面
-            var current = RegisteredModuleList.First;
+            var current = ModuleList.First;
             while (current is not null)
             {
                 if (module.Priority > current.Value.Priority) break;
@@ -358,9 +358,9 @@ namespace FuFramework.Core.Runtime
             }
 
             if (current is not null)
-                RegisteredModuleList.AddBefore(current, module);
+                ModuleList.AddBefore(current, module);
             else
-                RegisteredModuleList.AddLast(module);
+                ModuleList.AddLast(module);
 
             // 添加到缓存
             ModuleCacheDict[module.GetType()] = module;
@@ -392,8 +392,7 @@ namespace FuFramework.Core.Runtime
         private static List<Type> GetAllFuModuleTypes()
         {
             var fuModuleType = typeof(FuModule);
-            var allTypes = AppDomain.CurrentDomain.GetAssemblies()
-                                    .SelectMany(assembly =>
+            var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly =>
                                     {
                                         try
                                         {

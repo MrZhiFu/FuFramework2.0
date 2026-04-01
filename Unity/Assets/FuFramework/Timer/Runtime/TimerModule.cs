@@ -47,8 +47,7 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             foreach (var timerInfo in m_TimerDict.Values)
             {

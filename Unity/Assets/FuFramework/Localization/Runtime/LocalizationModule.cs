@@ -41,8 +41,8 @@ namespace FuFramework.Localization.Runtime
                 m_DataSaveModule.Save();
 
                 // 发送本地化语言改变事件
-                var localizationLanguageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
-                m_EventModule.Broadcast(this, localizationLanguageChangeEventArgs);
+                var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
+                m_EventModule.Broadcast(this, languageChangeEventArgs);
             }
         }
 
@@ -123,7 +123,6 @@ namespace FuFramework.Localization.Runtime
         /// <summary>
         /// 关闭
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType) { }
+        protected override void OnDispose() { }
     }
 }

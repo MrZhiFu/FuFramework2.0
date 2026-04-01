@@ -104,8 +104,7 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 关闭并清理数据本地存储管理器
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType) => SaveAll();
+        protected override void OnDispose() => SaveAll();
 
 
         /// <summary>

@@ -92,8 +92,7 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType) { }
+        protected override void OnDispose() { }
 
 
         #region 异步加载资源

@@ -49,8 +49,7 @@ namespace FuFramework.Procedure.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             if (!m_FsmModule) return;
 

@@ -60,8 +60,7 @@ namespace FuFramework.RedDot.Runtime
         /// <summary>
         /// 关闭并清理游戏框架模块。
         /// </summary>
-        /// <param name="shutdownType">关闭游戏框架类型</param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             // 释放所有节点回对象池
             foreach (var node in NodeDict.Values)

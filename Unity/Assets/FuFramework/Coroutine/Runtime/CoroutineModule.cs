@@ -47,8 +47,7 @@ namespace FuFramework.Coroutine.Runtime
         /// <summary>
         /// 关闭
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType) => StopAllCoroutines();
+        protected override void OnDispose() => StopAllCoroutines();
 
         /// <summary>
         /// 开启一个协程

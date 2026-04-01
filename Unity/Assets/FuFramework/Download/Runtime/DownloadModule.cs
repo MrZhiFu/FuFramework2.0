@@ -151,8 +151,7 @@ namespace FuFramework.Download.Runtime
         /// <summary>
         /// 下载管理器关闭。
         /// </summary>
-        /// <param name="shutdownType"></param>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             m_TaskPool.Shutdown();
             m_DownloadCounter.Shutdown();

@@ -124,7 +124,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 关闭并清理界面管理器。
         /// </summary>
-        protected override void OnShutdown(ShutdownType shutdownType)
+        protected override void OnDispose()
         {
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
