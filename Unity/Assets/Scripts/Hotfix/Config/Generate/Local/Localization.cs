@@ -67,11 +67,11 @@ namespace Hotfix.Config.Local
         /// </summary>
         public string Key { private set; get; }
         /// <summary>
-        /// 简体中心
+        /// 简体中文
         /// </summary>
         public string ChineseSimplified { private set; get; }
         /// <summary>
-        /// 繁体中心
+        /// 繁体中文
         /// </summary>
         public string ChineseTraditional { private set; get; }
         /// <summary>
