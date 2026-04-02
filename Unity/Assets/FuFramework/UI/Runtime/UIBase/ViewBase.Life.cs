@@ -31,23 +31,24 @@ namespace FuFramework.UI.Runtime
             Visible      = true;
             UIView.alpha = 0;
 
-            // 界面打开动画
+            // 先刷新界面
+            OnOpen();
+
+            // 再执行打开动画
             switch (TweenType)
             {
                 case UITweenType.None:
                     UIView.alpha = 1;
-                    OnOpen();
                     return;
                 case UITweenType.Fade:
-                    UIView.TweenFade(1, TweenDuration).OnComplete(OnOpen);
+                    UIView.TweenFade(1, TweenDuration);
                     return;
                 case UITweenType.Custom:
                     UIView.alpha = 1;
-                    OnCustomTweenOpen();
+                    DoCustomOpenTween();
                     return;
                 default:
                     UIView.alpha = 1;
-                    OnOpen();
                     return;
             }
         }
@@ -120,7 +121,7 @@ namespace FuFramework.UI.Runtime
                     UIView.TweenFade(0, TweenDuration).OnComplete(OnClose);
                     return;
                 case UITweenType.Custom:
-                    OnCustomTweenClose();
+                    CustomCloseTween();
                     return;
                 default:
                     OnClose();
@@ -172,31 +173,16 @@ namespace FuFramework.UI.Runtime
         /// <param name="e"></param>
         private void _OnLanguageChanged(object sender, GameEventArgs e)
         {
-            if (Visible) 
+            if (Visible)
                 OnOpen();
-        }
-
-        /// <summary>
-        /// 自定义界面打开动画
-        /// </summary>
-        private void OnCustomTweenOpen()
-        {
-            var gTween = DoCustomTweenOpen();
-            if (gTween == null)
-            {
-                OnOpen();
-                return;
-            }
-
-            gTween.OnComplete(OnOpen);
         }
 
         /// <summary>
         /// 自定义界面关闭动画
         /// </summary>
-        private void OnCustomTweenClose()
+        private void CustomCloseTween()
         {
-            var gTween = DoCustomTweenClose();
+            var gTween = DoCustomCloseTween();
             if (gTween == null)
             {
                 OnClose();
@@ -265,12 +251,12 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 自定义界面打开动画(可重写实现属于自身自定义动画)
         /// </summary>
-        protected virtual GTweener DoCustomTweenOpen() => null;
+        protected virtual void DoCustomOpenTween() { }
 
         /// <summary>
         /// 自定义界面关闭动画(可重写实现属于自身自定义动画)
         /// </summary>
-        protected virtual GTweener DoCustomTweenClose() => null;
+        protected virtual GTweener DoCustomCloseTween() => null;
 
         #endregion
     }
