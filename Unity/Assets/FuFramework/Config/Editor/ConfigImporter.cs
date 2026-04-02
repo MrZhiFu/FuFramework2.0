@@ -1,7 +1,7 @@
-﻿using System;
-using UnityEditor;
+﻿using System.IO;
+using System.Diagnostics;
 using UnityEngine;
-using System.IO;
+using UnityEditor;
 using FuFramework.Core.Editor;
 
 // ReSharper disable once CheckNamespace
@@ -59,7 +59,8 @@ namespace FuFramework.Config.Editor
         private static void ExportConfig(DataTarget target)
         {
             var configDir = GetConfigPath();
-            var now       = DateTime.Now.Ticks;
+            var stopwatch = Stopwatch.StartNew();
+            
             var targetStr = target.ToString().ToLower();
             var scriptName = Application.platform == RuntimePlatform.WindowsEditor
                 ? $"gen-client-{targetStr}.bat"
@@ -71,17 +72,20 @@ namespace FuFramework.Config.Editor
 
             if (success)
             {
-                Debug.LogFormat("导入配置成功，耗时: {0} s.", ((DateTime.Now.Ticks - now) / TimeSpan.TicksPerSecond));
-
                 // 如果导出 JSON 格式的配置表，则移除启用二进制配置表的环境变量符号，否则添加启用二进制配置表的环境变量符号
                 if (target == DataTarget.Json)
+                {
                     ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableBinaryConfigSymbol);
+                }
                 else
+                {
                     ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableBinaryConfigSymbol);
+                }
 
-                // 刷新 Unity 资源
+                // 刷新并保存Unity资源
                 AssetDatabase.Refresh();
-                EditorUtility.DisplayDialog("成功", "配置表导入成功！", "确定");
+                AssetDatabase.SaveAssets();
+                EditorUtility.DisplayDialog("成功", $"配置表导入成功, 耗时{stopwatch.Elapsed.TotalSeconds:F2}s", "确定");
             }
             else
             {
@@ -94,10 +98,14 @@ namespace FuFramework.Config.Editor
         /// </summary>
         private static string GetConfigPath()
         {
-            var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, "..")); // 项目根目录：Assets 的上一级
-            var parentDir   = Path.GetFullPath(Path.Combine(projectRoot,          "..")); // 项目父目录：项目根目录的上一级
+            // 项目根目录：Assets 的上一级
+            var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
 
-            return Path.Combine(parentDir, "Config"); // Config 目录
+            // 项目父目录：项目根目录的上一级
+            var parentDir = Path.GetFullPath(Path.Combine(projectRoot, ".."));
+
+            // Config 目录
+            return Path.Combine(parentDir, "Config");
         }
     }
 }
