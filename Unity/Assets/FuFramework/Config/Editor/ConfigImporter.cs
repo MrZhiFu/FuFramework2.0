@@ -60,7 +60,7 @@ namespace FuFramework.Config.Editor
         {
             var configDir = GetConfigPath();
             var stopwatch = Stopwatch.StartNew();
-            
+
             var targetStr = target.ToString().ToLower();
             var scriptName = Application.platform == RuntimePlatform.WindowsEditor
                 ? $"gen-client-{targetStr}.bat"
