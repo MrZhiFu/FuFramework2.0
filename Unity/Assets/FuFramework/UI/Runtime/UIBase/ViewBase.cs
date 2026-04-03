@@ -95,7 +95,7 @@ namespace FuFramework.UI.Runtime
                 UIView.visible = value;
 
                 // 触发UI显示状态变化事件
-                Broadcast(UIVisibleChangedEventArgs.EventId, UIVisibleChangedEventArgs.Create(this, value, null));
+                Broadcast(ChangeUIVisibleEventArgs.EventId, ChangeUIVisibleEventArgs.Create(this, value, null));
             }
         }
 
