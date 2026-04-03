@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架链表类(结合一个缓存队列对链表节点的生成做了相当于缓存池的优化)
+    /// 游戏框架链表类(结合一个缓存队列对链表节点的生成做了优化)
     /// </summary>
     /// <typeparam name="T">指定链表的元素类型。</typeparam>
     public sealed class FuLinkedList<T> : ICollection<T>, ICollection

@@ -76,7 +76,7 @@ namespace FuFramework.Model.Runtime
         }
 
         /// <summary>
-        /// 创建指定类型的Model，并注入指定的View
+        /// 创建指定类型的Model
         /// </summary>
         /// <typeparam name="T">指定类型</typeparam>
         /// <returns></returns>
