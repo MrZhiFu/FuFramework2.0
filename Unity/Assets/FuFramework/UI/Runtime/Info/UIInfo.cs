@@ -6,6 +6,7 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面组中的界面信息。
+    /// 职责：存储界面组中的界面信息，包括界面、是否暂停、是否被覆盖等。
     /// </summary>
     public sealed class UIInfo : IReference
     {

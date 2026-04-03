@@ -8,7 +8,10 @@ namespace FuFramework.UI.Runtime
     {
         /// <summary>
         /// 界面实例对象。
-        /// 用来将界面FUI对象和界面实例对象绑定在一起，并提供界面实例对象回收的功能。
+        /// 职责：用来将界面UI对象和界面实例对象绑定在一起，并提供界面实例对象的释放功能。
+        /// 核心功能:
+        /// 1. 创建界面实例对象。
+        /// 2. 释放界面实例对象。
         /// </summary>
         private sealed class UIInstanceObject : ObjectBase
         {

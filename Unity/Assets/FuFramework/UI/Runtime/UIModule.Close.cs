@@ -4,7 +4,11 @@
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面管理器。
+    /// UI管理器分部类之一。
+    /// 职责：用于关闭UI界面。
+    /// 核心功能:
+    /// 1. 关闭界面(加入待回收队列，等待update轮询中回收)。
+    /// 2. 立即关闭界面(立即回收)。
     /// </summary>
     public sealed partial class UIModule
     {

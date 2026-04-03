@@ -40,8 +40,8 @@ namespace FuFramework.UI.Runtime
         public CloseUICompleteEventArgs()
         {
             SerialId = 0;
-            UIName = null;
-            UIGroup = null;
+            UIName   = null;
+            UIGroup  = null;
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace FuFramework.UI.Runtime
         {
             var closeUICompleteEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId = serialId;
-            closeUICompleteEventArgs.UIName = uiName;
-            closeUICompleteEventArgs.UIGroup = uiGroup;
+            closeUICompleteEventArgs.UIName   = uiName;
+            closeUICompleteEventArgs.UIGroup  = uiGroup;
             return closeUICompleteEventArgs;
         }
 
@@ -66,8 +66,8 @@ namespace FuFramework.UI.Runtime
         public override void Clear()
         {
             SerialId = 0;
-            UIName = null;
-            UIGroup = null;
+            UIName   = null;
+            UIGroup  = null;
         }
     }
 }

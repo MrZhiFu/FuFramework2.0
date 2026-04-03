@@ -6,7 +6,11 @@ using FuFramework.Timer.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 计时器订阅器-界面的计时器管理
+    /// 界面基类分部类之一。
+    /// 职责：提供一个计时器订阅器，用于管理界面的计时器。
+    /// 核心功能:
+    /// 1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
+    /// 2. 暂停，继续，取消，停止(单个/所有)计时器。
     /// </summary>
     public abstract partial class ViewBase
     {
@@ -24,7 +28,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="updateCallBack">计时器更新回调</param>
         /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-        public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update,
+                                        bool ignoreTimeScale = false)
         {
             TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }

@@ -13,30 +13,48 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// FGui的包管理器，
-    /// 主要处理包的资源加载，缓存，卸载等
+    /// FUI包管理器。
+    /// 职责：用于自行管理FUI包的资源加载，缓存，卸载等操作。
+    /// 核心功能:
+    /// 1. 异步加载FUI包。
+    /// 2. 缓存已加载的FUI包。
+    /// 3. 卸载FUI包。
     /// </summary>
     public class FuiPkgManager
     {
+        /// <summary>
         /// 缓存已加载的包的字典，key:包名，value：包
+        /// </summary>
         private readonly Dictionary<string, UIPackage> m_LoadedPkgDict = new();
 
+        /// <summary>
         /// 正在异步加载的包的字典，key:包名，value：异步加载任务
+        /// </summary>
         private readonly Dictionary<string, UniTask<UIPackage>> m_LoadingTasks = new();
 
+        /// <summary>
         /// 包加载的取消令牌源字典，用于正确取消加载任务
+        /// </summary>
         private readonly Dictionary<string, CancellationTokenSource> m_LoadingCts = new();
 
+        /// <summary>
         /// 包对应的资源加载器字典，key:包名，value：资源加载器，一个包对应一个资源加载器，用于加载包的描述文件和资源文件
+        /// </summary>
         private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
 
+        /// <summary>
         /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
+        /// </summary>
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
-        /// 从Resources中加载的包名
+        /// <summary>
+        /// 从Resources中加载的包名列表
+        /// </summary>
         private readonly List<string> m_FromResourcesPackages = new() { "Launcher" };
 
-        /// 不会被释放的包名
+        /// <summary>
+        /// 不会被释放的包名列表
+        /// </summary>
         private readonly List<string> m_NotReleasePackages = new() { "Common" };
 
         public FuiPkgManager()

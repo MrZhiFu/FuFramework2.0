@@ -6,7 +6,12 @@ using FuFramework.Event.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 事件订阅器-界面的普通事件管理
+    /// 界面基类分部类之一。
+    /// 职责：提供一个事件订阅器，用于管理界面的业务逻辑事件。
+    /// 核心功能:
+    /// 1. 订阅事件。
+    /// 2. 取消订阅事件。
+    /// 3. 分发事件。
     /// </summary>
     public abstract partial class ViewBase
     {
@@ -48,8 +53,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="eventArgs">事件对象</param>
         public void Broadcast(object sender, GameEventArgs eventArgs)
         {
-            FuGuard.NotNull(sender, nameof(sender));
-            FuGuard.NotNull(eventArgs, nameof(eventArgs));
+            FuGuard.NotNull(sender,        nameof(sender));
+            FuGuard.NotNull(eventArgs,     nameof(eventArgs));
             FuGuard.NotNull(EventRegister, "事件订阅器");
             EventRegister.Broadcast(sender, eventArgs);
         }

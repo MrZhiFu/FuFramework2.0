@@ -5,7 +5,12 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面管理器。
+    /// UI管理器分部类之一。
+    /// 职责：用于获取已加载的UI界面。
+    /// 核心功能:
+    /// 1. 判断是否存在界面。
+    /// 2. 获取界面。
+    /// 3. 获取顶部界面。
     /// </summary>
     public sealed partial class UIModule
     {

@@ -5,7 +5,12 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// UI事件订阅器-界面的UI事件管理
+    /// 界面基类分部类之一。
+    /// 职责：提供一个UI事件订阅器，用于管理界面的UI事件。
+    /// 核心功能:
+    /// 1. 添加UI上指定组件的监听事件。
+    /// 2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
+    /// 3. 移除UI上指定组件的监听事件。
     /// </summary>
     public abstract partial class ViewBase
     {

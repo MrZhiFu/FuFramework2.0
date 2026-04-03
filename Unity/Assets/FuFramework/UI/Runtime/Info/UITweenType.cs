@@ -3,7 +3,7 @@
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面打开/关闭时的动画类型
+    /// 界面打开/关闭时的动画类型。
     /// </summary>
     public enum UITweenType
     {

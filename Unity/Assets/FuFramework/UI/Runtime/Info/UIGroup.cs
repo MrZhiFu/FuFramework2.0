@@ -8,6 +8,12 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面组。
+    /// 职责：管理同一层级下的多个界面，继承自 FairyGUI 的 GComponent。
+    /// 核心功能:
+    ///  1. 界面列表管理 (FuLinkedList[UIInfo])。
+    ///  2. 暂停/恢复整个组。
+    ///  3. 界面深度排序。
+    ///  4. 被覆盖/恢复处理。
     /// </summary>
     public sealed class UIGroup : GComponent
     {
@@ -19,7 +25,6 @@ namespace FuFramework.UI.Runtime
 
         /// 界面组内的界面列表
         private readonly FuLinkedList<UIInfo> m_UIInfoList = new();
-
 
 
         /// <summary>
@@ -70,12 +75,12 @@ namespace FuFramework.UI.Runtime
             var current = m_UIInfoList.First;
             while (current != null)
             {
-                if (!current.Value.Paused && current.Value.View.Visible)  // 只更新未暂停且可见的界面
+                if (!current.Value.Paused && current.Value.View.Visible) // 只更新未暂停且可见的界面
                 {
                     current.Value.View._OnUpdate(deltaTime, unscaledDeltaTime);
                 }
-                
-                current = current.Next;  // 继续处理下一个界面
+
+                current = current.Next; // 继续处理下一个界面
             }
         }
 

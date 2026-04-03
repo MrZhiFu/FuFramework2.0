@@ -7,7 +7,13 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面管理器.打开界面(打开一个界面只支持异步方式)
+    /// UI管理器分部类之一。
+    /// 职责：用于打开UI界面。
+    /// 核心功能:
+    /// 1. 异步打开UI界面。
+    /// 2. 创建FairyUI界面。
+    /// 3. 设置界面实例是否加锁，如果加锁，则不会被释放(销毁)。
+    /// 4. 设置界面实例对象的优先级。优先级小的实例会优先被释放。
     /// </summary>
     public sealed partial class UIModule
     {

@@ -3,7 +3,7 @@
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面层级
+    /// 界面层级。
     /// </summary>
     public enum UILayer
     {

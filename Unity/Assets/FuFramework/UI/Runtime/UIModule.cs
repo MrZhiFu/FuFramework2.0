@@ -11,7 +11,8 @@ using FuFramework.ObjectPool.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面管理器。
+    /// UI管理器。
+    /// 职责：用于管理所有UI界面的加载，关闭，释放等操作。
     /// </summary>
     [ModuleDependency(typeof(ObjectPoolModule), typeof(AssetModule), typeof(EventModule))]
     public sealed partial class UIModule : FuModule
@@ -22,17 +23,40 @@ namespace FuFramework.UI.Runtime
         /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
         protected override int Priority => ModulePriority.UI;
 
-        private Dictionary<int, string> m_LoadingDict;      // 正在加载中的界面字典, key为界面Id, value为界面名称
-        private Queue<ViewBase>         m_WaitRecycleQueue; // 关闭后待回收的界面集合
+        /// <summary>
+        /// 正在加载中的界面字典, key为界面Id, value为界面名称
+        /// </summary>
+        private Dictionary<int, string> m_LoadingDict;
 
-        private EventModule      m_EventModule;      // 事件组件
-        private ObjectPoolModule m_ObjectPoolModule; // 对象池管理器
+        /// <summary>
+        /// 关闭后待回收的界面集合
+        /// </summary>
+        private Queue<ViewBase> m_WaitRecycleQueue;
 
-        private ObjectPoolModule.ObjectPool<UIInstanceObject> m_InstancePool; // 界面实例对象池
+        /// <summary>
+        /// 事件组件
+        /// </summary>
+        private EventModule m_EventModule;
 
-        public FuiPkgManager PkgManager { get; private set; } // FGui的包管理器
+        /// <summary>
+        /// 对象池管理器
+        /// </summary>
+        private ObjectPoolModule m_ObjectPoolModule;
 
-        private int m_SerialId; // 界面序列号，每打开一个界面就加1
+        /// <summary>
+        /// 界面实例对象池
+        /// </summary>
+        private ObjectPoolModule.ObjectPool<UIInstanceObject> m_InstancePool;
+
+        /// <summary>
+        /// FGui的包管理器
+        /// </summary>
+        public FuiPkgManager PkgManager { get; private set; }
+
+        /// <summary>
+        /// 界面自增序列号，每打开一个界面就加1
+        /// </summary>
+        private int m_SerialId;
 
 
         [Header("界面实例对象池自动释放可释放对象的间隔秒数")]

@@ -39,9 +39,9 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public OpenUIFailureEventArgs()
         {
-            SerialId  = 0;
-            UIName    = null;
-            UserData  = null;
+            SerialId = 0;
+            UIName   = null;
+            UserData = null;
         }
 
         /// <summary>

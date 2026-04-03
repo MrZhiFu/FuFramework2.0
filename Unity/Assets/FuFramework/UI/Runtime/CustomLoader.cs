@@ -14,7 +14,8 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// FUI自定义Loader加载器的LRU缓存机制
+    /// FUI自定义Loader加载器的LRU缓存器
+    /// 职责：提供一个LRU缓存机制，用于缓存加载的纹理资源。
     /// </summary>
     public class LRUCache
     {
@@ -23,28 +24,43 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private class CacheItem
         {
+            /// <summary>
             /// 缓存的Key
+            /// </summary>
             public readonly string Key;
 
+            /// <summary>
             /// 缓存的纹理
+            /// </summary>
             public NTexture Texture;
 
             public CacheItem(string key, NTexture texture)
             {
-                Key = key;
+                Key     = key;
                 Texture = texture;
             }
         }
 
-        private readonly int m_MaxCapacity; // 最大容量
-        private readonly Dictionary<string, CacheItem> m_CacheDict; // 缓存字典，Key为资源路径，Value为缓存项
-        private readonly LinkedList<CacheItem> m_LruList; // 最近使用列表
+        /// <summary>
+        /// 最大容量
+        /// </summary>
+        private readonly int m_MaxCapacity;
+
+        /// <summary>
+        /// 缓存字典，Key为资源路径，Value为缓存项
+        /// </summary>
+        private readonly Dictionary<string, CacheItem> m_CacheDict;
+
+        /// <summary>
+        /// 最近使用列表
+        /// </summary>
+        private readonly LinkedList<CacheItem> m_LruList;
 
         public LRUCache(int maxCapacity)
         {
             m_MaxCapacity = maxCapacity;
-            m_CacheDict = new Dictionary<string, CacheItem>();
-            m_LruList = new LinkedList<CacheItem>();
+            m_CacheDict   = new Dictionary<string, CacheItem>();
+            m_LruList     = new LinkedList<CacheItem>();
         }
 
         /// <summary>
@@ -55,7 +71,9 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         public NTexture Get(string key)
         {
-            if (!m_CacheDict.TryGetValue(key, out var item)) return null; // 纹理未找到
+            // 缓存的纹理未找到
+            if (!m_CacheDict.TryGetValue(key, out var item))
+                return null;
 
             // 移动到最近使用的位置
             m_LruList.Remove(item);
@@ -133,15 +151,16 @@ namespace FuFramework.UI.Runtime
     }
 
     /// <summary>
-    /// FairyGUI 自定义Loader加载器，
-    /// 功能：
-    /// 1.实现了网络纹理资源和YooAsset包内纹理资源的加载
-    /// 2.实现了LRU缓存机制，避免重复加载资源
+    /// 自定义FUI的Loader加载器。
+    /// 职责：提供一个自定义的Loader加载器，用于加载Loader的纹理资源。
+    /// 核心功能:
+    /// 1. 实现了网络纹理资源和YooAsset包内纹理资源的加载。
+    /// 2. 实现了LRU缓存机制，避免重复加载资源。
     /// </summary>
     public sealed class CustomLoader : GLoader
     {
         /// <summary>
-        /// Loader 纹理LRU缓存
+        /// Loader纹理LRU缓存
         /// </summary>
         private static readonly LRUCache Cache = new(100);
 
@@ -154,7 +173,7 @@ namespace FuFramework.UI.Runtime
         /// 资源管理器
         /// </summary>
         private readonly AssetModule m_AssetModule;
-        
+
         public CustomLoader()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
@@ -163,7 +182,7 @@ namespace FuFramework.UI.Runtime
                 FuLogger.LogFatal("[CustomLoader] 资源管理器不存在!");
                 return;
             }
-            
+
             m_CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
         }
 
@@ -193,9 +212,9 @@ namespace FuFramework.UI.Runtime
                     }
                     else
                     {
-                        var hash = Utility.Hash.MD5.Hash(url);
-                        var path = $"{m_CachePath}{hash}.png";
-                        var isExists = Utility.File.IsExists(path);
+                        var hash      = Utility.Hash.MD5.Hash(url);
+                        var path      = $"{m_CachePath}{hash}.png";
+                        var isExists  = Utility.File.IsExists(path);
                         var texture2D = Texture2D.whiteTexture;
 
                         if (isExists)
@@ -205,9 +224,9 @@ namespace FuFramework.UI.Runtime
                         }
                         else
                         {
-                            if (!Directory.Exists(m_CachePath)) 
+                            if (!Directory.Exists(m_CachePath))
                                 Directory.CreateDirectory(m_CachePath);
-                            
+
                             var webBufferResult = await ModuleManager.GetModule<WebModule>().GetToBytes(url, null);
                             Utility.File.WriteAllBytes(path, webBufferResult.Result);
                             texture2D.LoadImage(webBufferResult.Result);

@@ -7,12 +7,18 @@ using FuFramework.ReferencePool.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// FUI事件注册器，更方便清晰的管理FUI的事件关系。
-    /// 主要负责管理该界面或该组件的响应UI管理
+    /// FUI事件注册器
+    /// 职责：用于管理FUI组件的UI响应事件。
+    /// 核心功能:
+    /// 1. 添加UI上指定组件的监听事件。
+    /// 2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
+    /// 3. 移除UI上指定组件的监听事件。
     /// </summary>
     public class FuiEventRegister : IReference
     {
-        /// 记录该界面的可响应UI的事件字典, key: 可相应UI元素，如按钮，value：该UI元素上的可响应事件回调
+        /// <summary>
+        /// 记录UI响应事件的字典, key: 可相应UI元素，如按钮，value：该UI元素上的可响应事件回调
+        /// </summary>
         private readonly Dictionary<EventListener, List<EventCallback1>> m_UIEventListenerDic = new();
 
         /// <summary>

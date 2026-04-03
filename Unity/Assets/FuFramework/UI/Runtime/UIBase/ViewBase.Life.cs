@@ -6,7 +6,15 @@ using FuFramework.Event.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// 界面基类: 生命周期相关
+    /// 界面基类分部类之一。
+    /// 职责：提供界面的生命周期相关方法。
+    /// 核心功能:
+    /// 1. 初始化。
+    /// 2. 打开。
+    /// 3. 轮询。
+    /// 4. 暂停。
+    /// 5. 恢复。
+    /// 6. 销毁。
     /// </summary>
     public abstract partial class ViewBase
     {
