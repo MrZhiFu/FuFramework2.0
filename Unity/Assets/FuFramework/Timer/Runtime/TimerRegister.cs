@@ -9,7 +9,10 @@ namespace FuFramework.Timer.Runtime
 {
     /// <summary>
     /// 计时器注册器。
-    /// 可用于单独管理属于自己模块的相关计时器
+    /// 职责: 用于单独管理属于自己模块的相关计时器。
+    /// 核心功能:
+    /// 1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器
+    /// 2. 暂停，继续，取消，停止(单个/所有)计时器
     /// </summary>
     public class TimerRegister : IReference
     {
@@ -42,7 +45,6 @@ namespace FuFramework.Timer.Runtime
         {
             m_TimerList.Remove(timerId);
         }
-
 
         /// <summary>
         /// 启动一个倒计时计时器
@@ -159,7 +161,7 @@ namespace FuFramework.Timer.Runtime
                 StopTimer(timerId);
             }
         }
-        
+
         /// <summary>
         /// 检查计时器是否存在
         /// </summary>
@@ -173,7 +175,7 @@ namespace FuFramework.Timer.Runtime
         /// <param name="timerId"></param>
         /// <returns></returns>
         public bool IsTimerPaused(int timerId) => m_TimerModule.IsTimerPaused(timerId);
-        
+
         /// <summary>
         /// 清理
         /// </summary>
