@@ -1,4 +1,4 @@
-﻿using FuFramework.Core.Runtime;
+using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
@@ -29,21 +29,20 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 关闭界面(加入待回收队列，等待update轮询中回收)。
+        /// 关闭界面(加入待回收队列，等待update下一帧回收)。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">界面类型。</typeparam>
         public void CloseUI<T>() where T : ViewBase
         {
-            var uis = GetUIs<T>(typeof(T).Name);
-            foreach (var ui in uis)
+            var view = GetUI<T>();
+            if (view != null)
             {
-                CloseUI(ui);
-                break;
+                CloseUI(view);
             }
         }
 
         /// <summary>
-        /// 关闭界面(加入待回收队列，等待update轮询中回收)。
+        /// 关闭界面(加入待回收队列，等待update下一帧回收)。
         /// </summary>
         /// <param name="view">要关闭的界面。</param>
         public void CloseUI(ViewBase view)
@@ -73,6 +72,7 @@ namespace FuFramework.UI.Runtime
             view._OnClose();
             uiGroup.Refresh();
 
+            // 抛出关闭界面完成事件
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
             m_EventModule.Broadcast(this, closeUICompleteEventArgs);
 
@@ -99,14 +99,13 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 立即关闭界面(立即回收)。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">界面类型。</typeparam>
         public void CloseUINow<T>() where T : ViewBase
         {
-            var uis = GetUIs<T>(typeof(T).Name);
-            foreach (var ui in uis)
+            var view = GetUI<T>();
+            if (view != null)
             {
-                CloseUINow(ui);
-                break;
+                CloseUINow(view);
             }
         }
 
@@ -141,6 +140,7 @@ namespace FuFramework.UI.Runtime
             view._OnClose();
             uiGroup.Refresh();
 
+            // 抛出关闭界面完成事件
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
             m_EventModule.Broadcast(this, closeUICompleteEventArgs);
 

@@ -8,23 +8,23 @@ namespace FuFramework.UI.Runtime
     {
         /// <summary>
         /// 界面实例对象。
-        /// 职责：用来将界面UI对象和界面实例对象绑定在一起，并提供界面实例对象的释放功能。
+        /// 职责：创建和释放界面实例对象。
         /// 核心功能:
         /// 1. 创建界面实例对象。
         /// 2. 释放界面实例对象。
         /// </summary>
-        private sealed class UIInstanceObject : ObjectBase
+        private sealed class ViewObject : ObjectBase
         {
             /// <summary>
             /// 创建界面实例对象。
             /// </summary>
-            /// <param name="name"></param>
+            /// <param name="uiName"></param>
             /// <param name="viewBase"></param>
             /// <returns></returns>
-            public static UIInstanceObject Create(string name, ViewBase viewBase)
+            public static ViewObject Create(string uiName, ViewBase viewBase)
             {
-                var uiInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<UIInstanceObject>();
-                uiInstanceObject.Initialize(name, viewBase);
+                var uiInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<ViewObject>();
+                uiInstanceObject.Initialize(uiName, viewBase);
                 return uiInstanceObject;
             }
 

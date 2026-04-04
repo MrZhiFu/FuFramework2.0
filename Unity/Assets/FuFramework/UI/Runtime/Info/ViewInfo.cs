@@ -8,7 +8,7 @@ namespace FuFramework.UI.Runtime
     /// 界面组中的界面信息。
     /// 职责：存储界面组中的界面信息，包括界面、是否暂停、是否被覆盖等。
     /// </summary>
-    public sealed class UIInfo : IReference
+    public sealed class ViewInfo : IReference
     {
         /// <summary>
         /// 界面。
@@ -31,10 +31,10 @@ namespace FuFramework.UI.Runtime
         /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="FuException">界面为空时抛出。</exception>
-        public static UIInfo Create(ViewBase view)
+        public static ViewInfo Create(ViewBase view)
         {
             if (view == null) throw new FuException("[UIInfo] ui界面逻辑实例为空.");
-            var uiInfo = ReferencePool.Runtime.ReferencePool.Acquire<UIInfo>();
+            var uiInfo = ReferencePool.Runtime.ReferencePool.Acquire<ViewInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;

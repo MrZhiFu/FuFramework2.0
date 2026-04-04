@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
@@ -20,40 +20,44 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 打开界面。
         /// </summary>
-        /// <param name="userData"></param>
-        /// <param name="isMultiple"></param>
-        /// <typeparam name="T"></typeparam>
-        public void OpenUI<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
+        /// <param name="userData">用户自定义数据。</param>
+        /// <typeparam name="T">界面类型。</typeparam>
+        public void OpenUI<T>(object userData = null) where T : ViewBase, new()
         {
-            _OpenUIAsync<T>(userData, isMultiple).Forget();
+            _OpenUIAsync<T>(userData).Forget();
         }
 
         /// <summary>
         /// 打开界面。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isMultiple">是否允许多个界面实例</param>
-        /// <returns>界面的序列编号。</returns>
-        public async UniTask<T> OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
+        /// <returns>界面实例。</returns>
+        public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : ViewBase, new()
         {
-            return await _OpenUIAsync<T>(userData, isMultiple);
+            return await _OpenUIAsync<T>(userData);
         }
 
         /// <summary>
         /// 打开界面。(内部使用)
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
-        /// <param name="isMultiple">是否允许多个界面实例</param>
-        /// <returns></returns>
-        private async UniTask<T> _OpenUIAsync<T>(object userData = null, bool isMultiple = false) where T : ViewBase, new()
+        /// <returns>界面实例。</returns>
+        private async UniTask<T> _OpenUIAsync<T>(object userData = null) where T : ViewBase, new()
         {
             var uiName = typeof(T).Name;
 
-            // 检查是否已经在加载中（考虑isMultiple参数）
-            if (!isMultiple && IsLoadingUI(uiName))
+            // 检查是否已经在加载中
+            if (IsLoadingUI(uiName))
             {
                 FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经正在加载.");
                 return null;
+            }
+
+            // 检查是否已存在该界面
+            if (HasUI(uiName))
+            {
+                FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经存在，不能重复打开.");
+                return GetUI<T>();
             }
 
             // 分配临时序列号，用于管理加载状态
@@ -66,35 +70,33 @@ namespace FuFramework.UI.Runtime
             {
                 T view;
 
-                // 获取界面实例对象，如果对象池中存在并且不允许使用多个实例，则直接使用对象池中的对象
-                var uiInstanceObject = m_InstancePool.Spawn(uiName);
-                if (uiInstanceObject != null && isMultiple == false)
+                // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
+                var uiIns = m_InstancePool.Spawn(uiName);
+                if (uiIns != null)
                 {
-                    view = uiInstanceObject.Target as T;
+                    view = uiIns.Target as T;
 
-                    // 使用临时序列号创建界面
-                    return CreateUIView(view, tempSerialId, false, userData);
+                    // 使用临时序列号创建Fui界面
+                    return CreateFuiView(view, tempSerialId, false, userData);
                 }
 
                 // 创建界面实例对象
-                view             = new T();
-                uiInstanceObject = UIInstanceObject.Create(view.UIName, view);
-                m_InstancePool.Register(uiInstanceObject, true);
+                view  = new T();
+                uiIns = ViewObject.Create(view.UIName, view);
+                m_InstancePool.Register(uiIns, true);
 
-                // UI包已经加载过，则直接创建界面
-                if (PkgManager == null) throw new FuException("[UIModule] FuiPkgManager不存在.");
-
+                // UI包已经加载过，则直接创建Fui界面
                 if (PkgManager.HasPackage(view.PackageName))
                 {
-                    // 使用临时序列号创建界面
-                    return CreateUIView(view, tempSerialId, true, userData);
+                    // 使用临时序列号创建Fui界面
+                    return CreateFuiView(view, tempSerialId, true, userData);
                 }
 
-                // UI包没有加载过，则等待加载UI包，加载完成后再创建界面
+                // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
                 await PkgManager.AddPackageAsync(view.PackageName);
 
-                // 使用临时序列号创建界面
-                return CreateUIView(view, tempSerialId, true, userData);
+                // 使用临时序列号创建Fui界面
+                return CreateFuiView(view, tempSerialId, true, userData);
             }
             finally
             {
@@ -111,7 +113,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateUIView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : ViewBase, new()
+        private T CreateFuiView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : ViewBase, new()
         {
             try
             {
@@ -126,10 +128,7 @@ namespace FuFramework.UI.Runtime
                 // FUI界面加入界面组
                 var uiGroup = view.UIGroup;
                 uiGroup.AddChild(view.UIView);
-                if (!uiGroup.InternalHasUI(view.UIName, view))
-                {
-                    uiGroup.AddUI(view);
-                }
+                uiGroup.AddUI(view);
 
                 view._OnOpen();    // 界面打开回调
                 uiGroup.Refresh(); // 刷新界面组

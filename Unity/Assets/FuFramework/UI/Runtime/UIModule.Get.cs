@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -91,56 +91,38 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 获取最顶部界面。
+        /// 获取指定层级中最顶部的界面。
         /// </summary>
-        /// <returns></returns>
+        /// <param name="uiLayer">界面层级，为null时返回所有层级中最顶部的界面。</param>
+        /// <returns>最顶部的界面。</returns>
         public T GetTopUI<T>(UILayer? uiLayer = null) where T : ViewBase
         {
+            // 获取指定层级的顶部界面
+            if (uiLayer.HasValue)
+            {
+                if (m_UIGroupDict.TryGetValue(uiLayer.Value, out var group))
+                {
+                    return group.CurrentViewBase as T;
+                }
+
+                return null;
+            }
+
+            // 获取所有层级中最顶部的界面（层级值最大的）
+            ViewBase topView  = null;
+            var      maxLayer = int.MinValue;
+
             foreach (var (layer, group) in m_UIGroupDict)
             {
-                if (uiLayer == null)
-                    return group.CurrentViewBase as T;
-                
-                if (layer != uiLayer.Value) continue;
-                return group.CurrentViewBase as T;
+                var layerValue = (int)layer;
+                if (layerValue > maxLayer && group.CurrentViewBase != null)
+                {
+                    maxLayer = layerValue;
+                    topView  = group.CurrentViewBase;
+                }
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// 获取所有界面组下的该名称的界面。
-        /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
-        /// <returns>要获取的界面。</returns>
-        public T[] GetUIs<T>(string uiName) where T : ViewBase
-        {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-
-            var results = new List<T>();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                results.AddRange(group.GetUIs<T>(uiName));
-            }
-
-            return results.ToArray();
-        }
-
-        /// <summary>
-        /// 获取所有界面组下的该类型界面。
-        /// </summary>
-        /// <param name="uiName">界面名称。</param>
-        /// <param name="results">结果列表。</param>
-        public void GetUIs(string uiName, List<ViewBase> results)
-        {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            FuGuard.NotNull(results, nameof(results));
-
-            results.Clear();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                results.AddRange(group.GetAllUIs());
-            }
+            return topView as T;
         }
 
         /// <summary>

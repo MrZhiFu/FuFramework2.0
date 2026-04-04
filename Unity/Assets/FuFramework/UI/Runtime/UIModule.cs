@@ -46,7 +46,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 界面实例对象池
         /// </summary>
-        private ObjectPoolModule.ObjectPool<UIInstanceObject> m_InstancePool;
+        private ObjectPoolModule.ObjectPool<ViewObject> m_InstancePool;
 
         /// <summary>
         /// FGui的包管理器
@@ -105,7 +105,7 @@ namespace FuFramework.UI.Runtime
             m_WaitRecycleQueue = new Queue<ViewBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-            m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<UIInstanceObject>("UIInstanceObjectPool");
+            m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<ViewObject>("UIInstanceObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
             PkgManager    = new FuiPkgManager();
@@ -132,12 +132,14 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
+            // 回收等待回收的界面
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var ui = m_WaitRecycleQueue.Dequeue();
                 RecycleUI(ui);
             }
 
+            // 驱动界面组帧更新
             foreach (var (_, group) in m_UIGroupDict)
             {
                 if (group.Pause) continue;

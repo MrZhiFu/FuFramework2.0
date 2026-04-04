@@ -1,4 +1,4 @@
-﻿using FairyGUI;
+using FairyGUI;
 using System.Linq;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace FuFramework.UI.Runtime
         public UILayer Layer { get; private set; }
 
         /// 界面组内的界面列表
-        private readonly FuLinkedList<UIInfo> m_UIInfoList = new();
+        private readonly FuLinkedList<ViewInfo> m_UIInfoList = new();
 
 
         /// <summary>
@@ -75,12 +75,17 @@ namespace FuFramework.UI.Runtime
             var current = m_UIInfoList.First;
             while (current != null)
             {
-                if (!current.Value.Paused && current.Value.View.Visible) // 只更新未暂停且可见的界面
+                var uiInfo = current.Value;
+                var view   = uiInfo.View;
+
+                // 只更新未暂停且可见的界面
+                if (!uiInfo.Paused && view.Visible)
                 {
-                    current.Value.View._OnUpdate(deltaTime, unscaledDeltaTime);
+                    view._OnUpdate(deltaTime, unscaledDeltaTime);
                 }
 
-                current = current.Next; // 继续处理下一个界面
+                // 继续处理下一个界面
+                current = current.Next;
             }
         }
 
@@ -89,7 +94,23 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUI(int serialId) => m_UIInfoList.Any(uiInfo => uiInfo.View.SerialId == serialId);
+        public bool HasUI(int serialId)
+        {
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                if (uiInfo.View.SerialId == serialId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 界面组中是否存在界面。
+        /// </summary>
+        /// <typeparam name="T">界面类型。</typeparam>
+        /// <returns></returns>
+        public bool HasUI<T>() where T : ViewBase => HasUI(typeof(T).Name);
 
         /// <summary>
         /// 界面组中是否存在界面。
@@ -98,8 +119,14 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            if (string.IsNullOrEmpty(uiName)) throw new FuException("[UIGroup] 传入的UI界面资源名称为空.");
-            return m_UIInfoList.Any(uiInfo => uiInfo.View.UIName == uiName);
+            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                if (uiInfo.View.UIName == uiName)
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -109,7 +136,15 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(int serialId)
         {
-            return (from uiInfo in m_UIInfoList where uiInfo.View.SerialId == serialId select uiInfo.View).FirstOrDefault();
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                if (uiInfo.View.SerialId == serialId)
+                {
+                    return uiInfo.View;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -126,33 +161,17 @@ namespace FuFramework.UI.Runtime
         public ViewBase GetUI(string uiName)
         {
             FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            return (from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View).FirstOrDefault();
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                if (uiInfo.View.UIName == uiName)
+                {
+                    return uiInfo.View;
+                }
+            }
+
+            return null;
         }
 
-        /// <summary>
-        /// 从界面组中获取界面。
-        /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
-        /// <returns>要获取的界面。</returns>
-        public T[] GetUIs<T>(string uiName) where T : ViewBase
-        {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            return (from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View as T).ToArray();
-        }
-
-        /// <summary>
-        /// 从界面组中获取界面。
-        /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
-        /// <param name="results">要获取的界面。</param>
-        public void GetUIs(string uiName, List<ViewBase> results)
-        {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
-            FuGuard.NotNull(results, nameof(results));
-
-            results.Clear();
-            results.AddRange(from uiInfo in m_UIInfoList where uiInfo.View.UIName == uiName select uiInfo.View);
-        }
 
         /// <summary>
         /// 从界面组中获取所有界面。
@@ -160,7 +179,15 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面组中的所有界面。</returns>
         public ViewBase[] GetAllUIs()
         {
-            return m_UIInfoList.Select(uiInfo => uiInfo.View).ToArray();
+            var result = new ViewBase[UICount];
+
+            var i = 0;
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                result[i++] = uiInfo.View;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -171,7 +198,10 @@ namespace FuFramework.UI.Runtime
         {
             FuGuard.NotNull(results, nameof(results));
             results.Clear();
-            results.AddRange(m_UIInfoList.Select(uiInfo => uiInfo.View));
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                results.Add(uiInfo.View);
+            }
         }
 
         /// <summary>
@@ -180,7 +210,11 @@ namespace FuFramework.UI.Runtime
         /// <param name="view">要增加的界面。</param>
         public void AddUI(ViewBase view)
         {
-            m_UIInfoList.AddFirst(UIInfo.Create(view));
+            if (HasUI(view.SerialId))
+                throw new FuException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+
+            var uiInfo = ViewInfo.Create(view);
+            m_UIInfoList.AddFirst(uiInfo);
         }
 
         /// <summary>
@@ -196,6 +230,7 @@ namespace FuFramework.UI.Runtime
             if (!m_UIInfoList.Remove(uiInfo))
                 throw new FuException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
+            // 释放界面信息实例
             ReferencePool.Runtime.ReferencePool.Release(uiInfo);
         }
 
@@ -208,96 +243,97 @@ namespace FuFramework.UI.Runtime
             var current = m_UIInfoList.First;
 
             var isCover = false;   // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
-            var isPause = m_Pause; // 是否暂停的标志(来自成员变量)
-            var depth   = UICount; //初始深度值(从界面数量开始递减)
+            var isPause = m_Pause; // 是否暂停的标志，初始值由组暂停状态决定，后续根据界面暂停状态更新
+            var depth   = UICount; // 初始深度值(从界面数量开始递减)
 
             while (current is { Value: not null })
             {
-                // 预先获取下一个节点（因为当前节点可能在处理过程中被移除）
-                var next = current.Next;
+                // 先缓存下一个节点，因为回调可能修改链表结构（如关闭当前界面）
+                var next   = current.Next;
+                var uiInfo = current.Value;
+
+                // 节点可能已被销毁，跳过继续处理下一个节点
+                if (uiInfo?.View == null)
+                {
+                    current = next;
+                    continue;
+                }
+
+                var view = uiInfo.View;
 
                 // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
-                current.Value.View._OnDepthChanged(depth--);
+                view._OnDepthChanged(depth--);
 
-                if (current.Value == null) return; // 可能在回调中被销毁，所有这里判断下
+                // 处理被暂停的界面状态
+                HandlePauseState(uiInfo, ref isPause);
 
-                // 暂停状态下的处理逻辑，第一个界面不会走到这里，只有第二个及以后的界面才会被暂停
-                if (isPause)
-                {
-                    if (!current.Value.Covered)
-                    {
-                        current.Value.Covered = true;
-                        current.Value.View._OnBeCover(); // 触发被覆盖回调
-                        if (current.Value == null) return;
-                    }
+                // 处理被覆盖的界面状态
+                HandleCoverState(uiInfo, ref isCover);
 
-                    if (!current.Value.Paused)
-                    {
-                        current.Value.Paused = true;
-                        current.Value.View._OnPause(); // 触发暂停回调
-                        if (current.Value == null) return;
-                    }
-                }
-
-                // 正常状态下的处理逻辑
-                else
-                {
-                    if (current.Value.Paused)
-                    {
-                        current.Value.Paused = false;
-                        current.Value.View._OnResume(); // 触发恢复回调
-                        if (current.Value == null) return;
-                    }
-
-                    // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
-                    if (current.Value.View.PauseCoveredUI)
-                        isPause = true;
-
-                    if (isCover)
-                    {
-                        // 需要覆盖后续界面，第一个界面不会走到这里，只有第二个及以后的界面才会被暂停
-                        if (!current.Value.Covered)
-                        {
-                            current.Value.Covered = true;
-                            current.Value.View._OnBeCover(); // 触发被覆盖回调
-                            if (current.Value == null) return;
-                        }
-                    }
-                    else
-                    {
-                        if (current.Value.Covered)
-                        {
-                            current.Value.Covered = false;
-                            current.Value.View._OnReveal(); // 触发重新显示回调
-                            if (current.Value == null) return;
-                        }
-
-                        isCover = true; // 后续界面需要被覆盖
-                    }
-                }
-
-                current = next; // 移动到下一个节点
+                // 移动到下一个节点
+                current = next;
             }
         }
 
         /// <summary>
-        /// 检查界面组中是否存在指定界面。
+        /// 处理被暂停的界面状态。
+        /// 顶部的第一个界面不会走到暂停逻辑，只有第二个及以后的界面才会被暂停。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
-        /// <param name="view">要检查的界面。</param>
-        /// <returns>是否存在指定界面。</returns>
-        public bool InternalHasUI(string uiName, ViewBase view)
+        /// <param name="viewInfo">界面信息。</param>
+        /// <param name="isPause">是否暂停的标志。</param>
+        private void HandlePauseState(ViewInfo viewInfo, ref bool isPause)
         {
-            return m_UIInfoList.Any(uiInfo => uiInfo.View.UIName == uiName && uiInfo.View == view);
+            // 先根据当前暂停状态执行暂停/恢复（第一个界面 isPause=false，不会触发暂停）
+            if (isPause && !viewInfo.Paused)
+            {
+                viewInfo.Paused = true;
+                viewInfo.View._OnPause(); // 触发暂停回调
+            }
+            else if (!isPause && viewInfo.Paused)
+            {
+                viewInfo.Paused = false;
+                viewInfo.View._OnResume(); // 触发恢复回调
+            }
+
+            // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
+            if (!isPause && viewInfo.View.PauseCoveredUI)
+            {
+                isPause = true;
+            }
+        }
+
+        /// <summary>
+        /// 处理被覆盖的界面状态。
+        /// 顶部的第一个界面不会走到这里，只有第二个及以后的界面才会被覆盖。
+        /// </summary>
+        /// <param name="viewInfo">界面信息。</param>
+        /// <param name="isCover">是否覆盖的标志。</param>
+        private void HandleCoverState(ViewInfo viewInfo, ref bool isCover)
+        {
+            if (isCover && !viewInfo.Covered)
+            {
+                viewInfo.Covered = true;
+                viewInfo.View._OnBeCover(); // 触发被覆盖回调
+            }
+            else if (!isCover && viewInfo.Covered)
+            {
+                viewInfo.Covered = false;
+                viewInfo.View._OnReveal(); // 触发重新显示回调
+            }
+
+            // 后续界面需要被覆盖
+            if (!isCover)
+            {
+                isCover = true;
+            }
         }
 
         /// <summary>
         /// 获取UI界面的界面信息。
         /// </summary>
-        /// <param name="view"></param>
-        /// <returns></returns>
-        /// <exception cref="FuException"></exception>
-        private UIInfo GetUIInfo(ViewBase view)
+        /// <param name="view">界面实例。</param>
+        /// <returns>界面信息。</returns>
+        private ViewInfo GetUIInfo(ViewBase view)
         {
             FuGuard.NotNull(view, nameof(view));
             return m_UIInfoList.FirstOrDefault(uiInfo => uiInfo.View == view);
