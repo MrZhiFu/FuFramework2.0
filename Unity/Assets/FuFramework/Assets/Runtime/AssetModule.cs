@@ -77,7 +77,9 @@ namespace FuFramework.Asset.Runtime
             BetterStreamingAssets.Initialize();
 
             YooAssets.Initialize();
-            YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame); // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
+
+            // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
+            YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
         }
@@ -490,7 +492,8 @@ namespace FuFramework.Asset.Runtime
         #region 卸载资源
 
         /// <summary>
-        /// 卸载资源
+        /// 卸载指定资源。
+        /// 注意：如果该资源还在被使用，该方法会无效
         /// </summary>
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string assetPath)
@@ -501,7 +504,8 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 卸载资源
+        /// 卸载指定资源包下的指定资源。
+        /// 注意：如果该资源还在被使用，该方法会无效
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <param name="assetPath">资源路径</param>
@@ -514,47 +518,49 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 强制回收所有资源
+        /// 卸载所有无用资源。
+        /// 注意：该方法会卸载所有引用计数为零的资源包，可以在切换场景之后调用资源释放方法或者写定时器间隔时间去释放。
         /// </summary>
         /// <param name="packageName">资源包名称</param>
-        public void UnloadAllAssetsAsync(string packageName)
+        public async UniTaskVoid UnloadUnusedAssetsAsync(string packageName)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.UnloadAllAssetsAsync();
+            await package.UnloadUnusedAssetsAsync();
         }
 
         /// <summary>
-        /// 卸载无用资源
+        /// 强制卸载所有资源。
+        /// 注意：该方法请在合适的时机调用。Package在销毁的时候也会自动调用该方法。
         /// </summary>
         /// <param name="packageName">资源包名称</param>
-        public void UnloadUnusedAssetsAsync(string packageName)
+        public async UniTaskVoid UnloadAllAssetsAsync(string packageName)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.UnloadUnusedAssetsAsync();
+            await package.UnloadAllAssetsAsync();
         }
 
         /// <summary>
-        /// 清理所有资源
+        /// 清理YooAssets文件系统所有的缓存资源文件。
         /// </summary>
         /// <param name="packageName">资源包名称</param>
-        public void ClearAllBundleFilesAsync(string packageName)
+        public async UniTaskVoid ClearAllBundleFilesAsync(string packageName)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
+            await package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
         }
 
         /// <summary>
-        /// 清理无用资源
+        /// 清理YooAssets文件系统未使用的缓存资源文件。
         /// </summary>
         /// <param name="packageName">资源包名称</param>
-        public void ClearUnusedBundleFilesAsync(string packageName)
+        public async UniTaskVoid ClearUnusedBundleFilesAsync(string packageName)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
+            await package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
         }
 
         #endregion

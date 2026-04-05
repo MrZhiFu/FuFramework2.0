@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.ReferencePool.Runtime;
+using YooAsset;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -10,17 +11,21 @@ namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源加载注册器。
-    /// 1.加载资源。
-    /// 2.记录加载过的资源路径，避免重复加载。
-    /// 3.卸载已经加载的资源。
+    /// 1.加载资源(只提供异步加载接口)。
+    /// 2.记录加载过的资源句柄，避免重复加载。
+    /// 3.卸载资源。
     /// </summary>
     public class AssetLoadRegister : IReference
     {
+        /// <summary>
         /// 资源管理器
+        /// </summary>
         private readonly AssetModule m_AssetModule = ModuleManager.GetModule<AssetModule>();
 
-        /// 缓存已经加载的资源路径列表
-        private readonly Dictionary<string, Object> m_ResDict = new();
+        /// <summary>
+        /// 缓存已经加载的资源句柄，key为资源路径，value为资源句柄
+        /// </summary>
+        private readonly Dictionary<string, AssetHandle> m_HandleDict = new();
 
         /// <summary>
         /// 创建资源加载器
@@ -35,21 +40,10 @@ namespace FuFramework.Asset.Runtime
         /// 异步加载资源。
         /// </summary>
         /// <param name="path">资源路径。</param>
-        public async UniTask<T> Load<T>(string path) where T : Object
+        public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
-            if (m_ResDict.TryGetValue(path, out var obj)) return obj as T;
-
-            var assetHandle = await m_AssetModule.LoadAssetAsync<T>(path);
-            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-            if (!isSuccess) throw new FuException($"[AssetLoadRegister]资源{path}加载失败.");
-
-            var assetObject = assetHandle.GetAssetObject<T>();
-            assetHandle.Release();
-
-            FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成.");
-
-            m_ResDict.Add(path, assetObject);
-            return assetObject;
+            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync<T>(path));
+            return handle.GetAssetObject<T>();
         }
 
         /// <summary>
@@ -58,71 +52,94 @@ namespace FuFramework.Asset.Runtime
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
         /// <returns></returns>
-        public async UniTask<Object> Load(string path, Type type)
+        public async UniTask<Object> LoadAsync(string path, Type type)
         {
-            if (m_ResDict.TryGetValue(path, out var obj)) return obj;
-
-            // 等待资源文件加载完成
-            var assetHandle = await m_AssetModule.LoadAssetAsync(path, type);
-            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-
-            if (!isSuccess)
-                throw new FuException($"[AssetLoadRegister]资源{path}加载失败");
-
-            var assetObject = assetHandle.AssetObject;
-            assetHandle.Release();
-
-            FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成.");
-
-            m_ResDict.Add(path, assetObject);
-            return assetObject;
+            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path, type));
+            return handle.AssetObject;
         }
 
         /// <summary>
         /// 异步加载资源。
         /// </summary>
         /// <param name="path">资源路径。</param>
-        public async UniTask<Object> Load(string path)
+        public async UniTask<Object> LoadAsync(string path)
         {
-            if (m_ResDict.TryGetValue(path, out var obj)) return obj;
-
-            var assetHandle = await m_AssetModule.LoadAssetAsync(path);
-            var isSuccess   = assetHandle != null && assetHandle.AssetObject != null;
-            if (!isSuccess) throw new FuException($"[AssetLoadRegister]资源{path}加载失败.");
-
-            var assetObject = assetHandle.AssetObject;
-            assetHandle.Release();
-
-            FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成.");
-
-            m_ResDict.Add(path, assetObject);
-            return assetObject;
+            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
+            return handle.AssetObject;
         }
 
         /// <summary>
-        /// 卸载已经加载的资源。
+        /// 加载资源句柄的通用逻辑。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        /// <param name="loadFunc">实际加载资源的异步函数。</param>
+        /// <returns>资源句柄。</returns>
+        private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<UniTask<AssetHandle>> loadFunc)
+        {
+            // 检查是否已加载
+            if (m_HandleDict.TryGetValue(path, out var existingHandle))
+            {
+                // 验证资源是否仍然有效
+                if (existingHandle.AssetObject != null)
+                    return existingHandle;
+
+                // 资源已失效，清理后重新加载
+                m_HandleDict.Remove(path);
+                existingHandle.Release();
+            }
+
+            AssetHandle assetHandle = null;
+            try
+            {
+                assetHandle = await loadFunc();
+                if (assetHandle == null || assetHandle.AssetObject == null)
+                {
+                    throw new FuException($"[AssetLoadRegister]资源{path}加载失败");
+                }
+
+                // 保存资源句柄
+                m_HandleDict[path] = assetHandle;
+                FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
+                return assetHandle;
+            }
+            catch
+            {
+                assetHandle?.Release();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 卸载已经加载的指定资源。
+        /// 1.释放资源句柄，即减少引用计数。
+        /// 2.尝试卸载资源，即引用计数为零时，才会真正卸载资源。
         /// </summary>
         /// <param name="path">资源路径。</param>
         public void Unload(string path)
         {
-            if (!m_ResDict.ContainsKey(path)) return;
+            if (!m_HandleDict.TryGetValue(path, out var handle)) return;
+
+            // 释放资源句柄，即减少引用计数
+            handle.Release();
+
+            // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
             m_AssetModule.UnloadAsset(path);
-            m_ResDict.Remove(path);
+
+            m_HandleDict.Remove(path);
             FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
         }
 
         /// <summary>
         /// 卸载所有已经加载的资源。
         /// </summary>
-        private void UnloadAll()
+        public void UnloadAll()
         {
-            foreach (var path in m_ResDict.Keys)
+            foreach (var path in m_HandleDict.Keys)
             {
-                m_AssetModule.UnloadAsset(path);
-                FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
+                Unload(path);
             }
 
-            m_ResDict.Clear();
+            m_HandleDict.Clear();
         }
 
         /// <summary>
