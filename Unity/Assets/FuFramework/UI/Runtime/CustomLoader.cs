@@ -5,7 +5,9 @@ using UnityEngine;
 using FuFramework.Web.Runtime;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using YooAsset;
 using Object = UnityEngine.Object;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -14,7 +16,7 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// FUI自定义Loader加载器的LRU缓存器
+    /// FUI自定义Loader的资源LRU缓存器
     /// 职责：提供一个LRU缓存机制，用于缓存加载的纹理资源。
     /// </summary>
     public class LRUCache
@@ -34,10 +36,16 @@ namespace FuFramework.UI.Runtime
             /// </summary>
             public NTexture Texture;
 
+            /// <summary>
+            /// YooAsset资源句柄(如果是YooAsset资源，则不为空，其他情况为null)
+            /// </summary>
+            public AssetHandle AssetHandle;
+
             public CacheItem(string key, NTexture texture)
             {
-                Key     = key;
-                Texture = texture;
+                Key         = key;
+                Texture     = texture;
+                AssetHandle = null;
             }
         }
 
@@ -72,8 +80,7 @@ namespace FuFramework.UI.Runtime
         public NTexture Get(string key)
         {
             // 缓存的纹理未找到
-            if (!m_CacheDict.TryGetValue(key, out var item))
-                return null;
+            if (!m_CacheDict.TryGetValue(key, out var item)) return null;
 
             // 移动到最近使用的位置
             m_LruList.Remove(item);
@@ -84,17 +91,33 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 缓存纹理
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="texture"></param>
-        public void Put(string key, NTexture texture)
+        /// <param name="key">资源路径</param>
+        /// <param name="texture">资源纹理</param>
+        /// <param name="assetHandle">YooAsset资源句柄</param>
+        public void Put(string key, NTexture texture, AssetHandle assetHandle)
         {
-            if (key == null) return;
+            if (key.IsNull()) return;
 
             if (m_CacheDict.TryGetValue(key, out var cacheItem))
             {
+                // 释放旧的纹理和资源句柄
+                cacheItem.Texture?.Dispose();
+                if (cacheItem.Texture?.nativeTexture.IsNotNull() == true)
+                {
+                    Object.Destroy(cacheItem.Texture.nativeTexture);
+                }
+
+                if (cacheItem.Texture?.alphaTexture.IsNotNull() == true)
+                {
+                    Object.Destroy(cacheItem.Texture.alphaTexture);
+                }
+
+                cacheItem.AssetHandle?.Release();
+
                 // 更新已有项并移动到最近使用位置
                 m_LruList.Remove(cacheItem);
-                cacheItem.Texture = texture;
+                cacheItem.Texture     = texture;
+                cacheItem.AssetHandle = assetHandle;
                 m_LruList.AddFirst(cacheItem);
             }
             else
@@ -105,7 +128,8 @@ namespace FuFramework.UI.Runtime
 
                 // 添加新项
                 var newItem = new CacheItem(key, texture);
-                m_CacheDict[key] = newItem;
+                newItem.AssetHandle = assetHandle;
+                m_CacheDict[key]    = newItem;
                 m_LruList.AddFirst(newItem);
             }
         }
@@ -121,13 +145,20 @@ namespace FuFramework.UI.Runtime
 
             m_LruList.RemoveLast();
             m_CacheDict.Remove(leastUsedItem.Key);
-            leastUsedItem.Texture.Dispose();
 
-            if (leastUsedItem.Texture.nativeTexture.IsNotNull())
-                Object.Destroy(leastUsedItem.Texture.nativeTexture); // 释放纹理资源
+            // 释放纹理和资源句柄
+            leastUsedItem.Texture?.Dispose();
+            if (leastUsedItem.Texture?.nativeTexture.IsNotNull() == true)
+            {
+                Object.Destroy(leastUsedItem.Texture.nativeTexture);
+            }
 
-            if (leastUsedItem.Texture.alphaTexture.IsNotNull())
-                Object.Destroy(leastUsedItem.Texture.alphaTexture); // 释放纹理资源
+            if (leastUsedItem.Texture?.alphaTexture.IsNotNull() == true)
+            {
+                Object.Destroy(leastUsedItem.Texture.alphaTexture);
+            }
+
+            leastUsedItem.AssetHandle?.Release();
         }
 
         /// <summary>
@@ -137,12 +168,18 @@ namespace FuFramework.UI.Runtime
         {
             foreach (var item in m_LruList)
             {
-                item.Texture.Dispose();
-                if (item.Texture.nativeTexture.IsNotNull())
-                    Object.Destroy(item.Texture.nativeTexture); // 释放纹理资源
+                item.Texture?.Dispose();
+                if (item.Texture?.nativeTexture.IsNotNull() == true)
+                {
+                    Object.Destroy(item.Texture.nativeTexture);
+                }
 
-                if (item.Texture.alphaTexture.IsNotNull())
-                    Object.Destroy(item.Texture.alphaTexture); // 释放纹理资源
+                if (item.Texture?.alphaTexture.IsNotNull() == true)
+                {
+                    Object.Destroy(item.Texture.alphaTexture);
+                }
+
+                item.AssetHandle?.Release();
             }
 
             m_CacheDict.Clear();
@@ -167,7 +204,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
         /// </summary>
-        private static string m_CachePath;
+        private static readonly string CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
 
         /// <summary>
         /// 资源管理器
@@ -179,15 +216,12 @@ namespace FuFramework.UI.Runtime
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
             if (!m_AssetModule)
             {
-                FuLogger.LogFatal("[CustomLoader] 资源管理器不存在!");
-                return;
+                throw new FuException("[CustomLoader] 资源管理器不存在!");
             }
-
-            m_CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
         }
 
         /// <summary>
-        /// Loader使用外部资源
+        /// Loader使用外部加载的纹理资源
         /// </summary>
         protected override async void LoadExternal()
         {
@@ -199,95 +233,142 @@ namespace FuFramework.UI.Runtime
                     return;
                 }
 
-                NTexture tempTexture = null;
-
-                // 1.从网络资源获取
-                if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
-                {
-                    // 先看缓存中是否有，如果有则直接使用缓存的纹理
-                    var nTexture = Cache.Get(url);
-                    if (!nTexture.IsNull())
-                    {
-                        tempTexture = nTexture;
-                    }
-                    else
-                    {
-                        var hash      = Utility.Hash.MD5.Hash(url);
-                        var path      = $"{m_CachePath}{hash}.png";
-                        var isExists  = Utility.File.IsExists(path);
-                        var texture2D = Texture2D.whiteTexture;
-
-                        if (isExists)
-                        {
-                            var buffer = Utility.File.ReadAllBytes(path);
-                            texture2D.LoadImage(buffer);
-                        }
-                        else
-                        {
-                            if (!Directory.Exists(m_CachePath))
-                                Directory.CreateDirectory(m_CachePath);
-
-                            var webBufferResult = await ModuleManager.GetModule<WebModule>().GetToBytes(url, null);
-                            Utility.File.WriteAllBytes(path, webBufferResult.Result);
-                            texture2D.LoadImage(webBufferResult.Result);
-                        }
-
-                        tempTexture = new NTexture(texture2D);
-                        Cache.Put(url, tempTexture);
-                    }
-                }
-
-                // 2.从FairyGUI的Package包内获取
-                else if (url.StartsWithFast("ui://"))
+                // 1.优先从FairyGUI资源包中加载
+                if (url.StartsWithFast("ui://"))
                 {
                     LoadContent();
+                    return;
                 }
 
-                // 3.从资源管理器中获取
+                // 2.看缓存中是否有，如果有则直接使用缓存的纹理
+                var targetTexture = Cache.Get(url);
+                if (!targetTexture.IsNull())
+                {
+                    onExternalLoadSuccess(targetTexture);
+                    return;
+                }
+
+                // 根据URL类型加载纹理
+                Texture2D   texture2D   = null;
+                AssetHandle assetHandle = null;
+                if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
+                {
+                    // 3.从网络加载
+                    texture2D = await LoadTextureFromNetwork(url);
+                }
                 else
                 {
-                    // 先看缓存中是否有，有则使用缓存的纹理
-                    var nTexture = Cache.Get(url);
-                    if (nTexture.IsNotNull())
+                    // 4.从资源管理器加载
+                    assetHandle = await LoadTextureFromAsset(url);
+                    if (assetHandle.IsNotNull() && assetHandle.IsDone)
                     {
-                        tempTexture = nTexture;
-                    }
-                    else
-                    {
-                        var assetInfo = m_AssetModule.GetAssetInfo(url);
-                        if (assetInfo.IsInvalid == false)
+                        texture2D = assetHandle.GetAssetObject<Texture2D>();
+                        if (texture2D.IsNull())
                         {
-                            var assetHandle = await m_AssetModule.LoadAssetAsync<Texture2D>(url);
-                            if (assetHandle.IsDone)
-                            {
-                                tempTexture = new NTexture(assetHandle.GetAssetObject<Texture2D>());
-                                Cache.Put(url, tempTexture);
-                            }
-                        }
-                        else
-                        {
-                            if (Utility.File.IsExists(url))
-                            {
-                                var buffer = Utility.File.ReadAllBytes(url);
-
-                                var texture2D = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false, false);
-                                texture2D.LoadImage(buffer);
-                                tempTexture = new NTexture(texture2D);
-                                Cache.Put(url, tempTexture);
-                            }
+                            // 资源存在但不是Texture2D类型，释放句柄
+                            assetHandle.Release();
+                            assetHandle = null;
                         }
                     }
                 }
 
-                if (tempTexture.IsNotNull())
-                    onExternalLoadSuccess(tempTexture);
+                // 创建纹理并缓存
+                if (texture2D.IsNotNull())
+                {
+                    targetTexture = new NTexture(texture2D);
+                    Cache.Put(url, targetTexture, assetHandle);
+                    onExternalLoadSuccess(targetTexture);
+                }
                 else
+                {
                     onExternalLoadFailed();
+                }
             }
             catch (Exception e)
             {
                 onExternalLoadFailed();
                 FuLogger.LogError(e);
+            }
+        }
+
+        /// <summary>
+        /// 从网络加载纹理
+        /// </summary>
+        /// <param name="url">网络URL地址。</param>
+        /// <returns>加载完成的Texture2D。</returns>
+        private async UniTask<Texture2D> LoadTextureFromNetwork(string url)
+        {
+            var textureHashName = Utility.Hash.MD5.Hash(url);
+            var texturePath     = $"{CachePath}{textureHashName}.png";
+
+            // 本地缓存文件存在，直接读取
+            if (Utility.File.IsExists(texturePath))
+            {
+                return LoadTextureFromFile(texturePath);
+            }
+
+            // 从网络下载并保存到本地缓存
+            if (!Directory.Exists(CachePath))
+                Directory.CreateDirectory(CachePath);
+
+            var webBufferResult = await ModuleManager.GetModule<WebModule>().GetToBytes(url, null);
+            if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
+            {
+                FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {url}");
+                return null;
+            }
+
+            Utility.File.WriteAllBytes(texturePath, webBufferResult.Result);
+
+            // 创建临时2x2纹理(占位)，LoadImage 内部重新分配为实际图片尺寸
+            var tempTexture = new Texture2D(2, 2);
+            tempTexture.LoadImage(webBufferResult.Result);
+            return tempTexture;
+        }
+
+        /// <summary>
+        /// 从资源管理器加载纹理
+        /// </summary>
+        /// <param name="url">资源路径。</param>
+        /// <returns>加载完成的Texture2D。</returns>
+        private async UniTask<AssetHandle> LoadTextureFromAsset(string url)
+        {
+            var assetInfo = m_AssetModule.GetAssetInfo(url);
+            if (assetInfo.IsInvalid) return null;
+            return await m_AssetModule.LoadAssetAsync<Texture2D>(url);
+        }
+
+        /// <summary>
+        /// 从本地文件加载纹理
+        /// </summary>
+        /// <param name="path">文件路径。</param>
+        /// <returns>加载完成的Texture2D，失败返回null。</returns>
+        private Texture2D LoadTextureFromFile(string path)
+        {
+            try
+            {
+                var buffer = Utility.File.ReadAllBytes(path);
+                if (buffer.IsNull() || buffer.Length == 0)
+                {
+                    FuLogger.LogError($"[CustomLoader] 读取文件失败或文件为空: {path}");
+                    return null;
+                }
+
+                // 创建临时2x2纹理(占位)，LoadImage方法内部会重新分配为实际图片尺寸
+                var tempTexture = new Texture2D(2, 2);
+                if (!tempTexture.LoadImage(buffer))
+                {
+                    FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {path}");
+                    Object.Destroy(tempTexture);
+                    return null;
+                }
+
+                return tempTexture;
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[CustomLoader] 从文件加载纹理异常: {path}, {e.Message}");
+                return null;
             }
         }
     }

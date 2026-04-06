@@ -97,7 +97,7 @@ namespace FuFramework.UI.Runtime
                 {
                     // 检查是否被取消
                     cts.Token.ThrowIfCancellationRequested();
-                    
+
                     var package = await LoadPackageAsync_(pkgName);
                     m_LoadedPkgDict[pkgName] = package; // 缓存结果
                     package.ReloadAssets();
@@ -106,7 +106,7 @@ namespace FuFramework.UI.Runtime
                 finally
                 {
                     m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
-                    m_LoadingCts.Remove(pkgName); // 移除取消令牌源
+                    m_LoadingCts.Remove(pkgName);   // 移除取消令牌源
                 }
             });
 
@@ -211,7 +211,7 @@ namespace FuFramework.UI.Runtime
             }
 
             // 等待描述文件加载完成
-            return await descLoader.Load<TextAsset>(descPath);
+            return await descLoader.LoadAsync<TextAsset>(descPath);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace FuFramework.UI.Runtime
                 m_PkgAssetLoaderDict[pkgName] = resLoader;
             }
 
-            var assetObj = await resLoader.Load(extPath, type);
+            var assetObj = await resLoader.LoadAsync(extPath, type);
 
             // 绑定资源到包内资源项
             packageItem.owner.SetItemAsset(packageItem, assetObj, DestroyMethod.Unload);
@@ -336,6 +336,7 @@ namespace FuFramework.UI.Runtime
             {
                 cts.Cancel();
             }
+
             m_LoadingCts.Clear();
 
             // 释放所有已加载的包
