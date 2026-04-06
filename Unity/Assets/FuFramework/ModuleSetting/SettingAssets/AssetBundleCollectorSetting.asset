@@ -19,13 +19,14 @@ MonoBehaviour:
   - PackageName: DefaultPackage
     PackageDesc: 
     EnableAddressable: 1
+    SupportExtensionless: 1
     LocationToLower: 0
     IncludeAssetGUID: 0
     AutoCollectShaders: 1
     IgnoreRuleName: NormalIgnoreRule
     Groups:
     - GroupName: AOTCode
-      GroupDesc: 
+      GroupDesc: "\u9884\u7F16\u8BD1\u4EE3\u7801"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
@@ -38,7 +39,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
     - GroupName: Code
-      GroupDesc: 
+      GroupDesc: "\u70ED\u66F4\u4EE3\u7801"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
@@ -51,7 +52,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
     - GroupName: UI
-      GroupDesc: 
+      GroupDesc: "UI\u8D44\u6E90"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
@@ -64,7 +65,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
     - GroupName: Config
-      GroupDesc: 
+      GroupDesc: "\u914D\u7F6E"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
@@ -77,7 +78,7 @@ MonoBehaviour:
         AssetTags: 
         UserData: 
     - GroupName: Sprites
-      GroupDesc: 
+      GroupDesc: "2d\u7CBE\u7075"
       AssetTags: 
       ActiveRuleName: EnableGroup
       Collectors:
