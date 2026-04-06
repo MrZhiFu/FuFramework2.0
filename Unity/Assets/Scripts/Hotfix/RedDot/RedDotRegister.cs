@@ -9,7 +9,7 @@ namespace Hotfix.UI
     /// <summary>
     /// 红点UI注册器
     /// </summary>
-    public class RedDotRegister
+    public static class RedDotRegister
     {
         /// <summary>
         /// 注册红点到指定组件
