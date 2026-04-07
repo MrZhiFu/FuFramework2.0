@@ -1,18 +1,18 @@
 {
     "FileVersion": "1.0.0",
     "PackageName": "DefaultPackage",
-    "PackageVersion": "2026-03-18-1100",
+    "PackageVersion": "2026-04-07-1109",
     "Wrappers": [
         {
-            "BundleGUID": "4d40a5a3b6fcf5eaca8c60bd6676e2a3",
+            "BundleGUID": "796f5889f976038e88e93d92c1bed3c5",
             "FileName": "defaultpackage_assets_bundles_aotcode.bundle"
         },
         {
-            "BundleGUID": "dfcbff2cf1033981cc98494ed73e483f",
+            "BundleGUID": "c37f985970b0d44014c67c4410a613f2",
             "FileName": "defaultpackage_assets_bundles_code.bundle"
         },
         {
-            "BundleGUID": "5f75b50cdda6ce1a4637a0138c41cf4c",
+            "BundleGUID": "3855e8e699766d05a425f3553ba9d1ed",
             "FileName": "defaultpackage_assets_bundles_config.bundle"
         },
         {
@@ -22,10 +22,6 @@
         {
             "BundleGUID": "7ff8ce81924b51b07418894ee449082a",
             "FileName": "defaultpackage_assets_bundles_sound.bundle"
-        },
-        {
-            "BundleGUID": "21d6c5d41f26304311e2d95701dae36c",
-            "FileName": "defaultpackage_assets_bundles_sprites_avatar.bundle"
         },
         {
             "BundleGUID": "6aaecba4c535c003e1a310ee63681086",
