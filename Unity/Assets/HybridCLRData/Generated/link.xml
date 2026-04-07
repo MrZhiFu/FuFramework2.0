@@ -105,7 +105,6 @@
   <assembly fullname="FuFramework.UI.Runtime">
     <type fullname="FuFramework.UI.Runtime.FuiPkgManager" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.ICustomComp" preserve="all" />
-    <type fullname="FuFramework.UI.Runtime.PackageLoadedEventArgs" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.UILayer" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.UIModule" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.UITweenType" preserve="all" />
@@ -157,7 +156,6 @@
     <type fullname="UnityEngine.MonoBehaviour" preserve="all" />
     <type fullname="UnityEngine.Object" preserve="all" />
     <type fullname="UnityEngine.Rect" preserve="all" />
-    <type fullname="UnityEngine.RuntimeInitializeOnLoadMethodAttribute" preserve="all" />
     <type fullname="UnityEngine.SystemInfo" preserve="all" />
     <type fullname="UnityEngine.TextAsset" preserve="all" />
     <type fullname="UnityEngine.Vector2" preserve="all" />
