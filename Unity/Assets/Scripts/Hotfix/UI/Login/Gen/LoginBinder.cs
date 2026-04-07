@@ -10,16 +10,14 @@ using FuFramework.Core.Runtime;
 namespace Hotfix.UI
 {
     /// <summary>
-    /// 自定义组件绑定器。
-    /// 由FuiPackageManager加载包时自动反射调用。
+    /// Login包自定义组件绑定器。
     /// </summary>
-    public class LoginBinder
+    public static class LoginBinder
     {
         /// <summary>
         /// 绑定所有自定义组件
         /// </summary>
-        [RuntimeInitializeOnLoadMethod]
-        private static void BindAll()
+        public static void BindAll()
         {
             FuLogger.LogInfo("绑定包-{Login}下的所有自定义组件");
 			UIObjectFactory.SetPackageItemExtension(CompPlayerListItem.URL, typeof(CompPlayerListItem));

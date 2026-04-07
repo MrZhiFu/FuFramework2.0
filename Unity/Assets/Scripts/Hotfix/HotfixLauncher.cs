@@ -1,4 +1,3 @@
-﻿using System;
 using UnityEngine;
 using Hotfix.Proto;
 using Hotfix.Config;
@@ -47,7 +46,7 @@ namespace Hotfix
 
             // 指定获取多语言的接口
             GlobalModule.LocalizationModule.LocalizationProvider = new LocalizationProvider();
-            
+
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
 
@@ -83,6 +82,19 @@ namespace Hotfix
         {
             // 添加通用UI资源包
             await GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
+
+            // 绑定Fui自定义组件
+            BindCustomComps();
+        }
+
+        /// <summary>
+        /// 绑定Fui自定义组件
+        /// </summary>
+        private static void BindCustomComps()
+        {
+            CommonBinder.BindAll();
+            BagBinder.BindAll();
+            LoginBinder.BindAll();
         }
 
 #if ENABLE_BINARY_CONFIG
