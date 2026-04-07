@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
+using FuFramework.Event.Runtime;
 using System.Collections.Generic;
 using System.Linq;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -19,6 +20,7 @@ namespace FuFramework.UI.Runtime
     /// 1. 异步加载FUI包。
     /// 2. 缓存已加载的FUI包。
     /// 3. 卸载FUI包。
+    /// 4. 支持通过事件系统通知包加载完成。
     /// </summary>
     public class FuiPkgManager
     {
@@ -57,9 +59,16 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         private readonly List<string> m_NotReleasePackages = new() { "Common" };
 
+        /// <summary>
+        /// 事件模块
+        /// </summary>
+        private readonly EventModule _eventModule;
+
         public FuiPkgManager()
         {
             UIPackage.unloadBundleByFGUI = false; // 手动管理资源
+
+            _eventModule = ModuleManager.GetModule<EventModule>();
         }
 
         /// <summary>
@@ -101,6 +110,9 @@ namespace FuFramework.UI.Runtime
                     var package = await LoadPackageAsync_(pkgName);
                     m_LoadedPkgDict[pkgName] = package; // 缓存结果
                     package.ReloadAssets();
+
+                    // 发送包加载完成事件，让热更代码绑定自定义组件
+                    _eventModule.Broadcast(this, PackageLoadedEventArgs.Create(pkgName));
                     return package;
                 }
                 finally

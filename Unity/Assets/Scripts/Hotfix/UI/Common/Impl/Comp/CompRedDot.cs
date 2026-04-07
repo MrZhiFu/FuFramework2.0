@@ -18,12 +18,12 @@ namespace Hotfix.UI
             /// 只显示红点
             /// </summary>
             DotOnly,
-            
+
             /// <summary>
             /// 红点+数字
             /// </summary>
             DotNumber,
-            
+
             /// <summary>
             /// 根据数量自动显示，=1显示红点，>1显示数字
             /// </summary>
@@ -68,13 +68,13 @@ namespace Hotfix.UI
         }
 
         /// <summary>
-        /// 设置红点
+        /// 注册红点
         /// </summary>
         /// <param name="view">所属界面</param>
         /// <param name="target">红点依附的目标组件</param>
         /// <param name="redKey">红点Key</param>
         /// <param name="displayMode">红点显示模式</param>
-        public void SetRedDot(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
+        public void Register(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
         {
             if (view   == null) return;
             if (target == null) return;
@@ -102,11 +102,11 @@ namespace Hotfix.UI
         public void SetRedDotPos(Vector2 offset = default)
         {
             if (m_Target == null) return;
-            
+
             // 计算在父容器内的相对位置
             var posX = m_Target.width - width + offset.x;
-            var posY = offset.y;                         
-    
+            var posY = offset.y;
+
             SetXY(posX, posY);
         }
 
