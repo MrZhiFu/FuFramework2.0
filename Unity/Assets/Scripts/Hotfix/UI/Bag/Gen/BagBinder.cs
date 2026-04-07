@@ -10,7 +10,7 @@ using FuFramework.Core.Runtime;
 namespace Hotfix.UI
 {
     /// <summary>
-    /// Bag包自定义组件绑定器。
+    /// Bag包下的自定义组件绑定器。
     /// </summary>
     public class BagBinder
     {

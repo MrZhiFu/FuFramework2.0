@@ -10,7 +10,7 @@ using FuFramework.Core.Runtime;
 namespace Hotfix.UI
 {
     /// <summary>
-    /// Common包自定义组件绑定器。
+    /// Common包下的是自定义组件绑定器。
     /// </summary>
     public static class CommonBinder
     {
