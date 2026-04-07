@@ -60,7 +60,8 @@ namespace FuFramework.UI.Runtime
 
         public FuiPkgManager()
         {
-            UIPackage.unloadBundleByFGUI = false; // 手动管理资源
+            // 手动管理资源
+            UIPackage.unloadBundleByFGUI = false; 
         }
 
         /// <summary>
@@ -156,7 +157,10 @@ namespace FuFramework.UI.Runtime
                     cts.Token.ThrowIfCancellationRequested();
 
                 // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
+                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
+                {
+                    LoadResAsync(assetName, extension, type, packageItem).Forget();
+                });
 
                 return loadedPackage;
             }
