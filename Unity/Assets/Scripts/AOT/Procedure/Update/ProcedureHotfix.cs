@@ -25,7 +25,7 @@ namespace Launcher.Procedure
         /// <summary>
         /// 热更程序集名称
         /// </summary>
-        private const string HotfixName = "Game.Hotfix";
+        private const string HotfixDllName = "Game.Hotfix";
 
 
         protected override void OnEnter()
@@ -71,7 +71,7 @@ namespace Launcher.Procedure
                 foreach (var assembly in assemblies)
                 {
                     var assemblyName = assembly.GetName().Name;
-                    var isHotfix     = assemblyName.Equals(HotfixName, StringComparison.OrdinalIgnoreCase);
+                    var isHotfix     = assemblyName.Equals(HotfixDllName, StringComparison.OrdinalIgnoreCase);
                     if (!isHotfix) continue;
 
                     return assembly;
@@ -94,7 +94,7 @@ namespace Launcher.Procedure
             FuLogger.LogInfo("结束加载AOT DLL");
 
             FuLogger.LogInfo("开始加载Game.Hotfix.dll");
-            var hotfixDllPath        = Utility.AssetPath.GetCodePath(HotfixName + Utility.Const.FileNameSuffix.DLL);
+            var hotfixDllPath        = Utility.AssetPath.GetCodePath(HotfixDllName + Utility.Const.FileNameSuffix.DLL);
             var hotfixDllAssetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(hotfixDllPath);
             var hotfixDllBytes       = hotfixDllAssetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 
