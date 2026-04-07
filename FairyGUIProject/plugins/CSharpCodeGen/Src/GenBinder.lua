@@ -34,6 +34,9 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
         -- 写入最终生成的代码文件
         Tool:WriteTxt(targetPath, templateCode)
     end
+
+    -- 自动更新 HotfixLauncher.cs 或 ProcedureLauncher.cs 中的 BindCustomComps 方法
+    GenBinder:UpdateLauncherBinder(pkgName, unityDataPath)
 end
 
 --- 生成组件绑定代码内容
@@ -56,6 +59,81 @@ function GenBinder:BinderComps(content, compClsArray)
         strContent = table.concat(arrStr)
     end
     return content:gsub('#BinderComps#', strContent)
+end
+
+--- 自动更新 Launcher 中的 BindCustomComps 方法
+--- 如果是 Launcher 包，更新 ProcedureLauncher.cs（AOT）
+--- 如果是其他包，更新 HotfixLauncher.cs（Hotfix）
+---@param pkgName string 包名
+---@param unityDataPath string Unity路径 "xxx/Assets"
+function GenBinder:UpdateLauncherBinder(pkgName, unityDataPath)
+    local isLauncher = tostring(pkgName) == "Launcher"
+    local launcherPath
+    local launcherName
+
+    if isLauncher then
+        -- AOT 代码路径
+        launcherPath = Tool:StrFormat("%s/Scripts/AOT/Procedure/ProcedureLauncher.cs", unityDataPath)
+        launcherName = "ProcedureLauncher.cs"
+    else
+        -- Hotfix 代码路径
+        launcherPath = Tool:StrFormat("%s/Scripts/Hotfix/HotfixLauncher.cs", unityDataPath)
+        launcherName = "HotfixLauncher.cs"
+    end
+
+    -- 检查文件是否存在
+    if not Tool:IsFileExists(launcherPath) then
+        Tool:Log("%s 不存在，跳过自动更新: %s", launcherName, launcherPath)
+        return
+    end
+
+    Tool:Log("更新 %s 中的 BindCustomComps 方法...", launcherName)
+
+    local content = Tool:ReadTxt(launcherPath)
+    local binderCall = Tool:StrFormat("%sBinder.BindAll();", pkgName)
+
+    -- 检查是否已存在该绑定代码（使用纯文本查找，不使用正则）
+    if string.find(content, binderCall, 1, true) then
+        Tool:Log("BindCustomComps 中已存在 %s 的绑定代码，跳过", binderCall)
+        return
+    end
+
+    -- 查找 BindCustomComps 方法体，在 { 之后插入代码
+    -- 匹配 private static void BindCustomComps() 后面跟着 { 和换行
+    local pattern = "(private static void BindCustomComps%(%)%s*\n?%s*{%s*\n)"
+    local replacement = "%1            " .. binderCall .. "\n"
+
+    local newContent, count = content:gsub(pattern, replacement)
+
+    if count > 0 then
+        Tool:WriteTxt(launcherPath, newContent)
+        Tool:Log("成功在 BindCustomComps 中添加 %s", binderCall)
+        return
+    end
+
+    -- 尝试匹配没有换行的情况: private static void BindCustomComps() {
+    pattern = "(private static void BindCustomComps%(%)%s*{%s*\n)"
+    replacement = "%1            " .. binderCall .. "\n"
+    newContent, count = content:gsub(pattern, replacement)
+
+    if count > 0 then
+        Tool:WriteTxt(launcherPath, newContent)
+        Tool:Log("成功在 BindCustomComps 中添加 %s", binderCall)
+        return
+    end
+
+    -- 尝试匹配方法体在 { 后面没有换行的情况
+    pattern = "(private static void BindCustomComps%(%)%s*{%s*)"
+    replacement = "%1\n            " .. binderCall .. "\n        "
+    newContent, count = content:gsub(pattern, replacement)
+
+    if count > 0 then
+        Tool:WriteTxt(launcherPath, newContent)
+        Tool:Log("成功在 BindCustomComps 中添加 %s", binderCall)
+        return
+    end
+
+    Tool:Warning("未能在 %s 中找到 BindCustomComps 方法，请手动添加 %s", launcherName, binderCall)
 end
 
 return GenBinder

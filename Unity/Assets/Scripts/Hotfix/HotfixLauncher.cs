@@ -44,6 +44,9 @@ namespace Hotfix
             LauncherUIHelper.SetTipText("LoadInitUIAsset...");
             await LoadUI();
 
+            // 绑定Fui自定义组件
+            BindCustomComps();
+
             // 指定获取多语言的接口
             GlobalModule.LocalizationModule.LocalizationProvider = new LocalizationProvider();
 
@@ -82,20 +85,21 @@ namespace Hotfix
         {
             // 添加通用UI资源包
             await GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
-
-            // 绑定Fui自定义组件
-            BindCustomComps();
         }
 
+        //@formatter:off
         /// <summary>
-        /// 绑定Fui自定义组件
+        /// 绑定Fui自定义组件(AutoGen)
+        /// 方法体由FUI导出时自动生成,请勿修改.
+        /// 特殊:如果清理了FUI包里的所有自定义组件,且清理了它们的绑定代码,则可以删除对应的BindAll()调用.
         /// </summary>
         private static void BindCustomComps()
         {
             CommonBinder.BindAll();
-            BagBinder.BindAll();
             LoginBinder.BindAll();
+            BagBinder.BindAll();
         }
+        //@formatter:on
 
 #if ENABLE_BINARY_CONFIG
         /// <summary>

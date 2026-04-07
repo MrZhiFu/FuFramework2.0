@@ -4,6 +4,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
+using Launcher.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -28,12 +29,26 @@ namespace Launcher.Procedure
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
 
+            // 绑定Fui自定义组件
+            BindCustomComps();
+
             // 启动热更进度UI
             await LauncherUIHelper.Start();
 
             // 启动流程
             Start().Forget();
         }
+
+        //@formatter:off
+        /// <summary>
+        /// 绑定Fui自定义组件.
+        /// 方法体由FUI导出时自动生成,请勿修改.
+        /// 特殊:如果清理了FUI包里的所有自定义组件,且清理了它们的绑定代码,则可以删除对应的BindAll()调用.
+        /// </summary>
+        private static void BindCustomComps()
+        {
+        }
+        //@formatter:on
 
         /// <summary>
         /// 进入获取全局信息流程
