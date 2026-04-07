@@ -12,7 +12,7 @@ namespace Hotfix.UI
     /// <summary>
     /// Bag包下的自定义组件绑定器。
     /// </summary>
-    public class BagBinder
+    public static class BagBinder
     {
         /// <summary>
         /// 绑定所有自定义组件
