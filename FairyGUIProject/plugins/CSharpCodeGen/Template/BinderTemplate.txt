@@ -10,16 +10,14 @@ using FuFramework.Core.Runtime;
 namespace #NAMESPACE#
 {
     /// <summary>
-    /// 自定义组件绑定器。
-    /// 由FuiPackageManager加载包时自动反射调用。
+    /// #PKGNAME#包下的自定义组件绑定器。
     /// </summary>
-    public class #PKGNAME#Binder
+    public static class #PKGNAME#Binder
     {
         /// <summary>
         /// 绑定所有自定义组件
         /// </summary>
-        [RuntimeInitializeOnLoadMethod]
-        private static void BindAll()
+        public static void BindAll()
         {
             FuLogger.LogInfo("绑定包-{#PKGNAME#}下的所有自定义组件");
 #BinderComps#
