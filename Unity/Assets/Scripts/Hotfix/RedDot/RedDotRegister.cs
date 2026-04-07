@@ -25,24 +25,6 @@ namespace Hotfix.UI
         /// <param name="offset">红点位置偏移</param>
         public static void RegisterRedDot(ViewBase view, string redDotKey, GComponent target, CompRedDot.DisplayMode displayMode = CompRedDot.DisplayMode.DotOnly, Vector2 offset = default)
         {
-            if (view is null)
-            {
-                FuLogger.LogError($"[RedDot] 注册红点失败 [{redDotKey}]，view 为空");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(redDotKey))
-            {
-                FuLogger.LogError($"[RedDot] 注册红点失败 [{redDotKey}]，redDotKey 为空");
-                return;
-            }
-
-            if (target is null)
-            {
-                FuLogger.LogError($"[RedDot] 注册红点失败 [{redDotKey}]，target 为空");
-                return;
-            }
-
             // 检查 Common 包是否已加载
             var commonPkg = UIPackage.GetByName("Common");
             if (commonPkg == null)
@@ -70,12 +52,21 @@ namespace Hotfix.UI
 
             // 如果没有，则创建红点组件CompRedDot，并调用Register方法进行注册。优先使用 URL 创建，失败后使用包名+组件名创建。
             var compObj = UIPackage.CreateObjectFromURL(CompRedDot.URL) ?? UIPackage.CreateObject("Common", "CompRedDot");
-            if (compObj is not CompRedDot compRedDot)
+            if (compObj == null)
             {
-                FuLogger.LogError($"[RedDot] 创建红点组件失败 [{redDotKey}]，创建的对象类型为: {compObj?.GetType().Name ?? "null"}，请检查是否正确绑定了CompRedDot组件");
+                FuLogger.LogError($"[RedDot] 创建红点组件失败 [{redDotKey}]，请确保 Common 包中存在 CompRedDot 组件");
                 return;
             }
 
+            // 尝试转换为 CompRedDot 类型
+            if (compObj is not CompRedDot compRedDot)
+            {
+                FuLogger.LogError($"[RedDot] 类型转换失败 [{redDotKey}]，请确保 Common 包中存在 CompRedDot 组件");
+                compObj.Dispose();
+                return;
+            }
+
+            // 注册红点组件到目标组件
             target.AddChild(compRedDot);
             compRedDot.Register(view, target, redDotKey, displayMode);
             compRedDot.SetRedDotPos(offset);

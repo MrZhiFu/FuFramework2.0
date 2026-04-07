@@ -6,62 +6,23 @@
 using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.UI.Runtime;
 
 namespace Hotfix.UI
 {
     /// <summary>
     /// 自定义组件绑定器。
+    /// 由FuiPackageManager加载包时自动反射调用。
     /// </summary>
-    public class CommonBinder
+    public static class CommonBinder
     {
         /// <summary>
-        /// 是否已经绑定过
-        /// </summary>
-        private static bool _isBound = false;
-
-        
-        [RuntimeInitializeOnLoadMethod]
-        public static void RegisteBindings()
-        {
-            // 订阅包加载完成事件，用于绑定自定义组件
-            GlobalModule.EventModule.Subscribe(PackageLoadedEventArgs.EventId, OnPackageLoaded);
-        }
-
-        /// <summary>
-        /// 包加载完成事件回调
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void OnPackageLoaded(object sender, GameEventArgs e)
-        {
-            var args = (PackageLoadedEventArgs)e;
-            if (args.PackageName != "Common") return;
-            
-            BindAll();
-            
-            // 绑定完成后取消订阅，避免重复绑定
-            GlobalModule.EventModule.Unsubscribe(PackageLoadedEventArgs.EventId, OnPackageLoaded);
-        }
-
-        /// <summary>
         /// 绑定所有自定义组件
-        /// 注意：必须在 Common 包加载完成后调用
         /// </summary>
         public static void BindAll()
         {
-            if (_isBound)
-            {
-                FuLogger.LogInfo("[CommonBinder] 包-{Common}下的所有自定义组件已经绑定过，跳过");
-                return;
-            }
-            
-            FuLogger.LogInfo("[CommonBinder] 绑定包-{Common}下的所有自定义组件");
-            UIObjectFactory.SetPackageItemExtension(CompRedDot.URL, typeof(CompRedDot));
-            
-            _isBound = true;
+            FuLogger.LogInfo("绑定包-{Common}下的所有自定义组件");
+			UIObjectFactory.SetPackageItemExtension(CompRedDot.URL, typeof(CompRedDot));
+
         }
     }
 }
