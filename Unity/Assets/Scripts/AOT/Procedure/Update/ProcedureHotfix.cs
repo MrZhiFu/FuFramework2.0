@@ -94,7 +94,7 @@ namespace Launcher.Procedure
             FuLogger.LogInfo("结束加载AOT DLL");
 
             FuLogger.LogInfo("开始加载Game.Hotfix.dll");
-            var hotfixDllPath        = Utility.AssetPath.GetCodePath(HotfixDllName + Utility.Const.FileNameSuffix.DLL);
+            var hotfixDllPath        = Utility.AssetPath.GetCodePath($"{HotfixDllName}.dll");
             var hotfixDllAssetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(hotfixDllPath);
             var hotfixDllBytes       = hotfixDllAssetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
 

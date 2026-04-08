@@ -121,7 +121,7 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<JSONNode> ConfigLoader(string file)
         {
-            var cfgPath     = Utility.AssetPath.GetConfigPath(file, Utility.Const.FileNameSuffix.Json);
+            var cfgPath     = Utility.AssetPath.GetConfigPath(file, ".json");
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
             return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
         }

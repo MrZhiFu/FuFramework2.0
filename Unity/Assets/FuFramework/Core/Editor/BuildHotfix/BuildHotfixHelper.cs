@@ -34,7 +34,7 @@ namespace FuFramework.Core.Editor
             async Task WaitExecute()
             {
                 await Task.Delay(TimeSpan.FromSeconds(1));
-                CopyHotfixCode();// 拷贝热更代码到Assets/Bundles/Code目录
+                CopyHotfixCode(); // 拷贝热更代码到Assets/Bundles/Code目录
             }
 
             _ = WaitExecute();
@@ -55,7 +55,7 @@ namespace FuFramework.Core.Editor
             {
                 // 源DLL相对路径，相对于Unity工程根目录。Unity编辑器运行时，当前工作目录自动设置为项目根目录。
                 var srcRelativePath = Path.Combine(HotFixAssembliesDir, hotfix);
-                File.Copy(srcRelativePath, Path.Combine(CodeDir, hotfix + Utility.Const.FileNameSuffix.Binary), true);
+                File.Copy(srcRelativePath, Path.Combine(CodeDir,        $"{hotfix}.bytes"), true);
                 Debug.Log($"复制热更代码DLL--{srcRelativePath}到{CodeDir}完成");
             }
 
@@ -85,7 +85,7 @@ namespace FuFramework.Core.Editor
                 foreach (var fileInfo in files)
                 {
                     stringBuilder.AppendLine(fileInfo.Name);
-                    fileInfo.CopyTo(AOTCodeDir + "/" + fileInfo.Name + Utility.Const.FileNameSuffix.Binary, true);
+                    fileInfo.CopyTo(AOTCodeDir + "/" + $"{fileInfo.Name}.bytes", true);
                 }
 
                 Debug.Log(stringBuilder);
