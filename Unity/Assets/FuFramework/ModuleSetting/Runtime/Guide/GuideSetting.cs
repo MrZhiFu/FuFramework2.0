@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -89,7 +88,13 @@ namespace FuFramework.ModuleSetting.Runtime
         public GuideInfo GetGuideByName(string guideName)
         {
             InitializeDictionary();
-            return m_Guides.FirstOrDefault(guide => guide.m_GuideName == guideName);
+            foreach (var guide in m_Guides)
+            {
+                if (guide.m_GuideName == guideName)
+                    return guide;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -405,15 +410,14 @@ namespace FuFramework.ModuleSetting.Runtime
 
                 if (string.IsNullOrEmpty(guide.m_GuideName))
                     errors.Add($"引导名称不能为空 (ID: {guide.m_GuideId})");
-                
+
                 if (guide.m_Steps == null || guide.m_Steps.Count == 0)
                     errors.Add($"引导 '{guide.m_GuideName}' 没有步骤");
                 else
                     ValidateSteps(guide.m_Steps, guide.m_GuideName, errors);
-                
+
                 if (string.IsNullOrEmpty(guide.m_StartStepId))
                     errors.Add($"引导 '{guide.m_GuideName}' 缺少起始步骤");
-
             }
 
             return errors.Count == 0;

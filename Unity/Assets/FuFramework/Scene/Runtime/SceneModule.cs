@@ -1,6 +1,5 @@
 using System;
 using YooAsset;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
@@ -89,9 +88,11 @@ namespace FuFramework.Scene.Runtime
         protected override void OnDispose()
         {
             // 反向遍历已加载的场景，卸载所有已加载的场景
-            for (var i = m_LoadedSceneDict.Count - 1; i >= 0; i--)
+            var loadedScenePaths = new string[m_LoadedSceneDict.Count];
+            m_LoadedSceneDict.Keys.CopyTo(loadedScenePaths, 0);
+            for (var i = loadedScenePaths.Length - 1; i >= 0; i--)
             {
-                var loadedScenePath = m_LoadedSceneDict.Keys.ToArray()[i];
+                var loadedScenePath = loadedScenePaths[i];
                 if (IsUnloading(loadedScenePath)) continue;
                 UnloadScene(loadedScenePath);
             }
@@ -195,7 +196,12 @@ namespace FuFramework.Scene.Runtime
         /// 获取所有已加载场景的资源路径。
         /// </summary>
         /// <returns>已加载场景的资源路径。</returns>
-        public string[] GetAllLoadedSceneAssetPaths() => m_LoadedSceneDict.Keys.ToArray();
+        public string[] GetAllLoadedSceneAssetPaths()
+        {
+            var results = new string[m_LoadedSceneDict.Count];
+            m_LoadedSceneDict.Keys.CopyTo(results, 0);
+            return results;
+        }
 
         /// <summary>
         /// 获取所有已加载场景的资源路径。
@@ -212,7 +218,12 @@ namespace FuFramework.Scene.Runtime
         /// 获取所有正在加载场景的资源路径。
         /// </summary>
         /// <returns>正在加载场景的资源路径。</returns>
-        public string[] GetAllLoadingSceneAssetPaths() => m_LoadingSceneDict.Keys.ToArray();
+        public string[] GetAllLoadingSceneAssetPaths()
+        {
+            var results = new string[m_LoadingSceneDict.Count];
+            m_LoadingSceneDict.Keys.CopyTo(results, 0);
+            return results;
+        }
 
         /// <summary>
         /// 获取所有正在加载场景的资源路径。
@@ -229,7 +240,12 @@ namespace FuFramework.Scene.Runtime
         /// 获取所有正在卸载场景的资源路径。
         /// </summary>
         /// <returns>正在卸载场景的资源路径。</returns>
-        public string[] GetAllUnloadingSceneAssetPaths() => m_UnloadingSceneDict.Keys.ToArray();
+        public string[] GetAllUnloadingSceneAssetPaths()
+        {
+            var results = new string[m_UnloadingSceneDict.Count];
+            m_UnloadingSceneDict.Keys.CopyTo(results, 0);
+            return results;
+        }
 
         /// <summary>
         /// 获取所有正在卸载场景的资源路径。

@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
@@ -83,7 +82,10 @@ namespace FuFramework.SaveData.Runtime
         {
             if (results == null) throw new FuException("[Data] 结果列表不能为空.");
             results.Clear();
-            results.AddRange(m_DataDict.Select(setting => setting.Key));
+            foreach (var setting in m_DataDict)
+            {
+                results.Add(setting.Key);
+            }
         }
 
         /// <summary>

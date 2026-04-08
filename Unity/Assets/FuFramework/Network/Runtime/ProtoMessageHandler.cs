@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using FuFramework.Core.Runtime;
 
@@ -13,8 +12,14 @@ namespace FuFramework.Network.Runtime
     /// </summary>
     public static class ProtoMessageHandler
     {
+        /// <summary>
+        /// 消息处理器字典, Key为消息类型, Value为消息处理器列表
+        /// </summary>
         private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new();
 
+        /// <summary>
+        /// 空消息处理器列表, 避免每次都新建一个空列表
+        /// </summary>
         private static readonly List<MessageHandlerAttribute> EmptyList = new();
 
         /// <summary>
@@ -24,7 +29,7 @@ namespace FuFramework.Network.Runtime
         public static void Add(IMessageHandler messageHandler)
         {
             FuGuard.NotNull(messageHandler, nameof(messageHandler));
-            var type = messageHandler.GetType();
+            var type        = messageHandler.GetType();
             var methodInfos = type.GetMethods(MessageHandlerAttribute.Flags);
 
             foreach (var methodInfo in methodInfos)
@@ -101,7 +106,8 @@ namespace FuFramework.Network.Runtime
         /// <returns>消息处理器</returns>
         internal static List<MessageHandlerAttribute> GetHandlers(Type messageType)
         {
-            if (MessageHandlerDictionary.TryGetValue(messageType, out var list)) return list?.ToList();
+            if (MessageHandlerDictionary.TryGetValue(messageType, out var list))
+                return list == null ? EmptyList : new List<MessageHandlerAttribute>(list);
             FuLogger.LogWarning("没有找到消息处理器消息类型：" + messageType.Name);
             return EmptyList;
         }

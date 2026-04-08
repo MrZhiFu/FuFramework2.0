@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
@@ -168,7 +167,7 @@ namespace FuFramework.Guide.Runtime
         #endregion
 
         #region 公开方法
-        
+
         /// <summary>
         /// 开始引导流程(通过引导ID)
         /// </summary>
@@ -221,7 +220,13 @@ namespace FuFramework.Guide.Runtime
         {
             try
             {
-                var firstGuide = m_Setting.AllGuides.FirstOrDefault();
+                GuideInfo firstGuide = null;
+                foreach (var guide in m_Setting.AllGuides)
+                {
+                    firstGuide = guide;
+                    break;
+                }
+
                 if (firstGuide == null)
                 {
                     FuLogger.LogError("[GuideModule] 没有可用的引导");

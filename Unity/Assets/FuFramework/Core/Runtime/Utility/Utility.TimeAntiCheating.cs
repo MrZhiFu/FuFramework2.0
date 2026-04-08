@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -183,11 +182,11 @@ namespace FuFramework.Core.Runtime
                 {
                     lastTimestamp = 0;
                 }
-                
+
                 // 获取当前时间戳和上次记录的时间戳差值
                 var timestampDelta = nowTimestamp - lastTimestamp;
                 Log($"当前时间戳: {nowTimestamp}s，上次记录的时间戳: {lastTimestamp}s, 两者差值: {timestampDelta}s");
-                
+
                 // 获取本次和上次的系统启动经过的时间差值
                 var tickTimeDelta = tickTime - lastTickTime;
                 Log($"本次系统启动经过的时间: {tickTime}s，上次系统启动经过的时间: {lastTickTime}s, 两者差值: {tickTimeDelta}s");
@@ -363,10 +362,21 @@ namespace FuFramework.Core.Runtime
                 ntpData[0] = 0x1B; // LI = 0 (no warning), VN = 3 (IPv4 only), Mode = 3 (Client Mode)
 
                 // 使用 Dns.GetHostEntryAsync 获取服务器 IP 地址
-                var addresses = (await Dns.GetHostEntryAsync(server)).AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork).ToArray();
-                if (!addresses.Any()) throw new Exception("无法解析 NTP 服务器地址");
+                var addresses = (await Dns.GetHostEntryAsync(server)).AddressList;
 
-                var ipEndPoint = new IPEndPoint(addresses[0], 123); // NTP 默认端口
+                // 过滤出 IPv4 地址
+                var ipv4AddressList = new List<IPAddress>();
+                foreach (var a in addresses)
+                {
+                    if (a.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ipv4AddressList.Add(a);
+                    }
+                }
+
+                if (ipv4AddressList.Count == 0) throw new Exception("无法解析 NTP 服务器地址");
+
+                var ipEndPoint = new IPEndPoint(ipv4AddressList[0], 123); // NTP 默认端口
 
                 using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 socket.SendTimeout    = sendTimeout;

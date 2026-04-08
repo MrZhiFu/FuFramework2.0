@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
-using System.Linq;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
@@ -61,7 +60,7 @@ namespace FuFramework.UI.Runtime
         public FuiPkgManager()
         {
             // 手动管理资源
-            UIPackage.unloadBundleByFGUI = false; 
+            UIPackage.unloadBundleByFGUI = false;
         }
 
         /// <summary>
@@ -345,9 +344,10 @@ namespace FuFramework.UI.Runtime
 
             m_LoadingCts.Clear();
 
-            // 释放所有已加载的包
-            var pkgsToRemove = m_LoadedPkgDict.Keys.ToList();
-            foreach (var pkgName in pkgsToRemove)
+            // 释放所有已加载的包（先复制Keys避免遍历时修改集合）
+            var pkgNames = new string[m_LoadedPkgDict.Count];
+            m_LoadedPkgDict.Keys.CopyTo(pkgNames, 0);
+            foreach (var pkgName in pkgNames)
             {
                 ReleasePackage(pkgName);
             }

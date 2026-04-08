@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ReferencePool.Runtime;
 
@@ -72,7 +72,12 @@ namespace FuFramework.Entity.Runtime
         /// 获取所有子实体。
         /// </summary>
         /// <returns></returns>
-        public Entity[] GetChildEntities() => m_ChildEntities.ToArray();
+        public Entity[] GetChildEntities()
+        {
+            var results = new Entity[m_ChildEntities.Count];
+            m_ChildEntities.CopyTo(results, 0);
+            return results;
+        }
 
         /// <summary>
         /// 获取所有子实体。

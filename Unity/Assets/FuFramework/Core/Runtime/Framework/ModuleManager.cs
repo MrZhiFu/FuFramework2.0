@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
@@ -77,7 +76,7 @@ namespace FuFramework.Core.Runtime
                 module.OnUpdate(deltaTime, unscaledDeltaTime);
             }
         }
-        
+
         /// <summary>
         /// 框架模块延迟帧更新
         /// </summary>
@@ -89,7 +88,7 @@ namespace FuFramework.Core.Runtime
                 module.OnLateUpdate(deltaTime, unscaledDeltaTime);
             }
         }
-        
+
         /// <summary>
         /// 框架模块固定帧更新
         /// </summary>
@@ -191,7 +190,7 @@ namespace FuFramework.Core.Runtime
         /// 获取所有已注册的模块。
         /// </summary>
         /// <returns>模块列表。</returns>
-        public static List<FuModule> GetAllModules() => ModuleList.ToList();
+        public static List<FuModule> GetAllModules() => new(ModuleList);
 
         /// <summary>
         /// 注册游戏框架模块
@@ -400,28 +399,17 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 获取依赖链字符串，用于循环依赖错误提示
-        /// </summary>
-        /// <param name="currentType">当前正在注册的类型</param>
-        /// <returns>依赖链字符串</returns>
-        private static string GetDependencyChainString(Type currentType)
-        {
-            var chain = string.Join(" → ", RegisteringSet.Select(t => t.Name));
-            return $"{chain} → {currentType.Name}";
-        }
-
-        /// <summary>
         /// 获取所有继承自FuModule的类型
         /// </summary>
         private static List<Type> GetAllFuModuleTypes()
         {
             var fuModuleType = typeof(FuModule);
-            var result = new List<Type>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var result       = new List<Type>();
+            var assemblies   = AppDomain.CurrentDomain.GetAssemblies();
 
             foreach (var assembly in assemblies)
             {
-                Type[] types= assembly.GetTypes();
+                Type[] types = assembly.GetTypes();
                 foreach (var type in types)
                 {
                     if (type == fuModuleType) continue;
