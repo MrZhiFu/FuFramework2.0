@@ -24,7 +24,8 @@
         "FuFramework.GlobalConfig.Runtime",
         "FuFramework.ModuleSetting.Runtime",
         "FuFramework.ObjectPool.Runtime",
-        "FuFramework.ReferencePool.Runtime"
+        "FuFramework.ReferencePool.Runtime",
+        "StompyRobot.SRDebugger"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
