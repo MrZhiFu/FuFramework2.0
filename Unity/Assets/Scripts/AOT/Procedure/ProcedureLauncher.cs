@@ -31,7 +31,7 @@ namespace Launcher.Procedure
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
 
-            // 绑定Fui自定义组件
+            // 绑定自动生成的Fui自定义组件(AOT下)
             BindCustomComps();
 
             // 启动热更进度UI

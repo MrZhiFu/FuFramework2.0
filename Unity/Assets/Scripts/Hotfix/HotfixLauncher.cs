@@ -44,7 +44,7 @@ namespace Hotfix
             LauncherUIHelper.SetTipText("LoadInitUIAsset...");
             await LoadUI();
 
-            // 绑定Fui自定义组件
+            // 绑定自动生成的Fui自定义组件(HotFix下)
             BindCustomComps();
 
             // 指定获取多语言的接口
