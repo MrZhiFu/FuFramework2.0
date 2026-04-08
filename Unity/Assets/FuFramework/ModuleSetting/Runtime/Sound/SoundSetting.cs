@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Audio;
 using System.Collections.Generic;
 
@@ -86,7 +85,13 @@ namespace FuFramework.ModuleSetting.Runtime
         public SoundGroupInfo GetGroupByID(string groupID)
         {
             InitializeDictionary();
-            return m_SoundGroups.FirstOrDefault(group => group.GroupID == groupID);
+            foreach (var group in m_SoundGroups)
+            {
+                if (group.GroupID == groupID)
+                    return group;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -215,8 +220,9 @@ namespace FuFramework.ModuleSetting.Runtime
             if (m_IsInitialized && m_GroupDictionary != null && m_GroupDictionary.Count == m_SoundGroups.Count) return;
 
             m_GroupDictionary = new Dictionary<string, SoundGroupInfo>();
-            foreach (var group in m_SoundGroups.Where(group => group != null && !string.IsNullOrEmpty(group.Name)))
+            foreach (var group in m_SoundGroups)
             {
+                if (group == null || string.IsNullOrEmpty(group.Name)) continue;
                 m_GroupDictionary.TryAdd(group.Name, group);
             }
 

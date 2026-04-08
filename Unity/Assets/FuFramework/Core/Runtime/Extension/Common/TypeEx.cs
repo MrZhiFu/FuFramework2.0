@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -37,11 +36,31 @@ namespace FuFramework.Core.Runtime
             // 检查是否是接口类型或抽象类型
             if (self.IsInterface || self.IsAbstract) return false;
 
+            var interfaces = self.GetInterfaces();
+
             // 只检查直接实现的接口
-            if (directOnly) return self.GetInterfaces().Any(i => i == target);
+            if (directOnly)
+            {
+                foreach (var i in interfaces)
+                {
+                    if (i == target) return true;
+                }
+
+                return false;
+            }
 
             // 检查所有实现的接口（包括继承的接口）
-            return self.GetInterfaces().Any(i => i == target || i.GetInterfaces().Contains(target));
+            foreach (var i in interfaces)
+            {
+                if (i == target) return true;
+                var subInterfaces = i.GetInterfaces();
+                foreach (var sub in subInterfaces)
+                {
+                    if (sub == target) return true;
+                }
+            }
+
+            return false;
         }
     }
 }

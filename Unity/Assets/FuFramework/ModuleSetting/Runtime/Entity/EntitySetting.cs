@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -75,7 +74,13 @@ namespace FuFramework.ModuleSetting.Runtime
         public EntityGroupInfo GetGroupByID(string groupID)
         {
             InitializeDictionary();
-            return m_EntityGroups.FirstOrDefault(group => group.GroupID == groupID);
+            foreach (var group in m_EntityGroups)
+            {
+                if (group.GroupID == groupID)
+                    return group;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -112,7 +117,7 @@ namespace FuFramework.ModuleSetting.Runtime
         {
             // 确保名称唯一
             var uniqueName = GetUniqueName(groupName);
-            var newGroup = new EntityGroupInfo(uniqueName);
+            var newGroup   = new EntityGroupInfo(uniqueName);
             AddGroup(newGroup);
             return newGroup;
         }
@@ -185,7 +190,7 @@ namespace FuFramework.ModuleSetting.Runtime
         private string GetUniqueName(string baseName)
         {
             var groupName = baseName;
-            var counter = 1;
+            var counter   = 1;
 
             while (ContainsGroup(groupName))
             {
@@ -204,8 +209,9 @@ namespace FuFramework.ModuleSetting.Runtime
             if (m_IsInitialized && m_GroupDictionary != null && m_GroupDictionary.Count == m_EntityGroups.Count) return;
 
             m_GroupDictionary = new Dictionary<string, EntityGroupInfo>();
-            foreach (var group in m_EntityGroups.Where(group => group != null && !string.IsNullOrEmpty(group.Name)))
+            foreach (var group in m_EntityGroups)
             {
+                if (group == null || string.IsNullOrEmpty(group.Name)) continue;
                 m_GroupDictionary.TryAdd(group.Name, group);
             }
 
