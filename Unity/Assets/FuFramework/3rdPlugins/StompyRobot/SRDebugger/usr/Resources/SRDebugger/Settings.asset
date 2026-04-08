@@ -51,7 +51,7 @@ MonoBehaviour:
   _collapseDuplicateLogEntries: 1
   _richTextInConsole: 1
   _requireEntryCode: 1
-  _requireEntryCodeEveryTime: 1
+  _requireEntryCodeEveryTime: 0
   _entryCode: 05000000040000000800000007000000
   _useDebugCamera: 0
   _debugLayer: 5
