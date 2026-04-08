@@ -91,21 +91,16 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 获取指定层级中最顶部的界面。
+        /// 获取顶部界面。
         /// </summary>
-        /// <param name="uiLayer">界面层级，为null时返回所有层级中最顶部的界面。</param>
+        /// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
         /// <returns>最顶部的界面。</returns>
-        public T GetTopUI<T>(UILayer? uiLayer = null) where T : ViewBase
+        public ViewBase GetTopUI(UILayer? uiLayer = null)
         {
             // 获取指定层级的顶部界面
             if (uiLayer.HasValue)
             {
-                if (m_UIGroupDict.TryGetValue(uiLayer.Value, out var group))
-                {
-                    return group.CurrentViewBase as T;
-                }
-
-                return null;
+                return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentViewBase : null;
             }
 
             // 获取所有层级中最顶部的界面（层级值最大的）
@@ -122,7 +117,7 @@ namespace FuFramework.UI.Runtime
                 }
             }
 
-            return topView as T;
+            return topView;
         }
 
         /// <summary>
