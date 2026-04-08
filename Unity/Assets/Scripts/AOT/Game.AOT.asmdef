@@ -2,10 +2,10 @@
     "name": "Game.AOT",
     "rootNamespace": "",
     "references": [
+        "UniTask",
         "FairyGUI",
         "YooAsset",
         "HybridCLRData",
-        "UniTask.Runtime",
         "HybridCLR.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Entry.Runtime",

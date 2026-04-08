@@ -41,7 +41,7 @@ namespace Launcher.Procedure
         private static async UniTaskVoid Start()
         {
             // 等待一帧，确保热更完毕
-            await UniTask.DelayFrame();
+            await UniTask.DelayFrame(1);
 
             // 等待加载热更程序集
             var hotfixAssembly = await LoadDll();

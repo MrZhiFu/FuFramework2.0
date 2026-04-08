@@ -2,7 +2,7 @@
   "dependencies": {
     "com.code-philosophy.hybridclr": "https://gitee.com/focus-creative-games/hybridclr_unity.git",
     "com.code-philosophy.luban": "https://gitee.com/focus-creative-games/luban_unity.git",
-    "com.gameframex.unity.cysharp.unitask": "https://gitee.com/gameframex/com.gameframex.unity.cysharp.unitask.git",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=/src/UniTask/Assets/Plugins/UniTask",
     "com.gameframex.unity.demigiant.dotween": "https://gitee.com/gameframex/com.gameframex.unity.demigiant.dotween.git",
     "com.gameframex.unity.google.protobuf": "https://gitee.com/gameframex/com.gameframex.unity.google.protobuf.git",
     "com.gameframex.unity.gwiazdorrr.betterstreamingassets": "https://gitee.com/gameframex/com.gameframex.unity.gwiazdorrr.betterstreamingassets.git",

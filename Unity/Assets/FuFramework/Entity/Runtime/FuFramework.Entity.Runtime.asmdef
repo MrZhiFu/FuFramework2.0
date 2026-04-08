@@ -2,8 +2,8 @@
     "name": "FuFramework.Entity.Runtime",
     "rootNamespace": "FuFramework.Entity.Runtime",
     "references": [
+        "UniTask",
         "YooAsset",
-        "UniTask.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Asset.Runtime",
         "FuFramework.Event.Runtime",

@@ -2,8 +2,8 @@
     "name": "FuFramework.Sound.Runtime",
     "rootNamespace": "FuFramework.Sound.Runtime",
     "references": [
+        "UniTask",
         "YooAsset",
-        "UniTask.Runtime",
         "FuFramework.Core.Runtime",
         "FuFramework.Entity.Runtime",
         "FuFramework.Event.Runtime",

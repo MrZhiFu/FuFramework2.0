@@ -47,7 +47,7 @@ namespace Launcher.Procedure
             await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadURL.Value, downloadURL.Value);
 
             Fsm.RemoveData("DownloadURL");
-            await UniTask.DelayFrame();
+            await UniTask.DelayFrame(1);
 
             ChangeState<ProcedureGetPackageVersion>();
         }

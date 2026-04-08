@@ -2,9 +2,9 @@
     "name": "FuFramework.Timer.Runtime",
     "rootNamespace": "FuFramework.Timer.Runtime",
     "references": [
+        "UniTask",
         "FuFramework.Core.Runtime",
-        "FuFramework.ReferencePool.Runtime",
-        "UniTask.Runtime"
+        "FuFramework.ReferencePool.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
