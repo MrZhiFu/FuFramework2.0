@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
@@ -64,7 +63,8 @@ namespace Launcher.Procedure
         /// </summary>
         public static async UniTask<Assembly> LoadDll()
         {
-            // 编辑器模式下，直接加载程序集
+            // 编辑器模式下，直接使用当前程序集
+            FuLogger.LogInfo("-------------编辑器模式下，直接使用当前程序集-----------------");
             if (Utility.Application.IsEditor)
             {
                 var assemblies = Utility.Assembly.GetAssemblies();
@@ -78,11 +78,9 @@ namespace Launcher.Procedure
                 }
             }
 
-            // 非编辑器模式下，加载AOT DLL，加载Game.Hotfix.dll，运行入口函数
-            FuLogger.LogInfo("开始加载AOT DLL");
-
-            var aotDlls = AOTGenericReferences.PatchedAOTAssemblyList.ToArray();
-            foreach (var aotDll in aotDlls)
+            // 非编辑器模式下，加载补丁AOT DLL和 Hotfix DLL
+            FuLogger.LogInfo("---------------开始加载AOT DLL---------------");
+            foreach (var aotDll in AOTGenericReferences.PatchedAOTAssemblyList)
             {
                 FuLogger.LogInfo("开始加载AOT DLL ==> " + aotDll);
                 var aotDllPath        = Utility.AssetPath.GetAOTCodePath(aotDll);
@@ -91,16 +89,16 @@ namespace Launcher.Procedure
                 RuntimeApi.LoadMetadataForAOTAssembly(aotDllBytes, HomologousImageMode.SuperSet);
             }
 
-            FuLogger.LogInfo("结束加载AOT DLL");
+            FuLogger.LogInfo("---------------结束加载AOT DLL---------------");
 
-            FuLogger.LogInfo("开始加载Game.Hotfix.dll");
+
+            FuLogger.LogInfo("+++++++++++++++开始加载Hotfix DLL+++++++++++++++");
             var hotfixDllPath        = Utility.AssetPath.GetCodePath($"{HotfixDllName}.dll");
             var hotfixDllAssetHandle = await GlobalModule.AssetModule.LoadAssetAsync<UnityEngine.Object>(hotfixDllPath);
             var hotfixDllBytes       = hotfixDllAssetHandle.GetAssetObject<UnityEngine.TextAsset>().bytes;
-
-            FuLogger.LogInfo("开始加载程序集Hotfix");
-            var hotfixAssembly = Assembly.Load(hotfixDllBytes, null);
-            FuLogger.LogInfo("加载程序集Hotfix 结束 Assembly " + hotfixAssembly.FullName);
+            var hotfixAssembly       = Assembly.Load(hotfixDllBytes, null);
+            FuLogger.LogInfo("加载完成 ==> " + hotfixAssembly.FullName);
+            FuLogger.LogInfo("+++++++++++++++结束加载Hotfix DLL+++++++++++++++");
 
             return hotfixAssembly;
         }

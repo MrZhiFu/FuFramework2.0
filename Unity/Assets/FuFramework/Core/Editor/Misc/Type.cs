@@ -13,10 +13,10 @@ namespace FuFramework.Core.Editor
     public static class Type
     {
         /// 运行时程序集名称列表
-        private static readonly string[] m_RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
+        private static readonly string[] RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
         
         /// 运行时或编辑器程序集名称列表
-        private static readonly string[] m_RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
+        private static readonly string[] RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
 
         /// <summary>
         /// 在运行时程序集中获取指定基类的所有子类的名称。
@@ -25,7 +25,7 @@ namespace FuFramework.Core.Editor
         /// <returns>指定基类的所有子类的名称。</returns>
         public static string[] GetRuntimeTypeNames(System.Type typeBase)
         {
-            return GetTypeNames(typeBase, m_RuntimeAssemblyNames);
+            return GetTypeNames(typeBase, RuntimeAssemblyNames);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace FuFramework.Core.Editor
         /// <returns>指定基类的所有子类的名称。</returns>
         internal static string[] GetRuntimeOrEditorTypeNames(System.Type typeBase)
         {
-            return GetTypeNames(typeBase, m_RuntimeOrEditorAssemblyNames);
+            return GetTypeNames(typeBase, RuntimeOrEditorAssemblyNames);
         }
 
         /// <summary>
