@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using UnityEngine;
-using UnityEngine.Audio;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Runtime
@@ -35,12 +33,6 @@ namespace FuFramework.Sound.Runtime
             /// 获取声音组名称。
             /// </summary>
             public string Name { get; private set; }
-
-            /// <summary>
-            /// 获取或设置声音组辅助器所在的混音组。
-            /// </summary>
-            // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            public AudioMixerGroup AudioMixerGroup { get; private set; }
 
             /// <summary>
             /// 获取或设置声音组中的声音是否允许被同优先级声音替换。
@@ -92,8 +84,7 @@ namespace FuFramework.Sound.Runtime
             /// 初始化声音组的新实例。
             /// </summary>
             /// <param name="soundGroupInfo">声音组信息。</param>
-            /// <param name="soundModule">声音管理器。</param>
-            public void Init(SoundGroupInfo soundGroupInfo, SoundModule soundModule)
+            public void Init(SoundGroupInfo soundGroupInfo)
             {
                 FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
                 Name                          = soundGroupInfo.Name;
@@ -106,7 +97,7 @@ namespace FuFramework.Sound.Runtime
                 // 添加声音组辅助器中的声音播放代理辅助器
                 for (var i = 0; i < soundGroupInfo.AgentCount; i++)
                 {
-                    AddSoundAgentHelper(i, soundModule);
+                    AddSoundAgentHelper(i);
                 }
             }
 
@@ -114,8 +105,7 @@ namespace FuFramework.Sound.Runtime
             /// 增加声音代理辅助器。
             /// </summary>
             /// <param name="idx">声音代理索引。</param>
-            /// <param name="module">声音管理器。</param>
-            public void AddSoundAgentHelper(int idx, SoundModule module)
+            public void AddSoundAgentHelper(int idx)
             {
                 var soundAgentGo = new GameObject($"Sound Agent - {idx}");
                 soundAgentGo.transform.SetParent(transform);
@@ -135,9 +125,9 @@ namespace FuFramework.Sound.Runtime
             {
                 errorCode = null;
                 SoundAgent candidateAgent = null; // 候选播放代理
-                
+
                 if (playSoundInfo is null) return null;
-                
+
 
                 // 遍历所有声音播放代理，找到合适的代理播放声音
                 foreach (var soundAgent in m_SoundAgents)
@@ -202,10 +192,13 @@ namespace FuFramework.Sound.Runtime
             /// <returns>是否停止播放声音成功。</returns>
             public bool StopSound(int serialId, float fadeOutSeconds)
             {
-                foreach (var soundAgent in m_SoundAgents.Where(soundAgent => soundAgent.SerialId == serialId))
+                foreach (var soundAgent in m_SoundAgents)
                 {
-                    soundAgent.Stop(fadeOutSeconds);
-                    return true;
+                    if (soundAgent.SerialId == serialId)
+                    {
+                        soundAgent.Stop(fadeOutSeconds);
+                        return true;
+                    }
                 }
 
                 return false;
@@ -219,10 +212,13 @@ namespace FuFramework.Sound.Runtime
             /// <returns>是否暂停播放声音成功。</returns>
             public bool PauseSound(int serialId, float fadeOutSeconds)
             {
-                foreach (var soundAgent in m_SoundAgents.Where(soundAgent => soundAgent.SerialId == serialId))
+                foreach (var soundAgent in m_SoundAgents)
                 {
-                    soundAgent.Pause(fadeOutSeconds);
-                    return true;
+                    if (soundAgent.SerialId == serialId)
+                    {
+                        soundAgent.Pause(fadeOutSeconds);
+                        return true;
+                    }
                 }
 
                 return false;
@@ -236,10 +232,13 @@ namespace FuFramework.Sound.Runtime
             /// <returns>是否恢复播放声音成功。</returns>
             public bool ResumeSound(int serialId, float fadeInSeconds)
             {
-                foreach (var soundAgent in m_SoundAgents.Where(soundAgent => soundAgent.SerialId == serialId))
+                foreach (var soundAgent in m_SoundAgents)
                 {
-                    soundAgent.Resume(fadeInSeconds);
-                    return true;
+                    if (soundAgent.SerialId == serialId)
+                    {
+                        soundAgent.Resume(fadeInSeconds);
+                        return true;
+                    }
                 }
 
                 return false;
@@ -251,9 +250,10 @@ namespace FuFramework.Sound.Runtime
             /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
             public void StopAllLoadedSounds(float fadeOutSeconds)
             {
-                foreach (var soundAgent in m_SoundAgents.Where(soundAgent => soundAgent.IsPlaying))
+                foreach (var soundAgent in m_SoundAgents)
                 {
-                    soundAgent.Stop(fadeOutSeconds);
+                    if (soundAgent.IsPlaying)
+                        soundAgent.Stop(fadeOutSeconds);
                 }
             }
         }

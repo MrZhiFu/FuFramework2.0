@@ -1,7 +1,6 @@
 using System;
 using YooAsset;
 using UnityEngine;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
@@ -24,7 +23,6 @@ namespace FuFramework.Entity.Runtime
     /// 5. 管理实体的对象池。
     /// 6. 管理实体的依赖资源加载。
     /// </summary>
-
     [ModuleDependency(typeof(ObjectPoolModule), typeof(AssetModule), typeof(EventModule))]
     public sealed class EntityModule : FuModule
     {
@@ -235,7 +233,13 @@ namespace FuFramework.Entity.Runtime
         public bool HasEntity(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 实体资源名称不能为空.");
-            return m_EntityDict.Any(entityInfo => entityInfo.Value.Entity.EntityAssetName == entityAssetName);
+            foreach (var (_, entityInfo) in m_EntityDict)
+            {
+                if (entityInfo.Entity.EntityAssetName == entityAssetName)
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -413,9 +417,9 @@ namespace FuFramework.Entity.Runtime
             // 创建一个加载实体资源的任务，先从对象池获取实体，没有才从资源加载
             var tcs               = new UniTaskCompletionSource<Entity>();
             var entityInstanceObj = entityGroup.SpawnEntityInstanceObject(entityAssetName);
-            
+
             // 实体额外信息
-            var showEntityInfoEx  = ShowEntityInfoEx.Create(entityLogicType, userData);
+            var showEntityInfoEx = ShowEntityInfoEx.Create(entityLogicType, userData);
 
             if (entityInstanceObj is null)
             {
@@ -427,7 +431,7 @@ namespace FuFramework.Entity.Runtime
                 {
                     // 实体信息
                     var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
-                    
+
                     if (handle.IsDone)
                         LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
                     else
@@ -639,7 +643,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentTransform">被附加的父实体的Transform</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, Transform parentTransform = null)
         {
-            if (childEntity  is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
+            if (childEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
             if (parentEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 父实体不存在.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransform);
         }
@@ -653,7 +657,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="parentTransformPath">被附加的父实体的Transform路径</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, string parentTransformPath = "")
         {
-            if (childEntity  is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
+            if (childEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
             if (parentEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 父实体不存在.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransformPath);
         }
@@ -706,7 +710,7 @@ namespace FuFramework.Entity.Runtime
         {
             if (childEntityId == parentEntityId)
                 throw new FuException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}和父实体{parentEntityId}不能相同.");
-                
+
             var childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo is null)
                 throw new FuException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}不存在.");
@@ -726,7 +730,7 @@ namespace FuFramework.Entity.Runtime
 
             // 如果指定的相对于于父实体的Transform路径为空，则默认直接附加到父实体的Transform上
             parentTransform ??= parentEntity.Logic.CachedTransform;
-            
+
             // 创建附加实体信息
             var attachEntityInfo = AttachEntityInfo.Create(parentTransform, userData);
 
@@ -736,7 +740,7 @@ namespace FuFramework.Entity.Runtime
             // 附加到新的父实体
             childEntityInfo.ParentEntity = parentEntity;
             parentEntityInfo.AddChildEntity(childEntity);
-            
+
             // 通知父实体有新子实体附加进来，通知子实体被附加到新的父实体上
             parentEntity.OnAttached(childEntity, attachEntityInfo);
             childEntity.OnAttachTo(parentEntity, attachEntityInfo);
@@ -828,7 +832,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="userData">用户自定义数据。</param>
         public void DetachChildEntities(Entity parentEntity, object userData)
         {
-            if (parentEntity is null) throw new  FuException("[EntityModule] 解除所有子实体失败, 父实体不存在.");
+            if (parentEntity is null) throw new FuException("[EntityModule] 解除所有子实体失败, 父实体不存在.");
             DetachChildEntities(parentEntity.Id, userData);
         }
 

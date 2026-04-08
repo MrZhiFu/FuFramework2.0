@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
@@ -92,9 +91,9 @@ namespace FuFramework.Entity.Runtime
         public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
             if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
-            if (groupGo      is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
+            if (groupGo is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
-            Name = groupSetting.Name;
+            Name    = groupSetting.Name;
             GroupGo = groupGo;
 
             var poolName = $"Entity Instance Pool ({Name})";
@@ -127,7 +126,16 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityId">实体序列编号。</param>
         /// <returns>实体组中是否存在实体。</returns>
-        public bool HasEntity(int entityId) => m_Entities.Any(entity => entity.Id == entityId);
+        public bool HasEntity(int entityId)
+        {
+            foreach (var entity in m_Entities)
+            {
+                if (entity.Id == entityId)
+                    return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// 实体组中是否存在实体。
@@ -137,7 +145,13 @@ namespace FuFramework.Entity.Runtime
         public bool HasEntity(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
-            return m_Entities.Any(entity => entity.EntityAssetName == entityAssetName);
+            foreach (var entity in m_Entities)
+            {
+                if (entity.EntityAssetName == entityAssetName)
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -145,7 +159,16 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="entityId">实体序列编号。</param>
         /// <returns>要获取的实体。</returns>
-        public Entity GetEntity(int entityId) => m_Entities.FirstOrDefault(entity => entity.Id == entityId);
+        public Entity GetEntity(int entityId)
+        {
+            foreach (var entity in m_Entities)
+            {
+                if (entity.Id == entityId)
+                    return entity;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// 从实体组中获取实体。
@@ -155,7 +178,13 @@ namespace FuFramework.Entity.Runtime
         public Entity GetEntity(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
-            return m_Entities.FirstOrDefault(entity => entity.EntityAssetName == entityAssetName);
+            foreach (var entity in m_Entities)
+            {
+                if (entity.EntityAssetName == entityAssetName)
+                    return entity;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -166,7 +195,14 @@ namespace FuFramework.Entity.Runtime
         public Entity[] GetEntities(string entityAssetName)
         {
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
-            return m_Entities.Where(entity => entity.EntityAssetName == entityAssetName).ToArray();
+            var results = new List<Entity>();
+            foreach (var entity in m_Entities)
+            {
+                if (entity.EntityAssetName == entityAssetName)
+                    results.Add(entity);
+            }
+
+            return results.ToArray();
         }
 
         /// <summary>
@@ -179,14 +215,28 @@ namespace FuFramework.Entity.Runtime
             if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
             if (results is null) throw new FuException("[EntityGroup] 结果列表为空.");
             results.Clear();
-            results.AddRange(m_Entities.Where(entity => entity.EntityAssetName == entityAssetName));
+            foreach (var entity in m_Entities)
+            {
+                if (entity.EntityAssetName == entityAssetName)
+                    results.Add(entity);
+            }
         }
 
         /// <summary>
         /// 从实体组中获取所有实体。
         /// </summary>
         /// <returns>实体组中的所有实体。</returns>
-        public Entity[] GetAllEntities() => m_Entities.ToArray();
+        public Entity[] GetAllEntities()
+        {
+            var results = new Entity[m_Entities.Count];
+            var index   = 0;
+            foreach (var entity in m_Entities)
+            {
+                results[index++] = entity;
+            }
+
+            return results;
+        }
 
         /// <summary>
         /// 从实体组中获取所有实体。

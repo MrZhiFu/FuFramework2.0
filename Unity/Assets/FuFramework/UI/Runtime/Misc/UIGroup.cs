@@ -1,5 +1,4 @@
 using FairyGUI;
-using System.Linq;
 using FuFramework.Core.Runtime;
 using System.Collections.Generic;
 
@@ -336,7 +335,13 @@ namespace FuFramework.UI.Runtime
         private ViewInfo GetUIInfo(ViewBase view)
         {
             FuGuard.NotNull(view, nameof(view));
-            return m_UIInfoList.FirstOrDefault(uiInfo => uiInfo.View == view);
+            foreach (var uiInfo in m_UIInfoList)
+            {
+                if (uiInfo.View == view)
+                    return uiInfo;
+            }
+
+            return null;
         }
     }
 }

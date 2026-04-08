@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using UnityEngine;
-using System.Linq;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
@@ -221,7 +220,10 @@ namespace FuFramework.SaveData.Runtime
         public void GetAllHelperNames(List<string> results)
         {
             if (results is null) throw new FuException("[DataSaveModule] 结果列表不能为空.");
-            results.AddRange(m_Helpers.Select(helper => helper.Key));
+            foreach (var helper in m_Helpers)
+            {
+                results.Add(helper.Key);
+            }
         }
 
         /// <summary>
@@ -264,7 +266,17 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 获取所有有未保存数据的Helper数量
         /// </summary>
-        public int GetDirtyHelperCount() => m_Helpers.Values.Count(helper => helper.IsDirty);
+        public int GetDirtyHelperCount()
+        {
+            var count = 0;
+            foreach (var helper in m_Helpers.Values)
+            {
+                if (helper.IsDirty)
+                    count++;
+            }
+
+            return count;
+        }
 
 
         /// <summary>

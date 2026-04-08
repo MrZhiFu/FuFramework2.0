@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
@@ -267,7 +266,13 @@ namespace FuFramework.Timer.Runtime
         /// 获取所有计时器名称
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<string> GetAllTimerNames() => m_TimerDict.Values.Select(x => x.Name);
+        public IEnumerable<string> GetAllTimerNames()
+        {
+            foreach (var timerInfo in m_TimerDict.Values)
+            {
+                yield return timerInfo.Name;
+            }
+        }
 
         #endregion
 

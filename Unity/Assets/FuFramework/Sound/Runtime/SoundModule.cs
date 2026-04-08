@@ -32,7 +32,7 @@ namespace FuFramework.Sound.Runtime
         private readonly List<int>    m_LoadingSoundList    = new(); // 记录正在加载的声音ID列表
         private readonly HashSet<int> m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 
-        private AssetModule m_AssetModule;   // 资源管理器
+        private AssetModule m_AssetModule; // 资源管理器
         private EventModule m_EventModule; // 事件组件
 
         private int m_Serial; // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
@@ -91,7 +91,7 @@ namespace FuFramework.Sound.Runtime
             SceneManager.sceneLoaded   += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
-        
+
         /// <summary>
         /// 释放
         /// </summary>
@@ -101,7 +101,7 @@ namespace FuFramework.Sound.Runtime
             m_SoundGroupDict.Clear();
             m_LoadingSoundList.Clear();
             m_LoadingToReleaseSet.Clear();
-            
+
             SceneManager.sceneLoaded   -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
         }
@@ -178,7 +178,7 @@ namespace FuFramework.Sound.Runtime
             soundGroupGo.transform.SetParent(transform);
             soundGroupGo.transform.localScale = Vector3.one;
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
-            soundGroup.Init(soundGroupInfo, this);
+            soundGroup.Init(soundGroupInfo);
             m_SoundGroupDict.Add(soundGroupInfo.Name, soundGroup);
             return true;
         }
@@ -492,7 +492,7 @@ namespace FuFramework.Sound.Runtime
             if (errorCode != null)
                 errorCodeValue = errorCode.Value;
 
-            var errorMessage = $"[SoundModule]播放声音 '{playSoundInfo.SoundAssetPath}' 失败, 声音组 '{playSoundInfo.SoundGroup.Name}', 错误类型 '{ errorCodeValue}'.";
+            var errorMessage = $"[SoundModule]播放声音 '{playSoundInfo.SoundAssetPath}' 失败, 声音组 '{playSoundInfo.SoundGroup.Name}', 错误类型 '{errorCodeValue}'.";
             if (errorCodeValue == EPlaySoundErrorCode.IgnoredBecauseLowPriority)
             {
                 FuLogger.LogInfo(errorMessage);

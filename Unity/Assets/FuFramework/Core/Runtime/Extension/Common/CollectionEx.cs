@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
@@ -33,7 +32,7 @@ namespace FuFramework.Core.Runtime
         public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> self, TKey key, Func<TKey, TValue> valueGetter)
         {
             if (self.TryGetValue(key, out var value)) return value;
-            value = valueGetter(key);
+            value     = valueGetter(key);
             self[key] = value;
             return value;
         }
@@ -51,12 +50,15 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static int RemoveIf<TKey, TValue>(this Dictionary<TKey, TValue> self, Func<TKey, TValue, bool> predict)
         {
-            var count = 0;
+            var count  = 0;
             var remove = new HashSet<TKey>();
-            foreach (var kv in self.Where(kv => predict(kv.Key, kv.Value)))
+            foreach (var kv in self)
             {
-                remove.Add(kv.Key);
-                count++;
+                if (predict(kv.Key, kv.Value))
+                {
+                    remove.Add(kv.Key);
+                    count++;
+                }
             }
 
             foreach (var key in remove)

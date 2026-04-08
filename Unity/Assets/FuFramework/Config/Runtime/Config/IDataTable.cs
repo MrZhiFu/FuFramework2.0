@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -120,7 +120,7 @@ namespace FuFramework.Config.Runtime
         /// </summary>
         /// <param name="func">查询条件</param>
         /// <returns></returns>
-        TK Max<TK>(Func<T, TK> func);
+        TK Max<TK>(Func<T, TK> func) where TK : IComparable<TK>;
 
         /// <summary>
         /// 取最小值
@@ -128,7 +128,7 @@ namespace FuFramework.Config.Runtime
         /// <param name="func">查询条件</param>
         /// <typeparam name="TK">返回值类型</typeparam>
         /// <returns></returns>
-        TK Min<TK>(Func<T, TK> func);
+        TK Min<TK>(Func<T, TK> func) where TK : IComparable<TK>;
 
         /// <summary>
         /// 求和
