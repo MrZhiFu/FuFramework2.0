@@ -238,7 +238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb2f8fa7d6f04cf1a8304d49b973e3b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FrameRate: 30
+  m_FrameRate: 120
   m_GameSpeed: 1
   m_RunInBackground: 1
   m_NeverSleep: 1
