@@ -11,24 +11,52 @@ namespace FuFramework.UI.Editor
     {
         private void OnPreprocessTexture()
         {
-            var isBundleUI = assetPath.Contains(Utility.Path.Combine(Utility.AssetPath.BundlesPath, "UI"));
-            var isResourceUI = assetPath.Contains(Utility.Path.Combine("Resources", "UI"));
+            var isBundleUI   = assetPath.Contains(Utility.Path.Combine(Utility.AssetPath.BundlesPath, "UI"));
+            var isResourceUI = assetPath.Contains(Utility.Path.Combine("Resources",                   "UI"));
             if (!isBundleUI && !isResourceUI) return;
-            
+
             var textureImporter = assetImporter as TextureImporter;
             if (textureImporter == null) return;
-           
+
             if (textureImporter.textureType != TextureImporterType.Default)
                 textureImporter.textureType = TextureImporterType.Default;
 
             if (textureImporter.mipmapEnabled)
                 textureImporter.mipmapEnabled = false;
-            
+
             if (textureImporter.isReadable)
                 textureImporter.isReadable = false;
 
             textureImporter.alphaSource         = TextureImporterAlphaSource.FromInput;
             textureImporter.alphaIsTransparency = true;
+
+            // Android - ASTC 6x6
+            var androidSettings = textureImporter.GetPlatformTextureSettings("Android");
+            androidSettings.overridden         = true;
+            androidSettings.format             = TextureImporterFormat.ASTC_6x6;
+            androidSettings.compressionQuality = 100;
+            textureImporter.SetPlatformTextureSettings(androidSettings);
+
+            // iOS - ASTC 6x6
+            var iosSettings = textureImporter.GetPlatformTextureSettings("iPhone");
+            iosSettings.overridden         = true;
+            iosSettings.format             = TextureImporterFormat.ASTC_6x6;
+            iosSettings.compressionQuality = 100;
+            textureImporter.SetPlatformTextureSettings(iosSettings);
+
+            // PC/Standalone - DXT5 支持透明
+            var standaloneSettings = textureImporter.GetPlatformTextureSettings("Standalone");
+            standaloneSettings.overridden         = true;
+            standaloneSettings.format             = TextureImporterFormat.DXT5;
+            standaloneSettings.compressionQuality = 100;
+            textureImporter.SetPlatformTextureSettings(standaloneSettings);
+
+            // WebGL - DXT5 兼容性最好
+            var webglSettings = textureImporter.GetPlatformTextureSettings("WebGL");
+            webglSettings.overridden         = true;
+            webglSettings.format             = TextureImporterFormat.DXT5;
+            webglSettings.compressionQuality = 100;
+            textureImporter.SetPlatformTextureSettings(webglSettings);
         }
     }
 }
