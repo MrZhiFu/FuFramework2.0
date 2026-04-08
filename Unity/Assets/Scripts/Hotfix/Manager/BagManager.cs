@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Network.Runtime;
@@ -20,7 +19,7 @@ namespace Hotfix.Manager
 
         public List<BagItem> GetItems()
         {
-            return _itemDic.Values.ToList();
+            return new List<BagItem>(_itemDic.Values);
         }
 
         /// <summary>
