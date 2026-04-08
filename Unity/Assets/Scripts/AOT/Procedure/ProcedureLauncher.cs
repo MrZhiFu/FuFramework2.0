@@ -18,9 +18,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureLauncher : ProcedureBase
     {
-        public override int Priority => 1; // 显示优先级
+        /// <summary>
+        /// 在Inspector中的显示优先级
+        /// </summary>
+        public override int Priority => 1;
 
-        protected override async void OnEnter()
+        protected override void OnEnter()
         {
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入首次启动流程------</color>");
@@ -33,9 +36,6 @@ namespace Launcher.Procedure
 
             // 绑定自动生成的Fui自定义组件(AOT下)
             BindCustomComps();
-
-            // 启动热更进度UI
-            await LauncherUIHelper.Start();
 
             // 启动流程
             Start().Forget();
@@ -58,6 +58,9 @@ namespace Launcher.Procedure
         private async UniTaskVoid Start()
         {
             await UniTask.NextFrame();
+
+            // 启动热更进度UI
+            await LauncherUIHelper.Start();
 
             // 编辑器下的模拟模式/单机离线模式--进入初始化资源包流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)

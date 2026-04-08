@@ -20,7 +20,10 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureDownloadPackage : ProcedureBase
     {
-        public override int Priority => 9; // 显示优先级
+        /// <summary>
+        /// 在Inspector中的显示优先级
+        /// </summary>
+        public override int Priority => 9;
 
         protected override void OnEnter()
         {

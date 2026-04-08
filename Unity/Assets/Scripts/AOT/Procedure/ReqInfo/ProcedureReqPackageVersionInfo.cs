@@ -22,7 +22,10 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureReqPackageVersionInfo : ProcedureBase
     {
-        public override int Priority => 4; // 优先级。
+        /// <summary>
+        /// 在Inspector中的显示优先级
+        /// </summary>
+        public override int Priority => 4;
 
         protected override void OnEnter()
         {

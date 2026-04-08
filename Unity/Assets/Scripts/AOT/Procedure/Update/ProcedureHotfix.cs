@@ -18,7 +18,7 @@ namespace Launcher.Procedure
     public sealed class ProcedureHotfix : ProcedureBase
     {
         /// <summary>
-        /// 显示优先级
+        /// 在Inspector中的显示优先级
         /// </summary>
         public override int Priority => 11;
 

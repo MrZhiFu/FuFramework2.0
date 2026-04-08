@@ -16,7 +16,10 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureInitPackage : ProcedureBase
     {
-        public override int Priority => 5; // 显示优先级
+        /// <summary>
+        /// 在Inspector中的显示优先级
+        /// </summary>
+        public override int Priority => 5;
 
         protected override void OnEnter()
         {

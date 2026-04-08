@@ -19,8 +19,11 @@ namespace Launcher.Procedure
     ///  </summary>
     public class ProcedureReqGlobalInfo : ProcedureBase
     {
-        public override int Priority => 2; // 显示优先级
-        
+        /// <summary>
+        /// 在Inspector中的显示优先级
+        /// </summary>
+        public override int Priority => 2;
+
         /// <summary>
         /// 全局信息的服务器地址
         /// </summary>
@@ -30,7 +33,7 @@ namespace Launcher.Procedure
         {
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入获取服务端全局信息流程------</color>");
-            
+
             // 热更模式
             GetGlobalInfo().Forget();
         }
@@ -63,7 +66,7 @@ namespace Launcher.Procedure
                 else
                 {
                     // 获取成功，保存全局信息到globalConfigComponent组件中，供后续流程使用，特别是获取App版本号流程 与 获取资源版本号流程
-                    var repGlobalInfo = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
+                    var repGlobalInfo         = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
                     var globalConfigComponent = GlobalModule.GlobalConfigModule;
                     globalConfigComponent.CheckAppVersionUrl      = repGlobalInfo.CheckAppVersionUrl;
                     globalConfigComponent.CheckResourceVersionUrl = repGlobalInfo.CheckResourceVersionUrl;
