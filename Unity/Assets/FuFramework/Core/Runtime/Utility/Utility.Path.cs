@@ -19,7 +19,7 @@ namespace FuFramework.Core.Runtime
             /// 合并路径的StringBuilder
             /// </summary>
             private static readonly StringBuilder CombinePathSb = new();
-            
+
             /// <summary>
             /// 热更新资源路径(应用程序外部资源路径存放路径)
             /// </summary>
@@ -29,22 +29,7 @@ namespace FuFramework.Core.Runtime
             /// 应用程序内部资源路径存放路径
             /// </summary>
             public static string AppResPath => GetRegularPath(UnityEngine.Application.streamingAssetsPath);
-            
-            /// <summary>
-            /// 应用程序内部资源路径存放路径(www/webrequest专用)
-            /// </summary>
-            public static string AppResPath4Web
-            {
-                get
-                {
-#if UNITY_IOS || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN || UNITY_EDITOR
-                    return $"file://{UnityEngine.Application.streamingAssetsPath}";
-#else
-                return GetRegularPath(UnityEngine.Application.streamingAssetsPath);
-#endif
-                }
-            }
-            
+
             /// <summary>
             /// 获取规范的路径。如果路径中包含 \，则会自动替换为 /。
             /// 如将"C:\test\test.txt"转化为"C:/test/test.txt"
@@ -52,18 +37,6 @@ namespace FuFramework.Core.Runtime
             /// <param name="path">需要规范的路径。</param>
             /// <returns>规范的路径。</returns>
             public static string GetRegularPath(string path) => path?.Replace('\\', '/');
-
-            /// <summary>
-            /// 获取远程格式的路径(将路径转换为带有文件读写协议的路径，如：file://)。
-            /// </summary>
-            /// <param name="path">原始路径。</param>
-            /// <returns>远程格式路径。</returns>
-            public static string GetRemotePath(string path)
-            {
-                var regularPath = GetRegularPath(path);
-                if (regularPath == null) return null;
-                return regularPath.Contains("://") ? regularPath : ("file:///" + regularPath).Replace("file:////", "file:///");
-            }
 
             /// <summary>
             /// 拼接路径，如："Assets/Resources/", "test.txt" => Assets/Resources/test.txt
@@ -81,7 +54,7 @@ namespace FuFramework.Core.Runtime
                 {
                     var path = paths[index];
                     CombinePathSb.Append(path);
-                    if (path.EndsWithFast(separatorA) || path.EndsWithFast(separatorB)) continue;
+                    if (path.EndsWithFast(separatorA)   || path.EndsWithFast(separatorB)) continue;
                     if (path.StartsWithFast(separatorA) || path.StartsWithFast(separatorB)) continue;
                     CombinePathSb.Append(separatorA);
                 }
@@ -89,7 +62,7 @@ namespace FuFramework.Core.Runtime
                 CombinePathSb.Append(paths[^1]); // ^1表示最后一个元素
                 return CombinePathSb.ToString();
             }
-            
+
             /// <summary>
             /// 移除空文件夹。
             /// </summary>
@@ -97,7 +70,9 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否移除空文件夹成功。</returns>
             public static bool RemoveEmptyDirectory(string directoryName)
             {
-                if (string.IsNullOrEmpty(directoryName)) throw new FuException("要处理的文件夹名称不能为空.");
+                if (string.IsNullOrEmpty(directoryName))
+                    throw new FuException("要处理的文件夹名称不能为空.");
+
                 try
                 {
                     if (!Directory.Exists(directoryName)) return false;
@@ -111,7 +86,8 @@ namespace FuFramework.Core.Runtime
                         subDirectoryCount--;
                     }
 
-                    if (subDirectoryCount                             > 0) return false;
+                    if (subDirectoryCount > 0) return false;
+
                     if (Directory.GetFiles(directoryName, "*").Length > 0) return false;
                     Directory.Delete(directoryName);
                     return true;
@@ -120,6 +96,28 @@ namespace FuFramework.Core.Runtime
                 {
                     return false;
                 }
+            }
+
+            /// <summary>
+            /// 是否是在StreamingAssets下的路径
+            /// </summary>
+            /// <param name="path">完整路径</param>
+            /// <returns></returns>
+            public static bool IsStreamingAssetsPath(string path)
+            {
+                var regularPath = GetRegularPath(path);
+                return regularPath.StartsWith(AppResPath);
+            }
+
+            /// <summary>
+            /// 获取相对于StreamingAssets的路径
+            /// </summary>
+            /// <param name="path">完整路径</param>
+            /// <returns>相对于StreamingAssets的路径，如：Assets/StreamingAssets/test.txt => test.txt</returns>
+            public static string GetRelativeStreamingAssetsPath(string path)
+            {
+                var regularPath = GetRegularPath(path);
+                return regularPath.StartsWith(AppResPath) ? regularPath[AppResPath.Length..] : null;
             }
         }
     }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using FuFramework.ReadAssets.Runtime;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -21,22 +19,24 @@ namespace FuFramework.Core.Runtime
         /// 7.判断文件是否存在。
         /// 8.判断是否是Android的只读路径。
         /// 9.移动文件到目标目录。
+        /// 10.读取指定路径的文件内容。
+        /// 11.写入指定路径的文件内容。
         /// </summary>
         public static class File
         {
             /// <summary>
             /// 字节大小单位列表
             /// </summary>
-            private static readonly string[] m_UnitList = { "B", "KB", "MB", "GB", "TB", "PB" };
+            private static readonly string[] UnitList = { "B", "KB", "MB", "GB", "TB", "PB" };
 
             /// <summary>
             /// 获取带有单位的字节大小
             /// </summary>
             /// <param name="size">字节大小</param>
             /// <returns>格式化后的字节大小字符串</returns>
-            public static string GetBytesSize(long size)
+            public static string GetBytesSizeWithUnit(long size)
             {
-                foreach (var unit in m_UnitList)
+                foreach (var unit in UnitList)
                 {
                     if (size <= 1024)
                     {
@@ -46,7 +46,7 @@ namespace FuFramework.Core.Runtime
                     size /= 1024;
                 }
 
-                return size + m_UnitList[0];
+                return size + UnitList[0];
             }
 
             /// <summary>
@@ -156,33 +156,13 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static bool IsExists(string path)
             {
-                if (IsAndroidReadOnlyPath(path, out var readPath))
+                // 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
+                if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
                 {
-                    return BlankReadAssets.IsFileExists(readPath);
+                    return FileWithBSA.IsExists(path);
                 }
 
                 return System.IO.File.Exists(path);
-            }
-
-            /// <summary>
-            /// 判断是否是Android的只读路径
-            /// </summary>
-            /// <param name="path"></param>
-            /// <param name="readPath"></param>
-            /// <returns></returns>
-            public static bool IsAndroidReadOnlyPath(string path, out string readPath)
-            {
-                if (UnityEngine.Application.platform == RuntimePlatform.Android)
-                {
-                    if (Path.GetRegularPath(path).Contains(Path.AppResPath))
-                    {
-                        readPath = path.Substring(Path.AppResPath.Length);
-                        return true;
-                    }
-                }
-
-                readPath = null;
-                return false;
             }
 
             /// <summary>
@@ -204,12 +184,11 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static byte[] ReadAllBytes(string path)
             {
-#if ENABLE_FU_FRAMEWORK_READ_ASSETS
-            if (IsAndroidReadOnlyPath((path), out var readPath))
-            {
-                return BlankReadAssets.BlankReadAssets.Read(readPath);
-            }
-#endif
+                // 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
+                if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
+                {
+                    return FileWithBSA.ReadAllBytes(path);
+                }
 
                 return System.IO.File.ReadAllBytes(path);
             }
@@ -218,31 +197,50 @@ namespace FuFramework.Core.Runtime
             /// 读取指定路径的文件内容
             /// </summary>
             /// <param name="path">文件路径</param>
+            /// <returns></returns>
+            public static string ReadAllText(string path)
+            {
+                // 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
+                if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
+                {
+                    return FileWithBSA.ReadAllText(path);
+                }
+
+                return System.IO.File.ReadAllText(path, Encoding.UTF8);
+            }
+
+            /// <summary>
+            /// 读取指定路径的文件内容
+            /// </summary>
+            /// <param name="path">文件路径</param>
             /// <param name="encoding">编码</param>
             /// <returns></returns>
-            public static string ReadAllText(string path, Encoding encoding) => System.IO.File.ReadAllText(path, encoding);
+            public static string[] ReadAllLines(string path, Encoding encoding)
+            {
+                // 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
+                if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
+                {
+                    return FileWithBSA.ReadAllLines(path);
+                }
+
+                return System.IO.File.ReadAllLines(path, encoding);
+            }
 
             /// <summary>
             /// 读取指定路径的文件内容
             /// </summary>
             /// <param name="path">文件路径</param>
             /// <returns></returns>
-            public static string ReadAllText(string path) => System.IO.File.ReadAllText(path, Encoding.UTF8);
+            public static string[] ReadAllLines(string path)
+            {
+                // 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
+                if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
+                {
+                    return FileWithBSA.ReadAllLines(path);
+                }
 
-            /// <summary>
-            /// 读取指定路径的文件内容
-            /// </summary>
-            /// <param name="path">文件路径</param>
-            /// <param name="encoding">编码</param>
-            /// <returns></returns>
-            public static string[] ReadAllLines(string path, Encoding encoding) => System.IO.File.ReadAllLines(path, encoding);
-
-            /// <summary>
-            /// 读取指定路径的文件内容
-            /// </summary>
-            /// <param name="path">文件路径</param>
-            /// <returns></returns>
-            public static string[] ReadAllLines(string path) => System.IO.File.ReadAllLines(path, Encoding.UTF8);
+                return System.IO.File.ReadAllLines(path, Encoding.UTF8);
+            }
 
             /// <summary>
             /// 写入指定路径的文件内容
@@ -250,7 +248,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="path">文件路径</param>
             /// <param name="buffer">写入内容</param>
             /// <returns></returns>
-            public static void ReadAllLines(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
+            public static void WriteAllLines(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
 
             /// <summary>
             /// 写入指定路径的文件内容

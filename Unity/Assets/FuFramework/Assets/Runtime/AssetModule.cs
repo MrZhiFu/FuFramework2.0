@@ -74,8 +74,7 @@ namespace FuFramework.Asset.Runtime
 #endif
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
-            BetterStreamingAssets.Initialize();
-
+            // 初始化YooAsset
             YooAssets.Initialize();
 
             // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）

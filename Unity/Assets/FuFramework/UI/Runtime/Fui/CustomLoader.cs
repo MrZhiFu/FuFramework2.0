@@ -301,13 +301,13 @@ namespace FuFramework.UI.Runtime
             var textureHashName = Utility.Hash.MD5.Hash(url);
             var texturePath     = $"{CachePath}{textureHashName}.png";
 
-            // 本地缓存文件存在，直接读取
+            // 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
             if (Utility.File.IsExists(texturePath))
             {
                 return LoadTextureFromFile(texturePath);
             }
 
-            // 从网络下载并保存到本地缓存
+            // 从网络下载并保存到本地缓存(persistentDataPath)
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
 
