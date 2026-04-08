@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 
@@ -54,8 +53,9 @@ namespace FuFramework.Fsm.Runtime
                 m_TempFsmList.Add(fsm.Value);
             }
 
-            foreach (var fsm in m_TempFsmList.Where(fsm => !fsm.IsDestroyed))
+            foreach (var fsm in m_TempFsmList)
             {
+                if (fsm.IsDestroyed) continue;
                 fsm.Update(deltaTime, unscaledDeltaTime);
             }
         }
