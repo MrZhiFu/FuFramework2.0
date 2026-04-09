@@ -5,7 +5,9 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// Object 对象工具类
+        /// Object相关的实用函数。
+        /// 功能：
+        ///     1. 交换两个对象的值。
         /// </summary>
         public static class Object
         {

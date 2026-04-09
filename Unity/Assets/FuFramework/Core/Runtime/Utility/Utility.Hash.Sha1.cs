@@ -39,7 +39,7 @@ namespace FuFramework.Core.Runtime
                     //将待加密字符串转为byte类型
                     var bytesIn  = encode.GetBytes(content);
                     var bytesOut = sha1.ComputeHash(bytesIn);
-                    var result   = BitConverter.ToString(bytesOut); //将运算结果转为string类型
+                    var result   = System.BitConverter.ToString(bytesOut); //将运算结果转为string类型
                     result = result.Replace("-", string.Empty).ToLower();
                     return result;
                 }

@@ -9,15 +9,25 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 校验数据完整性相关的实用函数。
         /// 功能：
-        /// 1. 计算二进制流的 CRC32。
-        /// 2. 获取 CRC32 数值的二进制数组。
+        ///     1. 计算二进制流的 CRC32。
+        ///     2. 获取 CRC32 数值的二进制数组。
         /// </summary>
         public static partial class Verifier
         {
-            private const int CachedBytesLength = 0x1000; // 缓存字节数组的长度，0x1000表示缓存16KB数据
+            /// <summary>
+            /// 缓存字节数组的长度，0x1000表示缓存16KB数据。
+            /// </summary>
+            private const int CachedBytesLength = 0x1000;
 
-            private static readonly byte[] s_CachedBytes = new byte[CachedBytesLength]; // 缓存字节数组
-            private static readonly Crc32  s_Algorithm   = new();                       // Crc32算法对象
+            /// <summary>
+            /// 缓存字节数组。
+            /// </summary>
+            private static readonly byte[] CachedBytes = new byte[CachedBytesLength];
+
+            /// <summary>
+            /// Crc32算法对象。
+            /// </summary>
+            private static readonly Crc32 CRC32 = new();
 
             /// <summary>
             /// 获取二进制流的使用CRC32算法后的哈希值
@@ -45,9 +55,9 @@ namespace FuFramework.Core.Runtime
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
                     throw new FuException("二进制流的偏移或长度不正确.");
 
-                s_Algorithm.HashCore(bytes, offset, length);
-                var result = (int)s_Algorithm.HashFinal();
-                s_Algorithm.Initialize();
+                CRC32.HashCore(bytes, offset, length);
+                var result = (int)CRC32.HashFinal();
+                CRC32.Initialize();
                 return result;
             }
 
@@ -62,16 +72,16 @@ namespace FuFramework.Core.Runtime
 
                 while (true)
                 {
-                    var bytesRead = stream.Read(s_CachedBytes, 0, CachedBytesLength);
+                    var bytesRead = stream.Read(CachedBytes, 0, CachedBytesLength);
                     if (bytesRead > 0)
-                        s_Algorithm.HashCore(s_CachedBytes, 0, bytesRead);
+                        CRC32.HashCore(CachedBytes, 0, bytesRead);
                     else
                         break;
                 }
 
-                var result = (int)s_Algorithm.HashFinal();
-                s_Algorithm.Initialize();
-                Array.Clear(s_CachedBytes, 0, CachedBytesLength);
+                var result = (int)CRC32.HashFinal();
+                CRC32.Initialize();
+                Array.Clear(CachedBytes, 0, CachedBytesLength);
                 return result;
             }
 
@@ -130,29 +140,29 @@ namespace FuFramework.Core.Runtime
                 var codeIndex = 0;
                 while (true)
                 {
-                    var bytesRead = stream.Read(s_CachedBytes, 0, CachedBytesLength);
+                    var bytesRead = stream.Read(CachedBytes, 0, CachedBytesLength);
                     if (bytesRead > 0)
                     {
                         if (length > 0)
                         {
                             for (var i = 0; i < bytesRead && i < length; i++)
                             {
-                                s_CachedBytes[i] ^= code[codeIndex++];
-                                codeIndex        %= codeLength;
+                                CachedBytes[i] ^= code[codeIndex++];
+                                codeIndex      %= codeLength;
                             }
 
                             length -= bytesRead;
                         }
 
-                        s_Algorithm.HashCore(s_CachedBytes, 0, bytesRead);
+                        CRC32.HashCore(CachedBytes, 0, bytesRead);
                     }
                     else
                         break;
                 }
 
-                var result = (int)s_Algorithm.HashFinal();
-                s_Algorithm.Initialize();
-                Array.Clear(s_CachedBytes, 0, CachedBytesLength);
+                var result = (int)CRC32.HashFinal();
+                CRC32.Initialize();
+                Array.Clear(CachedBytes, 0, CachedBytesLength);
                 return result;
             }
         }

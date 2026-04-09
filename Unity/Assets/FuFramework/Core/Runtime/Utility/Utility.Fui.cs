@@ -8,12 +8,17 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// FUI相关的实用函数
+        /// FUI相关的实用函数。
+        /// 功能：
+        ///     1. 根据UI对象获取UI路径。
+        ///     2. 搜索目标UI对象的所有父节点。
+        ///     3. 根据路径获取目标UI对象。
+        ///     4. 路径是否包含指定目标UI对象。
         /// </summary>
         public static class Fui
         {
             /// <summary>
-            /// 根据UI对象获取UI路径,
+            /// 根据UI对象获取UI路径。
             /// </summary>
             /// <param name="targetGObj">目标UI对象</param>
             /// <returns>UI所在路径</returns>
@@ -26,7 +31,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 搜索目标UI对象的所有父节点
+            /// 搜索目标UI对象的所有父节点。
             /// </summary>
             /// <param name="target">目标UI对象</param>
             /// <param name="resultList">结果列表</param>
@@ -47,7 +52,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 根据路径获取目标UI对象
+            /// 根据路径获取目标UI对象。
             /// 如：传入路径：/GRoot/UISynthesisScene/ContentBox/ListSelect/1990197248/icon
             /// 则返回的icon的UI对象
             /// </summary>
@@ -55,7 +60,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>UI对象</returns>
             public static GObject GetUIByPath(string path)
             {
-                var pathArr = path.Split('/');
+                var pathArr   = path.Split('/');
                 var pathQueue = new Queue<string>();
                 foreach (var item in pathArr)
                 {
@@ -76,48 +81,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 搜索指定起始节点下且路径指定的子节点。
-            /// 如果传入的路径中有$符号,则认为是用索引查找，如$1代表父节点的第一个子节点
-            /// </summary>
-            /// <param name="start">起始节点</param>
-            /// <param name="pathQueue">路径</param>
-            /// <returns></returns>
-            private static GObject SearchUIChild(GComponent start, Queue<string> pathQueue)
-            {
-                while (true)
-                {
-                    if (pathQueue.Count <= 0) return start;
-
-                    var name = pathQueue.Dequeue();
-                    GObject child;
-
-                    // 如果传入的路径中有$符号,则认为是用索引查找，如$1代表父节点的第一个子节点
-                    if (name[0] == '$')
-                    {
-                        child = start.GetChild(name);
-                        if (child == null)
-                        {
-                            var idxStr = name.Substring(1);
-                            var idx = int.Parse(idxStr);
-                            if (idx < 0 || idx >= start.numChildren) throw new Exception("路径错误");
-                            child = start.GetChildAt(idx);
-                        }
-                    }
-                    else
-                    {
-                        child = start.GetChild(name);
-                    }
-
-                    if (child == null) throw new Exception("路径错误");
-                    if (pathQueue.Count <= 0) return child;
-                    if (child is not GComponent gObject) throw new Exception("路径错误");
-
-                    start = gObject;
-                }
-            }
-
-            /// <summary>
-            /// 路径是否包含指定目标UI对象
+            /// 路径是否包含指定目标UI对象。
             /// </summary>
             /// <param name="path">路径</param>
             /// <param name="gObject">目标UI对象</param>
@@ -133,7 +97,7 @@ namespace FuFramework.Core.Runtime
                     nameList.Add(v);
                 }
 
-                var current = gObject;
+                var current     = gObject;
                 var gObjectList = new List<GObject> { current, };
                 while (current.parent != null && current.parent.name != "GRoot")
                 {
@@ -154,12 +118,53 @@ namespace FuFramework.Core.Runtime
                     // 如果名称以'$'开头，则尝试将其解析为索引，并检查当前对象在其父级中的索引是否匹配
                     if (nameList[i][0] != '$') return false;
                     var idxStr = nameList[i].Substring(1);
-                    var idx = int.Parse(idxStr);
+                    var idx    = int.Parse(idxStr);
                     if (gObjectList[i].parent.GetChildIndex(gObjectList[i]) == idx) continue;
                     return false;
                 }
 
                 return true;
+            }
+
+            /// <summary>
+            /// 搜索指定起始节点下且路径指定的子节点。
+            /// 如果传入的路径中有$符号,则认为是用索引查找，如$1代表父节点的第一个子节点
+            /// </summary>
+            /// <param name="start">起始节点</param>
+            /// <param name="pathQueue">路径</param>
+            /// <returns></returns>
+            private static GObject SearchUIChild(GComponent start, Queue<string> pathQueue)
+            {
+                while (true)
+                {
+                    if (pathQueue.Count <= 0) return start;
+
+                    var     name = pathQueue.Dequeue();
+                    GObject child;
+
+                    // 如果传入的路径中有$符号,则认为是用索引查找，如$1代表父节点的第一个子节点
+                    if (name[0] == '$')
+                    {
+                        child = start.GetChild(name);
+                        if (child == null)
+                        {
+                            var idxStr = name.Substring(1);
+                            var idx    = int.Parse(idxStr);
+                            if (idx < 0 || idx >= start.numChildren) throw new Exception("路径错误");
+                            child = start.GetChildAt(idx);
+                        }
+                    }
+                    else
+                    {
+                        child = start.GetChild(name);
+                    }
+
+                    if (child           == null) throw new Exception("路径错误");
+                    if (pathQueue.Count <= 0) return child;
+                    if (child is not GComponent gObject) throw new Exception("路径错误");
+
+                    start = gObject;
+                }
             }
         }
     }

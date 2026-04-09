@@ -9,8 +9,8 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// JSON 相关的实用函数。
         /// 功能：
-        /// 1. 使用Json辅助器序列化对象为 JSON 字符串。
-        /// 2. 使用Json辅助器反序列化 JSON 字符串为对象。
+        ///     1. 使用Newtonsoft.Json序列化对象为 JSON 字符串。
+        ///     2. 使用Newtonsoft.Json反序列化 JSON 字符串为对象。
         /// </summary>
         public static class Json
         {

@@ -8,10 +8,11 @@ namespace FuFramework.Core.Runtime
     {
         /// <summary>
         /// 程序集相关的实用函数。
-        /// 1.获取已加载的程序集。
-        /// 2.获取已加载的程序集中的所有类型。
-        /// 3.获取已加载的程序集中的指定类型。
-        /// 4.获取已加载的程序集中的指定类型的子类列表。
+        /// 功能：
+        ///     1. 获取已加载的程序集。
+        ///     2. 获取已加载的程序集中的所有类型。
+        ///     3. 获取已加载的程序集中的指定类型。
+        ///     4. 获取已加载的程序集中的指定类型的子类列表。
         /// </summary>
         public static class Assembly
         {
@@ -104,7 +105,7 @@ namespace FuFramework.Core.Runtime
             /// <returns></returns>
             public static List<string> GetRuntimeTypeNames(Type type)
             {
-                var types = GetTypes();
+                var types   = GetTypes();
                 var results = new List<string>();
                 foreach (var t in types)
                 {

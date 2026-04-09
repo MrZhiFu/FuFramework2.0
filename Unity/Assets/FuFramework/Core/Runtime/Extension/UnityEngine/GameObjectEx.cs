@@ -9,14 +9,25 @@ using Object = UnityEngine.Object;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// <see cref="GameObject"/> 扩展方法集。
+    /// GameObject相关的扩展方法。
+    /// 功能：
+    ///     1. 销毁物体下的所有子物体。
+    ///     2. 销毁游戏物体。
+    ///     3. 获取或增加组件。
+    ///     4. 获取或增加组件。
+    ///     5. 获取或增加组件。
+    ///     6. 获取或增加组件。
+    ///     7. 获取或增加组件。
+    ///     8. 获取或增加组件。
+    ///     9. 获取或增加组件。
+    ///     10. 获取或增加组件。
     /// </summary>
     public static class GameObjectEx
     {
         /// <summary>
         /// 缓存查找时的 Transform 列表。
         /// </summary>
-        private static readonly List<Transform> m_CachedTransforms = new();
+        private static readonly List<Transform> CachedTransforms = new();
 
         /// <summary>
         /// 销毁物体下的所有子物体
@@ -36,7 +47,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="gameObject"></param>
         public static void DestroyObject(this GameObject gameObject)
         {
-            if (ReferenceEquals(gameObject, null)) return;
+            if (gameObject is null) return;
             if (Application.isEditor && !Application.isPlaying)
             {
                 Object.DestroyImmediate(gameObject);
@@ -66,7 +77,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>获取或增加的组件。</returns>
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
         {
-            var component = gameObject.GetComponent<T>();
+            var component             = gameObject.GetComponent<T>();
             if (!component) component = gameObject.AddComponent<T>();
             return component;
         }
@@ -79,7 +90,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>获取或增加的组件。</returns>
         public static Component GetOrAddComponent(this GameObject gameObject, Type type)
         {
-            var component = gameObject.GetComponent(type);
+            var component             = gameObject.GetComponent(type);
             if (!component) component = gameObject.AddComponent(type);
             return component;
         }
@@ -91,7 +102,7 @@ namespace FuFramework.Core.Runtime
         /// <returns></returns>
         public static void ResetTransform(this GameObject gameObject)
         {
-            gameObject.transform.localScale = Vector3.one;
+            gameObject.transform.localScale    = Vector3.one;
             gameObject.transform.localPosition = Vector3.zero;
             gameObject.transform.localRotation = Quaternion.identity;
         }
@@ -109,13 +120,13 @@ namespace FuFramework.Core.Runtime
 
             if (!children) return;
 
-            gameObject.GetComponentsInChildren(true, m_CachedTransforms);
-            foreach (var tf in m_CachedTransforms)
+            gameObject.GetComponentsInChildren(true, CachedTransforms);
+            foreach (var tf in CachedTransforms)
             {
                 tf.gameObject.layer = layer;
             }
 
-            m_CachedTransforms.Clear();
+            CachedTransforms.Clear();
         }
 
         /// <summary>
@@ -124,7 +135,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="gameObject"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static GameObject FindChildGamObjectByName(this GameObject gameObject, string name)
+        public static GameObject FindChildGameObjectByName(this GameObject gameObject, string name)
         {
             var transform = gameObject.transform.FindChildName(name);
             return transform.IsNotNull() ? transform.gameObject : null;
@@ -138,7 +149,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="children">是否设置子物体的排序层</param>
         public static void SetSortingGroupLayer(this GameObject gameObject, string sortingLayer, bool children = true)
         {
-            var sortingGroup = gameObject.GetComponent<SortingGroup>();
+            var sortingGroup                = gameObject.GetComponent<SortingGroup>();
             if (!sortingGroup) sortingGroup = gameObject.AddComponent<SortingGroup>();
             sortingGroup.sortingLayerName = sortingLayer;
 
@@ -165,7 +176,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="sceneName">场景名称。</param>
         /// <param name="nodeName">节点名称。</param>
         /// <returns>找到的节点的GameObject实例，如果没有找到返回null。</returns>
-        public static GameObject FindChildGamObjectByName(string nodeName, string sceneName = null)
+        public static GameObject FindChildGameObjectByName(string nodeName, string sceneName = null)
         {
             Scene scene;
             if (sceneName.IsNullOrWhiteSpace())
@@ -181,7 +192,7 @@ namespace FuFramework.Core.Runtime
             var rootObjects = scene.GetRootGameObjects();
             foreach (var rootObject in rootObjects)
             {
-                var result = rootObject.FindChildGamObjectByName(nodeName);
+                var result = rootObject.FindChildGameObjectByName(nodeName);
                 if (result.IsNotNull()) return result;
             }
 
@@ -196,7 +207,7 @@ namespace FuFramework.Core.Runtime
         /// <returns></returns>
         public static GameObject Create(Transform parent, string name)
         {
-            Debug.Assert(!ReferenceEquals(parent, null), nameof(parent) + " == null");
+            Debug.Assert(parent is not null, nameof(parent) + " == null");
             var gameObject = new GameObject(name);
             gameObject.transform.SetParent(parent);
             return gameObject;
@@ -210,7 +221,7 @@ namespace FuFramework.Core.Runtime
         /// <returns></returns>
         public static GameObject Create(GameObject parent, string name)
         {
-            Debug.Assert(!ReferenceEquals(parent, null), nameof(parent) + " == null");
+            Debug.Assert(parent is not null, nameof(parent) + " == null");
             return Create(parent.transform, name);
         }
 

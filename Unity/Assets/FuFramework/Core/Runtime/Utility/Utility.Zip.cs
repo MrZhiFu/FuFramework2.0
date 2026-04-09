@@ -11,7 +11,11 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 压缩与解压缩(文件/文件夹)相关的实用函数。
+        /// 压缩与解压缩相关的实用函数集。
+        /// 功能：
+        ///     1. 解压缩文件。
+        ///     2. 解压缩文件夹。
+        ///     3. 解压缩数据到内存。
         /// </summary>
         public static class Zip
         {
@@ -31,10 +35,10 @@ namespace FuFramework.Core.Runtime
             /// 压缩文件
             /// </summary> 
             /// <param name="fileToZip">要压缩的文件完整路径</param> 
-            /// <param name="zipedPath">压缩后的文件完整路径</param> 
+            /// <param name="zippedPath">压缩后的文件完整路径</param> 
             /// <param name="password">密码</param> 
             /// <returns>是否成功</returns> 
-            public static bool CompressFile(string fileToZip, string zipedPath, string password = null)
+            public static bool CompressFile(string fileToZip, string zippedPath, string password = null)
             {
                 if (!System.IO.File.Exists(fileToZip))
                 {
@@ -45,28 +49,27 @@ namespace FuFramework.Core.Runtime
                 using (var readStream = System.IO.File.OpenRead(fileToZip))
                 {
                     byte[] buffer = new byte[readStream.Length];
-                    // ReSharper disable once UnusedVariable
-                    var read = readStream.Read(buffer, 0, buffer.Length);
-                    using (var writeStream = System.IO.File.Create(zipedPath))
-                    {
-                        var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
-                        {
-                            DateTime = DateTime.Now,
-                            Size = readStream.Length
-                        };
-                        CRC.Reset();
-                        CRC.Update(buffer);
-                        entry.Crc = CRC.Value;
-                        using (var zipStream = new ZipOutputStream(writeStream))
-                        {
-                            if (!string.IsNullOrEmpty(password))
-                                zipStream.Password = password;
 
-                            zipStream.PutNextEntry(entry);
-                            zipStream.SetLevel(Deflater.BEST_COMPRESSION);
-                            zipStream.Write(buffer, 0, buffer.Length);
-                        }
+                    _ = readStream.Read(buffer, 0, buffer.Length);
+                    using var writeStream = System.IO.File.Create(zippedPath);
+                    var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
+                    {
+                        DateTime = DateTime.Now,
+                        Size     = readStream.Length
+                    };
+                    CRC.Reset();
+                    CRC.Update(buffer);
+                    entry.Crc = CRC.Value;
+
+                    using var zipStream = new ZipOutputStream(writeStream);
+                    if (!string.IsNullOrEmpty(password))
+                    {
+                        zipStream.Password = password;
                     }
+
+                    zipStream.PutNextEntry(entry);
+                    zipStream.SetLevel(Deflater.BEST_COMPRESSION);
+                    zipStream.Write(buffer, 0, buffer.Length);
                 }
 
                 GC.Collect(1);
@@ -77,18 +80,18 @@ namespace FuFramework.Core.Runtime
             /// 压缩文件夹  
             /// </summary> 
             /// <param name="folderToZip">要压缩的文件夹完整路径</param> 
-            /// <param name="zipedPath">压缩后的文件完整路径</param> 
+            /// <param name="zippedPath">压缩后的文件完整路径</param> 
             /// <param name="password">密码</param> 
             /// <returns>是否成功</returns> 
-            public static bool CompressDirectory(string folderToZip, string zipedPath, string password = null)
+            public static bool CompressDirectory(string folderToZip, string zippedPath, string password = null)
             {
                 if (folderToZip.EndsWithFast(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWithFast("/"))
                 {
                     folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
                 }
 
-                var zipedFileStream = new FileStream(zipedPath, FileMode.Create, FileAccess.Write, FileShare.Write);
-                var zipStream = CompressDirectoryToZipStream(folderToZip, zipedFileStream, password);
+                var zippedFileStream = new FileStream(zippedPath, FileMode.Create, FileAccess.Write, FileShare.Write);
+                var zipStream        = CompressDirectoryToZipStream(folderToZip, zippedFileStream, password);
                 if (zipStream == null) return false;
 
                 zipStream.Close();
@@ -110,7 +113,9 @@ namespace FuFramework.Core.Runtime
                 zipStream.SetLevel(CompressionLevel);
 
                 if (!string.IsNullOrEmpty(password))
+                {
                     zipStream.Password = password;
+                }
 
                 if (CompressDirectory(folderToZip, zipStream, ""))
                 {
@@ -126,17 +131,17 @@ namespace FuFramework.Core.Runtime
             /// 解压功能(解压文件/文件夹到指定文件夹) 
             /// </summary> 
             /// <param name="fileToUnZip">待解压的文件夹</param> 
-            /// <param name="zipedPath">压缩后的文件完整路径</param> 
+            /// <param name="zippedPath">压缩后的文件完整路径</param> 
             /// <param name="password">密码</param> 
             /// <returns>是否成功</returns> 
-            public static bool DecompressFile(string fileToUnZip, string zipedPath, string password = null)
+            public static bool DecompressFile(string fileToUnZip, string zippedPath, string password = null)
             {
                 if (!System.IO.File.Exists(fileToUnZip)) return false;
-                if (!Directory.Exists(zipedPath)) Directory.CreateDirectory(zipedPath);
+                if (!Directory.Exists(zippedPath)) Directory.CreateDirectory(zippedPath);
 
-                if (!zipedPath.EndsWith("\\"))
+                if (!zippedPath.EndsWith("\\"))
                 {
-                    zipedPath += "\\";
+                    zippedPath += "\\";
                 }
 
                 using (var zipStream = new ZipInputStream(System.IO.File.OpenRead(fileToUnZip)))
@@ -152,17 +157,16 @@ namespace FuFramework.Core.Runtime
                         if (zipEntry.IsDirectory) continue;
                         if (string.IsNullOrEmpty(zipEntry.Name)) continue;
 
-                        string fileName = Path.Combine(zipedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
-                        var index = zipEntry.Name.LastIndexOf('/');
+                        string fileName = Path.Combine(zippedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                        var    index    = zipEntry.Name.LastIndexOf('/');
                         if (index != -1)
                         {
-                            string path = zipedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
+                            string path = zippedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
                             Directory.CreateDirectory(path);
                         }
 
                         var bytes = new byte[zipEntry.Size];
-                        // ReSharper disable once UnusedVariable
-                        var read = zipStream.Read(bytes, 0, bytes.Length);
+                        _ = zipStream.Read(bytes, 0, bytes.Length);
                         System.IO.File.WriteAllBytes(fileName, bytes);
                     }
                 }
@@ -195,11 +199,11 @@ namespace FuFramework.Core.Runtime
                     while (!compressor.IsFinished)
                     {
                         var count = compressor.Deflate(buffer);
-                        
+
                         // 压缩进度停滞但未完成，可能是异常情况
-                        if (count == 0 && !compressor.IsNeedingInput) 
+                        if (count == 0 && !compressor.IsNeedingInput)
                             throw new InvalidOperationException("压缩过程异常停滞");
-                        
+
                         compressorMemoryStream.Write(buffer, 0, count);
                     }
 
@@ -244,6 +248,7 @@ namespace FuFramework.Core.Runtime
                                 throw new InvalidDataException("解压缩需要更多输入数据");
                             break;
                         }
+
                         decompressMemoryStream.Write(buffer, 0, countLength);
                     }
 
@@ -282,7 +287,7 @@ namespace FuFramework.Core.Runtime
                 foreach (string file in files)
                 {
                     byte[] buffer = System.IO.File.ReadAllBytes(file);
-                    var path = System.IO.Path.GetFileName(file);
+                    var    path   = System.IO.Path.GetFileName(file);
                     if (parentFolderName.IsNotNullOrWhiteSpace())
                     {
                         path = parentFolderName + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(file);
@@ -292,7 +297,7 @@ namespace FuFramework.Core.Runtime
                     {
                         //ent.DateTime = System.IO.File.GetLastWriteTime(file);//设置文件最后修改时间
                         DateTime = DateTime.Now,
-                        Size = buffer.Length,
+                        Size     = buffer.Length,
                     };
 
                     CRC.Reset();

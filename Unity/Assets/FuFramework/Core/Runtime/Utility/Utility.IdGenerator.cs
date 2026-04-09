@@ -8,7 +8,13 @@ namespace FuFramework.Core.Runtime
     {
         /// <summary>
         /// ID生成器。
-        /// 使用时间戳（秒级）作为计数器的基准时间点，并使用Interlocked.Increment生成唯一ID的方法。
+        /// 功能：
+        ///     1. 生成唯一的长整型ID。
+        ///     2. 生成唯一的整型ID。
+        /// 
+        /// 注意：
+        ///     1. 生成的ID是基于时间戳的，确保在不同时间点生成的ID是唯一的。
+        ///     2. 生成的ID是原子性地递增的，确保在多线程环境下生成的ID是唯一的。
         /// </summary>
         public static class IdGenerator
         {
@@ -16,11 +22,11 @@ namespace FuFramework.Core.Runtime
             /// 全局UTC起始时间，用作计数器的基准时间点
             /// 设置为2020年1月1日0时0分0秒(UTC)
             /// </summary>
-            public static readonly DateTime s_UtcTimeStart = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            private static readonly DateTime UtcTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             // 共享计数器
-            private static long _counter    = (long)(DateTime.UtcNow - s_UtcTimeStart).TotalSeconds;
-            private static int  _intCounter = (int)(DateTime.UtcNow  - s_UtcTimeStart).TotalSeconds;
+            private static long m_Counter    = (long)(DateTime.UtcNow - UtcTime).TotalSeconds;
+            private static int  m_CounterInt = (int)(DateTime.UtcNow  - UtcTime).TotalSeconds;
 
             /// <summary>
             /// 使用Interlocked.Increment生成唯一ID的方法
@@ -29,7 +35,7 @@ namespace FuFramework.Core.Runtime
             public static long GetNextUniqueId()
             {
                 // 原子性地递增值，确保即使多个线程同时尝试递增同一个变量
-                return Interlocked.Increment(ref _counter);
+                return Interlocked.Increment(ref m_Counter);
             }
 
             /// <summary>
@@ -39,7 +45,7 @@ namespace FuFramework.Core.Runtime
             public static int GetNextUniqueIntId()
             {
                 // 原子性地递增值，确保即使多个线程同时尝试递增同一个变量
-                return Interlocked.Increment(ref _intCounter);
+                return Interlocked.Increment(ref m_CounterInt);
             }
         }
     }

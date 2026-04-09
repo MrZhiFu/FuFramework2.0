@@ -9,9 +9,11 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 文件路径相关的实用函数。
         /// 功能：
-        /// 1. 获取规范的路径。
-        /// 2. 获取远程格式的路径（带有file:// 或 http:// 前缀）。
-        /// 3. 移除空文件夹。
+        ///     1. 获取规范的路径。
+        ///     2. 拼接路径。
+        ///     3. 移除空文件夹。
+        ///     4. 是否是在StreamingAssets下的路径。
+        ///     5. 获取相对于StreamingAssets的路径。
         /// </summary>
         public static class Path
         {

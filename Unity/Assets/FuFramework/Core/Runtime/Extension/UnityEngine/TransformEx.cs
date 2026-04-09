@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// <see cref="Transform" /> 扩展方法集。
+    /// Transform 相关的扩展方法。
     /// </summary>
     public static class TransformEx
     {

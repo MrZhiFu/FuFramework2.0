@@ -10,13 +10,17 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 网络相关的对象工具类。
-        /// 提供了获取网络相关信息的方法，如获取本机IP地址、获取域名的IP地址、获取第一个可用的端口号等。
+        /// 网络相关的实用函数。
+        /// 功能：
+        ///     1. 获取第一个可用的端口号。
+        ///     2. 获取操作系统已用的端口号。
+        ///     3. 获取本机IP地址。
+        ///     4. 获取域名的IP地址。
         /// </summary>
         public static class Net
         {
             /// <summary>
-            /// 获取第一个可用的端口号
+            /// 获取第一个可用的端口号(默认从667开始)。
             /// </summary>
             /// <param name="startPort">起始端口号</param>
             /// <param name="maxPort">结束端口号</param>
@@ -32,7 +36,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 获取操作系统已用的端口号
+            /// 获取操作系统已用的端口号。
             /// </summary>
             /// <returns>返回一个包含所有已用端口号的列表</returns>
             public static List<int> PortIsUsed()
@@ -69,7 +73,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 检查指定端口是否已用
+            /// 检查指定端口是否已用。
             /// </summary>
             /// <param name="port">要检查的端口号</param>
             /// <returns>如果端口可用则返回true，否则返回false</returns>
@@ -86,7 +90,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 获取域名的IpV4 地址
+            /// 获取域名的IpV4 地址。
             /// </summary>
             /// <param name="domainName">域名</param>
             /// <returns>返回域名的IPv4地址，如果没有则返回空字符串</returns>
@@ -105,10 +109,10 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 获取域名的IpV6 地址
+            /// 获取域名的IpV6 地址。
             /// </summary>
             /// <param name="domainName">域名</param>
-            /// <returns>返回域名的IPv4地址，如果没有则返回空字符串</returns>
+            /// <returns>返回域名的IPv6地址，如果没有则返回空字符串</returns>
             public static string GetHostIPv6(string domainName)
             {
                 var iPHostEntry = Dns.GetHostEntry(domainName);
@@ -124,7 +128,7 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 获取本机ipv4地址
+            /// 获取本机ipv4地址。
             /// </summary>
             /// <returns>返回本机的IPv4地址，如果没有则返回空字符串</returns>
             public static string GetIP()
@@ -143,10 +147,10 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 获取本机IPv6地址
+            /// 获取本机IPv6地址。
             /// </summary>
-            /// <param name="host"></param>
-            /// <returns></returns>
+            /// <param name="host">主机名</param>
+            /// <returns>返回本机的IPv6地址，如果没有则返回空字符串</returns>
             public static (AddressFamily, string) GetIPv6Address(string host)
             {
                 var addresses = Dns.GetHostAddresses(host);
@@ -169,11 +173,11 @@ namespace FuFramework.Core.Runtime
 
                 return (AddressFamily.InterNetwork, host);
             }
-            
+
             /// <summary>
-            /// 获取本地的所有IP地址列表
+            /// 获取本地的所有IP地址列表。
             /// </summary>
-            /// <returns></returns>
+            /// <returns>返回本地的所有IP地址列表</returns>
             public static string[] GetAddressIPs()
             {
                 //获取本地的IP地址
@@ -189,27 +193,27 @@ namespace FuFramework.Core.Runtime
             }
 
             /// <summary>
-            /// 是否有网络
+            /// 是否有网络。
             /// </summary>
-            /// <returns></returns>
+            /// <returns>返回是否有网络</returns>
             public static bool IsReachable()
             {
                 return UnityEngine.Application.internetReachability != NetworkReachability.NotReachable;
             }
 
             /// <summary>
-            /// 是否是WIFI
+            /// 是否是WIFI网络。
             /// </summary>
-            /// <returns></returns>
+            /// <returns>返回是否是WIFI网络</returns>
             public static bool IsWifi()
             {
                 return UnityEngine.Application.internetReachability == NetworkReachability.ReachableViaLocalAreaNetwork;
             }
 
             /// <summary>
-            /// 是否是移动网络
+            /// 是否是移动网络。
             /// </summary>
-            /// <returns></returns>
+            /// <returns>返回是否是移动网络</returns>
             public static bool IsViaCarrierData()
             {
                 return UnityEngine.Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork;

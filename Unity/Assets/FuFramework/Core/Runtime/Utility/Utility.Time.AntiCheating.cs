@@ -16,7 +16,9 @@ using System.Runtime.InteropServices;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 时间防作弊工具类
+    /// 时间防作弊工具类。
+    /// 功能：
+    ///     1. 防止用户修改系统时间导致的时间作弊。
     /// 
     /// 【防作弊核心原理】
     /// 1. 双时间源验证：对比"系统运行时间(TickCount)"和"实际系统时间(DateTime.UtcNow)"
@@ -63,7 +65,6 @@ namespace FuFramework.Core.Runtime
         private static bool     m_ForbidCheck;         // 禁止检测（方便测试）
         private static DateTime m_CachedTime;          // 缓存的时间结果
         private static long     m_LastTickCount;       // 上次计算时的系统启动时间（秒）
-        private static bool     m_UseNetTime;          // 是否使用在线时间
         private static bool     m_GotNetTime;          // 是否得到了在线时间
         private static DateTime m_NowOnlineDateTime;   // 当前在线时间
         private static float    m_LastRecheckTime;     // 上次重查网络时间时的时间

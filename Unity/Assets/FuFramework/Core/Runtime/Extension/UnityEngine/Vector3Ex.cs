@@ -4,12 +4,12 @@
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// <see cref="Vector3" /> 类的扩展方法。
+    /// Vector3 相关的扩展方法。
     /// </summary>
     public static class Vector3Ex
     {
         /// <summary>
-        /// 取 <see cref="Vector3" /> 的 (x, y, z) 转换为 <see cref="Vector2" /> 的 (x, z)。
+        /// 取 Vector3 的 (x, y, z) 转换为 Vector2 的 (x, z)。
         /// </summary>
         /// <param name="vector3">要转换的 Vector3。</param>
         /// <returns>转换后的 Vector2。</returns>
@@ -19,9 +19,9 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 取 <see cref="Vector2" /> 的 (x, y) 转换为 <see cref="Vector3" /> 的 (x, 0, y)。
+        /// 取 Vector3Int 的 (x, y, z) 转换为 Vector3 的 (x, y, z)。
         /// </summary>
-        /// <param name="vector3">要转换的 Vector3。</param>
+        /// <param name="vector3">要转换的 Vector3Int。</param>
         /// <returns>转换后的 Vector3。</returns>
         public static Vector3 ToVector3(this Vector3Int vector3)
         {

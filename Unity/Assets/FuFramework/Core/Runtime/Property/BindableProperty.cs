@@ -4,7 +4,11 @@
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 可绑定属性，值变化时自动触发绑定事件
+    /// 可绑定属性，值变化时自动触发绑定事件。
+    /// 功能：
+    ///     1. 提供属性值的读写访问。
+    ///     2. 支持注册值变化事件，当值变化时自动触发。
+    ///     3. 支持注册初始值变化事件，初始化时触发一次初始值变化事件。
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public sealed class BindableProperty<T>

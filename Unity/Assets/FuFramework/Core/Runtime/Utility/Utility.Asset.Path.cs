@@ -5,9 +5,10 @@ namespace FuFramework.Core.Runtime
     public static partial class Utility
     {
         /// <summary>
-        /// 资源包相关的实用函数集，
-        /// 1.资源目录定义
-        /// 2.资源路径拼接
+        /// Bundle资源路径相关的实用函数集。
+        /// 功能：
+        ///     1. 提供Bundle资源目录定义。
+        ///     2. 提供Bundle资源路径拼接。
         /// </summary>
         // ReSharper disable once MemberHidesStaticFromOuterClass
         public static class AssetPath

@@ -9,6 +9,11 @@ namespace FuFramework.Core.Runtime
     {
         /// <summary>
         /// 加密解密相关的实用函数。
+        /// 功能：
+        ///     1. AES对称加密解密算法。
+        ///     2. 使用 code密钥 做异或运算的加密解密。
+        ///     3. DSA非对称加密解密算法。
+        ///     4. RSA非对称加密解密算法。
         /// </summary>
         public static partial class Encryption
         {

@@ -8,6 +8,9 @@ namespace FuFramework.Core.Runtime
     {
         /// <summary>
         /// 使用BetterStreamingAssets插件读取Android平台SteamingAssets中的文件相关实用函数。
+        /// 功能：
+        ///     1. 判断文件是否存在。
+        ///     2. 读取指定路径的文件内容。
         /// 
         /// BetterStreamingAssets是一款旨在简化并优化Unity项目中流式资产操作的插件。
         /// 它通过模仿System.IO.File和System.IO.Directory的API设计，使得开发者能够以更低的开销直接访问游戏中的流式资产，特别是在对效率要求苛刻的Android平台。

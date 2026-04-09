@@ -20,7 +20,7 @@ namespace FuFramework.Core.Runtime
                 /// <summary>
                 /// Md5加密算法
                 /// </summary>
-                private static readonly System.Security.Cryptography.MD5 s_MD5Cryptography = System.Security.Cryptography.MD5.Create();
+                private static readonly System.Security.Cryptography.MD5 Md5 = System.Security.Cryptography.MD5.Create();
 
                 /// <summary>
                 /// 获取字符串的Md5值
@@ -30,7 +30,7 @@ namespace FuFramework.Core.Runtime
                 // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(string input)
                 {
-                    var data = s_MD5Cryptography.ComputeHash(Encoding.UTF8.GetBytes(input));
+                    var data = Md5.ComputeHash(Encoding.UTF8.GetBytes(input));
                     return ToHash(data);
                 }
 
@@ -42,7 +42,7 @@ namespace FuFramework.Core.Runtime
                 // ReSharper disable once MemberHidesStaticFromOuterClass
                 public static string Hash(Stream input)
                 {
-                    var data = s_MD5Cryptography.ComputeHash(input);
+                    var data = Md5.ComputeHash(input);
                     return ToHash(data);
                 }
 

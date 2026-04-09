@@ -6,10 +6,10 @@ using System.Text;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 字节数组的扩展方法。
-    /// 功能包括：
-    /// 1. 字节数组的读写操作。
-    /// 2. 字节数组的转换操作。
+    /// 字节数组相关的扩展方法。
+    /// 功能：
+    ///     1. 字节数组的读写操作。
+    ///     2. 字节数组的转换操作。
     /// </summary>
     public static class BufferEx
     {

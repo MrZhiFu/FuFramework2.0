@@ -1,4 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
+
 namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
@@ -6,19 +7,45 @@ namespace FuFramework.Core.Runtime
         public static partial class Verifier
         {
             /// <summary>
-            /// CRC32 算法。
+            /// CRC32 算法相关的实用函数。
+            /// 功能：
+            ///     1. 提供 CRC32 算法的默认多项式和种子值。
+            ///     2. 提供 CRC32 算法的查找表初始化。
+            ///     3. 提供 CRC32 算法的哈希值计算。
+            ///     4. 提供 CRC32 算法的重置哈希值方法。
             /// CRC32（循环冗余校验32位）是一种广泛应用于数据完整性校验的技术，通过生成一个32位的哈希值来检测数据传输或存储过程中的错误
             /// </summary>
             private sealed class Crc32
             {
-                private const int  TableLength       = 256;        // CRC32查找表的长度为256
-                private const uint DefaultPolynomial = 0xedb88320; // CRC32算法的默认多项式
-                private const uint DefaultSeed       = 0xffffffff; // CRC32算法的默认种子值
+                /// <summary>
+                /// CRC32 算法的查找表长度(256)。
+                /// </summary>
+                private const int TableLength = 256;
 
-                private readonly uint   m_Seed;  //存储CRC32的种子值
-                private readonly uint[] m_Table; //存储预计算的CRC32查找表
+                /// <summary>
+                /// CRC32 算法的默认多项式(0xedb88320 十进制为3,990,539,042)。
+                /// </summary>
+                private const uint DefaultPolynomial = 0xedb88320;
 
-                private uint m_Hash; //当前的哈希值
+                /// <summary>
+                /// CRC32 算法的默认种子值(0xffffffff 十进制为4,294,967,295)。
+                /// </summary>
+                private const uint DefaultSeed = 0xffffffff;
+
+                /// <summary>
+                /// CRC32 算法的种子值。
+                /// </summary>
+                private readonly uint m_Seed;
+
+                /// <summary>
+                /// 存储预计算的CRC32查找表。
+                /// </summary>
+                private readonly uint[] m_Table;
+
+                /// <summary>
+                /// 当前的哈希值。
+                /// </summary>
+                private uint m_Hash;
 
                 /// <summary>
                 /// 使用默认多项式和种子初始化 CRC32。

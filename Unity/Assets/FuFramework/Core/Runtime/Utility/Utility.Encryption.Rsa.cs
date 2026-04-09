@@ -19,6 +19,9 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             public sealed class Rsa
             {
+                /// <summary>
+                /// RSA 实例，用于加密解密操作。
+                /// </summary>
                 private readonly RSACryptoServiceProvider _rsa;
 
                 /// <summary>

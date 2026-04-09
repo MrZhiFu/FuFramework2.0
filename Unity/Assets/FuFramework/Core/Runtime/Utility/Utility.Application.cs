@@ -7,8 +7,9 @@ namespace FuFramework.Core.Runtime
     {
         /// <summary>
         /// 应用相关的实用函数。
-        /// 1.用于平台相关的判断和操作。
-        /// 2.用于退出应用和打开URL。
+        /// 功能：
+        ///     1. 提供平台相关的获取和判断。
+        ///     2. 打开URL。
         /// </summary>
         public static class Application
         {
@@ -127,7 +128,7 @@ namespace FuFramework.Core.Runtime
 #endif
                 }
             }
-            
+
 #if UNITY_IOS
         [System.Runtime.InteropServices.DllImport("__Internal")]
         private static extern void open_url(string url);

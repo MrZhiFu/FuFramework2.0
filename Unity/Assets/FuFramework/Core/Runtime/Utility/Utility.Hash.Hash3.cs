@@ -45,7 +45,7 @@ namespace FuFramework.Core.Runtime
                     int i = 0;
                     for (uint j = nBlocks; j > 0; --j)
                     {
-                        uint k1L = BitConverter.ToUInt32(data, i);
+                        uint k1L = System.BitConverter.ToUInt32(data, i);
 
                         k1L *= c1;
                         k1L =  Rotl32(k1L, 15);

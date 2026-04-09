@@ -8,9 +8,6 @@ namespace FuFramework.Core.Runtime
 {
     public static partial class Utility
     {
-        /// <summary>
-        /// 加密解密相关的实用函数。
-        /// </summary>
         public static partial class Encryption
         {
             /// <summary>
@@ -19,6 +16,9 @@ namespace FuFramework.Core.Runtime
             /// </summary>
             public sealed class Dsa
             {
+                /// <summary>
+                /// DSA 实例，用于加密解密操作。
+                /// </summary>
                 private readonly DSACryptoServiceProvider _dsa;
 
                 /// <summary>
@@ -50,7 +50,7 @@ namespace FuFramework.Core.Runtime
                     var dic = new Dictionary<string, string>();
                     var dsa = new DSACryptoServiceProvider();
                     dic["privatekey"] = dsa.ToXmlString(true);
-                    dic["publickey"] = dsa.ToXmlString(false);
+                    dic["publickey"]  = dsa.ToXmlString(false);
                     return dic;
                 }
 

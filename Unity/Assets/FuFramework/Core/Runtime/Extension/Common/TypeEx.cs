@@ -4,7 +4,9 @@
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 扩展方法，用于检查当前类型是否实现了指定的接口。
+    /// Type 相关的扩展方法。
+    /// 功能：
+    ///     1. 判断类型是否实现了指定的接口（直接实现或继承实现）。
     /// </summary>
     public static class TypeEx
     {
