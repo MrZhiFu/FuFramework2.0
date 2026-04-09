@@ -22,7 +22,7 @@ namespace FuFramework.Sound.Runtime
         public sealed class SoundAgent : MonoBehaviour
         {
             /// <summary>
-            /// 资源管理器。
+            /// 资源管理模块。
             /// </summary>
             private AssetModule m_AssetModule;
             

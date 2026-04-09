@@ -6,7 +6,7 @@ using UnityEditor;
 namespace FuFramework.Localization.Editor
 {
     /// <summary>
-    /// 自定义本地化管理器的Inspector
+    /// 自定义本地化管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(LocalizationModule))]
     internal sealed class LocalizationModuleInspector : FuFrameworkInspector

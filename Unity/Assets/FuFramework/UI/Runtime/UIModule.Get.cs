@@ -5,7 +5,7 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// UI管理器分部类之一。
+    /// UI管理模块分部类之一。
     /// 职责：用于获取已加载的UI界面。
     /// 核心功能:
     /// 1. 判断是否存在界面。

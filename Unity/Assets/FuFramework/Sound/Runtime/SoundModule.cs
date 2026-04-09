@@ -15,30 +15,50 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.Sound.Runtime
 {
     /// <summary>
-    /// 声音管理器。
-    /// 功能：实现了声音管理器相关接口，包括声音组、声音播放，暂停，继续，停止等。
+    /// 声音管理模块。
+    /// 功能：实现了声音管理相关接口，包括声音组、声音播放，暂停，继续，停止等。
     /// </summary>
-    [ModuleDependency(typeof(AssetModule), typeof(EventModule))]
     public sealed partial class SoundModule : FuModule
     {
         /// <summary>
-        /// 获取游戏框架模块优先级。
+        /// 声音组字典，Key为声音组名称，Value为声音组对象
         /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
+        private readonly Dictionary<string, SoundGroup> m_SoundGroupDict = new();
 
-        private readonly Dictionary<string, SoundGroup> m_SoundGroupDict = new(); // 声音组字典，Key为声音组名称，Value为声音组对象
+        /// <summary>
+        /// 记录正在加载的声音ID列表
+        /// </summary>
+        private readonly List<int> m_LoadingSoundList = new();
 
-        private readonly List<int>    m_LoadingSoundList    = new(); // 记录正在加载的声音ID列表
-        private readonly HashSet<int> m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
+        /// <summary>
+        /// 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
+        /// </summary>
+        private readonly HashSet<int> m_LoadingToReleaseSet = new();
 
-        private AssetModule m_AssetModule; // 资源管理器
-        private EventModule m_EventModule; // 事件组件
+        /// <summary>
+        /// 资源管理模块
+        /// </summary>
+        private AssetModule m_AssetModule;
 
-        private int m_Serial; // 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
+        /// <summary>
+        /// 事件管理模块
+        /// </summary>
+        private EventModule m_EventModule;
 
-        private AudioMixer    m_AudioMixer;    // 混音器
-        private AudioListener m_AudioListener; // 声音监听器
+        /// <summary>
+        /// 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
+        /// </summary>
+        private int m_Serial;
+
+        /// <summary>
+        /// 混音器
+        /// </summary>
+        private AudioMixer m_AudioMixer;
+
+        /// <summary>
+        /// 声音监听器
+        /// </summary>
+        private AudioListener m_AudioListener;
 
         /// <summary>
         /// 获取声音组数量。
@@ -60,7 +80,7 @@ namespace FuFramework.Sound.Runtime
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
             if (!m_AssetModule)
             {
-                FuLogger.LogFatal("[SoundModule] 资源管理器不存在!");
+                FuLogger.LogFatal("[SoundModule] 资源管理模块不存在!");
                 return;
             }
 

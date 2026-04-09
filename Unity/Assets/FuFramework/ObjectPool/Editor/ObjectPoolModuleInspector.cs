@@ -12,7 +12,7 @@ using FuFramework.ObjectPool.Runtime;
 namespace FuFramework.ObjectPool.Editor
 {
     /// <summary>
-    /// 对象池管理器的Inspector
+    /// 对象池管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(ObjectPoolModule))]
     internal sealed class ObjectPoolModuleInspector : FuFrameworkInspector

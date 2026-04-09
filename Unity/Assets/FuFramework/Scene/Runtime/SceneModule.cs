@@ -14,30 +14,27 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.Scene.Runtime
 {
     /// <summary>
-    /// 场景管理器。
+    /// 场景管理模块。
     /// 功能：
     /// 1. 管理场景资源的加载、卸载。
     /// 2. 提供加载、卸载场景的接口。
     /// 3. 提供场景加载进度，加载成功、加载失败，卸载成功、卸载失败的事件。
     /// </summary>
-    [ModuleDependency(typeof(AssetModule), typeof(EventModule))]
     public sealed class SceneModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 封装场景加载中的数据
         /// </summary>
         private sealed class SceneHandleData
         {
+            /// <summary>
             /// 场景加载句柄
+            /// </summary>
             public readonly SceneHandle SceneHandle;
 
+            /// <summary>
             /// 用户自定义数据
+            /// </summary>
             public readonly object UserData;
 
             public SceneHandleData(SceneHandle sceneHandle, object userData)
@@ -47,16 +44,24 @@ namespace FuFramework.Scene.Runtime
             }
         }
 
+        /// <summary>
         /// 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
+        /// </summary>
         private readonly Dictionary<string, SceneHandle> m_LoadedSceneDict = new();
 
+        /// <summary>
         /// 正在加载的场景字典，Key为场景资源路径，Value为场景加载句柄数据
+        /// </summary>
         private readonly Dictionary<string, SceneHandleData> m_LoadingSceneDict = new();
 
+        /// <summary>
         /// 正在卸载的场景字典，Key为场景资源路径，Value为场景加载句柄
+        /// </summary>
         private readonly Dictionary<string, SceneHandle> m_UnloadingSceneDict = new();
 
-        /// 资源管理器
+        /// <summary>
+        /// 资源管理模块
+        /// </summary>
         private AssetModule m_AssetModule;
 
         /// 事件订阅器

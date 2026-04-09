@@ -5,7 +5,7 @@ using YooAsset;
 namespace FuFramework.ModuleSetting.Runtime
 {
     /// <summary>
-    /// 资源模块配置
+    /// 资源管理模块配置
     /// </summary>
     public class AssetSetting : ScriptableObject
     {

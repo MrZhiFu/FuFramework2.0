@@ -6,7 +6,7 @@ using FuFramework.Core.Editor;
 namespace FuFramework.Asset.Editor
 {
     /// <summary>
-    /// 自定义资源管理器组件的Inspector
+    /// 自定义资源管理模块组件的Inspector
     /// </summary>
     [CustomEditor(typeof(AssetModule))]
     internal sealed class AssetModuleInspector : FuFrameworkInspector

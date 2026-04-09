@@ -4,7 +4,7 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// UI管理器分部类之一。
+    /// UI管理模块分部类之一。
     /// 职责：用于关闭UI界面。
     /// 核心功能:
     /// 1. 关闭界面(加入待回收队列，等待update轮询中回收)。

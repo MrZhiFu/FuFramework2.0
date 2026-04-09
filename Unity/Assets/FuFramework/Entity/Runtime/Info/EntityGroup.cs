@@ -87,7 +87,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="groupSetting">实体组设置。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
-        /// <param name="objectPoolModule">对象池管理器。</param>
+        /// <param name="objectPoolModule">对象池管理模块。</param>
         public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
             if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");

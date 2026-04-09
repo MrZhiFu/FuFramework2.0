@@ -17,7 +17,7 @@ namespace FuFramework.Timer.Runtime
     public class TimerRegister : IReference
     {
         /// <summary>
-        /// 计时器管理器
+        /// 计时器管理模块
         /// </summary>
         private readonly TimerModule m_TimerModule = ModuleManager.GetModule<TimerModule>();
 

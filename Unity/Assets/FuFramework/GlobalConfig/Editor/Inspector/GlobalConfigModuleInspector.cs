@@ -8,7 +8,7 @@ using UnityEngine;
 namespace FuFramework.GlobalConfig.Editor
 {
     /// <summary>
-    /// 自定义全局配置组件的Inspector
+    /// 自定义全局配置管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(GlobalConfigModule))]
     internal sealed class GlobalConfigModuleInspector : FuFrameworkInspector

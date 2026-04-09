@@ -7,34 +7,36 @@ using UnityEngine;
 namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
-    /// 对象池管理器。
+    /// 对象池管理模块。
     /// 功能：管理 Unity端的GameObject的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销
     /// </summary>
     public sealed partial class ObjectPoolModule : FuModule
     {
         /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-
-
         /// 对象池默认容量。
+        /// </summary>
         private const int DefaultCapacity = int.MaxValue;
 
+        /// <summary>
         /// 对象池默认过期时间。
+        /// </summary>
         private const float DefaultExpireTime = float.MaxValue;
 
+        /// <summary>
         /// 对象池默认优先级。
+        /// </summary>
         private const int DefaultPriority = 0;
 
 
+        /// <summary>
         /// 存储所有对象池的字典, Key为对象池的类型+名称，Value为对象池。
+        /// </summary>
         private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
+        /// <summary>
         /// 缓存所有对象池的列表。释放所有对象池时使用。
+        /// </summary>
         private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
-
 
         /// <summary>
         /// 获取对象池数量。

@@ -5,16 +5,10 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Event.Runtime
 {
     /// <summary>
-    /// 事件管理器。
+    /// 事件管理模块。
     /// </summary>
     public sealed class EventModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-
         /// <summary>
         /// 事件池。
         /// </summary>

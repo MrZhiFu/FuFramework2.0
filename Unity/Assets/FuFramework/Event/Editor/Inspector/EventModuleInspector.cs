@@ -6,7 +6,7 @@ using FuFramework.Event.Runtime;
 namespace FuFramework.Event.Editor
 {
     /// <summary>
-    /// 自定义事件管理器的Inspector
+    /// 自定义事件管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(EventModule))]
     internal sealed class EventModuleInspector : FuFrameworkInspector

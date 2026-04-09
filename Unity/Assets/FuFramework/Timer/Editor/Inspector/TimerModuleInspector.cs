@@ -6,7 +6,7 @@ using FuFramework.Timer.Runtime;
 namespace FuFramework.Timer.Editor
 {
     /// <summary>
-    /// 计时器管理器的Inspector
+    /// 计时器管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(TimerModule))]
     internal sealed class TimerModuleInspector : FuFrameworkInspector

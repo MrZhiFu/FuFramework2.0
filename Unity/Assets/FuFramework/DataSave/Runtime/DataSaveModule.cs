@@ -8,17 +8,11 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.SaveData.Runtime
 {
     /// <summary>
-    /// 本地存储数据管理器。
+    /// 本地存储数据管理模块。
     /// 功能：负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
     /// </summary>
     public sealed class DataSaveModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-
         /// <summary>
         /// 数据根目录
         /// </summary>
@@ -27,7 +21,7 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 默认数据存储文件名
         /// </summary>
-        public const string DefaultFileName = "DefaultData";
+        private const string DefaultFileName = "DefaultData";
 
         /// <summary>
         /// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例

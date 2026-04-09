@@ -25,7 +25,7 @@ namespace FuFramework.ModuleSetting.Editor
 
 
         private SerializedProperty m_SoundSetting;    // 音频模块配置
-        private SerializedProperty m_AssetSetting;    // 资源模块配置
+        private SerializedProperty m_AssetSetting;    // 资源管理模块配置
         private SerializedProperty m_EntitySetting;   // 实体模块配置
         private SerializedProperty m_DataSaveSetting; // 本地数据存储模块配置
         private SerializedProperty m_RedDotSetting;   // 红点模块配置

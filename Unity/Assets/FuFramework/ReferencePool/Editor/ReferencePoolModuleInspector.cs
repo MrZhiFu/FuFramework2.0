@@ -10,7 +10,7 @@ using FuFramework.ReferencePool.Runtime;
 namespace FuFramework.ReferencePool.Editor
 {
     /// <summary>
-    /// 引用池管理器的Inspector
+    /// 引用池管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(ReferencePoolModule))]
     internal sealed class ReferencePoolModuleInspector : FuFrameworkInspector

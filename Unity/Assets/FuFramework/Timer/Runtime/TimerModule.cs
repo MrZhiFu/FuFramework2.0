@@ -7,7 +7,7 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Timer.Runtime
 {
     /// <summary>
-    /// 基于 UniTask 的计时器系统。
+    /// 基于 UniTask 的计时器管理模块。
     /// 职责: 用于管理计时器任务，提供启动计时器、暂停计时器、恢复计时器、停止计时器、获取计时器状态等功能。
     /// 核心功能:
     /// 1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器
@@ -15,12 +15,6 @@ namespace FuFramework.Timer.Runtime
     /// </summary>
     public sealed class TimerModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 计时器字典，key为计时器Id，value为计时器项
         /// </summary>

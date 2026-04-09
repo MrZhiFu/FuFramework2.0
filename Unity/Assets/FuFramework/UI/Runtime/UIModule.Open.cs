@@ -7,7 +7,7 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// UI管理器分部类之一。
+    /// UI管理模块分部类之一。
     /// 职责：用于打开UI界面。
     /// 核心功能:
     /// 1. 异步打开UI界面。

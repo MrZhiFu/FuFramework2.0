@@ -15,7 +15,7 @@ using UnityEngine.Networking;
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// Web请求管理器的ProtoBuf部分实现
+    /// Web管理模块的ProtoBuf部分实现
     /// </summary>
     public partial class WebModule
     {

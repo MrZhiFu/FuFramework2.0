@@ -36,7 +36,7 @@ namespace Launcher.Procedure
             // 创建资源下载器
             var downloader = GlobalModule.AssetModule.CreateResourceDownloader();
 
-            // 将资源下载器保存到流程管理器的Data变量(Downloader)中。
+            // 将资源下载器保存到流程管理模块的Data变量(Downloader)中。
             var downloaderObj = new VarObject();
             downloaderObj.SetValue(downloader);
             Fsm.SetData("Downloader", downloaderObj);

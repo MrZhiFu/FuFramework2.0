@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // ReSharper disable Unity.RedundantEventFunction
 // ReSharper disable once CheckNamespace
@@ -12,17 +12,6 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     public abstract class FuModule : MonoBehaviour
     {
-        /// <summary>
-        /// 优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected internal virtual int Priority => ModulePriority.Default;
-
-        /// <summary>
-        /// 是否已初始化
-        /// </summary>
-        public bool IsInitialized { get; internal set; }
-
         #region 框架生命周期方法(由子类实现)
 
         /// <summary>
@@ -60,19 +49,19 @@ namespace FuFramework.Core.Runtime
 
         private void Awake() { }
 
-        private void Start() { }
-
-        private void Update() { }
-
-        private void OnDestroy() { }
-
         private void OnEnable() { }
 
-        private void OnDisable() { }
+        private void Start() { }
 
         private void FixedUpdate() { }
 
+        private void Update() { }
+
         private void LateUpdate() { }
+
+        private void OnDisable() { }
+
+        private void OnDestroy() { }
 
         #endregion
     }

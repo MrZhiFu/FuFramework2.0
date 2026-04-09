@@ -18,7 +18,7 @@ namespace FuFramework.Asset.Runtime
     public class AssetLoadRegister : IReference
     {
         /// <summary>
-        /// 资源管理器
+        /// 资源管理模块
         /// </summary>
         private readonly AssetModule m_AssetModule = ModuleManager.GetModule<AssetModule>();
 

@@ -1,26 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.SaveData.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Model.Runtime
 {
     /// <summary>
-    /// Model管理器
+    /// 数据模型管理模块
     /// 1.将所有的Model存到字典里统一管理
     /// 2.提供获取、删除指定Model的方法
     /// </summary>
-    [ModuleDependency(typeof(EventModule), typeof(DataSaveModule))]
     public class ModelModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 存储所有的Model字典。Key：Model类型， value：Model实例
         /// </summary>

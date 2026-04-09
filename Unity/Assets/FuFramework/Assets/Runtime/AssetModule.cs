@@ -10,19 +10,13 @@ using Object = UnityEngine.Object;
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 资源管理器。
+    /// 资源管理模块。
     /// 功能：
-    /// 1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
-    /// 2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
+    ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
+    ///     2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
     public partial class AssetModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-
         /// <summary>
         /// 资源运行模式。
         /// </summary>
@@ -53,9 +47,9 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            // 获取资源模块配置数据
+            // 获取资源管理模块配置数据
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
-            if (!assetSetting) throw new FuException("[AssetModule]资源模块配置数据为空!");
+            if (!assetSetting) throw new FuException("[AssetModule]资源管理模块配置数据为空!");
 
             PlayMode                    = assetSetting.PlayMode;
             DefaultPackageName          = assetSetting.DefaultPackageName;

@@ -140,7 +140,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 实体隐藏时触发。
         /// </summary>
-        /// <param name="isShutdown">是否是关闭实体管理器时触发。</param>
+        /// <param name="isShutdown">是否是关闭实体管理模块时触发。</param>
         /// <param name="userData">用户自定义数据。</param>
         public void OnHide(bool isShutdown, object userData)
         {

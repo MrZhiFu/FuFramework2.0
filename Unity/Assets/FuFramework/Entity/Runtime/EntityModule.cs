@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 namespace FuFramework.Entity.Runtime
 {
     /// <summary>
-    /// 实体管理器。
+    /// 实体管理模块。
     /// 功能：
     /// 1. 管理实体组的创建、销毁等流程。
     /// 2. 管理实体的创建、销毁、显示、隐藏等流程。
@@ -23,28 +23,67 @@ namespace FuFramework.Entity.Runtime
     /// 5. 管理实体的对象池。
     /// 6. 管理实体的依赖资源加载。
     /// </summary>
-    [ModuleDependency(typeof(ObjectPoolModule), typeof(AssetModule), typeof(EventModule))]
     public sealed class EntityModule : FuModule
     {
-        protected override int Priority => ModulePriority.Game;
+        /// <summary>
+        /// 记录所有实体的字典，Key为实体编号，Value为实体信息，便于快速查找
+        /// </summary>
+        private readonly Dictionary<int, EntityInfo> m_EntityDict = new();
 
-        private readonly Dictionary<int, EntityInfo>     m_EntityDict      = new(); // 记录所有实体的字典，Key为实体编号，Value为实体信息，便于快速查找
-        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new(); // 记录所有实体组的字典，Key为实体组名称，Value为实体组
+        /// <summary>
+        /// 记录所有实体组的字典，Key为实体组名称，Value为实体组
+        /// </summary>
+        private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new();
 
-        private readonly Dictionary<int, int> m_LoadingEntityDict   = new(); // 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
-        private readonly HashSet<int>         m_LoadingToReleaseSet = new(); // 记录在加载中但是需要释放的实体id集合，防止在加载实体过程中被回收的情况
-        private readonly Queue<EntityInfo>    m_WaitRecycleQueue    = new(); // 待回收的实体信息队列
+        /// <summary>
+        /// 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
+        /// </summary>
+        private readonly Dictionary<int, int> m_LoadingEntityDict = new();
 
-        private EntityHelper m_EntityHelper; // 实体辅助器
+        /// <summary>
+        /// 记录在加载中但是需要释放的实体id集合，防止在加载实体过程中被回收的情况
+        /// </summary>
+        private readonly HashSet<int> m_LoadingToReleaseSet = new();
 
-        private int  m_Serial;     // 实体自增编号
-        private bool m_IsShutdown; // 是否关闭
+        /// <summary>
+        /// 待回收的实体信息队列
+        /// </summary>
+        private readonly Queue<EntityInfo> m_WaitRecycleQueue = new();
 
-        private EventModule      m_EventModule;      // 实体管理器
-        private AssetModule      m_AssetModule;      // 资源管理器
-        private ObjectPoolModule m_ObjectPoolModule; // 对象池管理器
+        /// <summary>
+        /// 实体辅助器
+        /// </summary>
+        private EntityHelper m_EntityHelper;
 
-        private Transform m_InstanceRoot; // 实体实例对象池根节点
+        /// <summary>
+        /// 实体自增编号
+        /// </summary>
+        private int m_Serial;
+
+        /// <summary>
+        /// 是否关闭
+        /// </summary>
+        private bool m_IsShutdown;
+
+        /// <summary>
+        /// 事件管理模块
+        /// </summary>
+        private EventModule m_EventModule;
+
+        /// <summary>
+        /// 资源管理模块
+        /// </summary>
+        private AssetModule m_AssetModule;
+
+        /// <summary>
+        /// 对象池管理模块
+        /// </summary>
+        private ObjectPoolModule m_ObjectPoolModule;
+
+        /// <summary>
+        /// 实体实例对象池根节点
+        /// </summary>
+        private Transform m_InstanceRoot;
 
         /// <summary>
         /// 获取实体数量。
@@ -55,6 +94,7 @@ namespace FuFramework.Entity.Runtime
         /// 获取实体组数量。
         /// </summary>
         public int EntityGroupCount => m_EntityGroupDict.Count;
+
 
         /// <summary>
         /// 初始化。
@@ -194,7 +234,7 @@ namespace FuFramework.Entity.Runtime
         /// <returns>是否增加实体组成功。</returns>
         public bool AddEntityGroup(EntityGroupInfo entityGroupSetting)
         {
-            if (m_ObjectPoolModule is null) throw new FuException("[EntityModule] 增加实体组失败, 请先设置对象池管理器.");
+            if (m_ObjectPoolModule is null) throw new FuException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
 
             if (HasEntityGroup(entityGroupSetting.Name))
             {

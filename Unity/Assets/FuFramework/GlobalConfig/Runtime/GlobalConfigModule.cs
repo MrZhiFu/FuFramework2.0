@@ -9,7 +9,7 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.GlobalConfig.Runtime
 {
     /// <summary>
-    /// 全局配置组件。
+    /// 全局配置管理模块。
     /// 功能：从服务器获取并提供游戏全局配置信息。包括：
     ///    - 检测App版本地址接口
     ///    - 检测资源版本地址接口
@@ -18,15 +18,8 @@ namespace FuFramework.GlobalConfig.Runtime
     ///    - AOT补充元数据列表
     ///    - 附加内容
     /// </summary>
-    [DisallowMultipleComponent]
     public sealed class GlobalConfigModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-        
         /// <summary>
         /// 检测App版本地址接口
         /// </summary>

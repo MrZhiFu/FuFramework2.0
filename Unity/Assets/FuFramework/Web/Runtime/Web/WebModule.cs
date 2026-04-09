@@ -12,16 +12,10 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// Web请求管理器,实现HTTP GET和POST请求功能
+    /// Web管理模块,实现HTTP GET和POST请求功能
     /// </summary>
     public partial class WebModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-        
         /// 用于构建URL的StringBuilder
         private readonly StringBuilder m_UrlStr = new(256);
 
@@ -33,9 +27,6 @@ namespace FuFramework.Web.Runtime
 
         /// 用于存储请求和响应数据的内存流
         private readonly MemoryStream m_MemoryStream = new();
-        
-        /// JSON内容类型常量
-        private const string JsonContentType = "application/json; charset=utf-8";
 
         /// <summary>
         /// 获取或设置超时时间(秒)

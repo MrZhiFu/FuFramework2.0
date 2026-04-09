@@ -8,24 +8,17 @@ using FuFramework.SaveData.Runtime;
 namespace FuFramework.Localization.Runtime
 {
     /// <summary>
-    /// 本地化管理器。
+    /// 本地化管理模块。
     /// </summary>
-    [ModuleDependency(typeof(EventModule), typeof(DataSaveModule))]
     public sealed class LocalizationModule : FuModule
     {
         /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
-        /// <summary>
-        /// 事件组件
+        /// 事件管理模块
         /// </summary>
         private EventModule m_EventModule;
 
         /// <summary>
-        /// Setting组件
+        /// 数据保存模块
         /// </summary>
         private DataSaveModule m_DataSaveModule;
 

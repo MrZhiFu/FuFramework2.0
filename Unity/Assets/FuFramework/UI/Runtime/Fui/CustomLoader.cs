@@ -207,7 +207,7 @@ namespace FuFramework.UI.Runtime
         private static readonly string CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
 
         /// <summary>
-        /// 资源管理器
+        /// 资源管理模块
         /// </summary>
         private readonly AssetModule m_AssetModule;
 
@@ -216,7 +216,7 @@ namespace FuFramework.UI.Runtime
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
             if (!m_AssetModule)
             {
-                throw new FuException("[CustomLoader] 资源管理器不存在!");
+                throw new FuException("[CustomLoader] 资源管理模块不存在!");
             }
         }
 
@@ -258,7 +258,7 @@ namespace FuFramework.UI.Runtime
                 }
                 else
                 {
-                    // 4.从资源管理器加载
+                    // 4.从资源管理模块加载
                     assetHandle = await LoadTextureFromAsset(url);
                     if (assetHandle.IsNotNull() && assetHandle.IsDone)
                     {
@@ -327,7 +327,7 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 从资源管理器加载纹理
+        /// 从资源管理模块加载纹理
         /// </summary>
         /// <param name="url">资源路径。</param>
         /// <returns>加载完成的Texture2D。</returns>

@@ -8,15 +8,11 @@ using UnityEngine;
 namespace FuFramework.Coroutine.Runtime
 {
     /// <summary>
-    /// 协程管理器。
+    /// 协程管理模块。
     /// 用于管理协程，提供一些便捷的方法。推荐还是使用UniTask实现。
     /// </summary>
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Game Framework/Coroutine")]
     public class CoroutineModule : FuModule
     {
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 等待帧结束
         /// </summary>

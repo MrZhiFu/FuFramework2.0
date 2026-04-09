@@ -7,34 +7,40 @@ using UnityEngine;
 namespace FuFramework.Guide.Runtime
 {
     /// <summary>
-    /// 引导管理器
+    /// 引导管理模块
     /// </summary>
     public class GuideModule : FuModule
     {
-        /// <summary>
-        /// 游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
         #region 私有字段
 
+        /// <summary>
         /// 引导配置SO
+        /// </summary>
         private GuideSetting m_Setting;
 
+        /// <summary>
         /// 当前引导
+        /// </summary>
         private GuideInfo m_CurrentGuide;
 
+        /// <summary>
         /// 当前引导中的当前步骤
+        /// </summary>
         private BaseStep m_CurrentStep;
 
+        /// <summary>
         /// 当前引导中的所有步骤，key为步骤Id，Value为步骤对象
+        /// </summary>
         private readonly Dictionary<string, BaseStep> m_AllStepDict = new();
 
+        /// <summary>
         /// 步骤历史记录栈
+        /// </summary>
         private readonly Stack<BaseStep> m_StepHistoryStack = new();
 
+        /// <summary>
         /// 缓存完成的引导，key为引导ID，Value为是否完成
+        /// </summary>
         private readonly Dictionary<string, bool> m_GuideCompletionCacheDict = new();
 
         #endregion
@@ -122,7 +128,7 @@ namespace FuFramework.Guide.Runtime
                 return;
             }
 
-            FuLogger.LogInfo("[GuideModule] 引导管理器初始化完成");
+            FuLogger.LogInfo("[GuideModule] 引导管理模块初始化完成");
         }
 
         /// <summary>

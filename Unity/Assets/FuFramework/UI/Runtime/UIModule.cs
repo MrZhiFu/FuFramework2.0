@@ -4,25 +4,17 @@ using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
-using FuFramework.Asset.Runtime;
 using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
-    /// UI管理器。
+    /// UI管理模块。
     /// 职责：用于管理所有UI界面的加载，关闭，释放等操作。
     /// </summary>
-    [ModuleDependency(typeof(ObjectPoolModule), typeof(AssetModule), typeof(EventModule))]
     public sealed partial class UIModule : FuModule
     {
-        /// <summary>
-        /// 获取游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.UI;
-
         /// <summary>
         /// 正在加载中的界面字典, key为界面Id, value为界面名称
         /// </summary>
@@ -39,7 +31,7 @@ namespace FuFramework.UI.Runtime
         private EventModule m_EventModule;
 
         /// <summary>
-        /// 对象池管理器
+        /// 对象池管理模块
         /// </summary>
         private ObjectPoolModule m_ObjectPoolModule;
 

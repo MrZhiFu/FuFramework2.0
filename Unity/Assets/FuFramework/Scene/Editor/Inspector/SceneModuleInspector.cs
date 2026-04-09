@@ -6,7 +6,7 @@ using FuFramework.Scene.Runtime;
 namespace FuFramework.Scene.Editor
 {
     /// <summary>
-    /// 自定义场景管理器的Inspector
+    /// 自定义场景管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(SceneModule))]
     internal sealed class SceneModuleInspector : FuFrameworkInspector

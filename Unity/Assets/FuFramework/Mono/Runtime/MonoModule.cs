@@ -1,60 +1,86 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Mono.Runtime
 {
     /// <summary>
-    /// Mono管理器。
+    /// Mono管理模块。
     /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
     /// </summary>
-    [ModuleDependency(typeof(EventModule))]
     public class MonoModule : FuModule
     {
         /// <summary>
-        /// 获取游戏框架模块优先级。
+        /// 等待执行的 Update 回调列表
         /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-        
-        private readonly List<Action> m_WaitUpdateList  = new(); // 等待执行的 Update 回调列表
-        private readonly List<Action> m_DoingUpdateList = new(); // 正在执行的 Update 回调列表
-
-        private readonly List<Action> m_WaitFixedUpdateList  = new(); // 等待执行的 FixedUpdate 回调列表
-        private readonly List<Action> m_DoingFixedUpdateList = new(); // 正在执行的 FixedUpdate 回调列表
-
-        private readonly List<Action> m_WaitLateUpdateList  = new(); // 等待执行的 LateUpdate 回调列表
-        private readonly List<Action> m_DoingLateUpdateList = new(); // 正在执行的 LateUpdate 回调列表
-
-        private readonly List<Action> m_WaitDestroyList  = new(); // 等待执行的 Destroy 回调列表
-        private readonly List<Action> m_DoingDestroyList = new(); // 正在执行的 Destroy 回调列表
-
-        private List<Action<bool>> m_WaitOnApplicationPauseList = new(); // 等待执行的 OnApplicationPause 回调列表
-        private List<Action<bool>> m_DoOnApplicationPauseList   = new(); // 正在执行的 OnApplicationPause 回调列表
-
-        private List<Action<bool>> m_WaitOnApplicationFocusList = new(); // 等待执行的 OnApplicationFocus 回调列表
-        private List<Action<bool>> m_DoOnApplicationFocusList   = new(); // 正在执行的 OnApplicationFocus 回调列表
-
-        private EventModule m_EventModule; // 事件管理器
+        private readonly List<Action> m_WaitUpdateList = new(); // 
 
         /// <summary>
-        /// 静态锁对象，用于同步多线程环境下的操作
+        /// 正在执行的 Update 回调列表
         /// </summary>
-        private static readonly object Locker = new();
+        private readonly List<Action> m_DoingUpdateList = new();
+
+
+        /// <summary>
+        /// 等待执行的 FixedUpdate 回调列表
+        /// </summary>
+        private readonly List<Action> m_WaitFixedUpdateList = new();
+
+        /// <summary>
+        /// 正在执行的 FixedUpdate 回调列表
+        /// </summary>
+        private readonly List<Action> m_DoingFixedUpdateList = new();
+
+
+        /// <summary>
+        /// 等待执行的 LateUpdate 回调列表
+        /// </summary>
+        private readonly List<Action> m_WaitLateUpdateList = new();
+
+        /// <summary>
+        /// 正在执行的 LateUpdate 回调列表
+        /// </summary>
+        private readonly List<Action> m_DoingLateUpdateList = new();
+
+
+        /// <summary>
+        /// 等待执行的 Destroy 回调列表
+        /// </summary>
+        private readonly List<Action> m_WaitDestroyList = new();
+
+        /// <summary>
+        /// 正在执行的 Destroy 回调列表
+        /// </summary>
+        private readonly List<Action> m_DoingDestroyList = new();
+
+
+        /// <summary>
+        /// 等待执行的 OnApplicationPause 回调列表
+        /// </summary>
+        private List<Action<bool>> m_WaitOnApplicationPauseList = new();
+
+        /// <summary>
+        /// 正在执行的 OnApplicationPause 回调列表
+        /// </summary>
+        private List<Action<bool>> m_DoOnApplicationPauseList = new();
+
+
+        /// <summary>
+        /// 等待执行的 OnApplicationFocus 回调列表
+        /// </summary>
+        private List<Action<bool>> m_WaitOnApplicationFocusList = new();
+
+        /// <summary>
+        /// 正在执行的 OnApplicationFocus 回调列表
+        /// </summary>
+        private List<Action<bool>> m_DoOnApplicationFocusList = new();
+
 
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
-        {
-            m_EventModule = ModuleManager.GetModule<EventModule>();
-            if (m_EventModule is null)
-            {
-                FuLogger.LogFatal("[MonoModule]事件管理器为空.");
-            }
-        }
+        protected override void OnInit() { }
 
         /// <summary>
         /// 帧更新。
@@ -67,10 +93,30 @@ namespace FuFramework.Mono.Runtime
         }
 
         /// <summary>
+        /// 固定帧更新
+        /// </summary>
+        protected override void OnFixedUpdate()
+        {
+            QueueInvoking(m_DoingFixedUpdateList, m_WaitFixedUpdateList);
+        }
+
+        /// <summary>
+        /// 延迟帧更新
+        /// </summary>
+        /// <param name="deltaTime">帧间隔时间。</param>
+        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+        protected override void OnLateUpdate(float deltaTime, float unscaledDeltaTime)
+        {
+            QueueInvoking(m_DoingLateUpdateList, m_WaitLateUpdateList);
+        }
+
+        /// <summary>
         /// 释放。
         /// </summary>
         protected override void OnDispose()
         {
+            QueueInvoking(m_DoingDestroyList, m_WaitDestroyList);
+
             m_WaitUpdateList.Clear();
             m_WaitDestroyList.Clear();
             m_WaitFixedUpdateList.Clear();
@@ -80,38 +126,12 @@ namespace FuFramework.Mono.Runtime
         }
 
         /// <summary>
-        /// 在固定的帧率下调用。
-        /// </summary>
-        public void FixedUpdate()
-        {
-            QueueInvoking(m_DoingFixedUpdateList, m_WaitFixedUpdateList);
-        }
-
-        /// <summary>
-        /// 在所有 Update 函数调用后每帧调用。
-        /// </summary>
-        public void LateUpdate()
-        {
-            QueueInvoking(m_DoingLateUpdateList, m_WaitLateUpdateList);
-        }
-
-        /// <summary>
-        /// 当 MonoBehaviour 将被销毁时调用。
-        /// </summary>
-        public void OnDestroy()
-        {
-            QueueInvoking(m_DoingDestroyList, m_WaitDestroyList);
-        }
-
-        /// <summary>
         /// 当应用程序失去或获得焦点时调用。
         /// </summary>
         /// <param name="focusStatus">应用程序的焦点状态</param>
         public void OnApplicationFocus(bool focusStatus)
         {
             QueueInvoking(ref m_DoOnApplicationFocusList, ref m_WaitOnApplicationFocusList, focusStatus);
-            if (m_EventModule)
-                m_EventModule.Broadcast(this, OnApplicationFocusChangedEventArgs.Create(focusStatus));
         }
 
         /// <summary>
@@ -121,8 +141,6 @@ namespace FuFramework.Mono.Runtime
         public void OnApplicationPause(bool pauseStatus)
         {
             QueueInvoking(ref m_DoOnApplicationPauseList, ref m_WaitOnApplicationPauseList, pauseStatus);
-            if (m_EventModule)
-                m_EventModule.Broadcast(this, OnApplicationPauseChangedEventArgs.Create(pauseStatus));
         }
 
 
@@ -133,7 +151,7 @@ namespace FuFramework.Mono.Runtime
         public void AddUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitUpdateList.Add(action);
+            m_WaitUpdateList.Add(action);
         }
 
         /// <summary>
@@ -143,7 +161,7 @@ namespace FuFramework.Mono.Runtime
         public void AddLateUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitLateUpdateList.Add(action);
+            m_WaitLateUpdateList.Add(action);
         }
 
         /// <summary>
@@ -153,7 +171,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveLateUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitLateUpdateList.Remove(action);
+            m_WaitLateUpdateList.Remove(action);
         }
 
         /// <summary>
@@ -163,7 +181,7 @@ namespace FuFramework.Mono.Runtime
         public void AddFixedUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitFixedUpdateList.Add(action);
+            m_WaitFixedUpdateList.Add(action);
         }
 
         /// <summary>
@@ -173,7 +191,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveFixedUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitFixedUpdateList.Remove(action);
+            m_WaitFixedUpdateList.Remove(action);
         }
 
         /// <summary>
@@ -183,7 +201,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveUpdateListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitUpdateList.Remove(action);
+            m_WaitUpdateList.Remove(action);
         }
 
 
@@ -194,7 +212,7 @@ namespace FuFramework.Mono.Runtime
         public void AddDestroyListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitDestroyList.Add(action);
+            m_WaitDestroyList.Add(action);
         }
 
         /// <summary>
@@ -204,7 +222,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveDestroyListener(Action action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitDestroyList.Remove(action);
+            m_WaitDestroyList.Remove(action);
         }
 
         /// <summary>
@@ -214,7 +232,7 @@ namespace FuFramework.Mono.Runtime
         public void AddOnApplicationPauseListener(Action<bool> action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitOnApplicationPauseList.Add(action);
+            m_WaitOnApplicationPauseList.Add(action);
         }
 
         /// <summary>
@@ -224,7 +242,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveOnApplicationPauseListener(Action<bool> action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitOnApplicationPauseList.Remove(action);
+            m_WaitOnApplicationPauseList.Remove(action);
         }
 
         /// <summary>
@@ -234,7 +252,7 @@ namespace FuFramework.Mono.Runtime
         public void AddOnApplicationFocusListener(Action<bool> action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitOnApplicationFocusList.Add(action);
+            m_WaitOnApplicationFocusList.Add(action);
         }
 
         /// <summary>
@@ -244,7 +262,7 @@ namespace FuFramework.Mono.Runtime
         public void RemoveOnApplicationFocusListener(Action<bool> action)
         {
             FuGuard.NotNull(action, nameof(action));
-            lock (Locker) m_WaitOnApplicationFocusList.Remove(action);
+            m_WaitOnApplicationFocusList.Remove(action);
         }
 
         /// <summary>
@@ -257,20 +275,17 @@ namespace FuFramework.Mono.Runtime
         /// <param name="waitInvokeList"></param>
         private static void QueueInvoking(List<Action> invokeList, List<Action> waitInvokeList)
         {
-            lock (Locker)
-            {
-                Utility.Object.Swap(ref invokeList, ref waitInvokeList);
+            Utility.Object.Swap(ref invokeList, ref waitInvokeList);
 
-                foreach (var action in invokeList)
+            foreach (var action in invokeList)
+            {
+                try
                 {
-                    try
-                    {
-                        action.Invoke();
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogError(e);
-                    }
+                    action.Invoke();
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogError(e);
                 }
             }
         }
@@ -286,20 +301,17 @@ namespace FuFramework.Mono.Runtime
         /// <param name="value"></param>
         private static void QueueInvoking(ref List<Action<bool>> a, ref List<Action<bool>> b, bool value)
         {
-            lock (Locker)
-            {
-                Utility.Object.Swap(ref a, ref b);
+            Utility.Object.Swap(ref a, ref b);
 
-                foreach (var action in a)
+            foreach (var action in a)
+            {
+                try
                 {
-                    try
-                    {
-                        action.Invoke(value);
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogError(e);
-                    }
+                    action.Invoke(value);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogError(e);
                 }
             }
         }

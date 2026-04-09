@@ -27,7 +27,7 @@ namespace FuFramework.Download.Runtime
             /// 是否已销毁
             private bool m_Disposed;
 
-            /// 事件管理器
+            /// 事件管理模块
             private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
 
 

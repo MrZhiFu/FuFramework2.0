@@ -11,7 +11,7 @@ namespace FuFramework.Event.Runtime
     /// </summary>
     public sealed class EventRegister : IReference
     {
-        /// 事件管理器
+        /// 事件管理模块
         private static EventModule EventModule => ModuleManager.GetModule<EventModule>();
 
         /// <summary>

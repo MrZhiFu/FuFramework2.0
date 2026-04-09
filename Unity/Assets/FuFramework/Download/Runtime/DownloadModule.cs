@@ -10,18 +10,11 @@ using System.Collections.Concurrent;
 namespace FuFramework.Download.Runtime
 {
     /// <summary>
-    /// 下载管理器。
+    /// 下载管理模块。
     /// 负责管理下载任务，核心实现是任务池，用来存储执行下载任务
     /// </summary>
-    [ModuleDependency(typeof(EventModule))]
     public sealed partial class DownloadModule : FuModule
     {
-        /// <summary>
-        /// 游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Core;
-
         /// <summary>
         /// 默认下载任务优先级。
         /// </summary>
@@ -38,7 +31,7 @@ namespace FuFramework.Download.Runtime
         private const int DownloadAgentHelperCount = 3;
 
         /// <summary>
-        /// 事件管理器
+        /// 事件管理模块
         /// </summary>
         private EventModule m_EventModule;
 
@@ -119,7 +112,7 @@ namespace FuFramework.Download.Runtime
             m_EventModule = ModuleManager.GetModule<EventModule>();
             if (!m_EventModule)
             {
-                FuLogger.LogFatal("[DownloadModule] 事件管理器为空!");
+                FuLogger.LogFatal("[DownloadModule] 事件管理模块为空!");
                 return;
             }
 

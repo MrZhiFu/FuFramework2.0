@@ -17,7 +17,7 @@ namespace Launcher.Procedure
     /// 获取服务端默认资源包的版本信息流程。
     /// 主要作用是：
     /// 1. 从服务端获取默认资源包的版本信息，包括：资源包名称、资源下载根路径、资源包版本号、平台、渠道等
-    /// 2. 若获取成功，则将版本信息保存到流程管理器的Data变量中，并进入资源更新初始化流程。
+    /// 2. 若获取成功，则将版本信息保存到流程管理模块的Data变量中，并进入资源更新初始化流程。
     /// 3. 若获取失败，则等待一段时间后重新获取。
     /// </summary>
     public class ProcedureReqPackageVersionInfo : ProcedureBase
@@ -64,14 +64,14 @@ namespace Launcher.Procedure
                     // 获取成功
                     var assetPackageVersion = Utility.Json.ToObject<ResponseGameAssetPackageVersion>(httpJsonResult.Data);
 
-                    // 将资源下载路径保存到流程管理器的Data变量("DownloadURL")中，路径格式为：根路径/资源包名称/平台/版本号/渠道/资源包名称/版本号
+                    // 将资源下载路径保存到流程管理模块的Data变量("DownloadURL")中，路径格式为：根路径/资源包名称/平台/版本号/渠道/资源包名称/版本号
                     var downloadURL = Path.Combine(assetPackageVersion.RootPath, assetPackageVersion.PackageName, assetPackageVersion.Platform, assetPackageVersion.AppVersion,
                                                    assetPackageVersion.Channel, assetPackageVersion.AssetPackageName, assetPackageVersion.Version) + Path.DirectorySeparatorChar;
                     var downloadURLStr = ReferencePool.Acquire<VarString>();
                     downloadURLStr.SetValue(downloadURL);
                     Fsm.SetData("DownloadURL", downloadURLStr);
 
-                    // 将版本信息保存到流程管理器的Data变量("PackageVersion)中，进入资源更新初始化流程。
+                    // 将版本信息保存到流程管理模块的Data变量("PackageVersion)中，进入资源更新初始化流程。
                     var versionStr = ReferencePool.Acquire<VarString>();
                     versionStr.SetValue(assetPackageVersion.Version);
                     Fsm.SetData("PackageVersion", versionStr);

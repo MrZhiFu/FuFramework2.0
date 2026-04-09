@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FuFramework.Network.Editor
 {
     /// <summary>
-    /// 自定义网络管理器的Inspector
+    /// 自定义网络管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(NetworkModule))]
     internal sealed class NetworkModuleInspector : FuFrameworkInspector

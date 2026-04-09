@@ -48,7 +48,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
             public override float AutoReleaseInterval { get; set; }
 
-            /// 获取或设置对象池的优先级。该优先级会影响该池子在对象池管理器中卸载的顺序。
+            /// 获取或设置对象池的优先级。该优先级会影响该池子在对象池管理模块中卸载的顺序。
             public override int Priority { get; set; }
 
             /// <summary>

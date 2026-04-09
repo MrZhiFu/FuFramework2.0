@@ -18,7 +18,7 @@ namespace FuFramework.UI.Runtime
         private bool m_IsInit = false;
 
         /// <summary>
-        /// UI管理器
+        /// UI管理模块
         /// </summary>
         private UIModule m_UIModule;
 
@@ -195,7 +195,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected void CloseSelf()
         {
-            if (m_UIModule is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理器为空。");
+            if (m_UIModule is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理模块为空。");
             m_UIModule.CloseUI(this);
         }
     }

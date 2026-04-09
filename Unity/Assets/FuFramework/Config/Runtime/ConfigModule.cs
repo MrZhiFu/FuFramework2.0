@@ -7,12 +7,10 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Config.Runtime
 {
     /// <summary>
-    /// 配置管理器。
+    /// 配置管理模块。
     /// </summary>
     public sealed class ConfigModule : FuModule
     {
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 配置表类型与名称字典。key为配置类型，value为配置名称。
         /// </summary>

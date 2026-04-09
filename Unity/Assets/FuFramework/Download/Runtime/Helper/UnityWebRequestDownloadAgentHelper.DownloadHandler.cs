@@ -13,7 +13,7 @@ namespace FuFramework.Download.Runtime
             private readonly UnityWebRequestDownloadAgentHelper m_Owner;
 
             /// <summary>
-            /// 事件管理器
+            /// 事件管理模块
             /// </summary>
             private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
 

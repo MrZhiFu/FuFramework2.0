@@ -7,7 +7,7 @@ using FuFramework.ModuleSetting.Runtime;
 namespace FuFramework.RedDot.Runtime
 {
     /// <summary>
-    /// 红点系统管理器
+    /// 红点管理模块
     /// 
     /// 主要功能：
     /// 1. 树形结构管理 - 支持父子节点层级关系，自动计算总计数
@@ -23,12 +23,6 @@ namespace FuFramework.RedDot.Runtime
     /// </summary>
     public class RedDotModule : FuModule
     {
-        /// <summary>
-        /// 游戏框架模块优先级。
-        /// </summary>
-        /// <remarks>优先级较高的模块会优先轮询，并且关闭操作会后进行。</remarks>
-        protected override int Priority => ModulePriority.Game;
-
         /// <summary>
         /// 存储所有节点的字典，key：节点的key，value：节点对象
         /// </summary>
