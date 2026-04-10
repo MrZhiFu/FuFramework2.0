@@ -12,7 +12,7 @@ namespace FuFramework.ReferencePool.Runtime
     public sealed class ReferencePoolModule : FuModule
     {
         [Header("是否开启引用类型严格检查(开启后会检查引用类型为非抽象类，且为IReference的接口实现类)")]
-        [SerializeField] private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.AlwaysEnable;
+        [SerializeField] private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.OnlyEnableInEditor;
 
         /// <summary>
         /// 获取或设置是否开启引用类型严格检查。
