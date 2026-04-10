@@ -160,8 +160,6 @@ namespace FuFramework.ModuleSetting.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
-
             // 设置游戏速度，屏幕休眠，帧率，后台运行等
             Time.timeScale              = m_GameSpeed;
             Screen.sleepTimeout         = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
