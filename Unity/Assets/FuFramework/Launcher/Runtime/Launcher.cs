@@ -11,9 +11,14 @@ namespace FuFramework.Launcher.Runtime
     /// </summary>
     public partial class Launcher : MonoSingleton<Launcher>
     {
-        private void Awake()
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInit()
         {
-            DontDestroyOnLoad(this);
+            // 初始化运行时日志查看器
+            SRDebug.Init();
+            FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
         }
 
         private void Start()

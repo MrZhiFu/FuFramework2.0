@@ -26,7 +26,8 @@
         "FuFramework.DataSave.Runtime",
         "FuFramework.RedDot.Runtime",
         "FuFramework.Guide.Runtime",
-        "FuFramework.ModuleSetting.Runtime"
+        "FuFramework.ModuleSetting.Runtime",
+        "StompyRobot.SRDebugger"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

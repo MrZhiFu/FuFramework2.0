@@ -28,9 +28,6 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入首次启动流程------</color>");
 
-            // 初始化运行时日志查看器(第三方插件)
-            SRDebug.Init();
-
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
 
