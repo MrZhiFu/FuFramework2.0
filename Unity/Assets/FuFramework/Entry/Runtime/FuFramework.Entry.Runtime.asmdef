@@ -25,7 +25,8 @@
         "FuFramework.Model.Runtime",
         "FuFramework.DataSave.Runtime",
         "FuFramework.RedDot.Runtime",
-        "FuFramework.Guide.Runtime"
+        "FuFramework.Guide.Runtime",
+        "FuFramework.ModuleSetting.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -25,11 +25,12 @@ namespace FuFramework.Config.Runtime
         /// 获取配置表数量。
         /// </summary>
         public int Count => m_CfgDataDict.Count;
-        
+
         /// <summary>
         /// 获取所有配置表名称。
         /// </summary>
         public IEnumerable<string> CfgNames => m_CfgDataDict.Keys;
+
 
         /// <summary>
         /// 初始化。
@@ -57,7 +58,7 @@ namespace FuFramework.Config.Runtime
         {
             if (!HasConfig<T>()) return default;
             var cfgName = GetTypeName<T>();
-            var cfg = GetConfig(cfgName);
+            var cfg     = GetConfig(cfgName);
             return cfg != null ? (T)cfg : default;
         }
 

@@ -158,7 +158,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void Init()
+        protected override void OnInit()
         {
             FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
 
@@ -189,7 +189,7 @@ namespace FuFramework.ModuleSetting.Runtime
         }
 
         /// <summary>
-        /// 重置为正常游戏速度。
+        /// 重置为正常游戏速度(1倍速)。
         /// </summary>
         public void ResetNormalGameSpeed()
         {

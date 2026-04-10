@@ -41,7 +41,7 @@ namespace FuFramework.RedDot.Runtime
                 FuLogger.LogError("[RedDotModule] 红点树配置文件不存在.");
                 return;
             }
-            
+
             NodeDict.Clear();
             foreach (var root in redDotSetting.m_RootNodes)
             {
@@ -91,7 +91,7 @@ namespace FuFramework.RedDot.Runtime
             }
         }
 
-        
+
         /// <summary>
         /// 注册节点状态变化的回调函数
         /// </summary>
@@ -120,12 +120,7 @@ namespace FuFramework.RedDot.Runtime
         /// <param name="onChange">节点状态变化的回调函数</param>
         public void Unregister(string key, Action<int> onChange)
         {
-            if (!NodeDict.TryGetValue(key, out var node))
-            {
-                FuLogger.LogWarning($"[RedDotModule] 移除监听时未找到节点: {key}");
-                return;
-            }
-
+            if (!NodeDict.TryGetValue(key, out var node)) return;
             node.OnCountChanged -= onChange;
         }
 

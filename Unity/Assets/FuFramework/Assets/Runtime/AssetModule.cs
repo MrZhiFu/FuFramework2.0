@@ -43,6 +43,11 @@ namespace FuFramework.Asset.Runtime
         public int AsyncSystemMaxSlicePerFrame { get; private set; }
 
         /// <summary>
+        /// 资源包是否已经初始化过
+        /// </summary>
+        private bool PackageInited { get; set; } = false;
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected override void OnInit()
@@ -69,10 +74,13 @@ namespace FuFramework.Asset.Runtime
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
             // 初始化YooAsset
-            YooAssets.Initialize();
+            if (!PackageInited)
+            {
+                YooAssets.Initialize();
 
-            // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-            YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
+                // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
+                YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
+            }
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
         }
@@ -87,7 +95,10 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose() { }
+        protected override void OnDispose()
+        {
+            UnloadAllAssetsAsync(DefaultPackageName).Forget();
+        }
 
 
         #region 异步加载资源
@@ -414,6 +425,13 @@ namespace FuFramework.Asset.Runtime
         public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
+
+            if (PackageInited)
+            {
+                return UniTask.FromResult(true);
+            }
+
+            PackageInited = true;
 
             // 创建默认的资源包
             var resourcePackage = TryGetPackage(packageName);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
@@ -134,7 +134,10 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         public void UnloadAll()
         {
-            foreach (var path in m_HandleDict.Keys)
+            // 先复制路径列表，避免遍历时集合被修改
+            var paths = new List<string>(m_HandleDict.Keys);
+            
+            foreach (var path in paths)
             {
                 Unload(path);
             }

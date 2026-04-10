@@ -81,10 +81,10 @@ namespace Hotfix
         /// <summary>
         /// 加载初始必要的UI
         /// </summary>
-        private static async UniTask LoadUI()
+        private static UniTask LoadUI()
         {
             // 添加通用UI资源包
-            await GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
+           return GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
         }
 
         //@formatter:off

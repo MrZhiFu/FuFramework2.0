@@ -29,7 +29,7 @@ namespace FuFramework.Entry.Runtime
 {
     /// <summary>
     /// 全局模块类。
-    /// 功能：提供对各个框架模块的访问入口。
+    /// 功能：提供各个框架模块的访问入口，用于在热更代码中通过此类来访问各个模块的接口。
     /// </summary>
     public static class GlobalModule
     {

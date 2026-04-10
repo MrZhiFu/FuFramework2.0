@@ -10,12 +10,15 @@ namespace FuFramework.Core.Runtime
     /// <typeparam name="T">单例类型</typeparam>
     public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
     {
-        private static T m_Instance; // 单例对象
-        
-        private static bool m_IsInitialized;         // 是否已初始化--防止重复初始化
-        private static bool m_IsApplicationQuitting; // 是否应用退出中--防止应用退出时访问已销毁的单例
+        /// <summary>
+        /// 单例对象
+        /// </summary>
+        private static T m_Instance;
 
-        private static readonly object m_Lock = new(); // 锁对象--防止多线程竞争
+        /// <summary>
+        /// 是否已初始化--防止重复初始化
+        /// </summary>
+        private static bool m_IsInitialized;
 
         /// <summary>
         /// 单例对象
@@ -24,34 +27,31 @@ namespace FuFramework.Core.Runtime
         {
             get
             {
-                if (m_IsApplicationQuitting)
+                if (m_Instance != null)
                 {
-                    FuLogger.LogWarning($"[MonoSingleton] 应用程序退出，{typeof(T)} 已被销毁，返回null");
-                    return null;
-                }
-
-                lock (m_Lock)
-                {
-                    if (m_Instance != null) return m_Instance;
-                    
-                    m_Instance = FindFirstObjectByType<T>();
-                    if (m_Instance != null)
-                    {
-                        // 确保手动放置在场景中的实例也被正确初始化
-                        if (!m_IsInitialized) m_Instance.InitializeSingleton();
-                        return m_Instance;
-                    }
-
-                    // 创建新实例
-                    var singletonObject = new GameObject();
-                    m_Instance = singletonObject.AddComponent<T>();
-                    singletonObject.name = $"[Singleton] {typeof(T).Name}";
-
-                    DontDestroyOnLoad(singletonObject);
-                    m_Instance.InitializeSingleton();
-
                     return m_Instance;
                 }
+
+                m_Instance = FindFirstObjectByType<T>();
+                if (m_Instance != null)
+                {
+                    // 确保手动放置在场景中的实例也被正确初始化
+                    if (!m_IsInitialized)
+                    {
+                        m_Instance.Init();
+                    }
+                    return m_Instance;
+                }
+
+                // 创建新实例
+                var singletonObject = new GameObject();
+                m_Instance           = singletonObject.AddComponent<T>();
+                singletonObject.name = $"[Singleton] {typeof(T).Name}";
+
+                DontDestroyOnLoad(singletonObject);
+                m_Instance.Init();
+
+                return m_Instance;
             }
         }
 
@@ -63,65 +63,54 @@ namespace FuFramework.Core.Runtime
             // 编辑器模式下跳过
             if (!Application.isPlaying) return;
 
-            lock (m_Lock)
+            // 防止在场景中手动放置了多个单例组件而导致创建重复实例
+            if (m_Instance && m_Instance != this)
             {
-                // 防止在场景中手动放置了多个单例组件而导致创建重复实例
-                if (m_Instance != null && m_Instance != this)
-                {
-                    FuLogger.LogWarning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
-                    DestroyImmediate(gameObject);
-                    return;
-                }
+                FuLogger.LogWarning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
+                DestroyImmediate(gameObject);
+                return;
+            }
 
-                // 确保场景中手动放置的单例组件也被正确初始化
-                if (m_Instance == null)
-                {
-                    m_Instance = this as T;
-                    DontDestroyOnLoad(gameObject);
+            // 确保场景中手动放置的单例组件也被正确初始化
+            if (!m_Instance)
+            {
+                m_Instance = this as T;
+                DontDestroyOnLoad(gameObject);
 
-                    if (!m_IsInitialized) 
-                        InitializeSingleton();
-                }
+                if (!m_IsInitialized)
+                    Init();
             }
         }
-
-        /// <summary>
-        /// 应用程序退出
-        /// </summary>
-        private void OnApplicationQuit() => m_IsApplicationQuitting = true;
 
         /// <summary>
         /// 销毁
         /// </summary>
         private void OnDestroy()
         {
-            lock (m_Lock)
-            {
-                if (m_Instance != this) return;
-                Dispose();
-                m_Instance = null;
-                m_IsInitialized = false;
-            }
+            if (m_Instance != this) return;
+            OnDispose();
+            m_Instance      = null;
+            m_IsInitialized = false;
         }
 
         /// <summary>
         /// 初始化单例（确保只初始化一次）
         /// </summary>
-        private void InitializeSingleton()
+        private void Init()
         {
             if (m_IsInitialized) return;
             m_IsInitialized = true;
-            Init();
+            OnInit();
         }
 
         /// <summary>
         /// 初始化
         /// </summary>
-        protected virtual void Init() { }
+        protected virtual void OnInit() { }
 
         /// <summary>
         /// 释放资源
         /// </summary>
-        protected virtual void Dispose() { }
+        protected virtual void OnDispose() { }
     }
 }

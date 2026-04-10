@@ -11,9 +11,11 @@ namespace FuFramework.Network.Runtime
     /// </summary>
     public static class ProtoMessageIdHandler
     {
-        private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary = new();
+        private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary  = new();
         private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new();
-        private static readonly List<Type> HeartBeatList = new();
+        private static readonly List<Type>                           HeartBeatList  = new();
+
+        private static bool IsInitialized = false;
 
         /// <summary>
         /// 根据消息ID获取请求的类型
@@ -95,6 +97,10 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         public static void Init(Assembly assembly)
         {
+            if (IsInitialized) return;
+            
+            IsInitialized = true;
+            
             ReqDictionary.Clear();
             RespDictionary.Clear();
             var types = assembly.GetTypes();

@@ -7,11 +7,11 @@ namespace FuFramework.Core.Runtime
     /// <typeparam name="T"></typeparam>
     public abstract class Singleton<T> where T : class, new()
     {
-        private static T _instance;
+        private static T m_Instance;
 
         /// <summary>
-        /// 单例对象
+        /// 获取单例对象
         /// </summary>
-        public static T Instance => _instance ??= new T();
+        public static T Instance => m_Instance ??= new T();
     }
 }
