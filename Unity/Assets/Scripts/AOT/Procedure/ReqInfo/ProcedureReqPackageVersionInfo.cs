@@ -3,7 +3,7 @@ using System.IO;
 using Cysharp.Threading.Tasks;
 using FuFramework.Web.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.GlobalConfig.Runtime;
 using FuFramework.ReferencePool.Runtime;

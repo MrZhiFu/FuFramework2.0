@@ -5,17 +5,16 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using FuFramework.Core.Editor;
-using FuFramework.Entry.Runtime;
 using FuFramework.Procedure.Runtime;
 using Type = FuFramework.Core.Editor.Type;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Entry.Editor
+namespace FuFramework.Launcher.Editor
 {
     /// <summary>
     /// 自定义流程组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(Launcher))]
+    [CustomEditor(typeof(Runtime.Launcher))]
     internal sealed class LauncherInspector : FuFrameworkInspector
     {
         private SerializedProperty m_AvailableProcedureTypeNames; // 可用的流程类型名称列表
@@ -39,7 +38,7 @@ namespace FuFramework.Entry.Editor
             base.OnInspectorGUI();
             serializedObject.Update();
 
-            if (target is not Launcher launcher) return;
+            if (target is not Runtime.Launcher launcher) return;
 
             if (string.IsNullOrEmpty(m_EntryProcedureTypeName.stringValue))
             {

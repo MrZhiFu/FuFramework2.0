@@ -24,7 +24,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Web.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Entry.Runtime
+namespace FuFramework.Launcher.Runtime
 {
     /// <summary>
     /// Launcher 模块注册部分

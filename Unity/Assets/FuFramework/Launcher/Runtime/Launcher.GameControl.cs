@@ -2,7 +2,7 @@ using UnityEngine;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Entry.Runtime
+namespace FuFramework.Launcher.Runtime
 {
     /// <summary>
     /// Launcher 游戏控制部分

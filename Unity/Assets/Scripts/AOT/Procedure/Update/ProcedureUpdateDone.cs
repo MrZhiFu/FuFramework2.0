@@ -1,6 +1,6 @@
 ﻿using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

@@ -2,7 +2,7 @@
 using Cysharp.Threading.Tasks;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

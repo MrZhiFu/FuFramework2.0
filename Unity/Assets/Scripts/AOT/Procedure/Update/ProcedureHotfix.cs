@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using HybridCLR;
 

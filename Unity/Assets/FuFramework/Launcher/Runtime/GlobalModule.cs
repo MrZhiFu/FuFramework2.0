@@ -25,7 +25,7 @@ using FuFramework.SaveData.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Entry.Runtime
+namespace FuFramework.Launcher.Runtime
 {
     /// <summary>
     /// 全局模块类。

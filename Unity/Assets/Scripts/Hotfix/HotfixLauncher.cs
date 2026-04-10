@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FuFramework.Network.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
 using Launcher.Procedure;
