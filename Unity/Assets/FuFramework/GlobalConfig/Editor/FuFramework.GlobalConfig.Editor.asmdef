@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.GlobalConfig.Editor",
-    "rootNamespace": "FuFramework.GlobalConfig.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.GlobalConfig.Runtime"

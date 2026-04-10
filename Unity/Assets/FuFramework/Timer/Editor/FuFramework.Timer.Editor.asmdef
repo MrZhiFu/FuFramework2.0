@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Timer.Editor",
-    "rootNamespace": "FuFramework.Timer.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Timer.Runtime",

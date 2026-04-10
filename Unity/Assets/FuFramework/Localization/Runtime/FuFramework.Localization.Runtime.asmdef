@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Localization.Runtime",
-    "rootNamespace": "FuFramework.Localization.Runtime",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Runtime",
         "FuFramework.Event.Runtime",
@@ -13,7 +13,7 @@
     "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

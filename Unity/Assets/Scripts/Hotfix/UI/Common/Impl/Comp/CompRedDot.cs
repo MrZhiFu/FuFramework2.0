@@ -2,7 +2,7 @@ using System;
 using FairyGUI;
 using UnityEngine;
 using FuFramework.UI.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI

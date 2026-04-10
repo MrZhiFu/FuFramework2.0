@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Core.Runtime",
-    "rootNamespace": "FuFramework.Core.Runtime",
+    "rootNamespace": "",
     "references": [
         "UniTask",
         "FairyGUI",
@@ -11,7 +11,7 @@
     "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Sound.Editor",
-    "rootNamespace": "FuFramework.Sound.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",

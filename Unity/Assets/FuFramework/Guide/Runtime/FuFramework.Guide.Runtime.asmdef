@@ -1,4 +1,20 @@
 {
-	"name": "FuFramework.Guide.Runtime",
-	"references":[ "GUID:a38628879c417cf49b28b1d0a90f18fa", "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c", "GUID:e4e4d912961bd2b40b157a8b70591522", "GUID:f14e31b21ee717844b91ba5166834d87", "GUID:8c8f9d96103e94a7da84b012fd7e9f13" ]
+    "name": "FuFramework.Guide.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "FairyGUI",
+        "FuFramework.ModuleSetting.Runtime",
+        "FuFramework.Core.Runtime",
+        "FuFramework.ReferencePool.Runtime",
+        "FuFramework.UI.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

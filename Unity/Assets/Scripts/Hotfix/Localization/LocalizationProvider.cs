@@ -1,5 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using FuFramework.Localization.Runtime;
 using Hotfix.Config.Local;
 

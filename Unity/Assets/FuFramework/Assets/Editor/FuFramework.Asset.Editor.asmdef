@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Asset.Editor",
-    "rootNamespace": "FuFramework.Asset.Editor",
+    "rootNamespace": "",
     "references": [
         "YooAsset",
         "FuFramework.Core.Editor",

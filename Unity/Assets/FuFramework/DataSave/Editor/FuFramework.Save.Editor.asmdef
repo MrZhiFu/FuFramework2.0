@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.DataSave.Editor",
-    "rootNamespace": "FuFramework.DataSave.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",

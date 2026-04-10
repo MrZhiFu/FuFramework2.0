@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Coroutine.Editor",
-    "rootNamespace": "FuFramework.Coroutine.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",

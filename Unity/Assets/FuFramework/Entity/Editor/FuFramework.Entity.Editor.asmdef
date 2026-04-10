@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.Entity.Editor",
-    "rootNamespace": "FuFramework.Entity.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.Core.Runtime",

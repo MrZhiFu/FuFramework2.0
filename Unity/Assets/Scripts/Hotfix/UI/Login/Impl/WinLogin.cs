@@ -3,7 +3,7 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Sound.Runtime;
-using FuFramework.Entry.Runtime;
+using FuFramework.Launcher.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
 using UnityEngine;

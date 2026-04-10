@@ -1,6 +1,6 @@
 {
     "name": "FuFramework.FSM.Editor",
-    "rootNamespace": "FuFramework.FSM.Editor",
+    "rootNamespace": "",
     "references": [
         "FuFramework.Core.Editor",
         "FuFramework.FSM.Runtime",
