@@ -23,7 +23,7 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 资源管理模块
         /// </summary>
-        private readonly AssetModule m_AssetModule = ModuleManager.GetModule<AssetModule>();
+        private static AssetModule m_AssetModule;
 
         /// <summary>
         /// 缓存已经加载的资源句柄，key为资源路径，value为资源句柄
@@ -36,6 +36,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetLoadRegister Create()
         {
+            m_AssetModule = ModuleManager.GetModule<AssetModule>();
             return ReferencePool.Runtime.ReferencePool.Acquire<AssetLoadRegister>();
         }
 
@@ -164,7 +165,11 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 清理引用。
         /// </summary>
-        public void Clear() => UnloadAll();
+        public void Clear()
+        {
+            UnloadAll();
+            m_AssetModule = null;
+        }
 
         /// <summary>
         /// 将引用归还引用池-释放资源
