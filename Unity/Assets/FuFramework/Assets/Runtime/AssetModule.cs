@@ -2,6 +2,7 @@ using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -412,6 +413,34 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
+        #region 实例化实体
+
+        /// <summary>
+        /// 异步实例化实体。
+        /// <param name="path">资源路径</param>
+        /// </summary>
+        /// <returns>实例化后的实体。</returns>
+        public async UniTask<GameObject> InstantiateAsync(string path)
+        {
+            var assetHandle          = await LoadAssetAsync(path);
+            var instantiateOperation = assetHandle.InstantiateAsync();
+            await instantiateOperation;
+            return instantiateOperation.Result;
+        }
+
+        /// <summary>
+        /// 同步实例化实体。
+        /// <param name="path">资源路径</param>
+        /// </summary>
+        /// <returns>实例化后的实体。</returns>
+        public async UniTask<GameObject> InstantiateSync(string path)
+        {
+            var assetHandle = await LoadAssetAsync(path);
+            return assetHandle.InstantiateSync();
+        }
+
+        #endregion
+        
         #region 资源包
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.ReferencePool.Runtime;
+using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
 
@@ -66,6 +67,30 @@ namespace FuFramework.Asset.Runtime
         {
             var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
             return handle.AssetObject;
+        }
+
+        /// <summary>
+        /// 异步实例化实体。
+        /// <param name="path">资源路径</param>
+        /// </summary>
+        /// <returns>实例化后的实体。</returns>
+        public async UniTask<GameObject> InstantiateAsync(string path)
+        {
+            var assetHandle          = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
+            var instantiateOperation = assetHandle.InstantiateAsync();
+            await instantiateOperation;
+            return instantiateOperation.Result;
+        }
+
+        /// <summary>
+        /// 同步实例化实体。
+        /// <param name="path">资源路径</param>
+        /// </summary>
+        /// <returns>实例化后的实体。</returns>
+        public async UniTask<GameObject> InstantiateSync(string path)
+        {
+            var assetHandle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
+            return assetHandle.InstantiateSync();
         }
 
         /// <summary>
@@ -136,7 +161,7 @@ namespace FuFramework.Asset.Runtime
         {
             // 先复制路径列表，避免遍历时集合被修改
             var paths = new List<string>(m_HandleDict.Keys);
-            
+
             foreach (var path in paths)
             {
                 Unload(path);
