@@ -41,10 +41,10 @@ namespace FuFramework.Entity.Runtime
         public static ShowEntityInfo Create(int serialId, int entityId, EntityGroup entityGroup, object userData)
         {
             var showEntityInfo = ReferencePool.Runtime.ReferencePool.Acquire<ShowEntityInfo>();
-            showEntityInfo.SerialId = serialId;
-            showEntityInfo.EntityId = entityId;
+            showEntityInfo.SerialId    = serialId;
+            showEntityInfo.EntityId    = entityId;
             showEntityInfo.EntityGroup = entityGroup;
-            showEntityInfo.UserData = userData;
+            showEntityInfo.UserData    = userData;
             return showEntityInfo;
         }
 
@@ -53,10 +53,10 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public void Clear()
         {
-            SerialId = 0;
-            EntityId = 0;
+            SerialId    = 0;
+            EntityId    = 0;
             EntityGroup = null;
-            UserData = null;
+            UserData    = null;
         }
     }
 }

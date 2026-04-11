@@ -12,9 +12,9 @@ namespace FuFramework.Entity.Runtime
     public sealed class EntityInstanceObject : ObjectBase
     {
         /// <summary>
-        /// 实体资源
+        /// 实体资源句柄
         /// </summary>
-        private object m_EntityAsset;
+        private object m_EntityAssetHandle;
 
         /// <summary>
         /// 实体帮助器
@@ -25,20 +25,20 @@ namespace FuFramework.Entity.Runtime
         /// 创建实体实例对象
         /// </summary>
         /// <param name="name">实体名称</param>
-        /// <param name="entityAsset">实体资源</param>
+        /// <param name="entityAssetHandle">实体资源句柄</param>
         /// <param name="entityInstanceGo">实体实例GameObject</param>
         /// <param name="entityHelper"></param>
         /// <returns></returns>
         /// <exception cref="FuException"></exception>
-        public static EntityInstanceObject Create(string name, object entityAsset, GameObject entityInstanceGo, EntityHelper entityHelper)
+        public static EntityInstanceObject Create(string name, object entityAssetHandle, GameObject entityInstanceGo, EntityHelper entityHelper)
         {
-            if (entityAsset  is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体资源为空.");
+            if (entityAssetHandle is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体资源句柄为空.");
             if (entityHelper is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体辅助器为空.");
 
             var entityInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<EntityInstanceObject>();
             entityInstanceObject.Initialize(name, entityInstanceGo);
-            entityInstanceObject.m_EntityAsset  = entityAsset;
-            entityInstanceObject.m_EntityHelper = entityHelper;
+            entityInstanceObject.m_EntityAssetHandle = entityAssetHandle;
+            entityInstanceObject.m_EntityHelper      = entityHelper;
             return entityInstanceObject;
         }
 
@@ -48,8 +48,8 @@ namespace FuFramework.Entity.Runtime
         public override void Clear()
         {
             base.Clear();
-            m_EntityAsset  = null;
-            m_EntityHelper = null;
+            m_EntityAssetHandle = null;
+            m_EntityHelper      = null;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace FuFramework.Entity.Runtime
         /// <param name="isShutdown"></param>
         protected override void Release(bool isShutdown)
         {
-            m_EntityHelper.ReleaseEntity(m_EntityAsset, Target);
+            m_EntityHelper.ReleaseEntity(m_EntityAssetHandle, Target);
         }
     }
 }

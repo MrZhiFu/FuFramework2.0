@@ -1,5 +1,6 @@
 ﻿using FuFramework.Core.Runtime;
 using UnityEngine;
+
 // ReSharper disable NotAccessedField.Local
 
 // ReSharper disable once CheckNamespace
@@ -87,7 +88,7 @@ namespace FuFramework.Entity.Runtime
         protected internal virtual void OnInit(object userData)
         {
             m_UserData = userData;
-            
+
             if (!CachedTransform)
                 CachedTransform = transform;
 

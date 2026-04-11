@@ -9,7 +9,7 @@ namespace FuFramework.Entity.Runtime
     /// 默认实体辅助器。
     /// 功能：用于实现实体的实例化、创建、释放等操作。
     /// </summary>
-    public class EntityHelper: MonoBehaviour
+    public class EntityHelper : MonoBehaviour
     {
         /// <summary>
         /// 资源操作句柄。
@@ -55,11 +55,11 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 释放实体。
         /// </summary>
-        /// <param name="entityAsset">要释放的实体资源。</param>
+        /// <param name="entityAssetHandle">要释放的实体资源句柄。</param>
         /// <param name="entityInstance">要释放的实体实例。</param>
-        public  void ReleaseEntity(object entityAsset, object entityInstance)
+        public void ReleaseEntity(object entityAssetHandle, object entityInstance)
         {
-            if (entityAsset is not AssetHandle assetOperationHandle)
+            if (entityAssetHandle is not AssetHandle assetOperationHandle)
             {
                 FuLogger.LogError("[EntityHelper]释放实体失败, 实体资源句柄为空!");
                 return;

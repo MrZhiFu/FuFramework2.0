@@ -885,11 +885,11 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         /// <param name="tcs">显示实体的Task。</param>
         /// <param name="entityAssetName">实体资源名称。</param>
-        /// <param name="entityAsset">实体资源对象。</param>
+        /// <param name="entityAssetHandle">实体资源句柄。</param>
         /// <param name="progress">加载进度。</param>
         /// <param name="showEntityInfo">显示时的实体信息。</param>
         /// <exception cref="FuException"></exception>
-        private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAsset, float progress, ShowEntityInfo showEntityInfo)
+        private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAssetHandle, float progress, ShowEntityInfo showEntityInfo)
         {
             if (showEntityInfo is null)
             {
@@ -898,12 +898,12 @@ namespace FuFramework.Entity.Runtime
                 throw exception;
             }
 
-            // 如果实体已经在加载中，则忽略
+            // 如果实体已经在加载中，则释放资源并忽略
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
                 ReferencePool.Runtime.ReferencePool.Release(showEntityInfo);
-                m_EntityHelper.ReleaseEntity(entityAsset, null);
+                m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
                 return;
             }
 
@@ -911,8 +911,8 @@ namespace FuFramework.Entity.Runtime
             m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
 
             // 实例化实体
-            var entityInstanceGo     = m_EntityHelper.InstantiateEntity(entityAsset);
-            var entityInstanceObject = EntityInstanceObject.Create(entityAssetName, entityAsset, entityInstanceGo, m_EntityHelper);
+            var entityInstanceGo     = m_EntityHelper.InstantiateEntity(entityAssetHandle);
+            var entityInstanceObject = EntityInstanceObject.Create(entityAssetName, entityAssetHandle, entityInstanceGo, m_EntityHelper);
             showEntityInfo.EntityGroup.RegisterEntityInstanceObject(entityInstanceObject, true);
 
             // 实体资源已经加载完成，开始显示实体
@@ -985,6 +985,7 @@ namespace FuFramework.Entity.Runtime
         {
             try
             {
+                // 创建实体
                 var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup);
                 if (entity is null)
                 {
@@ -993,7 +994,7 @@ namespace FuFramework.Entity.Runtime
                     throw exception;
                 }
 
-
+                // 创建实体信息
                 var entityInfo = EntityInfo.Create(entity);
                 m_EntityDict.Add(entityId, entityInfo);
 

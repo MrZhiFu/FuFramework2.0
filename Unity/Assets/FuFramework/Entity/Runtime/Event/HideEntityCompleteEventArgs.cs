@@ -39,7 +39,7 @@ namespace FuFramework.Entity.Runtime
         /// </summary>
         public object UserData { get; private set; }
 
-        
+
         /// <summary>
         /// 清理隐藏实体完成事件。
         /// </summary>

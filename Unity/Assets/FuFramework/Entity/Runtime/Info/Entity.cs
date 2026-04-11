@@ -184,7 +184,7 @@ namespace FuFramework.Entity.Runtime
                 FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
                 return;
             }
-            
+
             try
             {
                 Logic.OnAttached(childEntity.Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
@@ -224,7 +224,7 @@ namespace FuFramework.Entity.Runtime
                 FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
                 return;
             }
-            
+
             try
             {
                 Logic.OnAttachTo(parentEntity.Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
