@@ -8,8 +8,9 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 当使用HybridCLR发布到WEBGL的时候执行。
-    /// 为HybridCLR热更新在WebGL平台上创建符号链接，替换Unity默认的il2cpp目录。
-    /// HybridCLR需要修改Unity的il2cpp后端来支持热更新，因此需要执行生成的3条命令来完成这项工作。
+    /// 功能：
+    ///     1. 为HybridCLR热更新在WebGL平台上创建符号链接，替换Unity默认的il2cpp目录。
+    ///     2. HybridCLR需要修改Unity的il2cpp后端来支持热更新，因此需要执行生成的3条命令来完成这项工作。
     /// </summary>
     public static class BuildWebGLToolsWithHybridCLR
     {

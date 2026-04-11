@@ -4,7 +4,7 @@ using System;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架异常判空静态方法
+    /// 游戏框架防护类。
     /// </summary>
     public static class FuGuard
     {

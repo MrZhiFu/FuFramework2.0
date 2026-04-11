@@ -5,7 +5,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 日志脚本宏定义。
-    /// 配合日志系统使用，在编译阶段控制日志的输出级别。
+    /// 功能：
+    ///     1. 配合日志系统使用，在编译阶段控制日志的输出级别。
     /// </summary>
     public static class LogScriptingDefineSymbols
     {

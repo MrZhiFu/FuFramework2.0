@@ -6,7 +6,9 @@ using UnityEngine;
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 删除本地游戏数据
+    /// 删除本地游戏数据帮助类。
+    /// 功能：
+    ///     1. 删除本地游戏数据目录。
     /// </summary>
     public static class DeleteGameData
     {

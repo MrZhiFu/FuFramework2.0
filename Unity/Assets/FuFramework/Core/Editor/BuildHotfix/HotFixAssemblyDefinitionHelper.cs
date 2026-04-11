@@ -9,7 +9,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 热更程序集定义文件帮助类。
-    /// 用于修改指定路径的程序集定义文件(.asmdef)，勾选/取消在排除平台中添加Editor平台，即标记/取消该程序集仅在非Editor环境(运行时)下使用。
+    /// 功能：
+    ///     1. 用于修改指定路径的程序集定义文件(.asmdef)，勾选/取消在排除平台中添加Editor平台，即标记/取消该程序集仅在非Editor环境(运行时)下使用。
     /// </summary>
     public static class HotFixAssemblyDefinitionHelper
     {

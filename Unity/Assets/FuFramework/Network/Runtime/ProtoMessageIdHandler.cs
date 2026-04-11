@@ -30,7 +30,7 @@ namespace FuFramework.Network.Runtime
                 return null;
             }
 
-            ReqDictionary.TryGetValue(messageId, out var value);
+            ReqDictionary.TryGetValueByKey(messageId, out var value);
             return value;
         }
 
@@ -47,7 +47,7 @@ namespace FuFramework.Network.Runtime
                 return 0;
             }
 
-            ReqDictionary.TryGetKey(type, out var value);
+            ReqDictionary.TryGetKeyByValue(type, out var value);
             return value;
         }
 
@@ -64,7 +64,7 @@ namespace FuFramework.Network.Runtime
                 return null;
             }
 
-            RespDictionary.TryGetValue(messageId, out var value);
+            RespDictionary.TryGetValueByKey(messageId, out var value);
             return value;
         }
 
@@ -81,7 +81,7 @@ namespace FuFramework.Network.Runtime
                 return 0;
             }
 
-            RespDictionary.TryGetKey(type, out var value);
+            RespDictionary.TryGetKeyByValue(type, out var value);
             return value;
         }
 
@@ -122,7 +122,7 @@ namespace FuFramework.Network.Runtime
                     {
                         // 请求
                         if (ReqDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
-                        ReqDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        ReqDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
                         throw new FuException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
 
@@ -130,7 +130,7 @@ namespace FuFramework.Network.Runtime
                     {
                         // 返回
                         if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
-                        RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        RespDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
                         throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
 
@@ -138,7 +138,7 @@ namespace FuFramework.Network.Runtime
                     {
                         // 返回
                         if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
-                        RespDictionary.TryGetValue(messageIdHandler.MessageId, out var value);
+                        RespDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
                         throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
                 }

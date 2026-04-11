@@ -12,7 +12,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 构建产品帮助类。
-    /// 主要用于发布游戏的各个平台的产品
+    /// 功能：
+    ///     1. 构建游戏的各个平台的产品。
     /// </summary>
     public static class BuildProductHelper
     {

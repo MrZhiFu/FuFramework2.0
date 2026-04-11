@@ -10,7 +10,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 编辑器顶部工具栏扩展。
-    /// 目前包括快速切换场景按钮、打开C#工程按钮，后续可扩展更多功能
+    /// 功能：
+    ///     1. 目前包括快速切换场景按钮、打开C#工程按钮，后续可扩展更多功能 
     /// </summary>
     public static class EditorToolbarExtension
     {

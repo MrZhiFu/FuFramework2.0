@@ -5,7 +5,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 游戏框架Inspector属性面板抽象基类。
-    /// 作用：提供编译状态的判断和编译开始/完成的事件回调。
+    /// 功能：
+    ///     1. 提供编译状态的判断和编译开始/完成的事件回调。
     /// </summary>
     public abstract class FuFrameworkInspector : UnityEditor.Editor
     {

@@ -8,8 +8,8 @@ namespace FuFramework.Core.Editor
     /// <summary>
     /// 脚本宏定义。
     /// 功能：
-    /// 1。为平台增加或移除指定的脚本宏定义。
-    /// 3。获取/设置指定平台的脚本宏定义。
+    ///     1. 为平台增加或移除指定的脚本宏定义。
+    ///     2. 获取/设置指定平台的脚本宏定义。
     /// </summary>
     public static class ScriptingDefineSymbols
     {

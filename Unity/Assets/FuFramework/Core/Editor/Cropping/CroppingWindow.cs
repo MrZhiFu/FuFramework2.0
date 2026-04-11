@@ -12,7 +12,8 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 防裁剪代码生成窗口。
-    /// 用于生成防裁剪代码，防止代码被裁剪。
+    /// 功能：
+    ///     1. 用于生成防裁剪代码，防止代码被裁剪。
     /// </summary>
     public sealed class CroppingWindow : EditorWindow
     {

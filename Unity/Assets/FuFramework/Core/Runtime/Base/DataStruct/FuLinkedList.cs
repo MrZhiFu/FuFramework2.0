@@ -7,15 +7,26 @@ using System.Runtime.InteropServices;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架链表类(结合一个缓存队列对链表节点的生成做了优化)
+    /// 优化链表。
+    /// 功能：
+    ///     1. 支持链表的遍历、插入、删除等操作。
+    ///     2. 支持链表的遍历方向(正向/反向)。
+    ///     3. 支持链表的遍历顺序(按插入顺序/按值顺序)。
+    /// 
+    /// 实现原理：结合一个缓存队列对链表节点的生成做了优化。
+    ///     缓存队列用于存储已使用的链表节点，避免重复创建节点。
     /// </summary>
     /// <typeparam name="T">指定链表的元素类型。</typeparam>
     public sealed class FuLinkedList<T> : ICollection<T>, ICollection
     {
+        /// <summary>
         /// 存放目标元素的链表
+        /// </summary>
         private readonly LinkedList<T> m_LinkedList;
 
+        /// <summary>
         /// 缓存链表节点的队列
+        /// </summary>
         private readonly Queue<LinkedListNode<T>> m_CachedNodeQueue;
 
         /// <summary>

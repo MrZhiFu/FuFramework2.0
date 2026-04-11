@@ -6,9 +6,10 @@ namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 游戏框架模块抽象基类。
-    /// 定义了模块的相关生命周期。
-    /// 继承`MonoBehaviour`为了更好的在模块属性面板中显示模块信息, 隐藏了MonoBehaviour的相关生命周期，
-    /// 防止子类使用，造成模块生命周期混乱
+    /// 功能：
+    ///     1. 定义了模块的相关生命周期。
+    ///     2.继承`MonoBehaviour`为了更好的在模块属性面板中显示模块信息, 隐藏了MonoBehaviour的相关生命周期，
+    ///     3. 防止子类使用，造成模块生命周期混乱
     /// </summary>
     public abstract class FuModule : MonoBehaviour
     {
@@ -17,7 +18,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected internal abstract void OnInit();
+        protected internal virtual void OnInit() { }
 
         /// <summary>
         /// 帧更新
@@ -41,7 +42,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 释放
         /// </summary>
-        protected internal abstract void OnDispose();
+        protected internal virtual void OnDispose() { }
 
         #endregion
 

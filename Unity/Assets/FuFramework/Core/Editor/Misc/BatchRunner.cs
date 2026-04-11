@@ -8,7 +8,9 @@ using Debug = UnityEngine.Debug;
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 批处理执行工具
+    /// 批处理执行工具类。
+    /// 功能：
+    ///     1. 执行批处理命令(.bat或.sh)。
     /// </summary>
     public static class BatchRunner
     {

@@ -8,13 +8,14 @@ namespace FuFramework.Core.Editor
 {
     /// <summary>
     /// 类型相关的实用函数。
-    /// 功能：获取运行时或编辑器程序集中指定基类的所有子类的名称。
+    ///     功能：
+    ///         1. 获取运行时或编辑器程序集中指定基类的所有子类的名称。
     /// </summary>
     public static class Type
     {
         /// 运行时程序集名称列表
         private static readonly string[] RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
-        
+
         /// 运行时或编辑器程序集名称列表
         private static readonly string[] RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
 

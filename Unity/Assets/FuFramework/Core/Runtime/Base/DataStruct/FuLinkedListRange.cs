@@ -6,7 +6,13 @@ using System.Runtime.InteropServices;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架链表范围。用于指定一个链表在"指定的开始结点" 到 "指定的终结点"范围内的一段链表
+    /// 游戏框架链表范围。
+    /// 功能：
+    ///     1. 用于指定一个链表在"指定的开始结点" 到 "指定的终结点"范围内的一段链表。
+    ///     2. 支持链表范围的遍历。
+    ///     3. 支持链表范围的结点数量的获取。
+    ///     4. 支持链表范围的结点是否包含指定值的判断。
+    ///     5. 支持链表范围的结点是否有效判断。
     /// </summary>
     /// <typeparam name="T">指定链表范围的元素类型。</typeparam>
     [StructLayout(LayoutKind.Auto)]

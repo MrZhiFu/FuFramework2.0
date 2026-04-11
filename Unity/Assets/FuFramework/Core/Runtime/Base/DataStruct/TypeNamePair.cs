@@ -6,6 +6,10 @@ namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 类型和名称的组合值。
+    /// 功能：
+    ///     1. 支持类型和名称的组合值的比较。
+    ///     2. 支持类型和名称的组合值的哈希值获取。
+    ///     3. 支持类型和名称的组合值的字符串表示。
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct TypeNamePair : IEquatable<TypeNamePair>

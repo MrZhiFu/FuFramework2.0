@@ -7,7 +7,13 @@ using UnityEngine;
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 打开文件夹相关的实用函数。
+    /// 打开文件夹工具。
+    /// 功能：
+    ///     1. 打开 Data Path 文件夹。
+    ///     2. 打开 Persistent Data Path 文件夹。
+    ///     3. 打开 Streaming Assets Path 文件夹。
+    ///     4. 打开 Temporary Cache Path 文件夹。
+    ///     5. 打开 Console Log Path 文件夹。
     /// </summary>
     public static class OpenFolder
     {

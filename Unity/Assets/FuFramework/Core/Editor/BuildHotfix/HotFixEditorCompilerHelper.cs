@@ -4,7 +4,10 @@
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 热更新程序集编译选项帮助类
+    /// 热更新程序集编译选项帮助类。
+    /// 功能：
+    ///     1. 移除热更新程序集的编辑器编译指令。
+    ///     2. 增加热更新程序集的编辑器编译指令。
     /// </summary>
     public static class HotFixEditorCompilerHelper
     {

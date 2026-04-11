@@ -6,16 +6,83 @@ using System.Runtime.InteropServices;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架多值字典类(使用一个链表来实现多个值，优化插入操作性能)。
+    /// 多值字典。
+    /// 功能：
+    ///     1. 支持多值字典的添加，移除，获取，遍历等操作。
+    ///     2. 支持多值字典的值数量的获取。
+    ///     3. 支持多值字典的键下是否包含指定值的判断。
+    /// 
+    /// 实现原理：使用一个链表来实现多个值，优化插入操作性能。
     /// </summary>
     /// <typeparam name="TKey">指定多值字典的主键类型。</typeparam>
     /// <typeparam name="TValue">指定多值字典的值类型。</typeparam>
+
+    #region 使用示例
+
+    // // 创建多值字典
+    // var multiDict = new FuMultiDictionary&lt;string, int&gt;();
+    //
+    // // 添加键值对（一个键对应多个值）
+    // multiDict.Add("fruits", 1);
+    // multiDict.Add("fruits", 2);
+    // multiDict.Add("fruits", 3);
+    // multiDict.Add("numbers", 10);
+    // multiDict.Add("numbers", 20);
+    //
+    // // 检查是否包含指定键
+    // bool hasFruits = multiDict.Contains("fruits");  // true
+    // bool hasVegetables = multiDict.Contains("vegetables");  // false
+    //
+    // // 检查指定键是否包含指定值
+    // bool hasApple = multiDict.Contains("fruits", 1);  // true
+    // bool hasOrange = multiDict.Contains("fruits", 4);  // false
+    //
+    // // 获取指定键的所有值
+    // if (multiDict.TryGetValue("fruits", out var range))
+    // {
+    //     foreach (var value in range)
+    //     {
+    //         Debug.Log($"fruit value: {value}");  // 输出: 1, 2, 3
+    //     }
+    // }
+    //
+    // // 通过索引器获取值范围
+    // var numberRange = multiDict["numbers"];
+    // if (numberRange.IsValid)
+    // {
+    //     Debug.Log($"numbers count: {numberRange.Count}");  // 输出: 2
+    // }
+    //
+    // // 获取主键数量
+    // Debug.Log($"key count: {multiDict.Count}");  // 输出: 2
+    //
+    // // 从指定键中移除指定值
+    // multiDict.Remove("fruits", 2);
+    //
+    // // 移除指定键的所有值
+    // multiDict.RemoveAll("numbers");
+    //
+    // // 遍历所有键值对
+    // foreach (var pair in multiDict)
+    // {
+    //     Debug.Log($"key: {pair.Key}, value count: {pair.Value.Count}");
+    // }
+    //
+    // // 清空字典
+    // multiDict.Clear();
+
+    #endregion
+
     public sealed class FuMultiDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, FuLinkedListRange<TValue>>>
     {
+        /// <summary>
         /// 存放值的链表
+        /// </summary>
         private readonly FuLinkedList<TValue> m_LinkedList;
 
+        /// <summary>
         /// 存放主键与多值的字典, key:指定多值字典的主键类型--Value:存放值的一段范围链表
+        /// </summary>
         private readonly Dictionary<TKey, FuLinkedListRange<TValue>> m_Dictionary;
 
         /// <summary>

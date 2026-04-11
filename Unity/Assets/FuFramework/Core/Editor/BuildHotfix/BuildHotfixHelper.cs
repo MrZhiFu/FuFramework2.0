@@ -4,13 +4,15 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Editor
 {
     /// <summary>
-    /// 热更新编辑器
+    /// 热更新编辑器帮助类。
+    /// 功能：
+    ///     1. 复制热更新代码DLL到Assets/Bundles/Code目录。
+    ///     2. 复制AOT代码DLL到Assets/Bundles/AOTCode目录。
     /// </summary>
     [InitializeOnLoad]
     public static class BuildHotfixHelper
