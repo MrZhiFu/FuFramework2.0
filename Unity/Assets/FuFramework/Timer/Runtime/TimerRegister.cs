@@ -19,7 +19,7 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 计时器管理模块
         /// </summary>
-        private readonly TimerModule m_TimerModule = ModuleManager.GetModule<TimerModule>();
+        private static TimerModule m_TimerModule;
 
         /// <summary>
         /// 记录所有计时器任务的列表
@@ -32,8 +32,9 @@ namespace FuFramework.Timer.Runtime
         /// <returns></returns>
         public static TimerRegister Create()
         {
+            m_TimerModule = ModuleManager.GetModule<TimerModule>();
             var register = ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
-            register.m_TimerModule.OnTimerFinished += register.OnTimerFinished;
+            m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
         }
 
@@ -183,15 +184,14 @@ namespace FuFramework.Timer.Runtime
         {
             StopAllTimers();
             m_TimerList.Clear();
+            m_TimerModule.OnTimerFinished -= OnTimerFinished;
+
+            m_TimerModule = null;
         }
 
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release()
-        {
-            m_TimerModule.OnTimerFinished -= OnTimerFinished;
-            ReferencePool.Runtime.ReferencePool.Release(this);
-        }
+        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
     }
 }
