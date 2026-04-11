@@ -12,10 +12,10 @@ namespace FuFramework.Event.Runtime
     public sealed class EventRegister : IReference
     {
         /// 事件管理模块
-        private static EventModule EventModule => ModuleManager.GetModule<EventModule>();
+        private static EventModule m_EventModule;
 
         /// <summary>
-        /// 事件处理字典，key为消息ID，value为处理对象
+        /// 事件处理多值字典，key为事件ID，value为事件处理对象列表。
         /// </summary>
         private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_EventHandlerDict = new();
 
@@ -25,6 +25,7 @@ namespace FuFramework.Event.Runtime
         /// <returns></returns>
         public static EventRegister Create()
         {
+            m_EventModule = ModuleManager.GetModule<EventModule>();
             return ReferencePool.Runtime.ReferencePool.Acquire<EventRegister>();
         }
 
@@ -38,7 +39,7 @@ namespace FuFramework.Event.Runtime
         {
             if (handler == null) throw new Exception("[EventRegister]事件处理对象不能为空.");
             m_EventHandlerDict.Add(id, handler);
-            EventModule.Subscribe(id, handler);
+            m_EventModule.Subscribe(id, handler);
         }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace FuFramework.Event.Runtime
             if (!m_EventHandlerDict.Remove(id, handler))
                 throw new Exception($"[EventRegister]事件订阅器中不存在指定消息ID '{id}' 的处理对象.");
 
-            EventModule.Unsubscribe(id, handler);
+            m_EventModule.Unsubscribe(id, handler);
         }
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace FuFramework.Event.Runtime
             {
                 foreach (var eventHandler in eventHandlers)
                 {
-                    EventModule.Unsubscribe(id, eventHandler);
+                    m_EventModule.Unsubscribe(id, eventHandler);
                 }
             }
 
@@ -78,26 +79,30 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventArgs">消息对象</param>
-        public void Broadcast(object sender, GameEventArgs eventArgs) => EventModule.Broadcast(sender, eventArgs);
+        public void Broadcast(object sender, GameEventArgs eventArgs) => m_EventModule.Broadcast(sender, eventArgs);
 
         /// <summary>
         /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
-        public void Broadcast(object sender, string eventId) => EventModule.Broadcast(sender, eventId);
+        public void Broadcast(object sender, string eventId) => m_EventModule.Broadcast(sender, eventId);
 
         /// <summary>
         /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventArgs">事件内容。</param>
-        public void BroadcastNow(object sender, GameEventArgs eventArgs) => EventModule.BroadcastNow(sender, eventArgs);
+        public void BroadcastNow(object sender, GameEventArgs eventArgs) => m_EventModule.BroadcastNow(sender, eventArgs);
 
         /// <summary>
         /// 清理
         /// </summary>
-        public void Clear() => UnSubscribeAll();
+        public void Clear()
+        {
+            UnSubscribeAll();
+            m_EventModule = null;
+        }
 
         /// <summary>
         /// 将引用归还引用池-释放资源
