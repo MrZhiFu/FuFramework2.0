@@ -13,7 +13,7 @@ namespace FuFramework.Asset.Runtime
     /// <summary>
     /// 资源管理模块。
     /// 功能：
-    ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步接口。
+    ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步资源加载相关接口。
     ///     2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
     public partial class AssetModule : FuModule
@@ -85,13 +85,6 @@ namespace FuFramework.Asset.Runtime
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
         }
-
-        /// <summary>
-        /// 帧更新。
-        /// </summary>
-        /// <param name="deltaTime">帧间隔时间。</param>
-        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
         /// <summary>
         /// 释放
