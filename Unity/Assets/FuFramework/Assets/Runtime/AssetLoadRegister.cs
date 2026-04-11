@@ -12,9 +12,11 @@ namespace FuFramework.Asset.Runtime
 {
     /// <summary>
     /// 资源加载注册器。
-    /// 1.加载资源(只提供异步加载接口)。
-    /// 2.记录加载过的资源句柄，避免重复加载。
-    /// 3.卸载资源。
+    /// 功能：
+    ///     1.异步加载资源。
+    ///     2.记录加载过的资源句柄，避免重复加载。
+    ///     3.异步实例化游戏物体。
+    ///     4.卸载资源。
     /// </summary>
     public class AssetLoadRegister : IReference
     {
@@ -80,17 +82,6 @@ namespace FuFramework.Asset.Runtime
             var instantiateOperation = assetHandle.InstantiateAsync();
             await instantiateOperation;
             return instantiateOperation.Result;
-        }
-
-        /// <summary>
-        /// 同步实例化实体。
-        /// <param name="path">资源路径</param>
-        /// </summary>
-        /// <returns>实例化后的实体。</returns>
-        public async UniTask<GameObject> InstantiateSync(string path)
-        {
-            var assetHandle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
-            return assetHandle.InstantiateSync();
         }
 
         /// <summary>
