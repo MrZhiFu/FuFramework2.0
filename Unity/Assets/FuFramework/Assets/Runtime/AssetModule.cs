@@ -102,7 +102,7 @@ namespace FuFramework.Asset.Runtime
         }
 
 
-        #region 异步加载资源
+        #region 异步加载资源(推荐使用)
 
         /// <summary>
         /// 异步加载资源
@@ -214,7 +214,7 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
-        #region 同步加载资源
+        #region 同步加载资源(不推荐使用)
 
         /// <summary>
         /// 同步加载资源包内所有资源对象
@@ -395,7 +395,7 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
-        #region 同步加载原生文件
+        #region 同步加载原生文件(不推荐使用)
 
         /// <summary>
         /// 同步加载原生文件
@@ -413,10 +413,10 @@ namespace FuFramework.Asset.Runtime
 
         #endregion
 
-        #region 实例化实体
+        #region 实例化游戏物体
 
         /// <summary>
-        /// 异步实例化实体。
+        /// 异步实例化实体(推荐使用)。
         /// <param name="path">资源路径</param>
         /// </summary>
         /// <returns>实例化后的实体。</returns>
@@ -429,13 +429,13 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 同步实例化实体。
+        /// 同步实例化实体(不推荐使用)。
         /// <param name="path">资源路径</param>
         /// </summary>
         /// <returns>实例化后的实体。</returns>
-        public async UniTask<GameObject> InstantiateSync(string path)
+        public GameObject InstantiateSync(string path)
         {
-            var assetHandle = await LoadAssetAsync(path);
+            var assetHandle = LoadAssetSync(path);
             return assetHandle.InstantiateSync();
         }
 
