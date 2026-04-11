@@ -12,7 +12,7 @@ namespace Launcher.Procedure
     /// </summary>
     public static class HttpHelper
     {
-        private static readonly Dictionary<string, object> s_ParamDict = new();
+        private static readonly Dictionary<string, object> ParamDict = new();
 
         /// <summary>
         /// 获取各个平台的请求游戏后台的基础参数。如语言、版本号、包名，渠道等。
@@ -21,9 +21,9 @@ namespace Launcher.Procedure
         public static Dictionary<string, object> GetBaseParams()
         {
             //@formatter:off
-            s_ParamDict["Language"]               = Application.systemLanguage.ToString(); // 语言
-            s_ParamDict["AppVersion"]             = Application.version;                   // 版本号
-            s_ParamDict["DeviceUniqueIdentifier"] = SystemInfo.deviceUniqueIdentifier;     // 设备ID用于判断白名单和其他识别用途
+            ParamDict["Language"]               = Application.systemLanguage.ToString(); // 语言
+            ParamDict["AppVersion"]             = Application.version;                   // 版本号
+            ParamDict["DeviceUniqueIdentifier"] = SystemInfo.deviceUniqueIdentifier;     // 设备ID用于判断白名单和其他识别用途
 
 #if UNITY_WEBGL
             // WebGL平台参数
@@ -49,18 +49,18 @@ namespace Launcher.Procedure
 
 #else
             // 其他平台参数
-            s_ParamDict["Platform"] = Utility.Application.PlatformName;
+            ParamDict["Platform"] = Utility.Application.PlatformName;
 
     #if UNITY_STANDALONE_WIN
-            s_ParamDict["PackageName"] = Application.productName;
+            ParamDict["PackageName"] = Application.productName;
     #else
             DictionaryParams["PackageName"] = Application.identifier;
     #endif
 
-            s_ParamDict["Channel"]    = ChannelHelper.GetChannelName();
-            s_ParamDict["SubChannel"] = ChannelHelper.GetChannelName();
+            ParamDict["Channel"]    = ChannelHelper.GetChannelName();
+            ParamDict["SubChannel"] = ChannelHelper.GetChannelName();
 #endif
-            return s_ParamDict;
+            return ParamDict;
 
             //@formatter:on
         }
