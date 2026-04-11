@@ -34,7 +34,7 @@ namespace FuFramework.Asset.Runtime
         {
             FuGuard.NotNull(resourcePackage, nameof(resourcePackage));
             var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
-            var packageRoot   = simulateBuildResult.PackageRootDirectory;
+            var packageRoot         = simulateBuildResult.PackageRootDirectory;
             var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
             var initParameters = new EditorSimulateModeParameters
             {
@@ -71,7 +71,7 @@ namespace FuFramework.Asset.Runtime
             FuGuard.NotNull(resourcePackage,     nameof(resourcePackage));
             FuGuard.NotNull(downloadURL,         nameof(downloadURL));
             FuGuard.NotNull(fallbackDownloadURL, nameof(fallbackDownloadURL));
-            
+
             IRemoteServices remoteServices = new RemoteServices(downloadURL, fallbackDownloadURL);
 
             var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
@@ -97,9 +97,9 @@ namespace FuFramework.Asset.Runtime
             FuGuard.NotNull(resourcePackage,     nameof(resourcePackage));
             FuGuard.NotNull(downloadURL,         nameof(downloadURL));
             FuGuard.NotNull(fallbackDownloadURL, nameof(fallbackDownloadURL));
-            
-            var initParameters = new WebPlayModeParameters();
-            FileSystemParameters webFileSystem = null;
+
+            var                  initParameters = new WebPlayModeParameters();
+            FileSystemParameters webFileSystem  = null;
 
 #if UNITY_WEBGL
     #if ENABLE_DOUYIN_MINI_GAME
