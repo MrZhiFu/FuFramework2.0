@@ -7,8 +7,8 @@ namespace FuFramework.Fsm.Runtime
 {
     /// <summary>
     /// 有限状态机管理模块。
-    /// 功能；
-    /// 1. 管理多个有限状态机，包括创建、销毁、轮询等；
+    /// 功能：
+    ///     1. 管理多个有限状态机，包括创建、销毁、轮询等；
     /// </summary>
     public sealed class FsmModule : FuModule
     {

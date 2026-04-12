@@ -6,7 +6,7 @@ using FuFramework.Fsm.Runtime;
 namespace FuFramework.Fsm.Editor
 {
     /// <summary>
-    /// 自定义游戏状态机组件的Inspector
+    /// 自定义有限状态机管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(FsmModule))]
     internal sealed class FsmModuleInspector : FuFrameworkInspector

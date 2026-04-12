@@ -8,6 +8,10 @@ namespace FuFramework.Fsm.Runtime
 {
     /// <summary>
     /// 有限状态机。
+    /// 功能：
+    ///     1. 用于管理一个有限状态机下的状态和数据变量。
+    ///     2. 创建一个有限状态机实例。
+    ///     3. 提供一些便捷的方法，如切换状态、设置数据变量等。
     /// </summary>
     public sealed class Fsm : IReference
     {

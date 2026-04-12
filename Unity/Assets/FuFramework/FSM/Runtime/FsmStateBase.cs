@@ -6,7 +6,8 @@ namespace FuFramework.Fsm.Runtime
 {
     /// <summary>
     /// 状态基类。
-    /// 功能：定义有限状态机状态的基本接口。包括初始化、进入、轮询、离开、销毁生命周期，以及状态切换。
+    /// 功能：
+    ///     1. 定义一个有限状态机状态的基本接口。包括初始化、进入、轮询、离开、销毁生命周期，以及状态切换。
     /// </summary>
     public abstract class FsmStateBase
     {
