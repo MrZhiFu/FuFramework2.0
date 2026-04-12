@@ -7,7 +7,7 @@ namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 数据表基础接口.
-    /// 功能：定义数据表的异步加载与数据行数量接口。
+    /// 功能：定义数据表的异步加载与数据表的行数(对象)接口。
     /// </summary>
     public interface IDataTable
     {
