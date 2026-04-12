@@ -6,6 +6,10 @@ namespace FuFramework.Event.Runtime
 {
     /// <summary>
     /// 事件管理模块。
+    /// 功能：
+    ///     1. 用于管理事件，提供一些便捷的方法。
+    ///     2. 支持事件的抛出和订阅。
+    ///     3. 包装一个事件池，实际交由事件池管理事件。
     /// </summary>
     public sealed class EventModule : FuModule
     {

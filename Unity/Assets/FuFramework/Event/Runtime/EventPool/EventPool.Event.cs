@@ -7,7 +7,8 @@ namespace FuFramework.Event.Runtime
     {
         /// <summary>
         /// 事件定义。
-        /// 包装了事件发送者和事件参数。
+        /// 功能：
+        ///     1. 包装事件发送者和事件参数。
         /// </summary>
         private sealed class Event : IReference
         {

@@ -7,26 +7,43 @@ namespace FuFramework.Event.Runtime
 {
     /// <summary>
     /// 事件池。
+    /// 功能：
+    ///     1. 用于管理池中的事件，提供一些便捷的方法。
+    ///     2. 支持事件的订阅和取消订阅。
+    ///     3. 支持事件的抛出和处理。
+    ///     4. 支持事件的批量处理。
     /// </summary>
     /// <typeparam name="T">该事件池中的事件类型。</typeparam>
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {
-        /// 该事件池模式
+        /// <summary>
+        /// 事件池模式
+        /// </summary>
         private readonly EEventPoolMode m_PoolMode;
 
+        /// <summary>
         /// 事件默认处理器
+        /// </summary>
         private EventHandler<T> m_DefaultHandler;
 
+        /// <summary>
         /// 事件队列
+        /// </summary>
         private readonly Queue<Event> m_EventQueue;
 
+        /// <summary>
         /// 事件处理器多值字典，key为事件Id，value为事件处理函数列表
+        /// </summary>
         private readonly FuMultiDictionary<string, EventHandler<T>> m_EventHandlerMultiDict;
 
+        /// <summary>
         /// 待删除的事件处理器列表（线程安全的取消订阅方案，确保事件处理时使用的是最新的处理函数handler列表）
+        /// </summary>
         private readonly List<(string id, EventHandler<T> handler)> m_WaitRemoveHandlerList;
 
+        /// <summary>
         /// 事件处理器的同步锁
+        /// </summary>
         private readonly object m_EventHandlerLock = new();
 
         /// <summary>
