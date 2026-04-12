@@ -47,8 +47,9 @@ using FuFramework.Config.Runtime;
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             ByteBuf _buf = await _loadFunc();
-            StrKeyDataDict.Clear();
             DataList.Clear();
+            LongKeyDataDict.Clear();
+            StrKeyDataDict.Clear();
             for(int n = _buf.ReadSize() ; n > 0 ; --n)
             {
                 {{declaring_type_name value_type}} _v;

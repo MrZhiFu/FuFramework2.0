@@ -46,8 +46,9 @@ using GameFrameX.Core.Config;
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             ByteBuf _buf = await _loadFunc();
-            StringDataMaps.Clear();
             DataList.Clear();
+            LongDataMaps.Clear();
+            StringDataMaps.Clear();
             for(int n = _buf.ReadSize() ; n > 0 ; --n)
             {
                 {{declaring_type_name value_type}} _v;
