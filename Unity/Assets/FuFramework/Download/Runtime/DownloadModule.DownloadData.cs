@@ -7,7 +7,8 @@ namespace FuFramework.Download.Runtime
     {
         /// <summary>
         /// 下载任务信息数据。
-        /// 用于包装一个异步的下载任务的信息，包括标签、URL、序列编号、用户自定义数据等。
+        /// 功能：
+        ///     1. 用于包装一个异步的下载任务的信息，包括标签、URL、序列编号、用户自定义数据等。
         /// </summary>
         private sealed class DownloadData
         {

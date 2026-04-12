@@ -6,7 +6,11 @@ namespace FuFramework.Download.Runtime
     public sealed partial class DownloadModule
     {
         /// <summary>
-        /// 下载计数器
+        /// 下载计数器。
+        /// 功能：
+        ///     1. 记录下载进度。
+        ///     2. 计算下载速度。
+        ///     3. 记录下载时间。
         /// </summary>
         private sealed partial class DownloadCounter
         {

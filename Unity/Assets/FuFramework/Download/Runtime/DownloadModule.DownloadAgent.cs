@@ -11,7 +11,9 @@ namespace FuFramework.Download.Runtime
     {
         /// <summary>
         /// 下载代理。
-        /// 使用下载帮助类UnityWebRequest下载文件。
+        /// 功能：
+        ///     1. 使用下载帮助类UnityWebRequest下载文件。
+        ///     2. 监听下载代理辅助器的下载进度相关事件。
         /// </summary>
         private sealed class DownloadAgent : ITaskAgent<DownloadTask>, IDisposable
         {

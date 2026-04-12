@@ -8,7 +8,10 @@ namespace FuFramework.Download.Runtime
         private sealed partial class DownloadCounter
         {
             /// <summary>
-            /// 下载计数器节点
+            /// 下载计数器节点。
+            /// 功能：
+            ///     1. 记录差值大小。
+            ///     2. 记录下载流逝时间。
             /// </summary>
             private sealed class DownloadCounterNode : IReference
             {

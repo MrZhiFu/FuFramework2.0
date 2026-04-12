@@ -11,7 +11,12 @@ namespace FuFramework.Download.Runtime
 {
     /// <summary>
     /// 下载管理模块。
-    /// 负责管理下载任务，核心实现是任务池，用来存储执行下载任务
+    /// 功能：
+    ///     1. 负责管理下载任务，核心实现是任务池，用来存储执行下载任务。
+    ///     2. 提供下载进度事件和下载完成事件。
+    ///     3. 支持断点续传。
+    ///     4. 提供下载速度的计算。
+    ///     5. 添加/移除/获取下载任务。
     /// </summary>
     public sealed partial class DownloadModule : FuModule
     {

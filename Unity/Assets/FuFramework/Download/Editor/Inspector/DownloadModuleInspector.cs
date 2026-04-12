@@ -9,7 +9,7 @@ using FuFramework.TaskPool.Runtime;
 namespace FuFramework.Download.Editor
 {
     /// <summary>
-    /// 自定义下载组件的Inspector
+    /// 自定义下载管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(DownloadModule))]
     internal sealed class DownloadModuleInspector : FuFrameworkInspector

@@ -7,7 +7,9 @@ namespace FuFramework.Download.Runtime
     {
         /// <summary>
         /// 下载任务。
-        /// 是单个下载任务，存储了一次下载的所有变量信息，但自身并不执行下载，而是委托给了Agent代理进行下载，是一种代理模式的实现
+        /// 功能：
+        ///     1. 继承于任务池的任务基类，这样可使用任务池优化下载任务。
+        ///     1. 单个下载任务，存储了一次下载的任务信息，包括序列编号、状态、下载后存放全路径、原始下载地址、将缓冲区写入磁盘的临界大小、下载超时时长。
         /// </summary>
         private sealed class DownloadTask : TaskBase
         {

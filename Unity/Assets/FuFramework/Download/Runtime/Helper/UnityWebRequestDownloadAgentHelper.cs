@@ -21,26 +21,44 @@ namespace FuFramework.Download.Runtime
 
     /// <summary>
     /// 使用 UnityWebRequest 实现的下载代理辅助器。
+    /// 功能：
+    ///     1. 用于下载指定地址的数据。
+    ///     2. 支持断点续传。
+    ///     3. 提供下载进度事件和下载完成事件。
     /// </summary>
     public sealed partial class UnityWebRequestDownloadAgentHelper : MonoBehaviour
     {
+        /// <summary>
         /// 范围不适用错误码。
+        /// </summary>
         private const int RangeNotSatisfiableErrorCode = 416;
 
-        /// 缓存目标数据的字节数组的长度(0x1000 = 4096)
+        /// <summary>
+        /// 缓存目标数据的字节数组的长度。
+        /// </summary>
+        /// <remarks>
+        /// 0x1000 = 4096
+        /// </remarks>
         private const int CachedBytesLength = 0x1000;
 
-
-        /// 缓存目标数据的字节数组
+        /// <summary>
+        /// 缓存目标数据的字节数组。
+        /// </summary>
         private readonly byte[] m_CachedBytes = new byte[CachedBytesLength];
 
-        /// 记录是否已销毁
+        /// <summary>
+        /// 记录是否已销毁。
+        /// </summary>
         private bool m_Disposed;
 
-        /// Unity WebRequest
+        /// <summary>
+        /// Unity WebRequest。
+        /// </summary>
         private UnityWebRequest m_UnityWebRequest;
 
-        /// 事件管理模块
+        /// <summary>
+        /// 事件管理模块。
+        /// </summary>  
         private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
 
         /// <summary>
