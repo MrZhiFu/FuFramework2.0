@@ -8,19 +8,19 @@ namespace FuFramework.Config.Runtime
     /// <summary>
     /// 数据表基类。
     /// 功能：
-    ///     1. 维护数据表的key与数据的映射关系。
+    ///     1. 维护数据表每行数据的key与数据的映射关系，支持long类型的id和string类型的id。
     ///     2. 实现数据表泛型基础接口IDataTable<T> 相关的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
     /// </summary>
     /// <typeparam name="T">具体数据表类型</typeparam>
     public abstract class BaseDataTable<T> : IDataTable<T> where T : class
     {
         /// <summary>
-        /// 数据表的字典映射关系。key为long类型的id，value为具体的数据表类型。
+        /// 数据表每行数据的字典映射关系。key为long类型的id，value为具体的数据表类型。
         /// </summary>
         protected readonly SortedDictionary<long, T> LongKeyDataDict = new();
 
         /// <summary>
-        /// 数据表的字典映射关系。key为string类型的id，value为具体的数据表类型。
+        /// 数据表每行数据的字典映射关系。key为string类型的id，value为具体的数据表类型。
         /// </summary>
         protected readonly SortedDictionary<string, T> StrKeyDataDict = new();
 
