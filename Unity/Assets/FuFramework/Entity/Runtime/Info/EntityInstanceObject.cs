@@ -7,7 +7,8 @@ namespace FuFramework.Entity.Runtime
 {
     /// <summary>
     /// 实体实例对象。
-    /// 包装了实体资源和实体帮助器，用于实体实例对象池管理，方便释放实体资源。
+    /// 功能：
+    ///     1. 包装实体资源和实体帮助器，用于实体实例对象池管理，方便释放实体资源。
     /// </summary>
     public sealed class EntityInstanceObject : ObjectBase
     {

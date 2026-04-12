@@ -6,7 +6,8 @@ namespace FuFramework.Entity.Runtime
 {
     /// <summary>
     /// 附加实体信息。
-    /// 功能：用于在实体附加到其他实体时保存附加实体的信息。
+    /// 功能：
+    ///     1. 用于在实体附加到其他实体时保存附加实体的信息。
     /// </summary>
     internal sealed class AttachEntityInfo : IReference
     {

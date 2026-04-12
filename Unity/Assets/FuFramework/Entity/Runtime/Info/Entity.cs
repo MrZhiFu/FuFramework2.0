@@ -7,7 +7,8 @@ namespace FuFramework.Entity.Runtime
 {
     /// <summary>
     /// 实体显示类。
-    /// 功能：定义实体的基本属性和生命周期。并将生命周期的逻辑委托给实体逻辑类(EntityLogic)去处理。
+    /// 功能：
+    ///     1. 定义实体的基本属性和生命周期。并将生命周期的逻辑委托给实体逻辑类(EntityLogic)去处理。
     /// </summary>
     public sealed class Entity : MonoBehaviour
     {

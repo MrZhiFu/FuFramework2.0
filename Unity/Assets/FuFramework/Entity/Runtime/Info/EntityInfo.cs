@@ -6,7 +6,9 @@ using FuFramework.ReferencePool.Runtime;
 namespace FuFramework.Entity.Runtime
 {
     /// <summary>
-    /// 实体信息, 用于管理实体的状态、及其下子实体，如添加、移除子实体。
+    /// 实体信息。
+    /// 功能：
+    ///     1. 用于管理实体的状态、及其下子实体，如添加、移除子实体。
     /// </summary>
     public sealed class EntityInfo : IReference
     {

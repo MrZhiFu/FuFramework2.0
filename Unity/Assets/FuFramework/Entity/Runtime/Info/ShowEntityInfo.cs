@@ -5,7 +5,8 @@ namespace FuFramework.Entity.Runtime
 {
     /// <summary>
     /// 显示时的实体信息。
-    /// 用于在显示时暂时保存实体信息，以便在显示过程中传递实体信息。
+    /// 功能：
+    ///     1. 用于在显示时暂时保存实体信息，以便在显示过程中传递实体信息。
     /// </summary>
     public sealed class ShowEntityInfo : IReference
     {

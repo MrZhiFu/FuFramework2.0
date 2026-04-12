@@ -6,7 +6,7 @@ using FuFramework.Entity.Runtime;
 namespace FuFramework.Entity.Editor
 {
     /// <summary>
-    /// 自定义实体组件的Inspector
+    /// 自定义实体管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(EntityModule))]
     internal sealed class EntityModuleInspector : FuFrameworkInspector

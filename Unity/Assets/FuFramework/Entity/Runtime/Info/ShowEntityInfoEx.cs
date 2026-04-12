@@ -6,7 +6,8 @@ namespace FuFramework.Entity.Runtime
 {
     /// <summary>
     /// 显示时的实体额外信息(逻辑处理对象和用户数据)。
-    /// 用于在显示时暂时保存实体的逻辑处理对象和用户数据信息，以便在显示过程中传递数据。
+    /// 功能：
+    ///     1. 用于在显示时暂时保存实体的逻辑处理对象和用户数据信息，以便在显示过程中传递数据。
     /// </summary>
     public sealed class ShowEntityInfoEx : IReference
     {

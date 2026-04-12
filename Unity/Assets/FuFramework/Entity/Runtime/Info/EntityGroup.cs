@@ -10,8 +10,8 @@ namespace FuFramework.Entity.Runtime
     /// <summary>
     /// 实体组。
     /// 功能：
-    /// 1.管理实体组中的实体，
-    /// 2.对外提供获取实体、获取实体组中实体数量、设置实体实例的优先级等接口。
+    ///     1. 管理实体组中的实体，
+    ///     2. 对外提供获取实体、获取实体组中实体数量、设置实体实例的优先级等接口。
     /// </summary>
     public sealed class EntityGroup
     {
