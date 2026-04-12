@@ -8,6 +8,10 @@ namespace FuFramework.Config.Runtime
 {
     /// <summary>
     /// 配置管理模块。
+    /// 功能：
+    ///     1. 存储所有配置表。
+    ///     2. 获取配置表。
+    ///     3. 移除指定/所有配置表。
     /// </summary>
     public sealed class ConfigModule : FuModule
     {
