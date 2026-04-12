@@ -1,16 +1,16 @@
 ﻿# FuFramework Download Module
 
-## 简介
+## 1.简介
 FuFramework Download 模块是一个功能强大的文件下载管理系统。它基于任务池（TaskPool）架构设计，支持多任务并发下载、断点续传、速度监控以及流式写入。该模块旨在为游戏提供稳定、高效的资源下载服务，特别适用于热更新、DLC 下载等场景。
 
-## 特性
+## 2.特性
 - **并发下载**：支持同时下载多个文件（默认并发数 3，可配置）。
 - **断点续传**：自动检测本地已下载的文件大小，从断点处继续下载，节省流量。
 - **流式写入**：下载数据实时写入磁盘，内存占用极低，支持大文件下载。
 - **速度监控**：内置下载速度统计，方便 UI 实时显示。
 - **健壮性**：支持超时重试、错误处理和自动恢复。
 
-## 核心类说明
+## 3.核心类说明
 
 ### DownloadModule
 下载管理器，继承自 `FuModule`。
@@ -27,9 +27,9 @@ FuFramework Download 模块是一个功能强大的文件下载管理系统。�
 - `DownloadSuccessEventArgs`: 任务成功。
 - `DownloadFailureEventArgs`: 任务失败。
 
-## 使用示例
+## 4.使用示例
 
-### 1. 添加下载任务
+### 4.1. 添加下载任务
 ```csharp
 // 获取下载管理器
 var downloadModule = ModuleManager.GetModule<DownloadModule>();
@@ -43,7 +43,7 @@ string savePath = Path.Combine(Application.persistentDataPath, "file.zip");
 int serialId = downloadModule.AddDownloadTask(url, savePath, 0, "MyUserData");
 ```
 
-### 2. 监听下载事件
+### 4.2. 监听下载事件
 建议创建一个专门的控制器来处理下载事件。
 
 ```csharp
@@ -79,7 +79,7 @@ public class DownloadController : MonoBehaviour
 }
 ```
 
-### 3. 控制下载
+### 4.3. 控制下载
 ```csharp
 // 暂停所有下载
 downloadModule.Paused = true;
@@ -91,12 +91,12 @@ downloadModule.Paused = false;
 downloadModule.RemoveDownloadTask(serialId);
 ```
 
-## 配置说明
+## 5.配置说明
 在 `DownloadModule` 初始化时（或运行时）可以调整以下参数：
 - **Timeout**: 下载超时时间（默认 30秒）。
 - **FlushSize**: 缓冲区写入磁盘的阈值（默认 1MB）。
 
-## 编辑器扩展
+## 6.编辑器扩展
 选中场景中的 `[ModuleManager]` 节点，在 Inspector 面板的 `DownloadModule` 组件中可以查看：
 - **实时状态**：总代理数、工作代理数、等待任务数。
 - **下载速度**：当前全局下载速度。
