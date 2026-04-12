@@ -26,8 +26,9 @@ namespace Hotfix.Config.Tables
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             var jsonNode = await _loadFunc();
-            StrKeyDataDict.Clear();
             DataList.Clear();
+            LongKeyDataDict.Clear();
+            StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.Sound _v;
