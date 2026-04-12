@@ -12,7 +12,7 @@ namespace Hotfix.Localization
     public class LocalizationProvider : ILocalizationProvider
     {
         /// <summary>
-        /// 缓存配置表
+        /// 缓存多语言配置表，避免每次调用都从配置表中获取
         /// </summary>
         private TbLocalization m_TbLocalization;
 
@@ -20,22 +20,25 @@ namespace Hotfix.Localization
         /// 获取本地化多语言
         /// </summary>
         /// <param name="key">多语言key(使用静态类LanguageKey的多语言字段即可)</param>
+        /// <param name="args">参数</param>
         /// <returns></returns>
-        public string GetLanguage(string key)
+        public string GetLanguage(string key, params object[] args)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
 
+            // 获取多语言配置表并缓存
             m_TbLocalization ??= GlobalModule.ConfigModule.GetConfig<TbLocalization>();
 
             var localization = m_TbLocalization?.Get(key);
             if (localization == null)
             {
-                FuLogger.LogWarning($"多语言key '{key}' 没找到，请检查多语言配置表!");
+                FuLogger.LogError($"[LocalizationProvider] 多语言key '{key}' 没找到，请检查多语言配置表!");
                 return string.Empty;
             }
 
-            var language = GlobalModule.LocalizationModule.Language;
-            return language switch
+            var eLanguage = GlobalModule.LocalizationModule.Language;
+
+            var text = eLanguage switch
             {
                 // @formatter:off
                 ELanguage.ChineseSimplified  => localization.ChineseSimplified,
@@ -55,9 +58,18 @@ namespace Hotfix.Localization
                 ELanguage.Russian            => localization.Russian,
                 ELanguage.Belarusian         => localization.Russian,
                 ELanguage.Ukrainian          => localization.Russian,
-                _                            => localization.English, // 所有其他未支持的语言，统一使用英语
+                _                            => localization.English, // 语言类型未支持时，统一使用英语
                 // @formatter:on
             };
+
+            // 如果目标语言字段为空，则使用英语
+            if (text.IsNullOrEmpty())
+            {
+                text = localization.English;
+            }
+
+            // 如果有参数，则返回格式化参数后的文本，否则直接返回文本
+            return args is { Length: > 0 } ? string.Format(text, args) : text;
         }
     }
 }

@@ -138,10 +138,18 @@ namespace FuFramework.Localization.Runtime
         /// 获取当前语言下的多语言文本
         /// </summary>
         /// <param name="key">多语言key</param>
+        /// <param name="args">参数</param>
         /// <returns></returns>
-        public string GetLanguageText(string key)
+        public string GetLanguageText(string key, params object[] args)
         {
-            return LocalizationProvider is null ? "" : LocalizationProvider.GetLanguage(key);
+            if (LocalizationProvider is null)
+            {
+                FuLogger.LogWarning("[LocalizationModule] 本地化多语言提供者未设置，请先设置");
+                return $"[{key}]";
+            }
+
+            var result = LocalizationProvider.GetLanguage(key, args);
+            return result.IsNullOrEmpty() ? $"[{key}]" : result;
         }
     }
 }
