@@ -9,7 +9,7 @@ namespace FuFramework.Config.Runtime
     /// 数据表基类。
     /// 功能：
     ///     1. 维护数据表每行数据的key与数据的映射关系，支持long类型的id和string类型的id。
-    ///     2. 实现数据表泛型基础接口IDataTable<T> 相关的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
+    ///     2. 实现数据表泛型基础接口IDataTable-T 相关的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
     /// </summary>
     /// <typeparam name="T">具体数据表类型</typeparam>
     public abstract class BaseDataTable<T> : IDataTable<T> where T : class
