@@ -6,7 +6,7 @@ using UnityEditor;
 namespace GameFrameX.Coroutine.Editor
 {
     /// <summary>
-    /// 自定义协程组件的Inspector
+    /// 自定义协程管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(CoroutineModule))]
     internal sealed class CoroutineModuleInspector : FuFrameworkInspector

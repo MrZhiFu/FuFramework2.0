@@ -9,7 +9,9 @@ namespace FuFramework.Coroutine.Runtime
 {
     /// <summary>
     /// 协程管理模块。
-    /// 用于管理协程，提供一些便捷的方法。推荐还是使用UniTask实现。
+    /// 功能：
+    ///     1. 用于管理协程，提供一些便捷的方法。
+    ///     2. 推荐还是使用零GC的UniTask平替使用。
     /// </summary>
     public class CoroutineModule : FuModule
     {

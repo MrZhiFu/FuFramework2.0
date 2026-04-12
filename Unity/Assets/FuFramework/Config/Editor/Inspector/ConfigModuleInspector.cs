@@ -6,7 +6,7 @@ using FuFramework.Config.Runtime;
 namespace FuFramework.Config.Editor
 {
     /// <summary>
-    /// 自定义配置表Inspector
+    /// 自定义配置表管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(ConfigModule))]
     internal sealed class ConfigModuleInspector : FuFrameworkInspector
