@@ -9,7 +9,8 @@ namespace FuFramework.SaveData.Runtime
 {
     /// <summary>
     /// 本地存储数据管理模块。
-    /// 功能：负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
+    /// 功能：
+    ///     1. 负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
     /// </summary>
     public sealed class DataSaveModule : FuModule
     {

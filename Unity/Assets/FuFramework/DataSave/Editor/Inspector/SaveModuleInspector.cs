@@ -7,7 +7,7 @@ using FuFramework.SaveData.Runtime;
 namespace FuFramework.SaveData.Editor
 {
     /// <summary>
-    /// 自定义本地数据存储管理器的Inspector
+    /// 自定义本地数据存储管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(DataSaveModule))]
     internal sealed class SaveModuleInspector : FuFrameworkInspector
