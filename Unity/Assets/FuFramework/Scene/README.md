@@ -1,10 +1,10 @@
-﻿# FuFramework Scene Module
+# 1. FuFramework Scene Module
 
-## 概述
+## 1. 简介
 
-Scene 模块是 FuFramework 中的场景管理系统，专门用于管理 Unity 场景的加载、卸载和状态跟踪。该模块基于 YooAsset 资源管理系统，提供异步场景加载、进度跟踪、事件通知等高级功能，是游戏场景管理的核心组件。
+FuFramework Scene 模块是游戏框架的场景管理系统，专门用于管理 Unity 场景的加载、卸载和状态跟踪。该模块基于 YooAsset 资源管理系统和 UniTask 异步编程模型，提供异步场景加载、进度跟踪、事件通知等高级功能，是游戏场景管理的核心组件。
 
-### 核心特性
+## 2. 核心特性
 
 - **异步场景加载**：基于 UniTask 的异步场景加载，支持进度跟踪
 - **事件驱动架构**：完整的场景生命周期事件通知机制
@@ -12,85 +12,357 @@ Scene 模块是 FuFramework 中的场景管理系统，专门用于管理 Unity 
 - **状态跟踪**：实时跟踪场景的加载、卸载、使用状态
 - **错误处理**：完善的错误处理和异常捕获机制
 
-## 系统架构
+## 3. 核心概念
 
-### 核心类说明
-
-#### 1. SceneModule
-场景管理器，继承自 FuModule，负责整个场景系统的生命周期管理。
-
-**主要职责：**
-- 管理场景资源的加载、卸载
-- 提供加载、卸载场景的接口
-- 发布场景加载进度、成功、失败等事件
-- 跟踪场景状态（已加载、加载中、卸载中）
-
-#### 2. 场景事件类
-一系列事件参数类，用于场景生命周期的事件通知：
-
-- **LoadSceneSuccessEventArgs**：加载场景成功事件
-- **LoadSceneFailureEventArgs**：加载场景失败事件
-- **LoadSceneUpdateEventArgs**：加载场景更新事件（进度）
-- **UnloadSceneSuccessEventArgs**：卸载场景成功事件
-- **UnloadSceneFailureEventArgs**：卸载场景失败事件
-- **ActiveSceneChangedEventArgs**：活动场景改变事件
-
-### 技术架构
+### 3.1 类继承与实现体系
 
 ```
-SceneModule (管理器)
-    ↓
-SceneHandle (场景句柄)
-    ↓
-事件系统 (EventModule)
-    ↓
-资源系统 (AssetModule)
+【类继承体系】
+
+FuModule (框架模块基类)
+    └── SceneModule (场景管理模块)
+        ├── SceneHandleData (内部类)     # 封装场景加载中的数据
+        │   ├── SceneHandle              # 场景加载句柄
+        │   └── UserData                 # 用户自定义数据
+        │
+        ├── m_LoadedSceneDict            # 已加载场景字典
+        ├── m_LoadingSceneDict           # 正在加载场景字典
+        └── m_UnloadingSceneDict         # 正在卸载场景字典
+
+
+【事件参数类体系】
+
+GameEventArgs (事件参数基类)
+    ├── LoadSceneSuccessEventArgs      # 加载场景成功事件
+    ├── LoadSceneFailureEventArgs      # 加载场景失败事件
+    ├── LoadSceneUpdateEventArgs       # 加载场景更新事件(进度)
+    ├── UnloadSceneSuccessEventArgs    # 卸载场景成功事件
+    ├── UnloadSceneFailureEventArgs    # 卸载场景失败事件
+    └── ActiveSceneChangedEventArgs    # 活动场景改变事件
+
+
+【YooAsset 集成】
+
+YooAsset.SceneHandle (场景句柄)
+    └── 提供场景加载、卸载、进度查询等功能
+
+
+【模块依赖关系】
+
+SceneModule 依赖:
+    ├── AssetModule (资源管理模块)
+    │   └── LoadSceneAsync()           # 异步加载场景
+    │
+    └── EventModule (事件模块)
+        └── EventRegister              # 事件订阅/广播
 ```
 
-## 快速开始
+### 3.2 场景管理架构
 
-### 1. 基本场景加载示例
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     SceneModule                             │
+│                     (FuModule)                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                    状态字典                          │   │
+│  │                                                       │   │
+│  │  m_LoadedSceneDict     m_LoadingSceneDict            │   │
+│  │  ┌──────────────┐     ┌──────────────┐              │   │
+│  │  │ Path1:Handle1│     │ Path2:Data2  │              │   │
+│  │  │ Path2:Handle2│     │ Path3:Data3  │              │   │
+│  │  └──────────────┘     └──────────────┘              │   │
+│  │       已加载              正在加载                   │   │
+│  │                                                       │   │
+│  │  m_UnloadingSceneDict                                │   │
+│  │  ┌──────────────┐                                    │   │
+│  │  │ Path1:Handle1│                                    │   │
+│  │  └──────────────┘                                    │   │
+│  │       正在卸载                                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                              │                            │
+│                              ▼                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                    事件系统                          │   │
+│  │  EventRegister.Broadcast()                          │   │
+│  │  - LoadSceneSuccessEventArgs                        │   │
+│  │  - LoadSceneFailureEventArgs                        │   │
+│  │  - LoadSceneUpdateEventArgs                         │   │
+│  │  - UnloadSceneSuccessEventArgs                      │   │
+│  │  - UnloadSceneFailureEventArgs                      │   │
+│  │  - ActiveSceneChangedEventArgs                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │   AssetModule    │
+                    │  (YooAsset集成)   │
+                    │ LoadSceneAsync() │
+                    └──────────────────┘
+```
+
+### 3.3 场景生命周期
+
+```
+【场景状态流转】
+
+初始状态
+    │
+    ▼
+┌───────────┐    LoadScene()    ┌───────────┐    OnUpdate()    ┌───────────┐
+│   空闲    │ ─────────────────▶ │  加载中   │ ───────────────▶ │  加载中   │
+│  (Idle)   │                    │(Loading)  │   进度更新       │(Loading)  │
+└───────────┘                    └───────────┘                  └─────┬─────┘
+                                                                      │
+                         加载完成                                     │
+                              │                                       │
+                              ▼                                       │
+                    ┌─────────────────┐                               │
+                    │ OnLoadCompleted │                               │
+                    │   回调处理      │                               │
+                    └────────┬────────┘                               │
+                             │                                        │
+              ┌──────────────┼──────────────┐                        │
+              │              │              │                        │
+              ▼              ▼              ▼                        │
+        ┌─────────┐    ┌─────────┐    ┌─────────┐                    │
+        │ 成功    │    │ 失败    │    │ 更新    │◀───────────────────┘
+        │(Success)│    │(Failure)│    │(Update) │
+        └────┬────┘    └────┬────┘    └─────────┘
+             │              │
+             ▼              ▼
+    ┌─────────────┐  ┌─────────────┐
+    │ 已加载字典  │  │ 失败事件    │
+    │ 广播成功事件│  │ 广播失败事件│
+    └──────┬──────┘  └─────────────┘
+           │
+           ▼
+    ┌─────────────┐    UnloadScene()    ┌─────────────┐
+    │   已加载    │ ───────────────────▶ │  卸载中     │
+    │  (Loaded)   │                      │(Unloading)  │
+    └─────────────┘                      └──────┬──────┘
+                                                │
+                                                ▼
+                                       ┌─────────────────┐
+                                       │ 卸载完成回调    │
+                                       │ 广播成功/失败   │
+                                       └─────────────────┘
+
+
+【场景加载流程】
+
+1. 调用 LoadScene(sceneAssetPath, sceneMode, userData)
+   ├── 参数校验（路径格式、非空检查）
+   ├── 状态检查（是否正在加载/卸载/已加载）
+   └── 调用 AssetModule.LoadSceneAsync()
+
+2. 添加到 m_LoadingSceneDict
+   └── SceneHandleData(SceneHandle, UserData)
+
+3. 注册 Completed 回调
+   └── OnLoadSceneCompleted()
+
+4. 每帧更新进度 (OnUpdate)
+   └── OnLoadSceneUpdate() 广播进度事件
+
+5. 加载完成回调
+   ├── 成功: 添加到 m_LoadedSceneDict, 广播 LoadSceneSuccessEventArgs
+   └── 失败: 广播 LoadSceneFailureEventArgs
+```
+
+### 3.4 事件系统
+
+```
+【事件参数类结构】
+
+所有事件参数类继承自 GameEventArgs:
+
+LoadSceneSuccessEventArgs
+    ├── EventId: string              # 事件唯一标识
+    ├── SceneName: string            # 场景名称
+    └── UserData: object             # 用户自定义数据
+
+LoadSceneFailureEventArgs
+    ├── EventId: string
+    ├── SceneName: string
+    ├── ErrorMessage: string         # 错误信息
+    ├── Status: EOperationStatus     # 操作状态
+    └── UserData: object
+
+LoadSceneUpdateEventArgs
+    ├── EventId: string
+    ├── SceneName: string
+    ├── Progress: float              # 加载进度 0-1
+    └── UserData: object
+
+UnloadSceneSuccessEventArgs
+    ├── EventId: string
+    ├── SceneName: string
+    └── UserData: object
+
+UnloadSceneFailureEventArgs
+    ├── EventId: string
+    ├── SceneName: string
+    └── UserData: object
+
+ActiveSceneChangedEventArgs
+    ├── EventId: string
+    ├── LastActiveScene: Scene       # 上一个活动场景
+    └── ActiveScene: Scene           # 当前活动场景
+
+
+【事件创建与清理】
+
+所有事件参数类使用引用池管理:
+
+Create() 方法:
+    └── ReferencePool.Acquire<T>()
+        └── 从引用池获取对象
+        └── 设置属性值
+        └── 返回事件对象
+
+Clear() 方法 (IReference接口):
+    └── 重置所有属性为默认值
+    └── 对象归还引用池
+```
+
+## 4. 核心类详细说明
+
+### 4.1 SceneModule
+
+场景管理模块，继承自 `FuModule`，负责整个场景系统的生命周期管理。
+
+**核心功能：**
+
+```csharp
+public sealed class SceneModule : FuModule
+{
+    // 生命周期
+    protected override void OnInit()           // 初始化，获取 AssetModule
+    protected override void OnUpdate(...)      // 更新加载进度
+    protected override void OnDispose()        // 卸载所有场景
+    
+    // 状态查询
+    public bool HasScene(string sceneAssetPath)              // 检查场景资源是否存在
+    public bool IsLoaded(string sceneAssetPath)              // 场景是否已加载
+    public bool IsLoading(string sceneAssetPath)             // 场景是否正在加载
+    public bool IsUnloading(string sceneAssetPath)           // 场景是否正在卸载
+    public string GetSceneName(string sceneAssetPath)        // 获取场景名称
+    public string[] GetAllLoadedSceneAssetPaths()            // 获取所有已加载场景路径
+    public string[] GetAllLoadingSceneAssetPaths()           // 获取所有正在加载场景路径
+    public string[] GetAllUnloadingSceneAssetPaths()         // 获取所有正在卸载场景路径
+    
+    // 场景加载
+    public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
+    public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
+    
+    // 场景卸载
+    public void UnloadScene(string sceneAssetPath, object userData = null)
+}
+```
+
+**内部数据结构：**
+- `SceneHandleData` - 封装场景加载中的数据（SceneHandle + UserData）
+- `m_LoadedSceneDict` - 已加载场景字典（Key: 路径, Value: SceneHandle）
+- `m_LoadingSceneDict` - 正在加载场景字典（Key: 路径, Value: SceneHandleData）
+- `m_UnloadingSceneDict` - 正在卸载场景字典（Key: 路径, Value: SceneHandle）
+
+### 4.2 场景事件参数类
+
+所有事件参数类都继承自 `GameEventArgs` 并实现 `IReference` 接口。
+
+**通用结构：**
+
+```csharp
+public sealed class XxxEventArgs : GameEventArgs
+{
+    public override string Id => EventId;           // 事件ID
+    public static readonly string EventId;          // 静态事件ID
+    
+    // 事件特定属性
+    public string SceneName { get; private set; }
+    public object UserData { get; private set; }
+    
+    // 工厂方法
+    public static XxxEventArgs Create(...)
+    {
+        var args = ReferencePool.Acquire<XxxEventArgs>();
+        // 设置属性
+        return args;
+    }
+    
+    // 清理方法
+    public override void Clear()
+    {
+        // 重置属性
+    }
+}
+```
+
+**事件类型说明：**
+
+| 事件类 | 触发时机 | 主要属性 |
+|--------|----------|----------|
+| LoadSceneSuccessEventArgs | 场景加载成功 | SceneName, UserData |
+| LoadSceneFailureEventArgs | 场景加载失败 | SceneName, ErrorMessage, Status, UserData |
+| LoadSceneUpdateEventArgs | 场景加载进度更新 | SceneName, Progress, UserData |
+| UnloadSceneSuccessEventArgs | 场景卸载成功 | SceneName, UserData |
+| UnloadSceneFailureEventArgs | 场景卸载失败 | SceneName, UserData |
+| ActiveSceneChangedEventArgs | 活动场景改变 | LastActiveScene, ActiveScene |
+
+## 5. 使用示例
+
+### 5.1 基本场景加载
 
 ```csharp
 using FuFramework.Scene.Runtime;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class SceneLoader : MonoBehaviour
 {
     private async void Start()
     {
-        // 获取场景管理器
-        var sceneModule = SceneModule.Instance;
+        var sceneModule = GlobalModule.SceneModule;
         
-        // 异步加载场景
-        var sceneHandle = await sceneModule.LoadSceneByName("MainScene", LoadSceneMode.Single);
-        
-        if (sceneHandle.IsDone)
+        try
         {
-            Debug.Log("场景加载完成");
+            // 通过场景名称加载（自动转换路径）
+            var sceneHandle = await sceneModule.LoadSceneByName("MainScene", LoadSceneMode.Single);
+            
+            if (sceneHandle.IsDone)
+            {
+                Debug.Log("场景加载完成");
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"场景加载失败: {e.Message}");
         }
     }
 }
 ```
 
-### 2. 事件监听示例
+### 5.2 事件监听示例
 
 ```csharp
 using FuFramework.Scene.Runtime;
 using FuFramework.Event.Runtime;
+using UnityEngine;
 
 public class SceneEventListener : MonoBehaviour
 {
+    private EventRegister m_EventRegister;
+    
     private void Start()
     {
-        // 注册场景加载成功事件
-        EventModule.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        m_EventRegister = EventRegister.Create();
         
-        // 注册场景加载进度事件
-        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        
-        // 注册场景加载失败事件
-        EventModule.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        // 注册场景加载事件
+        m_EventRegister.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
+        m_EventRegister.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
+        m_EventRegister.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        m_EventRegister.Subscribe<UnloadSceneSuccessEventArgs>(OnSceneUnloadSuccess);
     }
     
     private void OnSceneLoadSuccess(object sender, LoadSceneSuccessEventArgs e)
@@ -108,77 +380,83 @@ public class SceneEventListener : MonoBehaviour
         Debug.LogError($"场景 {e.SceneName} 加载失败: {e.ErrorMessage}");
     }
     
+    private void OnSceneUnloadSuccess(object sender, UnloadSceneSuccessEventArgs e)
+    {
+        Debug.Log($"场景 {e.SceneName} 卸载成功");
+    }
+    
     private void OnDestroy()
     {
-        // 注销事件监听
-        EventModule.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventModule.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        m_EventRegister?.Release();
     }
 }
 ```
 
-## 详细使用指南
-
-### 1. 场景管理流程示例
-
-#### 完整的场景切换流程
+### 5.3 完整场景切换流程
 
 ```csharp
 using FuFramework.Scene.Runtime;
 using Cysharp.Threading.Tasks;
-using FuFramework.Event.Runtime;
+using UnityEngine;
 
-public class SceneModule : MonoBehaviour
+public class SceneSwitcher : MonoBehaviour
 {
     private const string MAIN_MENU_SCENE = "MainMenu";
     private const string GAME_SCENE = "GameScene";
     private const string LOADING_SCENE = "LoadingScene";
     
+    [SerializeField] private LoadingUI m_LoadingUI;
+    
     private async void Start()
     {
-        // 启动游戏，加载主菜单场景
         await SwitchToMainMenu();
     }
     
     // 切换到主菜单
     public async UniTask SwitchToMainMenu()
     {
-        // 卸载当前游戏场景（如果有）
         await UnloadCurrentScene();
-        
-        // 加载主菜单场景
-        await SceneModule.Instance.LoadSceneByName(MAIN_MENU_SCENE, LoadSceneMode.Single);
+        await GlobalModule.SceneModule.LoadSceneByName(MAIN_MENU_SCENE, LoadSceneMode.Single);
     }
     
     // 开始游戏
     public async UniTask StartGame()
     {
         // 显示加载界面
-        ShowLoadingScreen();
+        m_LoadingUI.Show();
         
-        // 卸载主菜单场景
-        await UnloadScene(MAIN_MENU_SCENE);
+        // 卸载主菜单
+        var sceneModule = GlobalModule.SceneModule;
+        if (sceneModule.IsLoaded(Utility.AssetPath.GetScenePath(MAIN_MENU_SCENE)))
+        {
+            sceneModule.UnloadScene(Utility.AssetPath.GetScenePath(MAIN_MENU_SCENE));
+        }
         
         // 加载游戏场景
         await LoadGameScene();
         
         // 隐藏加载界面
-        HideLoadingScreen();
+        m_LoadingUI.Hide();
     }
     
     // 加载游戏场景（带进度显示）
     private async UniTask LoadGameScene()
     {
-        var sceneModule = SceneModule.Instance;
-        
-        // 注册进度事件
-        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
+        var eventRegister = EventRegister.Create();
         
         try
         {
+            // 注册进度事件
+            eventRegister.Subscribe<LoadSceneUpdateEventArgs>((sender, e) =>
+            {
+                m_LoadingUI.SetProgress(e.Progress);
+            });
+            
             // 异步加载游戏场景
-            var sceneHandle = await sceneModule.LoadSceneByName(GAME_SCENE, LoadSceneMode.Single);
+            var sceneHandle = await GlobalModule.SceneModule.LoadSceneByName(
+                GAME_SCENE, 
+                LoadSceneMode.Single
+            );
             
             if (!sceneHandle.IsDone)
             {
@@ -190,782 +468,192 @@ public class SceneModule : MonoBehaviour
         }
         finally
         {
-            // 注销进度事件
-            EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnGameSceneLoadProgress);
-        }
-    }
-    
-    private void OnGameSceneLoadProgress(object sender, LoadSceneUpdateEventArgs e)
-    {
-        // 更新加载界面进度
-        UpdateLoadingProgress(e.Progress);
-    }
-    
-    // 卸载指定场景
-    private async UniTask UnloadScene(string sceneName)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        if (sceneModule.SceneIsLoaded(sceneName))
-        {
-            sceneModule.UnloadScene(sceneName);
-            
-            // 等待场景卸载完成
-            await UniTask.WaitUntil(() => !sceneModule.SceneIsLoaded(sceneName));
+            eventRegister.Release();
         }
     }
     
     // 卸载当前场景
     private async UniTask UnloadCurrentScene()
     {
-        var sceneModule = SceneModule.Instance;
-        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
+        var sceneModule = GlobalModule.SceneModule;
+        var loadedPaths = sceneModule.GetAllLoadedSceneAssetPaths();
         
-        foreach (var scenePath in loadedScenes)
+        foreach (var path in loadedPaths)
         {
-            var sceneName = sceneModule.GetSceneName(scenePath);
-            if (sceneName != MAIN_MENU_SCENE && sceneName != GAME_SCENE)
+            if (!sceneModule.IsUnloading(path))
             {
-                await UnloadScene(sceneName);
+                sceneModule.UnloadScene(path);
             }
         }
-    }
-    
-    private void ShowLoadingScreen()
-    {
-        // 显示加载界面逻辑
-    }
-    
-    private void HideLoadingScreen()
-    {
-        // 隐藏加载界面逻辑
-    }
-    
-    private void UpdateLoadingProgress(float progress)
-    {
-        // 更新加载进度显示逻辑
+        
+        // 等待卸载完成
+        await UniTask.WaitUntil(() => sceneModule.GetAllUnloadingSceneAssetPaths().Length == 0);
     }
 }
 ```
 
-#### 多场景叠加管理
+### 5.4 场景状态检查
 
 ```csharp
-using FuFramework.Scene.Runtime;
-using Cysharp.Threading.Tasks;
-
-public class MultiSceneManager : MonoBehaviour
+public class SceneStateChecker : MonoBehaviour
 {
-    private const string BASE_SCENE = "BaseScene";
-    private const string UI_SCENE = "UIScene";
-    private const string LEVEL_1_SCENE = "Level1";
-    private const string LEVEL_2_SCENE = "Level2";
-    
-    private async void Start()
+    private void Update()
     {
-        // 加载基础场景（单例模式）
-        await SceneModule.Instance.LoadSceneByName(BASE_SCENE, LoadSceneMode.Single);
+        var sceneModule = GlobalModule.SceneModule;
         
-        // 叠加加载 UI 场景
-        await SceneModule.Instance.LoadSceneByName(UI_SCENE, LoadSceneMode.Additive);
-        
-        // 加载第一关场景
-        await LoadLevel(LEVEL_1_SCENE);
-    }
-    
-    // 切换关卡
-    public async UniTask SwitchLevel(string newLevel)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        // 卸载当前关卡场景（如果有）
-        if (sceneModule.SceneIsLoaded(LEVEL_1_SCENE))
+        // 检查场景是否已加载
+        if (sceneModule.IsLoaded("Assets/Scenes/GameScene.unity"))
         {
-            sceneModule.UnloadScene(LEVEL_1_SCENE);
-        }
-        if (sceneModule.SceneIsLoaded(LEVEL_2_SCENE))
-        {
-            sceneModule.UnloadScene(LEVEL_2_SCENE);
+            Debug.Log("游戏场景已加载");
         }
         
-        // 加载新关卡
-        await sceneModule.LoadSceneByName(newLevel, LoadSceneMode.Additive);
-    }
-    
-    // 加载关卡（带错误处理）
-    private async UniTask LoadLevel(string levelName)
-    {
-        var sceneModule = SceneModule.Instance;
+        // 检查场景是否正在加载
+        if (sceneModule.IsLoading("Assets/Scenes/LoadingScene.unity"))
+        {
+            Debug.Log("加载场景正在加载中...");
+        }
         
+        // 检查场景是否正在卸载
+        if (sceneModule.IsUnloading("Assets/Scenes/MenuScene.unity"))
+        {
+            Debug.Log("菜单场景正在卸载中...");
+        }
+        
+        // 获取所有已加载场景
+        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
+        Debug.Log($"当前已加载 {loadedScenes.Length} 个场景");
+        
+        // 获取场景名称
+        var sceneName = sceneModule.GetSceneName("Assets/Scenes/Levels/Level1.unity");
+        Debug.Log($"场景名称: {sceneName}");  // 输出: Level1
+    }
+}
+```
+
+## 6. 目录结构
+
+```
+Assets/FuFramework/Scene/
+├── Runtime/
+│   ├── FuFramework.Scene.Runtime.asmdef    # 程序集定义
+│   ├── SceneModule.cs                       # 场景管理模块
+│   └── Event/
+│       ├── LoadSceneSuccessEventArgs.cs     # 加载场景成功事件
+│       ├── LoadSceneFailureEventArgs.cs     # 加载场景失败事件
+│       ├── LoadSceneUpdateEventArgs.cs      # 加载场景更新事件
+│       ├── UnloadSceneSuccessEventArgs.cs   # 卸载场景成功事件
+│       ├── UnloadSceneFailureEventArgs.cs   # 卸载场景失败事件
+│       └── ActiveSceneChangedEventArgs.cs   # 活动场景改变事件
+├── Editor/
+│   ├── FuFramework.Scene.Editor.asmdef      # 编辑器程序集定义
+│   └── Inspector/
+│       └── SceneModuleInspector.cs          # 模块 Inspector 面板
+└── README.md                                # 本文档
+```
+
+## 7. 依赖
+
+| 模块 | 说明 |
+|------|------|
+| FuFramework.Core | 提供 FuModule 基类、FuException、FuLogger、FuGuard |
+| FuFramework.Asset | 提供 AssetModule 和 YooAsset 集成 |
+| FuFramework.Event | 提供 GameEventArgs 和 EventRegister |
+| FuFramework.ReferencePool | 提供引用池管理 |
+| YooAsset | 场景加载底层实现 |
+| UniTask | 异步编程支持 |
+
+## 8. 最佳实践
+
+### 8.1 场景加载规范
+
+```csharp
+public class SceneManager : MonoBehaviour
+{
+    // 1. 使用 try-catch 处理异常
+    public async UniTask SafeLoadScene(string sceneName)
+    {
         try
         {
-            // 检查场景是否存在
-            if (!sceneModule.HasScene(levelName))
-            {
-                Debug.LogError($"场景 {levelName} 不存在");
-                return;
-            }
-            
-            // 检查场景是否正在加载或卸载
-            if (sceneModule.SceneIsLoading(levelName) || sceneModule.SceneIsUnloading(levelName))
-            {
-                Debug.LogWarning($"场景 {levelName} 正在操作中，请稍后重试");
-                return;
-            }
-            
-            // 加载场景
-            var sceneHandle = await sceneModule.LoadSceneByName(levelName, LoadSceneMode.Additive);
-            
-            if (sceneHandle.IsDone)
-            {
-                Debug.Log($"关卡 {levelName} 加载完成");
-            }
+            var handle = await GlobalModule.SceneModule.LoadSceneByName(sceneName);
+            // 处理加载完成
         }
-        catch (System.Exception ex)
+        catch (Exception e)
         {
-            Debug.LogError($"加载关卡 {levelName} 失败: {ex.Message}");
+            Debug.LogError($"加载场景失败: {e.Message}");
+            // 错误处理
         }
     }
     
-    // 获取当前加载的所有场景信息
-    private void LogSceneInfo()
+    // 2. 检查场景状态后再操作
+    public void SafeUnloadScene(string scenePath)
     {
-        var sceneModule = SceneModule.Instance;
+        var sceneModule = GlobalModule.SceneModule;
         
-        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
-        var loadingScenes = sceneModule.GetAllLoadingSceneAssetPaths();
-        var unloadingScenes = sceneModule.GetAllUnloadingSceneAssetPaths();
-        
-        Debug.Log($"已加载场景: {string.Join(", ", loadedScenes)}");
-        Debug.Log($"正在加载场景: {string.Join(", ", loadingScenes)}");
-        Debug.Log($"正在卸载场景: {string.Join(", ", unloadingScenes)}");
-    }
-}
-```
-
-### 2. 高级场景管理功能
-
-#### 场景预加载系统
-
-```csharp
-using FuFramework.Scene.Runtime;
-using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-
-public class ScenePreloader : MonoBehaviour
-{
-    private readonly Dictionary<string, SceneHandle> m_PreloadedScenes = new();
-    
-    // 预加载常用场景
-    public async UniTask PreloadCommonScenes()
-    {
-        var scenesToPreload = new[]
+        if (!sceneModule.IsLoaded(scenePath))
         {
-            "BattleScene",
-            "ShopScene", 
-            "InventoryScene",
-            "SettingsScene"
-        };
-        
-        var preloadTasks = new List<UniTask>();
-        
-        foreach (var sceneName in scenesToPreload)
-        {
-            preloadTasks.Add(PreloadScene(sceneName));
-        }
-        
-        // 并行预加载所有场景
-        await UniTask.WhenAll(preloadTasks);
-        
-        Debug.Log("常用场景预加载完成");
-    }
-    
-    // 预加载单个场景
-    private async UniTask PreloadScene(string sceneName)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        if (m_PreloadedScenes.ContainsKey(sceneName))
-        {
-            Debug.LogWarning($"场景 {sceneName} 已经预加载");
+            Debug.LogWarning("场景未加载，无需卸载");
             return;
         }
         
-        try
+        if (sceneModule.IsUnloading(scenePath))
         {
-            // 异步加载场景但不激活
-            var sceneHandle = await sceneModule.LoadSceneByName(sceneName, LoadSceneMode.Additive);
-            
-            if (sceneHandle.IsDone)
-            {
-                m_PreloadedScenes[sceneName] = sceneHandle;
-                Debug.Log($"场景 {sceneName} 预加载完成");
-            }
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"预加载场景 {sceneName} 失败: {ex.Message}");
-        }
-    }
-    
-    // 激活预加载的场景
-    public void ActivatePreloadedScene(string sceneName)
-    {
-        if (m_PreloadedScenes.TryGetValue(sceneName, out var sceneHandle))
-        {
-            // 场景已经加载，直接激活
-            Debug.Log($"激活预加载场景: {sceneName}");
-            // 这里可以执行场景激活逻辑
-        }
-        else
-        {
-            Debug.LogWarning($"场景 {sceneName} 未预加载");
-        }
-    }
-    
-    // 清理预加载的场景
-    public void CleanupPreloadedScenes()
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        foreach (var kvp in m_PreloadedScenes)
-        {
-            var sceneName = kvp.Key;
-            if (sceneModule.SceneIsLoaded(sceneName))
-            {
-                sceneModule.UnloadScene(sceneName);
-            }
+            Debug.LogWarning("场景正在卸载中");
+            return;
         }
         
-        m_PreloadedScenes.Clear();
-        Debug.Log("预加载场景清理完成");
+        sceneModule.UnloadScene(scenePath);
     }
 }
 ```
 
-#### 场景加载进度管理器
+### 8.2 加载界面集成
 
 ```csharp
-using FuFramework.Scene.Runtime;
-using FuFramework.Event.Runtime;
-using UnityEngine;
-using UnityEngine.UI;
-
-public class SceneLoadingProgressUI : MonoBehaviour
+public class LoadingScreen : MonoBehaviour
 {
     [SerializeField] private Slider m_ProgressSlider;
     [SerializeField] private Text m_ProgressText;
-    [SerializeField] private GameObject m_LoadingPanel;
     
-    private string m_CurrentLoadingScene;
-    private bool m_IsLoading;
+    private EventRegister m_EventRegister;
     
-    private void Start()
+    public void Show()
     {
-        // 注册场景加载事件
-        EventModule.Instance.Subscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventModule.Instance.Subscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventModule.Instance.Subscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        gameObject.SetActive(true);
+        m_EventRegister = EventRegister.Create();
         
-        HideLoadingUI();
-    }
-    
-    // 显示加载界面并开始跟踪进度
-    public void StartTrackingSceneLoad(string sceneName)
-    {
-        m_CurrentLoadingScene = sceneName;
-        m_IsLoading = true;
-        ShowLoadingUI();
-        
-        // 重置进度显示
-        m_ProgressSlider.value = 0f;
-        m_ProgressText.text = "0% 加载中...";
-    }
-    
-    private void OnSceneLoadProgress(object sender, LoadSceneUpdateEventArgs e)
-    {
-        if (!m_IsLoading || e.SceneName != m_CurrentLoadingScene) return;
-        
-        // 更新进度显示
-        m_ProgressSlider.value = e.Progress;
-        m_ProgressText.text = $"{e.Progress:P0} 加载中...";
-        
-        // 模拟进度条动画（可选）
-        if (e.Progress >= 0.9f)
+        // 监听进度事件
+        m_EventRegister.Subscribe<LoadSceneUpdateEventArgs>((sender, e) =>
         {
-            m_ProgressText.text = "场景初始化中...";
-        }
-    }
-    
-    private void OnSceneLoadSuccess(object sender, LoadSceneSuccessEventArgs e)
-    {
-        if (e.SceneName == m_CurrentLoadingScene)
+            UpdateProgress(e.Progress);
+        });
+        
+        // 监听完成事件
+        m_EventRegister.Subscribe<LoadSceneSuccessEventArgs>((sender, e) =>
         {
-            // 加载完成，隐藏加载界面
-            HideLoadingUI();
-            m_IsLoading = false;
-            m_CurrentLoadingScene = null;
-            
-            Debug.Log($"场景 {e.SceneName} 加载成功，界面已隐藏");
-        }
+            Hide();
+        });
     }
     
-    private void OnSceneLoadFailed(object sender, LoadSceneFailureEventArgs e)
+    private void UpdateProgress(float progress)
     {
-        if (e.SceneName == m_CurrentLoadingScene)
-        {
-            // 加载失败，显示错误信息
-            m_ProgressText.text = $"加载失败: {e.ErrorMessage}";
-            m_ProgressText.color = Color.red;
-            
-            // 3秒后自动隐藏
-            Invoke(nameof(HideLoadingUI), 3f);
-            
-            m_IsLoading = false;
-            m_CurrentLoadingScene = null;
-        }
+        m_ProgressSlider.value = progress;
+        m_ProgressText.text = $"{progress:P0}";
     }
     
-    private void ShowLoadingUI()
+    public void Hide()
     {
-        m_LoadingPanel.SetActive(true);
-    }
-    
-    private void HideLoadingUI()
-    {
-        m_LoadingPanel.SetActive(false);
-        m_ProgressText.color = Color.white; // 重置颜色
-    }
-    
-    private void OnDestroy()
-    {
-        // 注销事件监听
-        EventModule.Instance.Unsubscribe<LoadSceneUpdateEventArgs>(OnSceneLoadProgress);
-        EventModule.Instance.Unsubscribe<LoadSceneSuccessEventArgs>(OnSceneLoadSuccess);
-        EventModule.Instance.Unsubscribe<LoadSceneFailureEventArgs>(OnSceneLoadFailed);
+        m_EventRegister?.Release();
+        gameObject.SetActive(false);
     }
 }
 ```
 
-## 高级用法
+### 8.3 注意事项
 
-### 1. 自定义场景加载策略
-
-```csharp
-using FuFramework.Scene.Runtime;
-using Cysharp.Threading.Tasks;
-using System;
-
-public class AdvancedSceneLoader : MonoBehaviour
-{
-    // 自定义场景加载配置
-    [Serializable]
-    public class SceneLoadConfig
-    {
-        public string SceneName;
-        public LoadSceneMode LoadMode = LoadSceneMode.Additive;
-        public bool ShowLoadingScreen = true;
-        public float MinLoadTime = 2f; // 最小加载时间（用于避免加载过快）
-        public Action OnLoadComplete;
-        public Action<float> OnProgressUpdate;
-    }
-    
-    // 带配置的异步场景加载
-    public async UniTask<SceneHandle> LoadSceneWithConfig(SceneLoadConfig config)
-    {
-        var sceneModule = SceneModule.Instance;
-        var startTime = Time.time;
-        
-        // 显示加载界面
-        if (config.ShowLoadingScreen)
-        {
-            ShowCustomLoadingScreen();
-        }
-        
-        try
-        {
-            // 开始加载场景
-            var sceneHandle = await sceneModule.LoadSceneByName(config.SceneName, config.LoadMode);
-            
-            // 等待最小加载时间（避免加载过快导致的视觉跳跃）
-            var elapsedTime = Time.time - startTime;
-            if (elapsedTime < config.MinLoadTime)
-            {
-                await UniTask.Delay(TimeSpan.FromSeconds(config.MinLoadTime - elapsedTime));
-            }
-            
-            // 调用完成回调
-            config.OnLoadComplete?.Invoke();
-            
-            return sceneHandle;
-        }
-        finally
-        {
-            // 隐藏加载界面
-            if (config.ShowLoadingScreen)
-            {
-                HideCustomLoadingScreen();
-            }
-        }
-    }
-    
-    // 批量场景加载
-    public async UniTask LoadMultipleScenes(params string[] sceneNames)
-    {
-        var loadTasks = new List<UniTask>();
-        
-        foreach (var sceneName in sceneNames)
-        {
-            var config = new SceneLoadConfig
-            {
-                SceneName = sceneName,
-                LoadMode = LoadSceneMode.Additive,
-                ShowLoadingScreen = false // 批量加载时不显示单独加载界面
-            };
-            
-            loadTasks.Add(LoadSceneWithConfig(config));
-        }
-        
-        // 并行加载所有场景
-        await UniTask.WhenAll(loadTasks);
-        
-        Debug.Log($"批量加载完成: {string.Join(", ", sceneNames)}");
-    }
-    
-    private void ShowCustomLoadingScreen()
-    {
-        // 自定义加载界面显示逻辑
-    }
-    
-    private void HideCustomLoadingScreen()
-    {
-        // 自定义加载界面隐藏逻辑
-    }
-}
-```
-
-### 2. 场景依赖管理
-
-```csharp
-using FuFramework.Scene.Runtime;
-using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-
-public class SceneDependencyManager : MonoBehaviour
-{
-    // 场景依赖关系定义
-    private readonly Dictionary<string, string[]> m_SceneDependencies = new()
-    {
-        { "Level3", new[] { "Level2", "Level1" } },
-        { "BossBattle", new[] { "Level3", "SpecialAssets" } },
-        { "Ending", new[] { "BossBattle", "CreditsScene" } }
-    };
-    
-    // 检查并加载场景依赖
-    public async UniTask<bool> LoadSceneWithDependencies(string targetScene)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        // 检查目标场景是否已加载
-        if (sceneModule.SceneIsLoaded(targetScene))
-        {
-            Debug.LogWarning($"场景 {targetScene} 已经加载");
-            return true;
-        }
-        
-        // 获取依赖关系
-        if (!m_SceneDependencies.TryGetValue(targetScene, out var dependencies))
-        {
-            // 没有依赖，直接加载目标场景
-            await sceneModule.LoadSceneByName(targetScene, LoadSceneMode.Additive);
-            return true;
-        }
-        
-        // 加载所有依赖场景
-        foreach (var dependency in dependencies)
-        {
-            if (!sceneModule.SceneIsLoaded(dependency))
-            {
-                await sceneModule.LoadSceneByName(dependency, LoadSceneMode.Additive);
-            }
-        }
-        
-        // 加载目标场景
-        await sceneModule.LoadSceneByName(targetScene, LoadSceneMode.Additive);
-        
-        return true;
-    }
-    
-    // 卸载场景及其依赖（如果没有其他场景使用）
-    public void UnloadSceneWithDependencies(string targetScene)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        if (!sceneModule.SceneIsLoaded(targetScene))
-        {
-            Debug.LogWarning($"场景 {targetScene} 未加载，无需卸载");
-            return;
-        }
-        
-        // 卸载目标场景
-        sceneModule.UnloadScene(targetScene);
-        
-        // 检查依赖场景是否可以卸载
-        if (m_SceneDependencies.TryGetValue(targetScene, out var dependencies))
-        {
-            foreach (var dependency in dependencies)
-            {
-                if (CanUnloadDependency(dependency))
-                {
-                    sceneModule.UnloadScene(dependency);
-                }
-            }
-        }
-    }
-    
-    // 检查依赖场景是否可以被卸载
-    private bool CanUnloadDependency(string dependencyScene)
-    {
-        var sceneModule = SceneModule.Instance;
-        
-        // 检查是否有其他场景依赖于此场景
-        foreach (var kvp in m_SceneDependencies)
-        {
-            var scene = kvp.Key;
-            var dependencies = kvp.Value;
-            
-            // 如果其他已加载的场景依赖于此场景，则不能卸载
-            if (sceneModule.SceneIsLoaded(scene) && 
-                System.Array.IndexOf(dependencies, dependencyScene) >= 0)
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-}
-```
-
-## 性能优化建议
-
-### 1. 场景加载优化
-
-```csharp
-using FuFramework.Scene.Runtime;
-using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-
-public class SceneOptimizationManager : MonoBehaviour
-{
-    private readonly HashSet<string> m_FrequentlyUsedScenes = new()
-    {
-        "MainMenu",
-        "GameScene", 
-        "Inventory",
-        "Shop"
-    };
-    
-    // 预加载常用场景
-    public async UniTask PreloadFrequentScenes()
-    {
-        var sceneModule = SceneModule.Instance;
-        var preloadTasks = new List<UniTask>();
-        
-        foreach (var sceneName in m_FrequentlyUsedScenes)
-        {
-            if (!sceneModule.SceneIsLoaded(sceneName) && 
-                !sceneModule.SceneIsLoading(sceneName))
-            {
-                preloadTasks.Add(sceneModule.LoadSceneByName(sceneName, LoadSceneMode.Additive));
-            }
-        }
-        
-        if (preloadTasks.Count > 0)
-        {
-            await UniTask.WhenAll(preloadTasks);
-            Debug.Log("常用场景预加载完成");
-        }
-    }
-    
-    // 定期清理不常用的场景
-    public void CleanupUnusedScenes()
-    {
-        var sceneModule = SceneModule.Instance;
-        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
-        
-        foreach (var scenePath in loadedScenes)
-        {
-            var sceneName = sceneModule.GetSceneName(scenePath);
-            
-            // 如果不是常用场景，且不是当前活动场景，则卸载
-            if (!m_FrequentlyUsedScenes.Contains(sceneName) && 
-                !IsActiveScene(sceneName))
-            {
-                sceneModule.UnloadScene(scenePath);
-                Debug.Log($"清理不常用场景: {sceneName}");
-            }
-        }
-    }
-    
-    private bool IsActiveScene(string sceneName)
-    {
-        // 检查是否为当前活动场景的逻辑
-        return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == sceneName;
-    }
-}
-```
-
-### 2. 内存使用监控
-
-```csharp
-using FuFramework.Scene.Runtime;
-using UnityEngine;
-
-public class SceneMemoryMonitor : MonoBehaviour
-{
-    [SerializeField] private bool m_EnableMonitoring = true;
-    [SerializeField] private float m_CheckInterval = 10f;
-    
-    private float m_LastCheckTime;
-    
-    private void Update()
-    {
-        if (!m_EnableMonitoring) return;
-        
-        if (Time.time - m_LastCheckTime >= m_CheckInterval)
-        {
-            CheckSceneMemoryUsage();
-            m_LastCheckTime = Time.time;
-        }
-    }
-    
-    private void CheckSceneMemoryUsage()
-    {
-        var sceneModule = SceneModule.Instance;
-        var loadedScenes = sceneModule.GetAllLoadedSceneAssetPaths();
-        
-        Debug.Log($"当前加载场景数量: {loadedScenes.Length}");
-        
-        // 检查内存使用情况
-        var totalMemory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1024 / 1024;
-        Debug.Log($"总内存使用: {totalMemory} MB");
-        
-        // 如果内存使用过高，建议清理场景
-        if (totalMemory > 500) // 500MB 阈值
-        {
-            Debug.LogWarning("内存使用过高，建议清理不必要的场景");
-        }
-    }
-}
-```
-
-## 注意事项
-
-### 1. 内存管理
-- **及时卸载**：不再使用的场景应及时卸载释放内存
-- **避免泄漏**：确保场景对象正确释放，避免内存泄漏
-- **合理预加载**：根据使用频率合理预加载场景
-
-### 2. 性能考虑
-- **异步加载**：使用异步加载避免阻塞主线程
-- **进度跟踪**：合理使用进度事件更新 UI
-- **错误处理**：完善的错误处理机制确保稳定性
-
-### 3. 线程安全
-- **事件系统**：场景事件在主线程序列化处理
-- **状态同步**：确保场景状态变化的线程安全
-- **资源管理**：与资源管理器的线程安全协作
-
-### 4. 错误处理
-- **场景存在性**：加载前检查场景是否存在
-- **状态检查**：避免重复加载或卸载
-- **异常捕获**：使用 try-catch 包装关键操作
-
-## API 参考
-
-### SceneModule 类
-
-#### 静态属性
-
-##### Instance
-```csharp
-public static SceneModule Instance { get; }
-```
-**功能**：获取场景管理器单例实例
-
-#### 实例方法
-
-##### LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode, object userData)
-```csharp
-public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
-```
-**功能**：通过场景名称加载场景
-
-**参数**：
-- `sceneAssetName` (string)：场景资源名称
-- `sceneMode` (LoadSceneMode)：加载模式，默认 Additive
-- `userData` (object)：用户自定义数据
-
-**返回值**：
-- `UniTask<SceneHandle>`：异步场景加载任务
-
-**示例**：
-```csharp
-var sceneHandle = await SceneModule.Instance.LoadSceneByName("MainScene");
-```
-
-##### UnloadScene(string sceneAssetPath, object userData)
-```csharp
-public void UnloadScene(string sceneAssetPath, object userData = null)
-```
-**功能**：卸载指定场景
-
-**参数**：
-- `sceneAssetPath` (string)：场景资源路径
-- `userData` (object)：用户自定义数据
-
-**示例**：
-```csharp
-SceneModule.Instance.UnloadScene("Assets/Scenes/MainScene.unity");
-```
-
-##### SceneIsLoaded(string sceneAssetPath)
-```csharp
-public bool SceneIsLoaded(string sceneAssetPath)
-```
-**功能**：检查场景是否已加载
-
-**参数**：
-- `sceneAssetPath` (string)：场景资源路径
-
-**返回值**：
-- `bool`：场景是否已加载
-
-**示例**：
-```csharp
-bool isLoaded = SceneModule.Instance.SceneIsLoaded("MainScene");
-```
-
-## 常见问题解答
-
-### Q: 场景加载失败怎么办？
-A: 检查场景路径是否正确，场景文件是否存在，资源包是否加载成功。
-
-### Q: 如何实现场景切换的过渡效果？
-A: 使用加载界面显示进度，结合事件系统实现平滑过渡效果。
-
-### Q: 多场景叠加时如何管理场景关系？
-A: 使用场景依赖管理系统，确保场景加载顺序和依赖关系正确。
-
-### Q: 场景加载过程中如何避免内存峰值？
-A: 合理使用异步加载，分批加载资源，监控内存使用情况。
-
-### Q: 如何优化场景加载性能？
-A: 预加载常用场景，使用对象池管理场景资源，优化资源包大小。
-
-## 总结
-
-Scene 模块为 FuFramework 提供了强大的场景管理系统，支持异步加载、事件通知、状态跟踪等高级功能。通过合理的场景管理策略，可以显著提升游戏的加载性能和用户体验。
-
-该模块设计合理，功能完善，与资源管理系统深度集成，是游戏开发中场景管理的理想解决方案。
+1. **路径格式**：场景路径必须以 `Assets/` 开头，以 `.unity` 结尾，如 `Assets/Scenes/MainScene.unity`
+2. **重复加载检查**：已加载的场景不能重复加载，需要先卸载
+3. **状态检查**：加载/卸载前检查场景状态，避免冲突操作
+4. **事件注销**：组件销毁时释放 EventRegister，避免内存泄漏
+5. **异步等待**：使用 UniTask 和 await 处理异步操作，避免阻塞主线程
+6. **异常处理**：使用 try-catch 捕获加载过程中的异常
+7. **资源释放**：模块销毁时会自动卸载所有场景，无需手动处理
