@@ -6,7 +6,10 @@ using FuFramework.ReferencePool.Runtime;
 namespace FuFramework.Timer.Runtime
 {
     /// <summary>
-    /// 计时器基础信息类
+    /// 计时器基类。
+    /// 功能：
+    ///     1. 提供计时器的基本属性和方法。
+    ///     2. 实现引用池接口，提供计时器的初始化、清理方法。
     /// </summary>
     internal abstract class TimerBase : IReference
     {
