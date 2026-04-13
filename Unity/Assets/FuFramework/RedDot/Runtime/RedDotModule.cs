@@ -8,18 +8,17 @@ namespace FuFramework.RedDot.Runtime
 {
     /// <summary>
     /// 红点管理模块
-    /// 
-    /// 主要功能：
-    /// 1. 树形结构管理 - 支持父子节点层级关系，自动计算总计数
-    /// 2. 事件通知机制 - 计数变化时自动通知所有监听者
-    /// 3. 对象池管理 - 使用引用池减少GC分配
-    /// 4. 配置化驱动 - 通过配置RedDotSetting(ScriptableObject)初始化红点树结构
+    /// 功能：
+    ///     1. 树形结构管理 - 支持父子节点层级关系，自动计算总计数
+    ///     2. 事件通知机制 - 计数变化时自动通知所有监听者
+    ///     3. 对象池管理 - 使用引用池减少GC分配
+    ///     4. 配置化驱动 - 通过配置RedDotSetting(ScriptableObject)初始化红点树结构
     /// 
     /// 使用流程：
-    /// 1. 在配置RedDotSetting(ScriptableObject)中定义红点树结构
-    /// 2. 系统启动时自动构建节点树
-    /// 3. 业务逻辑调用接口设置红点计数，如：RedDotModule.Instance.SetCount("node1", 10)
-    /// 4. UI组件注册监听并更新显示状态，如：RedDotModule.Instance.Register("node1", (count) => { ui.SetText(count); })
+    ///     1. 在配置RedDotSetting(ScriptableObject)中定义红点树结构
+    ///     2. 系统启动时自动构建节点树
+    ///     3. 业务逻辑调用接口设置红点计数，如：RedDotModule.Instance.SetCount("node1", 10)
+    ///     4. UI组件注册监听并更新显示状态，如：RedDotModule.Instance.Register("node1", (count) => { ui.SetText(count); })
     /// </summary>
     public class RedDotModule : FuModule
     {
