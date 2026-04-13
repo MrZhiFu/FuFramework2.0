@@ -7,15 +7,17 @@ namespace FuFramework.Mono.Runtime
 {
     /// <summary>
     /// Mono管理模块。
-    /// 管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等，并提供了一种简便的方式来添加和移除这些事件的监听。
+    /// 功能：
+    ///     1.管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等。
+    ///     2.提供简便的方式来添加和移除这些事件的监听。
     /// </summary>
     public class MonoModule : FuModule
     {
         /// <summary>
         /// 等待执行的 Update 回调列表
         /// </summary>
-        private readonly List<Action> m_WaitUpdateList = new(); // 
-
+        private readonly List<Action> m_WaitUpdateList = new();
+        
         /// <summary>
         /// 正在执行的 Update 回调列表
         /// </summary>
