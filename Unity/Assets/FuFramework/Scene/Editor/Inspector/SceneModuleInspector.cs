@@ -6,7 +6,7 @@ using FuFramework.Scene.Runtime;
 namespace FuFramework.Scene.Editor
 {
     /// <summary>
-    /// 自定义场景管理模块的Inspector
+    /// 场景管理模块的Inspector
     /// </summary>
     [CustomEditor(typeof(SceneModule))]
     internal sealed class SceneModuleInspector : FuFrameworkInspector
@@ -24,7 +24,7 @@ namespace FuFramework.Scene.Editor
 
             if (!EditorApplication.isPlaying) return;
 
-            EditorGUILayout.LabelField("所有已加载的场景名称：", GetSceneNameString(m_SceneModule.GetAllLoadedSceneAssetPaths()));
+            EditorGUILayout.LabelField("已加载的场景名称：", GetSceneNameString(m_SceneModule.GetAllLoadedSceneAssetPaths()));
             EditorGUILayout.LabelField("正在加载的场景名称：", GetSceneNameString(m_SceneModule.GetAllLoadingSceneAssetPaths()));
             EditorGUILayout.LabelField("正在卸载的场景名称：", GetSceneNameString(m_SceneModule.GetAllUnloadingSceneAssetPaths()));
         }
