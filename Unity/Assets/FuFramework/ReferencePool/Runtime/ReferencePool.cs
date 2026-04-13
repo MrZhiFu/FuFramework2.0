@@ -7,7 +7,12 @@ namespace FuFramework.ReferencePool.Runtime
 {
     /// <summary>
     /// 引用池。
-    /// 功能：管理纯C#类对象（数据、逻辑）的内存分配和回收，目标是减少GC的频率，提高游戏运行效率。
+    /// 目标：用于管理纯C#类对象的内存分配和回收，目标是减少GC的频率，提高游戏运行效率。
+    /// 功能：
+    ///     1. 从引用池获取引用。
+    ///     2. 将引用归还引用池。
+    ///     3. 获取引用池的数量。
+    ///     4. 检查引用类型是否合法。
     /// </summary>
     public static partial class ReferencePool
     {

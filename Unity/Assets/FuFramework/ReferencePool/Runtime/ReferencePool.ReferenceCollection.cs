@@ -17,7 +17,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// </summary>
         private sealed class ReferenceCollection
         {
-            /// 引用池类型
+            /// 引用池内的引用类型
             public Type RefType { get; }
 
             /// 引用池队列, 存储闲置的引用对象

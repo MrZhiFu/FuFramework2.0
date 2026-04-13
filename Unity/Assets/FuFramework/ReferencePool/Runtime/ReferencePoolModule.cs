@@ -6,8 +6,9 @@ namespace FuFramework.ReferencePool.Runtime
 {
     /// <summary>
     /// 引用池管理模块。
-    /// 功能:主要用于设置是否开启引用池类型的严格检查。
-    /// 开启后会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能。
+    /// 功能：
+    ///     1. 主要用于设置是否开启引用池类型的严格检查。
+    ///     2. 开启后会检查引用类型为非抽象类，且为IReference的接口实现类。这可能会影响性能。
     /// </summary>
     public sealed class ReferencePoolModule : FuModule
     {
