@@ -16,52 +16,303 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 
 ## 系统架构
 
-### 核心类说明
-
-#### 1. TimerModule
-计时器管理器，继承自 FuModule，负责所有计时器的统一管理。
-
-#### 2. TimerBase
-计时器基类，定义计时器的通用接口和基础功能。
-
-#### 3. CountdownTimer
-倒计时计时器，在指定时间后触发完成回调。
-
-#### 4. IntervalTimer
-时间间隔计时器，按照固定时间间隔重复执行回调。
-
-#### 5. FrameTimer
-帧间隔计时器，按照固定帧数间隔重复执行回调。
-
-#### 6. TimerRegister
-计时器注册器，用于模块级别的计时器分组管理。
-
-### 技术架构图
+### 类继承体系
 
 ```
-TimerModule
-├── m_TimerDict (计时器字典)
-├── m_Lock (异步锁)
-└── 核心方法
-    ├── StartCountdownTimer() 启动倒计时计时器
-    ├── StartIntervalTimer() 启动时间间隔计时器
-    ├── StartFrameTimer() 启动帧间隔计时器
-    ├── PauseTimer() 暂停计时器
-    ├── ResumeTimer() 恢复计时器
-    └── StopTimer() 停止计时器
-    └── ExecuteTimerAsync() 异步执行计时器
+FuModule (抽象基类)
+    ↑
+TimerModule (计时器管理模块)
+    ├── m_TimerDict (计时器字典)
+    └── ExecuteTimerAsync (异步执行)
 
 TimerBase (抽象基类)
-├── CountdownTimer (倒计时计时器)
-├── IntervalTimer (时间间隔计时器)
-└── FrameTimer (帧间隔计时器)
+    ↑
+    ├── CountdownTimer (倒计时计时器)
+    ├── IntervalTimer (时间间隔计时器)
+    └── FrameTimer (帧间隔计时器)
+
+TimerRegister (计时器注册器)
+    └── IReference (引用池接口)
 ```
 
-## 快速开始
+### 技术架构
 
-### 基本使用
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     TimerModule                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  m_TimerDict (Dictionary<int, TimerBase>)           │   │
+│  │  - 存储所有活跃计时器                                │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  ExecuteTimerAsync()                                │   │
+│  │  - 异步执行计时器循环                                │   │
+│  │  - 处理暂停/恢复逻辑                                 │   │
+│  │  - 抗时间跳跃处理                                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+                    TimerBase.Update()
+                              ↓
+        ┌─────────────────────┼─────────────────────┐
+        ↓                     ↓                     ↓
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│CountdownTimer│    │IntervalTimer │    │ FrameTimer   │
+│- 倒计时逻辑  │    │- 间隔回调    │    │- 帧间隔回调  │
+│- 进度计算    │    │- 累计时间    │    │- 累计帧数    │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
 
-#### 1. 获取计时器管理器
+## 核心类详解
+
+### TimerModule
+
+计时器管理模块，继承自 FuModule，负责所有计时器的统一管理。
+
+**核心字段：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| m_TimerDict | Dictionary<int, TimerBase> | 计时器字典，Key为计时器ID |
+| m_NextTimerId | int | 下一个计时器ID（自增） |
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Count | int | 当前计时器数量 |
+| OnTimerFinished | Action<int> | 计时器完成/停止时触发的事件 |
+
+**核心方法：**
+
+```csharp
+// 启动倒计时计时器
+public int StartCountdownTimer(float duration, Action finishCallBack, 
+    Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, 
+    bool ignoreTimeScale = false)
+
+// 启动时间间隔计时器
+public int StartIntervalTimer(float interval, Action intervalCallback, 
+    int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+
+// 启动帧间隔计时器
+public int StartFrameTimer(int frameInterval, Action intervalCallback, 
+    int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+
+// 暂停/恢复/停止计时器
+public void PauseTimer(int timerId)
+public void ResumeTimer(int timerId)
+public void StopTimer(int timerId)
+
+// 批量操作
+public void PauseAllTimers()
+public void ResumeAllTimers()
+public void StopAllTimers()
+
+// 查询状态
+public bool IsTimerExist(int timerId)
+public bool IsTimerPaused(int timerId)
+public IEnumerable<string> GetAllTimerNames()
+```
+
+**执行机制：**
+
+1. **ExecuteTimerAsync**：异步执行计时器循环
+   - 使用 UniTask.Yield 实现每帧更新
+   - 处理暂停状态（WaitUntil 等待恢复）
+   - 限制最大 deltaTime 防止时间跳跃
+   - 自动清理完成的计时器
+
+### TimerBase
+
+计时器基类，定义计时器的通用接口和基础功能。
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Id | int | 计时器ID |
+| IgnoreTimeScale | bool | 是否忽略时间缩放 |
+| IsPaused | bool | 是否暂停 |
+| Cts | CancellationTokenSource | 取消令牌源 |
+| PlayerLoopTiming | PlayerLoopTiming | 更新时机类型 |
+| Name | string | 计时器名称（抽象属性） |
+| IsCompleted | bool | 是否已完成（抽象属性） |
+
+**核心方法：**
+
+```csharp
+// 清理计时器（实现 IReference 接口）
+public virtual void Clear()
+
+// 更新计时器（抽象方法）
+public abstract void Update(float deltaTime, int deltaFrames)
+
+// 当计时器完成时调用（虚方法）
+public virtual void OnComplete()
+```
+
+### CountdownTimer
+
+倒计时计时器，在指定时间后触发完成回调。
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| DurationTime | float | 总持续时间（秒） |
+| RemainingTime | float | 剩余时间（秒） |
+| FinishCallBack | Action | 计时器结束时触发的回调 |
+| UpdateCallBack | Action | 每帧更新时触发的回调 |
+| Progress | float | 当前进度（0-1的归一化值） |
+
+**核心方法：**
+
+```csharp
+// 更新计时器
+public override void Update(float deltaTime, int _)
+
+// 当计时器完成时调用
+public override void OnComplete()
+
+// 创建倒计时计时器（工厂方法）
+public static CountdownTimer Create(int timerId, float duration, Action finishCallBack, 
+    Action updateCallBack, PlayerLoopTiming playerLoopTiming, bool ignoreTimeScale)
+```
+
+**使用示例：**
+
+```csharp
+// 启动一个3秒后执行的倒计时计时器
+int timerId = timerModule.StartCountdownTimer(
+    duration: 3f,
+    finishCallBack: () => Debug.Log("倒计时完成！"),
+    updateCallBack: () => Debug.Log("更新中..."),
+    ignoreTimeScale: false
+);
+```
+
+### IntervalTimer
+
+时间间隔计时器，按照固定时间间隔重复执行回调。
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Interval | float | 执行间隔时间（秒） |
+| IntervalCallback | Action | 间隔到达时触发的回调 |
+| MaxCount | int | 最大执行次数（-1表示无限循环） |
+| ExecutedCount | int | 已执行次数 |
+| AccumulatedTime | float | 累计时间（抗时间跳跃） |
+
+**核心方法：**
+
+```csharp
+// 更新计时器（使用累计时间机制处理卡顿）
+public override void Update(float deltaTime, int _)
+
+// 创建时间间隔计时器（工厂方法）
+public static IntervalTimer Create(int timerId, float interval, Action intervalCallback, 
+    int repeatCount, bool immediate, bool ignoreTimeScale)
+```
+
+**抗时间跳跃机制：**
+
+```csharp
+// 累计时间增量
+AccumulatedTime += deltaTime;
+
+// 使用while循环确保在卡顿情况下也能正确执行所有遗漏的回调
+while (AccumulatedTime >= Interval && ExecutedCount < MaxCount)
+{
+    AccumulatedTime -= Interval;
+    ExecutedCount++;
+    IntervalCallback?.Invoke();
+}
+```
+
+### FrameTimer
+
+帧间隔计时器，按照固定帧数间隔重复执行回调。
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| FrameInterval | int | 执行间隔帧数 |
+| IntervalCallback | Action | 间隔到达时触发的回调 |
+| MaxCount | int | 最大执行次数（-1表示无限循环） |
+| ExecutedCount | int | 已执行次数 |
+| AccumulatedFrames | int | 累计帧数（抗帧率波动） |
+
+**核心方法：**
+
+```csharp
+// 更新计时器（使用累计帧数机制）
+public override void Update(float _, int deltaFrames)
+
+// 创建帧间隔计时器（工厂方法）
+public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, 
+    int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
+```
+
+**注意：** 帧间隔计时器始终忽略时间缩放，确保与帧率同步。
+
+### TimerRegister
+
+计时器注册器，用于模块级别的计时器分组管理。
+
+**核心字段：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| m_TimerModule | TimerModule | 计时器管理模块（静态） |
+| m_TimerList | List<int> | 记录所有计时器ID的列表 |
+
+**核心方法：**
+
+```csharp
+// 创建计时器注册器（工厂方法）
+public static TimerRegister Create()
+
+// 启动计时器（与 TimerModule 接口相同）
+public void StartCountdownTimer(float duration, Action finishCallBack = null, ...)
+public void StartIntervalTimer(float interval, Action intervalCallback, ...)
+public void StartFrameTimer(int frameInterval, Action intervalCallback, ...)
+
+// 暂停/恢复/停止计时器
+public void PauseTimer(int timerId)
+public void ResumeTimer(int timerId)
+public void StopTimer(int timerId)
+
+// 批量操作
+public void PauseAllTimers()
+public void ResumeAllTimers()
+public void StopAllTimers()
+
+// 清理和释放
+public void Clear()
+public void Release()
+```
+
+**使用示例：**
+
+```csharp
+// 创建计时器注册器
+var timerRegister = TimerRegister.Create();
+
+// 启动计时器
+timerRegister.StartCountdownTimer(10f, () => Debug.Log("倒计时结束"));
+timerRegister.StartIntervalTimer(5f, () => Debug.Log("每5秒执行"));
+
+// 清理所有计时器
+timerRegister.Release();
+```
+
+## 使用示例
+
+### 基本使用流程
 
 ```csharp
 using FuFramework.Timer.Runtime;
@@ -76,161 +327,52 @@ public class TimerExample : MonoBehaviour
         // 获取计时器管理器
         m_TimerModule = ModuleManager.GetModule<TimerModule>();
         
-        // 使用计时器
-        UseCountdownTimer();
-        UseIntervalTimer();
-        UseFrameTimer();
+        // 启动倒计时计时器
+        int countdownId = m_TimerModule.StartCountdownTimer(
+            duration: 3f,
+            finishCallBack: () => Debug.Log("倒计时完成！"),
+            ignoreTimeScale: false
+        );
+        
+        // 启动时间间隔计时器
+        int intervalId = m_TimerModule.StartIntervalTimer(
+            interval: 1f,
+            intervalCallback: () => Debug.Log("每秒执行一次"),
+            repeatCount: 5,
+            immediate: true
+        );
+        
+        // 启动帧间隔计时器
+        int frameId = m_TimerModule.StartFrameTimer(
+            frameInterval: 30,
+            intervalCallback: () => Debug.Log("每30帧执行一次"),
+            repeatCount: -1  // 无限循环
+        );
     }
 }
 ```
 
-#### 2. 使用倒计时计时器
-
-```csharp
-private void UseCountdownTimer()
-{
-    // 启动一个3秒后执行的倒计时计时器
-    int timerId = m_TimerModule.StartCountdownTimer(
-        duration: 3f,
-        finishCallBack: () => Debug.Log("3秒倒计时完成！"),
-        updateCallBack: () => Debug.Log("倒计时更新中..."),
-        playerLoopTiming: PlayerLoopTiming.Update,
-        ignoreTimeScale: false
-    );
-    
-    Debug.Log($"启动倒计时计时器，ID: {timerId}");
-}
-```
-
-#### 3. 使用时间间隔计时器
-
-```csharp
-private void UseIntervalTimer()
-{
-    int counter = 0;
-    
-    // 启动一个每2秒执行一次的时间间隔计时器，重复5次
-    int timerId = m_TimerModule.StartIntervalTimer(
-        interval: 2f,
-        intervalCallback: () => 
-        {
-            counter++;
-            Debug.Log($"时间间隔计时器第{counter}次执行");
-        },
-        repeatCount: 5,
-        immediate: true,  // 立即执行第一次回调
-        ignoreTimeScale: false
-    );
-}
-```
-
-#### 4. 使用帧间隔计时器
-
-```csharp
-private void UseFrameTimer()
-{
-    int frameCounter = 0;
-    
-    // 启动一个每30帧执行一次的帧间隔计时器，无限循环
-    int timerId = m_TimerModule.StartFrameTimer(
-        frameInterval: 30,
-        intervalCallback: () => 
-        {
-            frameCounter++;
-            Debug.Log($"帧间隔计时器第{frameCounter}次执行，当前帧率: {1f / Time.deltaTime:F1}");
-        },
-        repeatCount: -1,  // -1表示无限循环
-        immediate: true,
-        playerLoopTiming: PlayerLoopTiming.Update
-    );
-}
-```
-
-## 详细使用指南
-
 ### 计时器生命周期管理
 
-#### 1. 启动计时器
-
 ```csharp
-// 倒计时计时器
-int timerId = m_TimerModule.StartCountdownTimer(
-    duration: 5f,
-    finishCallBack: () => Debug.Log("倒计时完成"),
-    updateCallBack: () => Debug.Log("更新中..."),
-    playerLoopTiming: PlayerLoopTiming.Update,
-    ignoreTimeScale: true
-);
-
-// 时间间隔计时器
-int intervalTimerId = m_TimerModule.StartIntervalTimer(
-    interval: 1f,
-    intervalCallback: () => Debug.Log("间隔回调"),
-    repeatCount: 10,
-    immediate: false,
-    ignoreTimeScale: false
-);
-
-// 帧间隔计时器
-int frameTimerId = m_TimerModule.StartFrameTimer(
-    frameInterval: 60,
-    intervalCallback: () => Debug.Log("帧间隔回调"),
-    repeatCount: -1,
-    immediate: true,
-    playerLoopTiming: PlayerLoopTiming.Update
-);
-```
-
-#### 2. 暂停和恢复计时器
-
-```csharp
-// 暂停单个计时器
+// 暂停计时器
 m_TimerModule.PauseTimer(timerId);
 
-// 恢复单个计时器
+// 恢复计时器
 m_TimerModule.ResumeTimer(timerId);
 
-// 暂停所有计时器
-m_TimerModule.PauseAllTimers();
-
-// 恢复所有计时器
-m_TimerModule.ResumeAllTimers();
-```
-
-#### 3. 停止计时器
-
-```csharp
-// 停止单个计时器
+// 停止计时器
 m_TimerModule.StopTimer(timerId);
 
-// 停止所有计时器
+// 批量操作
+m_TimerModule.PauseAllTimers();
+m_TimerModule.ResumeAllTimers();
 m_TimerModule.StopAllTimers();
 ```
 
-#### 4. 查询计时器状态
+### 使用 TimerRegister 进行分组管理
 
 ```csharp
-// 检查计时器是否存在
-bool exists = m_TimerModule.IsTimerExist(timerId);
-
-// 检查计时器是否暂停
-bool isPaused = m_TimerModule.IsTimerPaused(timerId);
-
-// 获取所有计时器名称
-var timerNames = m_TimerModule.GetAllTimerNames();
-foreach (var name in timerNames)
-{
-    Debug.Log($"计时器: {name}");
-}
-```
-
-### 高级功能
-
-#### 1. 使用 TimerRegister 进行分组管理
-
-```csharp
-using FuFramework.Timer.Runtime;
-
 public class GameManager
 {
     private TimerRegister m_GameTimerRegister;
@@ -253,376 +395,100 @@ public class GameManager
 }
 ```
 
-#### 2. 进度监控和自定义逻辑
+### 进度监控示例
 
 ```csharp
-public class ProgressTimerExample : MonoBehaviour
+public void StartProgressTimer()
 {
-    private TimerModule m_TimerModule;
-    private int m_ProgressTimerId;
+    float totalDuration = 10f;
+    float elapsedTime = 0f;
     
-    private void Start()
-    {
-        m_TimerModule = ModuleManager.GetModule<TimerModule>();
-        StartProgressTimer();
-    }
-    
-    private void StartProgressTimer()
-    {
-        float totalDuration = 10f;
-        float elapsedTime = 0f;
-        
-        m_ProgressTimerId = m_TimerModule.StartCountdownTimer(
-            duration: totalDuration,
-            finishCallBack: () => 
-            {
-                Debug.Log("进度计时器完成！");
-                UpdateProgressUI(1f);
-            },
-            updateCallBack: () => 
-            {
-                // 计算当前进度
-                elapsedTime += Time.deltaTime;
-                float progress = elapsedTime / totalDuration;
-                UpdateProgressUI(progress);
-            },
-            ignoreTimeScale: false
-        );
-    }
-    
-    private void UpdateProgressUI(float progress)
-    {
-        Debug.Log($"当前进度: {progress:P0}");
-    }
-}
-```
-
-## 实际应用场景
-
-### 1. 游戏倒计时系统
-
-```csharp
-public class CountdownSystem
-{
-    private TimerModule m_TimerModule;
-    private int m_CountdownTimerId;
-    private int m_RemainingSeconds = 60;
-    
-    public void StartCountdown(int seconds)
-    {
-        m_RemainingSeconds = seconds;
-        m_TimerModule = ModuleManager.GetModule<TimerModule>();
-        
-        m_CountdownTimerId = m_TimerModule.StartIntervalTimer(
-            interval: 1f,
-            intervalCallback: UpdateCountdown,
-            repeatCount: seconds,
-            immediate: true,
-            ignoreTimeScale: true
-        );
-    }
-    
-    private void UpdateCountdown()
-    {
-        m_RemainingSeconds--;
-        
-        // 更新UI显示
-        UpdateCountdownUI(m_RemainingSeconds);
-        
-        if (m_RemainingSeconds <= 0)
+    int timerId = m_TimerModule.StartCountdownTimer(
+        duration: totalDuration,
+        finishCallBack: () => 
         {
-            Debug.Log("倒计时结束！");
-            OnCountdownFinished();
-        }
-    }
-    
-    private void UpdateCountdownUI(int seconds)
-    {
-        Debug.Log($"剩余时间: {seconds}秒");
-    }
-    
-    private void OnCountdownFinished()
-    {
-        // 倒计时结束逻辑
-    }
-}
-```
-
-### 2. 技能冷却系统
-
-```csharp
-public class SkillCoolDownSystem
-{
-    private TimerModule m_TimerModule;
-    private Dictionary<string, int> m_SkillTimers = new();
-    
-    public void UseSkill(string skillName, float coolDownTime)
-    {
-        if (IsSkillCooling(skillName))
+            Debug.Log("进度计时器完成！");
+            UpdateProgressUI(1f);
+        },
+        updateCallBack: () => 
         {
-            Debug.Log($"技能 {skillName} 正在冷却中");
-            return;
-        }
-        
-        // 启动冷却计时器
-        int timerId = m_TimerModule.StartCountdownTimer(
-            duration: coolDownTime,
-            finishCallBack: () => OnSkillCoolDownFinished(skillName),
-            ignoreTimeScale: false
-        );
-        
-        m_SkillTimers[skillName] = timerId;
-        Debug.Log($"使用技能 {skillName}，冷却时间: {coolDownTime}秒");
-    }
-    
-    private bool IsSkillCooling(string skillName)
-    {
-        return m_SkillTimers.ContainsKey(skillName) && 
-               m_TimerModule.IsTimerExist(m_SkillTimers[skillName]);
-    }
-    
-    private void OnSkillCoolDownFinished(string skillName)
-    {
-        m_SkillTimers.Remove(skillName);
-        Debug.Log($"技能 {skillName} 冷却完成");
-    }
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / totalDuration;
+            UpdateProgressUI(progress);
+        },
+        ignoreTimeScale: false
+    );
 }
-```
 
-### 3. 动画和特效控制
-
-```csharp
-public class AnimationController
+private void UpdateProgressUI(float progress)
 {
-    private TimerModule m_TimerModule;
-    
-    public void PlayFadeAnimation(GameObject target, float duration)
-    {
-        float elapsedTime = 0f;
-        
-        // 使用忽略时间缩放的计时器，确保动画流畅
-        m_TimerModule.StartCountdownTimer(
-            duration: duration,
-            finishCallBack: () => OnFadeComplete(target),
-            updateCallBack: () => 
-            {
-                elapsedTime += Time.unscaledDeltaTime;
-                UpdateFadeProgress(target, elapsedTime / duration);
-            },
-            ignoreTimeScale: true
-        );
-    }
-    
-    private void UpdateFadeProgress(GameObject target, float progress)
-    {
-        // 更新淡入淡出动画进度
-        Debug.Log($"淡入淡出进度: {progress:P0}");
-    }
-    
-    private void OnFadeComplete(GameObject target)
-    {
-        Debug.Log($"{target.name} 淡入淡出动画完成");
-    }
+    Debug.Log($"当前进度: {progress:P0}");
 }
 ```
 
-### 4. 网络心跳包
+## 目录结构
 
-```csharp
-public class NetworkHeartbeat
-{
-    private TimerModule m_TimerModule;
-    private int m_HeartbeatTimerId;
-    
-    public void StartHeartbeat()
-    {
-        m_TimerModule = ModuleManager.GetModule<TimerModule>();
-        
-        // 每30秒发送一次心跳包
-        m_HeartbeatTimerId = m_TimerModule.StartIntervalTimer(
-            interval: 30f,
-            intervalCallback: SendHeartbeat,
-            repeatCount: -1,  // 无限循环
-            immediate: false,
-            ignoreTimeScale: true  // 网络通信不受时间缩放影响
-        );
-    }
-    
-    private void SendHeartbeat()
-    {
-        Debug.Log("发送网络心跳包...");
-        // 实际网络通信逻辑
-    }
-    
-    public void StopHeartbeat()
-    {
-        m_TimerModule.StopTimer(m_HeartbeatTimerId);
-    }
-}
+```
+FuFramework/Timer/
+├── Runtime/
+│   ├── TimerModule.cs              # 计时器管理模块主类
+│   ├── TimerRegister.cs            # 计时器注册器
+│   ├── Base/
+│   │   └── TimerBase.cs            # 计时器基类
+│   ├── Sub/
+│   │   ├── CountdownTimer.cs       # 倒计时计时器
+│   │   ├── IntervalTimer.cs        # 时间间隔计时器
+│   │   └── FrameTimer.cs           # 帧间隔计时器
+│   └── FuFramework.Timer.Runtime.asmdef
+├── Editor/
+│   └── Inspector/
+│       └── TimerModuleInspector.cs # 编辑器Inspector
+└── README.md                       # 本文档
 ```
 
-## 性能优化建议
+## 依赖模块
 
-### 1. 合理选择计时器类型
+- **Core**: 提供 FuModule 基类、日志工具
+- **ReferencePool**: 提供对象池管理，用于计时器对象的复用
+- **UniTask**: 提供异步任务支持
 
-```csharp
-// 时间精度要求高的场景使用时间间隔计时器
-m_TimerModule.StartIntervalTimer(0.1f, HighPrecisionUpdate);
+## 设计特点
 
-// 与渲染帧同步的场景使用帧间隔计时器  
-m_TimerModule.StartFrameTimer(2, FrameSyncUpdate);
+### 1. 异步驱动
 
-// 简单的延时操作使用倒计时计时器
-m_TimerModule.StartCountdownTimer(3f, SimpleDelayCallback);
-```
+基于 UniTask 实现，使用 `UniTask.Yield` 实现每帧更新，避免使用 MonoBehaviour 的 Update 方法，降低性能开销。
 
-### 2. 避免频繁创建销毁计时器
+### 2. 抗时间跳跃
 
-```csharp
-public class OptimizedTimerUsage
-{
-    private TimerModule m_TimerModule;
-    private int m_ReusableTimerId;
-    
-    public void StartReusableTimer()
-    {
-        // 重用计时器ID，避免频繁创建
-        if (m_TimerModule.IsTimerExist(m_ReusableTimerId))
-        {
-            m_TimerModule.StopTimer(m_ReusableTimerId);
-        }
-        
-        m_ReusableTimerId = m_TimerModule.StartCountdownTimer(5f, ReusableCallback);
-    }
-    
-    private void ReusableCallback()
-    {
-        Debug.Log("可重用计时器完成");
-    }
-}
-```
+- **时间间隔计时器**：使用累计时间机制，在卡顿后连续执行遗漏的回调
+- **帧间隔计时器**：使用累计帧数机制，确保帧率波动时的执行准确性
+- **最大 deltaTime 限制**：限制最大时间增量为 0.1 秒，防止极端情况
 
-### 3. 使用 TimerRegister 进行批量管理
+### 3. 暂停机制
 
-```csharp
-public class LevelTimerManager
-{
-    private TimerRegister m_LevelTimerRegister;
-    
-    public void StartLevelTimers()
-    {
-        m_LevelTimerRegister = TimerRegister.Create();
-        
-        // 关卡相关的所有计时器使用同一个注册器
-        m_LevelTimerRegister.StartCountdownTimer(60f, OnLevelTimeUp);
-        m_LevelTimerRegister.StartIntervalTimer(10f, SpawnEnemyWave);
-        m_LevelTimerRegister.StartFrameTimer(30, UpdateMiniMap);
-    }
-    
-    public void CleanupLevelTimers()
-    {
-        // 一键清理所有关卡计时器
-        m_LevelTimerRegister.Release();
-    }
-}
-```
+使用 `UniTask.WaitUntil` 实现暂停等待，暂停时不占用 CPU 资源，恢复时自动同步时间。
 
-## API 参考
+### 4. 对象池管理
 
-### TimerModule 主要方法
+所有计时器类实现 `IReference` 接口，通过 ReferencePool 管理对象生命周期，减少 GC 压力。
 
-| 方法 | 描述 | 参数 | 返回值 |
-|------|------|------|--------|
-| `StartCountdownTimer()` | 启动倒计时计时器 | duration: 持续时间, finishCallBack: 完成回调, updateCallBack: 更新回调, playerLoopTiming: 更新时间点, ignoreTimeScale: 是否忽略时间缩放 | int (计时器ID) |
-| `StartIntervalTimer()` | 启动时间间隔计时器 | interval: 间隔时间, intervalCallback: 间隔回调, repeatCount: 重复次数, immediate: 是否立即执行, ignoreTimeScale: 是否忽略时间缩放 | int (计时器ID) |
-| `StartFrameTimer()` | 启动帧间隔计时器 | frameInterval: 帧间隔, intervalCallback: 间隔回调, repeatCount: 重复次数, immediate: 是否立即执行, playerLoopTiming: 更新时间点 | int (计时器ID) |
-| `PauseTimer()` | 暂停计时器 | timerId: 计时器ID | void |
-| `ResumeTimer()` | 恢复计时器 | timerId: 计时器ID | void |
-| `StopTimer()` | 停止计时器 | timerId: 计时器ID | void |
-| `PauseAllTimers()` | 暂停所有计时器 | - | void |
-| `ResumeAllTimers()` | 恢复所有计时器 | - | void |
-| `StopAllTimers()` | 停止所有计时器 | - | void |
-| `IsTimerExist()` | 检查计时器是否存在 | timerId: 计时器ID | bool |
-| `IsTimerPaused()` | 检查计时器是否暂停 | timerId: 计时器ID | bool |
-| `GetAllTimerNames()` | 获取所有计时器名称 | - | IEnumerable<string> |
+### 5. 分组管理
 
-### 属性
+TimerRegister 提供模块级别的计时器分组管理，便于批量控制和生命周期管理。
 
-| 属性 | 类型 | 描述 |
-|------|------|------|
-| `Count` | int | 当前计时器数量 |
-| `OnTimerFinished` | Action<int> | 计时器完成/停止时触发的事件 |
+## 应用场景
 
-### TimerRegister 主要方法
-
-| 方法 | 描述 | 参数 |
-|------|------|------|
-| `StartCountdownTimer()` | 启动倒计时计时器 | 同 TimerModule.StartCountdownTimer() |
-| `StartIntervalTimer()` | 启动时间间隔计时器 | 同 TimerModule.StartIntervalTimer() |
-| `StartFrameTimer()` | 启动帧间隔计时器 | 同 TimerModule.StartFrameTimer() |
-| `PauseTimer()` | 暂停计时器 | timerId: 计时器ID |
-| `ResumeTimer()` | 恢复计时器 | timerId: 计时器ID |
-| `StopTimer()` | 停止计时器 | timerId: 计时器ID |
-| `PauseAllTimers()` | 暂停所有计时器 | - |
-| `ResumeAllTimers()` | 恢复所有计时器 | - |
-| `StopAllTimers()` | 停止所有计时器 | - |
-| `IsTimerExist()` | 检查计时器是否存在 | timerId: 计时器ID |
-| `IsTimerPaused()` | 检查计时器是否暂停 | timerId: 计时器ID |
-| `Clear()` | 清理所有计时器 | - |
-| `Release()` | 释放注册器并归还引用池 | - |
+1. **技能冷却**：使用倒计时计时器实现技能冷却时间
+2. **倒计时系统**：使用间隔计时器实现每秒更新的倒计时
+3. **动画控制**：使用帧间隔计时器实现与帧率同步的动画
+4. **自动保存**：使用间隔计时器实现定期自动保存
+5. **网络心跳**：使用间隔计时器实现定时心跳包发送
+6. **UI动画**：使用忽略时间缩放的计时器实现流畅的UI动画
 
 ## 注意事项
 
-### 1. 内存管理
-- 使用 `ReferencePool` 管理计时器对象生命周期
-- 及时停止不再需要的计时器
-- 使用 `TimerRegister` 进行分组管理，便于批量清理
-
-### 2. 性能考虑
-- 避免在每帧更新中创建大量计时器
-- 合理选择计时器类型和参数
-- 使用忽略时间缩放时注意性能影响
-
-### 3. 线程安全
-- TimerModule 设计为单线程使用
-- 在多线程环境中需要额外的同步机制
-- 避免并发操作计时器字典
-
-### 4. 异常处理
-- 计时器回调中应包含异常处理
-- 使用 try-catch 包装关键逻辑
-- 确保计时器异常不会影响系统稳定性
-
-## 常见问题解答
-
-### Q: 如何选择合适的计时器类型？
-A: 根据需求选择：
-- **倒计时计时器**：简单的延时操作，如技能冷却、动画延时
-- **时间间隔计时器**：精确的时间控制，如倒计时、定期保存
-- **帧间隔计时器**：与渲染帧同步，如动画控制、物理模拟
-
-### Q: 忽略时间缩放有什么作用？
-A: 忽略时间缩放可以确保计时器不受 `Time.timeScale` 影响，适用于：
-- UI动画和特效
-- 网络通信
-- 后台逻辑处理
-- 需要稳定时间基准的场景
-
-### Q: 如何处理卡顿导致的计时器跳跃？
-A: 计时器系统内置了抗时间跳跃机制：
-- 时间间隔计时器使用累计时间机制
-- 帧间隔计时器使用累计帧数机制
-- 限制最大 deltaTime 防止极端情况
-
-### Q: 计时器回调中能否进行耗时操作？
-A: 不建议在计时器回调中进行耗时操作，因为：
-- 可能影响其他计时器的执行
-- 可能导致帧率下降
-- 建议将耗时操作放到其他线程或协程中处理
-
-### Q: 如何正确释放 TimerRegister？
-A: 使用 `Release()` 方法释放 TimerRegister：
-```csharp
-m_TimerRegister.Release();  // 正确方式
-// 不要直接使用 ReferencePool.Release(m_TimerRegister)
-```
+1. **线程安全**：TimerModule 设计为单线程使用，所有操作应在主线程执行
+2. **回调耗时**：避免在计时器回调中执行耗时操作，可能影响其他计时器
+3. **对象释放**：使用 TimerRegister 时，调用 Release() 方法而非直接归还引用池
+4. **时间缩放**：忽略时间缩放的计时器使用 `Time.unscaledTime` 和 `Time.unscaledDeltaTime`
+5. **取消令牌**：通过 CancellationTokenSource 取消计时器，确保资源正确释放
