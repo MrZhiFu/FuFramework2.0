@@ -29,8 +29,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 释放界面实例对象。
         /// </summary>
-        /// <param name="isShutdown"></param>
-        protected override void Release(bool isShutdown)
+        protected override void OnRelease()
         {
             if (Target is not ViewBase viewBase)
                 throw new FuException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
