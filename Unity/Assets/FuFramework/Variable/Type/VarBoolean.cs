@@ -3,18 +3,19 @@
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// Boolean 变量类。
-    /// 优点：可以像正常bool值类型一样使用，且底层使用引用池优化了内存。
+    /// 自定义 Boolean 变量类。
+    /// 功能：
+    ///     1. 可以像正常bool值类型一样使用，且底层使用引用池优化了内存。
     /// </summary>
     public sealed class VarBoolean : Variable<bool>
     {
         /// <summary>
-        /// 初始化 Boolean 变量类的新实例。
+        /// 初始化 VarBoolean 变量类的新实例。
         /// </summary>
         public VarBoolean() { }
 
         /// <summary>
-        /// 从 System.Boolean 到 Boolean 变量类的隐式转换。
+        /// 从 System.Boolean 到 VarBoolean 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator VarBoolean(bool value)
@@ -25,7 +26,7 @@ namespace FuFramework.Variable.Runtime
         }
 
         /// <summary>
-        /// 从 System.Boolean 变量类到 Boolean 的隐式转换。
+        /// 从 VarBoolean 变量类到 System.Boolean 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator bool(VarBoolean value) => value.Value;

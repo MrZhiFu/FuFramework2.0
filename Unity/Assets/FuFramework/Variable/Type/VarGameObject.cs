@@ -4,8 +4,9 @@
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// UnityEngine.GameObject 变量类。
-    /// 优点：可以像正常GameObject变量一样使用，且底层使用引用池优化了内存。
+    /// GameObject 变量类。
+    /// 功能：
+    ///     1. 可以像正常GameObject变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
     public sealed class VarGameObject : Variable<GameObject>
     {
@@ -15,7 +16,7 @@ namespace FuFramework.Variable.Runtime
         public VarGameObject() { }
 
         /// <summary>
-        /// 从 UnityEngine.GameObject 到 UnityEngine.GameObject 变量类的隐式转换。
+        /// 从 UnityEngine.GameObject 到 VarGameObject 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator VarGameObject(GameObject value)

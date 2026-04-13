@@ -4,18 +4,19 @@
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// UnityEngine.Quaternion 变量类。
-    /// 优点：可以像正常Quaternion变量一样使用，且底层使用引用池优化了内存。
+    /// 自定义 Quaternion 变量类。
+    /// 功能：
+    ///     1. 可以像正常Quaternion变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
     public sealed class VarQuaternion : Variable<Quaternion>
     {
         /// <summary>
-        /// 初始化 UnityEngine.Quaternion 变量类的新实例。
+        /// 初始化 VarQuaternion 变量类的新实例。
         /// </summary>
         public VarQuaternion() { }
 
         /// <summary>
-        /// 从 UnityEngine.Quaternion 到 UnityEngine.Quaternion 变量类的隐式转换。
+        /// 从 UnityEngine.Quaternion 到 VarQuaternion 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator VarQuaternion(Quaternion value)
@@ -26,7 +27,7 @@ namespace FuFramework.Variable.Runtime
         }
 
         /// <summary>
-        /// 从 UnityEngine.Quaternion 变量类到 UnityEngine.Quaternion 的隐式转换。
+        /// 从 VarQuaternion 变量类到 UnityEngine.Quaternion 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator Quaternion(VarQuaternion value) => value.Value;

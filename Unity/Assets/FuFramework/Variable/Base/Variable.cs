@@ -5,8 +5,9 @@ using FuFramework.ReferencePool.Runtime;
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// 变量。
-    /// 实现了使用引用池来优化变量的内存分配和释放，并提供统一的接口来获取变量类型、值、值类型等。
+    /// 变量基类。
+    /// 功能：
+    ///     1. 实现了使用引用池来优化变量的内存分配和释放，并提供统一的接口来获取变量类型、值、值类型。
     /// </summary>
     public abstract class Variable : IReference
     {

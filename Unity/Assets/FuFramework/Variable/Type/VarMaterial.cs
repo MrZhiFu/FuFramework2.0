@@ -4,18 +4,19 @@
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// UnityEngine.Material 变量类。
-    /// 优点：可以像正常Material变量一样使用，且底层使用引用池优化了内存。
+    /// 自定义 Material 变量类。
+    /// 功能：
+    ///     1. 可以像正常Material变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
     public sealed class VarMaterial : Variable<Material>
     {
         /// <summary>
-        /// 初始化 UnityEngine.Material 变量类的新实例。
+        /// 初始化 VarMaterial 变量类的新实例。
         /// </summary>
         public VarMaterial() { }
 
         /// <summary>
-        /// 从 UnityEngine.Material 到 UnityEngine.Material 变量类的隐式转换。
+        /// 从 UnityEngine.Material 到 VarMaterial 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator VarMaterial(Material value)
@@ -26,7 +27,7 @@ namespace FuFramework.Variable.Runtime
         }
 
         /// <summary>
-        /// 从 UnityEngine.Material 变量类到 UnityEngine.Material 的隐式转换。
+        /// 从 VarMaterial 变量类到 UnityEngine.Material 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator Material(VarMaterial value) => value.Value;

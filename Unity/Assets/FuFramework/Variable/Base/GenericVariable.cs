@@ -4,7 +4,11 @@
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// 通用变量。
+    /// 泛型变量基类。
+    /// 功能：
+    ///     1. 获取/设置变量值。
+    ///     2. 清理变量值。
+    ///     3. 转换为字符串表示。
     /// </summary>
     /// <typeparam name="T">变量类型。</typeparam>
     public abstract class Variable<T> : Variable

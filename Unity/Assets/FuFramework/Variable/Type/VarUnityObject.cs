@@ -5,18 +5,19 @@ using UnityEngine;
 namespace FuFramework.Variable.Runtime
 {
     /// <summary>
-    /// UnityEngine.Object 变量类。
-    /// 优点：可以像正常 UnityObject 变量一样使用，且底层使用引用池优化了内存。
+    /// 自定义 UnityEngine.Object 变量类。
+    /// 功能：
+    ///     1. 可以像正常 UnityObject 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
     public sealed class VarUnityObject : Variable<Object>
     {
         /// <summary>
-        /// 初始化 UnityEngine.Object 变量类的新实例。
+        /// 初始化 VarUnityObject 变量类的新实例。
         /// </summary>
         public VarUnityObject() { }
 
         /// <summary>
-        /// 从 UnityEngine.Object 到 UnityEngine.Object 变量类的隐式转换。
+        /// 从 UnityEngine.Object 到 VarUnityObject 变量类的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator VarUnityObject(Object value)
@@ -27,7 +28,7 @@ namespace FuFramework.Variable.Runtime
         }
 
         /// <summary>
-        /// 从 UnityEngine.Object 变量类到 UnityEngine.Object 的隐式转换。
+        /// 从 VarUnityObject 变量类到 UnityEngine.Object 的隐式转换。
         /// </summary>
         /// <param name="value">值。</param>
         public static implicit operator Object(VarUnityObject value) => value.Value;
