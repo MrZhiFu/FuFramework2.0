@@ -6,7 +6,8 @@ namespace FuFramework.TaskPool.Runtime
 {
     /// <summary>
     /// 任务池。
-    /// 实现原理：主要是基于任务管理的模式，通过在Update中轮询来维护任务的代理状态，从而高效地调度和管理任务。以下是实现原理说明：
+    /// 实现原理：
+    ///     主要是基于任务管理的模式，通过在Update中轮询来维护任务的代理状态，从而高效地调度和管理任务。以下是实现原理说明：
     ///
     /// m_FreeAgentStack：使用栈结构存放空闲的可用任务代理，以便快速获取和释放任务代理。栈的性质使得常见的“后进先出”操作易于实现，能够有效管理内存。
     /// m_WaitingTaskList：这是一个链表，用于存放正在等待执行的任务。这种设计允许灵活的添加和移除任务，同时保持任务的顺序。
@@ -15,7 +16,7 @@ namespace FuFramework.TaskPool.Runtime
     /// 任务调度：TaskPool 通过管理这几个集合来调度任务。例如，当有新的任务需要执行时，从 m_FreeAgentStack 中取出一个任务代理，将其添加到 m_WorkingAgentList 中，同时将其添加到 m_WaitingTaskList 中直到其完成。
     /// 资源复用：通过使用栈来管理空闲的任务代理，TaskPool 可以有效地复用任务代理，减少了频繁分配和释放内存的开销，这在需要频繁创建和销毁任务的游戏环境中尤为重要。
     ///
-    /// 运用举例：如下一些耗时的异步操作
+    /// 运用举例：如下一些耗时的异步操作，都可以使用TaskPool来管理：
     /// 1.DownloadAgent：用于服务器文件的下载代理器
     /// 2.LoadResourceAgent：用于加载本地AssetBundle资源的加载器
     /// 3.WebRequestAgent：web请求代理

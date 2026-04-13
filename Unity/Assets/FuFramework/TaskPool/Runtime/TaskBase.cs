@@ -5,6 +5,9 @@ namespace FuFramework.TaskPool.Runtime
 {
     /// <summary>
     /// 任务基类。
+    /// 功能：
+    ///     1. 提供任务的基本属性和方法。
+    ///     2. 实现引用池接口，提供任务的初始化、清理方法。
     /// </summary>
     public abstract class TaskBase : IReference
     {

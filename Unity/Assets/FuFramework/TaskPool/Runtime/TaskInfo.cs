@@ -6,6 +6,8 @@ namespace FuFramework.TaskPool.Runtime
 {
     /// <summary>
     /// 任务信息。
+    /// 功能：
+    ///     1. 提供任务的相关信息获取接口，用于外部查询，如显示在Inspector中。
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct TaskInfo
