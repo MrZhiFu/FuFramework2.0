@@ -21,7 +21,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// 获取对象池完整名称。
         /// </summary>
         public string FullName => new TypeNamePair(ObjectType, Name).ToString();
-        
+
         /// <summary>
         /// 构造函数。
         /// </summary>
@@ -30,7 +30,7 @@ namespace FuFramework.ObjectPool.Runtime
         {
             Name = name ?? string.Empty;
         }
-        
+
         #region 抽象属性
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace FuFramework.ObjectPool.Runtime
         public abstract int CanReleaseCount { get; }
 
         /// <summary>
-        /// 是否允许对象在使用时获取。
+        /// 获取对象池中的对象时，是否允许获取正在被使用的对象。一般都为false。
         /// false--对象只能在回收后才能再次被获取，即池中会存在多个同名对象;
-        /// true--对象能在未回收的状态下就能再次被获取，这样会使得池中的对象永远只有一个
+        /// true --对象能在未回收的状态下就能再次被获取，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
         /// </summary>
         public abstract bool AllowSpawnInUse { get; }
 
@@ -82,14 +82,8 @@ namespace FuFramework.ObjectPool.Runtime
         /// <summary>
         /// 对象池轮询。
         /// </summary>
-        /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        internal abstract void Update(float deltaTime, float unscaledDeltaTime);
-
-        /// <summary>
-        /// 关闭并清理对象池。
-        /// </summary>
-        internal abstract void Shutdown();
+        internal abstract void Update(float unscaledDeltaTime);
 
         /// <summary>
         /// 释放对象池中的可释放对象。
@@ -97,10 +91,9 @@ namespace FuFramework.ObjectPool.Runtime
         public abstract void Release();
 
         /// <summary>
-        /// 尝试释放对象池中的指定数量的对象。
+        /// 关闭并清理对象池。
         /// </summary>
-        /// <param name="toReleaseCount">尝试释放对象数量。</param>
-        public abstract void Release(int toReleaseCount);
+        internal abstract void OnDispose();
 
         /// <summary>
         /// 释放对象池中的所有未使用对象。

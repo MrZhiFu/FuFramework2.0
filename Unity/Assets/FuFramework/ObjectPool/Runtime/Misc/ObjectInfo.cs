@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
-    /// 对象信息。用于外部想要获取对象池中的对象信息时使用。如编辑器的Inspector面板
+    /// 对象信息。
+    /// 功能：
+    ///     1.用于外部想要获取对象池中的对象信息时使用。如编辑器的Inspector面板
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct ObjectInfo
@@ -65,12 +67,12 @@ namespace FuFramework.ObjectPool.Runtime
         // Preserve the constructor for Unity's serialization
         public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int spawnCount)
         {
-            Name = name;
-            Locked = locked;
+            Name                 = name;
+            Locked               = locked;
             CustomCanReleaseFlag = customCanReleaseFlag;
-            Priority = priority;
-            LastUseTime = lastUseTime;
-            SpawnCount = spawnCount;
+            Priority             = priority;
+            LastUseTime          = lastUseTime;
+            SpawnCount           = spawnCount;
         }
     }
 }

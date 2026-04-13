@@ -9,12 +9,10 @@ namespace FuFramework.ObjectPool.Runtime
     public sealed partial class ObjectPoolModule
     {
         /// <summary>
-        /// 具体管理T类型对象的对象池。继承于ObjectPoolBase。
+        /// 具体管理对象的对象池。
         /// 功能：
-        ///     1.单实例池 (AllowSpawnInUse = false)：不允许获取正在被使用的对象。
-        ///     2.多实例池 (AllowSpawnInUse = true)：允许获取正在被使用的对象，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
-        ///     3.允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
-        ///     4.设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
+        ///     1. 允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
+        ///     2. 设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
         public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
@@ -26,7 +24,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// 存储目标对象与其对应的内部对象的字典，key为目标对象，value为对应的内部对象.
             private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
 
-            /// 缓存当前所有可以释放的对象列表(未使用、未加锁、标记可释放).
+            /// 缓存当前所有可以释放的对象列表(未使用的、未加锁的、自定义标记为可释放的).
             private readonly List<T> m_CachedCanReleaseObjectList;
 
             /// 缓存经过筛选函数后最终决定要释放的对象列表
@@ -107,7 +105,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// 初始化对象池的新实例。
             /// </summary>
             /// <param name="name">对象池名称。</param>
-            /// <param name="allowSpawnInUse">是否允许对象被多次获取。</param>
+            /// <param name="allowSpawnInUse">是否允许对象池中对象正在使用的状态下被获取。</param>
             /// <param name="autoReleaseInterval">对象池自动释放可释放对象的间隔秒数。</param>
             /// <param name="capacity">对象池的容量。</param>
             /// <param name="expireTime">对象池对象过期秒数。</param>
@@ -131,24 +129,27 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 对象池轮询。
             /// </summary>
-            /// <param name="deltaTime">帧间隔时间。</param>
             /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-            internal override void Update(float deltaTime, float unscaledDeltaTime)
+            internal override void Update(float unscaledDeltaTime)
             {
                 m_AutoReleaseTimer += unscaledDeltaTime;
-                if (m_AutoReleaseTimer < AutoReleaseInterval) return;
-                Release();
+
+                // 每隔 AutoReleaseInterval 秒触发一次自动释放检查
+                if (m_AutoReleaseTimer >= AutoReleaseInterval)
+                {
+                    Release();
+                }
             }
 
             /// <summary>
             /// 关闭并清理对象池。
             /// </summary>
-            internal override void Shutdown()
+            internal override void OnDispose()
             {
-                foreach (var (_, internalObject) in m_TargetObjectDict)
+                foreach (var (_, obj) in m_TargetObjectDict)
                 {
-                    internalObject.Release(true);
-                    ReferencePool.Runtime.ReferencePool.Release(internalObject);
+                    obj.OnRelease();
+                    ReferencePool.Runtime.ReferencePool.Release(obj);
                 }
 
                 m_ObjectMultiDict.Clear();
@@ -158,7 +159,7 @@ namespace FuFramework.ObjectPool.Runtime
             }
 
             /// <summary>
-            /// 创建并注册一个对象。
+            /// 注册一个对象到对象池中。
             /// </summary>
             /// <param name="obj">对象。</param>
             /// <param name="spawned">对象是否提前生成。</param>
@@ -166,9 +167,9 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (obj == null) throw new FuException("[ObjectPoolModule] 要创建并注册对象不能为空.");
 
-                var internalObject = Object<T>.Create(obj, spawned);
-                m_ObjectMultiDict.Add(obj.Name, internalObject);
-                m_TargetObjectDict.Add(obj.Target, internalObject);
+                var tempObj = Object<T>.Create(obj, spawned);
+                m_ObjectMultiDict.Add(obj.Name, tempObj);
+                m_TargetObjectDict.Add(obj.Target, tempObj);
 
                 if (Count > m_Capacity)
                     Release();
@@ -185,10 +186,15 @@ namespace FuFramework.ObjectPool.Runtime
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return null;
 
-                foreach (var internalObject in objectRange)
+                foreach (var obj in objectRange)
                 {
-                    if (AllowSpawnInUse || !internalObject.IsInUse)
-                        return internalObject.Spawn();
+                    // 如果允许获取正在使用的对象，则直接获取。
+                    if (AllowSpawnInUse)
+                        return obj.Spawn();
+
+                    // 如果对象没有正在使用，则直接获取。
+                    if (!obj.IsInUse)
+                        return obj.Spawn();
                 }
 
                 return null;
@@ -212,11 +218,11 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (target == null) throw new FuException("[ObjectPoolModule] 要回收的目标对象不能为空.");
 
-                var internalObject = _GetObject(target);
-                if (internalObject == null)
+                var obj = _GetObject(target);
+                if (obj == null)
                     throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
-                internalObject.Recycle();
-                if (Count > m_Capacity && internalObject.SpawnCount <= 0)
+                obj.Recycle();
+                if (Count > m_Capacity && obj.SpawnCount <= 0)
                 {
                     Release();
                 }
@@ -242,20 +248,21 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (target == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
 
-                var internalObject = _GetObject(target);
-                if (internalObject == null) return false;
+                var obj = _GetObject(target);
+                if (obj == null) return false;
 
 
-                if (internalObject.IsInUse || internalObject.Locked || !internalObject.CustomCanReleaseFlag)
-                    return false;
+                if (obj.IsInUse) return false;
+                if (obj.Locked) return false;
+                if (!obj.CustomCanReleaseFlag) return false;
 
-                FuLogger.LogInfo($"[ObjectPoolModule] 真正释放对象池中的可释放对象 '{internalObject.Name}'");
+                FuLogger.LogInfo($"[ObjectPoolModule] 真正释放对象池中的可释放对象 '{obj.Name}'");
 
-                m_ObjectMultiDict.Remove(internalObject.Name, internalObject);
-                m_TargetObjectDict.Remove(internalObject.Peek().Target);
+                m_ObjectMultiDict.Remove(obj.Name, obj);
+                m_TargetObjectDict.Remove(obj.TargetObject.Target);
 
-                internalObject.Release(false);
-                ReferencePool.Runtime.ReferencePool.Release(internalObject);
+                obj.OnRelease();
+                ReferencePool.Runtime.ReferencePool.Release(obj);
                 return true;
             }
 
@@ -266,15 +273,6 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 var overCapacity = Count - m_Capacity;
                 Release(overCapacity, m_DefaultReleaseObjectFilterCallback);
-            }
-
-            /// <summary>
-            /// 释放对象池中的可释放对象。
-            /// </summary>
-            /// <param name="toReleaseCount">尝试释放对象数量。</param>
-            public override void Release(int toReleaseCount)
-            {
-                Release(toReleaseCount, m_DefaultReleaseObjectFilterCallback);
             }
 
             /// <summary>
@@ -308,7 +306,7 @@ namespace FuFramework.ObjectPool.Runtime
 
                 // 重置计时器
                 m_AutoReleaseTimer = 0f;
-                
+
                 // 获取所有可释放的对象
                 _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
                 FuLogger.LogInfo($"[ObjectPoolModule] 尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
@@ -344,20 +342,23 @@ namespace FuFramework.ObjectPool.Runtime
             public bool CanSpawn() => CanSpawn(string.Empty);
 
             /// <summary>
-            /// 检查对象是否存在。
+            /// 检查对象是否可生成。
             /// </summary>
             /// <param name="name">对象名称。</param>
-            /// <returns>要检查的对象是否存在。</returns>
+            /// <returns>要检查的对象是否可生成。</returns>
             public bool CanSpawn(string name)
             {
                 if (name == null) throw new FuException("[ObjectPoolModule] 对象名称不能为空.");
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return false;
 
-                foreach (var internalObject in objectRange)
+                foreach (var obj in objectRange)
                 {
-                    if (AllowSpawnInUse || !internalObject.IsInUse)
-                        return true;
+                    // 如果允许多次获取，则直接返回true。
+                    if (AllowSpawnInUse) return true;
+
+                    // 如果对象没有正在使用，则直接返回true。
+                    if (!obj.IsInUse) return true;
                 }
 
                 return false;
@@ -383,10 +384,10 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (target == null) throw new FuException("[ObjectPoolModule] 对象不能为空.");
 
-                var internalObject = _GetObject(target);
-                if (internalObject == null)
-                    throw new FuException($"[ObjectPoolModule] 在对象池“{ new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
-                internalObject.Locked = locked;
+                var obj = _GetObject(target);
+                if (obj == null)
+                    throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
+                obj.Locked = locked;
             }
 
             /// <summary>
@@ -409,11 +410,11 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (target == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
 
-                var internalObject = _GetObject(target);
-                if (internalObject == null)
+                var obj = _GetObject(target);
+                if (obj == null)
                     throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
 
-                internalObject.Priority = priority;
+                obj.Priority = priority;
             }
 
             /// <summary>
@@ -425,10 +426,10 @@ namespace FuFramework.ObjectPool.Runtime
                 var results = new List<ObjectInfo>();
                 foreach (var (_, objectRang) in m_ObjectMultiDict)
                 {
-                    foreach (var internalObject in objectRang)
+                    foreach (var obj in objectRang)
                     {
-                        results.Add(new ObjectInfo(internalObject.Name, internalObject.Locked, internalObject.CustomCanReleaseFlag,
-                                                   internalObject.Priority, internalObject.LastUseTime, internalObject.SpawnCount));
+                        results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanReleaseFlag,
+                                                   obj.Priority, obj.LastUseTime, obj.SpawnCount));
                     }
                 }
 
@@ -455,12 +456,15 @@ namespace FuFramework.ObjectPool.Runtime
                 if (results == null) throw new FuException("[ObjectPoolModule] 结果列表不能为空.");
 
                 results.Clear();
-                foreach (var (_, internalObject) in m_TargetObjectDict)
+                foreach (var (_, obj) in m_TargetObjectDict)
                 {
-                    if (internalObject.IsInUse || internalObject.Locked || !internalObject.CustomCanReleaseFlag)
+                    // 如果对象正在使用中，或者被加锁，或者自定义标记为不能被释放，则跳过。
+                    if (obj.IsInUse || obj.Locked || !obj.CustomCanReleaseFlag)
+                    {
                         continue;
+                    }
 
-                    results.Add(internalObject.Peek());
+                    results.Add(obj.TargetObject);
                 }
             }
 

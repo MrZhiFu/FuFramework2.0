@@ -16,40 +16,40 @@ namespace FuFramework.ObjectPool.Runtime
         private sealed class Object<T> : IReference where T : ObjectBase
         {
             /// 对象池内的目标对象
-            private T m_Object;
+            internal T TargetObject { get; private set; }
 
             /// <summary>
             /// 获取对象名称。
             /// </summary>
-            public string Name => m_Object.Name;
+            public string Name => TargetObject.Name;
 
             /// <summary>
-            /// 获取对象是否被加锁。
+            /// 对象是否被加锁(加锁的对象不会被释放)。
             /// </summary>
             public bool Locked
             {
-                get => m_Object.Locked;
-                internal set => m_Object.Locked = value;
+                get => TargetObject.Locked;
+                internal set => TargetObject.Locked = value;
             }
 
             /// <summary>
-            /// 获取对象的优先级。
+            /// 对象的优先级。
             /// </summary>
             public int Priority
             {
-                get => m_Object.Priority;
-                internal set => m_Object.Priority = value;
+                get => TargetObject.Priority;
+                internal set => TargetObject.Priority = value;
             }
 
             /// <summary>
             /// 获取自定义是否可释放标记。
             /// </summary>
-            public bool CustomCanReleaseFlag => m_Object.CustomCanReleaseFlag;
+            public bool CustomCanReleaseFlag => TargetObject.CustomCanReleaseFlag;
 
             /// <summary>
             /// 获取对象上次使用时间。
             /// </summary>
-            public DateTime LastUseTime => m_Object.LastUseTime;
+            public DateTime LastUseTime => TargetObject.LastUseTime;
 
             /// <summary>
             /// 获取对象是否正在使用。
@@ -57,7 +57,7 @@ namespace FuFramework.ObjectPool.Runtime
             public bool IsInUse => SpawnCount > 0;
 
             /// <summary>
-            /// 获取对象的生成计数。
+            /// 对象的生成计数。
             /// </summary>
             public int SpawnCount { get; private set; }
 
@@ -71,14 +71,14 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (obj == null) throw new FuException("[ObjectPoolModule] 要创建的对象不能为空.");
 
-                var internalObject = ReferencePool.Runtime.ReferencePool.Acquire<Object<T>>();
-                internalObject.m_Object     = obj;
-                internalObject.SpawnCount = spawned ? 1 : 0;
-                
-                if (spawned) 
+                var tempObj = ReferencePool.Runtime.ReferencePool.Acquire<Object<T>>();
+                tempObj.TargetObject = obj;
+                tempObj.SpawnCount   = spawned ? 1 : 0;
+
+                if (spawned)
                     obj.OnSpawn();
 
-                return internalObject;
+                return tempObj;
             }
 
             /// <summary>
@@ -86,15 +86,9 @@ namespace FuFramework.ObjectPool.Runtime
             /// </summary>
             public void Clear()
             {
-                m_Object     = null;
-                SpawnCount = 0;
+                TargetObject = null;
+                SpawnCount   = 0;
             }
-
-            /// <summary>
-            /// 查看对象。
-            /// </summary>
-            /// <returns>对象。</returns>
-            public T Peek() => m_Object;
 
             /// <summary>
             /// 获取已存在的对象。
@@ -103,9 +97,9 @@ namespace FuFramework.ObjectPool.Runtime
             public T Spawn()
             {
                 SpawnCount++;
-                m_Object.LastUseTime = DateTime.UtcNow;
-                m_Object.OnSpawn();
-                return m_Object;
+                TargetObject.LastUseTime = DateTime.UtcNow;
+                TargetObject.OnSpawn();
+                return TargetObject;
             }
 
             /// <summary>
@@ -113,8 +107,8 @@ namespace FuFramework.ObjectPool.Runtime
             /// </summary>
             public void Recycle()
             {
-                m_Object.OnRecycle();
-                m_Object.LastUseTime = DateTime.UtcNow;
+                TargetObject.OnRecycle();
+                TargetObject.LastUseTime = DateTime.UtcNow;
                 SpawnCount--;
                 if (SpawnCount < 0)
                     throw new FuException($"[ObjectPoolModule] 对象 '{Name}' 生成次数已经小于 0, 回收失败.");
@@ -123,11 +117,10 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 释放对象。
             /// </summary>
-            /// <param name="isShutdown">是否是销毁对象池时触发的释放。</param>
-            public void Release(bool isShutdown)
+            public void OnRelease()
             {
-                m_Object.Release(isShutdown);
-                ReferencePool.Runtime.ReferencePool.Release(m_Object);
+                TargetObject.OnRelease();
+                ReferencePool.Runtime.ReferencePool.Release(TargetObject);
             }
         }
     }

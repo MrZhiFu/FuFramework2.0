@@ -8,9 +8,10 @@ namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
     /// 对象池管理模块。
+    /// 
+    /// 目标：通过对象池管理 Unity端的GameObject的创建、销毁和复用，减少实例化(Instantiate)和销毁(Destroy)的开销。
     /// 功能：
-    ///     1. 管理 Unity端的GameObject的创建、销毁和复用，减少实例化(Instantiate)和销毁(Destroy)的开销。
-    ///     2. 提供对象池的创建、释放和销毁接口。
+    ///     1. 提供对象池的创建、获取、释放和销毁接口。
     /// </summary>
     public sealed partial class ObjectPoolModule : FuModule
     {
@@ -62,7 +63,7 @@ namespace FuFramework.ObjectPool.Runtime
         {
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
-                objPool.Update(deltaTime, unscaledDeltaTime);
+                objPool.Update(unscaledDeltaTime);
             }
         }
 
@@ -73,7 +74,7 @@ namespace FuFramework.ObjectPool.Runtime
         {
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
-                objPool.Shutdown();
+                objPool.OnDispose();
             }
 
             m_ObjPoolDict.Clear();
@@ -827,7 +828,7 @@ namespace FuFramework.ObjectPool.Runtime
         #region 释放对象池
 
         /// <summary>
-        /// 释放对象池中的可释放对象。
+        /// 释放所有对象池中的所有可释放对象。
         /// </summary>
         public void Release()
         {
@@ -935,7 +936,7 @@ namespace FuFramework.ObjectPool.Runtime
         private bool _DestroyObjectPool(TypeNamePair typeNamePair)
         {
             if (!m_ObjPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
-            objectPool.Shutdown();
+            objectPool.OnDispose();
             return m_ObjPoolDict.Remove(typeNamePair);
         }
 

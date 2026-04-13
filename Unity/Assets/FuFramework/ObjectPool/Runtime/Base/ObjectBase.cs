@@ -30,8 +30,8 @@ namespace FuFramework.ObjectPool.Runtime
 
         /// 自定义是否可释放标记。。默认为true。
         public virtual bool CustomCanReleaseFlag => true;
-        
-        
+
+
         /// <summary>
         /// 初始化对象基类。
         /// </summary>
@@ -100,9 +100,8 @@ namespace FuFramework.ObjectPool.Runtime
         protected internal virtual void OnRecycle() { }
 
         /// <summary>
-        /// 释放对象。
+        /// 释放对象时的事件。
         /// </summary>
-        /// <param name="isShutdown">是否是销毁对象池时触发。</param>
-        protected internal abstract void Release(bool isShutdown);
+        protected internal abstract void OnRelease();
     }
 }
