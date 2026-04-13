@@ -103,6 +103,7 @@ namespace FuFramework.Network.Runtime
             
             ReqDictionary.Clear();
             RespDictionary.Clear();
+            
             var types = assembly.GetTypes();
             // StringBuilder stringBuilder = new StringBuilder(1024);
             foreach (var type in types)

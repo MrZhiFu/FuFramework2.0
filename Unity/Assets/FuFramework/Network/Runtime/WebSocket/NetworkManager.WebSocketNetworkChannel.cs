@@ -41,7 +41,6 @@ namespace FuFramework.Network.Runtime
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
                     NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
                     return;
-
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
@@ -84,7 +83,6 @@ namespace FuFramework.Network.Runtime
                             var socketException = exception as SocketException;
                             NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                             return false;
-
                         }
                         finally
                         {
@@ -97,7 +95,6 @@ namespace FuFramework.Network.Runtime
                             if (NetworkChannelError == null) throw new FuException(errorMessage);
                             NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
                             return false;
-
                         }
 
                         PSendState.Reset();
@@ -106,7 +103,7 @@ namespace FuFramework.Network.Runtime
                     return true;
                 }
             }
-            
+
             /// <summary>
             /// 处理发送消息对象
             /// </summary>
@@ -161,7 +158,7 @@ namespace FuFramework.Network.Runtime
                     NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
-            
+
             private void ConnectCallback(ConnectState connectState)
             {
                 PIsConnecting = false;
@@ -182,10 +179,9 @@ namespace FuFramework.Network.Runtime
                     var socketException = exception as SocketException;
                     NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     return;
-
                 }
 
-                PSentPacketCount = 0;
+                PSentPacketCount     = 0;
                 PReceivedPacketCount = 0;
 
                 lock (PSendPacketPool) PSendPacketPool.Clear();

@@ -39,7 +39,7 @@ namespace FuFramework.Network.Runtime
         {
             var networkConnectedEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<NetworkConnectedEventArgs>();
             networkConnectedEventArgs.NetworkChannel = networkChannel;
-            networkConnectedEventArgs.UserData = userData;
+            networkConnectedEventArgs.UserData       = userData;
             return networkConnectedEventArgs;
         }
 
@@ -49,7 +49,7 @@ namespace FuFramework.Network.Runtime
         public override void Clear()
         {
             NetworkChannel = null;
-            UserData = null;
+            UserData       = null;
         }
     }
 }

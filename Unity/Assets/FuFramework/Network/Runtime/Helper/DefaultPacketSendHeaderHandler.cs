@@ -40,7 +40,7 @@ namespace FuFramework.Network.Runtime
         {
             // 4 + 1 + 1 + 4 + 4
             PacketHeaderLength = NetPacketLength + NetOperationTypeLength + NetZipFlagLength + NetUniqueIdLength + NetCmdIdLength;
-            m_CachedByte = new byte[PacketHeaderLength];
+            m_CachedByte       = new byte[PacketHeaderLength];
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace FuFramework.Network.Runtime
         /// </summary>
         public virtual uint LimitCompressLength => 512;
 
-        private int m_Offset;
+        private          int    m_Offset;
         private readonly byte[] m_CachedByte;
 
         /// <summary>
@@ -81,15 +81,15 @@ namespace FuFramework.Network.Runtime
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public bool Handler<T>(T messageObject, IMessageCompressHandler messageCompressHandler, MemoryStream destination,
-            out byte[] messageBodyBuffer) where T : MessageObject
+                               out byte[] messageBodyBuffer) where T : MessageObject
         {
             m_Offset = 0;
             var messageType = messageObject.GetType();
-            Id = ProtoMessageIdHandler.GetReqMessageIdByType(messageType);
+            Id                = ProtoMessageIdHandler.GetReqMessageIdByType(messageType);
             messageBodyBuffer = SerializerHelper.Serialize(messageObject);
             if (messageCompressHandler != null && messageBodyBuffer.Length > LimitCompressLength)
             {
-                IsZip = true;
+                IsZip             = true;
                 messageBodyBuffer = messageCompressHandler.Handler(messageBodyBuffer);
             }
             else
@@ -100,11 +100,11 @@ namespace FuFramework.Network.Runtime
             var messageLength = messageBodyBuffer.Length;
             PacketLength = (uint)(PacketHeaderLength + messageLength);
 
-            m_CachedByte.WriteUInt(PacketLength, ref m_Offset); // 数据包总大小
+            m_CachedByte.WriteUInt(PacketLength, ref m_Offset);                                                   // 数据包总大小
             m_CachedByte.WriteByte((byte)(ProtoMessageIdHandler.IsHeartbeat(messageType) ? 1 : 4), ref m_Offset); // 消息操作类型
-            m_CachedByte.WriteByte((byte)(IsZip ? 1 : 0), ref m_Offset); // 消息压缩标记
-            m_CachedByte.WriteInt(messageObject.UniqueId, ref m_Offset); // 消息编号
-            m_CachedByte.WriteInt(Id, ref m_Offset); // 消息ID
+            m_CachedByte.WriteByte((byte)(IsZip ? 1 : 0),                                          ref m_Offset); // 消息压缩标记
+            m_CachedByte.WriteInt(messageObject.UniqueId, ref m_Offset);                                          // 消息编号
+            m_CachedByte.WriteInt(Id,                     ref m_Offset);                                          // 消息ID
             destination.Write(m_CachedByte, 0, PacketHeaderLength);
             return true;
         }

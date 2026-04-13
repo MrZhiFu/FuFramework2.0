@@ -69,7 +69,7 @@ namespace FuFramework.Network.Runtime
 
 
             public IAsyncResult BeginSend(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mSendCallback,
-                INetworkSocket mSocket)
+                                          INetworkSocket mSocket)
             {
                 return m_Socket.BeginSend(getBuffer, streamPosition, streamLength, none, mSendCallback, mSocket);
             }
@@ -91,7 +91,7 @@ namespace FuFramework.Network.Runtime
             }
 
             public void BeginReceive(byte[] getBuffer, int streamPosition, int streamLength, SocketFlags none, AsyncCallback mReceiveCallback,
-                INetworkSocket mSocket)
+                                     INetworkSocket mSocket)
             {
                 m_Socket.BeginReceive(getBuffer, streamPosition, streamLength, none, mReceiveCallback, mSocket);
             }

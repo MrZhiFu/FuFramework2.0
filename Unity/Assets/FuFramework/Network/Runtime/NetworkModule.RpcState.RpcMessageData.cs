@@ -9,6 +9,9 @@ namespace FuFramework.Network.Runtime
     {
         public partial class RpcState
         {
+            /// <summary>
+            /// RPC 消息数据对象
+            /// </summary>
             internal sealed class RpcMessageData : IDisposable
             {
                 /// <summary>
@@ -62,7 +65,6 @@ namespace FuFramework.Network.Runtime
                     if (ElapseTime < Timeout) return false;
                     m_Tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
                     return true;
-
                 }
 
                 /// <summary>
@@ -79,11 +81,11 @@ namespace FuFramework.Network.Runtime
 
                 private RpcMessageData(IRequestMessage requestMessage, int timeout)
                 {
-                    CreatedTime = Utility.Time.ClientNow();
+                    CreatedTime    = Utility.Time.ClientNow();
                     RequestMessage = requestMessage;
-                    Timeout = timeout;
-                    UniqueId = ((MessageObject)requestMessage).UniqueId;
-                    m_Tcs = new TaskCompletionSource<IResponseMessage>();
+                    Timeout        = timeout;
+                    UniqueId       = ((MessageObject)requestMessage).UniqueId;
+                    m_Tcs          = new TaskCompletionSource<IResponseMessage>();
                 }
 
                 private readonly TaskCompletionSource<IResponseMessage> m_Tcs;

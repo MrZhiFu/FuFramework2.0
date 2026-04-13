@@ -7,12 +7,15 @@ namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkModule
     {
+        /// <summary>
+        /// 网络数据接收状态
+        /// </summary>
         public sealed class ReceiveState : IDisposable
         {
-            public const int DefaultBufferLength = 1024 * 64;
-            public const int PacketHeaderLength = 14;
-            private bool m_disposed = false;
-            
+            public const int  DefaultBufferLength = 1024 * 64;
+            public const int  PacketHeaderLength  = 14;
+            private      bool m_disposed          = false;
+
             public MemoryStream Stream { get; private set; } = new(DefaultBufferLength);
 
             /// <summary>
@@ -54,7 +57,7 @@ namespace FuFramework.Network.Runtime
                 Stream.SetLength(targetLength);
 
                 // 发现内容长度为空.说明是个空消息或者内容是默认值.
-                IsEmptyBody = targetLength == 0;
+                IsEmptyBody  = targetLength == 0;
                 PacketHeader = packetHeader;
             }
         }

@@ -10,8 +10,8 @@ namespace FuFramework.Network.Runtime
         /// <summary>
         /// TCP 网络频道。
         /// 功能：
-        /// 1. 实现TCP网络通讯功能。
-        /// 2. 实现消息的发送和接收。
+        ///     1. 实现TCP网络通讯功能。
+        ///     2. 实现消息的发送和接收。
         /// </summary>
         private sealed class SystemTcpNetworkChannel : NetworkChannelBase
         {

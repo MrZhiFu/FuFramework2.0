@@ -10,10 +10,17 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.Network.Runtime
 {
     /// <summary>
-    /// 默认网络频道帮助器
+    /// 默认网络频道帮助器。
+    /// 功能：
+    ///     1. 初始化网络频道帮助器。
+    ///     2. 反射注册包和包处理函数。
+    ///     3. 发送默认的包和包处理函数。
     /// </summary>
     public class DefaultNetworkChannelHelper : INetworkChannelHelper, IReference
     {
+        /// <summary>
+        /// 网络频道
+        /// </summary>
         private INetworkChannel m_NetworkChannel;
 
         /// <summary>

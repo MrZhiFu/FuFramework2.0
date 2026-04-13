@@ -6,7 +6,6 @@ namespace FuFramework.Network.Runtime
     /// <summary>
     /// 网络连接关闭事件。
     /// </summary>
-    
     public sealed class NetworkClosedEventArgs : GameEventArgs
     {
         /// <summary>

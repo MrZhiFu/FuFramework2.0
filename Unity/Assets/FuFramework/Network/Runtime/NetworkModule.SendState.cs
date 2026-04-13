@@ -6,10 +6,13 @@ namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkModule
     {
+        /// <summary>
+        /// 消息发送状态
+        /// </summary>
         public sealed class SendState : IDisposable
         {
-            private const int DefaultBufferLength = 1024 * 64;
-            private bool m_Disposed;
+            private const int  DefaultBufferLength = 1024 * 64;
+            private       bool m_Disposed;
 
             public MemoryStream Stream { get; private set; } = new(DefaultBufferLength);
 

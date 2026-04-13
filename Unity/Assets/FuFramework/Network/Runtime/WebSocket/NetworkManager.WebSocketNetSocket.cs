@@ -22,17 +22,18 @@ namespace FuFramework.Network.Runtime
             private bool m_isConnecting;
 
             private TaskCompletionSource<bool> m_connectTask = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
             private readonly Action<byte[]> m_onReceiveAction;
             private readonly Action<string> m_onCloseAction;
 
             public WebSocketNetSocket(string url, Action<byte[]> onReceiveAction, Action<string> onCloseAction)
             {
-                m_client = new WebSocket(url);
-                m_onReceiveAction = onReceiveAction;
-                m_onCloseAction = onCloseAction;
-                m_client.OnOpen += OnOpen;
-                m_client.OnError += OnError;
-                m_client.OnClose += OnClose;
+                m_client           =  new WebSocket(url);
+                m_onReceiveAction  =  onReceiveAction;
+                m_onCloseAction    =  onCloseAction;
+                m_client.OnOpen    += OnOpen;
+                m_client.OnError   += OnError;
+                m_client.OnClose   += OnClose;
                 m_client.OnMessage += OnMessage;
             }
 
@@ -72,7 +73,7 @@ namespace FuFramework.Network.Runtime
             public async Task ConnectAsync()
             {
                 m_isConnecting = true;
-                m_connectTask = new TaskCompletionSource<bool>();
+                m_connectTask  = new TaskCompletionSource<bool>();
                 m_client.ConnectAsync();
                 await m_connectTask.Task;
             }
@@ -88,7 +89,7 @@ namespace FuFramework.Network.Runtime
             public EndPoint RemoteEndPoint => null;
 
             public int ReceiveBufferSize { get; set; }
-            public int SendBufferSize { get; set; }
+            public int SendBufferSize    { get; set; }
 
             public void Shutdown()
             {

@@ -8,6 +8,10 @@ namespace FuFramework.Network.Runtime
 {
     /// <summary>
     /// 网络管理模块。
+    /// 功能：
+    ///     1. 管理网络频道。
+    ///     2. 网络事件广播。
+    ///     2. 驱动网络频道Update轮询。
     /// </summary>
     public sealed partial class NetworkModule : FuModule
     {
@@ -41,9 +45,9 @@ namespace FuFramework.Network.Runtime
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            foreach (var networkChannel in m_NetworkChannelDict)
+            foreach (var networkChannel in m_NetworkChannelDict.Values)
             {
-                networkChannel.Value.Update(deltaTime, unscaledDeltaTime);
+                networkChannel.Update(deltaTime, unscaledDeltaTime);
             }
         }
 

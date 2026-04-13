@@ -44,7 +44,7 @@ namespace FuFramework.Network.Runtime
             if (source is not byte[] reader) return false;
 
             // packetLength
-            int offset = 0;
+            int offset       = 0;
             var packetLength = reader.ReadUInt(ref offset); //4
             PacketLength = packetLength;
             // operationType

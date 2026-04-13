@@ -9,6 +9,9 @@ namespace FuFramework.Network.Runtime
 {
     public sealed partial class NetworkModule
     {
+        /// <summary>
+        /// RPC状态类
+        /// </summary>
         public partial class RpcState : IDisposable
         {
             /// <summary>
@@ -25,7 +28,9 @@ namespace FuFramework.Network.Runtime
             private EventHandler<MessageObject> m_rpcEndHandler;
             private EventHandler<MessageObject> m_rpcErrorHandler;
             private EventHandler<MessageObject> m_rpcErrorCodeHandler;
+
             private readonly int m_rpcTimeout;
+
             private bool m_disposed;
 
             public RpcState(int timeout)
@@ -44,7 +49,7 @@ namespace FuFramework.Network.Runtime
                 m_removeReplyHandlingObjectIds.Clear();
                 m_disposed = true;
             }
-            
+
             /// <summary>
             /// 处理RPC回复消息。
             /// 此方法用于处理接收到的RPC回复消息，并触发相应的结束处理程序。
@@ -55,7 +60,7 @@ namespace FuFramework.Network.Runtime
             {
                 if (!message.GetType().IsImplWithInterface(typeof(IResponseMessage))) return false;
                 if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
-                
+
                 try
                 {
                     var responseMessage = message as IResponseMessage;
@@ -72,7 +77,6 @@ namespace FuFramework.Network.Runtime
                 }
 
                 return true;
-
             }
 
             /// <summary>
@@ -145,7 +149,6 @@ namespace FuFramework.Network.Runtime
             /// 设置RPC错误Code的处理函数
             /// </summary>
             /// <param name="handler">处理函数</param>
-            
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -156,7 +159,6 @@ namespace FuFramework.Network.Runtime
             /// 设置RPC错误的处理函数
             /// </summary>
             /// <param name="handler">处理函数</param>
-            
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -167,7 +169,6 @@ namespace FuFramework.Network.Runtime
             /// 设置RPC开始的处理函数
             /// </summary>
             /// <param name="handler">处理函数</param>
-            
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));
@@ -178,7 +179,6 @@ namespace FuFramework.Network.Runtime
             /// 设置RPC结束的处理函数
             /// </summary>
             /// <param name="handler">处理函数</param>
-            
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
                 FuGuard.NotNull(handler, nameof(handler));

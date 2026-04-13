@@ -21,7 +21,7 @@ namespace FuFramework.Network.Runtime
 
             public ConnectState(INetworkSocket socket, object userData)
             {
-                Socket = socket;
+                Socket   = socket;
                 UserData = userData;
             }
         }

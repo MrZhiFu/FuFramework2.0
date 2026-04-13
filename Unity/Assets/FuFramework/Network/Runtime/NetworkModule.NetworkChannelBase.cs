@@ -27,8 +27,8 @@ namespace FuFramework.Network.Runtime
             private const int DefaultMissHeartBeatCountByClose = 10;
 
             protected readonly FuLinkedList<MessageObject> PSendPacketPool;
-            protected readonly INetworkChannelHelper PNetworkChannelHelper;
-            protected EAddressFamily PEAddressFamily;
+            protected readonly INetworkChannelHelper       PNetworkChannelHelper;
+            protected          EAddressFamily              PEAddressFamily;
 
             /// <summary>
             /// 当收到数据包时是否重置心跳流逝时长
@@ -48,22 +48,22 @@ namespace FuFramework.Network.Runtime
             /// <summary>
             /// 发送消息ID忽略列表
             /// </summary>
-            protected List<int> IgnoreSendIds = new List<int>();
+            protected List<int> IgnoreSendIds = new();
 
             /// <summary>
             /// 接收消息ID忽略列表
             /// </summary>
-            protected List<int> IgnoreReceiveIds = new List<int>();
+            protected List<int> IgnoreReceiveIds = new();
 
             /// <summary>
             /// 网络Socket 对象
             /// </summary>
             protected INetworkSocket PSocket;
 
-            protected readonly SendState PSendState;
-            protected readonly ReceiveState PReceiveState;
+            protected readonly SendState      PSendState;
+            protected readonly ReceiveState   PReceiveState;
             protected readonly HeartBeatState PHeartBeatState;
-            protected readonly RpcState PRpcState;
+            protected readonly RpcState       PRpcState;
 
             /// <summary>
             /// 是否验证地址
@@ -107,18 +107,18 @@ namespace FuFramework.Network.Runtime
                 }
             }
 
-            private IPacketSendHeaderHandler m_PacketSendHeaderHandler;
-            private IPacketSendBodyHandler m_PacketSendBodyHandler;
+            private IPacketSendHeaderHandler    m_PacketSendHeaderHandler;
+            private IPacketSendBodyHandler      m_PacketSendBodyHandler;
             private IPacketReceiveHeaderHandler m_PacketReceiveHeaderHandler;
-            private IPacketReceiveBodyHandler m_PacketReceiveBodyHandler;
-            private IPacketHeartBeatHandler m_PacketHeartBeatHandler;
+            private IPacketReceiveBodyHandler   m_PacketReceiveBodyHandler;
+            private IPacketHeartBeatHandler     m_PacketHeartBeatHandler;
 
             protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new();
 
-            public Action<NetworkChannelBase, object> NetworkChannelConnected;
-            public Action<NetworkChannelBase> NetworkChannelClosed;
-            public Action<NetworkChannelBase, bool> NetworkChannelActiveChanged;
-            public Action<NetworkChannelBase, int> NetworkChannelMissHeartBeat;
+            public Action<NetworkChannelBase, object>                                NetworkChannelConnected;
+            public Action<NetworkChannelBase>                                        NetworkChannelClosed;
+            public Action<NetworkChannelBase, bool>                                  NetworkChannelActiveChanged;
+            public Action<NetworkChannelBase, int>                                   NetworkChannelMissHeartBeat;
             public Action<NetworkChannelBase, NetworkErrorCode, SocketError, string> NetworkChannelError;
 
             /// <summary>
@@ -129,27 +129,27 @@ namespace FuFramework.Network.Runtime
             /// <param name="rpcTimeout">RPC超时时间</param>
             public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
             {
-                Name = name ?? string.Empty;
-                PSendPacketPool = new FuLinkedList<MessageObject>();
-                PNetworkChannelHelper = networkChannelHelper;
-                PEAddressFamily = EAddressFamily.Unknown;
+                Name                                          = name ?? string.Empty;
+                PSendPacketPool                               = new FuLinkedList<MessageObject>();
+                PNetworkChannelHelper                         = networkChannelHelper;
+                PEAddressFamily                               = EAddressFamily.Unknown;
                 PResetHeartBeatElapseSecondsWhenReceivePacket = false;
-                PHeartBeatInterval = DefaultHeartBeatInterval;
-                MissHeartBeatCountByClose = DefaultMissHeartBeatCountByClose;
-                PSocket = null;
-                PSendState = new SendState();
-                PReceiveState = new ReceiveState();
-                PHeartBeatState = new HeartBeatState();
-                PRpcState = new RpcState(rpcTimeout);
-                PSentPacketCount = 0;
-                PReceivedPacketCount = 0;
-                PActive = false;
-                PIsConnecting = false;
-                m_Disposed = false;
-                NetworkChannelConnected = null;
-                NetworkChannelClosed = null;
-                NetworkChannelMissHeartBeat = null;
-                NetworkChannelError = null;
+                PHeartBeatInterval                            = DefaultHeartBeatInterval;
+                MissHeartBeatCountByClose                     = DefaultMissHeartBeatCountByClose;
+                PSocket                                       = null;
+                PSendState                                    = new SendState();
+                PReceiveState                                 = new ReceiveState();
+                PHeartBeatState                               = new HeartBeatState();
+                PRpcState                                     = new RpcState(rpcTimeout);
+                PSentPacketCount                              = 0;
+                PReceivedPacketCount                          = 0;
+                PActive                                       = false;
+                PIsConnecting                                 = false;
+                m_Disposed                                    = false;
+                NetworkChannelConnected                       = null;
+                NetworkChannelClosed                          = null;
+                NetworkChannelMissHeartBeat                   = null;
+                NetworkChannelError                           = null;
 
                 networkChannelHelper.Initialize(this);
             }
@@ -290,7 +290,7 @@ namespace FuFramework.Network.Runtime
 
                 ProcessSend();
                 ProcessReceive();
-                
+
                 if (PSocket == null || !PActive) return;
 
                 ProcessHeartBeat(unscaledDeltaTime);
@@ -345,7 +345,7 @@ namespace FuFramework.Network.Runtime
             private void ProcessHeartBeat(float unscaledDeltaTime)
             {
                 if (PHeartBeatInterval <= 0f) return;
-                var sendHeartBeat = false;
+                var sendHeartBeat      = false;
                 var missHeartBeatCount = 0;
                 lock (PHeartBeatState)
                 {
@@ -354,8 +354,8 @@ namespace FuFramework.Network.Runtime
                     PHeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
                     if (PHeartBeatState.HeartBeatElapseSeconds >= PHeartBeatInterval)
                     {
-                        sendHeartBeat = true;
-                        missHeartBeatCount = PHeartBeatState.MissHeartBeatCount;
+                        sendHeartBeat                          = true;
+                        missHeartBeatCount                     = PHeartBeatState.MissHeartBeatCount;
                         PHeartBeatState.HeartBeatElapseSeconds = 0f;
                         PHeartBeatState.MissHeartBeatCount++;
                     }
@@ -581,7 +581,6 @@ namespace FuFramework.Network.Runtime
                             if (NetworkChannelError == null) throw new FuException(errorMessage);
                             NetworkChannelError(this, NetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
                             return;
-
                     }
                 }
 
@@ -599,7 +598,7 @@ namespace FuFramework.Network.Runtime
                 {
                     if (PSocket == null) return;
                     PActive = false;
-                    
+
                     try
                     {
                         PSocket.Shutdown();
@@ -615,7 +614,7 @@ namespace FuFramework.Network.Runtime
                         NetworkChannelClosed?.Invoke(this);
                     }
 
-                    PSentPacketCount = 0;
+                    PSentPacketCount     = 0;
                     PReceivedPacketCount = 0;
 
                     lock (PSendPacketPool) PSendPacketPool.Clear();
@@ -653,7 +652,6 @@ namespace FuFramework.Network.Runtime
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
                     NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
-
                 }
 
                 if (!PActive)
@@ -662,7 +660,6 @@ namespace FuFramework.Network.Runtime
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
                     NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
-
                 }
 
                 if (messageObject == null)
@@ -671,7 +668,6 @@ namespace FuFramework.Network.Runtime
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
                     NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
-
                 }
 
                 lock (PSendPacketPool)
@@ -739,10 +735,10 @@ namespace FuFramework.Network.Runtime
                 lock (PSendPacketPool)
                 {
                     if (PSendState.Stream.Length > 0 || PSendPacketPool.Count <= 0) return false;
-                    
+
                     while (PSendPacketPool.First != null)
                     {
-                        var messageObject = PSendPacketPool.First.Value;
+                        var  messageObject = PSendPacketPool.First.Value;
                         bool serializeResult;
                         try
                         {
@@ -756,7 +752,6 @@ namespace FuFramework.Network.Runtime
                             var socketException = exception as SocketException;
                             NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                             return false;
-
                         }
                         finally
                         {
@@ -807,7 +802,7 @@ namespace FuFramework.Network.Runtime
             /// <param name="receiveIds">接收列表</param>
             public void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds)
             {
-                IgnoreSendIds = sendIds;
+                IgnoreSendIds    = sendIds;
                 IgnoreReceiveIds = receiveIds;
             }
         }

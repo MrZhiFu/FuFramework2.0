@@ -12,7 +12,10 @@ namespace FuFramework.Network.Runtime
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageHandlerAttribute : Attribute
     {
-        public const BindingFlags Flags = BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
+        public const BindingFlags Flags = BindingFlags.Default   |
+                                          BindingFlags.Public    |
+                                          BindingFlags.NonPublic |
+                                          BindingFlags.Instance  |
                                           BindingFlags.Static;
 
         /// <summary>
@@ -96,7 +99,7 @@ namespace FuFramework.Network.Runtime
         /// <exception cref="ArgumentException"></exception>
         internal bool Add(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(MessageType, nameof(MessageType));
+            FuGuard.NotNull(MessageType,    nameof(MessageType));
             FuGuard.NotNull(messageHandler, nameof(messageHandler));
             m_MessageHandler = messageHandler;
             var target = messageHandler.GetType();
@@ -129,7 +132,7 @@ namespace FuFramework.Network.Runtime
         /// <exception cref="ArgumentException"></exception>
         internal bool Remove(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(MessageType, nameof(MessageType));
+            FuGuard.NotNull(MessageType,    nameof(MessageType));
             FuGuard.NotNull(messageHandler, nameof(messageHandler));
             m_MessageHandler = null;
             var target = messageHandler.GetType();
