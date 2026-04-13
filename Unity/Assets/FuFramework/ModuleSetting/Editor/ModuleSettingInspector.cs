@@ -6,7 +6,7 @@ using FuFramework.Core.Editor;
 namespace FuFramework.ModuleSetting.Editor
 {
     /// <summary>
-    /// Base组件Inspector
+    /// 模块配置Inspector。
     /// </summary>
     [CustomEditor(typeof(Runtime.ModuleSetting))]
     internal sealed class ModuleSettingInspector : FuFrameworkInspector
