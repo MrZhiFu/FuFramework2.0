@@ -16,7 +16,10 @@ namespace FuFramework.Sound.Runtime
 {
     /// <summary>
     /// 声音管理模块。
-    /// 功能：实现了声音管理相关接口，包括声音组、声音播放，暂停，继续，停止等。
+    /// 功能：
+    ///     1. 配合资源管理模块，管理声音资源的加载、卸载。
+    ///     2. 提供声音播放、暂停、继续、停止等接口。
+    ///     3. 提供声音组管理接口。
     /// </summary>
     public sealed partial class SoundModule : FuModule
     {

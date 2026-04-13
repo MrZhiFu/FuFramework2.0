@@ -8,7 +8,8 @@ namespace FuFramework.Sound.Runtime
     {
         /// <summary>
         /// 播放的声音信息。
-        /// 功能：用于在加载声音资源时保存相关信息。
+        /// 功能：
+        ///    1. 用于在加载声音资源时保存相关信息。
         /// </summary>
         public class PlaySoundInfo : IReference
         {

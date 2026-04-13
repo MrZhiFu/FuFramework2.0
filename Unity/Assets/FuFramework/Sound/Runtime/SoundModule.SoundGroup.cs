@@ -10,7 +10,9 @@ namespace FuFramework.Sound.Runtime
     {
         /// <summary>
         /// 声音组。
-        /// 功能:管理该组中的声音, 包括播放、停止、暂停、恢复等。
+        /// 功能：
+        ///     1. 管理该组中的声音, 包括播放、停止、暂停、恢复等。
+        ///     2. 提供声音组静音、音量设置等接口。
         /// </summary>
         public class SoundGroup : MonoBehaviour
         {

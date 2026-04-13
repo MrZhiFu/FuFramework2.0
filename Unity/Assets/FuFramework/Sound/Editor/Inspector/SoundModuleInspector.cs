@@ -5,6 +5,9 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Sound.Editor
 {
+    /// <summary>
+    /// 声音管理模块的Inspector
+    /// </summary>
     [CustomEditor(typeof(SoundModule))]
     internal sealed class SoundModuleInspector : FuFrameworkInspector
     {
