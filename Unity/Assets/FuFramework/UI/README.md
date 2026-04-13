@@ -1,10 +1,10 @@
 # FuFramework UI Module
 
-## 概述
+## 1. 概述
 
 UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现，提供完整的 UI 生命周期管理、层级管理、资源加载和动画效果。该模块采用模块化设计，支持界面分组、对象池复用、异步加载等高级功能。
 
-### 核心特性
+### 1.1 核心特性
 
 - **基于 FairyGUI**：强大的 UI 框架支持，跨平台兼容
 - **完整的生命周期管理**：初始化、打开、关闭、暂停、恢复、被覆盖等完整流程
@@ -15,9 +15,9 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 - **事件驱动架构**：完整的界面打开/关闭事件通知机制
 - **模块化设计**：支持界面组件化和自定义组件扩展
 
-## 系统架构
+## 2. 系统架构
 
-### 类继承体系
+### 2.1 类继承体系
 
 ```
 FuModule (抽象基类)
@@ -56,7 +56,7 @@ ViewInfo (界面信息)
     └── Covered (是否被覆盖)
 ```
 
-### 技术架构图
+### 2.2 技术架构图
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -97,9 +97,9 @@ ViewInfo (界面信息)
                     └─────────────────┘
 ```
 
-## 核心类详解
+## 3. 核心类详解
 
-### UIModule
+### 3.1 UIModule
 
 UI 管理模块，继承自 FuModule，负责所有 UI 界面的统一管理。
 
@@ -169,7 +169,7 @@ public void SetUIPriority(object uiView, int priority)
 8. 添加到界面组
 9. 触发打开回调和事件
 
-### ViewBase
+### 3.2 ViewBase
 
 界面基类，所有 UI 界面必须继承此类。
 
@@ -247,7 +247,7 @@ public void ResumeTimer(int timerId)
 public void StopTimer(int timerId)
 ```
 
-### UIGroup
+### 3.3 UIGroup
 
 界面组，管理同一层级下的多个界面，继承自 FairyGUI 的 GComponent。
 
@@ -309,7 +309,7 @@ while (current != null)
 }
 ```
 
-### FuiPkgManager
+### 3.4 FuiPkgManager
 
 FairyGUI 包管理器，负责 UI 包的加载、缓存和卸载管理。
 
@@ -347,7 +347,7 @@ public void SubRef(string pkgName)
 5. 加载依赖包（并行）
 6. 缓存并返回包实例
 
-### ViewInfo
+### 3.5 ViewInfo
 
 界面信息类，存储界面在组中的状态信息。
 
@@ -359,7 +359,7 @@ public void SubRef(string pkgName)
 | Paused | bool | 是否暂停 |
 | Covered | bool | 是否被覆盖 |
 
-### ViewObject
+### 3.6 ViewObject
 
 界面对象池对象，用于对象池管理界面实例。
 
@@ -373,7 +373,7 @@ public static ViewObject Create(string uiName, ViewBase viewBase)
 protected override void OnRelease()
 ```
 
-### UILayer 枚举
+### 3.7 UILayer 枚举
 
 ```csharp
 public enum UILayer
@@ -388,7 +388,7 @@ public enum UILayer
 }
 ```
 
-### UITweenType 枚举
+### 3.8 UITweenType 枚举
 
 ```csharp
 public enum UITweenType
@@ -399,9 +399,9 @@ public enum UITweenType
 }
 ```
 
-## 使用示例
+## 4. 使用示例
 
-### 创建自定义 UI 界面
+### 4.1 创建自定义 UI 界面
 
 ```csharp
 using FuFramework.UI.Runtime;
@@ -478,7 +478,7 @@ public class MainUIView : ViewBase
 }
 ```
 
-### 打开和关闭界面
+### 4.2 打开和关闭界面
 
 ```csharp
 using FuFramework.UI.Runtime;
@@ -523,7 +523,7 @@ public class GameController : MonoBehaviour
 }
 ```
 
-### 自定义动画效果
+### 4.3 自定义动画效果
 
 ```csharp
 public class AnimatedUIView : ViewBase
@@ -550,7 +550,7 @@ public class AnimatedUIView : ViewBase
 }
 ```
 
-### 使用不同层级
+### 4.4 使用不同层级
 
 ```csharp
 // 世界UI - HUD、血条等
@@ -593,7 +593,7 @@ public class LoadingView : ViewBase
 }
 ```
 
-### 界面组操作
+### 4.5 界面组操作
 
 ```csharp
 public class UIGroupExample : MonoBehaviour
@@ -622,7 +622,7 @@ public class UIGroupExample : MonoBehaviour
 }
 ```
 
-### 事件订阅与广播
+### 4.6 事件订阅与广播
 
 ```csharp
 public class EventExampleView : ViewBase
@@ -660,7 +660,7 @@ public class EventExampleView : ViewBase
 }
 ```
 
-### 计时器使用
+### 4.7 计时器使用
 
 ```csharp
 public class TimerExampleView : ViewBase
@@ -699,7 +699,7 @@ public class TimerExampleView : ViewBase
 }
 ```
 
-### 监听界面事件
+### 4.8 监听界面事件
 
 ```csharp
 public class UIEventListener : MonoBehaviour
@@ -747,7 +747,7 @@ public class UIEventListener : MonoBehaviour
 }
 ```
 
-## 目录结构
+## 5. 目录结构
 
 ```
 FuFramework/UI/
@@ -786,7 +786,7 @@ FuFramework/UI/
 └── README.md                          # 本文档
 ```
 
-## 依赖模块
+## 6. 依赖模块
 
 - **Core**: 提供 FuModule 基类、日志工具、链表等数据结构
 - **Event**: 提供事件系统支持
@@ -798,9 +798,9 @@ FuFramework/UI/
 - **FairyGUI**: UI 框架
 - **UniTask**: 异步任务支持
 
-## 设计特点
+## 7. 设计特点
 
-### 1. 层级管理
+### 7.1 层级管理
 
 使用 UILayer 枚举定义 7 个层级，每个层级对应一个 UIGroup：
 
@@ -808,7 +808,7 @@ FuFramework/UI/
 - 每个层级独立管理自己的界面列表
 - 支持层级暂停/恢复
 
-### 2. 界面生命周期
+### 7.2 界面生命周期
 
 完整的 8 个生命周期阶段：
 
@@ -821,19 +821,19 @@ FuFramework/UI/
 7. **OnReveal**：恢复显示，从被遮挡恢复时执行
 8. **OnClose**：关闭，界面关闭时执行
 
-### 3. 对象池管理
+### 7.3 对象池管理
 
 - 界面实例使用 ObjectPool 管理
 - 支持设置锁定和优先级
 - 自动释放策略减少内存占用
 
-### 4. 包管理
+### 7.4 包管理
 
 - 使用引用计数管理包生命周期
 - 支持依赖包自动加载
 - 异步加载避免阻塞主线程
 
-### 5. 动画系统
+### 7.5 动画系统
 
 三种动画类型：
 
@@ -841,13 +841,13 @@ FuFramework/UI/
 - **Fade**：淡入淡出
 - **Custom**：自定义动画（重写方法实现）
 
-### 6. 事件系统
+### 7.6 事件系统
 
 - 内置 EventRegister 管理业务事件
 - FuiEventRegister 管理 UI 事件
 - 全局事件广播机制
 
-## 应用场景
+## 8. 应用场景
 
 1. **游戏主界面系统**：主菜单、设置、商店等
 2. **HUD 系统**：血条、小地图、技能栏等
@@ -855,7 +855,7 @@ FuFramework/UI/
 4. **Loading 界面**：场景切换、资源加载等
 5. **引导系统**：新手引导、功能引导等
 
-## 注意事项
+## 9. 注意事项
 
 1. **线程安全**：所有 UI 操作应在主线程执行
 2. **资源管理**：及时关闭不再使用的界面，释放资源
@@ -864,9 +864,9 @@ FuFramework/UI/
 5. **动画回调**：自定义动画需要正确调用回调
 6. **事件清理**：界面关闭时清理所有事件监听
 
-## 常见问题
+## 10. 常见问题
 
-### Q: 如何传递数据给界面？
+### Q1: 如何传递数据给界面？
 
 A: 使用 userData 参数：
 
@@ -885,7 +885,7 @@ protected override void OnOpen()
 }
 ```
 
-### Q: 如何实现界面栈管理？
+### Q2: 如何实现界面栈管理？
 
 A: 使用 CloseSelf() 关闭当前界面，框架会自动处理被覆盖界面的恢复：
 
@@ -897,7 +897,7 @@ private void OnBackButtonClick()
 }
 ```
 
-### Q: 如何预加载 UI 包？
+### Q3: 如何预加载 UI 包？
 
 A: 使用 PkgManager：
 
@@ -905,7 +905,7 @@ A: 使用 PkgManager：
 await m_UIModule.PkgManager.AddPackageAsync("Main");
 ```
 
-### Q: 如何获取当前最顶部的界面？
+### Q4: 如何获取当前最顶部的界面？
 
 A: 使用 GetTopUI：
 

@@ -1,10 +1,10 @@
-﻿# FuFramework Web 模块
+# FuFramework Web 模块
 
-## 概述
+## 1. 概述
 
 Web 模块是 FuFramework 中的网络请求管理系统，提供基于 UnityWebRequest 的 HTTP 请求功能，支持 GET/POST 请求、JSON 数据处理、ProtoBuf 协议等。该模块通过队列管理和连接数控制，实现了高效的网络请求处理机制。
 
-### 核心特性
+### 1.1 核心特性
 
 - **异步请求**：基于 Task 的异步编程模型
 - **队列管理**：自动管理请求队列，控制并发连接数
@@ -61,9 +61,9 @@ WebModule (Web模块核心类)
 └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
-### 核心类说明
+### 2.2 核心类说明
 
-#### 1. WebModule (网络请求管理器)
+#### 2.2.1 WebModule (网络请求管理器)
 位于 `Runtime/Web/WebModule.cs`，是 Web 模块的核心管理类，继承自 `FuModule`。
 
 **主要功能：**
@@ -90,21 +90,21 @@ WebModule (Web模块核心类)
 | `m_SendingProtoBufList` | `List<WebProtoBufData>` | 正在处理的ProtoBuf请求列表（容量16） |
 | `m_MemoryStream` | `MemoryStream` | 用于存储请求和响应数据的内存流 |
 
-#### 2. WebStringResult (字符串结果类)
+#### 2.2.2 WebStringResult (字符串结果类)
 位于 `Runtime/Web/WebStringResult.cs`，封装 HTTP 请求返回的字符串数据。
 
 **主要属性：**
 - `string Result` - 请求返回的字符串结果
 - `object UserData` - 用户自定义数据
 
-#### 3. WebBufferResult (字节数组结果类)
+#### 2.2.3 WebBufferResult (字节数组结果类)
 位于 `Runtime/Web/WebBufferResult.cs`，封装 HTTP 请求返回的字节数组数据。
 
 **主要属性：**
 - `byte[] Result` - 请求返回的字节数组结果
 - `object UserData` - 用户自定义数据
 
-#### 4. WebData (请求数据基类)
+#### 2.2.4 WebData (请求数据基类)
 位于 `Runtime/Web/WebModule.WebData.cs`，是所有 Web 请求数据的抽象基类。
 
 **主要属性：**
@@ -119,7 +119,7 @@ WebModule (Web模块核心类)
 public virtual void Dispose() { }
 ```
 
-#### 5. WebJsonData (JSON 请求数据类)
+#### 2.2.5 WebJsonData (JSON 请求数据类)
 位于 `Runtime/Web/WebModule.WebJsonData.cs`，继承自 WebData，用于处理 JSON 格式的 Web 请求。
 
 **主要属性：**
@@ -136,7 +136,7 @@ public virtual void Dispose() { }
 - 用于带表单的字符串结果 POST 请求
 - 用于带表单的字节数组结果 POST 请求
 
-#### 6. WebProtoBufData (ProtoBuf 请求数据类)
+#### 2.2.6 WebProtoBufData (ProtoBuf 请求数据类)
 位于 `Runtime/Web/WebModule.WebProtoBufData.cs`，继承自 WebData，用于处理 Protocol Buffer 格式的 Web 请求。
 
 **主要属性：**
@@ -145,7 +145,7 @@ public virtual void Dispose() { }
 | `Task` | `TaskCompletionSource<WebBufferResult>` | 请求任务的完成源 |
 | `SendData` | `byte[]` | 要发送的 ProtoBuf 序列化数据 |
 
-#### 7. HttpJsonResult (HTTP JSON 响应结构)
+#### 2.2.7 HttpJsonResult (HTTP JSON 响应结构)
 位于 `Runtime/Extensions/HttpJsonResult.cs`，定义标准的 HTTP JSON 响应格式。
 
 **主要属性：**
@@ -159,7 +159,7 @@ public virtual void Dispose() { }
 - 使用 `[JsonProperty]` 特性映射 JSON 字段名
 - 重载 `ToString()` 方法返回序列化后的 JSON 字符串
 
-#### 8. HttpJsonResultData<T> (泛型结果数据类)
+#### 2.2.8 HttpJsonResultData<T> (泛型结果数据类)
 位于 `Runtime/Extensions/HttpJsonResultData.cs`，用于封装 HTTP 请求的返回结果。
 
 **主要属性：**
@@ -169,7 +169,7 @@ public virtual void Dispose() { }
 | `Code` | `int` | 响应码（0 表示成功） |
 | `Data` | `T` | 数据对象（泛型） |
 
-#### 9. HttpJsonResultHelper (JSON 结果辅助类)
+#### 2.2.9 HttpJsonResultHelper (JSON 结果辅助类)
 位于 `Runtime/Extensions/HttpJsonResultHelper.cs`，提供 JSON 数据处理工具方法。
 
 **主要方法：**
@@ -190,9 +190,9 @@ public static HttpJsonResultData<T> ToHttpJsonResultData<T>(this string jsonResu
 4. 如果 Data 为空，返回类型 T 的默认实例
 5. 捕获并记录异常信息
 
-## 快速开始
+## 3. 快速开始
 
-### 基本使用
+### 3.1 基本使用
 
 ```csharp
 using FuFramework.Web.Runtime;
@@ -209,7 +209,7 @@ var bytesResult = await webModule.GetToBytes("https://api.example.com/image");
 Debug.Log($"响应数据长度: {bytesResult.Result.Length}");
 ```
 
-### 带参数的请求
+### 3.2 带参数的请求
 
 ```csharp
 // 带查询参数的 GET 请求
@@ -231,11 +231,11 @@ var headers = new Dictionary<string, string>
 var result = await webModule.GetToString("https://api.example.com/protected", null, headers);
 ```
 
-## 详细使用指南
+## 4. 详细使用指南
 
-### 1. GET 请求
+### 4.1 GET 请求
 
-#### 获取字符串结果
+#### 4.1.1 获取字符串结果
 ```csharp
 // 简单 GET 请求
 var result = await webModule.GetToString("https://api.example.com/data");
@@ -257,7 +257,7 @@ var headers = new Dictionary<string, string>
 var result = await webModule.GetToString("https://api.example.com/data", null, headers);
 ```
 
-#### 获取字节数组结果
+#### 4.1.2 获取字节数组结果
 ```csharp
 // 下载文件或二进制数据
 var result = await webModule.GetToBytes("https://api.example.com/file.pdf");
@@ -266,9 +266,9 @@ var result = await webModule.GetToBytes("https://api.example.com/file.pdf");
 File.WriteAllBytes("downloaded.pdf", result.Result);
 ```
 
-### 2. POST 请求
+### 4.2 POST 请求
 
-#### 发送表单数据
+#### 4.2.1 发送表单数据
 ```csharp
 // 准备表单数据
 var formData = new Dictionary<string, object>
@@ -282,7 +282,7 @@ var formData = new Dictionary<string, object>
 var result = await webModule.PostToString("https://api.example.com/register", formData);
 ```
 
-#### 发送 JSON 数据
+#### 4.2.2 发送 JSON 数据
 ```csharp
 // 准备 JSON 数据
 var jsonData = new Dictionary<string, object>
@@ -296,7 +296,7 @@ var jsonData = new Dictionary<string, object>
 var result = await webModule.PostToString("https://api.example.com/posts", jsonData);
 ```
 
-### 3. 用户自定义数据
+### 4.3 用户自定义数据
 
 ```csharp
 // 发送请求时附带用户数据
@@ -307,7 +307,7 @@ var result = await webModule.GetToString("https://api.example.com/data", userDat
 Debug.Log($"请求ID: {result.UserData}");
 ```
 
-### 4. JSON 数据处理
+### 4.4 JSON 数据处理
 
 ```csharp
 using FuFramework.Web.Runtime;
@@ -337,9 +337,9 @@ public class UserInfo
 }
 ```
 
-## 实际应用场景
+## 5. 实际应用场景
 
-### 1. API 数据获取
+### 5.1 API 数据获取
 
 ```csharp
 public class UserService
@@ -391,7 +391,7 @@ public class UserListResponse
 }
 ```
 
-### 2. 文件下载
+### 5.2 文件下载
 
 ```csharp
 public class FileDownloader
@@ -434,7 +434,7 @@ public class FileDownloader
 }
 ```
 
-### 3. 表单提交
+### 5.3 表单提交
 
 ```csharp
 public class FormSubmitService
@@ -476,7 +476,7 @@ public class ContactResponse
 }
 ```
 
-### 4. 实时数据更新
+### 5.4 实时数据更新
 
 ```csharp
 public class RealTimeDataService
@@ -538,7 +538,7 @@ public class StockData
 }
 ```
 
-## 目录结构
+## 6. 目录结构
 
 ```
 FuFramework/Web/
@@ -563,16 +563,16 @@ FuFramework/Web/
 └── README.md                          # 本文档
 ```
 
-## 依赖模块
+## 7. 依赖模块
 
 - **Core**: 提供 FuModule 基类、FuLogger 日志、Utility 工具等
 - **Network**: 提供 ProtoBuf 序列化支持 (MessageObject, IResponseMessage, SerializerHelper)
 - **Newtonsoft.Json**: JSON 序列化/反序列化
 - **protobuf-net**: Protocol Buffer 序列化
 
-## 配置和优化
+## 8. 配置和优化
 
-### 1. 模块配置
+### 8.1 模块配置
 
 ```csharp
 // 获取 WebModule 实例
@@ -590,21 +590,21 @@ Debug.Log($"最大连接数: {webModule.MaxConnectionPerServer}");
 Debug.Log($"请求超时: {webModule.RequestTimeout}");
 ```
 
-### 2. 性能优化建议
+### 8.2 性能优化建议
 
-#### 合理设置超时时间
+#### 8.2.1 合理设置超时时间
 ```csharp
 // 根据网络状况设置合适的超时时间
 webModule.Timeout = 15f; // 15秒超时
 ```
 
-#### 控制并发连接数
+#### 8.2.2 控制并发连接数
 ```csharp
 // 根据服务器承受能力设置连接数
 webModule.MaxConnectionPerServer = 8; // 默认值，适合大多数场景
 ```
 
-#### 使用异步编程模式
+#### 8.2.3 使用异步编程模式
 ```csharp
 // 推荐：使用 async/await
 public async Task<List<User>> GetUsersAsync()
@@ -622,18 +622,18 @@ public List<User> GetUsers()
 }
 ```
 
-## API 参考
+## 9. API 参考
 
-### WebModule 类
+### 9.1 WebModule 类
 
-#### 属性
+#### 9.1.1 属性
 | 属性 | 类型 | 说明 |
 |------|------|------|
 | `Timeout` | `float` | 获取或设置超时时间（秒） |
 | `MaxConnectionPerServer` | `int` | 获取或设置每个服务器的最大连接数 |
 | `RequestTimeout` | `TimeSpan` | 获取请求超时时间 |
 
-#### GET 请求方法
+#### 9.1.2 GET 请求方法
 | 方法 | 返回类型 | 说明 |
 |------|----------|------|
 | `GetToString(string url, object userData = null)` | `Task<WebStringResult>` | 发送 GET 请求获取字符串结果 |
@@ -643,7 +643,7 @@ public List<User> GetUsers()
 | `GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)` | `Task<WebStringResult>` | 发送带查询参数和请求头的 GET 请求获取字符串结果 |
 | `GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)` | `Task<WebBufferResult>` | 发送带查询参数和请求头的 GET 请求获取字节数组结果 |
 
-#### POST 请求方法
+#### 9.1.3 POST 请求方法
 | 方法 | 返回类型 | 说明 |
 |------|----------|------|
 | `PostToString(string url, object userData = null)` | `Task<WebStringResult>` | 发送 POST 请求获取字符串结果 |
@@ -653,7 +653,7 @@ public List<User> GetUsers()
 | `PostToString(string url, Dictionary<string, object> form, Dictionary<string, string> header, object userData = null)` | `Task<WebStringResult>` | 发送带表单数据和请求头的 POST 请求获取字符串结果 |
 | `PostToBytes(string url, Dictionary<string, object> form, Dictionary<string, string> header, object userData = null)` | `Task<WebBufferResult>` | 发送带表单数据和请求头的 POST 请求获取字节数组结果 |
 
-#### ProtoBuf 请求方法
+#### 9.1.4 ProtoBuf 请求方法
 | 方法 | 返回类型 | 说明 |
 |------|----------|------|
 | `Post<T>(string url, MessageObject message)` | `Task<T>` | 发送 ProtoBuf 格式的 POST 请求，返回强类型结果 |
@@ -662,21 +662,21 @@ public List<User> GetUsers()
 - `T : MessageObject, IResponseMessage` - 返回类型必须继承 MessageObject 并实现 IResponseMessage 接口
 - `message` - 必须继承自 MessageObject
 
-### WebStringResult 类
+### 9.2 WebStringResult 类
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
 | `Result` | `string` | 获取请求返回的字符串结果 |
 | `UserData` | `object` | 获取用户自定义数据 |
 
-### WebBufferResult 类
+### 9.3 WebBufferResult 类
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
 | `Result` | `byte[]` | 获取请求返回的字节数组结果 |
 | `UserData` | `object` | 获取用户自定义数据 |
 
-### HttpJsonResult 类
+### 9.4 HttpJsonResult 类
 
 | 属性 | 类型 | 说明 |
 |------|------|------|

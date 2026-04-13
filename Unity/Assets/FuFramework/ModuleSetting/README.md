@@ -1,4 +1,4 @@
-# 1. FuFramework ModuleSetting Module
+# FuFramework ModuleSetting Module
 
 ## 1. 简介
 

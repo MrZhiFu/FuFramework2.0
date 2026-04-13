@@ -1,4 +1,4 @@
-# 1. FuFramework Network Module
+# FuFramework Network Module
 
 ## 1. 简介
 

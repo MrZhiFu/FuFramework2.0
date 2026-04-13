@@ -1,4 +1,4 @@
-# 1. FuFramework ObjectPool Module
+# FuFramework ObjectPool Module
 
 ## 1. 简介
 

@@ -1,4 +1,4 @@
-# 1. FuFramework RedDot Module
+# FuFramework RedDot Module
 
 ## 1. 简介
 

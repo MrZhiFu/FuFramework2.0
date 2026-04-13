@@ -1,4 +1,4 @@
-﻿# 1. FuFramework Mono Module
+﻿# FuFramework Mono Module
 
 ## 1. 简介
 

@@ -1,10 +1,10 @@
 # FuFramework TaskPool Module
 
-## 概述
+## 1. 概述
 
 TaskPool 模块是 FuFramework 中的任务池管理系统，提供高效的任务调度、执行和管理功能。该模块基于任务代理模式，通过对象池技术实现任务代理的复用，减少内存分配开销，适用于需要频繁创建和销毁任务的游戏环境。
 
-### 核心特性
+### 1.1 核心特性
 
 - **任务池管理**：基于栈和链表的高效任务调度机制
 - **任务代理模式**：分离任务定义和执行逻辑
@@ -13,9 +13,9 @@ TaskPool 模块是 FuFramework 中的任务池管理系统，提供高效的任�
 - **资源复用**：任务代理对象池，减少内存分配
 - **异步支持**：适用于各种异步操作场景
 
-## 系统架构
+## 2. 系统架构
 
-### 类继承体系
+### 2.1 类继承体系
 
 ```
 TaskPool<T> (泛型任务池)
@@ -36,7 +36,7 @@ TaskPool<T> (泛型任务池)
             └── StartTaskStatus (启动状态)
 ```
 
-### 技术架构
+### 2.2 技术架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -67,9 +67,9 @@ TaskPool<T> (泛型任务池)
 └──────────────────┘                    └──────────────────┘
 ```
 
-## 核心类详解
+## 3. 核心类详解
 
-### TaskPool<T>
+### 3.1 TaskPool<T>
 
 任务池核心类，负责任务的调度、执行和管理。
 
@@ -127,7 +127,7 @@ public void Shutdown()
    - 按优先级从高到低处理等待任务
    - 根据 Start 方法返回值决定任务状态
 
-### TaskBase
+### 3.2 TaskBase
 
 任务基类，所有自定义任务必须继承此类。实现了 IReference 接口，支持引用池管理。
 
@@ -181,7 +181,7 @@ public class DownloadTask : TaskBase
 }
 ```
 
-### ITaskAgent<T>
+### 3.3 ITaskAgent<T>
 
 任务代理接口，定义任务执行的具体逻辑。
 
@@ -253,7 +253,7 @@ public class DownloadAgent : ITaskAgent<DownloadTask>
 }
 ```
 
-### TaskInfo
+### 3.4 TaskInfo
 
 任务信息结构体（readonly struct），用于外部查询任务状态。
 
@@ -269,9 +269,9 @@ public class DownloadAgent : ITaskAgent<DownloadTask>
 | Description | string | 任务描述 |
 | UserData | object | 用户自定义数据 |
 
-### 枚举类型
+### 3.5 枚举类型
 
-#### TaskStatus
+#### 3.5.1 TaskStatus
 
 ```csharp
 public enum TaskStatus : byte
@@ -282,7 +282,7 @@ public enum TaskStatus : byte
 }
 ```
 
-#### StartTaskStatus
+#### 3.5.2 StartTaskStatus
 
 ```csharp
 public enum StartTaskStatus : byte
@@ -294,9 +294,9 @@ public enum StartTaskStatus : byte
 }
 ```
 
-## 使用示例
+## 4. 使用示例
 
-### 基本使用流程
+### 4.1 基本使用流程
 
 ```csharp
 using FuFramework.TaskPool.Runtime;
@@ -343,7 +343,7 @@ public class TaskPoolExample : MonoBehaviour
 }
 ```
 
-### 任务状态监控
+### 4.2 任务状态监控
 
 ```csharp
 // 获取任务池统计
@@ -369,7 +369,7 @@ foreach (var info in downloadTasks)
 }
 ```
 
-### 任务管理
+### 4.3 任务管理
 
 ```csharp
 // 添加高优先级任务
@@ -388,7 +388,7 @@ taskPool.RemoveTasks("Download");    // 按标签移除
 taskPool.RemoveAllTasks();           // 移除所有任务
 ```
 
-### 暂停和恢复
+### 4.4 暂停和恢复
 
 ```csharp
 // 暂停任务池
@@ -398,7 +398,7 @@ taskPool.Paused = true;
 taskPool.Paused = false;
 ```
 
-## 目录结构
+## 5. 目录结构
 
 ```
 FuFramework/TaskPool/
@@ -413,33 +413,33 @@ FuFramework/TaskPool/
 ├── README.md                    # 本文档
 ```
 
-## 依赖模块
+## 6. 依赖模块
 
 - **Core**: 提供 FuLinkedList、FuException、FuGuard 等工具类
 - **ReferencePool**: 提供对象池管理，用于任务对象的复用
 
-## 设计特点
+## 7. 设计特点
 
-### 1. 三层数据结构
+### 7.1 三层数据结构
 
 - **空闲代理栈（Stack）**：后进先出，快速获取和释放代理
 - **等待任务链表（LinkedList）**：支持按优先级插入和移除
 - **工作代理链表（LinkedList）**：支持遍历和动态移除
 
-### 2. 优先级调度
+### 7.2 优先级调度
 
 等待任务链表按优先级从高到低排序，高优先级任务优先获得代理资源。
 
-### 3. 资源复用
+### 7.3 资源复用
 
 - 任务代理通过栈结构复用，避免频繁创建销毁
 - 任务对象通过 ReferencePool 管理，减少 GC 压力
 
-### 4. 状态驱动
+### 7.4 状态驱动
 
 任务通过 Done 属性标记完成状态，代理通过 StartTaskStatus 返回启动结果，实现灵活的任务控制。
 
-## 应用场景
+## 8. 应用场景
 
 1. **资源下载**：管理多个并发下载任务
 2. **资源加载**：异步加载 AssetBundle 或其他资源
@@ -447,7 +447,7 @@ FuFramework/TaskPool/
 4. **数据处理**：批量处理大量数据
 5. **异步操作**：任何需要队列管理的异步任务
 
-## 注意事项
+## 9. 注意事项
 
 1. **线程安全**：TaskPool 设计为单线程使用，需在主线程调用 Update
 2. **代理数量**：合理设置代理数量，过多会占用资源，过少会降低并发度

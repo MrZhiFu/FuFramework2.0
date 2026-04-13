@@ -1,10 +1,10 @@
 # FuFramework Timer Module
 
-## 概述
+## 1. 概述
 
 Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现，提供多种类型的计时器功能。该模块支持倒计时计时器、时间间隔计时器、帧间隔计时器，具备暂停、恢复、停止等完整生命周期管理功能。
 
-### 核心特性
+### 1.1 核心特性
 
 - **多种计时器类型**：支持倒计时、时间间隔、帧间隔三种计时器
 - **基于 UniTask**：异步友好的计时器实现
@@ -14,9 +14,9 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 - **对象池管理**：使用 ReferencePool 实现对象复用
 - **模块化设计**：支持 TimerRegister 进行分组管理
 
-## 系统架构
+## 2. 系统架构
 
-### 类继承体系
+### 2.1 类继承体系
 
 ```
 FuModule (抽象基类)
@@ -35,7 +35,7 @@ TimerRegister (计时器注册器)
     └── IReference (引用池接口)
 ```
 
-### 技术架构
+### 2.2 技术架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -63,9 +63,9 @@ TimerRegister (计时器注册器)
 └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
-## 核心类详解
+## 3. 核心类详解
 
-### TimerModule
+### 3.1 TimerModule
 
 计时器管理模块，继承自 FuModule，负责所有计时器的统一管理。
 
@@ -123,7 +123,7 @@ public IEnumerable<string> GetAllTimerNames()
    - 限制最大 deltaTime 防止时间跳跃
    - 自动清理完成的计时器
 
-### TimerBase
+### 3.2 TimerBase
 
 计时器基类，定义计时器的通用接口和基础功能。
 
@@ -152,7 +152,7 @@ public abstract void Update(float deltaTime, int deltaFrames)
 public virtual void OnComplete()
 ```
 
-### CountdownTimer
+### 3.3 CountdownTimer
 
 倒计时计时器，在指定时间后触发完成回调。
 
@@ -192,7 +192,7 @@ int timerId = timerModule.StartCountdownTimer(
 );
 ```
 
-### IntervalTimer
+### 3.4 IntervalTimer
 
 时间间隔计时器，按照固定时间间隔重复执行回调。
 
@@ -232,7 +232,7 @@ while (AccumulatedTime >= Interval && ExecutedCount < MaxCount)
 }
 ```
 
-### FrameTimer
+### 3.5 FrameTimer
 
 帧间隔计时器，按照固定帧数间隔重复执行回调。
 
@@ -259,7 +259,7 @@ public static FrameTimer Create(int timerId, int frameInterval, Action intervalC
 
 **注意：** 帧间隔计时器始终忽略时间缩放，确保与帧率同步。
 
-### TimerRegister
+### 3.6 TimerRegister
 
 计时器注册器，用于模块级别的计时器分组管理。
 
@@ -310,9 +310,9 @@ timerRegister.StartIntervalTimer(5f, () => Debug.Log("每5秒执行"));
 timerRegister.Release();
 ```
 
-## 使用示例
+## 4. 使用示例
 
-### 基本使用流程
+### 4.1 基本使用流程
 
 ```csharp
 using FuFramework.Timer.Runtime;
@@ -352,7 +352,7 @@ public class TimerExample : MonoBehaviour
 }
 ```
 
-### 计时器生命周期管理
+### 4.2 计时器生命周期管理
 
 ```csharp
 // 暂停计时器
@@ -370,7 +370,7 @@ m_TimerModule.ResumeAllTimers();
 m_TimerModule.StopAllTimers();
 ```
 
-### 使用 TimerRegister 进行分组管理
+### 4.3 使用 TimerRegister 进行分组管理
 
 ```csharp
 public class GameManager
@@ -395,7 +395,7 @@ public class GameManager
 }
 ```
 
-### 进度监控示例
+### 4.4 进度监控示例
 
 ```csharp
 public void StartProgressTimer()
@@ -426,7 +426,7 @@ private void UpdateProgressUI(float progress)
 }
 ```
 
-## 目录结构
+## 5. 目录结构
 
 ```
 FuFramework/Timer/
@@ -446,37 +446,37 @@ FuFramework/Timer/
 └── README.md                       # 本文档
 ```
 
-## 依赖模块
+## 6. 依赖模块
 
 - **Core**: 提供 FuModule 基类、日志工具
 - **ReferencePool**: 提供对象池管理，用于计时器对象的复用
 - **UniTask**: 提供异步任务支持
 
-## 设计特点
+## 7. 设计特点
 
-### 1. 异步驱动
+### 7.1 异步驱动
 
 基于 UniTask 实现，使用 `UniTask.Yield` 实现每帧更新，避免使用 MonoBehaviour 的 Update 方法，降低性能开销。
 
-### 2. 抗时间跳跃
+### 7.2 抗时间跳跃
 
 - **时间间隔计时器**：使用累计时间机制，在卡顿后连续执行遗漏的回调
 - **帧间隔计时器**：使用累计帧数机制，确保帧率波动时的执行准确性
 - **最大 deltaTime 限制**：限制最大时间增量为 0.1 秒，防止极端情况
 
-### 3. 暂停机制
+### 7.3 暂停机制
 
 使用 `UniTask.WaitUntil` 实现暂停等待，暂停时不占用 CPU 资源，恢复时自动同步时间。
 
-### 4. 对象池管理
+### 7.4 对象池管理
 
 所有计时器类实现 `IReference` 接口，通过 ReferencePool 管理对象生命周期，减少 GC 压力。
 
-### 5. 分组管理
+### 7.5 分组管理
 
 TimerRegister 提供模块级别的计时器分组管理，便于批量控制和生命周期管理。
 
-## 应用场景
+## 8. 应用场景
 
 1. **技能冷却**：使用倒计时计时器实现技能冷却时间
 2. **倒计时系统**：使用间隔计时器实现每秒更新的倒计时
@@ -485,7 +485,7 @@ TimerRegister 提供模块级别的计时器分组管理，便于批量控制和
 5. **网络心跳**：使用间隔计时器实现定时心跳包发送
 6. **UI动画**：使用忽略时间缩放的计时器实现流畅的UI动画
 
-## 注意事项
+## 9. 注意事项
 
 1. **线程安全**：TimerModule 设计为单线程使用，所有操作应在主线程执行
 2. **回调耗时**：避免在计时器回调中执行耗时操作，可能影响其他计时器

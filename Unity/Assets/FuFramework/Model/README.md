@@ -1,4 +1,4 @@
-# 1. FuFramework Model Module
+# FuFramework Model Module
 
 ## 简介
 

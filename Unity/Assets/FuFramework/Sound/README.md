@@ -1,10 +1,10 @@
 # FuFramework Sound Module
 
-## 概述
+## 1. 概述
 
 Sound 模块是 FuFramework 中的音频管理系统，专门用于管理游戏中的声音播放、音效控制和音频资源管理。该模块基于 Unity AudioSource 组件，提供声音组管理、3D音效、事件通知、资源池等高级功能，是游戏音频管理的核心组件。
 
-### 核心特性
+### 1.1 核心特性
 
 - **声音组管理**：支持分组管理不同类型的声音（背景音乐、音效、UI音效等）
 - **3D音效支持**：支持基于位置的3D音效播放和实体绑定
@@ -13,9 +13,9 @@ Sound 模块是 FuFramework 中的音频管理系统，专门用于管理游戏�
 - **资源池管理**：声音代理对象池，减少内存分配
 - **参数配置**：丰富的音效参数配置（音量、音调、淡入淡出等）
 
-## 系统架构
+## 2. 系统架构
 
-### 类继承体系
+### 2.1 类继承体系
 
 ```
 FuModule (抽象基类)
@@ -40,7 +40,7 @@ SoundModule (声音管理模块)
             └── PlaySoundFailureEventArgs → GameEventArgs → IReference
 ```
 
-### 技术架构
+### 2.2 技术架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -71,9 +71,9 @@ SoundModule (声音管理模块)
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 核心类详解
+## 3. 核心类详解
 
-### SoundModule
+### 3.1 SoundModule
 
 声音管理模块，继承自 FuModule，负责整个音频系统的生命周期管理。
 
@@ -146,7 +146,7 @@ public bool IsSoundValid(int serialId)
 public int[] GetAllLoadingSoundSerialIds()
 ```
 
-### SoundGroup
+### 3.2 SoundGroup
 
 声音组，管理一组相关的声音代理，支持组级别的音量控制和静音设置。
 
@@ -183,7 +183,7 @@ public bool ResumeSound(int serialId, float fadeInSeconds)
 public void StopAllLoadedSounds(float fadeOutSeconds)
 ```
 
-### SoundAgent
+### 3.3 SoundAgent
 
 声音播放代理，封装 AudioSource 组件，提供具体的音频播放功能。
 
@@ -232,7 +232,7 @@ internal void RefreshMute()
 internal void RefreshVolume()
 ```
 
-### SoundParams
+### 3.4 SoundParams
 
 声音播放参数类，用于配置音频播放的各种参数。
 
@@ -265,7 +265,7 @@ soundParams.FadeInSeconds = 2f;
 ReferencePool.Release(soundParams);
 ```
 
-### SoundParams3D
+### 3.5 SoundParams3D
 
 3D声音播放参数类，用于配置3D音效的实体绑定和位置信息。
 
@@ -286,7 +286,7 @@ var soundParams3D = SoundParams3D.Create(entity, Vector3.zero);
 var soundParams3D = SoundParams3D.Create(null, worldPosition);
 ```
 
-### PlaySoundInfo
+### 3.6 PlaySoundInfo
 
 播放声音信息类，用于在加载声音资源时保存相关信息。实现了 IReference 接口，支持引用池管理。
 
@@ -303,9 +303,9 @@ var soundParams3D = SoundParams3D.Create(null, worldPosition);
 | OnPlayEnd | Action | 播放结束回调 |
 | UserData | object | 用户自定义数据 |
 
-### 事件参数类
+### 3.7 事件参数类
 
-#### PlaySoundSuccessEventArgs
+#### 3.7.1 PlaySoundSuccessEventArgs
 
 播放声音成功事件参数。
 
@@ -314,7 +314,7 @@ var soundParams3D = SoundParams3D.Create(null, worldPosition);
 - SoundAssetName: 声音资源名称
 - UserData: 用户自定义数据
 
-#### PlaySoundFailureEventArgs
+#### 3.7.2 PlaySoundFailureEventArgs
 
 播放声音失败事件参数。
 
@@ -337,9 +337,9 @@ public enum EPlaySoundErrorCode : byte
 }
 ```
 
-## 使用示例
+## 4. 使用示例
 
-### 基本音频播放
+### 4.1 基本音频播放
 
 ```csharp
 using FuFramework.Sound.Runtime;
@@ -361,7 +361,7 @@ public class SoundPlayer : MonoBehaviour
 }
 ```
 
-### 带参数的音频播放
+### 4.2 带参数的音频播放
 
 ```csharp
 // 配置声音参数
@@ -384,7 +384,7 @@ var serialId = await soundModule.PlaySound(
 );
 ```
 
-### 3D音效播放
+### 4.3 3D音效播放
 
 ```csharp
 // 在指定位置播放3D音效
@@ -410,7 +410,7 @@ var serialId = await soundModule.PlaySoundToEntity(
 );
 ```
 
-### 事件监听
+### 4.4 事件监听
 
 ```csharp
 using FuFramework.Sound.Runtime;
@@ -441,7 +441,7 @@ public class SoundEventListener : MonoBehaviour
 }
 ```
 
-### 声音组控制
+### 4.5 声音组控制
 
 ```csharp
 // 获取声音组
@@ -457,7 +457,7 @@ musicGroup.Mute = true;
 musicGroup.StopAllLoadedSounds(1f);  // 1秒淡出
 ```
 
-### 声音控制
+### 4.6 声音控制
 
 ```csharp
 // 停止声音
@@ -476,7 +476,7 @@ soundModule.StopAllLoadedSounds();
 soundModule.StopAllLoadingSounds();
 ```
 
-## 目录结构
+## 5. 目录结构
 
 ```
 FuFramework/Sound/
@@ -498,7 +498,7 @@ FuFramework/Sound/
 └── README.md                             # 本文档
 ```
 
-## 依赖模块
+## 6. 依赖模块
 
 - **Core**: 提供 FuModule 基类、日志、工具类
 - **Asset**: 提供音频资源异步加载功能
@@ -507,7 +507,7 @@ FuFramework/Sound/
 - **Entity**: 提供实体绑定功能（可选）
 - **ModuleSetting**: 提供声音模块配置
 
-## 配置说明
+## 7. 配置说明
 
 声音模块通过 ModuleSetting 进行配置，主要包括：
 
@@ -519,7 +519,7 @@ FuFramework/Sound/
   - AgentCount: 声音代理数量
   - AllowBeReplacedBySamePriority: 是否允许同优先级替换
 
-## 注意事项
+## 8. 注意事项
 
 1. **声音代理数量**：每个声音组的声音代理数量决定了该组可以同时播放的声音数量上限
 2. **优先级机制**：当声音代理不足时，高优先级声音会替换低优先级声音

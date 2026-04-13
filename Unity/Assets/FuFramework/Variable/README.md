@@ -1,10 +1,10 @@
 # FuFramework Variable Module
 
-## 概述
+## 1. 概述
 
-Variable 模块是 FuFramework 中的变量管理系统，提供基于引用池优化的类型安全变量封装。该模块通过统一的变量接口和隐式转换操作符，让开发者可以像使用原生类型一样使用变量类，同时享受引用池带来的内存优化优势。
+Variable 模块是 FuFramework 中的变量管理系统，提供基于引用池优化的类型安全变量封装。该模块为常用数据类型提供专门的变量类，支持隐式转换、内存优化和类型安全操作。
 
-### 核心特性
+### 1.1 核心特性
 
 - **类型安全**：为每种数据类型提供专门的变量类
 - **内存优化**：基于引用池技术，减少内存分配和GC压力
@@ -72,9 +72,9 @@ Variable<T> (泛型基类)
 └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
-## 核心类详解
+## 3. 核心类详解
 
-### Variable
+### 3.1 Variable
 
 变量抽象基类，实现 IReference 接口，定义变量的统一接口。
 
@@ -97,7 +97,7 @@ public abstract void SetValue(object value);
 public abstract void Clear();
 ```
 
-### Variable<T>
+### 3.2 Variable<T>
 
 泛型变量基类，继承自 Variable，提供类型安全的泛型实现。
 
@@ -124,7 +124,7 @@ public override void Clear() => Value = default;
 public override string ToString() => Value != null ? Value.ToString() : "<Null>";
 ```
 
-### 具体变量类
+### 3.3 具体变量类
 
 所有具体变量类都继承自 Variable<T>。大多数类型实现了双向隐式转换操作符，但 VarObject 作为通用对象类型，未实现隐式转换，需要显式操作。
 
@@ -162,9 +162,9 @@ var objVar = ReferencePool.Runtime.ReferencePool.Acquire<VarObject>();
 objVar.Value = anyObject;
 ```
 
-## 支持的变量类型
+## 4. 支持的变量类型
 
-### 基础类型
+### 4.1 基础类型
 
 | 变量类 | 原生类型 | 说明 |
 |--------|----------|------|
@@ -184,14 +184,14 @@ objVar.Value = anyObject;
 | VarString | string | 字符串 |
 | VarDateTime | DateTime | 日期时间 |
 
-### 数组类型
+### 4.2 数组类型
 
 | 变量类 | 原生类型 | 说明 |
 |--------|----------|------|
 | VarByteArray | byte[] | 字节数组 |
 | VarCharArray | char[] | 字符数组 |
 
-### Unity 类型
+### 4.3 Unity 类型
 
 | 变量类 | 原生类型 | 说明 |
 |--------|----------|------|
@@ -208,15 +208,15 @@ objVar.Value = anyObject;
 | VarTexture | Texture | 纹理 |
 | VarUnityObject | UnityEngine.Object | Unity对象基类 |
 
-### 通用类型
+### 4.4 通用类型
 
 | 变量类 | 原生类型 | 说明 |
 |--------|----------|------|
 | VarObject | object | 通用对象类型（无隐式转换） |
 
-## 使用示例
+## 5. 使用示例
 
-### 基本使用流程
+### 5.1 基本使用流程
 
 ```csharp
 using FuFramework.Variable.Runtime;
@@ -259,7 +259,7 @@ public class VariableExample : MonoBehaviour
 }
 ```
 
-### 使用引用池优化
+### 5.2 使用引用池优化
 
 ```csharp
 public void ProcessVariables()
@@ -285,7 +285,7 @@ public void ProcessVariablesBad()
 }
 ```
 
-### 事件系统数据传递
+### 5.3 事件系统数据传递
 
 ```csharp
 using FuFramework.Event.Runtime;
@@ -325,7 +325,7 @@ public void OnPlayerLevelUp()
 }
 ```
 
-### 配置数据管理
+### 5.4 配置数据管理
 
 ```csharp
 public class GameConfig
@@ -345,7 +345,7 @@ public class GameConfig
 }
 ```
 
-### 游戏状态管理
+### 5.5 游戏状态管理
 
 ```csharp
 public class PlayerState
@@ -365,7 +365,7 @@ public class PlayerState
 }
 ```
 
-### 批量变量处理
+### 5.6 批量变量处理
 
 ```csharp
 public void ProcessMultipleVariables()
@@ -394,7 +394,7 @@ public void ProcessMultipleVariables()
 }
 ```
 
-### 自定义变量类型
+### 5.7 自定义变量类型
 
 ```csharp
 // 自定义枚举变量
@@ -434,7 +434,7 @@ public void TestCustomVariable()
 }
 ```
 
-## 目录结构
+## 6. 目录结构
 
 ```
 FuFramework/Variable/
@@ -476,13 +476,13 @@ FuFramework/Variable/
 └── README.md                    # 本文档
 ```
 
-## 依赖模块
+## 7. 依赖模块
 
 - **ReferencePool**: 提供引用池管理，用于变量对象的复用
 
-## 设计特点
+## 8. 设计特点
 
-### 1. 引用池优化
+### 8.1 引用池优化
 
 所有变量类都实现 IReference 接口，通过引用池管理对象生命周期：
 
@@ -506,7 +506,7 @@ int value = var;
 
 **注意**：VarObject 作为通用对象类型，未实现隐式转换，需显式使用引用池获取和设置 Value 属性。
 
-### 3. 类型安全
+### 8.2 隐式转换
 
 通过泛型基类 Variable<T> 实现编译期类型检查：
 
@@ -515,7 +515,7 @@ VarInt32 intVar = 100;           // 正确
 VarInt32 wrongVar = "string";    // 编译错误
 ```
 
-### 4. 统一接口
+### 8.3 类型安全
 
 所有变量类都继承自 Variable 基类，提供统一的访问方式：
 
@@ -525,7 +525,7 @@ object value = baseVar.GetValue();
 baseVar.SetValue(200);
 ```
 
-## 应用场景
+### 8.4 统一接口
 
 1. **事件系统数据传递**：事件参数中使用变量类，支持引用池复用
 2. **配置数据管理**：游戏配置使用变量类，便于统一管理和序列化
@@ -533,7 +533,15 @@ baseVar.SetValue(200);
 4. **UI 数据绑定**：UI数据模型使用变量类，支持数据变更通知
 5. **网络消息封装**：网络消息中的字段使用变量类，便于类型转换
 
-## 注意事项
+## 9. 应用场景
+
+1. **事件系统数据传递**：事件参数中使用变量类，支持引用池复用
+2. **配置数据管理**：游戏配置使用变量类，便于统一管理和序列化
+3. **游戏状态管理**：玩家状态、游戏状态等使用变量类跟踪
+4. **UI 数据绑定**：UI数据模型使用变量类，支持数据变更通知
+5. **网络消息封装**：网络消息中的字段使用变量类，便于类型转换
+
+## 10. 注意事项
 
 1. **引用池管理**：使用引用池获取的变量，使用后必须释放，否则会导致内存泄漏
 2. **隐式转换开销**：隐式转换会触发引用池的获取操作，频繁转换可能产生开销
@@ -541,9 +549,9 @@ baseVar.SetValue(200);
 4. **线程安全**：变量类本身不是线程安全的，多线程环境需要额外同步
 5. **空值检查**：使用变量前检查是否为 null，避免 NullReferenceException
 
-## 性能对比
+## 11. 性能对比
 
-### 内存分配对比
+### 11.1 内存分配对比
 
 ```csharp
 // 方式1：使用 new（产生GC）
@@ -561,7 +569,7 @@ for (int i = 0; i < 1000; i++)
 }
 ```
 
-### 访问性能对比
+### 11.2 访问性能对比
 
 ```csharp
 VarInt32 var = 100;
@@ -577,9 +585,9 @@ Variable baseVar = var;
 object value3 = baseVar.GetValue();
 ```
 
-## 常见问题
+## 12. 常见问题
 
-### Q: 什么时候应该使用 Variable 模块？
+### Q1: 什么时候应该使用 Variable 模块？
 
 A: 在以下场景推荐使用：
 - 需要频繁创建和销毁变量的场景
@@ -587,7 +595,7 @@ A: 在以下场景推荐使用：
 - 需要统一管理和序列化的数据
 - 对内存分配敏感的场景
 
-### Q: Variable 和原生类型如何选择？
+### Q2: Variable 和原生类型如何选择？
 
 A: 建议：
 - 简单场景直接使用原生类型

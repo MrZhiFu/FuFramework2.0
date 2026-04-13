@@ -1,4 +1,4 @@
-# 1. FuFramework Scene Module
+# FuFramework Scene Module
 
 ## 1. 简介
 
