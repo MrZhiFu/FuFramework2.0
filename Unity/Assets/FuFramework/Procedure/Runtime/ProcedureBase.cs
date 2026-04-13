@@ -5,12 +5,13 @@ namespace FuFramework.Procedure.Runtime
 {
     /// <summary>
     /// 流程基类。
-    /// 功能：继承自有限状态机基类，定义了流程的生命周期。可补充加入只属于流程的自定义逻辑。
+    /// 功能：
+    ///     1. 继承自有限状态机基类，定义了流程的生命周期。可补充加入只属于流程的自定义逻辑。
     /// </summary>
     public abstract class ProcedureBase : FsmStateBase
     {
         /// <summary>
-        /// 显示优先级。
+        /// 属性面板显示优先级。
         /// </summary>
         public virtual int Priority => 0;
 

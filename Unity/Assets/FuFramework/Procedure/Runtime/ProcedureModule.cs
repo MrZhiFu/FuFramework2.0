@@ -7,6 +7,10 @@ namespace FuFramework.Procedure.Runtime
 {
     /// <summary>
     /// 流程管理模块。
+    /// 功能：
+    ///     1. 初始化流程状态机。
+    ///     2. 开始指定的流程。
+    ///     3. 获取当前流程持续时间。
     /// </summary>
     public sealed class ProcedureModule : FuModule
     {
