@@ -5,9 +5,10 @@ using FuFramework.Event.Runtime;
 namespace FuFramework.Model.Runtime
 {
     /// <summary>
-    /// Model基类
-    /// 1.提供事件的注册，广播
-    /// 2.提供一些初始化接口
+    /// Model基类。
+    /// 功能：
+    ///     1. 提供Model事件的注册，广播功能。
+    ///     2. 定义Model生命周期的接口。
     /// </summary>
     public abstract class BaseModel
     {
@@ -38,17 +39,17 @@ namespace FuFramework.Model.Runtime
 
 
         /// <summary>
-        /// 用于初始化Model数据
+        /// 初始化Model数据
         /// </summary>
         protected virtual void OnInitData() { }
 
         /// <summary>
-        /// 被删除时调用(游戏退出时)
+        /// 释放Model资源。
         /// </summary>
         protected virtual void OnDispose() { }
 
         /// <summary>
-        /// 在此方法中注册所有事件
+        /// 注册Model事件。
         /// </summary>
         protected virtual void RegisterEvents() { }
 

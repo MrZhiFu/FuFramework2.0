@@ -6,28 +6,30 @@ using FuFramework.SaveData.Runtime;
 namespace FuFramework.Model.Runtime
 {
     /// <summary>
-    /// 可序列化的Model基类。即数据字段可存储在本地的Model。
+    /// 可序列化的Model基类(数据字段存储在本地的Model)。
+    /// 功能：
+    ///     1. 配合数据存储模块，提供Model数据的序列化，反序列化功能。
     /// 
-    /// 【序列化规则说明】
-    /// 默认情况下，以下元素会被JSON序列化保存：
-    /// ✅ 公共属性 (public properties with getter and setter)
-    /// ✅ 公共字段 (public fields)
+    /// 序列化规则说明：
+    /// 1.默认情况下，以下元素会被JSON序列化保存：
+    ///     ✅ 公共属性 (public properties with getter and setter)
+    ///     ✅ 公共字段 (public fields)
     /// 
-    /// 以下元素默认不会被保存：
-    /// ❌ 私有/受保护成员 (private/protected members)
-    /// ❌ 只读属性 (read-only properties)
-    /// ❌ 计算方法/表达式体属性 (computed properties)
-    /// ❌ 方法、事件、委托 (methods, events, delegates)
-    /// ❌ Unity组件引用 (Unity object references)
+    /// 2.以下元素默认不会被保存：
+    ///     ❌ 私有/受保护成员 (private/protected members)
+    ///     ❌ 只读属性 (read-only properties)
+    ///     ❌ 计算方法/表达式体属性 (computed properties)
+    ///     ❌ 方法、事件、委托 (methods, events, delegates)
+    ///     ❌ Unity组件引用 (Unity object references)
     /// 
-    /// 【使用特性精确控制序列化】
-    /// 1. 使用 [JsonIgnore] 忽略公共属性：
+    /// 使用特性精确控制序列化：
+    ///     1. 使用 [JsonIgnore] 忽略公共属性：
     /// <code>
     /// [JsonIgnore]
     /// public string TemporaryData { get; set; }  // 不会被保存
     /// </code>
     /// 
-    /// 2. 使用 [JsonProperty] 强制序列化私有成员：
+    ///     2. 使用 [JsonProperty] 强制序列化私有成员：
     /// <code>
     /// [JsonProperty]
     /// private string secretCode; // 会被保存
@@ -36,7 +38,7 @@ namespace FuFramework.Model.Runtime
     public abstract class BaseSerializerModel : BaseModel
     {
         /// <summary>
-        /// 本地存储的文件名。默认为类名。
+        /// 本地存储的文件名(默认为类名)。
         /// </summary>
         private string m_FileName;
 

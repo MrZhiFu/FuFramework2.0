@@ -6,9 +6,10 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Model.Runtime
 {
     /// <summary>
-    /// 数据模型管理模块
-    /// 1.将所有的Model存到字典里统一管理
-    /// 2.提供获取、删除指定Model的方法
+    /// 数据模型管理模块。
+    /// 功能：
+    ///     1.将所有的Model存到字典里统一管理。
+    ///     2.提供获取、删除指定Model的方法。
     /// </summary>
     public class ModelModule : FuModule
     {
