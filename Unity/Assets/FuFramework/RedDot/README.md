@@ -1,61 +1,273 @@
-# FuFramework RedDot Module
+# 1. FuFramework RedDot Module
 
-## 概述
+## 1. 简介
 
-RedDot 模块是 FuFramework 中的红点管理系统，专门用于管理游戏和应用中的红点提示功能。该模块采用树形结构设计，支持父子节点的层级关系，能够自动计算总红点数量，并提供事件通知机制。
+FuFramework RedDot 模块是游戏框架的红点管理系统，专门用于管理游戏和应用中的红点提示功能。该模块采用树形结构设计，支持父子节点的层级关系，能够自动计算总红点数量，并提供事件通知机制。
 
-### 核心特性
+## 2. 核心特性
 
 - **树形结构管理**：支持父子节点层级关系，自动计算总计数
 - **事件通知机制**：计数变化时自动通知所有监听者
 - **对象池管理**：使用引用池减少 GC 分配
-- **配置化驱动**：通过 ScriptableObject 配置文件初始化红点树结构
+- **配置化驱动**：通过 RedDotSetting (ScriptableObject) 配置文件初始化红点树结构
 - **高性能设计**：优化的数据结构，支持大量节点管理
 
-## 系统架构
+## 3. 核心概念
 
-### 核心类说明
-
-#### 1. RedDotModule
-红点系统管理器，继承自 FuModule，负责整个红点系统的生命周期管理。
-
-**主要职责：**
-- 初始化红点树结构
-- 提供红点计数操作接口
-- 管理事件监听机制
-- 处理模块的初始化和关闭
-
-#### 2. RedDotNode
-红点节点类，实现 IReference 接口，支持对象池管理。
-
-**主要属性：**
-- `Key`：节点唯一标识
-- `RawCount`：节点的原始计数
-- `TotalCount`：节点的总计数（包含子节点）
-- `Parent`：父节点引用
-- `Path`：节点完整路径
-
-### 技术架构
+### 3.1 类继承与实现体系
 
 ```
-RedDotModule (管理器)
-    ↓
-RedDotNode (节点树)
-    ├── 父节点
-    │   ├── 子节点1
-    │   ├── 子节点2
-    │   └── 子节点3
-    └── 兄弟节点
+【类继承体系】
+
+FuModule (框架模块基类)
+    └── RedDotModule (红点管理模块)
+
+IReference (引用池接口)
+    └── RedDotNode (红点节点)
+        └── 实现 Clear() 方法用于对象池回收
+
+
+【数据结构】
+
+RedDotNodeData (配置数据结构)
+    ├── m_Key: string          # 节点唯一标识
+    ├── m_Children: List<RedDotNodeData>  # 子节点列表
+    └── 用途: 在 RedDotSetting 中配置红点树结构
+
+
+【模块依赖关系】
+
+RedDotModule 依赖:
+    └── ModuleSetting.Runtime.ModuleSetting
+        └── RedDotSetting (ScriptableObject)
+            └── m_RootNodes: List<RedDotNodeData>
+                └── 构建完整的红点树
 ```
 
-## 快速开始
+### 3.2 红点树架构
 
-### 1. 配置红点树结构
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    RedDotModule                             │
+│                     (FuModule)                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                    NodeDict                         │   │
+│  │              Dictionary<string, RedDotNode>         │   │
+│  │                                                       │   │
+│  │  ┌─────────┐    ┌─────────┐    ┌─────────┐          │   │
+│  │  │  Root1  │    │  Root2  │    │  Root3  │          │   │
+│  │  │ (main)  │    │ (mail)  │    │ (task)  │          │   │
+│  │  └────┬────┘    └────┬────┘    └────┬────┘          │   │
+│  │       │              │              │               │   │
+│  │  ┌────┴────┐    ┌────┴────┐    ┌────┴────┐          │   │
+│  │  │ Child1  │    │ Child1  │    │ Child1  │          │   │
+│  │  │ Child2  │    │ Child2  │    │ Child2  │          │   │
+│  │  └─────────┘    └─────────┘    └─────────┘          │   │
+│  │                                                       │   │
+│  │  每个节点维护:                                        │   │
+│  │  - Key: 唯一标识                                      │   │
+│  │  - RawCount: 自身计数                                 │   │
+│  │  - TotalCount: 总计数(自身+所有子节点)                │   │
+│  │  - Parent: 父节点引用                                 │   │
+│  │  - m_Children: 子节点列表                             │   │
+│  │  - Path: 完整路径 (如 "main/mail/system")             │   │
+│  │  - OnCountChanged: 计数变化事件                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │   RedDotSetting  │
+                    │ (ScriptableObject)│
+                    │   配置驱动初始化   │
+                    └──────────────────┘
+```
 
-首先需要在 ModuleSetting 中配置红点树结构。创建一个 RedDotSetting ScriptableObject 配置文件，定义红点节点的层级关系。
+### 3.3 红点计数传播机制
+
+```
+【计数计算规则】
+
+TotalCount = RawCount + Σ(所有子节点的 TotalCount)
+
+
+【计数传播示例】
+
+初始状态:
+main (Raw: 0, Total: 0)
+└── mail (Raw: 0, Total: 0)
+    ├── system (Raw: 0, Total: 0)
+    ├── friend (Raw: 0, Total: 0)
+    └── guild (Raw: 0, Total: 0)
+
+
+设置 system 节点计数为 5:
+
+Step 1: system.SetCount(5)
+    system: Raw=5, Total=5
+    └── 触发 OnCountChanged(5)
+
+Step 2: mail 收到子节点变化通知
+    mail: Raw=0, Total=0+5=5
+    └── 触发 OnCountChanged(5)
+
+Step 3: main 收到子节点变化通知
+    main: Raw=0, Total=0+5=5
+    └── 触发 OnCountChanged(5)
+
+
+最终状态:
+main (Raw: 0, Total: 5)      ← UI显示: 5
+└── mail (Raw: 0, Total: 5)  ← UI显示: 5
+    ├── system (Raw: 5, Total: 5)  ← UI显示: 5
+    ├── friend (Raw: 0, Total: 0)
+    └── guild (Raw: 0, Total: 0)
+```
+
+### 3.4 生命周期管理
+
+```
+【模块生命周期】
+
+OnInit()
+    │
+    ├── 读取 RedDotSetting 配置
+    ├── 清空 NodeDict
+    └── 递归构建红点树 (BuildNodeRecursive)
+        ├── 从 ReferencePool 获取 RedDotNode
+        ├── 设置 Key, Parent, Path
+        ├── 添加到 NodeDict
+        └── 递归处理子节点
+
+OnDispose()
+    │
+    ├── 遍历 NodeDict 中的所有节点
+    ├── 每个节点 Release 回 ReferencePool
+    └── 清空 NodeDict
+
+
+【节点生命周期】
+
+Create(key, parent)
+    │
+    ├── ReferencePool.Acquire<RedDotNode>()
+    ├── 初始化 Key, Parent, Path
+    └── 返回节点
+
+SetCount(count)
+    │
+    ├── 更新 RawCount
+    └── 调用 UpdateTotalCount()
+        ├── 计算子节点总计数
+        ├── 更新 TotalCount
+        ├── 触发 OnCountChanged 事件
+        └── 递归通知父节点更新
+
+Clear() (IReference 接口)
+    │
+    ├── 重置 Key, Path, Parent
+    ├── 重置 RawCount, TotalCount
+    ├── 清空 m_Children
+    └── 清空 OnCountChanged 事件
+```
+
+## 4. 核心类详细说明
+
+### 4.1 RedDotModule
+
+红点管理模块，继承自 `FuModule`，负责整个红点系统的生命周期管理。
+
+**核心功能：**
 
 ```csharp
-// 示例：在 ModuleSetting 中配置红点树
+public class RedDotModule : FuModule
+{
+    // 节点管理
+    private static readonly Dictionary<string, RedDotNode> NodeDict;
+    
+    // 生命周期
+    protected override void OnInit()           // 从配置初始化红点树
+    protected override void OnDispose()        // 释放所有节点回对象池
+    
+    // 节点构建
+    private void BuildNodeRecursive(RedDotNode parent, RedDotNodeData data)
+    
+    // 事件监听
+    public void Register(string key, Action<int> onChange, bool immediateNotify = true)
+    public void Unregister(string key, Action<int> onChange)
+    public void UnregisterAll(string key)
+    public void ClearAllListeners()
+    
+    // 节点查询
+    public RedDotNode GetNode(string key)
+    public int GetCount(string key)
+    public bool HasNode(string key)
+    
+    // 计数操作
+    public void SetCount(string key, int count)
+    public void AddCount(string key, int value = 1)
+    public void SubCount(string key, int value = 1)
+    public void ResetCount(string key)
+    public void ResetCounts(params string[] keys)
+}
+```
+
+**模块依赖：**
+- 依赖 `ModuleSetting.Runtime.ModuleSetting` 获取 `RedDotSetting` 配置
+- 依赖 `ReferencePool` 进行节点对象池管理
+
+### 4.2 RedDotNode
+
+红点节点类，实现 `IReference` 接口，支持对象池管理。
+
+**核心功能：**
+
+```csharp
+public class RedDotNode : IReference
+{
+    // 节点属性
+    public string Key { get; private set; }           // 节点唯一标识
+    public int RawCount { get; private set; }         // 自身红点计数
+    public int TotalCount { get; private set; }       // 总计数(自身+子节点)
+    public RedDotNode Parent { get; private set; }    // 父节点引用
+    public string Path { get; private set; }          // 完整路径
+    
+    // 事件
+    public event Action<int> OnCountChanged;          // 计数变化事件
+    
+    // 节点管理
+    private readonly List<RedDotNode> m_Children;     // 子节点列表
+    
+    // 工厂方法
+    public static RedDotNode Create(string key, RedDotNode parent)
+    
+    // 子节点管理
+    public void AddChild(RedDotNode child)
+    public IReadOnlyList<RedDotNode> GetChildren()
+    
+    // 计数管理
+    public void SetCount(int count)
+    private void UpdateTotalCount()
+    
+    // IReference 接口
+    public void Clear()
+    public void ClearAllListeners()
+}
+```
+
+**实现细节：**
+- 使用 `ReferencePool` 创建和回收，避免 GC 分配
+- 计数变化时自动向上传播到父节点
+- 支持事件监听，UI 组件可注册回调更新显示
+
+## 5. 使用示例
+
+### 5.1 配置红点树结构
+
+首先需要在 `RedDotSetting` ScriptableObject 中配置红点树结构：
+
+```csharp
+// RedDotSetting.cs (ScriptableObject)
 [CreateAssetMenu(fileName = "RedDotSetting", menuName = "FuFramework/RedDot Setting")]
 public class RedDotSetting : ScriptableObject
 {
@@ -65,33 +277,60 @@ public class RedDotSetting : ScriptableObject
 [Serializable]
 public class RedDotNodeData
 {
-    public string m_Key;
-    public List<RedDotNodeData> m_Children;
+    public string m_Key;                           // 节点唯一标识
+    public List<RedDotNodeData> m_Children;        // 子节点列表
 }
 ```
 
-### 2. 基本使用示例
+**配置示例（在 Unity Inspector 中配置）：**
+
+```
+RedDotSetting
+└── m_RootNodes
+    ├── [0] main
+    │   └── m_Children
+    │       ├── [0] mail
+    │       │   └── m_Children
+    │       │       ├── [0] mail_system
+    │       │       ├── [1] mail_friend
+    │       │       └── [2] mail_guild
+    │       └── [1] task
+    │           └── m_Children
+    │               ├── [0] task_daily
+    │               ├── [1] task_weekly
+    │               └── [2] task_achievement
+    └── [1] shop
+        └── m_Children
+            ├── [0] shop_new
+            └── [1] shop_discount
+```
+
+### 5.2 基本使用示例
 
 ```csharp
 using FuFramework.RedDot.Runtime;
+using UnityEngine;
 
 public class RedDotExample : MonoBehaviour
 {
     private void Start()
     {
-        var RedDotModule = GlobalModule.RedDotModule;
+        var redDotModule = GlobalModule.RedDotModule;
         
         // 注册红点变化监听
-        RedDotModule.Register("mail_system", OnMailCountChanged);
+        redDotModule.Register("mail_system", OnMailCountChanged);
         
         // 设置红点数量
-        RedDotModule.SetCount("mail_system", 5);
+        redDotModule.SetCount("mail_system", 5);
         
         // 递增红点数量
-        RedDotModule.IncrementCount("mail_system", 2);
+        redDotModule.AddCount("mail_system", 2);
+        
+        // 递减红点数量
+        redDotModule.SubCount("mail_system", 1);
         
         // 重置红点数量
-        RedDotModule.ResetCount("mail_system");
+        redDotModule.ResetCount("mail_system");
     }
     
     private void OnMailCountChanged(int count)
@@ -109,31 +348,171 @@ public class RedDotExample : MonoBehaviour
 }
 ```
 
-## 详细使用指南
-
-### 1. 红点树配置示例
+### 5.3 邮件系统红点管理
 
 ```csharp
-// 定义红点树结构
+public class MailSystemManager : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        var redDotModule = GlobalModule.RedDotModule;
+        
+        // 注册所有邮件相关红点监听
+        redDotModule.Register("mail_system", OnSystemMailCountChanged);
+        redDotModule.Register("mail_friend", OnFriendMailCountChanged);
+        redDotModule.Register("mail_guild", OnGuildMailCountChanged);
+        redDotModule.Register("mail", OnTotalMailCountChanged);
+        redDotModule.Register("main", OnMainRedDotCountChanged);
+    }
+    
+    private void OnDisable()
+    {
+        var redDotModule = GlobalModule.RedDotModule;
+        
+        // 注销所有监听
+        redDotModule.Unregister("mail_system", OnSystemMailCountChanged);
+        redDotModule.Unregister("mail_friend", OnFriendMailCountChanged);
+        redDotModule.Unregister("mail_guild", OnGuildMailCountChanged);
+        redDotModule.Unregister("mail", OnTotalMailCountChanged);
+        redDotModule.Unregister("main", OnMainRedDotCountChanged);
+    }
+    
+    // 收到新系统邮件
+    public void OnReceiveSystemMail()
+    {
+        GlobalModule.RedDotModule.AddCount("mail_system");
+    }
+    
+    // 阅读所有系统邮件
+    public void OnReadAllSystemMails()
+    {
+        GlobalModule.RedDotModule.ResetCount("mail_system");
+    }
+    
+    // 批量重置所有邮件红点
+    public void ResetAllMailCounts()
+    {
+        GlobalModule.RedDotModule.ResetCounts(
+            "mail_system", 
+            "mail_friend", 
+            "mail_guild"
+        );
+    }
+    
+    private void OnSystemMailCountChanged(int count)
+    {
+        // 更新系统邮件红点UI
+        systemMailRedDotText.text = count > 0 ? count.ToString() : "";
+        systemMailRedDotObj.SetActive(count > 0);
+    }
+    
+    private void OnTotalMailCountChanged(int count)
+    {
+        // 更新邮件总红点UI（包含所有子邮件类型）
+        mailRedDotText.text = count > 0 ? count.ToString() : "";
+        mailRedDotObj.SetActive(count > 0);
+    }
+    
+    private void OnMainRedDotCountChanged(int count)
+    {
+        // 更新主界面红点（包含邮件、任务等所有子系统）
+        mainRedDotObj.SetActive(count > 0);
+    }
+}
+```
+
+### 5.4 UI 红点组件封装
+
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// 红点UI组件 - 自动绑定红点系统
+/// </summary>
+public class RedDotUI : MonoBehaviour
+{
+    [SerializeField] private string m_RedDotKey;           // 红点节点key
+    [SerializeField] private Text m_CountText;             // 数量显示文本
+    [SerializeField] private GameObject m_RedDotObj;       // 红点对象
+    [SerializeField] private bool m_ShowZero = false;      // 是否显示0
+    
+    private void OnEnable()
+    {
+        if (string.IsNullOrEmpty(m_RedDotKey)) return;
+        
+        // 注册监听，立即通知当前状态
+        GlobalModule.RedDotModule.Register(m_RedDotKey, OnRedDotChanged, true);
+    }
+    
+    private void OnDisable()
+    {
+        if (string.IsNullOrEmpty(m_RedDotKey)) return;
+        
+        GlobalModule.RedDotModule.Unregister(m_RedDotKey, OnRedDotChanged);
+    }
+    
+    private void OnRedDotChanged(int count)
+    {
+        // 更新红点显示
+        if (m_RedDotObj != null)
+        {
+            m_RedDotObj.SetActive(count > 0);
+        }
+        
+        // 更新数量文本
+        if (m_CountText != null)
+        {
+            m_CountText.text = count > 0 || m_ShowZero ? count.ToString() : "";
+        }
+    }
+}
+```
+
+## 6. 目录结构
+
+```
+Assets/FuFramework/RedDot/
+├── Runtime/
+│   ├── FuFramework.RedDot.Runtime.asmdef    # 程序集定义
+│   ├── RedDotModule.cs                       # 红点管理模块
+│   └── RedDotNode.cs                         # 红点节点类
+└── README.md                                 # 本文档
+```
+
+## 7. 依赖
+
+| 模块 | 说明 |
+|------|------|
+| FuFramework.Core | 提供 FuModule 基类、FuLogger |
+| FuFramework.ReferencePool | 提供 IReference 接口和 ReferencePool |
+| FuFramework.ModuleSetting | 提供 RedDotSetting 配置 |
+
+## 8. 最佳实践
+
+### 8.1 红点树设计规范
+
+```csharp
+// 1. 定义统一的节点Key常量
 public static class RedDotKeys
 {
     // 根节点
     public const string Main = "main";
-    public const string Mail = "mail";
-    public const string Task = "task";
     
-    // 邮件系统子节点
+    // 邮件系统
+    public const string Mail = "mail";
     public const string MailSystem = "mail_system";
     public const string MailFriend = "mail_friend";
     public const string MailGuild = "mail_guild";
     
-    // 任务系统子节点
+    // 任务系统
+    public const string Task = "task";
     public const string TaskDaily = "task_daily";
     public const string TaskWeekly = "task_weekly";
     public const string TaskAchievement = "task_achievement";
 }
 
-// 对应的树形结构
+// 2. 在 RedDotSetting 中配置树形结构
 // main
 // ├── mail
 // │   ├── mail_system
@@ -145,471 +524,41 @@ public static class RedDotKeys
 //     └── task_achievement
 ```
 
-### 2. 复杂场景使用示例
-
-#### 邮件系统红点管理
+### 8.2 事件监听管理
 
 ```csharp
-public class MailSystemManager : MonoBehaviour
+public class RedDotManager : MonoBehaviour
 {
-    private void OnEnable()
+    // 使用字典管理监听器，便于批量注销
+    private Dictionary<string, Action<int>> m_Listeners = new();
+    
+    private void RegisterRedDot(string key, Action<int> callback)
     {
-        // 注册所有邮件相关红点监听
-        var RedDotModule = GlobalModule.RedDotModule;
-        RedDotModule.Register(RedDotKeys.MailSystem, OnSystemMailCountChanged);
-        RedDotModule.Register(RedDotKeys.MailFriend, OnFriendMailCountChanged);
-        RedDotModule.Register(RedDotKeys.MailGuild, OnGuildMailCountChanged);
-        RedDotModule.Register(RedDotKeys.Mail, OnTotalMailCountChanged);
+        m_Listeners[key] = callback;
+        GlobalModule.RedDotModule.Register(key, callback);
     }
     
-    private void OnDisable()
+    private void UnregisterAll()
     {
-        // 注销所有监听
-        var RedDotModule = GlobalModule.RedDotModule;
-        RedDotModule.Unregister(RedDotKeys.MailSystem, OnSystemMailCountChanged);
-        RedDotModule.Unregister(RedDotKeys.MailFriend, OnFriendMailCountChanged);
-        RedDotModule.Unregister(RedDotKeys.MailGuild, OnGuildMailCountChanged);
-        RedDotModule.Unregister(RedDotKeys.Mail, OnTotalMailCountChanged);
-    }
-    
-    // 收到新系统邮件
-    public void OnReceiveSystemMail()
-    {
-        RedDotModule.IncrementCount(RedDotKeys.MailSystem);
-    }
-    
-    // 阅读所有系统邮件
-    public void OnReadAllSystemMails()
-    {
-        RedDotModule.ResetCount(RedDotKeys.MailSystem);
-    }
-    
-    // 批量重置所有邮件红点
-    public void ResetAllMailCounts()
-    {
-        RedDotModule.ResetCounts(
-            RedDotKeys.MailSystem, 
-            RedDotKeys.MailFriend, 
-            RedDotKeys.MailGuild
-        );
-    }
-    
-    private void OnSystemMailCountChanged(int count)
-    {
-        UpdateSystemMailRedDot(count);
-    }
-    
-    private void OnFriendMailCountChanged(int count)
-    {
-        UpdateFriendMailRedDot(count);
-    }
-    
-    private void OnGuildMailCountChanged(int count)
-    {
-        UpdateGuildMailRedDot(count);
-    }
-    
-    private void OnTotalMailCountChanged(int count)
-    {
-        UpdateTotalMailRedDot(count);
-    }
-}
-```
-
-#### 任务系统红点管理
-
-```csharp
-public class TaskSystemManager : MonoBehaviour
-{
-    private Dictionary<string, int> m_TaskCounts = new();
-    
-    public void InitializeTaskCounts()
-    {
-        // 从服务器获取任务数据
-        var dailyTasks = GetDailyTasks();
-        var weeklyTasks = GetWeeklyTasks();
-        var achievementTasks = GetAchievementTasks();
-        
-        // 设置红点数量
-        RedDotModule.SetCount(RedDotKeys.TaskDaily, dailyTasks.Count);
-        RedDotModule.SetCount(RedDotKeys.TaskWeekly, weeklyTasks.Count);
-        RedDotModule.SetCount(RedDotKeys.TaskAchievement, achievementTasks.Count);
-    }
-    
-    // 完成任务
-    public void CompleteTask(string taskType, string taskId)
-    {
-        switch (taskType)
+        foreach (var pair in m_Listeners)
         {
-            case "daily":
-                RedDotModule.DecrementCount(RedDotKeys.TaskDaily);
-                break;
-            case "weekly":
-                RedDotModule.DecrementCount(RedDotKeys.TaskWeekly);
-                break;
-            case "achievement":
-                RedDotModule.DecrementCount(RedDotKeys.TaskAchievement);
-                break;
+            GlobalModule.RedDotModule.Unregister(pair.Key, pair.Value);
         }
-    }
-    
-    // 刷新任务（如每日重置）
-    public void RefreshTasks()
-    {
-        var newDailyTasks = GetDailyTasks();
-        RedDotModule.SetCount(RedDotKeys.TaskDaily, newDailyTasks.Count);
-    }
-}
-```
-
-### 3. UI 组件集成示例
-
-```csharp
-public class RedDotUIComponent : MonoBehaviour
-{
-    [SerializeField] private string m_RedDotKey;
-    [SerializeField] private GameObject m_RedDotObject;
-    [SerializeField] private Text m_CountText;
-    
-    private void Start()
-    {
-        // 注册红点监听
-        RedDotModule.Register(m_RedDotKey, OnRedDotCountChanged, true);
-    }
-    
-    private void OnRedDotCountChanged(int count)
-    {
-        // 更新红点显示状态
-        bool hasRedDot = count > 0;
-        m_RedDotObject.SetActive(hasRedDot);
-        
-        // 更新数量显示
-        if (m_CountText != null)
-        {
-            m_CountText.text = count > 99 ? "99+" : count.ToString();
-        }
+        m_Listeners.Clear();
     }
     
     private void OnDestroy()
     {
-        // 注销监听
-        if (RedDotModule.HasInstance)
-        {
-            RedDotModule.Unregister(m_RedDotKey, OnRedDotCountChanged);
-        }
-    }
-    
-    // 点击红点区域（如阅读所有邮件）
-    public void OnClickRedDotArea()
-    {
-        RedDotModule.ResetCount(m_RedDotKey);
+        UnregisterAll();
     }
 }
 ```
 
-## 高级用法
+### 8.3 注意事项
 
-### 1. 动态节点管理
-
-```csharp
-public class DynamicRedDotManager : MonoBehaviour
-{
-    // 动态创建红点节点（需要扩展 RedDotModule）
-    public void CreateDynamicNode(string parentKey, string newNodeKey)
-    {
-        var parentNode = RedDotModule.GetNode(parentKey);
-        if (parentNode != null)
-        {
-            // 动态创建节点逻辑（需要扩展现有系统）
-            CreateDynamicNodeInternal(parentNode, newNodeKey);
-        }
-    }
-    
-    // 动态移除节点
-    public void RemoveDynamicNode(string nodeKey)
-    {
-        // 动态移除节点逻辑
-        RemoveDynamicNodeInternal(nodeKey);
-    }
-}
-```
-
-### 2. 条件红点控制
-
-```csharp
-public class ConditionalRedDotManager : MonoBehaviour
-{
-    [SerializeField] private string m_RedDotKey;
-    [SerializeField] private int m_MinLevel = 10; // 最低等级要求
-    
-    private void Update()
-    {
-        // 根据条件控制红点显示
-        int playerLevel = GetPlayerLevel();
-        bool shouldShowRedDot = playerLevel >= m_MinLevel && HasNewContent();
-        
-        if (shouldShowRedDot)
-        {
-            RedDotModule.SetCount(m_RedDotKey, 1);
-        }
-        else
-        {
-            RedDotModule.ResetCount(m_RedDotKey);
-        }
-    }
-    
-    private bool HasNewContent()
-    {
-        // 检查是否有新内容
-        return CheckServerForNewContent();
-    }
-}
-```
-
-### 3. 红点分组管理
-
-```csharp
-public class RedDotGroupManager : MonoBehaviour
-{
-    private readonly List<string> m_MailGroup = new()
-    {
-        RedDotKeys.MailSystem,
-        RedDotKeys.MailFriend,
-        RedDotKeys.MailGuild
-    };
-    
-    private readonly List<string> m_TaskGroup = new()
-    {
-        RedDotKeys.TaskDaily,
-        RedDotKeys.TaskWeekly,
-        RedDotKeys.TaskAchievement
-    };
-    
-    // 重置整个邮件组红点
-    public void ResetMailGroup()
-    {
-        foreach (var key in m_MailGroup)
-        {
-            RedDotModule.ResetCount(key);
-        }
-    }
-    
-    // 获取组内总红点数量
-    public int GetGroupTotalCount(List<string> groupKeys)
-    {
-        int total = 0;
-        foreach (var key in groupKeys)
-        {
-            total += RedDotModule.GetCount(key);
-        }
-        return total;
-    }
-}
-```
-
-## 性能优化建议
-
-### 1. 监听器管理优化
-
-```csharp
-public class OptimizedRedDotUsage : MonoBehaviour
-{
-    private Dictionary<string, Action<int>> m_RegisteredCallbacks = new();
-    
-    // 批量注册监听
-    public void RegisterMultiple(List<string> keys, Action<int> callback)
-    {
-        foreach (var key in keys)
-        {
-            RedDotModule.Register(key, callback);
-            m_RegisteredCallbacks[key] = callback;
-        }
-    }
-    
-    // 批量注销监听
-    public void UnregisterMultiple(List<string> keys)
-    {
-        foreach (var key in keys)
-        {
-            if (m_RegisteredCallbacks.TryGetValue(key, out var callback))
-            {
-                RedDotModule.Unregister(key, callback);
-                m_RegisteredCallbacks.Remove(key);
-            }
-        }
-    }
-    
-    private void OnDestroy()
-    {
-        // 清理所有注册的监听
-        foreach (var kvp in m_RegisteredCallbacks)
-        {
-            RedDotModule.Unregister(kvp.Key, kvp.Value);
-        }
-        m_RegisteredCallbacks.Clear();
-    }
-}
-```
-
-### 2. 红点更新频率控制
-
-```csharp
-public class ThrottledRedDotUpdater : MonoBehaviour
-{
-    private Dictionary<string, int> m_PendingUpdates = new();
-    private float m_LastUpdateTime;
-    private const float UPDATE_INTERVAL = 0.1f; // 100ms 更新间隔
-    
-    public void QueueRedDotUpdate(string key, int count)
-    {
-        m_PendingUpdates[key] = count;
-        
-        // 检查是否需要立即更新
-        if (Time.time - m_LastUpdateTime >= UPDATE_INTERVAL)
-        {
-            ProcessPendingUpdates();
-        }
-    }
-    
-    private void Update()
-    {
-        // 定期处理积压的更新
-        if (m_PendingUpdates.Count > 0 && Time.time - m_LastUpdateTime >= UPDATE_INTERVAL)
-        {
-            ProcessPendingUpdates();
-        }
-    }
-    
-    private void ProcessPendingUpdates()
-    {
-        foreach (var kvp in m_PendingUpdates)
-        {
-            RedDotModule.SetCount(kvp.Key, kvp.Value);
-        }
-        
-        m_PendingUpdates.Clear();
-        m_LastUpdateTime = Time.time;
-    }
-}
-```
-
-## 注意事项
-
-### 1. 内存管理
-- 及时注销不再使用的监听器
-- 避免在频繁调用的方法中注册/注销监听
-- 使用对象池减少 GC 压力
-
-### 2. 性能考虑
-- 避免在 Update 中频繁调用红点计数方法
-- 对于大量节点，考虑使用批量操作
-- 合理设计红点树结构，避免过深的层级
-
-### 3. 错误处理
-- 检查节点是否存在后再进行操作
-- 处理监听器注册失败的情况
-- 使用 try-catch 包装关键操作
-
-### 4. 线程安全
-- 红点操作应在主线程执行
-- 避免多线程同时修改红点计数
-
-## API 参考
-
-### RedDotModule 类
-
-#### 静态属性
-
-##### Instance
-```csharp
-public static RedDotModule Instance { get; }
-```
-**功能**：获取红点管理器单例实例
-
-#### 实例方法
-
-##### Register(string key, Action<int> onChange, bool immediateNotify = true)
-```csharp
-public void Register(string key, Action<int> onChange, bool immediateNotify = true)
-```
-**功能**：注册节点状态变化的回调函数
-
-**参数**：
-- `key` (string)：节点的 key
-- `onChange` (Action<int>)：节点状态变化的回调函数
-- `immediateNotify` (bool)：是否立即通知当前状态，默认 true
-
-**示例**：
-```csharp
-RedDotModule.Register("mail_system", OnMailCountChanged);
-```
-
-##### Unregister(string key, Action<int> onChange)
-```csharp
-public void Unregister(string key, Action<int> onChange)
-```
-**功能**：注销节点状态变化的回调函数
-
-**参数**：
-- `key` (string)：节点的 key
-- `onChange` (Action<int>)：节点状态变化的回调函数
-
-**示例**：
-```csharp
-RedDotModule.Unregister("mail_system", OnMailCountChanged);
-```
-
-##### SetCount(string key, int count)
-```csharp
-public void SetCount(string key, int count)
-```
-**功能**：设置节点的红点数量
-
-**参数**：
-- `key` (string)：节点的 key
-- `count` (int)：红点数量
-
-**示例**：
-```csharp
-RedDotModule.SetCount("mail_system", 5);
-```
-
-##### GetCount(string key)
-```csharp
-public int GetCount(string key)
-```
-**功能**：获取节点的红点数量
-
-**参数**：
-- `key` (string)：节点的 key
-
-**返回值**：
-- `int`：红点数量，节点不存在返回 0
-
-**示例**：
-```csharp
-int count = RedDotModule.GetCount("mail_system");
-```
-
-## 常见问题解答
-
-### Q: 红点数量不更新怎么办？
-A: 检查是否正确注册了监听器，确认节点 key 是否正确，检查红点树配置是否包含该节点。
-
-### Q: 如何实现红点的条件显示？
-A: 可以在监听器中添加条件判断，或者使用 ConditionalRedDotManager 示例中的方法。
-
-### Q: 红点系统支持动态节点吗？
-A: 当前版本需要预先配置红点树结构，动态节点功能需要扩展实现。
-
-### Q: 如何处理大量红点节点的性能问题？
-A: 使用批量操作，控制更新频率，合理设计树形结构避免过深层级。
-
-### Q: 红点计数可以设置为负数吗？
-A: 不可以，红点计数会自动限制为不小于 0 的值。
-
-## 总结
-
-RedDot 模块为 FuFramework 提供了强大而灵活的红点管理系统，支持复杂的树形结构和事件通知机制。通过合理的配置和使用，可以轻松管理游戏中的各种红点提示需求。
-
-该模块的设计注重性能和易用性，提供了完整的生命周期管理和错误处理机制，是游戏开发中红点功能的理想解决方案。
+1. **配置先行**：确保在 RedDotSetting 中正确配置红点树结构，否则节点操作会失败
+2. **Key 唯一性**：所有节点的 Key 必须唯一，重复 Key 会导致初始化错误
+3. **事件注销**：组件销毁时务必注销红点监听，避免内存泄漏和空引用
+4. **计数传播**：父节点的 TotalCount 会自动计算所有子节点，无需手动设置
+5. **对象池**：RedDotNode 使用引用池管理，模块销毁时会自动回收所有节点
+6. **线程安全**：红点操作应在主线程进行，避免多线程问题
