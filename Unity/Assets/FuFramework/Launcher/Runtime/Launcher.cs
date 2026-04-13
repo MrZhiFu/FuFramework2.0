@@ -6,8 +6,11 @@ namespace FuFramework.Launcher.Runtime
 {
     /// <summary>
     /// 入口类。
-    /// 1. 启动游戏
-    /// 2. 驱动框架生命周期
+    /// 功能：
+    ///     1. 注册框架模块
+    ///     2. 启动游戏流程
+    ///     3. 驱动框架生命周期
+    ///     4. 暂停/继续/退出/重启游戏。
     /// </summary>
     public partial class Launcher : MonoSingleton<Launcher>
     {
