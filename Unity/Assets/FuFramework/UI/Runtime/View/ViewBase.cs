@@ -38,11 +38,6 @@ namespace FuFramework.UI.Runtime
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 获取界面深度。
-        /// </summary>
-        public int DepthInUIGroup { get; private set; }
-
-        /// <summary>
         /// 显示时是否暂停被覆盖的界面。
         /// </summary>
         public virtual bool PauseCoveredUI => false;
@@ -114,9 +109,8 @@ namespace FuFramework.UI.Runtime
             // 如果已经初始化过，则不再初始化
             if (m_IsInit) return;
 
-            m_UIModule     = ModuleManager.GetModule<UIModule>();
-            m_IsInit       = true;
-            DepthInUIGroup = 0;
+            m_UIModule = ModuleManager.GetModule<UIModule>();
+            m_IsInit   = true;
 
             if (!isNewInstance) return;
 

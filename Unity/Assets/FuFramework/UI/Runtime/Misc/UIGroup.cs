@@ -242,7 +242,6 @@ namespace FuFramework.UI.Runtime
 
             var isCover = false;   // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
             var isPause = m_Pause; // 是否暂停的标志，初始值由组暂停状态决定，后续根据界面暂停状态更新
-            var depth   = UICount; // 初始深度值(从界面数量开始递减)
 
             while (current is { Value: not null })
             {
@@ -256,11 +255,6 @@ namespace FuFramework.UI.Runtime
                     current = next;
                     continue;
                 }
-
-                var view = uiInfo.View;
-
-                // 通知界面深度变化（使用逆序深度分配，第一个元素深度值最大）
-                view._OnDepthChanged(depth--);
 
                 // 处理被暂停的界面状态
                 HandlePauseState(uiInfo, ref isPause);

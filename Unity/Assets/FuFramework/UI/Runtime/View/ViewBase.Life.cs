@@ -144,8 +144,7 @@ namespace FuFramework.UI.Runtime
         {
             FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
 
-            SerialId       = 0;
-            DepthInUIGroup = 0;
+            SerialId = 0;
             OnRecycle();
         }
 
@@ -162,16 +161,6 @@ namespace FuFramework.UI.Runtime
             ReleaseTimerRegister();   // 释放计时器注册器
 
             OnDispose();
-        }
-
-        /// <summary>
-        /// 界面深度改变。
-        /// </summary>
-        /// <param name="depthInUIGroup">界面在界面组中的深度。</param>
-        internal void _OnDepthChanged(int depthInUIGroup)
-        {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]深度被改变为'{depthInUIGroup}'-OnDepthChanged().");
-            DepthInUIGroup = depthInUIGroup;
         }
 
         /// <summary>
