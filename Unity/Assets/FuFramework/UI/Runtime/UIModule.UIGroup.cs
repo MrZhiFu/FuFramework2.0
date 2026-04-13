@@ -7,11 +7,11 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// UI分组管理器。
-    /// 职责：用于管理所有UI界面的分组。
-    /// 核心功能:
-    /// 1. 是否存在界面组。
-    /// 2. 获取界面组。
-    /// 3. 添加界面组。
+    /// 目标：用于管理所有UI界面的分组。
+    /// 功能：
+    ///     1. 是否存在界面组。
+    ///     2. 获取界面组。
+    ///     3. 添加界面组。
     /// </summary>
     public sealed partial class UIModule
     {

@@ -5,7 +5,11 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.UI.Editor
 {
     /// <summary>
-    /// UI纹理资源导入后处理器
+    /// UI纹理资源导入后处理器。
+    /// 目标：在导入UI纹理资源时，自动设置其导入参数，确保在不同平台上的正确显示。
+    /// 功能：
+    ///     1. 自动设置纹理导入参数，如纹理类型、Mipmap、可读性等。
+    ///     2. 支持在不同平台上的正确显示，如Android、iOS、PC/Standalone等。
     /// </summary>
     internal sealed class UITextureAssetPostprocessor : AssetPostprocessor
     {

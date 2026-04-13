@@ -8,11 +8,11 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// FUI事件注册器
-    /// 职责：用于管理FUI组件的UI响应事件。
-    /// 核心功能:
-    /// 1. 添加UI上指定组件的监听事件。
-    /// 2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
-    /// 3. 移除UI上指定组件的监听事件。
+    /// 目标：用于管理FUI组件的UI响应事件。
+    /// 功能：
+    ///     1. 添加UI上指定组件的监听事件。
+    ///     2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
+    ///     3. 移除UI上指定组件的监听事件。
     /// </summary>
     public class FuiEventRegister : IReference
     {

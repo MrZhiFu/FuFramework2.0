@@ -127,6 +127,8 @@ namespace FuFramework.UI.Runtime
 
                 // FUI界面加入界面组
                 var uiGroup = view.UIGroup;
+
+                // AddChild会自动sort++ 
                 uiGroup.AddChild(view.UIView);
                 uiGroup.AddUI(view);
 

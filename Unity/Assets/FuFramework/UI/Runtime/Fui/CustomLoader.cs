@@ -17,7 +17,8 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// FUI自定义Loader的资源LRU缓存器
-    /// 职责：提供一个LRU缓存机制，用于缓存加载的纹理资源。
+    /// 功能：
+    ///     1. 提供一个LRU缓存机制，用于缓存加载的纹理资源。
     /// </summary>
     public class LRUCache
     {

@@ -8,7 +8,7 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面基类。
-    /// 职责: 所有界面的基类，记录界面的FUI显示对象和基本信息。
+    /// 目标: 所有界面的基类，记录界面的FUI显示对象和基本信息。
     /// </summary>
     public abstract partial class ViewBase
     {
