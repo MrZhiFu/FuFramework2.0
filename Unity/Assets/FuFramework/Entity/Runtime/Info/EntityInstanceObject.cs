@@ -56,8 +56,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 释放实体
         /// </summary>
-        /// <param name="isShutdown"></param>
-        protected override void Release(bool isShutdown)
+        protected override void OnRelease()
         {
             m_EntityHelper.ReleaseEntity(m_EntityAssetHandle, Target);
         }

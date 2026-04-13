@@ -285,7 +285,7 @@ namespace FuFramework.Entity.Runtime
         /// 回收指定实体实例对象。
         /// </summary>
         /// <param name="entity"></param>
-        public void RecycleEntity(Entity entity) => m_InstancePool.Recycle(entity.Handle);
+        public void RecycleEntity(Entity entity) => m_InstancePool.Recycle(entity.Go);
 
         /// <summary>
         /// 设置实体实例对象是否被锁定。

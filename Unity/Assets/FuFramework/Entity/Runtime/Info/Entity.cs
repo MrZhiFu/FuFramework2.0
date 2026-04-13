@@ -35,7 +35,7 @@ namespace FuFramework.Entity.Runtime
         /// <summary>
         /// 获取实体实例。
         /// </summary>
-        public object Handle => gameObject;
+        public object Go => gameObject;
 
         /// <summary>
         /// 实体初始化时触发。
