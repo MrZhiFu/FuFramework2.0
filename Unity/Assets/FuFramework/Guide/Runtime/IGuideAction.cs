@@ -4,7 +4,9 @@ using FairyGUI;
 namespace FuFramework.Guide.Runtime
 {
     /// <summary>
-    /// 执行引导动作接口
+    /// 执行引导动作接口。
+    /// 功能：
+    ///     1. 定义执行引导动作的相关接口，由热更代码中指定具体的实现类。
     /// </summary>
     public interface IGuideAction
     {

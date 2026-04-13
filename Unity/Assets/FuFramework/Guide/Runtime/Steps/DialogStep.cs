@@ -4,7 +4,10 @@
 namespace FuFramework.Guide.Runtime
 {
     /// <summary>
-    /// 对话引导步骤
+    /// 对话引导步骤。
+    /// 功能：
+    ///     1. 执行对话引导。
+    ///     2. 对话引导完成后，移除对话引导。
     /// </summary>
     public class DialogStep : BaseStep
     {

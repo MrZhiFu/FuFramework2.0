@@ -7,7 +7,12 @@ using FuFramework.UI.Runtime;
 namespace FuFramework.Guide.Runtime
 {
     /// <summary>
-    /// UI点击引导步骤
+    /// UI点击引导步骤。
+    /// 功能：
+    ///     1. 查找点击目标UI组件。
+    ///     2. 添加目标UI点击回调。
+    ///     3. 执行点击UI引导。
+    ///     4. 点击UI引导完成后，移除点击回调。
     /// </summary>
     public class ClickUIStep : BaseStep
     {

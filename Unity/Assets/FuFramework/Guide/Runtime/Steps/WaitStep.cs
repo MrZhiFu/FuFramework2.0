@@ -9,7 +9,10 @@ namespace FuFramework.Guide.Runtime
     public class WaitStep : BaseStep
     {
         /// <summary>
-        /// 等待时间计时器
+        /// 等待时间计时器。
+        /// 功能：
+        ///     1. 记录等待时间。
+        ///     2. 等待时间到后，完成步骤。
         /// </summary>
         private float m_WaitTimer;
 

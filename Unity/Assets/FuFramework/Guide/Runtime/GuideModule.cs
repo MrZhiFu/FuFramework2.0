@@ -7,8 +7,13 @@ using UnityEngine;
 namespace FuFramework.Guide.Runtime
 {
     /// <summary>
-    /// 引导管理模块
-    /// </summary>
+    /// 引导管理模块。
+    /// 功能：
+    ///     1. 从引导配置中加载引导步骤信息。
+    ///     2. 执行/跳转/取消引导步骤。
+    ///     3. 缓存完成的引导。
+    ///     4. 提供引导相关事件。
+       /// </summary>
     public class GuideModule : FuModule
     {
         #region 私有字段
