@@ -1,4 +1,4 @@
-# FuFramework Variable 模块
+# FuFramework Variable Module
 
 ## 概述
 
@@ -14,162 +14,318 @@ Variable 模块是 FuFramework 中的变量管理系统，提供基于引用池�
 
 ## 系统架构
 
-### 核心类说明
+### 类继承体系
 
-#### 1. Variable (变量基类)
-位于 `Base/Variable.cs`，是所有变量类的抽象基类，实现 `IReference` 接口。
+```
+IReference (引用池接口)
+    ↑
+Variable (抽象基类)
+    ├── Type (抽象属性)
+    ├── GetValue() (抽象方法)
+    ├── SetValue() (抽象方法)
+    └── Clear() (抽象方法)
+    ↑
+Variable<T> (泛型基类)
+    ├── Value (属性)
+    ├── Type (实现)
+    ├── GetValue() (实现)
+    ├── SetValue() (实现)
+    ├── Clear() (实现)
+    └── ToString() (重写)
+    ↑
+    ├── VarInt32, VarString, VarVector3... (具体实现类)
+    │   └── 隐式转换操作符 (双向)
+    └── VarObject (通用对象类型)
+```
 
-**主要方法：**
-- `Type Type` - 获取变量类型
-- `object GetValue()` - 获取变量值
-- `void SetValue(object value)` - 设置变量值
-- `void Clear()` - 清理变量值
+### 技术架构图
 
-#### 2. Variable<T> (泛型变量基类)
-位于 `Base/GenericVariable.cs`，提供泛型变量实现。
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Variable (抽象基类)                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Type (抽象属性)                                     │   │
+│  │  GetValue() (抽象方法)                               │   │
+│  │  SetValue() (抽象方法)                               │   │
+│  │  Clear() (抽象方法)                                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Variable<T> (泛型基类)                    │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Value (T类型属性)                                   │   │
+│  │  Type (返回typeof(T))                                │   │
+│  │  GetValue() (返回Value)                              │   │
+│  │  SetValue() (设置Value)                              │   │
+│  │  Clear() (Value = default)                           │   │
+│  │  ToString() (Value.ToString())                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+        ┌─────────────────────┼─────────────────────┐
+        ↓                     ↓                     ↓
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  VarInt32    │    │  VarVector3  │    │  VarString   │
+│  - int       │    │  - Vector3   │    │  - string    │
+│  - 隐式转换   │    │  - 隐式转换   │    │  - 隐式转换   │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
 
-**主要属性：**
-- `T Value` - 获取或设置变量值
-- `override Type Type` - 返回泛型类型
+## 核心类详解
 
-#### 3. 具体变量类
-模块提供了丰富的变量类型实现，覆盖了常用的数据类型。
+### Variable
 
-## 快速开始
+变量抽象基类，实现 IReference 接口，定义变量的统一接口。
 
-### 基本使用
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Type | Type | 获取变量类型（抽象） |
+
+**核心方法：**
+
+```csharp
+// 获取变量值
+public abstract object GetValue();
+
+// 设置变量值
+public abstract void SetValue(object value);
+
+// 清理变量值（实现 IReference 接口）
+public abstract void Clear();
+```
+
+### Variable<T>
+
+泛型变量基类，继承自 Variable，提供类型安全的泛型实现。
+
+**核心属性：**
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| Value | T | 获取或设置变量值 |
+| Type | Type | 返回 typeof(T) |
+
+**核心方法：**
+
+```csharp
+// 获取变量值（装箱）
+public override object GetValue() => Value;
+
+// 设置变量值（拆箱）
+public override void SetValue(object value) => Value = (T)value;
+
+// 清理变量值
+public override void Clear() => Value = default;
+
+// 获取字符串表示
+public override string ToString() => Value != null ? Value.ToString() : "<Null>";
+```
+
+### 具体变量类
+
+所有具体变量类都继承自 Variable<T>。大多数类型实现了双向隐式转换操作符，但 VarObject 作为通用对象类型，未实现隐式转换，需要显式操作。
+
+**典型实现模式（带隐式转换）：**
+
+```csharp
+public sealed class VarInt32 : Variable<int>
+{
+    public VarInt32() { }
+
+    // 从原生类型到变量类的隐式转换
+    public static implicit operator VarInt32(int value)
+    {
+        var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        varValue.Value = value;
+        return varValue;
+    }
+
+    // 从变量类到原生类型的隐式转换
+    public static implicit operator int(VarInt32 value) => value.Value;
+}
+```
+
+**VarObject 特殊实现（无隐式转换）：**
+
+```csharp
+public sealed class VarObject : Variable<object>
+{
+    public VarObject() { }
+    // 未实现隐式转换操作符，需显式使用
+}
+
+// 使用方式
+var objVar = ReferencePool.Runtime.ReferencePool.Acquire<VarObject>();
+objVar.Value = anyObject;
+```
+
+## 支持的变量类型
+
+### 基础类型
+
+| 变量类 | 原生类型 | 说明 |
+|--------|----------|------|
+| VarBoolean | bool | 布尔类型 |
+| VarByte | byte | 无符号字节 |
+| VarSByte | sbyte | 有符号字节 |
+| VarChar | char | 字符类型 |
+| VarInt16 | short | 16位整数 |
+| VarInt32 | int | 32位整数 |
+| VarInt64 | long | 64位整数 |
+| VarUInt16 | ushort | 16位无符号整数 |
+| VarUInt32 | uint | 32位无符号整数 |
+| VarUInt64 | ulong | 64位无符号整数 |
+| VarFloat | float | 单精度浮点数 |
+| VarDouble | double | 双精度浮点数 |
+| VarDecimal | decimal | 十进制数 |
+| VarString | string | 字符串 |
+| VarDateTime | DateTime | 日期时间 |
+
+### 数组类型
+
+| 变量类 | 原生类型 | 说明 |
+|--------|----------|------|
+| VarByteArray | byte[] | 字节数组 |
+| VarCharArray | char[] | 字符数组 |
+
+### Unity 类型
+
+| 变量类 | 原生类型 | 说明 |
+|--------|----------|------|
+| VarVector2 | Vector2 | 二维向量 |
+| VarVector3 | Vector3 | 三维向量 |
+| VarVector4 | Vector4 | 四维向量 |
+| VarQuaternion | Quaternion | 四元数 |
+| VarColor | Color | 颜色（浮点） |
+| VarColor32 | Color32 | 颜色（字节） |
+| VarRect | Rect | 矩形 |
+| VarGameObject | GameObject | 游戏对象 |
+| VarTransform | Transform | 变换组件 |
+| VarMaterial | Material | 材质 |
+| VarTexture | Texture | 纹理 |
+| VarUnityObject | UnityEngine.Object | Unity对象基类 |
+
+### 通用类型
+
+| 变量类 | 原生类型 | 说明 |
+|--------|----------|------|
+| VarObject | object | 通用对象类型（无隐式转换） |
+
+## 使用示例
+
+### 基本使用流程
 
 ```csharp
 using FuFramework.Variable.Runtime;
-
-// 创建整数变量
-var intVar = new VarInt32();
-intVar.Value = 100;
-
-// 使用隐式转换
-VarInt32 varFromInt = 200;  // 从int隐式转换为VarInt32
-int intFromVar = varFromInt; // 从VarInt32隐式转换为int
-
-// 使用引用池获取变量
-var pooledVar = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
-pooledVar.Value = 300;
-
-// 使用后释放回引用池
-ReferencePool.Runtime.ReferencePool.Release(pooledVar);
-```
-
-### Unity 类型变量使用
-
-```csharp
 using UnityEngine;
-using FuFramework.Variable.Runtime;
 
-// 创建Vector3变量
-var vectorVar = new VarVector3();
-vectorVar.Value = new Vector3(1, 2, 3);
-
-// 隐式转换
-VarVector3 varFromVector = new Vector3(4, 5, 6);
-Vector3 vectorFromVar = varFromVector;
-
-// GameObject变量
-var gameObjectVar = new VarGameObject();
-gameObjectVar.Value = gameObject;
+public class VariableExample : MonoBehaviour
+{
+    private void Start()
+    {
+        // 创建整数变量（隐式转换）
+        VarInt32 intVar = 100;
+        Debug.Log($"Int Value: {intVar.Value}");
+        
+        // 隐式转换回原生类型
+        int nativeInt = intVar;
+        Debug.Log($"Native Int: {nativeInt}");
+        
+        // 创建字符串变量
+        VarString stringVar = "Hello Variable";
+        Debug.Log($"String Value: {stringVar}");
+        
+        // 创建Vector3变量
+        VarVector3 vectorVar = new Vector3(1, 2, 3);
+        Debug.Log($"Vector: {vectorVar}");
+        
+        // 使用引用池获取变量
+        var pooledVar = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        pooledVar.Value = 200;
+        Debug.Log($"Pooled Value: {pooledVar.Value}");
+        
+        // 释放回引用池
+        ReferencePool.Runtime.ReferencePool.Release(pooledVar);
+        
+        // VarObject 使用（无隐式转换）
+        var objVar = ReferencePool.Runtime.ReferencePool.Acquire<VarObject>();
+        objVar.Value = new { Name = "Test", Id = 1 };
+        Debug.Log($"Object Value: {objVar.Value}");
+        ReferencePool.Runtime.ReferencePool.Release(objVar);
+    }
+}
 ```
 
-## 详细使用指南
+### 使用引用池优化
 
-### 1. 基础类型变量
-
-#### 数值类型
 ```csharp
-// 整数类型
-VarInt32 int32Var = 100;
-VarInt64 int64Var = 1000L;
-VarUInt32 uint32Var = 200u;
+public void ProcessVariables()
+{
+    // 推荐：使用引用池获取变量
+    var tempVar = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+    tempVar.Value = 100;
+    
+    // 使用变量...
+    ProcessValue(tempVar.Value);
+    
+    // 使用后释放回引用池
+    ReferencePool.Runtime.ReferencePool.Release(tempVar);
+}
 
-// 浮点类型
-VarFloat floatVar = 3.14f;
-VarDouble doubleVar = 3.14159;
-
-// 其他数值类型
-VarDecimal decimalVar = 123.45m;
-VarByte byteVar = 255;
+// 不推荐：频繁创建新实例（产生GC压力）
+public void ProcessVariablesBad()
+{
+    var tempVar = new VarInt32(); // 每次调用都创建新实例
+    tempVar.Value = 100;
+    ProcessValue(tempVar.Value);
+    // 无法复用，依赖GC回收
+}
 ```
 
-#### 布尔和字符类型
-```csharp
-VarBoolean boolVar = true;
-VarChar charVar = 'A';
-```
-
-#### 字符串类型
-```csharp
-VarString stringVar = "Hello World";
-string normalString = stringVar; // 隐式转换回string
-```
-
-### 2. Unity 类型变量
-
-#### 向量和矩阵
-```csharp
-VarVector2 vector2Var = new Vector2(1, 2);
-VarVector3 vector3Var = new Vector3(1, 2, 3);
-VarVector4 vector4Var = new Vector4(1, 2, 3, 4);
-VarQuaternion quaternionVar = Quaternion.identity;
-```
-
-#### 颜色类型
-```csharp
-VarColor colorVar = Color.red;
-VarColor32 color32Var = new Color32(255, 0, 0, 255);
-```
-
-#### Unity 对象类型
-```csharp
-VarGameObject gameObjectVar = gameObject;
-VarTransform transformVar = transform;
-VarMaterial materialVar = material;
-VarTexture textureVar = texture;
-```
-
-### 3. 数组类型变量
+### 事件系统数据传递
 
 ```csharp
-VarByteArray byteArrayVar = new byte[] { 1, 2, 3 };
-VarCharArray charArrayVar = new char[] { 'a', 'b', 'c' };
-```
+using FuFramework.Event.Runtime;
 
-### 4. 通用对象类型
-
-```csharp
-VarObject objectVar = new object();
-VarUnityObject unityObjectVar = anyUnityObject;
-```
-
-## 实际应用场景
-
-### 1. 事件系统数据传递
-
-```csharp
-// 定义事件参数
 public class PlayerLevelUpEventArgs : GameEventArgs
 {
+    public static readonly string EventId = typeof(PlayerLevelUpEventArgs).FullName;
+    public override string Id => EventId;
+    
     public VarInt32 OldLevel { get; set; }
     public VarInt32 NewLevel { get; set; }
     public VarString PlayerName { get; set; }
+    
+    public static PlayerLevelUpEventArgs Create(int oldLevel, int newLevel, string playerName)
+    {
+        var args = ReferencePool.Runtime.ReferencePool.Acquire<PlayerLevelUpEventArgs>();
+        args.OldLevel = oldLevel;
+        args.NewLevel = newLevel;
+        args.PlayerName = playerName;
+        return args;
+    }
+    
+    public override void Clear()
+    {
+        OldLevel = null;
+        NewLevel = null;
+        PlayerName = null;
+    }
 }
 
 // 使用事件
-var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
-args.OldLevel = 10;
-args.NewLevel = 11;
-args.PlayerName = "Player1";
-
-GameEntry.Event.Fire(this, args);
+public void OnPlayerLevelUp()
+{
+    var args = PlayerLevelUpEventArgs.Create(10, 11, "Player1");
+    var eventModule = ModuleManager.GetModule<EventModule>();
+    eventModule.Broadcast(this, args);
+}
 ```
 
-### 2. 配置数据管理
+### 配置数据管理
 
 ```csharp
 public class GameConfig
@@ -178,197 +334,70 @@ public class GameConfig
     public VarFloat PlayerMoveSpeed { get; set; }
     public VarColor PlayerDefaultColor { get; set; }
     public VarVector3 SpawnPosition { get; set; }
+    
+    public void LoadConfig()
+    {
+        MaxPlayerLevel = 100;
+        PlayerMoveSpeed = 5.5f;
+        PlayerDefaultColor = Color.blue;
+        SpawnPosition = new Vector3(0, 1, 0);
+    }
 }
 ```
 
-### 3. 游戏状态管理
+### 游戏状态管理
 
 ```csharp
 public class PlayerState
 {
     public VarInt32 Health { get; set; }
-    public VarInt32 Mana { get; set; }
+    public VarInt32 MaxHealth { get; set; }
     public VarFloat Stamina { get; set; }
     public VarVector3 Position { get; set; }
     public VarQuaternion Rotation { get; set; }
-}
-```
-
-### 4. UI 数据绑定
-
-```csharp
-public class UIDataModel
-{
-    public VarString PlayerName { get; set; }
-    public VarInt32 PlayerLevel { get; set; }
-    public VarFloat HealthPercentage { get; set; }
-    public VarColor HealthBarColor { get; set; }
-}
-```
-
-## 性能优化建议
-
-### 1. 合理使用引用池
-
-```csharp
-// 推荐：使用引用池获取变量
-var tempVar = ReferencePool.Acquire<VarInt32>();
-tempVar.Value = 100;
-// 使用变量...
-ReferencePool.Release(tempVar);
-
-// 不推荐：频繁创建新实例
-var tempVar = new VarInt32(); // 会产生GC压力
-```
-
-### 2. 批量操作优化
-
-```csharp
-// 批量处理变量
-public void ProcessMultipleVariables(List<VarInt32> variables)
-{
-    foreach (var variable in variables)
+    
+    public float HealthPercentage => Health.Value / (float)MaxHealth.Value;
+    
+    public void TakeDamage(int damage)
     {
-        // 处理逻辑
-        variable.Value *= 2;
+        Health.Value = Mathf.Max(0, Health.Value - damage);
     }
 }
 ```
 
-### 3. 避免不必要的装箱拆箱
+### 批量变量处理
 
 ```csharp
-// 推荐：直接使用泛型变量
-VarInt32 intVar = 100;
-int value = intVar; // 无装箱拆箱
-
-// 不推荐：频繁使用object接口
-Variable baseVar = new VarInt32();
-baseVar.SetValue(100); // 涉及装箱
-object value = baseVar.GetValue(); // 涉及拆箱
+public void ProcessMultipleVariables()
+{
+    // 批量创建变量
+    var variables = new List<VarInt32>();
+    for (int i = 0; i < 100; i++)
+    {
+        var var = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        var.Value = i * 10;
+        variables.Add(var);
+    }
+    
+    // 批量处理
+    foreach (var variable in variables)
+    {
+        variable.Value *= 2;
+        Debug.Log($"Processed Value: {variable.Value}");
+    }
+    
+    // 批量释放
+    foreach (var variable in variables)
+    {
+        ReferencePool.Runtime.ReferencePool.Release(variable);
+    }
+}
 ```
-
-## API 参考
-
-### Variable 基类
-
-| 方法 | 说明 |
-|------|------|
-| `Type Type` | 获取变量类型 |
-| `object GetValue()` | 获取变量值 |
-| `void SetValue(object value)` | 设置变量值 |
-| `void Clear()` | 清理变量值 |
-
-### Variable<T> 泛型基类
-
-| 属性/方法 | 说明 |
-|-----------|------|
-| `T Value` | 获取或设置变量值 |
-| `override Type Type` | 返回泛型类型 |
-| `override object GetValue()` | 返回变量值 |
-| `override void SetValue(object value)` | 设置变量值 |
-| `override void Clear()` | 清理变量值 |
-| `override string ToString()` | 返回变量字符串表示 |
-
-### 支持的变量类型
-
-#### 基础类型
-- `VarBoolean` - bool
-- `VarByte` - byte
-- `VarSByte` - sbyte
-- `VarChar` - char
-- `VarInt16` - short
-- `VarInt32` - int
-- `VarInt64` - long
-- `VarUInt16` - ushort
-- `VarUInt32` - uint
-- `VarUInt64` - ulong
-- `VarFloat` - float
-- `VarDouble` - double
-- `VarDecimal` - decimal
-- `VarString` - string
-- `VarDateTime` - DateTime
-
-#### 数组类型
-- `VarByteArray` - byte[]
-- `VarCharArray` - char[]
-
-#### Unity 类型
-- `VarVector2` - Vector2
-- `VarVector3` - Vector3
-- `VarVector4` - Vector4
-- `VarQuaternion` - Quaternion
-- `VarColor` - Color
-- `VarColor32` - Color32
-- `VarRect` - Rect
-- `VarGameObject` - GameObject
-- `VarTransform` - Transform
-- `VarMaterial` - Material
-- `VarTexture` - Texture
-- `VarUnityObject` - UnityEngine.Object
-
-#### 通用类型
-- `VarObject` - object
-
-## 注意事项
-
-### 1. 内存管理
-- 变量类使用引用池管理，使用后应及时释放
-- 避免长时间持有变量引用，防止内存泄漏
-- 在频繁创建变量的场景中，优先使用引用池
-
-### 2. 类型安全
-- 使用隐式转换时注意类型匹配
-- 设置值时确保类型兼容性
-- 对于复杂类型，建议使用泛型变量类
-
-### 3. 性能考虑
-- 在性能敏感的场景中，避免频繁的变量创建和释放
-- 对于简单的值类型，考虑直接使用原生类型
-- 批量操作时使用列表或数组存储变量
-
-### 4. 线程安全
-- 变量类本身不是线程安全的
-- 在多线程环境中使用时需要额外的同步机制
-- 建议在单线程环境中使用变量类
-
-## 常见问题解答
-
-### Q: 什么时候应该使用 Variable 模块？
-A: 在需要频繁创建和销毁变量对象的场景中，特别是事件系统、数据绑定、配置管理等需要类型安全且内存高效的情况。
-
-### Q: Variable 模块和直接使用原生类型有什么区别？
-A: Variable 模块提供了引用池优化，减少GC压力，同时提供统一的接口和隐式转换，让使用更加方便。
-
-### Q: 如何选择使用哪种变量类型？
-A: 根据实际数据类型选择对应的变量类，对于自定义类型可以使用 `VarObject` 或创建自定义变量类。
-
-### Q: 变量类的性能如何？
-A: 通过引用池优化，变量类在频繁创建和销毁的场景中性能优于直接实例化，但在简单场景中可能略有开销。
-
-### Q: 是否支持自定义变量类型？
-A: 是的，可以通过继承 `Variable<T>` 基类来创建自定义变量类型。
-
-## 扩展功能
 
 ### 自定义变量类型
 
 ```csharp
 // 自定义枚举变量
-public sealed class VarPlayerState : Variable<PlayerState>
-{
-    public VarPlayerState() { }
-    
-    public static implicit operator VarPlayerState(PlayerState value)
-    {
-        var varValue = ReferencePool.Acquire<VarPlayerState>();
-        varValue.Value = value;
-        return varValue;
-    }
-    
-    public static implicit operator PlayerState(VarPlayerState value) => value.Value;
-}
-
 public enum PlayerState
 {
     Idle,
@@ -376,29 +405,223 @@ public enum PlayerState
     Attacking,
     Dead
 }
-```
 
-### 变量工具类
-
-```csharp
-public static class VariableHelper
+public sealed class VarPlayerState : Variable<PlayerState>
 {
-    public static TValue GetValueOrDefault<TValue>(this Variable<TValue> variable, TValue defaultValue)
+    public VarPlayerState() { }
+    
+    public static implicit operator VarPlayerState(PlayerState value)
     {
-        return variable != null ? variable.Value : defaultValue;
+        var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarPlayerState>();
+        varValue.Value = value;
+        return varValue;
     }
     
-    public static bool TryGetValue<TValue>(this Variable<TValue> variable, out TValue value)
+    public static implicit operator PlayerState(VarPlayerState value) => value.Value;
+}
+
+// 使用自定义变量
+public void TestCustomVariable()
+{
+    VarPlayerState state = PlayerState.Moving;
+    Debug.Log($"Player State: {state}");
+    
+    PlayerState nativeState = state;
+    if (nativeState == PlayerState.Moving)
     {
-        if (variable != null)
-        {
-            value = variable.Value;
-            return true;
-        }
-        value = default;
-        return false;
+        Debug.Log("Player is moving!");
     }
 }
 ```
 
-Variable 模块为 FuFramework 提供了强大而灵活的变量管理系统，通过类型安全和内存优化的设计，让开发者可以更加高效地处理各种数据类型，特别适合在游戏开发中的事件系统、配置管理、状态跟踪等场景中使用。
+## 目录结构
+
+```
+FuFramework/Variable/
+├── Base/
+│   ├── Variable.cs              # 变量抽象基类
+│   └── GenericVariable.cs       # 泛型变量基类
+├── Type/
+│   ├── VarBoolean.cs            # 布尔变量
+│   ├── VarByte.cs               # 字节变量
+│   ├── VarSByte.cs              # 有符号字节变量
+│   ├── VarChar.cs               # 字符变量
+│   ├── VarInt16.cs              # 短整型变量
+│   ├── VarInt32.cs              # 整型变量
+│   ├── VarInt64.cs              # 长整型变量
+│   ├── VarUInt16.cs             # 无符号短整型变量
+│   ├── VarUInt32.cs             # 无符号整型变量
+│   ├── VarUInt64.cs             # 无符号长整型变量
+│   ├── VarFloat.cs              # 单精度浮点变量
+│   ├── VarDouble.cs             # 双精度浮点变量
+│   ├── VarDecimal.cs            # 十进制变量
+│   ├── VarString.cs             # 字符串变量
+│   ├── VarDateTime.cs           # 日期时间变量
+│   ├── VarByteArray.cs          # 字节数组变量
+│   ├── VarCharArray.cs          # 字符数组变量
+│   ├── VarVector2.cs            # Vector2变量
+│   ├── VarVector3.cs            # Vector3变量
+│   ├── VarVector4.cs            # Vector4变量
+│   ├── VarQuaternion.cs         # 四元数变量
+│   ├── VarColor.cs              # Color变量
+│   ├── VarColor32.cs            # Color32变量
+│   ├── VarRect.cs               # Rect变量
+│   ├── VarGameObject.cs         # GameObject变量
+│   ├── VarTransform.cs          # Transform变量
+│   ├── VarMaterial.cs           # Material变量
+│   ├── VarTexture.cs            # Texture变量
+│   ├── VarUnityObject.cs        # UnityObject变量
+│   └── VarObject.cs             # 通用对象变量
+├── FuFramework.Variable.Runtime.asmdef
+└── README.md                    # 本文档
+```
+
+## 依赖模块
+
+- **ReferencePool**: 提供引用池管理，用于变量对象的复用
+
+## 设计特点
+
+### 1. 引用池优化
+
+所有变量类都实现 IReference 接口，通过引用池管理对象生命周期：
+
+- **获取**：`ReferencePool.Acquire<VarInt32>()`
+- **释放**：`ReferencePool.Release(var)`
+- **复用**：释放的变量会被回收复用，减少GC压力
+
+### 2. 隐式转换
+
+大多数具体变量类都实现了双向隐式转换操作符：
+
+```csharp
+// 原生类型 -> 变量类
+VarInt32 var = 100;
+
+// 变量类 -> 原生类型
+int value = var;
+```
+
+这种设计让变量类可以像原生类型一样使用，无需显式转换。
+
+**注意**：VarObject 作为通用对象类型，未实现隐式转换，需显式使用引用池获取和设置 Value 属性。
+
+### 3. 类型安全
+
+通过泛型基类 Variable<T> 实现编译期类型检查：
+
+```csharp
+VarInt32 intVar = 100;           // 正确
+VarInt32 wrongVar = "string";    // 编译错误
+```
+
+### 4. 统一接口
+
+所有变量类都继承自 Variable 基类，提供统一的访问方式：
+
+```csharp
+Variable baseVar = new VarInt32();
+object value = baseVar.GetValue();
+baseVar.SetValue(200);
+```
+
+## 应用场景
+
+1. **事件系统数据传递**：事件参数中使用变量类，支持引用池复用
+2. **配置数据管理**：游戏配置使用变量类，便于统一管理和序列化
+3. **游戏状态管理**：玩家状态、游戏状态等使用变量类跟踪
+4. **UI 数据绑定**：UI数据模型使用变量类，支持数据变更通知
+5. **网络消息封装**：网络消息中的字段使用变量类，便于类型转换
+
+## 注意事项
+
+1. **引用池管理**：使用引用池获取的变量，使用后必须释放，否则会导致内存泄漏
+2. **隐式转换开销**：隐式转换会触发引用池的获取操作，频繁转换可能产生开销
+3. **装箱拆箱**：通过基类接口访问时会涉及装箱拆箱，性能敏感场景建议使用泛型接口
+4. **线程安全**：变量类本身不是线程安全的，多线程环境需要额外同步
+5. **空值检查**：使用变量前检查是否为 null，避免 NullReferenceException
+
+## 性能对比
+
+### 内存分配对比
+
+```csharp
+// 方式1：使用 new（产生GC）
+for (int i = 0; i < 1000; i++)
+{
+    var var = new VarInt32 { Value = i }; // 每次循环都分配内存
+}
+
+// 方式2：使用引用池（无GC）
+for (int i = 0; i < 1000; i++)
+{
+    var var = ReferencePool.Acquire<VarInt32>();
+    var.Value = i;
+    ReferencePool.Release(var); // 释放后复用
+}
+```
+
+### 访问性能对比
+
+```csharp
+VarInt32 var = 100;
+
+// 直接访问（最优）
+int value1 = var.Value;
+
+// 隐式转换（轻微开销）
+int value2 = var;
+
+// 基类访问（涉及装箱）
+Variable baseVar = var;
+object value3 = baseVar.GetValue();
+```
+
+## 常见问题
+
+### Q: 什么时候应该使用 Variable 模块？
+
+A: 在以下场景推荐使用：
+- 需要频繁创建和销毁变量的场景
+- 事件系统的参数传递
+- 需要统一管理和序列化的数据
+- 对内存分配敏感的场景
+
+### Q: Variable 和原生类型如何选择？
+
+A: 建议：
+- 简单场景直接使用原生类型
+- 需要引用池优化时使用 Variable
+- 事件参数、配置数据等使用 Variable
+- 局部临时变量使用原生类型
+
+### Q: 如何创建自定义变量类型？
+
+A: 继承 Variable<T> 并实现隐式转换：
+
+```csharp
+public sealed class VarCustomType : Variable<CustomType>
+{
+    public VarCustomType() { }
+    
+    public static implicit operator VarCustomType(CustomType value)
+    {
+        var varValue = ReferencePool.Acquire<VarCustomType>();
+        varValue.Value = value;
+        return varValue;
+    }
+    
+    public static implicit operator CustomType(VarCustomType value) => value.Value;
+}
+```
+
+### Q: 变量类是否线程安全？
+
+A: 变量类本身不是线程安全的。在多线程环境中使用时，需要额外的同步机制，如锁或线程本地存储。
+
+### Q: 如何避免内存泄漏？
+
+A: 遵循以下原则：
+- 使用 `ReferencePool.Acquire` 获取的变量，必须使用 `ReferencePool.Release` 释放
+- 不要在静态变量或单例中长时间持有变量引用
+- 确保在异常情况下也能正确释放变量
