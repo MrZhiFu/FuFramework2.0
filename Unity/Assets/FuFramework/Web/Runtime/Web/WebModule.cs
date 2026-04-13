@@ -12,7 +12,9 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// Web管理模块,实现HTTP GET和POST请求功能
+    /// Web管理模块。
+    /// 功能：
+    ///     1.实现HTTP GET和POST请求功能。
     /// </summary>
     public partial class WebModule : FuModule
     {
@@ -49,7 +51,7 @@ namespace FuFramework.Web.Runtime
         protected override void OnInit() { }
 
         /// <summary>
-        /// 帧更新处理请求队列
+        /// 轮询处理请求队列
         /// </summary>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
@@ -67,7 +69,7 @@ namespace FuFramework.Web.Runtime
                     m_SendingNormalList.Add(webJsonData);
                 }
 
-                UpdateProtoBuf(deltaTime, unscaledDeltaTime);
+                UpdateProtoBuf();
             }
         }
 

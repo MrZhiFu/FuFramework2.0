@@ -7,7 +7,7 @@ using FuFramework.Web.Runtime;
 namespace FuFramework.Web.Editor
 {
     /// <summary>
-    /// 自定义Web组件的Inspector
+    /// Web模块的Inspector
     /// </summary>
     [CustomEditor(typeof(WebModule))]
     internal sealed class WebModuleInspector : FuFrameworkInspector

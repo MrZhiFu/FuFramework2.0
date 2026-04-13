@@ -6,7 +6,9 @@ using Newtonsoft.Json;
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// 提供用于处理HTTP JSON结果的辅助方法。
+    /// HTTP JSON辅助类。
+    /// 功能：
+    ///     1.将JSON字符串转换为HttpJsonResultData<T>对象。
     /// </summary>
     public static class HttpJsonResultHelper
     {
@@ -45,7 +47,7 @@ namespace FuFramework.Web.Runtime
                 FuLogger.LogError(e);
             }
 
-            return resultData; // 返回结果数据
+            return resultData;
         }
     }
 }

@@ -3,8 +3,9 @@
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// 消息返回统一结构
-    /// 该类用于封装HTTP请求的返回结果，提供统一的结构以便于处理和解析响应数据。
+    /// HTTP JSON结果数据类。
+    /// 功能：
+    ///     1.该类用于封装HTTP请求的返回结果，提供统一的结构以便于处理和解析响应数据。
     /// </summary>
     /// <typeparam name="T">消息类型，表示返回的数据对象的类型。</typeparam>
     public sealed class HttpJsonResultData<T>

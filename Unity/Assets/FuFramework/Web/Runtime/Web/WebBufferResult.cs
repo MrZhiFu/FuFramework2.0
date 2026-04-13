@@ -1,6 +1,11 @@
 ﻿// ReSharper disable once CheckNamespace
 namespace FuFramework.Web.Runtime
 {
+    /// <summary>
+    /// Web缓冲区结果类。
+    /// 功能：
+    ///     1.用于封装Web请求的缓冲区结果，包含用户自定义数据和请求结果。
+    /// </summary>
     public sealed class WebBufferResult
     {
         public WebBufferResult(object userData, byte[] result)

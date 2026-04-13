@@ -4,7 +4,9 @@ using Newtonsoft.Json;
 namespace FuFramework.Web.Runtime
 {
     /// <summary>
-    /// HTTP网页请求的消息响应结构
+    /// HTTP JSON消息响应结构。
+    /// 功能：
+    ///     1.用于封装HTTP JSON请求的消息响应结构，包含响应码、响应消息和响应数据。
     /// </summary>
     public sealed class HttpJsonResult
     {
