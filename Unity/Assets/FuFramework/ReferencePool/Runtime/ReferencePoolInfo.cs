@@ -6,6 +6,9 @@ namespace FuFramework.ReferencePool.Runtime
 {
     /// <summary>
     /// 引用池信息。
+    /// 功能：
+    ///     1. 用于外部查询引用池的信息。如 inspector 中显示。
+    ///     2. 获取引用池的类型、未使用引用数量、正在使用引用数量、已获取引用数量、归还引用数量、新增引用数量、移除引用数量。
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     public readonly struct ReferencePoolInfo
