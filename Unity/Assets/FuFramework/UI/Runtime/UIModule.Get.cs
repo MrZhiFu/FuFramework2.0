@@ -6,11 +6,11 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// UI管理模块分部类之一。
-    /// 职责：用于获取已加载的UI界面。
-    /// 核心功能:
-    /// 1. 判断是否存在界面。
-    /// 2. 获取界面。
-    /// 3. 获取顶部界面。
+    /// 目标：用于获取已加载的UI界面。
+    /// 功能：
+    ///     1. 判断是否存在界面。
+    ///     2. 获取界面。
+    ///     3. 获取顶部界面。
     /// </summary>
     public sealed partial class UIModule
     {

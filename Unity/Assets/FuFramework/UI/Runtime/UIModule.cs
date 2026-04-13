@@ -11,7 +11,7 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// UI管理模块。
-    /// 职责：用于管理所有UI界面的加载，关闭，释放等操作。
+    /// 目标：用于管理所有UI界面的加载，关闭，释放等操作。
     /// </summary>
     public sealed partial class UIModule : FuModule
     {

@@ -6,10 +6,10 @@ namespace FuFramework.UI.Runtime
 {
     /// <summary>
     /// 界面实例对象。
-    /// 职责：创建和释放界面实例对象。
-    /// 核心功能:
-    /// 1. 创建界面实例对象。
-    /// 2. 释放界面实例对象。
+    /// 目标：创建和释放界面实例对象。
+    /// 功能：
+    ///     1. 创建界面实例对象。
+    ///     2. 释放界面实例对象。
     /// </summary>
     public sealed class ViewObject : ObjectBase
     {
