@@ -1,138 +1,357 @@
-# FuFramework ObjectPool Module
+# 1. FuFramework ObjectPool Module
 
-## 概述
+## 1. 简介
 
-ObjectPool 模块是 FuFramework 的对象池管理系统，专门用于管理 Unity 游戏对象的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销，提高游戏性能。
+FuFramework ObjectPool 模块是游戏框架的对象池管理系统，专门用于管理 Unity 游戏对象的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销，降低 GC 压力，提高游戏性能。
 
-### 核心特性
+## 2. 核心特性
 
-- **对象复用机制**：减少频繁的对象创建和销毁，降低GC压力
+- **对象复用机制**：减少频繁的对象创建和销毁，降低 GC 压力
 - **多类型支持**：支持任意继承自 ObjectBase 的对象类型
 - **智能释放策略**：基于优先级和最后使用时间的自动释放机制
-- **内存管理**：低内存自动释放和手动释放控制
+- **内存管理**：过期后/低内存自动释放和手动释放控制
 - **生命周期管理**：完整的对象生成、回收、释放生命周期
 - **多池管理**：支持多个对象池并行管理
-- **线程安全**：安全的对象池操作
 
-## 核心类说明
+## 3. 核心概念
 
-### ObjectPoolModule
+### 3.1 类继承与实现体系
 
-对象池管理器，负责管理所有对象池和对象生命周期。
+```
+【类继承体系】
+ObjectPoolBase (对象池基类)
+    └── ObjectPool<T> (泛型对象池实现)
+    
+ObjectBase (对象基类)
+    └── 用户自定义对象类 (如 BulletObject, EnemyObject)
+    
+ObjectPoolModule.Object<T> (内部包装类)
+    └── 包装 ObjectBase 对象，管理生成计数
+
+
+【接口实现体系】
+ObjectBase 实现:
+    └── IReference (引用池接口)
+        └── 方法: Clear()
+
+ObjectPoolModule.Object<T> 实现:
+    └── IReference (引用池接口)
+        └── 方法: Clear()
+
+
+【释放对象筛选函数】
+ReleaseObjectFilterCallback<T>
+    └── 签名: List<T> Filter(List<T> candidates, int count, DateTime? expireThreshold)
+    └── 用途: 自定义对象释放筛选策略
+
+【数据结构】
+ObjectInfo (结构体)
+    ├── 属性: Name, Locked, CustomCanReleaseFlag, Priority, LastUseTime, SpawnCount, IsInUse
+    └── 用途: 对象信息展示（Inspector 面板）
+
+TypeNamePair (Core 模块)
+    └── 用途: 对象池字典的 Key（类型+名称）
+```
+
+### 3.2 对象池架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   ObjectPoolModule                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │ ObjectPool  │  │ ObjectPool  │  │ ObjectPool  │  ...     │
+│  │ <Bullet>    │  │ <Enemy>     │  │ <Effect>    │         │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘         │
+└─────────┼────────────────┼────────────────┼─────────────────┘
+          │                │                │
+          ▼                ▼                ▼
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │  Object  │     │  Object  │     │  Object  │
+    │ <Bullet> │     │ <Enemy>  │     │ <Effect> │
+    └──────────┘     └──────────┘     └──────────┘
+          │                │                │
+          ▼                ▼                ▼
+    ┌──────────┐     ┌──────────┐     ┌──────────┐
+    │ GameObject│     │ GameObject│     │ GameObject│
+    │ (Bullet)  │     │ (Enemy)   │     │ (Effect)  │
+    └──────────┘     └──────────┘     └──────────┘
+```
+
+### 3.3 对象生命周期
+
+```
+【对象状态流转】
+
+外部创建完成
+    │
+    ▼
+注册 (Register)
+    │
+    ▼
+┌─────────┐     获取 (Spawn)     ┌─────────┐
+│  空闲   │ ───────────────────▶ │ 使用中  │
+│ (In Pool)│                     │ (In Use)│
+└─────────┘ ◀─────────────────── └─────────┘
+    ▲         回收 (Recycle)
+    │
+    │ 释放 (Release)
+    ▼
+┌─────────┐
+│  销毁   │
+│(Destroy)│
+└─────────┘
+
+【生命周期回调】
+
+ObjectBase 生命周期:
+    ├── OnSpawn()   - 对象被获取时调用
+    ├── OnRecycle() - 对象被回收时调用
+    └── OnRelease() - 对象被释放时调用（抽象方法，必须实现）
+```
+
+### 3.4 释放策略
+
+```
+【默认释放筛选策略】
+
+1. 过期对象优先释放
+   - 检查对象最后使用时间
+   - 超过 ExpireTime 的对象优先释放
+
+2. 优先级排序释放
+   - 优先级低的对象先释放
+   - 优先级相同，最后使用时间早的先释放
+
+【释放条件检查】
+
+对象可被释放的条件:
+    ├── !IsInUse        - 对象不在使用中 (SpawnCount == 0)
+    ├── !Locked         - 对象未被加锁
+    └── CustomCanReleaseFlag - 自定义释放标记为 true
+```
+
+## 4. 核心类详细说明
+
+### 4.1 ObjectPoolModule
+
+对象池管理模块，继承自 `FuModule`，负责管理所有对象池。
+
+**核心功能：**
 
 ```csharp
 public sealed partial class ObjectPoolModule : FuModule
+{
+    // 对象池管理
+    public int Count { get; }                                           // 对象池数量
+    public bool HasObjectPool<T>() where T : ObjectBase                 // 检查对象池是否存在
+    public bool HasObjectPool<T>(string poolName)                       // 检查指定名称对象池
+    public ObjectPool<T> GetObjectPool<T>()                             // 获取对象池
+    public ObjectPool<T> GetObjectPool<T>(string poolName)              // 获取指定名称对象池
+    public ObjectPoolBase[] GetAllObjectPools(bool sort)                // 获取所有对象池
+    
+    // 对象池生命周期
+    public ObjectPool<T> CreateObjectPool<T>(...)                       // 创建对象池
+    public bool DestroyObjectPool<T>()                                  // 销毁对象池
+    public void ReleaseAllUnused()                                      // 释放所有未使用对象
+}
 ```
 
-**主要功能：**
-- 对象池的创建、销毁和管理
-- 对象池的轮询和自动释放
-- 低内存自动清理
-- 对象池统计信息获取
+**内存管理：**
 
-### ObjectPoolBase
+- 监听 `Application.lowMemory` 事件
+- 低内存时自动调用 `ReleaseAllUnused()` 释放资源
 
-对象池基类，定义对象池的基本操作接口。
+### 4.2 ObjectPoolBase
+
+对象池基类，定义对象池的基本属性和抽象方法。
+
+**核心属性：**
 
 ```csharp
 public abstract class ObjectPoolBase
+{
+    public string Name { get; }                    // 对象池名称
+    public string FullName { get; }                // 完整名称（类型+名称）
+    public abstract Type ObjectType { get; }       // 对象类型
+    public abstract int Count { get; }             // 对象数量
+    public abstract int CanReleaseCount { get; }   // 可释放对象数量
+    public abstract bool AllowSpawnInUse { get; }  // 是否允许多次获取
+    public abstract float AutoReleaseInterval { get; set; }  // 自动释放间隔
+    public abstract int Capacity { get; set; }     // 容量
+    public abstract float ExpireTime { get; set; } // 过期时间（秒）
+    public abstract int Priority { get; set; }     // 优先级
+}
 ```
 
-**主要属性：**
-- `string Name` - 对象池名称
-- `Type ObjectType` - 对象池中的对象类型
-- `int Count` - 对象池中对象的数量
-- `int CanReleaseCount` - 可释放的对象数量
-- `bool AllowSpawnInUse` - 是否允许获取正在使用的对象
+**抽象方法：**
 
-### ObjectBase
+- `Update()` - 轮询更新（自动释放检查）
+- `Shutdown()` - 关闭清理
+- `Release()` - 释放对象
+- `Release(int)` - 释放指定数量对象
+- `ReleaseAllUnused()` - 释放所有未使用对象
+- `GetAllObjectInfos()` - 获取所有对象信息
 
-对象池内的对象基类，实现引用对象接口。
+### 4.3 ObjectPool<T>
 
-```csharp
-public abstract class ObjectBase : IReference
-```
+泛型对象池实现，继承自 `ObjectPoolBase`。
 
-**主要属性：**
-- `string Name` - 对象名称
-- `object Target` - 目标真实对象（如GameObject）
-- `bool Locked` - 对象是否被加锁
-- `int Priority` - 对象优先级
-- `DateTime LastUseTime` - 对象上次使用时间
-
-### ObjectPool<T>
-
-具体存放 T 类型对象的对象池实现。
+**核心功能：**
 
 ```csharp
 public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
+{
+    // 对象管理
+    public void Register(T obj, bool spawned)       // 注册对象到池
+    public T Spawn(string name)                     // 获取对象
+    public void Recycle(T obj)                      // 回收对象
+    public void Recycle(object target)              // 通过目标对象回收
+    
+    // 释放控制
+    public bool ReleaseObject(T obj)                // 释放指定对象
+    public override void Release()                  // 释放超过容量的对象
+    public override void Release(int toReleaseCount)// 释放指定数量
+    public override void ReleaseAllUnused()         // 释放所有未使用
+    public void Release(ReleaseObjectFilterCallback<T> callback)  // 自定义释放
+    
+    // 对象属性控制
+    public void SetLocked(T obj, bool locked)       // 设置锁定状态
+    public void SetPriority(T obj, int priority)    // 设置优先级
+    public bool CanSpawn(string name)               // 检查对象是否可获取
+}
 ```
 
-**池类型说明：**
-- **单实例池** (`AllowSpawnInUse = false`)：一个对象每次只能被取出一次
-- **多实例池** (`AllowSpawnInUse = true`)：一个对象可以被同时取出多次（引用计数）
+**内部数据结构：**
 
-## 技术架构
+- `FuMultiDictionary<string, Object<T>>` - 按名称存储对象（多值字典，支持同名多对象）
+- `Dictionary<object, Object<T>>` - 按目标对象快速查找
 
-### 依赖关系
+### 4.4 ObjectBase
 
-```
-ObjectPoolModule → ObjectPoolBase → ObjectBase
-ObjectPoolModule → ReferencePool (IReference接口)
-```
+对象池内的对象基类，所有放入对象池的对象必须继承此类。
 
-### 对象生命周期
-
-1. **对象生成流程：**
-   - 检查对象池中是否有可用对象
-   - 如果有，从池中取出并调用 `OnSpawn()`
-   - 如果没有，创建新对象并调用 `OnSpawn()`
-
-2. **对象回收流程：**
-   - 调用对象的 `OnRecycle()` 方法
-   - 将对象放回对象池
-   - 更新对象的使用时间
-
-3. **自动释放流程：**
-   - 定时检查过期对象
-   - 根据优先级和最后使用时间排序
-   - 释放符合条件的对象
-
-### 内存管理策略
-
-- **容量控制**：设置对象池最大容量
-- **过期时间**：设置对象闲置过期时间
-- **优先级管理**：根据优先级决定释放顺序
-- **低内存处理**：系统低内存时自动释放资源
-
-## 使用指南
-
-### 1. 基础使用
-
-#### 创建自定义对象类
+**核心属性：**
 
 ```csharp
-// 定义自定义对象类，继承自 ObjectBase
+public abstract class ObjectBase : IReference
+{
+    public string Name { get; private set; }       // 对象名称
+    public object Target { get; private set; }     // 目标真实对象（如 GameObject）
+    public bool Locked { get; set; }               // 是否被加锁
+    public int Priority { get; set; }              // 优先级
+    public DateTime LastUseTime { get; internal set; }  // 最后使用时间
+    public virtual bool CustomCanReleaseFlag => true;  // 自定义释放标记
+}
+```
+
+**生命周期方法：**
+
+```csharp
+// 初始化方法（多种重载）
+protected void Initialize(object target)
+protected void Initialize(string name, object target)
+protected void Initialize(string name, object target, bool locked)
+protected void Initialize(string name, object target, int priority)
+
+// 生命周期回调
+protected internal virtual void OnSpawn() { }      // 对象被获取时
+protected internal virtual void OnRecycle() { }    // 对象被回收时
+protected internal abstract void OnRelease(bool isShutdown);  // 对象被释放时
+
+// 引用池接口
+public virtual void Clear()                        // 清理对象
+```
+
+### 4.5 ObjectPoolModule.Object<T>
+
+内部对象包装类，包装 `ObjectBase` 对象并管理生成计数。
+
+**核心属性：**
+
+```csharp
+private sealed class Object<T> : IReference where T : ObjectBase
+{
+    public string Name { get; }           // 对象名称
+    public bool Locked { get; set; }      // 是否被加锁
+    public int Priority { get; set; }     // 优先级
+    public bool CustomCanReleaseFlag { get; }  // 自定义释放标记
+    public DateTime LastUseTime { get; }  // 最后使用时间
+    public bool IsInUse => SpawnCount > 0;  // 是否正在使用
+    public int SpawnCount { get; private set; }  // 生成计数（引用计数）
+}
+```
+
+**核心方法：**
+
+- `Create(T obj, bool spawned)` - 创建内部对象
+- `Spawn()` - 获取对象（计数+1）
+- `Recycle()` - 回收对象（计数-1）
+- `Release(bool isShutdown)` - 释放对象
+- `Peek()` - 查看对象
+
+### 4.6 ObjectInfo
+
+对象信息结构体，用于外部获取对象信息，如 Inspector 面板展示。
+
+```csharp
+public readonly struct ObjectInfo
+{
+    public string Name { get; }                    // 对象名称
+    public bool Locked { get; }                    // 是否被加锁
+    public bool CustomCanReleaseFlag { get; }      // 自定义释放标记
+    public int Priority { get; }                   // 优先级
+    public DateTime LastUseTime { get; }           // 最后使用时间
+    public int SpawnCount { get; }                 // 生成计数
+    public bool IsInUse => SpawnCount > 0;         // 是否正在使用
+}
+```
+
+### 4.7 ReleaseObjectFilterCallback<T>
+
+释放对象筛选委托，用于自定义释放策略。
+
+```csharp
+public delegate List<T> ReleaseObjectFilterCallback<T>(
+    List<T> candidateObjects,      // 候选对象列表
+    int toReleaseCount,            // 需要释放的数量
+    DateTime? expireTimeThreshold  // 过期时间阈值
+) where T : ObjectBase;
+```
+
+## 5. 使用示例
+
+### 5.1 定义自定义对象类
+
+```csharp
+using FuFramework.ObjectPool.Runtime;
+using FuFramework.ReferencePool.Runtime;
+using UnityEngine;
+
+// 定义子弹对象类
 public class BulletObject : ObjectBase
 {
     private GameObject m_BulletGameObject;
+    private Rigidbody m_Rigidbody;
     
-    // 必须实现的构造函数
-    public BulletObject()
-    {
-        // 可以在这里初始化默认值
-    }
-    
-    // 创建对象实例
+    /// <summary>
+    /// 创建子弹对象
+    /// </summary>
     public static BulletObject Create(string name, GameObject bulletPrefab)
     {
         var bulletObject = ReferencePool.Acquire<BulletObject>();
-        var bulletInstance = GameObject.Instantiate(bulletPrefab);
+        var bulletInstance = Object.Instantiate(bulletPrefab);
+        bulletInstance.name = name;
+        
         bulletObject.Initialize(name, bulletInstance);
+        bulletObject.m_BulletGameObject = bulletInstance;
+        bulletObject.m_Rigidbody = bulletInstance.GetComponent<Rigidbody>();
+        
         return bulletObject;
     }
     
-    // 对象生成时的回调
+    /// <summary>
+    /// 对象被获取时的回调
+    /// </summary>
     protected internal override void OnSpawn()
     {
         base.OnSpawn();
@@ -140,9 +359,14 @@ public class BulletObject : ObjectBase
         {
             gameObject.SetActive(true);
         }
+        
+        // 重置子弹状态
+        m_Rigidbody?.Sleep();
     }
     
-    // 对象回收时的回调
+    /// <summary>
+    /// 对象被回收时的回调
+    /// </summary>
     protected internal override void OnRecycle()
     {
         base.OnRecycle();
@@ -152,530 +376,299 @@ public class BulletObject : ObjectBase
         }
     }
     
-    // 清理对象
+    /// <summary>
+    /// 释放对象（销毁 GameObject）
+    /// </summary>
+    protected internal override void Release(bool isShutdown)
+    {
+        if (Target is GameObject gameObject)
+        {
+            Object.Destroy(gameObject);
+        }
+        m_BulletGameObject = null;
+        m_Rigidbody = null;
+    }
+    
+    /// <summary>
+    /// 清理对象（返回引用池时）
+    /// </summary>
     public override void Clear()
     {
         base.Clear();
-        if (Target is GameObject gameObject)
-        {
-            GameObject.Destroy(gameObject);
-        }
         m_BulletGameObject = null;
+        m_Rigidbody = null;
+    }
+    
+    /// <summary>
+    /// 发射子弹
+    /// </summary>
+    public void Fire(Vector3 position, Vector3 direction, float speed)
+    {
+        if (m_BulletGameObject != null)
+        {
+            m_BulletGameObject.transform.position = position;
+            m_BulletGameObject.transform.rotation = Quaternion.LookRotation(direction);
+            m_Rigidbody?.WakeUp();
+            m_Rigidbody?.AddForce(direction * speed, ForceMode.Impulse);
+        }
     }
 }
 ```
 
-#### 创建对象池
+### 5.2 创建和使用对象池
 
 ```csharp
-// 获取对象池管理器
-var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+using FuFramework.Core.Runtime;
+using FuFramework.ObjectPool.Runtime;
 
-// 创建对象池（单实例池）
-var bulletPool = objectPoolModule.CreateObjectPool<BulletObject>("BulletPool", false);
-
-// 配置对象池参数
-bulletPool.Capacity = 100;           // 最大容量100
-bulletPool.ExpireTime = 30f;         // 30秒后过期
-bulletPool.AutoReleaseInterval = 5f; // 每5秒自动释放一次
-bulletPool.Priority = 1;              // 优先级1
-```
-
-#### 对象获取和回收
-
-```csharp
-// 获取对象
-var bulletObject = bulletPool.Spawn("Bullet_001");
-if (bulletObject != null)
+public class BulletManager
 {
-    // 使用对象
-    var bulletGameObject = bulletObject.Target as GameObject;
-    // ... 设置子弹位置、速度等
-}
-
-// 回收对象
-bulletPool.Recycle(bulletObject);
-
-// 或者使用 using 语句自动回收
-using (var tempBullet = bulletPool.Spawn("Bullet_002"))
-{
-    // 使用临时对象
-    // 离开作用域时自动回收
-}
-```
-
-### 2. 高级配置
-
-#### 多实例池配置
-
-```csharp
-// 创建多实例池（允许同一个对象被多次获取）
-var effectPool = objectPoolModule.CreateObjectPool<EffectObject>("EffectPool", true);
-
-// 配置多实例池参数
-effectPool.Capacity = 50;
-effectPool.ExpireTime = 10f;
-effectPool.Priority = 2;
-
-// 获取多个相同对象
-var effect1 = effectPool.Spawn("ExplosionEffect");
-var effect2 = effectPool.Spawn("ExplosionEffect"); // 可以获取同名对象
-
-// 分别回收
-effectPool.Recycle(effect1);
-effectPool.Recycle(effect2);
-```
-
-#### 对象锁定机制
-
-```csharp
-// 锁定重要对象，防止被自动释放
-var importantObject = bulletPool.Spawn("ImportantBullet");
-importantObject.Locked = true; // 锁定对象
-
-// 使用对象...
-
-// 解锁并回收
-importantObject.Locked = false;
-bulletPool.Recycle(importantObject);
-```
-
-#### 自定义释放策略
-
-```csharp
-// 自定义释放筛选函数
-ReleaseObjectFilterCallback<BulletObject> customFilter = (candidateObjects, releaseCount, expireTime) =>
-{
-    // 自定义释放逻辑：优先释放低优先级且长时间未使用的对象
-    var toReleaseObjects = new List<BulletObject>();
+    private ObjectPool<BulletObject> m_BulletPool;
+    private GameObject m_BulletPrefab;
     
-    foreach (var bullet in candidateObjects)
+    public void Init()
     {
-        if (bullet.Priority < 5 && 
-            (DateTime.UtcNow - bullet.LastUseTime).TotalSeconds > expireTime)
+        // 获取对象池模块
+        var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+        
+        // 创建子弹对象池
+        m_BulletPool = objectPoolModule.CreateObjectPool<BulletObject>(
+            poolName: "BulletPool",
+            allowSpawnInUse: false,           // 一个子弹只能被一个使用者持有
+            autoReleaseInterval: 10f,         // 每10秒检查一次自动释放
+            capacity: 50,                     // 最大容量50个
+            expireTime: 60f,                  // 60秒未使用则过期
+            priority: 1                       // 优先级1
+        );
+        
+        // 预创建一些子弹对象
+        for (int i = 0; i < 10; i++)
         {
-            toReleaseObjects.Add(bullet);
-            if (toReleaseObjects.Count >= releaseCount)
-                break;
+            var bullet = BulletObject.Create($"Bullet_{i}", m_BulletPrefab);
+            m_BulletPool.Register(bullet, false);  // 注册到池，不允许在使用中再次获取
         }
     }
     
-    return toReleaseObjects.ToArray();
+    /// <summary>
+    /// 发射子弹
+    /// </summary>
+    public void FireBullet(Vector3 position, Vector3 direction)
+    {
+        // 尝试从池中获取子弹
+        var bullet = m_BulletPool.Spawn("Bullet");
+        
+        if (bullet == null)
+        {
+            // 池中没有可用子弹，创建新的
+            bullet = BulletObject.Create($"Bullet_{Time.time}", m_BulletPrefab);
+            m_BulletPool.Register(bullet, true);  // 注册并标记为已生成
+        }
+        
+        // 发射子弹
+        bullet.Fire(position, direction, 100f);
+    }
+    
+    /// <summary>
+    /// 回收子弹
+    /// </summary>
+    public void RecycleBullet(BulletObject bullet)
+    {
+        m_BulletPool.Recycle(bullet);
+    }
+    
+    /// <summary>
+    /// 清理所有子弹
+    /// </summary>
+    public void ClearAllBullets()
+    {
+        m_BulletPool.ReleaseAllUnused();
+    }
+}
+```
+
+### 5.3 使用引用计数模式
+
+```csharp
+// 创建可在使用中再次获取的特效对象池（AllowSpawnInUse = true）
+var effectPool = objectPoolModule.CreateObjectPool<EffectObject>(
+    poolName: "EffectPool",
+    allowSpawnInUse: true, // 可在使用中再次获取
+    capacity: 20,
+    expireTime: 30f
+);
+
+// 同一个特效可以被多次获取（引用计数++）
+var effect1 = effectPool.Spawn("Explosion");  // SpawnCount = 1
+var effect2 = effectPool.Spawn("Explosion");  // SpawnCount = 2（同一个对象）
+var effect3 = effectPool.Spawn("Explosion");  // SpawnCount = 3（同一个对象）
+
+// 每次回收引用计数--
+effectPool.Recycle(effect1);  // SpawnCount = 2
+effectPool.Recycle(effect2);  // SpawnCount = 1
+effectPool.Recycle(effect3);  // SpawnCount = 0（可以被释放）
+```
+
+### 5.4 自定义释放策略
+
+```csharp
+// 定义自定义释放策略（优先释放低优先级对象）
+ReleaseObjectFilterCallback<BulletObject> customFilter = (candidates, count, expireThreshold) =>
+{
+    // 按优先级排序（低优先级在前）
+    candidates.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+    
+    // 返回需要释放的对象
+    return candidates.GetRange(0, Mathf.Min(count, candidates.Count));
 };
 
-// 设置自定义释放策略
-bulletPool.SetReleaseObjectFilterCallback(customFilter);
+// 使用自定义策略释放对象
+m_BulletPool.Release(customFilter);
 ```
 
-### 3. 池管理操作
-
-#### 查询对象池信息
-
-```csharp
-// 检查对象池是否存在
-bool hasPool = objectPoolModule.HasObjectPool<BulletObject>("BulletPool");
-
-// 获取对象池
-var pool = objectPoolModule.GetObjectPool<BulletObject>("BulletPool");
-
-// 获取所有对象池
-var allPools = objectPoolModule.GetAllObjectPools();
-
-// 获取特定条件的对象池
-var highPriorityPools = objectPoolModule.GetObjectPools(pool => pool.Priority > 5);
-```
-
-#### 手动释放控制
-
-```csharp
-// 释放单个对象池中的可释放对象
-bulletPool.Release();
-
-// 释放指定数量的对象
-bulletPool.Release(10); // 释放10个对象
-
-// 释放所有对象池中的可释放对象
-objectPoolModule.ReleaseAllUnused();
-
-// 强制释放所有对象（包括正在使用的）
-objectPoolModule.ReleaseAll();
-```
-
-#### 统计信息获取
+### 5.5 对象池监控和管理
 
 ```csharp
 // 获取对象池统计信息
-var poolCount = objectPoolModule.Count;
-var bulletCount = bulletPool.Count;
-var canReleaseCount = bulletPool.CanReleaseCount;
+Debug.Log($"对象池数量: {m_BulletPool.Count}");
+Debug.Log($"可释放数量: {m_BulletPool.CanReleaseCount}");
+Debug.Log($"容量: {m_BulletPool.Capacity}");
 
-// 打印统计信息
-Debug.Log($"总对象池数量: {poolCount}");
-Debug.Log($"子弹池对象数量: {bulletCount}");
-Debug.Log($"可释放子弹数量: {canReleaseCount}");
-```
-
-## 高级用法
-
-### 1. 复杂对象管理
-
-#### 游戏实体对象池
-
-```csharp
-// 游戏实体对象
-public class EntityObject : ObjectBase
+// 获取所有对象信息
+ObjectInfo[] infos = m_BulletPool.GetAllObjectInfos();
+foreach (var info in infos)
 {
-    public EntityComponent EntityComponent { get; private set; }
-    
-    public static EntityObject Create(string name, GameObject entityPrefab)
-    {
-        var entityObject = ReferencePool.Acquire<EntityObject>();
-        var entityInstance = GameObject.Instantiate(entityPrefab);
-        entityObject.Initialize(name, entityInstance);
-        entityObject.EntityComponent = entityInstance.GetComponent<EntityComponent>();
-        return entityObject;
-    }
-    
-    protected internal override void OnSpawn()
-    {
-        base.OnSpawn();
-        EntityComponent?.OnSpawn();
-    }
-    
-    protected internal override void OnRecycle()
-    {
-        base.OnRecycle();
-        EntityComponent?.OnRecycle();
-    }
-    
-    public override void Clear()
-    {
-        if (Target is GameObject gameObject)
-        {
-            GameObject.Destroy(gameObject);
-        }
-        EntityComponent = null;
-        base.Clear();
-    }
+    Debug.Log($"对象: {info.Name}, 使用中: {info.IsInUse}, 锁定: {info.Locked}");
 }
 
-// 实体管理器
-public class EntityManager
-{
-    private ObjectPool<EntityObject> m_EntityPool;
-    
-    public void Initialize()
-    {
-        var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-        m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>("EntityPool", false);
-        m_EntityPool.Capacity = 200;
-        m_EntityPool.ExpireTime = 60f;
-    }
-    
-    public EntityObject SpawnEntity(string entityName, GameObject prefab)
-    {
-        var entityObject = m_EntityPool.Spawn(entityName);
-        if (entityObject == null)
-        {
-            // 池中没有对象，创建新对象
-            entityObject = EntityObject.Create(entityName, prefab);
-        }
-        return entityObject;
-    }
-    
-    public void RecycleEntity(EntityObject entityObject)
-    {
-        m_EntityPool.Recycle(entityObject);
-    }
-}
+// 锁定重要对象（防止被释放）
+var importantBullet = m_BulletPool.Spawn("ImportantBullet");
+m_BulletPool.SetLocked(importantBullet, true);
+
+// 设置对象优先级
+m_BulletPool.SetPriority(importantBullet, 100);
+
+// 手动触发释放
+m_BulletPool.Release();           // 释放超过容量的对象
+m_BulletPool.Release(5);          // 尝试释放5个对象
+m_BulletPool.ReleaseAllUnused();  // 释放所有未使用对象
 ```
 
-### 2. 性能优化策略
+## 6. 目录结构
 
-#### 预热对象池
-
-```csharp
-// 预先创建对象，避免运行时创建的开销
-public void PrewarmPool<T>(ObjectPool<T> pool, int count, Func<T> createFunc) where T : ObjectBase
-{
-    var tempList = new List<T>();
-    
-    // 预先创建对象
-    for (int i = 0; i < count; i++)
-    {
-        var obj = createFunc();
-        tempList.Add(obj);
-    }
-    
-    // 立即回收所有对象到池中
-    foreach (var obj in tempList)
-    {
-        pool.Recycle(obj);
-    }
-    
-    tempList.Clear();
-}
-
-// 使用预热
-var bulletPrefab = Resources.Load<GameObject>("BulletPrefab");
-PrewarmPool(bulletPool, 50, () => BulletObject.Create("PreWarmBullet", bulletPrefab));
+```
+Assets/FuFramework/ObjectPool/
+├── Editor/
+│   ├── FuFramework.ObjectPool.Editor.asmdef    # 编辑器程序集定义
+│   └── ObjectPoolModuleInspector.cs            # 对象池模块 Inspector
+├── Runtime/
+│   ├── FuFramework.ObjectPool.Runtime.asmdef   # 运行时程序集定义
+│   ├── ObjectPoolModule.cs                     # 对象池管理模块
+│   ├── ObjectPoolModule.Object.cs              # 内部对象包装类
+│   ├── ObjectPoolModule.ObjectPool.cs          # 泛型对象池实现
+│   ├── Base/
+│   │   ├── ObjectBase.cs                       # 对象基类
+│   │   └── ObjectPoolBase.cs                   # 对象池基类
+│   └── Misc/
+│       ├── ObjectInfo.cs                       # 对象信息结构体
+│       └── ReleaseObjectFilterCallback.cs      # 释放筛选委托
+└── README.md                                   # 本文档
 ```
 
-#### 分层对象池
+## 7. 依赖
+
+| 模块                        | 说明                                               |
+| ------------------------- | ------------------------------------------------ |
+| FuFramework.Core          | 提供 FuModule 基类、TypeNamePair、FuException、FuLogger |
+| FuFramework.ReferencePool | 提供 IReference 接口和 ReferencePool                  |
+
+## 8. 最佳实践
+
+### 8.1 对象池设计规范
 
 ```csharp
-// 创建不同优先级的对象池
-public class HierarchicalObjectPool
+// 1. 使用 ReferencePool 创建对象（避免 GC）
+var obj = ReferencePool.Acquire<MyObject>();
+
+// 2. 在 Release 中销毁 GameObject，在 Clear 中清理引用
+protected internal override void Release(bool isShutdown)
 {
-    private Dictionary<int, ObjectPool<BulletObject>> m_PriorityPools = new();
-    
-    public void Initialize()
-    {
-        var objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-        
-        // 高优先级池（重要对象）
-        var highPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("HighPriorityBullets", false);
-        highPriorityPool.Priority = 10;
-        highPriorityPool.ExpireTime = 300f; // 5分钟
-        m_PriorityPools[10] = highPriorityPool;
-        
-        // 中优先级池（普通对象）
-        var mediumPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("MediumPriorityBullets", false);
-        mediumPriorityPool.Priority = 5;
-        mediumPriorityPool.ExpireTime = 60f; // 1分钟
-        m_PriorityPools[5] = mediumPriorityPool;
-        
-        // 低优先级池（临时对象）
-        var lowPriorityPool = objectPoolModule.CreateObjectPool<BulletObject>("LowPriorityBullets", true);
-        lowPriorityPool.Priority = 1;
-        lowPriorityPool.ExpireTime = 10f; // 10秒
-        m_PriorityPools[1] = lowPriorityPool;
-    }
-    
-    public BulletObject SpawnBullet(int priority, string name, GameObject prefab)
-    {
-        if (m_PriorityPools.TryGetValue(priority, out var pool))
-        {
-            return pool.Spawn(name) ?? BulletObject.Create(name, prefab);
-        }
-        return null;
-    }
+    if (Target is GameObject go)
+        Object.Destroy(go);
+}
+
+public override void Clear()
+{
+    base.Clear();
+    m_Component = null;  // 清理引用
+}
+
+// 3. 在 OnSpawn/OnRecycle 中控制 GameObject 显隐
+protected internal override void OnSpawn()
+{
+    base.OnSpawn();
+    (Target as GameObject)?.SetActive(true);
+}
+
+protected internal override void OnRecycle()
+{
+    base.OnRecycle();
+    (Target as GameObject)?.SetActive(false);
 }
 ```
 
-### 3. 内存监控和调试
-
-#### 内存使用监控
+### 8.2 对象池管理器封装
 
 ```csharp
-// 对象池监控器
-public class ObjectPoolMonitor
+public static class GameObjectPool
 {
-    private ObjectPoolModule m_ObjectPoolModule;
+    private static ObjectPoolModule s_Module;
     
-    public void Initialize()
+    public static void Init()
     {
-        m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+        s_Module = ModuleManager.GetModule<ObjectPoolModule>();
     }
     
-    public void LogMemoryUsage()
+    /// <summary>
+    /// 获取或创建对象池
+    /// </summary>
+    public static ObjectPool<T> GetOrCreatePool<T>(string poolName, int capacity = 50) 
+        where T : ObjectBase
     {
-        var allPools = m_ObjectPoolModule.GetAllObjectPools();
+        if (s_Module.HasObjectPool<T>(poolName))
+            return s_Module.GetObjectPool<T>(poolName);
         
-        Debug.Log("=== 对象池内存使用报告 ===");
-        foreach (var pool in allPools)
-        {
-            Debug.Log($"池名: {pool.FullName}");
-            Debug.Log($"  对象数量: {pool.Count}");
-            Debug.Log($"  可释放数量: {pool.CanReleaseCount}");
-            Debug.Log($"  容量: {pool.Capacity}");
-            Debug.Log($"  优先级: {pool.Priority}");
-        }
+        return s_Module.CreateObjectPool<T>(
+            poolName: poolName,
+            allowSpawnInUse: false,
+            autoReleaseInterval: 10f,
+            capacity: capacity,
+            expireTime: 60f,
+            priority: 0
+        );
     }
     
-    public void MonitorLowMemory()
+    /// <summary>
+    /// 预加载对象
+    /// </summary>
+    public static void Preload<T>(string poolName, int count, Func<T> factory) 
+        where T : ObjectBase
     {
-        // 订阅低内存事件
-        Application.lowMemory += OnLowMemory;
-    }
-    
-    private void OnLowMemory()
-    {
-        Debug.LogWarning("系统低内存，强制释放对象池资源");
-        
-        // 按优先级从低到高释放对象
-        var pools = m_ObjectPoolModule.GetAllObjectPools(true); // 按优先级排序
-        
-        foreach (var pool in pools)
-        {
-            if (pool.Priority <= 3) // 只释放低优先级对象
-            {
-                var releasedCount = pool.Release();
-                Debug.Log($"释放池 {pool.FullName} 中的 {releasedCount} 个对象");
-            }
-        }
-    }
-}
-```
-
-## 性能优化建议
-
-### 1. 容量规划
-
-```csharp
-// 根据游戏阶段动态调整容量
-public class DynamicCapacityManager
-{
-    private ObjectPool<BulletObject> m_BulletPool;
-    
-    public void AdjustCapacityBasedOnGameState(GameState gameState)
-    {
-        switch (gameState)
-        {
-            case GameState.Menu:
-                m_BulletPool.Capacity = 10; // 菜单阶段，少量对象
-                break;
-            case GameState.Normal:
-                m_BulletPool.Capacity = 100; // 正常游戏阶段
-                break;
-            case GameState.BossBattle:
-                m_BulletPool.Capacity = 300; // BOSS战，需要大量对象
-                break;
-        }
-    }
-}
-```
-
-### 2. 过期时间优化
-
-```csharp
-// 根据对象使用频率动态调整过期时间
-public class SmartExpireTimeManager
-{
-    private Dictionary<string, float> m_ObjectUsageFrequency = new();
-    
-    public float GetOptimalExpireTime(string objectName)
-    {
-        if (m_ObjectUsageFrequency.TryGetValue(objectName, out var frequency))
-        {
-            // 使用频率高的对象，设置较长的过期时间
-            if (frequency > 10f) return 300f; // 5分钟
-            if (frequency > 5f) return 120f;  // 2分钟
-            if (frequency > 1f) return 60f;   // 1分钟
-        }
-        
-        return 30f; // 默认30秒
-    }
-    
-    public void RecordUsage(string objectName)
-    {
-        // 记录对象使用频率
-        if (m_ObjectUsageFrequency.ContainsKey(objectName))
-        {
-            m_ObjectUsageFrequency[objectName] += 1f;
-        }
-        else
-        {
-            m_ObjectUsageFrequency[objectName] = 1f;
-        }
-    }
-}
-```
-
-### 3. 批量操作优化
-
-```csharp
-// 批量生成和回收对象
-public class BatchObjectOperator
-{
-    private ObjectPool<BulletObject> m_BulletPool;
-    
-    public List<BulletObject> SpawnMultiple(string baseName, int count, GameObject prefab)
-    {
-        var bullets = new List<BulletObject>();
-        
+        var pool = GetOrCreatePool<T>(poolName);
         for (int i = 0; i < count; i++)
         {
-            var bulletName = $"{baseName}_{i}";
-            var bullet = m_BulletPool.Spawn(bulletName) ?? BulletObject.Create(bulletName, prefab);
-            bullets.Add(bullet);
+            var obj = factory();
+            pool.Register(obj, false);
         }
-        
-        return bullets;
-    }
-    
-    public void RecycleMultiple(List<BulletObject> bullets)
-    {
-        foreach (var bullet in bullets)
-        {
-            m_BulletPool.Recycle(bullet);
-        }
-        bullets.Clear();
     }
 }
 ```
 
-## 注意事项
+### 8.3 注意事项
 
-### 1. 对象生命周期
+1. **对象生命周期**：确保对象在回收后不再被使用，避免空引用异常
+2. **容量设置**：合理设置容量，避免内存占用过大或频繁创建销毁
+3. **过期时间**：根据对象使用频率设置合适的过期时间
+4. **锁定机制**：重要对象使用 `SetLocked` 防止被自动释放
+5. **引用计数**：多实例池注意正确回收，避免内存泄漏
+6. **线程安全**：对象池操作应在主线程进行
 
-- 确保在 `OnSpawn()` 中正确初始化对象状态
-- 在 `OnRecycle()` 中清理对象状态
-- 在 `Clear()` 中释放所有资源
-
-### 2. 线程安全
-
-- 对象池操作主要在 Unity 主线程执行
-- 多线程访问需要适当的同步机制
-- 避免在对象生命周期回调中进行耗时操作
-
-### 3. 内存管理
-
-- 及时释放不再使用的对象池
-- 监控对象池的内存使用情况
-- 合理设置对象池容量和过期时间
-
-### 4. 性能考虑
-
-- 避免频繁创建和销毁对象池
-- 使用预热机制减少运行时开销
-- 根据实际使用情况优化池参数
-
-## API 参考
-
-### ObjectPoolModule 主要方法
-
-| 方法 | 说明 |
-|------|------|
-| `CreateObjectPool` | 创建对象池 |
-| `DestroyObjectPool` | 销毁对象池 |
-| `GetObjectPool` | 获取对象池 |
-| `HasObjectPool` | 检查对象池是否存在 |
-| `GetAllObjectPools` | 获取所有对象池 |
-| `ReleaseAllUnused` | 释放所有未使用的对象 |
-| `ReleaseAll` | 强制释放所有对象 |
-
-### ObjectPool<T> 主要方法
-
-| 方法 | 说明 |
-|------|------|
-| `Spawn` | 获取对象 |
-| `Recycle` | 回收对象 |
-| `Release` | 释放可释放对象 |
-| `SetReleaseObjectFilterCallback` | 设置释放筛选函数 |
-
-### ObjectBase 主要方法
-
-| 方法 | 说明 |
-|------|------|
-| `OnSpawn` | 对象生成时回调 |
-| `OnRecycle` | 对象回收时回调 |
-| `Clear` | 清理对象资源 |
-
-## 示例项目
-
-参考 FuFramework 示例项目中的对象池使用示例，了解完整的使用场景和最佳实践。
-
----
-
-**注意：** 本模块需要依赖 ReferencePool 模块进行引用计数管理，请确保 ReferencePool 模块已正确初始化。
