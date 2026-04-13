@@ -3,7 +3,7 @@
 namespace FuFramework.Localization.Runtime
 {
     /// <summary>
-    /// 本地化语言。
+    /// 本地化语言类型。
     /// </summary>
     public enum ELanguage : byte
     {
