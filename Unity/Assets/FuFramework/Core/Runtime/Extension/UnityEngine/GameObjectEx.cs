@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// GameObject相关的扩展方法。
+    /// GameObject 相关的扩展方法。
     /// 功能：
     ///     1. 销毁物体下的所有子物体。
     ///     2. 销毁游戏物体。
