@@ -12,7 +12,7 @@ using Type = FuFramework.Core.Editor.Type;
 namespace FuFramework.Launcher.Editor
 {
     /// <summary>
-    /// 自定义流程组件的Inspector
+    /// 自定义游戏启动流程的Inspector
     /// </summary>
     [CustomEditor(typeof(Runtime.Launcher))]
     internal sealed class LauncherInspector : FuFrameworkInspector
