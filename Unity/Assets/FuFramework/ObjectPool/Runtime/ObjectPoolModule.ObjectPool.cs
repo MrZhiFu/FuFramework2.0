@@ -10,10 +10,11 @@ namespace FuFramework.ObjectPool.Runtime
     {
         /// <summary>
         /// 具体管理T类型对象的对象池。继承于ObjectPoolBase。
-        /// 1.单实例池 (AllowSpawnInUse = false)：一个对象每次只能被取出一次。如果未被归还，再次获取时会创建新实例。
-        /// 2.多实例池 (AllowSpawnInUse = true)：一个对象可以被同时取出多次（引用计数）。只有当所有引用都被归还后，对象才会真正回池。
-        /// 3.允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
-        /// 4.设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
+        /// 功能：
+        ///     1.单实例池 (AllowSpawnInUse = false)：不允许获取正在被使用的对象。
+        ///     2.多实例池 (AllowSpawnInUse = true)：允许获取正在被使用的对象，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
+        ///     3.允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
+        ///     4.设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
         public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
@@ -54,7 +55,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <summary>
             /// 获取对象池中的对象时，是否允许获取正在被使用的对象。一般都为false。
             /// false--对象只能在回收后才能再次被获取，即池中会存在多个同名对象;
-            /// true--对象能在未回收的状态下就能再次被获取，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
+            /// true --对象能在未回收的状态下就能再次被获取，这样会使得池中的对象只有一个，每次获取之后这个对象的引用计数++
             /// </summary>
             public override bool AllowSpawnInUse { get; }
 

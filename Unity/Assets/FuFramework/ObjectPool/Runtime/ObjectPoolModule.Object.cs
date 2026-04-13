@@ -9,7 +9,8 @@ namespace FuFramework.ObjectPool.Runtime
     {
         /// <summary>
         /// 内部对象。
-        /// 包装一个对象池内的目标对象，创建并管理对象生命周期。
+        /// 功能：
+        ///     1. 包装一个对象池内的目标对象，创建并管理对象生命周期。
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         private sealed class Object<T> : IReference where T : ObjectBase

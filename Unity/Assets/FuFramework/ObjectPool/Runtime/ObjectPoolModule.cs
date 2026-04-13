@@ -8,7 +8,9 @@ namespace FuFramework.ObjectPool.Runtime
 {
     /// <summary>
     /// 对象池管理模块。
-    /// 功能：管理 Unity端的GameObject的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销
+    /// 功能：
+    ///     1. 管理 Unity端的GameObject的创建、销毁和复用，减少实例化(Instantiate)和销毁(Destroy)的开销。
+    ///     2. 提供对象池的创建、释放和销毁接口。
     /// </summary>
     public sealed partial class ObjectPoolModule : FuModule
     {
