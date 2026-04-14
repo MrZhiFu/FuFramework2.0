@@ -19,8 +19,11 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         protected override void OnInit()
         {
+#if ENABLE_SRDEBUGGER
             // 初始化运行时日志查看器
             SRDebug.Init();
+#endif
+
             FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
         }
 
