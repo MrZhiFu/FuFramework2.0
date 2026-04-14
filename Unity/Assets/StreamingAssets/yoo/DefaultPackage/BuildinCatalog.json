@@ -1,14 +1,14 @@
 {
     "FileVersion": "1.0.0",
     "PackageName": "DefaultPackage",
-    "PackageVersion": "2026-04-07-1363",
+    "PackageVersion": "2026-04-14-1274",
     "Wrappers": [
         {
-            "BundleGUID": "8ced2ccd50d5f552351a8db27128a7f3",
+            "BundleGUID": "4f6edb7ac0a9e60eac7d68af1a541c98",
             "FileName": "defaultpackage_assets_bundles_aotcode.bundle"
         },
         {
-            "BundleGUID": "4920917bdffdce1a7f1ebb6735d9acfb",
+            "BundleGUID": "1a5c04b2f599a09fbbcdd6c90964b81b",
             "FileName": "defaultpackage_assets_bundles_code.bundle"
         },
         {
