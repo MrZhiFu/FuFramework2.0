@@ -8,14 +8,12 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		"FuFramework.Asset.Runtime.dll",
 		"FuFramework.Config.Runtime.dll",
 		"FuFramework.Core.Runtime.dll",
-		"FuFramework.Model.Runtime.dll",
 		"FuFramework.Network.Runtime.dll",
 		"FuFramework.UI.Runtime.dll",
 		"FuFramework.Web.Runtime.dll",
 		"Luban.Runtime.dll",
-		"System.Core.dll",
 		"System.dll",
-		"UniTask.Runtime.dll",
+		"UniTask.dll",
 		"YooAsset.dll",
 		"mscorlib.dll",
 	};
@@ -26,12 +24,10 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 
 	// {{ AOT generic types
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask.<>c<Hotfix.HotfixLauncher.<LoadConfig>d__1>
-	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask.<>c<Hotfix.HotfixLauncher.<LoadUI>d__2>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask.<>c<Hotfix.HotfixLauncher.<Main>d__0>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask.<>c<Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask.<>c<Hotfix.Manager.BagManager.<RequestUseItem>d__4>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask<Hotfix.HotfixLauncher.<LoadConfig>d__1>
-	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask<Hotfix.HotfixLauncher.<LoadUI>d__2>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask<Hotfix.HotfixLauncher.<Main>d__0>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask<Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3>
 	// Cysharp.Threading.Tasks.CompilerServices.AsyncUniTask<Hotfix.Manager.BagManager.<RequestUseItem>d__4>
@@ -106,7 +102,7 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 	// Cysharp.Threading.Tasks.UniTaskCompletionSource<object>
 	// Cysharp.Threading.Tasks.UniTaskCompletionSourceCore<Cysharp.Threading.Tasks.AsyncUnit>
 	// Cysharp.Threading.Tasks.UniTaskExtensions.<>c__19<object>
-	// FuFramework.Asset.Runtime.AssetModule.<>c__DisplayClass26_0<object>
+	// FuFramework.Asset.Runtime.AssetModule.<>c__DisplayClass27_0<object>
 	// FuFramework.Core.Runtime.MonoSingleton<object>
 	// System.Action<System.ValueTuple<object,object>>
 	// System.Action<int>
@@ -306,6 +302,7 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 	// System.Func<System.ValueTuple<byte,System.ValueTuple<byte,object>>>
 	// System.Func<System.ValueTuple<byte,object>>
 	// System.Func<int>
+	// System.Func<object,System.Decimal>
 	// System.Func<object,System.Threading.Tasks.VoidTaskResult>
 	// System.Func<object,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,object>>>>>>>>
 	// System.Func<object,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,object>>>>>>>
@@ -314,6 +311,11 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 	// System.Func<object,System.ValueTuple<byte,System.ValueTuple<byte,System.ValueTuple<byte,object>>>>
 	// System.Func<object,System.ValueTuple<byte,System.ValueTuple<byte,object>>>
 	// System.Func<object,System.ValueTuple<byte,object>>
+	// System.Func<object,byte>
+	// System.Func<object,double>
+	// System.Func<object,float>
+	// System.Func<object,int>
+	// System.Func<object,long>
 	// System.Func<object,object,object>
 	// System.Func<object,object>
 	// System.Func<object>
@@ -470,17 +472,15 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 	public void RefMethods()
 	{
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask.Awaiter,Hotfix.HotfixLauncher.<Main>d__0>(Cysharp.Threading.Tasks.UniTask.Awaiter&,Hotfix.HotfixLauncher.<Main>d__0&)
-		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask.Awaiter<object>,Hotfix.HotfixLauncher.<LoadUI>d__2>(Cysharp.Threading.Tasks.UniTask.Awaiter<object>&,Hotfix.HotfixLauncher.<LoadUI>d__2&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,Hotfix.HotfixLauncher.<LoadConfig>d__1>(System.Runtime.CompilerServices.TaskAwaiter&,Hotfix.HotfixLauncher.<LoadConfig>d__1&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter<object>,Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3>(System.Runtime.CompilerServices.TaskAwaiter<object>&,Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter<object>,Hotfix.Manager.BagManager.<RequestUseItem>d__4>(System.Runtime.CompilerServices.TaskAwaiter<object>&,Hotfix.Manager.BagManager.<RequestUseItem>d__4&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.Start<Hotfix.HotfixLauncher.<LoadConfig>d__1>(Hotfix.HotfixLauncher.<LoadConfig>d__1&)
-		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.Start<Hotfix.HotfixLauncher.<LoadUI>d__2>(Hotfix.HotfixLauncher.<LoadUI>d__2&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.Start<Hotfix.HotfixLauncher.<Main>d__0>(Hotfix.HotfixLauncher.<Main>d__0&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.Start<Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3>(Hotfix.Manager.BagManager.<RequestGetBagInfo>d__3&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder.Start<Hotfix.Manager.BagManager.<RequestUseItem>d__4>(Hotfix.Manager.BagManager.<RequestUseItem>d__4&)
-		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder<object>.Start<FuFramework.UI.Runtime.UIModule.<OpenUIAsync>d__50<object>>(FuFramework.UI.Runtime.UIModule.<OpenUIAsync>d__50<object>&)
-		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder<object>.Start<FuFramework.UI.Runtime.UIModule.<_OpenUIAsync>d__51<object>>(FuFramework.UI.Runtime.UIModule.<_OpenUIAsync>d__51<object>&)
+		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder<object>.Start<FuFramework.UI.Runtime.UIModule.<OpenUIAsync>d__48<object>>(FuFramework.UI.Runtime.UIModule.<OpenUIAsync>d__48<object>&)
+		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder<object>.Start<FuFramework.UI.Runtime.UIModule.<_OpenUIAsync>d__49<object>>(FuFramework.UI.Runtime.UIModule.<_OpenUIAsync>d__49<object>&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskVoidMethodBuilder.AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask.Awaiter,Hotfix.UI.WinMain.<ReqBagInfo>d__26>(Cysharp.Threading.Tasks.UniTask.Awaiter&,Hotfix.UI.WinMain.<ReqBagInfo>d__26&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskVoidMethodBuilder.AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask.Awaiter<object>,Hotfix.Guide.GuideActionImpl.<_DoClickUIGuide>d__6>(Cysharp.Threading.Tasks.UniTask.Awaiter<object>&,Hotfix.Guide.GuideActionImpl.<_DoClickUIGuide>d__6&)
 		// System.Void Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskVoidMethodBuilder.AwaitUnsafeOnCompleted<Cysharp.Threading.Tasks.UniTask.Awaiter<object>,Hotfix.Guide.GuideActionImpl.<_DoDialogGuide>d__7>(Cysharp.Threading.Tasks.UniTask.Awaiter<object>&,Hotfix.Guide.GuideActionImpl.<_DoDialogGuide>d__7&)
@@ -501,8 +501,6 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		// object FuFramework.Config.Runtime.ConfigModule.GetConfig<object>()
 		// string FuFramework.Config.Runtime.ConfigModule.GetTypeName<object>()
 		// bool FuFramework.Config.Runtime.ConfigModule.HasConfig<object>()
-		// object FuFramework.Model.Runtime.ModelModule.CreateModel<object>()
-		// object FuFramework.Model.Runtime.ModelModule.GetModel<object>()
 		// System.Threading.Tasks.Task<object> FuFramework.Network.Runtime.INetworkChannel.Call<object>(FuFramework.Network.Runtime.MessageObject)
 		// System.Void FuFramework.UI.Runtime.UIModule.CloseUI<object>()
 		// object FuFramework.UI.Runtime.UIModule.GetUI<object>()
@@ -512,7 +510,6 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		// System.Threading.Tasks.Task<object> FuFramework.Web.Runtime.WebModule.Post<object>(string,FuFramework.Network.Runtime.MessageObject)
 		// string Luban.StringUtil.CollectionToString<int>(System.Collections.Generic.IEnumerable<int>)
 		// object System.Activator.CreateInstance<object>()
-		// System.Collections.Generic.List<object> System.Linq.Enumerable.ToList<object>(System.Collections.Generic.IEnumerable<object>)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,Hotfix.Config.TableManager.<LoadAsync>d__26>(System.Runtime.CompilerServices.TaskAwaiter&,Hotfix.Config.TableManager.<LoadAsync>d__26&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter<object>,Hotfix.Config.Local.TbLocalization.<LoadAsync>d__2>(System.Runtime.CompilerServices.TaskAwaiter<object>&,Hotfix.Config.Local.TbLocalization.<LoadAsync>d__2&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter<object>,Hotfix.Config.Tables.TbAchievement.<LoadAsync>d__2>(System.Runtime.CompilerServices.TaskAwaiter<object>&,Hotfix.Config.Tables.TbAchievement.<LoadAsync>d__2&)
@@ -532,7 +529,7 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbGlobalDefine.<LoadAsync>d__2>(Hotfix.Config.Tables.TbGlobalDefine.<LoadAsync>d__2&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbItem.<LoadAsync>d__2>(Hotfix.Config.Tables.TbItem.<LoadAsync>d__2&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbSound.<LoadAsync>d__2>(Hotfix.Config.Tables.TbSound.<LoadAsync>d__2&)
-		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<object>.Start<FuFramework.Web.Runtime.WebModule.<Post>d__41<object>>(FuFramework.Web.Runtime.WebModule.<Post>d__41<object>&)
+		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<object>.Start<FuFramework.Web.Runtime.WebModule.<Post>d__38<object>>(FuFramework.Web.Runtime.WebModule.<Post>d__38<object>&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<object>.Start<Hotfix.HotfixLauncher.<ConfigLoader>d__4>(Hotfix.HotfixLauncher.<ConfigLoader>d__4&)
 		// object YooAsset.AssetHandle.GetAssetObject<object>()
 		// YooAsset.AssetHandle YooAsset.ResourcePackage.LoadAssetAsync<object>(string,uint)

@@ -32,26 +32,14 @@
   </assembly>
   <assembly fullname="FuFramework.Core.Runtime">
     <type fullname="FuFramework.Core.Runtime.FuLogger" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.ModuleManager" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.MonoSingleton`1" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.ObjectEx" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.ShutdownType" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Singleton`1" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.StringEx" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Application" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/AssetPath" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Time" preserve="all" />
-  </assembly>
-  <assembly fullname="FuFramework.Download.Runtime">
-    <type fullname="FuFramework.Download.Runtime.DownloadFailureEventArgs" preserve="all" />
-    <type fullname="FuFramework.Download.Runtime.DownloadModule" preserve="all" />
-    <type fullname="FuFramework.Download.Runtime.DownloadStartEventArgs" preserve="all" />
-    <type fullname="FuFramework.Download.Runtime.DownloadSuccessEventArgs" preserve="all" />
-    <type fullname="FuFramework.Download.Runtime.DownloadUpdateEventArgs" preserve="all" />
-  </assembly>
-  <assembly fullname="FuFramework.Entry.Runtime">
-    <type fullname="FuFramework.Entry.Runtime.GlobalModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.Event.Runtime">
     <type fullname="FuFramework.Event.Runtime.EventModule" preserve="all" />
@@ -61,6 +49,9 @@
     <type fullname="FuFramework.Guide.Runtime.GuideModule" preserve="all" />
     <type fullname="FuFramework.Guide.Runtime.IGuideAction" preserve="all" />
   </assembly>
+  <assembly fullname="FuFramework.Launcher.Runtime">
+    <type fullname="FuFramework.Launcher.Runtime.GlobalModule" preserve="all" />
+  </assembly>
   <assembly fullname="FuFramework.Localization.Runtime">
     <type fullname="FuFramework.Localization.Runtime.ELanguage" preserve="all" />
     <type fullname="FuFramework.Localization.Runtime.ILocalizationProvider" preserve="all" />
@@ -68,7 +59,6 @@
   </assembly>
   <assembly fullname="FuFramework.Model.Runtime">
     <type fullname="FuFramework.Model.Runtime.BaseSerializerModel" preserve="all" />
-    <type fullname="FuFramework.Model.Runtime.ModelModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.ModuleSetting.Runtime">
     <type fullname="FuFramework.ModuleSetting.Runtime.ModuleSetting" preserve="all" />
@@ -98,9 +88,6 @@
   </assembly>
   <assembly fullname="FuFramework.ReferencePool.Runtime">
     <type fullname="FuFramework.ReferencePool.Runtime.ReferencePool" preserve="all" />
-  </assembly>
-  <assembly fullname="FuFramework.Timer.Runtime">
-    <type fullname="FuFramework.Timer.Runtime.TimerModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.UI.Runtime">
     <type fullname="FuFramework.UI.Runtime.FuiPkgManager" preserve="all" />
@@ -135,10 +122,7 @@
     <type fullname="System.ComponentModel.EditorBrowsableState" preserve="all" />
     <type fullname="System.Uri" preserve="all" />
   </assembly>
-  <assembly fullname="System.Core">
-    <type fullname="System.Linq.Enumerable" preserve="all" />
-  </assembly>
-  <assembly fullname="UniTask.Runtime">
+  <assembly fullname="UniTask">
     <type fullname="Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskMethodBuilder" preserve="all" />
     <type fullname="Cysharp.Threading.Tasks.CompilerServices.AsyncUniTaskVoidMethodBuilder" preserve="all" />
     <type fullname="Cysharp.Threading.Tasks.PlayerLoopTiming" preserve="all" />
@@ -150,21 +134,12 @@
     <type fullname="Cysharp.Threading.Tasks.UniTask`1/Awaiter" preserve="all" />
   </assembly>
   <assembly fullname="UnityEngine.CoreModule">
-    <type fullname="UnityEngine.Application" preserve="all" />
-    <type fullname="UnityEngine.Debug" preserve="all" />
-    <type fullname="UnityEngine.KeyCode" preserve="all" />
-    <type fullname="UnityEngine.MonoBehaviour" preserve="all" />
-    <type fullname="UnityEngine.Object" preserve="all" />
     <type fullname="UnityEngine.Rect" preserve="all" />
     <type fullname="UnityEngine.SystemInfo" preserve="all" />
     <type fullname="UnityEngine.TextAsset" preserve="all" />
     <type fullname="UnityEngine.Vector2" preserve="all" />
     <type fullname="UnityEngine.Vector3" preserve="all" />
     <type fullname="UnityEngine.Vector4" preserve="all" />
-    <type fullname="UnityEngine.WaitForSeconds" preserve="all" />
-  </assembly>
-  <assembly fullname="UnityEngine.InputLegacyModule">
-    <type fullname="UnityEngine.Input" preserve="all" />
   </assembly>
   <assembly fullname="YooAsset">
     <type fullname="YooAsset.AssetHandle" preserve="all" />
@@ -174,7 +149,6 @@
     <type fullname="System.Action`1" preserve="all" />
     <type fullname="System.ArgumentOutOfRangeException" preserve="all" />
     <type fullname="System.Array" preserve="all" />
-    <type fullname="System.Boolean" preserve="all" />
     <type fullname="System.Byte" preserve="all" />
     <type fullname="System.Collections.Generic.Dictionary`2" preserve="all" />
     <type fullname="System.Collections.Generic.Dictionary`2/Enumerator" preserve="all" />
@@ -198,8 +172,8 @@
     <type fullname="System.Int32" preserve="all" />
     <type fullname="System.Int64" preserve="all" />
     <type fullname="System.InvalidOperationException" preserve="all" />
-    <type fullname="System.NotSupportedException" preserve="all" />
     <type fullname="System.Object" preserve="all" />
+    <type fullname="System.ParamArrayAttribute" preserve="all" />
     <type fullname="System.Reflection.Assembly" preserve="all" />
     <type fullname="System.Reflection.MemberInfo" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.AsyncStateMachineAttribute" preserve="all" />
@@ -209,7 +183,6 @@
     <type fullname="System.Runtime.CompilerServices.CompilerGeneratedAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.IAsyncStateMachine" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.IsReadOnlyAttribute" preserve="all" />
-    <type fullname="System.Runtime.CompilerServices.IteratorStateMachineAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.RuntimeCompatibilityAttribute" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.RuntimeHelpers" preserve="all" />
     <type fullname="System.Runtime.CompilerServices.TaskAwaiter" preserve="all" />
