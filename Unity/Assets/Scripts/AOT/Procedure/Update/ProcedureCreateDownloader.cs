@@ -9,8 +9,10 @@ namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--创建资源下载器流程。
-    /// 主要作用是：
-    /// 1. 创建资源下载器。
+    /// 功能：
+    ///     1. 创建资源下载器，并将其保存到流程管理模块的变量(Downloader)中。
+    ///     2. 如果没有需要下载的资源，则直接进入资源更新完毕流程。
+    ///     3. 如果有需要下载的资源，则进入流程DownloadPackage。
     /// </summary>
     public class ProcedureCreateDownloader : ProcedureBase
     {
@@ -24,7 +26,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.CreateDownloader));
+            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.CreateDownloader));
             CreateDownloader();
         }
 
@@ -51,7 +53,7 @@ namespace Launcher.Procedure
                 FuLogger.LogInfo($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
-                GlobalModule.EventModule.Broadcast(this, AssetFoundUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
+                GlobalModule.EventModule.Broadcast(this, FoundNeedUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
                 ChangeState<ProcedureDownloadPackage>();
             }
         }

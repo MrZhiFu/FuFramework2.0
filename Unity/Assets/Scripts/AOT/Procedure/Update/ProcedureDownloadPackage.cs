@@ -1,5 +1,4 @@
 ﻿using YooAsset;
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
@@ -11,12 +10,12 @@ using FuFramework.Variable.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更流程--下载资源包。
-    /// 主要作用是：
-    /// 1. 下载热更包
-    /// 2. 监听下载进度
-    /// 3. 下载失败后，回到创建下载器的流程
-    /// 4. 下载成功后，切换到更新完毕流程
+    /// 热更流程--下载资源包流程。
+    /// 功能：
+    ///     1.下载资源包。
+    ///     2.监听下载进度。
+    ///     3.下载成功：切换到更新完毕流程。
+    ///     4.下载失败：重新回到创建下载器的流程。
     /// </summary>
     public class ProcedureDownloadPackage : ProcedureBase
     {
@@ -30,28 +29,41 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.Download));
-            BeginDownload().ToUniTask().Forget();
+            var assetUpdateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.Download);
+            GlobalModule.EventModule.Broadcast(this, assetUpdateStateChangeEvent);
+
+            // 开始下载热更包
+            BeginDownload().Forget();
         }
 
         /// <summary>
         /// 开始下载热更包
         /// </summary>
         /// <returns></returns>
-        private IEnumerator BeginDownload()
+        private async UniTaskVoid BeginDownload()
         {
+            // 获取下载器
             var downloader = Fsm.GetData<VarObject>("Downloader").GetValue() as ResourceDownloaderOperation;
-            if (downloader == null) yield break;
+            if (downloader == null)
+            {
+                FuLogger.LogError("下载器为空，无法下载资源包！");
+                return;
+            }
 
+            // 设置下载回调
             downloader.DownloadErrorCallback  = DownloaderOnDownloadErrorCallback;
             downloader.DownloadUpdateCallback = OnDownloadProgressCallback;
 
-            // 开始下载
+            // 开始下载并等待下载完成
             downloader.BeginDownload();
-            yield return downloader;
+            await downloader;
 
             // 下载是否成功
-            if (downloader.Status != EOperationStatus.Succeed) yield break;
+            if (downloader.Status != EOperationStatus.Succeed)
+            {
+                FuLogger.LogError("下载器状态异常，无法下载资源包！");
+                return;
+            }
 
             // 下载完成，移除记录的下载器，切换到更新完毕流程
             Fsm.RemoveData("Downloader");
@@ -79,7 +91,7 @@ namespace Launcher.Procedure
             var currentDownloadCount = data.CurrentDownloadCount;
             var totalDownloadBytes   = data.TotalDownloadBytes;
             var currentDownloadBytes = data.CurrentDownloadBytes;
-            GlobalModule.EventModule.Broadcast(this, AssetDownloadProgressUpdateEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
+            GlobalModule.EventModule.Broadcast(this, AssetDownloadProgressEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
         }
     }
 }

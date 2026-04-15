@@ -11,11 +11,11 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 获取服务端全局信息流程。
-    /// 主要作用是：
-    /// 1. 获取全局信息，包括：App版本号检查地址、资源版本检查地址、额外内容信息
-    /// 2. 获取成功，保存全局信息到globalConfigComponent组件中，并进入获取App版本号流程
-    /// 3. 若获取失败，则提示网络异常，并延迟3秒后重试。。 
+    /// 热更流程--获取服务端全局信息流程。
+    /// 功能：
+    ///     1. 获取全局信息，包括：App版本号检查地址、资源版本检查地址、额外内容信息
+    ///     2. 获取成功，保存全局信息到globalConfigComponent组件中，并进入获取App版本号流程
+    ///     3. 若获取失败，则提示网络异常，并延迟3秒后重试。。 
     ///  </summary>
     public class ProcedureReqGlobalInfo : ProcedureBase
     {
@@ -27,7 +27,7 @@ namespace Launcher.Procedure
         /// <summary>
         /// 全局信息的服务器地址
         /// </summary>
-        private const string GlobalInfoUrl = "http://127.0.0.1:20808/api/GameGlobalInfo/GetInfo";
+        private const string GlobalInfoUrl = "http://127.0.0.1:28080/api/GameGlobalInfo/GetInfo";
 
         protected override void OnEnter()
         {
@@ -66,11 +66,11 @@ namespace Launcher.Procedure
                 else
                 {
                     // 获取成功，保存全局信息到globalConfigComponent组件中，供后续流程使用，特别是获取App版本号流程 与 获取资源版本号流程
-                    var repGlobalInfo         = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
-                    var globalConfigComponent = GlobalModule.GlobalConfigModule;
-                    globalConfigComponent.CheckAppVersionUrl      = repGlobalInfo.CheckAppVersionUrl;
-                    globalConfigComponent.CheckResourceVersionUrl = repGlobalInfo.CheckResourceVersionUrl;
-                    globalConfigComponent.Content                 = repGlobalInfo.Content;
+                    var repGlobalInfo      = Utility.Json.ToObject<ResponseGlobalInfo>(httpJsonResult.Data);
+                    var globalConfigModule = GlobalModule.GlobalConfigModule;
+                    globalConfigModule.CheckAppVersionUrl      = repGlobalInfo.CheckAppVersionUrl;
+                    globalConfigModule.CheckResourceVersionUrl = repGlobalInfo.CheckResourceVersionUrl;
+                    globalConfigModule.Content                 = repGlobalInfo.Content;
                     LauncherUIHelper.SetTipText("Loading...");
 
                     // 进入获取App版本号流程

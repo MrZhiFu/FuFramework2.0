@@ -9,10 +9,11 @@ using FuFramework.Variable.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更流程--初始化资源包流程。
-    /// 主要作用是：
-    /// 1. 初始化设置资源包相关信息，包括：包名称、下载地址
-    /// 2. 进入获取资源版本号流程
+    /// 热更流程--初始化资源包流程流程。
+    /// 功能：
+    ///     1. 初始化设置资源包相关信息，包括：包名称、下载地址。
+    ///     2. 进入获取资源版本号流程。
+    /// 注意：
     /// </summary>
     public class ProcedureInitPackage : ProcedureBase
     {
@@ -26,6 +27,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：初始化资源包------</color>");
 
+            // 初始化资源包
             InitPackage().Forget();
         }
 
@@ -50,7 +52,7 @@ namespace Launcher.Procedure
             await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadURL.Value, downloadURL.Value);
 
             Fsm.RemoveData("DownloadURL");
-            await UniTask.DelayFrame(1);
+            await UniTask.NextFrame();
 
             ChangeState<ProcedureGetPackageVersion>();
         }

@@ -9,7 +9,11 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更进度显示UI帮助类
+    /// 热更UI帮助类。
+    /// 功能：
+    ///     1.打开热更UI界面。
+    ///     2.显示热更资源下载进度。
+    ///     3.设置下载时的提示文本。
     /// </summary>
     public static class LauncherUIHelper
     {
@@ -24,7 +28,7 @@ namespace Launcher.Procedure
         public static async UniTask Start()
         {
             m_WinLauncher = await GlobalModule.UIModule.OpenUIAsync<WinLauncher>();
-            GlobalModule.EventModule.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, OnAssetDownloadProgressUpdate);
+            GlobalModule.EventModule.Subscribe(AssetDownloadProgressEventArgs.EventId, OnAssetDownloadProgressUpdate);
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace Launcher.Procedure
         private static void OnAssetDownloadProgressUpdate(object sender, GameEventArgs gameEventArgs)
         {
             m_WinLauncher.SetUpdateState(false);
-            var message       = (AssetDownloadProgressUpdateEventArgs)gameEventArgs;
+            var message       = (AssetDownloadProgressEventArgs)gameEventArgs;
             var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
             var currentSizeMb = Utility.File.GetBytesSizeWithUnit(message.CurrentDownloadSizeBytes);
             var totalSizeMb   = Utility.File.GetBytesSizeWithUnit(message.TotalDownloadSizeBytes);

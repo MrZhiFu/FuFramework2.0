@@ -14,11 +14,11 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 获取服务端默认资源包的版本信息流程。
-    /// 主要作用是：
-    /// 1. 从服务端获取默认资源包的版本信息，包括：资源包名称、资源下载根路径、资源包版本号、平台、渠道等
-    /// 2. 若获取成功，则将版本信息保存到流程管理模块的Data变量中，并进入资源更新初始化流程。
-    /// 3. 若获取失败，则等待一段时间后重新获取。
+    /// 热更流程--获取远端默认资源包的版本信息流程。
+    /// 功能：
+    ///     1. 从远端获取默认资源包的版本信息，包括：资源包名称、资源下载根路径、资源包版本号、平台、渠道等
+    ///     2. 若获取成功，则将版本信息保存到流程管理模块的Data变量中，并进入资源更新初始化流程。
+    ///     3. 若获取失败，则等待一段时间后重新获取。
     /// </summary>
     public class ProcedureReqPackageVersionInfo : ProcedureBase
     {
@@ -30,20 +30,20 @@ namespace Launcher.Procedure
         protected override void OnEnter()
         {
             base.OnEnter();
-            FuLogger.LogInfo("<color=#43f656>------进入获取服务端默认资源包的版本信息流程------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入获取远端默认资源包的版本信息流程------</color>");
 
             GetAssetPackageVersionInfo().Forget();
         }
 
         /// <summary>
-        /// 从服务端获取默认资源包的版本信息。
+        /// 从远端获取默认资源包的版本信息。
         /// </summary>
         private async UniTaskVoid GetAssetPackageVersionInfo()
         {
             var jsonParams = HttpHelper.GetBaseParams();
             try
             {
-                // 请求服务端，获取默认资源包的版本信息。
+                // 请求远端，获取默认资源包的版本信息。
                 jsonParams["AssetPackageName"] = GlobalModule.AssetModule.DefaultPackageName;
                 var rstJson = await GlobalModule.WebModule.PostToString(GlobalModule.GlobalConfigModule.CheckResourceVersionUrl, jsonParams);
                 FuLogger.LogInfo(rstJson);

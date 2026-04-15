@@ -1,6 +1,5 @@
 ﻿using YooAsset;
 using UnityEngine;
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
@@ -13,10 +12,10 @@ namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--更新资源包清单流程。
-    /// 主要作用是：
-    /// 1. 下载最新资源清单
-    /// 2. 解析最新资源清单，并下载资源
-    /// 3. 完成后创建资源下载器流程
+    /// 功能：
+    ///     1. 下载最新资源清单
+    ///     2. 解析最新资源清单，并下载资源
+    ///     3. 完成后创建资源下载器流程
     /// </summary>
     public class ProcedureUpdatePackageManifest : ProcedureBase
     {
@@ -30,22 +29,20 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateManifest));
-            UpdateManifest().ToUniTask().Forget();
+            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateManifest));
+            UpdateManifest().Forget();
         }
 
         /// <summary>
         /// 更新资源清单
         /// </summary>
         /// <returns></returns>
-        private IEnumerator UpdateManifest()
+        private async UniTaskVoid UpdateManifest()
         {
-            yield return new WaitForSecondsRealtime(0.1f);
-
             var defaultPackage = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
             var versionStr     = Fsm.GetData<VarString>("PackageVersion");
             var operation      = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
-            yield return operation;
+            await operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
@@ -53,7 +50,7 @@ namespace Launcher.Procedure
                 if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
                 {
                     ChangeState<ProcedureUpdateDone>();
-                    yield break;
+                    return;
                 }
 
                 // 热更模式，进入创建资源下载器流程
@@ -64,7 +61,7 @@ namespace Launcher.Procedure
             {
                 // 更新失败，重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GlobalModule.EventModule.Broadcast(this, AssetPatchManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Broadcast(this, AssetManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureUpdatePackageManifest>();
             }
         }

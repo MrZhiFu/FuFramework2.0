@@ -11,8 +11,9 @@ namespace Launcher.Procedure
 {
     /// <summary>
     /// 代码热更流程
-    /// 主要作用是：
-    /// 1.加载热更程序集，并运行热更程序集入口函数，从而进入热更代码逻辑。
+    /// 功能：
+    ///     1.加载AOT程序集，补充AOT程序集的元数据
+    ///     2.加载热更程序集，并运行热更程序集入口函数，进入热更代码逻辑。
     /// </summary>
     public sealed class ProcedureHotfix : ProcedureBase
     {
@@ -40,7 +41,7 @@ namespace Launcher.Procedure
         private static async UniTaskVoid Start()
         {
             // 等待一帧，确保热更完毕
-            await UniTask.DelayFrame(1);
+            await UniTask.NextFrame();
 
             // 等待加载热更程序集
             var hotfixAssembly = await LoadDll();

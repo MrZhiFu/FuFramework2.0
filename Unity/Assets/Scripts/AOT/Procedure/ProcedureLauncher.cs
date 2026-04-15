@@ -10,11 +10,13 @@ using Launcher.UI;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 启动入口流程
-    /// 主要作用是：
-    /// 1. 设置FairyGUI的Loader加载器为自定义加载器
-    /// 2. 启动UI
-    /// 3. 进入获取全局信息流程
+    /// 入口启动流程。
+    /// 功能：
+    ///     1. 设置FairyGUI的Loader加载器为自定义的加载器。
+    ///     2. 绑定Fui自定义组件。
+    ///     3. 启动热更进度显示UI。
+    ///     4. 单机模式：进入获取全局信息流程。
+    ///     5. 热更模式：进入获取服务端全局信息流程。
     /// </summary>
     public class ProcedureLauncher : ProcedureBase
     {

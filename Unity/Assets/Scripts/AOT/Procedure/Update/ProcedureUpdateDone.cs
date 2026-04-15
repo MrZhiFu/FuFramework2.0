@@ -7,7 +7,10 @@ using FuFramework.Procedure.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更流程--更新完毕
+    /// 热更流程--资源更新完毕流程。
+    /// 功能：
+    ///     1. UI设置为更新完成状态
+    ///     2. 进入代码热更流程
     /// </summary>
     public class ProcedureUpdateDone : ProcedureBase
     {
@@ -21,7 +24,7 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：更新完毕------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateDone));
+            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateDone));
 
             // UI设置为更新完成状态
             LauncherUIHelper.SetProgressUpdateFinish();

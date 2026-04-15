@@ -1,5 +1,4 @@
 ﻿using YooAsset;
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
@@ -13,10 +12,10 @@ namespace Launcher.Procedure
 {
     /// <summary>
     /// 热更流程--获取资源包版本号流程。
-    /// 主要作用是：
-    /// 1. 获取资源的版本号
-    /// 2. 离线单机模式下，将最新版本号保存到流程的Data中，供再次使用，然后进入更新资源清单流程
-    /// 3. 热更模式下，进入更新资源清单流程
+    /// 功能：
+    ///     1. 获取资源的版本号
+    ///     2. 离线单机模式下，将最新版本号保存到流程的Data中，供再次使用，然后进入更新资源清单流程
+    ///     3. 热更模式下，进入更新资源清单流程
     /// </summary>
     public class ProcedureGetPackageVersion : ProcedureBase
     {
@@ -24,28 +23,30 @@ namespace Launcher.Procedure
         /// 在Inspector中的显示优先级
         /// </summary>
         public override int Priority => 6;
-
+        
         protected override void OnEnter()
         {
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetPatchStatesChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EPatchStates.UpdateVersion));
-            GetVersion().ToUniTask().Forget();
+            var assUpdateStateEventArgs = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
+            GlobalModule.EventModule.Broadcast(this, assUpdateStateEventArgs);
+           
+            GetVersion().Forget();
         }
 
         /// <summary>
         /// 获取资源的版本号
         /// </summary>
         /// <returns></returns>
-        private IEnumerator GetVersion()
+        private async UniTaskVoid GetVersion()
         {
             var package = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
 
             // 离线单机模式下请求的是应用程序内保存的版本号，一般存放在StreamingAssets目录下，
             // 热更模式下请求的是服务器上的版本号，一般存放在AssetBundle服务器上
             var operation = package.RequestPackageVersionAsync();
-            yield return operation;
+            await operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
@@ -62,7 +63,7 @@ namespace Launcher.Procedure
             {
                 // 获取失败，再次进入自身流程尝试
                 FuLogger.LogError(operation.Error);
-                GlobalModule.EventModule.Broadcast(this, AssetStaticVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
+                GlobalModule.EventModule.Broadcast(this, AssetVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
                 ChangeState<ProcedureGetPackageVersion>();
             }
         }
