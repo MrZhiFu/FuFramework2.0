@@ -10,7 +10,7 @@ namespace FuFramework.Asset.Runtime
     public partial class AssetModule
     {
         /// <summary>
-        /// 根据运行模式创建初始化句柄
+        /// 根据运行模式创建初始化操作句柄。
         /// </summary>
         /// <returns></returns>
         private InitializationOperation CreateInitHandler(ResourcePackage resourcePackage, string downloadURL, string fallbackDownloadURL)
@@ -26,7 +26,8 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 初始化为编辑器下模拟模式
+        /// 初始化为编辑器下模拟模式。
+        /// DefaultEditorFile => Application.dataPath目录
         /// </summary>
         /// <param name="resourcePackage"></param>
         /// <returns></returns>
@@ -44,7 +45,8 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 初始化为单机运行模式
+        /// 初始化为单机运行模式。
+        /// DefaultBuildinFile => StreamingAssets目录。
         /// </summary>
         /// <param name="resourcePackage"></param>
         /// <returns></returns>
@@ -60,7 +62,9 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 初始化为联机运行模式
+        /// 初始化为联机运行模式。
+        /// DefaultCacheFile => PC/Linux(Application.dataPath), Mac/Android/iOS(Application.persistentDataPath)。
+        /// DefaultBuildinFile => StreamingAssets目录。
         /// </summary>
         /// <param name="resourcePackage"></param>
         /// <param name="downloadURL"></param>

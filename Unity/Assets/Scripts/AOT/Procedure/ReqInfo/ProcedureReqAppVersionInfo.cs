@@ -33,7 +33,6 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入获取服务端App版本信息流程------</color>");
 
-            // 非编辑器模式下，获取版本信息
             GetAppVersionInfo().Forget();
         }
 
