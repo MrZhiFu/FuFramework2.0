@@ -10,15 +10,9 @@ namespace FuFramework.Entity.Runtime
     /// </summary>
     public sealed class ShowEntityFailureEventArgs : GameEventArgs
     {
-        /// <summary>
-        /// 获取显示实体失败事件编号。
-        /// </summary>
         public override string Id => EventId;
-
-        /// <summary>
-        /// 显示实体失败事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(ShowEntityFailureEventArgs).FullName;
+        
+        private static readonly string EventId = typeof(ShowEntityFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取实体编号。

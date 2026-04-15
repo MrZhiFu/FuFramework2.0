@@ -9,15 +9,9 @@ namespace FuFramework.Entity.Runtime
     /// </summary>
     public sealed class HideEntityCompleteEventArgs : GameEventArgs
     {
-        /// <summary>
-        /// 获取隐藏实体完成事件编号。
-        /// </summary>
         public override string Id => EventId;
-
-        /// <summary>
-        /// 隐藏实体完成事件编号。
-        /// </summary>
-        public static readonly string EventId = typeof(HideEntityCompleteEventArgs).FullName;
+        
+        private static readonly string EventId = typeof(HideEntityCompleteEventArgs).FullName;
 
         /// <summary>
         /// 获取实体编号。
