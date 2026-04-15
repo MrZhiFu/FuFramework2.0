@@ -3,32 +3,32 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 补丁系统更新状态
+    /// 资源更新状态
     /// </summary>
-    public enum EPatchStates
+    public enum EUpdateStates
     {
         /// <summary>
-        /// 更新资源版本
+        /// 获取资源版本
         /// </summary>
-        UpdateVersion,
+        GetVersion,
 
         /// <summary>
-        /// 更新补丁清单
+        /// 更新资源清单
         /// </summary>
         UpdateManifest,
 
         /// <summary>
-        /// 创建下载器
+        /// 创建资源下载器
         /// </summary>
         CreateDownloader,
 
         /// <summary>
-        /// 下载远端文件
+        /// 下载远端资源文件
         /// </summary>
         Download,
 
         /// <summary>
-        /// 更新流程完毕
+        /// 更新资源完毕
         /// </summary>
         UpdateDone,
     }

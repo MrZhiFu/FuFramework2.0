@@ -6,13 +6,13 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 网络文件下载失败
+    /// 网络文件下载失败事件
     /// </summary>
     public sealed class AssetWebFileDownloadFailedEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
-
         public override string Id => EventId;
+
+        private static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
 
         /// <summary>
         /// 文件名

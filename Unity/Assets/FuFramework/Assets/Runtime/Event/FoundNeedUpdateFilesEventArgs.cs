@@ -6,13 +6,18 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 发现更新文件
+    /// 发现需要更新的资源文件事件
     /// </summary>
-    public sealed class AssetFoundUpdateFilesEventArgs : GameEventArgs
+    public sealed class FoundNeedUpdateFilesEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetFoundUpdateFilesEventArgs).FullName;
-
         public override string Id => EventId;
+
+        private static readonly string EventId = typeof(FoundNeedUpdateFilesEventArgs).FullName;
+
+        /// <summary>
+        /// 包名称
+        /// </summary>
+        public string PackageName { get; set; }
 
         /// <summary>
         /// 总数量
@@ -24,11 +29,6 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         public long TotalSizeBytes { get; private set; }
 
-        /// <summary>
-        /// 包名称
-        /// </summary>
-        public string PackageName { get; set; }
-
         public override void Clear()
         {
             PackageName    = null;
@@ -37,15 +37,15 @@ namespace FuFramework.Asset.Runtime
         }
 
         /// <summary>
-        /// 创建发现更新文件
+        /// 创建发现需要更新的资源文件事件
         /// </summary>
         /// <param name="packageName">包名称</param>
         /// <param name="totalCount">总数量</param>
         /// <param name="totalSizeBytes">总大小</param>
         /// <returns></returns>
-        public static AssetFoundUpdateFilesEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
+        public static FoundNeedUpdateFilesEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
         {
-            var foundUpdateFiles = ReferencePool.Runtime.ReferencePool.Acquire<AssetFoundUpdateFilesEventArgs>();
+            var foundUpdateFiles = ReferencePool.Runtime.ReferencePool.Acquire<FoundNeedUpdateFilesEventArgs>();
             foundUpdateFiles.TotalCount     = totalCount;
             foundUpdateFiles.TotalSizeBytes = totalSizeBytes;
             foundUpdateFiles.PackageName    = packageName;

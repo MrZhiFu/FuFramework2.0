@@ -6,13 +6,13 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 补丁清单更新失败
+    /// 资源清单更新失败事件
     /// </summary>
-    public sealed class AssetPatchManifestUpdateFailedEventArgs : GameEventArgs
+    public sealed class AssetManifestUpdateFailedEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetPatchManifestUpdateFailedEventArgs).FullName;
-
         public override string Id => EventId;
+
+        private static readonly string EventId = typeof(AssetManifestUpdateFailedEventArgs).FullName;
 
         /// <summary>
         /// 包名称
@@ -36,9 +36,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">包名称</param>
         /// <param name="error">错误信息</param>
         /// <returns></returns>
-        public static AssetPatchManifestUpdateFailedEventArgs Create(string packageName, string error)
+        public static AssetManifestUpdateFailedEventArgs Create(string packageName, string error)
         {
-            var assetPatchManifestUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetPatchManifestUpdateFailedEventArgs>();
+            var assetPatchManifestUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetManifestUpdateFailedEventArgs>();
             assetPatchManifestUpdateFailed.PackageName = packageName;
             assetPatchManifestUpdateFailed.Error       = error;
             return assetPatchManifestUpdateFailed;

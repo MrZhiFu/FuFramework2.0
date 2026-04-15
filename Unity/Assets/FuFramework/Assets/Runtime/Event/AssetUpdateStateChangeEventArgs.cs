@@ -6,13 +6,13 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 补丁流程步骤改变
+    /// 资源更新状态改变事件
     /// </summary>
-    public sealed class AssetPatchStatesChangeEventArgs : GameEventArgs
+    public sealed class AssetUpdateStateChangeEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetPatchStatesChangeEventArgs).FullName;
-
         public override string Id => EventId;
+
+        private static readonly string EventId = typeof(AssetUpdateStateChangeEventArgs).FullName;
 
         /// <summary>
         /// 包名称
@@ -22,12 +22,12 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 当前步骤
         /// </summary>
-        public EPatchStates CurrentStates { get; private set; }
+        public EUpdateStates CurrentStates { get; private set; }
 
         public override void Clear()
         {
             PackageName   = null;
-            CurrentStates = EPatchStates.CreateDownloader;
+            CurrentStates = EUpdateStates.CreateDownloader;
         }
 
         /// <summary>
@@ -36,9 +36,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">包名称</param>
         /// <param name="currentStates">当前步骤</param>
         /// <returns></returns>
-        public static AssetPatchStatesChangeEventArgs Create(string packageName, EPatchStates currentStates)
+        public static AssetUpdateStateChangeEventArgs Create(string packageName, EUpdateStates currentStates)
         {
-            var assetPatchStatesChange = ReferencePool.Runtime.ReferencePool.Acquire<AssetPatchStatesChangeEventArgs>();
+            var assetPatchStatesChange = ReferencePool.Runtime.ReferencePool.Acquire<AssetUpdateStateChangeEventArgs>();
             assetPatchStatesChange.PackageName   = packageName;
             assetPatchStatesChange.CurrentStates = currentStates;
             return assetPatchStatesChange;

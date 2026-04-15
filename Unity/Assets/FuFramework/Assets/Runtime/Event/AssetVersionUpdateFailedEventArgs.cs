@@ -6,13 +6,13 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 资源版本号更新失败
+    /// 资源版本号更新失败事件
     /// </summary>
-    public sealed class AssetStaticVersionUpdateFailedEventArgs : GameEventArgs
+    public sealed class AssetVersionUpdateFailedEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetStaticVersionUpdateFailedEventArgs).FullName;
-
         public override string Id => EventId;
+
+        private static readonly string EventId = typeof(AssetVersionUpdateFailedEventArgs).FullName;
 
         /// <summary>
         /// 包名称
@@ -36,9 +36,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">包名称</param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public static AssetStaticVersionUpdateFailedEventArgs Create(string packageName, string error)
+        public static AssetVersionUpdateFailedEventArgs Create(string packageName, string error)
         {
-            var assetStaticVersionUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetStaticVersionUpdateFailedEventArgs>();
+            var assetStaticVersionUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetVersionUpdateFailedEventArgs>();
             assetStaticVersionUpdateFailed.PackageName = packageName;
             assetStaticVersionUpdateFailed.Error       = error;
             return assetStaticVersionUpdateFailed;

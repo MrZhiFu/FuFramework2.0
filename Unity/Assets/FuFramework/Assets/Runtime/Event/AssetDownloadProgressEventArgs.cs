@@ -5,13 +5,13 @@
 namespace FuFramework.Asset.Runtime
 {
     /// <summary>
-    /// 下载进度更新
+    /// 资源下载进度事件
     /// </summary>
-    public sealed class AssetDownloadProgressUpdateEventArgs : GameEventArgs
+    public sealed class AssetDownloadProgressEventArgs : GameEventArgs
     {
-        public static readonly string EventId = typeof(AssetDownloadProgressUpdateEventArgs).FullName;
-
         public override string Id => EventId;
+
+        public static readonly string EventId = typeof(AssetDownloadProgressEventArgs).FullName;
 
         /// <summary>
         /// 包名称
@@ -56,9 +56,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="totalDownloadSizeBytes">总下载大小</param>
         /// <param name="currentDownloadSizeBytes">当前下载大小</param>
         /// <returns></returns>
-        public static AssetDownloadProgressUpdateEventArgs Create(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
+        public static AssetDownloadProgressEventArgs Create(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
         {
-            var assetDownloadProgressUpdate = ReferencePool.Runtime.ReferencePool.Acquire<AssetDownloadProgressUpdateEventArgs>();
+            var assetDownloadProgressUpdate = ReferencePool.Runtime.ReferencePool.Acquire<AssetDownloadProgressEventArgs>();
             assetDownloadProgressUpdate.TotalDownloadCount       = totalDownloadCount;
             assetDownloadProgressUpdate.CurrentDownloadCount     = currentDownloadCount;
             assetDownloadProgressUpdate.TotalDownloadSizeBytes   = totalDownloadSizeBytes;
