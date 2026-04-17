@@ -8,12 +8,6 @@ namespace FuFramework.Web.Runtime
     /// </summary>
     public sealed class WebBufferResult
     {
-        public WebBufferResult(object userData, byte[] result)
-        {
-            UserData = userData;
-            Result   = result;
-        }
-
         /// <summary>
         /// 请求结果
         /// </summary>
@@ -23,5 +17,11 @@ namespace FuFramework.Web.Runtime
         /// 用户自定义数据
         /// </summary>
         public object UserData { get; }
+
+        public WebBufferResult(object userData, byte[] result)
+        {
+            UserData = userData;
+            Result   = result;
+        }
     }
 }
