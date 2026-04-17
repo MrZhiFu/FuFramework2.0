@@ -139,10 +139,7 @@ namespace FuFramework.Core.Runtime
             /// <param name="url">url地址</param>
             public static void OpenURL(string url)
             {
-#if UNITY_EDITOR
-                UnityEngine.Application.OpenURL(url);
-                return;
-#endif
+                if (string.IsNullOrEmpty(url)) return;
 #if UNITY_IOS
                 open_url(url);
 #else
