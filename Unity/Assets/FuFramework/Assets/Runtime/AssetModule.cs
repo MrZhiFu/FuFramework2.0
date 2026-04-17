@@ -441,10 +441,10 @@ namespace FuFramework.Asset.Runtime
         /// </summary>
         /// <param name="packageName">包名称</param>
         /// <param name="downloadURL">热更资源包下载URL</param>
-        /// <param name="fallbackDownloadURL">备用热更资源包下载URL</param>
+        /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
         /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
         /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
+        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
         {
             FuGuard.NotNull(packageName, nameof(packageName));
 
@@ -466,7 +466,7 @@ namespace FuFramework.Asset.Runtime
 
             // 新建一个任务，包装初始化操作
             var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            var initHandler          = CreateInitHandler(resourcePackage, downloadURL, fallbackDownloadURL);
+            var initHandler          = InitPackage(resourcePackage, downloadURL, downloadBackupURL);
             if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
 
             initHandler.Completed += asyncOperationBase =>
