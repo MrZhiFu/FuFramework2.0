@@ -10,10 +10,12 @@ namespace FuFramework.Procedure.Runtime
     /// </summary>
     public abstract class ProcedureBase : FsmStateBase
     {
+#if UNITY_EDITOR
         /// <summary>
-        /// 属性面板显示优先级。
+        /// 在Inspector中的显示优先级。
         /// </summary>
         public virtual int Priority => 0;
+#endif
 
         /// <summary>
         /// 状态初始化时调用。
