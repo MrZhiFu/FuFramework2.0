@@ -21,6 +21,8 @@ namespace FuFramework.Core.Runtime
             /// <returns>序列化后的 JSON 字符串。</returns>
             public static string ToJson(object obj)
             {
+                if (obj == null) return string.Empty;
+
                 try
                 {
                     return JsonConvert.SerializeObject(obj);
@@ -28,7 +30,7 @@ namespace FuFramework.Core.Runtime
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException($"无法转换为 JSON 并出现异常 '{exception}'.", exception);
+                    throw new FuException($"无法序列化为JSON，异常 '{exception}'.", exception);
                 }
             }
 
@@ -40,6 +42,8 @@ namespace FuFramework.Core.Runtime
             /// <returns>反序列化后的对象。</returns>
             public static T ToObject<T>(string json)
             {
+                if (string.IsNullOrEmpty(json)) return default;
+
                 try
                 {
                     return JsonConvert.DeserializeObject<T>(json);
@@ -47,7 +51,7 @@ namespace FuFramework.Core.Runtime
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException($"无法转换为 JSON 并出现异常 '{exception}'.", exception);
+                    throw new FuException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
                 }
             }
 
@@ -59,7 +63,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>反序列化后的对象。</returns>
             public static object ToObject(Type objectType, string json)
             {
-                if (objectType == null) throw new FuException("目标对象类型为空.");
+                if (objectType == null) return default;
 
                 try
                 {
@@ -68,7 +72,7 @@ namespace FuFramework.Core.Runtime
                 catch (Exception exception)
                 {
                     if (exception is FuException) throw;
-                    throw new FuException($"无法转换为 JSON 并出现异常 '{exception}'.", exception);
+                    throw new FuException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
                 }
             }
         }
