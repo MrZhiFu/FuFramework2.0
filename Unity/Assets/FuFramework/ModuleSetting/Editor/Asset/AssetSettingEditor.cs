@@ -18,6 +18,7 @@ namespace FuFramework.ModuleSetting.Editor
         private SerializedProperty m_DownloadingMaxNumProp;       // 资源下载最大并发数量
         private SerializedProperty m_FailedTryAgainNumProp;       // 资源下载失败重试次数
         private SerializedProperty m_AsyncSystemMaxSlicePerFrame; // YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）
+        private SerializedProperty m_ResCdnRootURLProp;           // 资源CDN根地址
 
         /// <summary>
         /// 编辑器启用时调用
@@ -29,6 +30,7 @@ namespace FuFramework.ModuleSetting.Editor
             m_DownloadingMaxNumProp       = serializedObject.FindProperty("m_DownloadingMaxNum");
             m_FailedTryAgainNumProp       = serializedObject.FindProperty("m_FailedTryAgainNum");
             m_AsyncSystemMaxSlicePerFrame = serializedObject.FindProperty("m_AsyncSystemMaxSlicePerFrame");
+            m_ResCdnRootURLProp           = serializedObject.FindProperty("m_ResCdnRootURL");
         }
 
         /// <summary>
@@ -85,6 +87,13 @@ namespace FuFramework.ModuleSetting.Editor
                 m_AsyncSystemMaxSlicePerFrame.intValue = asyncSystemMaxSlicePerFrame;
 
             EditorGUILayout.Space(10);
+
+            // 显示资源CDN根地址属性
+            EditorGUI.BeginChangeCheck();
+            var resCdnRootURL = m_ResCdnRootURLProp.stringValue;
+            resCdnRootURL = EditorGUILayout.TextField(new GUIContent("资源CDN根地址"), resCdnRootURL);
+            if (EditorGUI.EndChangeCheck())
+                m_ResCdnRootURLProp.stringValue = resCdnRootURL;
 
             // 重置配置
             if (GUILayout.Button("重置配置"))
