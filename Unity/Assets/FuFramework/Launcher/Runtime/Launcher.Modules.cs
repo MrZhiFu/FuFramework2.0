@@ -6,7 +6,6 @@ using FuFramework.Download.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Fsm.Runtime;
-using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Guide.Runtime;
 using FuFramework.Localization.Runtime;
 using FuFramework.Model.Runtime;
@@ -49,7 +48,6 @@ namespace FuFramework.Launcher.Runtime
             ModuleManager.RegisterModule<DownloadModule>();      // 下载管理模块
             ModuleManager.RegisterModule<DataSaveModule>();      // 本地存储数据管理模块
 
-            ModuleManager.RegisterModule<GlobalConfigModule>(); // 全局配置管理模块
             ModuleManager.RegisterModule<ConfigModule>();       // 配置管理模块
             ModuleManager.RegisterModule<SceneModule>();        // 场景管理模块
             ModuleManager.RegisterModule<SoundModule>();        // 声音管理模块

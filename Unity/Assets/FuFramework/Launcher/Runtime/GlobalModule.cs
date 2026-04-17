@@ -15,7 +15,6 @@ using FuFramework.Download.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Coroutine.Runtime;
 using FuFramework.ObjectPool.Runtime;
-using FuFramework.GlobalConfig.Runtime;
 using FuFramework.Guide.Runtime;
 using FuFramework.Localization.Runtime;
 using FuFramework.Model.Runtime;
@@ -46,7 +45,6 @@ namespace FuFramework.Launcher.Runtime
         private static FsmModule           m_FsmModule;           // 有限状态机管理模块
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
-        private static GlobalConfigModule  m_GlobalConfigModule;  // 全局配置管理模块
         private static LocalizationModule  m_LocalizationModule;  // 本地化管理模块
         private static MonoModule          m_MonoModule;          // Mono管理模块
         private static SceneModule         m_SceneModule;         // 场景管理模块
@@ -120,11 +118,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取UI管理模块。
         /// </summary>
         public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
-
-        /// <summary>
-        /// 获取服务器相关全局配置管理模块。
-        /// </summary>
-        public static GlobalConfigModule GlobalConfigModule => m_GlobalConfigModule ??= ModuleManager.GetModule<GlobalConfigModule>();
 
         /// <summary>
         /// 获取本地化管理模块。
