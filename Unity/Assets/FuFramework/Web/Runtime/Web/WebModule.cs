@@ -170,13 +170,14 @@ namespace FuFramework.Web.Runtime
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
 
+#if UNITY_WEBGL
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
 
             unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
             if (webJsonData.Form is { Count: > 0 })
             {
                 unityWebRequest.SetRequestHeader("Content-Type", "application/json");
-                var body     = Utility.Json.ToJson(webJsonData.Form);
+                var body = Utility.Json.ToJson(webJsonData.Form);
                 var postData = Encoding.UTF8.GetBytes(body);
                 unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
             }
@@ -203,7 +204,7 @@ namespace FuFramework.Web.Runtime
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
                 webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
             };
-
+#else
             try
             {
                 var request = WebRequest.CreateHttp(webJsonData.URL);
@@ -263,6 +264,7 @@ namespace FuFramework.Web.Runtime
             {
                 m_SendingNormalList.Remove(webJsonData);
             }
+#endif
         }
 
         /// <summary>
