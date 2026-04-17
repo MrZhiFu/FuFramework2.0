@@ -79,42 +79,49 @@ EventArgs (事件基类)
 ### 2.2 核心类说明
 
 #### 2.2.1 IWebSocket (WebSocket 接口)
+
 位于 `Runtime/Core/IWebSocket.cs`，定义了 WebSocket 的核心接口。
 
 **主要属性：**
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `IsConnected` | `bool` | 是否已连接 |
-| `ReadyState` | `WebSocketState` | 连接状态 |
-| `Address` | `string` | 连接地址 |
-| `SubProtocols` | `string[]` | 子协议数组 |
+
+| 属性             | 类型               | 说明    |
+| -------------- | ---------------- | ----- |
+| `IsConnected`  | `bool`           | 是否已连接 |
+| `ReadyState`   | `WebSocketState` | 连接状态  |
+| `Address`      | `string`         | 连接地址  |
+| `SubProtocols` | `string[]`       | 子协议数组 |
 
 **主要方法：**
-| 方法 | 参数 | 说明 |
-|------|------|------|
-| `ConnectAsync()` | 无 | 异步建立连接 |
-| `CloseAsync()` | 无 | 异步关闭连接 |
-| `SendAsync(byte[] data)` | `data` - 字节数组 | 异步发送二进制数据 |
-| `SendAsync(string text)` | `text` - 文本字符串 | 异步发送文本数据 |
+
+| 方法                       | 参数             | 说明        |
+| ------------------------ | -------------- | --------- |
+| `ConnectAsync()`         | 无              | 异步建立连接    |
+| `CloseAsync()`           | 无              | 异步关闭连接    |
+| `SendAsync(byte[] data)` | `data` - 字节数组  | 异步发送二进制数据 |
+| `SendAsync(string text)` | `text` - 文本字符串 | 异步发送文本数据  |
 
 **事件：**
-| 事件 | 参数类型 | 说明 |
-|------|----------|------|
-| `OnOpen` | `OpenEventArgs` | 连接打开事件 |
-| `OnClose` | `CloseEventArgs` | 连接关闭事件 |
-| `OnError` | `ErrorEventArgs` | 错误事件 |
+
+| 事件          | 参数类型               | 说明     |
+| ----------- | ------------------ | ------ |
+| `OnOpen`    | `OpenEventArgs`    | 连接打开事件 |
+| `OnClose`   | `CloseEventArgs`   | 连接关闭事件 |
+| `OnError`   | `ErrorEventArgs`   | 错误事件   |
 | `OnMessage` | `MessageEventArgs` | 消息接收事件 |
 
 #### 2.2.2 WebSocket (NoWebGL 实现)
+
 位于 `Runtime/Implementation/NoWebGL/WebSocket.cs`，使用 `System.Net.WebSockets.ClientWebSocket` 实现。
 
 **核心机制：**
+
 - **并发队列**：使用 `ConcurrentQueue<SendBuffer>` 管理发送队列
 - **事件队列**：使用 `ConcurrentQueue<EventArgs>` 管理事件队列
 - **双任务模型**：独立的接收任务和发送任务
 - **取消令牌**：使用 `CancellationTokenSource` 控制任务取消
 
 **内部类：**
+
 ```csharp
 class SendBuffer
 {
@@ -124,56 +131,66 @@ class SendBuffer
 ```
 
 **核心方法：**
-| 方法 | 说明 |
-|------|------|
-| `ConnectTask()` | 异步连接任务，建立连接后启动接收和发送任务 |
-| `StartSendTask()` | 发送任务，从队列取出数据并发送 |
-| `StartReceiveTask()` | 接收任务，持续接收消息并触发事件 |
-| `Update()` | 在主线程处理事件队列 |
+
+| 方法                   | 说明                    |
+| -------------------- | --------------------- |
+| `ConnectTask()`      | 异步连接任务，建立连接后启动接收和发送任务 |
+| `StartSendTask()`    | 发送任务，从队列取出数据并发送       |
+| `StartReceiveTask()` | 接收任务，持续接收消息并触发事件      |
+| `Update()`           | 在主线程处理事件队列            |
 
 #### 2.2.3 WebSocketManager (NoWebGL 管理器)
+
 位于 `Runtime/Implementation/NoWebGL/WebSocketManager.cs`，管理所有 WebSocket 实例。
 
 **特性：**
+
 - `[DisallowMultipleComponent]` - 禁止重复组件
 - `[DefaultExecutionOrder(-10000)]` - 确保最先执行
 - `DontDestroyOnLoad` - 跨场景保持
 
 **核心功能：**
+
 - 单例模式管理
 - 维护 WebSocket 实例列表
 - 每帧调用所有实例的 `Update()` 方法
 - 应用退出时中止所有连接
 
 #### 2.2.4 WebSocket (WebGL 实现)
+
 位于 `Runtime/Implementation/WebGL/WebSocket.cs`，通过 JavaScript 插件调用浏览器原生 WebSocket API。
 
 **核心机制：**
+
 - **实例 ID**：每个 WebSocket 分配唯一的 `instanceId`
 - **JS 回调**：通过 `DllImport` 调用 JavaScript 函数
 - **错误码映射**：将 JavaScript 错误码转换为错误消息
 
 **错误码说明：**
-| 错误码 | 说明 |
-|--------|------|
-| -1 | WebSocket 实例未找到 |
-| -2 | WebSocket 已连接或正在连接 |
-| -3 | WebSocket 未连接 |
-| -4 | WebSocket 正在关闭 |
-| -5 | WebSocket 已关闭 |
-| -6 | WebSocket 未处于打开状态 |
-| -7 | 无效的关闭码或原因过长 |
-| -8 | 不支持缓冲区切片 |
+
+| 错误码 | 说明                 |
+| --- | ------------------ |
+| -1  | WebSocket 实例未找到    |
+| -2  | WebSocket 已连接或正在连接 |
+| -3  | WebSocket 未连接      |
+| -4  | WebSocket 正在关闭     |
+| -5  | WebSocket 已关闭      |
+| -6  | WebSocket 未处于打开状态  |
+| -7  | 无效的关闭码或原因过长        |
+| -8  | 不支持缓冲区切片           |
 
 #### 2.2.5 WebSocketManager (WebGL 管理器)
+
 位于 `Runtime/Implementation/WebGL/WebSocketManager.cs`，管理 WebGL 平台的 WebSocket 实例。
 
 **核心功能：**
+
 - 维护实例 ID 到 WebSocket 的映射表
 - 初始化 JavaScript 回调委托
 - 处理 Unity 6000 版本的兼容性
 
 **JavaScript 互操作：**
+
 ```csharp
 [DllImport("__Internal")]
 public static extern int WebSocketConnect(int instanceId);
@@ -187,6 +204,7 @@ public static extern int WebSocketSend(int instanceId, byte[] dataPtr, int dataL
 #### 2.2.6 事件参数类
 
 **OpenEventArgs** - 连接打开事件参数
+
 ```csharp
 public class OpenEventArgs : EventArgs
 {
@@ -195,70 +213,77 @@ public class OpenEventArgs : EventArgs
 ```
 
 **CloseEventArgs** - 连接关闭事件参数
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Code` | `ushort` | 关闭状态码 |
-| `Reason` | `string` | 关闭原因 |
-| `WasClean` | `bool` | 是否正常关闭 |
+
+| 属性           | 类型                | 说明       |
+| ------------ | ----------------- | -------- |
+| `Code`       | `ushort`          | 关闭状态码    |
+| `Reason`     | `string`          | 关闭原因     |
+| `WasClean`   | `bool`            | 是否正常关闭   |
 | `StatusCode` | `CloseStatusCode` | 枚举类型的状态码 |
 
 **MessageEventArgs** - 消息接收事件参数
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Data` | `string` | 文本消息内容（UTF-8 解码） |
-| `RawData` | `byte[]` | 原始字节数据 |
-| `IsBinary` | `bool` | 是否为二进制消息 |
-| `IsText` | `bool` | 是否为文本消息 |
+
+| 属性         | 类型       | 说明               |
+| ---------- | -------- | ---------------- |
+| `Data`     | `string` | 文本消息内容（UTF-8 解码） |
+| `RawData`  | `byte[]` | 原始字节数据           |
+| `IsBinary` | `bool`   | 是否为二进制消息         |
+| `IsText`   | `bool`   | 是否为文本消息          |
 
 **ErrorEventArgs** - 错误事件参数
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Message` | `string` | 错误消息 |
+
+| 属性          | 类型          | 说明             |
+| ----------- | ----------- | -------------- |
+| `Message`   | `string`    | 错误消息           |
 | `Exception` | `Exception` | 异常对象（可能为 null） |
 
 #### 2.2.7 枚举类型
 
 **WebSocketState** - 连接状态枚举
-| 值 | 数值 | 说明 |
-|----|------|------|
-| `Connecting` | 0 | 连接中 |
-| `Open` | 1 | 连接已打开 |
-| `Closing` | 2 | 连接关闭中 |
-| `Closed` | 3 | 连接已关闭 |
+
+| 值            | 数值 | 说明    |
+| ------------ | -- | ----- |
+| `Connecting` | 0  | 连接中   |
+| `Open`       | 1  | 连接已打开 |
+| `Closing`    | 2  | 连接关闭中 |
+| `Closed`     | 3  | 连接已关闭 |
 
 **CloseStatusCode** - 关闭状态码枚举（RFC 6455 标准）
-| 值 | 数值 | 说明 |
-|----|------|------|
-| `Normal` | 1000 | 正常关闭 |
-| `Away` | 1001 | 端点离开 |
-| `ProtocolError` | 1002 | 协议错误 |
-| `UnsupportedData` | 1003 | 不支持的数据类型 |
-| `NoStatus` | 1005 | 无状态码（保留值） |
-| `Abnormal` | 1006 | 异常关闭（保留值） |
-| `InvalidData` | 1007 | 数据不一致 |
-| `PolicyViolation` | 1008 | 违反策略 |
-| `TooBig` | 1009 | 消息过大 |
-| `MandatoryExtension` | 1010 | 需要扩展 |
-| `ServerError` | 1011 | 服务器错误 |
+
+| 值                     | 数值   | 说明            |
+| --------------------- | ---- | ------------- |
+| `Normal`              | 1000 | 正常关闭          |
+| `Away`                | 1001 | 端点离开          |
+| `ProtocolError`       | 1002 | 协议错误          |
+| `UnsupportedData`     | 1003 | 不支持的数据类型      |
+| `NoStatus`            | 1005 | 无状态码（保留值）     |
+| `Abnormal`            | 1006 | 异常关闭（保留值）     |
+| `InvalidData`         | 1007 | 数据不一致         |
+| `PolicyViolation`     | 1008 | 违反策略          |
+| `TooBig`              | 1009 | 消息过大          |
+| `MandatoryExtension`  | 1010 | 需要扩展          |
+| `ServerError`         | 1011 | 服务器错误         |
 | `TlsHandshakeFailure` | 1015 | TLS 握手失败（保留值） |
 
 **Opcode** - WebSocket 帧类型枚举
-| 值 | 数值 | 说明 |
-|----|------|------|
-| `Text` | 0x1 | 文本帧 |
-| `Binary` | 0x2 | 二进制帧 |
-| `Close` | 0x8 | 连接关闭帧 |
+
+| 值        | 数值  | 说明    |
+| -------- | --- | ----- |
+| `Text`   | 0x1 | 文本帧   |
+| `Binary` | 0x2 | 二进制帧  |
+| `Close`  | 0x8 | 连接关闭帧 |
 
 #### 2.2.8 Settings (模块设置)
+
 位于 `Runtime/Core/Settings.cs`，包含模块的元数据信息。
 
-| 常量 | 值 | 说明 |
-|------|----|------|
-| `VERSION` | "2.8.6" | 版本号 |
-| `AUHTOR` | "psygames" | 作者 |
-| `GITHUB` | URL | GitHub 仓库地址 |
-| `EMAIL` | "799329256@qq.com" | 联系邮箱 |
-| `QQ_GROUP` | "1126457634" | QQ 群号 |
+| 常量         | 值                    | 说明          |
+| ---------- | -------------------- | ----------- |
+| `VERSION`  | "2.8.6"              | 版本号         |
+| `AUHTOR`   | "psygames"           | 作者          |
+| `GITHUB`   | URL                  | GitHub 仓库地址 |
+| `EMAIL`    | "<799329256@qq.com>" | 联系邮箱        |
+| `QQ_GROUP` | "1126457634"         | QQ 群号       |
 
 ## 3. 快速开始
 
@@ -313,6 +338,7 @@ var ws = new WebSocket("ws://localhost:8080/ws", protocols);
 ### 4.1 连接管理
 
 #### 4.1.1 建立连接
+
 ```csharp
 var ws = new WebSocket("wss://echo.websocket.org");
 
@@ -329,6 +355,7 @@ ws.ConnectAsync();
 ```
 
 #### 4.1.2 检查连接状态
+
 ```csharp
 // 检查是否已连接
 if (ws.IsConnected)
@@ -356,6 +383,7 @@ switch (state)
 ```
 
 #### 4.1.3 关闭连接
+
 ```csharp
 // 正常关闭连接
 ws.CloseAsync();
@@ -372,6 +400,7 @@ ws.OnClose += (sender, e) => {
 ### 4.2 消息收发
 
 #### 4.2.1 发送文本消息
+
 ```csharp
 // 发送简单文本消息
 ws.SendAsync("Hello, World!");
@@ -387,6 +416,7 @@ ws.SendAsync($"[{timestamp}] 这是一条聊天消息");
 ```
 
 #### 4.2.2 发送二进制消息
+
 ```csharp
 // 发送字节数组
 byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
@@ -399,6 +429,7 @@ ws.SendAsync(serializedData);
 ```
 
 #### 4.2.3 接收消息
+
 ```csharp
 ws.OnMessage += (sender, e) => {
     // 处理文本消息
@@ -748,12 +779,13 @@ FuFramework/WebSocket/
 
 WebSocket 模块采用条件编译实现跨平台支持：
 
-| 平台 | 条件编译指令 | 实现方式 | 特点 |
-|------|-------------|----------|------|
+| 平台      | 条件编译指令                                            | 实现方式                  | 特点        |
+| ------- | ------------------------------------------------- | --------------------- | --------- |
 | NoWebGL | `!NET_LEGACY && (UNITY_EDITOR \|\| !UNITY_WEBGL)` | System.Net.WebSockets | 完整功能，异步任务 |
-| WebGL | `!UNITY_EDITOR && UNITY_WEBGL` | JavaScript 插件 | 浏览器原生 API |
+| WebGL   | `!UNITY_EDITOR && UNITY_WEBGL`                    | JavaScript 插件         | 浏览器原生 API |
 
 **架构优势：**
+
 - 统一的 `IWebSocket` 接口，平台无关的编程模型
 - 自动平台检测，无需手动选择实现
 - 事件机制保持一致，便于跨平台开发
@@ -779,6 +811,7 @@ WebSocket 模块采用条件编译实现跨平台支持：
 ```
 
 **线程安全组件：**
+
 - `ConcurrentQueue<SendBuffer> sendQueue` - 线程安全的发送队列
 - `ConcurrentQueue<EventArgs> eventQueue` - 线程安全的事件队列
 - `CancellationTokenSource cts` - 取消令牌源
@@ -1000,50 +1033,53 @@ public class CompressedWebSocketClient
 ### 10.1 IWebSocket 接口
 
 #### 10.1.1 属性
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `IsConnected` | `bool` | 获取是否已连接 |
-| `ReadyState` | `WebSocketState` | 获取连接状态 |
+
+| 属性            | 类型               | 说明      |
+| ------------- | ---------------- | ------- |
+| `IsConnected` | `bool`           | 获取是否已连接 |
+| `ReadyState`  | `WebSocketState` | 获取连接状态  |
 
 #### 10.1.2 方法
-| 方法 | 参数 | 说明 |
-|------|------|------|
-| `ConnectAsync()` | 无 | 异步建立连接 |
-| `CloseAsync()` | 无 | 异步关闭连接 |
+
+| 方法                       | 参数                | 说明        |
+| ------------------------ | ----------------- | --------- |
+| `ConnectAsync()`         | 无                 | 异步建立连接    |
+| `CloseAsync()`           | 无                 | 异步关闭连接    |
 | `SendAsync(byte[] data)` | `data` - 要发送的字节数组 | 异步发送二进制数据 |
-| `SendAsync(string text)` | `text` - 要发送的文本 | 异步发送文本数据 |
+| `SendAsync(string text)` | `text` - 要发送的文本   | 异步发送文本数据  |
 
 #### 10.1.3 事件
-| 事件 | 参数类型 | 说明 |
-|------|----------|------|
-| `OnOpen` | `OpenEventArgs` | 连接打开时触发 |
-| `OnClose` | `CloseEventArgs` | 连接关闭时触发 |
-| `OnError` | `ErrorEventArgs` | 发生错误时触发 |
+
+| 事件          | 参数类型               | 说明      |
+| ----------- | ------------------ | ------- |
+| `OnOpen`    | `OpenEventArgs`    | 连接打开时触发 |
+| `OnClose`   | `CloseEventArgs`   | 连接关闭时触发 |
+| `OnError`   | `ErrorEventArgs`   | 发生错误时触发 |
 | `OnMessage` | `MessageEventArgs` | 收到消息时触发 |
 
 ### 10.2 WebSocketState 枚举
 
-| 值 | 说明 |
-|----|------|
-| `Connecting` | 连接中（数值：0） |
-| `Open` | 连接已打开（数值：1） |
-| `Closing` | 连接关闭中（数值：2） |
-| `Closed` | 连接已关闭（数值：3） |
+| 值            | 说明          |
+| ------------ | ----------- |
+| `Connecting` | 连接中（数值：0）   |
+| `Open`       | 连接已打开（数值：1） |
+| `Closing`    | 连接关闭中（数值：2） |
+| `Closed`     | 连接已关闭（数值：3） |
 
 ### 10.3 MessageEventArgs 类
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Data` | `string` | 消息文本内容 |
+| 属性        | 类型       | 说明       |
+| --------- | -------- | -------- |
+| `Data`    | `string` | 消息文本内容   |
 | `RawData` | `byte[]` | 消息原始字节数据 |
-| `Opcode` | `Opcode` | 消息操作码 |
+| `Opcode`  | `Opcode` | 消息操作码    |
 
 ### CloseEventArgs 类
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Code` | `ushort` | 关闭状态码 |
-| `Reason` | `string` | 关闭原因 |
+| 属性       | 类型       | 说明    |
+| -------- | -------- | ----- |
+| `Code`   | `ushort` | 关闭状态码 |
+| `Reason` | `string` | 关闭原因  |
 
 ## 错误处理和调试
 
@@ -1101,12 +1137,14 @@ public void SafeSend(string message)
 ## 注意事项
 
 ### 1. 线程安全
+
 - **NoWebGL 平台**：WebSocket 操作是线程安全的，使用 `ConcurrentQueue` 确保线程安全
 - **事件回调**：在 NoWebGL 平台，事件回调在主线程执行（通过 `Update()` 方法）
 - **WebGL 平台**：所有操作和回调都在主线程执行
 - **建议**：避免在事件回调中执行耗时操作，以免阻塞主线程
 
 ### 2. 内存管理
+
 - **及时关闭连接**：不再使用时调用 `CloseAsync()`，避免资源泄漏
 - **避免频繁创建**：WebSocket 实例可以复用，不要频繁创建和销毁
 - **消息数据处理**：
@@ -1116,7 +1154,9 @@ public void SafeSend(string message)
 - **WebGL 注意**：JavaScript 端的 WebSocket 实例由垃圾回收管理
 
 ### 3. 网络状态
+
 - **连接检查**：发送消息前检查 `IsConnected` 或 `ReadyState`
+
 ```csharp
 if (!ws.IsConnected)
 {
@@ -1124,8 +1164,10 @@ if (!ws.IsConnected)
     return;
 }
 ```
+
 - **异常处理**：捕获并处理可能的异常（连接失败、发送失败等）
 - **心跳机制**：定期发送心跳消息检测连接健康度
+
 ```csharp
 private float lastPingTime;
 private const float PING_INTERVAL = 30f;
@@ -1141,12 +1183,14 @@ void Update()
 ```
 
 ### 4. 安全性
+
 - **使用 WSS**：生产环境务必使用 `wss://` 协议（WebSocket Secure）
 - **证书验证**：确保服务器证书有效，防止中间人攻击
 - **数据加密**：敏感数据在应用层额外加密
 - **输入验证**：验证接收到的消息数据，防止注入攻击
 
 ### 5. 平台差异
+
 - **WebGL 限制**：
   - 无法直接访问底层 Socket API
   - 受浏览器 CORS 策略限制
@@ -1157,6 +1201,7 @@ void Update()
   - 支持自定义 HTTP 头（部分平台）
 
 ### 6. 日志调试
+
 - 定义 `UNITY_WEB_SOCKET_LOG` 符号可以启用详细日志
 - 日志包含时间戳、线程 ID 和操作信息
 - 有助于排查连接和消息问题
@@ -1164,7 +1209,9 @@ void Update()
 ## 常见问题解答
 
 ### Q: 如何检测 WebSocket 连接是否正常？
+
 A: 检查 `IsConnected` 属性或 `ReadyState` 属性，并实现心跳机制：
+
 ```csharp
 // 检查连接状态
 if (ws.IsConnected)
@@ -1191,7 +1238,9 @@ switch (ws.ReadyState)
 ```
 
 ### Q: WebSocket 连接断开后如何自动重连？
+
 A: 在 `OnClose` 事件中实现重连逻辑，注意重连间隔和最大重连次数：
+
 ```csharp
 private int reconnectAttempts = 0;
 private const int MAX_RECONNECT = 5;
@@ -1212,7 +1261,9 @@ ws.OnOpen += (sender, e) => {
 ```
 
 ### Q: 如何处理大量实时数据？
+
 A: 采取以下优化措施：
+
 1. **使用二进制格式**：减少数据体积
 2. **控制发送频率**：避免过于频繁的发送
 3. **消息合并**：将多个小消息合并发送
@@ -1220,19 +1271,22 @@ A: 采取以下优化措施：
 5. **限流处理**：在接收端实现限流机制
 
 ### Q: WebGL 和非 WebGL 环境有什么差异？
+
 A: 主要差异如下：
 
-| 特性 | NoWebGL | WebGL |
-|------|---------|-------|
-| 实现方式 | System.Net.WebSockets | 浏览器原生 API |
-| 线程模型 | 多线程（后台任务） | 单线程 |
-| 性能 | 更高 | 受浏览器限制 |
-| 功能完整性 | 完整 | 部分受限 |
-| CORS | 无限制 | 受浏览器限制 |
-| 自定义头 | 支持 | 部分支持 |
+| 特性    | NoWebGL               | WebGL     |
+| ----- | --------------------- | --------- |
+| 实现方式  | System.Net.WebSockets | 浏览器原生 API |
+| 线程模型  | 多线程（后台任务）             | 单线程       |
+| 性能    | 更高                    | 受浏览器限制    |
+| 功能完整性 | 完整                    | 部分受限      |
+| CORS  | 无限制                   | 受浏览器限制    |
+| 自定义头  | 支持                    | 部分支持      |
 
 ### Q: 如何发送和接收二进制数据？
+
 A: 使用以下方式：
+
 ```csharp
 // 发送二进制数据
 byte[] data = new byte[] { 0x01, 0x02, 0x03 };
@@ -1249,7 +1303,9 @@ ws.OnMessage += (sender, e) => {
 ```
 
 ### Q: 如何设置 WebSocket 子协议？
+
 A: 在构造函数中传入子协议：
+
 ```csharp
 // 单个子协议
 var ws = new WebSocket("ws://example.com", "my-protocol");
@@ -1260,7 +1316,9 @@ var ws = new WebSocket("ws://example.com", protocols);
 ```
 
 ### Q: 如何处理连接超时？
+
 A: 模块本身没有内置超时机制，可以通过以下方式实现：
+
 ```csharp
 private float connectStartTime;
 private const float CONNECT_TIMEOUT = 10f;
@@ -1285,14 +1343,18 @@ void Update()
 ```
 
 ### Q: 为什么 WebGL 平台无法连接？
+
 A: 可能原因：
+
 1. **CORS 限制**：服务器需要配置 CORS 头
 2. **WSS 要求**：WebGL 必须使用 WSS（HTTPS 页面）
 3. **协议不匹配**：检查子协议是否正确
 4. **浏览器限制**：某些浏览器有额外的安全限制
 
 ### Q: 如何在场景切换时保持连接？
+
 A: WebSocketManager 使用 `DontDestroyOnLoad`，会自动保持：
+
 ```csharp
 // WebSocketManager 会自动处理跨场景
 // 只需确保在场景切换后不调用 CloseAsync()
@@ -1308,10 +1370,10 @@ void OnDestroy()
 }
 ```
 
----
+***
 
 WebSocket 模块为 FuFramework 提供了强大的实时通信能力，通过事件驱动的设计和跨平台支持，使得开发者可以轻松构建各种实时应用，如聊天系统、多人游戏、实时数据监控等。
 
-**版本信息：** v2.8.6  
-**作者：** psygames  
-**GitHub：** https://github.com/psygames/UnityWebSocket
+**版本信息：** v2.8.6\
+**作者：** psygames\
+**GitHub：** <https://github.com/psygames/UnityWebSocket>
