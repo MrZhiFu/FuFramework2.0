@@ -19,10 +19,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureDownloadPackage : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 9;
+        public override int Priority => 7;
+#endif
 
         protected override void OnEnter()
         {

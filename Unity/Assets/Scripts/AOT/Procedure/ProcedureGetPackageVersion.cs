@@ -19,11 +19,13 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureGetPackageVersion : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 6;
-        
+        public override int Priority => 4;
+#endif
+
         protected override void OnEnter()
         {
             base.OnEnter();
@@ -31,7 +33,7 @@ namespace Launcher.Procedure
 
             var assUpdateStateEventArgs = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
             GlobalModule.EventModule.Broadcast(this, assUpdateStateEventArgs);
-           
+
             GetVersion().Forget();
         }
 
@@ -43,8 +45,8 @@ namespace Launcher.Procedure
         {
             var package = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
 
-            // 离线单机模式下请求的是应用程序内保存的版本号，一般存放在StreamingAssets目录下，
-            // 热更模式下请求的是服务器上的版本号，一般存放在AssetBundle服务器上
+            // 离线单机模式下请求的是应用程序内保存的版本号，版本号会随着YooAsset的打包一起生成，一般存放在StreamingAssets/yoo目录下，
+            // 热更模式下请求的是资源服务器上的版本号，版本号会随着YooAsset的打包一起生成，一般存放在AssetBundle服务器上
             var operation = package.RequestPackageVersionAsync();
             await operation;
 
@@ -61,10 +63,12 @@ namespace Launcher.Procedure
             }
             else
             {
-                // 获取失败，再次进入自身流程尝试
+                // 获取失败，延迟3秒后重试
                 FuLogger.LogError(operation.Error);
                 GlobalModule.EventModule.Broadcast(this, AssetVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
-                ChangeState<ProcedureGetPackageVersion>();
+
+                await UniTask.WaitForSeconds(3);
+                GetVersion().Forget();
             }
         }
     }

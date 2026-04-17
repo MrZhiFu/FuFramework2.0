@@ -17,10 +17,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureInitPackage : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 5;
+        public override int Priority => 3;
+#endif
 
         protected override void OnEnter()
         {
@@ -39,21 +41,28 @@ namespace Launcher.Procedure
             // 编辑器模拟模式/单机离线模式下，初始化完毕后直接进入获取资源版本号流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
             {
+                // 初始化资源包
                 await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName);
                 ChangeState<ProcedureGetPackageVersion>();
                 return;
             }
 
             // 热更模式下
-            // 获取资源包的下载地址，并将下载地址传入初始化资源包方法中，同时移除流程中的下载地址数据，初始化完毕后直接进入获取资源版本号流程
-            var downloadURL = Fsm.GetData<VarString>("DownloadURL");
-            FuLogger.LogInfo($"资源包的下载路径：{downloadURL}");
+            // 获取资源包的下载地址和备用下载地址
+            var downloadUrl       = Fsm.GetData<VarString>("ResDownloadUrl");
+            var downloadBackupUrl = Fsm.GetData<VarString>("ResDownloadBackupUrl");
+            FuLogger.LogInfo($"资源包的下载路径：{downloadUrl}, 备用下载路径：{downloadBackupUrl}");
 
-            await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadURL.Value, downloadURL.Value);
+            // 初始化资源包
+            await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadUrl.Value, downloadBackupUrl.Value);
 
-            Fsm.RemoveData("DownloadURL");
+            // 移除流程中的下载地址数据
+            Fsm.RemoveData("ResDownloadUrl");
+            Fsm.RemoveData("ResDownloadBackupUrl");
+
             await UniTask.NextFrame();
 
+            // 进入获取资源版本号流程
             ChangeState<ProcedureGetPackageVersion>();
         }
     }

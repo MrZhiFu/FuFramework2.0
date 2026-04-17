@@ -20,10 +20,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureLauncher : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
         public override int Priority => 1;
+#endif
 
         protected override void OnEnter()
         {
@@ -68,8 +70,8 @@ namespace Launcher.Procedure
                 return;
             }
 
-            // 热更模式--进入获取服务端全局信息流程
-            ChangeState<ProcedureReqGlobalInfo>();
+            // 热更模式--进入获取远端资源更新配置流程
+            ChangeState<ProcedureReqRemoteUpdateConfig>();
         }
     }
 }

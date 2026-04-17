@@ -10,17 +10,19 @@ using HybridCLR;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 代码热更流程
+    /// 代码热修复流程
     /// 功能：
     ///     1.加载AOT程序集，补充AOT程序集的元数据
     ///     2.加载热更程序集，并运行热更程序集入口函数，进入热更代码逻辑。
     /// </summary>
-    public sealed class ProcedureHotfix : ProcedureBase
+    public sealed class ProcedureCodeHotfix : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 11;
+        public override int Priority => 9;
+#endif
 
         /// <summary>
         /// 热更程序集名称
@@ -36,7 +38,7 @@ namespace Launcher.Procedure
         }
 
         /// <summary>
-        /// 开始代码热更
+        /// 开始代码热修复
         /// </summary>
         private static async UniTaskVoid Start()
         {
@@ -60,7 +62,7 @@ namespace Launcher.Procedure
         }
 
         /// <summary>
-        /// 加载热更程序集
+        /// 加载AOT程序集和热更程序集
         /// </summary>
         public static async UniTask<Assembly> LoadDll()
         {

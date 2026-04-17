@@ -14,10 +14,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureUpdateDone : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 10;
+        public override int Priority => 8;
+#endif
 
         protected override void OnEnter()
         {
@@ -30,8 +32,8 @@ namespace Launcher.Procedure
             LauncherUIHelper.SetProgressUpdateFinish();
             LauncherUIHelper.SetTipText(string.Empty);
 
-            // 资源热更流程更新完毕，进入代码热更流程;
-            ChangeState<ProcedureHotfix>();
+            // 资源热更流程更新完毕，进入代码热修复流程;
+            ChangeState<ProcedureCodeHotfix>();
         }
     }
 }

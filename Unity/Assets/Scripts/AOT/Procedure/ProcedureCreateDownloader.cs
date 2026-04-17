@@ -12,14 +12,16 @@ namespace Launcher.Procedure
     /// 功能：
     ///     1. 创建资源下载器，并将其保存到流程管理模块的变量(Downloader)中。
     ///     2. 如果没有需要下载的资源，则直接进入资源更新完毕流程。
-    ///     3. 如果有需要下载的资源，则进入流程DownloadPackage。
+    ///     3. 如果有需要下载的资源，则进入下载资源包流程。
     /// </summary>
     public class ProcedureCreateDownloader : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 8;
+        public override int Priority => 6;
+#endif
 
         protected override void OnEnter()
         {
@@ -54,6 +56,8 @@ namespace Launcher.Procedure
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
                 GlobalModule.EventModule.Broadcast(this, FoundNeedUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
+
+                // 进入下载资源包流程
                 ChangeState<ProcedureDownloadPackage>();
             }
         }

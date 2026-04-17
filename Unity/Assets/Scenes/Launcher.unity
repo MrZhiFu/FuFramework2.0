@@ -193,16 +193,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AvailableProcedureTypeNames:
   - Launcher.Procedure.ProcedureLauncher
-  - Launcher.Procedure.ProcedureReqGlobalInfo
-  - Launcher.Procedure.ProcedureReqAppVersionInfo
-  - Launcher.Procedure.ProcedureReqPackageVersionInfo
   - Launcher.Procedure.ProcedureInitPackage
   - Launcher.Procedure.ProcedureUpdatePackageManifest
   - Launcher.Procedure.ProcedureGetPackageVersion
   - Launcher.Procedure.ProcedureCreateDownloader
   - Launcher.Procedure.ProcedureDownloadPackage
   - Launcher.Procedure.ProcedureUpdateDone
-  - Launcher.Procedure.ProcedureHotfix
+  - Launcher.Procedure.ProcedureReqRemoteUpdateConfig
+  - Launcher.Procedure.ProcedureCodeHotfix
   m_EntryProcedureTypeName: Launcher.Procedure.ProcedureLauncher
 --- !u!114 &7148938655606090477
 MonoBehaviour:

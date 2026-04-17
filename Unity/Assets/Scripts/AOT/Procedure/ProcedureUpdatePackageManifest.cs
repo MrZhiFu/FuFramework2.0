@@ -19,10 +19,12 @@ namespace Launcher.Procedure
     /// </summary>
     public class ProcedureUpdatePackageManifest : ProcedureBase
     {
+#if UNITY_EDITOR
         /// <summary>
         /// 在Inspector中的显示优先级
         /// </summary>
-        public override int Priority => 7;
+        public override int Priority => 5;
+#endif
 
         protected override void OnEnter()
         {
@@ -46,7 +48,8 @@ namespace Launcher.Procedure
 
             if (operation.Status == EOperationStatus.Succeed)
             {
-                // 更新成功，如果是编辑器模拟模式或离线单机模式，则直接进入更新完成流程
+                // 更新成功
+                //编辑器模拟模式或离线单机模式，则直接进入更新完成流程
                 if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
                 {
                     ChangeState<ProcedureUpdateDone>();
