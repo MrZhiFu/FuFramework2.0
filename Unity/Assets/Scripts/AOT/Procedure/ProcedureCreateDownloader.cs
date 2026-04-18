@@ -39,19 +39,18 @@ namespace Launcher.Procedure
         {
             // 创建资源下载器
             var downloader = GlobalModule.AssetModule.CreateResourceDownloader();
-
-            // 将资源下载器保存到流程管理模块的Data变量(Downloader)中。
-            var downloaderObj = new VarObject();
-            downloaderObj.SetValue(downloader);
-            Fsm.SetData("Downloader", downloaderObj);
-
             if (downloader.TotalDownloadCount == 0)
             {
-                FuLogger.LogInfo("没有需要下载的资源");
+                FuLogger.LogInfo("没有需要下载的资源!");
                 ChangeState<ProcedureUpdateDone>();
             }
             else
             {
+                // 将资源下载器保存到流程管理模块的Data变量(Downloader)中。
+                var downloaderObj = new VarObject();
+                downloaderObj.SetValue(downloader);
+                Fsm.SetData("Downloader", downloaderObj);
+                
                 FuLogger.LogInfo($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;

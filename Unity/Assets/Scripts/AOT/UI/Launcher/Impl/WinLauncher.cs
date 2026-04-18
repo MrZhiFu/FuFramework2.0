@@ -1,4 +1,7 @@
 using FairyGUI;
+using FuFramework.Asset.Runtime;
+using FuFramework.Core.Runtime;
+using FuFramework.Event.Runtime;
 using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -18,20 +21,32 @@ namespace Launcher.UI
         #endregion
 
         /// <summary>
+        /// 确认按钮点击事件回调
+        /// </summary>
+        private EventCallback0 _btnOkClick;
+
+        /// <summary>
         /// 初始化
         /// </summary>  
         protected override void OnInit()
         {
             InitUIComp();
+            InitUIEvent();
+            InitEvent();
+        }
+
+        /// <summary>
+        /// 注册相关逻辑事件
+        /// </summary>
+        private void InitEvent()
+        {
+            Subscribe(AssetDownloadProgressEventArgs.EventId, OnAssetDownloadProgressUpdate);
         }
 
         /// <summary>
         /// 界面打开
         /// </summary>
-        protected override void OnOpen()
-        {
-            Refresh();
-        }
+        protected override void OnOpen() { }
 
         /// <summary>
         /// 界面关闭
@@ -44,30 +59,22 @@ namespace Launcher.UI
         protected override void OnDispose() { }
 
         /// <summary>
-        /// 刷新界面
-        /// </summary>
-        private void Refresh()
-        {
-            // TODO：刷新逻辑
-        }
-
-        /// <summary>
         /// 设置下载时的提示文本
         /// </summary>
         /// <param name="text"></param>
         public void SetTipText(string text) => txtTips.text = text;
 
         /// <summary>
-        /// 设置更新完成状态
-        /// </summary>
-        /// <param name="isFinish">是否完成更新</param>
-        public void SetUpdateState(bool isFinish) => SetController(isFinish ? EIsDownloading.No : EIsDownloading.Yes);
-
-        /// <summary>
-        /// 设置更新确认弹框状态
+        /// 设置更新弹框状态
         /// </summary>
         /// <param name="isNeedUpgrade">是否需要更新</param>
         public void SetUpdateSureUIState(bool isNeedUpgrade) => SetController(isNeedUpgrade ? EIsNeedUpgrade.Yes : EIsNeedUpgrade.No);
+
+        /// <summary>
+        /// 设置更新进度状态
+        /// </summary>
+        /// <param name="isFinish">是否完成更新</param>
+        public void SetUpdateProgressState(bool isFinish) => SetController(isFinish ? EIsDownloading.No : EIsDownloading.Yes);
 
         /// <summary>
         /// 设置更新进度
@@ -97,13 +104,29 @@ namespace Launcher.UI
         /// 设置更新按钮点击事件
         /// </summary>
         /// <param name="onClick">点击事件</param>
-        public void SetUpdateBtnOnClick(EventCallback0 onClick) => btnOk.onClick.Set(onClick);
+        public void SetUpdateBtnOnClick(EventCallback0 onClick) => _btnOkClick = onClick;
+
+        /// <summary>
+        /// 资源下载进度更新事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="gameEventArgs"></param>
+        private void OnAssetDownloadProgressUpdate(object sender, GameEventArgs gameEventArgs)
+        {
+            SetUpdateProgressState(false);
+            var message       = (AssetDownloadProgressEventArgs)gameEventArgs;
+            var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
+            var currentSizeMb = Utility.File.GetBytesSizeWithUnit(message.CurrentDownloadSizeBytes);
+            var totalSizeMb   = Utility.File.GetBytesSizeWithUnit(message.TotalDownloadSizeBytes);
+            SetUpdateProgress(progress * 100);
+            SetTipText($"Downloading {currentSizeMb}/{totalSizeMb}");
+        }
 
         #region 交互事件与ListItem渲染回调处理
 
         private void OnBtnOkClick(EventContext ctx)
         {
-            // todo
+            _btnOkClick?.Invoke();
         }
 
         #endregion

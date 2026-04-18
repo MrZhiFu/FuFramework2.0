@@ -9,9 +9,9 @@ using FuFramework.Variable.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更流程--初始化资源包流程流程。
+    /// 热更流程--初始化资源包流程。
     /// 功能：
-    ///     1. 初始化设置资源包相关信息，包括：包名称、下载地址。
+    ///     1. 初始化默认资源包相关信息，包括：资源包名称、资源包下载地址，资源包备用下载地址。
     ///     2. 进入获取资源版本号流程。
     /// 注意：
     /// </summary>
@@ -51,15 +51,16 @@ namespace Launcher.Procedure
             // 获取资源包的下载地址和备用下载地址
             var downloadUrl       = Fsm.GetData<VarString>("ResDownloadUrl");
             var downloadBackupUrl = Fsm.GetData<VarString>("ResDownloadBackupUrl");
-            FuLogger.LogInfo($"资源包的下载路径：{downloadUrl}, 备用下载路径：{downloadBackupUrl}");
+            FuLogger.LogInfo($"资源包的下载地址：{downloadUrl}, 备用下载地址：{downloadBackupUrl}");
 
-            // 初始化资源包
+            // 初始化默认资源包
             await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadUrl.Value, downloadBackupUrl.Value);
 
-            // 移除流程中的下载地址数据
+            // 移除流程中的保存的下载地址数据
             Fsm.RemoveData("ResDownloadUrl");
             Fsm.RemoveData("ResDownloadBackupUrl");
 
+            // 等待一帧
             await UniTask.NextFrame();
 
             // 进入获取资源版本号流程

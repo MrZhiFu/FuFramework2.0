@@ -10,7 +10,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
-using Launcher.Procedure;
+using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 #if ENABLE_BINARY_CONFIG
@@ -36,12 +36,20 @@ namespace Hotfix
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
+            // 获取热更界面
+            var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();
+            if (winLauncher == null)
+            {
+                FuLogger.LogError("热更界面获取失败！");
+                return;
+            }
+            
             // 加载配置表
-            LauncherUIHelper.SetTipText("LoadConfig...");
+            winLauncher.SetTipText("LoadConfig...");
             await LoadConfig();
 
             // 加载初始必要的UI资源
-            LauncherUIHelper.SetTipText("LoadInitUIAsset...");
+            winLauncher.SetTipText("LoadInitUIAsset...");
             await LoadUI();
 
             // 绑定自动生成的Fui自定义组件(HotFix下)

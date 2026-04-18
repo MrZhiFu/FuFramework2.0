@@ -45,8 +45,7 @@ namespace Launcher.Procedure
         private async UniTaskVoid BeginDownload()
         {
             // 获取下载器
-            var downloader = Fsm.GetData<VarObject>("Downloader").GetValue() as ResourceDownloaderOperation;
-            if (downloader == null)
+            if (Fsm.GetData<VarObject>("Downloader").GetValue() is not ResourceDownloaderOperation downloader)
             {
                 FuLogger.LogError("下载器为空，无法下载资源包！");
                 return;

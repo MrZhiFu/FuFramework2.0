@@ -21,9 +21,6 @@ namespace FuFramework.Procedure.Runtime
         /// 状态初始化时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
-        protected override void OnInit(Fsm.Runtime.Fsm procedureOwner)
-        {
-            base.OnInit(procedureOwner);
-        }
+        protected override void OnInit(Fsm.Runtime.Fsm procedureOwner) => base.OnInit(procedureOwner);
     }
 }

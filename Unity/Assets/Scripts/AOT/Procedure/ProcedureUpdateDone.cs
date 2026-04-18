@@ -2,6 +2,7 @@
 using FuFramework.Asset.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
+using Launcher.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -28,9 +29,17 @@ namespace Launcher.Procedure
 
             GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateDone));
 
-            // UI设置为更新完成状态
-            LauncherUIHelper.SetProgressUpdateFinish();
-            LauncherUIHelper.SetTipText(string.Empty);
+            // 获取热更界面
+            var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();
+            if (winLauncher == null)
+            {
+                FuLogger.LogError("热更界面获取失败！");
+                return;
+            }
+
+            // 设置UI为更新完成状态
+            winLauncher.SetUpdateProgressState(false);
+            winLauncher.SetTipText(string.Empty);
 
             // 资源热更流程更新完毕，进入代码热修复流程;
             ChangeState<ProcedureCodeHotfix>();

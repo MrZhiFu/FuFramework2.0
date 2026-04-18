@@ -5,6 +5,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using HybridCLR;
+using Launcher.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -57,8 +58,8 @@ namespace Launcher.Procedure
 
             FuLogger.LogInfo("<color=#43f656>------代码热更流程结束------</color>");
 
-            // 释放整个启动流程的加载界面
-            LauncherUIHelper.Dispose();
+            // 关闭整个启动流程的加载界面
+            GlobalModule.UIModule.CloseUI<WinLauncher>();
         }
 
         /// <summary>

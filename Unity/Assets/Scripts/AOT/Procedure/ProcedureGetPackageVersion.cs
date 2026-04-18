@@ -13,9 +13,8 @@ namespace Launcher.Procedure
     /// <summary>
     /// 热更流程--获取资源包版本号流程。
     /// 功能：
-    ///     1. 获取资源的版本号
-    ///     2. 离线单机模式下，将最新版本号保存到流程的Data中，供再次使用，然后进入更新资源清单流程
-    ///     3. 热更模式下，进入更新资源清单流程
+    ///     1. 获取资源的版本号，将最新版本号保存到流程的Data中，供后续更新资源清单流程使用。
+    ///     2. 进入更新资源清单流程。
     /// </summary>
     public class ProcedureGetPackageVersion : ProcedureBase
     {
@@ -34,6 +33,7 @@ namespace Launcher.Procedure
             var assUpdateStateEventArgs = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
             GlobalModule.EventModule.Broadcast(this, assUpdateStateEventArgs);
 
+            // 获取资源的版本号
             GetVersion().Forget();
         }
 
@@ -64,7 +64,7 @@ namespace Launcher.Procedure
             else
             {
                 // 获取失败，延迟3秒后重试
-                FuLogger.LogError(operation.Error);
+                FuLogger.LogError($"获取资源版本号失败，3秒后重试: {operation.Error}");
                 GlobalModule.EventModule.Broadcast(this, AssetVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
 
                 await UniTask.WaitForSeconds(3);
