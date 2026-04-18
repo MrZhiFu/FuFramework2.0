@@ -190,10 +190,10 @@ namespace FuFramework.UI.Runtime
 
     /// <summary>
     /// 自定义FUI的Loader加载器。
-    /// 职责：提供一个自定义的Loader加载器，用于加载Loader的纹理资源。
-    /// 核心功能:
-    /// 1. 实现了网络纹理资源和YooAsset包内纹理资源的加载。
-    /// 2. 实现了LRU缓存机制，避免重复加载资源。
+    /// 目标：提供一个自定义的Loader加载器，用于加载Loader的纹理资源。
+    /// 功能:
+    ///     1. 实现了网络纹理资源和YooAsset包内纹理资源的加载。
+    ///     2. 实现了LRU缓存机制，避免重复加载资源。
     /// </summary>
     public sealed class CustomLoader : GLoader
     {
