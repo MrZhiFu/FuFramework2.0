@@ -1,9 +1,9 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
-    /// 资源更新状态
+    /// 资源更新流程状态
     /// </summary>
     public enum EUpdateStates
     {

@@ -1,7 +1,6 @@
 ﻿using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Variable.Runtime;
@@ -10,12 +9,12 @@ using FuFramework.Variable.Runtime;
 namespace Launcher.Procedure
 {
     /// <summary>
-    /// 热更流程--下载资源包流程。
+    /// 热更流程--下载热更资源包流程。
     /// 功能：
-    ///     1.下载资源包。
+    ///     1.下载热更资源包。
     ///     2.监听下载进度。
-    ///     3.下载成功：切换到更新完毕流程。
-    ///     4.下载失败：重新回到创建下载器的流程。
+    ///     3.下载成功 => 进入更新完毕流程。
+    ///     4.下载失败 => 重新回到创建下载器的流程。
     /// </summary>
     public class ProcedureDownloadPackage : ProcedureBase
     {
@@ -31,15 +30,16 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：下载资源包------</color>");
 
-            var assetUpdateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.Download);
-            GlobalModule.EventModule.Broadcast(this, assetUpdateStateChangeEvent);
+            // 发送更新状态改变事件: 开始下载热更资源包
+            var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.Download);
+            GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
-            // 开始下载热更包
+            // 开始下载热更资源包
             BeginDownload().Forget();
         }
 
         /// <summary>
-        /// 开始下载热更包
+        /// 开始下载热更资源包
         /// </summary>
         /// <returns></returns>
         private async UniTaskVoid BeginDownload()
@@ -77,12 +77,13 @@ namespace Launcher.Procedure
         /// <param name="errorData"></param>
         private void DownloaderOnDownloadErrorCallback(DownloadErrorData errorData)
         {
-            GlobalModule.EventModule.Broadcast(this, AssetWebFileDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo));
+            var downloadFailedEvent = AssetDownloadFailedEventArgs.Create(errorData.PackageName, errorData.FileName, errorData.ErrorInfo);
+            GlobalModule.EventModule.Broadcast(this, downloadFailedEvent);
             ChangeState<ProcedureCreateDownloader>();
         }
 
         /// <summary>
-        /// 下载中进度回调，派发下载进度事件，通过事件更新进度条
+        /// 下载中进度回调，发送下载进度事件，通过事件更新下载进度条
         /// </summary>
         /// <param name="data">下载中的数据</param>
         private void OnDownloadProgressCallback(DownloadUpdateData data)
@@ -92,7 +93,9 @@ namespace Launcher.Procedure
             var currentDownloadCount = data.CurrentDownloadCount;
             var totalDownloadBytes   = data.TotalDownloadBytes;
             var currentDownloadBytes = data.CurrentDownloadBytes;
-            GlobalModule.EventModule.Broadcast(this, AssetDownloadProgressEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes));
+
+            var downloadProgressEvent = AssetDownloadProgressEventArgs.Create(packageName, totalDownloadCount, currentDownloadCount, totalDownloadBytes, currentDownloadBytes);
+            GlobalModule.EventModule.Broadcast(this, downloadProgressEvent);
         }
     }
 }

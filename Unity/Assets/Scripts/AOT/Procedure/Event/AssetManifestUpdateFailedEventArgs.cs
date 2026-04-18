@@ -1,9 +1,10 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 资源清单更新失败事件
@@ -38,7 +39,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetManifestUpdateFailedEventArgs Create(string packageName, string error)
         {
-            var assetPatchManifestUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetManifestUpdateFailedEventArgs>();
+            var assetPatchManifestUpdateFailed = ReferencePool.Acquire<AssetManifestUpdateFailedEventArgs>();
             assetPatchManifestUpdateFailed.PackageName = packageName;
             assetPatchManifestUpdateFailed.Error       = error;
             return assetPatchManifestUpdateFailed;

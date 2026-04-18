@@ -1,18 +1,19 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
-    /// 发现需要更新的资源文件事件
+    /// 发现需要更新的资源事件
     /// </summary>
-    public sealed class FoundNeedUpdateFilesEventArgs : GameEventArgs
+    public sealed class FoundNeedUpdateAssetEventArgs : GameEventArgs
     {
         public override string Id => EventId;
 
-        private static readonly string EventId = typeof(FoundNeedUpdateFilesEventArgs).FullName;
+        private static readonly string EventId = typeof(FoundNeedUpdateAssetEventArgs).FullName;
 
         /// <summary>
         /// 包名称
@@ -43,9 +44,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="totalCount">总数量</param>
         /// <param name="totalSizeBytes">总大小</param>
         /// <returns></returns>
-        public static FoundNeedUpdateFilesEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
+        public static FoundNeedUpdateAssetEventArgs Create(string packageName, int totalCount, long totalSizeBytes)
         {
-            var foundUpdateFiles = ReferencePool.Runtime.ReferencePool.Acquire<FoundNeedUpdateFilesEventArgs>();
+            var foundUpdateFiles = ReferencePool.Acquire<FoundNeedUpdateAssetEventArgs>();
             foundUpdateFiles.TotalCount     = totalCount;
             foundUpdateFiles.TotalSizeBytes = totalSizeBytes;
             foundUpdateFiles.PackageName    = packageName;

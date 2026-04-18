@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Variable.Runtime;
@@ -28,7 +27,11 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：创建资源下载器------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.CreateDownloader));
+            // 发送更新状态改变事件：创建资源下载器
+            var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.CreateDownloader);
+            GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
+
+            // 创建资源下载器
             CreateDownloader();
         }
 
@@ -50,11 +53,14 @@ namespace Launcher.Procedure
                 var downloaderObj = new VarObject();
                 downloaderObj.SetValue(downloader);
                 Fsm.SetData("Downloader", downloaderObj);
-                
+
                 FuLogger.LogInfo($"一共{downloader.TotalDownloadCount}个资源需要更新下载。");
                 var totalDownloadCount = downloader.TotalDownloadCount;
                 var totalDownloadBytes = downloader.TotalDownloadBytes;
-                GlobalModule.EventModule.Broadcast(this, FoundNeedUpdateFilesEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes));
+
+                // 发送发现需要更新的资源事件
+                var foundNeedUpdateAssetEventArgs = FoundNeedUpdateAssetEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes);
+                GlobalModule.EventModule.Broadcast(this, foundNeedUpdateAssetEventArgs);
 
                 // 进入下载资源包流程
                 ChangeState<ProcedureDownloadPackage>();

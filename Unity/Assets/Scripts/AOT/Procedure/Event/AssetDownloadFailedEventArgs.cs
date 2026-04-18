@@ -1,18 +1,19 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
-    /// 网络文件下载失败事件
+    /// 资源下载失败事件
     /// </summary>
-    public sealed class AssetWebFileDownloadFailedEventArgs : GameEventArgs
+    public sealed class AssetDownloadFailedEventArgs : GameEventArgs
     {
         public override string Id => EventId;
 
-        private static readonly string EventId = typeof(AssetWebFileDownloadFailedEventArgs).FullName;
+        private static readonly string EventId = typeof(AssetDownloadFailedEventArgs).FullName;
 
         /// <summary>
         /// 文件名
@@ -43,9 +44,9 @@ namespace FuFramework.Asset.Runtime
         /// <param name="fileName">文件名</param>
         /// <param name="error">错误信息</param>
         /// <returns></returns>
-        public static AssetWebFileDownloadFailedEventArgs Create(string packageName, string fileName, string error)
+        public static AssetDownloadFailedEventArgs Create(string packageName, string fileName, string error)
         {
-            var assetWebFileDownloadFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetWebFileDownloadFailedEventArgs>();
+            var assetWebFileDownloadFailed = ReferencePool.Acquire<AssetDownloadFailedEventArgs>();
             assetWebFileDownloadFailed.FileName    = fileName;
             assetWebFileDownloadFailed.Error       = error;
             assetWebFileDownloadFailed.PackageName = packageName;

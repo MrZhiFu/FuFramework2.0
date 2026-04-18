@@ -1,7 +1,6 @@
 ﻿using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ReferencePool.Runtime;
@@ -30,8 +29,9 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：获取资源包版本------</color>");
 
-            var assUpdateStateEventArgs = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
-            GlobalModule.EventModule.Broadcast(this, assUpdateStateEventArgs);
+            // 发送更新状态改变事件: 获取热更资源包版本号
+            var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
+            GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
             // 获取资源的版本号
             GetVersion().Forget();
@@ -63,10 +63,14 @@ namespace Launcher.Procedure
             }
             else
             {
-                // 获取失败，延迟3秒后重试
+                // 获取失败
                 FuLogger.LogError($"获取资源版本号失败，3秒后重试: {operation.Error}");
-                GlobalModule.EventModule.Broadcast(this, AssetVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
 
+                // 发送资源版本号更新失败事件
+                var versionUpdateFailedEvent = AssetVersionUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error);
+                GlobalModule.EventModule.Broadcast(this, versionUpdateFailedEvent);
+
+                // 延迟3秒后重试
                 await UniTask.WaitForSeconds(3);
                 GetVersion().Forget();
             }

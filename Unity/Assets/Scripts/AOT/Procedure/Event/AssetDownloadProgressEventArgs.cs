@@ -1,8 +1,9 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 资源下载进度事件
@@ -58,7 +59,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetDownloadProgressEventArgs Create(string packageName, int totalDownloadCount, int currentDownloadCount, long totalDownloadSizeBytes, long currentDownloadSizeBytes)
         {
-            var assetDownloadProgressUpdate = ReferencePool.Runtime.ReferencePool.Acquire<AssetDownloadProgressEventArgs>();
+            var assetDownloadProgressUpdate = ReferencePool.Acquire<AssetDownloadProgressEventArgs>();
             assetDownloadProgressUpdate.TotalDownloadCount       = totalDownloadCount;
             assetDownloadProgressUpdate.CurrentDownloadCount     = currentDownloadCount;
             assetDownloadProgressUpdate.TotalDownloadSizeBytes   = totalDownloadSizeBytes;

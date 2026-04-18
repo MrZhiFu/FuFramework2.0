@@ -1,8 +1,8 @@
 using FairyGUI;
-using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.UI.Runtime;
+using Launcher.Procedure;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.UI

@@ -1,5 +1,4 @@
 ﻿using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using Launcher.UI;
@@ -27,7 +26,9 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：更新完毕------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateDone));
+            // 发送更新状态改变事件: 更新完毕
+            var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateDone);
+            GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
             // 获取热更界面
             var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();

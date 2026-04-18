@@ -1,9 +1,10 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 资源版本号更新失败事件
@@ -38,7 +39,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetVersionUpdateFailedEventArgs Create(string packageName, string error)
         {
-            var assetStaticVersionUpdateFailed = ReferencePool.Runtime.ReferencePool.Acquire<AssetVersionUpdateFailedEventArgs>();
+            var assetStaticVersionUpdateFailed = ReferencePool.Acquire<AssetVersionUpdateFailedEventArgs>();
             assetStaticVersionUpdateFailed.PackageName = packageName;
             assetStaticVersionUpdateFailed.Error       = error;
             return assetStaticVersionUpdateFailed;

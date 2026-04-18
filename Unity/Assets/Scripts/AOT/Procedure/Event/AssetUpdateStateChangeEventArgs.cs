@@ -1,9 +1,10 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InconsistentNaming
-namespace FuFramework.Asset.Runtime
+namespace Launcher.Procedure
 {
     /// <summary>
     /// 资源更新状态改变事件
@@ -38,7 +39,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public static AssetUpdateStateChangeEventArgs Create(string packageName, EUpdateStates currentStates)
         {
-            var assetPatchStatesChange = ReferencePool.Runtime.ReferencePool.Acquire<AssetUpdateStateChangeEventArgs>();
+            var assetPatchStatesChange = ReferencePool.Acquire<AssetUpdateStateChangeEventArgs>();
             assetPatchStatesChange.PackageName   = packageName;
             assetPatchStatesChange.CurrentStates = currentStates;
             return assetPatchStatesChange;

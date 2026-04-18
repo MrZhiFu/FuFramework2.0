@@ -2,7 +2,6 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Asset.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Variable.Runtime;
@@ -31,7 +30,11 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：更新资源清单------</color>");
 
-            GlobalModule.EventModule.Broadcast(this, AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateManifest));
+            // 发送更新状态改变事件: 更新资源清单
+            var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateManifest);
+            GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
+
+            // 更新资源清单
             UpdateManifest().Forget();
         }
 
@@ -62,9 +65,10 @@ namespace Launcher.Procedure
             }
             else
             {
-                // 更新失败，重新尝试更新资源清单流程
+                // 更新失败，发送资源更新下载失败事件，并重新尝试更新资源清单流程
                 Debug.LogError(operation.Error);
-                GlobalModule.EventModule.Broadcast(this, AssetManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error));
+                var manifestUpdateFailedEvent = AssetManifestUpdateFailedEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, operation.Error);
+                GlobalModule.EventModule.Broadcast(this, manifestUpdateFailedEvent);
                 ChangeState<ProcedureUpdatePackageManifest>();
             }
         }
