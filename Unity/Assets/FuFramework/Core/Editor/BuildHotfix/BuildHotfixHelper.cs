@@ -14,7 +14,6 @@ namespace FuFramework.Core.Editor
     ///     1. 复制热更新代码DLL到Assets/Bundles/Code目录。
     ///     2. 复制AOT代码DLL到Assets/Bundles/AOTCode目录。
     /// </summary>
-    [InitializeOnLoad]
     public static class BuildHotfixHelper
     {
         // Unity代码生成dll位置
@@ -26,22 +25,7 @@ namespace FuFramework.Core.Editor
         // 热更代码存放位置
         private const string CodeDir    = "Assets/Bundles/Code/";
         private const string AOTCodeDir = "Assets/Bundles/AOTCode/";
-
-
-        /// <summary>
-        /// 每次Unity编译完毕后，等待一秒后执行热更新代码拷贝
-        /// </summary>
-        static BuildHotfixHelper()
-        {
-            async Task WaitExecute()
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                CopyHotfixCode(); // 拷贝热更代码到Assets/Bundles/Code目录
-            }
-
-            _ = WaitExecute();
-        }
-
+        
         /// <summary>
         /// 复制热更新代码Dll到Assets/Bundles/Code目录
         /// </summary>
