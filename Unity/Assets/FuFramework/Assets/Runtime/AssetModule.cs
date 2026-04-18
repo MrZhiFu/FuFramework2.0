@@ -437,6 +437,18 @@ namespace FuFramework.Asset.Runtime
         #region 资源包
 
         /// <summary>
+        /// 初始化默认资源包。
+        /// </summary>
+        /// <param name="downloadURL">热更资源包下载URL</param>
+        /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
+        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
+        /// <returns></returns>
+        public UniTask<bool> InitDefaultPackageAsync(string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
+        {
+            return InitPackageAsync(DefaultPackageName, downloadURL, downloadBackupURL, isDefaultPackage);
+        }
+
+        /// <summary>
         /// 初始化资源包。
         /// </summary>
         /// <param name="packageName">包名称</param>
@@ -461,7 +473,10 @@ namespace FuFramework.Asset.Runtime
             {
                 resourcePackage = CreatePackage(packageName);
                 if (isDefaultPackage)
-                    SetDefaultPackage(resourcePackage); // 设置该资源包为默认的资源包
+                {
+                    // 设置默认的资源包
+                    SetDefaultPackage(resourcePackage);
+                }
             }
 
             // 新建一个任务，包装初始化操作
@@ -499,6 +514,12 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
         public bool HasPackage(string packageName) => YooAssets.TryGetPackage(packageName) != null;
+
+        /// <summary>
+        /// 获取默认资源包
+        /// </summary>
+        /// <returns></returns>
+        public ResourcePackage GetDefaultPackage() => YooAssets.GetPackage(DefaultPackageName);
 
         /// <summary>
         /// 获取资源包

@@ -43,7 +43,7 @@ namespace Launcher.Procedure
         /// <returns></returns>
         private async UniTaskVoid GetVersion()
         {
-            var package = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
+            var package = GlobalModule.AssetModule.GetDefaultPackage();
 
             // 离线单机模式下请求的是应用程序内保存的版本号，版本号会随着YooAsset的打包一起生成，一般存放在StreamingAssets/yoo目录下，
             // 热更模式下请求的是资源服务器上的版本号，版本号会随着YooAsset的打包一起生成，一般存放在AssetBundle服务器上

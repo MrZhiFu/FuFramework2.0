@@ -41,8 +41,8 @@ namespace Launcher.Procedure
             // 编辑器模拟模式/单机离线模式下，初始化完毕后直接进入获取资源版本号流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
             {
-                // 初始化资源包
-                await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName);
+                // 初始化默认资源包
+                await GlobalModule.AssetModule.InitDefaultPackageAsync();
                 ChangeState<ProcedureGetPackageVersion>();
                 return;
             }
@@ -54,7 +54,7 @@ namespace Launcher.Procedure
             FuLogger.LogInfo($"资源包的下载地址：{downloadUrl}, 备用下载地址：{downloadBackupUrl}");
 
             // 初始化默认资源包
-            await GlobalModule.AssetModule.InitPackageAsync(GlobalModule.AssetModule.DefaultPackageName, downloadUrl.Value, downloadBackupUrl.Value);
+            await GlobalModule.AssetModule.InitDefaultPackageAsync(downloadUrl.Value, downloadBackupUrl.Value);
 
             // 移除流程中的保存的下载地址数据
             Fsm.RemoveData("ResDownloadUrl");

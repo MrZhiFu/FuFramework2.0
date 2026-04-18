@@ -44,7 +44,7 @@ namespace Launcher.Procedure
         /// <returns></returns>
         private async UniTaskVoid UpdateManifest()
         {
-            var defaultPackage = GlobalModule.AssetModule.GetPackage(GlobalModule.AssetModule.DefaultPackageName);
+            var defaultPackage = GlobalModule.AssetModule.GetDefaultPackage();
             var versionStr     = Fsm.GetData<VarString>("PackageVersion");
             var operation      = defaultPackage.UpdatePackageManifestAsync(versionStr.Value);
             await operation;
@@ -52,7 +52,7 @@ namespace Launcher.Procedure
             if (operation.Status == EOperationStatus.Succeed)
             {
                 // 更新成功
-                //编辑器模拟模式或离线单机模式，则直接进入更新完成流程
+                // 编辑器模拟模式或离线单机模式，则直接进入更新完成流程
                 if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
                 {
                     ChangeState<ProcedureUpdateDone>();
