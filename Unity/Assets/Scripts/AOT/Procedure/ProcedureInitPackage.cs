@@ -47,18 +47,27 @@ namespace Launcher.Procedure
                 return;
             }
 
-            // 热更模式下
-            // 获取资源包的下载地址和备用下载地址
-            var downloadUrl       = Fsm.GetData<VarString>("ResDownloadUrl").Value;
-            var downloadBackupUrl = Fsm.GetData<VarString>("ResDownloadBackupUrl").Value;
+            // 热更模式下，获取更新配置信息，并取得其中资源包的下载地址和备用下载地址，然后初始化默认资源包
+            if (Fsm.GetData<VarObject>("UpdateConfig").Value is not RemoteUpdateConfig updateConfig)
+            {
+                FuLogger.LogError("获取资源包的配置信息失败，请检查网络连接或配置信息是否正确！");
+                return;
+            }
+
+            // App主次版本号：如 v1.0
+            var version = $"v{Utility.Version.MajorMinorVersion}";
+
+            // 资源包的下载地址和备用下载地址，格式如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
+            var downloadUrl       = string.Format(updateConfig.ResDownloadUrl,       version);
+            var downloadBackupUrl = string.Format(updateConfig.ResDownloadBackupUrl, version);
             FuLogger.LogInfo($"资源包的下载地址：{downloadUrl}，备用下载地址：{downloadBackupUrl}");
 
             // 初始化默认资源包
             await GlobalModule.AssetModule.InitDefaultPackageAsync(downloadUrl, downloadBackupUrl);
 
             // 移除流程中的保存的下载地址数据
-            Fsm.RemoveData("ResDownloadUrl");
-            Fsm.RemoveData("ResDownloadBackupUrl");
+            // Fsm.RemoveData("ResDownloadUrl");
+            // Fsm.RemoveData("ResDownloadBackupUrl");
 
             // 等待一帧
             await UniTask.NextFrame();

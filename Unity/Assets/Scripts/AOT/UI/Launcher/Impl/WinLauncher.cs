@@ -1,6 +1,9 @@
+using System;
 using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
+using FuFramework.Launcher.Runtime;
+using FuFramework.Localization.Runtime;
 using FuFramework.UI.Runtime;
 using Launcher.Procedure;
 
@@ -65,46 +68,44 @@ namespace Launcher.UI
         public void SetTipText(string text) => txtTips.text = text;
 
         /// <summary>
-        /// 设置更新弹框状态
+        /// 设置是否显示更新提示框
         /// </summary>
-        /// <param name="isNeedUpgrade">是否需要更新</param>
-        public void SetUpdateSureUIState(bool isNeedUpgrade) => SetController(isNeedUpgrade ? EIsNeedUpgrade.Yes : EIsNeedUpgrade.No);
+        /// <param name="needUpgrade">是否完成更新</param>
+        public void SetUpdateSureUIState(bool needUpgrade) => SetController(needUpgrade ? EIsNeedUpgrade.Yes : EIsNeedUpgrade.No);
 
         /// <summary>
-        /// 设置更新进度状态
+        /// 设置是否显示更新进度
         /// </summary>
         /// <param name="isFinish">是否完成更新</param>
         public void SetUpdateProgressState(bool isFinish) => SetController(isFinish ? EIsDownloading.No : EIsDownloading.Yes);
 
         /// <summary>
-        /// 设置更新进度
+        /// 显示更新提示框
         /// </summary>
-        /// <param name="progress"></param>
-        public void SetUpdateProgress(float progress) => progressBar.value = progress;
+        /// <param name="content">更新内容</param>
+        /// <param name="updateBtnClickCallback">更新按钮点击事件</param>
+        public void ShowUpdateDialog(string content, Action updateBtnClickCallback)
+        {
+            // 打开更新提示框
+            SetUpdateSureUIState(true);
 
-        /// <summary>
-        /// 设置更新按钮文本
-        /// </summary>
-        /// <param name="text"></param>
-        public void SetUpdateBtnTitle(string text) => btnOk.title = text;
+            // 设置更新提示框
+            var isChinese = GlobalModule.LocalizationModule.Language == ELanguage.ChineseSimplified ||
+                            GlobalModule.LocalizationModule.Language == ELanguage.ChineseTraditional;
 
-        /// <summary>
-        /// 设置更新提示文本
-        /// </summary>
-        /// <param name="text"></param>
-        public void SetUpdateTipText(string text) => txtContent.text = text;
+            btnOk.title     = isChinese ? "更新" : "Update";
+            txtContent.text = content;
 
-        /// <summary>
-        /// 设置更新提示文本点击事件
-        /// </summary>
-        /// <param name="onClick">点击事件</param>
-        public void SetUpdateTipTextOnClick(EventCallback1 onClick) => txtContent.onClick.Set(onClick);
+            // 设置更新内容文本点击回调
+            txtContent.onClick.Set(context =>
+            {
+                if (context.data != null)
+                    Utility.Application.OpenURL(context.data.ToString());
+            });
 
-        /// <summary>
-        /// 设置更新按钮点击事件
-        /// </summary>
-        /// <param name="onClick">点击事件</param>
-        public void SetUpdateBtnOnClick(EventCallback0 onClick) => _btnOkClick = onClick;
+            // 设置更新按钮点击回调
+            _btnOkClick = () => { updateBtnClickCallback?.Invoke(); };
+        }
 
         /// <summary>
         /// 资源下载进度更新事件
@@ -118,8 +119,8 @@ namespace Launcher.UI
             var progress      = message.CurrentDownloadSizeBytes / (message.TotalDownloadSizeBytes * 1f);
             var currentSizeMb = Utility.File.GetBytesSizeWithUnit(message.CurrentDownloadSizeBytes);
             var totalSizeMb   = Utility.File.GetBytesSizeWithUnit(message.TotalDownloadSizeBytes);
-            SetUpdateProgress(progress * 100);
-            SetTipText($"Downloading {currentSizeMb}/{totalSizeMb}");
+            progressBar.value = progress * 100;
+            SetTipText($"Downloading：{currentSizeMb}/{totalSizeMb}");
         }
 
         #region 交互事件与ListItem渲染回调处理

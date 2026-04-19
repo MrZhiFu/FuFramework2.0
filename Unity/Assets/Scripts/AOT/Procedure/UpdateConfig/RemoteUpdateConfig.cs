@@ -9,14 +9,14 @@ namespace Launcher.Procedure
     public sealed class RemoteUpdateConfig
     {
         /// <summary>
-        /// 是否显示更新提示
-        /// </summary>
-        public bool ShowUpgrade { get; set; }
-
-        /// <summary>
         /// 是否强更
         /// </summary>
-        public bool IsForce { get; set; }
+        public bool ForceUpdate { get; set; }
+
+        /// <summary>
+        /// 是否显示更新提示
+        /// </summary>
+        public bool ShowUpdateTips { get; set; }
 
         /// <summary>
         /// 更新公告

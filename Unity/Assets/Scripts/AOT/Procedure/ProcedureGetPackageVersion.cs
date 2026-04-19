@@ -45,14 +45,14 @@ namespace Launcher.Procedure
         {
             var package = GlobalModule.AssetModule.GetDefaultPackage();
 
-            // 离线单机模式下请求的是应用程序内保存的版本号，版本号会随着YooAsset的打包一起生成，一般存放在StreamingAssets/yoo目录下，
-            // 热更模式下请求的是资源服务器上的版本号，版本号会随着YooAsset的打包一起生成，一般存放在AssetBundle服务器上
+            // 离线单机模式下请求的是应用程序内保存的版本号，版本号会随着YooAsset的打包一起生成，一般存放在StreamingAssets/yoo目录下，YooAsset会自动读取。
+            // 热更模式下请求的是资源服务器上的版本号，版本号会随着YooAsset的打包一起生成，一般存放在AssetBundle服务器上，YooAsset会自动读取。
             var operation = package.RequestPackageVersionAsync();
             await operation;
 
             if (operation.Status == EOperationStatus.Succeed)
             {
-                // 获取成功，保存版本号到流程中的Data变量"PackageVersion“中，用于后续更新资源清单流程
+                // 获取成功，保存版本号到流程中的数据中，用于后续更新资源清单流程
                 var versionStr = ReferencePool.Acquire<VarString>();
                 versionStr.SetValue(operation.PackageVersion);
                 Fsm.SetData("PackageVersion", versionStr);

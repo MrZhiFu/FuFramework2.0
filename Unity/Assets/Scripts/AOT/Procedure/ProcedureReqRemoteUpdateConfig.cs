@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
-using FuFramework.Localization.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.Variable.Runtime;
@@ -86,17 +85,19 @@ namespace Launcher.Procedure
                     return;
                 }
 
-                // 设置资源下载地址
-                SetResDownloadUrl();
+                // 设置资源更新配置到流程数据中
+                var updateConfig = ReferencePool.Acquire<VarObject>();
+                updateConfig.SetValue(m_UpdateConfig);
+                Fsm.SetData("UpdateConfig", updateConfig);
 
-                // 显示更新提示框
-                if (m_UpdateConfig.ShowUpgrade)
+                // 强更：显示强更提示框，点击更新按钮后打开下载安装包地址
+                if (m_UpdateConfig.ForceUpdate)
                 {
-                    ShowUpdateDialog();
+                    m_WinLauncher.ShowUpdateDialog(m_UpdateConfig.UpdateAnnouncement, () => { Application.OpenURL(m_UpdateConfig.AppDownloadUrl); });
                     return;
                 }
 
-                // 不显示更新提示框，进入初始化资源包流程
+                // 非强更：进入初始化资源包流程
                 ChangeState<ProcedureInitPackage>();
             }
             catch (Exception e)
@@ -118,82 +119,6 @@ namespace Launcher.Procedure
         {
             var json = await GlobalModule.WebModule.GetToString(configUrl);
             return Utility.Json.ToObject<RemoteUpdateConfig>(json.Result);
-        }
-
-        /// <summary>
-        /// 设置资源下载地址
-        /// </summary>
-        private void SetResDownloadUrl()
-        {
-            // App主次版本号：如V1.0
-            var version = $"v{Utility.Version.MajorMinorVersion}";
-
-            // 保存资源下载路径到流程管理模块的Data变量("ResDownloadUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
-            var resDownloadUrl = ReferencePool.Acquire<VarString>();
-            resDownloadUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadUrl, version));
-            Fsm.SetData("ResDownloadUrl", resDownloadUrl);
-
-            // 保存备用资源下载路径到流程管理模块的Data变量("ResDownloadBackupUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
-            var resDownloadBackupUrl = ReferencePool.Acquire<VarString>();
-            resDownloadBackupUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadBackupUrl, version));
-            Fsm.SetData("ResDownloadBackupUrl", resDownloadBackupUrl);
-        }
-
-        /// <summary>
-        /// 显示更新提示框
-        /// </summary>
-        private void ShowUpdateDialog()
-        {
-            // 打开更新提示框
-            m_WinLauncher.SetUpdateSureUIState(true);
-
-            // 设置更新提示框
-            SetupUpdateUI();
-
-            // 设置更新提示框回调
-            SetupUpdateCallbacks();
-        }
-
-        /// <summary>
-        /// 设置更新提示框UI
-        /// </summary>
-        private void SetupUpdateUI()
-        {
-            var isChinese = GlobalModule.LocalizationModule.Language == ELanguage.ChineseSimplified ||
-                            GlobalModule.LocalizationModule.Language == ELanguage.ChineseTraditional;
-
-            m_WinLauncher.SetUpdateBtnTitle(isChinese ? "更新" : "Update");
-            m_WinLauncher.SetUpdateTipText(m_UpdateConfig.UpdateAnnouncement);
-        }
-
-        /// <summary>
-        /// 设置更新提示框回调
-        /// </summary>
-        private void SetupUpdateCallbacks()
-        {
-            // 点击更新内容文本，打开对应的内容说明Url
-            m_WinLauncher.SetUpdateTipTextOnClick(context =>
-            {
-                if (context.data != null)
-                    Application.OpenURL(context.data.ToString());
-            });
-
-            // 点击更新按钮，如果是强更，打开下载安装包地址，否则执行存入下载地址和备用下载地址后进入初始化资源包流程
-            m_WinLauncher.SetUpdateBtnOnClick(() =>
-            {
-                if (m_UpdateConfig.IsForce)
-                {
-                    Application.OpenURL(m_UpdateConfig.AppDownloadUrl);
-                }
-                else
-                {
-                    // 关闭更新提示框
-                    m_WinLauncher.SetUpdateSureUIState(false);
-
-                    // 进入初始化资源包流程
-                    ChangeState<ProcedureInitPackage>();
-                }
-            });
         }
     }
 }
