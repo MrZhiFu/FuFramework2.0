@@ -41,16 +41,5 @@ namespace FuFramework.Core.Editor
         /// 编译完成事件。
         /// </summary>
         protected virtual void OnCompileComplete() { }
-        
-        /// <summary>
-        /// 判断游戏对象是否是预制体。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        protected bool IsPrefabInHierarchy(UnityEngine.Object obj)
-        {
-            if (!obj) return false;
-            return PrefabUtility.GetPrefabAssetType(obj) != PrefabAssetType.Regular;
-        }
     }
 }
