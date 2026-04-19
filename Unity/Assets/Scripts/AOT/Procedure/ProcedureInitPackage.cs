@@ -29,14 +29,14 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入热更流程：初始化资源包------</color>");
 
-            // 初始化资源包
-            InitPackage().Forget();
+            // 异步初始化资源包
+            InitPackageAsync().Forget();
         }
 
         /// <summary>
-        /// 初始化资源包
+        /// 异步初始化资源包
         /// </summary>
-        private async UniTaskVoid InitPackage()
+        private async UniTaskVoid InitPackageAsync()
         {
             // 编辑器模拟模式/单机离线模式下，初始化完毕后直接进入获取资源版本号流程
             if (GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode)
@@ -49,12 +49,12 @@ namespace Launcher.Procedure
 
             // 热更模式下
             // 获取资源包的下载地址和备用下载地址
-            var downloadUrl       = Fsm.GetData<VarString>("ResDownloadUrl");
-            var downloadBackupUrl = Fsm.GetData<VarString>("ResDownloadBackupUrl");
-            FuLogger.LogInfo($"资源包的下载地址：{downloadUrl}, 备用下载地址：{downloadBackupUrl}");
+            var downloadUrl       = Fsm.GetData<VarString>("ResDownloadUrl").Value;
+            var downloadBackupUrl = Fsm.GetData<VarString>("ResDownloadBackupUrl").Value;
+            FuLogger.LogInfo($"资源包的下载地址：{downloadUrl}，备用下载地址：{downloadBackupUrl}");
 
             // 初始化默认资源包
-            await GlobalModule.AssetModule.InitDefaultPackageAsync(downloadUrl.Value, downloadBackupUrl.Value);
+            await GlobalModule.AssetModule.InitDefaultPackageAsync(downloadUrl, downloadBackupUrl);
 
             // 移除流程中的保存的下载地址数据
             Fsm.RemoveData("ResDownloadUrl");

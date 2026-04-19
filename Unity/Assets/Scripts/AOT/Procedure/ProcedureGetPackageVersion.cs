@@ -33,15 +33,15 @@ namespace Launcher.Procedure
             var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.GetVersion);
             GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
-            // 获取资源的版本号
-            GetVersion().Forget();
+            // 异步获取资源的版本号
+            GetVersionAsync().Forget();
         }
 
         /// <summary>
-        /// 获取资源的版本号
+        /// 异步获取资源的版本号
         /// </summary>
         /// <returns></returns>
-        private async UniTaskVoid GetVersion()
+        private async UniTaskVoid GetVersionAsync()
         {
             var package = GlobalModule.AssetModule.GetDefaultPackage();
 
@@ -72,7 +72,7 @@ namespace Launcher.Procedure
 
                 // 延迟3秒后重试
                 await UniTask.WaitForSeconds(3);
-                GetVersion().Forget();
+                GetVersionAsync().Forget();
             }
         }
     }

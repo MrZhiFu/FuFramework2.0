@@ -40,8 +40,8 @@ namespace Launcher.Procedure
             // 绑定自动生成的Fui自定义组件(AOT下)
             BindCustomComps();
 
-            // 启动流程
-            Start().Forget();
+            // 异步启动流程
+            StartAsync().Forget();
         }
 
         //@formatter:off
@@ -56,9 +56,9 @@ namespace Launcher.Procedure
         //@formatter:on
 
         /// <summary>
-        /// 进入获取全局信息流程。
+        /// 异步启动流程。
         /// </summary>
-        private async UniTaskVoid Start()
+        private async UniTaskVoid StartAsync()
         {
             await UniTask.NextFrame();
 

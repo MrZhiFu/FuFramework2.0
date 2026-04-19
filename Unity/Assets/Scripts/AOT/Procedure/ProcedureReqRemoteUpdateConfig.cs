@@ -89,14 +89,14 @@ namespace Launcher.Procedure
                 // 设置资源下载地址
                 SetResDownloadUrl();
 
-                // 需要更新，显示更新提示框
-                if (m_UpdateConfig.IsUpgrade)
+                // 显示更新提示框
+                if (m_UpdateConfig.ShowUpgrade)
                 {
                     ShowUpdateDialog();
                     return;
                 }
 
-                // 不需要更新，进入初始化资源包流程
+                // 不显示更新提示框，进入初始化资源包流程
                 ChangeState<ProcedureInitPackage>();
             }
             catch (Exception e)
@@ -118,6 +118,25 @@ namespace Launcher.Procedure
         {
             var json = await GlobalModule.WebModule.GetToString(configUrl);
             return Utility.Json.ToObject<RemoteUpdateConfig>(json.Result);
+        }
+
+        /// <summary>
+        /// 设置资源下载地址
+        /// </summary>
+        private void SetResDownloadUrl()
+        {
+            // App主次版本号：如V1.0
+            var version = $"v{Utility.Version.MajorMinorVersion}";
+
+            // 保存资源下载路径到流程管理模块的Data变量("ResDownloadUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
+            var resDownloadUrl = ReferencePool.Acquire<VarString>();
+            resDownloadUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadUrl, version));
+            Fsm.SetData("ResDownloadUrl", resDownloadUrl);
+
+            // 保存备用资源下载路径到流程管理模块的Data变量("ResDownloadBackupUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
+            var resDownloadBackupUrl = ReferencePool.Acquire<VarString>();
+            resDownloadBackupUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadBackupUrl, version));
+            Fsm.SetData("ResDownloadBackupUrl", resDownloadBackupUrl);
         }
 
         /// <summary>
@@ -175,25 +194,6 @@ namespace Launcher.Procedure
                     ChangeState<ProcedureInitPackage>();
                 }
             });
-        }
-
-        /// <summary>
-        /// 设置资源下载地址
-        /// </summary>
-        private void SetResDownloadUrl()
-        {
-            // App主次版本号：如V1.0
-            var version = $"v{Utility.Version.MajorMinorVersion}";
-
-            // 保存资源下载路径到流程管理模块的Data变量("ResDownloadUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
-            var resDownloadUrl = ReferencePool.Acquire<VarString>();
-            resDownloadUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadUrl, version));
-            Fsm.SetData("ResDownloadUrl", resDownloadUrl);
-
-            // 保存备用资源下载路径到流程管理模块的Data变量("ResDownloadBackupUrl")中，如：http://127.0.0.1:8080/CDN/Android/{v1.0}/
-            var resDownloadBackupUrl = ReferencePool.Acquire<VarString>();
-            resDownloadBackupUrl.SetValue(string.Format(m_UpdateConfig.ResDownloadBackupUrl, version));
-            Fsm.SetData("ResDownloadBackupUrl", resDownloadBackupUrl);
         }
     }
 }

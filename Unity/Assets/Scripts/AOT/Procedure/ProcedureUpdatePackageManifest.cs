@@ -34,15 +34,15 @@ namespace Launcher.Procedure
             var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.UpdateManifest);
             GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
-            // 更新资源清单
-            UpdateManifest().Forget();
+            // 异步更新资源清单
+            UpdateManifestAsync().Forget();
         }
 
         /// <summary>
-        /// 更新资源清单
+        /// 异步更新资源清单
         /// </summary>
         /// <returns></returns>
-        private async UniTaskVoid UpdateManifest()
+        private async UniTaskVoid UpdateManifestAsync()
         {
             var defaultPackage = GlobalModule.AssetModule.GetDefaultPackage();
             var versionStr     = Fsm.GetData<VarString>("PackageVersion");

@@ -9,9 +9,9 @@ namespace Launcher.Procedure
     public sealed class RemoteUpdateConfig
     {
         /// <summary>
-        /// 是否需要更新
+        /// 是否显示更新提示
         /// </summary>
-        public bool IsUpgrade { get; set; }
+        public bool ShowUpgrade { get; set; }
 
         /// <summary>
         /// 是否强更

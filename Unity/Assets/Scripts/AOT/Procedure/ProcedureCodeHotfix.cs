@@ -35,13 +35,15 @@ namespace Launcher.Procedure
         {
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
-            Start().Forget();
+
+            // 开始异步代码热修复
+            StartAsync().Forget();
         }
 
         /// <summary>
-        /// 开始代码热修复
+        /// 开始异步代码热修复
         /// </summary>
-        private static async UniTaskVoid Start()
+        private static async UniTaskVoid StartAsync()
         {
             // 等待一帧，确保热更完毕
             await UniTask.NextFrame();

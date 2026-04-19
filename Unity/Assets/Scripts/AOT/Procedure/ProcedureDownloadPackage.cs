@@ -34,15 +34,15 @@ namespace Launcher.Procedure
             var updateStateChangeEvent = AssetUpdateStateChangeEventArgs.Create(GlobalModule.AssetModule.DefaultPackageName, EUpdateStates.Download);
             GlobalModule.EventModule.Broadcast(this, updateStateChangeEvent);
 
-            // 开始下载热更资源包
-            BeginDownload().Forget();
+            // 开始异步下载热更资源包
+            BeginDownloadAsync().Forget();
         }
 
         /// <summary>
-        /// 开始下载热更资源包
+        /// 开始异步下载热更资源包
         /// </summary>
         /// <returns></returns>
-        private async UniTaskVoid BeginDownload()
+        private async UniTaskVoid BeginDownloadAsync()
         {
             // 获取下载器
             if (Fsm.GetData<VarObject>("Downloader").GetValue() is not ResourceDownloaderOperation downloader)
