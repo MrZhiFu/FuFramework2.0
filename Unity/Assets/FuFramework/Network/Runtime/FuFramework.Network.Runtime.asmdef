@@ -2,11 +2,11 @@
     "name": "FuFramework.Network.Runtime",
     "rootNamespace": "",
     "references": [
-        "UnityWebSocket.Runtime",
-        "ProtoBuffer.Runtime",
-        "FuFramework.Core.Runtime",
-        "FuFramework.Event.Runtime",
-        "FuFramework.ReferencePool.Runtime"
+        "GUID:2ffae1f2d1333814d86d3488355143ab",
+        "GUID:637d0a9a943ee7d4a83d2a769ccbfbe1",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
+        "GUID:c53d9b5cc6e841f49a053d96fb6d18c2",
+        "GUID:e4e4d912961bd2b40b157a8b70591522"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

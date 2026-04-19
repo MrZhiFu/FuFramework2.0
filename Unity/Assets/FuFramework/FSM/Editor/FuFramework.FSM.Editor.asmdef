@@ -2,9 +2,9 @@
     "name": "FuFramework.FSM.Editor",
     "rootNamespace": "",
     "references": [
-        "FuFramework.Core.Editor",
-        "FuFramework.FSM.Runtime",
-        "FuFramework.Core.Runtime"
+        "GUID:0a9d5953f93fd5c4f9938a3d5a3e1c3d",
+        "GUID:2bd115c383da70644a7860b160235de7",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c"
     ],
     "includePlatforms": [
         "Editor"

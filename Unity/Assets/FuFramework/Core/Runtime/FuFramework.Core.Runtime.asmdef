@@ -2,9 +2,9 @@
     "name": "FuFramework.Core.Runtime",
     "rootNamespace": "",
     "references": [
-        "UniTask",
-        "FairyGUI",
-        "BetterStreamingAssets"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:8c8f9d96103e94a7da84b012fd7e9f13",
+        "GUID:5e90fee04fdf7164fa71eeef34c6a431"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

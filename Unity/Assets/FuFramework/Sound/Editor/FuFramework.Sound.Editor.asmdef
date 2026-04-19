@@ -2,9 +2,9 @@
     "name": "FuFramework.Sound.Editor",
     "rootNamespace": "",
     "references": [
-        "FuFramework.Core.Editor",
-        "FuFramework.Core.Runtime",
-        "FuFramework.Sound.Runtime"
+        "GUID:0a9d5953f93fd5c4f9938a3d5a3e1c3d",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
+        "GUID:c99c0dc6f0098c041b2709788becee69"
     ],
     "includePlatforms": [
         "Editor"

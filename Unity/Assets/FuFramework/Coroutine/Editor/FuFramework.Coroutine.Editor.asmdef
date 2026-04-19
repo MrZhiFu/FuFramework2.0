@@ -2,9 +2,9 @@
     "name": "FuFramework.Coroutine.Editor",
     "rootNamespace": "",
     "references": [
-        "FuFramework.Core.Editor",
-        "FuFramework.Core.Runtime",
-        "FuFramework.Coroutine.Runtime"
+        "GUID:0a9d5953f93fd5c4f9938a3d5a3e1c3d",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
+        "GUID:a367ea280589ce54b9af1e093f449bd2"
     ],
     "includePlatforms": [
         "Editor"

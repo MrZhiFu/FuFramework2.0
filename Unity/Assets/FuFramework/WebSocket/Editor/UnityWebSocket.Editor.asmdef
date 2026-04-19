@@ -1,9 +1,9 @@
 {
     "name": "UnityWebSocket.Editor",
+    "rootNamespace": "",
     "references": [
-        "UnityWebSocket.Runtime"
+        "GUID:637d0a9a943ee7d4a83d2a769ccbfbe1"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -12,5 +12,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

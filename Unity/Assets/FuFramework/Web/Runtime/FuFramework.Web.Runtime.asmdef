@@ -2,9 +2,9 @@
     "name": "FuFramework.Web.Runtime",
     "rootNamespace": "",
     "references": [
-        "ProtoBuffer.Runtime",
-        "FuFramework.Core.Runtime",
-        "FuFramework.Network.Runtime"
+        "GUID:2ffae1f2d1333814d86d3488355143ab",
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
+        "GUID:0b5994ea278bae44883485860530ae60"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

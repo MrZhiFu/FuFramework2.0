@@ -2,8 +2,8 @@
     "name": "FuFramework.Procedure.Runtime",
     "rootNamespace": "",
     "references": [
-        "FuFramework.Core.Runtime",
-        "FuFramework.FSM.Runtime"
+        "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
+        "GUID:2bd115c383da70644a7860b160235de7"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
