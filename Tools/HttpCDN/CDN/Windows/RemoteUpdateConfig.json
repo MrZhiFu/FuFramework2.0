@@ -1,0 +1,8 @@
+{
+  "ForceUpdate": false,
+  "ShowUpdateTips": true,
+  "UpdateAnnouncement": "发现新版本，更新以获得更好体验！\n1. 优化游戏性能\n2. 修复已知问题\n3. 新增活动玩法",
+  "AppDownloadUrl": "http://127.0.0.1:8080",
+  "ResDownloadUrl": "http://127.0.0.1:8080/CDN/Windows/{0}/",
+  "ResDownloadBackupUrl": "http://127.0.0.1:8080/CDN/Windows/{0}/"
+}
