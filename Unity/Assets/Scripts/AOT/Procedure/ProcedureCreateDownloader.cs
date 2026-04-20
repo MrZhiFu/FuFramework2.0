@@ -97,7 +97,7 @@ namespace Launcher.Procedure
 
             var totalDownloadCount = downloader.TotalDownloadCount;
             var totalDownloadBytes = downloader.TotalDownloadBytes;
-            FuLogger.LogInfo($"一共'{totalDownloadCount}'个资源需要更新下载， 总大小为'{totalDownloadBytes}Byte'。");
+            FuLogger.LogInfo($"一共'{totalDownloadCount}'个资源需要更新下载， 总大小为'{totalDownloadBytes} Byte'。");
 
             // 广播发现需要更新的资源事件
             var foundNeedUpdateAssetEventArgs = FoundNeedUpdateAssetEventArgs.Create(downloader.PackageName, totalDownloadCount, totalDownloadBytes);
