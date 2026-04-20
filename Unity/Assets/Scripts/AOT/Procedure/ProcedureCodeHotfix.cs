@@ -6,6 +6,7 @@ using FuFramework.Launcher.Runtime;
 using FuFramework.Procedure.Runtime;
 using HybridCLR;
 using Launcher.UI;
+using YooAsset;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Launcher.Procedure
@@ -69,10 +70,10 @@ namespace Launcher.Procedure
         /// </summary>
         public static async UniTask<Assembly> LoadDll()
         {
-            // 编辑器模式下，直接使用当前程序集
-            FuLogger.LogInfo("-------------编辑器模式下，直接使用当前程序集-----------------");
-            if (Utility.Application.IsEditor)
+            // 编辑器模式 且 资源加载在编辑器模拟模式下，直接使用当前程序集
+            if (Utility.Application.IsEditor && GlobalModule.AssetModule.PlayMode is EPlayMode.EditorSimulateMode)
             {
+                FuLogger.LogInfo("-------------编辑器模式下，直接使用编辑器下的程序集-----------------");
                 var assemblies = Utility.Assembly.GetAssemblies();
                 foreach (var assembly in assemblies)
                 {
