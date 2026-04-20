@@ -17,4 +17,4 @@ MonoBehaviour:
   m_DownloadingMaxNum: 10
   m_FailedTryAgainNum: 3
   m_AsyncSystemMaxSlicePerFrame: 30
-  m_ResCdnRootURL: http://localhost:8080/
+  m_ResCdnRootURL: http://localhost:8080/CDN/
