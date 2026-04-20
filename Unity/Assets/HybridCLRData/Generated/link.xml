@@ -101,7 +101,7 @@
     <type fullname="FuFramework.Web.Runtime.WebModule" preserve="all" />
   </assembly>
   <assembly fullname="Game.AOT">
-    <type fullname="Launcher.Procedure.LauncherUIHelper" preserve="all" />
+    <type fullname="Launcher.UI.WinLauncher" preserve="all" />
   </assembly>
   <assembly fullname="Luban.Runtime">
     <type fullname="Luban.BeanBase" preserve="all" />
