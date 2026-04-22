@@ -14,7 +14,6 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
   - `HostPlayMode`: 联机模式，支持资源热更新。
   - `WebPlayMode`: WebGL 模式，支持微信/字节小游戏适配。
 - **资源注册器**：提供 `AssetLoadRegister` 辅助类，方便在特定业务逻辑中加载资源并管理其引用与释放。
-- **完善的事件系统**：提供热更新流程中各个阶段的事件通知（下载进度、状态变更、错误处理等）。
 - **引用池集成**：`AssetLoadRegister` 实现 `IReference` 接口，支持引用池管理。
 
 ## 3. 核心类说明
@@ -36,8 +35,7 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 #### 初始化流程
 
 1. 从 `AssetSetting` 读取配置参数
-2. 根据平台自动调整运行模式（非编辑器环境下强制切换到 HostPlayMode，WebGL 强制 WebPlayMode）
-3. 初始化 YooAsset 并设置异步系统参数
+2. 初始化 YooAsset 并设置异步系统参数
 
 #### 资源加载方法
 
@@ -165,43 +163,7 @@ loader.Release();
 - `Download` - 下载远端文件
 - `UpdateDone` - 更新流程完毕
 
-## 4. 事件系统
-
-模块提供了丰富的事件用于构建热更新 UI：
-
-| 事件类                                       | 说明        | 主要属性                                                                                                              |
-| ----------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `AssetDownloadProgressUpdateEventArgs`    | 下载进度更新    | `PackageName`, `TotalDownloadCount`, `CurrentDownloadCount`, `TotalDownloadSizeBytes`, `CurrentDownloadSizeBytes` |
-| `AssetPatchStatesChangeEventArgs`         | 补丁流程状态变更  | `PackageName`, `CurrentStates`                                                                                    |
-| `AssetFoundUpdateFilesEventArgs`          | 发现更新文件    | `PackageName`, `TotalCount`, `TotalSizeBytes`                                                                     |
-| `AssetPatchManifestUpdateFailedEventArgs` | 补丁清单更新失败  | `PackageName`, `Error`                                                                                            |
-| `AssetStaticVersionUpdateFailedEventArgs` | 资源版本号更新失败 | `PackageName`, `Error`                                                                                            |
-| `AssetWebFileDownloadFailedEventArgs`     | 网络文件下载失败  | `PackageName`, `FileName`, `Error`                                                                                |
-
-### 事件使用示例
-
-```csharp
-// 监听下载进度
-EventManager.Instance.Subscribe(AssetDownloadProgressUpdateEventArgs.EventId, OnDownloadProgress);
-
-void OnDownloadProgress(object sender, GameEventArgs e)
-{
-    var args = (AssetDownloadProgressUpdateEventArgs)e;
-    float progress = (float)args.CurrentDownloadSizeBytes / args.TotalDownloadSizeBytes;
-    Debug.Log($"[{args.PackageName}] 下载进度: {progress:P2} ({args.CurrentDownloadCount}/{args.TotalDownloadCount})");
-}
-
-// 监听状态变更
-EventManager.Instance.Subscribe(AssetPatchStatesChangeEventArgs.EventId, OnStateChange);
-
-void OnStateChange(object sender, GameEventArgs e)
-{
-    var args = (AssetPatchStatesChangeEventArgs)e;
-    Debug.Log($"[{args.PackageName}] 状态变更为: {args.CurrentStates}");
-}
-```
-
-## 5. 运行模式详解
+## 4. 运行模式详解
 
 ### EditorSimulateMode（编辑器模拟模式）
 
@@ -228,7 +190,7 @@ void OnStateChange(object sender, GameEventArgs e)
 - 支持字节小游戏（`ENABLE_DOUYIN_MINI_GAME`）
 - 自动处理不同平台的文件系统
 
-## 6. 配置说明
+## 5. 配置说明
 
 资源系统的配置位于 `AssetSetting` (ScriptableObject) 中：
 
@@ -240,7 +202,7 @@ void OnStateChange(object sender, GameEventArgs e)
 | `FailedTryAgainNum`           | `int`       | 下载失败重试次数         |
 | `AsyncSystemMaxSlicePerFrame` | `int`       | 异步系统每帧最大时间切片（毫秒） |
 
-## 7. 使用示例
+## 6. 使用示例
 
 ### 初始化资源包
 
@@ -324,11 +286,9 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 
 ### 通用注意事项
 
-1. 编辑器模式下 `EditorSimulateMode` 在非编辑器环境会自动切换到 `HostPlayMode`
-2. WebGL 平台会自动强制使用 `WebPlayMode`
-3. 使用 `AssetLoadRegister` 时，重复加载同一资源会返回已缓存的句柄
-4. 资源句柄使用完毕后需要调用 `Release()` 释放，否则会导致内存泄漏
-5. 热更新流程需要通过事件系统监听各个阶段的状态
+1. 使用 `AssetLoadRegister` 时，重复加载同一资源会返回已缓存的句柄
+2. 资源句柄使用完毕后需要调用 `Release()` 释放，否则会导致内存泄漏
+3. 热更新流程需要通过事件系统监听各个阶段的状态
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
 
