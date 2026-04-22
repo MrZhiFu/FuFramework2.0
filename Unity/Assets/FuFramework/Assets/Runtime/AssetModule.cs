@@ -63,15 +63,6 @@ namespace FuFramework.Asset.Runtime
             FailedTryAgainNum           = assetSetting.FailedTryAgainNum;
             AsyncSystemMaxSlicePerFrame = assetSetting.AsyncSystemMaxSlicePerFrame;
 
-#if !UNITY_EDITOR
-            if (PlayMode == EPlayMode.EditorSimulateMode)
-            {
-                PlayMode = EPlayMode.HostPlayMode;
-            }
-    #if UNITY_WEBGL
-                PlayMode = EPlayMode.WebPlayMode;
-    #endif
-#endif
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
             // 初始化YooAsset
