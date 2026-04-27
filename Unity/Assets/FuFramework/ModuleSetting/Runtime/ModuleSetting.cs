@@ -1,5 +1,6 @@
 using UnityEngine;
 using FuFramework.Core.Runtime;
+using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ModuleSetting.Runtime
@@ -53,7 +54,7 @@ namespace FuFramework.ModuleSetting.Runtime
         [SerializeField] private EntitySetting m_EntitySetting;
 
         [Header("本地数据存储系统配置")]
-        [SerializeField] private DataSaveSetting m_DataSaveSetting;
+        [SerializeField] private StorageSetting m_StorageSetting;
 
         [Header("红点模块配置")]
         [SerializeField] private RedDotSetting m_RedDotSetting;
@@ -80,7 +81,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 获取本地存储系统配置
         /// </summary>
-        public DataSaveSetting DataSaveSetting => m_DataSaveSetting;
+        public StorageSetting StorageSetting => m_StorageSetting;
 
         /// <summary>
         /// 获取红点模块配置

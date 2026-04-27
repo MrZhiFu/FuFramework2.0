@@ -6,7 +6,7 @@ namespace FuFramework.ModuleSetting.Runtime
     /// <summary>
     /// 本地数据存储模块配置
     /// </summary>
-    public class DataSaveSetting : ScriptableObject
+    public class StorageSetting : ScriptableObject
     {
         /// <summary>
         /// 是否启用自动保存
@@ -26,7 +26,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 加密密钥
         /// </summary>
-        [SerializeField] private string m_EncryptKey = "FuFrameworkDataSaveKey";
+        [SerializeField] private string m_EncryptKey = "FuFrameworkStorageKey";
 
 
         /// <summary>
@@ -43,11 +43,11 @@ namespace FuFramework.ModuleSetting.Runtime
         /// 获取是否启用加密
         /// </summary>
         public bool EnableEncrypt => m_EnableEncrypt;
-        
+
         /// <summary>
         /// 获取加密密钥
         /// </summary>
-        public string EncryptKey => m_EncryptKey;   
+        public string EncryptKey => m_EncryptKey;
 
         /// <summary>
         /// 重置配置
@@ -57,7 +57,7 @@ namespace FuFramework.ModuleSetting.Runtime
             m_EnableAutoSave   = true;
             m_AutoSaveInterval = 300f;
             m_EnableEncrypt    = false;
-            m_EncryptKey       = "FuFrameworkDataSaveKey";
+            m_EncryptKey       = "FuFrameworkStorageKey";
         }
     }
 }

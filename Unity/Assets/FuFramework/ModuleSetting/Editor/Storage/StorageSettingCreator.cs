@@ -8,11 +8,11 @@ using FuFramework.ModuleSetting.Runtime;
 namespace FuFramework.ModuleSetting.Editor
 {
     /// <summary>
-    /// 本地数据存储配置-DataSaveSetting 创建器
+    /// 本地数据存储配置-StorageSetting 创建器
     /// </summary>
-    public static class DataSaveSettingCreator
+    public static class StorageSettingCreator
     {
-        private const string AssetName = "DataSaveSetting.asset";                          // 资源名称
+        private const string AssetName = "StorageSetting.asset";                           // 资源名称
         private const string AssetPath = "Assets/FuFramework/ModuleSetting/SettingAssets"; // 配置路径
 
         private static readonly string FullPath = $"{AssetPath}/{AssetName}"; // 完整路径
@@ -21,10 +21,10 @@ namespace FuFramework.ModuleSetting.Editor
         public static void CreateDefaultAssetSetting()
         {
             // 检查资源是否已存在
-            var existingSetting = AssetDatabase.LoadAssetAtPath<DataSaveSetting>(FullPath);
+            var existingSetting = AssetDatabase.LoadAssetAtPath<StorageSetting>(FullPath);
             if (existingSetting)
             {
-                EditorUtility.DisplayDialog("创建失败", "DataSaveSetting 资源已存在, 请勿重复创建!", "确定");
+                EditorUtility.DisplayDialog("创建失败", "StorageSetting 资源已存在, 请勿重复创建!", "确定");
                 Selection.activeObject = existingSetting;
                 EditorUtility.FocusProjectWindow();
                 return;
@@ -33,7 +33,7 @@ namespace FuFramework.ModuleSetting.Editor
             // 确保目录存在
             EnsureDirectoryExists(AssetPath);
 
-            var assetSetting = ScriptableObject.CreateInstance<DataSaveSetting>();
+            var assetSetting = ScriptableObject.CreateInstance<StorageSetting>();
             AssetDatabase.CreateAsset(assetSetting, FullPath);
             AssetDatabase.SaveAssets();
 
@@ -60,18 +60,18 @@ namespace FuFramework.ModuleSetting.Editor
         [MenuItem("FuFramework/框架模块配置/本地数据存储配置/查找", false, 12)]
         public static void FindAssetSetting()
         {
-            var guids = AssetDatabase.FindAssets("t:DataSaveSetting");
+            var guids = AssetDatabase.FindAssets("t:StorageSetting");
             if (guids.Length > 0)
             {
                 var path         = AssetDatabase.GUIDToAssetPath(guids[0]);
-                var assetSetting = AssetDatabase.LoadAssetAtPath<DataSaveSetting>(path);
+                var assetSetting = AssetDatabase.LoadAssetAtPath<StorageSetting>(path);
                 Selection.activeObject = assetSetting;
                 EditorUtility.FocusProjectWindow();
                 EditorGUIUtility.PingObject(assetSetting); // 高亮显示资源
             }
             else
             {
-                var createNew = EditorUtility.DisplayDialog("未找到资源", "未找到任何 DataSaveSetting 资源，是否创建新的？", "创建", "取消");
+                var createNew = EditorUtility.DisplayDialog("未找到资源", "未找到任何 StorageSetting 资源，是否创建新的？", "创建", "取消");
                 if (createNew) CreateDefaultAssetSetting();
             }
         }

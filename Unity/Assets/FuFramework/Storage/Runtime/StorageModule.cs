@@ -8,11 +8,11 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.SaveData.Runtime
 {
     /// <summary>
-    /// 本地存储数据管理模块。
+    /// 本地数据存储管理模块。
     /// 功能：
     ///     1. 负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
     /// </summary>
-    public sealed class DataSaveModule : FuModule
+    public sealed class StorageModule : FuModule
     {
         /// <summary>
         /// 数据根目录
@@ -27,7 +27,7 @@ namespace FuFramework.SaveData.Runtime
         /// <summary>
         /// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例
         /// </summary>
-        private readonly Dictionary<string, DataSaveHelper> m_Helpers = new();
+        private readonly Dictionary<string, StorageHelper> m_Helpers = new();
 
         /// <summary>
         /// 是否启用自动保存
@@ -61,11 +61,11 @@ namespace FuFramework.SaveData.Runtime
         protected override void OnInit()
         {
             // 读取系统配置
-            var dataSaveSetting = ModuleSetting.Runtime.ModuleSetting.Instance.DataSaveSetting;
-            m_EnableAutoSave   = dataSaveSetting.EnableAutoSave;
-            m_AutoSaveInterval = dataSaveSetting.AutoSaveInterval;
-            m_EnableEncryption = dataSaveSetting.EnableEncrypt;
-            m_EncryptKey       = dataSaveSetting.EncryptKey;
+            var storageSetting = ModuleSetting.Runtime.ModuleSetting.Instance.StorageSetting;
+            m_EnableAutoSave   = storageSetting.EnableAutoSave;
+            m_AutoSaveInterval = storageSetting.AutoSaveInterval;
+            m_EnableEncryption = storageSetting.EnableEncrypt;
+            m_EncryptKey       = storageSetting.EncryptKey;
 
             // 加载所有本地存储数据
             LoadAll();
@@ -106,7 +106,7 @@ namespace FuFramework.SaveData.Runtime
         /// </summary>
         /// <param name="fileName">文件名</param>
         /// <returns>数据辅助器实例</returns>
-        public DataSaveHelper GetOrCreateHelper(string fileName)
+        public StorageHelper GetOrCreateHelper(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[DataSaveModule] 文件名不能为空");
             if (m_Helpers.TryGetValue(fileName, out var helper)) return helper;
@@ -116,7 +116,7 @@ namespace FuFramework.SaveData.Runtime
             helperGo.transform.SetParent(transform);
             helperGo.transform.localScale = Vector3.one;
 
-            helper = helperGo.AddComponent<DataSaveHelper>();
+            helper = helperGo.AddComponent<StorageHelper>();
             helper.Init(fileName, m_EnableAutoSave, m_AutoSaveInterval, m_EnableEncryption, m_EncryptKey);
 
             m_Helpers[fileName] = helper;
@@ -128,7 +128,7 @@ namespace FuFramework.SaveData.Runtime
         /// </summary>
         /// <param name="fileName">文件名</param>
         /// <returns>数据辅助器</returns>
-        public DataSaveHelper GetHelper(string fileName)
+        public StorageHelper GetHelper(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[DataSaveModule] 文件名不能为空");
             return m_Helpers.GetValueOrDefault(fileName);
@@ -138,7 +138,7 @@ namespace FuFramework.SaveData.Runtime
         /// 获取所有本地存储数据辅助器
         /// </summary>
         /// <returns>辅助器字典</returns>
-        public Dictionary<string, DataSaveHelper> GetAllHelpers() => m_Helpers;
+        public Dictionary<string, StorageHelper> GetAllHelpers() => m_Helpers;
 
 
         /// <summary>

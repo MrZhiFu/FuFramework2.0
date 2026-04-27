@@ -51,7 +51,7 @@ namespace FuFramework.Launcher.Runtime
         private static SoundModule         m_SoundModule;         // 声音管理模块
         private static NetworkModule       m_NetworkModule;       // 网络管理模块
         private static WebModule           m_WebModule;           // Web管理模块
-        private static DataSaveModule      m_DataSaveModule;      // 本地持久化管理模块
+        private static StorageModule       m_StorageModule;       // 本地持久化管理模块
         private static ModelModule         m_ModelModule;         // 数据模型管理模块
         private static RedDotModule        m_RedDotModule;        // 红点管理模块
         private static GuideModule         m_GuideModule;         // 新手引导管理模块
@@ -152,7 +152,7 @@ namespace FuFramework.Launcher.Runtime
         /// <summary>
         /// 获取本地持久化管理模块。
         /// </summary>
-        public static DataSaveModule DataSaveModule => m_DataSaveModule ??= ModuleManager.GetModule<DataSaveModule>();
+        public static StorageModule StorageModule => m_StorageModule ??= ModuleManager.GetModule<StorageModule>();
 
         /// <summary>
         /// 获取数据模型管理模块。

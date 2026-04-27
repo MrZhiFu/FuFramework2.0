@@ -9,14 +9,14 @@ namespace FuFramework.SaveData.Editor
     /// <summary>
     /// 自定义本地数据存储管理模块的Inspector
     /// </summary>
-    [CustomEditor(typeof(DataSaveModule))]
-    internal sealed class SaveModuleInspector : FuFrameworkInspector
+    [CustomEditor(typeof(StorageModule))]
+    internal sealed class StorageModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            if (target is not DataSaveModule module) return;
+            if (target is not StorageModule module) return;
             if (!EditorApplication.isPlaying) return;
 
             EditorGUILayout.LabelField("当前所有数据文件数量", module.Count >= 0 ? module.Count.ToString() : "<Unknown>");

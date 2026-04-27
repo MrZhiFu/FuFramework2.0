@@ -9,8 +9,8 @@ namespace FuFramework.ModuleSetting.Editor
     /// <summary>
     /// 本地数据存储配置文件Inspector
     /// </summary>
-    [CustomEditor(typeof(DataSaveSetting))]
-    public class DataSaveSettingEditor : UnityEditor.Editor
+    [CustomEditor(typeof(StorageSetting))]
+    public class StorageSettingEditor : UnityEditor.Editor
     {
         private SerializedProperty m_EnableAutoSave;   // 自动保存开关
         private SerializedProperty m_AutoSaveInterval; // 自动保存间隔
@@ -35,8 +35,8 @@ namespace FuFramework.ModuleSetting.Editor
         {
             serializedObject.Update();
 
-            var dataSaveSetting = target as DataSaveSetting;
-            if (!dataSaveSetting) return;
+            var storageSetting = target as StorageSetting;
+            if (!storageSetting) return;
 
             // 自动保存开关
             EditorGUI.BeginChangeCheck();
@@ -71,7 +71,7 @@ namespace FuFramework.ModuleSetting.Editor
             }
 
             EditorGUILayout.Space(20);
-            
+
             // 加密密钥
             EditorGUI.BeginChangeCheck();
             var key = m_EncryptKey.stringValue;
@@ -83,7 +83,7 @@ namespace FuFramework.ModuleSetting.Editor
 
             // 重置配置
             if (GUILayout.Button("重置配置"))
-                dataSaveSetting.Reset();
+                storageSetting.Reset();
 
             serializedObject.ApplyModifiedProperties();
         }

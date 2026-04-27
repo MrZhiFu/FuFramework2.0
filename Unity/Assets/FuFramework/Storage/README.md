@@ -1,8 +1,8 @@
-# FuFramework DataSave Module
+# FuFramework Storage Module
 
 ## 1. 简介
 
-**FuFramework DataSave** 模块是框架的本地数据持久化解决方案，提供简单易用的 API 来管理游戏的本地存档、设置和用户数据。采用模块化设计，完美集成框架的生命周期管理。
+**FuFramework Storage** 模块是框架的本地数据持久化解决方案，提供简单易用的 API 来管理游戏的本地存档、设置和用户数据。采用模块化设计，完美集成框架的生命周期管理。
 
 ---
 
@@ -21,7 +21,7 @@
 
 ## 3. 核心类说明
 
-### 3.1 DataSaveModule
+### 3.1 StorageModule
 
 数据保存管理模块，继承自 `FuModule`，是数据保存的核心管理类。
 
@@ -41,13 +41,13 @@
 
 ```csharp
 // 获取或创建指定文件的数据辅助器
-DataSaveHelper GetOrCreateHelper(string fileName)
+StorageHelper GetOrCreateHelper(string fileName)
 
 // 获取指定文件的数据辅助器
-DataSaveHelper GetHelper(string fileName)
+StorageHelper GetHelper(string fileName)
 
 // 获取所有数据辅助器
-Dictionary<string, DataSaveHelper> GetAllHelpers()
+Dictionary<string, StorageHelper> GetAllHelpers()
 
 // 加载/保存指定文件的数据
 bool Load(string fileName = "DefaultData")
@@ -93,7 +93,7 @@ void SetObject<T>(string dataName, T obj, string fileName = "DefaultData")
 
 ---
 
-### 3.2 DataSaveHelper
+### 3.2 StorageHelper
 
 数据存储辅助器，继承自 `MonoBehaviour`，每个实例对应一个特定的数据文件。
 
@@ -219,30 +219,30 @@ void SetString(string dataName, string value)
 
 ```csharp
 using FuFramework.Core.Runtime;
-using FuFramework.SaveData.Runtime;
+using FuFramework.Storage.Runtime;
 
-public class GameSaveExample : MonoBehaviour
+public class GameStorageExample : MonoBehaviour
 {
-    private DataSaveModule m_SaveModule;
+    private StorageModule m_StorageModule;
     
     void Start()
     {
-        // 注册 DataSaveModule
-        ModuleManager.RegisterModule<DataSaveModule>();
-        m_SaveModule = ModuleManager.GetModule<DataSaveModule>();
+        // 注册 StorageModule
+        ModuleManager.RegisterModule<StorageModule>();
+        m_StorageModule = ModuleManager.GetModule<StorageModule>();
         
         // 保存基础类型数据
-        m_SaveModule.SetInt("PlayerLevel", 10);
-        m_SaveModule.SetBool("IsFirstTime", false);
-        m_SaveModule.SetFloat("Volume", 0.8f);
-        m_SaveModule.SetString("PlayerName", "Hero");
-        m_SaveModule.SetLong("PlayerExp", 999999999L);
+        m_StorageModule.SetInt("PlayerLevel", 10);
+        m_StorageModule.SetBool("IsFirstTime", false);
+        m_StorageModule.SetFloat("Volume", 0.8f);
+        m_StorageModule.SetString("PlayerName", "Hero");
+        m_StorageModule.SetLong("PlayerExp", 999999999L);
         
         // 读取基础类型数据（带默认值）
-        int level = m_SaveModule.GetInt("PlayerLevel");
-        bool isFirstTime = m_SaveModule.GetBool("IsFirstTime", true);
-        float volume = m_SaveModule.GetFloat("Volume", 1.0f);
-        string playerName = m_SaveModule.GetString("PlayerName", "Guest");
+        int level = m_StorageModule.GetInt("PlayerLevel");
+        bool isFirstTime = m_StorageModule.GetBool("IsFirstTime", true);
+        float volume = m_StorageModule.GetFloat("Volume", 1.0f);
+        string playerName = m_StorageModule.GetString("PlayerName", "Guest");
     }
 }
 ```
@@ -269,10 +269,10 @@ var playerInfo = new PlayerData
     Items = new List<string> { "Sword", "Shield", "Potion" }
 };
 
-m_SaveModule.SetObject("PlayerData", playerInfo);
+m_StorageModule.SetObject("PlayerData", playerInfo);
 
 // 读取复杂对象
-PlayerData data = m_SaveModule.GetObject<PlayerData>("PlayerData");
+PlayerData data = m_StorageModule.GetObject<PlayerData>("PlayerData");
 if (data != null)
 {
     Debug.Log($"Player: {data.Name}, Level: {data.Level}");
@@ -283,7 +283,7 @@ if (data != null)
 
 ```csharp
 // 创建指定文件名的数据辅助器
-var settingsHelper = m_SaveModule.GetOrCreateHelper("UserSettings");
+var settingsHelper = m_StorageModule.GetOrCreateHelper("UserSettings");
 
 // 对特定文件进行操作
 settingsHelper.SetInt("GraphicsQuality", 2);
@@ -291,7 +291,7 @@ settingsHelper.SetBool("Fullscreen", true);
 settingsHelper.SetFloat("MusicVolume", 0.5f);
 
 // 另一个文件存储游戏进度
-var progressHelper = m_SaveModule.GetOrCreateHelper("GameProgress");
+var progressHelper = m_StorageModule.GetOrCreateHelper("GameProgress");
 progressHelper.SetInt("CurrentLevel", 5);
 progressHelper.SetString("LastSaveTime", DateTime.Now.ToString());
 
@@ -300,7 +300,7 @@ settingsHelper.Save();
 progressHelper.Save();
 
 // 获取所有已加载的 Helper 名称
-string[] helperNames = m_SaveModule.GetAllHelperNames();
+string[] helperNames = m_StorageModule.GetAllHelperNames();
 foreach (var name in helperNames)
 {
     Debug.Log($"Data file: {name}");
@@ -311,7 +311,7 @@ foreach (var name in helperNames)
 
 ```csharp
 // 创建加密的数据辅助器
-var secureHelper = m_SaveModule.GetOrCreateHelper("UserAccount");
+var secureHelper = m_StorageModule.GetOrCreateHelper("UserAccount");
 
 // 通过配置文件启用加密（推荐）
 // 在 ModuleSetting 中设置 EnableEncrypt = true, EncryptKey = "YourSecretKey123"
@@ -320,32 +320,32 @@ var secureHelper = m_SaveModule.GetOrCreateHelper("UserAccount");
 // 注意：需要在 Init 之后设置，或重新创建 Helper
 
 // 保存敏感数据
-m_SaveModule.SetString("UserEmail", "user@example.com", "UserAccount");
-m_SaveModule.SetString("AccessToken", "encrypted_token_value", "UserAccount");
-m_SaveModule.SetBool("RememberPassword", true, "UserAccount");
+m_StorageModule.SetString("UserEmail", "user@example.com", "UserAccount");
+m_StorageModule.SetString("AccessToken", "encrypted_token_value", "UserAccount");
+m_StorageModule.SetBool("RememberPassword", true, "UserAccount");
 
 // 数据会自动加密保存到文件
-m_SaveModule.Save("UserAccount");
+m_StorageModule.Save("UserAccount");
 
 // 读取时自动解密
-string email = m_SaveModule.GetString("UserEmail", fileName: "UserAccount");
-string token = m_SaveModule.GetString("AccessToken", fileName: "UserAccount");
+string email = m_StorageModule.GetString("UserEmail", fileName: "UserAccount");
+string token = m_StorageModule.GetString("AccessToken", fileName: "UserAccount");
 ```
 
 ### 4.5 数据管理操作
 
 ```csharp
 // 检查数据是否存在
-bool hasLevel = m_SaveModule.HasData("PlayerLevel");
+bool hasLevel = m_StorageModule.HasData("PlayerLevel");
 
 // 删除指定数据
-bool removed = m_SaveModule.RemoveData("TempData");
+bool removed = m_StorageModule.RemoveData("TempData");
 
 // 清空所有数据（默认文件）
-m_SaveModule.RemoveAllData();
+m_StorageModule.RemoveAllData();
 
 // 清空指定文件的所有数据
-var helper = m_SaveModule.GetHelper("UserSettings");
+var helper = m_StorageModule.GetHelper("UserSettings");
 if (helper != null)
 {
     helper.RemoveAllData();
@@ -353,10 +353,10 @@ if (helper != null)
 }
 
 // 删除整个数据文件
-m_SaveModule.RemoveHelper("OldSaveData");
+m_StorageModule.RemoveHelper("OldStorageData");
 
 // 清空所有数据文件（危险操作）
-m_SaveModule.RemoveAllHelper();
+m_StorageModule.RemoveAllHelper();
 ```
 
 ### 4.6 自动保存机制
@@ -367,14 +367,14 @@ m_SaveModule.RemoveAllHelper();
 // AutoSaveInterval: 自动保存间隔（秒）
 
 // 手动检查是否有未保存的数据
-int dirtyCount = m_SaveModule.GetDirtyHelperCount();
+int dirtyCount = m_StorageModule.GetDirtyHelperCount();
 if (dirtyCount > 0)
 {
     Debug.Log($"有 {dirtyCount} 个数据文件需要保存");
 }
 
 // 检查指定 Helper 是否有未保存数据
-var helper = m_SaveModule.GetHelper("UserSettings");
+var helper = m_StorageModule.GetHelper("UserSettings");
 if (helper != null && helper.IsDirty)
 {
     Debug.Log("UserSettings 有未保存的修改");
@@ -382,16 +382,16 @@ if (helper != null && helper.IsDirty)
 }
 
 // 强制保存所有有未保存数据的 Helper
-m_SaveModule.SaveAll();
+m_StorageModule.SaveAll();
 ```
 
 ---
 
 ## 5. 编辑器功能
 
-### 5.1 SaveModuleInspector
+### 5.1 StorageModuleInspector
 
-`DataSaveModule` 的 Inspector 扩展，提供运行时数据查看功能。
+`StorageModule` 的 Inspector 扩展，提供运行时数据查看功能。
 
 **功能：**
 - 显示当前数据文件数量
@@ -401,12 +401,12 @@ m_SaveModule.SaveAll();
 
 **使用方法：**
 1. 在编辑器中运行游戏
-2. 在 Hierarchy 中找到 `[FrameworkModule]` 下的 `DataSaveModule`
+2. 在 Hierarchy 中找到 `[FrameworkModule]` 下的 `StorageModule`
 3. 选中后在 Inspector 面板查看数据信息
 
-### 5.2 SaveHelperInspector
+### 5.2 StorageHelperInspector
 
-`DataSaveHelper` 的 Inspector 扩展。
+`StorageHelper` 的 Inspector 扩展。
 
 **功能：**
 - 显示当前数据项数量
@@ -419,18 +419,18 @@ m_SaveModule.SaveAll();
 ## 6. 目录结构说明
 
 ```text
-DataSave/
+Storage/
 ├── Editor/                          # 编辑器扩展代码
 │   ├── Inspector/
-│   │   ├── SaveModuleInspector.cs   # DataSaveModule Inspector 扩展
-│   │   └── SaveHelperInspector.cs   # DataSaveHelper Inspector 扩展
-│   └── FuFramework.Save.Editor.asmdef
+│   │   ├── StorageModuleInspector.cs   # StorageModule Inspector 扩展
+│   │   └── StorageHelperInspector.cs   # StorageHelper Inspector 扩展
+│   └── FuFramework.Storage.Editor.asmdef
 ├── Runtime/                         # 运行时核心代码
-│   ├── DataSaveModule.cs            # 数据保存管理模块
-│   ├── DataSaveHelper.cs            # 数据存储辅助器
+│   ├── StorageModule.cs            # 数据保存管理模块
+│   ├── StorageHelper.cs            # 数据存储辅助器
 │   ├── Data.cs                      # 数据容器
 │   ├── DataSerializer.cs            # 数据序列化器
-│   └── FuFramework.DataSave.Runtime.asmdef
+│   └── FuFramework.Storage.Runtime.asmdef
 └── README.md                        # 本文档
 ```
 
@@ -450,7 +450,7 @@ Application.persistentDataPath/
 
 - **Unity**: 2021.3 LTS 或更高版本
 - **FuFramework.Core**: 框架核心模块
-- **FuFramework.Core.Utility.Encryption**: 加密功能模块（AES 加密支持）
+- **FuFramework.Utility.Encryption**: 加密功能模块（AES 加密支持）
 
 ---
 
@@ -462,13 +462,13 @@ Application.persistentDataPath/
 
 ```csharp
 // 用户设置（小数据量，频繁读取）
-var settings = m_SaveModule.GetOrCreateHelper("UserSettings");
+var settings = m_StorageModule.GetOrCreateHelper("UserSettings");
 
 // 游戏进度（中等数据量）
-var progress = m_SaveModule.GetOrCreateHelper("GameProgress");
+var progress = m_StorageModule.GetOrCreateHelper("GameProgress");
 
 // 玩家存档（大数据量，包含大量对象）
-var saveData = m_SaveModule.GetOrCreateHelper($"SaveSlot_{slotIndex}");
+var storageData = m_StorageModule.GetOrCreateHelper($"StorageSlot_{slotIndex}");
 ```
 
 ### 8.2 加密策略
@@ -479,11 +479,11 @@ var saveData = m_SaveModule.GetOrCreateHelper($"SaveSlot_{slotIndex}");
 
 ```csharp
 // 敏感数据使用加密
-var accountHelper = m_SaveModule.GetOrCreateHelper("Account");
+var accountHelper = m_StorageModule.GetOrCreateHelper("Account");
 // 加密配置在 ModuleSetting 中统一设置
 
 // 普通数据不使用加密
-var settingsHelper = m_SaveModule.GetOrCreateHelper("Settings");
+var settingsHelper = m_StorageModule.GetOrCreateHelper("Settings");
 ```
 
 ### 8.3 数据版本管理
@@ -494,13 +494,13 @@ const int CURRENT_VERSION = 2;
 
 void SaveGame()
 {
-    m_SaveModule.SetInt("SaveVersion", CURRENT_VERSION, "GameProgress");
+    m_StorageModule.SetInt("StorageVersion", CURRENT_VERSION, "GameProgress");
     // ... 保存其他数据
 }
 
 void LoadGame()
 {
-    int version = m_SaveModule.GetInt("SaveVersion", "GameProgress", 1);
+    int version = m_StorageModule.GetInt("StorageVersion", "GameProgress", 1);
     
     // 根据版本进行数据迁移
     if (version < CURRENT_VERSION)
@@ -520,14 +520,14 @@ public class GameManager
     // 关键数据变更时手动保存
     public void OnLevelComplete(int level)
     {
-        m_SaveModule.SetInt("CurrentLevel", level, "GameProgress");
-        m_SaveModule.Save("GameProgress"); // 立即保存
+        m_StorageModule.SetInt("CurrentLevel", level, "GameProgress");
+        m_StorageModule.Save("GameProgress"); // 立即保存
     }
     
     // 非关键数据依赖自动保存
     public void OnSettingsChanged(float volume)
     {
-        m_SaveModule.SetFloat("Volume", volume, "UserSettings");
+        m_StorageModule.SetFloat("Volume", volume, "UserSettings");
         // 等待自动保存或下次退出时保存
     }
 }
@@ -537,10 +537,10 @@ public class GameManager
 
 ```csharp
 // 备份存档
-public void BackupSave(int slotIndex)
+public void BackupStorage(int slotIndex)
 {
-    var sourcePath = Path.Combine(Application.persistentDataPath, "GameData", $"SaveSlot_{slotIndex}");
-    var backupPath = Path.Combine(Application.persistentDataPath, "GameData", $"SaveSlot_{slotIndex}_backup");
+    var sourcePath = Path.Combine(Application.persistentDataPath, "GameData", $"StorageSlot_{slotIndex}");
+    var backupPath = Path.Combine(Application.persistentDataPath, "GameData", $"StorageSlot_{slotIndex}_backup");
     
     if (File.Exists(sourcePath))
     {
@@ -551,14 +551,14 @@ public void BackupSave(int slotIndex)
 // 恢复备份
 public void RestoreBackup(int slotIndex)
 {
-    var sourcePath = Path.Combine(Application.persistentDataPath, "GameData", $"SaveSlot_{slotIndex}");
-    var backupPath = Path.Combine(Application.persistentDataPath, "GameData", $"SaveSlot_{slotIndex}_backup");
+    var sourcePath = Path.Combine(Application.persistentDataPath, "GameData", $"StorageSlot_{slotIndex}");
+    var backupPath = Path.Combine(Application.persistentDataPath, "GameData", $"StorageSlot_{slotIndex}_backup");
     
     if (File.Exists(backupPath))
     {
         File.Copy(backupPath, sourcePath, true);
         // 重新加载
-        m_SaveModule.Load($"SaveSlot_{slotIndex}");
+        m_StorageModule.Load($"StorageSlot_{slotIndex}");
     }
 }
 ```

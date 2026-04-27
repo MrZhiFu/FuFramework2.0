@@ -1,16 +1,19 @@
 {
-    "name": "FuFramework.DataSave.Runtime",
+    "name": "FuFramework.Storage.Editor",
     "rootNamespace": "",
     "references": [
+        "GUID:0a9d5953f93fd5c4f9938a3d5a3e1c3d",
         "GUID:4026e2f0c62532d4aa7fa02cc4a7c25c",
-        "GUID:a38628879c417cf49b28b1d0a90f18fa"
+        "GUID:ddad21a49e2146845be90f20e753ca40"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
-    "allowUnsafeCode": true,
+    "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

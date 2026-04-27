@@ -25,7 +25,7 @@ namespace FuFramework.Localization.Runtime
         /// <summary>
         /// 数据保存模块
         /// </summary>
-        private DataSaveModule m_DataSaveModule;
+        private StorageModule _storageModule;
 
         /// <summary>
         /// 当前使用的语言
@@ -51,8 +51,8 @@ namespace FuFramework.Localization.Runtime
                 m_Language = value;
 
                 // 保存设置
-                m_DataSaveModule.SetString("Language", value.ToString());
-                m_DataSaveModule.Save();
+                _storageModule.SetString("Language", value.ToString());
+                _storageModule.Save();
 
                 // 发送本地化语言改变事件
                 var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
@@ -125,9 +125,9 @@ namespace FuFramework.Localization.Runtime
         protected override void OnInit()
         {
             m_EventModule    = ModuleManager.GetModule<EventModule>();
-            m_DataSaveModule = ModuleManager.GetModule<DataSaveModule>();
+            _storageModule = ModuleManager.GetModule<StorageModule>();
 
-            var value = m_DataSaveModule.GetString("Language");
+            var value = _storageModule.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else

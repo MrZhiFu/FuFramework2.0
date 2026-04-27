@@ -9,14 +9,14 @@ using Utility = FuFramework.Core.Runtime.Utility;
 namespace FuFramework.SaveData.Runtime
 {
     /// <summary>
-    /// 数据存储辅助器。
+    /// 本地数据存储辅助器。
     /// 功能：
     ///     1. 加载/保存数据。
     ///     2. 获取/数据数据。
     ///     3. 序列化/反序列化数据。
     /// 注意：每个实例对应一个特定的数据文件。
     /// </summary>
-    public class DataSaveHelper : MonoBehaviour
+    public class StorageHelper : MonoBehaviour
     {
         /// <summary>
         /// 文件名
@@ -86,7 +86,7 @@ namespace FuFramework.SaveData.Runtime
             if (string.IsNullOrEmpty(fileName)) throw new FuException("[[DataSaveHelper] 文件名不能为空");
 
             FileName = fileName;
-            var path = Path.Combine(Application.persistentDataPath, DataSaveModule.DirRoot, fileName);
+            var path = Path.Combine(Application.persistentDataPath, StorageModule.DirRoot, fileName);
             FilePath = Utility.Path.GetRegularPath(path);
 
             Data = new Data();

@@ -9,14 +9,14 @@ namespace FuFramework.SaveData.Editor
     /// <summary>
     /// 自定义本地数据存储辅助器的Inspector
     /// </summary>
-    [CustomEditor(typeof(DataSaveHelper))]
-    internal sealed class SaveHelperInspector : FuFrameworkInspector
+    [CustomEditor(typeof(StorageHelper))]
+    internal sealed class StorageHelperInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            var saveHelper = target as DataSaveHelper;
+            var saveHelper = target as StorageHelper;
             if (!saveHelper) return;
 
             if (!EditorApplication.isPlaying) return;

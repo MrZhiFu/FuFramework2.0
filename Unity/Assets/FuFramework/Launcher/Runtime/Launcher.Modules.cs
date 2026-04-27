@@ -46,7 +46,7 @@ namespace FuFramework.Launcher.Runtime
             ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
             ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
             ModuleManager.RegisterModule<DownloadModule>();      // 下载管理模块
-            ModuleManager.RegisterModule<DataSaveModule>();      // 本地存储数据管理模块
+            ModuleManager.RegisterModule<StorageModule>();       // 本地数据存储管理模块
 
             ModuleManager.RegisterModule<ConfigModule>();       // 配置管理模块
             ModuleManager.RegisterModule<SceneModule>();        // 场景管理模块
