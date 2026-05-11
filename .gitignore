@@ -42,3 +42,4 @@ FairyGUIProject/plugins/CSharpCodeGen/.idea
 Config/Excels/~$*.xlsx
 Config/Excels/Local/~$*.xlsx
 Config/Excels/Tables/~$*.xlsx
+.claude/settings.local.json
