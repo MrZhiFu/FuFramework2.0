@@ -1,0 +1,40 @@
+using System;
+using FuFramework.SuperSocket.Server.Abstractions.Session;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace FuFramework.SuperSocket.Server;
+
+/// <summary>
+/// A generic session factory for creating instances of a specific session type.
+/// </summary>
+/// <typeparam name="TSession">The type of session to create.</typeparam>
+public class GenericSessionFactory<TSession> : ISessionFactory where TSession : IAppSession
+{
+	/// <summary>
+	/// Gets the type of session created by this factory.
+	/// </summary>
+	public Type SessionType => typeof(TSession);
+
+	/// <summary>
+	/// Gets the service provider used to create session instances.
+	/// </summary>
+	public IServiceProvider ServiceProvider { get; private set; }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="T:FuFramework.SuperSocket.Server.GenericSessionFactory`1" /> class.
+	/// </summary>
+	/// <param name="serviceProvider">The service provider used to create session instances.</param>
+	public GenericSessionFactory(IServiceProvider serviceProvider)
+	{
+		ServiceProvider = serviceProvider;
+	}
+
+	/// <summary>
+	/// Creates a new session instance.
+	/// </summary>
+	/// <returns>A new instance of the session.</returns>
+	public IAppSession Create()
+	{
+		return ActivatorUtilities.CreateInstance<TSession>(ServiceProvider, Array.Empty<object>());
+	}
+}

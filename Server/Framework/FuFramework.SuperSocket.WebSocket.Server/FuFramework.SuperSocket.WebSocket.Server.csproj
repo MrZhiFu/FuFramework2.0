@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.SuperSocket.Command\FuFramework.SuperSocket.Command.csproj" />
+    <ProjectReference Include="..\FuFramework.SuperSocket.Primitives\FuFramework.SuperSocket.Primitives.csproj" />
+    <ProjectReference Include="..\FuFramework.SuperSocket.Server\FuFramework.SuperSocket.Server.csproj" />
+    <ProjectReference Include="..\FuFramework.SuperSocket.WebSocket\FuFramework.SuperSocket.WebSocket.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>10</LangVersion>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <ApplicationIcon />
+        <StartupObject />
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <OutputPath>..\bin\app_debug</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <OutputPath>..\bin\app</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Update="Configs\app_log.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FuFramework.Apps\FuFramework.Apps.csproj" />
+        <ProjectReference Include="..\FuFramework.Config\FuFramework.Config.csproj" />
+        <ProjectReference Include="..\FuFramework.Proto\FuFramework.Proto.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Framework\FuFramework.GameAnalytics\FuFramework.GameAnalytics.csproj" />
+      <ProjectReference Include="..\Framework\FuFramework.StartUp\FuFramework.StartUp.csproj" />
+    </ItemGroup>
+</Project>

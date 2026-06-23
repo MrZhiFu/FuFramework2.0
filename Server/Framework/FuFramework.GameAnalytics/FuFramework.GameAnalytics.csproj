@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup><PackageReference Include="GameAnalytics.Net.Core.SDK" Version="3.4.0" /></ItemGroup>
+</Project>

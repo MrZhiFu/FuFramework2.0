@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Framework\FuFramework.NetWork\FuFramework.NetWork.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Proto\" />
+    </ItemGroup>
+
+</Project>

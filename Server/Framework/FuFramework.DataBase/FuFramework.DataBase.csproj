@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.Utility\FuFramework.Utility.csproj" />
+    <ProjectReference Include="..\FuFramework.Foundation.Hash\FuFramework.Foundation.Hash.csproj" />
+    <PackageReference Include="MongoDB.Entities" Version="24.1.1" />
+  </ItemGroup>
+</Project>

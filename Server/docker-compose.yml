@@ -11,9 +11,9 @@
       - MONGO_INITDB_ROOT_PASSWORD=admin
     networks:
       - backend
-  gameframex:
-    image: gameframex/server.launcher:1.0.0
-    container_name: gameframex
+  fuframework:
+    image: fuframework/server.launcher:1.0.0
+    container_name: fuframework
     ports:
       # APM 端口
       - "29090:29090"
@@ -37,7 +37,7 @@
       - DiscoveryCenterPort=10001
       - HttpCode=inner_httpcode
       - DataBaseUrl=mongodb://admin:admin@mongodb:27017/?authSource=admin
-      - DataBaseName=gameframex
+      - DataBaseName=fuframework
     networks:
       - frontend
       - backend
@@ -48,8 +48,8 @@
       - "./running/GameAnalytics:/GameAnalytics"
 networks:
   frontend:
-    name: gameframex-frontend
+    name: fuframework-frontend
     driver: bridge
   backend:
-    name: gameframex-backend
+    name: fuframework-backend
     driver: bridge

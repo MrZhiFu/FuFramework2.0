@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.SuperSocket.Primitives\FuFramework.SuperSocket.Primitives.csproj" />
+    <ProjectReference Include="..\FuFramework.SuperSocket.Server.Abstractions\FuFramework.SuperSocket.Server.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+</Project>

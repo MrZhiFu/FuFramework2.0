@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.NetWork.Abstractions\FuFramework.NetWork.Abstractions.csproj" />
+    <ProjectReference Include="..\FuFramework.NetWork\FuFramework.NetWork.csproj" />
+    <ProjectReference Include="..\FuFramework.ProtoBuf.Net\FuFramework.ProtoBuf.Net.csproj" />
+    <ProjectReference Include="..\FuFramework.Utility\FuFramework.Utility.csproj" />
+    <ProjectReference Include="..\FuFramework.Foundation.Hash\FuFramework.Foundation.Hash.csproj" />
+    <ProjectReference Include="..\FuFramework.Foundation.Http.Normalization\FuFramework.Foundation.Http.Normalization.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.12" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="7.3.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="7.3.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.3.1" />
+  </ItemGroup>
+</Project>

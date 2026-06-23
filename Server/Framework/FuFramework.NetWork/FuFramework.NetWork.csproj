@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.NetWork.Abstractions\FuFramework.NetWork.Abstractions.csproj" />
+    <ProjectReference Include="..\FuFramework.ProtoBuf.Net\FuFramework.ProtoBuf.Net.csproj" />
+    <ProjectReference Include="..\FuFramework.Utility\FuFramework.Utility.csproj" />
+    <ProjectReference Include="..\FuFramework.SuperSocket.WebSocket.Server\FuFramework.SuperSocket.WebSocket.Server.csproj" />
+  </ItemGroup>
+</Project>

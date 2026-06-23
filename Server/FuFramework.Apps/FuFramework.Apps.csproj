@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FuFramework.Proto\FuFramework.Proto.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Account\" />
+      <Folder Include="Player\" />
+      <Folder Include="Server\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mapster" Version="7.4.0" />
+      <ProjectReference Include="..\Framework\FuFramework.Core\FuFramework.Core.csproj" />
+      <ProjectReference Include="..\Framework\FuFramework.Monitor\FuFramework.Monitor.csproj" />
+    </ItemGroup>
+</Project>

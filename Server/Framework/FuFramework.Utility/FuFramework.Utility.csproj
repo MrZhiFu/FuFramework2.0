@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.Foundation.Hash\FuFramework.Foundation.Hash.csproj" />
+    <ProjectReference Include="..\FuFramework.Foundation.Logger\FuFramework.Foundation.Logger.csproj" />
+    <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+    <PackageReference Include="Tedd.RandomUtils" Version="1.0.6" />
+    <PackageReference Include="Yitter.IdGenerator" Version="1.0.14" />
+  </ItemGroup>
+</Project>

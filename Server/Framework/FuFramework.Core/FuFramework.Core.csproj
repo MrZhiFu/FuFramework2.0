@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>10</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FuFramework.DataBase\FuFramework.DataBase.csproj" />
+    <ProjectReference Include="..\FuFramework.NetWork.HTTP\FuFramework.NetWork.HTTP.csproj" />
+    <ProjectReference Include="..\FuFramework.NetWork\FuFramework.NetWork.csproj" />
+    <ProjectReference Include="..\FuFramework.Utility\FuFramework.Utility.csproj" />
+    <PackageReference Include="Quartz" Version="3.14.0" />
+  </ItemGroup>
+</Project>
