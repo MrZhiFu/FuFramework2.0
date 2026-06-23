@@ -3,7 +3,7 @@ using FuFramework.Coroutine.Runtime;
 using UnityEditor;
 
 // ReSharper disable once CheckNamespace
-namespace GameFrameX.Coroutine.Editor
+namespace FuFramework.Coroutine.Editor
 {
     /// <summary>
     /// 自定义协程管理模块的Inspector

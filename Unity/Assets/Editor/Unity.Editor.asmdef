@@ -5,8 +5,8 @@
         "YooAsset.Editor",
         "YooAsset.Runtime",
         "HybridCLR.Editor",
-        "GameFrameX.Editor",
-        "GameFrameX.Runtime"
+        "FuFramework.Editor",
+        "FuFramework.Runtime"
     ],
     "includePlatforms": [
         "Editor"
