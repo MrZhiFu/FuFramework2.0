@@ -120,8 +120,7 @@ public static class GameApp
 				}
 			}
 		}
-		LogHelper.InfoConsole("----------------------------启动服务器结束啦------------------------------");
-		ConsoleHelper.ConsoleLogo();
+		LogHelper.InfoConsole("----------------------------启动服务器结束------------------------------");
 		await Task.WhenAll(AppStartUpTasks);
 	}
 
