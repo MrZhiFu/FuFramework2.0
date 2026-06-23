@@ -35,7 +35,7 @@ cd Protobuf && ./Proto2CsExport_Server.bat
 ### 服务端
 ```bash
 # 快速启动游戏服务器
-cd Server/GameFrameX.Launcher && ./quick_start-game.bat
+cd Server/FuFramework.Launcher && ./quick_start-game.bat
 # 服务端解决方案: Server/Server.sln（使用 dotnet build）
 ```
 

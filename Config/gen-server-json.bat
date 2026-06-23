@@ -2,8 +2,8 @@ dotnet ./Tools/Luban/Luban.dll ^
     -t server ^
     -d json ^
     -c cs-dotnet-json ^
-    -x outputDataDir=../Server/GameFrameX.Config/Json ^
-    -x outputCodeDir=../Server/GameFrameX.Config/Config ^
+    -x outputDataDir=../Server/FuFramework.Config/Json ^
+    -x outputCodeDir=../Server/FuFramework.Config/Config ^
     -x tableImporter.name=fuframework ^
     --conf ./Luban.conf
 pause

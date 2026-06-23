@@ -1,4 +1,4 @@
-﻿using GameFrameX.Core.Config;
+﻿using FuFramework.Core.Config;
 {{
     parent_def_type = __bean.parent_def_type
     export_fields = __bean.export_fields

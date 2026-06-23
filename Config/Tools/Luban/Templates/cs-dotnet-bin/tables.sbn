@@ -1,5 +1,5 @@
 using System;
-using GameFrameX.Core.Config;
+using FuFramework.Core.Config;
 
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}

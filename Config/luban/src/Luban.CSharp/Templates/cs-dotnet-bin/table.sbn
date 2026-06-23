@@ -1,4 +1,4 @@
-using GameFrameX.Core.Config;
+using FuFramework.Core.Config;
 {{
     key_type = __table.key_ttype
     value_type =  __table.value_ttype
