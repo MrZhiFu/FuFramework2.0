@@ -51,7 +51,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -130,7 +130,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -178,7 +178,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -226,7 +226,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -263,7 +263,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -301,7 +301,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
@@ -339,7 +339,7 @@ namespace Hotfix.Proto
 		/// <summary>
 		/// 返回的错误码
 		/// </summary>
-		[ProtoMember(888)]
+		[ProtoMember(2047)]
 		public int ErrorCode { get; set; }
 
 	}
