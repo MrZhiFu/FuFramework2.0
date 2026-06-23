@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <RootNamespace>GameFrameX.ProtoExport</RootNamespace>
+    <RootNamespace>FuFramework.ProtoExport</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 

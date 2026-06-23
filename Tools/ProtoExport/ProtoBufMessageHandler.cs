@@ -1,4 +1,4 @@
-﻿namespace GameFrameX.ProtoExport;
+﻿namespace FuFramework.ProtoExport;
 
 public static class ProtoBufMessageHandler
 {

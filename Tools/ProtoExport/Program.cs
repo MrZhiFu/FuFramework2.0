@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace GameFrameX.ProtoExport
+namespace FuFramework.ProtoExport
 {
     internal static class Program
     {

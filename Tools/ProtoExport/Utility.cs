@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace GameFrameX.ProtoExport
+namespace FuFramework.ProtoExport
 {
     internal static class Utility
     {

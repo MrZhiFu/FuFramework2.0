@@ -1,4 +1,4 @@
-namespace GameFrameX.ProtoExport
+namespace FuFramework.ProtoExport
 {
     /// <summary>
     /// 协议生成帮助基类
@@ -11,7 +11,7 @@ namespace GameFrameX.ProtoExport
         /// <param name="inputPath">输入目录</param>
         /// <param name="outputPath">输出目录</param>
         /// <param name="namespaceName">命名空间</param>
-        void Run(MessageInfoList inputPath, string outputPath, string namespaceName = "GFXHotfix");
+        void Run(MessageInfoList inputPath, string outputPath, string namespaceName = "FuFramework.Proto");
 
         /// <summary>
         /// 生成后处理

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace GameFrameX.ProtoExport
+namespace FuFramework.ProtoExport
 {
     /// <summary>
     /// 生成ProtoBuf 协议文件
@@ -15,8 +15,8 @@ namespace GameFrameX.ProtoExport
             sb.AppendLine("using System;");
             sb.AppendLine("using ProtoBuf;");
             sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using GameFrameX.NetWork.Abstractions;");
-            sb.AppendLine("using GameFrameX.NetWork.Messages;");
+            sb.AppendLine("using FuFramework.NetWork.Abstractions;");
+            sb.AppendLine("using FuFramework.NetWork.Messages;");
 
 
             sb.AppendLine();

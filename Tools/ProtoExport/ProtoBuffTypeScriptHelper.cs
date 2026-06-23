@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace GameFrameX.ProtoExport
+namespace FuFramework.ProtoExport
 {
     /// <summary>
     /// 生成ProtoBuf 协议文件

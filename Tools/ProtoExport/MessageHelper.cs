@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace GameFrameX.ProtoExport;
+namespace FuFramework.ProtoExport;
 
 public static partial class MessageHelper
 {
