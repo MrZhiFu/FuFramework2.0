@@ -176,7 +176,7 @@ MonoBehaviour:
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
   m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
-  m_DataSaveSetting: {fileID: 11400000, guid: c0c1f85a9ceacb344888ccc274fb5ab1, type: 2}
+  m_StorageSetting: {fileID: 11400000, guid: c0c1f85a9ceacb344888ccc274fb5ab1, type: 2}
   m_RedDotSetting: {fileID: 11400000, guid: d021efe837b25bc4db387c9acd2e195d, type: 2}
   m_GuideSetting: {fileID: 11400000, guid: 7f37af1584d8a3d41bc625ea3630d689, type: 2}
 --- !u!114 &7148938655606090475
