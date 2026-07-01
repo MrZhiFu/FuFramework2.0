@@ -207,8 +207,10 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 将 UI 约束到安全区内（避让刘海/打孔区域）。
         /// </summary>
-        private void ApplySafeAreaConstraint()
+        protected virtual void ApplySafeAreaConstraint()
         {
+            if (UIView == null) return;
+
             UIView.x      = SafeAreaHelper.LeftInset;
             UIView.y      = SafeAreaHelper.TopInset;
             UIView.width  = SafeAreaHelper.FullWidth  - SafeAreaHelper.LeftInset - SafeAreaHelper.RightInset;
