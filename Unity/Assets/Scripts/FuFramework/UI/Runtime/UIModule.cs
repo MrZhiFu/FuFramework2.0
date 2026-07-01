@@ -111,6 +111,9 @@ namespace FuFramework.UI.Runtime
             // 设置GRoot根节点
             GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
 
+            // 初始化安全区数据
+            SafeAreaHelper.Refresh();
+
             // 遍历所有UI层级，并添加UI组
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
@@ -124,6 +127,9 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
+            // 检测安全区变化（方向切换等）
+            SafeAreaHelper.PollUpdate();
+
             // 回收等待回收的界面
             while (m_WaitRecycleQueue.Count > 0)
             {
