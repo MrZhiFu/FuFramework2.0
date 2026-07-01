@@ -53,9 +53,10 @@ namespace FuFramework.UI.Runtime
         public virtual string PackageName => "";
 
         /// <summary>
-        /// 是否是全屏界面。
+        /// 是否忽略安全区（刘海/打孔区域）。默认 true，即全屏显示覆盖刘海区域。
+        /// 设为 false 时 UI 内容自动约束在安全区内，避让刘海/打孔。
         /// </summary>
-        protected virtual bool IsFullScreen => true;
+        protected virtual bool IgnoreSafeArea => true;
 
         /// <summary>
         /// 界面所属的层级。
@@ -124,8 +125,12 @@ namespace FuFramework.UI.Runtime
                 UIView               = uiView;
                 UIView.fairyBatching = true;
 
-                // 设置全屏
-                if (IsFullScreen) UIView?.MakeFullScreen();
+                // 设置全屏和安全区适配
+                UIView?.MakeFullScreen();
+                if (!IgnoreSafeArea)
+                {
+                    ApplySafeAreaConstraint();
+                }
 
                 // 注册本地化语言改变事件
                 Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
@@ -135,6 +140,12 @@ namespace FuFramework.UI.Runtime
 
                 // 递归初始化子组件，传递自身实例给子组件。
                 InitChildrenView(UIView);
+
+                // 注册安全区变化监听
+                if (!IgnoreSafeArea)
+                {
+                    SafeAreaHelper.OnSafeAreaChanged += _OnSafeAreaChanged;
+                }
             }
             catch (Exception exception)
             {
@@ -191,6 +202,28 @@ namespace FuFramework.UI.Runtime
         {
             if (m_UIModule is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理模块为空。");
             m_UIModule.CloseUI(this);
+        }
+
+        /// <summary>
+        /// 将 UI 约束到安全区内（避让刘海/打孔区域）。
+        /// </summary>
+        private void ApplySafeAreaConstraint()
+        {
+            UIView.x      = SafeAreaHelper.LeftInset;
+            UIView.y      = SafeAreaHelper.TopInset;
+            UIView.width  = SafeAreaHelper.FullWidth  - SafeAreaHelper.LeftInset - SafeAreaHelper.RightInset;
+            UIView.height = SafeAreaHelper.FullHeight - SafeAreaHelper.TopInset  - SafeAreaHelper.BottomInset;
+        }
+
+        /// <summary>
+        /// 安全区变化回调（方向切换等）。
+        /// </summary>
+        private void _OnSafeAreaChanged()
+        {
+            if (!IgnoreSafeArea)
+            {
+                ApplySafeAreaConstraint();
+            }
         }
     }
 }
