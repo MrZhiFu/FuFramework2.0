@@ -17,7 +17,7 @@ namespace Launcher.UI
          //@formatter:off
          protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
          protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
-         protected override bool IsFullScreen     => true;             // 是否是全屏界面。
+         protected override bool IgnoreSafeArea     => true;             // 是否忽略安全区（刘海/打孔区域）。
          public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
         //@formatter:on
 

@@ -97,7 +97,7 @@ namespace FuFramework.UI.Runtime
         internal void _OnBeCover()
         {
             FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
-            if (IsFullScreen) Visible = false;
+            if (IgnoreSafeArea) Visible = false;
             OnBeCover();
         }
 
@@ -159,6 +159,9 @@ namespace FuFramework.UI.Runtime
             ReleaseEventRegister();   // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器
             ReleaseTimerRegister();   // 释放计时器注册器
+
+            // 注销安全区变化监听
+            SafeAreaHelper.OnSafeAreaChanged -= _OnSafeAreaChanged;
 
             OnDispose();
         }
