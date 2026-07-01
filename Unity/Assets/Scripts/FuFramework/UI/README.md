@@ -183,7 +183,7 @@ public void SetUIPriority(object uiView, int priority)
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
 | Layer | UILayer | 界面层级（可重写） |
-| IsFullScreen | bool | 是否全屏（可重写，默认true） |
+| IgnoreSafeArea | bool | 是否忽略安全区/刘海屏（可重写，默认true），false 时自动约束到安全区内 |
 | PauseCoveredUI | bool | 是否暂停被覆盖界面（可重写） |
 | TweenType | UITweenType | 动画类型（可重写） |
 | TweenDuration | float | 动画时长（可重写，默认0.3s） |
@@ -421,7 +421,7 @@ public class MainUIView : ViewBase
     protected override UILayer Layer => UILayer.MainUI;
     
     // 是否全屏界面
-    protected override bool IsFullScreen => true;
+    protected override bool IgnoreSafeArea => true;
     
     // 动画类型
     protected override UITweenType TweenType => UITweenType.Fade;
@@ -557,7 +557,7 @@ public class AnimatedUIView : ViewBase
 public class HUDView : ViewBase
 {
     protected override UILayer Layer => UILayer.WorldUI;
-    protected override bool IsFullScreen => false;
+    protected override bool IgnoreSafeArea => false;
 }
 
 // 主界面
@@ -576,14 +576,14 @@ public class BattleView : ViewBase
 public class ShopView : ViewBase
 {
     protected override UILayer Layer => UILayer.Window;
-    protected override bool IsFullScreen => false;
+    protected override bool IgnoreSafeArea => false;
 }
 
 // 提示界面
 public class ToastView : ViewBase
 {
     protected override UILayer Layer => UILayer.Tips;
-    protected override bool IsFullScreen => false;
+    protected override bool IgnoreSafeArea => false;
 }
 
 // Loading界面
