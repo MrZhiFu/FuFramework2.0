@@ -9,6 +9,7 @@
       <relation target="" sidePair="width-width,height-height"/>
     </image>
     <list id="n0_i3db" name="_listPlayer" xy="42,56" size="900,967" overflow="scroll" lineGap="10" defaultItem="ui://f011l0h9i3dbs9n" autoClearItems="true">
+      <relation target="" sidePair="width-width,left-left%"/>
       <item/>
       <item/>
       <item/>
@@ -17,15 +18,19 @@
     </list>
     <loader id="n1_ob7a" name="_loaderSelectedIcon" xy="1313,67" size="256,256" align="center" vAlign="middle" fill="scale">
       <gearDisplay controller="CtrlSelected" pages="1"/>
+      <relation target="" sidePair="center-center%,middle-middle%"/>
     </loader>
     <richtext id="n2_ob7a" name="_txtSelectedName" xy="1100,398" size="704,92" fontSize="49" color="#ccff33" align="center" vAlign="middle" autoSize="none" bold="true" singleLine="true" autoClearText="true" text="喊a韩餐尅就">
       <gearDisplay controller="CtrlSelected" pages="1"/>
+      <relation target="" sidePair="center-center%,middle-middle%"/>
     </richtext>
     <richtext id="n4_ob7a" name="_txtSelectedLevel" xy="1260,539" size="361,81" fontSize="30" color="#ffffff" align="center" vAlign="middle" autoSize="none" bold="true" singleLine="true" autoClearText="true" text="喊a韩餐尅就">
       <gearDisplay controller="CtrlSelected" pages="1"/>
+      <relation target="" sidePair="center-center%,middle-middle%"/>
     </richtext>
-    <component id="n3_ob7a" name="_btnLogin" src="xsvis9l" fileName="Comps/BtnLogin.xml" xy="1201,833">
+    <component id="n3_ob7a" name="_btnLogin" src="xsvis9l" fileName="Comp/BtnLogin.xml" xy="1201,833">
       <gearDisplay controller="CtrlSelected" pages="1"/>
+      <relation target="" sidePair="center-center%,middle-middle%"/>
     </component>
   </displayList>
 </component>
