@@ -22,7 +22,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 右侧安全区偏移（设计坐标）。
         /// </summary>
-        public static float RightInset { get; private set; }
+        public static float RightInset => FullWidth - Current.xMax;
 
         /// <summary>
         /// 顶部安全区偏移（设计坐标）。
@@ -32,7 +32,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 底部安全区偏移（设计坐标）。
         /// </summary>
-        public static float BottomInset { get; private set; }
+        public static float BottomInset => FullHeight - Current.yMax;
 
         /// <summary>
         /// 全屏宽度（设计坐标，含安全区）。
@@ -60,12 +60,10 @@ namespace FuFramework.UI.Runtime
             float scaleFactor = FairyGUI.UIContentScaler.scaleFactor;
             if (scaleFactor <= 0) scaleFactor = 1;
 
-            Current      = new Rect(safeArea.x / scaleFactor, safeArea.y / scaleFactor,
-                                    safeArea.width / scaleFactor, safeArea.height / scaleFactor);
-            RightInset   = (Screen.width  - safeArea.xMax) / scaleFactor;
-            BottomInset  = (Screen.height - safeArea.yMax) / scaleFactor;
-            FullWidth    = Screen.width  / scaleFactor;
-            FullHeight   = Screen.height / scaleFactor;
+            Current    = new Rect(safeArea.x / scaleFactor, safeArea.y / scaleFactor,
+                                   safeArea.width / scaleFactor, safeArea.height / scaleFactor);
+            FullWidth  = Screen.width  / scaleFactor;
+            FullHeight = Screen.height / scaleFactor;
             m_LastSafeArea = safeArea;
         }
 
