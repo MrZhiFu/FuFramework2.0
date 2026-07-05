@@ -111,8 +111,12 @@ namespace FuFramework.UI.Runtime
             // 设置GRoot根节点
             GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
 
-            // 初始化安全区数据
+            // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();
+            ApplyGRootSafeArea();
+
+            // 监听安全区变化（方向切换等），重新应用 GRoot 配置
+            SafeAreaHelper.OnSafeAreaChanged += ApplyGRootSafeArea;
 
             // 遍历所有UI层级，并添加UI组
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
@@ -128,7 +132,7 @@ namespace FuFramework.UI.Runtime
         protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             // 检测安全区变化（方向切换等）
-            SafeAreaHelper.PollUpdate();
+            SafeAreaHelper.OnUpdate();
 
             // 回收等待回收的界面
             while (m_WaitRecycleQueue.Count > 0)
@@ -150,10 +154,21 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected override void OnDispose()
         {
+            SafeAreaHelper.OnSafeAreaChanged -= ApplyGRootSafeArea;
+
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
             m_WaitRecycleQueue.Clear();
             PkgManager.ReleaseAll();
+        }
+
+        /// <summary>
+        /// 将 GRoot 移动到安全区内。普通 UI 自动适配；全屏 UI 通过负偏移覆盖刘海。
+        /// </summary>
+        private static void ApplyGRootSafeArea()
+        {
+            GRoot.inst.SetSize(SafeAreaHelper.SafeWidth, SafeAreaHelper.SafeHeight);
+            GRoot.inst.SetXY(SafeAreaHelper.OffsetX, SafeAreaHelper.OffsetY);
         }
     }
 }

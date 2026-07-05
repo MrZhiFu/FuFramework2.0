@@ -14,6 +14,7 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 - **动画效果支持**：内置淡入淡出动画，支持自定义动画效果
 - **事件驱动架构**：完整的界面打开/关闭事件通知机制
 - **模块化设计**：支持界面组件化和自定义组件扩展
+- **安全区适配**：自动适配刘海屏/打孔屏，GRoot 偏移到安全区内，普通 UI 自动避让，全屏 UI 可覆盖刘海
 
 ## 2. 系统架构
 
@@ -183,7 +184,7 @@ public void SetUIPriority(object uiView, int priority)
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
 | Layer | UILayer | 界面层级（可重写） |
-| IgnoreSafeArea | bool | 是否忽略安全区/刘海屏（可重写，默认true），false 时自动约束到安全区内 |
+| AdjustNotch | bool | 是否适配刘海/打孔（可重写，默认true），false 时填满全屏覆盖刘海 |
 | PauseCoveredUI | bool | 是否暂停被覆盖界面（可重写） |
 | TweenType | UITweenType | 动画类型（可重写） |
 | TweenDuration | float | 动画时长（可重写，默认0.3s） |
@@ -399,6 +400,67 @@ public enum UITweenType
 }
 ```
 
+### 3.9 SafeAreaHelper / GObjectSafeAreaExt
+
+安全区适配工具，用于刘海屏/打孔屏适配。
+
+**SafeAreaHelper** — 封装 Unity `Screen.safeArea`，提供 FairyGUI 坐标下的安全区偏移数据。
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| OffsetX | float | 左侧刘海/打孔宽度（屏幕像素） |
+| OffsetY | float | 顶部刘海/状态栏高度（屏幕像素） |
+| SafeWidth | float | 安全区宽度（FairyGUI 设计坐标） |
+| SafeHeight | float | 安全区高度（FairyGUI 设计坐标） |
+
+| 方法 | 说明 |
+|------|------|
+| `Refresh()` | 刷新安全区数据，UIModule 初始化时调用 |
+| `OnUpdate()` | 每帧检测安全区变化，由 UIModule.OnUpdate 驱动 |
+
+| 事件 | 说明 |
+|------|------|
+| `OnSafeAreaChanged` | 安全区变化时触发（横竖屏切换、折叠屏等） |
+
+**核心原理：**
+
+```
+屏幕 (0,0)
+  ←─── 刘海 50px ───→┌──────────────────────────────┐
+                      │  GRoot @ (50, 0)              │  ← SetXY(OffsetX, OffsetY)
+                      │  size = (SafeWidth, SafeHeight)│  ← 约束在安全区内
+                      │                              │
+                      │  普通 UI (AdjustNotch=true)    │  ← MakeFullScreen() 填充 GRoot
+                      │  自动避让刘海                   │
+                      │                              │
+  ┌────────────────────┤                              │
+  │ 全屏背景            │                              │  ← AdjustNotch=false
+  │ SetXY(-50, 0)      │                              │    负偏移跳出 GRoot 覆盖刘海
+  │ 整屏尺寸            │                              │
+  └────────────────────┴──────────────────────────────┘
+```
+
+**GObjectSafeAreaExt** — FairyGUI GObject 扩展方法，不修改 FairyGUI 源码。
+
+| 方法 | 说明 |
+|------|------|
+| `IgnoreSafeArea(RelationType)` | 使组件忽略安全区，扩展到整屏覆盖刘海。适用于全屏背景、遮罩等独立元素 |
+
+**ViewBase.AdjustNotch** — 控制界面是否适配安全区：
+
+| 值 | 行为 | 适用场景 |
+|----|------|---------|
+| `true`（默认） | 跟随 GRoot，约束在安全区内 | 登录、背包、商店等普通界面 |
+| `false` | 填满全屏覆盖刘海 | 全屏背景、遮罩、引导层 |
+
+```csharp
+// 全屏界面覆盖刘海
+protected override bool AdjustNotch => false;
+
+// 安全区变化时（方向切换等），全屏 UI 自动重新计算偏移
+// 普通 UI 跟随 GRoot，无需额外处理
+```
+
 ## 4. 使用示例
 
 ### 4.1 创建自定义 UI 界面
@@ -420,8 +482,8 @@ public class MainUIView : ViewBase
     // 界面层级
     protected override UILayer Layer => UILayer.MainUI;
     
-    // 是否全屏界面
-    protected override bool IgnoreSafeArea => true;
+    // 是否适配刘海/打孔区域（全屏覆盖）
+    protected override bool AdjustNotch => false;
     
     // 动画类型
     protected override UITweenType TweenType => UITweenType.Fade;
@@ -557,7 +619,6 @@ public class AnimatedUIView : ViewBase
 public class HUDView : ViewBase
 {
     protected override UILayer Layer => UILayer.WorldUI;
-    protected override bool IgnoreSafeArea => false;
 }
 
 // 主界面
@@ -576,14 +637,12 @@ public class BattleView : ViewBase
 public class ShopView : ViewBase
 {
     protected override UILayer Layer => UILayer.Window;
-    protected override bool IgnoreSafeArea => false;
 }
 
 // 提示界面
 public class ToastView : ViewBase
 {
     protected override UILayer Layer => UILayer.Tips;
-    protected override bool IgnoreSafeArea => false;
 }
 
 // Loading界面
@@ -769,6 +828,9 @@ FuFramework/UI/
 │   │   ├── UIGroup.cs                 # 界面组
 │   │   ├── UILayer.cs                 # 界面层级枚举
 │   │   └── UITweenType.cs             # 动画类型枚举
+│   ├── Utility/
+│   │   ├── SafeAreaHelper.cs            # 安全区辅助工具
+│   │   └── GObjectSafeAreaExt.cs        # GObject安全区扩展方法
 │   ├── Fui/
 │   │   ├── FuiPkgManager.cs           # FUI包管理器
 │   │   ├── FuiEventRegister.cs        # FUI事件注册器
@@ -846,6 +908,26 @@ FuFramework/UI/
 - 内置 EventRegister 管理业务事件
 - FuiEventRegister 管理 UI 事件
 - 全局事件广播机制
+
+### 7.7 安全区适配
+
+刘海屏/打孔屏适配方案，核心思路：
+
+1. **GRoot 移位**：UIModule 初始化时，将 GRoot 移动到安全区起始位置，并缩放到安全区大小
+2. **普通 UI 自动适配**：挂载在 GRoot 下的 UI 自动约束在安全区内，无需额外处理
+3. **全屏 UI 反向偏移**：需要覆盖刘海的界面设置 `AdjustNotch = false`，框架自动通过负偏移让其扩展到 GRoot 之外
+4. **方向切换检测**：SafeAreaHelper 每帧比对 `Screen.safeArea`，变化时触发回调重新适配
+
+```
+横屏示例（刘海在左侧）：
+  ┌─刘海─┬─────────────────────────┐
+  │      │ GRoot (安全区)           │
+  │←50px→│ ← 普通 UI 在此区域内 →   │
+  │      │                         │
+  ├──────┤                         │
+  │ 全屏背景（负偏移覆盖刘海）       │
+  └──────┴─────────────────────────┘
+```
 
 ## 8. 应用场景
 

@@ -1,5 +1,7 @@
 using FairyGUI;
+using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
@@ -14,51 +16,43 @@ namespace FuFramework.UI.Runtime
         private const float SafeAreaOverflow = 2f;
 
         /// <summary>
-        /// 忽略安全区，使组件覆盖刘海/打孔区域。自动监听方向变化并调整尺寸。
-        /// 适用场景：全屏背景、模态遮罩、引导遮挡层等需要超出安全区的内容。
+        /// 使指定组件忽略安全区，可覆盖刘海/打孔区域。自动监听方向变化并调整尺寸。
+        /// 适用场景：全屏背景、遮罩、引导遮挡层等需要超出安全区的内容。
+        /// 原理：GRoot 被移到了安全区内，此方法通过负偏移让组件反向扩展到 GRoot 之外，覆盖整屏。
         /// </summary>
         /// <param name="component">目标组件</param>
-        /// <param name="relationType">Relation 类型，常用 RelationType.Size（填满屏幕）</param>
-        public static void IgnoreSafeArea(this GObject component, RelationType relationType)
+        /// <param name="relationType">关联类型，常用 RelationType.Size（填满屏幕）</param>
+        public static void IgnoreSafeArea(this GObject component, RelationType relationType = RelationType.Size)
         {
-            bool isSetup = false;
+            // 首次调用
+            ApplyFullScreen();
 
-            void OnSetScreen()
+            // 监听安全区变化（方向切换等），-= 防止重复注册
+            SafeAreaHelper.OnSafeAreaChanged -= ApplyFullScreen;
+            SafeAreaHelper.OnSafeAreaChanged += ApplyFullScreen;
+
+            // 组件销毁时注销监听，防止内存泄漏
+            component.onRemovedFromStage.Add(() => { SafeAreaHelper.OnSafeAreaChanged -= ApplyFullScreen; });
+            return;
+
+            void ApplyFullScreen()
             {
                 if (component == null || component.isDisposed) return;
 
-                // 1. 仅清除与 GRoot 的旧 Relation，保留其他 Relation 不受影响
-                component.relations.ClearFor(GRoot.inst);
+                // 1. 清除组件所有旧关联，防止与新关联冲突
+                component.relations.ClearAll();
 
-                // 2. 计算偏移（含冗余边距防止浮点误差导致边界露缝）
-                var overFlow = SafeAreaOverflow;
-                var offsetX = -SafeAreaHelper.LeftInset - overFlow;
-                var offsetY = -SafeAreaHelper.TopInset  - overFlow;
+                // 2. 负偏移：反向扩展到 GRoot 之外，覆盖刘海区域（+2px 冗余防止边界露缝）
+                var offsetX = -SafeAreaHelper.OffsetX - SafeAreaOverflow;
+                var offsetY = -SafeAreaHelper.OffsetY - SafeAreaOverflow;
 
-                // 3. 调整位置和尺寸（覆盖安全区外的部分）
+                // 3. 整屏尺寸（含溢出余量）
                 component.SetXY(offsetX, offsetY);
-                component.SetSize(SafeAreaHelper.FullWidth + overFlow * 2, SafeAreaHelper.FullHeight + overFlow * 2);
+                component.SetSize(Screen.width / UIContentScaler.scaleFactor + SafeAreaOverflow * 2, Screen.height / UIContentScaler.scaleFactor + SafeAreaOverflow * 2);
 
                 // 4. 绑定到 GRoot 根容器
                 component.AddRelation(GRoot.inst, relationType);
             }
-
-            // 首次调用
-            OnSetScreen();
-
-            // 防止重复调用时重复注册 onRemovedFromStage 和事件监听
-            if (isSetup) return;
-            isSetup = true;
-
-            // 监听安全区变化（方向切换等），-= 防重复
-            SafeAreaHelper.OnSafeAreaChanged -= OnSetScreen;
-            SafeAreaHelper.OnSafeAreaChanged += OnSetScreen;
-
-            // 组件销毁时注销监听，防止内存泄漏
-            component.onRemovedFromStage.Add(() =>
-            {
-                SafeAreaHelper.OnSafeAreaChanged -= OnSetScreen;
-            });
         }
     }
 }

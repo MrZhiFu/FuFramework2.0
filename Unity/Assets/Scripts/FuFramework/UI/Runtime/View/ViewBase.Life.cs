@@ -97,7 +97,7 @@ namespace FuFramework.UI.Runtime
         internal void _OnBeCover()
         {
             FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
-            if (IgnoreSafeArea) Visible = false;
+            if (!AdjustNotch) Visible = false;
             OnBeCover();
         }
 

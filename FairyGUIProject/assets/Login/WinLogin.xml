@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component size="1920,1080">
   <displayList>
-    <graph id="n34_jfft" name="Bg" xy="0,0" size="1920,1080" type="rect" fillColor="#543399ff">
+    <graph id="n46_dxlc" name="Bg" xy="-690,-482" size="3300,2045" type="rect" lineSize="0" fillColor="#ff669966">
       <relation target="" sidePair="width-width,height-height"/>
     </graph>
     <text id="n23_nmd0" name="_txtLogin" xy="889,155" pivot="0.5,0.5" size="104,66" font="ui://f59y7iy8ghno32" fontSize="50" color="#e1c399" align="center" vAlign="middle" text="登录">

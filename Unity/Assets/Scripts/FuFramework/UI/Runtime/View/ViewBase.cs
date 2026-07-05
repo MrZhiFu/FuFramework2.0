@@ -2,6 +2,7 @@ using System;
 using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.Localization.Runtime;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace FuFramework.UI.Runtime
@@ -15,7 +16,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 界面是否已初始化。
         /// </summary>
-        private bool m_IsInit = false;
+        private bool m_IsInit;
 
         /// <summary>
         /// UI管理模块
@@ -53,10 +54,10 @@ namespace FuFramework.UI.Runtime
         public virtual string PackageName => "";
 
         /// <summary>
-        /// 是否忽略安全区（刘海/打孔区域）。默认 true，即全屏显示覆盖刘海区域。
-        /// 设为 false 时 UI 内容自动约束在安全区内，避让刘海/打孔。
+        /// 是否适配刘海/打孔区域。默认 true，即 UI 跟随 GRoot 约束在安全区内，避让刘海/打孔。
+        /// 设为 false 时 UI 填满全屏覆盖刘海（全屏背景、遮罩等）。
         /// </summary>
-        protected virtual bool IgnoreSafeArea => true;
+        protected virtual bool AdjustNotch => true;
 
         /// <summary>
         /// 界面所属的层级。
@@ -125,12 +126,8 @@ namespace FuFramework.UI.Runtime
                 UIView               = uiView;
                 UIView.fairyBatching = true;
 
-                // 设置全屏和安全区适配
-                UIView?.MakeFullScreen();
-                if (!IgnoreSafeArea)
-                {
-                    ApplySafeAreaConstraint();
-                }
+                // 初始化时，设置一次UI对象全屏和安全区适配
+                _OnSafeAreaChanged();
 
                 // 注册本地化语言改变事件
                 Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
@@ -142,10 +139,7 @@ namespace FuFramework.UI.Runtime
                 InitChildrenView(UIView);
 
                 // 注册安全区变化监听
-                if (!IgnoreSafeArea)
-                {
-                    SafeAreaHelper.OnSafeAreaChanged += _OnSafeAreaChanged;
-                }
+                SafeAreaHelper.OnSafeAreaChanged += _OnSafeAreaChanged;
             }
             catch (Exception exception)
             {
@@ -205,27 +199,22 @@ namespace FuFramework.UI.Runtime
         }
 
         /// <summary>
-        /// 将 UI 约束到安全区内（避让刘海/打孔区域）。
-        /// </summary>
-        protected virtual void ApplySafeAreaConstraint()
-        {
-            if (UIView == null) return;
-
-            UIView.x      = SafeAreaHelper.LeftInset;
-            UIView.y      = SafeAreaHelper.TopInset;
-            UIView.width  = SafeAreaHelper.FullWidth  - SafeAreaHelper.LeftInset - SafeAreaHelper.RightInset;
-            UIView.height = SafeAreaHelper.FullHeight - SafeAreaHelper.TopInset  - SafeAreaHelper.BottomInset;
-        }
-
-        /// <summary>
         /// 安全区变化回调（方向切换等）。
+        /// 全屏 UI（AdjustNotch = false）需要重新计算负偏移覆盖刘海；普通 UI 跟随 GRoot 自动适配无需处理。
         /// </summary>
         private void _OnSafeAreaChanged()
         {
-            if (!IgnoreSafeArea)
+            if (UIView == null) return;
+            if (AdjustNotch)
             {
-                ApplySafeAreaConstraint();
+                // 普通 UI 跟随 GRoot
+                UIView.SetSize(GRoot.inst.width, GRoot.inst.height);
+                return;
             }
+
+            // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域
+            UIView.SetSize(Screen.width / UIContentScaler.scaleFactor, Screen.height / UIContentScaler.scaleFactor);
+            UIView.SetXY(-SafeAreaHelper.OffsetX, -SafeAreaHelper.OffsetY);
         }
     }
 }
