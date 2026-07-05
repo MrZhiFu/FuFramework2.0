@@ -38,12 +38,12 @@ namespace Unity.Editor
             PlayerSettings.productName = "FuFrameworkDemo"; // 应用名称
             PlayerSettings.companyName = "FuStudio";        // 公司名称
 
-            // ========== 屏幕方向 ==========
-            // PlayerSettings.defaultInterfaceOrientation           = UIOrientation.AutoRotation; // 默认方向设为自动旋转
-            // PlayerSettings.allowedAutorotateToPortrait           = false;                      // 禁止竖屏
-            // PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;                      // 禁止倒置竖屏
-            // PlayerSettings.allowedAutorotateToLandscapeLeft      = true;                       // 允许左横屏
-            // PlayerSettings.allowedAutorotateToLandscapeRight     = true;                       // 允许右横屏
+            // ========== 屏幕方向(只允许横屏) ==========
+            PlayerSettings.defaultInterfaceOrientation           = UIOrientation.AutoRotation; // 默认方向设为自动旋转
+            PlayerSettings.allowedAutorotateToPortrait           = false;                      // 禁止竖屏
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;                      // 禁止倒置竖屏
+            PlayerSettings.allowedAutorotateToLandscapeLeft      = true;                       // 允许左横屏
+            PlayerSettings.allowedAutorotateToLandscapeRight     = true;                       // 允许右横屏
 
             // ========== 音频 ==========
             PlayerSettings.muteOtherAudioSources = false; // 不静音其他应用音频（允许后台音乐播放）
