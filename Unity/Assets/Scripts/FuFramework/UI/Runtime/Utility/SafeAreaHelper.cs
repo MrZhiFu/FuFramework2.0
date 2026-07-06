@@ -3,6 +3,7 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime
 {
     /// <summary>
@@ -74,8 +75,8 @@ namespace FuFramework.UI.Runtime
         public static void OnUpdate()
         {
             if (Screen.safeArea == m_LastSafeArea) return;
-            
-            FuLogger.LogInfo("[SafeAreaHelper]屏幕安全区刷新, "          +
+
+            FuLogger.LogInfo("[SafeAreaHelper]屏幕安全区刷新, "           +
                              $"旧安全区:{m_LastSafeArea}, "            +
                              $"新安全区:{Screen.safeArea}, "           +
                              $"安全区偏移量:({OffsetX}, {OffsetY}), "    +
