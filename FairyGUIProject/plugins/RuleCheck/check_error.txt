@@ -450,3 +450,33 @@ path: Bag/Comps/CompBagItemInfo	name: _txtName
 
 [ 文本没有设置自动清除文本属性：%s ]:
 path: Bag/Comps/CompBagItemInfo	name: _txtName
+
+
+========== 2026-07-06 21:35:51 ==========
+
+[ 文本设置了Microsoft YaHei字体：%s ]:
+path: Common/Comp/CompRedDot	name: _txtCount
+
+[ 文本没有设置自动清除文本属性：%s ]:
+path: Bag/WinBag	name: tips
+path: Bag/Comp/CompBagItemInfo	name: _txtName
+path: Bag/Comp/CompBagItemInfo	name: _txtDesc
+path: Bag/Comp/CompTypeItem	name: title
+path: Common/Comp/Btn/BtnCancel	name: title
+path: Common/Comp/Btn/BtnOk	name: title
+path: Guide/WinDialogGuide	name: _txtContent
+path: Launcher/Comp/BtnSure	name: title
+path: Loading/WinLoadingScene	name: LoadingTxt
+path: Login/WinLogin	name: _txtLogin
+path: Login/WinLogin	name: _txtUsername
+path: Login/WinLogin	name: _inputUserName
+path: Login/WinLogin	name: _txtPassword
+path: Login/WinLogin	name: _inputPassword
+path: Login/WinLoginAnnouncement	name: _txtTitle
+path: Login/Comp/BtnLogin	name: title
+path: Login/Comp/BtnLoginPlayerListItem	name: title
+path: Login/WinPlayerCreate	name: _txtTitle
+path: Login/WinPlayerCreate	name: _txtUserName
+path: Main/WinMain	name: _txtPlayerName
+path: Main/WinMain	name: _txtPlayerLevel
+path: Main/Comp/BtnBag	name: title
