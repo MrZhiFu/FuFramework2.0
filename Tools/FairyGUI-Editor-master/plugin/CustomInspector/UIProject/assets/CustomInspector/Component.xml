@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="270,86" bgColorEnabled="true" bgColor="#383838">
+  <controller name="c1" pages="0,,1,,2,,3,,4," selected="0"/>
+  <displayList>
+    <component id="n0_edka" name="browser" src="gcza18" fileName="ComboBox/ComboBox.xml" pkg="nk9ejx23" xy="86,7" size="166,20">
+      <ComboBox title="Unknown" visibleItemCount="10" selectionController="c1">
+        <item title="Unknown"/>
+        <item title="Chrome" value="Chrome"/>
+        <item title="IE" value="IE"/>
+        <item title="Opera" value="Opera"/>
+        <item title="Safari" value="Safari"/>
+      </ComboBox>
+    </component>
+    <text id="n1_edka" name="n1" xy="4,8" size="71,19" fontSize="12" color="#bdbdbd" align="center" autoSize="none" text="Browser"/>
+    <loader id="n2_o9mq" name="n2" xy="200,39" size="32,32">
+      <gearIcon controller="c1" pages="0,2,3,4" values="|ui://1g71c9u1o9mq1|ui://1g71c9u1o9mq3|ui://1g71c9u1o9mq2" default="ui://1g71c9u1o9mq4"/>
+    </loader>
+  </displayList>
+</component>

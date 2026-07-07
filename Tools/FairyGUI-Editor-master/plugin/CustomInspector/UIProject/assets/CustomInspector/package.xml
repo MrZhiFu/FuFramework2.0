@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="1g71c9u1">
+  <resources>
+    <image id="o9mq1" name="internetexplorer.svg" path="/" width="32" height="32"/>
+    <image id="o9mq2" name="safari.svg" path="/" width="32" height="32"/>
+    <image id="o9mq3" name="opera.svg" path="/" width="32" height="32"/>
+    <image id="o9mq4" name="chrome.svg" path="/" width="32" height="32"/>
+    <component id="oma25" name="Component.xml" path="/" exported="true"/>
+  </resources>
+  <publish name=""/>
+</packageDescription>
