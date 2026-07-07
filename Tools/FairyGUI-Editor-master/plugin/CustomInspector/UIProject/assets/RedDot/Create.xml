@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="270,25" bgColorEnabled="true" bgColor="#383838">
+  <displayList>
+    <component id="n3_oma2" name="create_btn" src="xualm" fileName="Button/Button.xml" pkg="nk9ejx23" xy="92,0">
+      <Button title="创建红点" titleColor="#ff0000"/>
+    </component>
+  </displayList>
+</component>

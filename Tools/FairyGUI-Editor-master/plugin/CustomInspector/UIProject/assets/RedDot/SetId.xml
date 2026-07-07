@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="270,29" bgColorEnabled="true" bgColor="#383838">
+  <displayList>
+    <text id="n4_oma2" name="n1" xy="0,3" size="65,23" fontSize="15" color="#ff0000" align="center" autoSize="none" text="红点ID："/>
+    <component id="n5_oma2" name="red_id" src="gcza1s" fileName="Input/TextInput.xml" pkg="nk9ejx23" xy="67,4" size="189,20" controller="noBorder,0,showClear,1"/>
+  </displayList>
+</component>

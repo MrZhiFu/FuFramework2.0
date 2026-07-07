@@ -1,0 +1,11 @@
+{
+  "name": "RedDotBind",
+  "displayName": "红点绑定工具",
+  "description": "为UI组件绑定通用红点，支持一键创建红点子节点和编辑红点ID（整数），数据存储在组件customData中，由运行时的CompRedDot组件代码自动解析绑定",
+  "version": "1.0",
+  "author": {
+    "name": "Mrfu"
+  },
+  "icon": "icon.png",
+  "main": "main.lua"
+}
