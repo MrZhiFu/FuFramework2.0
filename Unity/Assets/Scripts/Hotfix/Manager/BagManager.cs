@@ -15,11 +15,11 @@ namespace Hotfix.Manager
     /// </summary>
     public sealed class BagManager : Singleton<BagManager>, IMessageHandler
     {
-        private readonly Dictionary<int, BagItem> _itemDic = new Dictionary<int, BagItem>();
+        private readonly Dictionary<int, BagItem> m_ItemDic = new Dictionary<int, BagItem>();
 
         public List<BagItem> GetItems()
         {
-            return new List<BagItem>(_itemDic.Values);
+            return new List<BagItem>(m_ItemDic.Values);
         }
 
         /// <summary>
@@ -31,17 +31,17 @@ namespace Hotfix.Manager
         {
             foreach (var keyValuePair in msg.ItemDic)
             {
-                if (_itemDic.TryGetValue(keyValuePair.Key, out var item))
+                if (m_ItemDic.TryGetValue(keyValuePair.Key, out var item))
                 {
                     item.Count = keyValuePair.Value.Count;
-                    if (_itemDic[keyValuePair.Key].Count <= 0)
+                    if (m_ItemDic[keyValuePair.Key].Count <= 0)
                     {
-                        _itemDic.Remove(keyValuePair.Key);
+                        m_ItemDic.Remove(keyValuePair.Key);
                     }
                 }
                 else
                 {
-                    _itemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
+                    m_ItemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
                 }
             }
 
@@ -51,7 +51,7 @@ namespace Hotfix.Manager
         /// <summary>
         /// 请求背包信息
         /// </summary>
-        public async UniTask RequestGetBagInfo()
+        public async UniTask RequestGetBagInfoAsync()
         {
             var respBagInfo = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
             if (respBagInfo.ErrorCode != default)
@@ -61,7 +61,7 @@ namespace Hotfix.Manager
 
             foreach (var item in respBagInfo.ItemDic)
             {
-                _itemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
+                m_ItemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
             }
         }
 
@@ -70,7 +70,7 @@ namespace Hotfix.Manager
         /// </summary>
         /// <param name="itemId">道具ID</param>
         /// <param name="count">道具数量</param>
-        public async UniTask RequestUseItem(int itemId, long count = 1)
+        public async UniTask RequestUseItemAsync(int itemId, long count = 1)
         {
             var respUseItem = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
             if (respUseItem.ErrorCode != default)
@@ -78,12 +78,12 @@ namespace Hotfix.Manager
                 return;
             }
 
-            if (_itemDic.TryGetValue(respUseItem.ItemId, out var value))
+            if (m_ItemDic.TryGetValue(respUseItem.ItemId, out var value))
             {
                 value.Count -= respUseItem.Count;
                 if (value.Count <= 0)
                 {
-                    _itemDic.Remove(respUseItem.ItemId);
+                    m_ItemDic.Remove(respUseItem.ItemId);
                 }
             }
 
@@ -97,10 +97,10 @@ namespace Hotfix.Manager
         /// <returns></returns>
         public List<BagItem> GetBagItemsByType(ItemType bagType)
         {
-            var result = new List<BagItem>(_itemDic.Count);
+            var result = new List<BagItem>(m_ItemDic.Count);
             var tbItemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>();
             var itemType = bagType;
-            foreach (var bagItem in _itemDic)
+            foreach (var bagItem in m_ItemDic)
             {
                 var itemConfig = tbItemConfig.Get(bagItem.Key);
                 if (itemConfig.IsNotNull() && itemConfig.Type == itemType)

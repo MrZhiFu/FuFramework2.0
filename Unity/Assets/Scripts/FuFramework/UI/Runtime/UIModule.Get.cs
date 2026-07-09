@@ -95,7 +95,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
         /// <returns>最顶部的界面。</returns>
-        public ViewBase GetTopUI(UILayer? uiLayer = null)
+        public ViewBase GetTopUI(EUILayer? uiLayer = null)
         {
             // 获取指定层级的顶部界面
             if (uiLayer.HasValue)

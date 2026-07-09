@@ -5,7 +5,7 @@ namespace FuFramework.TaskPool.Runtime
     /// <summary>
     /// 任务状态。
     /// </summary>
-    public enum TaskStatus : byte
+    public enum ETaskStatus : byte
     {
         /// <summary>
         /// 未开始。

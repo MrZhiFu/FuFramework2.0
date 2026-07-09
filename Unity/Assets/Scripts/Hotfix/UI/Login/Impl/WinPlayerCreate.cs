@@ -14,8 +14,8 @@ namespace Hotfix.UI
          #region 界面基本属性(无特殊需求，可不做修改)
  
          //@formatter:off
-         protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
-         protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
+         protected override EUILayer Layer         => EUILayer.Normal;   // 界面所属的层级。
+         protected override EUITweenType TweenType => EUITweenType.Fade; // 界面打开/关闭时的动画效果。
          public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
          //@formatter:on
 
@@ -24,7 +24,7 @@ namespace Hotfix.UI
          /// <summary>
          /// 创建角色请求
          /// </summary>
-         private ReqPlayerCreate _req;
+         private ReqPlayerCreate m_Req;
         
         /// <summary>
         /// 初始化
@@ -50,7 +50,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.EDisplayMode.Auto);
         }
         
         /// <summary>
@@ -71,7 +71,7 @@ namespace Hotfix.UI
         /// </summary>
         protected override void OnDispose()
         {
-            _req = null;
+            m_Req = null;
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 创建角色按钮点击事件
         /// </summary>
-        private async UniTaskVoid CreatePlayer()
+        private async UniTaskVoid CreatePlayerAsync()
         {
             if (inputUserName.text.IsNullOrWhiteSpace())
             {
@@ -93,7 +93,7 @@ namespace Hotfix.UI
                 return;
             }
 
-            _req = new ReqPlayerCreate
+            m_Req = new ReqPlayerCreate
             {
                 Id = 10000,
                 Name = inputUserName.text
@@ -101,7 +101,7 @@ namespace Hotfix.UI
 
             // 创建角色
             var respPlayerCreate =
-                await GlobalModule.WebModule.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", _req);
+                await GlobalModule.WebModule.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
             if (respPlayerCreate.ErrorCode > 0)
             {
                 FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -112,7 +112,7 @@ namespace Hotfix.UI
                 FuLogger.LogInfo("创建角色成功");
 
             // 获取角色列表
-            var reqPlayerList = new ReqPlayerList { Id = _req.Id };
+            var reqPlayerList = new ReqPlayerList { Id = m_Req.Id };
             var respPlayerList =
                 await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
                     reqPlayerList);
@@ -146,7 +146,7 @@ namespace Hotfix.UI
 
         private void OnBtnCreateClick(EventContext ctx)
         {
-            CreatePlayer().Forget();
+            CreatePlayerAsync().Forget();
         }
 
         #endregion

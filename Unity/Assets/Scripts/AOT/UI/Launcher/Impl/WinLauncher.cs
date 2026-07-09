@@ -3,7 +3,6 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Launcher.Runtime;
-using FuFramework.Localization.Runtime;
 using FuFramework.UI.Runtime;
 using Launcher.Procedure;
 
@@ -15,8 +14,8 @@ namespace Launcher.UI
         #region 界面基本属性(无特殊需求，可不做修改)
  
          //@formatter:off
-         protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
-         protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
+         protected override EUILayer Layer         => EUILayer.Normal;   // 界面所属的层级。
+         protected override EUITweenType TweenType => EUITweenType.Fade; // 界面打开/关闭时的动画效果。
          protected override bool AdjustNotch      => false;            // 是否适配刘海/打孔区域（全屏覆盖）。
          public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
         //@formatter:on
@@ -26,7 +25,7 @@ namespace Launcher.UI
         /// <summary>
         /// 确认按钮点击事件回调
         /// </summary>
-        private EventCallback0 _btnOkClick;
+        private EventCallback0 m_BtnOkClick;
 
         /// <summary>
         /// 初始化
@@ -90,10 +89,7 @@ namespace Launcher.UI
             SetUpdateSureUIState(true);
 
             // 设置更新提示框
-            var isChinese = GlobalModule.LocalizationModule.Language == ELanguage.ChineseSimplified ||
-                            GlobalModule.LocalizationModule.Language == ELanguage.ChineseTraditional;
-
-            btnOk.title     = isChinese ? "更新" : "Update";
+            btnOk.title     = "更新";
             txtContent.text = content;
 
             // 设置更新内容文本点击回调
@@ -104,7 +100,7 @@ namespace Launcher.UI
             });
 
             // 设置更新按钮点击回调
-            _btnOkClick = () => { updateBtnClickCallback?.Invoke(); };
+            m_BtnOkClick = () => { updateBtnClickCallback?.Invoke(); };
         }
 
         /// <summary>
@@ -120,14 +116,14 @@ namespace Launcher.UI
             var currentSizeMb = Utility.File.GetBytesSizeWithUnit(message.CurrentDownloadSizeBytes);
             var totalSizeMb   = Utility.File.GetBytesSizeWithUnit(message.TotalDownloadSizeBytes);
             progressBar.value = progress * 100;
-            SetTipText($"Downloading：{currentSizeMb}/{totalSizeMb}");
+            SetTipText($"下载中：{currentSizeMb}/{totalSizeMb}");
         }
 
         #region 交互事件与ListItem渲染回调处理
 
         private void OnBtnOkClick(EventContext ctx)
         {
-            _btnOkClick?.Invoke();
+            m_BtnOkClick?.Invoke();
         }
 
         #endregion

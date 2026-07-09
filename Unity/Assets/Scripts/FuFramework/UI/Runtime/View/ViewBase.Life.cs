@@ -45,13 +45,13 @@ namespace FuFramework.UI.Runtime
             // 再执行打开动画
             switch (TweenType)
             {
-                case UITweenType.None:
+                case EUITweenType.None:
                     UIView.alpha = 1;
                     return;
-                case UITweenType.Fade:
+                case EUITweenType.Fade:
                     UIView.TweenFade(1, TweenDuration);
                     return;
-                case UITweenType.Custom:
+                case EUITweenType.Custom:
                     UIView.alpha = 1;
                     DoCustomOpenTween();
                     return;
@@ -122,13 +122,13 @@ namespace FuFramework.UI.Runtime
             // 界面关闭动画
             switch (TweenType)
             {
-                case UITweenType.None:
+                case EUITweenType.None:
                     OnClose();
                     return;
-                case UITweenType.Fade:
+                case EUITweenType.Fade:
                     UIView.TweenFade(0, TweenDuration).OnComplete(OnClose);
                     return;
-                case UITweenType.Custom:
+                case EUITweenType.Custom:
                     CustomCloseTween();
                     return;
                 default:

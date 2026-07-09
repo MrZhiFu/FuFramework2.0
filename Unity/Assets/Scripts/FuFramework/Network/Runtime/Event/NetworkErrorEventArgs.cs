@@ -27,7 +27,7 @@ namespace FuFramework.Network.Runtime
         /// <summary>
         /// 获取错误码。
         /// </summary>
-        public NetworkErrorCode ErrorCode { get; private set; } = NetworkErrorCode.Unknown;
+        public ENetworkErrorCode ErrorCode { get; private set; } = ENetworkErrorCode.Unknown;
 
         /// <summary>
         /// 获取 Socket 错误码。
@@ -47,7 +47,7 @@ namespace FuFramework.Network.Runtime
         /// <param name="socketErrorCode">Socket 错误码。</param>
         /// <param name="errorMessage">错误信息。</param>
         /// <returns>创建的网络错误事件。</returns>
-        public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
+        public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
                                                    string errorMessage)
         {
             var networkErrorEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<NetworkErrorEventArgs>();
@@ -65,7 +65,7 @@ namespace FuFramework.Network.Runtime
         {
             NetworkChannel  = null;
             ErrorMessage    = null;
-            ErrorCode       = NetworkErrorCode.Unknown;
+            ErrorCode       = ENetworkErrorCode.Unknown;
             SocketErrorCode = SocketError.Success;
         }
     }

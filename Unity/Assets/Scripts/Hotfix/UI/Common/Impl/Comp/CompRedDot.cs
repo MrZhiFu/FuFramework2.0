@@ -12,7 +12,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 红点显示模式
         /// </summary>
-        public enum DisplayMode
+        public enum EDisplayMode
         {
             /// <summary>
             /// 只显示红点
@@ -38,7 +38,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 红点显示模式
         /// </summary>
-        private DisplayMode m_DisplayMode = DisplayMode.DotOnly;
+        private EDisplayMode m_DisplayMode = EDisplayMode.DotOnly;
 
         /// <summary>
         /// 缓存目标组件
@@ -73,7 +73,7 @@ namespace Hotfix.UI
         /// <param name="target">红点依附的目标组件</param>
         /// <param name="redKey">红点Key</param>
         /// <param name="displayMode">红点显示模式</param>
-        public void Register(ViewBase view, GComponent target, string redKey, DisplayMode displayMode = DisplayMode.DotOnly)
+        public void Register(ViewBase view, GComponent target, string redKey, EDisplayMode displayMode = EDisplayMode.DotOnly)
         {
             if (view   == null) return;
             if (target == null) return;
@@ -117,16 +117,16 @@ namespace Hotfix.UI
         {
             switch (m_DisplayMode)
             {
-                case DisplayMode.DotOnly:
+                case EDisplayMode.DotOnly:
                     txtCount.visible  = false;
                     imgRedDot.visible = redCount > 0;
                     break;
-                case DisplayMode.DotNumber:
+                case EDisplayMode.DotNumber:
                     txtCount.visible  = redCount >= 1;
                     imgRedDot.visible = redCount > 0;
                     txtCount.text     = FormatRedDotCount(redCount);
                     break;
-                case DisplayMode.Auto:
+                case EDisplayMode.Auto:
                     txtCount.visible  = redCount > 1;
                     imgRedDot.visible = redCount > 0;
                     txtCount.text     = FormatRedDotCount(redCount);

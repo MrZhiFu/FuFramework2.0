@@ -119,7 +119,7 @@ namespace FuFramework.Network.Runtime
             public Action<NetworkChannelBase>                                        NetworkChannelClosed;
             public Action<NetworkChannelBase, bool>                                  NetworkChannelActiveChanged;
             public Action<NetworkChannelBase, int>                                   NetworkChannelMissHeartBeat;
-            public Action<NetworkChannelBase, NetworkErrorCode, SocketError, string> NetworkChannelError;
+            public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> NetworkChannelError;
 
             /// <summary>
             /// 初始化网络频道基类的新实例。
@@ -579,7 +579,7 @@ namespace FuFramework.Network.Runtime
                         default:
                             var errorMessage = $"Not supported address family '{ConnectEndPoint.AddressFamily}'.";
                             if (NetworkChannelError == null) throw new FuException(errorMessage);
-                            NetworkChannelError(this, NetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
+                            NetworkChannelError(this, ENetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
                             return;
                     }
                 }
@@ -650,7 +650,7 @@ namespace FuFramework.Network.Runtime
                 {
                     const string errorMessage = "You must connect first.";
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
-                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
 
@@ -658,7 +658,7 @@ namespace FuFramework.Network.Runtime
                 {
                     const string errorMessage = "Socket is not active.";
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
-                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
 
@@ -666,7 +666,7 @@ namespace FuFramework.Network.Runtime
                 {
                     const string errorMessage = "Packet is invalid.";
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
-                    NetworkChannelError(this, NetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                    NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
 
@@ -750,7 +750,7 @@ namespace FuFramework.Network.Runtime
                             PActive = false;
                             if (NetworkChannelError == null) throw;
                             var socketException = exception as SocketException;
-                            NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                            NetworkChannelError(this, ENetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                             return false;
                         }
                         finally
@@ -761,7 +761,7 @@ namespace FuFramework.Network.Runtime
                         if (serializeResult) continue;
                         const string errorMessage = "Serialized packet failure.";
                         if (NetworkChannelError == null) throw new FuException(errorMessage);
-                        NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                        NetworkChannelError(this, ENetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
                         return false;
 
                         // PSendState.Reset();

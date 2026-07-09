@@ -149,7 +149,7 @@ namespace FuFramework.Download.Runtime
             /// </summary>
             /// <param name="task">要处理的下载任务。</param>
             /// <returns>开始处理任务的状态。</returns>
-            public StartTaskStatus Start(DownloadTask task)
+            public EStartTaskStatus Start(DownloadTask task)
             {
                 Task = task ?? throw new FuException("[DownloadModule.DownloadAgent] 任务不能为空.");
 
@@ -183,14 +183,14 @@ namespace FuFramework.Download.Runtime
                     else
                         m_Helper.Download(Task.DownloadUri); // 全新下载
 
-                    return StartTaskStatus.CanResume;
+                    return EStartTaskStatus.CanResume;
                 }
                 catch (Exception exception)
                 {
                     var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
                     _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
                     ReferencePool.Runtime.ReferencePool.Release(downloadAgentHelperErrorEventArgs);
-                    return StartTaskStatus.UnknownError;
+                    return EStartTaskStatus.UnknownError;
                 }
             }
 

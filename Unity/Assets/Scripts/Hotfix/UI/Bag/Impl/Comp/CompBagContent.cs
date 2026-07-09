@@ -29,10 +29,10 @@ namespace Hotfix.UI
             }
         }
 
-        private List<ItemTypeData> _tabs = new(); // 道具类型页签列表
-        private List<BagItem> _bagItems = new(); // 背包道具列表
+        private List<ItemTypeData> m_Tabs = new(); // 道具类型页签列表
+        private List<BagItem> m_BagItems = new(); // 背包道具列表
 
-        private BagItem _selectBagItem = null; // 选中的背包道具
+        private BagItem m_SelectBagItem = null; // 选中的背包道具
 
         /// <summary>
         /// 初始化
@@ -58,13 +58,13 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.EDisplayMode.Auto);
         }
 
         private void InitData()
         {
-            _bagItems = new List<BagItem>();
-            _tabs = new List<ItemTypeData>
+            m_BagItems = new List<BagItem>();
+            m_Tabs = new List<ItemTypeData>
             {
                 new(ItemType.Item, "道具"),
                 new(ItemType.Equip, "装备"),
@@ -82,8 +82,8 @@ namespace Hotfix.UI
         
         public void Refresh()
         {  
-            listItem.numItems = _bagItems.Count;
-            listType.numItems = _tabs.Count;
+            listItem.numItems = m_BagItems.Count;
+            listType.numItems = m_Tabs.Count;
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Hotfix.UI
         /// <param name="bagItem"></param>
         private void UpdateSelectItem(BagItem bagItem)
         {
-            _selectBagItem = bagItem;
+            m_SelectBagItem = bagItem;
             compBagItem.SetData(bagItem);
         }
 
@@ -115,7 +115,7 @@ namespace Hotfix.UI
         private void OnClickListItemItem(EventContext ctx)
         {
             var idx = listItem.GetChildIndex((GObject)ctx.data);
-            var bagItem = _bagItems[idx];
+            var bagItem = m_BagItems[idx];
             UpdateSelectItem(bagItem);
         }
 
@@ -126,7 +126,7 @@ namespace Hotfix.UI
         /// <param name="item"></param>
         private void OnRenderListItemItem(int idx, GObject item)
         {
-            var bagItem = _bagItems[idx];
+            var bagItem = m_BagItems[idx];
             if (item is not CompBagItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
             compItem.Init(uiView);
@@ -140,21 +140,21 @@ namespace Hotfix.UI
         private void OnClickListTypeItem(EventContext ctx)
         {
             var idx = listType.GetChildIndex((GObject)ctx.data);
-            var itemTypeData = _tabs[idx];
+            var itemTypeData = m_Tabs[idx];
 
-            _bagItems.Clear();
-            _bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
-            if (_bagItems.Count > 0)
+            m_BagItems.Clear();
+            m_BagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
+            if (m_BagItems.Count > 0)
             {
                 listItem.selectedIndex = 0;
                 SetController(EIsSelectedItem.Yes);
-                var bagItem = _bagItems[0];
+                var bagItem = m_BagItems[0];
                 UpdateSelectItem(bagItem);
             }
             else
             {
                 SetController(EIsSelectedItem.No);
-                _selectBagItem = null;
+                m_SelectBagItem = null;
             }
         }
 
@@ -168,7 +168,7 @@ namespace Hotfix.UI
             if (item is not CompTypeItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
             compItem.Init(uiView);
-            compItem.SetData(_tabs[idx].Name);
+            compItem.SetData(m_Tabs[idx].Name);
         }
 
         #endregion

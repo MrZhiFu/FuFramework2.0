@@ -33,7 +33,7 @@
         /// </summary>
         /// <param name="task">要处理的任务。</param>
         /// <returns>开始处理任务的状态。</returns>
-        StartTaskStatus Start(T task);
+        EStartTaskStatus Start(T task);
 
         /// <summary>
         /// 停止正在处理的任务并重置任务代理。

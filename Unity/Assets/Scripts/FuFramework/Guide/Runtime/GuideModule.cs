@@ -568,12 +568,12 @@ namespace FuFramework.Guide.Runtime
         /// <returns></returns>
         private BaseStep CreateStep(StepInfo stepInfo)
         {
-            return stepInfo.m_StepType switch
+            return stepInfo.m_EStepType switch
             {
-                StepType.ClickUI => ClickUIStep.Create(stepInfo),
-                StepType.Dialog  => DialogStep.Create(stepInfo),
-                StepType.Wait    => WaitStep.Create(stepInfo),
-                StepType.None    => DefaultStep.Create(stepInfo),
+                EStepType.ClickUI => ClickUIStep.Create(stepInfo),
+                EStepType.Dialog  => DialogStep.Create(stepInfo),
+                EStepType.Wait    => WaitStep.Create(stepInfo),
+                EStepType.None    => DefaultStep.Create(stepInfo),
                 _                => DefaultStep.Create(stepInfo)
             };
         }
@@ -616,7 +616,7 @@ namespace FuFramework.Guide.Runtime
                 OnStepExecuting?.Invoke(m_CurrentStep);
                 OnStepChanged?.Invoke(CurrentGuideId, m_CurrentStep.StepInfo.m_StepId);
 
-                FuLogger.LogInfo($"[GuideModule] 执行步骤: {m_CurrentStep.StepInfo.m_StepId} ({m_CurrentStep.StepInfo.m_StepType})");
+                FuLogger.LogInfo($"[GuideModule] 执行步骤: {m_CurrentStep.StepInfo.m_StepId} ({m_CurrentStep.StepInfo.m_EStepType})");
             }
             catch (Exception e)
             {

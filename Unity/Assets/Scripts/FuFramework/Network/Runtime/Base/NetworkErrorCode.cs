@@ -5,7 +5,7 @@ namespace FuFramework.Network.Runtime
     /// <summary>
     /// 网络错误码。
     /// </summary>
-    public enum NetworkErrorCode : byte
+    public enum ENetworkErrorCode : byte
     {
         /// <summary>
         /// 未知错误。

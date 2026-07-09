@@ -29,7 +29,7 @@ namespace Hotfix
         /// <summary>
         /// 启动入口
         /// </summary>
-        public static async UniTask Main()
+        public static async UniTask MainAsync()
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
@@ -46,11 +46,11 @@ namespace Hotfix
             
             // 加载配置表
             winLauncher.SetTipText("LoadConfig...");
-            await LoadConfig();
+            await LoadConfigAsync();
 
             // 加载初始必要的UI资源
             winLauncher.SetTipText("LoadInitUIAsset...");
-            await LoadUI();
+            await LoadUIAsync();
 
             // 绑定自动生成的Fui自定义组件(HotFix下)
             BindCustomComps();
@@ -72,7 +72,7 @@ namespace Hotfix
         /// <summary>
         /// 加载配置表
         /// </summary>
-        private static async UniTask LoadConfig()
+        private static async UniTask LoadConfigAsync()
         {
             var tableManager = new TableManager();
             tableManager.Init(GlobalModule.ConfigModule);
@@ -89,7 +89,7 @@ namespace Hotfix
         /// <summary>
         /// 加载初始必要的UI
         /// </summary>
-        private static UniTask LoadUI()
+        private static UniTask LoadUIAsync()
         {
             // 添加通用UI资源包
            return GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");

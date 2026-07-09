@@ -9,7 +9,7 @@ namespace FuFramework.Guide.Runtime
     /// <summary>
     /// 步骤状态
     /// </summary>
-    public enum StepState
+    public enum EStepState
     {
         /// <summary>
         /// 空闲
@@ -62,17 +62,17 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 步骤状态
         /// </summary>
-        public StepState State { get; private set; } = StepState.Idle;
+        public EStepState State { get; private set; } = EStepState.Idle;
 
         /// <summary>
         /// 步骤是否在执行中
         /// </summary>
-        public bool IsExecuting => State == StepState.Executing;
+        public bool IsExecuting => State == EStepState.Executing;
 
         /// <summary>
         /// 步骤是否已完成
         /// </summary>
-        public bool IsCompleted => State == StepState.Completed;
+        public bool IsCompleted => State == EStepState.Completed;
 
         /// <summary>
         /// 步骤执行动作对象
@@ -88,7 +88,7 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         public void Execute()
         {
-            State         = StepState.Executing;
+            State         = EStepState.Executing;
             StartTime     = Time.time;
             ExecutionTime = 0f;
             OnExecute();
@@ -100,7 +100,7 @@ namespace FuFramework.Guide.Runtime
         /// <param name="deltaTime"></param>
         public void Update(float deltaTime)
         {
-            if (State == StepState.Executing)
+            if (State == EStepState.Executing)
             {
                 ExecutionTime += deltaTime;
             }
@@ -113,7 +113,7 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         public void Complete()
         {
-            State = StepState.Completed;
+            State = EStepState.Completed;
             OnComplete();
             
             // 执行下一个步骤
@@ -126,7 +126,7 @@ namespace FuFramework.Guide.Runtime
         /// </summary>
         public void Cancel()
         {
-            State = StepState.Cancelled;
+            State = EStepState.Cancelled;
             OnCancel();
         }
 
@@ -162,7 +162,7 @@ namespace FuFramework.Guide.Runtime
         /// <summary>
         /// 检查步骤是否可以完成
         /// </summary>
-        public virtual bool CanComplete() => State == StepState.Executing;
+        public virtual bool CanComplete() => State == EStepState.Executing;
 
         /// <summary>
         /// 清理

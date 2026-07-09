@@ -31,7 +31,7 @@ namespace FuFramework.TaskPool.Runtime
         private readonly string m_Description;
 
         /// 任务状态
-        private readonly TaskStatus m_Status;
+        private readonly ETaskStatus m_Status;
 
         /// <summary>
         /// 初始化任务信息的新实例。
@@ -42,7 +42,7 @@ namespace FuFramework.TaskPool.Runtime
         /// <param name="userData">任务的用户自定义数据。</param>
         /// <param name="status">任务状态。</param>
         /// <param name="description">任务描述。</param>
-        public TaskInfo(int serialId, string tag, int priority, object userData, TaskStatus status, string description)
+        public TaskInfo(int serialId, string tag, int priority, object userData, ETaskStatus status, string description)
         {
             m_Tag         = tag;
             m_IsValid     = true;
@@ -81,7 +81,7 @@ namespace FuFramework.TaskPool.Runtime
         /// <summary>
         /// 获取任务状态。
         /// </summary>
-        public TaskStatus Status => m_IsValid ? m_Status : throw new FuException("[TaskPool] 任务信息无效.");
+        public ETaskStatus Status => m_IsValid ? m_Status : throw new FuException("[TaskPool] 任务信息无效.");
 
         /// <summary>
         /// 获取任务描述。

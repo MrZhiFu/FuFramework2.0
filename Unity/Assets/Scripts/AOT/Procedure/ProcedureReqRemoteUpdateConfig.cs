@@ -78,8 +78,8 @@ namespace Launcher.Procedure
                 if (m_UpdateConfig is null)
                 {
                     // 获取失败，延迟3秒后重试
-                    m_WinLauncher.SetTipText("Asset Server error, retrying...");
-                    FuLogger.LogError($"获取获取远端资源更新配置异常，3秒后重试：Req=>{configUrl}");
+                    m_WinLauncher.SetTipText("资源服务器错误，正在重试...");
+                    FuLogger.LogError($"获取远端资源更新配置失败，3秒后重试：Req=>{configUrl}");
                     await UniTask.WaitForSeconds(3);
                     ProcessUpdateConfigAsync().Forget();
                     return;
@@ -103,8 +103,8 @@ namespace Launcher.Procedure
             catch (Exception e)
             {
                 // 网络异常，延迟3秒后重试
-                FuLogger.LogError($"获取远端资源更新配置异常，3秒后重试：Req=>{configUrl}，{e.Message}");
-                m_WinLauncher.SetTipText("Network error, retrying...");
+                FuLogger.LogError($"获取远端资源更新配置失败，网络异常，3秒后重试：Req=>{configUrl}，{e.Message}");
+                m_WinLauncher.SetTipText("网络错误，正在重试...");
                 await UniTask.WaitForSeconds(3);
                 ProcessUpdateConfigAsync().Forget();
             }

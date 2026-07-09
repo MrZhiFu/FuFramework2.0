@@ -5,7 +5,7 @@ namespace FuFramework.ModuleSetting.Runtime
     /// <summary>
     /// 引导步骤类型
     /// </summary>
-    public enum StepType
+    public enum EStepType
     {
         /// <summary>
         /// 无类型
@@ -42,7 +42,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 步骤类型
         /// </summary>
-        public StepType m_StepType;
+        public EStepType m_EStepType;
 
         /// <summary>
         /// 下一个步骤Id

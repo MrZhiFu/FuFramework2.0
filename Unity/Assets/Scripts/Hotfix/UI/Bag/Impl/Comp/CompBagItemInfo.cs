@@ -12,7 +12,7 @@ namespace Hotfix.UI
 {
     public partial class CompBagItemInfo
     {
-        private BagItem _selectBagItem;
+        private BagItem m_SelectBagItem;
 
         /// <summary>
         /// 初始化
@@ -36,7 +36,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.EDisplayMode.Auto);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Hotfix.UI
         public void SetData(BagItem selectBagItem)
         {
             if (selectBagItem.IsNull()) return;
-            _selectBagItem = selectBagItem;
+            m_SelectBagItem = selectBagItem;
             var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>().Get(selectBagItem.ItemId);
             txtName.text = itemConfig.Name;
             txtDesc.text = itemConfig.Desc;
@@ -64,8 +64,8 @@ namespace Hotfix.UI
 
         private void OnBtnUseClick(EventContext ctx)
         {
-            if (_selectBagItem.IsNull()) return;
-            BagManager.Instance.RequestUseItem(_selectBagItem.ItemId, _selectBagItem.Count).Forget();
+            if (m_SelectBagItem.IsNull()) return;
+            BagManager.Instance.RequestUseItemAsync(m_SelectBagItem.ItemId, m_SelectBagItem.Count).Forget();
         }
 
         private void OnBtnGetClick(EventContext ctx)

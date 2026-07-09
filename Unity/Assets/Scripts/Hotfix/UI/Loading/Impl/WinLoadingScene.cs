@@ -9,8 +9,8 @@ namespace Hotfix.UI
          #region 界面基本属性(无特殊需求，可不做修改)
  
          //@formatter:off
-         protected override UILayer Layer         => UILayer.Normal;   // 界面所属的层级。
-         protected override UITweenType TweenType => UITweenType.Fade; // 界面打开/关闭时的动画效果。
+         protected override EUILayer Layer         => EUILayer.Normal;   // 界面所属的层级。
+         protected override EUITweenType TweenType => EUITweenType.Fade; // 界面打开/关闭时的动画效果。
          protected override bool AdjustNotch      => false;            // 是否适配刘海/打孔区域（全屏覆盖）。
          public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
          //@formatter:on
@@ -41,7 +41,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.DisplayMode.Auto);
+            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.EDisplayMode.Auto);
         }
         
         /// <summary>

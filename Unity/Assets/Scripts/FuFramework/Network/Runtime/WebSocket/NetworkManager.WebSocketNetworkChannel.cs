@@ -39,7 +39,7 @@ namespace FuFramework.Network.Runtime
                 {
                     const string errorMessage = "Initialize network channel failure.";
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
-                    NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                    NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
                     return;
                 }
 
@@ -81,7 +81,7 @@ namespace FuFramework.Network.Runtime
                             PActive = false;
                             if (NetworkChannelError == null) throw;
                             var socketException = exception as SocketException;
-                            NetworkChannelError(this, NetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                            NetworkChannelError(this, ENetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                             return false;
                         }
                         finally
@@ -93,7 +93,7 @@ namespace FuFramework.Network.Runtime
                         {
                             const string errorMessage = "Serialized packet failure.";
                             if (NetworkChannelError == null) throw new FuException(errorMessage);
-                            NetworkChannelError(this, NetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                            NetworkChannelError(this, ENetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
                             return false;
                         }
 
@@ -116,7 +116,7 @@ namespace FuFramework.Network.Runtime
                 {
                     PActive = false;
                     const string errorMessage = "Network channel is closing.";
-                    NetworkChannelError?.Invoke(this, NetworkErrorCode.SocketError, SocketError.Disconnecting, errorMessage);
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.SocketError, SocketError.Disconnecting, errorMessage);
 
                     return false;
                 }
@@ -155,7 +155,7 @@ namespace FuFramework.Network.Runtime
                     // ReSharper disable once AsyncVoidMethod
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
@@ -166,7 +166,7 @@ namespace FuFramework.Network.Runtime
                 {
                     var socketUserData = (WebSocketNetSocket)PSocket;
                     if (!socketUserData.IsConnected)
-                        throw new SocketException((int)NetworkErrorCode.ConnectError);
+                        throw new SocketException((int)ENetworkErrorCode.ConnectError);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -177,7 +177,7 @@ namespace FuFramework.Network.Runtime
                     PActive = false;
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     return;
                 }
 
@@ -230,7 +230,7 @@ namespace FuFramework.Network.Runtime
                         {
                             if (NetworkChannelError != null)
                             {
-                                NetworkChannelError(this, NetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid.");
+                                NetworkChannelError(this, ENetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid.");
                                 return;
                             }
                         }
@@ -241,12 +241,12 @@ namespace FuFramework.Network.Runtime
                     }
                     else
                     {
-                        NetworkChannelError?.Invoke(this, NetworkErrorCode.DeserializePacketHeaderError, SocketError.Success, "Packet header is invalid.");
+                        NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketHeaderError, SocketError.Success, "Packet header is invalid.");
                     }
                 }
                 catch (Exception e)
                 {
-                    NetworkChannelError?.Invoke(this, NetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
                 }
             }
         }

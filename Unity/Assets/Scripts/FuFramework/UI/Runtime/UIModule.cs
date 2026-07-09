@@ -92,7 +92,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected override void OnInit()
         {
-            m_UIGroupDict      = new Dictionary<UILayer, UIGroup>();
+            m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
             m_WaitRecycleQueue = new Queue<ViewBase>();
 
@@ -119,7 +119,7 @@ namespace FuFramework.UI.Runtime
             SafeAreaHelper.OnSafeAreaChanged += ApplyGRootSafeArea;
 
             // 遍历所有UI层级，并添加UI组
-            foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
+            foreach (EUILayer layer in Enum.GetValues(typeof(EUILayer)))
             {
                 if (AddUIGroup(layer)) continue;
                 FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");

@@ -207,7 +207,7 @@ namespace FuFramework.ModuleSetting.Runtime
         /// <summary>
         /// 创建新的步骤
         /// </summary>
-        public StepInfo CreateStep(string guideId, string stepName, StepType stepType = StepType.None)
+        public StepInfo CreateStep(string guideId, string stepName, EStepType stepType = EStepType.None)
         {
             var guide = GetGuide(guideId);
             if (guide == null) return null;
@@ -216,9 +216,9 @@ namespace FuFramework.ModuleSetting.Runtime
             var newStep = new StepInfo
             {
                 m_StepId    = stepId,
-                m_StepType  = stepType,
+                m_EStepType  = stepType,
                 m_IsCanJump = false,
-                m_WaitTime  = stepType == StepType.Wait ? 3f : 0f // 等待步骤默认3秒
+                m_WaitTime  = stepType == EStepType.Wait ? 3f : 0f // 等待步骤默认3秒
             };
 
             return AddStepToGuide(guideId, newStep);

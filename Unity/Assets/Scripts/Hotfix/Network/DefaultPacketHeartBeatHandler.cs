@@ -6,18 +6,18 @@ namespace Hotfix.Network
 {
     public sealed class DefaultPacketHeartBeatHandler : BasePacketHeartBeatHandler
     {
-        private readonly ReqHeartBeat _reqHeartBeat;
+        private readonly ReqHeartBeat m_ReqHeartBeat;
 
         public DefaultPacketHeartBeatHandler()
         {
-            _reqHeartBeat = new ReqHeartBeat();
+            m_ReqHeartBeat = new ReqHeartBeat();
         }
 
         public override MessageObject Handler()
         {
-            _reqHeartBeat.Timestamp = Utility.Time.ClientNow();
-            _reqHeartBeat.UpdateUniqueId();
-            return _reqHeartBeat;
+            m_ReqHeartBeat.Timestamp = Utility.Time.ClientNow();
+            m_ReqHeartBeat.UpdateUniqueId();
+            return m_ReqHeartBeat;
         }
     }
 }

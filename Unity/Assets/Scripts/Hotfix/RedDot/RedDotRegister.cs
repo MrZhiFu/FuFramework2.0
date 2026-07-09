@@ -23,7 +23,7 @@ namespace Hotfix.UI
         /// <param name="target">红点依附的目标组件</param>
         /// <param name="displayMode">红点显示模式</param>
         /// <param name="offset">红点位置偏移</param>
-        public static void RegisterRedDot(ViewBase view, string redDotKey, GComponent target, CompRedDot.DisplayMode displayMode = CompRedDot.DisplayMode.DotOnly, Vector2 offset = default)
+        public static void RegisterRedDot(ViewBase view, string redDotKey, GComponent target, CompRedDot.EDisplayMode displayMode = CompRedDot.EDisplayMode.DotOnly, Vector2 offset = default)
         {
             // 检查 Common 包是否已加载
             var commonPkg = UIPackage.GetByName("Common");

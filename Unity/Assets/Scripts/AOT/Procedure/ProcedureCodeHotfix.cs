@@ -57,7 +57,7 @@ namespace Launcher.Procedure
             }
 
             // 等待热更程序集入口函数运行完毕
-            await Run(hotfixAssembly);
+            await RunAsync(hotfixAssembly);
 
             FuLogger.LogInfo("<color=#43f656>------代码热更流程结束------</color>");
 
@@ -113,12 +113,12 @@ namespace Launcher.Procedure
         /// <summary>
         /// 运行热更程序集入口函数
         /// </summary>
-        private static async UniTask Run(Assembly assembly)
+        private static async UniTask RunAsync(Assembly assembly)
         {
             var entryType = assembly.GetType("Hotfix.HotfixLauncher");
             FuLogger.LogInfo("获取程序集Hotfix的入口类型 ==>" + entryType.FullName);
 
-            var mainMethod = entryType.GetMethod("Main");
+            var mainMethod = entryType.GetMethod("MainAsync");
             FuLogger.LogInfo("获取程序集Hotfix的入口类型的入口方法 ==>" + mainMethod?.Name);
 
             // 调用异步入口函数并等待完成

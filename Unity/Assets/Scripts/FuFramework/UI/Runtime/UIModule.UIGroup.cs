@@ -18,7 +18,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 界面组字典。key为组名称，value为组对象。
         /// </summary>
-        private Dictionary<UILayer, UIGroup> m_UIGroupDict;
+        private Dictionary<EUILayer, UIGroup> m_UIGroupDict;
 
         /// <summary>
         /// 获取界面组数量。
@@ -30,14 +30,14 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>是否存在界面组。</returns>
-        public bool HasUIGroup(UILayer layer) => m_UIGroupDict.ContainsKey(layer);
+        public bool HasUIGroup(EUILayer layer) => m_UIGroupDict.ContainsKey(layer);
 
         /// <summary>
         /// 获取界面组。
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>要获取的界面组。</returns>
-        public UIGroup GetUIGroup(UILayer layer)
+        public UIGroup GetUIGroup(EUILayer layer)
         {
             return m_UIGroupDict.GetValueOrDefault(layer);
         }
@@ -78,7 +78,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>是否添加成功。</returns>
-        public bool AddUIGroup(UILayer layer)
+        public bool AddUIGroup(EUILayer layer)
         {
             if (HasUIGroup(layer))
             {

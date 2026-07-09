@@ -46,7 +46,7 @@ namespace FuFramework.Network.Runtime
                 {
                     const string errorMessage = "Initialize network channel failure.";
                     if (NetworkChannelError == null) throw new FuException(errorMessage);
-                    NetworkChannelError(this, NetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                    NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
                     return;
 
                 }
@@ -79,7 +79,7 @@ namespace FuFramework.Network.Runtime
                     PActive = false;
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
@@ -98,7 +98,7 @@ namespace FuFramework.Network.Runtime
                     PActive = false;
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     return;
 
                 }
@@ -200,7 +200,7 @@ namespace FuFramework.Network.Runtime
                 if (PActive == false)
                 {
                     PActive = false;
-                    NetworkChannelError?.Invoke(this, NetworkErrorCode.SocketError, SocketError.Disconnecting, "Network channel is closing.");
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.SocketError, SocketError.Disconnecting, "Network channel is closing.");
                     return false;
                 }
 
@@ -226,7 +226,7 @@ namespace FuFramework.Network.Runtime
                     PActive = false;
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
@@ -245,7 +245,7 @@ namespace FuFramework.Network.Runtime
                     PActive = false;
                     if (NetworkChannelError == null) return;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     return;
                 }
 
@@ -276,7 +276,7 @@ namespace FuFramework.Network.Runtime
                 {
                     if (NetworkChannelError == null) throw;
                     var socketException = exception as SocketException;
-                    NetworkChannelError(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
 
@@ -296,7 +296,7 @@ namespace FuFramework.Network.Runtime
                 catch (Exception exception)
                 {
                     var socketException = exception as SocketException;
-                    NetworkChannelError?.Invoke(this, NetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                     Close();
                     return;
                 }

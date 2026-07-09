@@ -147,7 +147,7 @@ namespace FuFramework.ModuleSetting.Editor
                     foreach (var step in GetAllSteps(setting[index].m_Steps))
                     {
                         stepIds.Add(step.m_StepId);
-                        stepNames.Add($"{step.m_StepId} ({step.m_StepType})");
+                        stepNames.Add($"{step.m_StepId} ({step.m_EStepType})");
                     }
 
                     var currentIndex                   = stepIds.IndexOf(startStepIdProperty.stringValue);
@@ -223,7 +223,7 @@ namespace FuFramework.ModuleSetting.Editor
         private void DisplayStep(SerializedProperty stepProperty, GuideSetting setting, string guideId)
         {
             var stepIdProperty       = stepProperty.FindPropertyRelative("m_StepId");
-            var stepTypeProperty     = stepProperty.FindPropertyRelative("m_StepType");
+            var stepTypeProperty     = stepProperty.FindPropertyRelative("m_EStepType");
             var nextStepIdProperty   = stepProperty.FindPropertyRelative("m_NextStepId");
             var canJumpProperty      = stepProperty.FindPropertyRelative("m_IsCanJump");
             var targetWindowProperty = stepProperty.FindPropertyRelative("m_TargetWindow");
@@ -270,17 +270,17 @@ namespace FuFramework.ModuleSetting.Editor
                 EditorGUILayout.PropertyField(canJumpProperty,  new GUIContent("是否可跳过"));
 
                 // 根据步骤类型显示不同的字段
-                var stepType = (StepType)stepTypeProperty.enumValueIndex;
+                var stepType = (EStepType)stepTypeProperty.enumValueIndex;
                 switch (stepType)
                 {
-                    case StepType.Dialog:
+                    case EStepType.Dialog:
                         EditorGUILayout.PropertyField(dialogProperty, new GUIContent("对话内容"));
                         break;
-                    case StepType.ClickUI:
+                    case EStepType.ClickUI:
                         EditorGUILayout.PropertyField(targetWindowProperty, new GUIContent("目标窗口"));
                         EditorGUILayout.PropertyField(targetUIProperty,     new GUIContent("目标UI"));
                         break;
-                    case StepType.Wait:
+                    case EStepType.Wait:
                         EditorGUILayout.PropertyField(waitTimeProperty, new GUIContent("等待时间(秒)"));
                         break;
                 }
@@ -299,7 +299,7 @@ namespace FuFramework.ModuleSetting.Editor
                     foreach (var step in allSteps.Where(s => s.m_StepId != stepIdProperty.stringValue))
                     {
                         stepIds.Add(step.m_StepId);
-                        stepNames.Add($"{step.m_StepId} ({step.m_StepType})");
+                        stepNames.Add($"{step.m_StepId} ({step.m_EStepType})");
                     }
 
                     var currentIndex = stepIds.IndexOf(nextStepIdProperty.stringValue);
@@ -425,7 +425,7 @@ namespace FuFramework.ModuleSetting.Editor
             if (guide != null)
             {
                 // 为每个引导添加一个示例步骤
-                var step = setting.CreateStep(guide.m_GuideId, "示例步骤", StepType.ClickUI);
+                var step = setting.CreateStep(guide.m_GuideId, "示例步骤", EStepType.ClickUI);
                 if (step != null)
                 {
                     step.m_TargetWindow  = "ExampleWindow";
@@ -452,7 +452,7 @@ namespace FuFramework.ModuleSetting.Editor
             if (guide == null) return;
 
             var stepName = $"步骤{guide.m_Steps.Count + 1}";
-            var step     = setting.CreateStep(guideId, stepName, StepType.ClickUI);
+            var step     = setting.CreateStep(guideId, stepName, EStepType.ClickUI);
 
             if (step != null)
             {

@@ -119,13 +119,13 @@ namespace FuFramework.TaskPool.Runtime
             {
                 var workingTask = workingAgent.Task;
                 if (workingTask.SerialId != serialId) continue;
-                return new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority, workingTask.UserData, workingTask.Done ? TaskStatus.Done : TaskStatus.Doing, workingTask.Description);
+                return new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority, workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
             }
 
             foreach (var waitingTask in m_WaitingTaskList)
             {
                 if (waitingTask.SerialId != serialId) continue;
-                return new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority, waitingTask.UserData, TaskStatus.Todo, waitingTask.Description);
+                return new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority, waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
             }
 
             return default;
@@ -159,14 +159,14 @@ namespace FuFramework.TaskPool.Runtime
                 var workingTask = workingAgent.Task;
                 if (workingTask.Tag != tag) continue;
                 results.Add(new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-                                         workingTask.UserData, workingTask.Done ? TaskStatus.Done : TaskStatus.Doing, workingTask.Description));
+                                         workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
             }
 
             foreach (var waitingTask in m_WaitingTaskList)
             {
                 if (waitingTask.Tag != tag) continue;
                 results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-                                         waitingTask.UserData, TaskStatus.Todo, waitingTask.Description));
+                                         waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
             }
         }
 
@@ -182,13 +182,13 @@ namespace FuFramework.TaskPool.Runtime
             {
                 var workingTask = workingAgent.Task;
                 results[index++] = new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-                                                workingTask.UserData, workingTask.Done ? TaskStatus.Done : TaskStatus.Doing, workingTask.Description);
+                                                workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
             }
 
             foreach (var waitingTask in m_WaitingTaskList)
             {
                 results[index++] = new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-                                                waitingTask.UserData, TaskStatus.Todo, waitingTask.Description);
+                                                waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
             }
 
             return results;
@@ -208,13 +208,13 @@ namespace FuFramework.TaskPool.Runtime
             {
                 var workingTask = workingAgent.Task;
                 results.Add(new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-                                         workingTask.UserData, workingTask.Done ? TaskStatus.Done : TaskStatus.Doing, workingTask.Description));
+                                         workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
             }
 
             foreach (var waitingTask in m_WaitingTaskList)
             {
                 results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-                                         waitingTask.UserData, TaskStatus.Todo, waitingTask.Description));
+                                         waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
             }
         }
 
@@ -388,17 +388,17 @@ namespace FuFramework.TaskPool.Runtime
                 var next      = current.Next;
                 var status    = agent.Start(task);
 
-                if (status is StartTaskStatus.Done or StartTaskStatus.HasToWait or StartTaskStatus.UnknownError)
+                if (status is EStartTaskStatus.Done or EStartTaskStatus.HasToWait or EStartTaskStatus.UnknownError)
                 {
                     agent.Reset();
                     m_FreeAgentStack.Push(agent);
                     m_WorkingAgentList.Remove(agentNode);
                 }
 
-                if (status is StartTaskStatus.Done or StartTaskStatus.CanResume or StartTaskStatus.UnknownError)
+                if (status is EStartTaskStatus.Done or EStartTaskStatus.CanResume or EStartTaskStatus.UnknownError)
                     m_WaitingTaskList.Remove(current);
 
-                if (status is StartTaskStatus.Done or StartTaskStatus.UnknownError)
+                if (status is EStartTaskStatus.Done or EStartTaskStatus.UnknownError)
                     ReferencePool.Runtime.ReferencePool.Release(task);
 
                 current = next;

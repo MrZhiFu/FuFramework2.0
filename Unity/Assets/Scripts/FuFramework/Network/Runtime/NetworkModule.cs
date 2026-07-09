@@ -184,7 +184,7 @@ namespace FuFramework.Network.Runtime
             m_EventModule.Broadcast(this, networkMissHeartBeatEventArgs);
         }
 
-        private void OnNetworkChannelError(NetworkChannelBase networkChannel, NetworkErrorCode errorCode, SocketError socketErrorCode,
+        private void OnNetworkChannelError(NetworkChannelBase networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
                                            string errorMessage)
         {
             var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);

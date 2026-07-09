@@ -112,18 +112,18 @@ namespace FuFramework.ModuleSetting.Editor
             if (newbieGuide != null)
             {
                 // 步骤1：欢迎对话
-                var step1 = setting.CreateStep(newbieGuide.m_GuideId, "欢迎对话", StepType.Dialog);
+                var step1 = setting.CreateStep(newbieGuide.m_GuideId, "欢迎对话", EStepType.Dialog);
                 step1.m_DialogContent = "欢迎来到游戏世界！让我来引导你熟悉基本操作。";
                 step1.m_NextStepId    = "Step_点击开始按钮";
 
                 // 步骤2：点击开始按钮
-                var step2 = setting.CreateStep(newbieGuide.m_GuideId, "点击开始按钮", StepType.ClickUI);
+                var step2 = setting.CreateStep(newbieGuide.m_GuideId, "点击开始按钮", EStepType.ClickUI);
                 step2.m_TargetWindow = "WinMain";
                 step2.m_TargetUI     = "btn_start";
                 step2.m_NextStepId   = "Step_等待2秒";
 
                 // 步骤3：等待2秒
-                var step3 = setting.CreateStep(newbieGuide.m_GuideId, "等待2秒", StepType.Wait);
+                var step3 = setting.CreateStep(newbieGuide.m_GuideId, "等待2秒", EStepType.Wait);
                 step3.m_IsCanJump = false;
                 step3.m_WaitTime  = 2f;
 

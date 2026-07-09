@@ -20,7 +20,7 @@ namespace FuFramework.UI.Runtime
         private bool m_Pause;
 
         /// 获取或设置界面组所在的层级。
-        public UILayer Layer { get; private set; }
+        public EUILayer Layer { get; private set; }
 
         /// 界面组内的界面列表
         private readonly FuLinkedList<ViewInfo> m_UIInfoList = new();
@@ -54,7 +54,7 @@ namespace FuFramework.UI.Runtime
         /// 初始化界面组的新实例。
         /// </summary>
         /// <param name="layer">界面组层级。</param>
-        public void Init(UILayer layer)
+        public void Init(EUILayer layer)
         {
             Layer   = layer;
             m_Pause = false;

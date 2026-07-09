@@ -15,7 +15,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 数据目标格式
         /// </summary>
-        public enum DataTarget
+        public enum EDataTarget
         {
             /// <summary>
             /// JSON格式
@@ -39,7 +39,7 @@ namespace FuFramework.Config.Editor
         [MenuItem("FuFramework/配置表/导出配置表—Json", false, 1000)]
         public static void ExportConfigToJson()
         {
-            ExportConfig(DataTarget.Json);
+            ExportConfig(EDataTarget.Json);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace FuFramework.Config.Editor
         [MenuItem("FuFramework/配置表/导出配置表—Bin", false, 1001)]
         public static void ExportConfigToBin()
         {
-            ExportConfig(DataTarget.Bin);
+            ExportConfig(EDataTarget.Bin);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace FuFramework.Config.Editor
         /// </summary>
         /// <param name="target">数据目标格式</param>
         /// <returns>是否导出成功</returns>
-        private static void ExportConfig(DataTarget target)
+        private static void ExportConfig(EDataTarget target)
         {
             var configDir = GetConfigPath();
             var stopwatch = Stopwatch.StartNew();
@@ -73,7 +73,7 @@ namespace FuFramework.Config.Editor
             if (success)
             {
                 // 如果导出 JSON 格式的配置表，则移除启用二进制配置表的环境变量符号，否则添加启用二进制配置表的环境变量符号
-                if (target == DataTarget.Json)
+                if (target == EDataTarget.Json)
                 {
                     ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableBinaryConfigSymbol);
                 }

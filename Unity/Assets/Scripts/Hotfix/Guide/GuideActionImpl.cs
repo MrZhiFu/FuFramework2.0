@@ -18,7 +18,7 @@ namespace Hotfix.Guide
         /// 执行点击UI引导
         /// </summary>
         /// <param name="targetUI">目标点击UI区域</param>
-        public void DoClickUIGuide(GComponent targetUI) => _DoClickUIGuide(targetUI).Forget();
+        public void DoClickUIGuide(GComponent targetUI) => ExecuteClickUIGuideAsync(targetUI).Forget();
 
         /// <summary>
         /// 结束点击UI引导
@@ -28,7 +28,7 @@ namespace Hotfix.Guide
         /// <summary>
         /// 显示对话引导
         /// </summary>
-        public void DoDialogGuide(string content, Action onConfirm) => _DoDialogGuide(content, onConfirm).Forget();
+        public void DoDialogGuide(string content, Action onConfirm) => ExecuteDialogGuideAsync(content, onConfirm).Forget();
 
         /// <summary>
         /// 结束对话引导
@@ -49,7 +49,7 @@ namespace Hotfix.Guide
         /// 执行点击UI引导
         /// </summary>
         /// <param name="targetUI">目标点击UI区域</param>
-        private async UniTaskVoid _DoClickUIGuide(GComponent targetUI)
+        private async UniTaskVoid ExecuteClickUIGuideAsync(GComponent targetUI)
         {
             FuLogger.LogInfo($"执行点击UI引导, 目标UI：{targetUI.name}");
             var winClickGuide = await GlobalModule.UIModule.OpenUIAsync<WinClickGuide>();
@@ -64,7 +64,7 @@ namespace Hotfix.Guide
         /// </summary>
         /// <param name="content">对话内容</param>
         /// <param name="onConfirm">对话提交回调</param>
-        private async UniTaskVoid _DoDialogGuide(string content, Action onConfirm)
+        private async UniTaskVoid ExecuteDialogGuideAsync(string content, Action onConfirm)
         {
             FuLogger.LogInfo("执行对话引导");
             var winDialogGuide = await GlobalModule.UIModule.OpenUIAsync<WinDialogGuide>();

@@ -5,7 +5,7 @@ namespace FuFramework.UI.Runtime
     /// <summary>
     /// 界面层级。
     /// </summary>
-    public enum UILayer
+    public enum EUILayer
     {
         /// <summary>
         /// 世界场景中的UI，如：HUD, 血条等
