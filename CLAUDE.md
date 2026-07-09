@@ -14,6 +14,8 @@
 
 **必须严格遵守**，详见 `Docs/Client/Git提交规范.md`。
 
+**提交前必须征得用户同意**，不得擅自执行 `git commit`。
+
 ## 代码风格规范
 
 **必须严格遵守**，详见 `Docs/Client/FuFramework代码风格规范.md`。
