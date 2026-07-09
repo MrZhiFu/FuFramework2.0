@@ -24,11 +24,21 @@
 <type>: <中文简短描述>
 ```
 
+## AI 提交标记
+
+**Claude Code (AI) 生成的提交**，Subject 末尾必须加 `[AI]` 后缀：
+
+```
+<type>: <中文简短描述> [AI]
+```
+
+人类提交不加此标记，以便区分提交来源。
+
 ## 示例
 
 ```
 feat: 新增背包道具排序功能
-fix: 修复登录界面偶发崩溃
+fix: 修复登录界面偶发崩溃 [AI]
 docs: 更新红点系统README
-refactor: 拆分 FsmModule 为 partial class
+refactor: 拆分 FsmModule 为 partial class [AI]
 ```
