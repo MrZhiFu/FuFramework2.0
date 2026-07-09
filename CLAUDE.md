@@ -118,31 +118,5 @@ AOT DLL 会被拷贝到 `Assets/Bundles/AOTCode/`，热更 DLL 拷贝到 `Assets
 
 ## 代码风格规范
 
-**必须严格遵守**。完整规范文档：`Docs/FuFramework代码风格规范.md`
-
-写任何 `.cs` 文件时，遵循以下硬性规则：
-
-### 命名
-- 私有字段：`m_` 前缀 + PascalCase（`m_FsmDict`、`m_OnConfirm`）
-- 手写枚举：`E` 前缀（`EUILayer`、`ENetworkErrorCode`）
-- 异步方法：必须加 `Async` 后缀（`LoginAsync()`、`LoadConfigAsync()`）
-- 常量：PascalCase，不使用 ALL_CAPS（`HotfixDllName`，不是 `HOTFIX_DLL_NAME`）
-- 局部变量/参数：camelCase + `var`（`var winLauncher`、`itemId`）
-
-### 注释
-- 全部使用 **中文**，XML 文档注释（`///`）为主
-- 每个类、方法、属性、字段、枚举成员都要写 `<summary>`
-- TODO 标记：`// TODO：xxx`
-
-### 格式
-- 缩进：Tab
-- 括号：K&R 风格（左括号同行）
-- 访问修饰符：始终显式声明
-
-### 异常
-- 自动生成代码不检查：Luban 生成 (`Config/Generate/`)、Proto 生成、FGUI `.Gen.cs` 文件、`UnityWebSocket` 命名空间
-
-### 代码组织
-- 单文件不超过 500 行，超过拆分为 partial class
-- Region 名称用中文
-- 生命周期拆分为：`InitUIComp()` → `InitUIEvent()` → `InitEvent()` → `InitRedDot()`
+**必须严格遵守**，详见 `Docs/FuFramework代码风格规范.md`。
+写 `.cs` 文件时 `.claude/rules/csharp.md` 会自动加载检查清单。
