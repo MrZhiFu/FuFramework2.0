@@ -7,7 +7,7 @@ alwaysApply: false
 
 # FuFramework C# 代码风格规范（写代码时逐条检查）
 
-> 完整参考文档：`Docs/FuFramework代码风格规范.md`
+> 完整参考文档：`Docs/Client/FuFramework代码风格规范.md`
 
 ## 写代码前检查清单
 
