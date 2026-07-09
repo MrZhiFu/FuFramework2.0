@@ -65,7 +65,7 @@ if ($errors.Count -gt 0) {
         Write-Output "  ✗ $err"
     }
     Write-Output "============================================="
-    Write-Output " 完整规范: Docs/Client/FuFramework代码风格规范.md"
+    Write-Output " 完整规范: Docs/代码风格规范.md"
     exit 1
 }
 else {
