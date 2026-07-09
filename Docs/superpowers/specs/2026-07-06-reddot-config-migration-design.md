@@ -22,6 +22,7 @@
 | 6 | 代码生成工具 | 不需要——枚举由 Luban 直接生成 |
 | 7 | 静态 vs 动态节点 | 双字典分离：`Dictionary<ERedDotKey, ...>` + `Dictionary<string, ...>` |
 | 8 | RedDotRegister 类 | 废弃，改为 FGUI 编辑器层驱动（自定义数据 + 代码生成） |
+| 9 | RedDotModule 程序集 | 从 AOT 迁移至 Hotfix，可直接引用 Luban 生成类型 |
 
 ## 三、Luban 配置定义
 
@@ -29,9 +30,12 @@
 
 ```xml
 <!-- ERedDotKey — 红点节点标识 -->
-枚举值按 Id 编号，例如:
-  Bag=1, Bag_Item=2, Bag_Skill=3, Shop=4, Shop_Gift=5, Shop_Res=6,
-  Hero=7, Hero_Equip=8, Hero_Skill=9, Hero_Skin=10, Battle=11, Battle_Team=12
+枚举值按区间分配，每个根节点预留 1000 个值的空间，方便后续插入:
+  Bag=1000, Bag_Item=1001, Bag_Skill=1002,          // 1000~1999
+  Shop=2000, Shop_Gift=2001, Shop_Res=2002,          // 2000~2999
+  Hero=3000, Hero_Equip=3001, Hero_Skill=3002, Hero_Skin=3003, // 3000~3999
+  Battle=4000, Battle_Team=4001                       // 4000~4999
+  // 后续根节点: 5000~5999, 6000~6999, ...
 
 <!-- ERedDotDisplayMode — 红点显示模式 -->
   DotOnly=0       # 只显示红点
@@ -48,21 +52,21 @@
 | 列名 | 类型 | 说明 |
 |---|---|---|
 | Id | `ERedDotKey` | 节点唯一标识（主键，即枚举值） |
-| ParentId | `int` | 父节点 Id，0 表示根节点 |
+| ##备注 | `string` | 策划备注（注释列，不进入运行时数据） |
+| ParentId | `int?` | 父节点 Id，可空，空表示根节点 |
 | DisplayMode | `ERedDotDisplayMode` | 默认显示模式 |
 | CleanStrategy | `ERedDotCleanStrategy` | 清理策略 |
-| ##备注 | `string` | 策划备注（注释列，不进入运行时数据） |
 
 数据示例：
 
-| Id | ParentId | DisplayMode | CleanStrategy | ##备注 |
+| Id | ##备注 | ParentId | DisplayMode | CleanStrategy |
 |---|---|---|---|---|
-| Bag(=1) | 0 | DotOnly | Manual | 背包 |
-| Bag_Item(=2) | 1 | DotNumber | Manual | 背包.道具 |
-| Bag_Skill(=3) | 1 | DotOnly | Manual | 背包.技能 |
-| Shop(=4) | 0 | DotNumber | Manual | 商店 |
-| Shop_Gift(=5) | 4 | DotOnly | Manual | 商店.礼包 |
-| Shop_Res(=6) | 4 | DotOnly | Manual | 商店.资源 |
+| Bag(=1000) | 背包 | (空) | DotOnly | Manual |
+| Bag_Item(=1001) | 背包.道具 | 1000 | DotNumber | Manual |
+| Bag_Skill(=1002) | 背包.技能 | 1000 | DotOnly | Manual |
+| Shop(=2000) | 商店 | (空) | DotNumber | Manual |
+| Shop_Gift(=2001) | 商店.礼包 | 2000 | DotOnly | Manual |
+| Shop_Res(=2002) | 商店.资源 | 2000 | DotOnly | Manual |
 
 > 注：`##` 标记的列 Luban 自动识别为注释列，不参与代码生成
 
@@ -175,9 +179,9 @@ public class RedDotModule : FuModule
         }
         foreach (var row in tbRedDot.DataList)
         {
-            if (row.ParentId == 0) continue;
+            if (row.ParentId == null) continue;
             if (!StaticNodes.TryGetValue(row.Id, out var child) ||
-                !StaticNodes.TryGetValue((ERedDotKey)row.ParentId, out var parent)) continue;
+                !StaticNodes.TryGetValue((ERedDotKey)row.ParentId.Value, out var parent)) continue;
             child.SetParent(parent);
             parent.AddChild(child);
         }
@@ -257,7 +261,7 @@ public class RedDotModule : FuModule
 public sealed partial class RedDot : BeanBase
 {
     public ERedDotKey Id { get; private set; }
-    public int ParentId { get; private set; }
+    public int? ParentId { get; private set; }
     public ERedDotDisplayMode DisplayMode { get; private set; }
     public ERedDotCleanStrategy CleanStrategy { get; private set; }
 }
@@ -265,39 +269,73 @@ public sealed partial class RedDot : BeanBase
 
 ## 五、UI 层改造 — 废弃 RedDotRegister
 
-### 5.1 CompRedDot 简化
+### 5.1 CompRedDot 改造
 
-`Register` 方法签名简化（不再需要 `target` 和 `offset`——组件已手动放置）：
+提供两套 `Register` 重载——静态节点走枚举（由 FGUI 插件生成），动态节点走字符串（业务代码手动调用）。不含 `DisplayMode` 本地字段——显示时直接从 `RedDotNode` 配置读取：
 
 ```csharp
 public partial class CompRedDot
 {
-    public enum DisplayMode { DotOnly, DotNumber, Auto }
+    public enum DisplayMode { DotOnly = 0, DotNumber = 1, Auto = 2 }
 
-    private ERedDotKey m_Key;
-    private DisplayMode m_DisplayMode;
+    private ERedDotKey? m_StaticKey;
+    private string m_DynamicKey;
 
-    // 简化后的 Register
-    public void Register(ViewBase view, ERedDotKey redKey,
-        DisplayMode? displayModeOverride = null)
+    // 静态节点（枚举，DisplayMode 由配置表决定）
+    public void Register(ViewBase view, ERedDotKey redKey)
     {
         uiView = view;
-        m_Key = redKey;
-        m_DisplayMode = displayModeOverride ?? GetDisplayModeFromConfig(redKey);
-
-        GlobalModule.RedDotModule.Register(m_Key, OnRedDotChanged);
+        m_StaticKey = redKey;
+        GlobalModule.RedDotModule.Register(redKey, OnRedDotChanged);
     }
 
-    // 从配置表读取默认显示模式
-    private static DisplayMode GetDisplayModeFromConfig(ERedDotKey key)
+    // 动态节点（字符串，默认 DotOnly）
+    public void Register(ViewBase view, string redKey)
     {
-        var node = GlobalModule.RedDotModule.GetNode(key);
-        return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+        uiView = view;
+        m_DynamicKey = redKey;
+        GlobalModule.RedDotModule.Register(redKey, OnRedDotChanged);
+    }
+
+    // 从 RedDotNode 配置读取 DisplayMode
+    private DisplayMode GetDisplayMode()
+    {
+        if (m_StaticKey.HasValue)
+        {
+            var node = GlobalModule.RedDotModule.GetNode(m_StaticKey.Value);
+            return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+        }
+        return DisplayMode.DotOnly; // 动态节点默认
+    }
+
+    private void OnRedDotChanged(int redCount)
+    {
+        var mode = GetDisplayMode();
+        switch (mode)
+        {
+            case DisplayMode.DotOnly:
+                txtCount.visible = false;
+                imgRedDot.visible = redCount > 0;
+                break;
+            case DisplayMode.DotNumber:
+                txtCount.visible = redCount >= 1;
+                imgRedDot.visible = redCount > 0;
+                txtCount.text = FormatRedDotCount(redCount);
+                break;
+            case DisplayMode.Auto:
+                txtCount.visible = redCount > 1;
+                imgRedDot.visible = redCount > 0;
+                txtCount.text = FormatRedDotCount(redCount);
+                break;
+        }
     }
 
     protected override void OnDispose()
     {
-        GlobalModule.RedDotModule.Unregister(m_Key, OnRedDotChanged);
+        if (m_StaticKey.HasValue)
+            GlobalModule.RedDotModule.Unregister(m_StaticKey.Value, OnRedDotChanged);
+        else if (m_DynamicKey != null)
+            GlobalModule.RedDotModule.Unregister(m_DynamicKey, OnRedDotChanged);
     }
 }
 ```
@@ -307,17 +345,45 @@ public partial class CompRedDot
 FGUI 编辑器中：
 
 1. 手动拖拽 `CompRedDot` 组件到目标按钮/图标上
-2. 选中 `CompRedDot` 实例，在"自定义数据"中填写：`i18n=1`
-   - `1` 即 `ERedDotKey` 的枚举值
-   - 可选：`i18n=1,mode=0` 覆盖显示模式
+2. 选中 `CompRedDot` 实例，在"自定义数据"中填写：`i18n=ERedDotKey.Bag_Item`
+   - 直接写枚举全名，插件生成代码时原样输出
+   - DisplayMode 由配置表决定，无需额外指定
 3. CSharpCodeGen 插件导出时，自动识别并生成注册代码
 
 ### 5.3 代码生成模板修改
 
-**CompTemplate.txt / WinTemplate.txt** — `InitRedDot()` 从示例注释变为实际生成代码：
+**CompGenTemplate.txt / WinGenTemplate.txt** — `.Gen.cs` 中新增 `InitRedDot()` 方法（每次导出自动更新）：
 
 ```csharp
+/// <summary>
+/// 初始化红点注册（自动生成，不可手动修改）
+/// </summary>
+private void InitRedDot()
+{
+#RedDotRegister#
+}
+```
+
+**CompTemplate.txt / WinTemplate.txt** — `OnInit()` 不再包含 `InitRedDot()`：
+
+```csharp
+// 改造前
+private void OnInit()
+{
+    InitEvent();
+    InitRedDot();  // ← 移除
+}
+
 // 改造后
+private void OnInit()
+{
+    InitEvent();
+}
+```
+
+**生成的 `.Gen.cs` 效果：**
+
+```csharp
 private void InitRedDot()
 {
     compRedDot1.Register(uiView, ERedDotKey.Bag_Item);
@@ -327,12 +393,25 @@ private void InitRedDot()
 
 ### 5.4 CSharpCodeGen 插件 Lua 脚本修改
 
-`GenComp.lua` / `GenWin.lua` — 新增逻辑：
+`GenCommon.lua` — 新增两个函数：
 
-1. 遍历当前界面/组件的所有子组件
-2. 筛选出类型为 `CompRedDot` 且自定义数据包含 `i18n=` 的实例
-3. 生成对应的 `compXXX.Register(uiView, ERedDotKey.XXX)` 代码
-4. 解析 `mode=` 可选参数，生成 displayModeOverride 参数
+**`GenRedDotRegister(dataList, compCls)`** — 入口函数，获取 XML displayList，递归扫描。
+
+**`FindRedDotComps(xmlNode, dataList)`** — 递归遍历：
+
+1. 遍历 `xmlNode.elements` 中每个元素
+2. 读取 `customData` 属性，匹配 `i18n=ERedDotKey.xxx`（正则：`i18n=(ERedDotKey%.%w+)`）
+3. 匹配成功则原样输出枚举名，生成 `compXxx.Register(uiView, ERedDotKey.Xxx);`
+4. 递归处理子元素
+
+`GenWin.lua` / `GenComp.lua` — 在生成流程中增加调用：
+
+```lua
+GenCommon:GenRedDotRegister(dataTable['#RedDotRegister#'], winCls)  -- Win
+GenCommon:GenRedDotRegister(dataDict['#RedDotRegister#'], compCls)  -- Comp
+```
+
+并在 dataKeys 中增加 `'#RedDotRegister#'`。
 
 ## 六、文件变更清单
 
@@ -347,10 +426,13 @@ private void InitRedDot()
 | `Config/Excels/__enums__.xlsx` | 新增 ERedDotKey / ERedDotDisplayMode / ERedDotCleanStrategy |
 | `RedDotModule.cs` | 初始化走 Luban；双字典；两套 API；TryAutoClean；AddDynamicChild |
 | `RedDotNode.cs` | 新增字段（StaticKey/DynamicKey/DisplayMode/CleanStrategy/SetParent） |
-| `CompRedDot.cs` | Register 签名简化，DisplayMode 从配置表读取 |
-| `CompTemplate.txt` | InitRedDot 从示例改为实际生成代码 |
+| `CompRedDot.cs` | Register 两套重载（枚举 + string），支持静态和动态节点 |
+| `CompGenTemplate.txt` | 新增 InitRedDot() + #RedDotRegister# placeholder |
+| `WinGenTemplate.txt` | 同上 |
+| `CompTemplate.txt` | OnInit() 中移除 InitRedDot() |
 | `WinTemplate.txt` | 同上 |
-| `GenComp.lua` | 新增识别 CompRedDot + 自定义数据逻辑 |
+| `GenCommon.lua` | 新增 GenRedDotRegister / FindRedDotComps 函数 |
+| `GenComp.lua` | 新增 #RedDotRegister# dataKey + 调用 GenRedDotRegister |
 | `GenWin.lua` | 同上 |
 | 业务层调用点（~25 个文件） | `RedDotKeys.Xxx` → `ERedDotKey.Xxx` |
 
