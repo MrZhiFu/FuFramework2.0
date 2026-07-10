@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.SaveData.Runtime;
+using Hotfix.Storage;
 
 namespace Hotfix.Localization
 {
@@ -131,7 +131,7 @@ namespace Hotfix.Localization
             Instance = this;
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            _storageModule = ModuleManager.GetModule<StorageModule>();
+            _storageModule = StorageModule.Instance;
 
             var value = _storageModule.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))

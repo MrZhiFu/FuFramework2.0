@@ -264,10 +264,8 @@ public static class GlobalModule
 | `UIModule` | UI 管理模块 | UI 窗口管理 |
 | `GlobalConfigModule` | 全局配置模块 | 服务器配置管理 |
 | `MonoModule` | Mono 管理模块 | MonoBehaviour 管理 |
-| `SoundModule` | 声音管理模块 | 音效和音乐管理 |
 | `NetworkModule` | 网络管理模块 | 网络通信 |
 | `WebModule` | Web 管理模块 | Web 请求管理 |
-| `DataSaveModule` | 数据存储模块 | 本地数据持久化 |
 
 #### 使用对比
 
@@ -618,14 +616,14 @@ FuFramework/Launcher/
 - **FuFramework.Config**：配置管理模块
 - **FuFramework.Coroutine**：协程管理模块
 - **FuFramework.Timer**：计时器管理模块
-- **FuFramework.Download**：下载管理模块
+- **Hotfix.Download**：下载管理模块（已迁移至热更层）
 - **FuFramework.Entity**：实体管理模块
 - **FuFramework.UI**：UI 管理模块
 - **Hotfix.Scene**：场景管理模块（已迁移至热更层）
-- **FuFramework.Sound**：声音管理模块
+- **Hotfix.Sound**：声音管理模块（已迁移至热更层）
 - **FuFramework.Network**：网络管理模块
 - **FuFramework.Web**：Web 管理模块
-- **FuFramework.DataSave**：数据存储模块
+- **Hotfix.Storage**：数据存储模块（已迁移至热更层）
 - **Hotfix.Localization**：本地化管理模块（已迁移至热更层）
 - **Hotfix.Model**：数据模型模块（已迁移至热更层）
 - **Hotfix.RedDot**：红点管理模块（已迁移至热更层）

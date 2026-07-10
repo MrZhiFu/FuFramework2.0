@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 using FuFramework.Core.Runtime;
-using FuFramework.SaveData.Runtime;
+using Hotfix.Storage;
 
 namespace Hotfix.Model
 {
@@ -58,7 +58,7 @@ namespace Hotfix.Model
         {
             base.OnInitData();
             m_FileName    = GetFileName();
-            _storageModule = ModuleManager.GetModule<StorageModule>();
+            _storageModule = StorageModule.Instance;
 
             if (_storageModule == null)
             {

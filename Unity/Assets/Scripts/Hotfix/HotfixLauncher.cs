@@ -14,6 +14,9 @@ using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
 using Hotfix.Model;
 using Hotfix.Scene;
+using Hotfix.Storage;
+using Hotfix.Sound;
+using Hotfix.Download;
 using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -47,6 +50,9 @@ namespace Hotfix
             ModuleManager.RegisterModule<ModelModule>();
             ModuleManager.RegisterModule<ConfigModule>();
             ModuleManager.RegisterModule<SceneModule>();
+            ModuleManager.RegisterModule<StorageModule>();
+            ModuleManager.RegisterModule<SoundModule>();
+            ModuleManager.RegisterModule<DownloadModule>();
 
             // 获取热更界面
             var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();

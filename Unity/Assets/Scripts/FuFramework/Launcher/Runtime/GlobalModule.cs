@@ -4,17 +4,14 @@ using FuFramework.Fsm.Runtime;
 using FuFramework.Mono.Runtime;
 using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.Sound.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Network.Runtime;
-using FuFramework.Download.Runtime;
 using FuFramework.Procedure.Runtime;
 
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.ReferencePool.Runtime;
-using FuFramework.SaveData.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -33,16 +30,13 @@ namespace FuFramework.Launcher.Runtime
         private static AssetModule         m_AssetModule;         // 资源管理模块
 
         private static TimerModule         m_TimerModule;         // 计时器管理模块
-        private static DownloadModule      m_DownloadModule;      // 下载管理模块
         private static EntityModule        m_EntityModule;        // 实体管理模块
         private static FsmModule           m_FsmModule;           // 有限状态机管理模块
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
         private static MonoModule          m_MonoModule;          // Mono管理模块
-        private static SoundModule         m_SoundModule;         // 声音管理模块
         private static NetworkModule       m_NetworkModule;       // 网络管理模块
         private static WebModule           m_WebModule;           // Web管理模块
-        private static StorageModule       m_StorageModule;       // 本地持久化管理模块
         // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
         // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
 
@@ -74,11 +68,6 @@ namespace FuFramework.Launcher.Runtime
         public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
 
         /// <summary>
-        /// 获取下载管理模块。
-        /// </summary>
-        public static DownloadModule DownloadModule => m_DownloadModule ??= ModuleManager.GetModule<DownloadModule>();
-
-        /// <summary>
         /// 获取实体管理模块。
         /// </summary>
         public static EntityModule EntityModule => m_EntityModule ??= ModuleManager.GetModule<EntityModule>();
@@ -104,11 +93,6 @@ namespace FuFramework.Launcher.Runtime
         public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
 
         /// <summary>
-        /// 获取声音管理模块。
-        /// </summary>
-        public static SoundModule SoundModule => m_SoundModule ??= ModuleManager.GetModule<SoundModule>();
-
-        /// <summary>
         /// 获取网络管理模块。
         /// </summary>
         public static NetworkModule NetworkModule => m_NetworkModule ??= ModuleManager.GetModule<NetworkModule>();
@@ -117,11 +101,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取Web管理模块。
         /// </summary>
         public static WebModule WebModule => m_WebModule ??= ModuleManager.GetModule<WebModule>();
-
-        /// <summary>
-        /// 获取本地持久化管理模块。
-        /// </summary>
-        public static StorageModule StorageModule => m_StorageModule ??= ModuleManager.GetModule<StorageModule>();
 
         ///// <summary>
         ///// 获取广告管理模块。// TODO

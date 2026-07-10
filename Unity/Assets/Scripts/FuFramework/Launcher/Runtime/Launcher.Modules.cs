@@ -1,7 +1,6 @@
 using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
 
-using FuFramework.Download.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Fsm.Runtime;
@@ -10,8 +9,6 @@ using FuFramework.Network.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ReferencePool.Runtime;
-using FuFramework.SaveData.Runtime;
-using FuFramework.Sound.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Web.Runtime;
@@ -39,10 +36,6 @@ namespace FuFramework.Launcher.Runtime
             ModuleManager.RegisterModule<MonoModule>();          // Mono管理模块
             ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
             ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
-            ModuleManager.RegisterModule<DownloadModule>();      // 下载管理模块
-            ModuleManager.RegisterModule<StorageModule>();       // 本地数据存储管理模块
-
-            ModuleManager.RegisterModule<SoundModule>();        // 声音管理模块
             ModuleManager.RegisterModule<EntityModule>();       // 实体管理模块
             ModuleManager.RegisterModule<NetworkModule>();      // 网络管理模块
             ModuleManager.RegisterModule<UIModule>();           // UI管理模块
