@@ -621,8 +621,9 @@ FuFramework/Launcher/
 - **FuFramework.UI**：UI 管理模块
 - **Hotfix.Scene**：场景管理模块（已迁移至热更层）
 - **Hotfix.Sound**：声音管理模块（已迁移至热更层）
-- **FuFramework.Network**：网络管理模块
-- **FuFramework.Web**：Web 管理模块
+- **Hotfix.Network**：网络管理模块（已迁移至热更层）
+- **Hotfix.Web**：Web 管理模块（已迁移至热更层）
+- **Hotfix.Download**：下载管理模块（已迁移至热更层）
 - **Hotfix.Storage**：数据存储模块（已迁移至热更层）
 - **Hotfix.Localization**：本地化管理模块（已迁移至热更层）
 - **Hotfix.Model**：数据模型模块（已迁移至热更层）

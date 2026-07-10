@@ -3,6 +3,7 @@ using FairyGUI;
 using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using Hotfix.Sound;
+using Hotfix.Web;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
@@ -132,7 +133,7 @@ namespace Hotfix.UI
                 Platform = Utility.Application.PlatformName
             };
 
-            var respLogin = await GlobalModule.WebModule.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
+            var respLogin = await WebModule.Instance.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
             if (respLogin.ErrorCode > 0)
             {
                 FuLogger.LogError("登录失败，错误信息:" + respLogin.ErrorCode);
@@ -141,7 +142,7 @@ namespace Hotfix.UI
 
             // 获取角色列表
             var reqPlayerList  = new ReqPlayerList { Id = respLogin.Id };
-            var respPlayerList = await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
+            var respPlayerList = await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {
                 FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);

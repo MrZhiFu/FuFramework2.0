@@ -5,6 +5,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Manager;
 using Hotfix.Proto;
+using Hotfix.Web;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI
@@ -101,7 +102,7 @@ namespace Hotfix.UI
 
             // 创建角色
             var respPlayerCreate =
-                await GlobalModule.WebModule.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
+                await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
             if (respPlayerCreate.ErrorCode > 0)
             {
                 FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -114,7 +115,7 @@ namespace Hotfix.UI
             // 获取角色列表
             var reqPlayerList = new ReqPlayerList { Id = m_Req.Id };
             var respPlayerList =
-                await GlobalModule.WebModule.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+                await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
                     reqPlayerList);
             if (respPlayerList.ErrorCode > 0)
             {

@@ -1,5 +1,5 @@
 using FuFramework.Core.Runtime;
-using FuFramework.Network.Runtime;
+using Hotfix.Network;
 using Hotfix.Proto;
 
 namespace Hotfix.Network

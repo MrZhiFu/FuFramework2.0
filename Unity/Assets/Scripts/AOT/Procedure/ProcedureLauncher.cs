@@ -34,9 +34,6 @@ namespace Launcher.Procedure
             base.OnEnter();
             FuLogger.LogInfo("<color=#43f656>------进入首次启动流程------</color>");
 
-            // 设置FairyGUI的Loader加载器为自定义加载器，用于自定义方式加载Loader的纹理资源。
-            FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
-
             // 绑定自动生成的Fui自定义组件(AOT下)
             BindCustomComps();
 

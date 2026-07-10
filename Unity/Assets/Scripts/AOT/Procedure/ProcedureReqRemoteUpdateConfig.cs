@@ -3,6 +3,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
+using UnityEngine.Networking;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ReferencePool.Runtime;
@@ -117,8 +118,12 @@ namespace Launcher.Procedure
         /// <returns>远端资源更新配置，获取失败返回null</returns>
         private async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfig(string configUrl)
         {
-            var json = await GlobalModule.WebModule.GetToString(configUrl);
-            return Utility.Json.ToObject<RemoteUpdateConfig>(json.Result);
+            using var request = UnityWebRequest.Get(configUrl);
+            request.timeout = 5;
+            await request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.Success)
+                return null;
+            return Utility.Json.ToObject<RemoteUpdateConfig>(request.downloadHandler.text);
         }
     }
 }

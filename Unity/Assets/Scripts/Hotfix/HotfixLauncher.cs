@@ -7,7 +7,7 @@ using Hotfix.Guide;
 using Hotfix.RedDot;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using FuFramework.Network.Runtime;
+using Hotfix.Network;
 using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
@@ -16,6 +16,7 @@ using Hotfix.Model;
 using Hotfix.Scene;
 using Hotfix.Storage;
 using Hotfix.Sound;
+using Hotfix.Web;
 using Hotfix.Download;
 using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -45,6 +46,10 @@ namespace Hotfix
 
             // 注册热更层框架模块
             ModuleManager.RegisterModule<RedDotModule>();
+
+            // 设置FairyGUI的Loader加载器为自定义加载器
+            FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
+
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<LocalizationModule>();
             ModuleManager.RegisterModule<ModelModule>();
@@ -53,6 +58,8 @@ namespace Hotfix
             ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<SoundModule>();
             ModuleManager.RegisterModule<DownloadModule>();
+            ModuleManager.RegisterModule<WebModule>();
+            ModuleManager.RegisterModule<NetworkModule>();
 
             // 获取热更界面
             var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();

@@ -1,5 +1,4 @@
 using FuFramework.UI.Runtime;
-using FuFramework.Web.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Mono.Runtime;
 using FuFramework.Core.Runtime;
@@ -7,7 +6,6 @@ using FuFramework.Event.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Entity.Runtime;
-using FuFramework.Network.Runtime;
 using FuFramework.Procedure.Runtime;
 
 using FuFramework.ObjectPool.Runtime;
@@ -35,8 +33,6 @@ namespace FuFramework.Launcher.Runtime
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
         private static MonoModule          m_MonoModule;          // Mono管理模块
-        private static NetworkModule       m_NetworkModule;       // 网络管理模块
-        private static WebModule           m_WebModule;           // Web管理模块
         // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
         // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
 
@@ -91,16 +87,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取Mono管理模块。
         /// </summary>
         public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
-
-        /// <summary>
-        /// 获取网络管理模块。
-        /// </summary>
-        public static NetworkModule NetworkModule => m_NetworkModule ??= ModuleManager.GetModule<NetworkModule>();
-
-        /// <summary>
-        /// 获取Web管理模块。
-        /// </summary>
-        public static WebModule WebModule => m_WebModule ??= ModuleManager.GetModule<WebModule>();
 
         ///// <summary>
         ///// 获取广告管理模块。// TODO

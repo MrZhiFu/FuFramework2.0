@@ -157,7 +157,7 @@ namespace FuFramework.UI.Runtime
             {
                 var comp = child switch
                 {
-                    CustomLoader loader  => loader.component,
+                    GLoader loader   => loader.component,
                     GComponent component => component,
                     _                    => null
                 };

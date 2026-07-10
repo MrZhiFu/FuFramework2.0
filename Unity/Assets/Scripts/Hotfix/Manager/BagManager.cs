@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using FuFramework.Network.Runtime;
+using Hotfix.Network;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
@@ -54,7 +54,7 @@ namespace Hotfix.Manager
         /// </summary>
         public async UniTask RequestGetBagInfoAsync()
         {
-            var respBagInfo = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
+            var respBagInfo = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
             if (respBagInfo.ErrorCode != default)
             {
                 return;
@@ -73,7 +73,7 @@ namespace Hotfix.Manager
         /// <param name="count">道具数量</param>
         public async UniTask RequestUseItemAsync(int itemId, long count = 1)
         {
-            var respUseItem = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
+            var respUseItem = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
             if (respUseItem.ErrorCode != default)
             {
                 return;

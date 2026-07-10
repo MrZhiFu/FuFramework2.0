@@ -1,0 +1,30 @@
+﻿using Newtonsoft.Json;
+using Utility = FuFramework.Core.Runtime.Utility;
+using ProtoBuf;
+
+// ReSharper disable once CheckNamespace
+namespace Hotfix.Network
+{
+    /// <summary>
+    /// HTTP消息包装基类
+    /// </summary>
+    [ProtoContract]
+    public class MessageHttpObject
+    {
+        /// <summary>
+        /// 消息ID
+        /// </summary>
+        [ProtoMember(1)]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// 消息序列号
+        /// </summary>
+        [ProtoMember(2)]
+        public int UniqueId { get; set; }
+
+        [JsonIgnore] [ProtoMember(3)] public byte[] Body { get; set; }
+
+        public override string ToString() => Utility.Json.ToJson(this);
+    }
+}

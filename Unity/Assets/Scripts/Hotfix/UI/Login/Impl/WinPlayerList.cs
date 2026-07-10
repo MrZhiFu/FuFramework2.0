@@ -4,11 +4,10 @@ using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.UI.Runtime;
 using FuFramework.Event.Runtime;
-using FuFramework.Network.Runtime;
+using Hotfix.Network;
 using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Manager;
-using Hotfix.Network;
 using Hotfix.Proto;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -97,7 +96,7 @@ namespace Hotfix.UI
         {
 	        // 请求玩家登录
 	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_SelectedPlayerInfo.Id };
-	        var respPlayerLogin = await GlobalModule.NetworkModule.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
+	        var respPlayerLogin = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
@@ -160,12 +159,12 @@ namespace Hotfix.UI
 				return;
 			}
 
-			if (networkChannel != null && GlobalModule.NetworkModule.HasNetworkChannel("network") && !networkChannel.Connected)
+			if (networkChannel != null && NetworkModule.Instance.HasNetworkChannel("network") && !networkChannel.Connected)
 			{
-				GlobalModule.NetworkModule.DestroyNetworkChannel("network");
+				NetworkModule.Instance.DestroyNetworkChannel("network");
 			}
 
-			networkChannel = GlobalModule.NetworkModule.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
+			networkChannel = NetworkModule.Instance.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
 
 			// 注册心跳消息
 			var packetSendHeaderHandler = new DefaultPacketHeartBeatHandler();

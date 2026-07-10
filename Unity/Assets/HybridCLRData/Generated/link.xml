@@ -63,26 +63,6 @@
   <assembly fullname="FuFramework.ModuleSetting.Runtime">
     <type fullname="FuFramework.ModuleSetting.Runtime.ModuleSetting" preserve="all" />
   </assembly>
-  <assembly fullname="FuFramework.Network.Runtime">
-    <type fullname="FuFramework.Network.Runtime.BasePacketHeartBeatHandler" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.DefaultNetworkChannelHelper" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.IHeartBeatMessage" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.IMessageHandler" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.INetworkChannel" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.INetworkChannelHelper" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.INotifyMessage" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.IPacketHeartBeatHandler" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.IRequestMessage" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.IResponseMessage" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.MessageHandlerAttribute" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.MessageObject" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.MessageTypeHandlerAttribute" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.NetworkClosedEventArgs" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.NetworkConnectedEventArgs" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.NetworkModule" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.ProtoMessageHandler" preserve="all" />
-    <type fullname="FuFramework.Network.Runtime.ProtoMessageIdHandler" preserve="all" />
-  </assembly>
   <assembly fullname="FuFramework.RedDot.Runtime">
     <type fullname="FuFramework.RedDot.Runtime.RedDotModule" preserve="all" />
   </assembly>
@@ -96,9 +76,6 @@
     <type fullname="FuFramework.UI.Runtime.UIModule" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.UITweenType" preserve="all" />
     <type fullname="FuFramework.UI.Runtime.ViewBase" preserve="all" />
-  </assembly>
-  <assembly fullname="FuFramework.Web.Runtime">
-    <type fullname="FuFramework.Web.Runtime.WebModule" preserve="all" />
   </assembly>
   <assembly fullname="Game.AOT">
     <type fullname="Launcher.UI.WinLauncher" preserve="all" />

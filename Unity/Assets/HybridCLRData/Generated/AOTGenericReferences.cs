@@ -8,9 +8,7 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		"FuFramework.Asset.Runtime.dll",
 		"FuFramework.Config.Runtime.dll",
 		"FuFramework.Core.Runtime.dll",
-		"FuFramework.Network.Runtime.dll",
 		"FuFramework.UI.Runtime.dll",
-		"FuFramework.Web.Runtime.dll",
 		"Luban.Runtime.dll",
 		"System.dll",
 		"UniTask.dll",
@@ -501,13 +499,11 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		// object FuFramework.Config.Runtime.ConfigModule.GetConfig<object>()
 		// string FuFramework.Config.Runtime.ConfigModule.GetTypeName<object>()
 		// bool FuFramework.Config.Runtime.ConfigModule.HasConfig<object>()
-		// System.Threading.Tasks.Task<object> FuFramework.Network.Runtime.INetworkChannel.Call<object>(FuFramework.Network.Runtime.MessageObject)
 		// System.Void FuFramework.UI.Runtime.UIModule.CloseUI<object>()
 		// object FuFramework.UI.Runtime.UIModule.GetUI<object>()
 		// System.Void FuFramework.UI.Runtime.UIModule.OpenUI<object>(object)
 		// Cysharp.Threading.Tasks.UniTask<object> FuFramework.UI.Runtime.UIModule.OpenUIAsync<object>(object)
 		// Cysharp.Threading.Tasks.UniTask<object> FuFramework.UI.Runtime.UIModule._OpenUIAsync<object>(object)
-		// System.Threading.Tasks.Task<object> FuFramework.Web.Runtime.WebModule.Post<object>(string,FuFramework.Network.Runtime.MessageObject)
 		// string Luban.StringUtil.CollectionToString<int>(System.Collections.Generic.IEnumerable<int>)
 		// object System.Activator.CreateInstance<object>()
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.AwaitUnsafeOnCompleted<System.Runtime.CompilerServices.TaskAwaiter,Hotfix.Config.TableManager.<LoadAsync>d__26>(System.Runtime.CompilerServices.TaskAwaiter&,Hotfix.Config.TableManager.<LoadAsync>d__26&)
@@ -529,7 +525,6 @@ public class AOTGenericReferences : UnityEngine.MonoBehaviour
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbGlobalDefine.<LoadAsync>d__2>(Hotfix.Config.Tables.TbGlobalDefine.<LoadAsync>d__2&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbItem.<LoadAsync>d__2>(Hotfix.Config.Tables.TbItem.<LoadAsync>d__2&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder.Start<Hotfix.Config.Tables.TbSound.<LoadAsync>d__2>(Hotfix.Config.Tables.TbSound.<LoadAsync>d__2&)
-		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<object>.Start<FuFramework.Web.Runtime.WebModule.<Post>d__38<object>>(FuFramework.Web.Runtime.WebModule.<Post>d__38<object>&)
 		// System.Void System.Runtime.CompilerServices.AsyncTaskMethodBuilder<object>.Start<Hotfix.HotfixLauncher.<ConfigLoader>d__4>(Hotfix.HotfixLauncher.<ConfigLoader>d__4&)
 		// object YooAsset.AssetHandle.GetAssetObject<object>()
 		// YooAsset.AssetHandle YooAsset.ResourcePackage.LoadAssetAsync<object>(string,uint)
