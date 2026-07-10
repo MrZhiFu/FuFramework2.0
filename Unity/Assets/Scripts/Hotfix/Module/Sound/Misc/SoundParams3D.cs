@@ -1,4 +1,3 @@
-using FuFramework.Entity.Runtime;
 using UnityEngine;
 using FuFramework.ReferencePool.Runtime;
 
@@ -13,7 +12,7 @@ namespace Hotfix.Sound
         /// <summary>
         /// 绑定的实体。
         /// </summary>
-        public Entity BindingEntity { get; private set; }
+        public Entity.Entity BindingEntity { get; private set; }
 
         /// <summary>
         /// 声音在世界空间中的位置。
@@ -26,7 +25,7 @@ namespace Hotfix.Sound
         /// <param name="bindingEntity">绑定的实体。</param>
         /// <param name="worldPosition">声音在世界空间中的位置。</param>
         /// <returns>创建的播放声音信息。</returns>
-        public static SoundParams3D Create(Entity bindingEntity, Vector3 worldPosition)
+        public static SoundParams3D Create(Entity.Entity bindingEntity, Vector3 worldPosition)
         {
             var playSoundInfo = ReferencePool.Acquire<SoundParams3D>();
             playSoundInfo.BindingEntity = bindingEntity;

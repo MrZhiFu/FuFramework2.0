@@ -18,6 +18,7 @@ using Hotfix.Storage;
 using Hotfix.Sound;
 using Hotfix.Web;
 using Hotfix.Download;
+using Hotfix.Entity;
 using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -51,12 +52,13 @@ namespace Hotfix
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
 
             ModuleManager.RegisterModule<GuideModule>();
+            ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<LocalizationModule>();
             ModuleManager.RegisterModule<ModelModule>();
             ModuleManager.RegisterModule<ConfigModule>();
             ModuleManager.RegisterModule<SceneModule>();
-            ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<SoundModule>();
+            ModuleManager.RegisterModule<EntityModule>();
             ModuleManager.RegisterModule<DownloadModule>();
             ModuleManager.RegisterModule<WebModule>();
             ModuleManager.RegisterModule<NetworkModule>();

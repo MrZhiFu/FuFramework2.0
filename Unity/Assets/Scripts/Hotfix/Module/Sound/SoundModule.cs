@@ -7,7 +7,6 @@ using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
-using FuFramework.Entity.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using FuFramework.ReferencePool.Runtime;
@@ -279,7 +278,7 @@ namespace Hotfix.Sound
         /// <param name="serialId">序列编号(如果不传入使用默认时，会自动自增后分配一个序列Id)</param>
         /// <param name="onPlayEnd">播放结束回调。</param>
         /// <returns>声音的序列编号。</returns>
-        public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, Entity bindingEntity, string extension = ".mp3", int serialId = -1,
+        public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, Entity.Entity bindingEntity, string extension = ".mp3", int serialId = -1,
                                                     SoundParams soundParams = null, object userData = null, Action onPlayEnd = null)
         {
             var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero);

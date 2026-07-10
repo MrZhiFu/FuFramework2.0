@@ -5,7 +5,6 @@ using FuFramework.Core.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Entity.Runtime;
 using FuFramework.Procedure.Runtime;
 
 using FuFramework.ObjectPool.Runtime;
@@ -28,7 +27,6 @@ namespace FuFramework.Launcher.Runtime
         private static AssetModule         m_AssetModule;         // 资源管理模块
 
         private static TimerModule         m_TimerModule;         // 计时器管理模块
-        private static EntityModule        m_EntityModule;        // 实体管理模块
         private static FsmModule           m_FsmModule;           // 有限状态机管理模块
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
@@ -62,11 +60,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取计时器管理模块。
         /// </summary>
         public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
-
-        /// <summary>
-        /// 获取实体管理模块。
-        /// </summary>
-        public static EntityModule EntityModule => m_EntityModule ??= ModuleManager.GetModule<EntityModule>();
 
         /// <summary>
         /// 获取有限状态机管理模块。

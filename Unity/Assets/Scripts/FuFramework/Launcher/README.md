@@ -104,7 +104,6 @@ private void RegisterModules()
     ModuleManager.RegisterModule<GlobalConfigModule>();  // 全局配置管理模块
     ModuleManager.RegisterModule<ConfigModule>();        // 配置管理模块
     ModuleManager.RegisterModule<SoundModule>();         // 声音管理模块
-    ModuleManager.RegisterModule<EntityModule>();        // 实体管理模块
     ModuleManager.RegisterModule<NetworkModule>();       // 网络管理模块
     ModuleManager.RegisterModule<UIModule>();            // UI管理模块
     ModuleManager.RegisterModule<WebModule>();           // Web管理模块
@@ -119,7 +118,7 @@ private void RegisterModules()
 3. **Event/Coroutine/Mono/Timer**：基础服务模块
 4. **Asset/Download/DataSave**：资源相关模块
 5. **GlobalConfig/Config**：配置模块
-6. **Sound/Entity/Network**：功能模块
+6. **Sound/Network**：功能模块
 7. **UI/Guide/RedDot/Localization/Model/Web**：上层业务模块
 
 ### 3.3 Launcher.Procedures
@@ -258,7 +257,7 @@ public static class GlobalModule
 | `CoroutineModule` | 协程管理模块 | 全局协程管理 |
 | `TimerModule` | 计时器管理模块 | 定时器和倒计时 |
 | `DownloadModule` | 下载管理模块 | 文件下载管理 |
-| `EntityModule` | 实体管理模块 | 游戏实体生命周期 |
+| `EntityModule` | 实体管理模块 | 游戏实体生命周期 | Hotfix |
 | `FsmModule` | 有限状态机模块 | 状态机管理 |
 | `ProcedureModule` | 流程管理模块 | 游戏流程控制 |
 | `UIModule` | UI 管理模块 | UI 窗口管理 |
@@ -617,7 +616,7 @@ FuFramework/Launcher/
 - **FuFramework.Coroutine**：协程管理模块
 - **FuFramework.Timer**：计时器管理模块
 - **Hotfix.Download**：下载管理模块（已迁移至热更层）
-- **FuFramework.Entity**：实体管理模块
+- **Hotfix.Entity.Runtime**：实体管理模块（已迁移至热更层）
 - **FuFramework.UI**：UI 管理模块
 - **Hotfix.Scene**：场景管理模块（已迁移至热更层）
 - **Hotfix.Sound**：声音管理模块（已迁移至热更层）
