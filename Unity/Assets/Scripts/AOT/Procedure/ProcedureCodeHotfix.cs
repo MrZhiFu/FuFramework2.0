@@ -29,7 +29,7 @@ namespace Launcher.Procedure
         /// <summary>
         /// 热更程序集名称
         /// </summary>
-        private const string HotfixDllName = "Game.Hotfix";
+        private const string HotfixDllName = "Hotfix";
 
 
         protected override void OnEnter()

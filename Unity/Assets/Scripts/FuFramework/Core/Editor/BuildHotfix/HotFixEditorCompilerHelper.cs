@@ -17,7 +17,7 @@ namespace FuFramework.Core.Editor
         [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集在Editor环境下也可使用", false, 400)]
         public static void RemoveEditorInExcludePlatforms()
         {
-            const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Hotfix.asmdef";
             HotFixAssemblyDefinitionHelper.RemoveEditorInExcludePlatforms(path);
         }
 
@@ -27,7 +27,7 @@ namespace FuFramework.Core.Editor
         [MenuItem("FuFramework/Build/标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用", false, 401)]
         public static void AddEditorInExcludePlatforms()
         {
-            const string path = "Assets/Scripts/Hotfix/Game.Hotfix.asmdef";
+            const string path = "Assets/Scripts/Hotfix/Hotfix.asmdef";
             HotFixAssemblyDefinitionHelper.AddEditorInExcludePlatforms(path);
         }
     }

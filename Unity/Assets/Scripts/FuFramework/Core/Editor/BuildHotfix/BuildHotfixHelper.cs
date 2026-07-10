@@ -20,7 +20,7 @@ namespace FuFramework.Core.Editor
         private const string HotFixAssembliesDir = "Library/ScriptAssemblies";
 
         // 热更DLL名称数组
-        private static readonly string[] HotfixDlls = { "Game.Hotfix.dll" };
+        private static readonly string[] HotfixDlls = { "Hotfix.dll" };
 
         // 热更代码存放位置
         private const string CodeDir    = "Assets/Bundles/Code/";
