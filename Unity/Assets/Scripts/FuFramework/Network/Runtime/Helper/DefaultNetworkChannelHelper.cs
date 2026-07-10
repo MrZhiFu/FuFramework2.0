@@ -30,7 +30,7 @@ namespace FuFramework.Network.Runtime
         {
             get
             {
-                if (!m_Event) m_Event = ModuleManager.GetModule<EventModule>();
+                if (m_Event == null) m_Event = ModuleManager.GetModule<EventModule>();
                 return m_Event;
             }
         }

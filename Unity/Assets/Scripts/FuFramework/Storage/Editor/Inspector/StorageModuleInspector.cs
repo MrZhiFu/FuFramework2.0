@@ -1,21 +1,22 @@
-﻿using UnityEditor;
-using UnityEngine;
 using FuFramework.Core.Editor;
-using FuFramework.SaveData.Runtime;
+using UnityEditor;
 
+// TODO: 后续考虑使用单独的调试界面去显示模块数据
 // ReSharper disable once CheckNamespace
 namespace FuFramework.SaveData.Editor
 {
     /// <summary>
     /// 自定义本地数据存储管理模块的Inspector
     /// </summary>
-    [CustomEditor(typeof(StorageModule))]
+    // [CustomEditor(typeof(StorageModule))]
     internal sealed class StorageModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
+            // TODO: 后续考虑使用单独的调试界面去显示这些数据
+            /*
             if (target is not StorageModule module) return;
             if (!EditorApplication.isPlaying) return;
 
@@ -35,6 +36,7 @@ namespace FuFramework.SaveData.Editor
             {
                 module.RemoveAllData();
             }
+            */
         }
     }
 }

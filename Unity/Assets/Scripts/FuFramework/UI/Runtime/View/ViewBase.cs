@@ -1,7 +1,6 @@
 using System;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using FuFramework.Localization.Runtime;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -130,7 +129,7 @@ namespace FuFramework.UI.Runtime
                 _OnSafeAreaChanged();
 
                 // 注册本地化语言改变事件
-                Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
+                Subscribe("Event.Localization.LanguageChange", _OnLanguageChanged);
 
                 // 初始化
                 _OnInit();

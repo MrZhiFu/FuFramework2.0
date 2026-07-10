@@ -215,7 +215,7 @@ namespace FuFramework.UI.Runtime
         public CustomLoader()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            if (!m_AssetModule)
+            if (m_AssetModule == null)
             {
                 throw new FuException("[CustomLoader] 资源管理模块不存在!");
             }

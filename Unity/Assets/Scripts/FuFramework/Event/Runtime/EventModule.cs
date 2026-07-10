@@ -11,7 +11,7 @@ namespace FuFramework.Event.Runtime
     ///     2. 支持事件的抛出和订阅。
     ///     3. 包装一个事件池，实际交由事件池管理事件。
     /// </summary>
-    public sealed class EventModule : FuModule
+    public sealed class EventModule : ModuleBase
     {
         /// <summary>
         /// 事件池。

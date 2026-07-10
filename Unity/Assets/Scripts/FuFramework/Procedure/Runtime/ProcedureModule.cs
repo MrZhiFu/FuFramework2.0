@@ -12,7 +12,7 @@ namespace FuFramework.Procedure.Runtime
     ///     2. 开始指定的流程。
     ///     3. 获取当前流程持续时间。
     /// </summary>
-    public sealed class ProcedureModule : FuModule
+    public sealed class ProcedureModule : ModuleBase
     {
         /// <summary>
         /// 有限状态机管理模块
@@ -40,7 +40,7 @@ namespace FuFramework.Procedure.Runtime
         protected override void OnInit()
         {
             m_FsmModule = ModuleManager.GetModule<FsmModule>();
-            if (!m_FsmModule) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
+            if (m_FsmModule == null) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace FuFramework.Procedure.Runtime
         /// </summary>
         protected override void OnDispose()
         {
-            if (!m_FsmModule) return;
+            if (m_FsmModule == null) return;
 
             if (m_ProcedureFsm != null)
             {
@@ -66,7 +66,7 @@ namespace FuFramework.Procedure.Runtime
         /// <exception cref="FuException"></exception>
         public void InitProcedures(ProcedureBase[] procedure)
         {
-            if (!m_FsmModule) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
+            if (m_FsmModule == null) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
             
             // ReSharper disable once CoVariantArrayConversion
             m_ProcedureFsm ??= m_FsmModule.CreateFsm(this, procedure);

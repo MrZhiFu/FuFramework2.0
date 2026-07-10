@@ -15,9 +15,9 @@
 
 ### 2.1 模块系统 (Module System)
 
-框架采用**模块化**设计，所有核心功能（如资源管理、UI管理、网络管理）都必须继承自 `FuModule`。
+框架采用**模块化**设计，所有核心功能（如资源管理、UI管理、网络管理）都必须继承自 `ModuleBase`。
 
-#### FuModule (模块基类)
+#### ModuleBase (模块基类)
 
 继承自 `MonoBehaviour`，但被框架接管了生命周期，继承`MonoBehaviour`只是为了更好的在模块属性面板中显示模块信息。
 
@@ -29,7 +29,7 @@
 
 #### ModuleManager (模块管理器)
 
-核心静态类，负责维护所有 `FuModule` 的实例。
+核心静态类，负责维护所有 `ModuleBase` 的实例。
 
 - **模块注册**：调用 `RegisterModule<T>()` 时，如果模块不存在，会自动创建并挂载到 `[FrameworkModule]` 根节点下。
 - **模块不销毁**：自动标记 `DontDestroyOnLoad`，确保模块在场景切换时不会丢失。
@@ -39,10 +39,10 @@
 
 ```csharp
 // 获取模块实例（仅查找已注册的模块，不会自动创建）
-T GetModule<T>() where T : FuModule
+T GetModule<T>() where T : ModuleBase
 
 // 注册模块（如果模块不存在，会自动创建并挂载到 `[FrameworkModule]` 根节点下）
-void RegisterModule<T>() where T : FuModule
+void RegisterModule<T>() where T : ModuleBase
 
 // 释放所有模块（逆序释放）
 void Dispose()
@@ -501,8 +501,8 @@ void SetScriptingDefineSymbols(BuildTargetGroup buildTargetGroup, string[] symbo
 using FuFramework.Core.Runtime;
 using UnityEngine;
 
-// 1. 继承 FuModule
-public class NetworkModule : FuModule
+// 1. 继承 ModuleBase
+public class NetworkModule : ModuleBase
 {
     // 2. 初始化
     protected internal override void OnInit()
@@ -699,7 +699,7 @@ Core/
     │       ├── Vector2Ex.cs
     │       └── Vector3Ex.cs
     ├── Framework/                   # 框架核心
-    │   ├── FuModule.cs              # 模块基类
+    │   ├── ModuleBase.cs              # 模块基类
     │   └── ModuleManager.cs         # 模块管理器
     ├── Property/                    # 属性绑定系统
     │   └── BindableProperty.cs

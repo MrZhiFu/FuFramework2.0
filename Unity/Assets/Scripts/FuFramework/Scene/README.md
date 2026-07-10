@@ -19,7 +19,7 @@ FuFramework Scene 模块是游戏框架的场景管理系统，专门用于管�
 ```
 【类继承体系】
 
-FuModule (框架模块基类)
+ModuleBase (框架模块基类)
     └── SceneModule (场景管理模块)
         ├── SceneHandleData (内部类)     # 封装场景加载中的数据
         │   ├── SceneHandle              # 场景加载句柄
@@ -62,7 +62,7 @@ SceneModule 依赖:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     SceneModule                             │
-│                     (FuModule)                              │
+│                     (ModuleBase)                              │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │                    状态字典                          │   │
 │  │                                                       │   │
@@ -230,12 +230,12 @@ Clear() 方法 (IReference接口):
 
 ### 4.1 SceneModule
 
-场景管理模块，继承自 `FuModule`，负责整个场景系统的生命周期管理。
+场景管理模块，继承自 `ModuleBase`，负责整个场景系统的生命周期管理。
 
 **核心功能：**
 
 ```csharp
-public sealed class SceneModule : FuModule
+public sealed class SceneModule : ModuleBase
 {
     // 生命周期
     protected override void OnInit()           // 初始化，获取 AssetModule
@@ -555,7 +555,7 @@ Assets/FuFramework/Scene/
 
 | 模块 | 说明 |
 |------|------|
-| FuFramework.Core | 提供 FuModule 基类、FuException、FuLogger、FuGuard |
+| FuFramework.Core | 提供 ModuleBase 基类、FuException、FuLogger、FuGuard |
 | FuFramework.Asset | 提供 AssetModule 和 YooAsset 集成 |
 | FuFramework.Event | 提供 GameEventArgs 和 EventRegister |
 | FuFramework.ReferencePool | 提供引用池管理 |

@@ -19,7 +19,7 @@ Web 模块是 FuFramework 中的网络请求管理系统，提供基于 UnityWeb
 ### 类继承体系
 
 ```
-FuModule (框架模块基类)
+ModuleBase (框架模块基类)
     ↑
 WebModule (Web模块核心类)
     ├── WebData (请求数据基类)
@@ -64,7 +64,7 @@ WebModule (Web模块核心类)
 ### 2.2 核心类说明
 
 #### 2.2.1 WebModule (网络请求管理器)
-位于 `Runtime/Web/WebModule.cs`，是 Web 模块的核心管理类，继承自 `FuModule`。
+位于 `Runtime/Web/WebModule.cs`，是 Web 模块的核心管理类，继承自 `ModuleBase`。
 
 **主要功能：**
 - 管理请求队列和并发连接
@@ -565,7 +565,7 @@ FuFramework/Web/
 
 ## 7. 依赖模块
 
-- **Core**: 提供 FuModule 基类、FuLogger 日志、Utility 工具等
+- **Core**: 提供 ModuleBase 基类、FuLogger 日志、Utility 工具等
 - **Network**: 提供 ProtoBuf 序列化支持 (MessageObject, IResponseMessage, SerializerHelper)
 - **Newtonsoft.Json**: JSON 序列化/反序列化
 - **protobuf-net**: Protocol Buffer 序列化

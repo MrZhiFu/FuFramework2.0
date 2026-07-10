@@ -12,7 +12,7 @@ namespace FuFramework.SaveData.Runtime
     /// 功能：
     ///     1. 负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
     /// </summary>
-    public sealed class StorageModule : FuModule
+    public sealed class StorageModule : ModuleBase
     {
         /// <summary>
         /// 数据根目录
@@ -113,7 +113,7 @@ namespace FuFramework.SaveData.Runtime
 
             // 创建新的辅助器实例
             var helperGo = new GameObject($"SaveHelper_{fileName}");
-            helperGo.transform.SetParent(transform);
+            helperGo.transform.SetParent(ModuleManager.ModuleRoot);
             helperGo.transform.localScale = Vector3.one;
 
             helper = helperGo.AddComponent<StorageHelper>();
@@ -235,7 +235,7 @@ namespace FuFramework.SaveData.Runtime
             if (Directory.Exists(dataPath))
                 Utility.File.Delete(dataPath);
 
-            DestroyImmediate(helper.gameObject);
+            UnityEngine.Object.DestroyImmediate(helper.gameObject);
             m_Helpers.Remove(fileName);
         }
 
@@ -247,7 +247,7 @@ namespace FuFramework.SaveData.Runtime
             foreach (var helper in m_Helpers.Values)
             {
                 helper.RemoveAllData();
-                DestroyImmediate(helper.gameObject);
+                UnityEngine.Object.DestroyImmediate(helper.gameObject);
             }
 
             // 删除整个数据文件夹GameData

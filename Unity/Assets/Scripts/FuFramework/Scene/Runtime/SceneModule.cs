@@ -19,7 +19,7 @@ namespace FuFramework.Scene.Runtime
     ///     1. 配合资源管理模块，管理场景资源的加载、卸载。
     ///     2. 提供场景加载进度，加载成功、加载失败，卸载成功、卸载失败的事件。
     /// </summary>
-    public sealed class SceneModule : FuModule
+    public sealed class SceneModule : ModuleBase
     {
         /// <summary>
         /// 封装场景加载中的数据

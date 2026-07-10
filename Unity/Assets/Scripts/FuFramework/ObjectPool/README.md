@@ -134,12 +134,12 @@ ObjectBase 生命周期:
 
 ### 4.1 ObjectPoolModule
 
-对象池管理模块，继承自 `FuModule`，负责管理所有对象池。
+对象池管理模块，继承自 `ModuleBase`，负责管理所有对象池。
 
 **核心功能：**
 
 ```csharp
-public sealed partial class ObjectPoolModule : FuModule
+public sealed partial class ObjectPoolModule : ModuleBase
 {
     // 对象池管理
     public int Count { get; }                                           // 对象池数量
@@ -578,7 +578,7 @@ Assets/FuFramework/ObjectPool/
 
 | 模块                        | 说明                                               |
 | ------------------------- | ------------------------------------------------ |
-| FuFramework.Core          | 提供 FuModule 基类、TypeNamePair、FuException、FuLogger |
+| FuFramework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuException、FuLogger |
 | FuFramework.ReferencePool | 提供 IReference 接口和 ReferencePool                  |
 
 ## 8. 最佳实践

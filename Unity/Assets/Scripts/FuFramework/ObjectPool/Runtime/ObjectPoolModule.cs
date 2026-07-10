@@ -13,7 +13,7 @@ namespace FuFramework.ObjectPool.Runtime
     /// 功能：
     ///     1. 提供对象池的创建、获取、释放和销毁接口。
     /// </summary>
-    public sealed partial class ObjectPoolModule : FuModule
+    public sealed partial class ObjectPoolModule : ModuleBase
     {
         /// <summary>
         /// 对象池默认容量。

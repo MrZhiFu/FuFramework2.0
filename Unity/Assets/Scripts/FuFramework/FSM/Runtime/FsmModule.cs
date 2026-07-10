@@ -10,7 +10,7 @@ namespace FuFramework.Fsm.Runtime
     /// 功能：
     ///     1. 管理多个有限状态机，包括创建、销毁、轮询等；
     /// </summary>
-    public sealed class FsmModule : FuModule
+    public sealed class FsmModule : ModuleBase
     {
         /// <summary>
         /// 有限状态机字典。key为状态机持有者类型和状态机名称的组合，value为有限状态机。
@@ -280,7 +280,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否销毁有限状态机成功。</returns>
         public bool DestroyFsm<T>(string fsmName) where T : class
         {
-            return InternalDestroyFsm(new TypeNamePair(typeof(T), name));
+            return InternalDestroyFsm(new TypeNamePair(typeof(T), fsmName));
         }
 
         /// <summary>
@@ -292,7 +292,7 @@ namespace FuFramework.Fsm.Runtime
         public bool DestroyFsm(Type ownerType, string fsmName)
         {
             if (ownerType == null) throw new FuException("[FsmModule] 有限状态机持有者类型不能为空。");
-            return InternalDestroyFsm(new TypeNamePair(ownerType, name));
+            return InternalDestroyFsm(new TypeNamePair(ownerType, fsmName));
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ FuFramework Procedure 模块是游戏框架的流程管理系统，基于有限�
 ```
 【类继承体系】
 
-FuModule (框架模块基类)
+ModuleBase (框架模块基类)
     └── ProcedureModule (流程管理模块)
 
 FsmStateBase (状态机状态基类)
@@ -38,7 +38,7 @@ ProcedureModule 依赖:
 【模块依赖特性】
 
 [ModuleDependency(typeof(FsmModule))]
-public sealed class ProcedureModule : FuModule
+public sealed class ProcedureModule : ModuleBase
     └── 确保 FsmModule 先于 ProcedureModule 初始化
 ```
 
@@ -47,7 +47,7 @@ public sealed class ProcedureModule : FuModule
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                   ProcedureModule                           │
-│                      (FuModule)                             │
+│                      (ModuleBase)                             │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │                   m_ProcedureFsm                      │   │
 │  │                      (Fsm)                            │   │
@@ -140,13 +140,13 @@ ProcedureBase                            FsmStateBase
 
 ### 4.1 ProcedureModule
 
-流程管理模块，继承自 `FuModule`，负责管理所有流程。
+流程管理模块，继承自 `ModuleBase`，负责管理所有流程。
 
 **核心功能：**
 
 ```csharp
 [ModuleDependency(typeof(FsmModule))]
-public sealed class ProcedureModule : FuModule
+public sealed class ProcedureModule : ModuleBase
 {
     // 流程状态监控
     public ProcedureBase CurrentProcedure { get; }      // 获取当前流程

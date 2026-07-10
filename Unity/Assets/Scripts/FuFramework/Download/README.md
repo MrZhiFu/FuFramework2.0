@@ -13,7 +13,7 @@ FuFramework Download 模块是一个功能强大的文件下载管理系统。�
 ## 3.核心类说明
 
 ### DownloadModule
-下载管理器，继承自 `FuModule`。
+下载管理器，继承自 `ModuleBase`。
 - **AddDownloadTask**: 添加一个下载任务。
 - **RemoveDownloadTask**: 移除一个下载任务。
 - **RemoveAllDownloadTasks**: 移除所有下载任务。

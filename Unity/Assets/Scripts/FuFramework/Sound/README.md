@@ -18,7 +18,7 @@ Sound 模块是 FuFramework 中的音频管理系统，专门用于管理游戏�
 ### 2.1 类继承体系
 
 ```
-FuModule (抽象基类)
+ModuleBase (抽象基类)
     ↑
 SoundModule (声音管理模块)
     ├── SoundGroup (声音组)
@@ -75,7 +75,7 @@ SoundModule (声音管理模块)
 
 ### 3.1 SoundModule
 
-声音管理模块，继承自 FuModule，负责整个音频系统的生命周期管理。
+声音管理模块，继承自 ModuleBase，负责整个音频系统的生命周期管理。
 
 **主要职责：**
 - 管理声音组的创建和销毁
@@ -500,7 +500,7 @@ FuFramework/Sound/
 
 ## 6. 依赖模块
 
-- **Core**: 提供 FuModule 基类、日志、工具类
+- **Core**: 提供 ModuleBase 基类、日志、工具类
 - **Asset**: 提供音频资源异步加载功能
 - **Event**: 提供事件广播机制
 - **ReferencePool**: 提供对象池管理

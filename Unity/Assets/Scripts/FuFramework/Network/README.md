@@ -24,7 +24,7 @@ FuFramework Network 模块是游戏框架的网络通信核心组件，提供了
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      NetworkModule                          │
-│                    (继承 FuModule)                          │
+│                    (继承 ModuleBase)                          │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
 │  │  Channel A  │  │  Channel B  │  │  Channel C  │  ...     │
 │  │  (TCP/WS)   │  │  (TCP/WS)   │  │  (TCP/WS)   │         │
@@ -135,12 +135,12 @@ Receive → Decompress → DeserializePacketHeader → DeserializePacketBody →
 
 ### 4.1 NetworkModule
 
-网络管理模块，继承自 `FuModule`，负责管理所有网络频道。
+网络管理模块，继承自 `ModuleBase`，负责管理所有网络频道。
 
 **核心功能：**
 
 ```csharp
-public sealed partial class NetworkModule : FuModule
+public sealed partial class NetworkModule : ModuleBase
 {
     // 网络频道管理
     public int NetworkChannelCount { get; }                          // 网络频道数量
@@ -722,7 +722,7 @@ FuFramework/Network/
 
 ## 7. 依赖
 
-- **FuFramework.Core**：框架核心模块（FuModule、FuGuard、Utility、FuLogger）
+- **FuFramework.Core**：框架核心模块（ModuleBase、FuGuard、Utility、FuLogger）
 - **FuFramework.Event**：事件管理模块（EventModule、GameEventArgs）
 - **FuFramework.ReferencePool**：对象池模块
 - **protobuf-net**：ProtoBuf 序列化库

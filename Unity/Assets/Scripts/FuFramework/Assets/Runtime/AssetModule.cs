@@ -16,7 +16,7 @@ namespace FuFramework.Asset.Runtime
     ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步资源加载相关接口。
     ///     2. 统一从资源配置(AssetSetting.scriptableObject)中读取相关参数配置，传入YooAsset，方便管理。
     /// </summary>
-    public partial class AssetModule : FuModule
+    public partial class AssetModule : ModuleBase
     {
         /// <summary>
         /// 资源运行模式。

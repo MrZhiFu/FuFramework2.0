@@ -13,7 +13,7 @@ namespace FuFramework.Timer.Runtime
     ///     1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
     ///     2. 暂停，继续，取消，停止(单个/所有)计时器。
     /// </summary>
-    public sealed class TimerModule : FuModule
+    public sealed class TimerModule : ModuleBase
     {
         /// <summary>
         /// 计时器字典，key为计时器Id，value为计时器项

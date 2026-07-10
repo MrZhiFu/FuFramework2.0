@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
@@ -22,7 +22,7 @@ namespace FuFramework.Core.Runtime
         /// <summary>
         /// 记录所有已注册的模块列表
         /// </summary>
-        private static readonly List<FuModule> ModuleList = new(ModuleCount);
+        private static readonly List<ModuleBase> ModuleList = new(ModuleCount);
 
         /// <summary>
         /// 模块根节点
@@ -30,9 +30,9 @@ namespace FuFramework.Core.Runtime
         private static Transform m_ModuleRoot;
 
         /// <summary>
-        /// 获取模块根节点
+        /// 模块根节点，供需要挂载子 GameObject 的模块使用。
         /// </summary>
-        private static Transform ModuleRoot
+        public static Transform ModuleRoot
         {
             get
             {
@@ -45,11 +45,11 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 获取游戏框架模块
+        /// 获取游戏框架模块（泛型版本）。
         /// </summary>
-        /// <typeparam name="T">要获取的游戏框架组件类型。</typeparam>
-        /// <returns>要获取的游戏框架组件。</returns>
-        public static T GetModule<T>() where T : FuModule
+        /// <typeparam name="T">要获取的模块类型。</typeparam>
+        /// <returns>要获取的模块实例。</returns>
+        public static T GetModule<T>() where T : ModuleBase
         {
             var type = typeof(T);
             for (var i = 0; i < ModuleList.Count; i++)
@@ -62,44 +62,41 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
-        /// 注册游戏框架模块3
+        /// 注册游戏框架模块（泛型版本，内部委托给 Type 版本）。
         /// </summary>
         /// <typeparam name="T">模块类型</typeparam>
-        public static void RegisterModule<T>() where T : FuModule
+        public static void RegisterModule<T>() where T : ModuleBase
         {
-            var moduleType = typeof(T);
+            RegisterModule(typeof(T));
+        }
 
-            if (!typeof(FuModule).IsAssignableFrom(moduleType))
+        /// <summary>
+        /// 注册游戏框架模块（Type 版本，支持热更模块）。
+        /// </summary>
+        /// <param name="moduleType">模块类型</param>
+        public static void RegisterModule(Type moduleType)
+        {
+            if (!typeof(ModuleBase).IsAssignableFrom(moduleType))
             {
-                FuLogger.LogError($"类型 {moduleType.Name} 不是有效的FuModule类型!");
+                FuLogger.LogError($"类型 {moduleType.Name} 不是有效的ModuleBase类型!");
                 return;
             }
 
             try
             {
                 // 检查模块是否已存在
-                if (GetModule<T>() != null)
+                if (GetModule(moduleType) != null)
                 {
                     FuLogger.LogWarning($"模块 {moduleType.Name} 已经注册");
                     return;
                 }
 
-                // 查找现有模块或创建新模块
-                var module = Object.FindObjectOfType<T>(true);
-                if (module == null)
-                {
-                    // 创建模块的GameObject
-                    GameObject moduleObject = new();
-                    module            = moduleObject.AddComponent<T>();
-                    moduleObject.name = $"[Module]-{moduleType.Name}";
-
-                    // 设置父对象到框架根节点
-                    moduleObject.transform.SetParent(ModuleRoot);
-                }
+                // 通过反射创建模块实例
+                var module = (ModuleBase)Activator.CreateInstance(moduleType);
 
                 if (module == null)
                 {
-                    throw new Exception($"注册模块 {moduleType.Name} 失败: 无法创建模块组件!");
+                    throw new Exception($"注册模块 {moduleType.Name} 失败: 无法创建模块实例!");
                 }
 
                 // 按注册顺序添加到列表末尾并初始化
@@ -112,6 +109,22 @@ namespace FuFramework.Core.Runtime
             {
                 FuLogger.LogError($"注册模块 {moduleType.Name} 失败: {e.Message}");
             }
+        }
+
+        /// <summary>
+        /// 获取游戏框架模块（Type 版本，支持热更模块查询）。
+        /// </summary>
+        /// <param name="moduleType">模块类型</param>
+        /// <returns>模块实例，未找到返回 null</returns>
+        public static ModuleBase GetModule(Type moduleType)
+        {
+            for (var i = 0; i < ModuleList.Count; i++)
+            {
+                if (ModuleList[i].GetType() == moduleType)
+                    return ModuleList[i];
+            }
+
+            return null;
         }
 
         /// <summary>

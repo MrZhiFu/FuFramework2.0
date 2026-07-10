@@ -16,7 +16,7 @@ namespace FuFramework.Web.Runtime
     /// 功能：
     ///     1.实现HTTP GET和POST请求功能。
     /// </summary>
-    public partial class WebModule : FuModule
+    public partial class WebModule : ModuleBase
     {
         /// 用于构建URL的StringBuilder
         private readonly StringBuilder m_UrlStr = new(256);

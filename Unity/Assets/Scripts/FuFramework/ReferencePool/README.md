@@ -25,7 +25,7 @@ IReference (引用接口)
 
 【类体系】
 
-FuModule (框架模块基类)
+ModuleBase (框架模块基类)
     └── ReferencePoolModule (引用池管理模块)
         └── 管理严格检查模式配置
 
@@ -67,7 +67,7 @@ ReferencePoolInfo (结构体)
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                ReferencePoolModule                          │
-│                    (FuModule)                               │
+│                    (ModuleBase)                               │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │           m_EnableStrictCheck                       │   │
 │  │     EReferenceStrictCheckType 枚举                  │   │
@@ -315,12 +315,12 @@ private sealed class ReferenceCollection
 
 ### 4.4 ReferencePoolModule
 
-引用池管理模块，继承自 `FuModule`，负责模块的生命周期管理。
+引用池管理模块，继承自 `ModuleBase`，负责模块的生命周期管理。
 
 **核心功能：**
 
 ```csharp
-public sealed class ReferencePoolModule : FuModule
+public sealed class ReferencePoolModule : ModuleBase
 {
     [SerializeField]
     private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.OnlyEnableInEditor;
@@ -686,7 +686,7 @@ Assets/FuFramework/ReferencePool/
 
 | 模块 | 说明 |
 |------|------|
-| FuFramework.Core | 提供 FuModule 基类、FuException、FuLogger |
+| FuFramework.Core | 提供 ModuleBase 基类、FuException、FuLogger |
 
 ## 8. 最佳实践
 

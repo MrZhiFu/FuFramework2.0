@@ -1,19 +1,22 @@
-﻿using UnityEditor;
-using FuFramework.Asset.Runtime;
 using FuFramework.Core.Editor;
+using UnityEditor;
 
+// TODO: 后续考虑使用单独的调试界面去显示模块数据
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Asset.Editor
 {
     /// <summary>
     /// 自定义资源管理模块组件的Inspector
     /// </summary>
-    [CustomEditor(typeof(AssetModule))]
+    // [CustomEditor(typeof(AssetModule))]
     internal sealed class AssetModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
+
+            // TODO: 后续考虑使用单独的调试界面去显示这些数据
+            /*
             serializedObject.Update();
 
             if (target is not AssetModule module) return;
@@ -27,6 +30,7 @@ namespace FuFramework.Asset.Editor
             }
 
             Repaint();
+            */
         }
     }
 }

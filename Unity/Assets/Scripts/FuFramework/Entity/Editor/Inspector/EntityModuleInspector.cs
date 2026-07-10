@@ -1,20 +1,22 @@
-﻿using UnityEditor;
 using FuFramework.Core.Editor;
-using FuFramework.Entity.Runtime;
+using UnityEditor;
 
+// TODO: 后续考虑使用单独的调试界面去显示模块数据
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Entity.Editor
 {
     /// <summary>
     /// 自定义实体管理模块的Inspector
     /// </summary>
-    [CustomEditor(typeof(EntityModule))]
+    // [CustomEditor(typeof(EntityModule))]
     internal sealed class EntityModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
+            // TODO: 后续考虑使用单独的调试界面去显示这些数据
+            /*
             serializedObject.Update();
 
             if (target is not EntityModule module) return;
@@ -32,6 +34,7 @@ namespace FuFramework.Entity.Editor
                     EditorGUILayout.LabelField($"实体组({entityGroup.Name})", entityGroup.EntityCount.ToString());
                 }
             }
+            */
         }
     }
 }

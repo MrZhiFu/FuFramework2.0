@@ -13,7 +13,7 @@ namespace FuFramework.Network.Runtime
     ///     2. 网络事件广播。
     ///     2. 驱动网络频道Update轮询。
     /// </summary>
-    public sealed partial class NetworkModule : FuModule
+    public sealed partial class NetworkModule : ModuleBase
     {
         /// <summary>
         /// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。

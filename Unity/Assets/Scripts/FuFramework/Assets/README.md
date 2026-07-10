@@ -20,7 +20,7 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 ### AssetModule
 
-核心管理器，继承自 `FuModule`。负责整个系统的初始化、配置读取以及全局资源操作。
+核心管理器，继承自 `ModuleBase`。负责整个系统的初始化、配置读取以及全局资源操作。
 
 #### 主要属性
 

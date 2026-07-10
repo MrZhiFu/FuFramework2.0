@@ -23,7 +23,7 @@
 
 ### 3.1 StorageModule
 
-数据保存管理模块，继承自 `FuModule`，是数据保存的核心管理类。
+数据保存管理模块，继承自 `ModuleBase`，是数据保存的核心管理类。
 
 **主要功能：**
 - 统一管理所有数据文件（DataSaveHelper）

@@ -21,7 +21,7 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 ### 2.1 类继承体系
 
 ```
-FuModule (抽象基类)
+ModuleBase (抽象基类)
     ↑
 UIModule (UI管理模块)
     ├── m_UIGroupDict (界面组字典)
@@ -102,7 +102,7 @@ ViewInfo (界面信息)
 
 ### 3.1 UIModule
 
-UI 管理模块，继承自 FuModule，负责所有 UI 界面的统一管理。
+UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理。
 
 **核心字段：**
 
@@ -850,7 +850,7 @@ FuFramework/UI/
 
 ## 6. 依赖模块
 
-- **Core**: 提供 FuModule 基类、日志工具、链表等数据结构
+- **Core**: 提供 ModuleBase 基类、日志工具、链表等数据结构
 - **Event**: 提供事件系统支持
 - **Timer**: 提供计时器功能
 - **ObjectPool**: 提供对象池管理

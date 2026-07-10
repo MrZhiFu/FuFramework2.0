@@ -21,7 +21,7 @@ namespace FuFramework.Sound.Runtime
     ///     2. 提供声音播放、暂停、继续、停止等接口。
     ///     3. 提供声音组管理接口。
     /// </summary>
-    public sealed partial class SoundModule : FuModule
+    public sealed partial class SoundModule : ModuleBase
     {
         /// <summary>
         /// 声音组字典，Key为声音组名称，Value为声音组对象
@@ -81,21 +81,21 @@ namespace FuFramework.Sound.Runtime
             m_Serial = 0;
 
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            if (!m_AssetModule)
+            if (m_AssetModule == null)
             {
                 FuLogger.LogFatal("[SoundModule] 资源管理模块不存在!");
                 return;
             }
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            if (!m_EventModule)
+            if (m_EventModule == null)
             {
                 FuLogger.LogFatal("[SoundModule] 事件组件不存在!");
                 return;
             }
 
             // 添加AudioListener组件
-            m_AudioListener = gameObject.GetOrAddComponent<AudioListener>();
+            m_AudioListener = ModuleManager.ModuleRoot.gameObject.GetOrAddComponent<AudioListener>();
 
             // 获取声音模块配置数据
             var soundSetting = ModuleSetting.Runtime.ModuleSetting.Instance.SoundSetting;
@@ -198,7 +198,7 @@ namespace FuFramework.Sound.Runtime
             }
 
             var soundGroupGo = new GameObject($"Sound Group - {soundGroupInfo.Name}");
-            soundGroupGo.transform.SetParent(transform);
+            soundGroupGo.transform.SetParent(ModuleManager.ModuleRoot);
             soundGroupGo.transform.localScale = Vector3.one;
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
             soundGroup.Init(soundGroupInfo);
@@ -557,7 +557,7 @@ namespace FuFramework.Sound.Runtime
         /// </summary>
         private void RefreshAudioListener()
         {
-            m_AudioListener.enabled = FindObjectsOfType<AudioListener>().Length <= 1;
+            m_AudioListener.enabled = UnityEngine.Object.FindObjectsOfType<AudioListener>().Length <= 1;
         }
     }
 }

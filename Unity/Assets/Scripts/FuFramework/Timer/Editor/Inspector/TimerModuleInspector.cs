@@ -1,20 +1,22 @@
-﻿using UnityEditor;
 using FuFramework.Core.Editor;
-using FuFramework.Timer.Runtime;
+using UnityEditor;
 
+// TODO: 后续考虑使用单独的调试界面去显示模块数据
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Timer.Editor
 {
     /// <summary>
     /// 计时器管理模块的Inspector
     /// </summary>
-    [CustomEditor(typeof(TimerModule))]
+    // [CustomEditor(typeof(TimerModule))]
     internal sealed class TimerModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
+            // TODO: 后续考虑使用单独的调试界面去显示这些数据
+            /*
             if (target is not TimerModule module) return;
             if (!EditorApplication.isPlaying) return;
 
@@ -25,6 +27,7 @@ namespace FuFramework.Timer.Editor
             {
                 EditorGUILayout.LabelField(timerName);
             }
+            */
         }
     }
 }

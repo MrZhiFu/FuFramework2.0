@@ -19,7 +19,7 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 ### 2.1 类继承体系
 
 ```
-FuModule (抽象基类)
+ModuleBase (抽象基类)
     ↑
 TimerModule (计时器管理模块)
     ├── m_TimerDict (计时器字典)
@@ -67,7 +67,7 @@ TimerRegister (计时器注册器)
 
 ### 3.1 TimerModule
 
-计时器管理模块，继承自 FuModule，负责所有计时器的统一管理。
+计时器管理模块，继承自 ModuleBase，负责所有计时器的统一管理。
 
 **核心字段：**
 
@@ -448,7 +448,7 @@ FuFramework/Timer/
 
 ## 6. 依赖模块
 
-- **Core**: 提供 FuModule 基类、日志工具
+- **Core**: 提供 ModuleBase 基类、日志工具
 - **ReferencePool**: 提供对象池管理，用于计时器对象的复用
 - **UniTask**: 提供异步任务支持
 

@@ -13,7 +13,7 @@ namespace FuFramework.UI.Runtime
     /// UI管理模块。
     /// 目标：用于管理所有UI界面的加载，关闭，释放等操作。
     /// </summary>
-    public sealed partial class UIModule : FuModule
+    public sealed partial class UIModule : ModuleBase
     {
         /// <summary>
         /// 正在加载中的界面字典, key为界面Id, value为界面名称
@@ -109,7 +109,7 @@ namespace FuFramework.UI.Runtime
             InstanceExpireTime          = m_InstanceExpireTime;
 
             // 设置GRoot根节点
-            GRoot.inst.displayObject.stage.gameObject.transform.parent = transform;
+            GRoot.inst.displayObject.stage.gameObject.transform.parent = ModuleManager.ModuleRoot;
 
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();

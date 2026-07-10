@@ -46,12 +46,12 @@ FuFramework Mono 模块是游戏框架的 MonoBehaviour 生命周期事件管理
 
 ### 4.1 MonoModule
 
-MonoBehaviour 生命周期管理器，继承自 `FuModule`。
+MonoBehaviour 生命周期管理器，继承自 `ModuleBase`。
 
 **核心功能**：
 
 ```csharp
-public class MonoModule : FuModule
+public class MonoModule : ModuleBase
 {
     // 生命周期监听管理
     public void AddUpdateListener(Action action)           // 添加 Update 监听
@@ -463,7 +463,7 @@ FuFramework/Mono/
 
 ## 7. 依赖
 
-- **FuFramework.Core**：框架核心模块（FuModule、FuGuard、Utility、FuLogger）
+- **FuFramework.Core**：框架核心模块（ModuleBase、FuGuard、Utility、FuLogger）
 
 ## 8. 最佳实践
 

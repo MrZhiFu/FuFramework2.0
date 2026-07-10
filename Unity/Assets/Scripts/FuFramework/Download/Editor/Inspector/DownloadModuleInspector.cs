@@ -1,23 +1,22 @@
-﻿using UnityEditor;
-using UnityEngine;
-using System.Globalization;
 using FuFramework.Core.Editor;
-using FuFramework.Download.Runtime;
-using FuFramework.TaskPool.Runtime;
+using UnityEditor;
 
+// TODO: 后续考虑使用单独的调试界面去显示模块数据
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Download.Editor
 {
     /// <summary>
     /// 自定义下载管理模块的Inspector
     /// </summary>
-    [CustomEditor(typeof(DownloadModule))]
+    // [CustomEditor(typeof(DownloadModule))]
     internal sealed class DownloadModuleInspector : FuFrameworkInspector
     {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
+            // TODO: 后续考虑使用单独的调试界面去显示这些数据
+            /*
             serializedObject.Update();
 
             if (target is not DownloadModule module) return;
@@ -51,16 +50,15 @@ namespace FuFramework.Download.Editor
             serializedObject.ApplyModifiedProperties();
 
             Repaint();
-        }
+            */
 
-        /// <summary>
-        /// 绘制下载任务信息
-        /// </summary>
-        /// <param name="downloadInfo"></param>
-        private void DrawDownloadInfo(TaskInfo downloadInfo)
-        {
-            var taskDesc = $"[Id]{downloadInfo.SerialId} [Tag]{downloadInfo.Tag ?? "<None>"} [优先级]{downloadInfo.Priority} [状态]{downloadInfo.Status}";
-            EditorGUILayout.LabelField(downloadInfo.Description, taskDesc);
+            /*
+            private void DrawDownloadInfo(TaskInfo downloadInfo)
+            {
+                var taskDesc = $"[Id]{downloadInfo.SerialId} [Tag]{downloadInfo.Tag ?? "<None>"} [优先级]{downloadInfo.Priority} [状态]{downloadInfo.Status}";
+                EditorGUILayout.LabelField(downloadInfo.Description, taskDesc);
+            }
+            */
         }
     }
 }

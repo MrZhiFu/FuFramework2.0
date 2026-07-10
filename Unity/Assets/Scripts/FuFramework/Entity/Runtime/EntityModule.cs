@@ -23,7 +23,7 @@ namespace FuFramework.Entity.Runtime
     ///     5. 管理实体的对象池。
     ///     6. 管理实体的依赖资源加载。
     /// </summary>
-    public sealed class EntityModule : FuModule
+    public sealed class EntityModule : ModuleBase
     {
         /// <summary>
         /// 记录所有实体的字典，Key为实体编号，Value为实体信息，便于快速查找
@@ -107,12 +107,12 @@ namespace FuFramework.Entity.Runtime
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;
-            m_InstanceRoot.SetParent(gameObject.transform);
+            m_InstanceRoot.SetParent(ModuleManager.ModuleRoot);
             m_InstanceRoot.localScale = Vector3.one;
 
             // 创建实体辅助器
             var entityHelperGo = new GameObject("Entity Helper");
-            entityHelperGo.transform.SetParent(transform);
+            entityHelperGo.transform.SetParent(ModuleManager.ModuleRoot);
             entityHelperGo.transform.localScale = Vector3.one;
             var entityHelper = entityHelperGo.AddComponent<EntityHelper>();
             m_EntityHelper = entityHelper;

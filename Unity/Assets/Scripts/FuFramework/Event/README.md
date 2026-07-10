@@ -76,7 +76,7 @@ EmptyEventArgs
 
 ### 4.1 EventModule
 
-事件管理模块，继承自 `FuModule`，是事件系统的核心管理类。
+事件管理模块，继承自 `ModuleBase`，是事件系统的核心管理类。
 
 核心属性：
 

@@ -18,7 +18,7 @@ namespace FuFramework.Download.Runtime
     ///     4. 提供下载速度的计算。
     ///     5. 添加/移除/获取下载任务。
     /// </summary>
-    public sealed partial class DownloadModule : FuModule
+    public sealed partial class DownloadModule : ModuleBase
     {
         /// <summary>
         /// 默认下载任务优先级。
@@ -115,7 +115,7 @@ namespace FuFramework.Download.Runtime
             FlushSize = OneMegaBytes;
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            if (!m_EventModule)
+            if (m_EventModule == null)
             {
                 FuLogger.LogFatal("[DownloadModule] 事件管理模块为空!");
                 return;
@@ -124,7 +124,7 @@ namespace FuFramework.Download.Runtime
             if (!m_InstanceRoot)
             {
                 m_InstanceRoot = new GameObject("Download Agent Instances").transform;
-                m_InstanceRoot.SetParent(gameObject.transform);
+                m_InstanceRoot.SetParent(ModuleManager.ModuleRoot);
                 m_InstanceRoot.localScale = Vector3.one;
             }
 
