@@ -1,8 +1,9 @@
 ﻿using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Scene.Runtime
+namespace Hotfix.Scene
 {
     /// <summary>
     /// 卸载场景成功事件。
@@ -37,7 +38,7 @@ namespace FuFramework.Scene.Runtime
         /// <returns>创建的卸载场景成功事件。</returns>
         public static UnloadSceneSuccessEventArgs Create(string sceneName, object userData)
         {
-            var unloadSceneSuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<UnloadSceneSuccessEventArgs>();
+            var unloadSceneSuccessEventArgs = ReferencePool.Acquire<UnloadSceneSuccessEventArgs>();
             unloadSceneSuccessEventArgs.SceneName = sceneName;
             unloadSceneSuccessEventArgs.UserData  = userData;
             return unloadSceneSuccessEventArgs;

@@ -11,7 +11,7 @@ using Utility = FuFramework.Core.Runtime.Utility;
 // ReSharper disable once CheckNamespace
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global
-namespace FuFramework.Scene.Runtime
+namespace Hotfix.Scene
 {
     /// <summary>
     /// 场景管理模块。
@@ -21,6 +21,11 @@ namespace FuFramework.Scene.Runtime
     /// </summary>
     public sealed class SceneModule : ModuleBase
     {
+        /// <summary>
+        /// 模块单例
+        /// </summary>
+        public static SceneModule Instance { get; private set; }
+
         /// <summary>
         /// 封装场景加载中的数据
         /// </summary>
@@ -71,6 +76,7 @@ namespace FuFramework.Scene.Runtime
         /// </summary>
         protected override void OnInit()
         {
+            Instance = this;
             EventRegister = EventRegister.Create();
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
         }
@@ -107,6 +113,7 @@ namespace FuFramework.Scene.Runtime
 
             EventRegister.Release();
             EventRegister = null;
+            Instance = null;
         }
 
         #region Get

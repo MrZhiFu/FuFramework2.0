@@ -1,9 +1,10 @@
 ﻿using YooAsset;
 using FuFramework.Event.Runtime;
+using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Scene.Runtime
+namespace Hotfix.Scene
 {
     /// <summary>
     /// 加载场景失败事件。
@@ -50,7 +51,7 @@ namespace FuFramework.Scene.Runtime
         /// <returns>创建的加载场景失败事件。</returns>
         public static LoadSceneFailureEventArgs Create(string sceneName, EOperationStatus status, string errorMessage, object userData)
         {
-            var loadSceneFailureEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<LoadSceneFailureEventArgs>();
+            var loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
             loadSceneFailureEventArgs.SceneName    = sceneName;
             loadSceneFailureEventArgs.ErrorMessage = errorMessage;
             loadSceneFailureEventArgs.UserData     = userData;

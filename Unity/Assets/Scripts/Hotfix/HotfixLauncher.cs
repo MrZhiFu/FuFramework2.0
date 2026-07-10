@@ -13,6 +13,7 @@ using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
 using Hotfix.Model;
+using Hotfix.Scene;
 using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -45,6 +46,7 @@ namespace Hotfix
             ModuleManager.RegisterModule<LocalizationModule>();
             ModuleManager.RegisterModule<ModelModule>();
             ModuleManager.RegisterModule<ConfigModule>();
+            ModuleManager.RegisterModule<SceneModule>();
 
             // 获取热更界面
             var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();

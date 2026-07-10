@@ -103,7 +103,6 @@ private void RegisterModules()
     ModuleManager.RegisterModule<DataSaveModule>();      // 本地存储数据管理模块
     ModuleManager.RegisterModule<GlobalConfigModule>();  // 全局配置管理模块
     ModuleManager.RegisterModule<ConfigModule>();        // 配置管理模块
-    ModuleManager.RegisterModule<SceneModule>();         // 场景管理模块
     ModuleManager.RegisterModule<SoundModule>();         // 声音管理模块
     ModuleManager.RegisterModule<EntityModule>();        // 实体管理模块
     ModuleManager.RegisterModule<NetworkModule>();       // 网络管理模块
@@ -120,7 +119,7 @@ private void RegisterModules()
 3. **Event/Coroutine/Mono/Timer**：基础服务模块
 4. **Asset/Download/DataSave**：资源相关模块
 5. **GlobalConfig/Config**：配置模块
-6. **Scene/Sound/Entity/Network**：功能模块
+6. **Sound/Entity/Network**：功能模块
 7. **UI/Guide/RedDot/Localization/Model/Web**：上层业务模块
 
 ### 3.3 Launcher.Procedures
@@ -265,7 +264,6 @@ public static class GlobalModule
 | `UIModule` | UI 管理模块 | UI 窗口管理 |
 | `GlobalConfigModule` | 全局配置模块 | 服务器配置管理 |
 | `MonoModule` | Mono 管理模块 | MonoBehaviour 管理 |
-| `SceneModule` | 场景管理模块 | 场景加载和切换 |
 | `SoundModule` | 声音管理模块 | 音效和音乐管理 |
 | `NetworkModule` | 网络管理模块 | 网络通信 |
 | `WebModule` | Web 管理模块 | Web 请求管理 |
@@ -623,7 +621,7 @@ FuFramework/Launcher/
 - **FuFramework.Download**：下载管理模块
 - **FuFramework.Entity**：实体管理模块
 - **FuFramework.UI**：UI 管理模块
-- **FuFramework.Scene**：场景管理模块
+- **Hotfix.Scene**：场景管理模块（已迁移至热更层）
 - **FuFramework.Sound**：声音管理模块
 - **FuFramework.Network**：网络管理模块
 - **FuFramework.Web**：Web 管理模块

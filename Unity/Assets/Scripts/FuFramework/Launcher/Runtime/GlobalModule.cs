@@ -3,7 +3,6 @@ using FuFramework.Web.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.Mono.Runtime;
 using FuFramework.Core.Runtime;
-using FuFramework.Scene.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Sound.Runtime;
 using FuFramework.Timer.Runtime;
@@ -40,7 +39,6 @@ namespace FuFramework.Launcher.Runtime
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
         private static MonoModule          m_MonoModule;          // Mono管理模块
-        private static SceneModule         m_SceneModule;         // 场景管理模块
         private static SoundModule         m_SoundModule;         // 声音管理模块
         private static NetworkModule       m_NetworkModule;       // 网络管理模块
         private static WebModule           m_WebModule;           // Web管理模块
@@ -104,11 +102,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取Mono管理模块。
         /// </summary>
         public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
-
-        /// <summary>
-        /// 获取场景管理模块。
-        /// </summary>
-        public static SceneModule SceneModule => m_SceneModule ??= ModuleManager.GetModule<SceneModule>();
 
         /// <summary>
         /// 获取声音管理模块。
