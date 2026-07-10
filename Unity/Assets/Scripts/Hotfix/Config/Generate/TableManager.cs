@@ -9,7 +9,7 @@
 
 using System;
 using SimpleJSON;
-using FuFramework.Config.Runtime;
+using Hotfix.ModuleConfig;
 namespace Hotfix.Config
 {
     public partial class TableManager

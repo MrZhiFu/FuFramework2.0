@@ -291,7 +291,7 @@ using Hotfix.Config.Tables;
 
 namespace Hotfix.RedDot.Runtime
 {
-    public class RedDotModule : FuModule
+    public class RedDotModule : ModuleBase
     {
         /// <summary>快速访问实例（替代 GlobalModule.RedDotModule）</summary>
         public static RedDotModule Instance => ModuleManager.GetModule<RedDotModule>();

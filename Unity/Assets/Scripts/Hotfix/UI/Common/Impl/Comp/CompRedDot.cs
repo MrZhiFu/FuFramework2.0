@@ -2,7 +2,7 @@ using System;
 using FairyGUI;
 using UnityEngine;
 using FuFramework.UI.Runtime;
-using FuFramework.Launcher.Runtime;
+using Hotfix.RedDot;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.UI
@@ -63,7 +63,7 @@ namespace Hotfix.UI
         /// </summary>
         private void OnDispose()
         {
-            GlobalModule.RedDotModule.Unregister(m_Key, OnRedDotChanged);
+            RedDotModule.Instance.Unregister(m_Key, OnRedDotChanged);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Hotfix.UI
             m_DisplayMode = displayMode;
 
             // 注册红点变化事件
-            GlobalModule.RedDotModule.Register(m_Key, OnRedDotChanged);
+            RedDotModule.Instance.Register(m_Key, OnRedDotChanged);
         }
 
         /// <summary>

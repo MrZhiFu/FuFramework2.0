@@ -1,8 +1,10 @@
 using UnityEngine;
 using Hotfix.Proto;
 using Hotfix.Config;
+using Hotfix.ModuleConfig;
 using Hotfix.UI;
 using Hotfix.Guide;
+using Hotfix.RedDot;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FuFramework.Network.Runtime;
@@ -10,6 +12,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
+using Hotfix.Model;
 using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -36,6 +39,13 @@ namespace Hotfix
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
+            // 注册热更层框架模块
+            ModuleManager.RegisterModule<RedDotModule>();
+            ModuleManager.RegisterModule<GuideModule>();
+            ModuleManager.RegisterModule<LocalizationModule>();
+            ModuleManager.RegisterModule<ModelModule>();
+            ModuleManager.RegisterModule<ConfigModule>();
+
             // 获取热更界面
             var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();
             if (winLauncher == null)
@@ -56,7 +66,7 @@ namespace Hotfix
             BindCustomComps();
 
             // 指定获取多语言的接口
-            GlobalModule.LocalizationModule.LocalizationProvider = new LocalizationProvider();
+            LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
 
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
@@ -64,8 +74,8 @@ namespace Hotfix
             // 如果开启引导，则指定引导模块的动作执行器，并开始首个引导
             if (ModuleSetting.Instance.OpenGuide)
             {
-                GlobalModule.GuideModule.GuideAction = new GuideActionImpl();
-                GlobalModule.GuideModule.StartFirstGuide();
+                GuideModule.Instance.GuideAction = new GuideActionImpl();
+                GuideModule.Instance.StartFirstGuide();
             }
         }
 
@@ -75,7 +85,7 @@ namespace Hotfix
         private static async UniTask LoadConfigAsync()
         {
             var tableManager = new TableManager();
-            tableManager.Init(GlobalModule.ConfigModule);
+            tableManager.Init(ConfigModule.Instance);
 
 #if ENABLE_BINARY_CONFIG
             // 使用二进制配置表

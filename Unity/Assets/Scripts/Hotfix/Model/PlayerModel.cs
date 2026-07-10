@@ -1,4 +1,4 @@
-using FuFramework.Model.Runtime;
+using Hotfix.Model;
 
 public class PlayerModel : BaseSerializerModel
 {

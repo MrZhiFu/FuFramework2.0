@@ -155,7 +155,7 @@ public class RedDotNode : IReference
 ### 4.2 RedDotModule 改造
 
 ```csharp
-public class RedDotModule : FuModule
+public class RedDotModule : ModuleBase
 {
     // ========== 双字典存储（无装箱） ==========
     private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodes = new();

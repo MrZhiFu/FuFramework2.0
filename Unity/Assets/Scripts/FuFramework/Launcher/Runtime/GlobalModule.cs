@@ -8,17 +8,12 @@ using FuFramework.Event.Runtime;
 using FuFramework.Sound.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Asset.Runtime;
-using FuFramework.Config.Runtime;
 using FuFramework.Entity.Runtime;
 using FuFramework.Network.Runtime;
 using FuFramework.Download.Runtime;
 using FuFramework.Procedure.Runtime;
-using FuFramework.Coroutine.Runtime;
+
 using FuFramework.ObjectPool.Runtime;
-using FuFramework.Guide.Runtime;
-using FuFramework.Localization.Runtime;
-using FuFramework.Model.Runtime;
-using FuFramework.RedDot.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.SaveData.Runtime;
 
@@ -37,25 +32,19 @@ namespace FuFramework.Launcher.Runtime
         private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
         private static EventModule         m_EventModule;         // 事件管理模块
         private static AssetModule         m_AssetModule;         // 资源管理模块
-        private static ConfigModule        m_ConfigModule;        // 配置管理模块
-        private static CoroutineModule     m_CoroutineModule;     // 协程管理模块
+
         private static TimerModule         m_TimerModule;         // 计时器管理模块
         private static DownloadModule      m_DownloadModule;      // 下载管理模块
         private static EntityModule        m_EntityModule;        // 实体管理模块
         private static FsmModule           m_FsmModule;           // 有限状态机管理模块
         private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
         private static UIModule            m_UIModule;            // UI管理模块
-        private static LocalizationModule  m_LocalizationModule;  // 本地化管理模块
         private static MonoModule          m_MonoModule;          // Mono管理模块
         private static SceneModule         m_SceneModule;         // 场景管理模块
         private static SoundModule         m_SoundModule;         // 声音管理模块
         private static NetworkModule       m_NetworkModule;       // 网络管理模块
         private static WebModule           m_WebModule;           // Web管理模块
         private static StorageModule       m_StorageModule;       // 本地持久化管理模块
-        private static ModelModule         m_ModelModule;         // 数据模型管理模块
-        private static RedDotModule        m_RedDotModule;        // 红点管理模块
-        private static GuideModule         m_GuideModule;         // 新手引导管理模块
-
         // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
         // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
 
@@ -79,15 +68,7 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         public static AssetModule AssetModule => m_AssetModule ??= ModuleManager.GetModule<AssetModule>();
 
-        /// <summary>
-        /// 获取配置管理模块。
-        /// </summary>
-        public static ConfigModule ConfigModule => m_ConfigModule ??= ModuleManager.GetModule<ConfigModule>();
 
-        /// <summary>
-        /// 获取协程管理模块。
-        /// </summary>
-        public static CoroutineModule CoroutineModule => m_CoroutineModule ??= ModuleManager.GetModule<CoroutineModule>();
 
         /// <summary>
         /// 获取计时器管理模块。
@@ -120,11 +101,6 @@ namespace FuFramework.Launcher.Runtime
         public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
 
         /// <summary>
-        /// 获取本地化管理模块。
-        /// </summary>
-        public static LocalizationModule LocalizationModule => m_LocalizationModule ??= ModuleManager.GetModule<LocalizationModule>();
-
-        /// <summary>
         /// 获取Mono管理模块。
         /// </summary>
         public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
@@ -153,21 +129,6 @@ namespace FuFramework.Launcher.Runtime
         /// 获取本地持久化管理模块。
         /// </summary>
         public static StorageModule StorageModule => m_StorageModule ??= ModuleManager.GetModule<StorageModule>();
-
-        /// <summary>
-        /// 获取数据模型管理模块。
-        /// </summary>
-        public static ModelModule ModelModule => m_ModelModule ??= ModuleManager.GetModule<ModelModule>();
-
-        /// <summary>
-        /// 获取红点管理模块。
-        /// </summary>
-        public static RedDotModule RedDotModule => m_RedDotModule ??= ModuleManager.GetModule<RedDotModule>();
-
-        /// <summary>
-        /// 获取新手引导管理模块。
-        /// </summary>
-        public static GuideModule GuideModule => m_GuideModule ??= ModuleManager.GetModule<GuideModule>();
 
         ///// <summary>
         ///// 获取广告管理模块。// TODO

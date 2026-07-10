@@ -5,6 +5,7 @@ using FuFramework.Network.Runtime;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
+using Hotfix.ModuleConfig;
 using Hotfix.Events;
 using Hotfix.Proto;
 
@@ -98,7 +99,7 @@ namespace Hotfix.Manager
         public List<BagItem> GetBagItemsByType(ItemType bagType)
         {
             var result = new List<BagItem>(m_ItemDic.Count);
-            var tbItemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>();
+            var tbItemConfig = ConfigModule.Instance.GetConfig<TbItem>();
             var itemType = bagType;
             foreach (var bagItem in m_ItemDic)
             {

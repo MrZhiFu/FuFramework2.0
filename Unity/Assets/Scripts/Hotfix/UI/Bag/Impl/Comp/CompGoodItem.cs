@@ -1,6 +1,8 @@
 using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
+using Hotfix.Config;
 using Hotfix.Config.Tables;
+using Hotfix.ModuleConfig;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -46,7 +48,7 @@ namespace Hotfix.UI
         /// <returns></returns>
         public void SetIcon(int itemId)
         {
-            var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>().Get(itemId);
+            var itemConfig = ConfigModule.Instance.GetConfig<TbItem>().Get(itemId);
             if (!itemConfig.IsNotNull()) return;
             loaderGift.icon = Utility.AssetPath.GetImagePath(itemConfig.Icon);
             loaderBg.icon   = Utility.AssetPath.GetImagePath(itemConfig.Bg);

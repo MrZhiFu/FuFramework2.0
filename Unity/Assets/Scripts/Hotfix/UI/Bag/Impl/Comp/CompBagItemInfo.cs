@@ -4,6 +4,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Launcher.Runtime;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
+using Hotfix.ModuleConfig;
 using Hotfix.Manager;
 using Hotfix.Proto;
 
@@ -53,7 +54,7 @@ namespace Hotfix.UI
         {
             if (selectBagItem.IsNull()) return;
             m_SelectBagItem = selectBagItem;
-            var itemConfig = GlobalModule.ConfigModule.GetConfig<TbItem>().Get(selectBagItem.ItemId);
+            var itemConfig = ConfigModule.Instance.GetConfig<TbItem>().Get(selectBagItem.ItemId);
             txtName.text = itemConfig.Name;
             txtDesc.text = itemConfig.Desc;
             var eIsCanUse = itemConfig.CanUse == ItemUseType.CanNot ? EIsCanUse.No : EIsCanUse.Yes;

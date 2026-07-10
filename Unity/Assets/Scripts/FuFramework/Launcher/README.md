@@ -108,10 +108,6 @@ private void RegisterModules()
     ModuleManager.RegisterModule<EntityModule>();        // 实体管理模块
     ModuleManager.RegisterModule<NetworkModule>();       // 网络管理模块
     ModuleManager.RegisterModule<UIModule>();            // UI管理模块
-    ModuleManager.RegisterModule<GuideModule>();         // 引导管理模块
-    ModuleManager.RegisterModule<RedDotModule>();        // 红点管理模块
-    ModuleManager.RegisterModule<LocalizationModule>();  // 本地化管理模块
-    ModuleManager.RegisterModule<ModelModule>();         // 数据模型管理模块
     ModuleManager.RegisterModule<WebModule>();           // Web管理模块
 }
 ```
@@ -268,16 +264,12 @@ public static class GlobalModule
 | `ProcedureModule` | 流程管理模块 | 游戏流程控制 |
 | `UIModule` | UI 管理模块 | UI 窗口管理 |
 | `GlobalConfigModule` | 全局配置模块 | 服务器配置管理 |
-| `LocalizationModule` | 本地化管理模块 | 多语言支持 |
 | `MonoModule` | Mono 管理模块 | MonoBehaviour 管理 |
 | `SceneModule` | 场景管理模块 | 场景加载和切换 |
 | `SoundModule` | 声音管理模块 | 音效和音乐管理 |
 | `NetworkModule` | 网络管理模块 | 网络通信 |
 | `WebModule` | Web 管理模块 | Web 请求管理 |
 | `DataSaveModule` | 数据存储模块 | 本地数据持久化 |
-| `ModelModule` | 数据模型模块 | 游戏数据模型 |
-| `RedDotModule` | 红点管理模块 | 红点提示系统 |
-| `GuideModule` | 引导管理模块 | 新手引导系统 |
 
 #### 使用对比
 
@@ -636,10 +628,10 @@ FuFramework/Launcher/
 - **FuFramework.Network**：网络管理模块
 - **FuFramework.Web**：Web 管理模块
 - **FuFramework.DataSave**：数据存储模块
-- **FuFramework.Localization**：本地化管理模块
-- **FuFramework.Model**：数据模型模块
-- **FuFramework.RedDot**：红点管理模块
-- **FuFramework.Guide**：引导管理模块
+- **Hotfix.Localization**：本地化管理模块（已迁移至热更层）
+- **Hotfix.Model**：数据模型模块（已迁移至热更层）
+- **Hotfix.RedDot**：红点管理模块（已迁移至热更层）
+- **Hotfix.Guide**：引导管理模块（已迁移至热更层）
 - **FuFramework.Mono**：Mono 管理模块
 - **FuFramework.GlobalConfig**：全局配置模块
 - **SRDebugger**：运行时日志查看器
