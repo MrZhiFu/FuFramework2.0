@@ -1,4 +1,4 @@
-# FuFramework C# 代码风格检查脚本
+﻿# FuFramework C# 代码风格检查脚本
 # 用法: powershell -File check-style.ps1 <file.cs>
 # 退出码: 0 = 通过, 1 = 发现问题
 
