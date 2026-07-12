@@ -28,7 +28,7 @@ function onPublish(handler)
 
     --- Launcher 包不自动生成代码（引导界面为手写，无需导出）
     if handler.pkg.name == "Launcher" then
-        Tool:Log("跳过 Launcher 包，不自动生成代码")
+        Tool:Log("跳过 Launcher 包，属于热更前，不需要自动生成代码，代码手动维护")
         return
     end
 
