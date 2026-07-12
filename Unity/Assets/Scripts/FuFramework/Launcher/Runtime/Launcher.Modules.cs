@@ -1,6 +1,5 @@
 using FuFramework.Core.Runtime;
 
-using FuFramework.Event.Runtime;
 using FuFramework.Fsm.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.Procedure.Runtime;
@@ -24,7 +23,6 @@ namespace FuFramework.Launcher.Runtime
             ModuleManager.RegisterModule<ObjectPoolModule>();    // 对象池管理模块
             ModuleManager.RegisterModule<FsmModule>();           // 有限状态机管理模块
             ModuleManager.RegisterModule<ProcedureModule>();     // 流程管理模块
-            ModuleManager.RegisterModule<EventModule>();         // 事件管理模块
 
         }
     }
