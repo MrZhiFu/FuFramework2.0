@@ -21,6 +21,8 @@ namespace FuFramework.Procedure.Runtime
         /// 状态初始化时调用。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
-        protected override void OnInit(Fsm.Runtime.Fsm procedureOwner) => base.OnInit(procedureOwner);
+        // 注意：FsmStateBase.OnInit 为 protected internal；FSM 与 Procedure 现同属 Hotfix 程序集，
+        // 同程序集重写须保留 internal（写成 protected 会触发 CS0507），请勿改为 protected override。
+        protected internal override void OnInit(Fsm.Runtime.Fsm procedureOwner) => base.OnInit(procedureOwner);
     }
 }
