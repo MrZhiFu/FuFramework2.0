@@ -17,17 +17,17 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
+    -- Launcher 包：Win/Binder/Comp 统一放在 Bootstrap/UI/ 下
+    local isLauncher = tostring(pkgName) == "Launcher"
+    local aotUiSubDir = isLauncher and "/UI" or ""
+
     for _, winCls in ipairs(winClsArray) do
-        -- Launcher包特殊处理：FGUI资源名为WinLauncher，C#类名使用BootstrapView
         local winName = winCls.resName
-        if tostring(pkgName) == "Launcher" then
-            winName = "BootstrapView"
-        end
 
         -------------------------------------WinXxx.Gen.cs----------------------------------------
         Tool:Log("生成界面C#代码----%s.Gen.cs", winName)
 
-        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
+        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. aotUiSubDir
 
         -- 创建存放代码的文件夹=>.../ViewGen
         Tool:CreateDirectory(targetDir)
@@ -36,7 +36,6 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         local compArray = Tool:GetCompArray(winCls)
 
         -- Launcher 包使用独立模板（不继承 ViewBase，手动管理 m_View）
-        local isLauncher = tostring(pkgName) == "Launcher"
         local templateName = isLauncher and "Template/WinGenLauncherTemplate.txt" or "Template/WinGenTemplate.txt"
         local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
         local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码
@@ -68,38 +67,44 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
 
-        -- Launcher 包特殊处理
-        if isLauncher then
-            -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前
-            local compDefineContent = table.concat(dataTable['#CompDefine#'])
-            local fieldLines = {}
-            local otherLines = {}
-            for line in compDefineContent:gmatch("[^\n]*\n?") do
-                if line:match("^\t*private %w+ [%w_]+;\n?$") then
-                    table.insert(fieldLines, line)
-                elseif line:match("^%s*$") then
-                    -- 空白行：归入下一组（不归属任何一组，按顺序追加到当前组）
-                    if #fieldLines > 0 and #otherLines == 0 then
-                        -- 字段后的空白暂时跳过，待合并时处理
-                    else
-                        table.insert(otherLines, line)
-                    end
+        -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前（所有包通用）
+        local compDefineContent = table.concat(dataTable['#CompDefine#'])
+        local fieldLines = {}
+        local otherLines = {}
+        for line in compDefineContent:gmatch("[^\n]*\n?") do
+            if line:match("^\t*private %w+ [%w_]+;\n?$") then
+                table.insert(fieldLines, line)
+            elseif line:match("^%s*$") then
+                if #fieldLines > 0 and #otherLines == 0 then
+                    -- 字段后的空白暂时跳过
                 else
                     table.insert(otherLines, line)
                 end
+            else
+                table.insert(otherLines, line)
             end
-            dataTable['#FieldDefine#'] = fieldLines
-            -- 清理 otherLines 首尾空白
-            while #otherLines > 0 and otherLines[1]:match("^%s*$") do
-                table.remove(otherLines, 1)
-            end
-            while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
-                table.remove(otherLines)
-            end
-            dataTable['#EnumAndMethodDefine#'] = otherLines
-            dataTable['#CompDefine#'] = {} -- Launcher 模板不使用此占位符
+        end
+        dataTable['#FieldDefine#'] = fieldLines
+        while #otherLines > 0 and otherLines[1]:match("^%s*$") do
+            table.remove(otherLines, 1)
+        end
+        while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
+            table.remove(otherLines)
+        end
+        dataTable['#EnumAndMethodDefine#'] = otherLines
+        dataTable['#CompDefine#'] = {} -- 拆分后原占位符不再使用
 
-            -- B. API 调用改为 m_View.xxx（不修改字段命名，Gen.cs 保持 FGUI 标准匈牙利风格）
+        -- B. Launcher 包特殊处理
+        if isLauncher then
+            -- B0. 字段/枚举/方法改为 public（独立类，非 partial，外部需要访问）
+            for _, k in ipairs({'#FieldDefine#', '#EnumAndMethodDefine#'}) do
+                local content = table.concat(dataTable[k])
+                if content ~= "" then
+                    content = content:gsub("\t\tprivate ", "\t\tpublic ")
+                    dataTable[k] = {content}
+                end
+            end
+
             local apiKeys = {'#FieldDefine#', '#EnumAndMethodDefine#', '#CompInit#', '#INITUIEVENT#'}
             for _, k in ipairs(apiKeys) do
                 local content = table.concat(dataTable[k])
@@ -108,7 +113,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                     content = content:gsub("UIView%.GetController", "m_View.GetController")
                     -- 2. UIView.GetTransition → m_View.GetTransition
                     content = content:gsub("UIView%.GetTransition", "m_View.GetTransition")
-                    -- 3. GetChild → m_View.GetChild（避免重复替换）
+                    -- 3. GetChild → m_View.GetChild
                     content = content:gsub("([^%.])GetChild%(", "%1m_View.GetChild(")
                     -- 4. AddUIListener(var.event, handler) → var.event.Set(handler)
                     content = content:gsub("AddUIListener%(([%w_]+)%.(%w+), ([^)]+)%)", function(varName, event, handler)
@@ -119,9 +124,11 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             end
         end
 
-        -- 使用生成的代码替换模板代码中各个关键字
+        -- 使用生成的代码替换模板代码中各个关键字（去除末尾多余换行，避免与模板换行叠加）
         for k, v in pairs(dataTable) do
-            templateCodeGen = templateCodeGen:gsub(k, table.concat(v))
+            local content = table.concat(v)
+            content = content:gsub("\n+$", "")
+            templateCodeGen = templateCodeGen:gsub(k, content)
         end
 
         -- 替换命名空间，包名，界面名

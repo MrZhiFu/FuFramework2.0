@@ -17,23 +17,32 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
+    -- Launcher 包使用独立模板与目录结构（不含 Hotfix 依赖）
+    local isLauncher = tostring(pkgName) == "Launcher"
+    local compSubDir = isLauncher and "/UI" or "/Comp"
+
     for _, compCls in ipairs(compClsArray) do
         -------------------------------------CompXxx.Gen.cs----------------------------------------
         Tool:Log("生成组件C#代码----%s", compCls.resName .. ".Gen.cs")
 
-        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. "/Comp"
+        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir
 
         -- 创建存放代码的文件夹=>.../ViewGen/Comp
         Tool:CreateDirectory(targetDir)
 
         local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, compCls.resName)
         local compArray = Tool:GetCompArray(compCls)
-        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompGenTemplate.txt")
+
+        -- Launcher 包使用独立模板（不含 Hotfix 依赖：ICustomComp、ViewBase、FuFramework.UI/Event 等）
+        local templateName = isLauncher and "Template/CompGenLauncherTemplate.txt" or "Template/CompGenTemplate.txt"
+        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
         local templateCodeGen = Tool:ReadTxt(templateCodeGenPath) -- 读取模板代码
 
         -- 定义模板代码中需要填充的关键字
         local dataKeys = {
-            '#CompDefine#', -- 组件包含的组件定义关键字
+            '#CompDefine#', -- 组件包含的组件定义关键字（拆分后不再使用）
+            '#FieldDefine#', -- 字段声明
+            '#EnumAndMethodDefine#', -- 枚举定义与 SetController 方法
             '#CompInit#', -- 组件包含的组件初始化赋值关键字
             '#CustomCompInit#', -- 自定义组件的初始化Init函数代码
             '#INITUIEVENT#', -- 组件可交互组件事件初始化
@@ -58,9 +67,53 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         GenCommon:GenCompEvent(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
 
-        -- 使用生成的代码替换模板代码中各个关键字
+        -- 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前
+        local compDefineContent = table.concat(dataDict['#CompDefine#'])
+        local fieldLines = {}
+        local otherLines = {}
+        for line in compDefineContent:gmatch("[^\n]*\n?") do
+            if line:match("^\t*private %w+ [%w_]+;\n?$") then
+                table.insert(fieldLines, line)
+            elseif line:match("^%s*$") then
+                if #fieldLines > 0 and #otherLines == 0 then
+                    -- 字段后的空白暂时跳过
+                else
+                    table.insert(otherLines, line)
+                end
+            else
+                table.insert(otherLines, line)
+            end
+        end
+        dataDict['#FieldDefine#'] = fieldLines
+        while #otherLines > 0 and otherLines[1]:match("^%s*$") do
+            table.remove(otherLines, 1)
+        end
+        while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
+            table.remove(otherLines)
+        end
+        dataDict['#EnumAndMethodDefine#'] = otherLines
+        dataDict['#CompDefine#'] = {}
+
+        -- Launcher 包：API 调用改为原生 FGUI 风格（无 uiView 间接层）
+        if isLauncher then
+            local apiKeys = {'#INITUIEVENT#'}
+            for _, k in ipairs(apiKeys) do
+                local content = table.concat(dataDict[k])
+                if content ~= "" then
+                    -- AddUIListener(var.event, handler) → var.event.Set(handler)
+                    content = content:gsub("AddUIListener%(([%w_]+)%.(%w+), ([^)]+)%)", function(varName, event, handler)
+                        return varName .. "." .. event .. ".Set(" .. handler .. ")"
+                    end)
+                    dataDict[k] = {content}
+                end
+            end
+        end
+
+        -- 使用生成的代码替换模板代码中各个关键字（去除末尾多余换行，避免与模板换行叠加）
         for k, v in pairs(dataDict) do
-            templateCodeGen = templateCodeGen:gsub(k, table.concat(v))
+            local content = table.concat(v)
+            content = content:gsub("\n+$", "")
+            templateCodeGen = templateCodeGen:gsub(k, content)
         end
 
         -- 替换命名空间，包名，组件名
@@ -74,7 +127,7 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         ------------------------------------------CompXxx.cs----------------------------------------------
         Tool:Log("生成组件逻辑C#代码----%s", compCls.resName .. ".cs")
 
-        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. "/Comp"
+        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir
         targetPath = Tool:StrFormat('%s/%s.cs', targetDir, compCls.resName)
 
         -- 如果组件逻辑代码文件存在，则不再生成
