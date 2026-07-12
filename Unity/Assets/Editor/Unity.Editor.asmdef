@@ -6,7 +6,8 @@
         "YooAsset.Runtime",
         "HybridCLR.Editor",
         "FuFramework.Editor",
-        "FuFramework.Runtime"
+        "FuFramework.Runtime",
+        "FuFramework.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"
