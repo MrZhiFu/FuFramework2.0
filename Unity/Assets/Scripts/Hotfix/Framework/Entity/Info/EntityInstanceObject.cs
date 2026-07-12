@@ -55,9 +55,11 @@ namespace Hotfix.Entity
         }
 
         /// <summary>
-        /// 释放实体
+        /// 释放实体。
+        /// ObjectBase.OnRelease 为 protected internal abstract，ObjectBase 现与子类同属 Hotfix 程序集，
+        /// 同程序集重写须保留 internal（写成 protected 会触发 CS0507），请勿改为 protected override。
         /// </summary>
-        protected override void OnRelease()
+        protected internal override void OnRelease()
         {
             m_EntityHelper.ReleaseEntity(m_EntityAssetHandle, Target);
         }

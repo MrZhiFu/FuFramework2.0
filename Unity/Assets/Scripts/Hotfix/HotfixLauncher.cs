@@ -12,6 +12,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Mono.Runtime;
+using FuFramework.ObjectPool.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.Fsm.Runtime;
@@ -56,6 +57,7 @@ namespace Hotfix
             ModuleManager.RegisterModule<FsmModule>();       // 有限状态机管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<ProcedureModule>(); // 流程管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<EventModule>();     // 事件管理模块（Phase 2 下沉）
+            ModuleManager.RegisterModule<ObjectPoolModule>(); // 对象池管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<MonoModule>();      // Mono管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<TimerModule>();     // 计时器管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<AssetModule>();     // 资源管理模块（Phase 2 下沉）

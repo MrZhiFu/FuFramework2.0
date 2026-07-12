@@ -28,8 +28,10 @@ namespace FuFramework.UI.Runtime
 
         /// <summary>
         /// 释放界面实例对象。
+        /// ObjectBase.OnRelease 为 protected internal abstract，ObjectBase 现与子类同属 Hotfix 程序集，
+        /// 同程序集重写须保留 internal（写成 protected 会触发 CS0507），请勿改为 protected override。
         /// </summary>
-        protected override void OnRelease()
+        protected internal override void OnRelease()
         {
             if (Target is not ViewBase viewBase)
                 throw new FuException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
