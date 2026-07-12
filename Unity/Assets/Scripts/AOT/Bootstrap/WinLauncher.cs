@@ -1,6 +1,6 @@
 using System;
-using Cysharp.Threading.Tasks;
 using FairyGUI;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -32,6 +32,18 @@ namespace Launcher
             InitUIEvent();
             SetNeedUpgrade(false);
             SetDownloading(false);
+        }
+
+        /// <summary>
+        /// 从 Resources 加载 Launcher FUI 包并创建 UI 组件（引导阶段不依赖 YooAsset）。
+        /// </summary>
+        private void LoadUIPackage()
+        {
+            UIPackage.AddPackage("UI/Launcher/Launcher");
+
+            m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
+            m_View.MakeFullScreen();
+            GRoot.inst.AddChild(m_View);
         }
 
         /// <summary>
