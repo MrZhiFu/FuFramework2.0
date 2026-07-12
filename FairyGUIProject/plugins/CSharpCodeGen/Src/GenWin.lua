@@ -13,9 +13,9 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         return
     end
 
-    local exportGenPath = Tool.ExportViewGenPath --- 导出ViewGen的C#代码路径
-    local exportPath = Tool.ExportViewPath       --- 导出View的C#代码路径
-    local namespace = Tool.ExportViewNamespace   --- 导出View的C#代码命名空间
+    local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
+    local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
+    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     for _, winCls in ipairs(winClsArray) do
         -------------------------------------WinXxx.Gen.cs----------------------------------------
@@ -66,6 +66,11 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         templateCodeGen = templateCodeGen:gsub('#NAMESPACE#', namespace)
         templateCodeGen = templateCodeGen:gsub('#PKGNAME#', pkgName)
         templateCodeGen = templateCodeGen:gsub('#WINNAME#', winCls.resName)
+
+        -- Launcher包不继承ViewBase，移除override属性
+        if tostring(pkgName) == "Launcher" then
+            templateCodeGen = templateCodeGen:gsub("[^\n]*override[^\n]*\n", "")
+        end
 
         -- 写入替换完成后的代码文件WinXxx.Gen.cs
         Tool:WriteTxt(targetPath, templateCodeGen)

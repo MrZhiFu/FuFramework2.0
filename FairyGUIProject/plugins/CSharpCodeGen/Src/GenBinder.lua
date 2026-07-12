@@ -11,9 +11,9 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
         return
     end
 
-    local exportGenPath = Tool.ExportViewGenPath--- 导出ViewGen的C#代码路径
+    local exportGenPath = Tool:GetExportCodeGenPath(pkgName)--- 导出ViewGen的C#代码路径
     local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) --- 导出ViewGen的C#代码目录
-    local namespace = Tool.ExportViewNamespace   --- 导出View的C#代码命名空间
+    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
     Tool:CreateDirectory(targetDir)
 
     for _, _ in ipairs(compClsArray) do

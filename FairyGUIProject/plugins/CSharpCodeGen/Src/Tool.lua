@@ -5,14 +5,53 @@ local Tool = {}
 local File = CS.System.IO.File
 local Directory = CS.System.IO.Directory
 
+--- 导出界面View的C#代码AOT路径（Launcher包专用，引导阶段使用）
+Tool.ExportViewAOTPath = "%s/Scripts/AOT/Bootstrap"
+
 --- 导出界面View的C#代码路径
 Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"
+
+--- 导出界面ViewGen的C#代码AOT路径（Launcher包专用，引导阶段使用）
+Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/Bootstrap/"
 
 --- 导出界面ViewGen的C#代码路径
 Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
 
 --- 导出界面View的命名空间
 Tool.ExportViewNamespace = "Hotfix.UI"
+
+--- 导出界面View的AOT命名空间（Launcher包专用）
+Tool.ExportViewAOTNamespace = "Launcher"
+
+--- 获取导出View的C#代码路径
+---@param pkgName string
+---@return string
+function Tool:GetExportCodePath(pkgName)
+    if tostring(pkgName) == "Launcher" then
+        return self.ExportViewAOTPath
+    end
+    return self.ExportViewPath
+end
+
+--- 获取导出的C#代码路径
+---@param pkgName string
+---@return string
+function Tool:GetExportCodeGenPath(pkgName)
+    if tostring(pkgName) == "Launcher" then
+        return self.ExportViewGenAOTPath
+    end
+    return self.ExportViewGenPath
+end
+
+--- 获取导出时的C#代码命名空间
+---@param pkgName string
+---@return string
+function Tool:GetExportCodeNamespace(pkgName)
+    if tostring(pkgName) == "Launcher" then
+        return self.ExportViewAOTNamespace
+    end
+    return self.ExportViewNamespace
+end
 
 --- 字符串格式化（封装 string.format，提供一致性调用接口）
 ---@param str string 格式字符串（参考 string.format）
