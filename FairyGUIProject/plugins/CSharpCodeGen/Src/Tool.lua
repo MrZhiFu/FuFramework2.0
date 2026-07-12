@@ -15,7 +15,7 @@ Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/%s/Impl"
 Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/%s/Gen/"
 
 --- 导出界面ViewGen的C#代码路径
-Tool.ExportViewGenPath = "%s/Scripts/Hotfix/UI/%s/Gen/"
+Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
 
 --- 导出界面View的命名空间
 Tool.ExportViewNamespace = "Hotfix.UI"
