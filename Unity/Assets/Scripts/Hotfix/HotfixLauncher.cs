@@ -83,11 +83,11 @@ namespace Hotfix
             ModuleManager.RegisterModule<NetworkModule>();
 
             // 将 ModuleManager 的生命周期方法挂接到 AOT 侧 Launcher 委托（ModuleManager 已随 Task 15 下沉 Hotfix）
-            Launcher.OnUpdate       = ModuleManager.Update;
-            Launcher.OnLateUpdate   = ModuleManager.LateUpdate;
-            Launcher.OnFixedUpdate  = ModuleManager.FixedUpdate;
-            Launcher.DisposeModules = ModuleManager.Dispose;
-            Launcher.ReInitModules  = ModuleManager.ReInit;
+            FuFramework.Launcher.Runtime.Launcher.OnUpdate       = ModuleManager.Update;
+            FuFramework.Launcher.Runtime.Launcher.OnLateUpdate   = ModuleManager.LateUpdate;
+            FuFramework.Launcher.Runtime.Launcher.OnFixedUpdate  = ModuleManager.FixedUpdate;
+            FuFramework.Launcher.Runtime.Launcher.DisposeModules = ModuleManager.Dispose;
+            FuFramework.Launcher.Runtime.Launcher.ReInitModules  = ModuleManager.ReInit;
 
             // 加载配置表
             bootstrapView.SetTip("LoadConfig...");
