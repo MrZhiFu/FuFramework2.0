@@ -1,4 +1,5 @@
 // ReSharper disable once CheckNamespace
+
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
@@ -8,10 +9,14 @@ namespace FuFramework.Core.Runtime
     /// </summary>
     public interface IBootstrapView
     {
-        /// <summary>设置加载提示文本。</summary>
+        /// <summary>
+        /// 设置加载提示文本。
+        /// </summary>
         void SetTip(string text);
 
-        /// <summary>关闭加载界面。</summary>
+        /// <summary>
+        /// 关闭加载界面。
+        /// </summary>
         void Close();
     }
 }
