@@ -6,7 +6,7 @@ using YooAsset;
 using HybridCLR;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
-using Launcher.Procedure;
+using Launcher.Bootstrap;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 // ReSharper disable once CheckNamespace
