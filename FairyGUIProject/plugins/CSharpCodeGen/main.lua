@@ -26,6 +26,12 @@ function onPublish(handler)
     --- 2.加载GenCommon生成时的通用功能对象
     GenReady:Init(handler, PluginPath)
 
+    --- Launcher 包不自动生成代码（引导界面为手写，无需导出）
+    if handler.pkg.name == "Launcher" then
+        Tool:Log("跳过 Launcher 包，不自动生成代码")
+        return
+    end
+
     --- 导出路径是否有效
     if not GenReady:IsExportPathOK() then
         return
