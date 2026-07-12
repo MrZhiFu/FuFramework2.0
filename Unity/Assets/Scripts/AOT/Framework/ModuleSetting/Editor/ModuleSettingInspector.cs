@@ -1,6 +1,6 @@
-﻿using UnityEditor;
+﻿using FuFramework.Core.Editor;
+using UnityEditor;
 using UnityEngine;
-using FuFramework.Core.Editor;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ModuleSetting.Editor

@@ -172,7 +172,7 @@ MonoBehaviour:
   m_GameSpeed: 1
   m_RunInBackground: 1
   m_NeverSleep: 1
-  m_OpenGuide: 0
+  m_OpenGuide: 1
   m_SoundSetting: {fileID: 11400000, guid: 6f728f34a29381444960bc9359c41283, type: 2}
   m_AssetSetting: {fileID: 11400000, guid: d0a30a5af33c5e64ea490a0fa40b48a6, type: 2}
   m_EntitySetting: {fileID: 11400000, guid: 4df97239b3180d94fa3a99c5160f2c68, type: 2}
@@ -191,17 +191,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12556a235f824331ae6c9d1c6d61427e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AvailableProcedureTypeNames:
-  - Launcher.Procedure.ProcedureLauncher
-  - Launcher.Procedure.ProcedureInitPackage
-  - Launcher.Procedure.ProcedureUpdatePackageManifest
-  - Launcher.Procedure.ProcedureGetPackageVersion
-  - Launcher.Procedure.ProcedureCreateDownloader
-  - Launcher.Procedure.ProcedureDownloadPackage
-  - Launcher.Procedure.ProcedureUpdateDone
-  - Launcher.Procedure.ProcedureReqRemoteUpdateConfig
-  - Launcher.Procedure.ProcedureCodeHotfix
-  m_EntryProcedureTypeName: Launcher.Procedure.ProcedureLauncher
 --- !u!114 &7148938655606090477
 MonoBehaviour:
   m_ObjectHideFlags: 0
