@@ -11,6 +11,7 @@ using Hotfix.Network;
 using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Timer.Runtime;
+using FuFramework.Mono.Runtime;
 using FuFramework.UI.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
@@ -49,6 +50,7 @@ namespace Hotfix
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
             // 注册热更层框架模块（含 Phase 2 起下沉到 Hotfix 的框架模块）
+            ModuleManager.RegisterModule<MonoModule>();  // Mono管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<TimerModule>(); // 计时器管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<AssetModule>(); // 资源管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<UIModule>();    // UI管理模块（Phase 2 下沉）
