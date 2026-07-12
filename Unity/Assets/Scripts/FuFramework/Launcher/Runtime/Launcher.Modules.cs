@@ -1,4 +1,3 @@
-using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
 
 using FuFramework.Event.Runtime;
@@ -31,7 +30,6 @@ namespace FuFramework.Launcher.Runtime
 
             ModuleManager.RegisterModule<MonoModule>();          // Mono管理模块
             ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
-            ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
         }
     }
 }
