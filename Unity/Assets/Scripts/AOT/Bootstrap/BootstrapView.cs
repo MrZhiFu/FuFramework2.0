@@ -12,16 +12,18 @@ namespace Launcher
     /// </summary>
     public sealed class BootstrapView : IBootstrapView
     {
-        private GComponent m_View;
-        private Controller m_IsNeedUpgrade;
-        private Controller m_IsDownloading;
-        private GTextField m_TxtTips;
-        private GProgressBar m_ProgressBar;
-        private GButton m_BtnOk;
+        private GComponent     m_View;
+        private Controller     m_IsNeedUpgrade;
+        private Controller     m_IsDownloading;
+        private GTextField     m_TxtTips;
+        private GProgressBar   m_ProgressBar;
+        private GButton        m_BtnOk;
         private GRichTextField m_TxtContent;
-        private Action m_OnConfirm;
+        private Action         m_OnConfirm;
 
-        /// <summary>创建并显示加载界面。</summary>
+        /// <summary>
+        /// 创建并显示加载界面。
+        /// </summary>
         public static UniTask<BootstrapView> CreateAsync()
         {
             var view = new BootstrapView();
@@ -50,13 +52,17 @@ namespace Launcher
             SetDownloading(false);
         }
 
-        /// <summary>设置提示文本。</summary>
+        /// <summary>
+        /// 设置提示文本。
+        /// </summary>
         public void SetTip(string text)
         {
             if (m_TxtTips != null) m_TxtTips.text = text;
         }
 
-        /// <summary>设置下载进度（0~1）与提示。</summary>
+        /// <summary>
+        /// 设置下载进度（0~1）与提示。
+        /// </summary>
         public void SetProgress(float value01, string tip)
         {
             SetDownloading(true);
@@ -64,11 +70,13 @@ namespace Launcher
             SetTip(tip);
         }
 
-        /// <summary>显示更新确认框。</summary>
+        /// <summary>
+        /// 显示更新确认框。
+        /// </summary>
         public void ShowUpdateDialog(string content, Action onConfirm)
         {
             SetNeedUpgrade(true);
-            m_BtnOk.title    = "更新";
+            m_BtnOk.title     = "更新";
             m_TxtContent.text = content;
             m_TxtContent.onClick.Set(ctx =>
             {
@@ -77,13 +85,19 @@ namespace Launcher
             m_OnConfirm = onConfirm;
         }
 
-        /// <summary>设置是否显示更新确认框。</summary>
+        /// <summary>
+        /// 设置是否显示更新确认框。
+        /// </summary>
         public void SetNeedUpgrade(bool need) => m_IsNeedUpgrade.SetSelectedIndex(need ? 1 : 0);
 
-        /// <summary>设置是否处于下载中状态。</summary>
+        /// <summary>
+        /// 设置是否处于下载中状态。
+        /// </summary>
         public void SetDownloading(bool downloading) => m_IsDownloading.SetSelectedIndex(downloading ? 1 : 0);
 
-        /// <summary>关闭并销毁加载界面。</summary>
+        /// <summary>
+        /// 关闭并销毁加载界面。
+        /// </summary>
         public void Close()
         {
             if (m_View == null) return;
