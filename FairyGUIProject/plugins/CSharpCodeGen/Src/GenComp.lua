@@ -9,26 +9,26 @@ local GenComp = {}
 ---@param AllClsMap table 所有组件与组件的Map--key-资源名称--value-资源对应的组件或组件
 ---@param unityDataPath string Unity工程路径 “xxx/Assets”
 function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
-    if not compClsArray or #compClsArray == 0 then
-        return
-    end
-
     local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     -- Launcher 包使用独立模板与目录结构（不含 Hotfix 依赖）
     local isLauncher = tostring(pkgName) == "Launcher"
-    local compSubDir = isLauncher and "/UI" or "/Comp"
+    local compSubDir = isLauncher and "/UI_AutoGen/Comp" or "/Comp"
+
+    -- 提前计算目标目录（Gen / 手写代码）
+    local targetGenDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir
+    local targetCsDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir
+
+    if compClsArray and #compClsArray > 0 then
+        Tool:CreateDirectory(targetGenDir)  -- 确保 Gen 目录存在
 
     for _, compCls in ipairs(compClsArray) do
         -------------------------------------CompXxx.Gen.cs----------------------------------------
         Tool:Log("生成组件C#代码----%s", compCls.resName .. ".Gen.cs")
 
-        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir
-
-        -- 创建存放代码的文件夹=>.../ViewGen/Comp
-        Tool:CreateDirectory(targetDir)
+        local targetDir = targetGenDir
 
         local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, compCls.resName)
         local compArray = Tool:GetCompArray(compCls)
@@ -127,17 +127,16 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         ------------------------------------------CompXxx.cs----------------------------------------------
         Tool:Log("生成组件逻辑C#代码----%s", compCls.resName .. ".cs")
 
-        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir
-        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, compCls.resName)
+        local csTargetPath = Tool:StrFormat('%s/%s.cs', targetCsDir, compCls.resName)
 
         -- 如果组件逻辑代码文件存在，则不再生成
-        if Tool:IsFileExists(targetPath) then
+        if Tool:IsFileExists(csTargetPath) then
             Tool:Log("组件代码文件%s已存在，不再生成", compCls.resName)
             goto continue
         end
 
         -- 创建存放代码的文件夹=>.../ViewImpl/Comp
-        Tool:CreateDirectory(targetDir)
+        Tool:CreateDirectory(targetCsDir)
 
         local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
         local templateCode = Tool:ReadTxt(templateCodePath) -- 读取模板代码
@@ -165,9 +164,67 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         templateCode = templateCode:gsub('#COMPNAME#', compCls.resName)
         templateCode = templateCode:gsub('#COMPTYPE#', compCls.superClassName)
 
-        -- 写入替换完成后的代码文件WinXxx.cs
-        Tool:WriteTxt(targetPath, templateCode)
+        -- 写入替换完成后的代码文件CompXxx.cs
+        Tool:WriteTxt(csTargetPath, templateCode)
         :: continue ::
+    end
+    end -- if compClsArray
+
+    -- 清理已删除组件的残留代码文件（FGUI 中移除组件后自动同步删除本地代码）
+    GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
+end
+
+--- 清理已从 FGUI 删除的组件对应的代码文件
+---@param targetGenDir  string  Gen 文件所在目录
+---@param targetCsDir   string  手写 .cs 文件所在目录
+---@param compClsArray  table   当前 FGUI 中存在的组件列表
+function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
+    if not CS.System.IO.Directory.Exists(targetGenDir) then
+        return
+    end
+
+    -- 构建当前有效组件名集合
+    local currentComps = {}
+    if compClsArray then
+        for _, cls in ipairs(compClsArray) do
+            currentComps[cls.resName] = true
+        end
+    end
+
+    local files = CS.System.IO.Directory.GetFiles(targetGenDir)
+    if not files or files.Length == 0 then
+        return
+    end
+
+    for i = 0, files.Length - 1 do
+        local filePath = files[i]
+        local fileName = filePath:match("([^/\\]+)$")
+        if not fileName then goto nextFile end
+
+        -- 匹配 CompXxx.Gen.cs
+        local compName = fileName:match("^(Comp.+)%.Gen%.cs$")
+        if not compName then goto nextFile end
+
+        if not currentComps[compName] then
+            Tool:Log("[清理] 删除已移除组件的 Gen 代码: %s", compName)
+            CS.System.IO.File.Delete(filePath)
+            local metaPath = filePath .. ".meta"
+            if Tool:IsFileExists(metaPath) then
+                CS.System.IO.File.Delete(metaPath)
+            end
+
+            -- 同时删除手写 .cs 文件（如含自定义逻辑请从 git 恢复）
+            local csPath = targetCsDir .. "/" .. compName .. ".cs"
+            if Tool:IsFileExists(csPath) then
+                Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
+                CS.System.IO.File.Delete(csPath)
+                local csMetaPath = csPath .. ".meta"
+                if Tool:IsFileExists(csMetaPath) then
+                    CS.System.IO.File.Delete(csMetaPath)
+                end
+            end
+        end
+        :: nextFile ::
     end
 end
 

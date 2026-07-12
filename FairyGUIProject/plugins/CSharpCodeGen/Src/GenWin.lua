@@ -9,17 +9,20 @@ local GenWin = {}
 ---@param AllClsMap table 所有界面与组件的Map--key-资源名称--value-资源对应的界面或组件
 ---@param unityDataPath string Unity工程路径 “xxx/Assets”
 function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
-    if not winClsArray or #winClsArray == 0 then
-        return
-    end
-
     local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     -- Launcher 包：Win/Binder/Comp 统一放在 Bootstrap/UI/ 下
     local isLauncher = tostring(pkgName) == "Launcher"
-    local aotUiSubDir = isLauncher and "/UI" or ""
+    local aotUiSubDir = isLauncher and "/UI_AutoGen" or ""
+
+    -- 提前计算目标目录（Gen / 手写代码）
+    local targetGenDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. aotUiSubDir
+    local targetCsDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
+
+    if winClsArray and #winClsArray > 0 then
+        Tool:CreateDirectory(targetGenDir)  -- 确保 Gen 目录存在
 
     for _, winCls in ipairs(winClsArray) do
         local winName = winCls.resName
@@ -27,7 +30,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         -------------------------------------WinXxx.Gen.cs----------------------------------------
         Tool:Log("生成界面C#代码----%s.Gen.cs", winName)
 
-        local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. aotUiSubDir
+        local targetDir = targetGenDir
 
         -- 创建存放代码的文件夹=>.../ViewGen
         Tool:CreateDirectory(targetDir)
@@ -144,14 +147,13 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         if not isLauncher then
             Tool:Log("生成界面逻辑C#代码----%s.cs", winName)
 
-            targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-            targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winName)
+            local csTargetPath = Tool:StrFormat('%s/%s.cs', targetCsDir, winName)
 
             -- 如果界面逻辑代码文件不存在，则生成
-            if not Tool:IsFileExists(targetPath) then
+            if not Tool:IsFileExists(csTargetPath) then
 
                 -- 创建存放代码的文件夹=>.../ViewImpl
-                Tool:CreateDirectory(targetDir)
+                Tool:CreateDirectory(targetCsDir)
 
                 -- 如果设置为导出，则生成界面代码文件WinXxx.cs
                 if winCls.res.exported then
@@ -181,10 +183,68 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                     templateCode = templateCode:gsub('#WINNAME#', winName)
 
                     -- 写入替换完成后的代码文件WinXxx.cs
-                    Tool:WriteTxt(targetPath, templateCode)
+                    Tool:WriteTxt(csTargetPath, templateCode)
                 end
             end
         end -- if not isLauncher
+    end
+    end -- if winClsArray
+
+    -- 清理已删除界面的残留代码文件（FGUI 中移除界面后自动同步删除本地代码）
+    GenWin:CleanupOrphanedWins(targetGenDir, targetCsDir, winClsArray)
+end
+
+--- 清理已从 FGUI 删除的界面对应的代码文件
+---@param targetGenDir  string  Gen 文件所在目录
+---@param targetCsDir   string  手写 .cs 文件所在目录
+---@param winClsArray   table   当前 FGUI 中存在的界面列表
+function GenWin:CleanupOrphanedWins(targetGenDir, targetCsDir, winClsArray)
+    if not CS.System.IO.Directory.Exists(targetGenDir) then
+        return
+    end
+
+    -- 构建当前有效界面名集合
+    local currentWins = {}
+    if winClsArray then
+        for _, winCls in ipairs(winClsArray) do
+            currentWins[winCls.resName] = true
+        end
+    end
+
+    local files = CS.System.IO.Directory.GetFiles(targetGenDir)
+    if not files or files.Length == 0 then
+        return
+    end
+
+    for i = 0, files.Length - 1 do
+        local filePath = files[i]
+        local fileName = filePath:match("([^/\\]+)$")
+        if not fileName then goto nextWinFile end
+
+        -- 匹配 WinXxx.Gen.cs
+        local winName = fileName:match("^(Win.+)%.Gen%.cs$")
+        if not winName then goto nextWinFile end
+
+        if not currentWins[winName] then
+            Tool:Log("[清理] 删除已移除界面的 Gen 代码: %s", winName)
+            CS.System.IO.File.Delete(filePath)
+            local metaPath = filePath .. ".meta"
+            if Tool:IsFileExists(metaPath) then
+                CS.System.IO.File.Delete(metaPath)
+            end
+
+            -- 同时删除手写 .cs 文件（如含自定义逻辑请从 git 恢复）
+            local csPath = targetCsDir .. "/" .. winName .. ".cs"
+            if Tool:IsFileExists(csPath) then
+                Tool:Log("[清理] 删除已移除界面的手写代码: %s.cs", winName)
+                CS.System.IO.File.Delete(csPath)
+                local csMetaPath = csPath .. ".meta"
+                if Tool:IsFileExists(csMetaPath) then
+                    CS.System.IO.File.Delete(csMetaPath)
+                end
+            end
+        end
+        :: nextWinFile ::
     end
 end
 

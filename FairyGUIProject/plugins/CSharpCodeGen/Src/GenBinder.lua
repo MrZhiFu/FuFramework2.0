@@ -7,10 +7,6 @@ local GenBinder = {}
 ---@param compClsArray CS.FairyEditor.PublishHandler.ClassInfo[] 组件数组
 ---@param unityDataPath string Unity路径 "xxx/Assets"
 function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
-    if not compClsArray or #compClsArray == 0 then
-        return
-    end
-
     local exportGenPath = Tool:GetExportCodeGenPath(pkgName)
     local isLauncher = tostring(pkgName) == "Launcher"
     local namespace = Tool:GetExportCodeNamespace(pkgName)
@@ -18,15 +14,26 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
     -- CustomCompBind.cs 放在 UI 目录根下（不区分包子目录）
     local customCompBindDir
     if isLauncher then
-        customCompBindDir = Tool:StrFormat("%s/Scripts/AOT/Bootstrap/UI", unityDataPath)
+        customCompBindDir = Tool:StrFormat("%s/Scripts/AOT/Bootstrap/UI_AutoGen", unityDataPath)
     else
         -- exportGenPath 为 "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
         -- 格式化为空字符串去掉末尾 %s/，再清理多余斜杠
         customCompBindDir = Tool:StrFormat(exportGenPath, unityDataPath, ""):gsub("/+$", "")
     end
 
+    -- 删除旧的 xxxBinder.cs（迁移遗留，总是执行）
+    GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath, isLauncher)
+
     Tool:CreateDirectory(customCompBindDir)
     local targetPath = Tool:StrFormat("%s/CustomCompBind.cs", customCompBindDir)
+
+    if not compClsArray or #compClsArray == 0 then
+        -- 包中已无自定义组件，从 CustomCompBind.cs 中移除该包的方法
+        if Tool:IsFileExists(targetPath) then
+            GenBinder:RemovePackageMethod(targetPath, pkgName, namespace)
+        end
+        return
+    end
 
     -- 生成当前包的 BindXxx 方法
     local methodCode = GenBinder:GenBindMethod(pkgName, compClsArray)
@@ -37,9 +44,6 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
     else
         GenBinder:CreateCustomCompBind(targetPath, pkgName, methodCode, namespace)
     end
-
-    -- 删除旧的 xxxBinder.cs
-    GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath, isLauncher)
 
     -- 自动更新 Launcher 中的调用（XxxBinder.BindAll → CustomCompBind.BindAll）
     GenBinder:UpdateLauncherBinder(pkgName, unityDataPath)
@@ -201,7 +205,7 @@ end
 function GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath, isLauncher)
     local oldBinderPath
     if isLauncher then
-        oldBinderPath = Tool:StrFormat("%s/Scripts/AOT/Bootstrap/UI/%sBinder.cs", unityDataPath, pkgName)
+        oldBinderPath = Tool:StrFormat("%s/Scripts/AOT/Bootstrap/UI_AutoGen/%sBinder.cs", unityDataPath, pkgName)
     else
         local oldBinderDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
         oldBinderPath = Tool:StrFormat("%s/%sBinder.cs", oldBinderDir, pkgName)
@@ -216,6 +220,41 @@ function GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath, isLaun
         if Tool:IsFileExists(metaPath) then
             CS.System.IO.File.Delete(metaPath)
         end
+    end
+end
+
+--- 从 CustomCompBind.cs 中移除指定包的 BindXxx 方法
+--- 当包中所有自定义组件被删除时调用
+---@param targetPath string CustomCompBind.cs 文件路径
+---@param pkgName string 包名
+---@param namespace string 命名空间
+function GenBinder:RemovePackageMethod(targetPath, pkgName, namespace)
+    local content = Tool:ReadTxt(targetPath)
+    local parsed = GenBinder:ParseCustomCompBind(content)
+
+    if not parsed.methods[pkgName] then
+        Tool:Log("CustomCompBind.cs 中不存在 Bind%s 方法，跳过清理", pkgName)
+        return
+    end
+
+    -- 移除方法
+    parsed.methods[pkgName] = nil
+    for i, name in ipairs(parsed.order) do
+        if name == pkgName then
+            table.remove(parsed.order, i)
+            break
+        end
+    end
+
+    if #parsed.order == 0 then
+        -- CustomCompBind 永久保留，清空 BindAll 和所有方法
+        local newContent = GenBinder:BuildCustomCompBind(namespace, {}, {})
+        Tool:WriteTxt(targetPath, newContent)
+        Tool:Log("[清理] 已从 CustomCompBind.cs 中移除 Bind%s 方法，当前无任何绑定方法", pkgName)
+    else
+        local newContent = GenBinder:BuildCustomCompBind(namespace, parsed.methods, parsed.order)
+        Tool:WriteTxt(targetPath, newContent)
+        Tool:Log("[清理] 已从 CustomCompBind.cs 中移除 Bind%s 方法，当前包含包: %s", pkgName, table.concat(parsed.order, ", "))
     end
 end
 
