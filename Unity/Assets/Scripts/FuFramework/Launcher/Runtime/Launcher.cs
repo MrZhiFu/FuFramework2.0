@@ -93,10 +93,7 @@ namespace FuFramework.Launcher.Runtime
         /// <param name="view">AOT 加载界面句柄，透传给热更入口用于收尾关闭。</param>
         private static async UniTask InvokeHotfixEntryAsync(global::Launcher.BootstrapView view)
         {
-            // 注册框架各模块（注册顺序见 Launcher.Modules）
-            Instance.RegisterModules();
-
-            // Phase 2: ModuleManager 已下沉 Hotfix，帧更新委托改由 HotfixLauncher 挂接
+            // 框架模块注册与帧更新委托挂接已全部移交 HotfixLauncher（Task 17）
 
             // 反射进入热更入口
             var hotfixAssembly = GetHotfixAssembly();
