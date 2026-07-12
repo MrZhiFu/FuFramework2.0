@@ -19,16 +19,9 @@ namespace Launcher
         /// </summary>
         public static void BindAll()
         {
-			BindLauncher();
+
         }
 
-		/// <summary>
-		/// 绑定Launcher包下的自定义组件
-		/// </summary>
-		private static void BindLauncher()
-		{
-			FuLogger.LogInfo("绑定包-{Launcher}下的所有自定义组件");
-			UIObjectFactory.SetPackageItemExtension(CompBagItemInfoTest.URL, typeof(CompBagItemInfoTest));
-		}
+
     }
 }
