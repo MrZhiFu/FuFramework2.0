@@ -65,13 +65,21 @@ namespace FuFramework.Asset.Runtime
 
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
-            // 初始化YooAsset
-            if (!PackageInited)
+            // 初始化YooAsset（引导阶段 BootstrapAssetHelper 可能已初始化，避免二次初始化）
+            if (BootstrapContext.YooAssetInitialized)
+            {
+                // 引导流程已初始化 YooAsset 并创建/初始化默认包，标记为已初始化，避免热更侧重复初始化默认包
+                PackageInited = true;
+            }
+            else
             {
                 YooAssets.Initialize();
 
                 // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
                 YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
+
+                BootstrapContext.YooAssetInitialized = true;
+                BootstrapContext.DefaultPackageName  = DefaultPackageName;
             }
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");

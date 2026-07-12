@@ -1,4 +1,5 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -36,8 +37,8 @@ namespace FuFramework.Launcher.Runtime
             // 重新初始化所有模块
             ModuleManager.ReInit();
 
-            // 开始游戏流程
-            StartProcedure();
+            // 重新运行 AOT 引导流程（重新显示加载界面并重进热更入口）
+            global::Launcher.BootstrapProcess.RunAsync(InvokeHotfixEntryAsync).Forget();
         }
 
         /// <summary>

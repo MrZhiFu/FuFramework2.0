@@ -19,7 +19,6 @@ using Hotfix.Sound;
 using Hotfix.Web;
 using Hotfix.Download;
 using Hotfix.Entity;
-using Launcher.UI;
 using Utility = FuFramework.Core.Runtime.Utility;
 
 #if ENABLE_BINARY_CONFIG
@@ -38,7 +37,8 @@ namespace Hotfix
         /// <summary>
         /// 启动入口
         /// </summary>
-        public static async UniTask MainAsync()
+        /// <param name="bootstrapView">AOT 引导加载界面句柄，登录界面打开后关闭。</param>
+        public static async UniTask MainAsync(IBootstrapView bootstrapView)
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
@@ -63,20 +63,12 @@ namespace Hotfix
             ModuleManager.RegisterModule<WebModule>();
             ModuleManager.RegisterModule<NetworkModule>();
 
-            // 获取热更界面
-            var winLauncher = GlobalModule.UIModule.GetUI<WinLauncher>();
-            if (winLauncher == null)
-            {
-                FuLogger.LogError("热更界面获取失败！");
-                return;
-            }
-            
             // 加载配置表
-            winLauncher.SetTipText("LoadConfig...");
+            bootstrapView.SetTip("LoadConfig...");
             await LoadConfigAsync();
 
             // 加载初始必要的UI资源
-            winLauncher.SetTipText("LoadInitUIAsset...");
+            bootstrapView.SetTip("LoadInitUIAsset...");
             await LoadUIAsync();
 
             // 绑定自动生成的Fui自定义组件(HotFix下)
@@ -87,6 +79,9 @@ namespace Hotfix
 
             // 打开登录界面
             GlobalModule.UIModule.OpenUI<WinLogin>();
+
+            // 登录界面已打开，关闭 AOT 引导加载界面
+            bootstrapView.Close();
 
             // 如果开启引导，则指定引导模块的动作执行器，并开始首个引导
             if (ModuleSetting.Instance.OpenGuide)
