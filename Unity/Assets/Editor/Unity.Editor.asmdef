@@ -3,11 +3,9 @@
     "rootNamespace": "Unity.Editor",
     "references": [
         "YooAsset.Editor",
-        "YooAsset.Runtime",
         "HybridCLR.Editor",
-        "FuFramework.Editor",
-        "FuFramework.Runtime",
-        "FuFramework.Core.Runtime"
+        "FuFramework.Core.Runtime",
+        "FuFramework.Core.Editor"
     ],
     "includePlatforms": [
         "Editor"

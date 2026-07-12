@@ -1,7 +1,7 @@
-using FuFramework.Core.Editor;
-using UnityEditor;
-
 // TODO: 后续考虑使用单独的调试界面去显示模块数据
+
+using FuFramework.Core.Editor;
+
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Asset.Editor
 {
