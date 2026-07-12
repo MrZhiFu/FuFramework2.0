@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using FairyGUI;
 using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -8,18 +9,18 @@ namespace Launcher
     /// <summary>
     /// AOT 启动加载界面。
     /// 功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
-    /// UI 组件绑定部分见 BootstrapView.Gen.cs。
+    /// UI 组件绑定部分见 WinLauncher.Gen.cs。
     /// </summary>
-    public sealed partial class BootstrapView : IBootstrapView
+    public sealed partial class WinLauncher : IWinLauncher
     {
         private Action m_OnConfirm;
 
         /// <summary>
         /// 创建并显示加载界面。
         /// </summary>
-        public static UniTask<BootstrapView> CreateAsync()
+        public static UniTask<WinLauncher> CreateAsync()
         {
-            var view = new BootstrapView();
+            var view = new WinLauncher();
             view.Init();
             return UniTask.FromResult(view);
         }
