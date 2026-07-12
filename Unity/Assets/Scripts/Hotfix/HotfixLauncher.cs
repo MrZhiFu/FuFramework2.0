@@ -12,6 +12,9 @@ using FuFramework.Core.Runtime;
 using FuFramework.Asset.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Mono.Runtime;
+using FuFramework.ReferencePool.Runtime;
+using FuFramework.TaskPool.Runtime;
+using FuFramework.Variable.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Procedure.Runtime;
@@ -54,7 +57,7 @@ namespace Hotfix
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
             // 注册热更层框架模块（含 Phase 2 起下沉到 Hotfix 的框架模块）
-            ModuleManager.RegisterModule<FsmModule>();       // 有限状态机管理模块（Phase 2 下沉）
+            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<ProcedureModule>(); // 流程管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<EventModule>();     // 事件管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<ObjectPoolModule>(); // 对象池管理模块（Phase 2 下沉）

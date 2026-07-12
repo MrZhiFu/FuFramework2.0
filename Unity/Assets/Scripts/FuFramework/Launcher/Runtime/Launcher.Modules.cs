@@ -1,6 +1,5 @@
 using FuFramework.Core.Runtime;
 
-using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Launcher.Runtime
@@ -16,7 +15,6 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         private void RegisterModules()
         {
-            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
 
         }
     }
