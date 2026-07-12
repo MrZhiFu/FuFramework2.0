@@ -17,9 +17,9 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
     local isLauncher = tostring(pkgName) == "Launcher"
     local compSubDir = isLauncher and "/UI_AutoGen/Comp" or "/Comp"
 
-    -- 提前计算目标目录（Gen / 手写代码）
-    local targetGenDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir
-    local targetCsDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir
+    -- 提前计算目标目录（Gen / 手写代码），归一化多余斜杠
+    local targetGenDir = (Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
+    local targetCsDir = (Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
 
     if compClsArray and #compClsArray > 0 then
         Tool:CreateDirectory(targetGenDir)  -- 确保 Gen 目录存在
@@ -179,10 +179,6 @@ end
 ---@param targetCsDir   string  手写 .cs 文件所在目录
 ---@param compClsArray  table   当前 FGUI 中存在的组件列表
 function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
-    if not CS.System.IO.Directory.Exists(targetGenDir) then
-        return
-    end
-
     -- 构建当前有效组件名集合
     local currentComps = {}
     if compClsArray then
@@ -191,40 +187,81 @@ function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
         end
     end
 
-    local files = CS.System.IO.Directory.GetFiles(targetGenDir)
-    if not files or files.Length == 0 then
+    -- 清理 Gen 目录中的孤儿 Comp 文件（.Gen.cs 和 .cs）
+    if CS.System.IO.Directory.Exists(targetGenDir) then
+        local files = CS.System.IO.Directory.GetFiles(targetGenDir)
+        if files and files.Length > 0 then
+            for i = 0, files.Length - 1 do
+                local filePath = files[i]
+                local fileName = filePath:match("([^/\\]+)$")
+                if not fileName then goto nextGenFile end
+
+                -- 匹配 CompXxx.Gen.cs 或 CompXxx.cs
+                local compName = fileName:match("^(Comp.+)%.Gen%.cs$")
+                if not compName then
+                    compName = fileName:match("^(Comp.+)%.cs$")
+                end
+                if compName and not currentComps[compName] then
+                    Tool:Log("[清理] 删除已移除组件的代码: %s", compName)
+                    CS.System.IO.File.Delete(filePath)
+                    local metaPath = filePath .. ".meta"
+                    if Tool:IsFileExists(metaPath) then
+                        CS.System.IO.File.Delete(metaPath)
+                    end
+                end
+                :: nextGenFile ::
+            end
+        end
+        -- 清理后如果目录为空则删除
+        GenComp:DeleteDirIfEmpty(targetGenDir)
+    end
+
+    -- 清理手写代码目录中的孤儿 .cs 文件（若与 Gen 目录不同）
+    if targetCsDir ~= targetGenDir and CS.System.IO.Directory.Exists(targetCsDir) then
+        local files = CS.System.IO.Directory.GetFiles(targetCsDir)
+        if files and files.Length > 0 then
+            for i = 0, files.Length - 1 do
+                local filePath = files[i]
+                local fileName = filePath:match("([^/\\]+)$")
+                if not fileName then goto nextCsFile end
+
+                local compName = fileName:match("^(Comp.+)%.cs$")
+                if compName and not currentComps[compName] then
+                    -- 检查是否还有对应的 .Gen.cs（可能在另一个目录）
+                    local genPath = targetGenDir .. "/" .. compName .. ".Gen.cs"
+                    if not Tool:IsFileExists(genPath) then
+                        Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
+                        CS.System.IO.File.Delete(filePath)
+                        local metaPath = filePath .. ".meta"
+                        if Tool:IsFileExists(metaPath) then
+                            CS.System.IO.File.Delete(metaPath)
+                        end
+                    end
+                end
+                :: nextCsFile ::
+            end
+        end
+        -- 清理后如果目录为空则删除
+        GenComp:DeleteDirIfEmpty(targetCsDir)
+    end
+end
+
+--- 如果目录为空（无任何文件/子目录），删除目录及其 .meta
+---@param dirPath string 目录路径
+function GenComp:DeleteDirIfEmpty(dirPath)
+    if not CS.System.IO.Directory.Exists(dirPath) then
         return
     end
 
-    for i = 0, files.Length - 1 do
-        local filePath = files[i]
-        local fileName = filePath:match("([^/\\]+)$")
-        if not fileName then goto nextFile end
-
-        -- 匹配 CompXxx.Gen.cs
-        local compName = fileName:match("^(Comp.+)%.Gen%.cs$")
-        if not compName then goto nextFile end
-
-        if not currentComps[compName] then
-            Tool:Log("[清理] 删除已移除组件的 Gen 代码: %s", compName)
-            CS.System.IO.File.Delete(filePath)
-            local metaPath = filePath .. ".meta"
-            if Tool:IsFileExists(metaPath) then
-                CS.System.IO.File.Delete(metaPath)
-            end
-
-            -- 同时删除手写 .cs 文件（如含自定义逻辑请从 git 恢复）
-            local csPath = targetCsDir .. "/" .. compName .. ".cs"
-            if Tool:IsFileExists(csPath) then
-                Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
-                CS.System.IO.File.Delete(csPath)
-                local csMetaPath = csPath .. ".meta"
-                if Tool:IsFileExists(csMetaPath) then
-                    CS.System.IO.File.Delete(csMetaPath)
-                end
-            end
+    local remainingFiles = CS.System.IO.Directory.GetFiles(dirPath)
+    local remainingDirs = CS.System.IO.Directory.GetDirectories(dirPath)
+    if (not remainingFiles or remainingFiles.Length == 0) and (not remainingDirs or remainingDirs.Length == 0) then
+        CS.System.IO.Directory.Delete(dirPath)
+        Tool:Log("[清理] 目录为空，已删除: %s", dirPath)
+        local metaPath = dirPath .. ".meta"
+        if Tool:IsFileExists(metaPath) then
+            CS.System.IO.File.Delete(metaPath)
         end
-        :: nextFile ::
     end
 end
 
