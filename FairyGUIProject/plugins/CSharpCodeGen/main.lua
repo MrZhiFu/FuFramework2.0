@@ -60,6 +60,7 @@ function onPublish(handler)
 
     -- Launcher 包只生成 Win 界面代码，不需要自定义组件与绑定
     if tostring(handler.pkg.name) ~= "Launcher" then
+        
         --- 生成组件代码
         GenComp:Gen(handler.pkg.name, compClsArray, AllClsMap, unityDataPath)
 

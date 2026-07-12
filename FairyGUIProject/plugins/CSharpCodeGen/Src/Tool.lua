@@ -5,23 +5,25 @@ local Tool = {}
 local File = CS.System.IO.File
 local Directory = CS.System.IO.Directory
 
---- 导出界面View的C#代码AOT路径（Launcher包专用，引导阶段使用）
+--- 导出界面View的AOT命名空间（Launcher包专用，热更前阶段使用）
+Tool.ExportViewAOTNamespace = "Launcher"
+
+--- 导出界面View的C#代码AOT路径（Launcher包专用，热更前阶段使用）
 Tool.ExportViewAOTPath = "%s/Scripts/AOT/Bootstrap"
 
---- 导出界面View的C#代码路径
-Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"
-
---- 导出界面ViewGen的C#代码AOT路径（Launcher包专用，引导阶段使用）
+--- 导出界面ViewGen的C#代码AOT路径（Launcher包专用，热更前阶段使用）
 Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/Bootstrap/"
 
---- 导出界面ViewGen的C#代码路径
-Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
 
 --- 导出界面View的命名空间
 Tool.ExportViewNamespace = "Hotfix.UI"
 
---- 导出界面View的AOT命名空间（Launcher包专用）
-Tool.ExportViewAOTNamespace = "Launcher"
+--- 导出界面View的C#代码路径
+Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"
+
+--- 导出界面ViewGen的C#代码路径
+Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
+
 
 --- 获取导出View的C#代码路径
 ---@param pkgName string

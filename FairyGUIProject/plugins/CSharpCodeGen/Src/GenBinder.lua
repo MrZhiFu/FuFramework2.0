@@ -77,7 +77,9 @@ function GenBinder:ParseCustomCompBind(content)
     while true do
         -- 查找方法级注释（2 个 tab）
         local summaryStart, summaryEnd = content:find("\t\t/// <summary>[^\n]*\n", pos)
-        if not summaryStart then break end
+        if not summaryStart then
+            break
+        end
 
         -- 从注释末尾查找方法签名
         local sigStart, sigEnd, pkgName = content:find("\t\tprivate static void Bind(%w+)()", summaryEnd)
@@ -114,7 +116,7 @@ function GenBinder:ParseCustomCompBind(content)
         end
     end
 
-    return {methods = methods, order = order}
+    return { methods = methods, order = order }
 end
 
 --- 生成 BindAll 方法体中的调用列表
@@ -159,7 +161,7 @@ end
 function GenBinder:CreateCustomCompBind(targetPath, pkgName, methodCode, namespace)
     local methods = {}
     methods[pkgName] = methodCode
-    local order = {pkgName}
+    local order = { pkgName }
 
     local content = GenBinder:BuildCustomCompBind(namespace, methods, order)
     Tool:WriteTxt(targetPath, content)

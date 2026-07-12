@@ -166,7 +166,7 @@ function GenCommon:GenControllerDefine(dataList, compCls)
                     value = ("N" .. idx)
                 end
                 local valueComment = remarkMap[idx] or value
-                table.insert(pageValues, {idx = idx, value = value, comment = valueComment})
+                table.insert(pageValues, { idx = idx, value = value, comment = valueComment })
             end
         end
 
@@ -466,7 +466,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
         -- 列表
     elseif type == "GList" then
         local dataList = {}
-        
+
         local lowerName = Tool:FirstCharLower(Tool:StrSub(comp.name, 2, -1))
         table.insert(dataList, Tool:StrFormat("\t\t\tvar idx = %s.GetChildIndex((GObject)ctx.data);\n", lowerName))
         table.insert(dataList, Tool:StrFormat("\t\t\tif (%s.isVirtual) idx = %s.ChildIndexToItemIndex(idx);\n", lowerName, lowerName))

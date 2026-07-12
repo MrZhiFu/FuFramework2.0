@@ -118,7 +118,7 @@ function GenReady:CheckDependencies(handler)
     -- 遍历检查包内的所有组件
     for _, classInfo in pairs(classes) do
         local compName = classInfo.className
-        
+
         -- 遍历检查直接属于当前组件的子组件的依赖项是否合法
         ---@type CS.FairyEditor.PublishHandler.MemberInfo[]
         local members = classInfo.members  -- 该组件的所有依赖成员
@@ -156,7 +156,7 @@ function GenReady:CheckDependencies(handler)
 
             -- 如果既不在 Common 包，也不在当前包，则标记为非法
             if not isCurPkg then
-                Tool:Error("[GenReady] %s中存在非法依赖：组件: %s, 类型: %s, 所在包: %s",compName, memberName, memberType, memberPkg.name)
+                Tool:Error("[GenReady] %s中存在非法依赖：组件: %s, 类型: %s, 所在包: %s", compName, memberName, memberType, memberPkg.name)
                 allDependenciesValid = false
             end
 
