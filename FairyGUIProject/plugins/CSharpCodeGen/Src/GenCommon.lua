@@ -76,11 +76,17 @@ function GenCommon:GenControllerDefine(dataList, compCls)
         table.insert(nameList, controllerName)
 
         ------------生成控制器对应的枚举定义-------------------
-        ------ 如：enum ECtrlSelected
-        ------       {
-        ------            No = 0,
-        ------            Yes = 1,
-        ------       }
+        ------ 如：/// <summary>
+        ------      /// TestCtrl 控制器状态枚举
+        ------      /// </summary>
+        ------      private enum ETestCtrl
+        ------      {
+        ------           /// <summary> No </summary>
+        ------           No = 0,
+        ------           /// <summary> Yes </summary>
+        ------           Yes = 1,
+        ------      }
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// %s 控制器状态枚举\n\t\t/// </summary>\n", controllerName))
         table.insert(dataList, "\t\tprivate enum E")
         table.insert(dataList, controllerName)
         table.insert(dataList, "\n\t\t{\n")
@@ -96,6 +102,7 @@ function GenCommon:GenControllerDefine(dataList, compCls)
                     value = ("N" .. idx)
                 end
 
+                table.insert(dataList, Tool:StrFormat("\t\t\t/// <summary>\n\t\t\t/// %s\n\t\t\t/// </summary>\n", value))
                 table.insert(dataList, "\t\t\t")
                 local keyName = Tool:FirstCharUpper(value)
                 table.insert(dataList, keyName)
@@ -107,14 +114,16 @@ function GenCommon:GenControllerDefine(dataList, compCls)
         table.insert(dataList, "\t\t}\n\n")
 
         ------------生成控制器的SetController函数----------------
-        --- 如：private void SetController(ETestCtrl eTestCtrl) => CtrlSelected.SetSelectedIndex((int) eTestCtrl);
+        --- 如：/// <summary> 设置 TestCtrl 控制器状态 </summary>
+        ---      private void SetController(ETestCtrl eTestCtrl) => TestCtrl.SetSelectedIndex((int) eTestCtrl);
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置 %s 控制器状态\n\t\t/// </summary>\n", controllerName))
         table.insert(dataList, Tool:StrFormat("\t\tprivate void SetController(E%s e%s) => ", controllerName, controllerName))
         table.insert(dataList, Tool:StrFormat("%s.SetSelectedIndex((int) e%s);\n", controllerName, controllerName))
         table.insert(dataList, "\n")
     end
 
     ------------生成控制器的定义-------------------
-    ---如：private Controller CtrlSelected
+    ---如：private Controller TestCtrl;
     for _, name in ipairs(nameList) do
         table.insert(dataList, string.format("\t\tprivate Controller %s;\n", name))
     end

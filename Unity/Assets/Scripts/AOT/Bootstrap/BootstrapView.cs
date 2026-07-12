@@ -41,7 +41,7 @@ namespace Launcher
         {
             UIPackage.AddPackage("UI/Launcher/Launcher");
 
-            m_View = UIPackage.CreateObject("Launcher", "BootstrapView").asCom;
+            m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
             m_View.MakeFullScreen();
             GRoot.inst.AddChild(m_View);
         }
@@ -51,7 +51,7 @@ namespace Launcher
         /// </summary>
         public void SetTip(string text)
         {
-            if (m_TxtTips != null) m_TxtTips.text = text;
+            if (txtTips != null) txtTips.text = text;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Launcher
         public void SetProgress(float value01, string tip)
         {
             SetDownloading(true);
-            if (m_ProgressBar != null) m_ProgressBar.value = value01 * 100f;
+            if (progressBar != null) progressBar.value = value01 * 100f;
             SetTip(tip);
         }
 
@@ -70,9 +70,9 @@ namespace Launcher
         public void ShowUpdateDialog(string content, Action onConfirm)
         {
             SetNeedUpgrade(true);
-            m_BtnOk.title     = "更新";
-            m_TxtContent.text = content;
-            m_TxtContent.onClick.Set(ctx =>
+            btnOk.title     = "更新";
+            txtContent.text = content;
+            txtContent.onClick.Set(ctx =>
             {
                 if (ctx.data != null) Utility.Application.OpenURL(ctx.data.ToString());
             });
@@ -82,12 +82,12 @@ namespace Launcher
         /// <summary>
         /// 设置是否显示更新确认框。
         /// </summary>
-        public void SetNeedUpgrade(bool need) => m_IsNeedUpgrade.SetSelectedIndex(need ? 1 : 0);
+        public void SetNeedUpgrade(bool need) => IsNeedUpgrade.SetSelectedIndex(need ? 1 : 0);
 
         /// <summary>
         /// 设置是否处于下载中状态。
         /// </summary>
-        public void SetDownloading(bool downloading) => m_IsDownloading.SetSelectedIndex(downloading ? 1 : 0);
+        public void SetDownloading(bool downloading) => IsDownloading.SetSelectedIndex(downloading ? 1 : 0);
 
         /// <summary>
         /// 关闭并销毁加载界面。

@@ -35,12 +35,17 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, winName) --- 界面代码生成目标路径
         local compArray = Tool:GetCompArray(winCls)
 
-        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
+        -- Launcher 包使用独立模板（不继承 ViewBase，手动管理 m_View）
+        local isLauncher = tostring(pkgName) == "Launcher"
+        local templateName = isLauncher and "Template/WinGenLauncherTemplate.txt" or "Template/WinGenTemplate.txt"
+        local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
         local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码
 
         -- 定义模板代码中需要填充的关键字
         local dataKeys = {
-            '#CompDefine#', -- 界面包含的组件定义关键字
+            '#CompDefine#', -- 界面包含的组件定义关键字（标准模板）
+            '#FieldDefine#', -- Launcher 模板：字段声明（含 Controller、组件、动效）
+            '#EnumAndMethodDefine#', -- Launcher 模板：枚举定义与 SetController 方法
             '#CompInit#', -- 界面包含的组件初始化赋值关键字
             '#CustomCompInit#', -- 自定义组件的初始化Init函数代码
             '#INITUIEVENT#', -- 界面可交互组件事件初始化
@@ -63,6 +68,57 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
 
+        -- Launcher 包特殊处理
+        if isLauncher then
+            -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前
+            local compDefineContent = table.concat(dataTable['#CompDefine#'])
+            local fieldLines = {}
+            local otherLines = {}
+            for line in compDefineContent:gmatch("[^\n]*\n?") do
+                if line:match("^\t*private %w+ [%w_]+;\n?$") then
+                    table.insert(fieldLines, line)
+                elseif line:match("^%s*$") then
+                    -- 空白行：归入下一组（不归属任何一组，按顺序追加到当前组）
+                    if #fieldLines > 0 and #otherLines == 0 then
+                        -- 字段后的空白暂时跳过，待合并时处理
+                    else
+                        table.insert(otherLines, line)
+                    end
+                else
+                    table.insert(otherLines, line)
+                end
+            end
+            dataTable['#FieldDefine#'] = fieldLines
+            -- 清理 otherLines 首尾空白
+            while #otherLines > 0 and otherLines[1]:match("^%s*$") do
+                table.remove(otherLines, 1)
+            end
+            while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
+                table.remove(otherLines)
+            end
+            dataTable['#EnumAndMethodDefine#'] = otherLines
+            dataTable['#CompDefine#'] = {} -- Launcher 模板不使用此占位符
+
+            -- B. API 调用改为 m_View.xxx（不修改字段命名，Gen.cs 保持 FGUI 标准匈牙利风格）
+            local apiKeys = {'#FieldDefine#', '#EnumAndMethodDefine#', '#CompInit#', '#INITUIEVENT#'}
+            for _, k in ipairs(apiKeys) do
+                local content = table.concat(dataTable[k])
+                if content ~= "" then
+                    -- 1. UIView.GetController → m_View.GetController
+                    content = content:gsub("UIView%.GetController", "m_View.GetController")
+                    -- 2. UIView.GetTransition → m_View.GetTransition
+                    content = content:gsub("UIView%.GetTransition", "m_View.GetTransition")
+                    -- 3. GetChild → m_View.GetChild（避免重复替换）
+                    content = content:gsub("([^%.])GetChild%(", "%1m_View.GetChild(")
+                    -- 4. AddUIListener(var.event, handler) → var.event.Set(handler)
+                    content = content:gsub("AddUIListener%(([%w_]+)%.(%w+), ([^)]+)%)", function(varName, event, handler)
+                        return varName .. "." .. event .. ".Set(" .. handler .. ")"
+                    end)
+                    dataTable[k] = {content}
+                end
+            end
+        end
+
         -- 使用生成的代码替换模板代码中各个关键字
         for k, v in pairs(dataTable) do
             templateCodeGen = templateCodeGen:gsub(k, table.concat(v))
@@ -73,57 +129,55 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         templateCodeGen = templateCodeGen:gsub('#PKGNAME#', pkgName)
         templateCodeGen = templateCodeGen:gsub('#WINNAME#', winName)
 
-        -- Launcher包不继承ViewBase，移除override属性
-        if tostring(pkgName) == "Launcher" then
-            templateCodeGen = templateCodeGen:gsub("[^\n]*override[^\n]*\n", "")
-        end
-
         -- 写入替换完成后的代码文件WinXxx.Gen.cs
         Tool:WriteTxt(targetPath, templateCodeGen)
 
         -------------------------------------WinXxx.cs----------------------------------------
-        Tool:Log("生成界面逻辑C#代码----%s.cs", winName)
+        -- Launcher 包的 BootstrapView.cs 为手写代码，不自动生成
+        if not isLauncher then
+            Tool:Log("生成界面逻辑C#代码----%s.cs", winName)
 
-        targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winName)
+            targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
+            targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winName)
 
-        -- 如果界面逻辑代码文件不存在，则生成
-        if not Tool:IsFileExists(targetPath) then
-            
-            -- 创建存放代码的文件夹=>.../ViewImpl
-            Tool:CreateDirectory(targetDir)
+            -- 如果界面逻辑代码文件不存在，则生成
+            if not Tool:IsFileExists(targetPath) then
 
-            -- 如果设置为导出，则生成界面代码文件WinXxx.cs
-            if winCls.res.exported then
-                local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
-                local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
+                -- 创建存放代码的文件夹=>.../ViewImpl
+                Tool:CreateDirectory(targetDir)
 
-                local dataKeys1 = {
-                    '#HANDLER#', -- 交互事件处理函数关键子
-                }
+                -- 如果设置为导出，则生成界面代码文件WinXxx.cs
+                if winCls.res.exported then
+                    local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
+                    local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
 
-                local dataTable1 = {}
-                for _, key in ipairs(dataKeys1) do
-                    dataTable1[key] = {}
+                    local dataKeys1 = {
+                        '#HANDLER#', -- 交互事件处理函数关键子
+                    }
+
+                    local dataTable1 = {}
+                    for _, key in ipairs(dataKeys1) do
+                        dataTable1[key] = {}
+                    end
+
+                    -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
+                    GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
+
+                    -- 使用生成的代码替换模板代码中各个关键字
+                    for k, v in pairs(dataTable1) do
+                        templateCode = templateCode:gsub(k, table.concat(v))
+                    end
+
+                    -- 替换命名空间，包名，界面名
+                    templateCode = templateCode:gsub('#NAMESPACE#', namespace)
+                    templateCode = templateCode:gsub('#PKGNAME#', pkgName)
+                    templateCode = templateCode:gsub('#WINNAME#', winName)
+
+                    -- 写入替换完成后的代码文件WinXxx.cs
+                    Tool:WriteTxt(targetPath, templateCode)
                 end
-
-                -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-                GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
-
-                -- 使用生成的代码替换模板代码中各个关键字
-                for k, v in pairs(dataTable1) do
-                    templateCode = templateCode:gsub(k, table.concat(v))
-                end
-
-                -- 替换命名空间，包名，界面名
-                templateCode = templateCode:gsub('#NAMESPACE#', namespace)
-                templateCode = templateCode:gsub('#PKGNAME#', pkgName)
-                templateCode = templateCode:gsub('#WINNAME#', winName)
-
-                -- 写入替换完成后的代码文件WinXxx.cs
-                Tool:WriteTxt(targetPath, templateCode)
             end
-        end
+        end -- if not isLauncher
     end
 end
 
