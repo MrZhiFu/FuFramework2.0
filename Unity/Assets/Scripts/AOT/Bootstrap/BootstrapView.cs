@@ -9,10 +9,11 @@ namespace Launcher
     /// <summary>
     /// AOT 启动加载界面。
     /// 功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
-    /// UI 组件绑定部分见 BootstrapView.Gen.cs。
+    /// UI 组件绑定部分见 WinLauncher.Gen.cs。
     /// </summary>
-    public sealed partial class BootstrapView : IBootstrapView
+    public sealed class BootstrapView : IBootstrapView
     {
+        private WinLauncher m_WinLauncher;
         private Action m_OnConfirm;
 
         /// <summary>
@@ -28,8 +29,7 @@ namespace Launcher
         private void Init()
         {
             LoadUIPackage();
-            InitUIComp();
-            InitUIEvent();
+            InitWinLauncher();
             SetNeedUpgrade(false);
             SetDownloading(false);
         }
@@ -41,9 +41,16 @@ namespace Launcher
         {
             UIPackage.AddPackage("UI/Launcher/Launcher");
 
-            m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
-            m_View.MakeFullScreen();
-            GRoot.inst.AddChild(m_View);
+            m_WinLauncher = new WinLauncher();
+            m_WinLauncher.m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
+            m_WinLauncher.m_View.MakeFullScreen();
+            GRoot.inst.AddChild(m_WinLauncher.m_View);
+        }
+
+        private void InitWinLauncher()
+        {
+            m_WinLauncher.InitUIComp();
+            m_WinLauncher.btnOk.onClick.Set(OnBtnOkClick);
         }
 
         /// <summary>
@@ -51,7 +58,7 @@ namespace Launcher
         /// </summary>
         public void SetTip(string text)
         {
-            if (txtTips != null) txtTips.text = text;
+            if (m_WinLauncher.txtTips != null) m_WinLauncher.txtTips.text = text;
         }
 
         /// <summary>
@@ -60,7 +67,7 @@ namespace Launcher
         public void SetProgress(float value01, string tip)
         {
             SetDownloading(true);
-            if (progressBar != null) progressBar.value = value01 * 100f;
+            if (m_WinLauncher.progressBar != null) m_WinLauncher.progressBar.value = value01 * 100f;
             SetTip(tip);
         }
 
@@ -70,9 +77,9 @@ namespace Launcher
         public void ShowUpdateDialog(string content, Action onConfirm)
         {
             SetNeedUpgrade(true);
-            btnOk.title     = "更新";
-            txtContent.text = content;
-            txtContent.onClick.Set(ctx =>
+            m_WinLauncher.btnOk.title     = "更新";
+            m_WinLauncher.txtContent.text = content;
+            m_WinLauncher.txtContent.onClick.Set(ctx =>
             {
                 if (ctx.data != null) Utility.Application.OpenURL(ctx.data.ToString());
             });
@@ -82,21 +89,21 @@ namespace Launcher
         /// <summary>
         /// 设置是否显示更新确认框。
         /// </summary>
-        public void SetNeedUpgrade(bool need) => IsNeedUpgrade.SetSelectedIndex(need ? 1 : 0);
+        public void SetNeedUpgrade(bool need) => m_WinLauncher.IsNeedUpgrade.SetSelectedIndex(need ? 1 : 0);
 
         /// <summary>
         /// 设置是否处于下载中状态。
         /// </summary>
-        public void SetDownloading(bool downloading) => IsDownloading.SetSelectedIndex(downloading ? 1 : 0);
+        public void SetDownloading(bool downloading) => m_WinLauncher.IsDownloading.SetSelectedIndex(downloading ? 1 : 0);
 
         /// <summary>
         /// 关闭并销毁加载界面。
         /// </summary>
         public void Close()
         {
-            if (m_View == null) return;
-            GRoot.inst.RemoveChild(m_View, true);
-            m_View = null;
+            if (m_WinLauncher?.m_View == null) return;
+            GRoot.inst.RemoveChild(m_WinLauncher.m_View, true);
+            m_WinLauncher = null;
         }
 
         private void OnBtnOkClick(EventContext ctx) => m_OnConfirm?.Invoke();
