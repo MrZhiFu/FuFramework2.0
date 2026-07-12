@@ -105,7 +105,7 @@ namespace Hotfix.Entity
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
 
@@ -142,7 +142,7 @@ namespace Hotfix.Entity
         /// <param name="deltaTime"></param>
         /// <param name="unscaledDeltaTime"></param>
         /// <exception cref="FuException"></exception>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             // 回收待回收的实体
             while (m_WaitRecycleQueue.Count > 0)
@@ -170,7 +170,7 @@ namespace Hotfix.Entity
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             Instance = null;
 

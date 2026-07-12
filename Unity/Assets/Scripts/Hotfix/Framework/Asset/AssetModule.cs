@@ -51,7 +51,7 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             // 获取资源管理模块配置数据
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
@@ -88,7 +88,7 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             UnloadAllAssetsAsync(DefaultPackageName).Forget();
         }

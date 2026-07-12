@@ -1,6 +1,5 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Launcher.Runtime
@@ -32,10 +31,10 @@ namespace FuFramework.Launcher.Runtime
         public void RestartGame()
         {
             // 释放所有模块
-            ModuleManager.Dispose();
+            DisposeModules?.Invoke();
 
             // 重新初始化所有模块
-            ModuleManager.ReInit();
+            ReInitModules?.Invoke();
 
             // 重新运行 AOT 引导流程（重新显示加载界面并重进热更入口）
             global::Launcher.BootstrapProcess.RunAsync(InvokeHotfixEntryAsync).Forget();
@@ -46,7 +45,7 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         public void QuitGame()
         {
-            ModuleManager.Dispose();
+            DisposeModules?.Invoke();
 
             Application.Quit();
 #if UNITY_EDITOR

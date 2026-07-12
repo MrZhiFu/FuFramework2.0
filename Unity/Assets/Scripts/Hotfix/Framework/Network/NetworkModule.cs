@@ -37,7 +37,7 @@ namespace Hotfix.Network
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
             m_EventModule = ModuleManager.GetModule<EventModule>();
@@ -48,7 +48,7 @@ namespace Hotfix.Network
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             foreach (var networkChannel in m_NetworkChannelDict.Values)
             {
@@ -59,7 +59,7 @@ namespace Hotfix.Network
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             foreach (var networkChannel in m_NetworkChannelDict)
             {

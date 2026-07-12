@@ -108,7 +108,7 @@ namespace Hotfix.Download
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
 
@@ -134,7 +134,7 @@ namespace Hotfix.Download
         /// </summary>
         /// <param name="deltaTime"></param>
         /// <param name="unscaledDeltaTime"></param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             m_TaskPool.Update(deltaTime, unscaledDeltaTime);
             m_DownloadCounter.Update(deltaTime, unscaledDeltaTime);
@@ -143,7 +143,7 @@ namespace Hotfix.Download
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             m_TaskPool.Shutdown();
             m_DownloadCounter.Shutdown();

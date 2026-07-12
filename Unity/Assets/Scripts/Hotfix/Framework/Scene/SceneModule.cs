@@ -74,7 +74,7 @@ namespace Hotfix.Scene
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
             EventRegister = EventRegister.Create();
@@ -84,7 +84,7 @@ namespace Hotfix.Scene
         /// <summary>
         /// 帧更新
         /// </summary>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
             {
@@ -95,7 +95,7 @@ namespace Hotfix.Scene
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             // 反向遍历已加载的场景，卸载所有已加载的场景
             var loadedScenePaths = new string[m_LoadedSceneDict.Count];

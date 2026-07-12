@@ -81,7 +81,7 @@ namespace Hotfix.Sound
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
 
@@ -125,7 +125,7 @@ namespace Hotfix.Sound
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             StopAllLoadedSounds();
             m_SoundGroupDict.Clear();

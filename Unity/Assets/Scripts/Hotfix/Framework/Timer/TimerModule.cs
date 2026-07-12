@@ -38,12 +38,12 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit() { }
+        protected internal override void OnInit() { }
 
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             foreach (var timerInfo in m_TimerDict.Values)
             {

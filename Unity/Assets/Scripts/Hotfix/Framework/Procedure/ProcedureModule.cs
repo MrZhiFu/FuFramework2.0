@@ -37,7 +37,7 @@ namespace FuFramework.Procedure.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             m_FsmModule = ModuleManager.GetModule<FsmModule>();
             if (m_FsmModule == null) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
@@ -46,7 +46,7 @@ namespace FuFramework.Procedure.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             if (m_FsmModule == null) return;
 

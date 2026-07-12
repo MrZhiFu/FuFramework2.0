@@ -53,7 +53,7 @@ namespace Hotfix.Web
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
         }
@@ -61,7 +61,7 @@ namespace Hotfix.Web
         /// <summary>
         /// 轮询处理请求队列
         /// </summary>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             lock (m_UrlStr)
             {
@@ -84,7 +84,7 @@ namespace Hotfix.Web
         /// <summary>
         /// 释放
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             while (m_WaitingNormalQueue.Count > 0)
             {

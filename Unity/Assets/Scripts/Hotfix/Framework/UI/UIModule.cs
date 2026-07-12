@@ -90,7 +90,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
@@ -129,7 +129,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 帧更新。
         /// </summary>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             // 检测安全区变化（方向切换等）
             SafeAreaHelper.OnUpdate();
@@ -152,7 +152,7 @@ namespace FuFramework.UI.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             SafeAreaHelper.OnSafeAreaChanged -= ApplyGRootSafeArea;
 

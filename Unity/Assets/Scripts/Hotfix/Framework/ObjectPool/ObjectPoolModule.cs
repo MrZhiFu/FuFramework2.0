@@ -49,7 +49,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Application.lowMemory += OnLowMemory;
         }
@@ -59,7 +59,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             foreach (var (_, objPool) in m_ObjPoolDict)
             {
@@ -70,7 +70,7 @@ namespace FuFramework.ObjectPool.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             foreach (var (_, objPool) in m_ObjPoolDict)
             {

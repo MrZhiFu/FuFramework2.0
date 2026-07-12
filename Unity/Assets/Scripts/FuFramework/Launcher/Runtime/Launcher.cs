@@ -17,19 +17,29 @@ namespace FuFramework.Launcher.Runtime
     public partial class Launcher : MonoSingleton<Launcher>
     {
         /// <summary>
-        /// 框架模块帧更新委托。引导完成后挂接，Phase 1 指向 ModuleManager.Update。
+        /// 框架模块帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.Update。
         /// </summary>
-        private static Action<float, float> OnUpdate;
+        public static Action<float, float> OnUpdate;
 
         /// <summary>
-        /// 框架模块延迟帧更新委托。引导完成后挂接，Phase 1 指向 ModuleManager.LateUpdate。
+        /// 框架模块延迟帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.LateUpdate。
         /// </summary>
-        private static Action<float, float> OnLateUpdate;
+        public static Action<float, float> OnLateUpdate;
 
         /// <summary>
-        /// 框架模块固定帧更新委托。引导完成后挂接，Phase 1 指向 ModuleManager.FixedUpdate。
+        /// 框架模块固定帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.FixedUpdate。
         /// </summary>
-        private static Action OnFixedUpdate;
+        public static Action OnFixedUpdate;
+
+        /// <summary>
+        /// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
+        /// </summary>
+        public static Action DisposeModules;
+
+        /// <summary>
+        /// 重新初始化全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.ReInit。
+        /// </summary>
+        public static Action ReInitModules;
 
         /// <summary>
         /// 初始化
@@ -78,7 +88,7 @@ namespace FuFramework.Launcher.Runtime
         /// 热更入口回调。
         /// 由 AOT 引导流程在加载完 Hotfix 程序集后调用：注册框架模块、接管帧更新循环，
         /// 随后反射调用热更入口 Hotfix.HotfixLauncher.MainAsync。
-        /// 说明：这是 Phase 1 过渡实现，待模块系统下沉热更后（Task 15）改由热更侧接管。
+        /// 说明：ModuleBase/ModuleManager 已下沉 Hotfix（Task 15），帧更新委托由 HotfixLauncher 挂接。
         /// </summary>
         /// <param name="view">AOT 加载界面句柄，透传给热更入口用于收尾关闭。</param>
         private static async UniTask InvokeHotfixEntryAsync(global::Launcher.BootstrapView view)
@@ -86,10 +96,7 @@ namespace FuFramework.Launcher.Runtime
             // 注册框架各模块（注册顺序见 Launcher.Modules）
             Instance.RegisterModules();
 
-            // 引导阶段无框架模块，此处才挂接帧更新循环
-            OnUpdate      = ModuleManager.Update;
-            OnLateUpdate  = ModuleManager.LateUpdate;
-            OnFixedUpdate = ModuleManager.FixedUpdate;
+            // Phase 2: ModuleManager 已下沉 Hotfix，帧更新委托改由 HotfixLauncher 挂接
 
             // 反射进入热更入口
             var hotfixAssembly = GetHotfixAssembly();

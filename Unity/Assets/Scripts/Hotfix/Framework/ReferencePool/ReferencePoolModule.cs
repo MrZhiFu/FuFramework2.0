@@ -34,7 +34,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             EnableStrictCheck = m_EnableStrictCheck switch
             {
@@ -49,7 +49,7 @@ namespace FuFramework.ReferencePool.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             ReferencePool.ClearAll();
         }

@@ -30,14 +30,14 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit() { }
+        protected internal override void OnInit() { }
 
         /// <summary>
         /// 帧更新。
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             m_TempFsmList.Clear();
             if (m_FsmDict.Count <= 0) return;
@@ -57,7 +57,7 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             foreach (var fsm in m_FsmDict)
             {

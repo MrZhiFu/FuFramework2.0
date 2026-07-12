@@ -63,7 +63,7 @@ namespace Hotfix.Storage
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
 
@@ -90,7 +90,7 @@ namespace Hotfix.Storage
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             if (!m_EnableAutoSave) return;
 
@@ -105,7 +105,7 @@ namespace Hotfix.Storage
         /// <summary>
         /// 释放，释放时保存所有数据
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             SaveAll();
             Instance = null;

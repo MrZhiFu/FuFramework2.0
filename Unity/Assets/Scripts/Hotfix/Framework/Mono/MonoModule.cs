@@ -82,14 +82,14 @@ namespace FuFramework.Mono.Runtime
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void OnInit() { }
+        protected internal override void OnInit() { }
 
         /// <summary>
         /// 帧更新。
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             QueueInvoking(m_DoingUpdateList, m_WaitUpdateList);
         }
@@ -97,7 +97,7 @@ namespace FuFramework.Mono.Runtime
         /// <summary>
         /// 固定帧更新
         /// </summary>
-        protected override void OnFixedUpdate()
+        protected internal override void OnFixedUpdate()
         {
             QueueInvoking(m_DoingFixedUpdateList, m_WaitFixedUpdateList);
         }
@@ -107,7 +107,7 @@ namespace FuFramework.Mono.Runtime
         /// </summary>
         /// <param name="deltaTime">帧间隔时间。</param>
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected override void OnLateUpdate(float deltaTime, float unscaledDeltaTime)
+        protected internal override void OnLateUpdate(float deltaTime, float unscaledDeltaTime)
         {
             QueueInvoking(m_DoingLateUpdateList, m_WaitLateUpdateList);
         }
@@ -115,7 +115,7 @@ namespace FuFramework.Mono.Runtime
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             QueueInvoking(m_DoingDestroyList, m_WaitDestroyList);
 

@@ -43,7 +43,7 @@ namespace Hotfix.ModuleConfig
         /// <summary>
         /// 初始化。
         /// </summary>
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
             Instance = this;
             m_CfgNameTypeDict.Clear();
@@ -53,7 +53,7 @@ namespace Hotfix.ModuleConfig
         /// <summary>
         /// 释放。
         /// </summary>
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             RemoveAllConfigs();
             Instance = null;
