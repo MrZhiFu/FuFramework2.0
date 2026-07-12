@@ -58,11 +58,14 @@ function onPublish(handler)
     --- 生成界面代码
     GenWin:Gen(handler.pkg.name, winClsArray, AllClsMap, unityDataPath)
 
-    --- 生成组件代码
-    GenComp:Gen(handler.pkg.name, compClsArray, AllClsMap, unityDataPath)
+    -- Launcher 包只生成 Win 界面代码，不需要自定义组件与绑定
+    if tostring(handler.pkg.name) ~= "Launcher" then
+        --- 生成组件代码
+        GenComp:Gen(handler.pkg.name, compClsArray, AllClsMap, unityDataPath)
 
-    --- 生成Binder代码
-    GenBinder:Gen(handler.pkg.name, compClsArray, unityDataPath)
+        --- 生成Binder代码
+        GenBinder:Gen(handler.pkg.name, compClsArray, unityDataPath)
+    end
 
     Tool:Log("---------------------生成 %s 包下的C#代码完成---------------------", handler.pkg.name)
 end

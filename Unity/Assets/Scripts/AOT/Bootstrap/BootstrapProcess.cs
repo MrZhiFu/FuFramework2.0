@@ -28,9 +28,6 @@ namespace Launcher
         {
             FuLogger.LogInfo("<color=#43f656>------进入启动引导流程------</color>");
 
-            // 注册 Launcher 包自定义组件（需在创建 UI 之前调用）
-            CustomCompBind.BindAll();
-
             s_View = await BootstrapView.CreateAsync();
 
             var playMode = ModuleSetting.Instance.AssetSetting.PlayMode;

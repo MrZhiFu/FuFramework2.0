@@ -14,7 +14,7 @@ namespace Launcher
     public sealed class BootstrapView : IBootstrapView
     {
         private WinLauncher m_WinLauncher;
-        private Action m_OnConfirm;
+        private Action      m_OnConfirm;
 
         /// <summary>
         /// 创建并显示加载界面。
@@ -41,9 +41,12 @@ namespace Launcher
         {
             UIPackage.AddPackage("UI/Launcher/Launcher");
 
-            m_WinLauncher = new WinLauncher();
-            m_WinLauncher.m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
+            m_WinLauncher = new WinLauncher
+            {
+                m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom
+            };
             m_WinLauncher.m_View.MakeFullScreen();
+
             GRoot.inst.AddChild(m_WinLauncher.m_View);
         }
 

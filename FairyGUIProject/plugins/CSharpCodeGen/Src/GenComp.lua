@@ -13,11 +13,9 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
-    -- Launcher 包使用独立模板与目录结构（不含 Hotfix 依赖）
-    local isLauncher = tostring(pkgName) == "Launcher"
-    local compSubDir = isLauncher and "/UI_AutoGen/Comp" or "/Comp"
+    local compSubDir = "/Comp"
 
-    -- 提前计算目标目录（Gen / 手写代码），归一化多余斜杠
+    -- Gen 和 Cs 的基础路径不同：Gen → AutoGen/UI/{pkg}, Cs → Game/UI/{pkg}
     local targetGenDir = (Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
     local targetCsDir = (Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
 
@@ -28,13 +26,10 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         -------------------------------------CompXxx.Gen.cs----------------------------------------
         Tool:Log("生成组件C#代码----%s", compCls.resName .. ".Gen.cs")
 
-        local targetDir = targetGenDir
-
-        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, compCls.resName)
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetGenDir, compCls.resName)
         local compArray = Tool:GetCompArray(compCls)
 
-        -- Launcher 包使用独立模板（不含 Hotfix 依赖：ICustomComp、ViewBase、FuFramework.UI/Event 等）
-        local templateName = isLauncher and "Template/CompGenLauncherTemplate.txt" or "Template/CompGenTemplate.txt"
+        local templateName = "Template/CompGenTemplate.txt"
         local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
         local templateCodeGen = Tool:ReadTxt(templateCodeGenPath) -- 读取模板代码
 
@@ -44,7 +39,6 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
             '#FieldDefine#', -- 字段声明
             '#EnumAndMethodDefine#', -- 枚举定义与 SetController 方法
             '#CompInit#', -- 组件包含的组件初始化赋值关键字
-            '#CustomCompInit#', -- 自定义组件的初始化Init函数代码
             '#INITUIEVENT#', -- 组件可交互组件事件初始化
         }
 
@@ -62,7 +56,6 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         GenCommon:GenControllerInit(dataDict['#CompInit#'], compCls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
         GenCommon:GenCompInit(dataDict['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
         GenCommon:GenTransitionInit(dataDict['#CompInit#'], compCls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
-        --GenCommon:GenCustomCompInit(dataDict['#CustomCompInit#'], compArray, AllClsMap, true)--生成自定义组件的初始化Init函数代码：compXXX.Init(this)，注入该组件属于的组件View
 
         GenCommon:GenCompEvent(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
         GenCommon:GenCompListOnRender(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
@@ -94,20 +87,6 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         dataDict['#EnumAndMethodDefine#'] = otherLines
         dataDict['#CompDefine#'] = {}
 
-        -- Launcher 包：API 调用改为原生 FGUI 风格（无 uiView 间接层）
-        if isLauncher then
-            local apiKeys = {'#INITUIEVENT#'}
-            for _, k in ipairs(apiKeys) do
-                local content = table.concat(dataDict[k])
-                if content ~= "" then
-                    -- AddUIListener(var.event, handler) → var.event.Set(handler)
-                    content = content:gsub("AddUIListener%(([%w_]+)%.(%w+), ([^)]+)%)", function(varName, event, handler)
-                        return varName .. "." .. event .. ".Set(" .. handler .. ")"
-                    end)
-                    dataDict[k] = {content}
-                end
-            end
-        end
 
         -- 使用生成的代码替换模板代码中各个关键字（去除末尾多余换行，避免与模板换行叠加）
         for k, v in pairs(dataDict) do
@@ -175,7 +154,7 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
 end
 
 --- 清理已从 FGUI 删除的组件对应的代码文件
----@param targetGenDir  string  Gen 文件所在目录
+---@param targetGenDir  string  Gen 文件所在目录（.Gen.cs）
 ---@param targetCsDir   string  手写 .cs 文件所在目录
 ---@param compClsArray  table   当前 FGUI 中存在的组件列表
 function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
@@ -227,15 +206,11 @@ function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
 
                 local compName = fileName:match("^(Comp.+)%.cs$")
                 if compName and not currentComps[compName] then
-                    -- 检查是否还有对应的 .Gen.cs（可能在另一个目录）
-                    local genPath = targetGenDir .. "/" .. compName .. ".Gen.cs"
-                    if not Tool:IsFileExists(genPath) then
-                        Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
-                        CS.System.IO.File.Delete(filePath)
-                        local metaPath = filePath .. ".meta"
-                        if Tool:IsFileExists(metaPath) then
-                            CS.System.IO.File.Delete(metaPath)
-                        end
+                    Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
+                    CS.System.IO.File.Delete(filePath)
+                    local metaPath = filePath .. ".meta"
+                    if Tool:IsFileExists(metaPath) then
+                        CS.System.IO.File.Delete(metaPath)
                     end
                 end
                 :: nextCsFile ::

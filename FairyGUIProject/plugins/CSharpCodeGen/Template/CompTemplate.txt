@@ -1,3 +1,6 @@
+using FairyGUI;
+using FairyGUI.Utils;
+
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace #NAMESPACE#
 {

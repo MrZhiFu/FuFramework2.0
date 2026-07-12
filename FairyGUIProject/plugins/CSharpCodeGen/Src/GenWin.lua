@@ -13,9 +13,9 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
-    -- Launcher 包：Win/Binder/Comp 统一放在 Bootstrap/UI/ 下
+    -- Launcher 包：Win 界面代码统一放在 Bootstrap/UI/ 下
     local isLauncher = tostring(pkgName) == "Launcher"
-    local aotUiSubDir = isLauncher and "/UI_AutoGen" or ""
+    local aotUiSubDir = isLauncher and "/UI" or ""
 
     -- 提前计算目标目录（Gen / 手写代码）
     local targetGenDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. aotUiSubDir
@@ -30,12 +30,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         -------------------------------------WinXxx.Gen.cs----------------------------------------
         Tool:Log("生成界面C#代码----%s.Gen.cs", winName)
 
-        local targetDir = targetGenDir
-
-        -- 创建存放代码的文件夹=>.../ViewGen
-        Tool:CreateDirectory(targetDir)
-
-        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, winName) --- 界面代码生成目标路径
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetGenDir, winName) --- 界面代码生成目标路径
         local compArray = Tool:GetCompArray(winCls)
 
         -- Launcher 包使用独立模板（不继承 ViewBase，手动管理 m_View）
@@ -49,7 +44,6 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             '#FieldDefine#', -- Launcher 模板：字段声明（含 Controller、组件、动效）
             '#EnumAndMethodDefine#', -- Launcher 模板：枚举定义与 SetController 方法
             '#CompInit#', -- 界面包含的组件初始化赋值关键字
-            '#CustomCompInit#', -- 自定义组件的初始化Init函数代码
             '#INITUIEVENT#', -- 界面可交互组件事件初始化
         }
 
@@ -170,7 +164,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                     end
 
                     -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-                    GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap, templateCode)
+                    GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
 
                     -- 使用生成的代码替换模板代码中各个关键字
                     for k, v in pairs(dataTable1) do
