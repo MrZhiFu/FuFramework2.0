@@ -189,7 +189,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
 end
 
 --- 清理已从 FGUI 删除的界面对应的代码文件
----@param targetGenDir  string  Gen 文件所在目录
+---@param targetGenDir  string  Gen 文件所在目录（.Gen.cs）
 ---@param targetCsDir   string  手写 .cs 文件所在目录
 ---@param winClsArray   table   当前 FGUI 中存在的界面列表
 function GenWin:CleanupOrphanedWins(targetGenDir, targetCsDir, winClsArray)

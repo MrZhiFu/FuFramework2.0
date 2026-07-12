@@ -19,7 +19,7 @@ function GenReady:Init(handler, pluginPath)
 end
 
 --- 导出路径是否有效
----@return boolean
+---@return boolean 导出路径在 Assets 目录下返回 true
 function GenReady:IsExportPathOK()
     local handler = Tool:Handler()
     local exportPath = handler.exportPath
@@ -36,7 +36,7 @@ end
 
 --- 获得Unity工程目录 “xxx/Assets”
 ---@param handler CS.FairyEditor.PublishHandler FUI发布处理器对象
----@return string
+---@return string Unity 数据路径（以 Assets 结尾）
 function GenReady:GetUnityDataPath(handler)
     local exportCodePath = handler.exportCodePath
     exportCodePath = exportCodePath:gsub('\\', '/')

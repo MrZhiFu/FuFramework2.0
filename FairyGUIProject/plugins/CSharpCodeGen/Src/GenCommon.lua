@@ -3,6 +3,9 @@
 local GenCommon = {}
 
 --- 生成组件的定义代码：private GButton btnEnter;
+---@param dataList table 待填充的代码行数组
+---@param compArray table 组件信息数组，元素格式 {comp, resName, resPkg, funName}
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
 function GenCommon:GenCompDefine(dataList, compArray, AllClsMap)
     if #compArray <= 0 then
         return
@@ -20,6 +23,8 @@ function GenCommon:GenCompDefine(dataList, compArray, AllClsMap)
 end
 
 --- 生成自定义组件的URL代码：public const string URL = "ui://mkasn9e4jo110";
+---@param dataList table 待填充的代码行数组
+---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件类信息
 function GenCommon:GenCompURL(dataList, compCls)
     Tool:Log("生成组件的URL的C#代码")
     local url = string.format("\t\tpublic const string URL = \"ui://%s%s\";\n\n", compCls.res.owner.id, compCls.resId)
@@ -27,6 +32,8 @@ function GenCommon:GenCompURL(dataList, compCls)
 end
 
 --- 生成动效的定义代码：private Transition xxxAnim;
+---@param dataList table 待填充的代码行数组
+---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件/界面类信息
 function GenCommon:GenTransitionDefine(dataList, compCls)
     local handler = Tool:Handler()
 
@@ -212,6 +219,9 @@ function GenCommon:GenControllerDefine(dataList, compCls)
 end
 
 --- 生成组件的初始化赋值C#代码：_btnEnter = (btn_Enter)GetChild("_btnEnter");
+---@param dataList table 待填充的代码行数组
+---@param compArray table 组件信息数组
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
 function GenCommon:GenCompInit(dataList, compArray, AllClsMap)
     if #compArray <= 0 then
         return
@@ -229,6 +239,8 @@ function GenCommon:GenCompInit(dataList, compArray, AllClsMap)
 end
 
 --- 生成动效的初始化赋值C#代码：testAnim = UIView.GetTransition("TestAnim");
+---@param dataList table 待填充的代码行数组
+---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件/界面类信息
 function GenCommon:GenTransitionInit(dataList, compCls)
     local handler = Tool:Handler()
 
@@ -263,6 +275,8 @@ function GenCommon:GenTransitionInit(dataList, compCls)
 end
 
 --- 生成控制器的初始化赋值C#代码：testCtrl = UIView.GetController("TestCtrl");
+---@param dataList table 待填充的代码行数组
+---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件/界面类信息
 function GenCommon:GenControllerInit(dataList, compCls)
     local handler = Tool:Handler()
 
@@ -294,6 +308,9 @@ function GenCommon:GenControllerInit(dataList, compCls)
 end
 
 --- 生成GList组件Item的渲染回调函数赋值C#代码：listPlayer.itemRenderer = OnShowListPlayerItem;
+---@param dataList table 待填充的代码行数组
+---@param compArray table 组件信息数组
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
 function GenCommon:GenCompListOnRender(dataList, compArray, AllClsMap)
     if #compArray <= 0 then
         return
@@ -316,6 +333,9 @@ function GenCommon:GenCompListOnRender(dataList, compArray, AllClsMap)
 end
 
 --- 生成组件的交互事件添加监听C#代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
+---@param dataList table 待填充的代码行数组
+---@param compArray table 组件信息数组
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
 function GenCommon:GenCompEvent(dataList, compArray, AllClsMap)
     if #compArray <= 0 then
         return
@@ -339,7 +359,10 @@ function GenCommon:GenCompEvent(dataList, compArray, AllClsMap)
 end
 
 --- 生成组件的交互事件处理函数C#代码:private void OnBtnEnterClick(EventContext ctx){ }。
--- list组件特殊处理，需要生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){ } 
+-- list组件特殊处理，需要生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){ }
+---@param dataList table 待填充的代码行数组
+---@param compArray table 组件信息数组
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
 function GenCommon:GenCompEventHandler(dataList, compArray, AllClsMap)
     if #compArray <= 0 then
         return
@@ -378,6 +401,9 @@ function GenCommon:GenCompEventHandler(dataList, compArray, AllClsMap)
 end
 
 --- 生成渲染GList组件的Item处理函数：private void OnRenderListPlayerItem(int idx, GObject item){}
+---@param dataList table 待填充的代码行数组
+---@param resName string 组件资源名称，用于类型转换（如 CompBagItem）
+---@param upName string 组件功能名（驼峰，如 ListPlayer）
 function GenCommon:GenListOnRenderHandler(dataList, resName, upName)
     Tool:Log("生成渲染GList组件<%s>的Item处理函数-%s", resName, "OnRender" .. upName .. "Item")
     table.insert(dataList, "\t\tprivate void OnRender")
@@ -396,7 +422,10 @@ function GenCommon:GenListOnRenderHandler(dataList, resName, upName)
     table.insert(dataList, "\t\t}\n\n")
 end
 
---- 获取不同类型组件的交互事件名称
+--- 获取不同类型组件的交互事件名称与回调信息
+---@param comp CS.FairyEditor.PublishHandler.MemberInfo 组件信息
+---@param AllClsMap table 所有类名映射表（资源名→类信息）
+---@return table 事件配置数组，元素格式 {eventName, cbNamePattern, args, [defaultContent]}
 function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
     local uiEventsNameArray = {}
     local type = Tool:GetCompType(comp, AllClsMap)

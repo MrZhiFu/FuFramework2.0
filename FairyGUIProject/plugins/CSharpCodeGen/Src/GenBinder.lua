@@ -121,7 +121,7 @@ end
 
 --- 生成 BindAll 方法体中的调用列表
 ---@param order table 包名数组
----@return string
+---@return string BindAll 方法体内的调用代码
 function GenBinder:GenBindAllCalls(order)
     local lines = {}
     for _, pkg in ipairs(order) do
@@ -134,7 +134,7 @@ end
 ---@param namespace string 命名空间
 ---@param methods table {[pkgName] = methodText}
 ---@param order table 包名数组
----@return string
+---@return string 完整的 CustomCompBind.cs 文件内容
 function GenBinder:BuildCustomCompBind(namespace, methods, order)
     local templatePath = Tool:StrFormat("%s/Template/CustomCompBindTemplate.txt", Tool:PluginPath())
     local template = Tool:ReadTxt(templatePath)

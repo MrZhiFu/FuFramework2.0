@@ -27,7 +27,7 @@ Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
 
 --- 获取导出View的C#代码路径
 ---@param pkgName string
----@return string
+---@return string 导出代码路径格式字符串
 function Tool:GetExportCodePath(pkgName)
     if tostring(pkgName) == "Launcher" then
         return self.ExportViewAOTPath
@@ -37,7 +37,7 @@ end
 
 --- 获取导出的C#代码路径
 ---@param pkgName string
----@return string
+---@return string 导出 Gen 代码路径格式字符串
 function Tool:GetExportCodeGenPath(pkgName)
     if tostring(pkgName) == "Launcher" then
         return self.ExportViewGenAOTPath
@@ -47,7 +47,7 @@ end
 
 --- 获取导出时的C#代码命名空间
 ---@param pkgName string
----@return string
+---@return string 导出代码命名空间
 function Tool:GetExportCodeNamespace(pkgName)
     if tostring(pkgName) == "Launcher" then
         return self.ExportViewAOTNamespace
@@ -115,7 +115,7 @@ end
 
 --- 检查文件是否存在
 ---@param path string
----@return boolean
+---@return boolean 文件存在返回 true，否则返回 false
 function Tool:IsFileExists(path)
     return File.Exists(path)
 end
@@ -134,25 +134,32 @@ function Tool:FormatVarName(varName)
 end
 
 --- 日志输出
+---@param fmt string 格式化字符串（支持 %s, %d 等占位符）
+---@param ... any 可变参数，填入占位符
 function Tool:Log(fmt, ...)
     fmt = tostring(fmt)
     fprint(string.format(fmt, ...))
 end
 
 --- 警告日志输出
+---@param fmt string 格式化字符串（支持 %s, %d 等占位符）
+---@param ... any 可变参数，填入占位符
 function Tool:Warning(fmt, ...)
     fmt = tostring(fmt)
     App.consoleView:LogWarning(string.format(fmt, ...))
 end
 
 --- 错误日志输出
+---@param fmt string 格式化字符串（支持 %s, %d 等占位符）
+---@param ... any 可变参数，填入占位符
 function Tool:Error(fmt, ...)
     fmt = tostring(fmt)
     App.consoleView:LogError(string.format(fmt, ...))
 end
 
 --- 读取文本
----@return string
+---@param path string 文件路径
+---@return string 文件文本内容
 function Tool:ReadTxt(path)
     return File.ReadAllText(path)
 end
@@ -171,7 +178,7 @@ function Tool:SetPluginPath(path)
 end
 
 --- 获得插件路径
----@return string
+---@return string 插件目录路径
 function Tool:PluginPath()
     return Tool.pluginPath
 end
@@ -183,7 +190,7 @@ function Tool:SetHandler(handler)
 end
 
 --- 获得句柄
----@return CS.FairyEditor.PublishHandler
+---@return CS.FairyEditor.PublishHandler FGUI 发布处理器对象
 function Tool:Handler()
     return Tool.handler
 end
@@ -192,7 +199,7 @@ end
 ---@param content string 要分割的字符串
 ---@param pattern string 分隔符（支持正则或纯文本）
 ---@param plain boolean [可选]是否禁用正则匹配（默认false）
----@return string[]
+---@return string[] 分割后的字符串数组
 ---   Tool:StrSplit("a,b,c", ",") --> {"a","b","c"}
 ---   Tool:StrSplit("1|2|3", "|", true) --> {"1","2","3"}
 function Tool:StrSplit(content, pattern, plain)
@@ -214,7 +221,7 @@ end
 
 --- 是否是需要导出的组件(组件以下划线结尾的是需要导出的)
 ---@param member CS.FairyEditor.PublishHandler.MemberInfo
----@return boolean
+---@return boolean 组件名以下划线开头返回 true
 function Tool:IsExportedComp(member)
     return Tool:StrFind(member.name, '_') == 1
 end
@@ -336,7 +343,7 @@ end
 
 --- 首字母大写
 ---@param str string
----@return string
+---@return string 首字母大写后的字符串
 function Tool:FirstCharUpper(str)
     if not str or str == "" then
         return ""
@@ -352,7 +359,7 @@ end
 
 --- 首字母小写
 ---@param str string
----@return string
+---@return string 首字母小写后的字符串
 function Tool:FirstCharLower(str)
     if not str or str == "" then
         return ""
