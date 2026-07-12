@@ -9,7 +9,7 @@ local Directory = CS.System.IO.Directory
 Tool.ExportViewAOTPath = "%s/Scripts/AOT/UI/%s/Impl"
 
 --- 导出界面View的C#代码路径
-Tool.ExportViewPath = "%s/Scripts/Hotfix/UI/%s/Impl"
+Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"
 
 --- 导出界面ViewGen的C#代码AOT路径
 Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/UI/%s/Gen/"
