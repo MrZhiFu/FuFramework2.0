@@ -1,5 +1,4 @@
 using System;
-using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 
@@ -8,18 +7,12 @@ namespace Launcher
 {
     /// <summary>
     /// AOT 启动加载界面。
-    /// 功能：从 Resources 加载 "Launcher" FUI 包并显示进度/提示/更新确认框，脱离 UIModule/EventModule 自包含运行。
+    /// 功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
+    /// UI 组件绑定部分见 BootstrapView.Gen.cs。
     /// </summary>
-    public sealed class BootstrapView : IBootstrapView
+    public sealed partial class BootstrapView : IBootstrapView
     {
-        private GComponent     m_View;
-        private Controller     m_IsNeedUpgrade;
-        private Controller     m_IsDownloading;
-        private GTextField     m_TxtTips;
-        private GProgressBar   m_ProgressBar;
-        private GButton        m_BtnOk;
-        private GRichTextField m_TxtContent;
-        private Action         m_OnConfirm;
+        private Action m_OnConfirm;
 
         /// <summary>
         /// 创建并显示加载界面。
@@ -33,21 +26,9 @@ namespace Launcher
 
         private void Init()
         {
-            // 从 Resources 加载 Launcher 包（不依赖 YooAsset）
-            UIPackage.AddPackage("UI/Launcher/Launcher");
-
-            m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
-            m_View.MakeFullScreen();
-            GRoot.inst.AddChild(m_View);
-
-            m_IsNeedUpgrade = m_View.GetController("IsNeedUpgrade");
-            m_IsDownloading = m_View.GetController("IsDownloading");
-            m_TxtTips       = (GTextField)m_View.GetChild("_txtTips");
-            m_ProgressBar   = (GProgressBar)m_View.GetChild("_progressBar");
-            m_BtnOk         = (GButton)m_View.GetChild("_btnOk");
-            m_TxtContent    = (GRichTextField)m_View.GetChild("_txtContent");
-
-            m_BtnOk.onClick.Set(OnBtnOkClick);
+            LoadUIPackage();
+            InitUIComp();
+            InitUIEvent();
             SetNeedUpgrade(false);
             SetDownloading(false);
         }
