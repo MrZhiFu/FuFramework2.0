@@ -67,7 +67,43 @@ function GenCommon:GenControllerDefine(dataList, compCls)
 
     Tool:Log("生成控制器的定义代码和枚举定义C#代码")
 
+    -- 尝试从原始 XML 文件读取 alias 和 page remark（GetItemDesc 可能不包含这些编辑器元数据）
+    local rawXml = nil
+    local pkgName = compCls.res.owner.name
+    local compName = compCls.resName
+    local pluginPath = Tool:PluginPath()
+    -- pluginPath 示例: .../FairyGUIProject/plugins/CSharpCodeGen/
+    -- 回退两级得到 FGUI 项目根目录
+    local projectPath = pluginPath:gsub("[/\\]plugins[/\\]CSharpCodeGen[/\\]?$", "")
+    if projectPath and projectPath ~= pluginPath then
+        local xmlPath = nil
+        -- 通过 package.xml 查找组件所在的子目录路径
+        local pkgXmlPath = projectPath .. "/assets/" .. pkgName .. "/package.xml"
+        if Tool:IsFileExists(pkgXmlPath) then
+            local pkgXml = Tool:ReadTxt(pkgXmlPath)
+            -- package.xml 格式: <component ... name="CompBagItemInfo.xml" path="/Comp/" .../>
+            local escName = compName:gsub("([%.%-])", "%%%1")
+            local pkgPath = pkgXml:match('name="' .. escName .. '%.xml"[^>]*path="([^"]*)"')
+            if pkgPath then
+                -- path 格式如 "/Comp/" → 去掉首尾斜杠 → "Comp"
+                pkgPath = pkgPath:gsub("^/", ""):gsub("/$", "")
+                if pkgPath ~= "" then
+                    xmlPath = projectPath .. "/assets/" .. pkgName .. "/" .. pkgPath .. "/" .. compName .. ".xml"
+                end
+            end
+        end
+        -- 回退：组件在包根目录
+        if not xmlPath then
+            xmlPath = projectPath .. "/assets/" .. pkgName .. "/" .. compName .. ".xml"
+        end
+        if Tool:IsFileExists(xmlPath) then
+            rawXml = Tool:ReadTxt(xmlPath)
+        end
+    end
+
+    -- 第一遍：收集所有控制器的元数据
     local nameList = {}
+    local ctrlInfos = {}
     for i = 1, controllerList.Count do
         ---@type CS.FairyGUI.Utils.XML
         local controller = controllerList[i - 1]
@@ -75,50 +111,96 @@ function GenCommon:GenControllerDefine(dataList, compCls)
         local controllerName = controller:GetAttribute("name")
         table.insert(nameList, controllerName)
 
-        ------------生成控制器对应的枚举定义-------------------
-        ------ 如：/// <summary>
-        ------      /// TestCtrl 控制器状态枚举
-        ------      /// </summary>
-        ------      private enum ETestCtrl
-        ------      {
-        ------           /// <summary> No </summary>
-        ------           No = 0,
-        ------           /// <summary> Yes </summary>
-        ------           Yes = 1,
-        ------      }
-        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// %s 控制器状态枚举\n\t\t/// </summary>\n", controllerName))
-        table.insert(dataList, "\t\tprivate enum E")
-        table.insert(dataList, controllerName)
-        table.insert(dataList, "\n\t\t{\n")
+        -- 1. 获取显示名：优先从 rawXml 解析 alias，回退 XML 属性
+        local displayName = nil
+        if rawXml then
+            local aliasPattern = '<controller name="' .. controllerName:gsub("([%.%-])", "%%%1") .. '"[^>]*alias="([^"]*)"'
+            displayName = rawXml:match(aliasPattern)
+        end
+        if not displayName or displayName == "" then
+            local alias = controller:GetAttribute("alias")
+            displayName = (alias and alias ~= "") and alias or controllerName
+        end
 
+        -- 2. 构建页面备注映射：优先从 rawXml 解析 <remark>，回退为空
+        local remarkMap = {}
+        if rawXml then
+            local escName = controllerName:gsub("([%.%-])", "%%%1")
+            local ctrlStart = rawXml:find('<controller name="' .. escName .. '"')
+            if ctrlStart then
+                local ctrlSection = rawXml:sub(ctrlStart)
+                local ctrlEnd = ctrlSection:find("</controller>")
+                if ctrlEnd then
+                    ctrlSection = ctrlSection:sub(1, ctrlEnd)
+                end
+                for page, value in ctrlSection:gmatch('<remark page="(%d+)" value="([^"]*)"') do
+                    if value ~= "" then
+                        remarkMap[page] = value
+                    end
+                end
+            end
+        end
+        if next(remarkMap) == nil then
+            local remarkList = controller:Elements("remark")
+            if remarkList and remarkList.Count > 0 then
+                for r = 1, remarkList.Count do
+                    local remark = remarkList[r - 1]
+                    local page = remark:GetAttribute("page")
+                    local remarkValue = remark:GetAttribute("value")
+                    if page and remarkValue and remarkValue ~= "" then
+                        remarkMap[page] = remarkValue
+                    end
+                end
+            end
+        end
+
+        -- 3. 收集页面信息
         local pages = controller:GetAttribute("pages")
+        local pageValues = {}
         if pages then
             local valArray = Tool:StrSplit(pages, ",")
             for t = 1, #valArray, 2 do
                 local idx = valArray[t]
                 local value = valArray[t + 1]
-
                 if value == "" then
                     value = ("N" .. idx)
                 end
-
-                table.insert(dataList, Tool:StrFormat("\t\t\t/// <summary>\n\t\t\t/// %s\n\t\t\t/// </summary>\n", value))
-                table.insert(dataList, "\t\t\t")
-                local keyName = Tool:FirstCharUpper(value)
-                table.insert(dataList, keyName)
-                table.insert(dataList, " = ")
-                table.insert(dataList, idx)
-                table.insert(dataList, ",\n")
+                local valueComment = remarkMap[idx] or value
+                table.insert(pageValues, {idx = idx, value = value, comment = valueComment})
             end
         end
-        table.insert(dataList, "\t\t}\n\n")
 
-        ------------生成控制器的SetController函数----------------
-        --- 如：/// <summary> 设置 TestCtrl 控制器状态 </summary>
-        ---      private void SetController(ETestCtrl eTestCtrl) => TestCtrl.SetSelectedIndex((int) eTestCtrl);
-        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置 %s 控制器状态\n\t\t/// </summary>\n", controllerName))
-        table.insert(dataList, Tool:StrFormat("\t\tprivate void SetController(E%s e%s) => ", controllerName, controllerName))
-        table.insert(dataList, Tool:StrFormat("%s.SetSelectedIndex((int) e%s);\n", controllerName, controllerName))
+        table.insert(ctrlInfos, {
+            name = controllerName,
+            displayName = displayName,
+            pages = pageValues,
+        })
+    end
+
+    -- 第二遍：生成所有枚举定义
+    for _, info in ipairs(ctrlInfos) do
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// %s\n\t\t/// </summary>\n", info.displayName))
+        table.insert(dataList, "\t\tprivate enum E")
+        table.insert(dataList, info.name)
+        table.insert(dataList, "\n\t\t{\n")
+
+        for _, pv in ipairs(info.pages) do
+            table.insert(dataList, Tool:StrFormat("\t\t\t/// <summary>\n\t\t\t/// %s\n\t\t\t/// </summary>\n", pv.comment))
+            table.insert(dataList, "\t\t\t")
+            local keyName = Tool:FirstCharUpper(pv.value)
+            table.insert(dataList, keyName)
+            table.insert(dataList, " = ")
+            table.insert(dataList, pv.idx)
+            table.insert(dataList, ",\n")
+        end
+        table.insert(dataList, "\t\t}\n\n")
+    end
+
+    -- 第三遍：生成所有 SetController 方法
+    for _, info in ipairs(ctrlInfos) do
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置 %s 控制器状态\n\t\t/// </summary>\n", info.displayName))
+        table.insert(dataList, Tool:StrFormat("\t\tprivate void SetController(E%s e%s) => ", info.name, info.name))
+        table.insert(dataList, Tool:StrFormat("%s.SetSelectedIndex((int) e%s);\n", info.name, info.name))
         table.insert(dataList, "\n")
     end
 
