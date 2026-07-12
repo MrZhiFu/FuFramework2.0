@@ -1,6 +1,5 @@
 using FuFramework.Core.Runtime;
 
-using FuFramework.Fsm.Runtime;
 using FuFramework.ObjectPool.Runtime;
 using FuFramework.ReferencePool.Runtime;
 
@@ -20,7 +19,6 @@ namespace FuFramework.Launcher.Runtime
         {
             ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
             ModuleManager.RegisterModule<ObjectPoolModule>();    // 对象池管理模块
-            ModuleManager.RegisterModule<FsmModule>();           // 有限状态机管理模块
 
         }
     }
