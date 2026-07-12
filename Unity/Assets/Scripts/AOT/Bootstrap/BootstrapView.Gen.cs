@@ -6,7 +6,7 @@ using FairyGUI;
 
 namespace Launcher
 {
-    public partial class WinLauncher
+    public partial class BootstrapView
     {
         private GComponent     m_View;
         private Controller     m_IsNeedUpgrade;

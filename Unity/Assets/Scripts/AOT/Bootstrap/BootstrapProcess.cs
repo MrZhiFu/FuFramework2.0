@@ -21,13 +21,13 @@ namespace Launcher
         private const string RemoteUpdateConfigName = "RemoteUpdateConfig.json";
         private const string HotfixDllName          = "Hotfix";
 
-        private static WinLauncher s_View;
+        private static BootstrapView s_View;
 
         /// <summary>运行引导流程。onHotfixEntry：加载完 Hotfix 程序集后由外部执行热更入口调用。</summary>
-        public static async UniTask RunAsync(Func<WinLauncher, UniTask> onHotfixEntry)
+        public static async UniTask RunAsync(Func<BootstrapView, UniTask> onHotfixEntry)
         {
             FuLogger.LogInfo("<color=#43f656>------进入启动引导流程------</color>");
-            s_View = await WinLauncher.CreateAsync();
+            s_View = await BootstrapView.CreateAsync();
 
             var playMode = ModuleSetting.Instance.AssetSetting.PlayMode;
             RemoteUpdateConfig updateConfig = null;
@@ -154,7 +154,7 @@ namespace Launcher
         }
 
         /// <summary>加载 AOT 补充元数据与 Hotfix 程序集，并移交热更入口。</summary>
-        private static async UniTask LoadHotfixAndHandoff(Func<WinLauncher, UniTask> onHotfixEntry)
+        private static async UniTask LoadHotfixAndHandoff(Func<BootstrapView, UniTask> onHotfixEntry)
         {
             FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
 

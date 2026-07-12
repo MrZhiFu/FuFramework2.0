@@ -9,18 +9,18 @@ namespace Launcher
     /// <summary>
     /// AOT 启动加载界面。
     /// 功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
-    /// UI 组件绑定部分见 WinLauncher.Gen.cs。
+    /// UI 组件绑定部分见 BootstrapView.Gen.cs。
     /// </summary>
-    public sealed partial class WinLauncher : IWinLauncher
+    public sealed partial class BootstrapView : IBootstrapView
     {
         private Action m_OnConfirm;
 
         /// <summary>
         /// 创建并显示加载界面。
         /// </summary>
-        public static UniTask<WinLauncher> CreateAsync()
+        public static UniTask<BootstrapView> CreateAsync()
         {
-            var view = new WinLauncher();
+            var view = new BootstrapView();
             view.Init();
             return UniTask.FromResult(view);
         }
@@ -41,7 +41,7 @@ namespace Launcher
         {
             UIPackage.AddPackage("UI/Launcher/Launcher");
 
-            m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom;
+            m_View = UIPackage.CreateObject("Launcher", "BootstrapView").asCom;
             m_View.MakeFullScreen();
             GRoot.inst.AddChild(m_View);
         }

@@ -18,15 +18,21 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     for _, winCls in ipairs(winClsArray) do
+        -- Launcher包特殊处理：FGUI资源名为WinLauncher，C#类名使用BootstrapView
+        local winName = winCls.resName
+        if tostring(pkgName) == "Launcher" then
+            winName = "BootstrapView"
+        end
+
         -------------------------------------WinXxx.Gen.cs----------------------------------------
-        Tool:Log("生成界面C#代码----%s.Gen.cs", winCls.resName)
+        Tool:Log("生成界面C#代码----%s.Gen.cs", winName)
 
         local targetDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
 
         -- 创建存放代码的文件夹=>.../ViewGen
         Tool:CreateDirectory(targetDir)
 
-        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, winCls.resName) --- 界面代码生成目标路径
+        local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetDir, winName) --- 界面代码生成目标路径
         local compArray = Tool:GetCompArray(winCls)
 
         local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinGenTemplate.txt")
@@ -65,7 +71,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         -- 替换命名空间，包名，界面名
         templateCodeGen = templateCodeGen:gsub('#NAMESPACE#', namespace)
         templateCodeGen = templateCodeGen:gsub('#PKGNAME#', pkgName)
-        templateCodeGen = templateCodeGen:gsub('#WINNAME#', winCls.resName)
+        templateCodeGen = templateCodeGen:gsub('#WINNAME#', winName)
 
         -- Launcher包不继承ViewBase，移除override属性
         if tostring(pkgName) == "Launcher" then
@@ -76,10 +82,10 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
         Tool:WriteTxt(targetPath, templateCodeGen)
 
         -------------------------------------WinXxx.cs----------------------------------------
-        Tool:Log("生成界面逻辑C#代码----%s.cs", winCls.resName)
+        Tool:Log("生成界面逻辑C#代码----%s.cs", winName)
 
         targetDir = Tool:StrFormat(exportPath, unityDataPath, pkgName)
-        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winCls.resName)
+        targetPath = Tool:StrFormat('%s/%s.cs', targetDir, winName)
 
         -- 如果界面逻辑代码文件不存在，则生成
         if not Tool:IsFileExists(targetPath) then
@@ -112,7 +118,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                 -- 替换命名空间，包名，界面名
                 templateCode = templateCode:gsub('#NAMESPACE#', namespace)
                 templateCode = templateCode:gsub('#PKGNAME#', pkgName)
-                templateCode = templateCode:gsub('#WINNAME#', winCls.resName)
+                templateCode = templateCode:gsub('#WINNAME#', winName)
 
                 -- 写入替换完成后的代码文件WinXxx.cs
                 Tool:WriteTxt(targetPath, templateCode)
