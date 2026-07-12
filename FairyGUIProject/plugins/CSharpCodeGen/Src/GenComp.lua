@@ -13,9 +13,9 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
         return
     end
 
-    local exportGenPath = Tool:GetExportCodeGenPath(pkgName) --- 导出ViewGen的C#代码路径
-    local exportPath = Tool:GetExportCodePath(pkgName)       --- 导出View的C#代码路径
-    local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
+    local exportGenPath = Tool.ExportViewGenPath --- 导出ViewGen的C#代码路径
+    local exportPath = Tool.ExportViewPath       --- 导出View的C#代码路径
+    local namespace = Tool.ExportViewNamespace   --- 导出View的C#代码命名空间
 
     for _, compCls in ipairs(compClsArray) do
         -------------------------------------CompXxx.Gen.cs----------------------------------------
