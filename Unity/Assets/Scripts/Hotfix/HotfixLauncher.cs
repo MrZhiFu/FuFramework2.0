@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Hotfix.Network;
 using FuFramework.Core.Runtime;
+using FuFramework.UI.Runtime;
 using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
@@ -45,7 +46,8 @@ namespace Hotfix
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
-            // 注册热更层框架模块
+            // 注册热更层框架模块（含 Phase 2 起下沉到 Hotfix 的框架模块）
+            ModuleManager.RegisterModule<UIModule>(); // UI管理模块（Phase 2 下沉）
             ModuleManager.RegisterModule<RedDotModule>();
 
             // 设置FairyGUI的Loader加载器为自定义加载器

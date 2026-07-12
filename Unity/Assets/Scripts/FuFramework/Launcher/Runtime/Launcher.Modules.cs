@@ -8,7 +8,6 @@ using FuFramework.ObjectPool.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.Timer.Runtime;
-using FuFramework.UI.Runtime;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Launcher.Runtime
@@ -33,7 +32,6 @@ namespace FuFramework.Launcher.Runtime
             ModuleManager.RegisterModule<MonoModule>();          // Mono管理模块
             ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
             ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
-            ModuleManager.RegisterModule<UIModule>();           // UI管理模块
         }
     }
 }
