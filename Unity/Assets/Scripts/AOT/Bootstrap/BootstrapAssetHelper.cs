@@ -85,7 +85,30 @@ namespace Launcher
                 }
                 case EPlayMode.WebPlayMode:
                 {
-                    var webFs = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+                    FileSystemParameters webFs = null;
+
+#if UNITY_WEBGL
+    #if ENABLE_DOUYIN_MINI_GAME
+                    // 创建字节小游戏文件系统
+                    if (url.IsNullOrWhiteSpace())
+                        webFs = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters();
+                    else
+                        webFs = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters(url);
+    #elif ENABLE_WECHAT_MINI_GAME
+                    // 创建微信小游戏文件系统
+                    WeChatWASM.WXBase.PreloadConcurrent(10);
+                    if (url.IsNullOrWhiteSpace())
+                        webFs = WechatFileSystemCreater.CreateWechatFileSystemParameters();
+                    else
+                        webFs = WechatFileSystemCreater.CreateWechatPathFileSystemParameters(url);
+    #else
+                    // 创建默认WebGL文件系统
+                    webFs = FileSystemParameters.CreateDefaultWebFileSystemParameters();
+    #endif
+#else
+                    // 非 WebGL 平台回退默认 Web 服务器文件系统
+                    webFs = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+#endif
                     return s_DefaultPackage.InitializeAsync(new WebPlayModeParameters { WebServerFileSystemParameters = webFs });
                 }
                 default:
@@ -122,7 +145,27 @@ namespace Launcher
         {
             var tcs    = new UniTaskCompletionSource<byte[]>();
             var handle = s_DefaultPackage.LoadAssetAsync<Object>(location);
-            handle.Completed += h => tcs.TrySetResult(h.GetAssetObject<TextAsset>().bytes);
+            handle.Completed += h =>
+            {
+                // 加载失败：记录错误并以 null 结果完成，避免回调抛异常导致 await 永久挂起。
+                if (h.Status != EOperationStatus.Succeed)
+                {
+                    FuLogger.LogError($"[Bootstrap] 加载原始文件失败: {location}, 错误信息: {h.LastError}");
+                    tcs.TrySetResult(null);
+                    return;
+                }
+
+                // 资源非 TextAsset（GetAssetObject 返回 null）：记录错误并以 null 结果完成。
+                var textAsset = h.GetAssetObject<TextAsset>();
+                if (textAsset == null)
+                {
+                    FuLogger.LogError($"[Bootstrap] 加载的资源不是 TextAsset 或为空: {location}");
+                    tcs.TrySetResult(null);
+                    return;
+                }
+
+                tcs.TrySetResult(textAsset.bytes);
+            };
             return tcs.Task;
         }
 
