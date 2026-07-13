@@ -54,8 +54,9 @@ namespace Launcher
                 updateConfig = await ReqRemoteUpdateConfigWithRetry();
                 if (updateConfig.ForceUpdate)
                 {
+                    // 强更中止后续流程
                     m_BootstrapView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () => Application.OpenURL(updateConfig.AppDownloadUrl));
-                    return; // 强更中止后续流程
+                    return;
                 }
             }
 
@@ -194,7 +195,7 @@ namespace Launcher
             {
                 var aotPath = Utility.AssetPath.GetAOTCodePath(aotDll);
                 var bytes   = await BootstrapAssetHelper.LoadDllBytesAsync(aotPath);
-                
+
                 // 加载失败：LoadRawFileBytesAsync 返回 null，禁止把 null 传给 RuntimeApi，记录路径并中止移交。
                 if (bytes == null)
                 {
@@ -232,13 +233,11 @@ namespace Launcher
         private static async UniTask EnterHotfixAsync()
         {
             System.Reflection.Assembly hotfixAssembly = null;
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (assembly.GetName().Name == HotfixDllName)
-                {
-                    hotfixAssembly = assembly;
-                    break;
-                }
+                if (assembly.GetName().Name != HotfixDllName) continue;
+                hotfixAssembly = assembly;
+                break;
             }
 
             if (hotfixAssembly == null)

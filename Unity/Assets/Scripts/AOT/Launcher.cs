@@ -1,10 +1,9 @@
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using FuFramework.Core.Runtime;
 using Launcher;
+using UnityEngine;
 
-// ReSharper disable once CheckNamespace
-namespace FuFramework.Launcher.Runtime
+namespace AOT
 {
     /// <summary>
     /// AOT 入口类。

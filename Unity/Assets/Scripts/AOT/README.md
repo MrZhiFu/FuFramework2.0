@@ -11,7 +11,7 @@ AOT 模块是游戏随包体预编译的部分（Ahead-of-Time），负责**极�
 - **极简引导**：线性流程（非 Procedure 状态机），仅一个 `BootstrapProcess` 静态类
 - **资源热更新**：集成 YooAsset，支持版本检测、清单更新、资源下载
 - **代码热修复**：集成 HybridCLR，支持 AOT 元数据补充和 Hotfix.dll 加载
-- **委托桥接**：`GameDriven`（MonoSingleton）持有委托自驱动帧循环，Hotfix 侧挂接 ModuleManager 生命周期方法
+- **委托桥接**：Hotfix 侧 `GameDriven` 持有委托自驱动帧循环，HotfixLauncher 挂接 ModuleManager 生命周期方法（无 AOT 依赖）
 - **多模式支持**：编辑器模拟模式、单机离线模式、联机热更模式
 
 ## 3. 目录结构
@@ -25,7 +25,6 @@ AOT/
 │   └── UpdateConfig/           # 远端更新配置
 │       └── RemoteUpdateConfig.cs
 ├── Launcher.cs                 # AOT 入口 MonoBehaviour（启动引导流程）
-├── GameDriven.cs               # MonoSingleton 帧驱动 + 游戏控制中枢
 └── AOT.asmdef                  # AOT 程序集定义
 ```
 
@@ -93,34 +92,7 @@ Launcher.Start()
 
 `IBootstrapView` 接口定义在 `FuFramework.Core.Runtime` 中，供 HotfixLauncher 通过接口类型消费（`SetTip`/`Close`），保证 AOT → Hotfix 的契约解耦。
 
-## 5. GameDriven（帧驱动 + 游戏控制）
-
-`GameDriven` 继承 `MonoSingleton<GameDriven>`，是 AOT↔Hotfix 的帧驱动桥梁 + 游戏控制中枢。
-
-### 5.1 帧驱动委托
-
-`GameDriven` 暴露 5 个 `public Action` 委托，自驱动 `Update`/`LateUpdate`/`FixedUpdate`：
-
-| 委托 | Hotfix 挂接目标 |
-|------|-----------------|
-| `GameDriven.Instance.OnUpdate` | `ModuleManager.Update` |
-| `GameDriven.Instance.OnLateUpdate` | `ModuleManager.LateUpdate` |
-| `GameDriven.Instance.OnFixedUpdate` | `ModuleManager.FixedUpdate` |
-| `GameDriven.Instance.DisposeModules` | `ModuleManager.Dispose` |
-| `GameDriven.Instance.ReInitModules` | `ModuleManager.ReInit` |
-
-由 `HotfixLauncher.MainAsync()` 在注册完所有模块后进行挂接。AOT 不需要引用 Hotfix 程序集。
-
-### 5.2 游戏控制
-
-| 方法 | 说明 |
-|------|------|
-| `PauseGame()` | 暂停游戏（委托 `ModuleSetting.Instance.PauseGame()`） |
-| `ResumeGame()` | 恢复游戏 |
-| `RestartGame()` | 重启游戏（释放并重新初始化所有模块，重新运行引导流程） |
-| `QuitGame()` | 退出游戏（释放模块并退出应用） |
-
-## 6. RemoteUpdateConfig - 远端更新配置
+## 5. RemoteUpdateConfig - 远端更新配置
 
 位于 CDN 服务器的 `RemoteUpdateConfig.json`：
 
@@ -146,7 +118,7 @@ Launcher.Start()
 }
 ```
 
-## 7. 运行模式
+## 6. 运行模式
 
 | 模式 | 说明 |
 |------|------|
@@ -156,7 +128,7 @@ Launcher.Start()
 
 运行模式在 `ModuleSetting` 中的 `AssetSetting` 里配置。
 
-## 8. BootstrapContext（跨 AOT/Hotfix 共享状态）
+## 7. BootstrapContext
 
 `BootstrapContext`（定义在 `FuFramework.Core.Runtime`）是跨 AOT/热更程序集的共享状态容器：
 

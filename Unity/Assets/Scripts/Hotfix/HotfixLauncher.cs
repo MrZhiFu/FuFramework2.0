@@ -17,7 +17,6 @@ using FuFramework.ObjectPool.Runtime;
 using FuFramework.Event.Runtime;
 using FuFramework.Procedure.Runtime;
 using FuFramework.UI.Runtime;
-using FuFramework.Launcher.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Hotfix.Localization;
 using Hotfix.Model;

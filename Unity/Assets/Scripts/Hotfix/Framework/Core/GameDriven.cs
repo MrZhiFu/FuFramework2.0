@@ -1,11 +1,10 @@
 using System;
-using UnityEngine;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using Launcher;
+using UnityEngine;
 
-// ReSharper disable once CheckNamespace
-namespace FuFramework.Launcher.Runtime
+namespace Hotfix
 {
     /// <summary>
     /// 框架帧驱动 + 游戏控制中枢。
@@ -84,7 +83,7 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         public void PauseGame()
         {
-            ModuleSetting.Runtime.ModuleSetting.Instance.PauseGame();
+            FuFramework.ModuleSetting.Runtime.ModuleSetting.Instance.PauseGame();
         }
 
         /// <summary>
@@ -92,7 +91,7 @@ namespace FuFramework.Launcher.Runtime
         /// </summary>
         public void ResumeGame()
         {
-            ModuleSetting.Runtime.ModuleSetting.Instance.ResumeGame();
+            FuFramework.ModuleSetting.Runtime.ModuleSetting.Instance.ResumeGame();
         }
 
         /// <summary>
