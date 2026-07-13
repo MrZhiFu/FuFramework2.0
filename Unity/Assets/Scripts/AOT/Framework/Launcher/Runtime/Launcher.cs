@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using FuFramework.Core.Runtime;
 using Launcher;
@@ -26,8 +27,8 @@ namespace FuFramework.Launcher.Runtime
 
         private void Start()
         {
-            // 启动 AOT 极简引导流程，引导完成后回调 GameDriven.EnterHotfixAsync 进入热更入口
-            BootstrapProcess.RunAsync(GameDriven.Instance.EnterHotfixAsync).Forget();
+            // 启动 AOT 极简引导流程，引导完成后由 BootstrapProcess 直接反射进入热更入口
+            BootstrapProcess.RunAsync().Forget();
         }
     }
 }
