@@ -51,14 +51,20 @@ namespace FuFramework.UI.Runtime
         private int m_SerialId;
 
 
-        [Header("界面实例对象池自动释放可释放对象的间隔秒数")]
-        [SerializeField] private float m_InstanceAutoReleaseInterval = 60f;
+        /// <summary>
+        /// 界面实例对象池自动释放可释放对象的间隔秒数
+        /// </summary>
+        private const float UIInstanceAutoReleaseInterval = 60f;
 
-        [Header("界面实例对象池的容量")]
-        [SerializeField] private int m_InstanceCapacity = 16;
+        /// <summary>
+        /// 界面实例对象池的容量
+        /// </summary>
+        private const int UIInstancePoolCapacity = 16;
 
-        [Header("界面实例对象池对象过期秒数")]
-        [SerializeField] private float m_InstanceExpireTime = 60f;
+        /// <summary>
+        /// 界面实例对象池对象过期秒数
+        /// </summary>
+        private const float UIInstanceExpireTime = 60f;
 
         /// <summary>
         /// 获取或设置界面实例对象池自动释放可释放对象的间隔秒数。
@@ -104,9 +110,9 @@ namespace FuFramework.UI.Runtime
 
             m_SerialId = 0;
 
-            InstanceAutoReleaseInterval = m_InstanceAutoReleaseInterval;
-            InstanceCapacity            = m_InstanceCapacity;
-            InstanceExpireTime          = m_InstanceExpireTime;
+            InstanceAutoReleaseInterval = UIInstanceAutoReleaseInterval;
+            InstanceCapacity            = UIInstancePoolCapacity;
+            InstanceExpireTime          = UIInstanceExpireTime;
 
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();
