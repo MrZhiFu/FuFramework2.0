@@ -4,7 +4,7 @@ namespace FuFramework.Core.Runtime
 {
     /// <summary>
     /// 启动引导共享上下文。
-    /// 功能：由 AOT 引导助手在初始化 YooAsset 后写入状态，供热更侧 AssetModule 判断是否复用，避免二次初始化。
+    ///     功能：由 AOT 引导助手在初始化 YooAsset 后写入状态，供热更侧 AssetModule 判断是否复用，避免二次初始化。
     /// </summary>
     public static class BootstrapContext
     {

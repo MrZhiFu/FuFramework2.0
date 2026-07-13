@@ -18,19 +18,35 @@ namespace Launcher
     /// </summary>
     public static class BootstrapProcess
     {
+        /// <summary>
+        /// 远端更新配置文件名，从远端资源服务器获取。
+        /// </summary>
         private const string RemoteUpdateConfigName = "RemoteUpdateConfig.json";
-        private const string HotfixDllName          = "Hotfix";
 
-        private static BootstrapView s_View;
+        /// <summary>
+        /// 远端更新配置文件名。
+        /// </summary>
+        private const string HotfixDllName = "Hotfix";
 
-        /// <summary>运行引导流程。onHotfixEntry：加载完 Hotfix 程序集后由外部执行热更入口调用。</summary>
-        public static async UniTask RunAsync(Func<BootstrapView, UniTask> onHotfixEntry)
+        /// <summary>
+        /// 加载界面视图。
+        /// </summary>
+        private static IBootstrapView m_BootstrapView;
+
+        /// <summary>
+        /// 运行引导流程。
+        /// </summary>
+        /// <param name="onHotfixEntry">加载完 Hotfix 程序集后由外部执行热更入口调用。</param>
+        /// <returns>异步流程</returns>
+        public static async UniTask RunAsync(Func<IBootstrapView, UniTask> onHotfixEntry)
         {
             FuLogger.LogInfo("<color=#43f656>------进入启动引导流程------</color>");
 
-            s_View = await BootstrapView.CreateAsync();
+            // 显示加载界面
+            m_BootstrapView = await BootstrapView.CreateAsync();
 
             var playMode = ModuleSetting.Instance.AssetSetting.PlayMode;
+
             RemoteUpdateConfig updateConfig = null;
 
             // 联机/Web 模式：请求远端更新配置（含强更判断）
@@ -39,13 +55,13 @@ namespace Launcher
                 updateConfig = await ReqRemoteUpdateConfigWithRetry();
                 if (updateConfig.ForceUpdate)
                 {
-                    s_View.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () => Application.OpenURL(updateConfig.AppDownloadUrl));
+                    m_BootstrapView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () => Application.OpenURL(updateConfig.AppDownloadUrl));
                     return; // 强更中止后续流程
                 }
             }
 
             // 初始化资源包
-            s_View.SetTip("InitPackage...");
+            m_BootstrapView.SetTip("InitPackage...");
             if (updateConfig == null)
             {
                 await BootstrapAssetHelper.InitPackageAsync();
@@ -59,19 +75,19 @@ namespace Launcher
             }
 
             // 获取版本号（失败重试）
-            s_View.SetTip("GetVersion...");
+            m_BootstrapView.SetTip("GetVersion...");
             string packageVersion;
             while ((packageVersion = await BootstrapAssetHelper.RequestVersionAsync()) == null)
             {
-                s_View.SetTip("获取版本号失败，正在重试...");
+                m_BootstrapView.SetTip("获取版本号失败，正在重试...");
                 await UniTask.WaitForSeconds(3);
             }
 
             // 更新资源清单（失败重试）
-            s_View.SetTip("UpdateManifest...");
+            m_BootstrapView.SetTip("UpdateManifest...");
             while (!await BootstrapAssetHelper.UpdateManifestAsync(packageVersion))
             {
-                s_View.SetTip("更新清单失败，正在重试...");
+                m_BootstrapView.SetTip("更新清单失败，正在重试...");
                 await UniTask.WaitForSeconds(3);
             }
 
@@ -80,8 +96,8 @@ namespace Launcher
                 await CreateAndDownload(updateConfig);
 
             // 资源更新完毕
-            s_View.SetDownloading(false);
-            s_View.SetTip(string.Empty);
+            m_BootstrapView.SetDownloading(false);
+            m_BootstrapView.SetTip(string.Empty);
 
             // 加载 AOT 补充元数据 + Hotfix.dll，移交热更入口
             await LoadHotfixAndHandoff(onHotfixEntry);
@@ -109,7 +125,8 @@ namespace Launcher
                 {
                     FuLogger.LogError($"[Bootstrap] 获取远端更新配置异常：{e.Message}");
                 }
-                s_View.SetTip("资源服务器错误，正在重试...");
+
+                m_BootstrapView.SetTip("资源服务器错误，正在重试...");
                 await UniTask.WaitForSeconds(3);
             }
         }
@@ -126,9 +143,9 @@ namespace Launcher
                 if (updateConfig is { ShowUpdateTips: true })
                 {
                     var confirmed = new UniTaskCompletionSource();
-                    s_View.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () =>
+                    m_BootstrapView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () =>
                     {
-                        s_View.SetNeedUpgrade(false);
+                        m_BootstrapView.SetNeedUpgrade(false);
                         confirmed.TrySetResult();
                     });
                     await confirmed.Task;
@@ -139,7 +156,7 @@ namespace Launcher
                     var progress = data.CurrentDownloadBytes / (data.TotalDownloadBytes * 1f);
                     var cur      = Utility.File.GetBytesSizeWithUnit(data.CurrentDownloadBytes);
                     var tot      = Utility.File.GetBytesSizeWithUnit(data.TotalDownloadBytes);
-                    s_View.SetProgress(progress, $"下载中：{cur}/{tot}");
+                    m_BootstrapView.SetProgress(progress, $"下载中：{cur}/{tot}");
                 };
                 var failed = false;
                 downloader.DownloadErrorCallback = _ => failed = true;
@@ -149,20 +166,20 @@ namespace Launcher
                 await downloader;
 
                 if (!failed && downloader.Status == EOperationStatus.Succeed) return; // 下载成功
-                s_View.SetTip("下载失败，正在重试...");
+                m_BootstrapView.SetTip("下载失败，正在重试...");
                 await UniTask.WaitForSeconds(3); // 失败后重建下载器重试
             }
         }
 
         /// <summary>加载 AOT 补充元数据与 Hotfix 程序集，并移交热更入口。</summary>
-        private static async UniTask LoadHotfixAndHandoff(Func<BootstrapView, UniTask> onHotfixEntry)
+        private static async UniTask LoadHotfixAndHandoff(Func<IBootstrapView, UniTask> onHotfixEntry)
         {
             FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
 
             // 编辑器模拟模式：程序集已在域中，直接移交
             if (Utility.Application.IsEditor && BootstrapAssetHelper.PlayMode == EPlayMode.EditorSimulateMode)
             {
-                await onHotfixEntry(s_View);
+                await onHotfixEntry(m_BootstrapView);
                 return;
             }
 
@@ -170,32 +187,34 @@ namespace Launcher
             foreach (var aotDll in AOTGenericReferences.PatchedAOTAssemblyList)
             {
                 var aotPath = Utility.AssetPath.GetAOTCodePath(aotDll);
-                var bytes   = await BootstrapAssetHelper.LoadRawFileBytesAsync(aotPath);
+                var bytes   = await BootstrapAssetHelper.LoadDllBytesAsync(aotPath);
                 // 加载失败：LoadRawFileBytesAsync 返回 null，禁止把 null 传给 RuntimeApi，记录路径并中止移交。
                 if (bytes == null)
                 {
                     FuLogger.LogError($"[Bootstrap] 加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
-                    s_View.SetTip("热更资源加载失败，请检查网络后重启游戏");
+                    m_BootstrapView.SetTip("热更资源加载失败，请检查网络后重启游戏");
                     return;
                 }
+
                 RuntimeApi.LoadMetadataForAOTAssembly(bytes, HomologousImageMode.SuperSet);
                 FuLogger.LogInfo($"[Bootstrap] 补充 AOT 元数据：{aotDll}");
             }
 
             // 加载 Hotfix.dll（域内自动注册程序集，供 onHotfixEntry 反射调用入口）
             var dllPath  = Utility.AssetPath.GetCodePath($"{HotfixDllName}.dll");
-            var dllBytes = await BootstrapAssetHelper.LoadRawFileBytesAsync(dllPath);
+            var dllBytes = await BootstrapAssetHelper.LoadDllBytesAsync(dllPath);
             // 加载失败：禁止把 null 传给 Assembly.Load，记录路径并中止移交。
             if (dllBytes == null)
             {
                 FuLogger.LogError($"[Bootstrap] 加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
-                s_View.SetTip("热更资源加载失败，请检查网络后重启游戏");
+                m_BootstrapView.SetTip("热更资源加载失败，请检查网络后重启游戏");
                 return;
             }
+
             System.Reflection.Assembly.Load(dllBytes);
             FuLogger.LogInfo("[Bootstrap] Hotfix 程序集加载完成");
 
-            await onHotfixEntry(s_View);
+            await onHotfixEntry(m_BootstrapView);
         }
     }
 }

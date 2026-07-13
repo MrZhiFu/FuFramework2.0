@@ -4,7 +4,8 @@
 namespace Launcher.Bootstrap
 {
     /// <summary>
-    /// 远端资源更新配置
+    /// 远端资源更新配置。
+    /// 功能：用于映射远程资源更新配置。
     /// </summary>
     public sealed class RemoteUpdateConfig
     {

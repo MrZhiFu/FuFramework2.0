@@ -47,8 +47,7 @@ namespace FuFramework.Launcher.Runtime
         protected override void OnInit()
         {
 #if ENABLE_SRDEBUGGER
-            // 初始化运行时日志查看器
-            SRDebug.Init();
+            SRDebug.Init();// 初始化运行时日志查看器
 #endif
 
             FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
@@ -91,10 +90,8 @@ namespace FuFramework.Launcher.Runtime
         /// 说明：ModuleBase/ModuleManager 已下沉 Hotfix（Task 15），帧更新委托由 HotfixLauncher 挂接。
         /// </summary>
         /// <param name="view">AOT 加载界面句柄，透传给热更入口用于收尾关闭。</param>
-        private static async UniTask InvokeHotfixEntryAsync(global::Launcher.BootstrapView view)
+        private static async UniTask InvokeHotfixEntryAsync(IBootstrapView view)
         {
-            // 框架模块注册与帧更新委托挂接已全部移交 HotfixLauncher（Task 17）
-
             // 反射进入热更入口
             var hotfixAssembly = GetHotfixAssembly();
             if (hotfixAssembly == null)
@@ -123,7 +120,9 @@ namespace FuFramework.Launcher.Runtime
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (assembly.GetName().Name == "Hotfix")
+                {
                     return assembly;
+                }
             }
 
             return null;
