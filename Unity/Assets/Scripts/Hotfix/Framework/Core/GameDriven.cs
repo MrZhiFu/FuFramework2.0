@@ -86,14 +86,7 @@ namespace Hotfix
         /// </summary>
         protected override void OnDispose()
         {
-            try
-            {
-                DisposeModules?.Invoke();
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[GameDriven] 释放模块时出现异常（应用退出阶段 Unity 对象销毁顺序不确定）: {e.Message}");
-            }
+            DisposeModules?.Invoke();
 
             DisposeModules    = null;
             ReInitModules     = null;

@@ -154,8 +154,16 @@ namespace FuFramework.Core.Runtime
             // 逆序释放所有模块(后注册的先关闭)
             for (var i = ModuleList.Count - 1; i >= 0; i--)
             {
-                ModuleList[i].OnDispose();
-                FuLogger.LogInfo($"<color=#00FBD5>------释放模块: {i + 1}.{ModuleList[i].GetType().Name}</color>");
+                var module = ModuleList[i];
+                try
+                {
+                    module.OnDispose();
+                    FuLogger.LogInfo($"<color=#00FBD5>------释放模块: {i + 1}.{module.GetType().Name}</color>");
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ModuleManager] 释放模块 {module.GetType().Name} 时出现异常: {e.Message}");
+                }
             }
         }
 
