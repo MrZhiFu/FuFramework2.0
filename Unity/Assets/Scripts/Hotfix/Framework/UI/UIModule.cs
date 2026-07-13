@@ -108,9 +108,6 @@ namespace FuFramework.UI.Runtime
             InstanceCapacity            = m_InstanceCapacity;
             InstanceExpireTime          = m_InstanceExpireTime;
 
-            // 设置GRoot根节点
-            GRoot.inst.displayObject.stage.gameObject.transform.parent = ModuleManager.ModuleRoot;
-
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();
             ApplyGRootSafeArea();

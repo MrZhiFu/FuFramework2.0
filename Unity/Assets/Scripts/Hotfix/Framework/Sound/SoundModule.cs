@@ -102,7 +102,8 @@ namespace Hotfix.Sound
             }
 
             // 添加AudioListener组件
-            m_AudioListener = ModuleManager.ModuleRoot.gameObject.GetOrAddComponent<AudioListener>();
+            var audioListener = new GameObject($"SoundListener");
+            m_AudioListener = audioListener.GetOrAddComponent<AudioListener>();
 
             // 获取声音模块配置数据
             var soundSetting = ModuleSetting.Instance.SoundSetting;
@@ -207,7 +208,6 @@ namespace Hotfix.Sound
             }
 
             var soundGroupGo = new GameObject($"Sound Group - {soundGroupInfo.Name}");
-            soundGroupGo.transform.SetParent(ModuleManager.ModuleRoot);
             soundGroupGo.transform.localScale = Vector3.one;
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
             soundGroup.Init(soundGroupInfo);

@@ -1,7 +1,5 @@
 using System;
-using UnityEngine;
 using System.Collections.Generic;
-using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
@@ -25,26 +23,6 @@ namespace FuFramework.Core.Runtime
         private static readonly List<ModuleBase> ModuleList = new(ModuleCount);
 
         /// <summary>
-        /// 模块根节点
-        /// </summary>
-        private static Transform m_ModuleRoot;
-
-        /// <summary>
-        /// 模块根节点，供需要挂载子 GameObject 的模块使用。
-        /// </summary>
-        public static Transform ModuleRoot
-        {
-            get
-            {
-                if (m_ModuleRoot is not null) return m_ModuleRoot;
-                var rootObj = new GameObject("[FrameworkModule]");
-                Object.DontDestroyOnLoad(rootObj);
-                m_ModuleRoot = rootObj.transform;
-                return m_ModuleRoot;
-            }
-        }
-
-        /// <summary>
         /// 获取游戏框架模块（泛型版本）。
         /// </summary>
         /// <typeparam name="T">要获取的模块类型。</typeparam>
@@ -52,10 +30,10 @@ namespace FuFramework.Core.Runtime
         public static T GetModule<T>() where T : ModuleBase
         {
             var type = typeof(T);
-            for (var i = 0; i < ModuleList.Count; i++)
+            foreach (var module in ModuleList)
             {
-                if (ModuleList[i].GetType() == type)
-                    return ModuleList[i] as T;
+                if (module.GetType() == type)
+                    return module as T;
             }
 
             return null;
@@ -65,10 +43,7 @@ namespace FuFramework.Core.Runtime
         /// 注册游戏框架模块（泛型版本，内部委托给 Type 版本）。
         /// </summary>
         /// <typeparam name="T">模块类型</typeparam>
-        public static void RegisterModule<T>() where T : ModuleBase
-        {
-            RegisterModule(typeof(T));
-        }
+        public static void RegisterModule<T>() where T : ModuleBase => RegisterModule(typeof(T));
 
         /// <summary>
         /// 注册游戏框架模块（Type 版本，支持热更模块）。
@@ -118,10 +93,10 @@ namespace FuFramework.Core.Runtime
         /// <returns>模块实例，未找到返回 null</returns>
         public static ModuleBase GetModule(Type moduleType)
         {
-            for (var i = 0; i < ModuleList.Count; i++)
+            foreach (var module in ModuleList)
             {
-                if (ModuleList[i].GetType() == moduleType)
-                    return ModuleList[i];
+                if (module.GetType() == moduleType)
+                    return module;
             }
 
             return null;
@@ -132,9 +107,9 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void Update(float deltaTime, float unscaledDeltaTime)
         {
-            for (var i = 0; i < ModuleList.Count; i++)
+            foreach (var module in ModuleList)
             {
-                ModuleList[i].OnUpdate(deltaTime, unscaledDeltaTime);
+                module.OnUpdate(deltaTime, unscaledDeltaTime);
             }
         }
 
@@ -143,9 +118,9 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void LateUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            for (var i = 0; i < ModuleList.Count; i++)
+            foreach (var module in ModuleList)
             {
-                ModuleList[i].OnLateUpdate(deltaTime, unscaledDeltaTime);
+                module.OnLateUpdate(deltaTime, unscaledDeltaTime);
             }
         }
 
@@ -154,9 +129,9 @@ namespace FuFramework.Core.Runtime
         /// </summary>
         public static void FixedUpdate()
         {
-            for (var i = 0; i < ModuleList.Count; i++)
+            foreach (var module in ModuleList)
             {
-                ModuleList[i].OnFixedUpdate();
+                module.OnFixedUpdate();
             }
         }
 

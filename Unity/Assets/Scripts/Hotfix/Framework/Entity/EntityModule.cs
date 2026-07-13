@@ -115,12 +115,10 @@ namespace Hotfix.Entity
 
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;
-            m_InstanceRoot.SetParent(ModuleManager.ModuleRoot);
             m_InstanceRoot.localScale = Vector3.one;
 
             // 创建实体辅助器
             var entityHelperGo = new GameObject("Entity Helper");
-            entityHelperGo.transform.SetParent(ModuleManager.ModuleRoot);
             entityHelperGo.transform.localScale = Vector3.one;
             var entityHelper = entityHelperGo.AddComponent<EntityHelper>();
             m_EntityHelper = entityHelper;
