@@ -1,6 +1,6 @@
 {
   "name": "com.fairygui.plugin.csharpcodegen",
-  "displayName": "CSharpCodeGen",
+  "displayName": "自动生成C#代码",
   "description": "自动生成 C# 代码的扩展，包括 Win(界面)、Comp(自定义组件)、CustomCompBind(统一组件绑定)。\n规范说明：\n1. 命名规则：\n   - 界面：WinXXX\n   - 自定义组件：CompXXX\n   - 控件：_ + 控件类型缩写 + 功能名，如 _btnXXX、_txtXXX、_imgXXX、_listXXX\n2. 目录结构（Hotfix）：\n   - 界面 .Gen.cs：Hotfix/Game/AutoGen/UI/{pkg}/\n   - 界面 .cs：Hotfix/Game/UI/{pkg}/\n   - 组件：Hotfix/Game/AutoGen/UI/{pkg}/Comp/\n   - 绑定：Hotfix/Game/AutoGen/UI/CustomCompBind.cs\n3. Launcher 包（AOT）：仅生成 WinLauncher.Gen.cs → Bootstrap/UI/\n使用方法：发布时自动启用，自动检查依赖是否在任意 Common 包或当前发布包中",
   "version": "1.0",
   "author": {
