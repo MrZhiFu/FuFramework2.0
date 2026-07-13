@@ -208,12 +208,12 @@ namespace Hotfix.Sound
             /// <summary>
             /// 获取当前是否正在播放。
             /// </summary>
-            public bool IsPlaying => m_AudioSource.isPlaying;
+            public bool IsPlaying => m_AudioSource && m_AudioSource.isPlaying;
 
             /// <summary>
             /// 获取声音长度。
             /// </summary>
-            public float Length => m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
+            public float Length => m_AudioSource && m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
 
 
             /// <summary>
