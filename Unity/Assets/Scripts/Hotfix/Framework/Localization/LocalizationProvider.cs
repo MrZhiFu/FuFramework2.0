@@ -1,9 +1,8 @@
 ﻿using FuFramework.Core.Runtime;
-using FuFramework.Launcher.Runtime;
-using Hotfix.Config;
 using Hotfix.Config.Local;
 using Hotfix.ModuleConfig;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Localization
 {
     /// <summary>

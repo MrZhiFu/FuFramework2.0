@@ -148,7 +148,15 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 foreach (var (_, obj) in m_TargetObjectDict)
                 {
-                    obj.OnRelease();
+                    try
+                    {
+                        obj.OnRelease();
+                    }
+                    catch (Exception e)
+                    {
+                        FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {Name} 中的对象时出现异常: {e.Message}");
+                    }
+
                     ReferencePool.Runtime.ReferencePool.Release(obj);
                 }
 

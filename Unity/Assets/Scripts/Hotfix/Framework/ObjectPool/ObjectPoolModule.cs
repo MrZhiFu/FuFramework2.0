@@ -72,9 +72,16 @@ namespace FuFramework.ObjectPool.Runtime
         /// </summary>
         protected internal override void OnDispose()
         {
-            foreach (var (_, objPool) in m_ObjPoolDict)
+            foreach (var (typeNamePair, objPool) in m_ObjPoolDict)
             {
-                objPool.OnDispose();
+                try
+                {
+                    objPool.OnDispose();
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {typeNamePair} 时出现异常: {e.Message}");
+                }
             }
 
             m_ObjPoolDict.Clear();

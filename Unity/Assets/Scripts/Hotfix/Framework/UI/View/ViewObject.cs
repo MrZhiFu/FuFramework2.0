@@ -1,4 +1,5 @@
-﻿using FuFramework.Core.Runtime;
+﻿using System;
+using FuFramework.Core.Runtime;
 using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace
@@ -36,7 +37,15 @@ namespace FuFramework.UI.Runtime
             if (Target is not ViewBase viewBase)
                 throw new FuException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
 
-            viewBase.UIView?.Dispose();
+            try
+            {
+                viewBase.UIView?.Dispose();
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogWarning($"[UIInstanceObject] 释放 UIView 时出现异常: {e.Message}");
+            }
+
             viewBase._OnDispose();
         }
     }

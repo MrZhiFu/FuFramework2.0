@@ -132,6 +132,7 @@ namespace Hotfix
             await LoadUIAsync();
 
             CustomCompBind.BindAll();
+
             LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
         }
 
