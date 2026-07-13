@@ -51,25 +51,49 @@ namespace Hotfix
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
-            // 协议消息处理器初始化：初始化所有协议对象
-            ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
+            InitProto();
+            SetupFairyGUI();
+            RegisterModules();
+            HookGameDriven();
 
-            // 设置FairyGUI的Loader加载器为自定义加载器
+            await InitFrameworkAsync(bootstrapView);
+            EnterGame(bootstrapView);
+        }
+
+        /// <summary>
+        /// 初始化协议消息处理器
+        /// </summary>
+        private static void InitProto()
+        {
+            ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
+        }
+
+        /// <summary>
+        /// 设置 FairyGUI 自定义加载器
+        /// </summary>
+        private static void SetupFairyGUI()
+        {
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
-            
-            // 注册热更层框架模块
-            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
-            ModuleManager.RegisterModule<FsmModule>();           // 有限状态机管理模块
-            ModuleManager.RegisterModule<ProcedureModule>();     // 流程管理模块
-            ModuleManager.RegisterModule<EventModule>();         // 事件管理模块
-            ModuleManager.RegisterModule<ObjectPoolModule>();    // 对象池管理模块
-            ModuleManager.RegisterModule<MonoModule>();          // Mono管理模块
-            ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
-            ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
-            ModuleManager.RegisterModule<UIModule>();            // UI管理模块
+        }
+
+        /// <summary>
+        /// 注册所有框架模块（按依赖顺序）
+        /// </summary>
+        private static void RegisterModules()
+        {
+            // 基础模块
+            ModuleManager.RegisterModule<ReferencePoolModule>();
+            ModuleManager.RegisterModule<FsmModule>();
+            ModuleManager.RegisterModule<ProcedureModule>();
+            ModuleManager.RegisterModule<EventModule>();
+            ModuleManager.RegisterModule<ObjectPoolModule>();
+            ModuleManager.RegisterModule<MonoModule>();
+            ModuleManager.RegisterModule<TimerModule>();
+            ModuleManager.RegisterModule<AssetModule>();
+            ModuleManager.RegisterModule<UIModule>();
             ModuleManager.RegisterModule<RedDotModule>();
 
-
+            // 功能模块
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<LocalizationModule>();
@@ -81,36 +105,44 @@ namespace Hotfix
             ModuleManager.RegisterModule<DownloadModule>();
             ModuleManager.RegisterModule<WebModule>();
             ModuleManager.RegisterModule<NetworkModule>();
+        }
 
-            // 将 ModuleManager 的生命周期方法挂接到 GameDriven 委托
+        /// <summary>
+        /// 将 ModuleManager 生命周期方法挂接到 GameDriven 委托
+        /// </summary>
+        private static void HookGameDriven()
+        {
             GameDriven.Instance.OnUpdate          = ModuleManager.Update;
             GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
             GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
             GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
             GameDriven.Instance.DisposeModules    = ModuleManager.Dispose;
             GameDriven.Instance.ReInitModules     = ModuleManager.ReInit;
+        }
 
-            // 加载配置表
+        /// <summary>
+        /// 初始化框架依赖：配置表、UI 资源、自定义组件绑定、多语言
+        /// </summary>
+        private static async UniTask InitFrameworkAsync(IBootstrapView bootstrapView)
+        {
             bootstrapView.SetTip("LoadConfig...");
             await LoadConfigAsync();
 
-            // 加载初始必要的UI资源
             bootstrapView.SetTip("LoadInitUIAsset...");
             await LoadUIAsync();
 
-            // 绑定自动生成的Fui自定义组件(HotFix下)
             CustomCompBind.BindAll();
-
-            // 指定获取多语言的接口
             LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
+        }
 
-            // 打开登录界面
+        /// <summary>
+        /// 进入游戏：打开登录界面，关闭引导界面，启动新手引导
+        /// </summary>
+        private static void EnterGame(IBootstrapView bootstrapView)
+        {
             GlobalModule.UIModule.OpenUI<WinLogin>();
-
-            // 登录界面已打开，关闭 AOT 引导加载界面
             bootstrapView.Close();
 
-            // 如果开启引导，则指定引导模块的动作执行器，并开始首个引导
             if (ModuleSetting.Instance.OpenGuide)
             {
                 GuideModule.Instance.GuideAction = new GuideActionImpl();
