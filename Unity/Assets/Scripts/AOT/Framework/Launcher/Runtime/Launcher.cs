@@ -8,46 +8,19 @@ using FuFramework.Core.Runtime;
 namespace FuFramework.Launcher.Runtime
 {
     /// <summary>
-    /// 入口类。
+    /// AOT 入口类。
     /// 功能：
     ///     1. 启动 AOT 极简引导流程（下载资源、加载热更程序集）
-    ///     2. 引导完成后注册框架模块并接管框架帧更新生命周期
-    ///     3. 暂停/继续/退出/重启游戏。
+    ///     2. 引导完成后反射调用 HotfixLauncher.MainAsync() 进入热更逻辑
     /// </summary>
-    public partial class Launcher : MonoSingleton<Launcher>
+    public class Launcher : MonoBehaviour
     {
-        /// <summary>
-        /// 框架模块帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.Update。
-        /// </summary>
-        public static Action<float, float> OnUpdate;
-
-        /// <summary>
-        /// 框架模块延迟帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.LateUpdate。
-        /// </summary>
-        public static Action<float, float> OnLateUpdate;
-
-        /// <summary>
-        /// 框架模块固定帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.FixedUpdate。
-        /// </summary>
-        public static Action OnFixedUpdate;
-
-        /// <summary>
-        /// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
-        /// </summary>
-        public static Action DisposeModules;
-
-        /// <summary>
-        /// 重新初始化全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.ReInit。
-        /// </summary>
-        public static Action ReInitModules;
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected override void OnInit()
+        private void Awake()
         {
+            DontDestroyOnLoad(gameObject);
+
 #if ENABLE_SRDEBUGGER
-            SRDebug.Init();// 初始化运行时日志查看器
+            SRDebug.Init();
 #endif
 
             FuLogger.LogInfo($"游戏版本号: {Application.version}, Unity版本号: {Application.unityVersion}");
@@ -60,34 +33,8 @@ namespace FuFramework.Launcher.Runtime
         }
 
         /// <summary>
-        /// 驱动框架模块帧更新
-        /// </summary>
-        private void Update()
-        {
-            OnUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
-        }
-
-        /// <summary>
-        /// 驱动框架模块延迟帧更新
-        /// </summary>
-        private void LateUpdate()
-        {
-            OnLateUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
-        }
-
-        /// <summary>
-        /// 驱动框架模块固定帧更新
-        /// </summary>
-        private void FixedUpdate()
-        {
-            OnFixedUpdate?.Invoke();
-        }
-
-        /// <summary>
         /// 热更入口回调。
-        /// 由 AOT 引导流程在加载完 Hotfix 程序集后调用：注册框架模块、接管帧更新循环，
-        /// 随后反射调用热更入口 Hotfix.HotfixLauncher.MainAsync。
-        /// 说明：ModuleBase/ModuleManager 已下沉 Hotfix（Task 15），帧更新委托由 HotfixLauncher 挂接。
+        /// 由 AOT 引导流程在加载完 Hotfix 程序集后调用：随后反射调用热更入口 Hotfix.HotfixLauncher.MainAsync。
         /// </summary>
         /// <param name="view">AOT 加载界面句柄，透传给热更入口用于收尾关闭。</param>
         private static async UniTask InvokeHotfixEntryAsync(IBootstrapView view)
@@ -126,6 +73,14 @@ namespace FuFramework.Launcher.Runtime
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 重启引导流程，供 GameDriven.RestartGame 调用。
+        /// </summary>
+        internal static void RestartBootstrap()
+        {
+            global::Launcher.BootstrapProcess.RunAsync(InvokeHotfixEntryAsync).Forget();
         }
     }
 }
