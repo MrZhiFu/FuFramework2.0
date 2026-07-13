@@ -6,6 +6,6 @@
   "author": {
     "name": "Mrfu"
   },
-  "icon": "",
+  "icon": "icon.png",
   "main": "main.lua"
 }
