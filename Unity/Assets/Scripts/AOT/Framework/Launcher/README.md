@@ -2,191 +2,106 @@
 
 ## 1. 简介
 
-**FuFramework Launcher** 模块是 AOT 侧的 MonoBehaviour 入口和核心驱动器。它挂载在启动场景的 GameObject 上，负责：
+**FuFramework Launcher** 模块是 AOT 侧的 MonoBehaviour 入口和核心驱动器。它由两个组件组成，挂载在启动场景的同一 GameObject 上：
 
-1. 启动 AOT 极简引导流程（`BootstrapProcess.RunAsync()`）
-2. 通过委托桥接驱动 Hotfix 侧的帧更新循环（`ModuleManager.Update/LateUpdate/FixedUpdate`）
-3. 提供游戏控制功能（暂停、恢复、重启、退出）
+1. **Launcher** — 纯 MonoBehaviour 入口，启动 AOT 极简引导流程（`BootstrapProcess.RunAsync()`），引导完成后反射调用 HotfixLauncher.MainAsync() 进入热更逻辑
+2. **GameDriven** — MonoSingleton，提供帧驱动委托 + 游戏级别控制（暂停、恢复、重启、退出）
 
-所有框架模块的注册和生命周期已移交 Hotfix 侧（`HotfixLauncher.MainAsync()`）。Launcher 仅保留委托桥接，不再直接引用任何框架模块。
-
-本模块采用**部分类（partial class）**设计：
-
-- `Launcher.cs`：核心生命周期和委托桥接
-- `Launcher.GameControl.cs`：游戏控制
+所有框架模块的注册和生命周期已移交 Hotfix 侧（`HotfixLauncher.MainAsync()`）。Launcher 模块仅保留 AOT 入口 + 帧驱动桥接，不再直接引用任何框架模块。
 
 ## 2. 特性
 
-- **极简入口**：仅负责引导启动 + 委托桥接，零模块注册代码
-- **委托驱动**：通过 `public static Action` 委托将帧循环移交 Hotfix 侧 ModuleManager
-- **游戏控制**：支持暂停、恢复、重启、退出游戏
+- **极简入口**：Launcher 仅负责引导启动，零模块注册代码
+- **委托驱动**：GameDriven 持有帧更新委托，HotfixLauncher 挂接 ModuleManager 生命周期方法
+- **游戏控制**：GameDriven 提供暂停、恢复、重启、退出游戏
+- **自驱动**：GameDriven 自行处理 MonoBehaviour Update/LateUpdate/FixedUpdate，无需外部喂帧
 - **反射移交**：引导完成后反射调用 `HotfixLauncher.MainAsync()` 进入热更逻辑
 
 ## 3. 核心类详解
 
 ### 3.1 Launcher
 
-游戏启动器，继承自 `MonoSingleton<Launcher>`，是整个框架的 AOT 入口点。
+游戏启动器，普通 MonoBehaviour，是整个框架的 AOT 入口点。
 
 #### 职责
 
 1. **启动引导流程**：在 `Start()` 中调用 `BootstrapProcess.RunAsync()`
-2. **驱动帧循环**：通过委托桥接 Hotfix 侧的 `ModuleManager`
-3. **游戏控制**：提供暂停、恢复、重启、退出游戏功能
+2. **DontDestroyOnLoad**：在 `Awake()` 中确保跨场景存活
+3. **暴露重启接口**：`RestartBootstrap()` (internal static) 供 GameDriven 调用
 
 #### 生命周期流程
 
 ```
-OnInit() -> Start() -> Update()/LateUpdate()/FixedUpdate()
-   ↓
-初始化日志 -> 启动引导流程 -> 引导完成回调 -> 反射进入热更 -> 驱动帧循环
-```
-
-#### 代码结构
-
-```csharp
-public partial class Launcher : MonoSingleton<Launcher>
-{
-    // 委托桥接 —— HotfixLauncher 在注册模块后挂接
-    public static Action<float, float> OnUpdate;
-    public static Action<float, float> OnLateUpdate;
-    public static Action OnFixedUpdate;
-    public static Action DisposeModules;
-    public static Action ReInitModules;
-
-    protected override void OnInit()
-    {
-        SRDebug.Init();
-    }
-
-    private void Start()
-    {
-        // 启动 AOT 极简引导流程，引导完成后回调 InvokeHotfixEntryAsync 进入热更入口
-        BootstrapProcess.RunAsync(InvokeHotfixEntryAsync).Forget();
-    }
-
-    private void Update()
-    {
-        OnUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
-    }
-
-    private void LateUpdate()
-    {
-        OnLateUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
-    }
-
-    private void FixedUpdate()
-    {
-        OnFixedUpdate?.Invoke();
-    }
-
-    private static async UniTask InvokeHotfixEntryAsync(BootstrapView view)
-    {
-        // 反射调用 Hotfix.HotfixLauncher.MainAsync(IBootstrapView)
-        var hotfixAssembly = GetHotfixAssembly();
-        var entryType  = hotfixAssembly.GetType("Hotfix.HotfixLauncher");
-        var mainMethod = entryType?.GetMethod("MainAsync", BindingFlags.Public | BindingFlags.Static);
-        await (UniTask)mainMethod.Invoke(null, new object[] { view });
-    }
-}
+Awake() -> Start()
+              ↓
+         DontDestroyOnLoad -> 启动引导流程 -> 反射进入热更
 ```
 
 #### 委托挂接（Hotfix 侧）
 
 ```csharp
 // HotfixLauncher.MainAsync() 中：
-FuFramework.Launcher.Runtime.Launcher.OnUpdate       = ModuleManager.Update;
-FuFramework.Launcher.Runtime.Launcher.OnLateUpdate   = ModuleManager.LateUpdate;
-FuFramework.Launcher.Runtime.Launcher.OnFixedUpdate  = ModuleManager.FixedUpdate;
-FuFramework.Launcher.Runtime.Launcher.DisposeModules = ModuleManager.Dispose;
-FuFramework.Launcher.Runtime.Launcher.ReInitModules  = ModuleManager.ReInit;
+GameDriven.Instance.OnUpdate       = ModuleManager.Update;
+GameDriven.Instance.OnLateUpdate   = ModuleManager.LateUpdate;
+GameDriven.Instance.OnFixedUpdate  = ModuleManager.FixedUpdate;
+GameDriven.Instance.DisposeModules = ModuleManager.Dispose;
+GameDriven.Instance.ReInitModules  = ModuleManager.ReInit;
 ```
 
-### 3.2 Launcher.GameControl
+### 3.2 GameDriven
 
-游戏控制部分，提供游戏级别的控制功能。
+帧驱动 + 游戏控制中枢，继承自 `MonoSingleton<GameDriven>`。
 
-#### 方法
+#### 职责
 
-| 方法 | 说明 |
-|------|------|
-| `PauseGame()` | 暂停游戏（通过 ModuleSetting） |
-| `ResumeGame()` | 恢复游戏（通过 ModuleSetting） |
-| `RestartGame()` | 重启游戏（释放并重新初始化所有模块） |
-| `QuitGame()` | 退出游戏（释放模块并退出应用） |
+1. **帧驱动委托**：持有 5 个 Action 委托供 Hotfix 侧挂接
+2. **自驱动帧循环**：Update/LateUpdate/FixedUpdate 调用已挂接的委托
+3. **游戏控制**：暂停、恢复、重启、退出
 
-#### 重启游戏流程
-
-```csharp
-public void RestartGame()
-{
-    DisposeModules?.Invoke();  // 释放所有模块
-    ReInitModules?.Invoke();   // 重新初始化所有模块
-    // 重新开始引导流程...
-}
-```
-
-## 4. 委托桥接数据流
+#### 委托桥接数据流
 
 ```
-AOT Launcher                     HotfixLauncher                     ModuleManager
-───────────                      ─────────────                      ─────────────
-Update()                         MainAsync()                        Update(dt, udt)
-  └── OnUpdate?.Invoke()  ──→     OnUpdate = ModuleManager.Update ──→ 遍历所有模块.OnUpdate()
-LateUpdate()
-  └── OnLateUpdate?.Invoke() ──→ OnLateUpdate = ...             ──→ 遍历所有模块.OnLateUpdate()
-FixedUpdate()
-  └── OnFixedUpdate?.Invoke() ──→ OnFixedUpdate = ...           ──→ 遍历所有模块.OnFixedUpdate()
+AOT                                         Hotfix
+────                                        ──────
 
-GameControl.RestartGame()
-  ├── DisposeModules?.Invoke() ──→ DisposeModules = ModuleManager.Dispose   ──→ 遍历所有模块.OnDispose()
-  └── ReInitModules?.Invoke()  ──→ ReInitModules  = ModuleManager.ReInit    ──→ 遍历所有模块.OnInit()
+GameDriven.Update()                         ModuleManager.Update(dt, udt)
+  └── OnUpdate?.Invoke()  ────────────────→ 遍历所有模块.OnUpdate()
+
+GameDriven.PauseGame()    ← Hotfix UI 调用
+GameDriven.RestartGame()
+  ├── DisposeModules?.Invoke()  ───────────→ ModuleManager.Dispose
+  ├── ReInitModules?.Invoke()   ───────────→ ModuleManager.ReInit
+  └── Launcher.RestartBootstrap()
 ```
 
-## 5. GlobalModule
-
-`GlobalModule` 已随模块系统下沉到 Hotfix 程序集（`Hotfix/Framework/Core/GlobalModule.cs`），供热更侧代码使用。
-
-通过 `GlobalModule.<模块名>` 全局访问各模块（内部采用延迟初始化单例）：
-
-```csharp
-GlobalModule.AssetModule.LoadAssetAsync<GameObject>("Prefab/Player");
-GlobalModule.EventModule.Subscribe<GameStartEventArgs>(OnGameStart);
-GlobalModule.UIModule.OpenUI<WinLogin>();
-```
-
-## 6. 目录结构
+## 4. 目录结构
 
 ```
 FuFramework/Launcher/
 ├── README.md                                 # 模块说明文档
 ├── Runtime/                                  # 运行时代码
 │   ├── FuFramework.Launcher.Runtime.asmdef   # 程序集定义
-│   ├── Launcher.cs                           # 核心启动器 + 委托桥接
-│   └── Launcher.GameControl.cs               # 游戏控制
-└── Editor/                                   # 编辑器代码
-    └── Inspector/
-        └── LauncherInspector.cs              # Launcher Inspector
+│   ├── Launcher.cs                           # AOT 入口 MonoBehaviour
+│   └── GameDriven.cs                         # 帧驱动 + 游戏控制 MonoSingleton
 ```
 
-> **注意**：`Launcher.Modules.cs` 和 `Launcher.Procedures.cs` 已删除。模块注册已移交 `HotfixLauncher.MainAsync()`，流程管理已由 AOT 侧 `BootstrapProcess` 替代。
+> **注意**：`Launcher.GameControl.cs` 已删除。游戏控制功能已合并到 `GameDriven.cs`。
 
-## 7. 依赖
+## 5. 依赖
 
 AOT 侧最小依赖：
 
-- **FuFramework.Core.Runtime**：基础工具（FuLogger/Utility/FuException）
+- **FuFramework.Core.Runtime**：基础工具（FuLogger/Utility/FuException/MonoSingleton）
 - **FuFramework.ModuleSetting.Runtime**：模块设置
 - **HybridCLR.Runtime**：AOT 元数据补充
 - **YooAsset**：资源管理
 - **UniTask**：异步操作
 - **FairyGUI**：UI 框架（BootstrapView 自包含包）
 
-## 8. 注意事项
+## 6. 注意事项
 
-1. **单例模式**：Launcher 继承自 `MonoSingleton`，确保场景中只有一个实例
-2. **委托安全**：委托默认为 null，HotfixLauncher 挂接前不会执行任何帧更新
-3. **全限定类名**：Hotfix 侧引用 Launcher 委托时必须使用 `FuFramework.Launcher.Runtime.Launcher.OnUpdate`（避免与 `global::Launcher` 命名空间冲突）
+1. **GameObject 结构**：Launcher 和 GameDriven 挂载在同一 GameObject 上，`DontDestroyOnLoad` 由 Launcher 在 Awake 中执行
+2. **委托安全**：委托默认为 null，HotfixLauncher 挂接前不会执行任何帧更新，`?.Invoke()` 天然安全
+3. **Hotfix 侧引用**：挂接委托时使用 `GameDriven.Instance.OnUpdate = ...`，已存在 `using FuFramework.Launcher.Runtime;` 无需额外添加
 4. **反射入口**：HotfixLauncher.MainAsync 通过反射调用，AOT 不直接引用 Hotfix 程序集
-5. **重启游戏**：`RestartGame` 通过委托调用 `DisposeModules` + `ReInitModules`
-6. **场景引用**：`Launcher.unity` 场景中若有旧版 Procedure 引用需在 Unity Editor 中清理
+5. **重启游戏**：`RestartGame()` 通过委托调用 `DisposeModules` + `ReInitModules`，随后调用 `Launcher.RestartBootstrap()` 重新运行引导流程
