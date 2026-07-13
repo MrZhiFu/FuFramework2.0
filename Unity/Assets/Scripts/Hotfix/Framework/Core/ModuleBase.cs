@@ -35,6 +35,11 @@ namespace FuFramework.Core.Runtime
         protected internal virtual void OnFixedUpdate() { }
 
         /// <summary>
+        /// 每秒更新
+        /// </summary>
+        protected internal virtual void OnPerSecondUpdate() { }
+
+        /// <summary>
         /// 释放
         /// </summary>
         protected internal virtual void OnDispose() { }

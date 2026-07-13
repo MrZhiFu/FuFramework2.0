@@ -49,7 +49,7 @@ namespace Launcher
         /// </summary>
         private void LoadUIPackage()
         {
-            UIPackage.AddPackage("UI/Launcher/Launcher");
+            UIPackage.AddPackage("UI/Launcher");
 
             m_WinLauncher = new WinLauncher
             {

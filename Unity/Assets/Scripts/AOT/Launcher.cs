@@ -26,7 +26,7 @@ namespace AOT
 
         private void Start()
         {
-            // 启动 AOT 极简引导流程，引导完成后由 BootstrapProcess 直接反射进入热更入口
+            // 启动热更脚手架流程
             BootstrapProcess.RunAsync().Forget();
         }
     }

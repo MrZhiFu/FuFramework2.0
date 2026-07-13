@@ -54,20 +54,21 @@ namespace Hotfix
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
-            // 注册热更层框架模块
-            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
-            ModuleManager.RegisterModule<FsmModule>();          // 有限状态机管理模块
-            ModuleManager.RegisterModule<ProcedureModule>(); // 流程管理模块
-            ModuleManager.RegisterModule<EventModule>();     // 事件管理模块
-            ModuleManager.RegisterModule<ObjectPoolModule>(); // 对象池管理模块
-            ModuleManager.RegisterModule<MonoModule>();      // Mono管理模块
-            ModuleManager.RegisterModule<TimerModule>();     // 计时器管理模块
-            ModuleManager.RegisterModule<AssetModule>();     // 资源管理模块
-            ModuleManager.RegisterModule<UIModule>();        // UI管理模块
-            ModuleManager.RegisterModule<RedDotModule>();
-
             // 设置FairyGUI的Loader加载器为自定义加载器
             FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
+            
+            // 注册热更层框架模块
+            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
+            ModuleManager.RegisterModule<FsmModule>();           // 有限状态机管理模块
+            ModuleManager.RegisterModule<ProcedureModule>();     // 流程管理模块
+            ModuleManager.RegisterModule<EventModule>();         // 事件管理模块
+            ModuleManager.RegisterModule<ObjectPoolModule>();    // 对象池管理模块
+            ModuleManager.RegisterModule<MonoModule>();          // Mono管理模块
+            ModuleManager.RegisterModule<TimerModule>();         // 计时器管理模块
+            ModuleManager.RegisterModule<AssetModule>();         // 资源管理模块
+            ModuleManager.RegisterModule<UIModule>();            // UI管理模块
+            ModuleManager.RegisterModule<RedDotModule>();
+
 
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<StorageModule>();
@@ -82,11 +83,12 @@ namespace Hotfix
             ModuleManager.RegisterModule<NetworkModule>();
 
             // 将 ModuleManager 的生命周期方法挂接到 GameDriven 委托
-            GameDriven.Instance.OnUpdate       = ModuleManager.Update;
-            GameDriven.Instance.OnLateUpdate   = ModuleManager.LateUpdate;
-            GameDriven.Instance.OnFixedUpdate  = ModuleManager.FixedUpdate;
-            GameDriven.Instance.DisposeModules = ModuleManager.Dispose;
-            GameDriven.Instance.ReInitModules  = ModuleManager.ReInit;
+            GameDriven.Instance.OnUpdate          = ModuleManager.Update;
+            GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
+            GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
+            GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
+            GameDriven.Instance.DisposeModules    = ModuleManager.Dispose;
+            GameDriven.Instance.ReInitModules     = ModuleManager.ReInit;
 
             // 加载配置表
             bootstrapView.SetTip("LoadConfig...");
@@ -139,7 +141,7 @@ namespace Hotfix
         private static UniTask LoadUIAsync()
         {
             // 添加通用UI资源包
-           return GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
+            return GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
         }
 
 #if ENABLE_BINARY_CONFIG

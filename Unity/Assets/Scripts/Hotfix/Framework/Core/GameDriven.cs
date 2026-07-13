@@ -41,11 +41,28 @@ namespace Hotfix
         public Action ReInitModules;
 
         /// <summary>
+        /// 框架模块每秒更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.PerSecondUpdate。
+        /// </summary>
+        public Action OnPerSecondUpdate;
+
+        /// <summary>
+        /// 每秒更新累计时间
+        /// </summary>
+        private float m_PerSecondUpdateTimer;
+
+        /// <summary>
         /// 驱动框架模块帧更新
         /// </summary>
         private void Update()
         {
             OnUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
+
+            m_PerSecondUpdateTimer += Time.deltaTime;
+            if (m_PerSecondUpdateTimer >= 1f)
+            {
+                m_PerSecondUpdateTimer -= 1f;
+                OnPerSecondUpdate?.Invoke();
+            }
         }
 
         /// <summary>
@@ -76,6 +93,7 @@ namespace Hotfix
             OnUpdate = null;
             OnLateUpdate = null;
             OnFixedUpdate = null;
+            OnPerSecondUpdate = null;
         }
 
         /// <summary>

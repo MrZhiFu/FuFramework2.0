@@ -125,6 +125,17 @@ namespace FuFramework.Core.Runtime
         }
 
         /// <summary>
+        /// 框架模块每秒更新
+        /// </summary>
+        public static void PerSecondUpdate()
+        {
+            foreach (var module in ModuleList)
+            {
+                module.OnPerSecondUpdate();
+            }
+        }
+
+        /// <summary>
         /// 框架模块固定帧更新
         /// </summary>
         public static void FixedUpdate()
