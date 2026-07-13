@@ -4,8 +4,8 @@
 
 **FuFramework Launcher** 模块是 AOT 侧的 MonoBehaviour 入口和核心驱动器。它由两个组件组成，挂载在启动场景的同一 GameObject 上：
 
-1. **Launcher** — 纯 MonoBehaviour 入口，启动 AOT 极简引导流程，引导完成后由 GameDriven 接管进入热更逻辑
-2. **GameDriven** — MonoSingleton，AOT↔Hotfix 中枢：帧驱动委托 + 热更入口 + 游戏控制（暂停、恢复、重启、退出）
+1. **Launcher** — 纯 MonoBehaviour 入口，启动 AOT 极简引导流程
+2. **GameDriven** — MonoSingleton，帧驱动委托 + 游戏控制（暂停、恢复、重启、退出）
 
 所有框架模块的注册和生命周期已移交 Hotfix 侧（`HotfixLauncher.MainAsync()`）。Launcher 模块仅保留 AOT 入口 + 帧驱动桥接，不再直接引用任何框架模块。
 
@@ -15,7 +15,7 @@
 - **委托驱动**：GameDriven 持有帧更新委托，HotfixLauncher 挂接 ModuleManager 生命周期方法
 - **游戏控制**：GameDriven 提供暂停、恢复、重启、退出游戏
 - **自驱动**：GameDriven 自行处理 MonoBehaviour Update/LateUpdate/FixedUpdate，无需外部喂帧
-- **反射移交**：GameDriven.EnterHotfixAsync() 反射调用 `HotfixLauncher.MainAsync()` 进入热更逻辑
+- **反射移交**：`BootstrapProcess` 加载完 Hotfix 程序集后内置反射调用 `HotfixLauncher.MainAsync()` 进入热更逻辑
 
 ## 3. 核心类详解
 
@@ -25,7 +25,7 @@
 
 #### 职责
 
-1. **启动引导流程**：在 `Start()` 中调用 `BootstrapProcess.RunAsync(GameDriven.Instance.EnterHotfixAsync)`
+1. **启动引导流程**：在 `Start()` 中调用 `BootstrapProcess.RunAsync()`
 2. **DontDestroyOnLoad**：在 `Awake()` 中确保跨场景存活
 
 #### 生命周期流程
@@ -54,9 +54,8 @@ GameDriven.Instance.ReInitModules  = ModuleManager.ReInit;
 #### 职责
 
 1. **帧驱动委托**：持有 5 个 Action 委托供 Hotfix 侧挂接
-2. **热更入口**：`EnterHotfixAsync()` 反射调用 HotfixLauncher.MainAsync()，供 BootstrapProcess 和 RestartGame 使用
-3. **自驱动帧循环**：Update/LateUpdate/FixedUpdate 调用已挂接的委托
-4. **游戏控制**：暂停、恢复、重启、退出
+2. **自驱动帧循环**：Update/LateUpdate/FixedUpdate 调用已挂接的委托
+3. **游戏控制**：暂停、恢复、重启、退出
 
 #### 委托桥接数据流
 
@@ -66,8 +65,7 @@ AOT                                         Hotfix
 
 Launcher.Start()
   └── BootstrapProcess.RunAsync()
-        └── GameDriven.EnterHotfixAsync()
-              └── 反射调用 HotfixLauncher.MainAsync()
+        └── 加载 Hotfix.dll → 反射调用 HotfixLauncher.MainAsync()
 
 GameDriven.Update()                         ModuleManager.Update(dt, udt)
   └── OnUpdate?.Invoke()  ────────────────→ 遍历所有模块.OnUpdate()
@@ -76,7 +74,7 @@ GameDriven.PauseGame()    ← Hotfix UI 调用
 GameDriven.RestartGame()
   ├── DisposeModules?.Invoke()  ───────────→ ModuleManager.Dispose
   ├── ReInitModules?.Invoke()   ───────────→ ModuleManager.ReInit
-  └── BootstrapProcess.RunAsync(EnterHotfixAsync)
+  └── BootstrapProcess.RunAsync()
 ```
 
 ## 4. 目录结构
