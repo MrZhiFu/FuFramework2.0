@@ -66,6 +66,20 @@ namespace FuFramework.Launcher.Runtime
         }
 
         /// <summary>
+        /// 释放资源
+        /// </summary>
+        protected override void OnDispose()
+        {
+            base.OnDispose();
+            DisposeModules?.Invoke();
+            DisposeModules = null;
+            ReInitModules = null;
+            OnUpdate = null;
+            OnLateUpdate = null;
+            OnFixedUpdate = null;
+        }
+
+        /// <summary>
         /// 暂停游戏。
         /// </summary>
         public void PauseGame()

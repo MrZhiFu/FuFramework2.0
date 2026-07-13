@@ -11,7 +11,7 @@ AOT 模块是游戏随包体预编译的部分（Ahead-of-Time），负责**极�
 - **极简引导**：线性流程（非 Procedure 状态机），仅一个 `BootstrapProcess` 静态类
 - **资源热更新**：集成 YooAsset，支持版本检测、清单更新、资源下载
 - **代码热修复**：集成 HybridCLR，支持 AOT 元数据补充和 Hotfix.dll 加载
-- **委托桥接**：AOT Launcher 通过 `public static Action` 委托将帧更新移交给 Hotfix 侧 ModuleManager
+- **委托桥接**：`GameDriven`（MonoSingleton）持有委托自驱动帧循环，Hotfix 侧挂接 ModuleManager 生命周期方法
 - **多模式支持**：编辑器模拟模式、单机离线模式、联机热更模式
 
 ## 3. 目录结构
@@ -24,6 +24,8 @@ AOT/
 │   ├── BootstrapProcess.cs     # 引导流程编排（线性 async，非 Procedure 状态机）
 │   └── UpdateConfig/           # 远端更新配置
 │       └── RemoteUpdateConfig.cs
+├── Launcher.cs                 # AOT 入口 MonoBehaviour（启动引导流程）
+├── GameDriven.cs               # MonoSingleton 帧驱动 + 游戏控制中枢
 └── AOT.asmdef                  # AOT 程序集定义
 ```
 
@@ -34,7 +36,7 @@ AOT/
 ```
 Launcher.Start()
     │
-    └── BootstrapProcess.RunAsync(onHotfixEntry)
+    └── BootstrapProcess.RunAsync()
             │
             ├── BootstrapView.CreateAsync()           // 显示加载界面
             ├── ReqRemoteUpdateConfigWithRetry()       // 联机模式：获取远端配置
@@ -44,10 +46,7 @@ Launcher.Start()
             ├── RequestVersionAsync()                   // 获取资源版本号（失败重试）
             ├── UpdateManifestAsync()                   // 更新资源清单（失败重试）
             ├── CreateAndDownload()                     // 联机模式：下载资源
-            ├── LoadHotfixAndHandoff()                  // 加载 AOT 元数据 + Hotfix.dll
-            │     ├── RuntimeApi.LoadMetadataForAOTAssembly()  // 补充 AOT 元数据
-            │     └── Assembly.Load(dllBytes)                  // 加载 Hotfix 程序集
-            └── onHotfixEntry(view)                    // 反射调用 HotfixLauncher.MainAsync()
+            └── LoadHotfixAndHandoff()                  // 加载 AOT 元数据 + Hotfix.dll → 反射进入热更
                     │
                     └── 进入热更逻辑...
 ```
@@ -58,10 +57,11 @@ Launcher.Start()
 
 | 方法 | 说明 |
 |------|------|
-| `RunAsync(onHotfixEntry)` | 总入口，按顺序执行全部引导步骤 |
+| `RunAsync()` | 总入口，按顺序执行全部引导步骤，完成后内置反射进入热更 |
 | `ReqRemoteUpdateConfigWithRetry()` | 向 CDN 获取 `RemoteUpdateConfig.json`，失败自动重试 |
 | `CreateAndDownload(updateConfig)` | 创建 YooAsset 下载器并下载，失败自动重试 |
-| `LoadHotfixAndHandoff(onHotfixEntry)` | 加载 AOT 元数据 + Hotfix.dll，完成后回调移交 |
+| `LoadHotfixAndHandoff()` | 加载 AOT 元数据 + Hotfix.dll，完成后反射调用 HotfixLauncher |
+| `EnterHotfixAsync()` | 反射查找 Hotfix 程序集并调用 `HotfixLauncher.MainAsync()` |
 
 ### 4.3 BootstrapAssetHelper（资源助手）
 
@@ -93,19 +93,32 @@ Launcher.Start()
 
 `IBootstrapView` 接口定义在 `FuFramework.Core.Runtime` 中，供 HotfixLauncher 通过接口类型消费（`SetTip`/`Close`），保证 AOT → Hotfix 的契约解耦。
 
-## 5. 委托桥接（AOT → Hotfix 帧循环）
+## 5. GameDriven（帧驱动 + 游戏控制）
 
-AOT `Launcher` 暴露 5 个 `public static Action` 委托：
+`GameDriven` 继承 `MonoSingleton<GameDriven>`，是 AOT↔Hotfix 的帧驱动桥梁 + 游戏控制中枢。
+
+### 5.1 帧驱动委托
+
+`GameDriven` 暴露 5 个 `public Action` 委托，自驱动 `Update`/`LateUpdate`/`FixedUpdate`：
 
 | 委托 | Hotfix 挂接目标 |
 |------|-----------------|
-| `Launcher.OnUpdate` | `ModuleManager.Update` |
-| `Launcher.OnLateUpdate` | `ModuleManager.LateUpdate` |
-| `Launcher.OnFixedUpdate` | `ModuleManager.FixedUpdate` |
-| `Launcher.DisposeModules` | `ModuleManager.Dispose` |
-| `Launcher.ReInitModules` | `ModuleManager.ReInit` |
+| `GameDriven.Instance.OnUpdate` | `ModuleManager.Update` |
+| `GameDriven.Instance.OnLateUpdate` | `ModuleManager.LateUpdate` |
+| `GameDriven.Instance.OnFixedUpdate` | `ModuleManager.FixedUpdate` |
+| `GameDriven.Instance.DisposeModules` | `ModuleManager.Dispose` |
+| `GameDriven.Instance.ReInitModules` | `ModuleManager.ReInit` |
 
 由 `HotfixLauncher.MainAsync()` 在注册完所有模块后进行挂接。AOT 不需要引用 Hotfix 程序集。
+
+### 5.2 游戏控制
+
+| 方法 | 说明 |
+|------|------|
+| `PauseGame()` | 暂停游戏（委托 `ModuleSetting.Instance.PauseGame()`） |
+| `ResumeGame()` | 恢复游戏 |
+| `RestartGame()` | 重启游戏（释放并重新初始化所有模块，重新运行引导流程） |
+| `QuitGame()` | 退出游戏（释放模块并退出应用） |
 
 ## 6. RemoteUpdateConfig - 远端更新配置
 
