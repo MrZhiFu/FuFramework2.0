@@ -24,7 +24,7 @@ namespace Launcher
         private const string RemoteUpdateConfigName = "RemoteUpdateConfig.json";
 
         /// <summary>
-        /// 远端更新配置文件名。
+        /// 热更 dll 名称。
         /// </summary>
         private const string HotfixDllName = "Hotfix";
 
@@ -34,11 +34,10 @@ namespace Launcher
         private static IBootstrapView m_BootstrapView;
 
         /// <summary>
-        /// 运行引导流程。
+        /// 运行引导流程。加载完 Hotfix 程序集后直接反射进入热更入口。
         /// </summary>
-        /// <param name="onHotfixEntry">加载完 Hotfix 程序集后由外部执行热更入口调用。</param>
         /// <returns>异步流程</returns>
-        public static async UniTask RunAsync(Func<IBootstrapView, UniTask> onHotfixEntry)
+        public static async UniTask RunAsync()
         {
             FuLogger.LogInfo("<color=#43f656>------进入启动引导流程------</color>");
 
@@ -100,10 +99,12 @@ namespace Launcher
             m_BootstrapView.SetTip(string.Empty);
 
             // 加载 AOT 补充元数据 + Hotfix.dll，移交热更入口
-            await LoadHotfixAndHandoff(onHotfixEntry);
+            await LoadHotfixAndHandoff();
         }
 
-        /// <summary>请求远端更新配置（失败重试）。</summary>
+        /// <summary>
+        /// 请求远端更新配置（失败重试）。
+        /// </summary>
         private static async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfigWithRetry()
         {
             var assetSetting = ModuleSetting.Instance.AssetSetting;
@@ -131,7 +132,10 @@ namespace Launcher
             }
         }
 
-        /// <summary>创建下载器并下载资源。</summary>
+        /// <summary>
+        /// 创建下载器并下载资源。
+        /// </summary>
+        /// <param name="updateConfig">远端更新配置。</param>
         private static async UniTask CreateAndDownload(RemoteUpdateConfig updateConfig)
         {
             while (true)
@@ -171,15 +175,17 @@ namespace Launcher
             }
         }
 
-        /// <summary>加载 AOT 补充元数据与 Hotfix 程序集，并移交热更入口。</summary>
-        private static async UniTask LoadHotfixAndHandoff(Func<IBootstrapView, UniTask> onHotfixEntry)
+        /// <summary>
+        /// 加载 AOT 补充元数据与 Hotfix 程序集，随后反射进入热更入口。
+        /// </summary>
+        private static async UniTask LoadHotfixAndHandoff()
         {
             FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
 
-            // 编辑器模拟模式：程序集已在域中，直接移交
+            // 编辑器模拟模式：程序集已在域中，直接进入热更入口
             if (Utility.Application.IsEditor && BootstrapAssetHelper.PlayMode == EPlayMode.EditorSimulateMode)
             {
-                await onHotfixEntry(m_BootstrapView);
+                await EnterHotfixAsync();
                 return;
             }
 
@@ -188,6 +194,7 @@ namespace Launcher
             {
                 var aotPath = Utility.AssetPath.GetAOTCodePath(aotDll);
                 var bytes   = await BootstrapAssetHelper.LoadDllBytesAsync(aotPath);
+                
                 // 加载失败：LoadRawFileBytesAsync 返回 null，禁止把 null 传给 RuntimeApi，记录路径并中止移交。
                 if (bytes == null)
                 {
@@ -200,9 +207,10 @@ namespace Launcher
                 FuLogger.LogInfo($"[Bootstrap] 补充 AOT 元数据：{aotDll}");
             }
 
-            // 加载 Hotfix.dll（域内自动注册程序集，供 onHotfixEntry 反射调用入口）
+            // 加载 Hotfix.dll 并反射进入热更入口
             var dllPath  = Utility.AssetPath.GetCodePath($"{HotfixDllName}.dll");
             var dllBytes = await BootstrapAssetHelper.LoadDllBytesAsync(dllPath);
+
             // 加载失败：禁止把 null 传给 Assembly.Load，记录路径并中止移交。
             if (dllBytes == null)
             {
@@ -214,7 +222,40 @@ namespace Launcher
             System.Reflection.Assembly.Load(dllBytes);
             FuLogger.LogInfo("[Bootstrap] Hotfix 程序集加载完成");
 
-            await onHotfixEntry(m_BootstrapView);
+            await EnterHotfixAsync();
+        }
+
+        /// <summary>
+        /// 反射调用 HotfixLauncher.MainAsync() 进入热更逻辑。
+        /// Hotfix 程序集已在域中（编辑器模拟模式直接可用，非编辑器模式由 LoadHotfixAndHandoff 加载到域）。
+        /// </summary>
+        private static async UniTask EnterHotfixAsync()
+        {
+            System.Reflection.Assembly hotfixAssembly = null;
+            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name == HotfixDllName)
+                {
+                    hotfixAssembly = assembly;
+                    break;
+                }
+            }
+
+            if (hotfixAssembly == null)
+            {
+                FuLogger.LogError("[Bootstrap] 未找到已加载的 Hotfix 程序集，无法进入热更入口。");
+                return;
+            }
+
+            var entryType  = hotfixAssembly.GetType("Hotfix.HotfixLauncher");
+            var mainMethod = entryType?.GetMethod("MainAsync", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (mainMethod == null)
+            {
+                FuLogger.LogError("[Bootstrap] 未找到热更入口 Hotfix.HotfixLauncher.MainAsync。");
+                return;
+            }
+
+            await (UniTask)mainMethod.Invoke(null, new object[] { m_BootstrapView });
         }
     }
 }
