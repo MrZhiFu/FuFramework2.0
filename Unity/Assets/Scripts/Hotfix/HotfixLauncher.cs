@@ -54,16 +54,16 @@ namespace Hotfix
             // 协议消息处理器初始化：初始化所有协议对象
             ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
 
-            // 注册热更层框架模块（含 Phase 2 起下沉到 Hotfix 的框架模块）
-            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<FsmModule>();          // 有限状态机管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<ProcedureModule>(); // 流程管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<EventModule>();     // 事件管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<ObjectPoolModule>(); // 对象池管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<MonoModule>();      // Mono管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<TimerModule>();     // 计时器管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<AssetModule>();     // 资源管理模块（Phase 2 下沉）
-            ModuleManager.RegisterModule<UIModule>();        // UI管理模块（Phase 2 下沉）
+            // 注册热更层框架模块
+            ModuleManager.RegisterModule<ReferencePoolModule>(); // 引用池管理模块
+            ModuleManager.RegisterModule<FsmModule>();          // 有限状态机管理模块
+            ModuleManager.RegisterModule<ProcedureModule>(); // 流程管理模块
+            ModuleManager.RegisterModule<EventModule>();     // 事件管理模块
+            ModuleManager.RegisterModule<ObjectPoolModule>(); // 对象池管理模块
+            ModuleManager.RegisterModule<MonoModule>();      // Mono管理模块
+            ModuleManager.RegisterModule<TimerModule>();     // 计时器管理模块
+            ModuleManager.RegisterModule<AssetModule>();     // 资源管理模块
+            ModuleManager.RegisterModule<UIModule>();        // UI管理模块
             ModuleManager.RegisterModule<RedDotModule>();
 
             // 设置FairyGUI的Loader加载器为自定义加载器
