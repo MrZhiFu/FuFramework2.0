@@ -85,7 +85,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>是否成功</returns> 
             public static bool CompressDirectory(string folderToZip, string zippedPath, string password = null)
             {
-                if (folderToZip.EndsWithFast(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWithFast("/"))
+                if (folderToZip.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWith("/"))
                 {
                     folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
                 }
@@ -183,7 +183,7 @@ namespace FuFramework.Core.Runtime
             /// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
             public static byte[] Compress(byte[] content)
             {
-                content.CheckNull(nameof(content));
+                if (content == null) throw new ArgumentNullException(nameof(content));
                 if (content.Length == 0) return content;
 
                 var compressor = new Deflater();
@@ -229,7 +229,7 @@ namespace FuFramework.Core.Runtime
             /// <exception cref="InvalidDataException">当压缩数据格式无效或已损坏时抛出。</exception>
             public static byte[] Decompress(byte[] content)
             {
-                content.CheckNull(nameof(content));
+                if (content == null) throw new ArgumentNullException(nameof(content));
                 if (content.Length == 0) return content;
 
                 var decompressor = new Inflater();
@@ -276,7 +276,7 @@ namespace FuFramework.Core.Runtime
             private static bool CompressDirectory(string folderToZip, ZipOutputStream zipStream, string parentFolderName)
             {
                 // 这段是创建空文件夹,注释掉可以去掉空文件夹(因为在写入文件的时候也会创建文件夹)
-                if (parentFolderName.IsNotNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(parentFolderName))
                 {
                     var ent = new ZipEntry(parentFolderName + "/");
                     zipStream.PutNextEntry(ent);
@@ -288,7 +288,7 @@ namespace FuFramework.Core.Runtime
                 {
                     byte[] buffer = System.IO.File.ReadAllBytes(file);
                     var    path   = System.IO.Path.GetFileName(file);
-                    if (parentFolderName.IsNotNullOrWhiteSpace())
+                    if (!string.IsNullOrWhiteSpace(parentFolderName))
                     {
                         path = parentFolderName + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(file);
                     }
@@ -313,7 +313,7 @@ namespace FuFramework.Core.Runtime
                 {
                     var folderName = folder.Substring(folder.LastIndexOf('\\') + 1);
 
-                    if (parentFolderName.IsNotNullOrWhiteSpace())
+                    if (!string.IsNullOrWhiteSpace(parentFolderName))
                     {
                         folderName = parentFolderName + "\\" + folder.Substring(folder.LastIndexOf('\\') + 1);
                     }

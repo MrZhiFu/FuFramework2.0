@@ -56,8 +56,8 @@ namespace FuFramework.Core.Runtime
                 {
                     var path = paths[index];
                     CombinePathSb.Append(path);
-                    if (path.EndsWithFast(separatorA)   || path.EndsWithFast(separatorB)) continue;
-                    if (path.StartsWithFast(separatorA) || path.StartsWithFast(separatorB)) continue;
+                    if (path.EndsWith(separatorA)   || path.EndsWith(separatorB)) continue;
+                    if (path.StartsWith(separatorA) || path.StartsWith(separatorB)) continue;
                     CombinePathSb.Append(separatorA);
                 }
 

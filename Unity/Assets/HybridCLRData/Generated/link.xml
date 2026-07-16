@@ -31,36 +31,22 @@
     <type fullname="FuFramework.Asset.Runtime.AssetModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.Core.Runtime">
-    <type fullname="FuFramework.Core.Runtime.BinaryEx" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.BufferEx" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuBidirectionalDictionary`2" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.FuException" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.FuGuard" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuLinkedList`1" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuLinkedList`1/Enumerator" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.FuLogger" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuSerializer`1" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuSerializer`1/DeserializeCallback" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.FuSerializer`1/SerializeCallback" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.GameObjectEx" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.ModuleBase" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.ModuleManager" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.MonoSingleton`1" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.ObjectEx" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.Singleton`1" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.StringEx" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.TypeEx" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Application" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Assembly" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/AssetPath" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.Utility/File" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.Utility/Json" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Encryption" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Encryption/Aes" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.Utility/File" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Hash" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Hash/MD5" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/IdGenerator" preserve="all" />
-    <type fullname="FuFramework.Core.Runtime.Utility/Json" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Net" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Path" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Time" preserve="all" />
@@ -72,6 +58,20 @@
     <type fullname="FuFramework.Event.Runtime.GameEventArgs" preserve="all" />
   </assembly>
   <assembly fullname="Hotfix">
+    <type fullname="FuFramework.Core.Runtime.BinaryEx" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.BufferEx" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuBidirectionalDictionary`2" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuLinkedList`1" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuLinkedList`1/Enumerator" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuSerializer`1" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuSerializer`1/DeserializeCallback" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.FuSerializer`1/SerializeCallback" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.GameObjectEx" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.ModuleBase" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.ModuleManager" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.ObjectEx" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.Singleton`1" preserve="all" />
+    <type fullname="FuFramework.Core.Runtime.StringEx" preserve="all" />
     <type fullname="Hotfix.GlobalModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.ModuleSetting.Runtime">
