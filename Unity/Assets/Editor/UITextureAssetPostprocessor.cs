@@ -1,5 +1,5 @@
 ﻿using UnityEditor;
-using Utility = FuFramework.Core.Runtime.Utility;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Editor
@@ -15,8 +15,8 @@ namespace FuFramework.UI.Editor
     {
         private void OnPreprocessTexture()
         {
-            var isBundleUI   = assetPath.Contains(Utility.Path.Combine(Utility.AssetPath.BundlesPath, "UI"));
-            var isResourceUI = assetPath.Contains(Utility.Path.Combine("Resources",                   "UI"));
+            var isBundleUI   = assetPath.Contains(UtilityAOT.Path.Combine(UtilityAOT.AssetPath.BundlesPath, "UI"));
+            var isResourceUI = assetPath.Contains(UtilityAOT.Path.Combine("Resources",                   "UI"));
             if (!isBundleUI && !isResourceUI) return;
 
             var textureImporter = assetImporter as TextureImporter;

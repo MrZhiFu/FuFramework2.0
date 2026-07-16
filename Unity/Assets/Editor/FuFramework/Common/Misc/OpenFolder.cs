@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using FuFramework.Core.Runtime;
+﻿using System;
+using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
 
@@ -65,7 +65,7 @@ namespace FuFramework.Core.Editor
                     break;
 
                 default:
-                    throw new FuException($"在 '{Application.platform}' 平台不支持打开文件夹.");
+                    throw new InvalidOperationException($"在 '{Application.platform}' 平台不支持打开文件夹.");
             }
         }
     }

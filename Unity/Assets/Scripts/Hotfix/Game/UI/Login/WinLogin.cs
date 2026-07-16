@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.UI.Runtime;
 using Hotfix.Sound;
 using Hotfix.Web;
@@ -130,7 +131,7 @@ namespace Hotfix.UI
                 UserName = txtUsername.text,
                 Password = txtPassword.text,
                 Device   = SystemInfo.deviceUniqueIdentifier,
-                Platform = Utility.Application.PlatformName
+                Platform = UtilityAOT.Application.PlatformName
             };
 
             var respLogin = await WebModule.Instance.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);

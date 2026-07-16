@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -86,7 +87,7 @@ namespace Hotfix.Storage
 
             FileName = fileName;
             var path = Path.Combine(Application.persistentDataPath, StorageModule.DirRoot, fileName);
-            FilePath = Utility.Path.GetRegularPath(path);
+            FilePath = UtilityAOT.Path.GetRegularPath(path);
 
             Data = new Data();
 
@@ -350,7 +351,7 @@ namespace Hotfix.Storage
         {
             var json = GetString(dataName);
             if (json.IsNullOrWhiteSpace()) return default;
-            return Utility.Json.ToObject<T>(json);
+            return UtilityAOT.Json.ToObject<T>(json);
         }
 
         /// <summary>
@@ -363,7 +364,7 @@ namespace Hotfix.Storage
         {
             var json = GetString(dataName);
             if (json.IsNullOrWhiteSpace()) return null;
-            return Utility.Json.ToObject(objectType, json);
+            return UtilityAOT.Json.ToObject(objectType, json);
         }
 
         #endregion
@@ -456,7 +457,7 @@ namespace Hotfix.Storage
         /// <param name="obj">要写入的对象。</param>
         public void SetObject<T>(string dataName, T obj)
         {
-            var json = Utility.Json.ToJson(obj);
+            var json = UtilityAOT.Json.ToJson(obj);
             SetString(dataName, json);
         }
 

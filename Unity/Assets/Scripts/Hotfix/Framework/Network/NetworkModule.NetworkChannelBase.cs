@@ -1,8 +1,10 @@
+using System;
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -779,7 +781,7 @@ namespace Hotfix.Network
 #if ENABLE_NETWORK_REQ_LOG
                 if (!IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
                 {
-                    FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(messageObject)}");
                 }
 #endif
             }
@@ -789,7 +791,7 @@ namespace Hotfix.Network
 #if ENABLE_NETWORK_RSP_LOG
                 if (!IgnoreReceiveIds.Contains(PacketReceiveHeaderHandler.Id))
                 {
-                    FuLogger.LogInfo($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{Utility.Json.ToJson(messageObject)}");
+                    FuLogger.LogInfo($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(messageObject)}");
                 }
 #endif
             }

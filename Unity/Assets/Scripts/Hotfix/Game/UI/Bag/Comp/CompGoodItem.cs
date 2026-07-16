@@ -1,4 +1,5 @@
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using Hotfix;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
@@ -50,8 +51,8 @@ namespace Hotfix.UI
         {
             var itemConfig = ConfigModule.Instance.GetConfig<TbItem>().Get(itemId);
             if (!itemConfig.IsNotNull()) return;
-            loaderGift.icon = Utility.AssetPath.GetImagePath(itemConfig.Icon);
-            loaderBg.icon   = Utility.AssetPath.GetImagePath(itemConfig.Bg);
+            loaderGift.icon = UtilityAOT.AssetPath.GetImagePath(itemConfig.Icon);
+            loaderBg.icon   = UtilityAOT.AssetPath.GetImagePath(itemConfig.Bg);
         }
 
         /// <summary>

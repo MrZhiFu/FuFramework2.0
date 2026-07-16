@@ -2,6 +2,7 @@ using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace Launcher
@@ -118,7 +119,7 @@ namespace Launcher
             m_WinLauncher.txtContent.text = content;
             m_WinLauncher.txtContent.onClick.Set(ctx =>
             {
-                if (ctx.data != null) Utility.Application.OpenURL(ctx.data.ToString());
+                if (ctx.data != null) UtilityAOT.Application.OpenURL(ctx.data.ToString());
             });
             m_OnConfirm = onConfirm;
         }

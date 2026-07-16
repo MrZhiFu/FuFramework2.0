@@ -2,6 +2,7 @@ using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.Asset.Runtime;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
@@ -299,7 +300,7 @@ namespace Hotfix.Scene
         public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetName)) throw new InvalidOperationException("[SceneModule] 场景资源名称不能为空!.");
-            var sceneAssetPath = Utility.AssetPath.GetScenePath(sceneAssetName);
+            var sceneAssetPath = UtilityAOT.AssetPath.GetScenePath(sceneAssetName);
             return LoadScene(sceneAssetPath, sceneMode, userData);
         }
 

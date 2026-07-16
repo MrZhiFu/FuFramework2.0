@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Utility = FuFramework.Core.Runtime.Utility;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
@@ -25,6 +26,6 @@ namespace Hotfix.Network
 
         [JsonIgnore] [ProtoMember(3)] public byte[] Body { get; set; }
 
-        public override string ToString() => Utility.Json.ToJson(this);
+        public override string ToString() => UtilityAOT.Json.ToJson(this);
     }
 }

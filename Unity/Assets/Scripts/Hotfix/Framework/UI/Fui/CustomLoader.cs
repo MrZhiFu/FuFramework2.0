@@ -7,6 +7,7 @@ using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using YooAsset;
 using Object = UnityEngine.Object;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -205,7 +206,7 @@ namespace Hotfix.UI
         /// <summary>
         /// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
         /// </summary>
-        private static readonly string CachePath = Utility.Path.AppHotfixResPath + "/FUICache/images/";
+        private static readonly string CachePath = UtilityAOT.Path.AppHotfixResPath + "/FUICache/images/";
 
         /// <summary>
         /// 资源管理模块
@@ -303,7 +304,7 @@ namespace Hotfix.UI
             var texturePath     = $"{CachePath}{textureHashName}.png";
 
             // 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
-            if (Utility.File.IsExists(texturePath))
+            if (UtilityAOT.File.IsExists(texturePath))
             {
                 return LoadTextureFromFile(texturePath);
             }
@@ -319,7 +320,7 @@ namespace Hotfix.UI
                 return null;
             }
 
-            Utility.File.WriteAllBytes(texturePath, webBufferResult.Result);
+            UtilityAOT.File.WriteAllBytes(texturePath, webBufferResult.Result);
 
             // 创建临时2x2纹理(占位)，LoadImage 内部重新分配为实际图片尺寸
             var tempTexture = new Texture2D(2, 2);
@@ -348,7 +349,7 @@ namespace Hotfix.UI
         {
             try
             {
-                var buffer = Utility.File.ReadAllBytes(path);
+                var buffer = UtilityAOT.File.ReadAllBytes(path);
                 if (buffer.IsNull() || buffer.Length == 0)
                 {
                     FuLogger.LogError($"[CustomLoader] 读取文件失败或文件为空: {path}");

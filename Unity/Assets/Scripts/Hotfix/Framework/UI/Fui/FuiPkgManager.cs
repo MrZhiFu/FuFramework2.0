@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -197,7 +198,7 @@ namespace FuFramework.UI.Runtime
             if (string.IsNullOrEmpty(pkgName)) throw new InvalidOperationException("[FuiPkgManager] 包名不能为空.");
 
             //"Assets/Bundles/UI/";
-            var rootPath = Utility.AssetPath.GetUIRootPath();
+            var rootPath = UtilityAOT.AssetPath.GetUIRootPath();
             var descPath = $"{rootPath}{pkgName}/{pkgName}_fui.bytes";
 
             m_PkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
@@ -221,7 +222,7 @@ namespace FuFramework.UI.Runtime
         private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem packageItem)
         {
             var pkgName  = packageItem.owner.name;
-            var rootPath = Utility.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
+            var rootPath = UtilityAOT.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
             var itemPath = $"{rootPath}{pkgName}/{pkgName}_{assetName}";
             var extPath  = $"{itemPath}{extension}";
 

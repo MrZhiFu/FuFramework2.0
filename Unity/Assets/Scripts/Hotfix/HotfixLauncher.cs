@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Hotfix.Network;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.Asset.Runtime;
 using FuFramework.Timer.Runtime;
 using FuFramework.Mono.Runtime;
@@ -185,7 +186,7 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<ByteBuf> ConfigBufferLoader(string file)
         {
-            var configPath = Utility.AssetPath.GetConfigPath(file);
+            var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
             return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
         }
@@ -197,7 +198,7 @@ namespace Hotfix
         /// <returns></returns>
         private static async Task<JSONNode> ConfigLoader(string file)
         {
-            var cfgPath     = Utility.AssetPath.GetConfigPath(file, ".json");
+            var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
             return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
         }

@@ -5,6 +5,7 @@ using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.Asset.Runtime;
 using System.Collections.Generic;
 using FuFramework.Event.Runtime;
@@ -300,7 +301,7 @@ namespace Hotfix.Sound
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int serialId = -1, SoundParams soundParams = null,
                                             SoundParams3D soundParams3D = null, object userData = null, Action onPlayEnd = null)
         {
-            var soundAssetPath = Utility.AssetPath.GetSoundPath(soundAssetName, extension);
+            var soundAssetPath = UtilityAOT.AssetPath.GetSoundPath(soundAssetName, extension);
             soundParams ??= SoundParams.Create();
 
             int newSerialId;

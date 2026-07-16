@@ -7,7 +7,7 @@ using HybridCLR;
 using FuFramework.Core.Runtime;
 using FuFramework.ModuleSetting.Runtime;
 using Launcher.Bootstrap;
-using Utility = FuFramework.Core.Runtime.Utility;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace Launcher
@@ -68,7 +68,7 @@ namespace Launcher
             }
             else
             {
-                var version   = $"v{Utility.Version.MajorMinorVersion}";
+                var version   = $"v{UtilityAOT.Version.MajorMinorVersion}";
                 var url       = string.Format(updateConfig.ResDownloadUrl,       version);
                 var backupUrl = string.Format(updateConfig.ResDownloadBackupUrl, version);
                 await BootstrapAssetHelper.InitPackageAsync(url, backupUrl);
@@ -109,7 +109,7 @@ namespace Launcher
         private static async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfigWithRetry()
         {
             var assetSetting = ModuleSetting.Instance.AssetSetting;
-            var configUrl    = $"{assetSetting.ResCdnRootRootURL}{Utility.Application.PlatformName}/{RemoteUpdateConfigName}";
+            var configUrl    = $"{assetSetting.ResCdnRootRootURL}{UtilityAOT.Application.PlatformName}/{RemoteUpdateConfigName}";
             while (true)
             {
                 try
@@ -119,7 +119,7 @@ namespace Launcher
                     await request.SendWebRequest();
                     if (request.result == UnityWebRequest.Result.Success)
                     {
-                        var cfg = Utility.Json.ToObject<RemoteUpdateConfig>(request.downloadHandler.text);
+                        var cfg = UtilityAOT.Json.ToObject<RemoteUpdateConfig>(request.downloadHandler.text);
                         if (cfg != null) return cfg;
                     }
                 }
@@ -159,8 +159,8 @@ namespace Launcher
                 downloader.DownloadUpdateCallback = data =>
                 {
                     var progress = data.CurrentDownloadBytes / (data.TotalDownloadBytes * 1f);
-                    var cur      = Utility.File.GetBytesSizeWithUnit(data.CurrentDownloadBytes);
-                    var tot      = Utility.File.GetBytesSizeWithUnit(data.TotalDownloadBytes);
+                    var cur      = UtilityAOT.File.GetBytesSizeWithUnit(data.CurrentDownloadBytes);
+                    var tot      = UtilityAOT.File.GetBytesSizeWithUnit(data.TotalDownloadBytes);
                     m_BootstrapView.SetProgress(progress, $"下载中：{cur}/{tot}");
                 };
                 var failed = false;
@@ -184,7 +184,7 @@ namespace Launcher
             FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
 
             // 编辑器模拟模式：程序集已在域中，直接进入热更入口
-            if (Utility.Application.IsEditor && BootstrapAssetHelper.PlayMode == EPlayMode.EditorSimulateMode)
+            if (UtilityAOT.Application.IsEditor && BootstrapAssetHelper.PlayMode == EPlayMode.EditorSimulateMode)
             {
                 await EnterHotfixAsync();
                 return;
@@ -193,7 +193,7 @@ namespace Launcher
             // 补充 AOT 元数据
             foreach (var aotDll in AOTGenericReferences.PatchedAOTAssemblyList)
             {
-                var aotPath = Utility.AssetPath.GetAOTCodePath(aotDll);
+                var aotPath = UtilityAOT.AssetPath.GetAOTCodePath(aotDll);
                 var bytes   = await BootstrapAssetHelper.LoadDllBytesAsync(aotPath);
 
                 // 加载失败：LoadRawFileBytesAsync 返回 null，禁止把 null 传给 RuntimeApi，记录路径并中止移交。
@@ -209,7 +209,7 @@ namespace Launcher
             }
 
             // 加载 Hotfix.dll 并反射进入热更入口
-            var dllPath  = Utility.AssetPath.GetCodePath($"{HotfixDllName}.dll");
+            var dllPath  = UtilityAOT.AssetPath.GetCodePath($"{HotfixDllName}.dll");
             var dllBytes = await BootstrapAssetHelper.LoadDllBytesAsync(dllPath);
 
             // 加载失败：禁止把 null 传给 Assembly.Load，记录路径并中止移交。

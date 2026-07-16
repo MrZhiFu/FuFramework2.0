@@ -1,10 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 文件路径相关的实用函数。

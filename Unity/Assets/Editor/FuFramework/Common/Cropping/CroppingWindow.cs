@@ -5,7 +5,7 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Utility = FuFramework.Core.Runtime.Utility;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Editor
@@ -267,7 +267,7 @@ namespace FuFramework.Core.Editor
 
             try
             {
-                var targetType = Utility.Assembly.GetType(targetTypeName);
+                var targetType = UtilityAOT.Assembly.GetType(targetTypeName);
                 if (targetType != null)
                 {
                     m_currentTypeName = targetTypeName;
@@ -483,7 +483,7 @@ namespace FuFramework.Core.Editor
                 }
 
                 // 获取所有类型，并过滤掉忽略的类型
-                var types = Utility.Assembly.GetTypes();
+                var types = UtilityAOT.Assembly.GetTypes();
                 var result = new List<string>();
                 
                 foreach (var type in types)
@@ -539,7 +539,7 @@ namespace FuFramework.Core.Editor
 
             try
             {
-                var targetType = Utility.Assembly.GetType(targetTypeName);
+                var targetType = UtilityAOT.Assembly.GetType(targetTypeName);
                 if (targetType == null)
                 {
                     ShowNotification(new GUIContent { text = $"找不到类型: {targetTypeName}" });
@@ -578,7 +578,7 @@ namespace FuFramework.Core.Editor
 
             try
             {
-                var targetType = Utility.Assembly.GetType(targetTypeName);
+                var targetType = UtilityAOT.Assembly.GetType(targetTypeName);
                 if (targetType == null)
                 {
                     ShowNotification(new GUIContent { text = $"找不到类型: {targetTypeName}" });

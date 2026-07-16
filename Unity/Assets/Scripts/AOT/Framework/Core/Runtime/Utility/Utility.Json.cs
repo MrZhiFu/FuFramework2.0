@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// JSON 相关的实用函数。

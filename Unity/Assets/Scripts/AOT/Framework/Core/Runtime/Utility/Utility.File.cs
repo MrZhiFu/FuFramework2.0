@@ -6,7 +6,7 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 文件相关的实用函数。

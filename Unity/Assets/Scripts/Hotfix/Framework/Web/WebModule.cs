@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
 
@@ -177,7 +178,7 @@ namespace Hotfix.Web
         /// </summary>
         private async void MakeJsonStringRequest(WebJsonData webJsonData)
         {
-            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
+            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
 #if UNITY_WEBGL
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
@@ -186,7 +187,7 @@ namespace Hotfix.Web
             if (webJsonData.Form is { Count: > 0 })
             {
                 unityWebRequest.SetRequestHeader("Content-Type", "application/json");
-                var body = Utility.Json.ToJson(webJsonData.Form);
+                var body = UtilityAOT.Json.ToJson(webJsonData.Form);
                 var postData = Encoding.UTF8.GetBytes(body);
                 unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
             }
@@ -205,12 +206,12 @@ namespace Hotfix.Web
                 m_SendingNormalList.Remove(webJsonData);
                 if (unityWebRequest.result != UnityWebRequest.Result.Success && unityWebRequest.error != null)
                 {
-                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
+                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
                     webJsonData.UniTaskCompletionStringSource.TrySetException(new Exception(unityWebRequest.error));
                     return;
                 }
 
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
                 webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
             };
 #else
@@ -223,7 +224,7 @@ namespace Hotfix.Web
                 if (webJsonData.Form is { Count: > 0 })
                 {
                     request.ContentType = "application/json";
-                    var body     = Utility.Json.ToJson(webJsonData.Form);
+                    var body     = UtilityAOT.Json.ToJson(webJsonData.Form);
                     var postData = Encoding.UTF8.GetBytes(body);
                     request.ContentLength = postData.Length;
                     await using var requestStream = request.GetRequestStream();
@@ -244,7 +245,7 @@ namespace Hotfix.Web
 
                 using var reader  = new StreamReader(responseStream);
                 var       content = await reader.ReadToEndAsync();
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {content}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {content}");
                 webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, content));
             }
             catch (WebException e)
@@ -256,17 +257,17 @@ namespace Hotfix.Web
                     return;
                 }
 
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             catch (IOException e)
             {
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             catch (Exception e)
             {
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionStringSource.SetException(e);
             }
             finally
@@ -281,7 +282,7 @@ namespace Hotfix.Web
         /// </summary>
         private async void MakeJsonBytesRequest(WebJsonData webJsonData)
         {
-            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)}");
+            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
 #if UNITY_WEBGL
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
@@ -290,7 +291,7 @@ namespace Hotfix.Web
             if (webJsonData.Form is { Count: > 0 })
             {
                 unityWebRequest.SetRequestHeader("Content-Type", "application/json");
-                var body = Utility.Json.ToJson(webJsonData.Form);
+                var body = UtilityAOT.Json.ToJson(webJsonData.Form);
                 var postData = Encoding.UTF8.GetBytes(body);
                 unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
             }
@@ -309,12 +310,12 @@ namespace Hotfix.Web
                 m_SendingNormalList.Remove(webJsonData);
                 if (unityWebRequest.result != UnityWebRequest.Result.Success || unityWebRequest.error != null)
                 {
-                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
+                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
                     webJsonData.UniTaskCompletionBytesSource.TrySetException(new Exception(unityWebRequest.error));
                     return;
                 }
 
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
                 webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, unityWebRequest.downloadHandler.data));
             };
 #else
@@ -335,7 +336,7 @@ namespace Hotfix.Web
                 if (webJsonData.Form is { Count: > 0 })
                 {
                     request.ContentType = "application/json";
-                    var body     = Utility.Json.ToJson(webJsonData.Form);
+                    var body     = UtilityAOT.Json.ToJson(webJsonData.Form);
                     var postData = Encoding.UTF8.GetBytes(body);
                     request.ContentLength = postData.Length;
                     await using var requestStream = request.GetRequestStream();
@@ -349,12 +350,12 @@ namespace Hotfix.Web
                 m_MemoryStream.Position = 0;
                 await responseStream.CopyToAsync(m_MemoryStream);
                 var resultData = m_MemoryStream.ToArray();
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {resultData}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {resultData}");
                 webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, resultData)); // 将流的内容复制到内存流中并转换为byte数组
             }
             catch (WebException e)
             {
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
 
                 // 捕获超时异常
                 if (e.Status == WebExceptionStatus.Timeout)
@@ -367,12 +368,12 @@ namespace Hotfix.Web
             }
             catch (IOException e)
             {
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionBytesSource.SetException(e);
             }
             catch (Exception e)
             {
-                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {Utility.Json.ToJson(webJsonData.Header)} \n  Form: {Utility.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
+                FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
                 webJsonData.UniTaskCompletionBytesSource.SetException(e);
             }
             finally

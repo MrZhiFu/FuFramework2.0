@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 程序集相关的实用函数。

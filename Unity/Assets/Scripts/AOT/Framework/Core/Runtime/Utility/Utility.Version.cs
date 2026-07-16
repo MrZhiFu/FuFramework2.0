@@ -2,7 +2,7 @@
 
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 游戏版本号相关的实用函数。

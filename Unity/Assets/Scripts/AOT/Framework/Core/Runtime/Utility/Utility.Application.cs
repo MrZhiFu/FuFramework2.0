@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 应用相关的实用函数。

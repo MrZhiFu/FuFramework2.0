@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.Event.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using Utility = FuFramework.Core.Runtime.Utility;
@@ -55,7 +56,7 @@ namespace Hotfix.Network
             var messageDecompressHandlerBaseType = typeof(IMessageDecompressHandler);
             var packetHandlerBaseType = typeof(IPacketHandler);
 
-            var types = Utility.Assembly.GetTypes();
+            var types = UtilityAOT.Assembly.GetTypes();
             foreach (var type in types)
             {
                 if (!type.IsClass || type.IsAbstract) continue;

@@ -4,7 +4,7 @@
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Runtime
 {
-    public static partial class Utility
+    public static partial class UtilityAOT
     {
         /// <summary>
         /// 使用BetterStreamingAssets插件读取Android平台SteamingAssets中的文件相关实用函数。

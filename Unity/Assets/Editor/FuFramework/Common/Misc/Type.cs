@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Utility = FuFramework.Core.Runtime.Utility;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Core.Editor
@@ -14,10 +14,10 @@ namespace FuFramework.Core.Editor
     public static class Type
     {
         /// 运行时程序集名称列表
-        private static readonly string[] RuntimeAssemblyNames = Utility.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
+        private static readonly string[] RuntimeAssemblyNames = UtilityAOT.Assembly.GetAssemblies().Where(m => !m.FullName.Contains("Editor")).Select(m => m.FullName).ToArray();
 
         /// 运行时或编辑器程序集名称列表
-        private static readonly string[] RuntimeOrEditorAssemblyNames = Utility.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
+        private static readonly string[] RuntimeOrEditorAssemblyNames = UtilityAOT.Assembly.GetAssemblies().Select(m => m.FullName).ToArray();
 
         /// <summary>
         /// 在运行时程序集中获取指定基类的所有子类的名称。

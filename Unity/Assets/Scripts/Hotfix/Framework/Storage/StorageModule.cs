@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
 using FuFramework.ModuleSetting.Runtime;
 
 namespace Hotfix.Storage
@@ -240,7 +241,7 @@ namespace Hotfix.Storage
             // 删除数据文件
             var dataPath = Path.Combine(Application.persistentDataPath, DirRoot, fileName);
             if (Directory.Exists(dataPath))
-                Utility.File.Delete(dataPath);
+                UtilityAOT.File.Delete(dataPath);
 
             m_Helpers.Remove(fileName);
         }
@@ -258,7 +259,7 @@ namespace Hotfix.Storage
             // 删除整个数据文件夹GameData
             var dataPath = Path.Combine(Application.persistentDataPath, DirRoot);
             if (Directory.Exists(dataPath))
-                Utility.File.DeleteDir(dataPath);
+                UtilityAOT.File.DeleteDir(dataPath);
 
             m_Helpers.Clear();
         }
