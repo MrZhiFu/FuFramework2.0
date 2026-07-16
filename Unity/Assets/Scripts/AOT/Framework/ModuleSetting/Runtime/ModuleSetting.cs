@@ -1,5 +1,4 @@
 using UnityEngine;
-using FuFramework.Core.Runtime;
 using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
@@ -16,8 +15,12 @@ namespace FuFramework.ModuleSetting.Runtime
     /// 1. 该类为单例类，请不要在代码中创建多个实例。
     /// 2. 该类需要挂载到首个初始化场景的 GameObject 上，否则其他模块无法正确初始化。
     /// </summary>
-    public class ModuleSetting : MonoSingleton<ModuleSetting>
+    public class ModuleSetting : MonoBehaviour
     {
+        /// <summary>
+        /// 单例实例。由 Awake 赋值，依赖 Launcher 的 DontDestroyOnLoad 保证跨场景存活。
+        /// </summary>
+        public static ModuleSetting Instance { get; private set; }
         /// <summary>
         /// 游戏帧率。
         /// </summary>
@@ -156,11 +159,17 @@ namespace FuFramework.ModuleSetting.Runtime
             set => m_OpenGuide = value;
         }
 
-        /// <summary>
-        /// 初始化。
-        /// </summary>
-        protected override void OnInit()
+        private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            // DontDestroyOnLoad 由挂载在同一 GameObject 上的 Launcher 统一处理
+
             // 设置游戏速度，屏幕休眠，帧率，后台运行等
             Time.timeScale              = m_GameSpeed;
             Screen.sleepTimeout         = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
