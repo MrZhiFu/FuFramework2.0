@@ -76,7 +76,7 @@ namespace FuFramework.Core.Runtime
                 if (offset >= 35)
                 {
                     // 检查位移是否超过35位，因为32位整数最多需要32位来表示，在7位编码中，每个字节最多贡献7位，因此，最多需要5个字节来表示一个32位整数(因为5x7=35位已经超过了32位)
-                    throw new FuException("7位编码的整数值无效.");
+                    throw new InvalidOperationException("7位编码的整数值无效.");
                 }
 
                 b        =  binaryReader.ReadByte(); // 从二进制流中读取一个字节
@@ -170,7 +170,7 @@ namespace FuFramework.Core.Runtime
                 if (offset >= 70)
                 {
                     // 检查位移是否超过70位，因为64位整数最多需要64位来表示，在7位编码中，每个字节最多贡献7位，因此，最多需要10个字节来表示一个64位整数(因为10x7=70位已经超过了64位)
-                    throw new FuException("7位编码的整数值无效.");
+                    throw new InvalidOperationException("7位编码的整数值无效.");
                 }
 
                 b        =  binaryReader.ReadByte();
@@ -307,7 +307,7 @@ namespace FuFramework.Core.Runtime
             int length = Utility.BitConverter.String2Bytes(value, CachedBytes);
             if (length > byte.MaxValue)
             {
-                throw new FuException($"字符串 '{value}' 太长，无法加密.");
+                throw new InvalidOperationException($"字符串 '{value}' 太长，无法加密.");
             }
 
             Utility.Encryption.Xor.GetSelfXorBytes(CachedBytes, encryptBytes);

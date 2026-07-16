@@ -60,7 +60,7 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TState">要切换到的状态类型。</typeparam>
         protected void ChangeState<TState>() where TState : FsmStateBase
         {
-            if (Fsm is null) throw new FuException("[FsmStateBase] 有限状态机不能为空。");
+            if (Fsm is null) throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
             Fsm.ChangeState<TState>();
         }
 
@@ -70,13 +70,13 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="state">要切换到的状态类型。</param>
         protected void ChangeState(Type state)
         {
-            if (state == null) throw new FuException("[FsmStateBase] 状态类型不能为空。");
+            if (state == null) throw new InvalidOperationException("[FsmStateBase] 状态类型不能为空。");
 
             if (!typeof(FsmStateBase).IsAssignableFrom(state))
-                throw new FuException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
+                throw new InvalidOperationException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
 
             if (Fsm is null) 
-                throw new FuException("[FsmStateBase] 有限状态机不能为空。");
+                throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
             
             Fsm.ChangeState(state);
         }

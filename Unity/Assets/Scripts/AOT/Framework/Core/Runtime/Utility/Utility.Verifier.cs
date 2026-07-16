@@ -36,7 +36,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>计算后的 CRC32。</returns>
             public static int GetCrc32(byte[] bytes)
             {
-                if (bytes == null) throw new FuException("要计算 CRC32 的二进制流为空.");
+                if (bytes == null) throw new ArgumentNullException(nameof(bytes));
                 return GetCrc32(bytes, 0, bytes.Length);
             }
 
@@ -50,10 +50,10 @@ namespace FuFramework.Core.Runtime
             public static int GetCrc32(byte[] bytes, int offset, int length)
             {
                 if (bytes == null)
-                    throw new FuException("要计算 CRC32 的二进制流为空.");
+                    throw new ArgumentNullException(nameof(bytes));
 
                 if (offset < 0 || length < 0 || offset + length > bytes.Length)
-                    throw new FuException("二进制流的偏移或长度不正确.");
+                    throw new ArgumentOutOfRangeException("二进制流的偏移或长度不正确.");
 
                 CRC32.HashCore(bytes, offset, length);
                 var result = (int)CRC32.HashFinal();
@@ -68,7 +68,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>计算后的 CRC32。</returns>
             public static int GetCrc32(Stream stream)
             {
-                if (stream == null) throw new FuException("要计算 CRC32 的字节流为空.");
+                if (stream == null) throw new ArgumentNullException(nameof(stream));
 
                 while (true)
                 {
@@ -108,8 +108,8 @@ namespace FuFramework.Core.Runtime
             /// <param name="offset">CRC32 哈希值的二进制数组在结果数组内的起始位置。</param>
             public static void GetCrc32Bytes(int crc32, byte[] bytes, int offset)
             {
-                if (bytes == null) throw new FuException("传入的结果数组为空.");
-                if (offset < 0 || offset + 4 > bytes.Length) throw new FuException("结果数组的偏移或长度不正确.");
+                if (bytes == null) throw new ArgumentNullException(nameof(bytes));
+                if (offset < 0 || offset + 4 > bytes.Length) throw new ArgumentOutOfRangeException(nameof(offset));
 
                 bytes[offset]     = (byte)((crc32 >> 24) & 0xff);
                 bytes[offset + 1] = (byte)((crc32 >> 16) & 0xff);
@@ -124,14 +124,14 @@ namespace FuFramework.Core.Runtime
             /// <param name="code">指定的密钥。</param>
             /// <param name="length">密钥的长度。</param>
             /// <returns></returns>
-            /// <exception cref="FuException"></exception>
+            /// <exception cref="ArgumentException"></exception>
             internal static int GetCrc32(Stream stream, byte[] code, int length)
             {
-                if (stream == null) throw new FuException("指定的字节流为空.");
-                if (code   == null) throw new FuException("指定的密钥为空.");
+                if (stream == null) throw new ArgumentNullException(nameof(stream));
+                if (code   == null) throw new ArgumentNullException(nameof(code));
 
                 var codeLength = code.Length;
-                if (codeLength <= 0) throw new FuException("指定的密钥长度不正确.");
+                if (codeLength <= 0) throw new ArgumentException("指定的密钥长度不正确.", nameof(code));
 
                 var bytesLength = (int)stream.Length;
                 if (length < 0 || length > bytesLength)

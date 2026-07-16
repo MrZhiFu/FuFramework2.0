@@ -117,7 +117,7 @@ namespace FuFramework.UI.Runtime
         {
             try
             {
-                if (view == null) throw new FuException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
+                if (view == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
                 var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;

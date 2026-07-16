@@ -322,10 +322,10 @@ namespace Hotfix.Download
         /// <returns>新增下载任务的序列编号。</returns>
         public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority, object userData)
         {
-            if (string.IsNullOrEmpty(downloadedFullPath)) throw new FuException("下载路径不能为空.");
-            if (string.IsNullOrEmpty(downloadUri)) throw new FuException("下载地址不能为空.");
+            if (string.IsNullOrEmpty(downloadedFullPath)) throw new InvalidOperationException("下载路径不能为空.");
+            if (string.IsNullOrEmpty(downloadUri)) throw new InvalidOperationException("下载地址不能为空.");
 
-            if (TotalAgentCount <= 0) throw new FuException("可用的下载代理个数为0.");
+            if (TotalAgentCount <= 0) throw new InvalidOperationException("可用的下载代理个数为0.");
 
             // 创建下载任务
             var downloadTask = DownloadTask.Create(downloadedFullPath, downloadUri, taskTag, priority, FlushSize, Timeout, userData);

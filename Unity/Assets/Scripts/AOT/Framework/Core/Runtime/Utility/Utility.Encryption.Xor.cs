@@ -87,15 +87,15 @@ namespace FuFramework.Core.Runtime
 
                     if (code == null)
                         throw
-                            new FuException("传入的 code密钥 为空.");
+                            new ArgumentNullException(nameof(code));
 
                     var codeLength = code.Length;
 
                     if (codeLength <= 0)
-                        throw new FuException("传入的 code密钥 长度不正确.");
+                        throw new ArgumentException("传入的 code密钥 长度不正确.", nameof(code));
 
                     if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length)
-                        throw new FuException("传入的开始位置或长度不正确.");
+                        throw new ArgumentOutOfRangeException("传入的开始位置或长度不正确.");
 
                     var codeIndex = startIndex % codeLength;
                     for (var i = startIndex; i < length; i++)

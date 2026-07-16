@@ -82,7 +82,7 @@ namespace Hotfix.Storage
         /// <param name="encryptKey">加密密钥</param>
         public void Init(string fileName, bool enableAutoSave, float autoSaveInterval, bool enableEncryption = false, string encryptKey = null)
         {
-            if (string.IsNullOrEmpty(fileName)) throw new FuException("[[DataSaveHelper] 文件名不能为空");
+            if (string.IsNullOrEmpty(fileName)) throw new InvalidOperationException("[[DataSaveHelper] 文件名不能为空");
 
             FileName = fileName;
             var path = Path.Combine(Application.persistentDataPath, StorageModule.DirRoot, fileName);

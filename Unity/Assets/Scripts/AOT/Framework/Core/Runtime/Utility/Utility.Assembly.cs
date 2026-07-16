@@ -59,7 +59,7 @@ namespace FuFramework.Core.Runtime
             public static void GetTypes(List<Type> results)
             {
                 if (results == null)
-                    throw new FuException("传入的结果列表为空，请检查参数是否正确.");
+                    throw new ArgumentNullException(nameof(results));
 
                 results.Clear();
                 foreach (var assembly in Assemblies)
@@ -76,7 +76,7 @@ namespace FuFramework.Core.Runtime
             public static Type GetType(string typeName)
             {
                 if (string.IsNullOrEmpty(typeName))
-                    throw new FuException("传入的类型名为空，请检查参数是否正确.");
+                    throw new ArgumentException("传入的类型名为空，请检查参数是否正确.", nameof(typeName));
 
                 if (CachedDict.TryGetValue(typeName, out var type)) return type;
 

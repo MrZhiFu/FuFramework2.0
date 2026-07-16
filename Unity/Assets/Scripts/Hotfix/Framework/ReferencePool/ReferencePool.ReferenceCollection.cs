@@ -56,7 +56,7 @@ namespace FuFramework.ReferencePool.Runtime
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public T Acquire<T>() where T : class, IReference, new()
             {
-                if (typeof(T) != RefType) throw new FuException("[ReferencePool.ReferenceCollection] 引用获取失败，引用类型无效.");
+                if (typeof(T) != RefType) throw new InvalidOperationException("[ReferencePool.ReferenceCollection] 引用获取失败，引用类型无效.");
 
                 UsingReferenceCount++;
                 AcquireReferenceCount++;
@@ -97,7 +97,7 @@ namespace FuFramework.ReferencePool.Runtime
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Release(IReference reference)
             {
-                if (reference == null) throw new FuException("[ReferencePool.ReferenceCollection] 引用释放失败，引用对象为空.");
+                if (reference == null) throw new InvalidOperationException("[ReferencePool.ReferenceCollection] 引用释放失败，引用对象为空.");
 
                 // 清理引用，清除数据后方便重用该对象
                 reference.Clear();
@@ -105,7 +105,7 @@ namespace FuFramework.ReferencePool.Runtime
                 lock (m_FreeQueue)
                 {
                     if (m_FreeQueue.Contains(reference))
-                        throw new FuException($"[ReferencePool.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，该对象已经被释放.");
+                        throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，该对象已经被释放.");
 
                     m_FreeQueue.Enqueue(reference);
                 }
@@ -122,7 +122,7 @@ namespace FuFramework.ReferencePool.Runtime
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public void Add<T>(int count) where T : class, IReference, new()
             {
-                if (typeof(T) != RefType) throw new FuException($"[ReferencePool.ReferenceCollection] 添加引用失败，类型{typeof(T).Name}不是引用池类型.");
+                if (typeof(T) != RefType) throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 添加引用失败，类型{typeof(T).Name}不是引用池类型.");
 
                 lock (m_FreeQueue)
                 {

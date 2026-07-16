@@ -35,7 +35,7 @@ namespace FuFramework.UI.Runtime
         protected internal override void OnRelease()
         {
             if (Target is not ViewBase viewBase)
-                throw new FuException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
+                throw new InvalidOperationException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
 
             try
             {

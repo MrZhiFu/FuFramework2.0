@@ -31,11 +31,11 @@ namespace Hotfix.Entity
         /// <param name="entityInstanceGo">实体实例GameObject</param>
         /// <param name="entityHelper"></param>
         /// <returns></returns>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public static EntityInstanceObject Create(string name, object entityAssetHandle, GameObject entityInstanceGo, EntityHelper entityHelper)
         {
-            if (entityAssetHandle is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体资源句柄为空.");
-            if (entityHelper is null) throw new FuException("[EntityInstanceObject] 创建实体实例对象失败，实体辅助器为空.");
+            if (entityAssetHandle is null) throw new InvalidOperationException("[EntityInstanceObject] 创建实体实例对象失败，实体资源句柄为空.");
+            if (entityHelper is null) throw new InvalidOperationException("[EntityInstanceObject] 创建实体实例对象失败，实体辅助器为空.");
 
             var entityInstanceObject = ReferencePool.Acquire<EntityInstanceObject>();
             entityInstanceObject.Initialize(name, entityInstanceGo);

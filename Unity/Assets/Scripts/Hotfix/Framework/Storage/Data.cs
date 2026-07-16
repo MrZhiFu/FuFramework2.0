@@ -79,7 +79,7 @@ namespace Hotfix.Storage
         /// <param name="results">所有本地存储的数据项的名称。</param>
         public void GetAllDataNames(List<string> results)
         {
-            if (results == null) throw new FuException("[Data] 结果列表不能为空.");
+            if (results == null) throw new InvalidOperationException("[Data] 结果列表不能为空.");
             results.Clear();
             foreach (var setting in m_DataDict)
             {
@@ -118,7 +118,7 @@ namespace Hotfix.Storage
         {
             if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
             if (bool.TryParse(value, out var result)) return result;
-            throw new FuException($"[Data] 无法将 {value} 转换为布尔值.");
+            throw new InvalidOperationException($"[Data] 无法将 {value} 转换为布尔值.");
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Hotfix.Storage
         {
             if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
             if (int.TryParse(value, out var result)) return result;
-            throw new FuException($"[Data] 无法将 {value} 转换为整数值.");
+            throw new InvalidOperationException($"[Data] 无法将 {value} 转换为整数值.");
         }
 
         /// <summary>
@@ -140,12 +140,12 @@ namespace Hotfix.Storage
         /// <param name="dataName"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public long GetLong(string dataName, long defaultValue = 0)
         {
             if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
             if (long.TryParse(value, out var result)) return result;
-            throw new FuException($"[Data] 无法将 {value} 转换为长整数值.");
+            throw new InvalidOperationException($"[Data] 无法将 {value} 转换为长整数值.");
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Hotfix.Storage
         {
             if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
             if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)) return result;
-            throw new FuException($"[Data] 无法将 {value} 转换为浮点数值.");
+            throw new InvalidOperationException($"[Data] 无法将 {value} 转换为浮点数值.");
         }
 
         /// <summary>
@@ -167,12 +167,12 @@ namespace Hotfix.Storage
         /// <param name="dataName"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public double GetDouble(string dataName, double defaultValue = 0)
         {
             if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
             if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)) return result;
-            throw new FuException($"[Data] 无法将 {value} 转换为双精度浮点数值.");
+            throw new InvalidOperationException($"[Data] 无法将 {value} 转换为双精度浮点数值.");
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace FuFramework.Procedure.Runtime
         protected internal override void OnInit()
         {
             m_FsmModule = ModuleManager.GetModule<FsmModule>();
-            if (m_FsmModule == null) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
+            if (m_FsmModule == null) throw new InvalidOperationException("[ProcedureModule] 有限状态机管理模块不能为空");
         }
 
         /// <summary>
@@ -63,14 +63,14 @@ namespace FuFramework.Procedure.Runtime
         /// 初始化流程状态机。
         /// </summary>
         /// <param name="procedure"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void InitProcedures(ProcedureBase[] procedure)
         {
-            if (m_FsmModule == null) throw new FuException("[ProcedureModule] 有限状态机管理模块不能为空");
+            if (m_FsmModule == null) throw new InvalidOperationException("[ProcedureModule] 有限状态机管理模块不能为空");
             
             // ReSharper disable once CoVariantArrayConversion
             m_ProcedureFsm ??= m_FsmModule.CreateFsm(this, procedure);
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 创建流程管理模块失败.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 创建流程管理模块失败.");
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace FuFramework.Procedure.Runtime
         /// <typeparam name="T">要开始的流程类型。</typeparam>
         public void StartProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             m_ProcedureFsm.Start<T>();
         }
 
@@ -89,7 +89,7 @@ namespace FuFramework.Procedure.Runtime
         /// <param name="procedureType">要开始的流程类型。</param>
         public void StartProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             m_ProcedureFsm.Start(procedureType);
         }
         
@@ -100,7 +100,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>是否存在流程。</returns>
         public bool HasProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             return m_ProcedureFsm.HasState<T>();
         }
 
@@ -111,7 +111,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>是否存在流程。</returns>
         public bool HasProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             return m_ProcedureFsm.HasState(procedureType);
         }
 
@@ -122,7 +122,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>要获取的流程。</returns>
         public ProcedureBase GetProcedure<T>() where T : ProcedureBase
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             return m_ProcedureFsm.GetState<T>();
         }
 
@@ -133,7 +133,7 @@ namespace FuFramework.Procedure.Runtime
         /// <returns>要获取的流程。</returns>
         public ProcedureBase GetProcedure(Type procedureType)
         {
-            if (m_ProcedureFsm == null) throw new FuException("[ProcedureModule] 流程管理模块尚未初始化.");
+            if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
             return (ProcedureBase)m_ProcedureFsm.GetState(procedureType);
         }
     }

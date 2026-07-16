@@ -217,7 +217,7 @@ namespace Hotfix.UI
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
             if (m_AssetModule == null)
             {
-                throw new FuException("[CustomLoader] 资源管理模块不存在!");
+                throw new InvalidOperationException("[CustomLoader] 资源管理模块不存在!");
             }
         }
 

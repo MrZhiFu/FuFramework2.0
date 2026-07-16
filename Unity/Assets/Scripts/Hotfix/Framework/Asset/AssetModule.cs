@@ -55,7 +55,7 @@ namespace FuFramework.Asset.Runtime
         {
             // 获取资源管理模块配置数据
             var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
-            if (!assetSetting) throw new FuException("[AssetModule]资源管理模块配置数据为空!");
+            if (!assetSetting) throw new InvalidOperationException("[AssetModule]资源管理模块配置数据为空!");
 
             PlayMode                    = assetSetting.PlayMode;
             DefaultPackageName          = assetSetting.DefaultPackageName;
@@ -481,7 +481,7 @@ namespace FuFramework.Asset.Runtime
             // 新建一个任务，包装初始化操作
             var taskCompletionSource = new UniTaskCompletionSource<bool>();
             var initHandler          = InitPackage(resourcePackage, downloadURL, downloadBackupURL);
-            if (initHandler == null) throw new FuException($"初始化资源包失败：{packageName}");
+            if (initHandler == null) throw new InvalidOperationException($"初始化资源包失败：{packageName}");
 
             initHandler.Completed += asyncOperationBase =>
             {

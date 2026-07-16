@@ -45,7 +45,7 @@ namespace Hotfix.Network
                 if (PSocket == null)
                 {
                     const string errorMessage = "Initialize network channel failure.";
-                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                     NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
                     return;
 

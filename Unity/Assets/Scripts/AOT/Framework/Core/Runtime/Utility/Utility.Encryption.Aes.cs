@@ -56,8 +56,8 @@ namespace FuFramework.Core.Runtime
                 /// <param name="encryptKey">加密密钥</param>
                 public static byte[] AesEncrypt(byte[] encryptByte, string encryptKey)
                 {
-                    if (encryptByte == null || encryptByte.Length == 0) throw new FuException("明文不得为空");
-                    if (string.IsNullOrEmpty(encryptKey)) throw new FuException("密钥不得为空");
+                    if (encryptByte == null || encryptByte.Length == 0) throw new ArgumentException("明文不得为空");
+                    if (string.IsNullOrEmpty(encryptKey)) throw new ArgumentException("密钥不得为空");
 
                     using var aes          = System.Security.Cryptography.Aes.Create();
                     using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
@@ -92,8 +92,8 @@ namespace FuFramework.Core.Runtime
                 /// <param name="decryptKey">解密密钥</param>
                 public static byte[] AesDecrypt(byte[] decryptByte, string decryptKey)
                 {
-                    if (decryptByte == null || decryptByte.Length == 0) throw new FuException("密文不得为空");
-                    if (string.IsNullOrEmpty(decryptKey)) throw new FuException("密钥不得为空");
+                    if (decryptByte == null || decryptByte.Length == 0) throw new ArgumentException("密文不得为空");
+                    if (string.IsNullOrEmpty(decryptKey)) throw new ArgumentException("密钥不得为空");
 
                     using var aes          = System.Security.Cryptography.Aes.Create();
                     using var derivedBytes = new Rfc2898DeriveBytes(decryptKey, Salt, 10000, HashAlgorithmName.SHA256);

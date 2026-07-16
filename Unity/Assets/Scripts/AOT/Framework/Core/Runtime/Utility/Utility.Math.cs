@@ -49,7 +49,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>厘米。</returns>
             public static float Pixel2Centimeter(float pixel)
             {
-                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
                 return InchesToCentimeters * pixel / ScreenDpi;
             }
 
@@ -60,7 +60,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>像素。</returns>
             public static float Centimeter2Pixel(float centimeters)
             {
-                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
                 return CentimetersToInches * centimeters * ScreenDpi;
             }
 
@@ -71,7 +71,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>英寸。</returns>
             public static float Pixel2Inches(float pixel)
             {
-                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
                 return pixel / ScreenDpi;
             }
 
@@ -82,7 +82,7 @@ namespace FuFramework.Core.Runtime
             /// <returns>像素。</returns>
             public static float Inches2Pixels(float inches)
             {
-                if (ScreenDpi <= 0) throw new FuException("您必须先设置屏幕 DPI.");
+                if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
                 return inches * ScreenDpi;
             }
 

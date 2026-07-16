@@ -52,7 +52,7 @@ namespace Hotfix.Download
             /// <param name="downloadAgentHelper">下载代理辅助器。</param>
             public DownloadAgent(UnityWebRequestDownloadAgentHelper downloadAgentHelper)
             {
-                m_Helper = downloadAgentHelper ?? throw new FuException("[DownloadAgent]下载代理辅助器为空!");
+                m_Helper = downloadAgentHelper ?? throw new InvalidOperationException("[DownloadAgent]下载代理辅助器为空!");
 
                 Task             = null;
                 m_FileStream     = null;
@@ -151,7 +151,7 @@ namespace Hotfix.Download
             /// <returns>开始处理任务的状态。</returns>
             public EStartTaskStatus Start(DownloadTask task)
             {
-                Task = task ?? throw new FuException("[DownloadModule.DownloadAgent] 任务不能为空.");
+                Task = task ?? throw new InvalidOperationException("[DownloadModule.DownloadAgent] 任务不能为空.");
 
                 Task.Status = DownloadTaskStatus.Doing;
                 var downloadFile = $"{Task.DownloadedFullPath}.download";
@@ -295,7 +295,7 @@ namespace Hotfix.Download
                 DownloadedLength = e.Length;
 
                 if (SavedLength != CurrentLength)
-                    throw new FuException("[DownloadModule.DownloadAgent] 已存储的大小和当前大小不一致");
+                    throw new InvalidOperationException("[DownloadModule.DownloadAgent] 已存储的大小和当前大小不一致");
 
                 m_Helper.Reset();
                 m_FileStream.Close();

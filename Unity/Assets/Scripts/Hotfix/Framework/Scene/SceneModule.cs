@@ -147,7 +147,7 @@ namespace Hotfix.Scene
         /// <returns>场景是否已加载。</returns>
         public bool IsLoaded(string sceneAssetPath)
         {
-            if (string.IsNullOrEmpty(sceneAssetPath)) throw new FuException("[SceneModule] 场景资源路径无效!");
+            if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
             return m_LoadedSceneDict.ContainsKey(sceneAssetPath);
         }
 
@@ -158,7 +158,7 @@ namespace Hotfix.Scene
         /// <returns>场景是否正在加载。</returns>
         public bool IsLoading(string sceneAssetPath)
         {
-            if (string.IsNullOrEmpty(sceneAssetPath)) throw new FuException("[SceneModule] 场景资源路径无效!");
+            if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
             return m_LoadingSceneDict.ContainsKey(sceneAssetPath);
         }
 
@@ -169,7 +169,7 @@ namespace Hotfix.Scene
         /// <returns>场景是否正在卸载。</returns>
         public bool IsUnloading(string sceneAssetPath)
         {
-            if (string.IsNullOrEmpty(sceneAssetPath)) throw new FuException("[SceneModule] 场景资源路径无效!");
+            if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
             return m_UnloadingSceneDict.ContainsKey(sceneAssetPath);
         }
 
@@ -220,7 +220,7 @@ namespace Hotfix.Scene
         /// <param name="results">已加载场景的资源路径。</param>
         public void GetAllLoadedSceneAssetPaths(List<string> results)
         {
-            if (results == null) throw new FuException("[SceneModule] 结果参数列表为空!");
+            if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
             results.Clear();
             results.AddRange(m_LoadedSceneDict.Keys);
         }
@@ -242,7 +242,7 @@ namespace Hotfix.Scene
         /// <param name="results">正在加载场景的资源路径。</param>
         public void GetAllLoadingSceneAssetPaths(List<string> results)
         {
-            if (results == null) throw new FuException("[SceneModule] 结果参数列表为空!");
+            if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
             results.Clear();
             results.AddRange(m_LoadingSceneDict.Keys);
         }
@@ -264,7 +264,7 @@ namespace Hotfix.Scene
         /// <param name="results">正在卸载场景的资源路径。</param>
         public void GetAllUnloadingSceneAssetPaths(List<string> results)
         {
-            if (results == null) throw new FuException("[SceneModule] 结果参数列表为空!");
+            if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
             results.Clear();
             results.AddRange(m_UnloadingSceneDict.Keys);
         }
@@ -298,7 +298,7 @@ namespace Hotfix.Scene
         /// <param name="userData">用户自定义数据。</param>
         public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
-            if (string.IsNullOrEmpty(sceneAssetName)) throw new FuException("[SceneModule] 场景资源名称不能为空!.");
+            if (string.IsNullOrEmpty(sceneAssetName)) throw new InvalidOperationException("[SceneModule] 场景资源名称不能为空!.");
             var sceneAssetPath = Utility.AssetPath.GetScenePath(sceneAssetName);
             return LoadScene(sceneAssetPath, sceneMode, userData);
         }
@@ -313,19 +313,19 @@ namespace Hotfix.Scene
         public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetPath))
-                throw new FuException("[SceneModule] 场景资源路径不能为空!.");
+                throw new InvalidOperationException("[SceneModule] 场景资源路径不能为空!.");
 
             if (!sceneAssetPath.StartsWith("Assets/", StringComparison.Ordinal) || !sceneAssetPath.EndsWith(".unity", StringComparison.Ordinal))
-                throw new FuException($"[SceneModule] 场景资源路径 '{sceneAssetPath}' 格式错误!");
+                throw new InvalidOperationException($"[SceneModule] 场景资源路径 '{sceneAssetPath}' 格式错误!");
 
             if (IsUnloading(sceneAssetPath))
-                throw new FuException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在卸载中!");
+                throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在卸载中!");
 
             if (IsLoading(sceneAssetPath))
-                throw new FuException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在加载中!");
+                throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在加载中!");
 
             if (IsLoaded(sceneAssetPath))
-                throw new FuException($"[SceneModule] 场景资源 '{sceneAssetPath}' 已被加载过，不能重复加载!");
+                throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 已被加载过，不能重复加载!");
 
             var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode);
             m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
@@ -347,13 +347,13 @@ namespace Hotfix.Scene
             FuGuard.NotNull(sceneAssetPath, nameof(sceneAssetPath));
 
             if (IsUnloading(sceneAssetPath))
-                throw new FuException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在卸载中!.");
+                throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在卸载中!.");
 
             if (IsLoading(sceneAssetPath))
-                throw new FuException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在加载中!.");
+                throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在加载中!.");
 
             if (!IsLoaded(sceneAssetPath))
-                throw new FuException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景未加载!");
+                throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景未加载!");
 
             if (!m_LoadedSceneDict.TryGetValue(sceneAssetPath, out var sceneOperationHandle)) return;
 

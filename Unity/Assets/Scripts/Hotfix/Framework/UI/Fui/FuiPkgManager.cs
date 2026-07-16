@@ -191,10 +191,10 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         private async UniTask<TextAsset> LoadDesc(string pkgName)
         {
-            if (string.IsNullOrEmpty(pkgName)) throw new FuException("[FuiPkgManager] 包名不能为空.");
+            if (string.IsNullOrEmpty(pkgName)) throw new InvalidOperationException("[FuiPkgManager] 包名不能为空.");
 
             //"Assets/Bundles/UI/";
             var rootPath = Utility.AssetPath.GetUIRootPath();

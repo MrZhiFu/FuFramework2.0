@@ -193,7 +193,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         protected void CloseSelf()
         {
-            if (m_UIModule is null) throw new FuException("[ViewBase] 关闭自身失败，UI管理模块为空。");
+            if (m_UIModule is null) throw new InvalidOperationException("[ViewBase] 关闭自身失败，UI管理模块为空。");
             m_UIModule.CloseUI(this);
         }
 

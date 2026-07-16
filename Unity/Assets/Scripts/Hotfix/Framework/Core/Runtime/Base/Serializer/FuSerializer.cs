@@ -76,7 +76,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="callback">序列化回调函数。</param>
         public void RegisterSerializeCallback(byte version, SerializeCallback callback)
         {
-            m_SerializeCbDict[version] = callback ?? throw new FuException("传入的序列化回调函数为空.");
+            m_SerializeCbDict[version] = callback ?? throw new InvalidOperationException("传入的序列化回调函数为空.");
             if (version <= m_LatestSerializeCbVersion) return;
             m_LatestSerializeCbVersion = version;
         }
@@ -88,7 +88,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="callback">反序列化回调函数。</param>
         public void RegisterDeserializeCallback(byte version, DeserializeCallback callback)
         {
-            m_DeserializeCbDict[version] = callback ?? throw new FuException("传入的反序列化回调函数为空.");
+            m_DeserializeCbDict[version] = callback ?? throw new InvalidOperationException("传入的反序列化回调函数为空.");
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="callback">尝试从指定流获取指定键的值回调函数。</param>
         public void RegisterTryGetValueCallback(byte version, TryGetValueCallback callback)
         {
-            m_TryGetValueCbDict[version] = callback ?? throw new FuException("传入的取值回调函数为空.");
+            m_TryGetValueCbDict[version] = callback ?? throw new InvalidOperationException("传入的取值回调函数为空.");
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace FuFramework.Core.Runtime
         public bool Serialize(Stream stream, T data)
         {
             return m_SerializeCbDict.Count <= 0
-                ? throw new FuException("未注册任何序列化回调函数.")
+                ? throw new InvalidOperationException("未注册任何序列化回调函数.")
                 : Serialize(stream, data, m_LatestSerializeCbVersion);
         }
 
@@ -131,7 +131,7 @@ namespace FuFramework.Core.Runtime
             stream.WriteByte(version);
 
             if (!m_SerializeCbDict.TryGetValue(version, out var callback))
-                throw new FuException($"序列化回调函数版本 '{version}' 不存在.");
+                throw new InvalidOperationException($"序列化回调函数版本 '{version}' 不存在.");
 
             return callback(stream, data);
         }
@@ -150,11 +150,11 @@ namespace FuFramework.Core.Runtime
             var header2 = (byte)stream.ReadByte();
 
             if (header0 != header[0] || header1 != header[1] || header2 != header[2])
-                throw new FuException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 文件中为 '{ (char)header0}{(char)header1}{(char)header2}'.");
+                throw new InvalidOperationException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 文件中为 '{ (char)header0}{(char)header1}{(char)header2}'.");
 
             var version = (byte)stream.ReadByte();
             if (!m_DeserializeCbDict.TryGetValue(version, out var callback))
-                throw new FuException($"反序列化回调函数版本 '{version}' 不存在.");
+                throw new InvalidOperationException($"反序列化回调函数版本 '{version}' 不存在.");
 
             return callback(stream);
         }

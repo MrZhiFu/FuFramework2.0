@@ -39,7 +39,7 @@ namespace Hotfix.Download
                 get => m_UpdateInterval;
                 set
                 {
-                    if (value <= 0f) throw new FuException("更新间隔无效，必须大于0.");
+                    if (value <= 0f) throw new InvalidOperationException("更新间隔无效，必须大于0.");
                     m_UpdateInterval = value;
                     Reset();
                 }
@@ -52,7 +52,7 @@ namespace Hotfix.Download
                 get => m_RecordInterval;
                 set
                 {
-                    if (value <= 0f) throw new FuException("记录间隔无效，必须大于0.");
+                    if (value <= 0f) throw new InvalidOperationException("记录间隔无效，必须大于0.");
                     m_RecordInterval = value;
                     Reset();
                 }
@@ -65,8 +65,8 @@ namespace Hotfix.Download
             /// <param name="recordInterval">记录间隔(秒，默认为10秒1次)</param>
             public DownloadCounter(float updateInterval, float recordInterval)
             {
-                if (updateInterval <= 0f) throw new FuException("更新间隔无效，必须大于0.");
-                if (recordInterval <= 0f) throw new FuException("记录间隔无效，必须大于0.");
+                if (updateInterval <= 0f) throw new InvalidOperationException("更新间隔无效，必须大于0.");
+                if (recordInterval <= 0f) throw new InvalidOperationException("记录间隔无效，必须大于0.");
 
                 m_DownloadCounterNodeList = new FuLinkedList<DownloadCounterNode>();
 

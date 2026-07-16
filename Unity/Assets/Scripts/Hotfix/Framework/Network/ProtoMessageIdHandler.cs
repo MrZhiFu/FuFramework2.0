@@ -115,7 +115,7 @@ namespace Hotfix.Network
                 {
                     if (type.IsImplWithInterface(typeof(IHeartBeatMessage)))
                     {
-                        if (HeartBeatList.Contains(type)) throw new FuException($"心跳消息重复==>类型:{type.FullName}");
+                        if (HeartBeatList.Contains(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
                         HeartBeatList.Add(type);
                     }
 
@@ -124,7 +124,7 @@ namespace Hotfix.Network
                         // 请求
                         if (ReqDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
                         ReqDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
-                        throw new FuException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                        throw new InvalidOperationException($"请求Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
 
                     if (type.IsImplWithInterface(typeof(IResponseMessage)))
@@ -132,7 +132,7 @@ namespace Hotfix.Network
                         // 返回
                         if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
                         RespDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
-                        throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                        throw new InvalidOperationException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
 
                     if (type.IsImplWithInterface(typeof(INotifyMessage)))
@@ -140,7 +140,7 @@ namespace Hotfix.Network
                         // 返回
                         if (RespDictionary.TryAdd(messageIdHandler.MessageId, type)) continue;
                         RespDictionary.TryGetValueByKey(messageIdHandler.MessageId, out var value);
-                        throw new FuException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
+                        throw new InvalidOperationException($"返回Id重复==>当前ID:{messageIdHandler.MessageId},已有ID类型:{value.FullName}");
                     }
                 }
             }

@@ -30,10 +30,10 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
-        /// <exception cref="FuException">界面为空时抛出。</exception>
+        /// <exception cref="InvalidOperationException">界面为空时抛出。</exception>
         public static ViewInfo Create(ViewBase view)
         {
-            if (view == null) throw new FuException("[UIInfo] ui界面逻辑实例为空.");
+            if (view == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Runtime.ReferencePool.Acquire<ViewInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;

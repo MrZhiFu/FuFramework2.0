@@ -36,7 +36,7 @@ namespace Hotfix.Download
         /// <returns>创建的下载代理辅助器更新数据大小事件。</returns>
         public static DownloadAgentHelperUpdateLengthEventArgs Create(int deltaLength)
         {
-            if (deltaLength <= 0) throw new FuException("下载的增量数据大小必须大于0.");
+            if (deltaLength <= 0) throw new InvalidOperationException("下载的增量数据大小必须大于0.");
 
             var downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
             downloadAgentHelperUpdateLengthEventArgs.DeltaLength = deltaLength;

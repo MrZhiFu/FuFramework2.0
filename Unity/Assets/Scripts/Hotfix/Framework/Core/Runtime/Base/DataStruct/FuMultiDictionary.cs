@@ -250,7 +250,7 @@ namespace FuFramework.Core.Runtime
             {
                 if (dictionary == null)
                 {
-                    throw new FuException("Dictionary is invalid.");
+                    throw new InvalidOperationException("Dictionary is invalid.");
                 }
 
                 m_Enumerator = dictionary.GetEnumerator();

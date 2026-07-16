@@ -578,7 +578,7 @@ namespace Hotfix.Network
 
                         default:
                             var errorMessage = $"Not supported address family '{ConnectEndPoint.AddressFamily}'.";
-                            if (NetworkChannelError == null) throw new FuException(errorMessage);
+                            if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                             NetworkChannelError(this, ENetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
                             return;
                     }
@@ -649,7 +649,7 @@ namespace Hotfix.Network
                 if (PSocket == null)
                 {
                     const string errorMessage = "You must connect first.";
-                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                     NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
@@ -657,7 +657,7 @@ namespace Hotfix.Network
                 if (!PActive)
                 {
                     const string errorMessage = "Socket is not active.";
-                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                     NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
@@ -665,7 +665,7 @@ namespace Hotfix.Network
                 if (messageObject == null)
                 {
                     const string errorMessage = "Packet is invalid.";
-                    if (NetworkChannelError == null) throw new FuException(errorMessage);
+                    if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                     NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
                     return;
                 }
@@ -729,7 +729,7 @@ namespace Hotfix.Network
             /// 处理消息发送
             /// </summary>
             /// <returns></returns>
-            /// <exception cref="FuException"></exception>
+            /// <exception cref="InvalidOperationException"></exception>
             protected virtual bool ProcessSend()
             {
                 lock (PSendPacketPool)
@@ -760,7 +760,7 @@ namespace Hotfix.Network
 
                         if (serializeResult) continue;
                         const string errorMessage = "Serialized packet failure.";
-                        if (NetworkChannelError == null) throw new FuException(errorMessage);
+                        if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                         NetworkChannelError(this, ENetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
                         return false;
 

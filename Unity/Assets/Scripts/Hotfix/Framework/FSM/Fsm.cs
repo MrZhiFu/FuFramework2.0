@@ -81,8 +81,8 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>创建的有限状态机。</returns>
         public static Fsm Create<T>(string name, T owner, params FsmStateBase[] states) where T : class
         {
-            if (owner == null) throw new FuException("[Fsm] 有限状态机持有者不能为空.");
-            if (states == null || states.Length < 1) throw new FuException("[Fsm] 有限状态机状态不能为空.");
+            if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
+            if (states == null || states.Length < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
             var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
@@ -91,10 +91,10 @@ namespace FuFramework.Fsm.Runtime
 
             foreach (var state in states)
             {
-                if (state == null) throw new FuException("[Fsm] 有限状态机状态不能为空.");
+                if (state == null) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
                 var stateType = state.GetType();
                 if (!fsm.m_StateDict.TryAdd(stateType, state))
-                    throw new FuException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
+                    throw new InvalidOperationException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
 
                 // 初始化状态
                 state.OnInit(fsm);
@@ -114,8 +114,8 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>创建的有限状态机。</returns>
         public static Fsm Create<T>(string name, T owner, List<FsmStateBase> states) where T : class
         {
-            if (owner == null) throw new FuException("[Fsm] 有限状态机持有者不能为空.");
-            if (states == null || states.Count < 1) throw new FuException("[Fsm] 有限状态机状态不能为空.");
+            if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
+            if (states == null || states.Count < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
             var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
@@ -124,10 +124,10 @@ namespace FuFramework.Fsm.Runtime
 
             foreach (var state in states)
             {
-                if (state == null) throw new FuException("[Fsm] 有限状态机状态不能为空.");
+                if (state == null) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
                 var stateType = state.GetType();
                 if (!fsm.m_StateDict.TryAdd(stateType, state))
-                    throw new FuException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
+                    throw new InvalidOperationException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
 
                 // 初始化状态
                 state.OnInit(fsm);
@@ -142,12 +142,12 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TState">要开始的有限状态机状态类型。</typeparam>
         public void Start<TState>() where TState : FsmStateBase
         {
-            if (IsRunning) throw new FuException("[Fsm] 有限状态机正在运行中，不能重复开始。");
+            if (IsRunning) throw new InvalidOperationException("[Fsm] 有限状态机正在运行中，不能重复开始。");
 
             FsmStateBase stateBase = GetState<TState>();
 
             CurrentStateTime = 0f;
-            CurrentStateBase = stateBase ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在。");
+            CurrentStateBase = stateBase ?? throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在。");
             CurrentStateBase.OnEnter();
         }
 
@@ -157,16 +157,16 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="stateType">要开始的有限状态机状态类型。</param>
         public void Start(Type stateType)
         {
-            if (IsRunning) throw new FuException("[Fsm] 有限状态机正在运行中，不能重复开始。");
-            if (stateType == null) throw new FuException("[Fsm] 有限状态机开始失败，需要开始的状态不能为空。");
+            if (IsRunning) throw new InvalidOperationException("[Fsm] 有限状态机正在运行中，不能重复开始。");
+            if (stateType == null) throw new InvalidOperationException("[Fsm] 有限状态机开始失败，需要开始的状态不能为空。");
 
             if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
-                throw new FuException($"State type '{stateType.FullName}' is invalid.");
+                throw new InvalidOperationException($"State type '{stateType.FullName}' is invalid.");
 
             var state = GetState(stateType);
 
             CurrentStateTime = 0f;
-            CurrentStateBase = state ?? throw new FuException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在。");
+            CurrentStateBase = state ?? throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在。");
             CurrentStateBase.OnEnter();
         }
 
@@ -236,9 +236,9 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否存在有限状态机状态。</returns>
         public bool HasState(Type stateType)
         {
-            if (stateType == null) throw new FuException("[Fsm] 需要判断的状态不能为空。");
+            if (stateType == null) throw new InvalidOperationException("[Fsm] 需要判断的状态不能为空。");
             if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
-                throw new FuException($"[Fsm] 状态类型 '{stateType.FullName}' 不是 FsmStateBase 的子类。");
+                throw new InvalidOperationException($"[Fsm] 状态类型 '{stateType.FullName}' 不是 FsmStateBase 的子类。");
             return m_StateDict.ContainsKey(stateType);
         }
 
@@ -259,9 +259,9 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>要获取的有限状态机状态。</returns>
         public FsmStateBase GetState(Type stateType)
         {
-            if (stateType == null) throw new FuException("[Fsm] 需要获取的状态不能为空。");
+            if (stateType == null) throw new InvalidOperationException("[Fsm] 需要获取的状态不能为空。");
             if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
-                throw new FuException($"[Fsm] 状态类型 '{stateType.FullName}' 不是 FsmStateBase 的子类。");
+                throw new InvalidOperationException($"[Fsm] 状态类型 '{stateType.FullName}' 不是 FsmStateBase 的子类。");
             return m_StateDict.GetValueOrDefault(stateType);
         }
 
@@ -287,7 +287,7 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="results">有限状态机的所有状态。</param>
         public void GetAllStates(List<FsmStateBase> results)
         {
-            if (results == null) throw new FuException("[Fsm] 结果列表不能为空。");
+            if (results == null) throw new InvalidOperationException("[Fsm] 结果列表不能为空。");
             results.Clear();
             foreach (var (_, state) in m_StateDict)
             {
@@ -302,7 +302,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>有限状态机数据是否存在。</returns>
         public bool HasData(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new FuException("[Fsm] 数据名称不能为空。");
+            if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 数据名称不能为空。");
             return m_DataDict != null && m_DataDict.ContainsKey(name);
         }
 
@@ -324,7 +324,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>要获取的有限状态机数据。</returns>
         public Variable.Runtime.Variable GetData(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new FuException("[Fsm] 数据名称不能为空。");
+            if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 数据名称不能为空。");
             return m_DataDict?.GetValueOrDefault(name);
         }
 
@@ -346,7 +346,7 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="data">要设置的有限状态机数据。</param>
         public void SetData(string name, Variable.Runtime.Variable data)
         {
-            if (string.IsNullOrEmpty(name)) throw new FuException("[Fsm] 需要设置的数据名称不能为空。");
+            if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要设置的数据名称不能为空。");
 
             m_DataDict ??= new Dictionary<string, Variable.Runtime.Variable>(StringComparer.Ordinal);
 
@@ -364,7 +364,7 @@ namespace FuFramework.Fsm.Runtime
         /// <returns>是否移除有限状态机数据成功。</returns>
         public bool RemoveData(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new FuException("[Fsm] 需要移除的数据名称不能为空。");
+            if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要移除的数据名称不能为空。");
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
@@ -387,9 +387,9 @@ namespace FuFramework.Fsm.Runtime
         /// <param name="stateType">要切换到的有限状态机状态类型。</param>
         internal void ChangeState(Type stateType)
         {
-            if (CurrentStateBase == null) throw new FuException("[Fsm] 有限状态机当前状态为空，切换失败。");
+            if (CurrentStateBase == null) throw new InvalidOperationException("[Fsm] 有限状态机当前状态为空，切换失败。");
             var state = GetState(stateType);
-            if (state == null) throw new FuException($"[Fsm] 有限状态机 '{FullName}' 切换状态 '{stateType.FullName}' 失败，状态不存在。");
+            if (state == null) throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 切换状态 '{stateType.FullName}' 失败，状态不存在。");
 
             CurrentStateBase.OnLeave(false);
             CurrentStateTime = 0f;

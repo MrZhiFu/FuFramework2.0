@@ -144,7 +144,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public bool Check(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new FuException("[EventPool]事件对应的处理函数不能为空!");
+            if (handler == null) throw new InvalidOperationException("[EventPool]事件对应的处理函数不能为空!");
 
             lock (m_EventHandlerLock)
             {
@@ -157,7 +157,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public void Subscribe(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new FuException("[EventPool]事件对应的处理函数不能为空!");
+            if (handler == null) throw new InvalidOperationException("[EventPool]事件对应的处理函数不能为空!");
 
             lock (m_EventHandlerLock)
             {
@@ -168,10 +168,10 @@ namespace FuFramework.Event.Runtime
                 }
 
                 if ((m_PoolMode & EEventPoolMode.AllowMultiHandler) != EEventPoolMode.AllowMultiHandler)
-                    throw new FuException($"[EventPool]事件 '{id}' 不允许多次注册处理函数!");
+                    throw new InvalidOperationException($"[EventPool]事件 '{id}' 不允许多次注册处理函数!");
 
                 if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) != EEventPoolMode.AllowDuplicateHandler && Check(id, handler))
-                    throw new FuException($"[EventPool]事件 '{id}' 不允许重复注册处理函数!");
+                    throw new InvalidOperationException($"[EventPool]事件 '{id}' 不允许重复注册处理函数!");
 
                 m_EventHandlerMultiDict.Add(id, handler);
             }
@@ -182,7 +182,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public void Unsubscribe(string id, EventHandler<T> handler)
         {
-            if (handler == null) throw new FuException("[EventPool]事件对应的处理函数不能为空!");
+            if (handler == null) throw new InvalidOperationException("[EventPool]事件对应的处理函数不能为空!");
 
             // 先将待取消的handler添加到待删除列表，在事件处理时统一移除
             lock (m_EventHandlerLock)
@@ -207,7 +207,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public void Broadcast(object sender, T eArgs)
         {
-            if (eArgs == null) throw new FuException("[EventPool]事件参数不能为空!");
+            if (eArgs == null) throw new InvalidOperationException("[EventPool]事件参数不能为空!");
 
             var tempEvent = Event.Create(sender, eArgs);
             lock (m_EventQueue)
@@ -221,7 +221,7 @@ namespace FuFramework.Event.Runtime
         /// </summary>
         public void BroadcastNow(object sender, T eArgs)
         {
-            if (eArgs == null) throw new FuException("[EventPool]事件参数不能为空!");
+            if (eArgs == null) throw new InvalidOperationException("[EventPool]事件参数不能为空!");
             HandleEvent(sender, eArgs);
         }
 
@@ -293,7 +293,7 @@ namespace FuFramework.Event.Runtime
             }
 
             if (noHandlerException)
-                throw new FuException($"[EventPool]事件 '{eArgs.Id}' 没有对应的处理函数!");
+                throw new InvalidOperationException($"[EventPool]事件 '{eArgs.Id}' 没有对应的处理函数!");
         }
 
         /// <summary>

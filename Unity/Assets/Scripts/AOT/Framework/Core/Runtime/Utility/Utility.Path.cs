@@ -73,7 +73,7 @@ namespace FuFramework.Core.Runtime
             public static bool RemoveEmptyDirectory(string directoryName)
             {
                 if (string.IsNullOrEmpty(directoryName))
-                    throw new FuException("要处理的文件夹名称不能为空.");
+                    throw new ArgumentException("要处理的文件夹名称不能为空.", nameof(directoryName));
 
                 try
                 {

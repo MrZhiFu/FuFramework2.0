@@ -209,7 +209,7 @@ namespace FuFramework.UI.Runtime
         public void AddUI(ViewBase view)
         {
             if (HasUI(view.SerialId))
-                throw new FuException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
             var uiInfo = ViewInfo.Create(view);
             m_UIInfoList.AddFirst(uiInfo);
@@ -223,10 +223,10 @@ namespace FuFramework.UI.Runtime
         {
             var uiInfo = GetUIInfo(view);
             if (uiInfo == null)
-                throw new FuException($"[UIGroup] 无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
+                throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new FuException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
             // 释放界面信息实例
             ReferencePool.Runtime.ReferencePool.Release(uiInfo);

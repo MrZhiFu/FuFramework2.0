@@ -79,7 +79,7 @@ namespace FuFramework.ObjectPool.Runtime
                 get => m_Capacity;
                 set
                 {
-                    if (value      < 0) throw new FuException("[ObjectPoolModule] 对象池容量不能小于0.");
+                    if (value      < 0) throw new InvalidOperationException("[ObjectPoolModule] 对象池容量不能小于0.");
                     if (m_Capacity == value) return;
 
                     m_Capacity = value;
@@ -93,7 +93,7 @@ namespace FuFramework.ObjectPool.Runtime
                 get => m_ExpireTime;
                 set
                 {
-                    if (value < 0f) throw new FuException("[ObjectPoolModule] 对象过期秒数不能小于0.");
+                    if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能小于0.");
                     if (Mathf.Approximately(ExpireTime, value)) return;
 
                     m_ExpireTime = value;
@@ -173,7 +173,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="spawned">对象是否提前生成。</param>
             public void Register(T obj, bool spawned)
             {
-                if (obj == null) throw new FuException("[ObjectPoolModule] 要创建并注册对象不能为空.");
+                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
 
                 var tempObj = Object<T>.Create(obj, spawned);
                 m_ObjectMultiDict.Add(obj.Name, tempObj);
@@ -190,7 +190,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns>要获取的对象。</returns>
             public T Spawn(string name)
             {
-                if (name == null) throw new FuException("[ObjectPoolModule] 对象名称不能为空.");
+                if (name == null) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return null;
 
@@ -214,7 +214,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="obj">要回收的对象。</param>
             public void Recycle(T obj)
             {
-                if (obj == null) throw new FuException("[ObjectPoolModule] 对象不能为空.");
+                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
                 Recycle(obj.Target);
             }
 
@@ -224,11 +224,11 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="target">要回收的对象。</param>
             public void Recycle(object target)
             {
-                if (target == null) throw new FuException("[ObjectPoolModule] 要回收的目标对象不能为空.");
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 要回收的目标对象不能为空.");
 
                 var obj = _GetObject(target);
                 if (obj == null)
-                    throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
+                    throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
                 obj.Recycle();
                 if (Count > m_Capacity && obj.SpawnCount <= 0)
                 {
@@ -243,7 +243,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns>释放对象是否成功。</returns>
             public bool ReleaseObject(T obj)
             {
-                if (obj == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
+                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
                 return ReleaseObject(obj.Target);
             }
 
@@ -254,7 +254,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns>释放对象是否成功。</returns>
             public bool ReleaseObject(object target)
             {
-                if (target == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
 
                 var obj = _GetObject(target);
                 if (obj == null) return false;
@@ -300,7 +300,7 @@ namespace FuFramework.ObjectPool.Runtime
             public void Release(int toReleaseCount, ReleaseObjectFilterCallback<T> releaseObjectFilterCallback)
             {
                 if (releaseObjectFilterCallback == null)
-                    throw new FuException("[ObjectPoolModule] 释放对象筛选函数不能为空.");
+                    throw new InvalidOperationException("[ObjectPoolModule] 释放对象筛选函数不能为空.");
 
                 if (toReleaseCount <= 0) return;
 
@@ -356,7 +356,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns>要检查的对象是否可生成。</returns>
             public bool CanSpawn(string name)
             {
-                if (name == null) throw new FuException("[ObjectPoolModule] 对象名称不能为空.");
+                if (name == null) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 
                 if (!m_ObjectMultiDict.TryGetValue(name, out var objectRange)) return false;
 
@@ -379,7 +379,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="locked">是否被加锁。</param>
             public void SetLocked(T obj, bool locked)
             {
-                if (obj == null) throw new FuException("[ObjectPoolModule] 对象不能为空.");
+                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
                 SetLocked(obj.Target, locked);
             }
 
@@ -390,11 +390,11 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="locked">是否被加锁。</param>
             public void SetLocked(object target, bool locked)
             {
-                if (target == null) throw new FuException("[ObjectPoolModule] 对象不能为空.");
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
 
                 var obj = _GetObject(target);
                 if (obj == null)
-                    throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
+                    throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
                 obj.Locked = locked;
             }
 
@@ -405,7 +405,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="priority">优先级。</param>
             public void SetPriority(T obj, int priority)
             {
-                if (obj == null) throw new FuException("[ObjectPoolModule] 对象不能为空.");
+                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
                 SetPriority(obj.Target, priority);
             }
 
@@ -416,11 +416,11 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="priority">优先级。</param>
             public void SetPriority(object target, int priority)
             {
-                if (target == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
 
                 var obj = _GetObject(target);
                 if (obj == null)
-                    throw new FuException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
+                    throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
 
                 obj.Priority = priority;
             }
@@ -451,7 +451,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <returns></returns>
             private Object<T> _GetObject(object target)
             {
-                if (target == null) throw new FuException("[ObjectPoolModule] 目标对象不能为空.");
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
                 return m_TargetObjectDict.GetValueOrDefault(target);
             }
 
@@ -461,7 +461,7 @@ namespace FuFramework.ObjectPool.Runtime
             /// <param name="results">结果列表</param>
             private void _GetCanReleaseObjects(List<T> results)
             {
-                if (results == null) throw new FuException("[ObjectPoolModule] 结果列表不能为空.");
+                if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
 
                 results.Clear();
                 foreach (var (_, obj) in m_TargetObjectDict)

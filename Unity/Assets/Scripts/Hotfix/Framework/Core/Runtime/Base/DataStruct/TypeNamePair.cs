@@ -37,7 +37,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="name">名称。</param>
         public TypeNamePair(Type type, string name)
         {
-            Type = type ?? throw new FuException("[TypeNamePair] 类型不能为空!");
+            Type = type ?? throw new InvalidOperationException("[TypeNamePair] 类型不能为空!");
             Name = name ?? string.Empty;
         }
 
@@ -47,7 +47,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>类型和名称的组合值字符串。</returns>
         public override string ToString()
         {
-            if (Type == null) throw new FuException("[TypeNamePair] 类型不能为空!");
+            if (Type == null) throw new InvalidOperationException("[TypeNamePair] 类型不能为空!");
             var typeName = Type.FullName;
             return (string.IsNullOrEmpty(Name) ? typeName : $"{typeName}.{Name}") ?? string.Empty;
         }

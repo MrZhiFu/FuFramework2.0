@@ -235,7 +235,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveFirst()
         {
             var first = m_LinkedList.First;
-            if (first == null) throw new FuException("[FuLinkedList]移除开头结点失败，链表开头结点为空!");
+            if (first == null) throw new InvalidOperationException("[FuLinkedList]移除开头结点失败，链表开头结点为空!");
 
             m_LinkedList.RemoveFirst();
             _ReleaseNode(first);
@@ -247,7 +247,7 @@ namespace FuFramework.Core.Runtime
         public void RemoveLast()
         {
             var last = m_LinkedList.Last;
-            if (last == null) throw new FuException("[FuLinkedList]移除结尾结点失败，链表结尾结点为空!");
+            if (last == null) throw new InvalidOperationException("[FuLinkedList]移除结尾结点失败，链表结尾结点为空!");
 
             m_LinkedList.RemoveLast();
             _ReleaseNode(last);
@@ -319,7 +319,7 @@ namespace FuFramework.Core.Runtime
 
             internal Enumerator(LinkedList<T> linkedList)
             {
-                if (linkedList == null) throw new FuException("[FuLinkedList.Enumerator] 传入的链表为空!");
+                if (linkedList == null) throw new InvalidOperationException("[FuLinkedList.Enumerator] 传入的链表为空!");
                 m_Enumerator = linkedList.GetEnumerator();
             }
 

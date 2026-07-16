@@ -121,7 +121,7 @@ namespace FuFramework.Core.Runtime
                 case ELogLevel.Warning: UnityEngine.Debug.LogWarning($"{time}{message}"); break;
                 case ELogLevel.Error:   UnityEngine.Debug.LogError($"{time}{message}");   break;
                 case ELogLevel.Fatal:   UnityEngine.Debug.LogError($"{time}{message}");   break;
-                default:               throw new FuException($"{time}{message}");
+                default:               throw new ArgumentOutOfRangeException(nameof(level), level, $"{time}{message}");
                 // @formatter:on
             }
         }

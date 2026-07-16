@@ -140,7 +140,7 @@ namespace Hotfix.Network
 
             if (HasNetworkChannel(channelName))
             {
-                throw new FuException($"[NetworkModule]网络频道已存在: '{channelName ?? string.Empty}'.");
+                throw new InvalidOperationException($"[NetworkModule]网络频道已存在: '{channelName ?? string.Empty}'.");
             }
 #if (ENABLE_GAME_FRAME_X_WEB_SOCKET && UNITY_WEBGL) || FORCE_ENABLE_WEB_SOCKET
             NetworkChannelBase networkChannel = new WebSocketNetworkChannel(channelName, networkChannelHelper, rpcTimeout);

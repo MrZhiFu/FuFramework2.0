@@ -35,7 +35,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="end">链表范围的终结点。</param>
         public FuLinkedListRange(LinkedListNode<T> first, LinkedListNode<T> end)
         {
-            if (first == null || end == null || first == end) throw new FuException("[FuLinkedListRange]链表范围无效!");
+            if (first == null || end == null || first == end) throw new InvalidOperationException("[FuLinkedListRange]链表范围无效!");
             First = first;
             End   = end;
         }
@@ -121,7 +121,7 @@ namespace FuFramework.Core.Runtime
 
             internal Enumerator(FuLinkedListRange<T> range)
             {
-                if (!range.IsValid) throw new FuException("[Enumerator]链表范围无效!");
+                if (!range.IsValid) throw new InvalidOperationException("[Enumerator]链表范围无效!");
 
                 m_Range        = range;
                 m_CurrentValue = default;

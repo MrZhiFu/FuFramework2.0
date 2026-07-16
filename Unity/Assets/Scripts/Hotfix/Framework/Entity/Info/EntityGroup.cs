@@ -90,8 +90,8 @@ namespace Hotfix.Entity
         /// <param name="objectPoolModule">对象池管理模块。</param>
         public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
-            if (groupSetting is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
-            if (groupGo is null) throw new FuException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
+            if (groupSetting is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
+            if (groupGo is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
             Name    = groupSetting.Name;
             GroupGo = groupGo;
@@ -144,7 +144,7 @@ namespace Hotfix.Entity
         /// <returns>实体组中是否存在实体。</returns>
         public bool HasEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
             foreach (var entity in m_Entities)
             {
                 if (entity.EntityAssetName == entityAssetName)
@@ -177,7 +177,7 @@ namespace Hotfix.Entity
         /// <returns>要获取的实体。</returns>
         public Entity GetEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
             foreach (var entity in m_Entities)
             {
                 if (entity.EntityAssetName == entityAssetName)
@@ -194,7 +194,7 @@ namespace Hotfix.Entity
         /// <returns>要获取的实体。</returns>
         public Entity[] GetEntities(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
             var results = new List<Entity>();
             foreach (var entity in m_Entities)
             {
@@ -212,8 +212,8 @@ namespace Hotfix.Entity
         /// <param name="results">要获取的实体。</param>
         public void GetEntities(string entityAssetName, List<Entity> results)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityGroup] 实体资源名称为空.");
-            if (results is null) throw new FuException("[EntityGroup] 结果列表为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
+            if (results is null) throw new InvalidOperationException("[EntityGroup] 结果列表为空.");
             results.Clear();
             foreach (var entity in m_Entities)
             {
@@ -244,7 +244,7 @@ namespace Hotfix.Entity
         /// <param name="results">实体组中的所有实体。</param>
         public void GetAllEntities(List<Entity> results)
         {
-            if (results is null) throw new FuException("[EntityGroup] 结果列表为空.");
+            if (results is null) throw new InvalidOperationException("[EntityGroup] 结果列表为空.");
             results.Clear();
             results.AddRange(m_Entities);
         }
@@ -264,7 +264,7 @@ namespace Hotfix.Entity
             if (m_CachedNode != null && m_CachedNode.Value == entity)
                 m_CachedNode = m_CachedNode.Next;
             if (!m_Entities.Remove(entity))
-                throw new FuException($"[EntityGroup] 移除实体失败，实体组 '{Name}' 中不存在指定的实体 '[{entity.Id}]{entity.EntityAssetName}'.");
+                throw new InvalidOperationException($"[EntityGroup] 移除实体失败，实体组 '{Name}' 中不存在指定的实体 '[{entity.Id}]{entity.EntityAssetName}'.");
         }
 
         /// <summary>
@@ -292,10 +292,10 @@ namespace Hotfix.Entity
         /// </summary>
         /// <param name="entityInstance"></param>
         /// <param name="locked"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void SetEntityInstanceLocked(object entityInstance, bool locked)
         {
-            if (entityInstance is null) throw new FuException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
+            if (entityInstance is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
             m_InstancePool.SetLocked(entityInstance, locked);
         }
 
@@ -304,10 +304,10 @@ namespace Hotfix.Entity
         /// </summary>
         /// <param name="entityInstance"></param>
         /// <param name="priority"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void SetEntityInstancePriority(object entityInstance, int priority)
         {
-            if (entityInstance is null) throw new FuException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
+            if (entityInstance is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
             m_InstancePool.SetPriority(entityInstance, priority);
         }
     }

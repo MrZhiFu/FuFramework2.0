@@ -49,7 +49,7 @@ namespace Hotfix.Localization
             get => m_Language;
             set
             {
-                if (value == ELanguage.Unspecified) throw new FuException("[LocalizationModule]设置本地化语言失败，语言未指定.");
+                if (value == ELanguage.Unspecified) throw new InvalidOperationException("[LocalizationModule]设置本地化语言失败，语言未指定.");
                 if (value == m_Language) return;
                 var oldLanguage = m_Language;
                 m_Language = value;

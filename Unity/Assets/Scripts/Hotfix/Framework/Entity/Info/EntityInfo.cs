@@ -43,10 +43,10 @@ namespace Hotfix.Entity
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public static EntityInfo Create(Entity entity)
         {
-            if (entity is null) throw new FuException("[EntityInfo] 创建实体信息失败，实体显示对象为空!");
+            if (entity is null) throw new InvalidOperationException("[EntityInfo] 创建实体信息失败，实体显示对象为空!");
             var entityInfo = ReferencePool.Acquire<EntityInfo>();
             entityInfo.Entity = entity;
             entityInfo.Status = EEntityStatus.WillInit;
@@ -85,10 +85,10 @@ namespace Hotfix.Entity
         /// 获取所有子实体。
         /// </summary>
         /// <param name="results"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void GetChildEntities(List<Entity> results)
         {
-            if (results is null) throw new FuException("[EntityInfo] 结果列表为空!");
+            if (results is null) throw new InvalidOperationException("[EntityInfo] 结果列表为空!");
             results.Clear();
             results.AddRange(m_ChildEntities);
         }
@@ -97,10 +97,10 @@ namespace Hotfix.Entity
         /// 添加子实体。
         /// </summary>
         /// <param name="childEntity"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void AddChildEntity(Entity childEntity)
         {
-            if (m_ChildEntities.Contains(childEntity)) throw new FuException("[EntityInfo]添加子实体失败, 子实体已存在, 不能重复添加!");
+            if (m_ChildEntities.Contains(childEntity)) throw new InvalidOperationException("[EntityInfo]添加子实体失败, 子实体已存在, 不能重复添加!");
             m_ChildEntities.Add(childEntity);
         }
 
@@ -108,11 +108,11 @@ namespace Hotfix.Entity
         /// 移除子实体。
         /// </summary>
         /// <param name="childEntity"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public void RemoveChildEntity(Entity childEntity)
         {
             if (m_ChildEntities.Remove(childEntity)) return;
-            throw new FuException("[EntityInfo]移除子实体失败, 子实体不存在, 不能移除!");
+            throw new InvalidOperationException("[EntityInfo]移除子实体失败, 子实体不存在, 不能移除!");
         }
     }
 }

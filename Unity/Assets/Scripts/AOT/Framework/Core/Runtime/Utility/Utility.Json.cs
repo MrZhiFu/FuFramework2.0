@@ -29,8 +29,7 @@ namespace FuFramework.Core.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is FuException) throw;
-                    throw new FuException($"无法序列化为JSON，异常 '{exception}'.", exception);
+                    throw new InvalidOperationException($"无法序列化为JSON，异常 '{exception}'.", exception);
                 }
             }
 
@@ -50,8 +49,7 @@ namespace FuFramework.Core.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is FuException) throw;
-                    throw new FuException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
+                    throw new InvalidOperationException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
                 }
             }
 
@@ -71,8 +69,7 @@ namespace FuFramework.Core.Runtime
                 }
                 catch (Exception exception)
                 {
-                    if (exception is FuException) throw;
-                    throw new FuException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
+                    throw new InvalidOperationException($"无法反序列化为JSON对象，异常 '{exception}'.", exception);
                 }
             }
         }

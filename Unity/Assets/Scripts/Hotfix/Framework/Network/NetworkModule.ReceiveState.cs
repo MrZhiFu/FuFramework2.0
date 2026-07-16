@@ -51,7 +51,7 @@ namespace Hotfix.Network
 
             public void Reset(int targetLength, IPacketReceiveHeaderHandler packetHeader)
             {
-                if (targetLength < 0) throw new FuException("Target length is invalid.");
+                if (targetLength < 0) throw new InvalidOperationException("Target length is invalid.");
 
                 Stream.Position = 0L;
                 Stream.SetLength(targetLength);

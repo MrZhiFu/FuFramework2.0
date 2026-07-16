@@ -111,7 +111,7 @@ namespace FuFramework.Asset.Runtime
                 assetHandle = await loadFunc();
                 if (assetHandle == null || assetHandle.AssetObject == null)
                 {
-                    throw new FuException($"[AssetLoadRegister]资源{path}加载失败");
+                    throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                 }
 
                 // 保存资源句柄

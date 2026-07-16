@@ -152,8 +152,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static unsafe void Short2Bytes(short value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 2 > buffer.Length) throw new FuException("开始索引超出范围.");
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (startIndex < 0 || startIndex + 2 > buffer.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -299,8 +299,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static unsafe void Int2Bytes(int value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 4 > buffer.Length) throw new FuException("开始索引超出范围.");
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (startIndex < 0 || startIndex + 4 > buffer.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -446,8 +446,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static unsafe void Long2Bytes(long value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 8 > buffer.Length) throw new FuException("开始索引超出范围.");
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (startIndex < 0 || startIndex + 8 > buffer.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
 
                 fixed (byte* valueRef = buffer)
                 {
@@ -766,8 +766,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static byte[] String2Bytes(string value, Encoding encoding)
             {
-                if (value    == null) throw new FuException("传入的字符串为空.");
-                if (encoding == null) throw new FuException("传入的编码为空.");
+                if (value    == null) throw new ArgumentNullException(nameof(value));
+                if (encoding == null) throw new ArgumentNullException(nameof(encoding));
 
                 return encoding.GetBytes(value);
             }
@@ -799,8 +799,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static int String2Bytes(string value, Encoding encoding, byte[] buffer, int startIndex)
             {
-                if (value    == null) throw new FuException("传入的字符串为空.");
-                if (encoding == null) throw new FuException("传入的编码为空.");
+                if (value    == null) throw new ArgumentNullException(nameof(value));
+                if (encoding == null) throw new ArgumentNullException(nameof(encoding));
 
                 return encoding.GetBytes(value, 0, value.Length, buffer, startIndex);
             }
@@ -875,8 +875,8 @@ namespace FuFramework.Core.Runtime
             /// </example>
             public static void Bool2Bytes(bool value, byte[] buffer, int startIndex)
             {
-                if (buffer == null) throw new FuException("传入的结果Buffer为空.");
-                if (startIndex < 0 || startIndex + 1 > buffer.Length) throw new FuException("开始索引超出范围.");
+                if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+                if (startIndex < 0 || startIndex + 1 > buffer.Length) throw new ArgumentOutOfRangeException(nameof(startIndex));
                 buffer[startIndex] = value ? (byte)1 : (byte)0;
             }
 

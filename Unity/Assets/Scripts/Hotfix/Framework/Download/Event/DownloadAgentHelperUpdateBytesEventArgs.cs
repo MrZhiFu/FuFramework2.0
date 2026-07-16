@@ -58,9 +58,9 @@ namespace Hotfix.Download
         /// <returns>创建的下载代理辅助器更新数据流事件。</returns>
         public static DownloadAgentHelperUpdateBytesEventArgs Create(byte[] bytes, int offset, int length)
         {
-            if (bytes == null) throw new FuException("下载的数据流不能为空.");
-            if (offset < 0  || offset          >= bytes.Length) throw new FuException("数据流的偏移不正确.");
-            if (length <= 0 || offset + length > bytes.Length) throw new FuException("数据流的长度不正确.");
+            if (bytes == null) throw new InvalidOperationException("下载的数据流不能为空.");
+            if (offset < 0  || offset          >= bytes.Length) throw new InvalidOperationException("数据流的偏移不正确.");
+            if (length <= 0 || offset + length > bytes.Length) throw new InvalidOperationException("数据流的长度不正确.");
 
             var downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
             downloadAgentHelperUpdateBytesEventArgs.m_Bytes = bytes;

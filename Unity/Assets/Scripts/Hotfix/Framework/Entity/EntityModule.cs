@@ -139,7 +139,7 @@ namespace Hotfix.Entity
         /// </summary>
         /// <param name="deltaTime"></param>
         /// <param name="unscaledDeltaTime"></param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
             // 回收待回收的实体
@@ -149,7 +149,7 @@ namespace Hotfix.Entity
                 Entity      entity      = entityInfo.Entity;
                 EntityGroup entityGroup = entity.EntityGroup;
 
-                if (entityGroup is null) throw new FuException($"[EntityModule] 回收实体失败, 实体{entity.EntityAssetName}所属的实体组为空.");
+                if (entityGroup is null) throw new InvalidOperationException($"[EntityModule] 回收实体失败, 实体{entity.EntityAssetName}所属的实体组为空.");
 
                 entityInfo.Status = EEntityStatus.WillRecycle;
                 entity.OnRecycle();
@@ -189,7 +189,7 @@ namespace Hotfix.Entity
         /// <returns>是否存在实体组。</returns>
         public bool HasEntityGroup(string entityGroupName)
         {
-            if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("[EntityModule] 实体组名称不能为空.");
+            if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException("[EntityModule] 实体组名称不能为空.");
             return m_EntityGroupDict.ContainsKey(entityGroupName);
         }
 
@@ -200,7 +200,7 @@ namespace Hotfix.Entity
         /// <returns>要获取的实体组。</returns>
         public EntityGroup GetEntityGroup(string entityGroupName)
         {
-            if (string.IsNullOrEmpty(entityGroupName)) throw new FuException("[EntityModule] 实体组名称不能为空.");
+            if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException("[EntityModule] 实体组名称不能为空.");
             return m_EntityGroupDict.GetValueOrDefault(entityGroupName);
         }
 
@@ -226,7 +226,7 @@ namespace Hotfix.Entity
         /// <param name="results">所有实体组。</param>
         public void GetAllEntityGroups(List<EntityGroup> results)
         {
-            if (results is null) throw new FuException("[EntityModule] 结果列表不能为空.");
+            if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
             results.Clear();
             foreach (var (_, entityGroup) in m_EntityGroupDict)
@@ -242,7 +242,7 @@ namespace Hotfix.Entity
         /// <returns>是否增加实体组成功。</returns>
         public bool AddEntityGroup(EntityGroupInfo entityGroupSetting)
         {
-            if (m_ObjectPoolModule is null) throw new FuException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
+            if (m_ObjectPoolModule is null) throw new InvalidOperationException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
 
             if (HasEntityGroup(entityGroupSetting.Name))
             {
@@ -280,7 +280,7 @@ namespace Hotfix.Entity
         /// <returns>是否存在实体。</returns>
         public bool HasEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 实体资源名称不能为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
             foreach (var (_, entityInfo) in m_EntityDict)
             {
                 if (entityInfo.Entity.EntityAssetName == entityAssetName)
@@ -304,7 +304,7 @@ namespace Hotfix.Entity
         /// <returns>要获取的实体。</returns>
         public Entity GetEntity(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 实体资源名称不能为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
 
             foreach (var (_, entityInfo) in m_EntityDict)
             {
@@ -322,7 +322,7 @@ namespace Hotfix.Entity
         /// <returns>要获取的实体。</returns>
         public Entity[] GetEntities(string entityAssetName)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 实体资源名称不能为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
 
             var results = new List<Entity>();
             foreach (var entityInfo in m_EntityDict)
@@ -341,8 +341,8 @@ namespace Hotfix.Entity
         /// <param name="results">要获取的实体。</param>
         public void GetEntities(string entityAssetName, List<Entity> results)
         {
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 实体资源名称不能为空.");
-            if (results is null) throw new FuException("[EntityModule] 结果列表不能为空.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
+            if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
             results.Clear();
             foreach (var (_, entityInfo) in m_EntityDict)
@@ -374,7 +374,7 @@ namespace Hotfix.Entity
         /// <param name="results">所有已加载的实体。</param>
         public void GetAllLoadedEntities(List<Entity> results)
         {
-            if (results is null) throw new FuException("[EntityModule] 结果列表不能为空.");
+            if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
             results.Clear();
             foreach (var (_, entityInfo) in m_EntityDict)
@@ -405,7 +405,7 @@ namespace Hotfix.Entity
         /// <param name="results">所有正在加载实体的编号。</param>
         public void GetAllLoadingEntityIds(List<int> results)
         {
-            if (results is null) throw new FuException("[EntityModule] 结果列表不能为空.");
+            if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
             results.Clear();
             foreach (var (entityId, _) in m_LoadingEntityDict)
             {
@@ -453,14 +453,14 @@ namespace Hotfix.Entity
         /// <param name="userData">用户自定义数据。</param>
         public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, object userData = null)
         {
-            if (m_EntityHelper is null) throw new FuException("[EntityModule] 显示实体失败, 请先设置实体辅助器.");
-            if (string.IsNullOrEmpty(entityAssetName)) throw new FuException("[EntityModule] 显示实体失败, 实体资源名称不能为空.");
-            if (string.IsNullOrEmpty(entityGroupName)) throw new FuException($"[EntityModule] 显示实体{entityAssetName}失败, 实体组名称不能为空.");
-            if (HasEntity(entityId)) throw new FuException($"[EntityModule] 显示实体{entityAssetName}失败, 实体已存在.");
-            if (IsLoadingEntity(entityId)) throw new FuException($"[EntityModule] 显示实体{entityAssetName}失败, 实体已在加载中.");
+            if (m_EntityHelper is null) throw new InvalidOperationException("[EntityModule] 显示实体失败, 请先设置实体辅助器.");
+            if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 显示实体失败, 实体资源名称不能为空.");
+            if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体组名称不能为空.");
+            if (HasEntity(entityId)) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体已存在.");
+            if (IsLoadingEntity(entityId)) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体已在加载中.");
 
             var entityGroup = GetEntityGroup(entityGroupName);
-            if (entityGroup is null) throw new FuException($"[EntityModule] 显示实体{entityAssetName}失败, 实体组 '{entityGroupName}' 不存在.");
+            if (entityGroup is null) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体组 '{entityGroupName}' 不存在.");
 
             // 创建一个加载实体资源的任务，先从对象池获取实体，没有才从资源加载
             var tcs               = new UniTaskCompletionSource<Entity>();
@@ -519,7 +519,7 @@ namespace Hotfix.Entity
             }
 
             var entityInfo = GetEntityInfo(entityId);
-            if (entityInfo is null) throw new FuException($"[EntityModule] 隐藏实体失败, 实体{entityId}不存在.");
+            if (entityInfo is null) throw new InvalidOperationException($"[EntityModule] 隐藏实体失败, 实体{entityId}不存在.");
 
             InternalHideEntity(entityInfo, userData);
         }
@@ -537,7 +537,7 @@ namespace Hotfix.Entity
         /// <param name="userData">用户自定义数据。</param>
         public void HideEntity(Entity entity, object userData)
         {
-            if (entity is null) throw new FuException($"[EntityModule] 隐藏实体失败, 实体不存在.");
+            if (entity is null) throw new InvalidOperationException($"[EntityModule] 隐藏实体失败, 实体不存在.");
             HideEntity(entity.Id, userData);
         }
 
@@ -582,7 +582,7 @@ namespace Hotfix.Entity
         public Entity GetParentEntity(int childEntityId)
         {
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo is null) throw new FuException($"[EntityModule] 获取父实体失败, 实体{childEntityId}信息不存在.");
+            if (childEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 获取父实体失败, 实体{childEntityId}信息不存在.");
             return childEntityInfo.ParentEntity;
         }
 
@@ -593,7 +593,7 @@ namespace Hotfix.Entity
         /// <returns>子实体的父实体。</returns>
         public Entity GetParentEntity(Entity childEntity)
         {
-            if (childEntity is null) throw new FuException("[EntityModule] 获取父实体失败, 实体不存在.");
+            if (childEntity is null) throw new InvalidOperationException("[EntityModule] 获取父实体失败, 实体不存在.");
             return GetParentEntity(childEntity.Id);
         }
 
@@ -605,7 +605,7 @@ namespace Hotfix.Entity
         public int GetChildEntityCount(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 获取子实体数量失败, 父实体{parentEntityId}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 获取子实体数量失败, 父实体{parentEntityId}信息不存在.");
             return parentEntityInfo.ChildEntityCount;
         }
 
@@ -617,7 +617,7 @@ namespace Hotfix.Entity
         public Entity GetChildEntity(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 获取子实体失败, 父实体{parentEntityId}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 获取子实体失败, 父实体{parentEntityId}信息不存在.");
             return parentEntityInfo.GetChildEntity();
         }
 
@@ -628,7 +628,7 @@ namespace Hotfix.Entity
         /// <returns>子实体。</returns>
         public Entity GetChildEntity(Entity parentEntity)
         {
-            if (parentEntity is null) throw new FuException("[EntityModule] 获取子实体数量失败, 父实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 获取子实体数量失败, 父实体不存在.");
             return GetChildEntity(parentEntity.Id);
         }
 
@@ -640,7 +640,7 @@ namespace Hotfix.Entity
         public Entity[] GetChildEntities(int parentEntityId)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 获取所有子实体失败, 父实体{parentEntityId}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 获取所有子实体失败, 父实体{parentEntityId}信息不存在.");
             return parentEntityInfo.GetChildEntities();
         }
 
@@ -652,7 +652,7 @@ namespace Hotfix.Entity
         public void GetChildEntities(int parentEntityId, List<Entity> results)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 获取所有子实体失败, 父实体{parentEntityId}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 获取所有子实体失败, 父实体{parentEntityId}信息不存在.");
             parentEntityInfo.GetChildEntities(results);
         }
 
@@ -663,7 +663,7 @@ namespace Hotfix.Entity
         /// <returns>所有子实体。</returns>
         public Entity[] GetChildEntities(Entity parentEntity)
         {
-            if (parentEntity is null) throw new FuException("[EntityModule] 获取所有子实体失败, 父实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 获取所有子实体失败, 父实体不存在.");
             return GetChildEntities(parentEntity.Id);
         }
 
@@ -674,7 +674,7 @@ namespace Hotfix.Entity
         /// <param name="results">所有子实体。</param>
         public void GetChildEntities(Entity parentEntity, List<Entity> results)
         {
-            if (parentEntity is null) throw new FuException("[EntityModule] 获取所有子实体失败, 父实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 获取所有子实体失败, 父实体不存在.");
             GetChildEntities(parentEntity.Id, results);
         }
 
@@ -691,8 +691,8 @@ namespace Hotfix.Entity
         /// <param name="parentTransform">被附加的父实体的Transform</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, Transform parentTransform = null)
         {
-            if (childEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
-            if (parentEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 父实体不存在.");
+            if (childEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 子实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 父实体不存在.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransform);
         }
 
@@ -705,8 +705,8 @@ namespace Hotfix.Entity
         /// <param name="parentTransformPath">被附加的父实体的Transform路径</param>
         public void AttachEntity(Entity childEntity, Entity parentEntity, object userData, string parentTransformPath = "")
         {
-            if (childEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 子实体不存在.");
-            if (parentEntity is null) throw new FuException("[EntityModule] 附加子实体失败, 父实体不存在.");
+            if (childEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 子实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 父实体不存在.");
             AttachEntity(childEntity.Id, parentEntity.Id, userData, parentTransformPath);
         }
 
@@ -721,10 +721,10 @@ namespace Hotfix.Entity
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo is null)
-                throw new FuException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}不存在.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}不存在.");
 
             if (parentEntityInfo.Status >= EEntityStatus.WillHide)
-                throw new FuException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}处于将要隐藏状态.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}处于将要隐藏状态.");
 
             var parentEntity = parentEntityInfo.Entity;
 
@@ -757,21 +757,21 @@ namespace Hotfix.Entity
         public void AttachEntity(int childEntityId, int parentEntityId, object userData, Transform parentTransform = null)
         {
             if (childEntityId == parentEntityId)
-                throw new FuException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}和父实体{parentEntityId}不能相同.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}和父实体{parentEntityId}不能相同.");
 
             var childEntityInfo = GetEntityInfo(childEntityId);
             if (childEntityInfo is null)
-                throw new FuException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}不存在.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}不存在.");
 
             if (childEntityInfo.Status >= EEntityStatus.WillHide)
-                throw new FuException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}处于将要隐藏状态.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 子实体{childEntityId}处于将要隐藏状态.");
 
             var parentEntityInfo = GetEntityInfo(parentEntityId);
             if (parentEntityInfo is null)
-                throw new FuException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}不存在.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}不存在.");
 
             if (parentEntityInfo.Status >= EEntityStatus.WillHide)
-                throw new FuException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}处于将要隐藏状态.");
+                throw new InvalidOperationException($"[EntityModule] 附加子实体失败, 父实体{parentEntityId}处于将要隐藏状态.");
 
             var childEntity  = childEntityInfo.Entity;
             var parentEntity = parentEntityInfo.Entity;
@@ -812,13 +812,13 @@ namespace Hotfix.Entity
         public void DetachEntity(int childEntityId, object userData)
         {
             var childEntityInfo = GetEntityInfo(childEntityId);
-            if (childEntityInfo is null) throw new FuException($"[EntityModule] 解除子实体{childEntityId}失败, 子实体信息不存在.");
+            if (childEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 解除子实体{childEntityId}失败, 子实体信息不存在.");
 
             var parentEntity = childEntityInfo.ParentEntity;
             if (parentEntity is null) return;
 
             var parentEntityInfo = GetEntityInfo(parentEntity.Id);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 解除子实体{childEntityId}失败, 父实体{parentEntity.Id}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 解除子实体{childEntityId}失败, 父实体{parentEntity.Id}信息不存在.");
 
             var childEntity = childEntityInfo.Entity;
             childEntityInfo.ParentEntity = null;
@@ -840,7 +840,7 @@ namespace Hotfix.Entity
         /// <param name="userData">用户自定义数据。</param>
         public void DetachEntity(Entity childEntity, object userData)
         {
-            if (childEntity is null) throw new FuException("[EntityModule] 解除子实体失败, 子实体不存在.");
+            if (childEntity is null) throw new InvalidOperationException("[EntityModule] 解除子实体失败, 子实体不存在.");
             DetachEntity(childEntity.Id, userData);
         }
 
@@ -858,7 +858,7 @@ namespace Hotfix.Entity
         public void DetachChildEntities(int parentEntityId, object userData)
         {
             var parentEntityInfo = GetEntityInfo(parentEntityId);
-            if (parentEntityInfo is null) throw new FuException($"[EntityModule] 解除所有子实体失败, 父实体{parentEntityId}信息不存在.");
+            if (parentEntityInfo is null) throw new InvalidOperationException($"[EntityModule] 解除所有子实体失败, 父实体{parentEntityId}信息不存在.");
 
             while (parentEntityInfo.ChildEntityCount > 0)
             {
@@ -880,7 +880,7 @@ namespace Hotfix.Entity
         /// <param name="userData">用户自定义数据。</param>
         public void DetachChildEntities(Entity parentEntity, object userData)
         {
-            if (parentEntity is null) throw new FuException("[EntityModule] 解除所有子实体失败, 父实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 解除所有子实体失败, 父实体不存在.");
             DetachChildEntities(parentEntity.Id, userData);
         }
 
@@ -896,12 +896,12 @@ namespace Hotfix.Entity
         /// <param name="entityAssetHandle">实体资源句柄。</param>
         /// <param name="progress">加载进度。</param>
         /// <param name="showEntityInfo">显示时的实体信息。</param>
-        /// <exception cref="FuException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         private void LoadAssetSuccessCallback(UniTaskCompletionSource<Entity> tcs, string entityAssetName, object entityAssetHandle, float progress, ShowEntityInfo showEntityInfo)
         {
             if (showEntityInfo is null)
             {
-                var exception = new FuException("[EntityModule]加载实体资源成功, 但是显示时的实体信息为空.");
+                var exception = new InvalidOperationException("[EntityModule]加载实体资源成功, 但是显示时的实体信息为空.");
                 tcs.TrySetException(exception);
                 throw exception;
             }
@@ -941,10 +941,10 @@ namespace Hotfix.Entity
         {
             var showEntityInfo = (ShowEntityInfo)userData;
 
-            FuException exception;
+            Exception exception;
             if (showEntityInfo is null)
             {
-                exception = new FuException("[EntityModule]加载实体资源失败, 显示时的实体信息为空.");
+                exception = new InvalidOperationException("[EntityModule]加载实体资源失败, 显示时的实体信息为空.");
                 tcs.TrySetException(exception);
                 throw exception;
             }
@@ -956,7 +956,7 @@ namespace Hotfix.Entity
             }
 
             m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
-            exception = new FuException($"[EntityModule]加载实体资源失败, 实体资源名称 '{entityAssetName}', 加载状态 '{status}', 错误信息 '{errorMessage}'.");
+            exception = new InvalidOperationException($"[EntityModule]加载实体资源失败, 实体资源名称 '{entityAssetName}', 加载状态 '{status}', 错误信息 '{errorMessage}'.");
 
             // 发送显示实体失败事件
             var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), userData);
@@ -997,7 +997,7 @@ namespace Hotfix.Entity
                 var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup);
                 if (entity is null)
                 {
-                    var exception = new FuException("[EntityModule] 创建实体失败，实体帮助器返回的实体为空!");
+                    var exception = new InvalidOperationException("[EntityModule] 创建实体失败，实体帮助器返回的实体为空!");
                     tcs.TrySetException(exception);
                     throw exception;
                 }
@@ -1061,7 +1061,7 @@ namespace Hotfix.Entity
             entityInfo.Status = EEntityStatus.Hidden;
 
             entity.EntityGroup.RemoveEntity(entity);
-            if (!m_EntityDict.Remove(entity.Id)) throw new FuException("[EntityModule] 隐藏实体失败，实体字典中不存在该实体!");
+            if (!m_EntityDict.Remove(entity.Id)) throw new InvalidOperationException("[EntityModule] 隐藏实体失败，实体字典中不存在该实体!");
 
             // 发送隐藏实体成功事件
             var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entity.EntityGroup, userData);
