@@ -4,8 +4,7 @@
     "references": [
         "YooAsset.Editor",
         "HybridCLR.Editor",
-        "FuFramework.Core.Runtime",
-        "FuFramework.Core.Editor"
+        "AOT"
     ],
     "includePlatforms": [
         "Editor"

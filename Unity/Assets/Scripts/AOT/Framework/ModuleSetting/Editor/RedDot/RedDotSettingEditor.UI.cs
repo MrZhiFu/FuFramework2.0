@@ -122,7 +122,7 @@ namespace FuFramework.ModuleSetting.Editor
         private void HandleFocusNextFrame()
         {
             // 在下一帧设置焦点
-            if (Event.current.type == EventType.Repaint)
+            if (UnityEngine.Event.current.type == EventType.Repaint)
             {
                 m_NeedFocusNextFrame = false;
                 EditorGUI.FocusTextInControl($"KeyField_{m_FocusNodeKey}");
