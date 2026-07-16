@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.akiojin.unity-cli-bridge": "https://github.com/akiojin/unity-cli.git?path=UnityCliBridge/Packages/unity-cli-bridge",
     "com.code-philosophy.hybridclr": "https://gitee.com/focus-creative-games/hybridclr_unity.git",
     "com.code-philosophy.luban": "https://gitee.com/focus-creative-games/luban_unity.git#d870def77ce13ea942786a6f9e6e55112b46c331",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=/src/UniTask/Assets/Plugins/UniTask",
