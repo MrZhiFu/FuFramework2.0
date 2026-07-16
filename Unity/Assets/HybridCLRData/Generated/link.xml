@@ -71,8 +71,8 @@
     <type fullname="FuFramework.Event.Runtime.EventRegister" preserve="all" />
     <type fullname="FuFramework.Event.Runtime.GameEventArgs" preserve="all" />
   </assembly>
-  <assembly fullname="FuFramework.Launcher.Runtime">
-    <type fullname="FuFramework.Launcher.Runtime.GlobalModule" preserve="all" />
+  <assembly fullname="Hotfix">
+    <type fullname="Hotfix.GlobalModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.ModuleSetting.Runtime">
     <type fullname="FuFramework.ModuleSetting.Runtime.EStepType" preserve="all" />

@@ -12,7 +12,7 @@ using FuFramework.ReferencePool.Runtime;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Launcher.Runtime
+namespace Hotfix
 {
     /// <summary>
     /// 全局模块类。

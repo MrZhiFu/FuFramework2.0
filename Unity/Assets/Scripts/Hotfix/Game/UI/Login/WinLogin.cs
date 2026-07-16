@@ -4,7 +4,7 @@ using FuFramework.Core.Runtime;
 using FuFramework.UI.Runtime;
 using Hotfix.Sound;
 using Hotfix.Web;
-using FuFramework.Launcher.Runtime;
+using Hotfix;
 using Hotfix.Manager;
 using Hotfix.Proto;
 using UnityEngine;

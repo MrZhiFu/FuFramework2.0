@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
 using Hotfix.Network;
-using FuFramework.Launcher.Runtime;
+using Hotfix;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
 using Hotfix.ModuleConfig;
