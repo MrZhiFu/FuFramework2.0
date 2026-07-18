@@ -7,17 +7,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+
+
 namespace Hotfix.Config
-{
+{ 
     public enum ERedDotCleanStrategy
     {
         /// <summary>
-        /// 手动清除（业务代码显式调用 ResetCount）
+        /// 手动清除(业务代码显式调用)
         /// </summary>
         Manual = 0,
         /// <summary>
-        /// 框架提供 TryAutoClean，业务代码在合适时机调用（如点击页签）
+        /// 界面关闭时框架自动清除
         /// </summary>
         ViewAutoClean = 1,
     }
-}
+
+} 
+

@@ -7,8 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+
+
 namespace Hotfix.Config
-{
+{ 
     public enum ERedDotDisplayMode
     {
         /// <summary>
@@ -16,12 +18,14 @@ namespace Hotfix.Config
         /// </summary>
         DotOnly = 0,
         /// <summary>
-        /// 红点 + 数字
+        /// 红点+数字
         /// </summary>
         DotNumber = 1,
         /// <summary>
-        /// =1 显示红点，&gt;1 显示数字
+        /// 自动
         /// </summary>
         Auto = 2,
     }
-}
+
+} 
+

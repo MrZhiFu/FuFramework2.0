@@ -7,8 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+
+
 namespace Hotfix.Config
-{
+{ 
     public enum ERedDotKey
     {
         /// <summary>
@@ -60,4 +62,6 @@ namespace Hotfix.Config
         /// </summary>
         Battle_Team = 4001,
     }
-}
+
+} 
+
