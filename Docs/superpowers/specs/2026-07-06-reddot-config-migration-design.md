@@ -1,6 +1,6 @@
 # 红点系统配置表化设计文档
 
-> 日期: 2026-07-06 | 状态: 待 Review
+> 日期: 2026-07-06 | 更新: 2026-07-18 | 状态: 已同步框架现状，待实现
 
 ## 一、背景与目标
 
@@ -9,6 +9,19 @@
 - **统一管理**：红点配置与其他游戏配置一样通过 Excel 表管理，策划可在 Excel 中编辑
 - **扩展性**：为红点节点增加更多配置字段（显示模式、清理策略等）
 - **流程统一**：所有配置统一走 Luban 管线，享受校验、多格式导出、版本管理等能力
+
+### 〇、框架重构已完成的变更（2026-07-11）
+
+在本次 Luban 配置迁移之前，框架重构已将以下内容完成：
+
+- RedDotModule / RedDotNode 已从 AOT `FuFramework.RedDot.Runtime` 程序集迁移至 Hotfix 程序集（`Hotfix.asmdef`），命名空间 `Hotfix.RedDot`
+- `Launcher.Modules.cs`（AOT）已删除，模块注册已统一至 `HotfixLauncher.RegisterModules()`
+- `GlobalModule.cs` 中不再包含 RedDotModule 访问器，改为 `RedDotModule.Instance` 直接访问
+- `ModuleBase` 生命周期方法签名为 `protected internal virtual void OnInit()` / `OnDispose()`
+- `ConfigModule` 通过 `ConfigModule.Instance.GetConfig<T>()` 获取配置表
+- FGUI 模板（CompTemplate.txt / WinTemplate.txt）已预留 `InitRedDot()` 方法桩，OnInit() 中已调用
+- Luban 生成代码路径：`Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/`，命名空间 `Hotfix.Config` / `Hotfix.Config.Tables`
+- 废弃的 `FuFramework.RedDot.Runtime.csproj` 残留在根目录，需一并清理
 
 ## 二、核心设计决策
 
@@ -22,7 +35,7 @@
 | 6 | 代码生成工具 | 不需要——枚举由 Luban 直接生成 |
 | 7 | 静态 vs 动态节点 | 双字典分离：`Dictionary<ERedDotKey, ...>` + `Dictionary<string, ...>` |
 | 8 | RedDotRegister 类 | 废弃，改为 FGUI 编辑器层驱动（自定义数据 + 代码生成） |
-| 9 | RedDotModule 程序集 | 从 AOT 迁移至 Hotfix，可直接引用 Luban 生成类型 |
+| 9 | RedDotModule 程序集 | 已迁移至 Hotfix（`Hotfix.asmdef`，命名空间 `Hotfix.RedDot`） |
 
 ## 三、Luban 配置定义
 
@@ -72,24 +85,28 @@
 
 ### 3.3 Luban 自动生成的代码
 
-运行 `gen-client-bin.bat` 后自动产出：
+运行 `gen-client-bin.bat` 后自动产出到 `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/`：
 
-| 文件 | 说明 |
-|---|---|
-| `ERedDotKey.cs` | 红点节点枚举 |
-| `ERedDotDisplayMode.cs` | 显示模式枚举 |
-| `ERedDotCleanStrategy.cs` | 清理策略枚举 |
-| `RedDot.cs` | 每行数据的 Bean 类（由 Luban 自动生成） |
-| `TbRedDot.cs` | 配置表数据容器 |
-| `TableManager.cs` | 自动注册 `TbRedDot` |
+| 文件 | 命名空间 | 说明 |
+|---|---|---|
+| `ERedDotKey.cs` | `Hotfix.Config` | 红点节点枚举 |
+| `ERedDotDisplayMode.cs` | `Hotfix.Config` | 显示模式枚举 |
+| `ERedDotCleanStrategy.cs` | `Hotfix.Config` | 清理策略枚举 |
+| `Tables/RedDot.cs` | `Hotfix.Config.Tables` | 每行数据的 Bean 类 |
+| `Tables/TbRedDot.cs` | `Hotfix.Config.Tables` | 配置表数据容器 |
+| `TableManager.cs` | `Hotfix.Config` | 自动注册 `TbRedDot`（追加） |
+
+> 注：`TableManager.cs` 由 Luban 在每次生成时自动重写，会包含所有表的注册代码。
 
 ## 四、运行时数据结构
 
 ### 4.1 RedDotNode 改造
 
 ```csharp
-public class RedDotNode : IReference
+namespace Hotfix.RedDot
 {
+    public class RedDotNode : IReference
+    {
     // 节点标识（静态节点使用枚举，动态节点使用字符串）
     public ERedDotKey? StaticKey { get; private set; }
     public string DynamicKey { get; private set; }
@@ -149,24 +166,31 @@ public class RedDotNode : IReference
     // IReference
     public void Clear() { ... }
     public void ClearAllListeners() { ... }
+    }
 }
 ```
 
 ### 4.2 RedDotModule 改造
 
 ```csharp
-public class RedDotModule : ModuleBase
+namespace Hotfix.RedDot
 {
-    // ========== 双字典存储（无装箱） ==========
-    private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodes = new();
-    private static readonly Dictionary<string, RedDotNode> DynamicNodes = new();
-
-    // ========== 生命周期 ==========
-    protected override void OnInit()
+    public class RedDotModule : ModuleBase
     {
-        // 1. 从 Luban 配置表获取数据
-        var tbRedDot = GlobalModule.ConfigModule.GetConfig<TbRedDot>();
-        if (tbRedDot == null || tbRedDot.DataList.Count == 0) return;
+        public static RedDotModule Instance { get; private set; }
+
+        // ========== 双字典存储（无装箱） ==========
+        private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodes = new();
+        private static readonly Dictionary<string, RedDotNode> DynamicNodes = new();
+
+        // ========== 生命周期 ==========
+        protected internal override void OnInit()
+        {
+            Instance = this;
+
+            // 1. 从 Luban 配置表获取数据
+            var tbRedDot = ConfigModule.Instance.GetConfig<TbRedDot>();
+            if (tbRedDot == null || tbRedDot.DataList.Count == 0) return;
 
         StaticNodes.Clear();
         DynamicNodes.Clear();
@@ -187,12 +211,13 @@ public class RedDotModule : ModuleBase
         }
     }
 
-    protected override void OnDispose()
+    protected internal override void OnDispose()
     {
         foreach (var node in StaticNodes.Values) ReferencePool.Release(node);
         foreach (var node in DynamicNodes.Values) ReferencePool.Release(node);
         StaticNodes.Clear();
         DynamicNodes.Clear();
+        Instance = null;
     }
 
     // ========== 动态节点 ==========
@@ -251,6 +276,7 @@ public class RedDotModule : ModuleBase
     public int GetCount(string key) { ... }
     public bool HasNode(string key) { ... }
     public void ResetCount(string key) => SetCount(key, 0);
+    }
 }
 ```
 
@@ -274,68 +300,72 @@ public sealed partial class RedDot : BeanBase
 提供两套 `Register` 重载——静态节点走枚举（由 FGUI 插件生成），动态节点走字符串（业务代码手动调用）。不含 `DisplayMode` 本地字段——显示时直接从 `RedDotNode` 配置读取：
 
 ```csharp
-public partial class CompRedDot
+// ReSharper disable once CheckNamespace
+namespace Hotfix.UI
 {
-    public enum DisplayMode { DotOnly = 0, DotNumber = 1, Auto = 2 }
-
-    private ERedDotKey? m_StaticKey;
-    private string m_DynamicKey;
-
-    // 静态节点（枚举，DisplayMode 由配置表决定）
-    public void Register(ViewBase view, ERedDotKey redKey)
+    public partial class CompRedDot
     {
-        uiView = view;
-        m_StaticKey = redKey;
-        GlobalModule.RedDotModule.Register(redKey, OnRedDotChanged);
-    }
+        public enum DisplayMode { DotOnly = 0, DotNumber = 1, Auto = 2 }
 
-    // 动态节点（字符串，默认 DotOnly）
-    public void Register(ViewBase view, string redKey)
-    {
-        uiView = view;
-        m_DynamicKey = redKey;
-        GlobalModule.RedDotModule.Register(redKey, OnRedDotChanged);
-    }
+        private ERedDotKey? m_StaticKey;
+        private string m_DynamicKey;
 
-    // 从 RedDotNode 配置读取 DisplayMode
-    private DisplayMode GetDisplayMode()
-    {
-        if (m_StaticKey.HasValue)
+        // 静态节点（枚举，DisplayMode 由配置表决定）
+        public void Register(ViewBase view, ERedDotKey redKey)
         {
-            var node = GlobalModule.RedDotModule.GetNode(m_StaticKey.Value);
-            return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+            uiView = view;
+            m_StaticKey = redKey;
+            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
         }
-        return DisplayMode.DotOnly; // 动态节点默认
-    }
 
-    private void OnRedDotChanged(int redCount)
-    {
-        var mode = GetDisplayMode();
-        switch (mode)
+        // 动态节点（字符串，默认 DotOnly）
+        public void Register(ViewBase view, string redKey)
         {
-            case DisplayMode.DotOnly:
-                txtCount.visible = false;
-                imgRedDot.visible = redCount > 0;
-                break;
-            case DisplayMode.DotNumber:
-                txtCount.visible = redCount >= 1;
-                imgRedDot.visible = redCount > 0;
-                txtCount.text = FormatRedDotCount(redCount);
-                break;
-            case DisplayMode.Auto:
-                txtCount.visible = redCount > 1;
-                imgRedDot.visible = redCount > 0;
-                txtCount.text = FormatRedDotCount(redCount);
-                break;
+            uiView = view;
+            m_DynamicKey = redKey;
+            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
         }
-    }
 
-    protected override void OnDispose()
-    {
-        if (m_StaticKey.HasValue)
-            GlobalModule.RedDotModule.Unregister(m_StaticKey.Value, OnRedDotChanged);
-        else if (m_DynamicKey != null)
-            GlobalModule.RedDotModule.Unregister(m_DynamicKey, OnRedDotChanged);
+        // 从 RedDotNode 配置读取 DisplayMode
+        private DisplayMode GetDisplayMode()
+        {
+            if (m_StaticKey.HasValue)
+            {
+                var node = RedDotModule.Instance.GetNode(m_StaticKey.Value);
+                return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+            }
+            return DisplayMode.DotOnly; // 动态节点默认
+        }
+
+        private void OnRedDotChanged(int redCount)
+        {
+            var mode = GetDisplayMode();
+            switch (mode)
+            {
+                case DisplayMode.DotOnly:
+                    txtCount.visible = false;
+                    imgRedDot.visible = redCount > 0;
+                    break;
+                case DisplayMode.DotNumber:
+                    txtCount.visible = redCount >= 1;
+                    imgRedDot.visible = redCount > 0;
+                    txtCount.text = FormatRedDotCount(redCount);
+                    break;
+                case DisplayMode.Auto:
+                    txtCount.visible = redCount > 1;
+                    imgRedDot.visible = redCount > 0;
+                    txtCount.text = FormatRedDotCount(redCount);
+                    break;
+            }
+        }
+
+        private void OnDispose()
+        {
+            if (m_StaticKey.HasValue)
+                RedDotModule.Instance.Unregister(m_StaticKey.Value, OnRedDotChanged);
+            else if (m_DynamicKey != null)
+                RedDotModule.Instance.Unregister(m_DynamicKey, OnRedDotChanged);
+        }
     }
 }
 ```
@@ -418,34 +448,37 @@ GenCommon:GenRedDotRegister(dataDict['#RedDotRegister#'], compCls)  -- Comp
 ### 新增
 | 文件 | 说明 |
 |---|---|
-| `Config/Excels/.../R-RedDot-红点表.xlsx` | 红点配置表 |
+| `Config/Excels/Tables/R-RedDot-红点表.xlsx` | 红点配置表 |
 
 ### 修改
-| 文件 | 改动说明 |
-|---|---|
-| `Config/Excels/__enums__.xlsx` | 新增 ERedDotKey / ERedDotDisplayMode / ERedDotCleanStrategy |
-| `RedDotModule.cs` | 初始化走 Luban；双字典；两套 API；TryAutoClean；AddDynamicChild |
-| `RedDotNode.cs` | 新增字段（StaticKey/DynamicKey/DisplayMode/CleanStrategy/SetParent） |
-| `CompRedDot.cs` | Register 两套重载（枚举 + string），支持静态和动态节点 |
-| `CompGenTemplate.txt` | 新增 InitRedDot() + #RedDotRegister# placeholder |
-| `WinGenTemplate.txt` | 同上 |
-| `CompTemplate.txt` | OnInit() 中移除 InitRedDot() |
-| `WinTemplate.txt` | 同上 |
-| `GenCommon.lua` | 新增 GenRedDotRegister / FindRedDotComps 函数 |
-| `GenComp.lua` | 新增 #RedDotRegister# dataKey + 调用 GenRedDotRegister |
-| `GenWin.lua` | 同上 |
-| 业务层调用点（~25 个文件） | `RedDotKeys.Xxx` → `ERedDotKey.Xxx` |
+| 文件 | 路径 | 改动说明 |
+|---|---|---|
+| `__enums__.xlsx` | `Config/Excels/` | 新增 ERedDotKey / ERedDotDisplayMode / ERedDotCleanStrategy |
+| `RedDotModule.cs` | `Assets/Scripts/Hotfix/Framework/RedDot/` | 初始化走 Luban；双字典；两套 API；TryAutoClean；AddDynamicChild |
+| `RedDotNode.cs` | `Assets/Scripts/Hotfix/Framework/RedDot/` | 新增字段（StaticKey/DynamicKey/DisplayMode/CleanStrategy/SetParent） |
+| `CompRedDot.cs` | `Assets/Scripts/Hotfix/Game/UI/Common/Comp/` | Register 两套重载（枚举 + string），支持静态和动态节点 |
+| `CompRedDot.Gen.cs` | `Assets/Scripts/Hotfix/Game/AutoGen/UI/Common/Comp/` | 新增 InitRedDot() + #RedDotRegister#（模板重生成） |
+| `CompGenTemplate.txt` | `FairyGUIProject/plugins/CSharpCodeGen/Template/` | 新增 InitRedDot() + #RedDotRegister# placeholder，追加 `using Hotfix.Config;` |
+| `WinGenTemplate.txt` | `FairyGUIProject/plugins/CSharpCodeGen/Template/` | 同上 |
+| `CompTemplate.txt` | `FairyGUIProject/plugins/CSharpCodeGen/Template/` | OnInit() 中移除 InitRedDot() |
+| `WinTemplate.txt` | `FairyGUIProject/plugins/CSharpCodeGen/Template/` | 同上 |
+| `GenCommon.lua` | `FairyGUIProject/plugins/CSharpCodeGen/Src/` | 新增 GenRedDotRegister / FindRedDotComps 函数 |
+| `GenComp.lua` | `FairyGUIProject/plugins/CSharpCodeGen/Src/` | 新增 #RedDotRegister# dataKey + 调用 GenRedDotRegister |
+| `GenWin.lua` | `FairyGUIProject/plugins/CSharpCodeGen/Src/` | 同上 |
+| 业务层调用点（18 个文件） | `Assets/Scripts/Hotfix/Game/UI/` 各处 | `RedDotKeys.Xxx` → `ERedDotKey.Xxx`；`RedDotRegister.RegisterRedDot(...)` → 直接 `comp.Register(view, ERedDotKey.Xxx)` |
 
 ### 废弃/删除
-| 文件 | 说明 |
-|---|---|
-| `RedDotSetting.asset` | SO 配置不再需要 |
-| `RedDotSetting.cs` | ScriptableObject 类 |
-| `RedDotNodeData.cs` | 配置数据结构 |
-| `RedDotSettingEditor.cs` 及 5 个 partial 文件 | 自定义编辑器面板（~1000 行） |
-| `RedDotSettingCreator.cs` | 编辑器创建工具 |
-| `RedDotKeys.cs` | Luban 生成的 ERedDotKey 枚举替代 |
-| `RedDotRegister.cs` | FGUI 编辑器层驱动替代 |
+| 文件 | 路径 | 说明 |
+|---|---|---|
+| `RedDotSetting.asset` | `Assets/Scripts/AOT/Framework/ModuleSetting/SettingAssets/` | SO 配置不再需要 |
+| `RedDotSetting.cs` | `Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/` | ScriptableObject 类 |
+| `RedDotNodeData.cs` | `Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/` | 配置数据结构 |
+| `RedDotSettingEditor.cs` 及 5 partial | `Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/` | 自定义编辑器面板 |
+| `RedDotSettingCreator.cs` | `Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/` | 编辑器创建工具 |
+| `RedDotKeys.cs` | `Assets/Scripts/Hotfix/Framework/RedDot/` | Luban 生成的 ERedDotKey 枚举替代 |
+| `RedDotRegister.cs` | `Assets/Scripts/Hotfix/Framework/RedDot/` | FGUI 编辑器层驱动替代 |
+| `ModuleSetting.cs` 中 RedDotSetting 字段/属性 | `Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/` | 移除 m_RedDotSetting 和属性 |
+| `ModuleSettingInspector.cs` 中 RedDot 绘制 | `Assets/Scripts/AOT/Framework/ModuleSetting/Editor/` | 移除 RedDotSetting 字段的 Inspector 绘制 |
 
 ### 无需改动
 | 项目 | 说明 |
@@ -453,19 +486,21 @@ GenCommon:GenRedDotRegister(dataDict['#RedDotRegister#'], compCls)  -- Comp
 | `gen-client-bin.bat` | Luban 自动收集 Excel 并生成代码 |
 | `__beans__.xlsx` | 不走 Luban Bean，运行时代码定义 |
 | `__tables__.xlsx` | Luban 自动收集，无需手动注册 |
+| `HotfixLauncher.cs` | 已有 `ModuleManager.RegisterModule<RedDotModule>()`，无需改动 |
 | `RedDotNode` 计数传播逻辑 | 核心父子计数传播算法不变 |
+| `TableManager.cs` | Luban 自动生成追加 TbRedDot 注册，无需手动修改 |
 
 ## 七、迁移步骤
 
-1. 在 `__enums__.xlsx` 中定义枚举（按现有红点树提取所有 Key）
-2. 创建 `R-RedDot-红点表.xlsx`，将现有 SO 配置迁移为表数据
-3. 运行 `gen-client-bin.bat` 生成代码
-4. 改造 `RedDotNode` + `RedDotModule` 运行时核心
-5. 改造 `CompRedDot` UI 组件
-6. 改造 CSharpCodeGen 插件模板和 Lua 脚本
-7. 迁移所有业务层调用点（`RedDotKeys.Xxx` → `ERedDotKey.Xxx`）
-8. 删除废弃文件
-9. Unity Editor 手动测试验证
+1. 在 `__enums__.xlsx` 中定义 ERedDotKey / ERedDotDisplayMode / ERedDotCleanStrategy 枚举
+2. 创建 `Config/Excels/Tables/R-RedDot-红点表.xlsx`，将现有 SO 配置迁移为表数据
+3. 运行 `gen-client-bin.bat` 生成代码，确认产出文件
+4. 改造 `RedDotNode.cs` + `RedDotModule.cs` 运行时核心（`Hotfix/Framework/RedDot/`）
+5. 改造 `CompRedDot.cs` UI 组件（`Hotfix/Game/UI/Common/Comp/`）
+6. 改造 CSharpCodeGen 插件模板和 Lua 脚本（`FairyGUIProject/plugins/CSharpCodeGen/`）
+7. 迁移所有业务层调用点（18 个文件：`RedDotKeys.Xxx` → `ERedDotKey.Xxx`，`RedDotRegister.RegisterRedDot` → 直接注册）
+8. 删除废弃文件（SO / Editor / RedDotKeys / RedDotRegister / ModuleSetting 中的 RedDot 引用）
+9. Unity Editor 中手动测试验证：静态红点、动态红点、ViewAutoClean、FGUI 重新导出
 
 ## 八、设计自检清单
 
@@ -473,3 +508,4 @@ GenCommon:GenRedDotRegister(dataDict['#RedDotRegister#'], compCls)  -- Comp
 - [x] 前后一致：架构描述与变更清单匹配
 - [x] 范围可控：单一红点系统改造，不涉及其他模块
 - [x] 无歧义：所有接口签名、文件路径均已明确
+- [x] 与实际项目结构一致（已根据 2026-07-18 框架现状同步）

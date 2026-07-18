@@ -2,17 +2,18 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将红点系统从 ScriptableObject 配置迁移至 Luban 配置表，RedDotModule 从 AOT 迁移至 Hotfix，用 `ERedDotKey` 枚举替代字符串 Key，废弃 `RedDotRegister` 改为 FGUI 编辑器层代码自动生成。
+**Goal:** 将红点系统从 ScriptableObject 配置迁移至 Luban 配置表，用 `ERedDotKey` 枚举替代字符串 Key，废弃 `RedDotRegister` 改为 FGUI 编辑器层代码自动生成。
 
-**Architecture:** RedDotModule 移入 Hotfix 程序集，直接引用 Luban 生成的 `ERedDotKey` 枚举和 `TbRedDot` 配置表。双字典（静态枚举 + 动态 string）管理节点。FGUI CSharpCodeGen 插件识别 CompRedDot 的 `i18n=ERedDotKey.Xxx` 自定义数据，自动生成 `compXxx.Register(uiView, ...)` 注册代码。
+**Architecture:** RedDotModule 已在 Hotfix 程序集（`Hotfix.asmdef`，命名空间 `Hotfix.RedDot`），直接引用 Luban 生成的 `ERedDotKey` 枚举和 `TbRedDot` 配置表。双字典（静态枚举 + 动态 string）管理节点。FGUI CSharpCodeGen 插件识别 CompRedDot 的 `i18n=ERedDotKey.Xxx` 自定义数据，自动生成 `compXxx.Register(uiView, ...)` 注册代码。
 
 **Tech Stack:** C# (Unity 2022.3), Luban (配置表), Lua (FGUI 插件), FairyGUI, HybridCLR
 
 ## Global Constraints
 
-- RedDotModule / RedDotNode 从 `FuFramework.RedDot.Runtime` (AOT) 迁移至 `Assets/Scripts/Hotfix/RedDot/Runtime/` (Hotfix)
+- RedDotModule / RedDotNode 当前位于 `Assets/Scripts/Hotfix/Framework/RedDot/`（命名空间 `Hotfix.RedDot`），已属 Hotfix 程序集
+- Luban 生成代码路径：`Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/`（命名空间 `Hotfix.Config` / `Hotfix.Config.Tables`）
 - 直接引用 Luban 生成的 `ERedDotKey`, `ERedDotDisplayMode`, `ERedDotCleanStrategy`, `TbRedDot`
-- 原 AOT 程序集中删除所有 RedDot 相关引用
+- 原 AOT `ModuleSetting` 中删除 `RedDotSetting` 引用和字段
 - FGUI 自定义数据格式: `i18n=ERedDotKey.Xxx`，插件原样输出枚举名
 - 枚举值按区间分配 (1000/2000/3000/4000)，ParentId 可空
 - 项目无自动化测试，验证靠 Unity Editor 手动运行
@@ -94,51 +95,53 @@ cd Config && ./gen-client-bin.bat
 - [ ] **Step 4: 验证生成产物**
 
 检查以下文件已生成：
-- `Assets/Scripts/Hotfix/Config/Generate/ERedDotKey.cs`
-- `Assets/Scripts/Hotfix/Config/Generate/ERedDotDisplayMode.cs`
-- `Assets/Scripts/Hotfix/Config/Generate/ERedDotCleanStrategy.cs`
-- `Assets/Scripts/Hotfix/Config/Generate/Tables/RedDot.cs`
-- `Assets/Scripts/Hotfix/Config/Generate/Tables/TbRedDot.cs`
-- `Assets/Scripts/Hotfix/Config/Generate/TableManager.cs` 中包含 `TbRedDot` 字段
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/ERedDotKey.cs`
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/ERedDotDisplayMode.cs`
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/ERedDotCleanStrategy.cs`
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/Tables/RedDot.cs`
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/Tables/TbRedDot.cs`
+- `Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/TableManager.cs` 中包含 `TbRedDot` 字段
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add Config/Excels/__enums__.xlsx Config/Excels/Tables/R-RedDot-红点表.xlsx
-git add Unity/Assets/Scripts/Hotfix/Config/Generate/
+git add Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate/
 git commit -m "feat: 新增红点 Luban 枚举和配置表定义"
 ```
 
 ---
 
-### Task 2: RedDotNode 改造并移至 Hotfix
+### Task 2: RedDotNode 改造（原地修改）
 
 **Files:**
-- Create: `Unity/Assets/Scripts/Hotfix/RedDot/Runtime/RedDotNode.cs`
-- Modify: `Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotNode.cs` → 删除
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotNode.cs`（原地修改，非新建）
 
 **Interfaces:**
 - Consumes: Task 1 的 `ERedDotKey`, `ERedDotDisplayMode`, `ERedDotCleanStrategy`
 - Produces: `RedDotNode` 类 — 被 Task 3, Task 4 消费
 
-- [ ] **Step 1: 在 Hotfix 目录创建新的 RedDotNode.cs**
+- [ ] **Step 1: 改造现有 RedDotNode.cs**
+
+当前文件位于 `Assets/Scripts/Hotfix/Framework/RedDot/RedDotNode.cs`，命名空间 `Hotfix.RedDot`。将现有 string Key 替换为 StaticKey/DynamicKey，新增 DisplayMode/CleanStrategy 字段。
 
 ```csharp
-// Assets/Scripts/Hotfix/RedDot/Runtime/RedDotNode.cs
+// Assets/Scripts/Hotfix/Framework/RedDot/RedDotNode.cs
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.ReferencePool.Runtime;
-using Hotfix.Config; // Luban 生成的枚举所在命名空间
+using Hotfix.Config; // Luban 生成的 ERedDotKey / ERedDotDisplayMode / ERedDotCleanStrategy
 
-namespace Hotfix.RedDot.Runtime
+namespace Hotfix.RedDot
 {
     public class RedDotNode : IReference
     {
         /// <summary>静态节点 Key（配置表定义的节点）</summary>
         public ERedDotKey? StaticKey { get; private set; }
 
-        /// <summary>动态节点 Key（运行时创建的节点，如道具实例红点）</summary>
+        /// <summary>动态节点 Key（运行时创建的节点）</summary>
         public string DynamicKey { get; private set; }
 
         /// <summary>自身计数</summary>
@@ -165,7 +168,7 @@ namespace Hotfix.RedDot.Runtime
         public static RedDotNode Create(ERedDotKey key, RedDotNode parent,
             ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy)
         {
-            var node = ReferencePool.Runtime.ReferencePool.Acquire<RedDotNode>();
+            var node = ReferencePool.Acquire<RedDotNode>();
             node.StaticKey = key;
             node.Parent = parent;
             node.DisplayMode = displayMode;
@@ -176,7 +179,7 @@ namespace Hotfix.RedDot.Runtime
         /// <summary>运行时创建动态节点</summary>
         public static RedDotNode CreateDynamic(string key, RedDotNode parent)
         {
-            var node = ReferencePool.Runtime.ReferencePool.Acquire<RedDotNode>();
+            var node = ReferencePool.Acquire<RedDotNode>();
             node.DynamicKey = key;
             node.Parent = parent;
             node.DisplayMode = ERedDotDisplayMode.DotOnly;
@@ -246,55 +249,47 @@ namespace Hotfix.RedDot.Runtime
 }
 ```
 
-- [ ] **Step 2: 确保 Hotfix 程序集定义包含新目录**
-
-检查 `Assets/Scripts/Hotfix/` 目录下的 `.asmdef` 文件，确认 `Hotfix/RedDot/Runtime/` 在程序集覆盖范围内。如果需要新建，复制现有 Hotfix asmdef 引用配置。
-
-- [ ] **Step 3: 删除 AOT 中的旧 RedDotNode.cs**
+- [ ] **Step 2: Commit**
 
 ```bash
-rm "Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotNode.cs"
-```
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add Unity/Assets/Scripts/Hotfix/RedDot/Runtime/RedDotNode.cs
-git rm Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotNode.cs
-git commit -m "refactor: RedDotNode 迁移至 Hotfix，新增配置字段"
+git add Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotNode.cs
+git commit -m "refactor: RedDotNode 新增配置字段(StaticKey/DynamicKey/DisplayMode/CleanStrategy)"
 ```
 
 ---
 
-### Task 3: RedDotModule 改造并移至 Hotfix
+### Task 3: RedDotModule 改造（原地修改）
 
 **Files:**
-- Create: `Unity/Assets/Scripts/Hotfix/RedDot/Runtime/RedDotModule.cs`
-- Modify: `Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotModule.cs` → 删除
-- Modify: `Unity/Assets/Scripts/FuFramework/Launcher/Runtime/Launcher.Modules.cs`
-- Modify: `Unity/Assets/Scripts/FuFramework/Launcher/Runtime/GlobalModule.cs`
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotModule.cs`（原地修改，非新建）
+- Modify: `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/ModuleSetting.cs`（移除 RedDotSetting 引用）
 
 **Interfaces:**
 - Consumes: Task 2 的 `RedDotNode`，Task 1 的 `ERedDotKey`, `TbRedDot`
 - Produces: `RedDotModule` 类 — 被 Task 4, Task 6 消费
 
-- [ ] **Step 1: 在 Hotfix 目录创建新的 RedDotModule.cs**
+**注意：** `HotfixLauncher.cs` 中已有 `ModuleManager.RegisterModule<RedDotModule>()`（第 98 行），无需额外注册。
+
+- [ ] **Step 1: 改造现有 RedDotModule.cs**
+
+当前文件位于 `Assets/Scripts/Hotfix/Framework/RedDot/RedDotModule.cs`，命名空间 `Hotfix.RedDot`。将现有 SO 配置读取改为 Luban 配置表读取，添加双字典和两套 API。
 
 ```csharp
-// Assets/Scripts/Hotfix/RedDot/Runtime/RedDotModule.cs
+// Assets/Scripts/Hotfix/Framework/RedDot/RedDotModule.cs
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
 using FuFramework.ReferencePool.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix.Config;
 using Hotfix.Config.Tables;
+using Hotfix.ModuleConfig;
 
-namespace Hotfix.RedDot.Runtime
+namespace Hotfix.RedDot
 {
     public class RedDotModule : ModuleBase
     {
-        /// <summary>快速访问实例（替代 GlobalModule.RedDotModule）</summary>
-        public static RedDotModule Instance => ModuleManager.GetModule<RedDotModule>();
+        public static RedDotModule Instance { get; private set; }
 
         // ========== 双字典存储（无装箱） ==========
         private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodes = new();
@@ -302,9 +297,11 @@ namespace Hotfix.RedDot.Runtime
 
         // ========== 生命周期 ==========
 
-        protected override void OnInit()
+        protected internal override void OnInit()
         {
-            var tbRedDot = GlobalModule.ConfigModule.GetConfig<TbRedDot>();
+            Instance = this;
+
+            var tbRedDot = ConfigModule.Instance.GetConfig<TbRedDot>();
             if (tbRedDot == null || tbRedDot.DataList.Count == 0)
             {
                 FuLogger.LogError("[RedDotModule] 红点配置表不存在或为空.");
@@ -323,7 +320,7 @@ namespace Hotfix.RedDot.Runtime
                 if (!StaticNodes.TryAdd(row.Id, node))
                 {
                     FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
-                    ReferencePool.Runtime.ReferencePool.Release(node);
+                    ReferencePool.Release(node);
                 }
             }
 
@@ -331,7 +328,7 @@ namespace Hotfix.RedDot.Runtime
             foreach (var row in tbRedDot.DataList)
             {
                 if (row.ParentId == null) continue;
-                var parentKey = (ERedDotKey)row.ParentId.Value; // ParentId 是 int?，需强转
+                var parentKey = (ERedDotKey)row.ParentId.Value;
 
                 if (!StaticNodes.TryGetValue(row.Id, out var child) ||
                     !StaticNodes.TryGetValue(parentKey, out var parent))
@@ -344,14 +341,15 @@ namespace Hotfix.RedDot.Runtime
             FuLogger.LogInfo($"[RedDotModule] 初始化完成, 静态节点: {StaticNodes.Count}");
         }
 
-        protected override void OnDispose()
+        protected internal override void OnDispose()
         {
             foreach (var node in StaticNodes.Values)
-                ReferencePool.Runtime.ReferencePool.Release(node);
+                ReferencePool.Release(node);
             foreach (var node in DynamicNodes.Values)
-                ReferencePool.Runtime.ReferencePool.Release(node);
+                ReferencePool.Release(node);
             StaticNodes.Clear();
             DynamicNodes.Clear();
+            Instance = null;
         }
 
         // ========== 动态节点 ==========
@@ -470,7 +468,7 @@ namespace Hotfix.RedDot.Runtime
             {
                 node.Parent?.RemoveChild(node);
                 DynamicNodes.Remove(key);
-                ReferencePool.Runtime.ReferencePool.Release(node);
+                ReferencePool.Release(node);
             }
         }
 
@@ -479,66 +477,21 @@ namespace Hotfix.RedDot.Runtime
 }
 ```
 
-- [ ] **Step 2: 在 HotfixLauncher.Main() 中注册 RedDotModule**
+- [ ] **Step 2: 从 AOT ModuleSetting 中移除 RedDotSetting 引用**
 
-文件: `Unity/Assets/Scripts/Hotfix/HotfixLauncher.cs`
+文件: `Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/ModuleSetting.cs`
+- 删除 `m_RedDotSetting` 字段
+- 删除 `RedDotSetting` 属性
 
-在 `Main()` 方法中，`LoadConfig()` 已执行完毕（配置表可用），`BindCustomComps()` 之后、打开 UI 之前，插入模块注册：
+文件: `Assets/Scripts/AOT/Framework/ModuleSetting/Editor/ModuleSettingInspector.cs`（如果存在）
+- 删除 `m_RedDotSetting` 的 Inspector 绘制代码
 
-```csharp
-// 注册 RedDotModule（从 AOT 迁移至 Hotfix，需放在 LoadConfig 之后）
-ModuleManager.RegisterModule<RedDotModule>();
-```
-
-完整插入位置（Main 方法内）：
-
-```csharp
-// 绑定自动生成的Fui自定义组件(HotFix下)
-BindCustomComps();
-
-// 注册 RedDotModule（从 AOT 迁移至 Hotfix）
-ModuleManager.RegisterModule<RedDotModule>();  // ← 新增
-
-// 指定获取多语言的接口
-GlobalModule.LocalizationModule.LocalizationProvider = new LocalizationProvider();
-```
-
-同时添加 using:
-```csharp
-using Hotfix.RedDot.Runtime;  // RedDotModule 所在命名空间
-```
-
-- [ ] **Step 3: 从 AOT Launcher.Modules.cs 中删除 RedDotModule 注册**
-
-```csharp
-// Unity/Assets/Scripts/FuFramework/Launcher/Runtime/Launcher.Modules.cs
-// 删除: using FuFramework.RedDot.Runtime;
-// 删除: ModuleManager.RegisterModule<RedDotModule>();
-```
-
-- [ ] **Step 4: 从 AOT GlobalModule.cs 中删除 RedDotModule 引用**
-
-```csharp
-// Unity/Assets/Scripts/FuFramework/Launcher/Runtime/GlobalModule.cs
-// 删除: using FuFramework.RedDot.Runtime;
-// 删除: private static RedDotModule m_RedDotModule;
-// 删除: public static RedDotModule RedDotModule => ...
-```
-
-- [ ] **Step 5: 删除 AOT 中的旧 RedDotModule.cs**
+- [ ] **Step 3: Commit**
 
 ```bash
-rm "Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotModule.cs"
-```
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add Unity/Assets/Scripts/Hotfix/RedDot/Runtime/RedDotModule.cs
-git add Unity/Assets/Scripts/FuFramework/Launcher/Runtime/Launcher.Modules.cs
-git add Unity/Assets/Scripts/FuFramework/Launcher/Runtime/GlobalModule.cs
-git rm Unity/Assets/Scripts/FuFramework/RedDot/Runtime/RedDotModule.cs
-git commit -m "refactor: RedDotModule 迁移至 Hotfix，接入 Luban 配置表"
+git add Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotModule.cs
+git add Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/ModuleSetting.cs
+git commit -m "refactor: RedDotModule 接入 Luban 配置表，移除 SO 依赖"
 ```
 
 ---
@@ -546,8 +499,8 @@ git commit -m "refactor: RedDotModule 迁移至 Hotfix，接入 Luban 配置表"
 ### Task 4: CompRedDot UI 组件改造
 
 **Files:**
-- Modify: `Unity/Assets/Scripts/Hotfix/UI/Common/Impl/Comp/CompRedDot.cs`
-- Modify: `Unity/Assets/Scripts/Hotfix/UI/Common/Gen/Comp/CompRedDot.Gen.cs`（如果 Init 调用链有 `OnInit()` 需要调整）
+- Modify: `Unity/Assets/Scripts/Hotfix/Game/UI/Common/Comp/CompRedDot.cs`
+- Re-generate: `CompRedDot.Gen.cs`（FGUI 重新导出后自动更新）
 
 **Interfaces:**
 - Consumes: Task 3 的 `RedDotModule` API
@@ -563,7 +516,7 @@ using FairyGUI;
 using UnityEngine;
 using FuFramework.UI.Runtime;
 using Hotfix.Config;
-using Hotfix.RedDot.Runtime;
+using Hotfix.RedDot;
 
 namespace Hotfix.UI
 {
@@ -660,7 +613,7 @@ namespace Hotfix.UI
 - [ ] **Step 3: Commit**
 
 ```bash
-git add Unity/Assets/Scripts/Hotfix/UI/Common/Impl/Comp/CompRedDot.cs
+git add Unity/Assets/Scripts/Hotfix/Game/UI/Common/Comp/CompRedDot.cs
 git commit -m "refactor: CompRedDot 适配新 RedDotModule，双重重载支持静态/动态节点"
 ```
 
@@ -820,24 +773,25 @@ git commit -m "feat: FGUI 插件支持 CompRedDot 自定义数据自动生成注
 
 ### Task 6: 业务层迁移 — RedDotKeys → ERedDotKey
 
-**Files (19个):**
-- `Unity/Assets/Scripts/Hotfix/UI/Tips/Impl/WinDialogMessageBox.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Main/Impl/WinMain.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Login/Impl/WinPlayerList.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Login/Impl/WinPlayerCreate.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Login/Impl/WinLoginAnnouncement.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Login/Impl/WinLogin.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Loading/Impl/WinLoadingScene.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Guide/Impl/WinDialogGuide.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Guide/Impl/WinClickGuide.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Common/Impl/WinGlobalLoading.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/WinBag.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/Comp/CompBagItemInfo.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/Comp/CompGoodItem.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Login/Impl/Comp/CompPlayerListItem.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/Comp/CompTypeItem.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/Comp/CompBagItem.cs`
-- `Unity/Assets/Scripts/Hotfix/UI/Bag/Impl/Comp/CompBagContent.cs`
+**Files (18个，位于 `Assets/Scripts/Hotfix/Game/UI/` 下):**
+- `Bag/WinBag.cs`
+- `Bag/Comp/CompBagItemInfo.cs`
+- `Bag/Comp/CompGoodItem.cs`
+- `Bag/Comp/CompTypeItem.cs`
+- `Bag/Comp/CompBagItem.cs`
+- `Bag/Comp/CompBagContent.cs`
+- `Login/WinLogin.cs`
+- `Login/WinPlayerList.cs`
+- `Login/WinPlayerCreate.cs`
+- `Login/WinLoginAnnouncement.cs`
+- `Login/Comp/CompPlayerListItem.cs`
+- `Main/WinMain.cs`
+- `Tips/WinDialogMessageBox.cs`
+- `Loading/WinLoadingScene.cs`
+- `Guide/WinDialogGuide.cs`
+- `Guide/WinClickGuide.cs`
+- `Common/WinGlobalLoading.cs`
+- （以及 RedDotRegister.RegisterRedDot 调用点）
 
 **Interfaces:**
 - Consumes: Task 3 的 `RedDotModule.Instance`, Task 1 的 `ERedDotKey`
@@ -861,13 +815,16 @@ git commit -m "feat: FGUI 插件支持 CompRedDot 自定义数据自动生成注
 | `RedDotKeys.Battle` | `ERedDotKey.Battle` |
 | `RedDotKeys.BattleTeam` | `ERedDotKey.Battle_Team` |
 
-- [ ] **Step 2: 替换 GlobalModule.RedDotModule → RedDotModule.Instance**
+- [ ] **Step 2: 替换业务代码中的调用模式**
 
-所有 `GlobalModule.RedDotModule.XXX()` 调用改为 `RedDotModule.Instance.XXX()`。同时检查 `RedDotRegister.RegisterRedDot(...)` 调用——如果文件中有手动创建的 CompRedDot 并调用 Register，改为 `compXxx.Register(uiView, ERedDotKey.Xxx)`。
+两种替换规则：
+1. `RedDotKeys.Xxx` → `ERedDotKey.Xxx`（添加 `using Hotfix.Config;`）
+2. `RedDotRegister.RegisterRedDot(view, RedDotKeys.Xxx, target, mode)` → 直接在 FGUI 编辑器中为 CompRedDot 设置 `i18n=ERedDotKey.Xxx`，由插件自动生成注册代码。如有代码动态创建场景，改为 `compRedDot.Register(view, ERedDotKey.Xxx)`。
 
 **同时添加必要的 using:**
 ```csharp
 using Hotfix.Config;           // ERedDotKey, ERedDotDisplayMode 等枚举
+using Hotfix.RedDot;           // RedDotModule.Instance
 using Hotfix.RedDot.Runtime;   // RedDotModule
 ```
 
@@ -892,20 +849,21 @@ git commit -m "refactor: 业务层 RedDotKeys → ERedDotKey，GlobalModule.RedD
 ### Task 7: 废弃文件清理
 
 **Files:**
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/SettingAssets/RedDotSetting.asset` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/RedDot/RedDotSetting.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/RedDot/RedDotNodeData.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.CodeGeneration.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Navigation.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.NodeManagement.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.UI.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Validation.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Utility.cs` — 删除
-- `Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/RedDotSettingCreator.cs` — 删除
-- `Unity/Assets/Scripts/Hotfix/RedDot/RedDotKeys.cs` — 删除
-- `Unity/Assets/Scripts/Hotfix/RedDot/RedDotRegister.cs` — 删除
-- Modify: `Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/ModuleSetting.cs` — 删除 `RedDotSetting` 字段和属性
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/SettingAssets/RedDotSetting.asset` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/RedDotSetting.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/RedDotNodeData.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.CodeGeneration.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Navigation.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.NodeManagement.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.UI.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Validation.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingEditor.Utility.cs` — 删除
+- `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/RedDotSettingCreator.cs` — 删除
+- `Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotKeys.cs` — 删除
+- `Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotRegister.cs` — 删除
+- `Unity/FuFramework.RedDot.Runtime.csproj` — 删除（已废弃的残留文件）
+- Modify: `Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/ModuleSetting.cs` — 删除 `RedDotSetting` 字段和属性
 
 - [ ] **Step 1: 修改 ModuleSetting.cs — 删除 RedDotSetting 引用**
 
@@ -920,40 +878,31 @@ git commit -m "refactor: 业务层 RedDotKeys → ERedDotKey，GlobalModule.RedD
 - [ ] **Step 2: 删除废弃文件**
 
 ```bash
-rm "Unity/Assets/Scripts/FuFramework/ModuleSetting/SettingAssets/RedDotSetting.asset"
-rm "Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/RedDot/RedDotSetting.cs"
-rm "Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/RedDot/RedDotNodeData.cs"
-rm "Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/"*.cs
-rm "Unity/Assets/Scripts/Hotfix/RedDot/RedDotKeys.cs"
-rm "Unity/Assets/Scripts/Hotfix/RedDot/RedDotRegister.cs"
+rm "Unity/Assets/Scripts/AOT/Framework/ModuleSetting/SettingAssets/RedDotSetting.asset"
+rm "Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/RedDotSetting.cs"
+rm "Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/RedDotNodeData.cs"
+rm "Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/"*.cs
+rm "Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotKeys.cs"
+rm "Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotRegister.cs"
+rm "Unity/FuFramework.RedDot.Runtime.csproj"
 ```
 
 删除对应的 `.meta` 文件。
 
-- [ ] **Step 3: 清理 FuFramework.RedDot.Runtime 程序集**
-
-如果 `FuFramework.RedDot.Runtime` 目录下的文件已全部删除（只剩下空目录或 `.asmdef`），删除整个目录及其 `.asmdef`。
-
-```bash
-rm -rf "Unity/Assets/Scripts/FuFramework/RedDot/"
-```
-
-同时从 `FuFramework.ModuleSetting.Runtime` 和 `FuFramework.ModuleSetting.Editor` 的 `.asmdef` 中移除对 `FuFramework.RedDot.Runtime` 的引用（如果存在）。
-
-- [ ] **Step 4: 在 Unity Editor 中确认无编译错误**
+- [ ] **Step 3: 在 Unity Editor 中确认无编译错误**
 
 打开 Unity，等待脚本编译完成，检查 Console 无错误。
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git rm -r Unity/Assets/Scripts/FuFramework/ModuleSetting/SettingAssets/RedDotSetting.asset
-git rm -r Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/RedDot/
-git rm -r Unity/Assets/Scripts/FuFramework/ModuleSetting/Editor/RedDot/
-git rm Unity/Assets/Scripts/Hotfix/RedDot/RedDotKeys.cs
-git rm Unity/Assets/Scripts/Hotfix/RedDot/RedDotRegister.cs
-git rm -r Unity/Assets/Scripts/FuFramework/RedDot/
-git add Unity/Assets/Scripts/FuFramework/ModuleSetting/Runtime/ModuleSetting.cs
+git rm -r Unity/Assets/Scripts/AOT/Framework/ModuleSetting/SettingAssets/RedDotSetting.asset
+git rm -r Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/RedDot/
+git rm -r Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Editor/RedDot/
+git rm Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotKeys.cs
+git rm Unity/Assets/Scripts/Hotfix/Framework/RedDot/RedDotRegister.cs
+git rm Unity/FuFramework.RedDot.Runtime.csproj
+git add Unity/Assets/Scripts/AOT/Framework/ModuleSetting/Runtime/ModuleSetting.cs
 git commit -m "chore: 删除废弃的红点 SO 配置、编辑器、RedDotKeys、RedDotRegister"
 ```
 
