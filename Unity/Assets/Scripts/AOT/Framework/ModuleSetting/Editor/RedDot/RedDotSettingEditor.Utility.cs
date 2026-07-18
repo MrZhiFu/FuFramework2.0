@@ -2,7 +2,7 @@
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Editor
+namespace AOT.Framework.ModuleSetting.Editor.RedDot
 {
     public partial class RedDotSettingEditor
     {

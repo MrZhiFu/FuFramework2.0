@@ -1,11 +1,11 @@
 using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
+using AOT.Framework.ModuleSetting.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace Launcher
+namespace AOT.Bootstrap
 {
     /// <summary>
     /// AOT 资源引导助手。
@@ -128,14 +128,14 @@ namespace Launcher
 #if UNITY_WEBGL
     #if ENABLE_DOUYIN_MINI_GAME
                     // 创建抖音小游戏文件系统
-                    if (url.IsNullOrWhiteSpace())
+                    if (string.IsNullOrWhiteSpace(url))
                         webFs = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters();
                     else
                         webFs = ByteGameFileSystemCreater.CreateByteGameFileSystemParameters(url);
     #elif ENABLE_WECHAT_MINI_GAME
                     // 创建微信小游戏文件系统
                     WeChatWASM.WXBase.PreloadConcurrent(10);
-                    if (url.IsNullOrWhiteSpace())
+                    if (string.IsNullOrWhiteSpace(url))
                         webFs = WechatFileSystemCreater.CreateWechatFileSystemParameters();
                     else
                         webFs = WechatFileSystemCreater.CreateWechatPathFileSystemParameters(url);

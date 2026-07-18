@@ -1,7 +1,7 @@
 ﻿// ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Launcher.Bootstrap
+namespace AOT.Bootstrap.UpdateConfig
 {
     /// <summary>
     /// 远端资源更新配置。

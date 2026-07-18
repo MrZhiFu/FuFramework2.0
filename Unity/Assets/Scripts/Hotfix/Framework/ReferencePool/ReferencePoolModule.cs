@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ReferencePool.Runtime

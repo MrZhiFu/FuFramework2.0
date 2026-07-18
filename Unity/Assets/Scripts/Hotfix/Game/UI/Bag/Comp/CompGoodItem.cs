@@ -1,5 +1,6 @@
 using FuFramework.Core.Runtime;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using AOT.Framework.Core.Utility;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix;
 using Hotfix.Config;
 using Hotfix.Config.Tables;

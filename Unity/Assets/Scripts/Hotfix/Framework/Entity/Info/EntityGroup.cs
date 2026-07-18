@@ -2,7 +2,8 @@ using System;
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.Entity;
+using AOT.Framework.ModuleSetting.Runtime;
 using FuFramework.ObjectPool.Runtime;
 
 // ReSharper disable once CheckNamespace

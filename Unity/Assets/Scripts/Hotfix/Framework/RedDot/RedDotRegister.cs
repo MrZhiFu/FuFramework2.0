@@ -2,6 +2,7 @@
 using UnityEngine;
 using FuFramework.UI.Runtime;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.UI

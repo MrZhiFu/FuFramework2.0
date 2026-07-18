@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace FuFramework.Core.Runtime
+namespace AOT.Bootstrap
 {
     /// <summary>
     /// 启动引导共享上下文。

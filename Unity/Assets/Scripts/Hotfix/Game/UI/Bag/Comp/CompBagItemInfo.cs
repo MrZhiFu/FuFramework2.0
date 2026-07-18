@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix;
 using Hotfix.Config;
 using Hotfix.Config.Tables;

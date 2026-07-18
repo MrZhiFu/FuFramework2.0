@@ -2,7 +2,7 @@ using System;
 
 // ReSharper disable once CheckNamespace
 
-namespace FuFramework.Core.Runtime
+namespace AOT.Bootstrap
 {
     /// <summary>
     /// 启动热更资源加载界面句柄接口。

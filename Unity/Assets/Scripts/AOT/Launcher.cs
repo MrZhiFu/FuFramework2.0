@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
-using Launcher;
+using AOT.Framework.Core.Log;
+using AOT.Bootstrap;
 using UnityEngine;
 
 namespace AOT

@@ -2,10 +2,11 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.Sound;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Editor
+namespace AOT.Framework.ModuleSetting.Editor.Sound
 {
     /// <summary>
     /// 声音配置-SoundSetting 创建器

@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix.Storage;
 
 namespace Hotfix.Model

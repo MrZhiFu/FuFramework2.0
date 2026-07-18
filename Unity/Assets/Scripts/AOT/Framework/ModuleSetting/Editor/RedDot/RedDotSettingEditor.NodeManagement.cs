@@ -2,10 +2,11 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.RedDot;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Editor
+namespace AOT.Framework.ModuleSetting.Editor.RedDot
 {
     public partial class RedDotSettingEditor
     {

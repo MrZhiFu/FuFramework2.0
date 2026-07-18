@@ -8,6 +8,7 @@ using FairyGUI;
 using FairyGUI.Utils;
 using FuFramework.UI.Runtime;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.Event.Runtime;
 using Cysharp.Threading.Tasks;
 

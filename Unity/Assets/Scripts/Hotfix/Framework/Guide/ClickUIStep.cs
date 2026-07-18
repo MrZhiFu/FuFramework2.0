@@ -1,9 +1,11 @@
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.ReferencePool.Runtime;
 using FuFramework.UI.Runtime;
 
+using AOT.Framework.ModuleSetting.Runtime.Guide;
 namespace Hotfix.Guide
 {
     /// <summary>

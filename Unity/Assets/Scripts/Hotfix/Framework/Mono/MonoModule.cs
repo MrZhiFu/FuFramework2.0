@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Mono.Runtime

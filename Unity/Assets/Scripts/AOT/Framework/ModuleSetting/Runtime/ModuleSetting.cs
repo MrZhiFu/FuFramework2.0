@@ -1,8 +1,14 @@
+using AOT.Framework.ModuleSetting.Runtime.Asset;
+using AOT.Framework.ModuleSetting.Runtime.DataSave;
+using AOT.Framework.ModuleSetting.Runtime.Entity;
+using AOT.Framework.ModuleSetting.Runtime.Guide;
+using AOT.Framework.ModuleSetting.Runtime.RedDot;
+using AOT.Framework.ModuleSetting.Runtime.Sound;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime
 {
     /// <summary>
     /// 系统模块配置。

@@ -6,7 +6,7 @@ local File = CS.System.IO.File
 local Directory = CS.System.IO.Directory
 
 --- 导出界面View的AOT命名空间（Launcher包专用，热更前阶段使用）
-Tool.ExportViewAOTNamespace = "Launcher"
+Tool.ExportViewAOTNamespace = "AOT.Bootstrap.UI"
 
 --- 导出界面View的C#代码AOT路径（Launcher包专用，热更前阶段使用）
 Tool.ExportViewAOTPath = "%s/Scripts/AOT/Bootstrap"

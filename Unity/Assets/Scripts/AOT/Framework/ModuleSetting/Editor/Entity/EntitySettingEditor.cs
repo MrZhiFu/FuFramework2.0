@@ -1,10 +1,11 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.Entity;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Editor
+namespace AOT.Framework.ModuleSetting.Editor.Entity
 {
     /// <summary>
     /// 实体配置文件Inspector

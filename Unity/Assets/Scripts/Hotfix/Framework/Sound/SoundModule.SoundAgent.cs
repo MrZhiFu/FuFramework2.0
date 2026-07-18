@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using FuFramework.Asset.Runtime;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix.Entity;
 using Entity = Hotfix.Entity.Entity;
 

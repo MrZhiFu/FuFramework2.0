@@ -6,6 +6,7 @@ using FuFramework.UI.Runtime;
 using FuFramework.Event.Runtime;
 using Hotfix.Network;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix;
 using Hotfix.Manager;
 using Hotfix.Proto;

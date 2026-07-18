@@ -2,6 +2,7 @@ using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.UI.Runtime

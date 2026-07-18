@@ -1,5 +1,6 @@
 using System;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace

@@ -2,10 +2,11 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.Asset;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Editor
+namespace AOT.Framework.ModuleSetting.Editor.Asset
 {
     /// <summary>
     /// 资源配置-AssetSetting 创建器

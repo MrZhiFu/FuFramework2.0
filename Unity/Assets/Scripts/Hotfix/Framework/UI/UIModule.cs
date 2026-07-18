@@ -2,6 +2,7 @@ using System;
 using FairyGUI;
 using UnityEngine;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.Event.Runtime;
 using System.Collections.Generic;
 using FuFramework.ObjectPool.Runtime;

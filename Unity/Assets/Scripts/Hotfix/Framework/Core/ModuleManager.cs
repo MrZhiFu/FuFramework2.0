@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
+using AOT.Framework.Core.Log;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime.Entity
 {
     /// <summary>
     /// 实体组信息

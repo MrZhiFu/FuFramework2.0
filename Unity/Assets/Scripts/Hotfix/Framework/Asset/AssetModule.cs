@@ -2,6 +2,10 @@ using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using AOT.Bootstrap;
+using AOT.Framework.ModuleSetting.Runtime.Asset;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -54,7 +58,7 @@ namespace FuFramework.Asset.Runtime
         protected internal override void OnInit()
         {
             // 获取资源管理模块配置数据
-            var assetSetting = ModuleSetting.Runtime.ModuleSetting.Instance.AssetSetting;
+            var assetSetting = ModuleSetting.Instance.AssetSetting;
             if (!assetSetting) throw new InvalidOperationException("[AssetModule]资源管理模块配置数据为空!");
 
             PlayMode                    = assetSetting.PlayMode;

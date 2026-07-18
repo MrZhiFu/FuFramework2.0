@@ -2,7 +2,7 @@
 using YooAsset;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime.Asset
 {
     /// <summary>
     /// 资源管理模块配置

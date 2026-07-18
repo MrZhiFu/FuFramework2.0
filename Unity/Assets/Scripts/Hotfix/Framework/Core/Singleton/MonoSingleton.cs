@@ -2,6 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable StaticMemberInGenericType
+using AOT.Framework.Core.Log;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>

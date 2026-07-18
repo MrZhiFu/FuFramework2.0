@@ -2,7 +2,7 @@
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace AOT.Framework.Core.Utility
 {
     public static partial class UtilityAOT
     {

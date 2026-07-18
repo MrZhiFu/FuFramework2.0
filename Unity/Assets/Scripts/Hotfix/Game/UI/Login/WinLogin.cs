@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using AOT.Framework.Core.Utility;
+using AOT.Framework.Core.Log;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using FuFramework.UI.Runtime;
 using Hotfix.Sound;
 using Hotfix.Web;

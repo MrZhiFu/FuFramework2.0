@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using Hotfix;
 using Hotfix.UI;
 using UnityEngine;

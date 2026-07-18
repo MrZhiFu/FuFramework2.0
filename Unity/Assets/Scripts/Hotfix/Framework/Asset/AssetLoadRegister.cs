@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.ReferencePool.Runtime;
 using UnityEngine;
 using YooAsset;

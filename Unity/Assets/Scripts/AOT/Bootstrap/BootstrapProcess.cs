@@ -4,13 +4,13 @@ using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using HybridCLR;
-using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
-using Launcher.Bootstrap;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using AOT.Framework.Core.Log;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Bootstrap.UpdateConfig;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
-namespace Launcher
+namespace AOT.Bootstrap
 {
     /// <summary>
     /// AOT 启动引导流程。

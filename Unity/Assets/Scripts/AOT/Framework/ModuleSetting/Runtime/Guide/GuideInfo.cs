@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime.Guide
 {
     /// <summary>
     /// 引导数据

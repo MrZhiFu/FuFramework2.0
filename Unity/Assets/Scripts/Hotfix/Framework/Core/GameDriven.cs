@@ -1,7 +1,9 @@
 using System;
 using Cysharp.Threading.Tasks;
 using FuFramework.Core.Runtime;
-using Launcher;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
+using AOT.Bootstrap;
 using UnityEngine;
 
 namespace Hotfix
@@ -103,7 +105,7 @@ namespace Hotfix
         /// </summary>
         public void PauseGame()
         {
-            FuFramework.ModuleSetting.Runtime.ModuleSetting.Instance.PauseGame();
+            ModuleSetting.Instance.PauseGame();
         }
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace Hotfix
         /// </summary>
         public void ResumeGame()
         {
-            FuFramework.ModuleSetting.Runtime.ModuleSetting.Instance.ResumeGame();
+            ModuleSetting.Instance.ResumeGame();
         }
 
         /// <summary>

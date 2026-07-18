@@ -3,8 +3,10 @@ using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.DataSave;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Utility;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 namespace Hotfix.Storage
 {

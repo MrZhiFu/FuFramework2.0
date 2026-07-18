@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using AOT.Framework.Core.Extension;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace AOT.Framework.Core.Utility
 {
     public static partial class UtilityAOT
     {

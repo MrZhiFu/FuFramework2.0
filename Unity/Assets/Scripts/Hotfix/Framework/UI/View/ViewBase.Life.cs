@@ -1,5 +1,6 @@
 ﻿using FairyGUI;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.Event.Runtime;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

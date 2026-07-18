@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.Sound;
+using AOT.Framework.ModuleSetting.Runtime;
 using UnityEngine;
 
 namespace Hotfix.Sound

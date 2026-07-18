@@ -5,9 +5,10 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
+using AOT.Framework.Core.Utility;
 namespace FuFramework.Core.Editor
 {
     /// <summary>

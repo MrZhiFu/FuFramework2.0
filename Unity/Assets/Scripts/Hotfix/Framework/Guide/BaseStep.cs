@@ -1,8 +1,9 @@
 using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime;
 using FuFramework.ReferencePool.Runtime;
 using UnityEngine;
 
+using AOT.Framework.ModuleSetting.Runtime.Guide;
 namespace Hotfix.Guide
 {
     /// <summary>

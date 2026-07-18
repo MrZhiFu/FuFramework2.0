@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using System.Collections.Generic;
 using Hotfix.Network;
 

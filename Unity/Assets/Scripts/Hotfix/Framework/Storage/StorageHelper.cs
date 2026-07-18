@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using UnityEngine;
 using FuFramework.Core.Runtime;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using AOT.Framework.Core.Utility;
+using AOT.Framework.Core.Log;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using System.Collections.Generic;
 using Utility = FuFramework.Core.Runtime.Utility;
 

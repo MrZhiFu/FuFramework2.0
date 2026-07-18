@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FairyGUI;
 
 // ReSharper disable once CheckNamespace
+using AOT.Framework.Core.Log;
 namespace FuFramework.Core.Runtime
 {
     public static partial class Utility

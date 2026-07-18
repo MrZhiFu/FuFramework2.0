@@ -1,11 +1,11 @@
 using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using AOT.Bootstrap.UI;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
-namespace Launcher
+namespace AOT.Bootstrap
 {
     /// <summary>
     /// AOT 启动加载界面。

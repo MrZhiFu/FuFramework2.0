@@ -1,7 +1,7 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace AOT.Framework.Core.Extension
 {
     /// <summary>
     /// Type 相关的扩展方法。

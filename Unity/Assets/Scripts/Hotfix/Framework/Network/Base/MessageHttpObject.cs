@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Utility = FuFramework.Core.Runtime.Utility;
-using UtilityAOT = FuFramework.Core.Runtime.UtilityAOT;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
+using AOT.Framework.Core.Utility;
 namespace Hotfix.Network
 {
     /// <summary>

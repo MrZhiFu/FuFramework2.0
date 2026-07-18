@@ -3,7 +3,7 @@ using UnityEngine.Audio;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime.Sound
 {
     /// <summary>
     /// 音频模块配置

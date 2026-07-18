@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ModuleSetting.Runtime
+namespace AOT.Framework.ModuleSetting.Runtime.DataSave
 {
     /// <summary>
     /// 本地数据存储模块配置

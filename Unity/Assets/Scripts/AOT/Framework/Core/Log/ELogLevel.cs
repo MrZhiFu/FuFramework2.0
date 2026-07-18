@@ -1,5 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace AOT.Framework.Core.Log
 {
     /// <summary>
     /// 游戏框架日志等级。

@@ -1,4 +1,5 @@
 ﻿using FuFramework.Core.Runtime;
+using AOT.Framework.Core.Log;
 using UnityEngine;
 
 // ReSharper disable NotAccessedField.Local

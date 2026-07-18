@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using FuFramework.Core.Runtime;
-using FuFramework.ModuleSetting.Runtime;
+using AOT.Framework.ModuleSetting.Runtime.RedDot;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
 using FuFramework.ReferencePool.Runtime;
 
 namespace Hotfix.RedDot
