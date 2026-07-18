@@ -45,6 +45,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                 '#EnumAndMethodDefine#', -- Launcher 模板：枚举定义与 SetController 方法
                 '#CompInit#', -- 界面包含的组件初始化赋值关键字
                 '#INITUIEVENT#', -- 界面可交互组件事件初始化
+                '#RedDotRegister#', -- 红点注册代码（自动生成）
             }
 
             -- 定义关键字对应的填充内容字典
@@ -63,6 +64,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
 
             GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
             GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
+            GenCommon:GenRedDotRegister(dataTable['#RedDotRegister#'], winCls)-- 生成红点注册代码：compXxx.Register(uiView, ERedDotKey.Xxx);
 
             -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前（所有包通用）
             local compDefineContent = table.concat(dataTable['#CompDefine#'])

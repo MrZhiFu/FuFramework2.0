@@ -1,3 +1,4 @@
+using Hotfix.Config;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
@@ -52,7 +53,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin);
+            // Example: RedDotRegister.RegisterRedDot(this, ERedDotKey.Bag_Item, btnLogin);
         }
         
         /// <summary>

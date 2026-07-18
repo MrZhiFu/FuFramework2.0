@@ -2,7 +2,6 @@ using AOT.Framework.ModuleSetting.Runtime.Asset;
 using AOT.Framework.ModuleSetting.Runtime.DataSave;
 using AOT.Framework.ModuleSetting.Runtime.Entity;
 using AOT.Framework.ModuleSetting.Runtime.Guide;
-using AOT.Framework.ModuleSetting.Runtime.RedDot;
 using AOT.Framework.ModuleSetting.Runtime.Sound;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -65,9 +64,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         [Header("本地数据存储系统配置")]
         [SerializeField] private StorageSetting m_StorageSetting;
 
-        [Header("红点模块配置")]
-        [SerializeField] private RedDotSetting m_RedDotSetting;
-
         [Header("引导模块配置")]
         [SerializeField] private GuideSetting m_GuideSetting;
 
@@ -91,11 +87,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// 获取本地存储系统配置
         /// </summary>
         public StorageSetting StorageSetting => m_StorageSetting;
-
-        /// <summary>
-        /// 获取红点模块配置
-        /// </summary>
-        public RedDotSetting RedDotSetting => m_RedDotSetting;
 
         /// <summary>
         /// 获取引导模块配置

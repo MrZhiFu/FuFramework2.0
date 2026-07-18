@@ -28,7 +28,6 @@ namespace AOT.Framework.ModuleSetting.Editor
         private SerializedProperty m_AssetSetting;   // 资源管理模块配置
         private SerializedProperty m_EntitySetting;  // 实体模块配置
         private SerializedProperty m_StorageSetting; // 本地数据存储模块配置
-        private SerializedProperty m_RedDotSetting;  // 红点模块配置
         private SerializedProperty m_GuideSetting;   // 引导模块配置
 
         private void OnEnable()
@@ -42,7 +41,6 @@ namespace AOT.Framework.ModuleSetting.Editor
             m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
             m_EntitySetting   = serializedObject.FindProperty("m_EntitySetting");
             m_StorageSetting  = serializedObject.FindProperty("m_StorageSetting");
-            m_RedDotSetting   = serializedObject.FindProperty("m_RedDotSetting");
             m_GuideSetting    = serializedObject.FindProperty("m_GuideSetting");
         }
 
@@ -120,7 +118,6 @@ namespace AOT.Framework.ModuleSetting.Editor
             EditorGUILayout.PropertyField(m_AssetSetting);
             EditorGUILayout.PropertyField(m_EntitySetting);
             EditorGUILayout.PropertyField(m_StorageSetting);
-            EditorGUILayout.PropertyField(m_RedDotSetting);
             EditorGUILayout.PropertyField(m_GuideSetting);
 
             serializedObject.ApplyModifiedProperties();

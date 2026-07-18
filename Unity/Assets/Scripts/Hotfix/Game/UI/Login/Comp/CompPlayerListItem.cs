@@ -1,3 +1,4 @@
+using Hotfix.Config;
 using FairyGUI;
 using Hotfix.Proto;
 
@@ -28,7 +29,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin);
+            // Example: RedDotRegister.RegisterRedDot(this.uiView, ERedDotKey.Bag_Item, btnLogin);
         }
         
         /// <summary>

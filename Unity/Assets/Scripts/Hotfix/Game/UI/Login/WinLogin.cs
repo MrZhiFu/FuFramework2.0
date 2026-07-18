@@ -1,3 +1,4 @@
+using Hotfix.Config;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FuFramework.Core.Runtime;
@@ -52,7 +53,14 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin);
+            // 创建红点组件并注册到 btnLogin
+            var compObj = UIPackage.CreateObjectFromURL(CompRedDot.URL);
+            if (compObj is CompRedDot compRedDot)
+            {
+                btnLogin.AddChild(compRedDot);
+                compRedDot.Register(this, ERedDotKey.Bag_Item);
+                compRedDot.SetRedDotPos();
+            }
         }
 
         /// <summary>
@@ -87,7 +95,7 @@ namespace Hotfix.UI
         {
             LoginAsync().Forget();
             // PlayBgm().Forget();
-            // GlobalModule.RedDotModule.AddCount(RedDotKeys.BagItem);
+            // GlobalModule.RedDotModule.AddCount(ERedDotKey.Bag_Item);
         }
 
         private void OnInputUserNameChanged(EventContext ctx)

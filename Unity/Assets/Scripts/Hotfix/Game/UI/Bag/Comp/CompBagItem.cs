@@ -1,3 +1,4 @@
+using Hotfix.Config;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 
 namespace Hotfix.UI
@@ -26,7 +27,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this.uiView, RedDotKeys.BagItem, btnLogin);
+            // Example: RedDotRegister.RegisterRedDot(this.uiView, ERedDotKey.Bag_Item, btnLogin);
         }
         
         /// <summary>
