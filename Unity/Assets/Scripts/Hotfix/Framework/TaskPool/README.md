@@ -415,7 +415,7 @@ FuFramework/TaskPool/
 
 ## 6. 依赖模块
 
-- **Core**: 提供 FuLinkedList、FuException、FuGuard 等工具类
+- **Core**: 提供 FuLinkedList、FuException、FuGuardEx 等工具类
 - **ReferencePool**: 提供对象池管理，用于任务对象的复用
 
 ## 7. 设计特点

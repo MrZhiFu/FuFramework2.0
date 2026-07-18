@@ -36,7 +36,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private InitializationOperation InitInEditorSimulateMode(ResourcePackage resPackage)
         {
-            FuGuard.NotNull(resPackage, nameof(resPackage));
+            resPackage.NotNull(nameof(resPackage));
             var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
             var packageRoot         = simulateBuildResult.PackageRootDirectory;
             var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
@@ -55,7 +55,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private InitializationOperation InitInOfflinePlayMode(ResourcePackage resPackage)
         {
-            FuGuard.NotNull(resPackage, nameof(resPackage));
+            resPackage.NotNull(nameof(resPackage));
             var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
             var initParameters = new OfflinePlayModeParameters
             {
@@ -75,9 +75,9 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private InitializationOperation InitInHostPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
-            FuGuard.NotNull(resPackage,        nameof(resPackage));
-            FuGuard.NotNull(downloadURL,       nameof(downloadURL));
-            FuGuard.NotNull(downloadBackupURL, nameof(downloadBackupURL));
+            resPackage.NotNull(       nameof(resPackage));
+            downloadURL.NotNull(      nameof(downloadURL));
+            downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
             IRemoteServices remoteServices = new RemoteServices(downloadURL, downloadBackupURL);
 
@@ -101,9 +101,9 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         private InitializationOperation InitInWebPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
-            FuGuard.NotNull(resPackage,        nameof(resPackage));
-            FuGuard.NotNull(downloadURL,       nameof(downloadURL));
-            FuGuard.NotNull(downloadBackupURL, nameof(downloadBackupURL));
+            resPackage.NotNull(       nameof(resPackage));
+            downloadURL.NotNull(      nameof(downloadURL));
+            downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
             var                  initParameters = new WebPlayModeParameters();
             FileSystemParameters webFileSystem  = null;

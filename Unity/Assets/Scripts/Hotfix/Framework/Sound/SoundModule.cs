@@ -149,7 +149,7 @@ namespace Hotfix.Sound
         /// <returns>指定声音组是否存在。</returns>
         public bool HasSoundGroup(string groupName)
         {
-            FuGuard.NotNullOrEmpty(groupName, "[SoundModule]声音组名称");
+            groupName.NotNullOrEmpty("[SoundModule]声音组名称");
             return m_SoundGroupDict.ContainsKey(groupName);
         }
 
@@ -160,7 +160,7 @@ namespace Hotfix.Sound
         /// <returns>要获取的声音组。</returns>
         public SoundGroup GetSoundGroup(string groupName)
         {
-            FuGuard.NotNullOrEmpty(groupName, "[SoundModule]声音组名称");
+            groupName.NotNullOrEmpty("[SoundModule]声音组名称");
             return m_SoundGroupDict.GetValueOrDefault(groupName);
         }
 
@@ -186,7 +186,7 @@ namespace Hotfix.Sound
         /// <param name="results">所有声音组。</param>
         public void GetAllSoundGroups(List<SoundGroup> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
             results.Clear();
             foreach (var (_, soundGroup) in m_SoundGroupDict)
             {
@@ -201,7 +201,7 @@ namespace Hotfix.Sound
         /// <returns>是否增加声音组成功。</returns>
         public bool AddSoundGroup(SoundGroupInfo soundGroupInfo)
         {
-            FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
+            soundGroupInfo.NotNull(nameof(soundGroupInfo));
             if (HasSoundGroup(soundGroupInfo.Name))
             {
                 FuLogger.LogInfo($"[SoundModule]声音组 '{soundGroupInfo.Name}' 已存在，不可重复添加!");
@@ -232,7 +232,7 @@ namespace Hotfix.Sound
         /// <param name="results">所有正在加载声音的序列编号。</param>
         public void GetAllLoadingSoundSerialIds(List<int> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
             results.Clear();
             results.AddRange(m_LoadingSoundList);
         }

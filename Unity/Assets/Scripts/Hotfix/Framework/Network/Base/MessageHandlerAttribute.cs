@@ -50,8 +50,8 @@ namespace Hotfix.Network
         /// <param name="invokeMethodName">执行的方法名称。建议使用nameof标记当前的函数</param>
         public MessageHandlerAttribute(Type message, string invokeMethodName)
         {
-            FuGuard.NotNull(message, nameof(message));
-            FuGuard.NotNullOrEmpty(invokeMethodName, nameof(invokeMethodName));
+            message.NotNull(nameof(message));
+            invokeMethodName.NotNullOrEmpty(nameof(invokeMethodName));
             m_InvokeMethodName = invokeMethodName;
             if (message.BaseType != typeof(MessageObject))
                 throw new ArgumentException("message必须继承:" + nameof(MessageObject));
@@ -68,7 +68,7 @@ namespace Hotfix.Network
         /// <param name="messageObject">消息对象</param>
         public void SetMessageObject(MessageObject messageObject)
         {
-            FuGuard.NotNull(messageObject, nameof(messageObject));
+            messageObject.NotNull(nameof(messageObject));
             m_MessageObjects.Enqueue(messageObject);
         }
 
@@ -99,8 +99,8 @@ namespace Hotfix.Network
         /// <exception cref="ArgumentException"></exception>
         internal bool Add(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(MessageType,    nameof(MessageType));
-            FuGuard.NotNull(messageHandler, nameof(messageHandler));
+            MessageType.NotNull(   nameof(MessageType));
+            messageHandler.NotNull(nameof(messageHandler));
             m_MessageHandler = messageHandler;
             var target = messageHandler.GetType();
 
@@ -132,8 +132,8 @@ namespace Hotfix.Network
         /// <exception cref="ArgumentException"></exception>
         internal bool Remove(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(MessageType,    nameof(MessageType));
-            FuGuard.NotNull(messageHandler, nameof(messageHandler));
+            MessageType.NotNull(   nameof(MessageType));
+            messageHandler.NotNull(nameof(messageHandler));
             m_MessageHandler = null;
             var target = messageHandler.GetType();
 

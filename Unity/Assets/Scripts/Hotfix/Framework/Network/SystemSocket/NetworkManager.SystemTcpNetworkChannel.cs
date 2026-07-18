@@ -172,7 +172,7 @@ namespace Hotfix.Network
                 if (PReceiveState.PacketHeader.ZipFlag != 0)
                 {
                     // 解压
-                    FuGuard.NotNull(MessageDecompressHandler, nameof(MessageDecompressHandler));
+                    MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
                     buffer = MessageDecompressHandler.Handler(buffer);
                 }
 

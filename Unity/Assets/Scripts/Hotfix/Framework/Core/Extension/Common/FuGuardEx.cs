@@ -4,9 +4,9 @@ using System;
 namespace FuFramework.Core.Runtime
 {
     /// <summary>
-    /// 游戏框架防护类。
+    /// 游戏框架防护扩展类。
     /// </summary>
-    public static class FuGuard
+    public static class FuGuardEx
     {
         /// <summary>
         /// 确保指定的值不为null。
@@ -14,7 +14,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="value">要检查的值。</param>
         /// <param name="name">值的名称。</param>
         /// <exception cref="ArgumentNullException">当值为null时引发。</exception>
-        public static void NotNullOrEmpty(string value, string name)
+        public static void NotNullOrEmpty(this string value, string name)
         {
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentNullException(name, "不能为空或空字符串.");
@@ -27,7 +27,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="value">要检查的值。</param>
         /// <param name="name">值的名称。</param>
         /// <exception cref="ArgumentNullException">当值为null时引发。</exception>
-        public static void NotNull<T>(T value, string name) where T : class
+        public static void NotNull<T>(this T value, string name) where T : class
         {
             if (value == null)
                 throw new ArgumentNullException(name, "不能为空.");
@@ -41,7 +41,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="max">允许的最大值。</param>
         /// <param name="name">值的名称。</param>
         /// <exception cref="ArgumentOutOfRangeException">当值不在指定范围内时抛出。</exception>
-        public static void NotRange(int value, int min, int max, string name)
+        public static void NotRange(this int value, int min, int max, string name)
         {
             if (value > max || value < min)
                 throw new ArgumentOutOfRangeException(name, "值必须在" + min + " 到 " + max + "之间.");

@@ -58,7 +58,7 @@ namespace FuFramework.Core.Runtime
         /// <returns></returns>
         public BindableProperty<T> Register(Action<T> callback)
         {
-            FuGuard.NotNull(callback, nameof(callback));
+            callback.NotNull(nameof(callback));
             m_onValueChanged += callback;
             return this;
         }
@@ -70,7 +70,7 @@ namespace FuFramework.Core.Runtime
         /// <returns></returns>
         public BindableProperty<T> RegisterWithInitValue(Action<T> callback)
         {
-            FuGuard.NotNull(callback, nameof(callback));
+            callback.NotNull(nameof(callback));
             callback?.Invoke(m_value);
             return Register(callback);
         }
@@ -81,7 +81,7 @@ namespace FuFramework.Core.Runtime
         /// <param name="callback">事件</param>
         public void UnRegister(Action<T> callback)
         {
-            FuGuard.NotNull(callback, nameof(callback));
+            callback.NotNull(nameof(callback));
             m_onValueChanged -= callback;
         }
 

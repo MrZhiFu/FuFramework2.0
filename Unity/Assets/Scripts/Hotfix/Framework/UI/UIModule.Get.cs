@@ -37,7 +37,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            uiName.NotNullOrEmpty(nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -78,7 +78,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(string uiName)
         {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            uiName.NotNullOrEmpty(nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -141,7 +141,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有已加载的界面。</param>
         public void GetAllLoadedUIs(List<ViewBase> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
@@ -172,7 +172,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有正在加载界面的序列编号。</param>
         public void GetAllLoadingUISerialIds(List<int> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
 
             results.Clear();
             foreach (var (id, _) in m_LoadingDict)

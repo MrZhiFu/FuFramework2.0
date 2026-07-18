@@ -222,7 +222,7 @@ namespace Hotfix.Sound
             /// <param name="soundGroup">所在的声音组。</param>
             public void Init(SoundGroup soundGroup)
             {
-                FuGuard.NotNull(soundGroup, nameof(soundGroup));
+                soundGroup.NotNull(nameof(soundGroup));
                 m_AssetModule = ModuleManager.GetModule<AssetModule>();
 
                 m_SoundGroup   = soundGroup;

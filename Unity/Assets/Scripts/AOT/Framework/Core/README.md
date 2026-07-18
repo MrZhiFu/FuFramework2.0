@@ -110,13 +110,13 @@ void UnRegister(Action<T> callback)
 void Clear()
 ```
 
-#### 异常防护 (FuGuard)
+#### 异常防护 (FuGuardEx)
 
-提供静态判空方法，用于参数校验。
+提供扩展方法用于参数校验。
 
-- `NotNull<T>(T value, string name)`: 确保值不为 null
-- `NotNullOrEmpty(string value, string name)`: 确保字符串不为空
-- `NotRange(int value, int min, int max, string name)`: 确保值在指定范围内
+- `NotNull<T>(this T value, string name)`: 确保值不为 null
+- `NotNullOrEmpty(this string value, string name)`: 确保字符串不为空
+- `NotRange(this int value, int min, int max, string name)`: 确保值在指定范围内
 
 ***
 
@@ -674,8 +674,10 @@ Core/
     │   │   ├── FuMultiDictionary.cs
     │   │   └── TypeNamePair.cs
     │   ├── Exception/               # 异常处理
-    │   │   ├── FuException.cs
-    │   │   └── FuGuard.cs
+    │   │   └── FuException.cs
+    │   ├── Extension/              # 扩展方法
+    │   │   └── Common/
+    │   │       └── FuGuardEx.cs
     │   ├── Log/                     # 日志系统
     │   │   ├── ELogLevel.cs
     │   │   └── FuLogger.cs

@@ -118,7 +118,7 @@ namespace Hotfix.Network
         /// <param name="results">所有网络频道。</param>
         public void GetAllNetworkChannels(List<INetworkChannel> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
 
             results.Clear();
             foreach (var networkChannel in m_NetworkChannelDict)
@@ -136,8 +136,8 @@ namespace Hotfix.Network
         /// <returns>要创建的网络频道。</returns>
         public INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
         {
-            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
-            FuGuard.NotNull(networkChannelHelper, nameof(networkChannelHelper));
+            channelName.NotNullOrEmpty(nameof(channelName));
+            networkChannelHelper.NotNull(nameof(networkChannelHelper));
 
             if (HasNetworkChannel(channelName))
             {
@@ -163,7 +163,7 @@ namespace Hotfix.Network
         /// <returns>是否销毁网络频道成功。</returns>
         public bool DestroyNetworkChannel(string channelName)
         {
-            FuGuard.NotNullOrEmpty(channelName, nameof(channelName));
+            channelName.NotNullOrEmpty(nameof(channelName));
             if (!m_NetworkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
             networkChannel.NetworkChannelConnected     -= OnNetworkChannelConnected;
             networkChannel.NetworkChannelClosed        -= OnNetworkChannelClosed;

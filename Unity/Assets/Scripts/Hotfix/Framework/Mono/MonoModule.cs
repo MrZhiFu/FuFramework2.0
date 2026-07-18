@@ -152,7 +152,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitUpdateList.Add(action);
         }
 
@@ -162,7 +162,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddLateUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitLateUpdateList.Add(action);
         }
 
@@ -172,7 +172,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveLateUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitLateUpdateList.Remove(action);
         }
 
@@ -182,7 +182,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddFixedUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitFixedUpdateList.Add(action);
         }
 
@@ -192,7 +192,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveFixedUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitFixedUpdateList.Remove(action);
         }
 
@@ -202,7 +202,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveUpdateListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitUpdateList.Remove(action);
         }
 
@@ -213,7 +213,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddDestroyListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitDestroyList.Add(action);
         }
 
@@ -223,7 +223,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveDestroyListener(Action action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitDestroyList.Remove(action);
         }
 
@@ -233,7 +233,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationPauseListener(Action<bool> action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitOnApplicationPauseList.Add(action);
         }
 
@@ -243,7 +243,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationPauseListener(Action<bool> action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitOnApplicationPauseList.Remove(action);
         }
 
@@ -253,7 +253,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void AddOnApplicationFocusListener(Action<bool> action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitOnApplicationFocusList.Add(action);
         }
 
@@ -263,7 +263,7 @@ namespace FuFramework.Mono.Runtime
         /// <param name="action">监听器函数</param>
         public void RemoveOnApplicationFocusListener(Action<bool> action)
         {
-            FuGuard.NotNull(action, nameof(action));
+            action.NotNull(nameof(action));
             m_WaitOnApplicationFocusList.Remove(action);
         }
 

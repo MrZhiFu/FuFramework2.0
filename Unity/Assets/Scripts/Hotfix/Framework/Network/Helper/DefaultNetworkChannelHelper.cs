@@ -129,10 +129,10 @@ namespace Hotfix.Network
 
         public bool SerializePacketHeader<T>(T messageObject, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
         {
-            FuGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
-            FuGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
-            FuGuard.NotNull(messageObject, nameof(messageObject));
-            FuGuard.NotNull(destination, nameof(destination));
+            m_NetworkChannel.NotNull(nameof(m_NetworkChannel));
+            m_NetworkChannel.PacketSendHeaderHandler.NotNull(nameof(m_NetworkChannel.PacketSendHeaderHandler));
+            messageObject.NotNull(nameof(messageObject));
+            destination.NotNull(nameof(destination));
 
             return m_NetworkChannel.PacketSendHeaderHandler.Handler(messageObject, m_NetworkChannel.MessageCompressHandler, destination,
                 out messageBodyBuffer);
@@ -140,25 +140,25 @@ namespace Hotfix.Network
 
         public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
         {
-            FuGuard.NotNull(m_NetworkChannel, nameof(m_NetworkChannel));
-            FuGuard.NotNull(m_NetworkChannel.PacketSendHeaderHandler, nameof(m_NetworkChannel.PacketSendHeaderHandler));
-            FuGuard.NotNull(m_NetworkChannel.PacketSendBodyHandler, nameof(m_NetworkChannel.PacketSendBodyHandler));
-            FuGuard.NotNull(messageBodyBuffer, nameof(messageBodyBuffer));
-            FuGuard.NotNull(destination, nameof(destination));
+            m_NetworkChannel.NotNull(nameof(m_NetworkChannel));
+            m_NetworkChannel.PacketSendHeaderHandler.NotNull(nameof(m_NetworkChannel.PacketSendHeaderHandler));
+            m_NetworkChannel.PacketSendBodyHandler.NotNull(nameof(m_NetworkChannel.PacketSendBodyHandler));
+            messageBodyBuffer.NotNull(nameof(messageBodyBuffer));
+            destination.NotNull(nameof(destination));
 
             return m_NetworkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
         }
 
         public bool DeserializePacketHeader(byte[] source)
         {
-            FuGuard.NotNull(source, nameof(source));
+            source.NotNull(nameof(source));
 
             return m_NetworkChannel.PacketReceiveHeaderHandler.Handler(source);
         }
 
         public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
         {
-            FuGuard.NotNull(source, nameof(source));
+            source.NotNull(nameof(source));
 
             return m_NetworkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
         }

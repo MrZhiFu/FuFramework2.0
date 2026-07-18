@@ -28,7 +28,7 @@ namespace Hotfix.Network
         /// <param name="messageHandler">消息接收对象</param>
         public static void Add(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(messageHandler, nameof(messageHandler));
+            messageHandler.NotNull(nameof(messageHandler));
             var type        = messageHandler.GetType();
             var methodInfos = type.GetMethods(MessageHandlerAttribute.Flags);
 
@@ -64,7 +64,7 @@ namespace Hotfix.Network
         /// <param name="messageHandler">消息接收对象</param>
         public static void Remove(IMessageHandler messageHandler)
         {
-            FuGuard.NotNull(messageHandler, nameof(messageHandler));
+            messageHandler.NotNull(nameof(messageHandler));
             var type = messageHandler.GetType();
 
             var methodInfos = type.GetMethods(MessageHandlerAttribute.Flags);

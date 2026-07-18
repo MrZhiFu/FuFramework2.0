@@ -87,7 +87,7 @@ namespace Hotfix.Sound
             /// <param name="soundGroupInfo">声音组信息。</param>
             public void Init(SoundGroupInfo soundGroupInfo)
             {
-                FuGuard.NotNull(soundGroupInfo, nameof(soundGroupInfo));
+                soundGroupInfo.NotNull(nameof(soundGroupInfo));
                 Name                          = soundGroupInfo.Name;
                 AllowBeReplacedBySamePriority = soundGroupInfo.AllowBeReplacedBySamePriority;
 

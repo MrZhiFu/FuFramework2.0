@@ -64,7 +64,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">所有界面组。</param>
         public void GetAllUIGroups(List<UIGroup> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)

@@ -152,7 +152,7 @@ namespace Hotfix.Network
             /// <param name="handler">处理函数</param>
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_rpcErrorCodeHandler = handler;
             }
 
@@ -162,7 +162,7 @@ namespace Hotfix.Network
             /// <param name="handler">处理函数</param>
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_rpcErrorHandler = handler;
             }
 
@@ -172,7 +172,7 @@ namespace Hotfix.Network
             /// <param name="handler">处理函数</param>
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_rpcStartHandler = handler;
             }
 
@@ -182,7 +182,7 @@ namespace Hotfix.Network
             /// <param name="handler">处理函数</param>
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_rpcEndHandler = handler;
             }
         }

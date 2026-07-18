@@ -27,9 +27,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="handler">事件处理回调</param>
         public void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
         {
-            FuGuard.NotNull(handler, nameof(handler));
-            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            handler.NotNull(nameof(handler));
+            eventId.NotNullOrEmpty(nameof(eventId));
+            EventRegister.NotNull("事件订阅器");
             EventRegister.Subscribe(eventId, handler);
         }
 
@@ -40,9 +40,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="handler">事件处理回调</param>
         public void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
         {
-            FuGuard.NotNull(handler, nameof(handler));
-            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            handler.NotNull(nameof(handler));
+            eventId.NotNullOrEmpty(nameof(eventId));
+            EventRegister.NotNull("事件订阅器");
             EventRegister.UnSubscribe(eventId, handler);
         }
 
@@ -53,9 +53,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="eventArgs">事件对象</param>
         public void Broadcast(object sender, GameEventArgs eventArgs)
         {
-            FuGuard.NotNull(sender,        nameof(sender));
-            FuGuard.NotNull(eventArgs,     nameof(eventArgs));
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            sender.NotNull(       nameof(sender));
+            eventArgs.NotNull(    nameof(eventArgs));
+            EventRegister.NotNull("事件订阅器");
             EventRegister.Broadcast(sender, eventArgs);
         }
 
@@ -66,9 +66,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="eventId">事件ID</param>
         public void Broadcast(object sender, string eventId)
         {
-            FuGuard.NotNull(sender, nameof(sender));
-            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            sender.NotNull(nameof(sender));
+            eventId.NotNullOrEmpty(nameof(eventId));
+            EventRegister.NotNull("事件订阅器");
             EventRegister.Broadcast(sender, eventId);
         }
 
@@ -79,9 +79,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="eventArgs">事件对象</param>
         public void BroadcastNow(object sender, GameEventArgs eventArgs)
         {
-            FuGuard.NotNull(sender,        nameof(sender));
-            FuGuard.NotNull(eventArgs,     nameof(eventArgs));
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            sender.NotNull(       nameof(sender));
+            eventArgs.NotNull(    nameof(eventArgs));
+            EventRegister.NotNull("事件订阅器");
             EventRegister.BroadcastNow(sender, eventArgs);
         }
 
@@ -90,7 +90,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void UnSubscribeAll()
         {
-            FuGuard.NotNull(EventRegister, "事件订阅器");
+            EventRegister.NotNull("事件订阅器");
             EventRegister.UnSubscribeAll();
         }
 

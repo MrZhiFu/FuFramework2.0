@@ -345,7 +345,7 @@ namespace Hotfix.Scene
         /// <param name="userData">用户自定义数据。</param>
         public void UnloadScene(string sceneAssetPath, object userData = null)
         {
-            FuGuard.NotNull(sceneAssetPath, nameof(sceneAssetPath));
+            sceneAssetPath.NotNull(nameof(sceneAssetPath));
 
             if (IsUnloading(sceneAssetPath))
                 throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在卸载中!.");
@@ -402,7 +402,7 @@ namespace Hotfix.Scene
         /// <param name="sceneHandle"></param>
         private void OnLoadSceneUpdate(SceneHandle sceneHandle)
         {
-            FuGuard.NotNull(sceneHandle, nameof(sceneHandle));
+            sceneHandle.NotNull(nameof(sceneHandle));
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
             if (!m_LoadingSceneDict.TryGetValue(assetPath, out var value)) return;
 
@@ -417,7 +417,7 @@ namespace Hotfix.Scene
         /// <param name="sceneHandle"></param>
         private void OnLoadSceneCompleted(SceneHandle sceneHandle)
         {
-            FuGuard.NotNull(sceneHandle, nameof(sceneHandle));
+            sceneHandle.NotNull(nameof(sceneHandle));
 
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
             m_LoadedSceneDict.Add(assetPath, sceneHandle);

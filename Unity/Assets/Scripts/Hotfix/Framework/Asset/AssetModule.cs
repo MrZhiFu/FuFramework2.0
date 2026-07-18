@@ -457,7 +457,7 @@ namespace FuFramework.Asset.Runtime
         /// <returns></returns>
         public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
+            packageName.NotNull(nameof(packageName));
 
             if (PackageInited)
             {
@@ -551,7 +551,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string assetPath)
         {
-            FuGuard.NotNull(assetPath, nameof(assetPath));
+            assetPath.NotNull(nameof(assetPath));
             var package = YooAssets.GetPackage(DefaultPackageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -564,8 +564,8 @@ namespace FuFramework.Asset.Runtime
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string packageName, string assetPath)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
-            FuGuard.NotNull(assetPath,   nameof(assetPath));
+            packageName.NotNull(nameof(packageName));
+            assetPath.NotNull(  nameof(assetPath));
             var package = YooAssets.GetPackage(packageName);
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -577,7 +577,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public async UniTaskVoid UnloadUnusedAssetsAsync(string packageName)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
+            packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             await package.UnloadUnusedAssetsAsync();
         }
@@ -589,7 +589,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public async UniTaskVoid UnloadAllAssetsAsync(string packageName)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
+            packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             await package.UnloadAllAssetsAsync();
         }
@@ -600,7 +600,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public async UniTaskVoid ClearAllBundleFilesAsync(string packageName)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
+            packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             await package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
         }
@@ -611,7 +611,7 @@ namespace FuFramework.Asset.Runtime
         /// <param name="packageName">资源包名称</param>
         public async UniTaskVoid ClearUnusedBundleFilesAsync(string packageName)
         {
-            FuGuard.NotNull(packageName, nameof(packageName));
+            packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
             await package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
         }

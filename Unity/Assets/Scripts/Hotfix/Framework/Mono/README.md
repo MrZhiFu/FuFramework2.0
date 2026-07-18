@@ -117,7 +117,7 @@ private static void QueueInvoking(List<Action> invokeList, List<Action> waitInvo
 ```
 
 **设计特点**：
-- 使用 `FuGuard.NotNull` 进行参数校验
+- 使用 `.NotNull()` 扩展方法进行参数校验
 - 异常捕获确保单个监听器失败不影响其他监听器
 - 队列交换机制避免执行时的竞态条件
 - 清理时自动清空所有队列
@@ -463,7 +463,7 @@ FuFramework/Mono/
 
 ## 7. 依赖
 
-- **FuFramework.Core**：框架核心模块（ModuleBase、FuGuard、Utility、FuLogger）
+- **FuFramework.Core**：框架核心模块（ModuleBase、FuGuardEx、Utility、FuLogger）
 
 ## 8. 最佳实践
 
@@ -569,7 +569,7 @@ public class BatchOperationExample : MonoBehaviour
 ## 9. 注意事项
 
 1. **空值检查**
-   - 模块内部使用 `FuGuard.NotNull` 进行参数校验
+   - 模块内部使用 `.NotNull()` 扩展方法进行参数校验
    - 传入 null 会抛出异常
 
 2. **异常处理**

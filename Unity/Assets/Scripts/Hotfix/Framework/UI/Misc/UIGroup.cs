@@ -119,7 +119,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面组中是否存在界面。</returns>
         public bool HasUI(string uiName)
         {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
             {
                 if (uiInfo.View.UIName == uiName)
@@ -160,7 +160,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>要获取的界面。</returns>
         public ViewBase GetUI(string uiName)
         {
-            FuGuard.NotNullOrEmpty(uiName, nameof(uiName));
+            uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
             {
                 if (uiInfo.View.UIName == uiName)
@@ -195,7 +195,7 @@ namespace FuFramework.UI.Runtime
         /// <param name="results">界面组中的所有界面。</param>
         public void GetAllUIs(List<ViewBase> results)
         {
-            FuGuard.NotNull(results, nameof(results));
+            results.NotNull(nameof(results));
             results.Clear();
             foreach (var uiInfo in m_UIInfoList)
             {
@@ -328,7 +328,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>界面信息。</returns>
         private ViewInfo GetUIInfo(ViewBase view)
         {
-            FuGuard.NotNull(view, nameof(view));
+            view.NotNull(nameof(view));
             foreach (var uiInfo in m_UIInfoList)
             {
                 if (uiInfo.View == view)

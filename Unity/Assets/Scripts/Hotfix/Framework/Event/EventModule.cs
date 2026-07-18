@@ -115,7 +115,7 @@ namespace FuFramework.Event.Runtime
         /// <param name="eventId">事件编号。</param>
         public void Broadcast(object sender, string eventId)
         {
-            FuGuard.NotNullOrEmpty(eventId, nameof(eventId));
+            eventId.NotNullOrEmpty(nameof(eventId));
             m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
         }
 

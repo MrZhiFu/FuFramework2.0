@@ -26,9 +26,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void AddUIListener(EventListener listener, EventCallback1 callback)
         {
-            FuGuard.NotNull(listener,        nameof(listener));
-            FuGuard.NotNull(callback,        nameof(callback));
-            FuGuard.NotNull(UIEventRegister, "UI事件订阅器");
+            listener.NotNull(       nameof(listener));
+            callback.NotNull(       nameof(callback));
+            UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.AddUIListener(listener, callback);
         }
 
@@ -39,9 +39,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void SetUIListener(EventListener listener, EventCallback1 callback)
         {
-            FuGuard.NotNull(listener,        nameof(listener));
-            FuGuard.NotNull(callback,        nameof(callback));
-            FuGuard.NotNull(UIEventRegister, "UI事件订阅器");
+            listener.NotNull(       nameof(listener));
+            callback.NotNull(       nameof(callback));
+            UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.SetUIListener(listener, callback);
         }
 
@@ -52,9 +52,9 @@ namespace FuFramework.UI.Runtime
         /// <param name="callback">回调函数</param>
         public void RemoveUIListener(EventListener listener, EventCallback1 callback)
         {
-            FuGuard.NotNull(listener,        nameof(listener));
-            FuGuard.NotNull(callback,        nameof(callback));
-            FuGuard.NotNull(UIEventRegister, "UUI事件订阅器");
+            listener.NotNull(       nameof(listener));
+            callback.NotNull(       nameof(callback));
+            UIEventRegister.NotNull("UUI事件订阅器");
             UIEventRegister.RemoveUIListener(listener, callback);
         }
 
@@ -64,8 +64,8 @@ namespace FuFramework.UI.Runtime
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         public void ClearUIListener(EventListener listener)
         {
-            FuGuard.NotNull(listener,        nameof(listener));
-            FuGuard.NotNull(UIEventRegister, "UI事件订阅器");
+            listener.NotNull(       nameof(listener));
+            UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.ClearUIListener(listener);
         }
 
@@ -74,7 +74,7 @@ namespace FuFramework.UI.Runtime
         /// </summary>
         public void ClearAllUIListener()
         {
-            FuGuard.NotNull(UIEventRegister, "UI事件订阅器");
+            UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.ClearAllUIListener();
         }
 

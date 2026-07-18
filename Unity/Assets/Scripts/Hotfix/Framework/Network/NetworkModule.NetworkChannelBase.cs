@@ -415,7 +415,7 @@ namespace Hotfix.Network
             /// <param name="handler">要注册的网络消息包处理函数。</param>
             public void RegisterHandler(IPacketSendHeaderHandler handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_PacketSendHeaderHandler = handler;
             }
 
@@ -426,7 +426,7 @@ namespace Hotfix.Network
             /// <param name="handler">要注册的网络消息包处理函数。</param>
             public void RegisterHandler(IPacketSendBodyHandler handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_PacketSendBodyHandler = handler;
             }
 
@@ -436,7 +436,7 @@ namespace Hotfix.Network
             /// <param name="handler">要注册的网络消息包处理函数。</param>
             public void RegisterHandler(IPacketReceiveHeaderHandler handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_PacketReceiveHeaderHandler = handler;
             }
 
@@ -446,7 +446,7 @@ namespace Hotfix.Network
             /// <param name="handler">要注册的网络消息包处理函数。</param>
             public void RegisterHandler(IPacketReceiveBodyHandler handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_PacketReceiveBodyHandler = handler;
             }
 
@@ -466,7 +466,7 @@ namespace Hotfix.Network
             /// <param name="handler">要注册的网络消息包处理函数</param>
             public void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 m_PacketHeartBeatHandler = handler;
                 if (handler.HeartBeatInterval > 0)
                 {
@@ -485,7 +485,7 @@ namespace Hotfix.Network
             /// <param name="handler"></param>
             public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 PRpcState.SetRPCErrorCodeHandler(handler);
             }
 
@@ -495,7 +495,7 @@ namespace Hotfix.Network
             /// <param name="handler"></param>
             public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 PRpcState.SetRPCErrorHandler(handler);
             }
 
@@ -505,7 +505,7 @@ namespace Hotfix.Network
             /// <param name="handler"></param>
             public void SetRPCStartHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 PRpcState.SetRPCStartHandler(handler);
             }
 
@@ -515,7 +515,7 @@ namespace Hotfix.Network
             /// <param name="handler"></param>
             public void SetRPCEndHandler(EventHandler<MessageObject> handler)
             {
-                FuGuard.NotNull(handler, nameof(handler));
+                handler.NotNull(nameof(handler));
                 PRpcState.SetRPCEndHandler(handler);
             }
 
@@ -634,7 +634,7 @@ namespace Hotfix.Network
             /// <typeparam name="TResult"></typeparam>
             public async Task<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
             {
-                FuGuard.NotNull(messageObject, nameof(messageObject));
+                messageObject.NotNull(nameof(messageObject));
                 Send(messageObject);
                 var result = await PRpcState.Call(messageObject);
                 return result as TResult;
@@ -647,7 +647,7 @@ namespace Hotfix.Network
             /// <param name="messageObject">要发送的消息包。</param>
             public void Send<T>(T messageObject) where T : MessageObject
             {
-                FuGuard.NotNull(messageObject, nameof(messageObject));
+                messageObject.NotNull(nameof(messageObject));
                 if (PSocket == null)
                 {
                     const string errorMessage = "You must connect first.";
