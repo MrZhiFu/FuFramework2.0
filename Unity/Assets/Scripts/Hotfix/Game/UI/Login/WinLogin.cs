@@ -52,7 +52,7 @@ namespace Hotfix.UI
         /// </summary>
         private void InitRedDot()
         {
-            RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin, displayMode: CompRedDot.EDisplayMode.Auto);
+            RedDotRegister.RegisterRedDot(this, RedDotKeys.BagItem, btnLogin);
         }
 
         /// <summary>

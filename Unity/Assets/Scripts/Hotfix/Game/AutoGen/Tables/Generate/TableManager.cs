@@ -40,6 +40,11 @@ namespace Hotfix.Config
         /// </summary>
         internal Tables.TbSound TbSound { private set; get; }
 
+        /// <summary>
+        /// 红点配置表
+        /// </summary>
+        internal Tables.TbRedDot TbRedDot { private set; get; }
+
         private ConfigModule m_ConfigModule;
 
         public void Init(ConfigModule configModule)
@@ -87,7 +92,11 @@ namespace Hotfix.Config
             loadTasks.Add(TbSound.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbSound), TbSound);
 
-    
+            TbRedDot = new Tables.TbRedDot(() => loader("tables_tbreddot"));
+            loadTasks.Add(TbRedDot.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbRedDot), TbRedDot);
+
+
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
     
             Refresh();
@@ -110,6 +119,7 @@ namespace Hotfix.Config
             TbItem.TranslateText(translator);
             TbGlobalDefine.TranslateText(translator);
             TbSound.TranslateText(translator);
+            TbRedDot.TranslateText(translator);
         }
 
         private void ResolveRef()
@@ -119,6 +129,7 @@ namespace Hotfix.Config
             TbItem.ResolveRef(this);
             TbGlobalDefine.ResolveRef(this);
             TbSound.ResolveRef(this);
+            TbRedDot.ResolveRef(this);
         }
     
         public void Refresh()

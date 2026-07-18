@@ -2,6 +2,7 @@ using System;
 using FairyGUI;
 using UnityEngine;
 using FuFramework.UI.Runtime;
+using Hotfix.Config;
 using Hotfix.RedDot;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -10,43 +11,35 @@ namespace Hotfix.UI
     public partial class CompRedDot
     {
         /// <summary>
-        /// 红点显示模式
+        /// 红点显示模式（与 ERedDotDisplayMode 枚举值对齐）
         /// </summary>
-        public enum EDisplayMode
+        public enum DisplayMode
         {
-            /// <summary>
-            /// 只显示红点
-            /// </summary>
-            DotOnly,
-
-            /// <summary>
-            /// 红点+数字
-            /// </summary>
-            DotNumber,
-
-            /// <summary>
-            /// 根据数量自动显示，=1显示红点，>1显示数字
-            /// </summary>
-            Auto
+            /// <summary>只显示红点</summary>
+            DotOnly = 0,
+            /// <summary>红点 + 数字</summary>
+            DotNumber = 1,
+            /// <summary>=1 显示红点，>1 显示数字</summary>
+            Auto = 2
         }
 
         /// <summary>
-        /// 红点Key
+        /// 静态节点 Key（枚举，DisplayMode 由配置表决定）
         /// </summary>
-        private string m_Key;
+        private ERedDotKey? m_StaticKey;
 
         /// <summary>
-        /// 红点显示模式
+        /// 动态节点 Key（字符串，默认 DotOnly）
         /// </summary>
-        private EDisplayMode m_DisplayMode = EDisplayMode.DotOnly;
+        private string m_DynamicKey;
 
         /// <summary>
-        /// 缓存目标组件
+        /// 缓存目标组件（用于 SetRedDotPos）
         /// </summary>
         private GComponent m_Target;
 
         /// <summary>
-        /// 初始化
+        /// 初始化（在 InitRedDot 之后调用）
         /// </summary>
         private void OnInit()
         {
@@ -59,33 +52,56 @@ namespace Hotfix.UI
         private void InitEvent() { }
 
         /// <summary>
-        /// 销毁。
+        /// 销毁
         /// </summary>
         private void OnDispose()
         {
-            RedDotModule.Instance.Unregister(m_Key, OnRedDotChanged);
+            if (m_StaticKey.HasValue)
+                RedDotModule.Instance.Unregister(m_StaticKey.Value, OnRedDotChanged);
+            else if (m_DynamicKey != null)
+                RedDotModule.Instance.Unregister(m_DynamicKey, OnRedDotChanged);
         }
 
         /// <summary>
-        /// 注册红点
+        /// 静态节点注册（枚举，DisplayMode 由配置表决定）
         /// </summary>
         /// <param name="view">所属界面</param>
-        /// <param name="target">红点依附的目标组件</param>
-        /// <param name="redKey">红点Key</param>
-        /// <param name="displayMode">红点显示模式</param>
-        public void Register(ViewBase view, GComponent target, string redKey, EDisplayMode displayMode = EDisplayMode.DotOnly)
+        /// <param name="redKey">红点节点 Key</param>
+        public void Register(ViewBase view, ERedDotKey redKey)
         {
-            if (view   == null) return;
-            if (target == null) return;
+            if (view == null) return;
+
+            uiView = view;
+            m_StaticKey = redKey;
+            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
+        }
+
+        /// <summary>
+        /// 动态节点注册（字符串，默认 DotOnly）
+        /// </summary>
+        /// <param name="view">所属界面</param>
+        /// <param name="redKey">动态红点节点 Key</param>
+        public void Register(ViewBase view, string redKey)
+        {
+            if (view == null) return;
             if (string.IsNullOrEmpty(redKey)) return;
 
-            uiView        = view;
-            m_Target      = target;
-            m_Key         = redKey;
-            m_DisplayMode = displayMode;
+            uiView = view;
+            m_DynamicKey = redKey;
+            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
+        }
 
-            // 注册红点变化事件
-            RedDotModule.Instance.Register(m_Key, OnRedDotChanged);
+        /// <summary>
+        /// 从 RedDotNode 配置读取 DisplayMode
+        /// </summary>
+        private DisplayMode GetDisplayMode()
+        {
+            if (m_StaticKey.HasValue)
+            {
+                var node = RedDotModule.Instance.GetNode(m_StaticKey.Value);
+                return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+            }
+            return DisplayMode.DotOnly; // 动态节点默认 DotOnly
         }
 
         /// <summary>
@@ -115,21 +131,22 @@ namespace Hotfix.UI
         /// <param name="redCount">红点数量</param>
         private void OnRedDotChanged(int redCount)
         {
-            switch (m_DisplayMode)
+            var mode = GetDisplayMode();
+            switch (mode)
             {
-                case EDisplayMode.DotOnly:
-                    txtCount.visible  = false;
+                case DisplayMode.DotOnly:
+                    txtCount.visible = false;
                     imgRedDot.visible = redCount > 0;
                     break;
-                case EDisplayMode.DotNumber:
-                    txtCount.visible  = redCount >= 1;
+                case DisplayMode.DotNumber:
+                    txtCount.visible = redCount >= 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text     = FormatRedDotCount(redCount);
+                    txtCount.text = FormatRedDotCount(redCount);
                     break;
-                case EDisplayMode.Auto:
-                    txtCount.visible  = redCount > 1;
+                case DisplayMode.Auto:
+                    txtCount.visible = redCount > 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text     = FormatRedDotCount(redCount);
+                    txtCount.text = FormatRedDotCount(redCount);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -147,7 +164,7 @@ namespace Hotfix.UI
             {
                 <= 0 => "0",
                 > 99 => "99+",
-                _    => count.ToString()
+                _ => count.ToString()
             };
         }
     }

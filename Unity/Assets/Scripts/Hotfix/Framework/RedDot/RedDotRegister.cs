@@ -1,4 +1,4 @@
-﻿using FairyGUI;
+using FairyGUI;
 using UnityEngine;
 using FuFramework.UI.Runtime;
 using FuFramework.Core.Runtime;
@@ -8,11 +8,12 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.UI
 {
     /// <summary>
-    /// 红点UI注册器。
+    /// 红点UI注册器（适配新 CompRedDot.Register 签名）
     /// 如果目标组件上原本就有红点组件，则直接注册到该红点组件；如果没有，则创建自动创建新的红点组件并注册。
     /// 注意：1.红点组件固定在Common包中，且名称为CompRedDot。
     ///      2.确保红点组件都来自于Common包。
     ///      3.如果需要自定义红点样式，请先拖拽Common包中的CompRedDot到界面/组件中，然后再进行自定义修改，或者使用控制器在CompRedDot上修改。
+    ///      4.DisplayMode 现在由配置表决定，不再通过代码传入。
     /// </summary>
     public static class RedDotRegister
     {
@@ -22,9 +23,8 @@ namespace Hotfix.UI
         /// <param name="view">红点组件所属界面</param>
         /// <param name="redDotKey">红点节点Key</param>
         /// <param name="target">红点依附的目标组件</param>
-        /// <param name="displayMode">红点显示模式</param>
         /// <param name="offset">红点位置偏移</param>
-        public static void RegisterRedDot(ViewBase view, string redDotKey, GComponent target, CompRedDot.EDisplayMode displayMode = CompRedDot.EDisplayMode.DotOnly, Vector2 offset = default)
+        public static void RegisterRedDot(ViewBase view, string redDotKey, GComponent target, Vector2 offset = default)
         {
             // 检查 Common 包是否已加载
             var commonPkg = UIPackage.GetByName("Common");
@@ -47,7 +47,7 @@ namespace Hotfix.UI
             foreach (var child in children)
             {
                 if (child is not CompRedDot comp) continue;
-                comp.Register(view, target, redDotKey, displayMode);
+                comp.Register(view, redDotKey);
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace Hotfix.UI
 
             // 注册红点组件到目标组件
             target.AddChild(compRedDot);
-            compRedDot.Register(view, target, redDotKey, displayMode);
+            compRedDot.Register(view, redDotKey);
             compRedDot.SetRedDotPos(offset);
 
             FuLogger.LogInfo($"[RedDot] 注册红点[{redDotKey}] 到 {target.name}成功");
