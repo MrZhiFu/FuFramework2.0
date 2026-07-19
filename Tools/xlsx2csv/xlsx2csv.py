@@ -138,6 +138,8 @@ def scan_xlsx_files(input_dir: Path, subdirs: list | None, output_dir_name: str)
         ]
 
     tasks = []
+
+    # 扫描子目录
     for sub in subdirs:
         sub_path = input_dir / sub
         if not sub_path.is_dir():
@@ -154,6 +156,14 @@ def scan_xlsx_files(input_dir: Path, subdirs: list | None, output_dir_name: str)
 
         for xf in xlsx_files:
             tasks.append((xf, output_dir))
+
+    # 扫描根目录下的 xlsx 文件
+    root_xlsx = sorted(input_dir.glob("*.xlsx"))
+    if root_xlsx:
+        root_output = input_dir / output_dir_name
+        ensure_dir(root_output)
+        for xf in root_xlsx:
+            tasks.append((xf, root_output))
 
     return tasks
 
@@ -223,7 +233,8 @@ def main():
     current_subdir = None
 
     for xlsx_path, output_dir in tasks:
-        sub = xlsx_path.parent.name
+        # 根目录文件用 "(根目录)" 标识
+        sub = xlsx_path.parent.name if xlsx_path.parent != input_dir else "(根目录)"
         if sub != current_subdir:
             current_subdir = sub
             print(f"\n[{sub}/]")
