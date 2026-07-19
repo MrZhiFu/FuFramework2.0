@@ -5,8 +5,8 @@ using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime.Sound;
-using AOT.Framework.ModuleSetting.Runtime;
+using Hotfix.Framework.Config;
+using SoundGroupCfg = Hotfix.Game.Tables.Tables.SoundGroup;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
@@ -68,6 +68,11 @@ namespace Hotfix.Framework.Sound
         private AudioMixer m_AudioMixer;
 
         /// <summary>
+        /// AudioMixer 资源路径，需在 Unity Editor 中确认实际路径后填入
+        /// </summary>
+        private const string AudioMixerAssetPath = "Assets/Art/Audio/AudioMixer.mixer";
+
+        /// <summary>
         /// 声音监听器
         /// </summary>
         private AudioListener m_AudioListener;
@@ -109,17 +114,22 @@ namespace Hotfix.Framework.Sound
             var audioListener = new GameObject($"SoundListener");
             m_AudioListener = audioListener.GetOrAddComponent<AudioListener>();
 
-            // 获取声音模块配置数据
-            var soundSetting = ModuleSetting.Instance.SoundSetting;
+            // 获取声音组配置表
+            var tbSoundGroup = ConfigModule.Instance.GetConfig<TbSoundGroup>();
+            if (tbSoundGroup == null || tbSoundGroup.Count == 0)
+            {
+                FuLogger.LogFatal("[SoundModule] 声音组配置表未加载，SoundModule 初始化失败!");
+                return;
+            }
 
-            // 设置混音器
-            m_AudioMixer ??= soundSetting.AudioMixer;
+            // 加载混音器
+            LoadAudioMixerAsync().Forget();
 
             // 添加声音组
-            foreach (var group in soundSetting.AllGroups)
+            foreach (var row in tbSoundGroup.All)
             {
-                if (AddSoundGroup(group)) continue;
-                FuLogger.LogWarning($"[SoundModule] 添加声音组 '{group.Name}' 失败!");
+                if (AddSoundGroup(row)) continue;
+                FuLogger.LogWarning($"[SoundModule] 添加声音组 '{row.Id}' 失败!");
             }
 
             // 监听场景加载和卸载事件
@@ -202,20 +212,21 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         /// <param name="soundGroupInfo">声音组信息。</param>
         /// <returns>是否增加声音组成功。</returns>
-        public bool AddSoundGroup(SoundGroupInfo soundGroupInfo)
+        public bool AddSoundGroup(SoundGroupCfg row)
         {
-            soundGroupInfo.NotNull(nameof(soundGroupInfo));
-            if (HasSoundGroup(soundGroupInfo.Name))
+            row.NotNull(nameof(row));
+            var groupName = row.Id.ToString();
+            if (HasSoundGroup(groupName))
             {
-                FuLogger.LogInfo($"[SoundModule]声音组 '{soundGroupInfo.Name}' 已存在，不可重复添加!");
+                FuLogger.LogInfo($"[SoundModule]声音组 '{groupName}' 已存在，不可重复添加!");
                 return false;
             }
 
-            var soundGroupGo = new GameObject($"Sound Group - {soundGroupInfo.Name}");
+            var soundGroupGo = new GameObject($"Sound Group - {groupName}");
             soundGroupGo.transform.localScale = Vector3.one;
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
-            soundGroup.Init(soundGroupInfo);
-            m_SoundGroupDict.Add(soundGroupInfo.Name, soundGroup);
+            soundGroup.Init(row);
+            m_SoundGroupDict.Add(groupName, soundGroup);
             return true;
         }
 
@@ -571,6 +582,18 @@ namespace Hotfix.Framework.Sound
         private void RefreshAudioListener()
         {
             m_AudioListener.enabled = UnityEngine.Object.FindObjectsOfType<AudioListener>().Length <= 1;
+        }
+
+        /// <summary>
+        /// 异步加载 AudioMixer 资源。
+        /// </summary>
+        private async UniTaskVoid LoadAudioMixerAsync()
+        {
+            var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath);
+            if (handle.IsDone)
+                m_AudioMixer = handle.GetAssetObject<AudioMixer>();
+            else
+                FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath}");
         }
     }
 }
