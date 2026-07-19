@@ -11,12 +11,12 @@ using Luban;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Local
 {
     /// <summary>
     /// 本地化多语言表
     /// </summary>
-    public partial class TbLocalization : BaseDataTable<Localization>
+    public partial class TbLocalization : BaseDataTable<Local.Localization>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbLocalization(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,8 +31,8 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Localization _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Localization.DeserializeLocalization(_ele);  }
+                Local.Localization _v;
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Local.Localization.DeserializeLocalization(_ele);  }
                 DataList.Add(_v);
                 StrKeyDataDict.Add(_v.Key.ToString(), _v);
             }

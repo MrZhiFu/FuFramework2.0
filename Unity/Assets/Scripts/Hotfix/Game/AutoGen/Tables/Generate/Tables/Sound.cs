@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     public sealed partial class Sound : BeanBase
     {
@@ -35,7 +35,7 @@ namespace Hotfix.Game.Tables
 
         public static Sound DeserializeSound(JSONNode _buf)
         {
-            return new Sound(_buf);
+            return new Tables.Sound(_buf);
         }
 
         /// <summary>

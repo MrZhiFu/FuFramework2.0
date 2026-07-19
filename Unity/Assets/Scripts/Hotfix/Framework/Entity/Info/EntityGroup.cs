@@ -2,7 +2,7 @@ using System;
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using EntityGroupCfg = Hotfix.Game.Tables.EntityGroup;
+using EntityGroupCfg = Hotfix.Game.Tables.Tables.EntityGroup;
 using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace

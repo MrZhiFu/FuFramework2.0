@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     public sealed partial class RedDot : BeanBase
     {
@@ -37,7 +37,7 @@ namespace Hotfix.Game.Tables
 
         public static RedDot DeserializeRedDot(JSONNode _buf)
         {
-            return new RedDot(_buf);
+            return new Tables.RedDot(_buf);
         }
 
         /// <summary>

@@ -11,12 +11,12 @@ using Luban;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     /// <summary>
     /// 道具表
     /// </summary>
-    public partial class TbItem : BaseDataTable<Item>
+    public partial class TbItem : BaseDataTable<Tables.Item>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbItem(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,10 +31,10 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Item _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Item.DeserializeItem(_ele);  }
+                Tables.Item _v;
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Tables.Item.DeserializeItem(_ele);  }
                 DataList.Add(_v);
-                LongKeyDataDict.Add(_v.Id, _v);
+                LongKeyDataDict.Add((long)_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);
             }
             PostInit();

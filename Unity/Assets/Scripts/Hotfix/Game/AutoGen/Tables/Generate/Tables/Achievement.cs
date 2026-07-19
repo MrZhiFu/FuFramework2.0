@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     public sealed partial class Achievement : BeanBase
     {
@@ -41,7 +41,7 @@ namespace Hotfix.Game.Tables
 
         public static Achievement DeserializeAchievement(JSONNode _buf)
         {
-            return new Achievement(_buf);
+            return new Tables.Achievement(_buf);
         }
 
         /// <summary>

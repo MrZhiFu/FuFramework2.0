@@ -18,42 +18,42 @@ namespace Hotfix.Game.Tables
         /// <summary>
         /// 本地化多语言表
         /// </summary>
-        internal TbLocalization TbLocalization { private set; get; }
+        internal Local.TbLocalization TbLocalization { private set; get; }
 
         /// <summary>
         /// 成就表
         /// </summary>
-        internal TbAchievement TbAchievement { private set; get; }
+        internal Tables.TbAchievement TbAchievement { private set; get; }
 
         /// <summary>
         /// 道具表
         /// </summary>
-        internal TbItem TbItem { private set; get; }
-
-        /// <summary>
-        /// 全局常量定义表
-        /// </summary>
-        internal TbGlobalDefine TbGlobalDefine { private set; get; }
-
-        /// <summary>
-        /// 声音表
-        /// </summary>
-        internal TbSound TbSound { private set; get; }
-
-        /// <summary>
-        /// 红点配置表
-        /// </summary>
-        internal TbRedDot TbRedDot { private set; get; }
-
-        /// <summary>
-        /// 声音组配置表
-        /// </summary>
-        internal TbSoundGroup TbSoundGroup { private set; get; }
+        internal Tables.TbItem TbItem { private set; get; }
 
         /// <summary>
         /// 实体组配置表
         /// </summary>
-        internal TbEntityGroup TbEntityGroup { private set; get; }
+        internal Tables.TbEntityGroup TbEntityGroup { private set; get; }
+
+        /// <summary>
+        /// 全局常量定义表
+        /// </summary>
+        internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
+
+        /// <summary>
+        /// 红点表
+        /// </summary>
+        internal Tables.TbRedDot TbRedDot { private set; get; }
+
+        /// <summary>
+        /// 声音表
+        /// </summary>
+        internal Tables.TbSound TbSound { private set; get; }
+
+        /// <summary>
+        /// 声音组配置表
+        /// </summary>
+        internal Tables.TbSoundGroup TbSoundGroup { private set; get; }
 
         private ConfigModule m_ConfigModule;
 
@@ -81,42 +81,42 @@ namespace Hotfix.Game.Tables
             IsLoaded = false;
             m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-
-            TbLocalization = new TbLocalization(() => loader("local_tblocalization"));
+    
+            TbLocalization = new Local.TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbLocalization), TbLocalization);
+            m_ConfigModule.AddConfig(nameof(Local.TbLocalization), TbLocalization);
 
-            TbAchievement = new TbAchievement(() => loader("tables_tbachievement"));
+            TbAchievement = new Tables.TbAchievement(() => loader("tables_tbachievement"));
             loadTasks.Add(TbAchievement.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbAchievement), TbAchievement);
+            m_ConfigModule.AddConfig(nameof(Tables.TbAchievement), TbAchievement);
 
-            TbItem = new TbItem(() => loader("tables_tbitem"));
+            TbItem = new Tables.TbItem(() => loader("tables_tbitem"));
             loadTasks.Add(TbItem.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbItem), TbItem);
+            m_ConfigModule.AddConfig(nameof(Tables.TbItem), TbItem);
 
-            TbGlobalDefine = new TbGlobalDefine(() => loader("tables_tbglobaldefine"));
-            loadTasks.Add(TbGlobalDefine.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbGlobalDefine), TbGlobalDefine);
-
-            TbSound = new TbSound(() => loader("tables_tbsound"));
-            loadTasks.Add(TbSound.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbSound), TbSound);
-
-            TbRedDot = new TbRedDot(() => loader("tables_tbreddot"));
-            loadTasks.Add(TbRedDot.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbRedDot), TbRedDot);
-
-            TbSoundGroup = new TbSoundGroup(() => loader("tables_tbsoundgroup"));
-            loadTasks.Add(TbSoundGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbSoundGroup), TbSoundGroup);
-
-            TbEntityGroup = new TbEntityGroup(() => loader("tables_tbentitygroup"));
+            TbEntityGroup = new Tables.TbEntityGroup(() => loader("tables_tbentitygroup"));
             loadTasks.Add(TbEntityGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbEntityGroup), TbEntityGroup);
+            m_ConfigModule.AddConfig(nameof(Tables.TbEntityGroup), TbEntityGroup);
 
+            TbGlobalDefine = new Tables.TbGlobalDefine(() => loader("tables_tbglobaldefine"));
+            loadTasks.Add(TbGlobalDefine.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbGlobalDefine), TbGlobalDefine);
 
+            TbRedDot = new Tables.TbRedDot(() => loader("tables_tbreddot"));
+            loadTasks.Add(TbRedDot.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbRedDot), TbRedDot);
+
+            TbSound = new Tables.TbSound(() => loader("tables_tbsound"));
+            loadTasks.Add(TbSound.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbSound), TbSound);
+
+            TbSoundGroup = new Tables.TbSoundGroup(() => loader("tables_tbsoundgroup"));
+            loadTasks.Add(TbSoundGroup.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbSoundGroup), TbSoundGroup);
+
+    
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
-
+    
             Refresh();
             IsLoaded = true;
         }
@@ -135,11 +135,11 @@ namespace Hotfix.Game.Tables
             TbLocalization.TranslateText(translator);
             TbAchievement.TranslateText(translator);
             TbItem.TranslateText(translator);
-            TbGlobalDefine.TranslateText(translator);
-            TbSound.TranslateText(translator);
-            TbRedDot.TranslateText(translator);
-            TbSoundGroup.TranslateText(translator);
             TbEntityGroup.TranslateText(translator);
+            TbGlobalDefine.TranslateText(translator);
+            TbRedDot.TranslateText(translator);
+            TbSound.TranslateText(translator);
+            TbSoundGroup.TranslateText(translator);
         }
 
         private void ResolveRef()
@@ -147,19 +147,19 @@ namespace Hotfix.Game.Tables
             TbLocalization.ResolveRef(this);
             TbAchievement.ResolveRef(this);
             TbItem.ResolveRef(this);
-            TbGlobalDefine.ResolveRef(this);
-            TbSound.ResolveRef(this);
-            TbRedDot.ResolveRef(this);
-            TbSoundGroup.ResolveRef(this);
             TbEntityGroup.ResolveRef(this);
+            TbGlobalDefine.ResolveRef(this);
+            TbRedDot.ResolveRef(this);
+            TbSound.ResolveRef(this);
+            TbSoundGroup.ResolveRef(this);
         }
-
+    
         public void Refresh()
         {
             PostInit();
             ResolveRef();
         }
-
+    
         partial void PostInit();
     }
 }

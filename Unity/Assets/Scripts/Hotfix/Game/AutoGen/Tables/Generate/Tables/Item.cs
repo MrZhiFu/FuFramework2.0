@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     public sealed partial class Item : BeanBase
     {
@@ -49,7 +49,7 @@ namespace Hotfix.Game.Tables
 
         public static Item DeserializeItem(JSONNode _buf)
         {
-            return new Item(_buf);
+            return new Tables.Item(_buf);
         }
 
         /// <summary>

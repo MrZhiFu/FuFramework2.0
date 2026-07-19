@@ -11,12 +11,12 @@ using Luban;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     /// <summary>
     /// 全局常量定义表
     /// </summary>
-    public partial class TbGlobalDefine : BaseDataTable<GlobalDefine>
+    public partial class TbGlobalDefine : BaseDataTable<Tables.GlobalDefine>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbGlobalDefine(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,8 +31,8 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                GlobalDefine _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
+                Tables.GlobalDefine _v;
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.PlayerInitialCoin, _v);
                 StrKeyDataDict.Add(_v.PlayerInitialCoin.ToString(), _v);

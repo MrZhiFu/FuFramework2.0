@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Tables.Tables
 {
     public sealed partial class GlobalDefine : BeanBase
     {
@@ -33,7 +33,7 @@ namespace Hotfix.Game.Tables
 
         public static GlobalDefine DeserializeGlobalDefine(JSONNode _buf)
         {
-            return new GlobalDefine(_buf);
+            return new Tables.GlobalDefine(_buf);
         }
 
         /// <summary>
