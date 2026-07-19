@@ -1,6 +1,6 @@
 using System;
 using SimpleJSON;
-using FuFramework.Config.Runtime;
+using Hotfix.Framework.Config;
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}
     {

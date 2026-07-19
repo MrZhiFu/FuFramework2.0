@@ -1,6 +1,6 @@
 using Luban;
 using SimpleJSON;
-using FuFramework.Config.Runtime;
+using Hotfix.Framework.Config;
 {{
     func index_type_name
         ret (declaring_type_name $0.type)
