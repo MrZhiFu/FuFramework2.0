@@ -29,7 +29,7 @@ Config/Excels/
 ### 规则
 
 - 扫描 `Excels/` 下所有子目录，跳过输出目录自身
-- 每个 Sheet → 一个 CSV 文件，命名：`{xlsx文件名去扩展名}_{Sheet名}.csv`
+- 每个 Sheet → 一个 CSV 文件，命名：单 Sheet 时 `{xlsx文件名}.csv`，多 Sheet 时 `{xlsx文件名}_{Sheet名}.csv`
 - 第一行为列头
 - 跳过完全为空的数据行
 

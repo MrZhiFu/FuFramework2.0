@@ -1,0 +1,4 @@
+﻿##column#var,##type,,##
+,,参数值,描述
+player_initial_coin,long,10000,玩家初始金币
+player_initial_hp,int,100,玩家初始血量

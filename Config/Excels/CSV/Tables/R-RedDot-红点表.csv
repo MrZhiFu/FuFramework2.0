@@ -1,0 +1,17 @@
+﻿##var,Id,##备注,ParentId,DisplayMode,CleanStrategy
+##type,ERedDotKey,string,ERedDotKey?,ERedDotDisplayMode,ERedDotCleanStrategy
+##group,,,,,
+##,节点ID,策划备注(仅注释),父节点ID(空=根节点),显示模式,清理策略
+##,,,,DotOnly=0 DotNumber=1 Auto=2,Manual=0 ViewAutoClean=1
+,Bag,背包,,DotOnly,Manual
+,Bag_Item,背包.道具,Bag,DotNumber,Manual
+,Bag_Skill,背包.技能,Bag,DotOnly,Manual
+,Shop,商店,,DotNumber,Manual
+,Shop_Gift,商店.礼包,Shop,DotOnly,Manual
+,Shop_Res,商店.资源,Shop,DotOnly,Manual
+,Hero,英雄,,DotOnly,Manual
+,Hero_Equip,英雄.装备,Hero,DotOnly,Manual
+,Hero_Skill,英雄.技能,Hero,DotOnly,Manual
+,Hero_Skin,英雄.皮肤,Hero,DotOnly,Manual
+,Battle,战斗,,DotOnly,Manual
+,Battle_Team,战斗.队伍,Battle,DotOnly,Manual
