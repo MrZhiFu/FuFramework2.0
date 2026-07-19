@@ -1,7 +1,7 @@
-﻿using FuFramework.Core.Runtime;
+﻿using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 默认消息解压处理

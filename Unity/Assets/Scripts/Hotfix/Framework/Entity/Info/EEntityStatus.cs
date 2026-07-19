@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体状态。

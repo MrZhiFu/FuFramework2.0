@@ -1,9 +1,9 @@
 ﻿using System;
 using ProtoBuf;
 using System.Collections.Generic;
-using Hotfix.Network;
+using Hotfix.Framework.Network;
 
-namespace Hotfix.Proto
+namespace Hotfix.Game.Proto
 {
 	/// <summary>
 	/// 

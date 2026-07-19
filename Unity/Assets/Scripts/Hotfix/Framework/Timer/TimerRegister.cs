@@ -1,11 +1,11 @@
 using System;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Timer.Runtime
+namespace Hotfix.Framework.Timer
 {
     /// <summary>
     /// 计时器注册器。
@@ -33,7 +33,7 @@ namespace FuFramework.Timer.Runtime
         public static TimerRegister Create()
         {
             m_TimerModule = ModuleManager.GetModule<TimerModule>();
-            var register = ReferencePool.Runtime.ReferencePool.Acquire<TimerRegister>();
+            var register = ReferencePool.Acquire<TimerRegister>();
             m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
         }
@@ -192,6 +192,6 @@ namespace FuFramework.Timer.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
+        public void Release() => ReferencePool.Release(this);
     }
 }

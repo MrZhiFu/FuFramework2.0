@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 默认心跳包处理

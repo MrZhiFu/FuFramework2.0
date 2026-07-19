@@ -3,9 +3,9 @@ using System.IO;
 using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
-namespace Hotfix.Storage
+namespace Hotfix.Framework.Storage
 {
     /// <summary>
     /// 本地存储的数据。

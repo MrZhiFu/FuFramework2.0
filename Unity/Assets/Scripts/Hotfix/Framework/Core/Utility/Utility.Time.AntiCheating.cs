@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 时间防作弊工具类。

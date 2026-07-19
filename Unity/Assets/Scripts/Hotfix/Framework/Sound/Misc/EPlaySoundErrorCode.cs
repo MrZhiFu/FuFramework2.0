@@ -1,4 +1,4 @@
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     /// <summary>
     /// 播放声音错误码。

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Proto
+namespace Hotfix
 {
     /// <summary>
     /// 这个类是用来标记协议程序集的。

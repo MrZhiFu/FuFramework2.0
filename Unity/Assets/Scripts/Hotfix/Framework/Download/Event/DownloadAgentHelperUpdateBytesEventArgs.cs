@@ -1,9 +1,9 @@
 using System;
-using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     /// <summary>
     /// 下载代理辅助器更新数据流事件。

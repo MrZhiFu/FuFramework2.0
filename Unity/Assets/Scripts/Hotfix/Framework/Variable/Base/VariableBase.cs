@@ -1,20 +1,20 @@
 ﻿using System;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 变量基类。
     /// 功能：
     ///     1. 实现了使用引用池来优化变量的内存分配和释放，并提供统一的接口来获取变量类型、值、值类型。
     /// </summary>
-    public abstract class Variable : IReference
+    public abstract class VariableBase : IReference
     {
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        protected Variable() { }
+        protected VariableBase() { }
 
         /// <summary>
         /// 获取变量类型。

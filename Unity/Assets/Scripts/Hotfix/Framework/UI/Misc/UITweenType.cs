@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面打开/关闭时的动画类型。

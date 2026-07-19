@@ -2,7 +2,7 @@ using System;
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// Object相关的扩展方法。

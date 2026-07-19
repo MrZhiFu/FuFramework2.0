@@ -1,7 +1,7 @@
-﻿using FuFramework.Fsm.Runtime;
+﻿using Hotfix.Framework.FSM;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Procedure.Runtime
+namespace Hotfix.Framework.Procedure
 {
     /// <summary>
     /// 流程基类。
@@ -23,6 +23,6 @@ namespace FuFramework.Procedure.Runtime
         /// <param name="procedureOwner">流程持有者。</param>
         // 注意：FsmStateBase.OnInit 为 protected internal；FSM 与 Procedure 现同属 Hotfix 程序集，
         // 同程序集重写须保留 internal（写成 protected 会触发 CS0507），请勿改为 protected override。
-        protected internal override void OnInit(Fsm.Runtime.Fsm procedureOwner) => base.OnInit(procedureOwner);
+        protected internal override void OnInit(Fsm procedureOwner) => base.OnInit(procedureOwner);
     }
 }

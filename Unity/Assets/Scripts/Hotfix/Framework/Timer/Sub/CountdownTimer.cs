@@ -1,9 +1,10 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Timer.Runtime
+namespace Hotfix.Framework.Timer
 {
     /// <summary>
     /// 倒计时计时器。
@@ -96,7 +97,7 @@ namespace FuFramework.Timer.Runtime
         /// <returns></returns>
         public static CountdownTimer Create(int timerId, float duration, Action finishCallBack, Action updateCallBack, PlayerLoopTiming playerLoopTiming, bool ignoreTimeScale)
         {
-            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<CountdownTimer>();
+            var timerInfo = ReferencePool.Acquire<CountdownTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id               = timerId;

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     public partial class WebModule
     {

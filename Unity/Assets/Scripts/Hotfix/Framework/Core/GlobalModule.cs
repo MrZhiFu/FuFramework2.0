@@ -1,18 +1,18 @@
-using FuFramework.UI.Runtime;
-using FuFramework.Fsm.Runtime;
-using FuFramework.Mono.Runtime;
-using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.Timer.Runtime;
-using FuFramework.Asset.Runtime;
-using FuFramework.Procedure.Runtime;
+using Hotfix.Framework.UI;
+using Hotfix.Framework.FSM;
+using Hotfix.Framework.Mono;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.Timer;
+using Hotfix.Framework.Asset;
+using Hotfix.Framework.Procedure;
 
-using FuFramework.ObjectPool.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ObjectPool;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace Hotfix
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 全局模块类。

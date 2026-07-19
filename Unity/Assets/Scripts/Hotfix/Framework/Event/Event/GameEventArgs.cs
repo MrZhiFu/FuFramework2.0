@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     /// <summary>
     /// 游戏逻辑事件基类。

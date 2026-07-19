@@ -1,7 +1,7 @@
 using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Bootstrap;
 using AOT.Framework.ModuleSetting.Runtime.Asset;
 using AOT.Framework.ModuleSetting.Runtime;
@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-namespace FuFramework.Asset.Runtime
+namespace Hotfix.Framework.Asset
 {
     /// <summary>
     /// 资源管理模块。

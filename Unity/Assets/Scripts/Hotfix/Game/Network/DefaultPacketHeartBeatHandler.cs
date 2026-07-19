@@ -1,8 +1,10 @@
-using FuFramework.Core.Runtime;
-using Hotfix.Network;
-using Hotfix.Proto;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Network;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 
-namespace Hotfix.Network
+namespace Hotfix.Game.Network
 {
     public sealed class DefaultPacketHeartBeatHandler : BasePacketHeartBeatHandler
     {

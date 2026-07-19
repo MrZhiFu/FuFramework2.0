@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 游戏框架链表范围。

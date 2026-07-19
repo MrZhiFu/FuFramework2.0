@@ -1,13 +1,14 @@
+using Hotfix.Framework.ReferencePools;
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 Boolean 变量类。
     /// 功能：
     ///     1. 可以像正常bool值类型一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarBoolean : Variable<bool>
+    public sealed class VarBoolean : GenericVariable<bool>
     {
         /// <summary>
         /// 初始化 VarBoolean 变量类的新实例。
@@ -20,7 +21,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarBoolean(bool value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarBoolean>();
+            var varValue = ReferencePool.Acquire<VarBoolean>();
             varValue.Value = value;
             return varValue;
         }

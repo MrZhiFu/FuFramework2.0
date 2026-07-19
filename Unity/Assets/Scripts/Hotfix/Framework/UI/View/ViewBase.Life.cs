@@ -1,10 +1,9 @@
 ﻿using FairyGUI;
-using FuFramework.Core.Runtime;
 using AOT.Framework.Core.Log;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Event;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面基类分部类之一。

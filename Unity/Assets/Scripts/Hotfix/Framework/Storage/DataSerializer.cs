@@ -1,6 +1,6 @@
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
-namespace Hotfix.Storage
+namespace Hotfix.Framework.Storage
 {
     /// <summary>
     /// 数据序列化器。

@@ -1,8 +1,9 @@
-﻿using FuFramework.Event.Runtime;
+using Hotfix.Framework.ReferencePools;
+﻿using Hotfix.Framework.Event;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 改变界面可见状态事件。
@@ -53,7 +54,7 @@ namespace FuFramework.UI.Runtime
         /// <returns>创建的打开界面成功事件。</returns>
         public static ChangeUIVisibleEventArgs Create(ViewBase uiView, bool visible, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Runtime.ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
+            var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
             uiSuccessEventArgs.UIView   = uiView;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;

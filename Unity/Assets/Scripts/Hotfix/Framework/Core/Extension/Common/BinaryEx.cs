@@ -3,7 +3,7 @@ using System;
 using System.IO;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// BinaryReader 和 BinaryWriter 相关的扩展方法。

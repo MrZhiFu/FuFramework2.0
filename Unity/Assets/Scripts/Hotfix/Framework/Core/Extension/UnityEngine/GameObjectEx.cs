@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// GameObject 相关的扩展方法。
@@ -178,7 +178,7 @@ namespace FuFramework.Core.Runtime
         /// <returns>找到的节点的GameObject实例，如果没有找到返回null。</returns>
         public static GameObject FindChildGameObjectByName(string nodeName, string sceneName = null)
         {
-            Scene scene;
+            UnityEngine.SceneManagement.Scene scene;
             if (sceneName.IsNullOrWhiteSpace())
             {
                 scene = SceneManager.GetActiveScene();

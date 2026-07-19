@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 消息解压器接口定义，用于解压压缩后的消息

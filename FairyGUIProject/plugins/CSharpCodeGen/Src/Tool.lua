@@ -16,7 +16,7 @@ Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/Bootstrap/"
 
 
 --- 导出界面View的命名空间
-Tool.ExportViewNamespace = "Hotfix.UI"
+Tool.ExportViewNamespace = "Hotfix.Game.UI"
 
 --- 导出界面View的C#代码路径
 Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"

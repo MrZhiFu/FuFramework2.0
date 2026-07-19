@@ -2,21 +2,21 @@ using System;
 using FairyGUI;
 using System.IO;
 using UnityEngine;
-using Hotfix.Web;
-using FuFramework.Asset.Runtime;
+using Hotfix.Framework.Web;
+using Hotfix.Framework.Asset;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using YooAsset;
 using Object = UnityEngine.Object;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 // ReSharper disable once InconsistentNaming 禁用命名风格检查
-namespace Hotfix.UI
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// FUI自定义Loader的资源LRU缓存器

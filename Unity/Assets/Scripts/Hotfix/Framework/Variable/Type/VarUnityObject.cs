@@ -1,15 +1,16 @@
+using Hotfix.Framework.ReferencePools;
 ﻿
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 UnityEngine.Object 变量类。
     /// 功能：
     ///     1. 可以像正常 UnityObject 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarUnityObject : Variable<Object>
+    public sealed class VarUnityObject : GenericVariable<Object>
     {
         /// <summary>
         /// 初始化 VarUnityObject 变量类的新实例。
@@ -22,7 +23,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarUnityObject(Object value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarUnityObject>();
+            var varValue = ReferencePool.Acquire<VarUnityObject>();
             varValue.Value = value;
             return varValue;
         }

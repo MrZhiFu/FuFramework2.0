@@ -1,14 +1,15 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 Quaternion 变量类。
     /// 功能：
     ///     1. 可以像正常Quaternion变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarQuaternion : Variable<Quaternion>
+    public sealed class VarQuaternion : GenericVariable<Quaternion>
     {
         /// <summary>
         /// 初始化 VarQuaternion 变量类的新实例。
@@ -21,7 +22,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarQuaternion(Quaternion value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarQuaternion>();
+            var varValue = ReferencePool.Acquire<VarQuaternion>();
             varValue.Value = value;
             return varValue;
         }

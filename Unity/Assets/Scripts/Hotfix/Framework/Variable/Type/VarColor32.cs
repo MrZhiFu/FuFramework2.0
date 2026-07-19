@@ -1,14 +1,15 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 Color32 变量类。
     /// 功能：
     ///     1. 可以像正常UnityEngine.Color32变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarColor32 : Variable<Color32>
+    public sealed class VarColor32 : GenericVariable<Color32>
     {
         /// <summary>
         /// 初始化 VarColor32 变量类的新实例。
@@ -21,7 +22,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarColor32(Color32 value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarColor32>();
+            var varValue = ReferencePool.Acquire<VarColor32>();
             varValue.Value = value;
             return varValue;
         }

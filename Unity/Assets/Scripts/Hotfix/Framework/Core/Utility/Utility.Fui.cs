@@ -4,7 +4,7 @@ using FairyGUI;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     public static partial class Utility
     {

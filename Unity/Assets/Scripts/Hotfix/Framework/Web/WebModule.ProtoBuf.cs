@@ -3,17 +3,17 @@ using ProtoBuf;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
-using Hotfix.Network;
+using Hotfix.Framework.Network;
 
 #if UNITY_WEBGL
 using UnityEngine.Networking;
 #endif
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// Web管理模块的ProtoBuf部分实现

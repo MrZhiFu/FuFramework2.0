@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.ReferencePool.Runtime;
-using Hotfix.Config;
+using Hotfix.Framework.ReferencePools;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 
-namespace Hotfix.RedDot
+namespace Hotfix.Framework.RedDot
 {
     /// <summary>
     /// 红点节点

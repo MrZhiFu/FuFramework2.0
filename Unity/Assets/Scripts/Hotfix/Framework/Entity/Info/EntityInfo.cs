@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体信息。

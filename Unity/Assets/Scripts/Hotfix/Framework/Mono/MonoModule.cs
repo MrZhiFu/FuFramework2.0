@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Mono.Runtime
+namespace Hotfix.Framework.Mono
 {
     /// <summary>
     /// Mono管理模块。

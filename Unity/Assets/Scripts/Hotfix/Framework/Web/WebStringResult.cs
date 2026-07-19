@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// Web字符串请求结果类，用于封装HTTP请求返回的字符串数据

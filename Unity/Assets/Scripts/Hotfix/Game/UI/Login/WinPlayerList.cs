@@ -1,19 +1,20 @@
-using Hotfix.Config;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
-using FuFramework.UI.Runtime;
-using FuFramework.Event.Runtime;
-using Hotfix.Network;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.UI;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.Network;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix;
-using Hotfix.Manager;
-using Hotfix.Proto;
+using Hotfix.Game.Manager_ToDelete;
+using Hotfix.Game.Network;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class WinPlayerList : ViewBase
     {

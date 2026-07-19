@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     public static partial class Utility
     {

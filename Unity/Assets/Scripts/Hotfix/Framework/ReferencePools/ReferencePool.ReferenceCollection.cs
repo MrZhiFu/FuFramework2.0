@@ -1,11 +1,11 @@
 using System;
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentlySynchronizedField
-namespace FuFramework.ReferencePool.Runtime
+namespace Hotfix.Framework.ReferencePools
 {
     public static partial class ReferencePool
     {

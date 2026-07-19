@@ -1,10 +1,10 @@
 using System;
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ReferencePool.Runtime
+namespace Hotfix.Framework.ReferencePools
 {
     /// <summary>
     /// 引用池。

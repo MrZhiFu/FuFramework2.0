@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络地址类型。

@@ -1,7 +1,7 @@
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Events
+namespace Hotfix.Game.Events
 {
     /// <summary>
     /// 背包数量变化或者道具变化事件

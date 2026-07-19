@@ -1,13 +1,13 @@
 using System;
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.Entity;
 using AOT.Framework.ModuleSetting.Runtime;
-using FuFramework.ObjectPool.Runtime;
+using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体组。

@@ -1,10 +1,10 @@
 using System;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// HTTP JSON辅助类。

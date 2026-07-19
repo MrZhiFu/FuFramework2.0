@@ -1,8 +1,8 @@
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using YooAsset;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Asset.Runtime
+namespace Hotfix.Framework.Asset
 {
     /// <summary>
     /// 初始化加载模式

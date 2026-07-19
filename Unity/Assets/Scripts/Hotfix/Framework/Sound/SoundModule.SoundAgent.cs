@@ -1,13 +1,13 @@
 using System;
 using UnityEngine;
 using System.Collections;
-using FuFramework.Asset.Runtime;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Asset;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Entity;
-using Entity = Hotfix.Entity.Entity;
+using Hotfix.Framework.Entity;
+using Entity = Hotfix.Framework.Entity.Entity;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     public partial class SoundModule
     {

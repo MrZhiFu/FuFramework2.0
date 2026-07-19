@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络频道接口。

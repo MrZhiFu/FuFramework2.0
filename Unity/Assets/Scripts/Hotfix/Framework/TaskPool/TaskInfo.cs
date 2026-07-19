@@ -1,9 +1,9 @@
 using System;
 ﻿using System.Runtime.InteropServices;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.TaskPool.Runtime
+namespace Hotfix.Framework.TaskPool
 {
     /// <summary>
     /// 任务信息。

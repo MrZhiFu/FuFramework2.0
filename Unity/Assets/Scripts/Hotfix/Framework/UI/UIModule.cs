@@ -1,14 +1,14 @@
 using System;
 using FairyGUI;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Event;
 using System.Collections.Generic;
-using FuFramework.ObjectPool.Runtime;
+using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// UI管理模块。

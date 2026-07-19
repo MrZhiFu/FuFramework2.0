@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     public partial class NetworkModule
     {

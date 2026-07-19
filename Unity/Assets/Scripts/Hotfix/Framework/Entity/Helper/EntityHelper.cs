@@ -1,10 +1,10 @@
 ﻿using YooAsset;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 默认实体辅助器。

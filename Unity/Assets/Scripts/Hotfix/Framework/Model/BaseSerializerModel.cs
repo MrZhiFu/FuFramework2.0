@@ -1,9 +1,9 @@
 using Newtonsoft.Json;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Storage;
+using Hotfix.Framework.Storage;
 
-namespace Hotfix.Model
+namespace Hotfix.Framework.Model
 {
     /// <summary>
     /// 可序列化的Model基类(数据字段存储在本地的Model)。

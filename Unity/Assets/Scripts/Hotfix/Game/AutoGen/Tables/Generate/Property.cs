@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Config
+namespace Hotfix.Game.Tables
 {
     /// <summary>
     /// 属性

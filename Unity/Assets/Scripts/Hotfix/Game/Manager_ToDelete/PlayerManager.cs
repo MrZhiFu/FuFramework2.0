@@ -1,7 +1,9 @@
-﻿using FuFramework.Core.Runtime;
-using Hotfix.Proto;
+﻿using Hotfix.Framework.Core;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 
-namespace Hotfix.Manager
+namespace Hotfix.Game.Manager_ToDelete
 {
     public sealed class PlayerManager : Singleton<PlayerManager>
     {

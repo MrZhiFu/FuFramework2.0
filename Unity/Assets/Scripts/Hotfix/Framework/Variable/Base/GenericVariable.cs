@@ -1,7 +1,7 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 泛型变量基类。
@@ -11,12 +11,12 @@ namespace FuFramework.Variable.Runtime
     ///     3. 转换为字符串表示。
     /// </summary>
     /// <typeparam name="T">变量类型。</typeparam>
-    public abstract class Variable<T> : Variable
+    public abstract class GenericVariable<T> : VariableBase
     {
         /// <summary>
         /// 初始化变量的新实例。
         /// </summary>
-        public Variable() => Value = default;
+        public GenericVariable() => Value = default;
 
         /// <summary>
         /// 获取变量类型。

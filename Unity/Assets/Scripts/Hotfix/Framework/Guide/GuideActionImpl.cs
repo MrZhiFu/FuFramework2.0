@@ -1,13 +1,12 @@
 using System;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix;
-using Hotfix.UI;
+using Hotfix.Game.UI;
 using UnityEngine;
 
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 引导动作执行实现

@@ -1,12 +1,13 @@
+using Hotfix.Framework.ReferencePools;
 ﻿// ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 Char 数组变量类。
     /// 功能：
     ///     1. 可以像正常Char数组一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarCharArray : Variable<char[]>
+    public sealed class VarCharArray : GenericVariable<char[]>
     {
         /// <summary>
         /// 初始化 VarCharArray 变量类的新实例。
@@ -19,7 +20,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarCharArray(char[] value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarCharArray>();
+            var varValue = ReferencePool.Acquire<VarCharArray>();
             varValue.Value = value;
             return varValue;
         }

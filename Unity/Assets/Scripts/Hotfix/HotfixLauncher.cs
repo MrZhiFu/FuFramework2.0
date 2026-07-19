@@ -1,38 +1,38 @@
 using UnityEngine;
-using Hotfix.Proto;
-using Hotfix.Config;
-using Hotfix.ModuleConfig;
-using Hotfix.UI;
-using Hotfix.Guide;
-using Hotfix.RedDot;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Framework.Config;
+using Hotfix.Framework.Guide;
+using Hotfix.Framework.RedDot;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using Hotfix.Network;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Network;
+using Hotfix.Framework.Core;
 using AOT.Bootstrap;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.Asset.Runtime;
-using FuFramework.Timer.Runtime;
-using FuFramework.Mono.Runtime;
-using FuFramework.ReferencePool.Runtime;
-using FuFramework.ObjectPool.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.Fsm.Runtime;
+using Hotfix.Framework.Asset;
+using Hotfix.Framework.Timer;
+using Hotfix.Framework.Mono;
+using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ObjectPool;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.FSM;
 
-using FuFramework.Procedure.Runtime;
-using FuFramework.UI.Runtime;
-using Hotfix.Localization;
-using Hotfix.Model;
-using Hotfix.Scene;
-using Hotfix.Storage;
-using Hotfix.Sound;
-using Hotfix.Web;
-using Hotfix.Download;
-using Hotfix.Entity;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Hotfix.Framework.Procedure;
+using Hotfix.Framework.UI;
+using Hotfix.Framework.Localization;
+using Hotfix.Framework.Model;
+using Hotfix.Framework.Scene;
+using Hotfix.Framework.Storage;
+using Hotfix.Framework.Sound;
+using Hotfix.Framework.Web;
+using Hotfix.Framework.Download;
+using Hotfix.Framework.Entity;
+using Utility = Hotfix.Framework.Core.Utility;
 
 #if ENABLE_BINARY_CONFIG
 using Luban;
@@ -86,6 +86,8 @@ namespace Hotfix
         private static void RegisterModules()
         {
             // 基础模块
+            ModuleManager.RegisterModule<ConfigModule>();
+            ModuleManager.RegisterModule<RedDotModule>();
             ModuleManager.RegisterModule<ReferencePoolModule>();
             ModuleManager.RegisterModule<FsmModule>();
             ModuleManager.RegisterModule<ProcedureModule>();
@@ -95,14 +97,14 @@ namespace Hotfix
             ModuleManager.RegisterModule<TimerModule>();
             ModuleManager.RegisterModule<AssetModule>();
             ModuleManager.RegisterModule<UIModule>();
-            ModuleManager.RegisterModule<RedDotModule>();
+            
 
             // 功能模块
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<LocalizationModule>();
             ModuleManager.RegisterModule<ModelModule>();
-            ModuleManager.RegisterModule<ConfigModule>();
+            
             ModuleManager.RegisterModule<SceneModule>();
             ModuleManager.RegisterModule<SoundModule>();
             ModuleManager.RegisterModule<EntityModule>();

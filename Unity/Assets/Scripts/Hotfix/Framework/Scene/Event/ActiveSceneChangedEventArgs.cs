@@ -1,9 +1,9 @@
-﻿using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+﻿using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Scene
+namespace Hotfix.Framework.Scene
 {
     /// <summary>
     /// 激活场景被改变事件。

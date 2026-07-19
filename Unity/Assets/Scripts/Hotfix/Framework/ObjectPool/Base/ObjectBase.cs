@@ -1,10 +1,10 @@
 using System;
 ﻿using System;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象池内的对象基类。实现了引用对象的接口。

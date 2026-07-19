@@ -1,10 +1,10 @@
 ﻿using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// UI分组管理器。

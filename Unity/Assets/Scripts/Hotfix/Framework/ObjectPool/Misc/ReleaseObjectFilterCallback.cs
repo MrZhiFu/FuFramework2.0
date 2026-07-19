@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 释放对象筛选函数。

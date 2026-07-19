@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// Web缓冲区结果类。

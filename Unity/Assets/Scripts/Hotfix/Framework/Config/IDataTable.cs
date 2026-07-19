@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hotfix.ModuleConfig
+namespace Hotfix.Framework.Config
 {
     /// <summary>
     /// 数据表基础接口.

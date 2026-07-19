@@ -9,8 +9,8 @@
 
 using System;
 using SimpleJSON;
-using Hotfix.ModuleConfig;
-namespace Hotfix.Config
+using Hotfix.Framework.Config;
+namespace Hotfix.Game.Tables
 {
     public partial class TableManager
     {
@@ -18,7 +18,7 @@ namespace Hotfix.Config
         /// <summary>
         /// 本地化多语言表
         /// </summary>
-        internal Local.TbLocalization TbLocalization { private set; get; }
+        internal TbLocalization TbLocalization { private set; get; }
 
         /// <summary>
         /// 成就表
@@ -72,9 +72,9 @@ namespace Hotfix.Config
             m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
     
-            TbLocalization = new Local.TbLocalization(() => loader("local_tblocalization"));
+            TbLocalization = new TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Local.TbLocalization), TbLocalization);
+            m_ConfigModule.AddConfig(nameof(TbLocalization), TbLocalization);
 
             TbAchievement = new Tables.TbAchievement(() => loader("tables_tbachievement"));
             loadTasks.Add(TbAchievement.LoadAsync());

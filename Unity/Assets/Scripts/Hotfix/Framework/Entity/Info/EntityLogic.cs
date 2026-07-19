@@ -1,4 +1,4 @@
-﻿using FuFramework.Core.Runtime;
+﻿using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体逻辑基类。

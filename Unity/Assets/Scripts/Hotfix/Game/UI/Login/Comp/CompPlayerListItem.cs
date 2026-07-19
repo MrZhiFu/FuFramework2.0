@@ -1,9 +1,10 @@
-using Hotfix.Config;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 using FairyGUI;
-using Hotfix.Proto;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class CompPlayerListItem
     {

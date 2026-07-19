@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     public partial class NetworkModule
     {

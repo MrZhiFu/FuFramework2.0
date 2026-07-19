@@ -1,8 +1,8 @@
 ﻿using System;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 显示时的实体额外信息(逻辑处理对象和用户数据)。

@@ -2,7 +2,7 @@ using System.Net;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络套接字接口。

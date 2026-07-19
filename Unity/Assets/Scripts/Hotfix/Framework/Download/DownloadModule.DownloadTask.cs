@@ -1,7 +1,7 @@
-using FuFramework.ReferencePool.Runtime;
-using FuFramework.TaskPool.Runtime;
+using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.TaskPool;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     public sealed partial class DownloadModule
     {

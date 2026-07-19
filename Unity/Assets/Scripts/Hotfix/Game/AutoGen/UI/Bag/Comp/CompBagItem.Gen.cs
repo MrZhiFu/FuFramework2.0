@@ -6,13 +6,13 @@
 using System;
 using FairyGUI;
 using FairyGUI.Utils;
-using FuFramework.UI.Runtime;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.UI;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Event;
 using Cysharp.Threading.Tasks;
 
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class CompBagItem : GButton, ICustomComp
     {

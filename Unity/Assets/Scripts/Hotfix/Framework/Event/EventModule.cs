@@ -1,8 +1,8 @@
 ﻿using System;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     /// <summary>
     /// 事件管理模块。

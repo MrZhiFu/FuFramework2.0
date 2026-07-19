@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Utility;
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// HTTP消息包装基类

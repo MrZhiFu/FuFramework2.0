@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using FairyGUI;
-using FuFramework.Event.Runtime;
-using Hotfix.Config;
-using Hotfix.Events;
-using Hotfix.Manager;
-using Hotfix.Proto;
+using Hotfix.Framework.Event;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Game.Events;
+using Hotfix.Game.Manager_ToDelete;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class CompBagContent
     {

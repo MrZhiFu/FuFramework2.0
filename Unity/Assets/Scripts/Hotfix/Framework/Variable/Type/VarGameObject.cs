@@ -1,14 +1,15 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// GameObject 变量类。
     /// 功能：
     ///     1. 可以像正常GameObject变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarGameObject : Variable<GameObject>
+    public sealed class VarGameObject : GenericVariable<GameObject>
     {
         /// <summary>
         /// 初始化 VarGameObject 变量类的新实例。
@@ -21,7 +22,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarGameObject(GameObject value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarGameObject>();
+            var varValue = ReferencePool.Acquire<VarGameObject>();
             varValue.Value = value;
             return varValue;
         }

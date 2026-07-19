@@ -1,17 +1,17 @@
 using System;
 using System.IO;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Extension;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
+using Utility = Hotfix.Framework.Core.Utility;
 
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 默认网络频道帮助器。

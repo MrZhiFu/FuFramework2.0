@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.Guide;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 引导管理模块。

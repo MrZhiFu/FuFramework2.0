@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.Event.Runtime;
-using Hotfix.Storage;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.Storage;
 
-namespace Hotfix.Localization
+namespace Hotfix.Framework.Localization
 {
     /// <summary>
     /// 本地化管理模块。

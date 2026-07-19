@@ -1,12 +1,12 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityWebSocket;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     public partial class NetworkModule
     {

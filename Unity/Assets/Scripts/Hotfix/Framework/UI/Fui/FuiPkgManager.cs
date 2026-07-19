@@ -3,16 +3,16 @@ using FairyGUI;
 using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.Asset.Runtime;
+using Hotfix.Framework.Asset;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// FUI包管理器。

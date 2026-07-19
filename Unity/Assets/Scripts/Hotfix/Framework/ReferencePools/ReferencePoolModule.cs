@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ReferencePool.Runtime
+namespace Hotfix.Framework.ReferencePools
 {
     /// <summary>
     /// 引用池管理模块。

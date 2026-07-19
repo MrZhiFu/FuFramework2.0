@@ -1,12 +1,13 @@
+using Hotfix.Framework.ReferencePools;
 ﻿// ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// Float 变量类。
     /// 功能：
     ///     1. 可以像正常System.Float变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarFloat : Variable<float>
+    public sealed class VarFloat : GenericVariable<float>
     {
         /// <summary>
         /// 初始化 VarFloat 变量类的新实例。
@@ -19,7 +20,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarFloat(float value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarFloat>();
+            var varValue = ReferencePool.Acquire<VarFloat>();
             varValue.Value = value;
             return varValue;
         }

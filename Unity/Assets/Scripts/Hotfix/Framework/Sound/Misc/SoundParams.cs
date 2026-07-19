@@ -1,6 +1,6 @@
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     /// <summary>
     /// 播放时的声音参数。

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
-namespace Hotfix.Model
+namespace Hotfix.Framework.Model
 {
     /// <summary>
     /// 数据模型管理模块。

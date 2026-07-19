@@ -2,12 +2,12 @@ using System;
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Extension;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 协议消息处理器

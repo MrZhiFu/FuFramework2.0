@@ -1,12 +1,12 @@
 using System;
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象池管理模块。

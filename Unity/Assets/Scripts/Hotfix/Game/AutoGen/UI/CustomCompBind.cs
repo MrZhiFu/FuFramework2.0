@@ -5,10 +5,10 @@
 
 using FairyGUI;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     /// <summary>
     /// 所有自定义组件的绑定器。由FUI导出时自动生成。

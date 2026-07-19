@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// HTTP JSON消息响应结构。

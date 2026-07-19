@@ -1,7 +1,7 @@
 using System;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     public sealed partial class SoundModule
     {

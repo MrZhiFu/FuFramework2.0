@@ -1,7 +1,7 @@
 using YooAsset;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Asset.Runtime
+namespace Hotfix.Framework.Asset
 {
     /// <summary>
     /// 远程服务接口

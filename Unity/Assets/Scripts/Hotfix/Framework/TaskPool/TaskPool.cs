@@ -1,9 +1,10 @@
+using Hotfix.Framework.ReferencePools;
 using System;
 ﻿using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.TaskPool.Runtime
+namespace Hotfix.Framework.TaskPool
 {
     /// <summary>
     /// 任务池。
@@ -249,7 +250,7 @@ namespace FuFramework.TaskPool.Runtime
             {
                 if (task.SerialId != serialId) continue;
                 m_WaitingTaskList.Remove(task);
-                ReferencePool.Runtime.ReferencePool.Release(task);
+                ReferencePool.Release(task);
                 return true;
             }
 
@@ -265,7 +266,7 @@ namespace FuFramework.TaskPool.Runtime
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Runtime.ReferencePool.Release(task);
+                    ReferencePool.Release(task);
                     return true;
                 }
 
@@ -292,7 +293,7 @@ namespace FuFramework.TaskPool.Runtime
                 if (task.Tag == tag)
                 {
                     m_WaitingTaskList.Remove(currentWaitingTask);
-                    ReferencePool.Runtime.ReferencePool.Release(task);
+                    ReferencePool.Release(task);
                     count++;
                 }
 
@@ -310,7 +311,7 @@ namespace FuFramework.TaskPool.Runtime
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Runtime.ReferencePool.Release(task);
+                    ReferencePool.Release(task);
                     count++;
                 }
 
@@ -330,7 +331,7 @@ namespace FuFramework.TaskPool.Runtime
 
             foreach (var task in m_WaitingTaskList)
             {
-                ReferencePool.Runtime.ReferencePool.Release(task);
+                ReferencePool.Release(task);
             }
 
             m_WaitingTaskList.Clear();
@@ -340,7 +341,7 @@ namespace FuFramework.TaskPool.Runtime
                 var task = workingAgent.Task;
                 workingAgent.Reset();
                 m_FreeAgentStack.Push(workingAgent);
-                ReferencePool.Runtime.ReferencePool.Release(task);
+                ReferencePool.Release(task);
             }
 
             m_WorkingAgentList.Clear();
@@ -370,7 +371,7 @@ namespace FuFramework.TaskPool.Runtime
                 current.Value.Reset();
                 m_FreeAgentStack.Push(current.Value);
                 m_WorkingAgentList.Remove(current);
-                ReferencePool.Runtime.ReferencePool.Release(task);
+                ReferencePool.Release(task);
                 current = next;
             }
         }
@@ -400,7 +401,7 @@ namespace FuFramework.TaskPool.Runtime
                     m_WaitingTaskList.Remove(current);
 
                 if (status is EStartTaskStatus.Done or EStartTaskStatus.UnknownError)
-                    ReferencePool.Runtime.ReferencePool.Release(task);
+                    ReferencePool.Release(task);
 
                 current = next;
             }

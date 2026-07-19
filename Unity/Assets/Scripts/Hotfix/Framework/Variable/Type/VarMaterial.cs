@@ -1,14 +1,15 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 Material 变量类。
     /// 功能：
     ///     1. 可以像正常Material变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarMaterial : Variable<Material>
+    public sealed class VarMaterial : GenericVariable<Material>
     {
         /// <summary>
         /// 初始化 VarMaterial 变量类的新实例。
@@ -21,7 +22,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarMaterial(Material value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarMaterial>();
+            var varValue = ReferencePool.Acquire<VarMaterial>();
             varValue.Value = value;
             return varValue;
         }

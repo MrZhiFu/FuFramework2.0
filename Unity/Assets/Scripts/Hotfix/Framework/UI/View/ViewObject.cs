@@ -1,11 +1,12 @@
+using Hotfix.Framework.ReferencePools;
 using System;
 ﻿using System;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.ObjectPool.Runtime;
+using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面实例对象。
@@ -24,7 +25,7 @@ namespace FuFramework.UI.Runtime
         /// <returns></returns>
         public static ViewObject Create(string uiName, ViewBase viewBase)
         {
-            var uiInstanceObject = ReferencePool.Runtime.ReferencePool.Acquire<ViewObject>();
+            var uiInstanceObject = ReferencePool.Acquire<ViewObject>();
             uiInstanceObject.Initialize(uiName, viewBase);
             return uiInstanceObject;
         }

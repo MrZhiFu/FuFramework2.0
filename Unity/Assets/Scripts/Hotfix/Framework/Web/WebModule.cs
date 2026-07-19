@@ -4,15 +4,15 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// Web管理模块。

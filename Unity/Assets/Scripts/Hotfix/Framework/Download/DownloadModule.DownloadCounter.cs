@@ -1,8 +1,8 @@
 using System;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     public sealed partial class DownloadModule
     {

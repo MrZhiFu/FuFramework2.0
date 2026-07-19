@@ -1,14 +1,14 @@
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.Event.Runtime;
-using FuFramework.TaskPool.Runtime;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.TaskPool;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     /// <summary>
     /// 下载管理模块。
@@ -49,7 +49,7 @@ namespace Hotfix.Download
         /// <summary>
         /// 下载任务的任务池
         /// </summary>
-        private readonly FuFramework.TaskPool.Runtime.TaskPool<DownloadTask> m_TaskPool = new();
+        private readonly Hotfix.Framework.TaskPool.TaskPool<DownloadTask> m_TaskPool = new();
 
         /// <summary>
         /// 下载计数器，1秒更新一次，10秒记录一次，用于计算下载速度

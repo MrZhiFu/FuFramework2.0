@@ -1,10 +1,10 @@
 using System;
 ﻿using System;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     public sealed partial class ObjectPoolModule
     {
@@ -72,7 +72,7 @@ namespace FuFramework.ObjectPool.Runtime
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建的对象不能为空.");
 
-                var tempObj = ReferencePool.Runtime.ReferencePool.Acquire<Object<T>>();
+                var tempObj = ReferencePool.Acquire<Object<T>>();
                 tempObj.TargetObject = obj;
                 tempObj.SpawnCount   = spawned ? 1 : 0;
 
@@ -121,7 +121,7 @@ namespace FuFramework.ObjectPool.Runtime
             public void OnRelease()
             {
                 TargetObject.OnRelease();
-                ReferencePool.Runtime.ReferencePool.Release(TargetObject);
+                ReferencePool.Release(TargetObject);
             }
         }
     }

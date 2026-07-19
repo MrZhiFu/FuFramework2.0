@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace 禁用命名空间检查
 
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面层级。

@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络消息处理器属性定义

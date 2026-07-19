@@ -3,7 +3,7 @@ using System.Buffers.Binary;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 字节数组相关的扩展方法。

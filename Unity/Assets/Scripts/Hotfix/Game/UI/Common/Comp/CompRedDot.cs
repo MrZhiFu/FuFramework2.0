@@ -1,12 +1,14 @@
 using System;
 using FairyGUI;
 using UnityEngine;
-using FuFramework.UI.Runtime;
-using Hotfix.Config;
-using Hotfix.RedDot;
+using Hotfix.Framework.UI;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Framework.RedDot;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class CompRedDot
     {

@@ -1,8 +1,8 @@
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// UI管理模块分部类之一。

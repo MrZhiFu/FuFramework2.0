@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 附加实体信息。

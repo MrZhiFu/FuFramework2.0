@@ -1,8 +1,8 @@
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.ModuleSetting.Runtime.Guide;
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 等待时间步骤

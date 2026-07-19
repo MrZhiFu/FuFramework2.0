@@ -2,7 +2,7 @@ using FairyGUI;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 为 FairyGUI GObject 提供安全区相关扩展方法。

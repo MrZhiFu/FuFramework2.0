@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 客户端发送给服务器的消息的基类接口

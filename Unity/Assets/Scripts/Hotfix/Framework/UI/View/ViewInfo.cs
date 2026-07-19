@@ -1,9 +1,9 @@
 using System;
-﻿using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+﻿using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面组中的界面信息。
@@ -35,7 +35,7 @@ namespace FuFramework.UI.Runtime
         public static ViewInfo Create(ViewBase view)
         {
             if (view == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
-            var uiInfo = ReferencePool.Runtime.ReferencePool.Acquire<ViewInfo>();
+            var uiInfo = ReferencePool.Acquire<ViewInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;

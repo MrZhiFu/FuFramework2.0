@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     public static partial class Utility
     {

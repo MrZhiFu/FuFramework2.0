@@ -1,7 +1,7 @@
-using FuFramework.UI.Runtime;
+using Hotfix.Framework.UI;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     /// <summary>
     /// 全局遮罩界面

@@ -1,15 +1,14 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
-using Hotfix.Network;
-using Hotfix;
-using Hotfix.Config;
-using Hotfix.Config.Tables;
-using Hotfix.ModuleConfig;
-using Hotfix.Events;
-using Hotfix.Proto;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Network;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Framework.Config;
+using Hotfix.Game.Events;
 
-namespace Hotfix.Manager
+namespace Hotfix.Game.Manager_ToDelete
 {
     /// <summary>
     /// 背包 管理器

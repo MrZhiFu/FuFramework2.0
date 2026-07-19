@@ -4,19 +4,19 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.Sound;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.Asset.Runtime;
+using Hotfix.Framework.Asset;
 using System.Collections.Generic;
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
+using Utility = Hotfix.Framework.Core.Utility;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     /// <summary>
     /// 声音管理模块。

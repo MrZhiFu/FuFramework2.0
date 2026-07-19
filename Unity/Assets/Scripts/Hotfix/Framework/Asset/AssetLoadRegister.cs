@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Asset.Runtime
+namespace Hotfix.Framework.Asset
 {
     /// <summary>
     /// 资源加载注册器。
@@ -38,7 +38,7 @@ namespace FuFramework.Asset.Runtime
         public static AssetLoadRegister Create()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            return ReferencePool.Runtime.ReferencePool.Acquire<AssetLoadRegister>();
+            return ReferencePool.Acquire<AssetLoadRegister>();
         }
 
         /// <summary>
@@ -175,6 +175,6 @@ namespace FuFramework.Asset.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
+        public void Release() => ReferencePool.Release(this);
     }
 }

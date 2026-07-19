@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
-namespace Hotfix.ModuleConfig
+namespace Hotfix.Framework.Config
 {
     /// <summary>
     /// 配置管理模块。

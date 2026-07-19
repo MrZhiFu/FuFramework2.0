@@ -1,12 +1,12 @@
 using System;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 using AOT.Bootstrap;
 using UnityEngine;
 
-namespace Hotfix
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 框架帧驱动 + 游戏控制中枢。

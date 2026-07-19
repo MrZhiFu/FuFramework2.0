@@ -1,9 +1,9 @@
 using System.IO;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 默认消息发送头部处理器

@@ -1,12 +1,13 @@
+using Hotfix.Framework.ReferencePools;
 using System;
 ﻿using System;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     public sealed partial class ObjectPoolModule
     {
@@ -159,7 +160,7 @@ namespace FuFramework.ObjectPool.Runtime
                         FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {Name} 中的对象时出现异常: {e.Message}");
                     }
 
-                    ReferencePool.Runtime.ReferencePool.Release(obj);
+                    ReferencePool.Release(obj);
                 }
 
                 m_ObjectMultiDict.Clear();
@@ -272,7 +273,7 @@ namespace FuFramework.ObjectPool.Runtime
                 m_TargetObjectDict.Remove(obj.TargetObject.Target);
 
                 obj.OnRelease();
-                ReferencePool.Runtime.ReferencePool.Release(obj);
+                ReferencePool.Release(obj);
                 return true;
             }
 

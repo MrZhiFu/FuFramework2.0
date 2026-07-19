@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.Sound;
 using AOT.Framework.ModuleSetting.Runtime;
 using UnityEngine;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     public partial class SoundModule
     {

@@ -1,7 +1,7 @@
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Sound
+namespace Hotfix.Framework.Sound
 {
     /// <summary>
     /// 播放声音失败事件。

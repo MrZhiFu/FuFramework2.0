@@ -1,7 +1,7 @@
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
-namespace Hotfix.Localization
+namespace Hotfix.Framework.Localization
 {
     /// <summary>
     /// 本地化语言改变事件。

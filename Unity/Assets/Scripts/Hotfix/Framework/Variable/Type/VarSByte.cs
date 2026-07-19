@@ -1,13 +1,14 @@
+using Hotfix.Framework.ReferencePools;
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 SByte 变量类。
     /// 功能：
     ///     1. 可以像正常 SByte 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarSByte : Variable<sbyte>
+    public sealed class VarSByte : GenericVariable<sbyte>
     {
         /// <summary>
         /// 初始化 VarSByte 变量类的新实例。
@@ -20,7 +21,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarSByte(sbyte value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarSByte>();
+            var varValue = ReferencePool.Acquire<VarSByte>();
             varValue.Value = value;
             return varValue;
         }

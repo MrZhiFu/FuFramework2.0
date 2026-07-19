@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     public partial class WebModule
     {

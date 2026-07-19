@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Config.Tables
+namespace Hotfix.Game.Tables
 {
     public sealed partial class Achievement : BeanBase
     {

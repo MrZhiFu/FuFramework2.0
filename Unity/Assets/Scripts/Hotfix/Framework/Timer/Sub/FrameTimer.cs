@@ -1,9 +1,10 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Timer.Runtime
+namespace Hotfix.Framework.Timer
 {
     /// <summary>
     /// 帧间隔计时器。
@@ -101,7 +102,7 @@ namespace FuFramework.Timer.Runtime
         /// <returns></returns>
         public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
         {
-            var timerInfo = ReferencePool.Runtime.ReferencePool.Acquire<FrameTimer>();
+            var timerInfo = ReferencePool.Acquire<FrameTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id                = timerId;

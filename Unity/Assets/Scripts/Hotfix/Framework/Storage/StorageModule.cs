@@ -2,13 +2,13 @@ using System;
 using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.DataSave;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
-namespace Hotfix.Storage
+namespace Hotfix.Framework.Storage
 {
     /// <summary>
     /// 本地数据存储管理模块。

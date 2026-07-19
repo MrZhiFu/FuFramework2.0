@@ -1,7 +1,7 @@
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 默认消息接收内容处理器

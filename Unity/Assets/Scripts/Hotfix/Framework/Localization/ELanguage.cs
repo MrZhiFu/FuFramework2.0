@@ -1,4 +1,4 @@
-namespace Hotfix.Localization
+namespace Hotfix.Framework.Localization
 {
     /// <summary>
     /// 本地化语言类型。

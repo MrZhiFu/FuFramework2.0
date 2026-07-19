@@ -1,10 +1,10 @@
 using System;
 ﻿using System;
 using System.Net.Sockets;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     public sealed partial class NetworkModule
     {

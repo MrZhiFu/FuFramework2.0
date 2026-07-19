@@ -9,9 +9,9 @@
 
 using Luban;
 using SimpleJSON;
-using Hotfix.ModuleConfig;
+using Hotfix.Framework.Config;
 
-namespace Hotfix.Config.Tables
+namespace Hotfix.Game.Tables
 {
     /// <summary>
     /// 成就表
@@ -32,7 +32,7 @@ namespace Hotfix.Config.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.Achievement _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Tables.Achievement.DeserializeAchievement(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Achievement.DeserializeAchievement(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);

@@ -3,15 +3,15 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     public sealed partial class NetworkModule
     {

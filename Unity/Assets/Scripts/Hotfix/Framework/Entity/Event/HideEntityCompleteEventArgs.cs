@@ -1,9 +1,9 @@
-﻿using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+﻿using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 隐藏实体完成事件。

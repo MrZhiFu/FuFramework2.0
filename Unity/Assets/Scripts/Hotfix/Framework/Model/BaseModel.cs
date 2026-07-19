@@ -1,7 +1,7 @@
 using System;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Event;
 
-namespace Hotfix.Model
+namespace Hotfix.Framework.Model
 {
     /// <summary>
     /// Model基类。

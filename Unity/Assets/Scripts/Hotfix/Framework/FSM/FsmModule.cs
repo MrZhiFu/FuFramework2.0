@@ -1,10 +1,10 @@
 using System;
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Fsm.Runtime
+namespace Hotfix.Framework.FSM
 {
     /// <summary>
     /// 有限状态机管理模块。

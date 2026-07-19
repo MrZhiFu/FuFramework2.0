@@ -9,9 +9,9 @@
 
 using Luban;
 using SimpleJSON;
-using Hotfix.ModuleConfig;
+using Hotfix.Framework.Config;
 
-namespace Hotfix.Config.Tables
+namespace Hotfix.Game.Tables
 {
     /// <summary>
     /// 声音表
@@ -32,7 +32,7 @@ namespace Hotfix.Config.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.Sound _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Tables.Sound.DeserializeSound(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Sound.DeserializeSound(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);

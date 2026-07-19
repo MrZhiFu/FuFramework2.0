@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 游戏框架序列化器基类。

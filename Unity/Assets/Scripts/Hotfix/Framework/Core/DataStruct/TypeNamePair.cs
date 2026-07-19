@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 类型和名称的组合值。

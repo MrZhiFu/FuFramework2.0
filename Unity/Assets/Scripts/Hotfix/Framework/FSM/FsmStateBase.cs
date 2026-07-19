@@ -1,9 +1,9 @@
 using System;
 ﻿using System;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Fsm.Runtime
+namespace Hotfix.Framework.FSM
 {
     /// <summary>
     /// 状态基类。

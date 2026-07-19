@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 // ReSharper disable StaticMemberInGenericType
 using AOT.Framework.Core.Log;
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 游戏框架Mono单例(线程安全)

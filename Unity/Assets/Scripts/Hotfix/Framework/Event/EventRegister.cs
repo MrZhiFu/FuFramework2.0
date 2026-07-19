@@ -1,9 +1,9 @@
 using System;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     /// <summary>
     /// 事件注册器。
@@ -29,7 +29,7 @@ namespace FuFramework.Event.Runtime
         public static EventRegister Create()
         {
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            return ReferencePool.Runtime.ReferencePool.Acquire<EventRegister>();
+            return ReferencePool.Acquire<EventRegister>();
         }
 
         /// <summary>
@@ -110,6 +110,6 @@ namespace FuFramework.Event.Runtime
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Runtime.ReferencePool.Release(this);
+        public void Release() => ReferencePool.Release(this);
     }
 }

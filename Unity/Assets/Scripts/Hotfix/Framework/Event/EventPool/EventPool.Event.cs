@@ -1,7 +1,7 @@
-﻿using FuFramework.ReferencePool.Runtime;
+﻿using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     public sealed partial class EventPool<T> where T : BaseEventArgs
     {
@@ -30,7 +30,7 @@ namespace FuFramework.Event.Runtime
             /// <returns></returns>
             public static Event Create(object sender, T eventArgs)
             {
-                var eventNodeNode = ReferencePool.Runtime.ReferencePool.Acquire<Event>();
+                var eventNodeNode = ReferencePool.Acquire<Event>();
                 eventNodeNode.Sender    = sender;
                 eventNodeNode.EventArgs = eventArgs;
                 return eventNodeNode;

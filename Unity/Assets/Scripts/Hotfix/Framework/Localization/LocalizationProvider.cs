@@ -1,10 +1,12 @@
-﻿using FuFramework.Core.Runtime;
+﻿using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Config.Local;
-using Hotfix.ModuleConfig;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Framework.Config;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Localization
+namespace Hotfix.Framework.Localization
 {
     /// <summary>
     /// 本地化多语言提供着

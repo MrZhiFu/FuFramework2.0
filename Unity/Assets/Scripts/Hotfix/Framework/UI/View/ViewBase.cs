@@ -1,11 +1,11 @@
 using System;
 using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面基类。
@@ -118,8 +118,8 @@ namespace FuFramework.UI.Runtime
 
             // 创建UI事件注册器，事件注册器，计时器注册器
             UIEventRegister = FuiEventRegister.Create();
-            EventRegister   = Event.Runtime.EventRegister.Create();
-            TimerRegister   = Timer.Runtime.TimerRegister.Create();
+            EventRegister   = Event.EventRegister.Create();
+            TimerRegister   = Timer.TimerRegister.Create();
 
             try
             {

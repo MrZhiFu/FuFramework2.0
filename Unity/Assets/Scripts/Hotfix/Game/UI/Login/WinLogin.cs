@@ -1,20 +1,20 @@
-using Hotfix.Config;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.UI.Runtime;
-using Hotfix.Sound;
-using Hotfix.Web;
-using Hotfix;
-using Hotfix.Manager;
-using Hotfix.Proto;
+using Hotfix.Framework.UI;
+using Hotfix.Framework.Sound;
+using Hotfix.Framework.Web;
+using Hotfix.Game.Manager_ToDelete;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class WinLogin : ViewBase
     {

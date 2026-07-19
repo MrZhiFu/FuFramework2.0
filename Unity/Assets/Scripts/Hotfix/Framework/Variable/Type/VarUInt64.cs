@@ -1,13 +1,14 @@
+using Hotfix.Framework.ReferencePools;
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 UInt64 变量类。
     /// 功能：
     ///     1. 可以像正常 UInt64 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarUInt64 : Variable<ulong>
+    public sealed class VarUInt64 : GenericVariable<ulong>
     {
         /// <summary>
         /// 初始化 VarUInt64 变量类的新实例。
@@ -20,7 +21,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarUInt64(ulong value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarUInt64>();
+            var varValue = ReferencePool.Acquire<VarUInt64>();
             varValue.Value = value;
             return varValue;
         }

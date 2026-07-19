@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 字符串相关的扩展函数

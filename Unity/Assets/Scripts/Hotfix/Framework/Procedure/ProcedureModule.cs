@@ -1,9 +1,9 @@
 using System;
-using FuFramework.Fsm.Runtime;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.FSM;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Procedure.Runtime
+namespace Hotfix.Framework.Procedure
 {
     /// <summary>
     /// 流程管理模块。
@@ -22,7 +22,7 @@ namespace FuFramework.Procedure.Runtime
         /// <summary>
         /// 流程管理模块的有限状态机
         /// </summary>
-        private Fsm.Runtime.Fsm m_ProcedureFsm;
+        private Fsm m_ProcedureFsm;
 
         /// <summary>
         /// 获取当前流程。

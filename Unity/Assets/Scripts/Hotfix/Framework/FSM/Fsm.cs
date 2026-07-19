@@ -1,11 +1,11 @@
 using System;
-﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Variable;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Fsm.Runtime
+namespace Hotfix.Framework.FSM
 {
     /// <summary>
     /// 有限状态机。
@@ -24,7 +24,7 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 记录该有限状态机的所有数据变量的字典。key为变量名，value为变量实例。
         /// </summary>
-        private Dictionary<string, Variable.Runtime.Variable> m_DataDict;
+        private Dictionary<string, VariableBase> m_DataDict;
 
         /// <summary>
         /// 名称
@@ -85,7 +85,7 @@ namespace FuFramework.Fsm.Runtime
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Length < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
+            var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -118,7 +118,7 @@ namespace FuFramework.Fsm.Runtime
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Count < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = ReferencePool.Runtime.ReferencePool.Acquire<Fsm>();
+            var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -204,7 +204,7 @@ namespace FuFramework.Fsm.Runtime
                 foreach (var (_, data) in m_DataDict)
                 {
                     if (data == null) continue;
-                    ReferencePool.Runtime.ReferencePool.Release(data);
+                    ReferencePool.Release(data);
                 }
 
                 m_DataDict.Clear();
@@ -218,7 +218,7 @@ namespace FuFramework.Fsm.Runtime
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
-        internal void Shutdown() => ReferencePool.Runtime.ReferencePool.Release(this);
+        internal void Shutdown() => ReferencePool.Release(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -313,7 +313,7 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TData">要获取的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public TData GetData<TData>(string name) where TData : Variable.Runtime.Variable
+        public TData GetData<TData>(string name) where TData : VariableBase
         {
             return GetData(name) as TData;
         }
@@ -323,7 +323,7 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public Variable.Runtime.Variable GetData(string name)
+        public VariableBase GetData(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 数据名称不能为空。");
             return m_DataDict?.GetValueOrDefault(name);
@@ -335,9 +335,9 @@ namespace FuFramework.Fsm.Runtime
         /// <typeparam name="TData">要设置的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData<TData>(string name, TData data) where TData : Variable.Runtime.Variable
+        public void SetData<TData>(string name, TData data) where TData : VariableBase
         {
-            SetData(name, data as Variable.Runtime.Variable);
+            SetData(name, data as VariableBase);
         }
 
         /// <summary>
@@ -345,15 +345,15 @@ namespace FuFramework.Fsm.Runtime
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData(string name, Variable.Runtime.Variable data)
+        public void SetData(string name, VariableBase data)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要设置的数据名称不能为空。");
 
-            m_DataDict ??= new Dictionary<string, Variable.Runtime.Variable>(StringComparer.Ordinal);
+            m_DataDict ??= new Dictionary<string, VariableBase>(StringComparer.Ordinal);
 
             var oldData = GetData(name);
             if (oldData != null)
-                ReferencePool.Runtime.ReferencePool.Release(oldData);
+                ReferencePool.Release(oldData);
 
             m_DataDict[name] = data;
         }
@@ -369,7 +369,7 @@ namespace FuFramework.Fsm.Runtime
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
-            if (oldData != null) ReferencePool.Runtime.ReferencePool.Release(oldData);
+            if (oldData != null) ReferencePool.Release(oldData);
             return m_DataDict.Remove(name);
         }
 

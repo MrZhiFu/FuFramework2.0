@@ -1,8 +1,8 @@
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.ModuleSetting.Runtime.Guide;
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 默认引导步骤(用于未定义类型的步骤)

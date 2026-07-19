@@ -1,10 +1,10 @@
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 using AOT.Framework.ModuleSetting.Runtime.Guide;
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 步骤状态

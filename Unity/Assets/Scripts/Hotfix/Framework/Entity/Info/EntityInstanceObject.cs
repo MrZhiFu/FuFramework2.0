@@ -1,11 +1,11 @@
 using System;
-﻿using FuFramework.Core.Runtime;
-using FuFramework.ObjectPool.Runtime;
-using FuFramework.ReferencePool.Runtime;
+﻿using Hotfix.Framework.Core;
+using Hotfix.Framework.ObjectPool;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体实例对象。

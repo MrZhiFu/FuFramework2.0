@@ -1,10 +1,10 @@
 ﻿using YooAsset;
-using FuFramework.Event.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Scene
+namespace Hotfix.Framework.Scene
 {
     /// <summary>
     /// 加载场景失败事件。

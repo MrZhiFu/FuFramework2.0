@@ -9,7 +9,7 @@
 
 
 
-namespace Hotfix.Config
+namespace Hotfix.Game.Tables
 { 
     public enum ERedDotKey
     {

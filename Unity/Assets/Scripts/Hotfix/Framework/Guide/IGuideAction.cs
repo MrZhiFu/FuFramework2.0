@@ -1,7 +1,7 @@
 using System;
 using FairyGUI;
 
-namespace Hotfix.Guide
+namespace Hotfix.Framework.Guide
 {
     /// <summary>
     /// 执行引导动作接口。

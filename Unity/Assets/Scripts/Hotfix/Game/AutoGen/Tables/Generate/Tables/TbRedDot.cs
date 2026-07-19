@@ -9,9 +9,9 @@
 
 using Luban;
 using SimpleJSON;
-using Hotfix.ModuleConfig;
+using Hotfix.Framework.Config;
 
-namespace Hotfix.Config.Tables
+namespace Hotfix.Game.Tables
 {
     /// <summary>
     /// 红点表
@@ -32,7 +32,7 @@ namespace Hotfix.Config.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.RedDot _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Tables.RedDot.DeserializeRedDot(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.RedDot.DeserializeRedDot(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add((long)_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);

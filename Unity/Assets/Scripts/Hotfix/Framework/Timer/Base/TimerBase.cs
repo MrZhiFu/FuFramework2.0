@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Timer.Runtime
+namespace Hotfix.Framework.Timer
 {
     /// <summary>
     /// 计时器基类。

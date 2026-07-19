@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 集合相关的扩展方法。

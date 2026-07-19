@@ -1,11 +1,11 @@
 using System;
 using System.Net.Sockets;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络管理模块。

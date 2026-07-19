@@ -1,7 +1,7 @@
 using System.IO;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Network
+namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 网络发送消息包头接口。

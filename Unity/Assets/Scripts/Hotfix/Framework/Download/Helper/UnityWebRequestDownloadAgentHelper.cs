@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
-using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     /// <summary>
     /// 下载证书验证处理器。目前不做任何处理，直接返回true。

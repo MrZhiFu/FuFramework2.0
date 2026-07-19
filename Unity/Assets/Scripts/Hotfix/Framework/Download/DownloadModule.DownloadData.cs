@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 
-namespace Hotfix.Download
+namespace Hotfix.Framework.Download
 {
     public sealed partial class DownloadModule
     {

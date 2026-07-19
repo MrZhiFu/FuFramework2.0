@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-namespace FuFramework.TaskPool.Runtime
+namespace Hotfix.Framework.TaskPool
 {
     /// <summary>
     /// 任务状态。

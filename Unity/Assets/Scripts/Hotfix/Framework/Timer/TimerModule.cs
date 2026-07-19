@@ -1,11 +1,12 @@
+using Hotfix.Framework.ReferencePools;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Timer.Runtime
+namespace Hotfix.Framework.Timer
 {
     /// <summary>
     /// 基于 UniTask 的计时器管理模块。
@@ -49,7 +50,7 @@ namespace FuFramework.Timer.Runtime
             foreach (var timerInfo in m_TimerDict.Values)
             {
                 timerInfo.Cts.Cancel();
-                ReferencePool.Runtime.ReferencePool.Release(timerInfo);
+                ReferencePool.Release(timerInfo);
             }
 
             m_TimerDict.Clear();
@@ -337,7 +338,7 @@ namespace FuFramework.Timer.Runtime
             if (!m_TimerDict.Remove(timerId, out var timerInfo)) return;
             if (timerInfo == null) return;
             FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
-            ReferencePool.Runtime.ReferencePool.Release(timerInfo);
+            ReferencePool.Release(timerInfo);
             OnTimerFinished?.Invoke(timerId);
         }
 

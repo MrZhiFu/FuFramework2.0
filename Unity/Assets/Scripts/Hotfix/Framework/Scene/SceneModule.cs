@@ -1,20 +1,20 @@
 using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
-using FuFramework.Asset.Runtime;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Asset;
+using Hotfix.Framework.Event;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global
-namespace Hotfix.Scene
+namespace Hotfix.Framework.Scene
 {
     /// <summary>
     /// 场景管理模块。

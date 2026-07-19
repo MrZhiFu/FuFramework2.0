@@ -1,14 +1,15 @@
+using Hotfix.Framework.ReferencePools;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Variable.Runtime
+namespace Hotfix.Framework.Variable
 {
     /// <summary>
     /// 自定义 UnityEngine.Vector3 变量类。
     /// 功能：
     ///     1. 可以像正常 Vector3 变量一样使用，且底层使用引用池优化了内存。
     /// </summary>
-    public sealed class VarVector3 : Variable<Vector3>
+    public sealed class VarVector3 : GenericVariable<Vector3>
     {
         /// <summary>
         /// 初始化 VarVector3 变量类的新实例。
@@ -21,7 +22,7 @@ namespace FuFramework.Variable.Runtime
         /// <param name="value">值。</param>
         public static implicit operator VarVector3(Vector3 value)
         {
-            var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarVector3>();
+            var varValue = ReferencePool.Acquire<VarVector3>();
             varValue.Value = value;
             return varValue;
         }

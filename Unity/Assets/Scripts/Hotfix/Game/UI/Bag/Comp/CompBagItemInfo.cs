@@ -1,16 +1,15 @@
 using Cysharp.Threading.Tasks;
 using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix;
-using Hotfix.Config;
-using Hotfix.Config.Tables;
-using Hotfix.ModuleConfig;
-using Hotfix.Manager;
-using Hotfix.Proto;
+using Hotfix.Game.UI;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Proto;
+using Hotfix.Framework.Config;
+using Hotfix.Game.Manager_ToDelete;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace Hotfix.UI
+namespace Hotfix.Game.UI
 {
     public partial class CompBagItemInfo
     {

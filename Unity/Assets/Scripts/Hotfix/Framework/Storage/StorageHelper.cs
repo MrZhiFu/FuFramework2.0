@@ -1,14 +1,14 @@
 using System;
 using System.IO;
 using UnityEngine;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using System.Collections.Generic;
-using Utility = FuFramework.Core.Runtime.Utility;
+using Utility = Hotfix.Framework.Core.Utility;
 
-namespace Hotfix.Storage
+namespace Hotfix.Framework.Storage
 {
     /// <summary>
     /// 本地数据存储辅助器。

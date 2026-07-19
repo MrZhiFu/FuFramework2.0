@@ -1,8 +1,8 @@
 ﻿using System;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     /// <summary>
     /// 事件基类。

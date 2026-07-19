@@ -1,7 +1,7 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 可绑定属性，值变化时自动触发绑定事件。

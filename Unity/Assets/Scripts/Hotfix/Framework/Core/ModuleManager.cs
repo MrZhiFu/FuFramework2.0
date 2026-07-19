@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 框架模块管理器。

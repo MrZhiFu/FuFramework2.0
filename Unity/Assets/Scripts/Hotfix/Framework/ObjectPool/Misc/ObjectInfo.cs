@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-namespace FuFramework.ObjectPool.Runtime
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象信息。

@@ -3,18 +3,18 @@ using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime.Entity;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
-using FuFramework.Asset.Runtime;
-using FuFramework.Event.Runtime;
-using FuFramework.ObjectPool.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.Asset;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.ObjectPool;
+using Hotfix.Framework.ReferencePools;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Entity
+namespace Hotfix.Framework.Entity
 {
     /// <summary>
     /// 实体管理模块。

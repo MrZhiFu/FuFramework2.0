@@ -9,9 +9,9 @@
 
 using Luban;
 using SimpleJSON;
-using Hotfix.ModuleConfig;
+using Hotfix.Framework.Config;
 
-namespace Hotfix.Config.Tables
+namespace Hotfix.Game.Tables
 {
     /// <summary>
     /// 全局常量定义表
@@ -32,7 +32,7 @@ namespace Hotfix.Config.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.GlobalDefine _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.PlayerInitialCoin, _v);
                 StrKeyDataDict.Add(_v.PlayerInitialCoin.ToString(), _v);

@@ -1,4 +1,4 @@
-﻿namespace FuFramework.ReferencePool.Runtime
+﻿namespace Hotfix.Framework.ReferencePools
 {
     /// <summary>
     /// 引用严格检查类型。

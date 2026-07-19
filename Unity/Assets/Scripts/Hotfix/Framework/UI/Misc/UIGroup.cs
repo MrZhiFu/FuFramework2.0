@@ -1,10 +1,11 @@
+using Hotfix.Framework.ReferencePools;
 using System;
 using FairyGUI;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
-namespace FuFramework.UI.Runtime
+namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面组。
@@ -230,7 +231,7 @@ namespace FuFramework.UI.Runtime
                 throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
             // 释放界面信息实例
-            ReferencePool.Runtime.ReferencePool.Release(uiInfo);
+            ReferencePool.Release(uiInfo);
         }
 
         /// <summary>

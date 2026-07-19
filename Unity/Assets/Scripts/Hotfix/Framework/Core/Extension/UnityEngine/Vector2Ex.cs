@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Core.Runtime
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// Vector2 相关的扩展方法。

@@ -1,10 +1,11 @@
 using System;
 ﻿using System;
 using System.Collections.Generic;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Event.Runtime
+namespace Hotfix.Framework.Event
 {
     /// <summary>
     /// 事件池。
@@ -99,7 +100,7 @@ namespace FuFramework.Event.Runtime
                 {
                     var tempEvent = m_EventQueue.Dequeue();
                     HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
-                    ReferencePool.Runtime.ReferencePool.Release(tempEvent);
+                    ReferencePool.Release(tempEvent);
                 }
             }
         }
@@ -290,7 +291,7 @@ namespace FuFramework.Event.Runtime
             }
             finally
             {
-                ReferencePool.Runtime.ReferencePool.Release(eArgs);
+                ReferencePool.Release(eArgs);
             }
 
             if (noHandlerException)

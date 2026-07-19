@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Web
+namespace Hotfix.Framework.Web
 {
     /// <summary>
     /// HTTP JSON结果数据类。
