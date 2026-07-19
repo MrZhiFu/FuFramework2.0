@@ -1,0 +1,15 @@
+﻿##var,#Description,key,ChineseSimplified,ChineseTraditional,English,Japanese,Korean,Thai,Indonesian,French,German,Russian,Italian,PortuguesePortugal,Spanish,Vietnamese
+##type,,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string
+##,,ID,简体中文,繁体中文,英语,日语,韩语,泰语,印尼语,法语,德语,俄语,意大利语,葡萄牙语,西班牙语,越南语
+,,common_start_game,开始游戏,開始遊戲,Start Game,ゲームを始める,게임 시작,เริ่มเกม,Mulai Game,Commencer,Spiel starten,Начать игру,Inizia gioco,Iniciar jogo,Iniciar juego,Bắt đầu trò chơi
+,,common_load_game,读取游戏,讀取遊戲,Load Game,ゲームをロード,게임 불러오기,โหลดเกม,Muat Game,Charger,Spiel laden,Загрузить игру,Carica gioco,Carregar jogo,Cargar juego,Tải trò chơi
+,,common_system_setting,系统设置,系統設置,Settings,設定,환경설정,ตั้งค่า,Pengaturan,Paramètres,Einstellungen,Настройки,Impostazioni,Configurações,Configuración,Cài đặt
+,,common_gallerty,画廊设置,畫廊設置,Gallery,ギャラリー,갤러리,แกลเลอรี่,Galeri,Galerie,Galerie,Галерея,Galleria,Galeria,Galería,Thư viện
+,,common_about,关于更多,關於更多,About,詳細情報,더 보기,เกี่ยวกับ,Tentang,À propos,Über,О игре,Info,Sobre,Acerca de,Thông tin
+,,common_exit_game,退出游戏,退出遊戲,Quit,終了,종료,ออกเกม,Keluar,Quitter,Beenden,Выход,Esci,Sair,Salir,Thoát
+,,common_pop_start_game,开始游戏,開始遊戲,New Game,新しいゲーム,새 게임,เกมใหม่,Game Baru,Nouveau jeu,Neues Spiel,Новая игра,Nuovo gioco,Novo jogo,Nuevo juego,Trò chơi mới
+,,common_continue_game,继续上一次游戏,繼續上一次遊戲,Continue,続きから,이어하기,เล่นต่อ,Lanjutkan,Continuer,Fortsetzen,Продолжить,Continua,Continuar,Continuar,Tiếp tục
+,,common_exit_submit,确定,確定,OK,決定,확인,ตกลง,OK,OK,OK,ОК,OK,OK,OK,OK
+,,common_exit_cancel,取消,取消,Cancel,キャンセル,취소,ยกเลิก,Batal,Annuler,Abbrechen,Отмена,Annulla,Cancelar,Cancelar,Hủy
+,,common_exit_title,是否退出游戏？,是否退出遊戲？,Exit game?,ゲームを終了しますか？,게임을 종료하시겠습니까?,ต้องการออกจากเกมหรือไม่?,Keluar dari game?,Quitter le jeu?,Spiel beenden?,Выйти из игры?,Uscire dal gioco?,Sair do jogo?,¿Salir del juego?,Thoát trò chơi?
+,,common_exit_label,始终需要确认,始終需要確認,Always confirm,常に確認する,항상 확인,ยืนยันทุกครั้ง,Selalu konfirmasi,Toujours confirmer,Immer bestätigen,Всегда подтверждать,Conferma sempre,Confirmar sempre,Confirmar siempre,Luôn xác nhận

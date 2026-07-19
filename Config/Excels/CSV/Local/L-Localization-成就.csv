@@ -1,0 +1,8 @@
+﻿##var,#Description,key,ChineseSimplified,ChineseTraditional,English,Japanese,Korean,Thai,Indonesian,French,German,Russian,Italian,PortuguesePortugal,Spanish,Vietnamese
+##type,,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string
+##,,ID,简体中文,繁体中文,英语,日语,韩语,泰语,印尼语,法语,德语,俄语,意大利语,葡萄牙语,西班牙语,越南语
+,,achievement_name_01, 独自享受的日常,,,,,,,,,,,,,
+,,achievement_name_02, 神社的守护者,,,,,,,,,,,,,
+,,achievement_content_1,您已解锁“独自享受的日常”路线！恭喜您！这是只属于您一人的物语！,,,,,,,,,,,,,
+,,achievement_content_2, 您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）,,,,,,,,,,,,,
+,,achievement_cover,成就未解锁,,,,,,,,,,,,,
