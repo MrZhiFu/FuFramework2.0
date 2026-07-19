@@ -1,3 +1,0 @@
-﻿##var,full_name,value_type,read_schema_from_file,input,index,mode,group,comment,tags,output
-##,全名(包含模块和名字),记录类名,从excel读取定义,文件列表,表id字段,模式,分组,注释,,输出文件名
-##,,,false时取已有定义，true为从excel标题头和属性栏读取定义,"可以多个，以逗号','分隔","为空的话自动取value_type中第一个字段,多主键联合索引为key1+key2,多主键独立索引为""key1,key2""",取值one|map|list，为空自动为map,"取值c|s|e，可以有多个，以逗号','分隔。空则表示属于所有分组",,,默认为 <module>_<name>.<suffix>

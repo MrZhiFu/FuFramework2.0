@@ -1,8 +1,0 @@
-﻿##var,Id,Mute,Volume,AgentCount,AllowBeReplacedBySamePriority
-##type,ESoundGroup,bool,float,int,bool
-##group,,,,,
-##,声音组ID,默认静音,默认音量,播放代理数,允许同优先级替换
-##,BGM=1 SFX=2 UI=3,,,,
-,BGM,True,1,1,True
-,SFX,True,1,10,True
-,UI,False,1,5,True
