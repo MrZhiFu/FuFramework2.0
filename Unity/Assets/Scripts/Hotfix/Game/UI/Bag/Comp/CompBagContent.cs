@@ -4,6 +4,7 @@ using FairyGUI;
 using Hotfix.Framework.Event;
 using Hotfix.Game.UI;
 using Hotfix.Game.Tables;
+using Hotfix.Game.Tables.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Game.Events;
 using Hotfix.Game.Manager_ToDelete;

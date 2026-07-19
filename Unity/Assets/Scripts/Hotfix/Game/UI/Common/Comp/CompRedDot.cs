@@ -4,6 +4,7 @@ using UnityEngine;
 using Hotfix.Framework.UI;
 using Hotfix.Game.UI;
 using Hotfix.Game.Tables;
+using Hotfix.Game.Tables.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Framework.RedDot;
 

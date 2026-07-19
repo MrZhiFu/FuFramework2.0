@@ -4,6 +4,7 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 using AOT.Framework.Core.Log;
 using Hotfix.Game.Tables;
+using Hotfix.Game.Tables.Tables;
 using Hotfix.Framework.Config;
 
 namespace Hotfix.Framework.RedDot

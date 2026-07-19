@@ -4,6 +4,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Game.UI;
 using Hotfix.Game.Tables;
+using Hotfix.Game.Tables.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Manager_ToDelete;
