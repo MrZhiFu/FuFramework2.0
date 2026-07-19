@@ -1,8 +1,6 @@
 using AOT.Framework.ModuleSetting.Runtime.Asset;
 using AOT.Framework.ModuleSetting.Runtime.DataSave;
-using AOT.Framework.ModuleSetting.Runtime.Entity;
 using AOT.Framework.ModuleSetting.Runtime.Guide;
-using AOT.Framework.ModuleSetting.Runtime.Sound;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -52,14 +50,8 @@ namespace AOT.Framework.ModuleSetting.Runtime
         [SerializeField] private bool m_OpenGuide = true;
 
 
-        [Header("音频系统配置")]
-        [SerializeField] private SoundSetting m_SoundSetting;
-
         [Header("资源系统配置")]
         [SerializeField] private AssetSetting m_AssetSetting;
-
-        [Header("实体系统配置")]
-        [SerializeField] private EntitySetting m_EntitySetting;
 
         [Header("本地数据存储系统配置")]
         [SerializeField] private StorageSetting m_StorageSetting;
@@ -69,19 +61,9 @@ namespace AOT.Framework.ModuleSetting.Runtime
 
 
         /// <summary>
-        /// 获取音频系统配置
-        /// </summary>
-        public SoundSetting SoundSetting => m_SoundSetting;
-
-        /// <summary>
         /// 获取资源系统配置
         /// </summary>
         public AssetSetting AssetSetting => m_AssetSetting;
-
-        /// <summary>
-        /// 获取实体系统配置
-        /// </summary>
-        public EntitySetting EntitySetting => m_EntitySetting;
 
         /// <summary>
         /// 获取本地存储系统配置
