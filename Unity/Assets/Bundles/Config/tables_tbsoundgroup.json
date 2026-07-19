@@ -1,0 +1,23 @@
+[
+  {
+    "Id": 1,
+    "Mute": true,
+    "Volume": 1,
+    "AgentCount": 1,
+    "AllowBeReplacedBySamePriority": true
+  },
+  {
+    "Id": 2,
+    "Mute": true,
+    "Volume": 1,
+    "AgentCount": 10,
+    "AllowBeReplacedBySamePriority": true
+  },
+  {
+    "Id": 3,
+    "Mute": false,
+    "Volume": 1,
+    "AgentCount": 5,
+    "AllowBeReplacedBySamePriority": true
+  }
+]

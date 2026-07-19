@@ -45,6 +45,16 @@ namespace Hotfix.Game.Tables
         /// </summary>
         internal Tables.TbRedDot TbRedDot { private set; get; }
 
+        /// <summary>
+        /// 声音组配置表
+        /// </summary>
+        internal Tables.TbSoundGroup TbSoundGroup { private set; get; }
+
+        /// <summary>
+        /// 实体组配置表
+        /// </summary>
+        internal Tables.TbEntityGroup TbEntityGroup { private set; get; }
+
         private ConfigModule m_ConfigModule;
 
         public void Init(ConfigModule configModule)
@@ -96,6 +106,14 @@ namespace Hotfix.Game.Tables
             loadTasks.Add(TbRedDot.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbRedDot), TbRedDot);
 
+            TbSoundGroup = new Tables.TbSoundGroup(() => loader("tables_tbsoundgroup"));
+            loadTasks.Add(TbSoundGroup.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbSoundGroup), TbSoundGroup);
+
+            TbEntityGroup = new Tables.TbEntityGroup(() => loader("tables_tbentitygroup"));
+            loadTasks.Add(TbEntityGroup.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbEntityGroup), TbEntityGroup);
+
 
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
     
@@ -120,6 +138,8 @@ namespace Hotfix.Game.Tables
             TbGlobalDefine.TranslateText(translator);
             TbSound.TranslateText(translator);
             TbRedDot.TranslateText(translator);
+            TbSoundGroup.TranslateText(translator);
+            TbEntityGroup.TranslateText(translator);
         }
 
         private void ResolveRef()
@@ -130,6 +150,8 @@ namespace Hotfix.Game.Tables
             TbGlobalDefine.ResolveRef(this);
             TbSound.ResolveRef(this);
             TbRedDot.ResolveRef(this);
+            TbSoundGroup.ResolveRef(this);
+            TbEntityGroup.ResolveRef(this);
         }
     
         public void Refresh()
