@@ -37,7 +37,7 @@ namespace Hotfix.Game.Tables
 
         public static RedDot DeserializeRedDot(JSONNode _buf)
         {
-            return new Tables.RedDot(_buf);
+            return new RedDot(_buf);
         }
 
         /// <summary>

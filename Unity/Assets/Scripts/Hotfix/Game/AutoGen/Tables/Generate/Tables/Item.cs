@@ -49,7 +49,7 @@ namespace Hotfix.Game.Tables
 
         public static Item DeserializeItem(JSONNode _buf)
         {
-            return new Tables.Item(_buf);
+            return new Item(_buf);
         }
 
         /// <summary>

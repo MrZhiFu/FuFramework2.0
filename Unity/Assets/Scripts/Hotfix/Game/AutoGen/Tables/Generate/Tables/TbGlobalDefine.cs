@@ -16,7 +16,7 @@ namespace Hotfix.Game.Tables
     /// <summary>
     /// 全局常量定义表
     /// </summary>
-    public partial class TbGlobalDefine : BaseDataTable<Tables.GlobalDefine>
+    public partial class TbGlobalDefine : BaseDataTable<GlobalDefine>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbGlobalDefine(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,7 +31,7 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Tables.GlobalDefine _v;
+                GlobalDefine _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.PlayerInitialCoin, _v);

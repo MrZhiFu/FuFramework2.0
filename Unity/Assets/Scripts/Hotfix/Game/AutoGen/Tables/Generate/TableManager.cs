@@ -23,37 +23,37 @@ namespace Hotfix.Game.Tables
         /// <summary>
         /// 成就表
         /// </summary>
-        internal Tables.TbAchievement TbAchievement { private set; get; }
+        internal TbAchievement TbAchievement { private set; get; }
 
         /// <summary>
         /// 道具表
         /// </summary>
-        internal Tables.TbItem TbItem { private set; get; }
+        internal TbItem TbItem { private set; get; }
 
         /// <summary>
         /// 全局常量定义表
         /// </summary>
-        internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
+        internal TbGlobalDefine TbGlobalDefine { private set; get; }
 
         /// <summary>
         /// 声音表
         /// </summary>
-        internal Tables.TbSound TbSound { private set; get; }
+        internal TbSound TbSound { private set; get; }
 
         /// <summary>
         /// 红点配置表
         /// </summary>
-        internal Tables.TbRedDot TbRedDot { private set; get; }
+        internal TbRedDot TbRedDot { private set; get; }
 
         /// <summary>
         /// 声音组配置表
         /// </summary>
-        internal Tables.TbSoundGroup TbSoundGroup { private set; get; }
+        internal TbSoundGroup TbSoundGroup { private set; get; }
 
         /// <summary>
         /// 实体组配置表
         /// </summary>
-        internal Tables.TbEntityGroup TbEntityGroup { private set; get; }
+        internal TbEntityGroup TbEntityGroup { private set; get; }
 
         private ConfigModule m_ConfigModule;
 
@@ -81,42 +81,42 @@ namespace Hotfix.Game.Tables
             IsLoaded = false;
             m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-    
+
             TbLocalization = new TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
             m_ConfigModule.AddConfig(nameof(TbLocalization), TbLocalization);
 
-            TbAchievement = new Tables.TbAchievement(() => loader("tables_tbachievement"));
+            TbAchievement = new TbAchievement(() => loader("tables_tbachievement"));
             loadTasks.Add(TbAchievement.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbAchievement), TbAchievement);
+            m_ConfigModule.AddConfig(nameof(TbAchievement), TbAchievement);
 
-            TbItem = new Tables.TbItem(() => loader("tables_tbitem"));
+            TbItem = new TbItem(() => loader("tables_tbitem"));
             loadTasks.Add(TbItem.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbItem), TbItem);
+            m_ConfigModule.AddConfig(nameof(TbItem), TbItem);
 
-            TbGlobalDefine = new Tables.TbGlobalDefine(() => loader("tables_tbglobaldefine"));
+            TbGlobalDefine = new TbGlobalDefine(() => loader("tables_tbglobaldefine"));
             loadTasks.Add(TbGlobalDefine.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbGlobalDefine), TbGlobalDefine);
+            m_ConfigModule.AddConfig(nameof(TbGlobalDefine), TbGlobalDefine);
 
-            TbSound = new Tables.TbSound(() => loader("tables_tbsound"));
+            TbSound = new TbSound(() => loader("tables_tbsound"));
             loadTasks.Add(TbSound.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbSound), TbSound);
+            m_ConfigModule.AddConfig(nameof(TbSound), TbSound);
 
-            TbRedDot = new Tables.TbRedDot(() => loader("tables_tbreddot"));
+            TbRedDot = new TbRedDot(() => loader("tables_tbreddot"));
             loadTasks.Add(TbRedDot.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbRedDot), TbRedDot);
+            m_ConfigModule.AddConfig(nameof(TbRedDot), TbRedDot);
 
-            TbSoundGroup = new Tables.TbSoundGroup(() => loader("tables_tbsoundgroup"));
+            TbSoundGroup = new TbSoundGroup(() => loader("tables_tbsoundgroup"));
             loadTasks.Add(TbSoundGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbSoundGroup), TbSoundGroup);
+            m_ConfigModule.AddConfig(nameof(TbSoundGroup), TbSoundGroup);
 
-            TbEntityGroup = new Tables.TbEntityGroup(() => loader("tables_tbentitygroup"));
+            TbEntityGroup = new TbEntityGroup(() => loader("tables_tbentitygroup"));
             loadTasks.Add(TbEntityGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbEntityGroup), TbEntityGroup);
+            m_ConfigModule.AddConfig(nameof(TbEntityGroup), TbEntityGroup);
 
 
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
-    
+
             Refresh();
             IsLoaded = true;
         }
@@ -153,13 +153,13 @@ namespace Hotfix.Game.Tables
             TbSoundGroup.ResolveRef(this);
             TbEntityGroup.ResolveRef(this);
         }
-    
+
         public void Refresh()
         {
             PostInit();
             ResolveRef();
         }
-    
+
         partial void PostInit();
     }
 }

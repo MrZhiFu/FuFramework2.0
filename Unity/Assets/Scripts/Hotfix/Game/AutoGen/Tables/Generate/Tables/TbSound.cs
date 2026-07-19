@@ -16,7 +16,7 @@ namespace Hotfix.Game.Tables
     /// <summary>
     /// 声音表
     /// </summary>
-    public partial class TbSound : BaseDataTable<Tables.Sound>
+    public partial class TbSound : BaseDataTable<Sound>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbSound(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,7 +31,7 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Tables.Sound _v;
+                Sound _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Sound.DeserializeSound(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);

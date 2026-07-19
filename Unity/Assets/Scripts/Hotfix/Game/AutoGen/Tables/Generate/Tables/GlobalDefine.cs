@@ -33,7 +33,7 @@ namespace Hotfix.Game.Tables
 
         public static GlobalDefine DeserializeGlobalDefine(JSONNode _buf)
         {
-            return new Tables.GlobalDefine(_buf);
+            return new GlobalDefine(_buf);
         }
 
         /// <summary>

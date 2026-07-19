@@ -35,7 +35,7 @@ namespace Hotfix.Game.Tables
 
         public static Sound DeserializeSound(JSONNode _buf)
         {
-            return new Tables.Sound(_buf);
+            return new Sound(_buf);
         }
 
         /// <summary>

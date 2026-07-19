@@ -16,7 +16,7 @@ namespace Hotfix.Game.Tables
     /// <summary>
     /// 道具表
     /// </summary>
-    public partial class TbItem : BaseDataTable<Tables.Item>
+    public partial class TbItem : BaseDataTable<Item>
     {
         private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbItem(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
@@ -31,7 +31,7 @@ namespace Hotfix.Game.Tables
             StrKeyDataDict.Clear();
             foreach(var _ele in jsonNode.Children)
             {
-                Tables.Item _v;
+                Item _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Item.DeserializeItem(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add(_v.Id, _v);

@@ -41,7 +41,7 @@ namespace Hotfix.Game.Tables
 
         public static Achievement DeserializeAchievement(JSONNode _buf)
         {
-            return new Tables.Achievement(_buf);
+            return new Achievement(_buf);
         }
 
         /// <summary>
