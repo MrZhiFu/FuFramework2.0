@@ -10,6 +10,7 @@ xlsx → CSV 独立转换工具
     python xlsx2csv.py                          # 默认：Excels/ → Excels/CSV/
     python xlsx2csv.py --input ./Excels --output ./MyCSV
     python xlsx2csv.py --subdirs Tables,Local   # 只处理指定子目录
+    python xlsx2csv.py --replace                # 转换后用 CSV 替换原 xlsx，删除临时目录
 """
 
 import argparse
@@ -205,6 +206,11 @@ def main():
         default=None,
         help="要处理的子目录，逗号分隔 (默认: 输入目录下所有子目录)",
     )
+    parser.add_argument(
+        "--replace", "-r",
+        action="store_true",
+        help="用生成的 CSV 替换原 xlsx 文件，并删除临时输出目录",
+    )
     args = parser.parse_args()
 
     input_dir: Path = args.input.resolve()
@@ -231,6 +237,7 @@ def main():
 
     total_ok, total_fail, total_files = 0, 0, 0
     current_subdir = None
+    converted_xlsx = []  # 记录成功转换的 xlsx 路径
 
     for xlsx_path, output_dir in tasks:
         # 根目录文件用 "(根目录)" 标识
@@ -244,9 +251,45 @@ def main():
         total_ok += ok
         total_fail += fail
         total_files += 1
+        if fail == 0:
+            converted_xlsx.append(xlsx_path)
 
     print("\n" + "=" * 50)
     print(f"完成! 处理 {total_files} 个 xlsx 文件, {total_ok} 个 Sheet 成功, {total_fail} 个失败.")
+
+    # --replace: 用 CSV 替换原 xlsx
+    if args.replace and converted_xlsx:
+        if total_fail > 0:
+            print("[警告] 存在失败的 Sheet，仅替换完全成功转换的 xlsx 文件。")
+        print("\n替换 xlsx → CSV ...")
+        replaced = 0
+        for xlsx_path in converted_xlsx:
+            # 构造对应的 CSV 文件列表
+            xlsx_stem = xlsx_path.stem
+            is_root = xlsx_path.parent == input_dir
+            csv_dir = input_dir / args.output
+            if not is_root:
+                csv_dir = csv_dir / xlsx_path.parent.name
+
+            # 匹配该 xlsx 生成的所有 CSV
+            csv_files = sorted(csv_dir.glob(f"{xlsx_stem}*.csv"))
+            for cf in csv_files:
+                dest = xlsx_path.parent / cf.name
+                cf.replace(dest)
+                print(f"  {cf.name} → {xlsx_path.parent.name + '/' if not is_root else ''}{cf.name}")
+
+            # 删除原 xlsx
+            xlsx_path.unlink()
+            replaced += 1
+
+        # 删除临时输出目录
+        output_root = input_dir / args.output
+        if output_root.exists():
+            import shutil
+            shutil.rmtree(output_root)
+            print(f"\n已删除临时目录: {output_root}")
+
+        print(f"替换完成! {replaced} 个 xlsx → CSV.")
 
 
 if __name__ == "__main__":
