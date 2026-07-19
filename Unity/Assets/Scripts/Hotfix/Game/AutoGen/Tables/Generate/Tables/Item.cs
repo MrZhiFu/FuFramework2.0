@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 using Luban;
+using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -27,17 +28,18 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public Item(ByteBuf _buf) 
+        public Item(JSONNode _buf)
         {
-            Id = _buf.ReadInt();
-            Name = _buf.ReadString();
-            Desc = _buf.ReadString();
-            Icon = _buf.ReadString();
-            Bg = _buf.ReadString();
-            Quality = (EQuality)_buf.ReadInt();
-            Type = (ItemType)_buf.ReadInt();
-            SubType = (ItemSubType)_buf.ReadInt();
-            CanUse = (ItemUseType)_buf.ReadInt();
+            { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
+            { if(!_buf["name"].IsString) { throw new SerializationException(); }  Name = _buf["name"]; }
+            { if(!_buf["desc"].IsString) { throw new SerializationException(); }  Desc = _buf["desc"]; }
+            { if(!_buf["icon"].IsString) { throw new SerializationException(); }  Icon = _buf["icon"]; }
+            { if(!_buf["bg"].IsString) { throw new SerializationException(); }  Bg = _buf["bg"]; }
+            { if(!_buf["quality"].IsNumber) { throw new SerializationException(); }  Quality = (EQuality)_buf["quality"].AsInt; }
+            { if(!_buf["type"].IsNumber) { throw new SerializationException(); }  Type = (ItemType)_buf["type"].AsInt; }
+            { if(!_buf["sub_type"].IsNumber) { throw new SerializationException(); }  SubType = (ItemSubType)_buf["sub_type"].AsInt; }
+            { if(!_buf["can_use"].IsNumber) { throw new SerializationException(); }  CanUse = (ItemUseType)_buf["can_use"].AsInt; }
+
             // Localization Key Begin
             Name_Localization_Key = Name;
             Desc_Localization_Key = Desc;
@@ -45,7 +47,7 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public static Item DeserializeItem(ByteBuf _buf)
+        public static Item DeserializeItem(JSONNode _buf)
         {
             return new Tables.Item(_buf);
         }
@@ -61,7 +63,7 @@ namespace Hotfix.Game.Tables.Tables
         /// <summary>
         /// 名称 的多语言Key
         /// </summary>
-        public readonly string Name_Localization_Key;
+        private readonly string Name_Localization_Key;
         /// <summary>
         /// 描述
         /// </summary>
@@ -69,7 +71,7 @@ namespace Hotfix.Game.Tables.Tables
         /// <summary>
         /// 描述 的多语言Key
         /// </summary>
-        public readonly string Desc_Localization_Key;
+        private readonly string Desc_Localization_Key;
         /// <summary>
         /// 图标
         /// </summary>
@@ -108,7 +110,6 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
-            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -133,6 +134,5 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

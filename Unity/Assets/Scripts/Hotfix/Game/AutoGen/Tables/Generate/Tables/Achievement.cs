@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 using Luban;
+using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -23,13 +24,14 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public Achievement(ByteBuf _buf) 
+        public Achievement(JSONNode _buf)
         {
-            Id = _buf.ReadInt();
-            Icon = _buf.ReadString();
-            Name = _buf.ReadString();
-            Desc = _buf.ReadString();
-            {int n0 = _buf.ReadSize(); UnlockCondition = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); UnlockCondition.Add(_e0);}}
+            { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
+            { if(!_buf["icon"].IsString) { throw new SerializationException(); }  Icon = _buf["icon"]; }
+            { if(!_buf["name"].IsString) { throw new SerializationException(); }  Name = _buf["name"]; }
+            { if(!_buf["desc"].IsString) { throw new SerializationException(); }  Desc = _buf["desc"]; }
+            { var __json0 = _buf["unlock_condition"]; if(!__json0.IsArray) { throw new SerializationException(); } UnlockCondition = new System.Collections.Generic.List<int>(__json0.Count); foreach(JSONNode __e0 in __json0.Children) { int __v0;  { if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0; }  UnlockCondition.Add(__v0); }   }
+
             // Localization Key Begin
             Name_Localization_Key = Name;
             Desc_Localization_Key = Desc;
@@ -37,7 +39,7 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public static Achievement DeserializeAchievement(ByteBuf _buf)
+        public static Achievement DeserializeAchievement(JSONNode _buf)
         {
             return new Tables.Achievement(_buf);
         }
@@ -57,7 +59,7 @@ namespace Hotfix.Game.Tables.Tables
         /// <summary>
         /// 成就名称 的多语言Key
         /// </summary>
-        public readonly string Name_Localization_Key;
+        private readonly string Name_Localization_Key;
         /// <summary>
         /// 描述信息
         /// </summary>
@@ -65,7 +67,7 @@ namespace Hotfix.Game.Tables.Tables
         /// <summary>
         /// 描述信息 的多语言Key
         /// </summary>
-        public readonly string Desc_Localization_Key;
+        private readonly string Desc_Localization_Key;
         /// <summary>
         /// 成就解锁条件
         /// </summary>
@@ -80,7 +82,6 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
-            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -101,6 +102,5 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 using Luban;
+using SimpleJSON;
 using Hotfix.Framework.Config;
 
 namespace Hotfix.Game.Tables.Local
@@ -17,37 +18,33 @@ namespace Hotfix.Game.Tables.Local
     /// </summary>
     public partial class TbLocalization : BaseDataTable<Local.Localization>
     {
-        private readonly System.Func<System.Threading.Tasks.Task<ByteBuf>> _loadFunc;
-
-        public TbLocalization(System.Func<System.Threading.Tasks.Task<ByteBuf>> loadFunc)
+        private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
+        public TbLocalization(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
         {
             _loadFunc = loadFunc;
         }
-
         public override async System.Threading.Tasks.Task LoadAsync()
         {
-            ByteBuf _buf = await _loadFunc();
+            var jsonNode = await _loadFunc();
             DataList.Clear();
             LongKeyDataDict.Clear();
             StrKeyDataDict.Clear();
-            for(int n = _buf.ReadSize() ; n > 0 ; --n)
+            foreach(var _ele in jsonNode.Children)
             {
                 Local.Localization _v;
-                _v = global::Hotfix.Game.Tables.Local.Localization.DeserializeLocalization(_buf);
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Local.Localization.DeserializeLocalization(_ele);  }
                 DataList.Add(_v);
                 StrKeyDataDict.Add(_v.Key.ToString(), _v);
             }
             PostInit();
         }
-
-
+    
         public void ResolveRef(TableManager tables)
         {
             foreach(var value in DataList)
             {
                 value.ResolveRef(tables);
             }
-            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -59,7 +56,9 @@ namespace Hotfix.Game.Tables.Local
         }
 
 
+
+
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }
+

@@ -8,12 +8,13 @@
 //------------------------------------------------------------------------------
 
 using Luban;
+using SimpleJSON;
 
 namespace Hotfix.Game.Tables
 {
-/// <summary>
-/// 属性
-/// </summary>
+    /// <summary>
+    /// 属性
+    /// </summary>
     public sealed partial class Property : BeanBase
     {
         public Property(int PhysicalAttack, int MagicAttack, int PhysicalDefense, int MagicDefense, int Life, int Crit, int BurstDamage, int Precise, int Block) 
@@ -30,23 +31,24 @@ namespace Hotfix.Game.Tables
             PostInit();
         }
 
-        public Property(ByteBuf _buf) 
+        public Property(JSONNode _buf)
         {
-            PhysicalAttack = _buf.ReadInt();
-            MagicAttack = _buf.ReadInt();
-            PhysicalDefense = _buf.ReadInt();
-            MagicDefense = _buf.ReadInt();
-            Life = _buf.ReadInt();
-            Crit = _buf.ReadInt();
-            BurstDamage = _buf.ReadInt();
-            Precise = _buf.ReadInt();
-            Block = _buf.ReadInt();
+            { if(!_buf["PhysicalAttack"].IsNumber) { throw new SerializationException(); }  PhysicalAttack = _buf["PhysicalAttack"]; }
+            { if(!_buf["MagicAttack"].IsNumber) { throw new SerializationException(); }  MagicAttack = _buf["MagicAttack"]; }
+            { if(!_buf["PhysicalDefense"].IsNumber) { throw new SerializationException(); }  PhysicalDefense = _buf["PhysicalDefense"]; }
+            { if(!_buf["MagicDefense"].IsNumber) { throw new SerializationException(); }  MagicDefense = _buf["MagicDefense"]; }
+            { if(!_buf["Life"].IsNumber) { throw new SerializationException(); }  Life = _buf["Life"]; }
+            { if(!_buf["Crit"].IsNumber) { throw new SerializationException(); }  Crit = _buf["Crit"]; }
+            { if(!_buf["burstDamage"].IsNumber) { throw new SerializationException(); }  BurstDamage = _buf["burstDamage"]; }
+            { if(!_buf["precise"].IsNumber) { throw new SerializationException(); }  Precise = _buf["precise"]; }
+            { if(!_buf["block"].IsNumber) { throw new SerializationException(); }  Block = _buf["block"]; }
+
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static Property DeserializeProperty(ByteBuf _buf)
+        public static Property DeserializeProperty(JSONNode _buf)
         {
             return new Property(_buf);
         }
@@ -101,7 +103,6 @@ namespace Hotfix.Game.Tables
             
             
             
-            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -124,6 +125,5 @@ namespace Hotfix.Game.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

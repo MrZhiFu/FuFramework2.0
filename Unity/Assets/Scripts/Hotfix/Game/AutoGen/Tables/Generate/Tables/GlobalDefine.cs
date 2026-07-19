@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 using Luban;
+using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -20,16 +21,17 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public GlobalDefine(ByteBuf _buf) 
+        public GlobalDefine(JSONNode _buf)
         {
-            PlayerInitialCoin = _buf.ReadLong();
-            PlayerInitialHp = _buf.ReadInt();
+            { if(!_buf["player_initial_coin"].IsNumber) { throw new SerializationException(); }  PlayerInitialCoin = _buf["player_initial_coin"]; }
+            { if(!_buf["player_initial_hp"].IsNumber) { throw new SerializationException(); }  PlayerInitialHp = _buf["player_initial_hp"]; }
+
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static GlobalDefine DeserializeGlobalDefine(ByteBuf _buf)
+        public static GlobalDefine DeserializeGlobalDefine(JSONNode _buf)
         {
             return new Tables.GlobalDefine(_buf);
         }
@@ -49,7 +51,6 @@ namespace Hotfix.Game.Tables.Tables
         {
             
             
-            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -65,6 +66,5 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }
