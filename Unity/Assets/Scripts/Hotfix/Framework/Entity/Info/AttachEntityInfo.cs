@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace

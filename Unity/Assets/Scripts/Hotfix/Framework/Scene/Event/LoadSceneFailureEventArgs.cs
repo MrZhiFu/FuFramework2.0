@@ -1,4 +1,4 @@
-﻿using YooAsset;
+using YooAsset;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 

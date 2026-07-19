@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace 禁用命名空间检查
+// ReSharper disable once CheckNamespace 禁用命名空间检查
 
 namespace Hotfix.Framework.UI
 {

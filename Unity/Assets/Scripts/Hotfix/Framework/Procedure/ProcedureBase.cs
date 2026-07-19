@@ -1,4 +1,4 @@
-﻿using Hotfix.Framework.FSM;
+using Hotfix.Framework.FSM;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Procedure

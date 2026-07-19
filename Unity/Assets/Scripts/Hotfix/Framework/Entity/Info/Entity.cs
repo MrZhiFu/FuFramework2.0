@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;

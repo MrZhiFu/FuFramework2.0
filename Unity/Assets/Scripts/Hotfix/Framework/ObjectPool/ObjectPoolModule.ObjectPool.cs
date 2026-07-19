@@ -1,6 +1,5 @@
 using Hotfix.Framework.ReferencePools;
 using System;
-﻿using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;

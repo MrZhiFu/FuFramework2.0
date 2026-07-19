@@ -1,4 +1,4 @@
-﻿using Hotfix.Framework.Event;
+using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global

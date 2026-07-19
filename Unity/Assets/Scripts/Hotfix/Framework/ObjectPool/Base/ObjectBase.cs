@@ -1,5 +1,4 @@
 using System;
-﻿using System;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 

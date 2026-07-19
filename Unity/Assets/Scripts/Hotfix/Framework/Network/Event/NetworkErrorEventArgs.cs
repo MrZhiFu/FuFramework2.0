@@ -1,4 +1,4 @@
-﻿using System.Net.Sockets;
+using System.Net.Sockets;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 

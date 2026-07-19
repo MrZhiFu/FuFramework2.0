@@ -1,4 +1,4 @@
-﻿using YooAsset;
+using YooAsset;
 using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;

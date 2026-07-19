@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable StaticMemberInGenericType

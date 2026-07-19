@@ -1,4 +1,4 @@
-﻿using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event

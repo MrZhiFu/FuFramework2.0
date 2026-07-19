@@ -1,4 +1,4 @@
-﻿using Hotfix.Framework.Core;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network

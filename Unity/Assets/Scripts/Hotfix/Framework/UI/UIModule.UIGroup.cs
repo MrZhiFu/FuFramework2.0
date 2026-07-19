@@ -1,4 +1,4 @@
-﻿using FairyGUI;
+using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;

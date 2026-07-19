@@ -1,4 +1,4 @@
-﻿namespace Hotfix.Framework.TaskPool
+namespace Hotfix.Framework.TaskPool
 {
     /// <summary>
     /// 任务代理接口。

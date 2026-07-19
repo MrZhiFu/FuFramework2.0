@@ -1,4 +1,4 @@
-﻿using FairyGUI;
+using FairyGUI;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
 

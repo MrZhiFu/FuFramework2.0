@@ -1,4 +1,4 @@
-﻿using Hotfix.Framework.Core;
+using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 

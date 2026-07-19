@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 
