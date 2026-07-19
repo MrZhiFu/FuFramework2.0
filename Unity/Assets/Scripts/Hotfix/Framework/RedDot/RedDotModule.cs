@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 using AOT.Framework.Core.Log;
-using Hotfix.Game.UI;
 using Hotfix.Game.Tables;
-using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 
 namespace Hotfix.Framework.RedDot
@@ -44,41 +42,11 @@ namespace Hotfix.Framework.RedDot
         private static readonly Dictionary<string, RedDotNode> DynamicNodes = new();
 
         /// <summary>
-        /// 红点树是否已构建（延迟初始化，等待 ConfigModule 和配置表就绪）
-        /// </summary>
-        private bool _isTreeBuilt = false;
-
-        /// <summary>
-        /// 初始化（注册时调用，此时 ConfigModule 和配置表可能尚未就绪）
+        /// 初始化（注册时调用，从配置表构建红点树）
         /// </summary>
         protected internal override void OnInit()
         {
             Instance = this;
-        }
-
-        /// <summary>
-        /// 释放
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            foreach (var node in StaticNodes.Values)
-                ReferencePool.Release(node);
-            foreach (var node in DynamicNodes.Values)
-                ReferencePool.Release(node);
-
-            StaticNodes.Clear();
-            DynamicNodes.Clear();
-            _isTreeBuilt = false;
-            Instance = null;
-        }
-
-        /// <summary>
-        /// 确保红点树已构建（延迟初始化，首次访问时从配置表构建）
-        /// </summary>
-        private void EnsureTreeBuilt()
-        {
-            if (_isTreeBuilt) return;
-            _isTreeBuilt = true;
 
             var tbRedDot = ConfigModule.Instance?.GetConfig<TbRedDot>();
             if (tbRedDot == null || tbRedDot.Count == 0)
@@ -112,13 +80,34 @@ namespace Hotfix.Framework.RedDot
 
                 if (!StaticNodes.TryGetValue(row.Id, out var child) ||
                     !StaticNodes.TryGetValue(parentKey, out var parent))
+                {
                     continue;
+                }
 
                 child.SetParent(parent);
                 parent.AddChild(child);
             }
 
             FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {StaticNodes.Count}");
+        }
+
+        /// <summary>
+        /// 释放
+        /// </summary>
+        protected internal override void OnDispose()
+        {
+            foreach (var node in StaticNodes.Values)
+            {
+                ReferencePool.Release(node);
+            }
+            foreach (var node in DynamicNodes.Values)
+            {
+                ReferencePool.Release(node);
+            }
+
+            StaticNodes.Clear();
+            DynamicNodes.Clear();
+            Instance = null;
         }
 
         #region 动态节点
@@ -131,8 +120,6 @@ namespace Hotfix.Framework.RedDot
         /// <returns>创建的动态节点，父节点不存在时返回 null</returns>
         public RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(parentKey, out var parentNode))
             {
                 FuLogger.LogError($"[RedDotModule] 父节点不存在: {parentKey}");
@@ -160,8 +147,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="key">红点节点 Key</param>
         public void TryAutoClean(ERedDotKey key)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node)) return;
             if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
             CleanNodeRecursive(node);
@@ -189,8 +174,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="immediateNotify">是否立即通知当前状态</param>
         public void Register(ERedDotKey key, Action<int> onChange, bool immediateNotify = true)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogWarning($"[RedDotModule] 注册监听时未找到静态节点: {key}");
@@ -210,8 +193,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="onChange">节点状态变化的回调函数</param>
         public void Unregister(ERedDotKey key, Action<int> onChange)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node)) return;
             node.OnCountChanged -= onChange;
         }
@@ -220,31 +201,19 @@ namespace Hotfix.Framework.RedDot
         /// 获取节点
         /// </summary>
         /// <param name="key">节点的 Key</param>
-        public RedDotNode GetNode(ERedDotKey key)
-        {
-            EnsureTreeBuilt();
-            return StaticNodes.GetValueOrDefault(key);
-        }
+        public RedDotNode GetNode(ERedDotKey key) => StaticNodes.GetValueOrDefault(key);
 
         /// <summary>
         /// 获取节点的红点数量
         /// </summary>
         /// <param name="key">节点的 Key</param>
-        public int GetCount(ERedDotKey key)
-        {
-            EnsureTreeBuilt();
-            return StaticNodes.TryGetValue(key, out var node) ? node.TotalCount : 0;
-        }
+        public int GetCount(ERedDotKey key) => StaticNodes.TryGetValue(key, out var node) ? node.TotalCount : 0;
 
         /// <summary>
         /// 是否存在节点
         /// </summary>
         /// <param name="key">节点的 Key</param>
-        public bool HasNode(ERedDotKey key)
-        {
-            EnsureTreeBuilt();
-            return StaticNodes.ContainsKey(key);
-        }
+        public bool HasNode(ERedDotKey key) => StaticNodes.ContainsKey(key);
 
         /// <summary>
         /// 设置节点的红点数量
@@ -253,8 +222,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="count">红点数量</param>
         public void SetCount(ERedDotKey key, int count)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogWarning($"[RedDotModule] SetCount 未找到静态节点: {key}");
@@ -271,8 +238,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="value">递增的数量</param>
         public void AddCount(ERedDotKey key, int value = 1)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node)) return;
             node.SetCount(node.RawCount + value);
         }
@@ -284,8 +249,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="value">递减的数量</param>
         public void SubCount(ERedDotKey key, int value = 1)
         {
-            EnsureTreeBuilt();
-
             if (!StaticNodes.TryGetValue(key, out var node)) return;
             node.SetCount(Math.Max(0, node.RawCount - value));
         }
@@ -294,11 +257,7 @@ namespace Hotfix.Framework.RedDot
         /// 重置节点的红点数量为 0
         /// </summary>
         /// <param name="key">节点的 Key</param>
-        public void ResetCount(ERedDotKey key)
-        {
-            EnsureTreeBuilt();
-            SetCount(key, 0);
-        }
+        public void ResetCount(ERedDotKey key) => SetCount(key, 0);
 
         #endregion
 
@@ -312,8 +271,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="immediateNotify">是否立即通知当前状态</param>
         public void Register(string key, Action<int> onChange, bool immediateNotify = true)
         {
-            EnsureTreeBuilt();
-
             if (!DynamicNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogWarning($"[RedDotModule] 注册监听时未找到动态节点: {key}");
@@ -333,8 +290,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="onChange">节点状态变化的回调函数</param>
         public void Unregister(string key, Action<int> onChange)
         {
-            EnsureTreeBuilt();
-
             if (!DynamicNodes.TryGetValue(key, out var node)) return;
             node.OnCountChanged -= onChange;
         }
@@ -344,8 +299,6 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void UnregisterAll(string key)
         {
-            EnsureTreeBuilt();
-
             if (DynamicNodes.TryGetValue(key, out var node))
             {
                 node.ClearAllListeners();
@@ -356,31 +309,19 @@ namespace Hotfix.Framework.RedDot
         /// 获取动态节点
         /// </summary>
         /// <param name="key">动态节点的 Key</param>
-        public RedDotNode GetNode(string key)
-        {
-            EnsureTreeBuilt();
-            return DynamicNodes.GetValueOrDefault(key);
-        }
+        public RedDotNode GetNode(string key) => DynamicNodes.GetValueOrDefault(key);
 
         /// <summary>
         /// 获取动态节点的红点数量
         /// </summary>
         /// <param name="key">动态节点的 Key</param>
-        public int GetCount(string key)
-        {
-            EnsureTreeBuilt();
-            return DynamicNodes.TryGetValue(key, out var node) ? node.TotalCount : 0;
-        }
+        public int GetCount(string key) => DynamicNodes.TryGetValue(key, out var node) ? node.TotalCount : 0;
 
         /// <summary>
         /// 是否存在动态节点
         /// </summary>
         /// <param name="key">动态节点的 Key</param>
-        public bool HasNode(string key)
-        {
-            EnsureTreeBuilt();
-            return DynamicNodes.ContainsKey(key);
-        }
+        public bool HasNode(string key) => DynamicNodes.ContainsKey(key);
 
         /// <summary>
         /// 设置动态节点的红点数量
@@ -390,8 +331,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="count">红点数量</param>
         public void SetCount(string key, int count)
         {
-            EnsureTreeBuilt();
-
             if (!DynamicNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogWarning($"[RedDotModule] SetCount 未找到动态节点: {key}");
@@ -416,8 +355,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="value">递增的数量</param>
         public void AddCount(string key, int value = 1)
         {
-            EnsureTreeBuilt();
-
             if (!DynamicNodes.TryGetValue(key, out var node)) return;
             node.SetCount(node.RawCount + value);
         }
@@ -429,8 +366,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="value">递减的数量</param>
         public void SubCount(string key, int value = 1)
         {
-            EnsureTreeBuilt();
-
             if (!DynamicNodes.TryGetValue(key, out var node)) return;
             node.SetCount(Math.Max(0, node.RawCount - value));
         }
@@ -441,7 +376,6 @@ namespace Hotfix.Framework.RedDot
         /// <param name="key">动态节点的 Key</param>
         public void ResetCount(string key)
         {
-            EnsureTreeBuilt();
             SetCount(key, 0);
         }
 
@@ -454,12 +388,14 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void ClearAllListeners()
         {
-            EnsureTreeBuilt();
-
             foreach (var node in StaticNodes.Values)
+            {
                 node.ClearAllListeners();
+            }
             foreach (var node in DynamicNodes.Values)
+            {
                 node.ClearAllListeners();
+            }
         }
 
         #endregion
