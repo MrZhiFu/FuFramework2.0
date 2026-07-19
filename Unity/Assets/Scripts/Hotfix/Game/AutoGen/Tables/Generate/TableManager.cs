@@ -7,54 +7,45 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using Luban;
 using System;
-using SimpleJSON;
 using Hotfix.Framework.Config;
 namespace Hotfix.Game.Tables
 {
     public partial class TableManager
     {
-
         /// <summary>
         /// 本地化多语言表
         /// </summary>
         internal Local.TbLocalization TbLocalization { private set; get; }
-
         /// <summary>
         /// 成就表
         /// </summary>
         internal Tables.TbAchievement TbAchievement { private set; get; }
-
         /// <summary>
         /// 道具表
         /// </summary>
         internal Tables.TbItem TbItem { private set; get; }
-
         /// <summary>
         /// 实体组配置表
         /// </summary>
         internal Tables.TbEntityGroup TbEntityGroup { private set; get; }
-
         /// <summary>
         /// 全局常量定义表
         /// </summary>
         internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
-
         /// <summary>
         /// 红点表
         /// </summary>
         internal Tables.TbRedDot TbRedDot { private set; get; }
-
         /// <summary>
         /// 声音表
         /// </summary>
         internal Tables.TbSound TbSound { private set; get; }
-
         /// <summary>
         /// 声音组配置表
         /// </summary>
         internal Tables.TbSoundGroup TbSoundGroup { private set; get; }
-
         private ConfigModule m_ConfigModule;
 
         public void Init(ConfigModule configModule)
@@ -72,7 +63,7 @@ namespace Hotfix.Game.Tables
         /// 异步加载配置文件
         /// </summary>
         /// <param name="loader">加载器</param>
-        public async System.Threading.Tasks.Task LoadAsync(System.Func<string, System.Threading.Tasks.Task<JSONNode>> loader)
+        public async System.Threading.Tasks.Task LoadAsync(System.Func<string, System.Threading.Tasks.Task<ByteBuf>> loader)
         {
             if (IsLoaded)
             {
@@ -81,7 +72,7 @@ namespace Hotfix.Game.Tables
             IsLoaded = false;
             m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-    
+
             TbLocalization = new Local.TbLocalization(() => loader("local_tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Local.TbLocalization), TbLocalization);
@@ -114,9 +105,9 @@ namespace Hotfix.Game.Tables
             loadTasks.Add(TbSoundGroup.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbSoundGroup), TbSoundGroup);
 
-    
+
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
-    
+
             Refresh();
             IsLoaded = true;
         }
@@ -152,14 +143,16 @@ namespace Hotfix.Game.Tables
             TbRedDot.ResolveRef(this);
             TbSound.ResolveRef(this);
             TbSoundGroup.ResolveRef(this);
+            PostResolveRef();
         }
-    
+
         public void Refresh()
         {
             PostInit();
             ResolveRef();
         }
-    
+
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

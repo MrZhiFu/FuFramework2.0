@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Local
 {
@@ -34,30 +33,29 @@ namespace Hotfix.Game.Tables.Local
             PostInit();
         }
 
-        public Localization(JSONNode _buf)
+        public Localization(ByteBuf _buf) 
         {
-            { if(!_buf["key"].IsString) { throw new SerializationException(); }  Key = _buf["key"]; }
-            { if(!_buf["ChineseSimplified"].IsString) { throw new SerializationException(); }  ChineseSimplified = _buf["ChineseSimplified"]; }
-            { if(!_buf["ChineseTraditional"].IsString) { throw new SerializationException(); }  ChineseTraditional = _buf["ChineseTraditional"]; }
-            { if(!_buf["English"].IsString) { throw new SerializationException(); }  English = _buf["English"]; }
-            { if(!_buf["Japanese"].IsString) { throw new SerializationException(); }  Japanese = _buf["Japanese"]; }
-            { if(!_buf["Korean"].IsString) { throw new SerializationException(); }  Korean = _buf["Korean"]; }
-            { if(!_buf["Thai"].IsString) { throw new SerializationException(); }  Thai = _buf["Thai"]; }
-            { if(!_buf["Indonesian"].IsString) { throw new SerializationException(); }  Indonesian = _buf["Indonesian"]; }
-            { if(!_buf["French"].IsString) { throw new SerializationException(); }  French = _buf["French"]; }
-            { if(!_buf["German"].IsString) { throw new SerializationException(); }  German = _buf["German"]; }
-            { if(!_buf["Russian"].IsString) { throw new SerializationException(); }  Russian = _buf["Russian"]; }
-            { if(!_buf["Italian"].IsString) { throw new SerializationException(); }  Italian = _buf["Italian"]; }
-            { if(!_buf["PortuguesePortugal"].IsString) { throw new SerializationException(); }  PortuguesePortugal = _buf["PortuguesePortugal"]; }
-            { if(!_buf["Spanish"].IsString) { throw new SerializationException(); }  Spanish = _buf["Spanish"]; }
-            { if(!_buf["Vietnamese"].IsString) { throw new SerializationException(); }  Vietnamese = _buf["Vietnamese"]; }
-
+            Key = _buf.ReadString();
+            ChineseSimplified = _buf.ReadString();
+            ChineseTraditional = _buf.ReadString();
+            English = _buf.ReadString();
+            Japanese = _buf.ReadString();
+            Korean = _buf.ReadString();
+            Thai = _buf.ReadString();
+            Indonesian = _buf.ReadString();
+            French = _buf.ReadString();
+            German = _buf.ReadString();
+            Russian = _buf.ReadString();
+            Italian = _buf.ReadString();
+            PortuguesePortugal = _buf.ReadString();
+            Spanish = _buf.ReadString();
+            Vietnamese = _buf.ReadString();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static Localization DeserializeLocalization(JSONNode _buf)
+        public static Localization DeserializeLocalization(ByteBuf _buf)
         {
             return new Local.Localization(_buf);
         }
@@ -142,6 +140,7 @@ namespace Hotfix.Game.Tables.Local
             
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -170,5 +169,6 @@ namespace Hotfix.Game.Tables.Local
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

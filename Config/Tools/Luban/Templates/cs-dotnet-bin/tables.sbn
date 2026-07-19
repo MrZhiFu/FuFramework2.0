@@ -1,5 +1,5 @@
 using System;
-using FuFramework.Core.Config;
+using Hotfix.Framework.Config;
 
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}

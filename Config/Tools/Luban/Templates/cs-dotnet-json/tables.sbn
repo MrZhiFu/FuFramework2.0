@@ -1,6 +1,6 @@
 using System.Text.Json;
-using FuFramework.Core.Config;
-using FuFramework.Config;
+using Hotfix.Framework.Config;
+using Hotfix.Framework.Config;
 
 {{namespace_with_grace_begin __namespace}}
     public partial class {{__name}}

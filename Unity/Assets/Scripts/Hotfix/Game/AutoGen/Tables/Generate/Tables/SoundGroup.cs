@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -24,20 +23,19 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public SoundGroup(JSONNode _buf)
+        public SoundGroup(ByteBuf _buf) 
         {
-            { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (ESoundGroup)_buf["Id"].AsInt; }
-            { if(!_buf["Mute"].IsBoolean) { throw new SerializationException(); }  Mute = _buf["Mute"]; }
-            { if(!_buf["Volume"].IsNumber) { throw new SerializationException(); }  Volume = _buf["Volume"]; }
-            { if(!_buf["AgentCount"].IsNumber) { throw new SerializationException(); }  AgentCount = _buf["AgentCount"]; }
-            { if(!_buf["AllowBeReplacedBySamePriority"].IsBoolean) { throw new SerializationException(); }  AllowBeReplacedBySamePriority = _buf["AllowBeReplacedBySamePriority"]; }
-
+            Id = (ESoundGroup)_buf.ReadInt();
+            Mute = _buf.ReadBool();
+            Volume = _buf.ReadFloat();
+            AgentCount = _buf.ReadInt();
+            AllowBeReplacedBySamePriority = _buf.ReadBool();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static SoundGroup DeserializeSoundGroup(JSONNode _buf)
+        public static SoundGroup DeserializeSoundGroup(ByteBuf _buf)
         {
             return new Tables.SoundGroup(_buf);
         }
@@ -72,6 +70,7 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -90,5 +89,6 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -24,20 +23,19 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public EntityGroup(JSONNode _buf)
+        public EntityGroup(ByteBuf _buf) 
         {
-            { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (EEntityGroup)_buf["Id"].AsInt; }
-            { if(!_buf["InstanceAutoReleaseInterval"].IsNumber) { throw new SerializationException(); }  InstanceAutoReleaseInterval = _buf["InstanceAutoReleaseInterval"]; }
-            { if(!_buf["InstanceCapacity"].IsNumber) { throw new SerializationException(); }  InstanceCapacity = _buf["InstanceCapacity"]; }
-            { if(!_buf["InstanceExpireTime"].IsNumber) { throw new SerializationException(); }  InstanceExpireTime = _buf["InstanceExpireTime"]; }
-            { if(!_buf["InstancePriority"].IsNumber) { throw new SerializationException(); }  InstancePriority = _buf["InstancePriority"]; }
-
+            Id = (EEntityGroup)_buf.ReadInt();
+            InstanceAutoReleaseInterval = _buf.ReadFloat();
+            InstanceCapacity = _buf.ReadInt();
+            InstanceExpireTime = _buf.ReadFloat();
+            InstancePriority = _buf.ReadInt();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static EntityGroup DeserializeEntityGroup(JSONNode _buf)
+        public static EntityGroup DeserializeEntityGroup(ByteBuf _buf)
         {
             return new Tables.EntityGroup(_buf);
         }
@@ -72,6 +70,7 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -90,5 +89,6 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

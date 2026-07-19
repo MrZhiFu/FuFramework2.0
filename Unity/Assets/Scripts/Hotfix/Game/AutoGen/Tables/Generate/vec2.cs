@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables
 {
@@ -21,17 +20,16 @@ namespace Hotfix.Game.Tables
             PostInit();
         }
 
-        public vec2(JSONNode _buf)
+        public vec2(ByteBuf _buf) 
         {
-            { if(!_buf["x"].IsNumber) { throw new SerializationException(); }  X = _buf["x"]; }
-            { if(!_buf["y"].IsNumber) { throw new SerializationException(); }  Y = _buf["y"]; }
-
+            X = _buf.ReadFloat();
+            Y = _buf.ReadFloat();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static vec2 Deserializevec2(JSONNode _buf)
+        public static vec2 Deserializevec2(ByteBuf _buf)
         {
             return new vec2(_buf);
         }
@@ -43,6 +41,7 @@ namespace Hotfix.Game.Tables
         {
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -58,5 +57,6 @@ namespace Hotfix.Game.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

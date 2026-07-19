@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -22,18 +21,17 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public Sound(JSONNode _buf)
+        public Sound(ByteBuf _buf) 
         {
-            { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = _buf["id"]; }
-            { if(!_buf["groupName"].IsString) { throw new SerializationException(); }  GroupName = _buf["groupName"]; }
-            { if(!_buf["path"].IsString) { throw new SerializationException(); }  Path = _buf["path"]; }
-
+            Id = _buf.ReadInt();
+            GroupName = _buf.ReadString();
+            Path = _buf.ReadString();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static Sound DeserializeSound(JSONNode _buf)
+        public static Sound DeserializeSound(ByteBuf _buf)
         {
             return new Tables.Sound(_buf);
         }
@@ -58,6 +56,7 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -74,5 +73,6 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

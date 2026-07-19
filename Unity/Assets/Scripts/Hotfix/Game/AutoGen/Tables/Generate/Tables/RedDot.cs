@@ -8,7 +8,6 @@
 //------------------------------------------------------------------------------
 
 using Luban;
-using SimpleJSON;
 
 namespace Hotfix.Game.Tables.Tables
 {
@@ -23,19 +22,18 @@ namespace Hotfix.Game.Tables.Tables
             PostInit();
         }
 
-        public RedDot(JSONNode _buf)
+        public RedDot(ByteBuf _buf) 
         {
-            { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (ERedDotKey)_buf["Id"].AsInt; }
-            { var _j = _buf["ParentId"]; if (_j.Tag != JSONNodeType.None && _j.Tag != JSONNodeType.NullValue) { { if(!_j.IsNumber) { throw new SerializationException(); }  ParentId = (ERedDotKey?)_j.AsInt; } } else { ParentId = null; } }
-            { if(!_buf["DisplayMode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)_buf["DisplayMode"].AsInt; }
-            { if(!_buf["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["CleanStrategy"].AsInt; }
-
+            Id = (ERedDotKey)_buf.ReadInt();
+            if(_buf.ReadBool()){ ParentId = (ERedDotKey)_buf.ReadInt(); } else { ParentId = null; }
+            DisplayMode = (ERedDotDisplayMode)_buf.ReadInt();
+            CleanStrategy = (ERedDotCleanStrategy)_buf.ReadInt();
             // Localization Key Begin
             // Localization Key End
             PostInit();
         }
 
-        public static RedDot DeserializeRedDot(JSONNode _buf)
+        public static RedDot DeserializeRedDot(ByteBuf _buf)
         {
             return new Tables.RedDot(_buf);
         }
@@ -65,6 +63,7 @@ namespace Hotfix.Game.Tables.Tables
             
             
             
+            PostResolveRef();
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -82,5 +81,6 @@ namespace Hotfix.Game.Tables.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

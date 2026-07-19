@@ -1,4 +1,4 @@
-using FuFramework.Core.Config;
+using Hotfix.Framework.Config;
 {{
     key_type = __table.key_ttype
     value_type =  __table.value_ttype
