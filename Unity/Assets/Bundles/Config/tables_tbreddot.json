@@ -1,0 +1,70 @@
+[
+  {
+    "Id": 1000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 1001,
+    "ParentId": 1000,
+    "DisplayMode": 1,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 1002,
+    "ParentId": 1000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 2000,
+    "DisplayMode": 1,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 2001,
+    "ParentId": 2000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 2002,
+    "ParentId": 2000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 3000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 3001,
+    "ParentId": 3000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 3002,
+    "ParentId": 3000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 3003,
+    "ParentId": 3000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 4000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  },
+  {
+    "Id": 4001,
+    "ParentId": 4000,
+    "DisplayMode": 0,
+    "CleanStrategy": 0
+  }
+]

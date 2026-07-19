@@ -14,16 +14,15 @@ using Hotfix.ModuleConfig;
 namespace Hotfix.Config.Tables
 {
     /// <summary>
-    /// 红点配置表
+    /// 红点表
     /// </summary>
     public partial class TbRedDot : BaseDataTable<Tables.RedDot>
     {
-        private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;
+        private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbRedDot(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
         {
             _loadFunc = loadFunc;
         }
-
         public override async System.Threading.Tasks.Task LoadAsync()
         {
             var jsonNode = await _loadFunc();
@@ -35,12 +34,12 @@ namespace Hotfix.Config.Tables
                 Tables.RedDot _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Config.Tables.RedDot.DeserializeRedDot(_ele);  }
                 DataList.Add(_v);
-                LongKeyDataDict.Add((int)_v.Id, _v);
-                StrKeyDataDict.Add(((int)_v.Id).ToString(), _v);
+                LongKeyDataDict.Add((long)_v.Id, _v);
+                StrKeyDataDict.Add(_v.Id.ToString(), _v);
             }
             PostInit();
         }
-
+    
         public void ResolveRef(TableManager tables)
         {
             foreach(var value in DataList)
@@ -57,6 +56,10 @@ namespace Hotfix.Config.Tables
             }
         }
 
+
+
+
         partial void PostInit();
     }
 }
+

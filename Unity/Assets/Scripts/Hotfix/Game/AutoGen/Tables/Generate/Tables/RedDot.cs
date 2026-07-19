@@ -14,7 +14,7 @@ namespace Hotfix.Config.Tables
 {
     public sealed partial class RedDot : BeanBase
     {
-        public RedDot(ERedDotKey Id, int? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy)
+        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy) 
         {
             this.Id = Id;
             this.ParentId = ParentId;
@@ -25,10 +25,13 @@ namespace Hotfix.Config.Tables
 
         public RedDot(JSONNode _buf)
         {
-            { if(!_buf["id"].IsNumber) { throw new SerializationException(); }  Id = (ERedDotKey)_buf["id"].AsInt; }
-            { if(_buf["parent_id"].IsNull) { ParentId = null; } else { if(!_buf["parent_id"].IsNumber) { throw new SerializationException(); }  ParentId = _buf["parent_id"]; } }
-            { if(!_buf["display_mode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)_buf["display_mode"].AsInt; }
-            { if(!_buf["clean_strategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["clean_strategy"].AsInt; }
+            { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (ERedDotKey)_buf["Id"].AsInt; }
+            { var _j = _buf["ParentId"]; if (_j.Tag != JSONNodeType.None && _j.Tag != JSONNodeType.NullValue) { { if(!_j.IsNumber) { throw new SerializationException(); }  ParentId = (ERedDotKey?)_j.AsInt; } } else { ParentId = null; } }
+            { if(!_buf["DisplayMode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)_buf["DisplayMode"].AsInt; }
+            { if(!_buf["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["CleanStrategy"].AsInt; }
+
+            // Localization Key Begin
+            // Localization Key End
             PostInit();
         }
 
@@ -38,27 +41,30 @@ namespace Hotfix.Config.Tables
         }
 
         /// <summary>
-        /// 节点唯一标识
+        /// 节点ID
         /// </summary>
         public ERedDotKey Id { private set; get; }
         /// <summary>
-        /// 父节点 Id，可空表示根节点
+        /// 父节点ID(空=根节点)
         /// </summary>
-        public int? ParentId { private set; get; }
+        public ERedDotKey? ParentId { private set; get; }
         /// <summary>
-        /// 默认显示模式
+        /// 显示模式
         /// </summary>
         public ERedDotDisplayMode DisplayMode { private set; get; }
         /// <summary>
         /// 清理策略
         /// </summary>
         public ERedDotCleanStrategy CleanStrategy { private set; get; }
-
-        public const int __ID__ = 1914332800;
+        public const int __ID__ = 2013705889;
         public override int GetTypeId() => __ID__;
 
-        public void ResolveRef(TableManager tables)
+        public  void ResolveRef(TableManager tables)
         {
+            
+            
+            
+            
         }
 
         public void TranslateText(System.Func<string, string, string> translator)
@@ -68,10 +74,10 @@ namespace Hotfix.Config.Tables
         public override string ToString()
         {
             return "{ "
-            + "id:" + Id + ","
-            + "parentId:" + ParentId + ","
-            + "displayMode:" + DisplayMode + ","
-            + "cleanStrategy:" + CleanStrategy + ","
+            + "Id:" + Id + ","
+            + "ParentId:" + ParentId + ","
+            + "DisplayMode:" + DisplayMode + ","
+            + "CleanStrategy:" + CleanStrategy + ","
             + "}";
         }
 
