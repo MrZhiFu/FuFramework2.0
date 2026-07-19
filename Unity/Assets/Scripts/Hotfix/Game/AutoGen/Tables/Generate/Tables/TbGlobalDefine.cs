@@ -34,7 +34,7 @@ namespace Hotfix.Game.Tables.Tables
                 Tables.GlobalDefine _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Tables.GlobalDefine.DeserializeGlobalDefine(_ele);  }
                 DataList.Add(_v);
-                LongKeyDataDict.Add(_v.PlayerInitialCoin, _v);
+                LongKeyDataDict.Add((int)_v.PlayerInitialCoin, _v);
                 StrKeyDataDict.Add(_v.PlayerInitialCoin.ToString(), _v);
             }
             PostInit();
