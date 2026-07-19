@@ -4,8 +4,8 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime.Entity;
-using AOT.Framework.ModuleSetting.Runtime;
+using Hotfix.Framework.Config;
+using EntityGroupCfg = Hotfix.Game.Tables.Tables.EntityGroup;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;
@@ -125,12 +125,18 @@ namespace Hotfix.Framework.Entity
             var entityHelper = entityHelperGo.AddComponent<EntityHelper>();
             m_EntityHelper = entityHelper;
 
-            // 获取所有实体组配置，并创建添加实体组
-            var setting = ModuleSetting.Instance.EntitySetting;
-            foreach (var entityGroup in setting.AllGroups)
+            // 获取实体组配置表，并创建添加实体组
+            var tbEntityGroup = ConfigModule.Instance.GetConfig<TbEntityGroup>();
+            if (tbEntityGroup == null || tbEntityGroup.Count == 0)
             {
-                if (AddEntityGroup(entityGroup)) continue;
-                FuLogger.LogWarning($"[EntityModule] 添加实体组 '{entityGroup.Name}' 失败.");
+                FuLogger.LogFatal("[EntityModule] 实体组配置表未加载，EntityModule 初始化失败!");
+                return;
+            }
+
+            foreach (var row in tbEntityGroup.All)
+            {
+                if (AddEntityGroup(row)) continue;
+                FuLogger.LogWarning($"[EntityModule] 添加实体组 '{row.Id}' 失败.");
             }
         }
 
@@ -242,21 +248,22 @@ namespace Hotfix.Framework.Entity
         /// </summary>
         /// <param name="entityGroupSetting">实体组信息配置。</param>
         /// <returns>是否增加实体组成功。</returns>
-        public bool AddEntityGroup(EntityGroupInfo entityGroupSetting)
+        public bool AddEntityGroup(EntityGroupCfg row)
         {
             if (m_ObjectPoolModule is null) throw new InvalidOperationException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
 
-            if (HasEntityGroup(entityGroupSetting.Name))
+            var groupName = row.Id.ToString();
+            if (HasEntityGroup(groupName))
             {
-                FuLogger.LogWarning($"[EntityModule] 添加实体组'{entityGroupSetting.Name}'失败, 实体组已存在.");
+                FuLogger.LogWarning($"[EntityModule] 添加实体组'{groupName}'失败, 实体组已存在.");
                 return false;
             }
 
-            var entityGroupGo = new GameObject($"Entity Group - {entityGroupSetting.Name}");
+            var entityGroupGo = new GameObject($"Entity Group - {groupName}");
             entityGroupGo.transform.SetParent(m_InstanceRoot);
             entityGroupGo.transform.localScale = Vector3.one;
-            var entityGroup = new EntityGroup(entityGroupSetting, entityGroupGo, m_ObjectPoolModule);
-            m_EntityGroupDict.Add(entityGroupSetting.Name, entityGroup);
+            var entityGroup = new EntityGroup(row, entityGroupGo, m_ObjectPoolModule);
+            m_EntityGroupDict.Add(groupName, entityGroup);
 
             return true;
         }

@@ -2,8 +2,7 @@ using System;
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime.Entity;
-using AOT.Framework.ModuleSetting.Runtime;
+using EntityGroupCfg = Hotfix.Game.Tables.Tables.EntityGroup;
 using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
@@ -90,17 +89,17 @@ namespace Hotfix.Framework.Entity
         /// <param name="groupSetting">实体组设置。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
         /// <param name="objectPoolModule">对象池管理模块。</param>
-        public EntityGroup(EntityGroupInfo groupSetting, GameObject groupGo, ObjectPoolModule objectPoolModule)
+        public EntityGroup(EntityGroupCfg row, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
-            if (groupSetting is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
+            if (row is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
             if (groupGo is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
-            Name    = groupSetting.Name;
+            Name    = row.Id.ToString();
             GroupGo = groupGo;
 
             var poolName = $"Entity Instance Pool ({Name})";
-            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, groupSetting.InstanceCapacity, groupSetting.InstanceExpireTime, groupSetting.InstancePriority);
-            m_InstancePool.AutoReleaseInterval = groupSetting.InstanceAutoReleaseInterval;
+            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, row.InstanceCapacity, row.InstanceExpireTime, row.InstancePriority);
+            m_InstancePool.AutoReleaseInterval = row.InstanceAutoReleaseInterval;
 
             m_Entities   = new FuLinkedList<Entity>();
             m_CachedNode = null;
