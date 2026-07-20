@@ -15,7 +15,7 @@ namespace FuFramework.ProtoExport
             sb.AppendLine("using System;");
             sb.AppendLine("using ProtoBuf;");
             sb.AppendLine("using System.Collections.Generic;");
-            sb.AppendLine("using FuFramework.Network.Runtime;");
+            sb.AppendLine("using Hotfix.Framework.Network;");
 
             sb.AppendLine();
             sb.AppendLine($"namespace {namespaceName}");
