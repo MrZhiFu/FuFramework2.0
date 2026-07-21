@@ -105,7 +105,7 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public void PauseGame()
         {
-            ModuleSetting.Instance.PauseGame();
+            GameSetting.Instance.PauseGame();
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public void ResumeGame()
         {
-            ModuleSetting.Instance.ResumeGame();
+            GameSetting.Instance.ResumeGame();
         }
 
         /// <summary>

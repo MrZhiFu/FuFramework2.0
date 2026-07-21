@@ -49,7 +49,7 @@ namespace AOT.Bootstrap
         /// </summary>
         public static async UniTask InitPackageAsync(string url = null, string backupUrl = null)
         {
-            var assetSetting = ModuleSetting.Instance.AssetSetting;
+            var assetSetting = GameSetting.Instance.AssetSetting;
 
             PlayMode            = assetSetting.PlayMode;
             DefaultPackageName  = assetSetting.DefaultPackageName;

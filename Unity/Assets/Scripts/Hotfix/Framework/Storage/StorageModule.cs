@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Storage
             Instance = this;
 
             // 读取系统配置
-            var storageSetting = ModuleSetting.Instance.StorageSetting;
+            var storageSetting = GameSetting.Instance.StorageSetting;
             m_EnableAutoSave   = storageSetting.EnableAutoSave;
             m_AutoSaveInterval = storageSetting.AutoSaveInterval;
             m_EnableEncryption = storageSetting.EnableEncrypt;

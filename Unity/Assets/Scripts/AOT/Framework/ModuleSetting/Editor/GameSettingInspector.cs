@@ -8,8 +8,8 @@ namespace AOT.Framework.ModuleSetting.Editor
     /// <summary>
     /// 模块配置Inspector。
     /// </summary>
-    [CustomEditor(typeof(Runtime.ModuleSetting))]
-    internal sealed class ModuleSettingInspector : FuFrameworkInspector
+    [CustomEditor(typeof(Runtime.GameSetting))]
+    internal sealed class GameSettingInspector : FuFrameworkInspector
     {
         /// 游戏速度数组
         private static readonly float[] GameSpeed = { 0f, 0.01f, 0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 4f, 8f };
@@ -44,14 +44,14 @@ namespace AOT.Framework.ModuleSetting.Editor
 
             serializedObject.Update();
 
-            if (target is not Runtime.ModuleSetting moduleSetting) return;
+            if (target is not Runtime.GameSetting gameSetting) return;
 
             // 帧率
             var frameRate = EditorGUILayout.IntSlider("帧率设置：", m_FrameRate.intValue, 1, 120);
             if (frameRate != m_FrameRate.intValue)
             {
                 if (EditorApplication.isPlaying)
-                    moduleSetting.FrameRate = frameRate;
+                    gameSetting.FrameRate = frameRate;
                 else
                     m_FrameRate.intValue = frameRate;
             }
@@ -69,7 +69,7 @@ namespace AOT.Framework.ModuleSetting.Editor
                 if (!Mathf.Approximately(gameSpeed, m_GameSpeed.floatValue))
                 {
                     if (EditorApplication.isPlaying)
-                        moduleSetting.GameSpeed = gameSpeed;
+                        gameSetting.GameSpeed = gameSpeed;
                     else
                         m_GameSpeed.floatValue = gameSpeed;
                 }
@@ -81,7 +81,7 @@ namespace AOT.Framework.ModuleSetting.Editor
             if (runInBackground != m_RunInBackground.boolValue)
             {
                 if (EditorApplication.isPlaying)
-                    moduleSetting.RunInBackground = runInBackground;
+                    gameSetting.RunInBackground = runInBackground;
                 else
                     m_RunInBackground.boolValue = runInBackground;
             }
@@ -91,7 +91,7 @@ namespace AOT.Framework.ModuleSetting.Editor
             if (neverSleep != m_NeverSleep.boolValue)
             {
                 if (EditorApplication.isPlaying)
-                    moduleSetting.NeverSleep = neverSleep;
+                    gameSetting.NeverSleep = neverSleep;
                 else
                     m_NeverSleep.boolValue = neverSleep;
             }
@@ -101,7 +101,7 @@ namespace AOT.Framework.ModuleSetting.Editor
             if (openGuide != m_OpenGuide.boolValue)
             {
                 if (EditorApplication.isPlaying)
-                    moduleSetting.OpenGuide = openGuide;
+                    gameSetting.OpenGuide = openGuide;
                 else
                     m_OpenGuide.boolValue = openGuide;
             }

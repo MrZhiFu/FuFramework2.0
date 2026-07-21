@@ -156,7 +156,7 @@ namespace Hotfix
             GlobalModule.UIModule.OpenUI<WinLogin>();
             bootstrapView.Close();
 
-            if (ModuleSetting.Instance.OpenGuide)
+            if (GameSetting.Instance.OpenGuide)
             {
                 GuideModule.Instance.GuideAction = new GuideActionImpl();
                 GuideModule.Instance.StartFirstGuide();
