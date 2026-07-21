@@ -493,7 +493,7 @@ namespace Hotfix.Framework.Entity
                     if (handle.IsDone)
                         LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
                     else
-                        LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.LastError, showEntityInfo);
+                        LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.Error, showEntityInfo);
                 };
 
                 return await tcs.Task;

@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="downloadURL">资源下载地址</param>
         /// <param name="downloadBackupURL">资源备用下载地址</param>
         /// <returns></returns>
-        private InitializationOperation InitPackage(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
+        private InitializePackageOperation InitPackage(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
             return PlayMode switch
             {
@@ -34,17 +34,17 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="resPackage">资源包</param>
         /// <returns></returns>
-        private InitializationOperation InitInEditorSimulateMode(ResourcePackage resPackage)
+        private InitializePackageOperation InitInEditorSimulateMode(ResourcePackage resPackage)
         {
             resPackage.NotNull(nameof(resPackage));
-            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
+            var simulateBuildResult = EditorSimulateBuildInvoker.Build(DefaultPackageName, (int)EBundleType.VirtualAssetBundle);
             var packageRoot         = simulateBuildResult.PackageRootDirectory;
             var editorFileSystem    = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
-            var initParameters = new EditorSimulateModeParameters
+            var initOptions = new EditorSimulateModeOptions
             {
                 EditorFileSystemParameters = editorFileSystem
             };
-            return resPackage.InitializeAsync(initParameters);
+            return resPackage.InitializePackageAsync(initOptions);
         }
 
         /// <summary>
@@ -53,15 +53,15 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="resPackage">资源包</param>
         /// <returns></returns>
-        private InitializationOperation InitInOfflinePlayMode(ResourcePackage resPackage)
+        private InitializePackageOperation InitInOfflinePlayMode(ResourcePackage resPackage)
         {
             resPackage.NotNull(nameof(resPackage));
-            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-            var initParameters = new OfflinePlayModeParameters
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            var initOptions = new OfflinePlayModeOptions
             {
-                BuildinFileSystemParameters = buildInFileSystem
+                BuiltinFileSystemParameters = buildInFileSystem
             };
-            return resPackage.InitializeAsync(initParameters);
+            return resPackage.InitializePackageAsync(initOptions);
         }
 
         /// <summary>
@@ -73,23 +73,23 @@ namespace Hotfix.Framework.Asset
         /// <param name="downloadURL">资源下载地址</param>
         /// <param name="downloadBackupURL">资源备用下载地址</param>
         /// <returns></returns>
-        private InitializationOperation InitInHostPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
+        private InitializePackageOperation InitInHostPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
             resPackage.NotNull(       nameof(resPackage));
             downloadURL.NotNull(      nameof(downloadURL));
             downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
-            IRemoteServices remoteServices = new RemoteServices(downloadURL, downloadBackupURL);
+            IRemoteService remoteService = new RemoteServices(downloadURL, downloadBackupURL);
 
-            var cacheFileSystem   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-            var buildInFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var cacheFileSystem   = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remoteService);
+            var buildInFileSystem = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
 
-            var initParameters = new HostPlayModeParameters
+            var initOptions = new HostPlayModeOptions
             {
-                BuildinFileSystemParameters = buildInFileSystem,
+                BuiltinFileSystemParameters = buildInFileSystem,
                 CacheFileSystemParameters   = cacheFileSystem
             };
-            return resPackage.InitializeAsync(initParameters);
+            return resPackage.InitializePackageAsync(initOptions);
         }
 
         /// <summary>
@@ -99,14 +99,14 @@ namespace Hotfix.Framework.Asset
         /// <param name="downloadURL">资源下载地址</param>
         /// <param name="downloadBackupURL">资源备用下载地址</param>
         /// <returns></returns>
-        private InitializationOperation InitInWebPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
+        private InitializePackageOperation InitInWebPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
             resPackage.NotNull(       nameof(resPackage));
             downloadURL.NotNull(      nameof(downloadURL));
             downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
-            var                  initParameters = new WebPlayModeParameters();
-            FileSystemParameters webFileSystem  = null;
+            var                  initOptions   = new WebPlayModeOptions();
+            FileSystemParameters webFileSystem = null;
 
 #if UNITY_WEBGL
     #if ENABLE_DOUYIN_MINI_GAME
@@ -129,8 +129,8 @@ namespace Hotfix.Framework.Asset
 #else
             webFileSystem = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
 #endif
-            initParameters.WebServerFileSystemParameters = webFileSystem;
-            return resPackage.InitializeAsync(initParameters);
+            initOptions.WebServerFileSystemParameters = webFileSystem;
+            return resPackage.InitializePackageAsync(initOptions);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using YooAsset;
 
 // ReSharper disable once CheckNamespace
@@ -11,7 +12,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 远端资源服务器定义，用于提供远端资源的下载地址
         /// </summary>
-        private class RemoteServices : IRemoteServices
+        private class RemoteServices : IRemoteService
         {
             /// <summary>
             /// 远端资源服务器地址
@@ -30,18 +31,19 @@ namespace Hotfix.Framework.Asset
             }
 
             /// <summary>
-            /// 获取远端资源的下载地址
+            /// 获取指定文件的所有远端候选地址，按优先级排序。
             /// </summary>
-            /// <param name="fileName"></param>
-            /// <returns></returns>
-            public string GetRemoteMainURL(string fileName) => HostServer + fileName;
-
-            /// <summary>
-            /// 获取远端资源的备用下载地址
-            /// </summary>
-            /// <param name="fileName"></param>
-            /// <returns></returns>
-            public string GetRemoteFallbackURL(string fileName) => FallbackHostServer + fileName;
+            /// <param name="fileName">资源文件名。</param>
+            /// <returns>按优先级排序的远端候选地址列表。</returns>
+            public IReadOnlyList<string> GetRemoteUrls(string fileName)
+            {
+                var urls = new List<string>(2);
+                if (!string.IsNullOrEmpty(HostServer))
+                    urls.Add(HostServer + fileName);
+                if (!string.IsNullOrEmpty(FallbackHostServer))
+                    urls.Add(FallbackHostServer + fileName);
+                return urls;
+            }
         }
     }
 }

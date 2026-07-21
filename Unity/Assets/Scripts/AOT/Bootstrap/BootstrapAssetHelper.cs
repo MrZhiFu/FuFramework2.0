@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -59,16 +60,15 @@ namespace AOT.Bootstrap
             if (!BootstrapContext.YooAssetInitialized)
             {
                 YooAssets.Initialize();
-                YooAssets.SetOperationSystemMaxTimeSlice(assetSetting.AsyncSystemMaxSlicePerFrame);
+                YooAssets.SetAsyncOperationMaxTimeSlice(assetSetting.AsyncSystemMaxSlicePerFrame);
 
                 // 记入引导上下文
                 BootstrapContext.YooAssetInitialized = true;
                 BootstrapContext.DefaultPackageName  = DefaultPackageName;
             }
 
-            // 设置默认资源包。
-            DefaultPackage = YooAssets.TryGetPackage(DefaultPackageName) ?? YooAssets.CreatePackage(DefaultPackageName);
-            YooAssets.SetDefaultPackage(DefaultPackage);
+            // 获取或创建默认资源包（v3 移除了 SetDefaultPackage，改为自行持有引用）。
+            DefaultPackage = YooAssets.TryGetPackage(DefaultPackageName, out var existingPackage) ? existingPackage : YooAssets.CreatePackage(DefaultPackageName);
 
             // 根据运行模式初始化资源包
             var initOperation = InitByPlayMode(url, backupUrl);
@@ -80,7 +80,7 @@ namespace AOT.Bootstrap
 
             // 返回初始化操作结果。
             await initOperation;
-            if (initOperation.Status != EOperationStatus.Succeed)
+            if (initOperation.Status != EOperationStatus.Succeeded)
             {
                 FuLogger.LogError($"[Bootstrap] 资源包初始化失败: {initOperation.Error}");
             }
@@ -92,32 +92,32 @@ namespace AOT.Bootstrap
         /// <param name="backupUrl"> 备用资源服务器地址。</param>
         /// <returns>初始化操作。</returns>
         /// </summary>
-        private static InitializationOperation InitByPlayMode(string url, string backupUrl)
+        private static InitializePackageOperation InitByPlayMode(string url, string backupUrl)
         {
             switch (PlayMode)
             {
                 // 编辑器模拟模式：模拟打包并创建文件系统。
                 case EPlayMode.EditorSimulateMode:
                 {
-                    var buildResult = EditorSimulateModeHelper.SimulateBuild(DefaultPackageName);
+                    var buildResult = EditorSimulateBuildInvoker.Build(DefaultPackageName, (int)EBundleType.VirtualAssetBundle);
                     var fs          = FileSystemParameters.CreateDefaultEditorFileSystemParameters(buildResult.PackageRootDirectory);
-                    return DefaultPackage.InitializeAsync(new EditorSimulateModeParameters { EditorFileSystemParameters = fs });
+                    return DefaultPackage.InitializePackageAsync(new EditorSimulateModeOptions { EditorFileSystemParameters = fs });
                 }
 
                 // 离线模式：使用内置文件系统(StreamingAssets)。
                 case EPlayMode.OfflinePlayMode:
                 {
-                    var fs = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-                    return DefaultPackage.InitializeAsync(new OfflinePlayModeParameters { BuildinFileSystemParameters = fs });
+                    var fs = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+                    return DefaultPackage.InitializePackageAsync(new OfflinePlayModeOptions { BuiltinFileSystemParameters = fs });
                 }
 
                 // 主机模式：使用远程服务器文件系统(资源CDN服务器)。
                 case EPlayMode.HostPlayMode:
                 {
-                    IRemoteServices remote    = new RemoteServices(url, backupUrl);
-                    var             cacheFs   = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remote);
-                    var             buildInFs = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-                    return DefaultPackage.InitializeAsync(new HostPlayModeParameters { BuildinFileSystemParameters = buildInFs, CacheFileSystemParameters = cacheFs });
+                    IRemoteService remote     = new RemoteServices(url, backupUrl);
+                    var            cacheFs   = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
+                    var            buildInFs = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+                    return DefaultPackage.InitializePackageAsync(new HostPlayModeOptions { BuiltinFileSystemParameters = buildInFs, CacheFileSystemParameters = cacheFs });
                 }
 
                 // Web 模式：使用 Web 服务器文件系统（资源服务器）。
@@ -147,7 +147,7 @@ namespace AOT.Bootstrap
                     // 非 WebGL 平台回退默认 Web 服务器文件系统
                     webFs = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
 #endif
-                    return DefaultPackage.InitializeAsync(new WebPlayModeParameters { WebServerFileSystemParameters = webFs });
+                    return DefaultPackage.InitializePackageAsync(new WebPlayModeOptions { WebServerFileSystemParameters = webFs });
                 }
                 case EPlayMode.CustomPlayMode:
                 default: return null;
@@ -161,7 +161,7 @@ namespace AOT.Bootstrap
         {
             var reqOperation = DefaultPackage.RequestPackageVersionAsync();
             await reqOperation;
-            return reqOperation.Status == EOperationStatus.Succeed ? reqOperation.PackageVersion : null;
+            return reqOperation.Status == EOperationStatus.Succeeded ? reqOperation.PackageVersion : null;
         }
 
         /// <summary>
@@ -169,16 +169,16 @@ namespace AOT.Bootstrap
         /// </summary>
         public static async UniTask<bool> UpdateManifestAsync(string version)
         {
-            var updateOperation = DefaultPackage.UpdatePackageManifestAsync(version);
+            var updateOperation = DefaultPackage.LoadPackageManifestAsync(new LoadPackageManifestOptions(version, 60));
             await updateOperation;
-            return updateOperation.Status == EOperationStatus.Succeed;
+            return updateOperation.Status == EOperationStatus.Succeeded;
         }
 
         /// <summary>
         /// 创建资源下载器。
         /// </summary>
         public static ResourceDownloaderOperation CreateDownloader() =>
-            DefaultPackage.CreateResourceDownloader(m_DownloadingMaxNum, m_FailedTryAgainNum);
+            DefaultPackage.CreateResourceDownloader(new ResourceDownloaderOptions(m_DownloadingMaxNum, m_FailedTryAgainNum));
 
         /// <summary>
         /// 加载程序集字节文件(用于 AOT/Hotfix DLL)。
@@ -193,9 +193,9 @@ namespace AOT.Bootstrap
             handle.Completed += h =>
             {
                 // 加载失败：记录错误并以 null 结果完成，避免回调抛异常导致 await 永久挂起。
-                if (h.Status != EOperationStatus.Succeed)
+                if (h.Status != EOperationStatus.Succeeded)
                 {
-                    FuLogger.LogError($"[Bootstrap] 加载原始文件失败: {location}, 错误信息: {h.LastError}");
+                    FuLogger.LogError($"[Bootstrap] 加载原始文件失败: {location}, 错误信息: {h.Error}");
                     tcs.TrySetResult(null);
                     return;
                 }
@@ -217,7 +217,7 @@ namespace AOT.Bootstrap
         /// <summary>
         /// 远端资源服务器定义，用于提供远端资源的下载地址。
         /// </summary>
-        private class RemoteServices : IRemoteServices
+        private class RemoteServices : IRemoteService
         {
             /// <summary>
             /// 远端资源服务器地址。
@@ -241,18 +241,19 @@ namespace AOT.Bootstrap
             }
 
             /// <summary>
-            /// 获取远端资源的下载地址。
+            /// 获取指定文件的所有远端候选地址，按优先级排序。
             /// </summary>
             /// <param name="fileName"> 资源文件名。</param>
-            /// <returns>远端资源的下载地址。</returns>
-            public string GetRemoteMainURL(string fileName) => HostServer + fileName;
-
-            /// <summary>
-            /// 获取远端资源的备用下载地址。
-            /// </summary>
-            /// <param name="fileName"> 资源文件名。</param>
-            /// <returns>远端资源的备用下载地址。</returns>
-            public string GetRemoteFallbackURL(string fileName) => FallbackHostServer + fileName;
+            /// <returns>按优先级排序的远端候选地址列表。</returns>
+            public IReadOnlyList<string> GetRemoteUrls(string fileName)
+            {
+                var urls = new List<string>(2);
+                if (!string.IsNullOrEmpty(HostServer))
+                    urls.Add(HostServer + fileName);
+                if (!string.IsNullOrEmpty(FallbackHostServer))
+                    urls.Add(FallbackHostServer + fileName);
+                return urls;
+            }
         }
     }
 }

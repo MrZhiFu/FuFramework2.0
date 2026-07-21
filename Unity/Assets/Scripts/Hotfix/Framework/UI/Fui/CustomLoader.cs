@@ -338,7 +338,7 @@ namespace Hotfix.Framework.UI
         private async UniTask<AssetHandle> LoadTextureFromAsset(string url)
         {
             var assetInfo = m_AssetModule.GetAssetInfo(url);
-            if (assetInfo.IsInvalid) return null;
+            if (assetInfo == null) return null;
             return await m_AssetModule.LoadAssetAsync<Texture2D>(url);
         }
 

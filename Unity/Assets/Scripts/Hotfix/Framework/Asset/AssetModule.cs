@@ -80,7 +80,7 @@ namespace Hotfix.Framework.Asset
                 YooAssets.Initialize();
 
                 // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-                YooAssets.SetOperationSystemMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
+                YooAssets.SetAsyncOperationMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
 
                 BootstrapContext.YooAssetInitialized = true;
                 BootstrapContext.DefaultPackageName  = DefaultPackageName;
@@ -108,7 +108,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AssetHandle> LoadAssetAsync(string path)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(path);
+            var assetHandle          = GetDefaultPackage().LoadAssetAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync<T>(path);
+            var assetHandle          = GetDefaultPackage().LoadAssetAsync<T>(path);
 
             assetHandle.Completed += OnAssetHandleOnCompleted;
             return taskCompletionSource.Task;
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(path, type);
+            var assetHandle          = GetDefaultPackage().LoadAssetAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -152,7 +152,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AssetHandle> LoadAssetAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AssetHandle>();
-            var assetHandle          = YooAssets.LoadAssetAsync(assetInfo);
+            var assetHandle          = GetDefaultPackage().LoadAssetAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -165,7 +165,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync<T>(path);
+            var assetHandle          = GetDefaultPackage().LoadAllAssetsAsync<T>(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -179,7 +179,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(path, type);
+            var assetHandle          = GetDefaultPackage().LoadAllAssetsAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -191,7 +191,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(path);
+            var assetHandle          = GetDefaultPackage().LoadAllAssetsAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<AllAssetsHandle> LoadAllAssetsAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<AllAssetsHandle>();
-            var assetHandle          = YooAssets.LoadAllAssetsAsync(assetInfo);
+            var assetHandle          = GetDefaultPackage().LoadAllAssetsAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -216,42 +216,42 @@ namespace Hotfix.Framework.Asset
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path) => YooAssets.LoadAllAssetsSync(path);
+        public AllAssetsHandle LoadAllAssetsSync(string path) => GetDefaultPackage().LoadAllAssetsSync(path);
 
         /// <summary>
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object => YooAssets.LoadAllAssetsSync<T>(path);
+        public AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object => GetDefaultPackage().LoadAllAssetsSync<T>(path);
 
         /// <summary>
         /// 同步加载资源包内所有资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
         /// <param name="type">子对象类型</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path, Type type) => YooAssets.LoadAllAssetsSync(path, type);
+        public AllAssetsHandle LoadAllAssetsSync(string path, Type type) => GetDefaultPackage().LoadAllAssetsSync(path, type);
 
         /// <summary>
         /// 同步加载包内全部资源对象
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo) => YooAssets.LoadAllAssetsSync(assetInfo);
+        public AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo) => GetDefaultPackage().LoadAllAssetsSync(assetInfo);
 
         /// <summary>
         /// 同步加载子资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path) => YooAssets.LoadSubAssetsSync(path);
+        public SubAssetsHandle LoadSubAssetSync(string path) => GetDefaultPackage().LoadSubAssetsSync(path);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path) => YooAssets.LoadAssetSync(path);
+        public AssetHandle LoadAssetSync(string path) => GetDefaultPackage().LoadAssetSync(path);
 
         /// <summary>
         /// 同步加载资源
@@ -259,21 +259,21 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path, Type type) => YooAssets.LoadAssetSync(path, type);
+        public AssetHandle LoadAssetSync(string path, Type type) => GetDefaultPackage().LoadAssetSync(path, type);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync(AssetInfo assetInfo) => YooAssets.LoadAssetSync(assetInfo);
+        public AssetHandle LoadAssetSync(AssetInfo assetInfo) => GetDefaultPackage().LoadAssetSync(assetInfo);
 
         /// <summary>
         /// 同步加载资源
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public AssetHandle LoadAssetSync<T>(string path) where T : Object => YooAssets.LoadAssetSync<T>(path);
+        public AssetHandle LoadAssetSync<T>(string path) where T : Object => GetDefaultPackage().LoadAssetSync<T>(path);
 
         #endregion
 
@@ -289,7 +289,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SceneHandle>();
-            var sceneHandle          = YooAssets.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
+            var sceneHandle          = GetDefaultPackage().LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
             sceneHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -304,7 +304,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<SceneHandle> LoadSceneAsync(AssetInfo assetInfo, LoadSceneMode sceneMode, bool activateOnLoad = true)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SceneHandle>();
-            var sceneHandle          = YooAssets.LoadSceneAsync(assetInfo, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
+            var sceneHandle          = GetDefaultPackage().LoadSceneAsync(assetInfo, sceneMode, LocalPhysicsMode.None, !activateOnLoad);
             sceneHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -317,7 +317,7 @@ namespace Hotfix.Framework.Asset
         /// 异步加载子资源对象
         /// </summary>
         /// <param name="path">资源的定位地址</param>
-        public SubAssetsHandle LoadSubAssetsAsync(string path) => YooAssets.LoadSubAssetsAsync(path);
+        public SubAssetsHandle LoadSubAssetsAsync(string path) => GetDefaultPackage().LoadSubAssetsAsync(path);
 
         /// <summary>
         /// 异步加载子资源对象
@@ -327,7 +327,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync<T>(path);
+            var assetHandle          = GetDefaultPackage().LoadSubAssetsAsync<T>(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -341,7 +341,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(path, type);
+            var assetHandle          = GetDefaultPackage().LoadSubAssetsAsync(path, type);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -354,7 +354,7 @@ namespace Hotfix.Framework.Asset
         public UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
         {
             var taskCompletionSource = new UniTaskCompletionSource<SubAssetsHandle>();
-            var assetHandle          = YooAssets.LoadSubAssetsAsync(assetInfo);
+            var assetHandle          = GetDefaultPackage().LoadSubAssetsAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -368,10 +368,10 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public UniTask<RawFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
+        public UniTask<BundleFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
         {
-            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(assetInfo);
+            var taskCompletionSource = new UniTaskCompletionSource<BundleFileHandle>();
+            var assetHandle          = GetDefaultPackage().LoadBundleFileAsync(assetInfo);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -381,10 +381,10 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public UniTask<RawFileHandle> LoadRawFileAsync(string path)
+        public UniTask<BundleFileHandle> LoadRawFileAsync(string path)
         {
-            var taskCompletionSource = new UniTaskCompletionSource<RawFileHandle>();
-            var assetHandle          = YooAssets.LoadRawFileAsync(path);
+            var taskCompletionSource = new UniTaskCompletionSource<BundleFileHandle>();
+            var assetHandle          = GetDefaultPackage().LoadBundleFileAsync(path);
             assetHandle.Completed += handle => { taskCompletionSource.TrySetResult(handle); };
             return taskCompletionSource.Task;
         }
@@ -398,14 +398,14 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(AssetInfo assetInfo) => YooAssets.LoadRawFileSync(assetInfo);
+        public BundleFileHandle LoadRawFileSync(AssetInfo assetInfo) => GetDefaultPackage().LoadBundleFileSync(assetInfo);
 
         /// <summary>
         /// 同步加载原生文件
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public RawFileHandle LoadRawFileSync(string path) => YooAssets.LoadRawFileSync(path);
+        public BundleFileHandle LoadRawFileSync(string path) => GetDefaultPackage().LoadBundleFileSync(path);
 
         #endregion
 
@@ -475,11 +475,7 @@ namespace Hotfix.Framework.Asset
             if (resourcePackage == null)
             {
                 resourcePackage = CreatePackage(packageName);
-                if (isDefaultPackage)
-                {
-                    // 设置默认的资源包
-                    SetDefaultPackage(resourcePackage);
-                }
+                // v3 移除了全局默认包概念，只需创建包即可，通过包名访问
             }
 
             // 新建一个任务，包装初始化操作
@@ -489,7 +485,7 @@ namespace Hotfix.Framework.Asset
 
             initHandler.Completed += asyncOperationBase =>
             {
-                if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeed && asyncOperationBase.IsDone)
+                if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeeded && asyncOperationBase.IsDone)
                     taskCompletionSource.TrySetResult(true);
                 else
                     taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
@@ -509,14 +505,14 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public ResourcePackage TryGetPackage(string packageName) => YooAssets.TryGetPackage(packageName);
+        public ResourcePackage TryGetPackage(string packageName) => YooAssets.TryGetPackage(packageName, out var package) ? package : null;
 
         /// <summary>
         /// 检查资源包是否存在
         /// </summary>
         /// <param name="packageName">资源包名称</param>
         /// <returns></returns>
-        public bool HasPackage(string packageName) => YooAssets.TryGetPackage(packageName) != null;
+        public bool HasPackage(string packageName) => YooAssets.TryGetPackage(packageName, out _);
 
         /// <summary>
         /// 获取默认资源包
@@ -536,13 +532,14 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="resourcePackage">资源信息</param>
         /// <returns></returns>
-        public void SetDefaultPackage(ResourcePackage resourcePackage) => YooAssets.SetDefaultPackage(resourcePackage);
+        [System.Obsolete("YooAsset v3 已移除全局默认包概念，此方法不再需要调用。")]
+        public void SetDefaultPackage(ResourcePackage resourcePackage) { /* v3 已移除 YooAssets.SetDefaultPackage */ }
 
         /// <summary>
         /// 设置默认资源包
         /// </summary>
         /// <returns></returns>
-        public ResourceDownloaderOperation CreateResourceDownloader() => YooAssets.CreateResourceDownloader(DownloadingMaxNum, FailedTryAgainNum);
+        public ResourceDownloaderOperation CreateResourceDownloader() => GetDefaultPackage().CreateResourceDownloader(new ResourceDownloaderOptions(DownloadingMaxNum, FailedTryAgainNum));
 
         #endregion
 
@@ -606,7 +603,7 @@ namespace Hotfix.Framework.Asset
         {
             packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            await package.ClearCacheFilesAsync(EFileClearMode.ClearAllBundleFiles);
+            await package.ClearCacheAsync(new ClearCacheOptions("ClearAllBundleFiles"));
         }
 
         /// <summary>
@@ -617,7 +614,7 @@ namespace Hotfix.Framework.Asset
         {
             packageName.NotNull(nameof(packageName));
             var package = YooAssets.GetPackage(packageName);
-            await package.ClearCacheFilesAsync(EFileClearMode.ClearUnusedBundleFiles);
+            await package.ClearCacheAsync(new ClearCacheOptions("ClearUnusedBundleFiles"));
         }
 
         #endregion
@@ -629,40 +626,40 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="assetInfo">资源信息</param>
         /// <returns></returns>
-        public bool IsNeedDownload(AssetInfo assetInfo) => YooAssets.IsNeedDownloadFromRemote(assetInfo);
+        public bool IsNeedDownload(AssetInfo assetInfo) => GetDefaultPackage().GetDownloadSize(assetInfo) > 0;
 
         /// <summary>
         /// 是否需要下载
         /// </summary>
         /// <param name="path">资源地址</param>
         /// <returns></returns>
-        public bool IsNeedDownload(string path) => YooAssets.IsNeedDownloadFromRemote(path);
+        public bool IsNeedDownload(string path) => GetDefaultPackage().GetDownloadSize(path) > 0;
 
         /// <summary>
         /// 获取资源信息
         /// </summary>
         /// <param name="assetTags">资源标签列表</param>
         /// <returns></returns>
-        public AssetInfo[] GetAssetInfos(string[] assetTags) => YooAssets.GetAssetInfos(assetTags);
+        public AssetInfo[] GetAssetInfos(string[] assetTags) => GetDefaultPackage().GetAssetInfos(assetTags);
 
         /// <summary>
         /// 获取资源信息
         /// </summary>
         /// <param name="assetTag">资源标签</param>
         /// <returns></returns>
-        public AssetInfo[] GetAssetInfos(string assetTag) => YooAssets.GetAssetInfos(assetTag);
+        public AssetInfo[] GetAssetInfos(string assetTag) => GetDefaultPackage().GetAssetInfos(assetTag);
 
         /// <summary>
         /// 获取资源信息
         /// </summary>
-        public AssetInfo GetAssetInfo(string path) => YooAssets.GetAssetInfo(path);
+        public AssetInfo GetAssetInfo(string path) => GetDefaultPackage().GetAssetInfo(path);
 
         /// <summary>
         /// 检查指定的资源路径是否有效。
         /// </summary>
         /// <param name="path">要检查的资源路径。</param>
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>
-        public bool HasAssetPath(string path) => YooAssets.CheckLocationValid(path);
+        public bool HasAssetPath(string path) => GetDefaultPackage().IsLocationValid(path);
 
         #endregion
     }

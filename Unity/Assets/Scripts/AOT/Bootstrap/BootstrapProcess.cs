@@ -156,21 +156,21 @@ namespace AOT.Bootstrap
                     await confirmed.Task;
                 }
 
-                downloader.DownloadUpdateCallback = data =>
+                downloader.DownloadProgressChanged += args =>
                 {
-                    var progress = data.CurrentDownloadBytes / (data.TotalDownloadBytes * 1f);
-                    var cur      = UtilityAOT.File.GetBytesSizeWithUnit(data.CurrentDownloadBytes);
-                    var tot      = UtilityAOT.File.GetBytesSizeWithUnit(data.TotalDownloadBytes);
+                    var progress = args.CurrentDownloadBytes / (args.TotalDownloadBytes * 1f);
+                    var cur      = UtilityAOT.File.GetBytesSizeWithUnit(args.CurrentDownloadBytes);
+                    var tot      = UtilityAOT.File.GetBytesSizeWithUnit(args.TotalDownloadBytes);
                     m_BootstrapView.SetProgress(progress, $"下载中：{cur}/{tot}");
                 };
                 var failed = false;
-                downloader.DownloadErrorCallback = _ => failed = true;
+                downloader.DownloadError += _ => failed = true;
 
-                // 既有流程（ProcedureDownloadPackage）直接 await YooAsset 操作，此处保持一致。
-                downloader.BeginDownload();
+                // v3 API: 使用 StartDownload() 替代旧版 BeginDownload()
+                downloader.StartDownload();
                 await downloader;
 
-                if (!failed && downloader.Status == EOperationStatus.Succeed) return; // 下载成功
+                if (!failed && downloader.Status == EOperationStatus.Succeeded) return; // 下载成功
                 m_BootstrapView.SetTip("下载失败，正在重试...");
                 await UniTask.WaitForSeconds(3); // 失败后重建下载器重试
             }

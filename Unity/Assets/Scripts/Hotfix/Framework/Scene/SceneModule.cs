@@ -360,7 +360,7 @@ namespace Hotfix.Framework.Scene
 
             if (!m_LoadedSceneDict.TryGetValue(sceneAssetPath, out var sceneOperationHandle)) return;
 
-            var unloadHandle = sceneOperationHandle.UnloadAsync();
+            var unloadHandle = sceneOperationHandle.UnloadSceneAsync();
             m_LoadedSceneDict.Remove(sceneAssetPath);
             m_UnloadingSceneDict.Add(sceneAssetPath, sceneOperationHandle);
 
@@ -386,7 +386,7 @@ namespace Hotfix.Framework.Scene
                     // 卸载失败
                     m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
                     if (sceneHandle == null) return;
-                    FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.");
+                    FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
                     var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
                     EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
@@ -436,7 +436,7 @@ namespace Hotfix.Framework.Scene
             else
             {
                 // 加载失败
-                var errorMessage = $"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.LastError}'.";
+                var errorMessage = $"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.";
                 FuLogger.LogError(errorMessage);
                 var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneHandle.SceneName, sceneHandle.Status, errorMessage, sceneHandleData.UserData);
                 EventRegister.Broadcast(this, loadSceneFailureEventArgs);
