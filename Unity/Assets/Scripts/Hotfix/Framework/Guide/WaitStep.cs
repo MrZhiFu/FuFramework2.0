@@ -1,5 +1,5 @@
 using Hotfix.Framework.ReferencePools;
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>

@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Config
 {
     public partial struct vec4
     {

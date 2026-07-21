@@ -1,7 +1,7 @@
 using UnityEngine;
 using Hotfix.Game.UI;
-using Hotfix.Game.Tables;
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config;
+using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Guide;

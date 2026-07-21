@@ -1,8 +1,8 @@
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
 using Hotfix.Game.UI;
-using Hotfix.Game.Tables;
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config;
+using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 
 namespace Hotfix.Game.Network

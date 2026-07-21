@@ -1,6 +1,6 @@
 using Hotfix.Game.UI;
-using Hotfix.Game.Tables;
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config;
+using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI

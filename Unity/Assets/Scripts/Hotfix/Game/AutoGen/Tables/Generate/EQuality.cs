@@ -9,7 +9,7 @@
 
 
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Config
 { 
     public enum EQuality
     {

@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables.Tables
+namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class RedDot : BeanBase
     {

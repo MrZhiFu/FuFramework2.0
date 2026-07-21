@@ -11,7 +11,7 @@ using Luban;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 
-namespace Hotfix.Game.Tables.Tables
+namespace Hotfix.Game.Config.Tables
 {
     /// <summary>
     /// 引导步骤表
@@ -32,7 +32,7 @@ namespace Hotfix.Game.Tables.Tables
             foreach(var _ele in jsonNode.Children)
             {
                 Tables.GuideStep _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Tables.GuideStep.DeserializeGuideStep(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Config.Tables.GuideStep.DeserializeGuideStep(_ele);  }
                 DataList.Add(_v);
                 LongKeyDataDict.Add((long)_v.Id, _v);
                 StrKeyDataDict.Add(_v.Id.ToString(), _v);

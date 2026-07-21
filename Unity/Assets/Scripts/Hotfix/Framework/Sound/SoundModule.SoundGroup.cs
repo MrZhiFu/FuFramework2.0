@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using SoundGroupCfg = Hotfix.Game.Tables.Tables.SoundGroup;
+using SoundGroupCfg = Hotfix.Game.Config.Tables.SoundGroup;
 using UnityEngine;
 
 namespace Hotfix.Framework.Sound
