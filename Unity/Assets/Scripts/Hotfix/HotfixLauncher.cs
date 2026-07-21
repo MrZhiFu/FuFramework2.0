@@ -89,7 +89,6 @@ namespace Hotfix
         private static void RegisterBaseModules()
         {
             ModuleManager.RegisterModule<ConfigModule>();
-            ModuleManager.RegisterModule<RedDotModule>();
             ModuleManager.RegisterModule<ReferencePoolModule>();
             ModuleManager.RegisterModule<FsmModule>();
             ModuleManager.RegisterModule<ProcedureModule>();
@@ -108,6 +107,7 @@ namespace Hotfix
         /// </summary>
         private static void RegisterFeatureModules()
         {
+            ModuleManager.RegisterModule<RedDotModule>();
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<ModelModule>();
 
