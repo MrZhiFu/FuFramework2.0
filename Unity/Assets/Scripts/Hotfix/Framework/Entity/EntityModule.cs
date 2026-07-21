@@ -116,6 +116,24 @@ namespace Hotfix.Framework.Entity
             m_EventModule      = ModuleManager.GetModule<EventModule>();
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
 
+            if (m_AssetModule == null)
+            {
+                FuLogger.LogFatal("[EntityModule] 资源管理模块不存在!");
+                return;
+            }
+
+            if (m_EventModule == null)
+            {
+                FuLogger.LogFatal("[EntityModule] 事件模块不存在!");
+                return;
+            }
+
+            if (m_ObjectPoolModule == null)
+            {
+                FuLogger.LogFatal("[EntityModule] 对象池模块不存在!");
+                return;
+            }
+
             // 创建实体实例对象池根节点
             m_InstanceRoot = new GameObject("Entity Instances").transform;
             m_InstanceRoot.localScale = Vector3.one;

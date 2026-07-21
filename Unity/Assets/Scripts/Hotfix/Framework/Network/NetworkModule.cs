@@ -42,6 +42,11 @@ namespace Hotfix.Framework.Network
         {
             Instance = this;
             m_EventModule = ModuleManager.GetModule<EventModule>();
+            if (m_EventModule == null)
+            {
+                FuLogger.LogFatal("[NetworkModule] 事件模块不存在!");
+                return;
+            }
         }
 
         /// <summary>
