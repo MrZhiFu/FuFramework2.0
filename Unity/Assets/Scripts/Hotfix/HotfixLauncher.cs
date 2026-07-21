@@ -99,6 +99,7 @@ namespace Hotfix
             ModuleManager.RegisterModule<TimerModule>();
             ModuleManager.RegisterModule<AssetModule>();
             ModuleManager.RegisterModule<UIModule>();
+            ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<LocalizationModule>();
         }
 
@@ -108,7 +109,6 @@ namespace Hotfix
         private static void RegisterFeatureModules()
         {
             ModuleManager.RegisterModule<GuideModule>();
-            ModuleManager.RegisterModule<StorageModule>();
             ModuleManager.RegisterModule<ModelModule>();
 
             ModuleManager.RegisterModule<SceneModule>();
