@@ -58,10 +58,12 @@ namespace Hotfix
 
             InitProto();
             SetupFairyGUI();
-            RegisterModules();
+            RegisterBaseModules();
             HookGameDriven();
 
+            // 配置表必须在依赖它的模块（Sound、Entity 等）注册前加载
             await InitFrameworkAsync(bootstrapView);
+            RegisterFeatureModules();
             EnterGame(bootstrapView);
         }
 
@@ -82,11 +84,10 @@ namespace Hotfix
         }
 
         /// <summary>
-        /// 注册所有框架模块（按依赖顺序）
+        /// 注册基础模块（配置表加载前，不依赖配置数据）
         /// </summary>
-        private static void RegisterModules()
+        private static void RegisterBaseModules()
         {
-            // 基础模块
             ModuleManager.RegisterModule<ConfigModule>();
             ModuleManager.RegisterModule<RedDotModule>();
             ModuleManager.RegisterModule<ReferencePoolModule>();
@@ -98,14 +99,18 @@ namespace Hotfix
             ModuleManager.RegisterModule<TimerModule>();
             ModuleManager.RegisterModule<AssetModule>();
             ModuleManager.RegisterModule<UIModule>();
-            
+            ModuleManager.RegisterModule<LocalizationModule>();
+        }
 
-            // 功能模块
+        /// <summary>
+        /// 注册功能模块（配置表加载后，可能依赖配置数据）
+        /// </summary>
+        private static void RegisterFeatureModules()
+        {
             ModuleManager.RegisterModule<GuideModule>();
             ModuleManager.RegisterModule<StorageModule>();
-            ModuleManager.RegisterModule<LocalizationModule>();
             ModuleManager.RegisterModule<ModelModule>();
-            
+
             ModuleManager.RegisterModule<SceneModule>();
             ModuleManager.RegisterModule<SoundModule>();
             ModuleManager.RegisterModule<EntityModule>();
