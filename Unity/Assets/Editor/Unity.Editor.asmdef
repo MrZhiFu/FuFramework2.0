@@ -4,6 +4,7 @@
     "references": [
         "YooAsset.Editor",
         "HybridCLR.Editor",
+        "YooAsset",
         "AOT",
         "GUID:a38628879c417cf49b28b1d0a90f18fa"
     ],
