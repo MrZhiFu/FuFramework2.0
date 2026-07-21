@@ -10,7 +10,7 @@
 using System;
 using SimpleJSON;
 using Hotfix.Framework.Config;
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Config
 {
     public partial class TableManager
     {

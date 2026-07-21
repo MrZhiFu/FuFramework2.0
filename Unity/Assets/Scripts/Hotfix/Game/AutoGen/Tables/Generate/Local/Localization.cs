@@ -10,7 +10,7 @@
 using Luban;
 using SimpleJSON;
 
-namespace Hotfix.Game.Tables.Local
+namespace Hotfix.Game.Config.Local
 {
     public sealed partial class Localization : BeanBase
     {

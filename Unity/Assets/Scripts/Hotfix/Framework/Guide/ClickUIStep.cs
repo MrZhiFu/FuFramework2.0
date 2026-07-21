@@ -3,7 +3,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.UI;
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>

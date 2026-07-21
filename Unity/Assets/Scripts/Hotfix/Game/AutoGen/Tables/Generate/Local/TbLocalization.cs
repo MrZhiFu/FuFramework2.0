@@ -11,7 +11,7 @@ using Luban;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 
-namespace Hotfix.Game.Tables.Local
+namespace Hotfix.Game.Config.Local
 {
     /// <summary>
     /// 本地化多语言表
@@ -32,7 +32,7 @@ namespace Hotfix.Game.Tables.Local
             foreach(var _ele in jsonNode.Children)
             {
                 Local.Localization _v;
-                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Tables.Local.Localization.DeserializeLocalization(_ele);  }
+                { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Config.Local.Localization.DeserializeLocalization(_ele);  }
                 DataList.Add(_v);
                 StrKeyDataDict.Add(_v.Key.ToString(), _v);
             }

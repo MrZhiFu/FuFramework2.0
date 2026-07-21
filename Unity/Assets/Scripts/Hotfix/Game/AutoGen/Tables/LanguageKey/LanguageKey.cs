@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Hotfix.Game.Tables
+namespace Hotfix.Game.Config
 {
     /// <summary>
     /// 本地化多语言Key列表

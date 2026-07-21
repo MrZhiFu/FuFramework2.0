@@ -2,7 +2,7 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
-using Hotfix.Game.Tables.Tables;
+using Hotfix.Game.Config.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
