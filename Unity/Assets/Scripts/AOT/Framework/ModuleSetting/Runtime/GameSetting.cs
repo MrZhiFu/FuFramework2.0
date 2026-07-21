@@ -17,12 +17,12 @@ namespace AOT.Framework.ModuleSetting.Runtime
     /// 1. 该类为单例类，请不要在代码中创建多个实例。
     /// 2. 该类需要挂载到首个初始化场景的 GameObject 上，否则其他模块无法正确初始化。
     /// </summary>
-    public class ModuleSetting : MonoBehaviour
+    public class GameSetting : MonoBehaviour
     {
         /// <summary>
         /// 单例实例。由 Awake 赋值，依赖 Launcher 的 DontDestroyOnLoad 保证跨场景存活。
         /// </summary>
-        public static ModuleSetting Instance { get; private set; }
+        public static GameSetting Instance { get; private set; }
         /// <summary>
         /// 游戏帧率。
         /// </summary>

@@ -58,7 +58,7 @@ namespace Hotfix.Framework.Asset
         protected internal override void OnInit()
         {
             // 获取资源管理模块配置数据
-            var assetSetting = ModuleSetting.Instance.AssetSetting;
+            var assetSetting = GameSetting.Instance.AssetSetting;
             if (!assetSetting) throw new InvalidOperationException("[AssetModule]资源管理模块配置数据为空!");
 
             PlayMode                    = assetSetting.PlayMode;
