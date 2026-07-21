@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Sound
         /// <summary>
         /// AudioMixer 资源路径，需在 Unity Editor 中确认实际路径后填入
         /// </summary>
-        private const string AudioMixerAssetPath = "Assets/Art/Audio/AudioMixer.mixer";
+        private const string AudioMixerAssetPath = "Assets/Bundles/Sound/MainAudioMixer.mixer";
 
         /// <summary>
         /// 声音监听器
