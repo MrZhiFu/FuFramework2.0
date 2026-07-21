@@ -1,9 +1,8 @@
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime;
 using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
-using AOT.Framework.ModuleSetting.Runtime.Guide;
+using Hotfix.Game.Tables.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -47,7 +46,7 @@ namespace Hotfix.Framework.Guide
         /// <summary>
         /// 步骤数据
         /// </summary>
-        public StepInfo StepInfo { get; protected set; }
+        public GuideStep StepInfo { get; protected set; }
 
         /// <summary>
         /// 步骤执行时间
@@ -117,8 +116,8 @@ namespace Hotfix.Framework.Guide
             OnComplete();
 
             // 执行下一个步骤
-            if (!string.IsNullOrEmpty(StepInfo.m_NextStepId))
-                GuideModule.Instance.JumpToStep(StepInfo.m_NextStepId);
+            if (StepInfo.NextStepId.HasValue)
+                GuideModule.Instance.JumpToStep(StepInfo.NextStepId.Value);
         }
 
         /// <summary>

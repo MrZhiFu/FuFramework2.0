@@ -1,7 +1,5 @@
 using Hotfix.Framework.ReferencePools;
-
-using AOT.Framework.ModuleSetting.Runtime;
-using AOT.Framework.ModuleSetting.Runtime.Guide;
+using Hotfix.Game.Tables.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -29,7 +27,7 @@ namespace Hotfix.Framework.Guide
             if (IsExecuting)
             {
                 m_WaitTimer += deltaTime;
-                if (m_WaitTimer >= StepInfo.m_WaitTime)
+                if (m_WaitTimer >= StepInfo.WaitTime)
                 {
                     Complete();
                 }
@@ -56,7 +54,7 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         /// <param name="stepInfo">步骤数据信息</param>
         /// <returns></returns>
-        public static WaitStep Create(StepInfo stepInfo)
+        public static WaitStep Create(GuideStep stepInfo)
         {
             var step = ReferencePool.Acquire<WaitStep>();
             step.StepInfo = stepInfo;

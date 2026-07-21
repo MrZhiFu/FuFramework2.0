@@ -1,11 +1,9 @@
 using FairyGUI;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.UI;
-
-using AOT.Framework.ModuleSetting.Runtime.Guide;
+using Hotfix.Game.Tables.Tables;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -30,17 +28,17 @@ namespace Hotfix.Framework.Guide
             if (uiModule == null) return;
 
             // 查找目标界面
-            var targetWin = uiModule.GetUI(StepInfo.m_TargetWindow);
+            var targetWin = uiModule.GetUI(StepInfo.TargetWindow);
             if (targetWin == null)
             {
-                FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.m_TargetWindow}");
+                FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.TargetWindow}");
                 return;
             }
 
             // 查找目标点击UI
-            if (targetWin.UIView.GetChild(StepInfo.m_TargetUI) is not GComponent targetClickUI)
+            if (targetWin.UIView.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
             {
-                FuLogger.LogWarning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.m_TargetUI}");
+                FuLogger.LogWarning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.TargetUI}");
                 return;
             }
 
@@ -73,7 +71,7 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         /// <param name="stepInfo">步骤数据信息</param>
         /// <returns></returns>
-        public static ClickUIStep Create(StepInfo stepInfo)
+        public static ClickUIStep Create(GuideStep stepInfo)
         {
             var step = ReferencePool.Acquire<ClickUIStep>();
             step.StepInfo = stepInfo;
