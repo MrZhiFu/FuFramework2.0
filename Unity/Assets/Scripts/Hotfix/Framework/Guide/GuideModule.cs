@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime.Guide;
-using AOT.Framework.ModuleSetting.Runtime;
+using Hotfix.Framework.Config;
+using Hotfix.Game.Tables;
+using Hotfix.Game.Tables.Tables;
+using GuideData = Hotfix.Game.Tables.Tables.Guide;
+using GuideStepData = Hotfix.Game.Tables.Tables.GuideStep;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
+using System.Linq;
 using UnityEngine;
 
 namespace Hotfix.Framework.Guide
@@ -12,7 +16,7 @@ namespace Hotfix.Framework.Guide
     /// <summary>
     /// 引导管理模块。
     /// 功能：
-    ///     1. 从引导配置中加载引导步骤信息。
+    ///     1. 从配置表加载引导步骤信息。
     ///     2. 执行/跳转/取消引导步骤。
     ///     3. 缓存完成的引导。
     ///     4. 提供引导相关事件。
@@ -27,14 +31,9 @@ namespace Hotfix.Framework.Guide
         public static GuideModule Instance { get; private set; }
 
         /// <summary>
-        /// 引导配置SO
-        /// </summary>
-        private GuideSetting m_Setting;
-
-        /// <summary>
         /// 当前引导
         /// </summary>
-        private GuideInfo m_CurrentGuide;
+        private GuideData m_CurrentGuide;
 
         /// <summary>
         /// 当前引导中的当前步骤
@@ -42,9 +41,19 @@ namespace Hotfix.Framework.Guide
         private BaseStep m_CurrentStep;
 
         /// <summary>
+        /// 引导数据字典，key 为引导 ID
+        /// </summary>
+        private Dictionary<int, GuideData> m_GuideDict;
+
+        /// <summary>
+        /// 步骤数据字典（来自配置表），key 为步骤 ID
+        /// </summary>
+        private Dictionary<int, GuideStepData> m_StepDataDict;
+
+        /// <summary>
         /// 当前引导中的所有步骤，key为步骤Id，Value为步骤对象
         /// </summary>
-        private readonly Dictionary<string, BaseStep> m_AllStepDict = new();
+        private readonly Dictionary<int, BaseStep> m_AllStepDict = new();
 
         /// <summary>
         /// 步骤历史记录栈
@@ -54,7 +63,7 @@ namespace Hotfix.Framework.Guide
         /// <summary>
         /// 缓存完成的引导，key为引导ID，Value为是否完成
         /// </summary>
-        private readonly Dictionary<string, bool> m_GuideCompletionCacheDict = new();
+        private readonly Dictionary<int, bool> m_GuideCompletionCacheDict = new();
 
         #endregion
 
@@ -63,22 +72,22 @@ namespace Hotfix.Framework.Guide
         /// <summary>
         /// 引导开始事件
         /// </summary>
-        public event Action<string> OnGuideStarted;
+        public event Action<int> OnGuideStarted;
 
         /// <summary>
         /// 引导完成事件
         /// </summary>
-        public event Action<string> OnGuideFinished;
+        public event Action<int> OnGuideFinished;
 
         /// <summary>
         /// 步骤改变事件
         /// </summary>
-        public event Action<string, string> OnStepChanged;
+        public event Action<int, int> OnStepChanged;
 
         /// <summary>
         /// 引导中断事件
         /// </summary>
-        public event Action<string, bool> OnGuideInterrupted;
+        public event Action<int, bool> OnGuideInterrupted;
 
         /// <summary>
         /// 步骤开始事件
@@ -100,19 +109,19 @@ namespace Hotfix.Framework.Guide
         public bool IsGuiding => m_CurrentStep != null;
 
         /// <summary>
-        /// 当前引导ID
+        /// 当前引导 ID
         /// </summary>
-        public string CurrentGuideId => m_CurrentGuide?.m_GuideId;
+        public int? CurrentGuideId => m_CurrentGuide?.Id;
 
         /// <summary>
-        /// 当前步骤ID
+        /// 当前步骤 ID
         /// </summary>
-        public string CurrentStepId => m_CurrentStep?.StepInfo.m_StepId;
+        public int? CurrentStepId => m_CurrentStep?.StepInfo.Id;
 
         /// <summary>
         /// 当前引导配置
         /// </summary>
-        public GuideInfo CurrentGuide => m_CurrentGuide;
+        public GuideData CurrentGuide => m_CurrentGuide;
 
         /// <summary>
         /// 当前步骤
@@ -136,14 +145,40 @@ namespace Hotfix.Framework.Guide
             Instance = this;
 
             m_GuideCompletionCacheDict.Clear();
-            m_Setting = ModuleSetting.Instance.GuideSetting;
-            if (m_Setting == null)
+
+            var tbGuide = ConfigModule.Instance?.GetConfig<TbGuide>();
+            var tbGuideStep = ConfigModule.Instance?.GetConfig<TbGuideStep>();
+            if (tbGuide == null || tbGuideStep == null)
             {
-                FuLogger.LogError("[GuideModule] 配置文件不存在.");
+                FuLogger.LogError("[GuideModule] 引导配置表不存在，跳过初始化.");
                 return;
             }
 
-            FuLogger.LogInfo("[GuideModule] 引导管理模块初始化完成");
+            m_GuideDict = new Dictionary<int, GuideData>();
+            foreach (var guide in tbGuide.All)
+            {
+                if (m_GuideDict.ContainsKey(guide.Id))
+                {
+                    FuLogger.LogError($"[GuideModule] 重复的引导 ID: {guide.Id}");
+                    continue;
+                }
+
+                m_GuideDict[guide.Id] = guide;
+            }
+
+            m_StepDataDict = new Dictionary<int, GuideStepData>();
+            foreach (var step in tbGuideStep.All)
+            {
+                if (m_StepDataDict.ContainsKey(step.Id))
+                {
+                    FuLogger.LogError($"[GuideModule] 重复的步骤 ID: {step.Id}");
+                    continue;
+                }
+
+                m_StepDataDict[step.Id] = step;
+            }
+
+            FuLogger.LogInfo($"[GuideModule] 引导管理模块初始化完成. 引导数量: {m_GuideDict.Count}, 步骤总数量: {m_StepDataDict.Count}");
         }
 
         /// <summary>
@@ -174,6 +209,8 @@ namespace Hotfix.Framework.Guide
             m_AllStepDict.Clear();
             m_StepHistoryStack.Clear();
             m_GuideCompletionCacheDict.Clear();
+            m_GuideDict?.Clear();
+            m_StepDataDict?.Clear();
             m_CurrentGuide = null;
 
             // 清理事件订阅
@@ -192,48 +229,20 @@ namespace Hotfix.Framework.Guide
         #region 公开方法
 
         /// <summary>
-        /// 开始引导流程(通过引导ID)
+        /// 开始引导流程
         /// </summary>
-        /// <param name="guideId">引导ID</param>
+        /// <param name="guideId">引导 ID</param>
         /// <param name="forceRestart">是否强制重新开始</param>
         /// <returns>是否成功开始引导</returns>
-        public bool StartGuideById(string guideId, bool forceRestart = false)
+        public bool StartGuide(int guideId, bool forceRestart = false)
         {
-            try
+            if (!m_GuideDict.TryGetValue(guideId, out var guide))
             {
-                return StartGuide(guideId, forceRestart);
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[GuideModule] 加载引导配置失败: {e.Message}");
+                FuLogger.LogError($"[GuideModule] 找不到引导: {guideId}");
                 return false;
             }
-        }
 
-        /// <summary>
-        /// 开始引导流程(通过引导名称)
-        /// </summary>
-        /// <param name="guideName">引导名称</param>
-        /// <param name="forceRestart">是否强制重新开始</param>
-        /// <returns>是否成功开始引导</returns>
-        public bool StartGuideByName(string guideName, bool forceRestart = false)
-        {
-            try
-            {
-                var guide = m_Setting.GetGuideByName(guideName);
-                if (guide == null)
-                {
-                    FuLogger.LogError($"[GuideModule] 找不到引导: {guideName}");
-                    return false;
-                }
-
-                return StartGuide(guide, forceRestart);
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[GuideModule] 加载引导配置失败: {e.Message}");
-                return false;
-            }
+            return StartGuideInternal(guide, forceRestart);
         }
 
         /// <summary>
@@ -241,113 +250,20 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         public bool StartFirstGuide(bool forceRestart = false)
         {
-            try
+            GuideData firstGuide = null;
+            foreach (var guide in m_GuideDict.Values)
             {
-                GuideInfo firstGuide = null;
-                foreach (var guide in m_Setting.AllGuides)
-                {
-                    firstGuide = guide;
-                    break;
-                }
-
-                if (firstGuide == null)
-                {
-                    FuLogger.LogError("[GuideModule] 没有可用的引导");
-                    return false;
-                }
-
-                return StartGuide(firstGuide, forceRestart);
+                firstGuide = guide;
+                break;
             }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[GuideModule] 开始引导失败: {e.Message}");
-                return false;
-            }
-        }
 
-        /// <summary>
-        /// 开始引导流程
-        /// </summary>
-        /// <param name="guideId">要开始的引导ID</param>
-        /// <param name="forceRestart">是否强制重新开始</param>
-        /// <returns>是否成功开始引导</returns>
-        public bool StartGuide(string guideId, bool forceRestart = false)
-        {
-            var guideInfo = m_Setting.GetGuide(guideId);
-            if (guideInfo == null)
+            if (firstGuide == null)
             {
-                FuLogger.LogError($"[GuideModule] 找不到引导: {guideId}");
+                FuLogger.LogError("[GuideModule] 没有可用的引导");
                 return false;
             }
 
-            return StartGuide(guideInfo, forceRestart);
-        }
-
-        /// <summary>
-        /// 开始引导流程(通过GuideInfo)
-        /// </summary>
-        /// <param name="guideInfo">引导信息</param>
-        /// <param name="forceRestart">是否强制重新开始</param>
-        /// <returns>是否成功开始引导</returns>
-        public bool StartGuide(GuideInfo guideInfo, bool forceRestart = false)
-        {
-            if (guideInfo == null)
-            {
-                FuLogger.LogError("[GuideModule] 引导信息为空");
-                return false;
-            }
-
-            if (IsGuiding)
-            {
-                if (CurrentGuideId == guideInfo.m_GuideId && !forceRestart)
-                {
-                    FuLogger.LogWarning($"[GuideModule] 引导 {guideInfo.m_GuideId} 已在运行中");
-                    return false;
-                }
-
-                FuLogger.LogWarning($"[GuideModule] 中断当前引导 {CurrentGuideId}，开始新引导 {guideInfo.m_GuideId}");
-                InterruptGuide();
-            }
-
-            if (IsGuideCompleted(guideInfo.m_GuideId) && !forceRestart)
-            {
-                FuLogger.LogInfo($"[GuideModule] 引导 {guideInfo.m_GuideId} 已完成，跳过");
-                return false;
-            }
-
-            try
-            {
-                m_CurrentGuide = guideInfo;
-
-                // 构建当前引导下的所有步骤节点
-                BuildStepNodes(guideInfo);
-
-                if (string.IsNullOrEmpty(guideInfo.m_StartStepId))
-                {
-                    throw new ArgumentException("引导配置缺少起始步骤ID");
-                }
-
-                if (!m_AllStepDict.TryGetValue(guideInfo.m_StartStepId, out var step))
-                {
-                    throw new ArgumentException($"起始步骤ID不存在: {guideInfo.m_StartStepId}");
-                }
-
-                m_CurrentStep = step;
-
-                // 开始执行当前引导的第一个步骤
-                ExecuteCurrentStep();
-
-                OnGuideStarted?.Invoke(guideInfo.m_GuideId);
-                FuLogger.LogInfo($"[GuideModule] 开始引导: {guideInfo.m_GuideName} ({guideInfo.m_GuideId})");
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[GuideModule] 开始引导失败 {guideInfo.m_GuideId}: {e.Message}\n{e.StackTrace}");
-                ClearGuideData();
-                return false;
-            }
+            return StartGuideInternal(firstGuide, forceRestart);
         }
 
         /// <summary>
@@ -359,7 +275,7 @@ namespace Hotfix.Framework.Guide
 
             if (!m_CurrentStep.CanComplete())
             {
-                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.m_StepId} 当前无法完成");
+                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 当前无法完成");
                 return;
             }
 
@@ -373,7 +289,7 @@ namespace Hotfix.Framework.Guide
             }
             catch (Exception e)
             {
-                FuLogger.LogError($"[GuideModule] 完成步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
+                FuLogger.LogError($"[GuideModule] 完成步骤失败 {m_CurrentStep.StepInfo.Id}: {e.Message}");
                 ForceNextStep();
             }
         }
@@ -385,16 +301,16 @@ namespace Hotfix.Framework.Guide
         {
             if (m_CurrentStep == null) return;
 
-            if (m_CurrentStep.StepInfo.m_IsCanJump)
+            if (m_CurrentStep.StepInfo.CanJump)
             {
-                FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_CurrentStep.StepInfo.m_StepId}");
+                FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_CurrentStep.StepInfo.Id}");
                 m_CurrentStep.Cancel();
                 m_StepHistoryStack.Push(m_CurrentStep);
                 MoveToNextStep();
             }
             else
             {
-                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.m_StepId} 不可跳过");
+                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 不可跳过");
             }
         }
 
@@ -415,7 +331,7 @@ namespace Hotfix.Framework.Guide
             m_CurrentStep = previousStep;
             ExecuteCurrentStep();
 
-            FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStep.StepInfo.m_StepId}");
+            FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStep.StepInfo.Id}");
         }
 
         /// <summary>
@@ -423,7 +339,7 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         /// <param name="stepId">步骤ID</param>
         /// <returns>是否跳转成功</returns>
-        public bool JumpToStep(string stepId)
+        public bool JumpToStep(int stepId)
         {
             if (!m_AllStepDict.ContainsKey(stepId))
             {
@@ -456,12 +372,12 @@ namespace Hotfix.Framework.Guide
 
             m_CurrentStep.Cancel();
 
-            if (markAsCompleted && !string.IsNullOrEmpty(guideId))
+            if (markAsCompleted && guideId.HasValue)
             {
-                MarkGuideAsCompleted(guideId);
+                MarkGuideAsCompleted(guideId.Value);
             }
 
-            OnGuideInterrupted?.Invoke(guideId, markAsCompleted);
+            OnGuideInterrupted?.Invoke(guideId ?? 0, markAsCompleted);
             FuLogger.LogInfo($"[GuideModule] 引导中断: {guideId}, 标记完成: {markAsCompleted}");
 
             ClearGuideData();
@@ -474,10 +390,10 @@ namespace Hotfix.Framework.Guide
         {
             if (m_CurrentStep == null) return;
 
-            var nextStepId = m_CurrentStep.StepInfo.m_NextStepId;
+            var nextStepId = m_CurrentStep.StepInfo.NextStepId;
             m_CurrentStep.Cancel();
 
-            if (!string.IsNullOrEmpty(nextStepId) && m_AllStepDict.TryGetValue(nextStepId, out var nextStep))
+            if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
             {
                 m_CurrentStep = nextStep;
                 ExecuteCurrentStep();
@@ -493,7 +409,7 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         /// <param name="guideId">引导ID</param>
         /// <returns>是否已完成</returns>
-        public bool IsGuideCompleted(string guideId)
+        public bool IsGuideCompleted(int guideId)
         {
             if (m_GuideCompletionCacheDict.TryGetValue(guideId, out var completed))
             {
@@ -510,7 +426,7 @@ namespace Hotfix.Framework.Guide
         /// 标记引导为已完成
         /// </summary>
         /// <param name="guideId">引导ID</param>
-        public void MarkGuideAsCompleted(string guideId)
+        public void MarkGuideAsCompleted(int guideId)
         {
             PlayerPrefs.SetInt($"Guide_Completed_{guideId}", 1);
             PlayerPrefs.Save();
@@ -523,7 +439,7 @@ namespace Hotfix.Framework.Guide
         /// 重置引导状态
         /// </summary>
         /// <param name="guideId">引导ID</param>
-        public void ResetGuide(string guideId)
+        public void ResetGuide(int guideId)
         {
             PlayerPrefs.DeleteKey($"Guide_Completed_{guideId}");
             m_GuideCompletionCacheDict.Remove(guideId);
@@ -536,37 +452,94 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         /// <param name="stepId">步骤ID</param>
         /// <returns>步骤实例</returns>
-        public BaseStep GetStep(string stepId) => m_AllStepDict.GetValueOrDefault(stepId);
+        public BaseStep GetStep(int stepId) => m_AllStepDict.GetValueOrDefault(stepId);
 
         /// <summary>
         /// 获取所有步骤
         /// </summary>
         /// <returns>步骤字典</returns>
-        public Dictionary<string, BaseStep> GetAllSteps() => new(m_AllStepDict);
+        public Dictionary<int, BaseStep> GetAllSteps() => new(m_AllStepDict);
 
         /// <summary>
         /// 获取当前引导信息
         /// </summary>
-        public GuideInfo GetCurrentGuideInfo() => m_CurrentGuide;
+        public GuideData GetCurrentGuideInfo() => m_CurrentGuide;
 
         #endregion
 
         #region 私有方法
 
         /// <summary>
+        /// 开始引导流程(通过 Guide)
+        /// </summary>
+        private bool StartGuideInternal(GuideData guide, bool forceRestart = false)
+        {
+            if (IsGuiding)
+            {
+                if (m_CurrentGuide?.Id == guide.Id && !forceRestart)
+                {
+                    FuLogger.LogWarning($"[GuideModule] 引导 {guide.Id} 已在运行中");
+                    return false;
+                }
+
+                FuLogger.LogWarning($"[GuideModule] 中断当前引导 {m_CurrentGuide?.Id}，开始新引导 {guide.Id}");
+                InterruptGuide();
+            }
+
+            if (IsGuideCompleted(guide.Id) && !forceRestart)
+            {
+                FuLogger.LogInfo($"[GuideModule] 引导 {guide.Id} 已完成，跳过");
+                return false;
+            }
+
+            try
+            {
+                m_CurrentGuide = guide;
+
+                // 构建当前引导下的所有步骤节点
+                BuildStepNodes(guide);
+
+                if (guide.StartStepId == 0 || !m_AllStepDict.TryGetValue(guide.StartStepId, out var step))
+                {
+                    throw new ArgumentException($"起始步骤 ID 无效: {guide.StartStepId}");
+                }
+
+                m_CurrentStep = step;
+
+                // 开始执行当前引导的第一个步骤
+                ExecuteCurrentStep();
+
+                OnGuideStarted?.Invoke(guide.Id);
+                FuLogger.LogInfo($"[GuideModule] 开始引导: {guide.Name} ({guide.Id})");
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[GuideModule] 开始引导失败 {guide.Id}: {e.Message}\n{e.StackTrace}");
+                ClearGuideData();
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 构建步骤节点
         /// </summary>
-        private void BuildStepNodes(GuideInfo info)
+        private void BuildStepNodes(GuideData guide)
         {
             m_AllStepDict.Clear();
             m_StepHistoryStack.Clear();
 
-            foreach (var stepInfo in info.m_Steps)
+            var guideSteps = m_StepDataDict.Values
+                .Where(s => s.GuideId == guide.Id)
+                .ToList();
+
+            foreach (var stepInfo in guideSteps)
             {
                 var step = CreateStep(stepInfo);
                 if (step == null) continue;
 
-                m_AllStepDict.Add(step.StepInfo.m_StepId, step);
+                m_AllStepDict.Add(stepInfo.Id, step);
             }
 
             // 验证步骤链
@@ -576,17 +549,15 @@ namespace Hotfix.Framework.Guide
         /// <summary>
         /// 创建步骤
         /// </summary>
-        /// <param name="stepInfo"></param>
-        /// <returns></returns>
-        private BaseStep CreateStep(StepInfo stepInfo)
+        private BaseStep CreateStep(GuideStepData stepInfo)
         {
-            return stepInfo.m_EStepType switch
+            return stepInfo.StepType switch
             {
                 EStepType.ClickUI => ClickUIStep.Create(stepInfo),
                 EStepType.Dialog  => DialogStep.Create(stepInfo),
                 EStepType.Wait    => WaitStep.Create(stepInfo),
                 EStepType.None    => DefaultStep.Create(stepInfo),
-                _                => DefaultStep.Create(stepInfo)
+                _                 => DefaultStep.Create(stepInfo)
             };
         }
 
@@ -597,9 +568,9 @@ namespace Hotfix.Framework.Guide
         {
             foreach (var step in m_AllStepDict.Values)
             {
-                if (!string.IsNullOrEmpty(step.StepInfo.m_NextStepId) && !m_AllStepDict.ContainsKey(step.StepInfo.m_StepId))
+                if (step.StepInfo.NextStepId.HasValue && !m_AllStepDict.ContainsKey(step.StepInfo.NextStepId.Value))
                 {
-                    FuLogger.LogWarning($"[GuideModule] 步骤 {step.StepInfo.m_StepId} 的下一步ID无效: {step.StepInfo.m_NextStepId}");
+                    FuLogger.LogWarning($"[GuideModule] 步骤 {step.StepInfo.Id} 的下一步ID无效: {step.StepInfo.NextStepId}");
                 }
             }
         }
@@ -617,7 +588,7 @@ namespace Hotfix.Framework.Guide
 
             if (!m_CurrentStep.CanExecute())
             {
-                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.m_StepId} 条件不满足，尝试跳过");
+                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 条件不满足，尝试跳过");
                 ForceNextStep();
                 return;
             }
@@ -626,13 +597,13 @@ namespace Hotfix.Framework.Guide
             {
                 m_CurrentStep.Execute();
                 OnStepExecuting?.Invoke(m_CurrentStep);
-                OnStepChanged?.Invoke(CurrentGuideId, m_CurrentStep.StepInfo.m_StepId);
+                OnStepChanged?.Invoke(CurrentGuideId ?? 0, CurrentStepId ?? 0);
 
-                FuLogger.LogInfo($"[GuideModule] 执行步骤: {m_CurrentStep.StepInfo.m_StepId} ({m_CurrentStep.StepInfo.m_EStepType})");
+                FuLogger.LogInfo($"[GuideModule] 执行步骤: {m_CurrentStep.StepInfo.Id} ({m_CurrentStep.StepInfo.StepType})");
             }
             catch (Exception e)
             {
-                FuLogger.LogError($"[GuideModule] 执行步骤失败 {m_CurrentStep.StepInfo.m_StepId}: {e.Message}");
+                FuLogger.LogError($"[GuideModule] 执行步骤失败 {m_CurrentStep.StepInfo.Id}: {e.Message}");
                 ForceNextStep();
             }
         }
@@ -642,9 +613,9 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private void MoveToNextStep()
         {
-            var nextStepId = m_CurrentStep?.StepInfo?.m_NextStepId;
+            var nextStepId = m_CurrentStep?.StepInfo?.NextStepId;
 
-            if (!string.IsNullOrEmpty(nextStepId) && m_AllStepDict.TryGetValue(nextStepId, out var nextStep))
+            if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
             {
                 ReferencePool.Release(m_CurrentStep); // 回收当前步骤到引用池中
                 m_CurrentStep = nextStep;
@@ -661,13 +632,13 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private void FinishGuide()
         {
-            string finishedGuideId = CurrentGuideId;
+            int? finishedGuideId = CurrentGuideId;
 
-            if (!string.IsNullOrEmpty(finishedGuideId))
+            if (finishedGuideId.HasValue)
             {
-                MarkGuideAsCompleted(finishedGuideId);
-                OnGuideFinished?.Invoke(finishedGuideId);
-                FuLogger.LogInfo($"[GuideModule] 引导完成: {finishedGuideId}");
+                MarkGuideAsCompleted(finishedGuideId.Value);
+                OnGuideFinished?.Invoke(finishedGuideId.Value);
+                FuLogger.LogInfo($"[GuideModule] 引导完成: {finishedGuideId.Value}");
             }
 
             ClearGuideData();
