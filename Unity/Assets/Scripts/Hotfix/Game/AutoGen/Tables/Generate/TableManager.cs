@@ -41,6 +41,16 @@ namespace Hotfix.Game.Tables
         internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
 
         /// <summary>
+        /// 引导表
+        /// </summary>
+        internal Tables.TbGuide TbGuide { private set; get; }
+
+        /// <summary>
+        /// 引导步骤表
+        /// </summary>
+        internal Tables.TbGuideStep TbGuideStep { private set; get; }
+
+        /// <summary>
         /// 红点表
         /// </summary>
         internal Tables.TbRedDot TbRedDot { private set; get; }
@@ -102,6 +112,14 @@ namespace Hotfix.Game.Tables
             loadTasks.Add(TbGlobalDefine.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbGlobalDefine), TbGlobalDefine);
 
+            TbGuide = new Tables.TbGuide(() => loader("tables_tbguide"));
+            loadTasks.Add(TbGuide.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbGuide), TbGuide);
+
+            TbGuideStep = new Tables.TbGuideStep(() => loader("tables_tbguidestep"));
+            loadTasks.Add(TbGuideStep.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbGuideStep), TbGuideStep);
+
             TbRedDot = new Tables.TbRedDot(() => loader("tables_tbreddot"));
             loadTasks.Add(TbRedDot.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbRedDot), TbRedDot);
@@ -137,6 +155,8 @@ namespace Hotfix.Game.Tables
             TbItem.TranslateText(translator);
             TbEntityGroup.TranslateText(translator);
             TbGlobalDefine.TranslateText(translator);
+            TbGuide.TranslateText(translator);
+            TbGuideStep.TranslateText(translator);
             TbRedDot.TranslateText(translator);
             TbSound.TranslateText(translator);
             TbSoundGroup.TranslateText(translator);
@@ -149,6 +169,8 @@ namespace Hotfix.Game.Tables
             TbItem.ResolveRef(this);
             TbEntityGroup.ResolveRef(this);
             TbGlobalDefine.ResolveRef(this);
+            TbGuide.ResolveRef(this);
+            TbGuideStep.ResolveRef(this);
             TbRedDot.ResolveRef(this);
             TbSound.ResolveRef(this);
             TbSoundGroup.ResolveRef(this);

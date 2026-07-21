@@ -1,0 +1,34 @@
+[
+  {
+    "Id": 101,
+    "GuideId": 1,
+    "StepType": 2,
+    "NextStepId": 102,
+    "CanJump": false,
+    "TargetWindow": "",
+    "TargetUI": "",
+    "DialogContent": "欢迎来到游戏世界！让我来引导你熟悉基本操作。",
+    "WaitTime": 0
+  },
+  {
+    "Id": 102,
+    "GuideId": 1,
+    "StepType": 1,
+    "NextStepId": 103,
+    "CanJump": false,
+    "TargetWindow": "WinLogin",
+    "TargetUI": "_btnLogin",
+    "DialogContent": "",
+    "WaitTime": 0
+  },
+  {
+    "Id": 103,
+    "GuideId": 1,
+    "StepType": 3,
+    "CanJump": false,
+    "TargetWindow": "",
+    "TargetUI": "",
+    "DialogContent": "",
+    "WaitTime": 2
+  }
+]
