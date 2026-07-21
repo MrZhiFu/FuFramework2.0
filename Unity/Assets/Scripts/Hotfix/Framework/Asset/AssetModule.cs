@@ -591,7 +591,8 @@ namespace Hotfix.Framework.Asset
         public async UniTaskVoid UnloadAllAssetsAsync(string packageName)
         {
             packageName.NotNull(nameof(packageName));
-            var package = YooAssets.GetPackage(packageName);
+            if (!YooAssets.IsInitialized) return;
+            if (!YooAssets.TryGetPackage(packageName, out var package)) return;
             await package.UnloadAllAssetsAsync();
         }
 
