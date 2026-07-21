@@ -26,7 +26,6 @@ namespace AOT.Framework.ModuleSetting.Editor
 
         private SerializedProperty m_AssetSetting;   // 资源管理模块配置
         private SerializedProperty m_StorageSetting; // 本地数据存储模块配置
-        private SerializedProperty m_GuideSetting;   // 引导模块配置
 
         private void OnEnable()
         {
@@ -37,7 +36,6 @@ namespace AOT.Framework.ModuleSetting.Editor
             m_OpenGuide       = serializedObject.FindProperty("m_OpenGuide");
             m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
             m_StorageSetting  = serializedObject.FindProperty("m_StorageSetting");
-            m_GuideSetting    = serializedObject.FindProperty("m_GuideSetting");
         }
 
         public override void OnInspectorGUI()
@@ -112,7 +110,6 @@ namespace AOT.Framework.ModuleSetting.Editor
             EditorGUILayout.Space(20);
             EditorGUILayout.PropertyField(m_AssetSetting);
             EditorGUILayout.PropertyField(m_StorageSetting);
-            EditorGUILayout.PropertyField(m_GuideSetting);
 
             serializedObject.ApplyModifiedProperties();
         }

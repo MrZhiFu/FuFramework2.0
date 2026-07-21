@@ -1,6 +1,5 @@
 using AOT.Framework.ModuleSetting.Runtime.Asset;
 using AOT.Framework.ModuleSetting.Runtime.DataSave;
-using AOT.Framework.ModuleSetting.Runtime.Guide;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -56,9 +55,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         [Header("本地数据存储系统配置")]
         [SerializeField] private StorageSetting m_StorageSetting;
 
-        [Header("引导模块配置")]
-        [SerializeField] private GuideSetting m_GuideSetting;
-
 
         /// <summary>
         /// 获取资源系统配置
@@ -69,11 +65,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// 获取本地存储系统配置
         /// </summary>
         public StorageSetting StorageSetting => m_StorageSetting;
-
-        /// <summary>
-        /// 获取引导模块配置
-        /// </summary>
-        public GuideSetting GuideSetting => m_GuideSetting;
 
 
         /// 游戏暂停之前的速度
