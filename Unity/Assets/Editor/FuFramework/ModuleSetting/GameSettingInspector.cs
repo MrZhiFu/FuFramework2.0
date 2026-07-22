@@ -24,18 +24,34 @@ namespace AOT.Framework.ModuleSetting.Editor
         private SerializedProperty m_OpenGuide;       // 是否开启引导
 
 
-        private SerializedProperty m_AssetSetting;   // 资源管理模块配置
-        private SerializedProperty m_StorageSetting; // 本地数据存储模块配置
+        private SerializedProperty m_PlayMode;
+        private SerializedProperty m_DefaultPackageName;
+        private SerializedProperty m_DownloadingMaxNum;
+        private SerializedProperty m_FailedTryAgainNum;
+        private SerializedProperty m_AsyncSystemMaxSlicePerFrame;
+        private SerializedProperty m_ResCdnRootURL;
+        private SerializedProperty m_EnableAutoSave;
+        private SerializedProperty m_AutoSaveInterval;
+        private SerializedProperty m_EnableEncrypt;
+        private SerializedProperty m_EncryptKey;
 
         private void OnEnable()
         {
-            m_FrameRate       = serializedObject.FindProperty("m_FrameRate");
-            m_GameSpeed       = serializedObject.FindProperty("m_GameSpeed");
-            m_RunInBackground = serializedObject.FindProperty("m_RunInBackground");
-            m_NeverSleep      = serializedObject.FindProperty("m_NeverSleep");
-            m_OpenGuide       = serializedObject.FindProperty("m_OpenGuide");
-            m_AssetSetting    = serializedObject.FindProperty("m_AssetSetting");
-            m_StorageSetting  = serializedObject.FindProperty("m_StorageSetting");
+            m_FrameRate                 = serializedObject.FindProperty("m_FrameRate");
+            m_GameSpeed                 = serializedObject.FindProperty("m_GameSpeed");
+            m_RunInBackground           = serializedObject.FindProperty("m_RunInBackground");
+            m_NeverSleep                = serializedObject.FindProperty("m_NeverSleep");
+            m_OpenGuide                 = serializedObject.FindProperty("m_OpenGuide");
+            m_PlayMode                  = serializedObject.FindProperty("m_PlayMode");
+            m_DefaultPackageName        = serializedObject.FindProperty("m_DefaultPackageName");
+            m_DownloadingMaxNum         = serializedObject.FindProperty("m_DownloadingMaxNum");
+            m_FailedTryAgainNum         = serializedObject.FindProperty("m_FailedTryAgainNum");
+            m_AsyncSystemMaxSlicePerFrame = serializedObject.FindProperty("m_AsyncSystemMaxSlicePerFrame");
+            m_ResCdnRootURL             = serializedObject.FindProperty("m_ResCdnRootURL");
+            m_EnableAutoSave            = serializedObject.FindProperty("m_EnableAutoSave");
+            m_AutoSaveInterval          = serializedObject.FindProperty("m_AutoSaveInterval");
+            m_EnableEncrypt             = serializedObject.FindProperty("m_EnableEncrypt");
+            m_EncryptKey                = serializedObject.FindProperty("m_EncryptKey");
         }
 
         public override void OnInspectorGUI()
@@ -106,10 +122,21 @@ namespace AOT.Framework.ModuleSetting.Editor
                     m_OpenGuide.boolValue = openGuide;
             }
 
-            // 框架模块配置
+            // 资源系统配置
             EditorGUILayout.Space(20);
-            EditorGUILayout.PropertyField(m_AssetSetting);
-            EditorGUILayout.PropertyField(m_StorageSetting);
+            EditorGUILayout.PropertyField(m_PlayMode);
+            EditorGUILayout.PropertyField(m_DefaultPackageName);
+            EditorGUILayout.PropertyField(m_DownloadingMaxNum);
+            EditorGUILayout.PropertyField(m_FailedTryAgainNum);
+            EditorGUILayout.PropertyField(m_AsyncSystemMaxSlicePerFrame);
+            EditorGUILayout.PropertyField(m_ResCdnRootURL);
+
+            // 本地数据存储系统配置
+            EditorGUILayout.Space(20);
+            EditorGUILayout.PropertyField(m_EnableAutoSave);
+            EditorGUILayout.PropertyField(m_AutoSaveInterval);
+            EditorGUILayout.PropertyField(m_EnableEncrypt);
+            EditorGUILayout.PropertyField(m_EncryptKey);
 
             serializedObject.ApplyModifiedProperties();
         }
