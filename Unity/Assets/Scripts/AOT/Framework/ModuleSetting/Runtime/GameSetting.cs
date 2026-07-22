@@ -23,11 +23,12 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// </summary>
         public static GameSetting Instance { get; private set; }
 
-        #region 游戏基本配置
+        #region 游戏基本设置
 
         /// <summary>
         /// 游戏帧率。
         /// </summary>
+        [Header("游戏基本设置")]
         [SerializeField] private int m_FrameRate = 30;
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// </summary>
         private float m_GameSpeedBeforePause = 1f;
 
-        #region 游戏基本配置属性
+        #region 游戏基本设置属性
 
         /// <summary>
         /// 获取或设置游戏帧率。
@@ -249,7 +250,7 @@ namespace AOT.Framework.ModuleSetting.Runtime
             }
 
             Instance = this;
-            // DontDestroyOnLoad 由挂载在同一 GameObject 上的 Launcher 统一处理
+            DontDestroyOnLoad(gameObject);
 
             Time.timeScale              = m_GameSpeed;
             Screen.sleepTimeout         = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
