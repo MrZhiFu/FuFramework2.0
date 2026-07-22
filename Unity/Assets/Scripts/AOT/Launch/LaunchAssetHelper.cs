@@ -9,8 +9,8 @@ using AOT.Framework.ModuleSetting.Runtime;
 namespace AOT.Launch
 {
     /// <summary>
-    /// AOT 资源引导助手。
-    /// 功能：引导期直连 YooAsset 完成「初始化默认包 / 请求版本号 / 更新清单 / 创建下载器 / 加载原始字节」等流程。
+    /// AOT 资源启动助手。
+    /// 功能：启动期直连 YooAsset 完成「初始化默认包 / 请求版本号 / 更新清单 / 创建下载器 / 加载原始字节」等流程。
     ///      不依赖 AssetModule。YooAssetInitialized 字段供 AOT/Hotfix 共用，防止二次初始化。
     /// </summary>
     public static class LaunchAssetHelper
@@ -65,7 +65,7 @@ namespace AOT.Launch
                 YooAssets.Initialize();
                 YooAssets.SetAsyncOperationMaxTimeSlice(GameSetting.Instance.AsyncSystemMaxSlicePerFrame);
 
-                // 记入引导上下文
+                // 记入启动共享状态
                 YooAssetInitialized = true;
             }
 

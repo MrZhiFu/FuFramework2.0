@@ -10,7 +10,7 @@ Launch 是 AOT 入口之后的第一阶段，负责**线性异步启动流程**�
 
 ```
 Launch/
-├── LaunchProcess.cs         # 引导流程编排（线性 async，完成后反射进入热更）
+├── LaunchProcess.cs         # 启动流程编排（线性 async，完成后反射进入热更）
 ├── LaunchAssetHelper.cs     # YooAsset 资源初始化助手 + AOT/Hotfix 共享状态
 ├── LaunchView.cs            # 加载界面 View（实现 ILaunchView）—— 自包含 FairyGUI 包
 ├── ILaunchView.cs           # 加载界面接口（定义在 AOT，供 HotfixLauncher 消费）
@@ -20,7 +20,7 @@ Launch/
     └── RemoteUpdateConfig.cs   # 远端更新配置（CDN JSON 映射）
 ```
 
-## 3. 引导流程
+## 3. 启动流程
 
 ```
 Launcher.Start()
@@ -44,11 +44,11 @@ Launcher.Start()
 
 ### 4.1 LaunchProcess
 
-引导流程编排类，所有方法均为 `static`，以 `async UniTask` 方式顺序执行。
+启动流程编排类，所有方法均为 `static`，以 `async UniTask` 方式顺序执行。
 
 | 方法 | 说明 |
 |------|------|
-| `RunAsync(ILaunchView)` | 总入口，按顺序执行全部引导步骤 |
+| `RunAsync(ILaunchView)` | 总入口，按顺序执行全部启动步骤 |
 | `ReqRemoteUpdateConfigWithRetry()` | 向 CDN 获取 `RemoteUpdateConfig.json`，失败自动重试 |
 | `CreateAndDownload(updateConfig)` | 创建 YooAsset 下载器并下载，失败自动重试 |
 | `LoadHotfixAndHandoff()` | 加载 AOT 元数据 + Hotfix.dll，完成后反射调用 HotfixLauncher |
