@@ -3,7 +3,6 @@ using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using AOT.Framework.ModuleSetting.Runtime.DataSave;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
@@ -71,11 +70,10 @@ namespace Hotfix.Framework.Storage
             Instance = this;
 
             // 读取系统配置
-            var storageSetting = GameSetting.Instance.StorageSetting;
-            m_EnableAutoSave   = storageSetting.EnableAutoSave;
-            m_AutoSaveInterval = storageSetting.AutoSaveInterval;
-            m_EnableEncryption = storageSetting.EnableEncrypt;
-            m_EncryptKey       = storageSetting.EncryptKey;
+            m_EnableAutoSave   = GameSetting.Instance.EnableAutoSave;
+            m_AutoSaveInterval = GameSetting.Instance.AutoSaveInterval;
+            m_EnableEncryption = GameSetting.Instance.EnableEncrypt;
+            m_EncryptKey       = GameSetting.Instance.EncryptKey;
 
             // 加载所有本地存储数据
             LoadAll();
