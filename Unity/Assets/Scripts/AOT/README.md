@@ -21,11 +21,10 @@ AOT/
 │   ├── UI/                      # 加载界面 FairyGUI 自动生成代码
 │   └── UpdateConfig/            # 远端更新配置
 │       └── RemoteUpdateConfig.cs
-└── Framework/
-    └── Core/                    # AOT 侧基础工具（日志、路径、JSON、版本等）
-        ├── Log/                 # 日志系统（FuLogger）
-        ├── Extension/           # C# 类型扩展方法
-        └── Utility/             # 静态工具类（Application、File、Json、Path、Version）
+└── Framework/               # AOT 侧基础工具
+    ├── Log/                 # 日志系统（FuLogger）
+    ├── Extension/           # C# 类型扩展方法
+    └── Utility/             # 静态工具类（Application、File、Json、Path、Version）
 ```
 
 ## 3. GameSetting（游戏全局配置）

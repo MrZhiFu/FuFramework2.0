@@ -1,15 +1,15 @@
-# FuFramework AOT Core
+# AOT Framework
 
 ## 1. 简介
 
-AOT Core 是框架在 AOT 侧的基础设施层，提供**日志、文件路径、JSON、版本处理**等不依赖 Hotfix 的基础工具。
+AOT Framework 是框架在 AOT 侧的基础设施层，提供**日志、文件路径、JSON、版本处理**等不依赖 Hotfix 的基础工具。
 
 > **注意**：模块系统（`ModuleBase`、`ModuleManager`）、属性绑定（`BindableProperty`）、高性能数据结构、加密/哈希工具等已迁移至 `Hotfix/Framework/Core`。本目录仅保留 AOT 启动阶段必需的工具。
 
 ## 2. 目录结构
 
 ```
-Core/
+Framework/
 ├── Log/                         # 日志系统
 │   ├── ELogLevel.cs             # 日志级别枚举
 │   └── FuLogger.cs              # 日志输出封装（条件编译控制）
