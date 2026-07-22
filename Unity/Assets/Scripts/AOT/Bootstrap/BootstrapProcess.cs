@@ -44,7 +44,7 @@ namespace AOT.Bootstrap
             // 显示加载界面
             m_BootstrapView = await BootstrapView.CreateAsync();
 
-            var playMode = GameSetting.Instance.AssetSetting.PlayMode;
+            var playMode = GameSetting.Instance.PlayMode;
 
             RemoteUpdateConfig updateConfig = null;
 
@@ -108,8 +108,7 @@ namespace AOT.Bootstrap
         /// </summary>
         private static async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfigWithRetry()
         {
-            var assetSetting = GameSetting.Instance.AssetSetting;
-            var configUrl    = $"{assetSetting.ResCdnRootRootURL}{UtilityAOT.Application.PlatformName}/{RemoteUpdateConfigName}";
+            var configUrl = $"{GameSetting.Instance.ResCdnRootRootURL}{UtilityAOT.Application.PlatformName}/{RemoteUpdateConfigName}";
             while (true)
             {
                 try

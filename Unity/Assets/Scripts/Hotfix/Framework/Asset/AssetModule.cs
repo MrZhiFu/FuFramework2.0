@@ -3,7 +3,6 @@ using YooAsset;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Bootstrap;
-using AOT.Framework.ModuleSetting.Runtime.Asset;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 using UnityEngine;
@@ -58,14 +57,11 @@ namespace Hotfix.Framework.Asset
         protected internal override void OnInit()
         {
             // 获取资源管理模块配置数据
-            var assetSetting = GameSetting.Instance.AssetSetting;
-            if (!assetSetting) throw new InvalidOperationException("[AssetModule]资源管理模块配置数据为空!");
-
-            PlayMode                    = assetSetting.PlayMode;
-            DefaultPackageName          = assetSetting.DefaultPackageName;
-            DownloadingMaxNum           = assetSetting.DownloadingMaxNum;
-            FailedTryAgainNum           = assetSetting.FailedTryAgainNum;
-            AsyncSystemMaxSlicePerFrame = assetSetting.AsyncSystemMaxSlicePerFrame;
+            PlayMode                    = GameSetting.Instance.PlayMode;
+            DefaultPackageName          = GameSetting.Instance.DefaultPackageName;
+            DownloadingMaxNum           = GameSetting.Instance.DownloadingMaxNum;
+            FailedTryAgainNum           = GameSetting.Instance.FailedTryAgainNum;
+            AsyncSystemMaxSlicePerFrame = GameSetting.Instance.AsyncSystemMaxSlicePerFrame;
 
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 

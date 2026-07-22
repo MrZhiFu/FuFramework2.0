@@ -49,18 +49,16 @@ namespace AOT.Bootstrap
         /// </summary>
         public static async UniTask InitPackageAsync(string url = null, string backupUrl = null)
         {
-            var assetSetting = GameSetting.Instance.AssetSetting;
-
-            PlayMode            = assetSetting.PlayMode;
-            DefaultPackageName  = assetSetting.DefaultPackageName;
-            m_DownloadingMaxNum = assetSetting.DownloadingMaxNum;
-            m_FailedTryAgainNum = assetSetting.FailedTryAgainNum;
+            PlayMode            = GameSetting.Instance.PlayMode;
+            DefaultPackageName  = GameSetting.Instance.DefaultPackageName;
+            m_DownloadingMaxNum = GameSetting.Instance.DownloadingMaxNum;
+            m_FailedTryAgainNum = GameSetting.Instance.FailedTryAgainNum;
 
             // 初始化 YooAsset 与默认资源包。
             if (!BootstrapContext.YooAssetInitialized)
             {
                 YooAssets.Initialize();
-                YooAssets.SetAsyncOperationMaxTimeSlice(assetSetting.AsyncSystemMaxSlicePerFrame);
+                YooAssets.SetAsyncOperationMaxTimeSlice(GameSetting.Instance.AsyncSystemMaxSlicePerFrame);
 
                 // 记入引导上下文
                 BootstrapContext.YooAssetInitialized = true;
