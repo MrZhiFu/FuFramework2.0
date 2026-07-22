@@ -79,7 +79,6 @@ namespace Hotfix.Framework.Asset
                 YooAssets.SetAsyncOperationMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
 
                 BootstrapContext.YooAssetInitialized = true;
-                BootstrapContext.DefaultPackageName  = DefaultPackageName;
             }
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");

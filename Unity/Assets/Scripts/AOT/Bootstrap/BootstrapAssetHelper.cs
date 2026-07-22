@@ -62,7 +62,6 @@ namespace AOT.Bootstrap
 
                 // 记入引导上下文
                 BootstrapContext.YooAssetInitialized = true;
-                BootstrapContext.DefaultPackageName  = DefaultPackageName;
             }
 
             // 获取或创建默认资源包（v3 移除了 SetDefaultPackage，改为自行持有引用）。
