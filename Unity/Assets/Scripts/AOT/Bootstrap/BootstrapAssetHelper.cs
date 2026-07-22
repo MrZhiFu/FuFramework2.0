@@ -11,10 +11,15 @@ namespace AOT.Bootstrap
     /// <summary>
     /// AOT 资源引导助手。
     /// 功能：引导期直连 YooAsset 完成「初始化默认包 / 请求版本号 / 更新清单 / 创建下载器 / 加载原始字节」等流程。
-    ///      不依赖 AssetModule。初始化完成后写入 BootstrapContext 供热更侧 AssetModule 复用。
+    ///      不依赖 AssetModule。YooAssetInitialized 字段供 AOT/Hotfix 共用，防止二次初始化。
     /// </summary>
     public static class BootstrapAssetHelper
     {
+        /// <summary>
+        /// YooAsset 是否已完成初始化（AOT/Hotfix 共用，防止二次初始化）。
+        /// </summary>
+        public static bool YooAssetInitialized { get; set; }
+
         /// <summary>
         /// 最大下载数。
         /// </summary>
@@ -55,13 +60,13 @@ namespace AOT.Bootstrap
             m_FailedTryAgainNum = GameSetting.Instance.FailedTryAgainNum;
 
             // 初始化 YooAsset 与默认资源包。
-            if (!BootstrapContext.YooAssetInitialized)
+            if (!YooAssetInitialized)
             {
                 YooAssets.Initialize();
                 YooAssets.SetAsyncOperationMaxTimeSlice(GameSetting.Instance.AsyncSystemMaxSlicePerFrame);
 
                 // 记入引导上下文
-                BootstrapContext.YooAssetInitialized = true;
+                YooAssetInitialized = true;
             }
 
             // 获取或创建默认资源包（v3 移除了 SetDefaultPackage，改为自行持有引用）。
