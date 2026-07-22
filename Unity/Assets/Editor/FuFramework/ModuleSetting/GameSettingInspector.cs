@@ -56,6 +56,9 @@ namespace AOT.Framework.ModuleSetting.Editor
 
             if (target is not Runtime.GameSetting gameSetting) return;
 
+            // 游戏基本设置
+            EditorGUILayout.LabelField("游戏基本设置", EditorStyles.boldLabel);
+
             // 帧率
             var frameRate = EditorGUILayout.IntSlider("帧率设置：", m_FrameRate.intValue, 1, 120);
             if (frameRate != m_FrameRate.intValue)
