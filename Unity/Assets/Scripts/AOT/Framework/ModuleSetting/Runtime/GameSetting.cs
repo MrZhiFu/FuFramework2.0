@@ -28,7 +28,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// <summary>
         /// 游戏帧率。
         /// </summary>
-        [Header("游戏基本设置")]
         [SerializeField] private int m_FrameRate = 30;
 
         /// <summary>
@@ -58,7 +57,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// <summary>
         /// 资源运行模式。
         /// </summary>
-        [Header("资源系统配置")]
         [SerializeField] private EPlayMode m_PlayMode = EPlayMode.EditorSimulateMode;
 
         /// <summary>
@@ -93,7 +91,6 @@ namespace AOT.Framework.ModuleSetting.Runtime
         /// <summary>
         /// 是否启用自动保存。
         /// </summary>
-        [Header("本地数据存储系统配置")]
         [SerializeField] private bool m_EnableAutoSave = true;
 
         /// <summary>
