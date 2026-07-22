@@ -51,8 +51,8 @@ namespace Hotfix
         /// <summary>
         /// 启动入口
         /// </summary>
-        /// <param name="bootstrapView">AOT 引导加载界面句柄，登录界面打开后关闭。</param>
-        public static async UniTask MainAsync(ILaunchView bootstrapView)
+        /// <param name="launchView">AOT 启动加载界面句柄，登录界面打开后关闭。</param>
+        public static async UniTask MainAsync(ILaunchView launchView)
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
@@ -62,9 +62,9 @@ namespace Hotfix
             HookGameDriven();
 
             // 配置表必须在依赖它的模块（Sound、Entity 等）注册前加载
-            await InitFrameworkAsync(bootstrapView);
+            await InitFrameworkAsync(launchView);
             RegisterFeatureModules();
-            EnterGame(bootstrapView);
+            EnterGame(launchView);
         }
 
         /// <summary>
@@ -135,12 +135,12 @@ namespace Hotfix
         /// <summary>
         /// 初始化框架依赖：配置表、UI 资源、自定义组件绑定、多语言
         /// </summary>
-        private static async UniTask InitFrameworkAsync(ILaunchView bootstrapView)
+        private static async UniTask InitFrameworkAsync(ILaunchView launchView)
         {
-            bootstrapView.SetTip("LoadConfig...");
+            launchView.SetTip("LoadConfig...");
             await LoadConfigAsync();
 
-            bootstrapView.SetTip("LoadInitUIAsset...");
+            launchView.SetTip("LoadInitUIAsset...");
             await LoadUIAsync();
 
             CustomCompBind.BindAll();
@@ -149,12 +149,12 @@ namespace Hotfix
         }
 
         /// <summary>
-        /// 进入游戏：打开登录界面，关闭引导界面，启动新手引导
+        /// 进入游戏：打开登录界面，关闭启动界面，启动新手引导
         /// </summary>
-        private static void EnterGame(ILaunchView bootstrapView)
+        private static void EnterGame(ILaunchView launchView)
         {
             GlobalModule.UIModule.OpenUI<WinLogin>();
-            bootstrapView.Close();
+            launchView.Close();
 
             if (GameSetting.Instance.OpenGuide)
             {

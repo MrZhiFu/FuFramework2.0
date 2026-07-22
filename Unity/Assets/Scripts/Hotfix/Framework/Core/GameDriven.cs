@@ -18,17 +18,17 @@ namespace Hotfix.Framework.Core
     public class GameDriven : MonoSingleton<GameDriven>
     {
         /// <summary>
-        /// 框架模块帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.Update。
+        /// 框架模块帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.Update。
         /// </summary>
         public Action<float, float> OnUpdate;
 
         /// <summary>
-        /// 框架模块延迟帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.LateUpdate。
+        /// 框架模块延迟帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.LateUpdate。
         /// </summary>
         public Action<float, float> OnLateUpdate;
 
         /// <summary>
-        /// 框架模块固定帧更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.FixedUpdate。
+        /// 框架模块固定帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.FixedUpdate。
         /// </summary>
         public Action OnFixedUpdate;
 
@@ -43,7 +43,7 @@ namespace Hotfix.Framework.Core
         public Action ReInitModules;
 
         /// <summary>
-        /// 框架模块每秒更新委托。引导完成后由 Hotfix 侧挂接，指向 ModuleManager.PerSecondUpdate。
+        /// 框架模块每秒更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.PerSecondUpdate。
         /// </summary>
         public Action OnPerSecondUpdate;
 
@@ -118,14 +118,14 @@ namespace Hotfix.Framework.Core
 
         /// <summary>
         /// 重启游戏（如设置界面重启）。
-        /// 依次释放所有模块、重新初始化模块、重新运行 AOT 引导流程。
+        /// 依次释放所有模块、重新初始化模块、重新运行 AOT 启动流程。
         /// </summary>
         public void RestartGame()
         {
             DisposeModules?.Invoke();
             ReInitModules?.Invoke();
 
-            // 重新运行 AOT 引导流程（重新显示加载界面并重进热更入口）
+            // 重新运行 AOT 启动流程（重新显示加载界面并重进热更入口）
             LaunchProcess.RunAsync().Forget();
         }
 

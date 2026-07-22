@@ -65,10 +65,10 @@ namespace Hotfix.Framework.Asset
 
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
-            // 初始化YooAsset（引导阶段 LaunchAssetHelper 可能已初始化，避免二次初始化）
+            // 初始化YooAsset（启动阶段 LaunchAssetHelper 可能已初始化，避免二次初始化）
             if (LaunchAssetHelper.YooAssetInitialized)
             {
-                // 引导流程已初始化 YooAsset 并创建/初始化默认包，标记为已初始化，避免热更侧重复初始化默认包
+                // 启动流程已初始化 YooAsset 并创建/初始化默认包，标记为已初始化，避免热更侧重复初始化默认包
                 PackageInited = true;
             }
             else
