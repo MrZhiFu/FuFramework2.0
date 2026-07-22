@@ -11,9 +11,8 @@ Bootstrap 是 AOT 入口之后的第一阶段，负责**线性异步引导流程
 ```
 Bootstrap/
 ├── BootstrapProcess.cs         # 引导流程编排（线性 async，完成后反射进入热更）
-├── BootstrapAssetHelper.cs     # YooAsset 资源初始化助手（封装初始化/版本/清单/下载）
+├── BootstrapAssetHelper.cs     # YooAsset 资源初始化助手 + AOT/Hotfix 共享状态
 ├── BootstrapView.cs            # 加载界面 View（实现 IBootstrapView）—— 自包含 FairyGUI 包
-├── BootstrapContext.cs         # 跨 AOT/Hotfix 程序集的共享状态容器
 ├── IBootstrapView.cs           # 加载界面接口（定义在 AOT，供 HotfixLauncher 消费）
 ├── UI/                         # FairyGUI 自动生成代码
 │   └── WinLauncher.Gen.cs
@@ -70,7 +69,7 @@ Launcher.Start()
 | `CreateDownloader()` | 创建资源下载器 |
 | `LoadRawFileBytesAsync(path)` | 加载原始文件（用于 AOT 元数据和 Hotfix.dll） |
 
-初始化完成后向 `BootstrapContext` 写入 `YooAssetInitialized = true` 和 `DefaultPackageName`，供热更侧 `AssetModule` 读取，跳过重复初始化。
+初始化完成后设置静态属性 `YooAssetInitialized = true`，供热更侧 `AssetModule` 读取，跳过重复初始化。
 
 ### 4.3 BootstrapView
 
@@ -85,19 +84,7 @@ Launcher.Start()
 | `SetDownloading(downloading)` | 设置是否正在下载 |
 | `Close()` | 关闭加载界面 |
 
-### 4.4 BootstrapContext
-
-跨 AOT/Hotfix 程序集的共享状态容器（定义在 AOT）：
-
-| 字段 | 说明 |
-|------|------|
-| `YooAssetInitialized` | AOT 引导是否已完成 YooAsset 初始化 |
-| `DefaultPackageName` | 默认资源包名称 |
-
-- **AOT 写入**：`BootstrapAssetHelper.InitPackageAsync()` 完成后设置
-- **Hotfix 读取**：`AssetModule.OnInit()` 检查后跳过重复初始化
-
-### 4.5 IBootstrapView
+### 4.4 IBootstrapView
 
 加载界面接口，定义在 AOT，供 HotfixLauncher 通过接口类型消费（`SetTip`/`Close`），保证 AOT → Hotfix 的契约解耦。
 
@@ -119,7 +106,7 @@ Launcher.Start()
 ```
 AOT 侧                          Hotfix 侧
 ────────                        ─────────
-BootstrapContext ────写入────→  AssetModule 读取（跳过重复初始化）
-IBootstrapView    ────接口────→  HotfixLauncher.MainAsync(IBootstrapView)
-GameSetting.Instance ──引用────→  Hotfix 所有模块通过实例访问
+BootstrapAssetHelper ──写入────→  AssetModule 读取 YooAssetInitialized（跳过重复初始化）
+IBootstrapView       ──接口────→  HotfixLauncher.MainAsync(IBootstrapView)
+GameSetting.Instance  ──引用────→  Hotfix 所有模块通过实例访问
 ```

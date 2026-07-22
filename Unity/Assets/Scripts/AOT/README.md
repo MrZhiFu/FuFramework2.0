@@ -17,7 +17,6 @@ AOT/
 │   ├── BootstrapView.cs         # AOT 加载界面（实现 IBootstrapView）—— 自包含 FairyGUI 包
 │   ├── BootstrapAssetHelper.cs  # 资源初始化助手（封装 YooAsset 初始化/版本/清单/下载）
 │   ├── BootstrapProcess.cs      # 引导流程编排（线性 async）—— 完成后反射进入热更
-│   ├── BootstrapContext.cs      # 跨 AOT/Hotfix 程序集的共享状态容器
 │   ├── IBootstrapView.cs        # 加载界面接口（供 Hotfix 消费）
 │   ├── UI/                      # 加载界面 FairyGUI 自动生成代码
 │   └── UpdateConfig/            # 远端更新配置
@@ -61,6 +60,6 @@ AOT/
 
 ## 7. 跨程序集共享
 
-- **`BootstrapContext`**：定义在 AOT，记录 `YooAssetInitialized`、`DefaultPackageName` 等状态，AOT 写入、Hotfix 读取
+- **`BootstrapAssetHelper.YooAssetInitialized`**：AOT 写入、Hotfix 读取，防止 YooAsset 二次初始化
 - **`IBootstrapView`**：定义在 AOT，供 HotfixLauncher 通过接口调用 `SetTip`/`Close`，保证契约解耦
 - **`GameSetting.Instance`**：AOT 侧 MonoBehaviour 单例，Hotfix 通过 AOT 引用直接访问
