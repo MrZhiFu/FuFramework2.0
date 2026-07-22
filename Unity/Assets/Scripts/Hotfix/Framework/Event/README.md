@@ -202,7 +202,7 @@ public sealed class EmptyEventArgs : GameEventArgs
     
     public static EmptyEventArgs Create(string eventId)
     {
-        var eventArgs = ReferencePool.Runtime.ReferencePool.Acquire<EmptyEventArgs>();
+        var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
         m_EventId = eventId;
         return eventArgs;
     }
@@ -243,7 +243,7 @@ public class PlayerDamageEventArgs : GameEventArgs
     
     public static PlayerDamageEventArgs Create(int damage, GameObject attacker, Vector3 hitPosition)
     {
-        var args = ReferencePool.Runtime.ReferencePool.Acquire<PlayerDamageEventArgs>();
+        var args = ReferencePool.Acquire<PlayerDamageEventArgs>();
         args.Damage = damage;
         args.Attacker = attacker;
         args.HitPosition = hitPosition;
@@ -267,7 +267,7 @@ public class PlayerLevelUpEventArgs : GameEventArgs
     
     public static PlayerLevelUpEventArgs Create(int newLevel, int oldLevel)
     {
-        var args = ReferencePool.Runtime.ReferencePool.Acquire<PlayerLevelUpEventArgs>();
+        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
         args.NewLevel = newLevel;
         args.OldLevel = oldLevel;
         return args;
@@ -278,8 +278,8 @@ public class PlayerLevelUpEventArgs : GameEventArgs
 ### 5.2 订阅事件
 
 ```csharp
-using FuFramework.Core.Runtime;
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
 
 public class PlayerController : MonoBehaviour
 {
@@ -577,23 +577,17 @@ public class CriticalSystem : MonoBehaviour
 
 ```text
 Event/
-├── Editor/                          # 编辑器扩展代码
-│   ├── Inspector/
-│   │   └── EventModuleInspector.cs  # EventModule Inspector 扩展
-│   └── FuFramework.Event.Editor.asmdef
-├── Runtime/                         # 运行时核心代码
-│   ├── EventModule.cs               # 事件管理模块
-│   ├── EventRegister.cs             # 事件注册器
-│   ├── EventPool/                   # 事件池
-│   │   ├── EventPool.cs             # 事件池核心实现
-│   │   ├── EventPool.Event.cs       # 事件节点定义
-│   │   └── EEventPoolMode.cs        # 事件池模式枚举
-│   ├── Event/                       # 事件参数
-│   │   ├── BaseEventArgs.cs         # 事件参数基类
-│   │   ├── GameEventArgs.cs         # 游戏事件参数基类
-│   │   └── EmptyEventArgs.cs        # 空事件参数
-│   └── FuFramework.Event.Runtime.asmdef
-└── README.md                        # 本文档
+├── EventModule.cs               # 事件管理模块
+├── EventRegister.cs             # 事件注册器
+├── EventPool/                   # 事件池
+│   ├── EventPool.cs             # 事件池核心实现
+│   ├── EventPool.Event.cs       # 事件节点定义
+│   └── EEventPoolMode.cs        # 事件池模式枚举
+├── Event/                       # 事件参数
+│   ├── BaseEventArgs.cs         # 事件参数基类
+│   ├── GameEventArgs.cs         # 游戏事件参数基类
+│   └── EmptyEventArgs.cs        # 空事件参数
+└── README.md                    # 本文档
 ```
 
 ***
@@ -601,8 +595,8 @@ Event/
 ## 9. 依赖
 
 - Unity  : 2021.3 LTS 或更高版本
-- FuFramework.Core  : 框架核心模块
-- FuFramework.ReferencePool  : 引用池模块
+- Hotfix.Framework.Core  : 框架核心模块
+- Hotfix.Framework.ReferencePools  : 引用池模块
 
 ***
 
@@ -659,7 +653,7 @@ public class MyEventArgs : GameEventArgs
     
     public static MyEventArgs Create(int intValue, string stringValue)
     {
-        var args = ReferencePool.Runtime.ReferencePool.Acquire<MyEventArgs>();
+        var args = ReferencePool.Acquire<MyEventArgs>();
         args.IntValue = intValue;
         args.StringValue = stringValue;
         return args;

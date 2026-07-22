@@ -127,7 +127,7 @@ private static void QueueInvoking(List<Action> invokeList, List<Action> waitInvo
 ### 5.1 基础生命周期事件监听
 
 ```csharp
-using FuFramework.Mono.Runtime;
+using Hotfix.Framework.Mono;
 using UnityEngine;
 
 public class LifecycleExample : MonoBehaviour
@@ -193,7 +193,7 @@ public class LifecycleExample : MonoBehaviour
 ### 5.2 应用程序事件监听
 
 ```csharp
-using FuFramework.Mono.Runtime;
+using Hotfix.Framework.Mono;
 using UnityEngine;
 
 public class ApplicationEventExample : MonoBehaviour
@@ -298,7 +298,7 @@ public class ApplicationEventExample : MonoBehaviour
 ### 5.3 非 MonoBehaviour 对象使用生命周期事件
 
 ```csharp
-using FuFramework.Mono.Runtime;
+using Hotfix.Framework.Mono;
 using System;
 
 // 非 MonoBehaviour 的业务逻辑类
@@ -406,7 +406,7 @@ public class GameController : MonoBehaviour
 ### 5.4 性能监控示例
 
 ```csharp
-using FuFramework.Mono.Runtime;
+using Hotfix.Framework.Mono;
 using System.Diagnostics;
 
 public class PerformanceMonitor
@@ -454,16 +454,15 @@ public class PerformanceMonitor
 ## 6. 目录结构
 
 ```
-FuFramework/Mono/
-├── Runtime/
-│   ├── FuFramework.Mono.Runtime.asmdef    # 运行时程序集定义
+Hotfix.Framework/Mono/
+├── 
 │   └── MonoModule.cs                       # Mono 生命周期管理模块
 └── README.md                               # 模块文档
 ```
 
 ## 7. 依赖
 
-- **FuFramework.Core**：框架核心模块（ModuleBase、FuGuardEx、Utility、FuLogger）
+- **Hotfix.Framework.Core**：框架核心模块（ModuleBase、FuGuardEx、Utility、FuLogger）
 
 ## 8. 最佳实践
 

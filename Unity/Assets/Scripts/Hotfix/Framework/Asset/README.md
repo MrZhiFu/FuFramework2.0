@@ -61,8 +61,8 @@ UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
 UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
 
 // 加载原生文件
-UniTask<RawFileHandle> LoadRawFileAsync(string path)
-UniTask<RawFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
+UniTask<BundleFileHandle> LoadRawFileAsync(string path)
+UniTask<BundleFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
 ```
 
 ##### 同步加载资源(不推荐使用)
@@ -80,8 +80,8 @@ AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo)
 
 SubAssetsHandle LoadSubAssetSync(string path)
 
-RawFileHandle LoadRawFileSync(string path)
-RawFileHandle LoadRawFileSync(AssetInfo assetInfo)
+BundleFileHandle LoadRawFileSync(string path)
+BundleFileHandle LoadRawFileSync(AssetInfo assetInfo)
 ```
 
 ##### 异步加载场景
@@ -102,22 +102,24 @@ GameObject InstantiateSync(string path)   // 同步实例化(不推荐使用)
 
 ```csharp
 // 初始化资源包
-UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string fallbackDownloadURL = null, bool isDefaultPackage = true)
+UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
 
 // 资源包操作
 ResourcePackage CreatePackage(string packageName)
 ResourcePackage TryGetPackage(string packageName)
 bool HasPackage(string packageName)
-void SetDefaultPackage(ResourcePackage package)
+void SetDefaultPackage(ResourcePackage package)  // [Obsolete] YooAsset v3 已移除全局默认包概念
 ```
 
 #### 资源卸载
 
 ```csharp
-void UnloadAsset(string path)
-UniTask UnloadAllAssetsAsync(string packageName)
-void UnloadUnusedAssets()
-UniTask UnloadUnusedAssetsAsync()
+void UnloadAsset(string assetPath)
+void UnloadAsset(string packageName, string assetPath)
+UniTaskVoid UnloadAllAssetsAsync(string packageName)
+UniTaskVoid UnloadUnusedAssetsAsync(string packageName)
+UniTaskVoid ClearAllBundleFilesAsync(string packageName)
+UniTaskVoid ClearUnusedBundleFilesAsync(string packageName)
 ```
 
 ### AssetLoadRegister
@@ -212,8 +214,8 @@ var assetModule = ModuleManager.GetModule<AssetModule>();
 // HostPlayMode 需要传入下载地址
 bool success = await assetModule.InitPackageAsync(
     "DefaultPackage",
-    "https://your-cdn.com/assets/",
-    "https://your-backup-cdn.com/assets/"
+    downloadURL: "https://your-cdn.com/assets/",
+    downloadBackupURL: "https://your-backup-cdn.com/assets/"
 );
 ```
 
@@ -278,9 +280,9 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 
 - [YooAsset](https://www.yooasset.com/) - 资源管理核心
 - [UniTask](https://github.com/Cysharp/UniTask) - 异步编程支持
-- FuFramework.Core - 框架核心模块
-- FuFramework.Event - 事件系统
-- FuFramework.ReferencePool - 引用池系统
+- Hotfix.Framework.Core - 框架核心模块
+- Hotfix.Framework.Event - 事件系统
+- Hotfix.Framework.ReferencePools - 引用池系统
 
 ## 9. 注意事项
 

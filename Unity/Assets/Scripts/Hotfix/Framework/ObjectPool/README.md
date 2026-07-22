@@ -256,7 +256,7 @@ protected void Initialize(string name, object target, int priority)
 // 生命周期回调
 protected internal virtual void OnSpawn() { }      // 对象被获取时
 protected internal virtual void OnRecycle() { }    // 对象被回收时
-protected internal abstract void OnRelease(bool isShutdown);  // 对象被释放时
+protected internal abstract void OnRelease();  // 对象被释放时
 
 // 引用池接口
 public virtual void Clear()                        // 清理对象
@@ -286,7 +286,7 @@ private sealed class Object<T> : IReference where T : ObjectBase
 - `Create(T obj, bool spawned)` - 创建内部对象
 - `Spawn()` - 获取对象（计数+1）
 - `Recycle()` - 回收对象（计数-1）
-- `Release(bool isShutdown)` - 释放对象
+- `OnRelease()` - 释放对象
 - `Peek()` - 查看对象
 
 ### 4.6 ObjectInfo
@@ -323,8 +323,8 @@ public delegate List<T> ReleaseObjectFilterCallback<T>(
 ### 5.1 定义自定义对象类
 
 ```csharp
-using FuFramework.ObjectPool.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ObjectPool;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 // 定义子弹对象类
@@ -379,7 +379,7 @@ public class BulletObject : ObjectBase
     /// <summary>
     /// 释放对象（销毁 GameObject）
     /// </summary>
-    protected internal override void Release(bool isShutdown)
+    protected internal override void OnRelease()
     {
         if (Target is GameObject gameObject)
         {
@@ -418,8 +418,8 @@ public class BulletObject : ObjectBase
 ### 5.2 创建和使用对象池
 
 ```csharp
-using FuFramework.Core.Runtime;
-using FuFramework.ObjectPool.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ObjectPool;
 
 public class BulletManager
 {
@@ -556,12 +556,10 @@ m_BulletPool.ReleaseAllUnused();  // 释放所有未使用对象
 ## 6. 目录结构
 
 ```
-Assets/FuFramework/ObjectPool/
+ObjectPool/
 ├── Editor/
-│   ├── FuFramework.ObjectPool.Editor.asmdef    # 编辑器程序集定义
 │   └── ObjectPoolModuleInspector.cs            # 对象池模块 Inspector
 ├── Runtime/
-│   ├── FuFramework.ObjectPool.Runtime.asmdef   # 运行时程序集定义
 │   ├── ObjectPoolModule.cs                     # 对象池管理模块
 │   ├── ObjectPoolModule.Object.cs              # 内部对象包装类
 │   ├── ObjectPoolModule.ObjectPool.cs          # 泛型对象池实现
@@ -578,8 +576,8 @@ Assets/FuFramework/ObjectPool/
 
 | 模块                        | 说明                                               |
 | ------------------------- | ------------------------------------------------ |
-| FuFramework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuException、FuLogger |
-| FuFramework.ReferencePool | 提供 IReference 接口和 ReferencePool                  |
+| Hotfix.Framework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuException、FuLogger |
+| Hotfix.Framework.ReferencePools | 提供 IReference 接口和 ReferencePool                  |
 
 ## 8. 最佳实践
 
@@ -590,7 +588,7 @@ Assets/FuFramework/ObjectPool/
 var obj = ReferencePool.Acquire<MyObject>();
 
 // 2. 在 Release 中销毁 GameObject，在 Clear 中清理引用
-protected internal override void Release(bool isShutdown)
+protected internal override void OnRelease()
 {
     if (Target is GameObject go)
         Object.Destroy(go);

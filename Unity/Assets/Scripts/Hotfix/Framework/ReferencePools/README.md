@@ -367,7 +367,7 @@ public readonly struct ReferencePoolInfo
 创建一个需要被引用池管理的类：
 
 ```csharp
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 
 /// <summary>
 /// 网络消息类 - 实现 IReference 接口支持引用池
@@ -403,7 +403,7 @@ public class NetworkMessage : IReference
 ### 5.2 基本使用示例
 
 ```csharp
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 public class ReferencePoolExample : MonoBehaviour
@@ -667,18 +667,14 @@ public class SafeObjectUsage : MonoBehaviour
 ## 6. 目录结构
 
 ```
-Assets/FuFramework/ReferencePool/
-├── Runtime/
-│   ├── FuFramework.ReferencePool.Runtime.asmdef    # 程序集定义
+ReferencePools/
+├── 
 │   ├── ReferencePoolModule.cs                       # 引用池管理模块
 │   ├── ReferencePool.cs                             # 引用池静态类
 │   ├── ReferencePool.ReferenceCollection.cs         # 引用集合实现
 │   ├── IReference.cs                                # 引用接口
 │   ├── ReferencePoolInfo.cs                         # 引用池信息结构体
 │   └── EReferenceStrictCheckType.cs                 # 严格检查类型枚举
-├── Editor/
-│   ├── FuFramework.ReferencePool.Editor.asmdef      # 编辑器程序集定义
-│   └── ReferencePoolModuleInspector.cs              # 模块 Inspector 面板
 └── README.md                                        # 本文档
 ```
 
@@ -686,7 +682,7 @@ Assets/FuFramework/ReferencePool/
 
 | 模块 | 说明 |
 |------|------|
-| FuFramework.Core | 提供 ModuleBase 基类、FuException、FuLogger |
+| Hotfix.Framework.Core | 提供 ModuleBase 基类、FuException、FuLogger |
 
 ## 8. 最佳实践
 

@@ -118,10 +118,10 @@ void GetAllStates(List<FsmStateBase> results)
 
 // 数据管理
 bool HasData(string name)
-TData GetData<TData>(string name) where TData : Variable.Runtime.Variable
-Variable.Runtime.Variable GetData(string name)
-void SetData<TData>(string name, TData data) where TData : Variable.Runtime.Variable
-void SetData(string name, Variable.Runtime.Variable data)
+TData GetData<TData>(string name) where TData : VariableBase
+VariableBase GetData(string name)
+void SetData<TData>(string name, TData data) where TData : VariableBase
+void SetData(string name, VariableBase data)
 bool RemoveData(string name)
 
 // 状态切换（内部方法，通常在状态中调用）
@@ -179,8 +179,8 @@ protected void ChangeState(Type state)
 ### 5.1 定义状态类
 
 ```csharp
-using FuFramework.Fsm.Runtime;
-using FuFramework.Core.Runtime;
+using Hotfix.Framework.FSM;
+using Hotfix.Framework.Core;
 using UnityEngine;
 
 // 空闲状态
@@ -306,8 +306,8 @@ public class PlayerDeathState : FsmStateBase
 ### 5.2 创建和使用状态机
 
 ```csharp
-using FuFramework.Core.Runtime;
-using FuFramework.Fsm.Runtime;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.FSM;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -346,7 +346,7 @@ public class PlayerController : MonoBehaviour
         health -= damage;
 
         // 更新血量
-        var healthVar = VarFloat.Create(health);
+        VarFloat healthVar = health;
         m_PlayerFsm.SetData("Health", healthVar);
 
         // 血量归零，切换到死亡状态
@@ -378,9 +378,10 @@ public class EnemyAIState : FsmStateBase
         base.OnInit(fsm);
 
         // 初始化数据
-        var detectionRange = VarFloat.Create(10f);
-        var attackRange = VarFloat.Create(2f);
-        var patrolPoints = VarGameObjectArray.Create(new GameObject[4]);
+        VarFloat detectionRange = 10f;
+        VarFloat attackRange = 2f;
+        VarObject patrolPoints = ReferencePool.Acquire<VarObject>();
+        patrolPoints.Value = new GameObject[4];
 
         Fsm.SetData("DetectionRange", detectionRange);
         Fsm.SetData("AttackRange", attackRange);
@@ -403,7 +404,7 @@ public class EnemyAIState : FsmStateBase
         // AI 逻辑...
         if (target != null)
         {
-            float distance = Vector3.Distance(Fsm.transform.position, target.transform.position);
+            float distance = Vector3.Distance(// 通过其他方式获取 Transform: position, target.transform.position);
 
             if (distance <= detectionRange?.Value)
             {
@@ -432,8 +433,8 @@ public class EnemyController : MonoBehaviour
         );
 
         // 设置初始数据
-        var health = VarFloat.Create(100f);
-        var speed = VarFloat.Create(5f);
+        VarFloat health = 100f;
+        VarFloat speed = 5f;
 
         m_EnemyFsm.SetData("Health", health);
         m_EnemyFsm.SetData("Speed", speed);
@@ -478,8 +479,8 @@ public class GamePlayState : FsmStateBase
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
         // 检查游戏结束条件
-        bool isPlayerDead = Fsm.GetData<VarBool>("IsPlayerDead")?.Value ?? false;
-        bool isLevelComplete = Fsm.GetData<VarBool>("IsLevelComplete")?.Value ?? false;
+        bool isPlayerDead = Fsm.GetData<VarBoolean>("IsPlayerDead")?.Value ?? false;
+        bool isLevelComplete = Fsm.GetData<VarBoolean>("IsLevelComplete")?.Value ?? false;
 
         if (isPlayerDead)
         {
@@ -569,13 +570,13 @@ public class GameManager : MonoBehaviour
 
     public void SetPlayerDead()
     {
-        var isDead = VarBool.Create(true);
+        VarBoolean isDead = true;
         m_GameFsm.SetData("IsPlayerDead", isDead);
     }
 
     public void SetLevelComplete()
     {
-        var isComplete = VarBool.Create(true);
+        VarBoolean isComplete = true;
         m_GameFsm.SetData("IsLevelComplete", isComplete);
     }
 }
@@ -659,16 +660,10 @@ public class ComplexEnemyController : MonoBehaviour
 
 ```text
 FSM/
-├── Editor/                          # 编辑器扩展代码
-│   ├── Inspector/
-│   │   └── FsmModuleInspector.cs    # FsmModule Inspector 扩展
-│   └── FuFramework.FSM.Editor.asmdef
-├── Runtime/                         # 运行时核心代码
-│   ├── FsmModule.cs                 # 有限状态机管理模块
-│   ├── Fsm.cs                       # 有限状态机核心类
-│   ├── FsmStateBase.cs              # 状态基类
-│   └── FuFramework.FSM.Runtime.asmdef
-└── README.md                        # 本文档
+├── FsmModule.cs                 # 有限状态机管理模块
+├── Fsm.cs                       # 有限状态机核心类
+├── FsmStateBase.cs              # 状态基类
+└── README.md                    # 本文档
 ```
 
 ---
@@ -676,9 +671,9 @@ FSM/
 ## 8. 依赖
 
 - **Unity**: 2021.3 LTS 或更高版本
-- **FuFramework.Core**: 框架核心模块
-- **FuFramework.ReferencePool**: 引用池模块
-- **FuFramework.Variable**: 变量管理模块（用于状态机数据存储）
+- **Hotfix.Framework.Core**: 框架核心模块
+- **Hotfix.Framework.ReferencePools**: 引用池模块
+- **Hotfix.Framework.Variable**: 变量管理模块（用于状态机数据存储）
 
 ---
 
@@ -721,7 +716,7 @@ public class ChaseState : FsmStateBase
             return;
         }
 
-        float distance = Vector3.Distance(Fsm.transform.position, target.transform.position);
+        float distance = Vector3.Distance(// 通过其他方式获取 Transform: position, target.transform.position);
 
         // 进入攻击范围
         if (distance <= attackRange)
@@ -752,12 +747,12 @@ public class AIStateBase : FsmStateBase
     protected const string KEY_HEALTH = "Health";
     protected const string KEY_SPEED = "Speed";
 
-    protected T GetData<T>(string key) where T : Variable.Runtime.Variable
+    protected T GetData<T>(string key) where T : VariableBase
     {
         return Fsm.GetData<T>(key);
     }
 
-    protected void SetData<T>(string key, T value) where T : Variable.Runtime.Variable
+    protected void SetData<T>(string key, T value) where T : VariableBase
     {
         Fsm.SetData(key, value);
     }

@@ -19,13 +19,13 @@ Variable 模块是 FuFramework 中的变量管理系统，提供基于引用池�
 ```
 IReference (引用池接口)
     ↑
-Variable (抽象基类)
+VariableBase (抽象基类)
     ├── Type (抽象属性)
     ├── GetValue() (抽象方法)
     ├── SetValue() (抽象方法)
     └── Clear() (抽象方法)
     ↑
-Variable<T> (泛型基类)
+GenericVariable<T> (泛型基类)
     ├── Value (属性)
     ├── Type (实现)
     ├── GetValue() (实现)
@@ -42,7 +42,7 @@ Variable<T> (泛型基类)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Variable (抽象基类)                      │
+│                    VariableBase (抽象基类)                      │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  Type (抽象属性)                                     │   │
 │  │  GetValue() (抽象方法)                               │   │
@@ -52,7 +52,7 @@ Variable<T> (泛型基类)
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                   Variable<T> (泛型基类)                    │
+│                   GenericVariable<T> (泛型基类)                    │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  Value (T类型属性)                                   │   │
 │  │  Type (返回typeof(T))                                │   │
@@ -97,9 +97,9 @@ public abstract void SetValue(object value);
 public abstract void Clear();
 ```
 
-### 3.2 Variable<T>
+### 3.2 GenericVariable<T>
 
-泛型变量基类，继承自 Variable，提供类型安全的泛型实现。
+泛型变量基类，继承自 VariableBase，提供类型安全的泛型实现。
 
 **核心属性：**
 
@@ -126,19 +126,19 @@ public override string ToString() => Value != null ? Value.ToString() : "<Null>"
 
 ### 3.3 具体变量类
 
-所有具体变量类都继承自 Variable<T>。大多数类型实现了双向隐式转换操作符，但 VarObject 作为通用对象类型，未实现隐式转换，需要显式操作。
+所有具体变量类都继承自 GenericVariable<T>。大多数类型实现了双向隐式转换操作符，但 VarObject 作为通用对象类型，未实现隐式转换，需要显式操作。
 
 **典型实现模式（带隐式转换）：**
 
 ```csharp
-public sealed class VarInt32 : Variable<int>
+public sealed class VarInt32 : GenericVariable<int>
 {
     public VarInt32() { }
 
     // 从原生类型到变量类的隐式转换
     public static implicit operator VarInt32(int value)
     {
-        var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        var varValue = ReferencePool.Acquire<VarInt32>();
         varValue.Value = value;
         return varValue;
     }
@@ -151,14 +151,14 @@ public sealed class VarInt32 : Variable<int>
 **VarObject 特殊实现（无隐式转换）：**
 
 ```csharp
-public sealed class VarObject : Variable<object>
+public sealed class VarObject : GenericVariable<object>
 {
     public VarObject() { }
     // 未实现隐式转换操作符，需显式使用
 }
 
 // 使用方式
-var objVar = ReferencePool.Runtime.ReferencePool.Acquire<VarObject>();
+var objVar = ReferencePool.Acquire<VarObject>();
 objVar.Value = anyObject;
 ```
 
@@ -219,7 +219,7 @@ objVar.Value = anyObject;
 ### 5.1 基本使用流程
 
 ```csharp
-using FuFramework.Variable.Runtime;
+using Hotfix.Framework.Variable;
 using UnityEngine;
 
 public class VariableExample : MonoBehaviour
@@ -243,18 +243,18 @@ public class VariableExample : MonoBehaviour
         Debug.Log($"Vector: {vectorVar}");
         
         // 使用引用池获取变量
-        var pooledVar = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        var pooledVar = ReferencePool.Acquire<VarInt32>();
         pooledVar.Value = 200;
         Debug.Log($"Pooled Value: {pooledVar.Value}");
         
         // 释放回引用池
-        ReferencePool.Runtime.ReferencePool.Release(pooledVar);
+        ReferencePool.Release(pooledVar);
         
         // VarObject 使用（无隐式转换）
-        var objVar = ReferencePool.Runtime.ReferencePool.Acquire<VarObject>();
+        var objVar = ReferencePool.Acquire<VarObject>();
         objVar.Value = new { Name = "Test", Id = 1 };
         Debug.Log($"Object Value: {objVar.Value}");
-        ReferencePool.Runtime.ReferencePool.Release(objVar);
+        ReferencePool.Release(objVar);
     }
 }
 ```
@@ -265,14 +265,14 @@ public class VariableExample : MonoBehaviour
 public void ProcessVariables()
 {
     // 推荐：使用引用池获取变量
-    var tempVar = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+    var tempVar = ReferencePool.Acquire<VarInt32>();
     tempVar.Value = 100;
     
     // 使用变量...
     ProcessValue(tempVar.Value);
     
     // 使用后释放回引用池
-    ReferencePool.Runtime.ReferencePool.Release(tempVar);
+    ReferencePool.Release(tempVar);
 }
 
 // 不推荐：频繁创建新实例（产生GC压力）
@@ -288,7 +288,7 @@ public void ProcessVariablesBad()
 ### 5.3 事件系统数据传递
 
 ```csharp
-using FuFramework.Event.Runtime;
+using Hotfix.Framework.Event;
 
 public class PlayerLevelUpEventArgs : GameEventArgs
 {
@@ -301,7 +301,7 @@ public class PlayerLevelUpEventArgs : GameEventArgs
     
     public static PlayerLevelUpEventArgs Create(int oldLevel, int newLevel, string playerName)
     {
-        var args = ReferencePool.Runtime.ReferencePool.Acquire<PlayerLevelUpEventArgs>();
+        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
         args.OldLevel = oldLevel;
         args.NewLevel = newLevel;
         args.PlayerName = playerName;
@@ -374,7 +374,7 @@ public void ProcessMultipleVariables()
     var variables = new List<VarInt32>();
     for (int i = 0; i < 100; i++)
     {
-        var var = ReferencePool.Runtime.ReferencePool.Acquire<VarInt32>();
+        var var = ReferencePool.Acquire<VarInt32>();
         var.Value = i * 10;
         variables.Add(var);
     }
@@ -389,7 +389,7 @@ public void ProcessMultipleVariables()
     // 批量释放
     foreach (var variable in variables)
     {
-        ReferencePool.Runtime.ReferencePool.Release(variable);
+        ReferencePool.Release(variable);
     }
 }
 ```
@@ -406,13 +406,13 @@ public enum PlayerState
     Dead
 }
 
-public sealed class VarPlayerState : Variable<PlayerState>
+public sealed class VarPlayerState : GenericVariable<PlayerState>
 {
     public VarPlayerState() { }
     
     public static implicit operator VarPlayerState(PlayerState value)
     {
-        var varValue = ReferencePool.Runtime.ReferencePool.Acquire<VarPlayerState>();
+        var varValue = ReferencePool.Acquire<VarPlayerState>();
         varValue.Value = value;
         return varValue;
     }
@@ -437,7 +437,7 @@ public void TestCustomVariable()
 ## 6. 目录结构
 
 ```
-FuFramework/Variable/
+Hotfix.Framework/Variable/
 ├── Base/
 │   ├── Variable.cs              # 变量抽象基类
 │   └── GenericVariable.cs       # 泛型变量基类
@@ -472,7 +472,6 @@ FuFramework/Variable/
 │   ├── VarTexture.cs            # Texture变量
 │   ├── VarUnityObject.cs        # UnityObject变量
 │   └── VarObject.cs             # 通用对象变量
-├── FuFramework.Variable.Runtime.asmdef
 └── README.md                    # 本文档
 ```
 
@@ -508,7 +507,7 @@ int value = var;
 
 ### 8.2 隐式转换
 
-通过泛型基类 Variable<T> 实现编译期类型检查：
+通过泛型基类 GenericVariable<T> 实现编译期类型检查：
 
 ```csharp
 VarInt32 intVar = 100;           // 正确
@@ -517,7 +516,7 @@ VarInt32 wrongVar = "string";    // 编译错误
 
 ### 8.3 类型安全
 
-所有变量类都继承自 Variable 基类，提供统一的访问方式：
+所有变量类都继承自 VariableBase 基类，提供统一的访问方式：
 
 ```csharp
 Variable baseVar = new VarInt32();
@@ -605,10 +604,10 @@ A: 建议：
 
 ### Q: 如何创建自定义变量类型？
 
-A: 继承 Variable<T> 并实现隐式转换：
+A: 继承 GenericVariable<T> 并实现隐式转换：
 
 ```csharp
-public sealed class VarCustomType : Variable<CustomType>
+public sealed class VarCustomType : GenericVariable<CustomType>
 {
     public VarCustomType() { }
     

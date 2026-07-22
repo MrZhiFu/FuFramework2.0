@@ -32,8 +32,8 @@ TaskPool<T> (泛型任务池)
     ├── TaskInfo (任务信息结构体)
     │
     └── 枚举类型
-            ├── TaskStatus (任务状态)
-            └── StartTaskStatus (启动状态)
+            ├── ETaskStatus (任务状态)
+            └── EStartTaskStatus (启动状态)
 ```
 
 ### 2.2 技术架构
@@ -203,7 +203,7 @@ public interface ITaskAgent<T> where T : TaskBase
     void Shutdown();
 
     // 开始处理任务
-    StartTaskStatus Start(T task);
+    EStartTaskStatus Start(T task);
 
     // 重置代理（任务完成或失败时调用）
     void Reset();
@@ -240,10 +240,10 @@ public class DownloadAgent : ITaskAgent<DownloadTask>
         // 清理资源
     }
 
-    public StartTaskStatus Start(DownloadTask task)
+    public EStartTaskStatus Start(DownloadTask task)
     {
         Task = task;
-        return StartTaskStatus.CanResume;
+        return EStartTaskStatus.CanResume;
     }
 
     public void Reset()
@@ -265,16 +265,16 @@ public class DownloadAgent : ITaskAgent<DownloadTask>
 | SerialId | int | 任务序列编号 |
 | Tag | string | 任务标签 |
 | Priority | int | 任务优先级 |
-| Status | TaskStatus | 任务状态 |
+| Status | ETaskStatus | 任务状态 |
 | Description | string | 任务描述 |
 | UserData | object | 用户自定义数据 |
 
 ### 3.5 枚举类型
 
-#### 3.5.1 TaskStatus
+#### 3.5.1 ETaskStatus
 
 ```csharp
-public enum TaskStatus : byte
+public enum ETaskStatus : byte
 {
     Todo = 0,   // 未开始
     Doing,      // 执行中
@@ -282,10 +282,10 @@ public enum TaskStatus : byte
 }
 ```
 
-#### 3.5.2 StartTaskStatus
+#### 3.5.2 EStartTaskStatus
 
 ```csharp
-public enum StartTaskStatus : byte
+public enum EStartTaskStatus : byte
 {
     Done = 0,       // 完成此任务（立即完成，无需Update）
     CanResume,      // 恢复处理此任务（需要后续Update）
@@ -299,8 +299,8 @@ public enum StartTaskStatus : byte
 ### 4.1 基本使用流程
 
 ```csharp
-using FuFramework.TaskPool.Runtime;
-using FuFramework.ReferencePool.Runtime;
+using Hotfix.Framework.TaskPool;
+using Hotfix.Framework.ReferencePools;
 
 public class TaskPoolExample : MonoBehaviour
 {
@@ -401,15 +401,14 @@ taskPool.Paused = false;
 ## 5. 目录结构
 
 ```
-FuFramework/TaskPool/
-├── Runtime/
+TaskPool/
+├── 
 │   ├── TaskPool.cs              # 任务池核心类
 │   ├── TaskBase.cs              # 任务基类
 │   ├── ITaskAgent.cs            # 任务代理接口
 │   ├── TaskInfo.cs              # 任务信息结构体
-│   ├── TaskStatus.cs            # 任务状态枚举
-│   ├── StartTaskStatus.cs       # 启动状态枚举
-│   └── FuFramework.TaskPool.Runtime.asmdef
+│   ├── ETaskStatus.cs            # 任务状态枚举
+│   ├── EStartTaskStatus.cs       # 启动状态枚举
 ├── README.md                    # 本文档
 ```
 
@@ -433,11 +432,11 @@ FuFramework/TaskPool/
 ### 7.3 资源复用
 
 - 任务代理通过栈结构复用，避免频繁创建销毁
-- 任务对象通过 ReferencePool 管理，减少 GC 压力
+- 任务对象通过 ReferencePools 管理，减少 GC 压力
 
 ### 7.4 状态驱动
 
-任务通过 Done 属性标记完成状态，代理通过 StartTaskStatus 返回启动结果，实现灵活的任务控制。
+任务通过 Done 属性标记完成状态，代理通过 EStartTaskStatus 返回启动结果，实现灵活的任务控制。
 
 ## 8. 应用场景
 
@@ -451,6 +450,6 @@ FuFramework/TaskPool/
 
 1. **线程安全**：TaskPool 设计为单线程使用，需在主线程调用 Update
 2. **代理数量**：合理设置代理数量，过多会占用资源，过少会降低并发度
-3. **任务清理**：完成的任务会自动释放回 ReferencePool，无需手动处理
+3. **任务清理**：完成的任务会自动释放回 ReferencePools，无需手动处理
 4. **暂停机制**：暂停后不会处理新任务，但正在执行的任务会继续直到完成
-5. **错误处理**：通过 StartTaskStatus.UnknownError 标记错误任务，会自动释放
+5. **错误处理**：通过 EStartTaskStatus.UnknownError 标记错误任务，会自动释放

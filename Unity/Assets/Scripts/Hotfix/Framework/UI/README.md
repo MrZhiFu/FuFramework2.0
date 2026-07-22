@@ -63,7 +63,7 @@ ViewInfo (界面信息)
 ┌─────────────────────────────────────────────────────────────────┐
 │                        UIModule                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_UIGroupDict (Dictionary<UILayer, UIGroup>)          │   │
+│  │  m_UIGroupDict (Dictionary<EUILayer, UIGroup>)          │   │
 │  │  - WorldUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -108,7 +108,7 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_UIGroupDict | Dictionary<UILayer, UIGroup> | 界面组字典 |
+| m_UIGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
 | m_LoadingDict | Dictionary<int, string> | 加载中界面字典 |
 | m_WaitRecycleQueue | Queue<ViewBase> | 待回收界面队列 |
 | m_InstancePool | ObjectPool<ViewObject> | 界面实例对象池 |
@@ -140,7 +140,7 @@ public void CloseAllUIs()
 // 获取界面
 public T GetUI<T>() where T : ViewBase
 public ViewBase GetUI(int serialId)
-public ViewBase GetTopUI(UILayer? uiLayer = null)
+public ViewBase GetTopUI(EUILayer? uiLayer = null)
 public ViewBase[] GetAllLoadedUIs()
 
 // 查询界面
@@ -149,9 +149,9 @@ public bool HasUI(int serialId)
 public bool IsLoadingUI(string uiName)
 
 // 界面组管理
-public bool AddUIGroup(UILayer layer)
-public UIGroup GetUIGroup(UILayer layer)
-public bool HasUIGroup(UILayer layer)
+public bool AddUIGroup(EUILayer layer)
+public UIGroup GetUIGroup(EUILayer layer)
+public bool HasUIGroup(EUILayer layer)
 
 // 对象池设置
 public void SetUILocked(object uiView, bool locked)
@@ -183,10 +183,10 @@ public void SetUIPriority(object uiView, int priority)
 | UserData | object | 用户自定义数据 |
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
-| Layer | UILayer | 界面层级（可重写） |
+| Layer | EUILayer | 界面层级（可重写） |
 | AdjustNotch | bool | 是否适配刘海/打孔（可重写，默认true），false 时填满全屏覆盖刘海 |
 | PauseCoveredUI | bool | 是否暂停被覆盖界面（可重写） |
-| TweenType | UITweenType | 动画类型（可重写） |
+| TweenType | EUITweenType | 动画类型（可重写） |
 | TweenDuration | float | 动画时长（可重写，默认0.3s） |
 | UIGroup | UIGroup | 所属界面组 |
 | Visible | bool | 是否可见 |
@@ -258,7 +258,7 @@ public void StopTimer(int timerId)
 |------|------|------|
 | m_UIInfoList | FuLinkedList<ViewInfo> | 界面信息链表 |
 | m_Pause | bool | 组暂停状态 |
-| Layer | UILayer | 界面组层级 |
+| Layer | EUILayer | 界面组层级 |
 
 **核心属性：**
 
@@ -272,7 +272,7 @@ public void StopTimer(int timerId)
 
 ```csharp
 // 初始化
-public void Init(UILayer layer)
+public void Init(EUILayer layer)
 
 // 更新
 public void OnUpdate(float deltaTime, float unscaledDeltaTime)
@@ -374,10 +374,10 @@ public static ViewObject Create(string uiName, ViewBase viewBase)
 protected override void OnRelease()
 ```
 
-### 3.7 UILayer 枚举
+### 3.7 EUILayer 枚举
 
 ```csharp
-public enum UILayer
+public enum EUILayer
 {
     WorldUI = 0,      // 世界场景UI，如HUD、血条
     MainUI = 1500,    // 主界面
@@ -389,10 +389,10 @@ public enum UILayer
 }
 ```
 
-### 3.8 UITweenType 枚举
+### 3.8 EUITweenType 枚举
 
 ```csharp
-public enum UITweenType
+public enum EUITweenType
 {
     None,    // 无动画
     Fade,    // 淡入淡出
@@ -466,7 +466,7 @@ protected override bool AdjustNotch => false;
 ### 4.1 创建自定义 UI 界面
 
 ```csharp
-using FuFramework.UI.Runtime;
+using Hotfix.Framework.UI;
 using FairyGUI;
 using UnityEngine;
 
@@ -480,13 +480,13 @@ public class MainUIView : ViewBase
     public override string PackageName => "Main";
     
     // 界面层级
-    protected override UILayer Layer => UILayer.MainUI;
+    protected override EUILayer Layer => EUILayer.MainUI;
     
     // 是否适配刘海/打孔区域（全屏覆盖）
     protected override bool AdjustNotch => false;
     
     // 动画类型
-    protected override UITweenType TweenType => UITweenType.Fade;
+    protected override EUITweenType TweenType => EUITweenType.Fade;
     
     // 动画时长
     protected override float TweenDuration => 0.3f;
@@ -543,7 +543,7 @@ public class MainUIView : ViewBase
 ### 4.2 打开和关闭界面
 
 ```csharp
-using FuFramework.UI.Runtime;
+using Hotfix.Framework.UI;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -591,7 +591,7 @@ public class GameController : MonoBehaviour
 public class AnimatedUIView : ViewBase
 {
     public override string UIName => "AnimatedUI";
-    protected override UITweenType TweenType => UITweenType.Custom;
+    protected override EUITweenType TweenType => EUITweenType.Custom;
     
     // 自定义打开动画
     protected override void DoCustomOpenTween()
@@ -618,37 +618,37 @@ public class AnimatedUIView : ViewBase
 // 世界UI - HUD、血条等
 public class HUDView : ViewBase
 {
-    protected override UILayer Layer => UILayer.WorldUI;
+    protected override EUILayer Layer => EUILayer.WorldUI;
 }
 
 // 主界面
 public class MainMenuView : ViewBase
 {
-    protected override UILayer Layer => UILayer.MainUI;
+    protected override EUILayer Layer => EUILayer.MainUI;
 }
 
 // 普通全屏界面
 public class BattleView : ViewBase
 {
-    protected override UILayer Layer => UILayer.Normal;
+    protected override EUILayer Layer => EUILayer.Normal;
 }
 
 // 窗口界面
 public class ShopView : ViewBase
 {
-    protected override UILayer Layer => UILayer.Window;
+    protected override EUILayer Layer => EUILayer.Window;
 }
 
 // 提示界面
 public class ToastView : ViewBase
 {
-    protected override UILayer Layer => UILayer.Tips;
+    protected override EUILayer Layer => EUILayer.Tips;
 }
 
 // Loading界面
 public class LoadingView : ViewBase
 {
-    protected override UILayer Layer => UILayer.Loading;
+    protected override EUILayer Layer => EUILayer.Loading;
 }
 ```
 
@@ -664,7 +664,7 @@ public class UIGroupExample : MonoBehaviour
         m_UIModule = ModuleManager.GetModule<UIModule>();
         
         // 获取界面组
-        var mainUIGroup = m_UIModule.GetUIGroup(UILayer.MainUI);
+        var mainUIGroup = m_UIModule.GetUIGroup(EUILayer.MainUI);
         
         // 暂停界面组
         mainUIGroup.Pause = true;
@@ -809,7 +809,7 @@ public class UIEventListener : MonoBehaviour
 ## 5. 目录结构
 
 ```
-FuFramework/UI/
+Hotfix.Framework/UI/
 ├── Runtime/
 │   ├── UIModule.cs                    # UI管理模块主类
 │   ├── UIModule.Open.cs               # 打开界面功能
@@ -826,8 +826,8 @@ FuFramework/UI/
 │   │   └── ViewObject.cs              # 界面对象池对象
 │   ├── Misc/
 │   │   ├── UIGroup.cs                 # 界面组
-│   │   ├── UILayer.cs                 # 界面层级枚举
-│   │   └── UITweenType.cs             # 动画类型枚举
+│   │   ├── EUILayer.cs                 # 界面层级枚举
+│   │   └── EUITweenType.cs             # 动画类型枚举
 │   ├── Utility/
 │   │   ├── SafeAreaHelper.cs            # 安全区辅助工具
 │   │   └── GObjectSafeAreaExt.cs        # GObject安全区扩展方法
@@ -841,10 +841,8 @@ FuFramework/UI/
 │   │   ├── OpenUIFailureEventArgs.cs  # 打开失败事件
 │   │   ├── CloseUICompleteEventArgs.cs# 关闭完成事件
 │   │   └── ChangeUIVisibleEventArgs.cs# 可见性变化事件
-│   └── FuFramework.UI.Runtime.asmdef
 ├── Editor/
 │   ├── UITextureAssetPostprocessor.cs # 纹理资源后处理器
-│   └── FuFramework.UI.Editor.asmdef
 └── README.md                          # 本文档
 ```
 
@@ -854,7 +852,7 @@ FuFramework/UI/
 - **Event**: 提供事件系统支持
 - **Timer**: 提供计时器功能
 - **ObjectPool**: 提供对象池管理
-- **ReferencePool**: 提供引用池管理
+- **ReferencePools**: 提供引用池管理
 - **Asset**: 提供资源加载功能
 - **Localization**: 提供本地化支持
 - **FairyGUI**: UI 框架
@@ -864,7 +862,7 @@ FuFramework/UI/
 
 ### 7.1 层级管理
 
-使用 UILayer 枚举定义 7 个层级，每个层级对应一个 UIGroup：
+使用 EUILayer 枚举定义 7 个层级，每个层级对应一个 UIGroup：
 
 - 层级值越大，显示在越上层
 - 每个层级独立管理自己的界面列表
@@ -993,7 +991,7 @@ A: 使用 GetTopUI：
 
 ```csharp
 // 获取指定层级的顶部界面
-var topView = m_UIModule.GetTopUI(UILayer.Window);
+var topView = m_UIModule.GetTopUI(EUILayer.Window);
 
 // 获取所有层级中最顶部的界面
 var topView = m_UIModule.GetTopUI();
