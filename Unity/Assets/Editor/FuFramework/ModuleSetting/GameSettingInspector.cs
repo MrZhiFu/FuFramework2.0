@@ -111,19 +111,21 @@ namespace AOT.Framework.ModuleSetting.Editor
 
             // 资源系统配置
             EditorGUILayout.Space(20);
-            EditorGUILayout.PropertyField(m_PlayMode);
-            EditorGUILayout.PropertyField(m_DefaultPackageName);
-            EditorGUILayout.PropertyField(m_DownloadingMaxNum);
-            EditorGUILayout.PropertyField(m_FailedTryAgainNum);
-            EditorGUILayout.PropertyField(m_AsyncSystemMaxSlicePerFrame);
-            EditorGUILayout.PropertyField(m_ResCdnRootURL);
+            EditorGUILayout.LabelField("资源系统配置", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(m_PlayMode, new GUIContent("资源运行模式"));
+            EditorGUILayout.PropertyField(m_DefaultPackageName, new GUIContent("默认资源包名称"));
+            EditorGUILayout.PropertyField(m_DownloadingMaxNum, new GUIContent("下载最大并发数量"));
+            EditorGUILayout.PropertyField(m_FailedTryAgainNum, new GUIContent("下载失败重试次数"));
+            EditorGUILayout.PropertyField(m_AsyncSystemMaxSlicePerFrame, new GUIContent("异步系统每帧最大时间切片（毫秒）"));
+            EditorGUILayout.PropertyField(m_ResCdnRootURL, new GUIContent("资源CDN根地址"));
 
             // 本地数据存储系统配置
             EditorGUILayout.Space(20);
-            EditorGUILayout.PropertyField(m_EnableAutoSave);
-            EditorGUILayout.PropertyField(m_AutoSaveInterval);
-            EditorGUILayout.PropertyField(m_EnableEncrypt);
-            EditorGUILayout.PropertyField(m_EncryptKey);
+            EditorGUILayout.LabelField("本地数据存储系统配置", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(m_EnableAutoSave, new GUIContent("是否自动保存"));
+            EditorGUILayout.PropertyField(m_AutoSaveInterval, new GUIContent("自动保存间隔（秒）"));
+            EditorGUILayout.PropertyField(m_EnableEncrypt, new GUIContent("是否加密"));
+            EditorGUILayout.PropertyField(m_EncryptKey, new GUIContent("加密密钥"));
 
             serializedObject.ApplyModifiedProperties();
         }
