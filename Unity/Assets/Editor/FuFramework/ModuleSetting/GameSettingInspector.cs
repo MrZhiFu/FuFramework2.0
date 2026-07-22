@@ -31,21 +31,21 @@ namespace AOT.Framework.ModuleSetting.Editor
 
         private void OnEnable()
         {
-            m_FrameRate                 = serializedObject.FindProperty("m_FrameRate");
-            m_GameSpeed                 = serializedObject.FindProperty("m_GameSpeed");
-            m_RunInBackground           = serializedObject.FindProperty("m_RunInBackground");
-            m_NeverSleep                = serializedObject.FindProperty("m_NeverSleep");
-            m_OpenGuide                 = serializedObject.FindProperty("m_OpenGuide");
-            m_PlayMode                  = serializedObject.FindProperty("m_PlayMode");
-            m_DefaultPackageName        = serializedObject.FindProperty("m_DefaultPackageName");
-            m_DownloadingMaxNum         = serializedObject.FindProperty("m_DownloadingMaxNum");
-            m_FailedTryAgainNum         = serializedObject.FindProperty("m_FailedTryAgainNum");
+            m_FrameRate                   = serializedObject.FindProperty("m_FrameRate");
+            m_GameSpeed                   = serializedObject.FindProperty("m_GameSpeed");
+            m_RunInBackground             = serializedObject.FindProperty("m_RunInBackground");
+            m_NeverSleep                  = serializedObject.FindProperty("m_NeverSleep");
+            m_OpenGuide                   = serializedObject.FindProperty("m_OpenGuide");
+            m_PlayMode                    = serializedObject.FindProperty("m_PlayMode");
+            m_DefaultPackageName          = serializedObject.FindProperty("m_DefaultPackageName");
+            m_DownloadingMaxNum           = serializedObject.FindProperty("m_DownloadingMaxNum");
+            m_FailedTryAgainNum           = serializedObject.FindProperty("m_FailedTryAgainNum");
             m_AsyncSystemMaxSlicePerFrame = serializedObject.FindProperty("m_AsyncSystemMaxSlicePerFrame");
-            m_ResCdnRootURL             = serializedObject.FindProperty("m_ResCdnRootURL");
-            m_EnableAutoSave            = serializedObject.FindProperty("m_EnableAutoSave");
-            m_AutoSaveInterval          = serializedObject.FindProperty("m_AutoSaveInterval");
-            m_EnableEncrypt             = serializedObject.FindProperty("m_EnableEncrypt");
-            m_EncryptKey                = serializedObject.FindProperty("m_EncryptKey");
+            m_ResCdnRootURL               = serializedObject.FindProperty("m_ResCdnRootURL");
+            m_EnableAutoSave              = serializedObject.FindProperty("m_EnableAutoSave");
+            m_AutoSaveInterval            = serializedObject.FindProperty("m_AutoSaveInterval");
+            m_EnableEncrypt               = serializedObject.FindProperty("m_EnableEncrypt");
+            m_EncryptKey                  = serializedObject.FindProperty("m_EncryptKey");
         }
 
         public override void OnInspectorGUI()
@@ -112,20 +112,20 @@ namespace AOT.Framework.ModuleSetting.Editor
             // 资源系统配置
             EditorGUILayout.Space(20);
             EditorGUILayout.LabelField("资源系统配置", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(m_PlayMode, new GUIContent("资源运行模式"));
-            EditorGUILayout.PropertyField(m_DefaultPackageName, new GUIContent("默认资源包名称"));
-            EditorGUILayout.PropertyField(m_DownloadingMaxNum, new GUIContent("下载最大并发数量"));
-            EditorGUILayout.PropertyField(m_FailedTryAgainNum, new GUIContent("下载失败重试次数"));
+            EditorGUILayout.PropertyField(m_PlayMode,                    new GUIContent("资源运行模式"));
+            EditorGUILayout.PropertyField(m_DefaultPackageName,          new GUIContent("默认资源包名称"));
+            EditorGUILayout.PropertyField(m_DownloadingMaxNum,           new GUIContent("下载最大并发数量"));
+            EditorGUILayout.PropertyField(m_FailedTryAgainNum,           new GUIContent("下载失败重试次数"));
             EditorGUILayout.PropertyField(m_AsyncSystemMaxSlicePerFrame, new GUIContent("异步系统每帧最大时间切片（毫秒）"));
-            EditorGUILayout.PropertyField(m_ResCdnRootURL, new GUIContent("资源CDN根地址"));
+            EditorGUILayout.PropertyField(m_ResCdnRootURL,               new GUIContent("资源CDN根地址"));
 
             // 本地数据存储系统配置
             EditorGUILayout.Space(20);
             EditorGUILayout.LabelField("本地数据存储系统配置", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(m_EnableAutoSave, new GUIContent("是否自动保存"));
+            EditorGUILayout.PropertyField(m_EnableAutoSave,   new GUIContent("是否自动保存"));
             EditorGUILayout.PropertyField(m_AutoSaveInterval, new GUIContent("自动保存间隔（秒）"));
-            EditorGUILayout.PropertyField(m_EnableEncrypt, new GUIContent("是否加密"));
-            EditorGUILayout.PropertyField(m_EncryptKey, new GUIContent("加密密钥"));
+            EditorGUILayout.PropertyField(m_EnableEncrypt,    new GUIContent("是否加密"));
+            EditorGUILayout.PropertyField(m_EncryptKey,       new GUIContent("加密密钥"));
 
             serializedObject.ApplyModifiedProperties();
         }
