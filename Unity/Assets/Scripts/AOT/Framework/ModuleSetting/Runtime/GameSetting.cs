@@ -1,6 +1,5 @@
-using AOT.Framework.ModuleSetting.Runtime.Asset;
-using AOT.Framework.ModuleSetting.Runtime.DataSave;
 using UnityEngine;
+using YooAsset;
 using UnityEngine.Serialization;
 
 // ReSharper disable once CheckNamespace
@@ -49,23 +48,55 @@ namespace AOT.Framework.ModuleSetting.Runtime
         [SerializeField] private bool m_OpenGuide = true;
 
 
+        #region 资源系统配置
+
         [Header("资源系统配置")]
-        [SerializeField] private AssetSetting m_AssetSetting;
+        [SerializeField] private EPlayMode m_PlayMode = EPlayMode.EditorSimulateMode;
+
+        [SerializeField] private string m_DefaultPackageName = "DefaultPackage";
+
+        [SerializeField] private int m_DownloadingMaxNum = 10;
+
+        [SerializeField] private int m_FailedTryAgainNum = 3;
+
+        [SerializeField] private int m_AsyncSystemMaxSlicePerFrame = 30;
+
+        [SerializeField] private string m_ResCdnRootURL = "http://localhost:8080/CDN/";
+
+        public EPlayMode PlayMode => m_PlayMode;
+
+        public string DefaultPackageName => m_DefaultPackageName;
+
+        public int DownloadingMaxNum => m_DownloadingMaxNum;
+
+        public int FailedTryAgainNum => m_FailedTryAgainNum;
+
+        public int AsyncSystemMaxSlicePerFrame => m_AsyncSystemMaxSlicePerFrame;
+
+        public string ResCdnRootRootURL => m_ResCdnRootURL;
+
+        #endregion
+
+        #region 本地数据存储系统配置
 
         [Header("本地数据存储系统配置")]
-        [SerializeField] private StorageSetting m_StorageSetting;
+        [SerializeField] private bool m_EnableAutoSave = true;
 
+        [SerializeField] private float m_AutoSaveInterval = 300f;
 
-        /// <summary>
-        /// 获取资源系统配置
-        /// </summary>
-        public AssetSetting AssetSetting => m_AssetSetting;
+        [SerializeField] private bool m_EnableEncrypt = false;
 
-        /// <summary>
-        /// 获取本地存储系统配置
-        /// </summary>
-        public StorageSetting StorageSetting => m_StorageSetting;
+        [SerializeField] private string m_EncryptKey = "FuFrameworkStorageKey";
 
+        public bool EnableAutoSave => m_EnableAutoSave;
+
+        public float AutoSaveInterval => m_AutoSaveInterval;
+
+        public bool EnableEncrypt => m_EnableEncrypt;
+
+        public string EncryptKey => m_EncryptKey;
+
+        #endregion
 
         /// 游戏暂停之前的速度
         private float m_GameSpeedBeforePause = 1f;
