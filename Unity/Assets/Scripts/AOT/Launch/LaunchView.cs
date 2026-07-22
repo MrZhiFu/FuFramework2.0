@@ -46,7 +46,7 @@ namespace AOT.Launch
         }
 
         /// <summary>
-        /// 从 Resources 加载 Launcher FUI 包并创建 UI 组件（引导阶段不依赖 YooAsset）。
+        /// 从 Resources 加载 Launcher FUI 包并创建 UI 组件（启动阶段不依赖 YooAsset）。
         /// </summary>
         private void LoadUIPackage()
         {

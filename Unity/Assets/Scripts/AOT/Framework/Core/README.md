@@ -4,7 +4,7 @@
 
 AOT Core 是框架在 AOT 侧的基础设施层，提供**日志、文件路径、JSON、版本处理**等不依赖 Hotfix 的基础工具。
 
-> **注意**：模块系统（`ModuleBase`、`ModuleManager`）、属性绑定（`BindableProperty`）、高性能数据结构、加密/哈希工具等已迁移至 `Hotfix/Framework/Core`。本目录仅保留 AOT 引导阶段必需的工具。
+> **注意**：模块系统（`ModuleBase`、`ModuleManager`）、属性绑定（`BindableProperty`）、高性能数据结构、加密/哈希工具等已迁移至 `Hotfix/Framework/Core`。本目录仅保留 AOT 启动阶段必需的工具。
 
 ## 2. 目录结构
 

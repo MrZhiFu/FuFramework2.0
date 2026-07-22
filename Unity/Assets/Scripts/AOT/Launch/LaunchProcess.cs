@@ -13,7 +13,7 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 namespace AOT.Launch
 {
     /// <summary>
-    /// AOT 启动引导流程。
+    /// AOT 启动流程。
     /// 功能：显示加载界面 → 资源更新（远端配置/版本/清单/下载）→ 加载 AOT 元数据与 Hotfix.dll → 移交热更入口。
     /// </summary>
     public static class LaunchProcess
@@ -34,12 +34,12 @@ namespace AOT.Launch
         private static ILaunchView m_LaunchView;
 
         /// <summary>
-        /// 运行引导流程。加载完 Hotfix 程序集后直接反射进入热更入口。
+        /// 运行启动流程。加载完 Hotfix 程序集后直接反射进入热更入口。
         /// </summary>
         /// <returns>异步流程</returns>
         public static async UniTask RunAsync()
         {
-            FuLogger.LogInfo("<color=#43f656>------进入启动引导流程------</color>");
+            FuLogger.LogInfo("<color=#43f656>------进入启动流程------</color>");
 
             // 显示加载界面
             m_LaunchView = await LaunchView.CreateAsync();
