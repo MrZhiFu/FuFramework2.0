@@ -1,19 +1,19 @@
-# Bootstrap（引导流程）
+# Launch（启动流程）
 
 ## 1. 简介
 
-Bootstrap 是 AOT 入口之后的第一阶段，负责**线性异步引导流程**：显示加载界面 → 初始化 YooAsset 资源包 → 检查远端更新 → 下载资源 → 加载 Hotfix 程序集 → 反射进入热更。
+Launch 是 AOT 入口之后的第一阶段，负责**线性异步启动流程**：显示加载界面 → 初始化 YooAsset 资源包 → 检查远端更新 → 下载资源 → 加载 Hotfix 程序集 → 反射进入热更。
 
-采用极简的**静态类 + async/await** 模式（非 Procedure 状态机），仅一个 `BootstrapProcess` 编排全部步骤。
+采用极简的**静态类 + async/await** 模式（非 Procedure 状态机），仅一个 `LaunchProcess` 编排全部步骤。
 
 ## 2. 目录结构
 
 ```
-Bootstrap/
-├── BootstrapProcess.cs         # 引导流程编排（线性 async，完成后反射进入热更）
-├── BootstrapAssetHelper.cs     # YooAsset 资源初始化助手 + AOT/Hotfix 共享状态
-├── BootstrapView.cs            # 加载界面 View（实现 IBootstrapView）—— 自包含 FairyGUI 包
-├── IBootstrapView.cs           # 加载界面接口（定义在 AOT，供 HotfixLauncher 消费）
+Launch/
+├── LaunchProcess.cs         # 引导流程编排（线性 async，完成后反射进入热更）
+├── LaunchAssetHelper.cs     # YooAsset 资源初始化助手 + AOT/Hotfix 共享状态
+├── LaunchView.cs            # 加载界面 View（实现 ILaunchView）—— 自包含 FairyGUI 包
+├── ILaunchView.cs           # 加载界面接口（定义在 AOT，供 HotfixLauncher 消费）
 ├── UI/                         # FairyGUI 自动生成代码
 │   └── WinLauncher.Gen.cs
 └── UpdateConfig/
@@ -25,13 +25,13 @@ Bootstrap/
 ```
 Launcher.Start()
     │
-    └── BootstrapProcess.RunAsync()
+    └── LaunchProcess.RunAsync()
             │
-            ├── BootstrapView.CreateAsync()           // 显示加载界面
+            ├── LaunchView.CreateAsync()           // 显示加载界面
             ├── ReqRemoteUpdateConfigWithRetry()       // 联机模式：获取远端 RemoteUpdateConfig.json
             │     ├─ 强更 → 弹窗打开 App 下载链接 → 中止
             │     └─ 非强更 → 继续
-            ├── BootstrapAssetHelper.InitPackageAsync() // 初始化 YooAsset 资源包
+            ├── LaunchAssetHelper.InitPackageAsync() // 初始化 YooAsset 资源包
             ├── RequestVersionAsync()                   // 获取资源版本号（失败重试）
             ├── UpdateManifestAsync()                   // 更新资源清单（失败重试）
             ├── CreateAndDownload()                     // 联机模式：下载资源（失败重试）
@@ -42,13 +42,13 @@ Launcher.Start()
 
 ## 4. 核心类说明
 
-### 4.1 BootstrapProcess
+### 4.1 LaunchProcess
 
 引导流程编排类，所有方法均为 `static`，以 `async UniTask` 方式顺序执行。
 
 | 方法 | 说明 |
 |------|------|
-| `RunAsync(IBootstrapView)` | 总入口，按顺序执行全部引导步骤 |
+| `RunAsync(ILaunchView)` | 总入口，按顺序执行全部引导步骤 |
 | `ReqRemoteUpdateConfigWithRetry()` | 向 CDN 获取 `RemoteUpdateConfig.json`，失败自动重试 |
 | `CreateAndDownload(updateConfig)` | 创建 YooAsset 下载器并下载，失败自动重试 |
 | `LoadHotfixAndHandoff()` | 加载 AOT 元数据 + Hotfix.dll，完成后反射调用 HotfixLauncher |
@@ -56,9 +56,9 @@ Launcher.Start()
 
 强更判断逻辑在 `RunAsync` 中：若 `RemoteUpdateConfig.ForceUpdate == true`，弹出更新对话框并中止后续流程。
 
-### 4.2 BootstrapAssetHelper
+### 4.2 LaunchAssetHelper
 
-封装 YooAsset 底层 API，供 `BootstrapProcess` 调用。
+封装 YooAsset 底层 API，供 `LaunchProcess` 调用。
 
 | 方法 | 说明 |
 |------|------|
@@ -71,9 +71,9 @@ Launcher.Start()
 
 初始化完成后设置静态属性 `YooAssetInitialized = true`，供热更侧 `AssetModule` 读取，跳过重复初始化。
 
-### 4.3 BootstrapView
+### 4.3 LaunchView
 
-自包含的 FairyGUI 加载界面，实现 `IBootstrapView` 接口。
+自包含的 FairyGUI 加载界面，实现 `ILaunchView` 接口。
 
 | 方法 | 说明 |
 |------|------|
@@ -84,13 +84,13 @@ Launcher.Start()
 | `SetDownloading(downloading)` | 设置是否正在下载 |
 | `Close()` | 关闭加载界面 |
 
-### 4.4 IBootstrapView
+### 4.4 ILaunchView
 
 加载界面接口，定义在 AOT，供 HotfixLauncher 通过接口类型消费（`SetTip`/`Close`），保证 AOT → Hotfix 的契约解耦。
 
 ## 5. RemoteUpdateConfig
 
-位于 CDN 服务器的 `RemoteUpdateConfig.json`，由 `BootstrapProcess` 拉取并解析：
+位于 CDN 服务器的 `RemoteUpdateConfig.json`，由 `LaunchProcess` 拉取并解析：
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -101,12 +101,12 @@ Launcher.Start()
 | `ResDownloadUrl` | `string` | 资源下载地址，支持 `{0}` 版本号占位符 |
 | `ResDownloadBackupUrl` | `string` | 资源下载备用地址 |
 
-## 6. Bootstrap 与 Hotfix 的桥接
+## 6. Launch 与 Hotfix 的桥接
 
 ```
 AOT 侧                          Hotfix 侧
 ────────                        ─────────
-BootstrapAssetHelper ──写入────→  AssetModule 读取 YooAssetInitialized（跳过重复初始化）
-IBootstrapView       ──接口────→  HotfixLauncher.MainAsync(IBootstrapView)
+LaunchAssetHelper ──写入────→  AssetModule 读取 YooAssetInitialized（跳过重复初始化）
+ILaunchView       ──接口────→  HotfixLauncher.MainAsync(ILaunchView)
 GameSetting.Instance  ──引用────→  Hotfix 所有模块通过实例访问
 ```

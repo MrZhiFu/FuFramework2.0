@@ -1,18 +1,18 @@
 using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
-using AOT.Bootstrap.UI;
+using AOT.Launch.UI;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
-namespace AOT.Bootstrap
+namespace AOT.Launch
 {
     /// <summary>
     /// AOT 启动加载界面。
     ///     功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
     ///     UI 组件绑定部分见 WinLauncher.Gen.cs。
     /// </summary>
-    public sealed class BootstrapView : IBootstrapView
+    public sealed class LaunchView : ILaunchView
     {
         /// <summary>
         /// 资源加载UI界面。
@@ -27,9 +27,9 @@ namespace AOT.Bootstrap
         /// <summary>
         /// 创建并显示加载界面。
         /// </summary>
-        public static UniTask<BootstrapView> CreateAsync()
+        public static UniTask<LaunchView> CreateAsync()
         {
-            var view = new BootstrapView();
+            var view = new LaunchView();
             view.Init();
             return UniTask.FromResult(view);
         }

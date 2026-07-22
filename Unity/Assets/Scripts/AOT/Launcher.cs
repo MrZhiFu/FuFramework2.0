@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 using AOT.Framework.Core.Log;
-using AOT.Bootstrap;
+using AOT.Launch;
 using UnityEngine;
 
 namespace AOT
@@ -27,7 +27,7 @@ namespace AOT
         private void Start()
         {
             // 启动热更脚手架流程
-            BootstrapProcess.RunAsync().Forget();
+            LaunchProcess.RunAsync().Forget();
         }
     }
 }
