@@ -2,14 +2,14 @@ using System;
 
 // ReSharper disable once CheckNamespace
 
-namespace AOT.Bootstrap
+namespace AOT.Launch
 {
     /// <summary>
     /// 启动热更资源加载界面句柄接口。
-    /// 功能： 由 AOT 的 BootstrapView 实现，AOT 引导流程与 HotfixLauncher 均面向此接口编程，
+    /// 功能： 由 AOT 的 LaunchView 实现，AOT 引导流程与 HotfixLauncher 均面向此接口编程，
     ///       使加载界面能跨越「下载(AOT)→加载配置/UI(热更)」两阶段并在登录界面打开时关闭。
     /// </summary>
-    public interface IBootstrapView
+    public interface ILaunchView
     {
         /// <summary>
         /// 设置热更资源加载提示文本。

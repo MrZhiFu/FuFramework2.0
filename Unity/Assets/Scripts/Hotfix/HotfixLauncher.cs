@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Network;
 using Hotfix.Framework.Core;
-using AOT.Bootstrap;
+using AOT.Launch;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
@@ -52,7 +52,7 @@ namespace Hotfix
         /// 启动入口
         /// </summary>
         /// <param name="bootstrapView">AOT 引导加载界面句柄，登录界面打开后关闭。</param>
-        public static async UniTask MainAsync(IBootstrapView bootstrapView)
+        public static async UniTask MainAsync(ILaunchView bootstrapView)
         {
             FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
@@ -135,7 +135,7 @@ namespace Hotfix
         /// <summary>
         /// 初始化框架依赖：配置表、UI 资源、自定义组件绑定、多语言
         /// </summary>
-        private static async UniTask InitFrameworkAsync(IBootstrapView bootstrapView)
+        private static async UniTask InitFrameworkAsync(ILaunchView bootstrapView)
         {
             bootstrapView.SetTip("LoadConfig...");
             await LoadConfigAsync();
@@ -151,7 +151,7 @@ namespace Hotfix
         /// <summary>
         /// 进入游戏：打开登录界面，关闭引导界面，启动新手引导
         /// </summary>
-        private static void EnterGame(IBootstrapView bootstrapView)
+        private static void EnterGame(ILaunchView bootstrapView)
         {
             GlobalModule.UIModule.OpenUI<WinLogin>();
             bootstrapView.Close();

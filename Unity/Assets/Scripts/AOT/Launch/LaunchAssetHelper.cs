@@ -6,14 +6,14 @@ using AOT.Framework.Core.Log;
 using AOT.Framework.ModuleSetting.Runtime;
 
 // ReSharper disable once CheckNamespace
-namespace AOT.Bootstrap
+namespace AOT.Launch
 {
     /// <summary>
     /// AOT 资源引导助手。
     /// 功能：引导期直连 YooAsset 完成「初始化默认包 / 请求版本号 / 更新清单 / 创建下载器 / 加载原始字节」等流程。
     ///      不依赖 AssetModule。YooAssetInitialized 字段供 AOT/Hotfix 共用，防止二次初始化。
     /// </summary>
-    public static class BootstrapAssetHelper
+    public static class LaunchAssetHelper
     {
         /// <summary>
         /// YooAsset 是否已完成初始化（AOT/Hotfix 共用，防止二次初始化）。
@@ -76,7 +76,7 @@ namespace AOT.Bootstrap
             var initOperation = InitByPlayMode(url, backupUrl);
             if (initOperation == null)
             {
-                FuLogger.LogError($"[Bootstrap] 未知的资源运行模式: {PlayMode}");
+                FuLogger.LogError($"[Launch] 未知的资源运行模式: {PlayMode}");
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace AOT.Bootstrap
             await initOperation;
             if (initOperation.Status != EOperationStatus.Succeeded)
             {
-                FuLogger.LogError($"[Bootstrap] 资源包初始化失败: {initOperation.Error}");
+                FuLogger.LogError($"[Launch] 资源包初始化失败: {initOperation.Error}");
             }
         }
 
@@ -197,7 +197,7 @@ namespace AOT.Bootstrap
                 // 加载失败：记录错误并以 null 结果完成，避免回调抛异常导致 await 永久挂起。
                 if (h.Status != EOperationStatus.Succeeded)
                 {
-                    FuLogger.LogError($"[Bootstrap] 加载原始文件失败: {location}, 错误信息: {h.Error}");
+                    FuLogger.LogError($"[Launch] 加载原始文件失败: {location}, 错误信息: {h.Error}");
                     tcs.TrySetResult(null);
                     return;
                 }
@@ -206,7 +206,7 @@ namespace AOT.Bootstrap
                 var textAsset = h.GetAssetObject<TextAsset>();
                 if (textAsset == null)
                 {
-                    FuLogger.LogError($"[Bootstrap] 加载的资源不是 TextAsset 或为空: {location}");
+                    FuLogger.LogError($"[Launch] 加载的资源不是 TextAsset 或为空: {location}");
                     tcs.TrySetResult(null);
                     return;
                 }

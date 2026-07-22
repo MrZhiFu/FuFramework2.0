@@ -2,7 +2,7 @@ using System;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Bootstrap;
+using AOT.Launch;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 using UnityEngine;
@@ -65,8 +65,8 @@ namespace Hotfix.Framework.Asset
 
             FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
 
-            // 初始化YooAsset（引导阶段 BootstrapAssetHelper 可能已初始化，避免二次初始化）
-            if (BootstrapAssetHelper.YooAssetInitialized)
+            // 初始化YooAsset（引导阶段 LaunchAssetHelper 可能已初始化，避免二次初始化）
+            if (LaunchAssetHelper.YooAssetInitialized)
             {
                 // 引导流程已初始化 YooAsset 并创建/初始化默认包，标记为已初始化，避免热更侧重复初始化默认包
                 PackageInited = true;
@@ -78,7 +78,7 @@ namespace Hotfix.Framework.Asset
                 // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
                 YooAssets.SetAsyncOperationMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
 
-                BootstrapAssetHelper.YooAssetInitialized = true;
+                LaunchAssetHelper.YooAssetInitialized = true;
             }
 
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");

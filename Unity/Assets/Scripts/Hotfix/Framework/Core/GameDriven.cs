@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
-using AOT.Bootstrap;
+using AOT.Launch;
 using UnityEngine;
 
 namespace Hotfix.Framework.Core
@@ -126,7 +126,7 @@ namespace Hotfix.Framework.Core
             ReInitModules?.Invoke();
 
             // 重新运行 AOT 引导流程（重新显示加载界面并重进热更入口）
-            BootstrapProcess.RunAsync().Forget();
+            LaunchProcess.RunAsync().Forget();
         }
 
         /// <summary>
