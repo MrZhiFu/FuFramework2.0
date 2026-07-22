@@ -13,8 +13,7 @@ namespace AOT.Framework.ModuleSetting.Runtime
     ///     4. 提供游戏暂停、恢复、重置正常速度等功能。
     ///
     /// 注意：
-    ///     1. 该类为单例，挂载到首个初始化场景的 GameObject 上。
-    ///     2. DontDestroyOnLoad 由同 GameObject 上的 Launcher 统一处理。
+    ///     1. 该类为单例，挂载到首个初始化场景的 GameObject 上，并且 DontDestroyOnLoad。
     /// </summary>
     public class GameSetting : MonoBehaviour
     {
