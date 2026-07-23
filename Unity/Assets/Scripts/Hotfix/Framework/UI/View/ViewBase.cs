@@ -3,6 +3,9 @@ using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
+using Hotfix.Framework.Config;
+using Hotfix.Game.Config.Tables;
+using UIConfigRow = Hotfix.Game.Config.Tables.UIConfig;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI
@@ -39,9 +42,34 @@ namespace Hotfix.Framework.UI
         public object UserData { get; private set; }
 
         /// <summary>
-        /// 显示时是否暂停被覆盖的界面。
+        /// UI 配置数据（来自 UIConfig 配置表）。为 null 时使用默认值。
         /// </summary>
-        public virtual bool PauseCoveredUI => false;
+        public UIConfigRow UIConfig { get; private set; }
+
+        /// <summary>
+        /// 获取界面所属的层级（仅框架内部使用，外部请读 UIConfig.Layer）。
+        /// </summary>
+        private EUILayer Layer => (EUILayer)(UIConfig?.Layer ?? (int)EUILayer.Normal);
+
+        /// <summary>
+        /// 获取界面打开/关闭时的动画类型（仅框架内部使用）。
+        /// </summary>
+        private EUITweenType TweenType => (EUITweenType)(UIConfig?.TweenType ?? (int)EUITweenType.Fade);
+
+        /// <summary>
+        /// 获取界面打开/关闭时的动画时长（仅框架内部使用）。
+        /// </summary>
+        private float TweenDuration => UIConfig?.TweenDuration ?? 0.3f;
+
+        /// <summary>
+        /// 是否适配刘海/打孔区域（仅框架内部使用）。
+        /// </summary>
+        private bool AdjustNotch => UIConfig?.AdjustNotch ?? true;
+
+        /// <summary>
+        /// 显示时是否暂停被覆盖的界面。UIGroup 通过 view.PauseCoveredUI 外部访问，保持 public。
+        /// </summary>
+        public bool PauseCoveredUI => UIConfig?.PauseCoveredUI ?? false;
 
         /// <summary>
         /// 界面名称。
@@ -52,27 +80,6 @@ namespace Hotfix.Framework.UI
         /// 界面资源包名称。
         /// </summary>
         public virtual string PackageName => "";
-
-        /// <summary>
-        /// 是否适配刘海/打孔区域。默认 true，即 UI 跟随 GRoot 约束在安全区内，避让刘海/打孔。
-        /// 设为 false 时 UI 填满全屏覆盖刘海（全屏背景、遮罩等）。
-        /// </summary>
-        protected virtual bool AdjustNotch => true;
-
-        /// <summary>
-        /// 界面所属的层级。
-        /// </summary>
-        protected virtual EUILayer Layer => EUILayer.Normal;
-
-        /// <summary>
-        /// 界面打开/关闭时的动画类型。
-        /// </summary>
-        protected virtual EUITweenType TweenType => EUITweenType.Fade;
-
-        /// <summary>
-        /// 界面打开/关闭时的动画时长。
-        /// </summary>
-        protected virtual float TweenDuration => 0.3f;
 
         /// <summary>
         /// 获取界面所属的界面组。
@@ -113,6 +120,9 @@ namespace Hotfix.Framework.UI
 
             m_UIModule = ModuleManager.GetModule<UIModule>();
             m_IsInit   = true;
+
+            // 加载 UI 配置表（通过 Get(string) 方法查表；StrKeyDataDict 为 protected，外部不可直接访问）
+            UIConfig = ConfigModule.Instance?.GetConfig<TbUIConfig>()?.Get(UIName);
 
             if (!isNewInstance) return;
 
