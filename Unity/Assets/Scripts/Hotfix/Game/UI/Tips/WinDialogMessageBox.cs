@@ -11,16 +11,6 @@ namespace Hotfix.Game.UI
 {
     public partial class WinDialogMessageBox : ViewBase
     {
-        #region 界面基本属性(无特殊需求，可不做修改)
- 
-         //@formatter:off
-         protected override EUILayer Layer         => EUILayer.Window;   // 界面所属的层级。
-         protected override EUITweenType TweenType => EUITweenType.Fade; // 界面打开/关闭时的动画效果。
-         public override bool PauseCoveredUI      => false;            // 显示时是否暂停被覆盖的界面。
-        //@formatter:on
-
-        #endregion
-
         /// <summary>
         /// 对话框弹窗数据
         /// </summary>
