@@ -6,17 +6,8 @@ namespace #NAMESPACE#
 {
     public partial class #WINNAME# : ViewBase
     {
-         #region 界面基本属性(无特殊需求，可不做修改)
- 
-         //@formatter:off
-         protected override EUILayer Layer         => EUILayer.Normal;   // 界面所属的层级。
-         protected override EUITweenType TweenType => EUITweenType.Fade; // 界面打开/关闭时的动画效果。
-         protected override bool IsFullScreen      => true;              // 是否是全屏界面。
-         public override bool PauseCoveredUI       => false;             // 显示时是否暂停被覆盖的界面。
-         //@formatter:on
-         
-         #endregion
-        
+        // 界面基本属性(Layer、TweenType、AdjustNotch、PauseCoveredUI等)已迁移至 UIConfig 配置表，无需代码重写。
+
         /// <summary>
         /// 初始化
         /// </summary>  
