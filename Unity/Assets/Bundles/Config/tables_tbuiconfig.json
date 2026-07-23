@@ -1,0 +1,98 @@
+[
+  {
+    "UIName": "WinMain",
+    "Layer": 1500,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinLogin",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinPlayerList",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinPlayerCreate",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinLoginAnnouncement",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinBag",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinGlobalLoading",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinDialogMessageBox",
+    "Layer": 2500,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": true,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinGlobalMask",
+    "Layer": 3500,
+    "TweenType": 0,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinClickGuide",
+    "Layer": 3500,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinDialogGuide",
+    "Layer": 3500,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  },
+  {
+    "UIName": "WinLoadingScene",
+    "Layer": 2000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false
+  }
+]
