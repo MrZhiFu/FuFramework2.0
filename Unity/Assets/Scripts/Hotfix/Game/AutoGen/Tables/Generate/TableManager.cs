@@ -46,6 +46,11 @@ namespace Hotfix.Game.Config
         internal Tables.TbGuide TbGuide { private set; get; }
 
         /// <summary>
+        /// UI配置表
+        /// </summary>
+        internal Tables.TbUIConfig TbUIConfig { private set; get; }
+
+        /// <summary>
         /// 引导步骤表
         /// </summary>
         internal Tables.TbGuideStep TbGuideStep { private set; get; }
@@ -116,6 +121,10 @@ namespace Hotfix.Game.Config
             loadTasks.Add(TbGuide.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbGuide), TbGuide);
 
+            TbUIConfig = new Tables.TbUIConfig(() => loader("tables_tbuiconfig"));
+            loadTasks.Add(TbUIConfig.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbUIConfig), TbUIConfig);
+
             TbGuideStep = new Tables.TbGuideStep(() => loader("tables_tbguidestep"));
             loadTasks.Add(TbGuideStep.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbGuideStep), TbGuideStep);
@@ -156,6 +165,7 @@ namespace Hotfix.Game.Config
             TbEntityGroup.TranslateText(translator);
             TbGlobalDefine.TranslateText(translator);
             TbGuide.TranslateText(translator);
+            TbUIConfig.TranslateText(translator);
             TbGuideStep.TranslateText(translator);
             TbRedDot.TranslateText(translator);
             TbSound.TranslateText(translator);
@@ -170,6 +180,7 @@ namespace Hotfix.Game.Config
             TbEntityGroup.ResolveRef(this);
             TbGlobalDefine.ResolveRef(this);
             TbGuide.ResolveRef(this);
+            TbUIConfig.ResolveRef(this);
             TbGuideStep.ResolveRef(this);
             TbRedDot.ResolveRef(this);
             TbSound.ResolveRef(this);
