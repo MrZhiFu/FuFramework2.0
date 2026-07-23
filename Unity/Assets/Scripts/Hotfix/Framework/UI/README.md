@@ -621,7 +621,7 @@ public class AnimatedUIView : ViewBase
     {
         // 缩放动画
         UIView.scale = Vector2.zero;
-        UIView.TweenScale(Vector2.one, TweenDuration)
+        UIView.TweenScale(Vector2.one, UIConfig.TweenDuration)
               .SetEase(EaseType.BackOut);
     }
     
@@ -629,7 +629,7 @@ public class AnimatedUIView : ViewBase
     protected override GTweener DoCustomCloseTween()
     {
         // 旋转缩放动画
-        return UIView.TweenScale(Vector2.zero, TweenDuration)
+        return UIView.TweenScale(Vector2.zero, UIConfig.TweenDuration)
                      .SetEase(EaseType.BackIn);
     }
 }
