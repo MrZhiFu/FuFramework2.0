@@ -183,11 +183,11 @@ public void SetUIPriority(object uiView, int priority)
 | UserData | object | 用户自定义数据 |
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
-| Layer | EUILayer | 界面层级（可重写） |
-| AdjustNotch | bool | 是否适配刘海/打孔（可重写，默认true），false 时填满全屏覆盖刘海 |
-| PauseCoveredUI | bool | 是否暂停被覆盖界面（可重写） |
-| TweenType | EUITweenType | 动画类型（可重写） |
-| TweenDuration | float | 动画时长（可重写，默认0.3s） |
+| Layer | EUILayer | 界面层级（由 UIConfig 配置表设置） |
+| AdjustNotch | bool | 是否适配刘海/打孔（由 UIConfig 配置表设置，默认true），false 时填满全屏覆盖刘海 |
+| PauseCoveredUI | bool | 是否暂停被覆盖界面（由 UIConfig 配置表设置） |
+| TweenType | EUITweenType | 动画类型（由 UIConfig 配置表设置） |
+| TweenDuration | float | 动画时长（由 UIConfig 配置表设置，默认0.3s） |
 | UIGroup | UIGroup | 所属界面组 |
 | Visible | bool | 是否可见 |
 
@@ -454,11 +454,39 @@ public enum EUITweenType
 | `false` | 填满全屏覆盖刘海 | 全屏背景、遮罩、引导层 |
 
 ```csharp
-// 全屏界面覆盖刘海
-protected override bool AdjustNotch => false;
-
 // 安全区变化时（方向切换等），全屏 UI 自动重新计算偏移
 // 普通 UI 跟随 GRoot，无需额外处理
+```
+
+> AdjustNotch 参数现在通过 UIConfig 配置表设置，不再在代码中 override。在 Excel 配置表中设置 "是否适配安全区" 列即可，详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
+
+### 3.10 UI 配置表（UIConfig）
+
+自 v2.x 起，UI 界面的基本属性（Layer、TweenType、TweenDuration、AdjustNotch、PauseCoveredUI）由 `UIConfig` 配置表驱动，不再通过代码 override。
+
+- **配置表路径**: `Config/Excels/Tables/U-UIConfig-UI配置表.xlsx`
+- **查询配置**: 运行时通过 `view.UIConfig` 获取当前 UI 的配置行，各属性自动从配置表读取
+- **新增 UI**: 在 Excel 中添加一行（UIName 为 key），运行 `gen-client-json.bat` 重新生成代码
+- **配置列说明**:
+
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| UIName | string | UI 标识 key，与 ViewBase.UIName 对应 |
+| Layer | EUILayer | 界面层级（WorldUI=0, MainUI=1500, ...） |
+| TweenType | EUITweenType | 动画类型（None=0, Fade=1, Custom=2） |
+| TweenDuration | float | 动画时长（默认 0.3s） |
+| AdjustNotch | bool | 是否适配安全区（默认 true） |
+| PauseCoveredUI | bool | 是否暂停被覆盖界面 |
+
+- **代码加载方式**:
+
+```csharp
+// ViewBase 内部自动通过 UIName 查询 UIConfig 配置表完成初始化
+// 用户无需手动调用，框架在 OnInit 阶段自动完成配置绑定
+
+// 在 UI 代码中访问当前配置
+var config = this.UIConfig;
+Debug.Log($"Layer={config.Layer}, TweenType={config.TweenType}");
 ```
 
 ## 4. 使用示例
@@ -479,17 +507,11 @@ public class MainUIView : ViewBase
     // UI包名称
     public override string PackageName => "Main";
     
-    // 界面层级
-    protected override EUILayer Layer => EUILayer.MainUI;
-    
-    // 是否适配刘海/打孔区域（全屏覆盖）
-    protected override bool AdjustNotch => false;
-    
-    // 动画类型
-    protected override EUITweenType TweenType => EUITweenType.Fade;
-    
-    // 动画时长
-    protected override float TweenDuration => 0.3f;
+    // 以下属性（Layer、AdjustNotch、TweenType、TweenDuration、PauseCoveredUI）
+    // 不再通过代码 override，改为在 UIConfig 配置表中设置。
+    // 在 Excel 中添加一行（UIName = "MainUI"）并配置各列即可，
+    // 运行时通过 view.UIConfig 获取配置。
+    // 详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
     
     // 界面组件引用
     private GButton m_StartButton;
@@ -591,7 +613,8 @@ public class GameController : MonoBehaviour
 public class AnimatedUIView : ViewBase
 {
     public override string UIName => "AnimatedUI";
-    protected override EUITweenType TweenType => EUITweenType.Custom;
+    // TweenType 不再通过代码 override，改为在 UIConfig 配置表中设置 EUITweenType.Custom。
+    // 详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
     
     // 自定义打开动画
     protected override void DoCustomOpenTween()
@@ -612,45 +635,23 @@ public class AnimatedUIView : ViewBase
 }
 ```
 
-### 4.4 使用不同层级
+### 4.4 设置界面层级
 
-```csharp
-// 世界UI - HUD、血条等
-public class HUDView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.WorldUI;
-}
+界面的层级不再在代码中 override，改为在 UIConfig 配置表中设置。
 
-// 主界面
-public class MainMenuView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.MainUI;
-}
+在 Excel 配置表（`Config/Excels/Tables/U-UIConfig-UI配置表.xlsx`）中，为每个 UI 设置对应的 Layer 列值：
 
-// 普通全屏界面
-public class BattleView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.Normal;
-}
+| Layer 列值 | EUILayer 枚举 | 用途 |
+|-----------|--------------|------|
+| WorldUI (0) | EUILayer.WorldUI | 世界UI - HUD、血条等 |
+| MainUI (1500) | EUILayer.MainUI | 主界面 |
+| Normal (2000) | EUILayer.Normal | 普通全屏界面 |
+| Window (2500) | EUILayer.Window | 窗口界面 |
+| Tips (3000) | EUILayer.Tips | 提示界面 |
+| Guide (3500) | EUILayer.Guide | 引导界面 |
+| Loading (4000) | EUILayer.Loading | Loading界面 |
 
-// 窗口界面
-public class ShopView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.Window;
-}
-
-// 提示界面
-public class ToastView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.Tips;
-}
-
-// Loading界面
-public class LoadingView : ViewBase
-{
-    protected override EUILayer Layer => EUILayer.Loading;
-}
-```
+代码中只需声明 UIName 和 PackageName，运行时框架自动根据 UIName 查询 UIConfig 获取层级等配置。
 
 ### 4.5 界面组操作
 
