@@ -3,6 +3,7 @@ using System;
 using FairyGUI;
 using Hotfix.Framework.Core;
 using System.Collections.Generic;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI

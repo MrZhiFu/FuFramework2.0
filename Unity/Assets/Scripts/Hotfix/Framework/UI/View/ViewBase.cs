@@ -5,6 +5,7 @@ using AOT.Framework.Core.Log;
 using UnityEngine;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 using UIConfigRow = Hotfix.Game.Config.Tables.UIConfig;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -49,12 +50,12 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面所属的层级（仅框架内部使用，外部请读 UIConfig.Layer）。
         /// </summary>
-        private EUILayer Layer => (EUILayer)(UIConfig?.Layer ?? (int)EUILayer.Normal);
+        private EUILayer Layer => UIConfig?.Layer ?? EUILayer.Normal;
 
         /// <summary>
         /// 获取界面打开/关闭时的动画类型（仅框架内部使用）。
         /// </summary>
-        private EUITweenType TweenType => (EUITweenType)(UIConfig?.TweenType ?? (int)EUITweenType.Fade);
+        private EUITweenType TweenType => UIConfig?.TweenType ?? EUITweenType.Fade;
 
         /// <summary>
         /// 获取界面打开/关闭时的动画时长（仅框架内部使用）。

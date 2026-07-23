@@ -1,6 +1,7 @@
 using FairyGUI;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI

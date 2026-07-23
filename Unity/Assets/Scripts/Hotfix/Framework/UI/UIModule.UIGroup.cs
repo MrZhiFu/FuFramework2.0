@@ -2,6 +2,7 @@ using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI

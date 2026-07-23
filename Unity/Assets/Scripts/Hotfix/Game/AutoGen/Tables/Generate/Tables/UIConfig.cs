@@ -14,7 +14,7 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class UIConfig : BeanBase
     {
-        public UIConfig(string UIName, int Layer, int TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI)
+        public UIConfig(string UIName, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI) 
         {
             this.UIName = UIName;
             this.Layer = Layer;
@@ -28,8 +28,8 @@ namespace Hotfix.Game.Config.Tables
         public UIConfig(JSONNode _buf)
         {
             { if(!_buf["UIName"].IsString) { throw new SerializationException(); }  UIName = _buf["UIName"]; }
-            { if(!_buf["Layer"].IsNumber) { throw new SerializationException(); }  Layer = _buf["Layer"]; }
-            { if(!_buf["TweenType"].IsNumber) { throw new SerializationException(); }  TweenType = _buf["TweenType"]; }
+            { if(!_buf["Layer"].IsNumber) { throw new SerializationException(); }  Layer = (EUILayer)_buf["Layer"].AsInt; }
+            { if(!_buf["TweenType"].IsNumber) { throw new SerializationException(); }  TweenType = (EUITweenType)_buf["TweenType"].AsInt; }
             { if(!_buf["TweenDuration"].IsNumber) { throw new SerializationException(); }  TweenDuration = _buf["TweenDuration"]; }
             { if(!_buf["AdjustNotch"].IsBoolean) { throw new SerializationException(); }  AdjustNotch = _buf["AdjustNotch"]; }
             { if(!_buf["PauseCoveredUI"].IsBoolean) { throw new SerializationException(); }  PauseCoveredUI = _buf["PauseCoveredUI"]; }
@@ -51,11 +51,11 @@ namespace Hotfix.Game.Config.Tables
         /// <summary>
         /// 界面层级
         /// </summary>
-        public int Layer { private set; get; }
+        public EUILayer Layer { private set; get; }
         /// <summary>
         /// 动画类型
         /// </summary>
-        public int TweenType { private set; get; }
+        public EUITweenType TweenType { private set; get; }
         /// <summary>
         /// 动画时长（秒）
         /// </summary>
@@ -68,17 +68,17 @@ namespace Hotfix.Game.Config.Tables
         /// 被遮挡时是否暂停
         /// </summary>
         public bool PauseCoveredUI { private set; get; }
-        public const int __ID__ = 1987654321;
+        public const int __ID__ = -910817217;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)
         {
-
-
-
-
-
-
+            
+            
+            
+            
+            
+            
         }
 
         public void TranslateText(System.Func<string, string, string> translator)

@@ -46,11 +46,6 @@ namespace Hotfix.Game.Config
         internal Tables.TbGuide TbGuide { private set; get; }
 
         /// <summary>
-        /// UI配置表
-        /// </summary>
-        internal Tables.TbUIConfig TbUIConfig { private set; get; }
-
-        /// <summary>
         /// 引导步骤表
         /// </summary>
         internal Tables.TbGuideStep TbGuideStep { private set; get; }
@@ -69,6 +64,11 @@ namespace Hotfix.Game.Config
         /// 声音组配置表
         /// </summary>
         internal Tables.TbSoundGroup TbSoundGroup { private set; get; }
+
+        /// <summary>
+        /// UI配置表
+        /// </summary>
+        internal Tables.TbUIConfig TbUIConfig { private set; get; }
 
         private ConfigModule m_ConfigModule;
 
@@ -121,10 +121,6 @@ namespace Hotfix.Game.Config
             loadTasks.Add(TbGuide.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbGuide), TbGuide);
 
-            TbUIConfig = new Tables.TbUIConfig(() => loader("tables_tbuiconfig"));
-            loadTasks.Add(TbUIConfig.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(Tables.TbUIConfig), TbUIConfig);
-
             TbGuideStep = new Tables.TbGuideStep(() => loader("tables_tbguidestep"));
             loadTasks.Add(TbGuideStep.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbGuideStep), TbGuideStep);
@@ -140,6 +136,10 @@ namespace Hotfix.Game.Config
             TbSoundGroup = new Tables.TbSoundGroup(() => loader("tables_tbsoundgroup"));
             loadTasks.Add(TbSoundGroup.LoadAsync());
             m_ConfigModule.AddConfig(nameof(Tables.TbSoundGroup), TbSoundGroup);
+
+            TbUIConfig = new Tables.TbUIConfig(() => loader("tables_tbuiconfig"));
+            loadTasks.Add(TbUIConfig.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(Tables.TbUIConfig), TbUIConfig);
 
     
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
@@ -165,11 +165,11 @@ namespace Hotfix.Game.Config
             TbEntityGroup.TranslateText(translator);
             TbGlobalDefine.TranslateText(translator);
             TbGuide.TranslateText(translator);
-            TbUIConfig.TranslateText(translator);
             TbGuideStep.TranslateText(translator);
             TbRedDot.TranslateText(translator);
             TbSound.TranslateText(translator);
             TbSoundGroup.TranslateText(translator);
+            TbUIConfig.TranslateText(translator);
         }
 
         private void ResolveRef()
@@ -180,11 +180,11 @@ namespace Hotfix.Game.Config
             TbEntityGroup.ResolveRef(this);
             TbGlobalDefine.ResolveRef(this);
             TbGuide.ResolveRef(this);
-            TbUIConfig.ResolveRef(this);
             TbGuideStep.ResolveRef(this);
             TbRedDot.ResolveRef(this);
             TbSound.ResolveRef(this);
             TbSoundGroup.ResolveRef(this);
+            TbUIConfig.ResolveRef(this);
         }
     
         public void Refresh()

@@ -18,7 +18,7 @@ namespace Hotfix.Game.Config.Tables
     /// </summary>
     public partial class TbUIConfig : BaseDataTable<Tables.UIConfig>
     {
-        private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;
+        private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;        
         public TbUIConfig(System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc)
         {
             _loadFunc = loadFunc;
@@ -34,11 +34,11 @@ namespace Hotfix.Game.Config.Tables
                 Tables.UIConfig _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Config.Tables.UIConfig.DeserializeUIConfig(_ele);  }
                 DataList.Add(_v);
-                StrKeyDataDict.Add(_v.UIName, _v);
+                StrKeyDataDict.Add(_v.UIName.ToString(), _v);
             }
             PostInit();
         }
-
+    
         public void ResolveRef(TableManager tables)
         {
             foreach(var value in DataList)
@@ -61,3 +61,4 @@ namespace Hotfix.Game.Config.Tables
         partial void PostInit();
     }
 }
+

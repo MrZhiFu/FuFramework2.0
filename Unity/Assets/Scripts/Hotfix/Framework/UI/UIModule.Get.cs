@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI
