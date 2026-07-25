@@ -13,10 +13,7 @@ namespace Hotfix.Framework.Localization
         /// </summary>
         public override string Id => EventId;
 
-        /// <summary>
-        /// 本地化语言改变事件编号。
-        /// </summary>
-        public const string EventId = "Event.Localization.LanguageChange";
+        public static readonly string EventId = typeof(LanguageChangeEventArgs).FullName;
 
         /// <summary>
         /// 当前语言。
