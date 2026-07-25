@@ -3,6 +3,7 @@ using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
@@ -11,6 +12,9 @@ namespace Hotfix.Framework.RedDot
     /// </summary>
     public sealed class RedDotChangedEventArgs : GameEventArgs
     {
+        /// <summary>
+        /// 获取事件编号
+        /// </summary>
         public override string Id => EventId;
 
         /// <summary>

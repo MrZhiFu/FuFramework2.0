@@ -1,6 +1,5 @@
 using System;
 using FairyGUI;
-using UnityEngine;
 using Hotfix.Framework.UI;
 using Hotfix.Framework.RedDot;
 using Hotfix.Framework.Event;
@@ -13,66 +12,48 @@ namespace Hotfix.Game.UI
     public partial class CompRedDot
     {
         /// <summary>
-        /// 红点节点 Key（从 customData 自动解析）
-        /// </summary>
-        private ERedDotKey? m_RedDotKey;
-
-        /// <summary>
-        /// 缓存目标组件（用于 SetRedDotPos）
-        /// </summary>
-        private GComponent m_Target;
-
-        /// <summary>
         /// FGUI customData 中红点标识前缀
         /// </summary>
         private const string FlagRedDot = "red_dot:";
 
         /// <summary>
-        /// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅 EventModule
+        /// 静态红点节点 Key（customData 解析为 ERedDotKey 枚举时使用）
+        /// </summary>
+        private ERedDotKey? m_StaticKey;
+
+        /// <summary>
+        /// 动态红点节点 Key（customData 无法解析为枚举时作为 string 使用）
+        /// </summary>
+        private string m_DynamicKey;
+
+        /// <summary>
+        /// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅红点变更事件
         /// </summary>
         private void OnInit()
         {
             var customData = data as string;
-            if (!TryParseRedDotKey(customData, out var key)) return;
+            if (!TryParseRedDotKey(customData, out var keyValue)) return;
 
-            m_RedDotKey = key;
+            if (Enum.TryParse<ERedDotKey>(keyValue, true, out var staticKey))
+            {
+                m_StaticKey = staticKey;
+            }
+            else
+            {
+                m_DynamicKey = keyValue;
+            }
+
             GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
-
-            // 立即刷新当前状态
-            var state = RedDotModule.Instance.GetState(key);
-            RefreshUI(state.Count, state.DisplayMode);
+            RefreshCurrentState();
         }
 
         /// <summary>
-        /// 销毁：取消 EventModule 订阅
+        /// 销毁：取消订阅红点变更事件
         /// </summary>
         private void OnDispose()
         {
-            if (m_RedDotKey.HasValue)
+            if (m_StaticKey.HasValue || m_DynamicKey != null)
                 GlobalModule.EventModule.Unsubscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
-        }
-
-        /// <summary>
-        /// 设置红点位置，默认在组件的右上角
-        /// </summary>
-        /// <param name="offset">位置偏移</param>
-        public void SetRedDotPos(Vector2 offset = default)
-        {
-            if (m_Target == null) return;
-
-            var posX = m_Target.width - width + offset.x;
-            var posY = offset.y;
-            SetXY(posX, posY);
-        }
-
-        /// <summary>
-        /// 手动设置红点显示（用于列表 Item 等脱离 RedDotModule 的场景）
-        /// </summary>
-        /// <param name="redCount">红点数量</param>
-        /// <param name="mode">显示模式（默认 DotOnly）</param>
-        public void SetRedDot(int redCount, ERedDotDisplayMode mode = ERedDotDisplayMode.DotOnly)
-        {
-            RefreshUI(redCount, mode);
         }
 
         #region 内部实现
@@ -82,15 +63,23 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnRedDotChanged(object sender, GameEventArgs e)
         {
-            if (!m_RedDotKey.HasValue) return;
             if (e is not RedDotChangedEventArgs args) return;
 
-            for (int i = 0; i < args.ChangedStaticKeys.Count; i++)
+            if (m_StaticKey.HasValue)
             {
-                if (args.ChangedStaticKeys[i] == m_RedDotKey.Value)
+                foreach (var key in args.ChangedStaticKeys)
                 {
-                    var state = RedDotModule.Instance.GetState(m_RedDotKey.Value);
-                    RefreshUI(state.Count, state.DisplayMode);
+                    if (key != m_StaticKey.Value) continue;
+                    RefreshCurrentState();
+                    return;
+                }
+            }
+            else if (m_DynamicKey != null)
+            {
+                foreach (var key in args.ChangedDynamicKeys)
+                {
+                    if (key != m_DynamicKey) continue;
+                    RefreshCurrentState();
                     return;
                 }
             }
@@ -136,11 +125,23 @@ namespace Hotfix.Game.UI
         }
 
         /// <summary>
-        /// 解析 FGUI customData 中的 red_dot:{key} 段（支持竖线分隔组合，如 i18n&key|red_dot:Bag_Item）
+        /// 查询当前状态并刷新 UI
         /// </summary>
-        private static bool TryParseRedDotKey(string customData, out ERedDotKey result)
+        private void RefreshCurrentState()
         {
-            result = 0;
+            var state = m_StaticKey.HasValue
+                ? RedDotModule.Instance.GetState(m_StaticKey.Value)
+                : RedDotModule.Instance.GetState(m_DynamicKey);
+
+            RefreshUI(state.Count, state.DisplayMode);
+        }
+
+        /// <summary>
+        /// 解析UI组件customData中的 red_dot:{key} 段（支持竖线分隔组合，如red_dot:Bag）
+        /// </summary>
+        private static bool TryParseRedDotKey(string customData, out string result)
+        {
+            result = null;
 
             if (string.IsNullOrEmpty(customData))
                 return false;
@@ -151,14 +152,11 @@ namespace Hotfix.Game.UI
 
             var dataStart = segStart + FlagRedDot.Length;
             var pipePos = customData.IndexOf('|', dataStart);
-            var segValue = pipePos >= 0
+            result = pipePos >= 0
                 ? customData.Substring(dataStart, pipePos - dataStart).Trim()
                 : customData.Substring(dataStart).Trim();
 
-            if (string.IsNullOrEmpty(segValue))
-                return false;
-
-            return Enum.TryParse(segValue, true, out result);
+            return !string.IsNullOrEmpty(result);
         }
 
         #endregion

@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
-using Hotfix.Framework.Storage;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
-    /// 红点管理模块（Pull 模式 — Leaf Provider 驱动）
+    /// 红点管理模块
     /// 功能：
     ///     1. 树形结构管理 — 支持父子节点层级关系，LogicType（Any/Sum）控制聚合
     ///     2. Leaf Provider — 业务注册 Func<int> 计算函数，OnUpdate 批处理重算
@@ -23,19 +23,29 @@ namespace Hotfix.Framework.RedDot
     ///     7. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态
     ///
     /// 使用流程：
-    ///     1. 在 Luban 配置表中定义红点树结构
+    ///     1. 在Luban配置表中定义红点树结构
     ///     2. 业务模块调用 RegisterLeaf 注册计算函数
-    ///     3. 业务触发事件 → OnUpdate 重算 → EventModule 广播变更
-    ///     4. CompRedDot 监听广播事件，按 ID 过滤刷新 UI
+    ///     3. 业务触发事件 → OnUpdate 重算 → 广播红点变更事件
+    ///     4. UI组件CompRedDot 监听广播事件，按 ID 过滤刷新 UI
     /// </summary>
-    public class RedDotModule : ModuleBase
+    public partial class RedDotModule : ModuleBase
     {
+        /// <summary>
+        /// 模块静态单例
+        /// </summary>
         public static RedDotModule Instance { get; private set; }
 
         // ========== 节点存储 ==========
 
-        private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodes = new();
-        private static readonly Dictionary<string, RedDotNode> DynamicNodes = new();
+        /// <summary>
+        /// 静态节点字典（配置表驱动，Key: ERedDotKey）
+        /// </summary>
+        private static readonly Dictionary<ERedDotKey, RedDotNode> m_StaticNodes = new();
+
+        /// <summary>
+        /// 动态节点字典（运行时创建，Key: string）
+        /// </summary>
+        private static readonly Dictionary<string, RedDotNode> m_DynamicNodes = new();
 
         // ========== 脏标记批处理 ==========
 
@@ -63,7 +73,14 @@ namespace Hotfix.Framework.RedDot
         /// <summary>已读节点 Key 集合（存为 ERedDotKey 的 int 值）</summary>
         private readonly HashSet<int> m_ReadSet = new();
 
+        /// <summary>
+        /// 已读状态在 StorageModule 中的 Key
+        /// </summary>
         private const string ReadStorageKey = "ReadSet";
+
+        /// <summary>
+        /// 已读状态在 StorageModule 中的文件名
+        /// </summary>
         private const string ReadStorageFile = "RedDotData";
 
         // ========== 生命周期 ==========
@@ -79,8 +96,8 @@ namespace Hotfix.Framework.RedDot
                 return;
             }
 
-            StaticNodes.Clear();
-            DynamicNodes.Clear();
+            m_StaticNodes.Clear();
+            m_DynamicNodes.Clear();
 
             var allRows = tbRedDot.All;
 
@@ -90,7 +107,7 @@ namespace Hotfix.Framework.RedDot
                 var node = RedDotNode.Create(row.Id, null, row.DisplayMode, row.CleanStrategy,
                     row.LogicType, row.IsActive, row.ShowOrder);
 
-                if (!StaticNodes.TryAdd(row.Id, node))
+                if (!m_StaticNodes.TryAdd(row.Id, node))
                 {
                     FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
                     ReferencePool.Release(node);
@@ -103,8 +120,8 @@ namespace Hotfix.Framework.RedDot
                 if (row.ParentId == null) continue;
                 var parentKey = row.ParentId.Value;
 
-                if (!StaticNodes.TryGetValue(row.Id, out var child) ||
-                    !StaticNodes.TryGetValue(parentKey, out var parent))
+                if (!m_StaticNodes.TryGetValue(row.Id, out var child) ||
+                    !m_StaticNodes.TryGetValue(parentKey, out var parent))
                     continue;
 
                 child.SetParent(parent);
@@ -112,13 +129,13 @@ namespace Hotfix.Framework.RedDot
             }
 
             // 注入变更追踪回调
-            foreach (var node in StaticNodes.Values)
+            foreach (var node in m_StaticNodes.Values)
                 node.OnTotalCountChanged = OnNodeTotalCountChanged;
 
             // 加载已读状态
             LoadReadState();
 
-            FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {StaticNodes.Count}");
+            FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {m_StaticNodes.Count}");
         }
 
         protected internal override void OnDispose()
@@ -131,13 +148,13 @@ namespace Hotfix.Framework.RedDot
             m_EventToNodes.Clear();
 
             // 回收节点
-            foreach (var node in StaticNodes.Values)
+            foreach (var node in m_StaticNodes.Values)
                 ReferencePool.Release(node);
-            foreach (var node in DynamicNodes.Values)
+            foreach (var node in m_DynamicNodes.Values)
                 ReferencePool.Release(node);
 
-            StaticNodes.Clear();
-            DynamicNodes.Clear();
+            m_StaticNodes.Clear();
+            m_DynamicNodes.Clear();
             m_DirtyNodes.Clear();
             m_ChangedStaticSet.Clear();
             m_ChangedDynamicSet.Clear();
@@ -151,29 +168,31 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            if (m_DirtyNodes.Count == 0) return;
-
-            m_ChangedStaticSet.Clear();
-            m_ChangedDynamicSet.Clear();
-
-            // 收集所有需要从脏集合移除的节点（避免迭代时修改集合）
-            var processedNodes = new List<RedDotNode>(m_DirtyNodes.Count);
-            foreach (var node in m_DirtyNodes)
+            // 处理脏节点
+            if (m_DirtyNodes.Count > 0)
             {
-                node.IsDirty = false;
-                processedNodes.Add(node);
+                foreach (var node in m_DirtyNodes)
+                {
+                    node.IsDirty = false;
 
-                // 仅 Leaf Provider 节点需要重算
-                if (node.LeafProvider == null) continue;
+                    if (node.LeafProvider == null) continue;
 
-                var newCount = node.LeafProvider.Invoke();
-                if (node.IsRead) newCount = 0;
-                node.SetCount(newCount);
+                    try
+                    {
+                        var newCount = node.LeafProvider.Invoke();
+                        if (node.IsRead) newCount = 0;
+                        node.SetCount(newCount);
+                    }
+                    catch (Exception ex)
+                    {
+                        FuLogger.LogError($"[RedDotModule] LeafProvider 执行异常: {ex.Message}");
+                    }
+                }
+
+                m_DirtyNodes.Clear();
             }
 
-            m_DirtyNodes.Clear();
-
-            // 批量广播（SetCount/UpdateTotalCount 过程中 OnNodeTotalCountChanged 已收集变更 Key）
+            // 广播所有本帧累积的变更（脏节点 + MarkRead/RefreshInstance 等）
             if (m_ChangedStaticSet.Count > 0 || m_ChangedDynamicSet.Count > 0)
             {
                 BroadcastChangedIds();
@@ -190,7 +209,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
         public void RegisterLeaf(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
         {
-            if (!StaticNodes.TryGetValue(key, out var node))
+            if (!m_StaticNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogError($"[RedDotModule] RegisterLeaf 未找到静态节点: {key}");
                 return;
@@ -204,7 +223,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void RegisterLeaf(string key, Func<int> provider, params string[] triggerEvents)
         {
-            if (!DynamicNodes.TryGetValue(key, out var node))
+            if (!m_DynamicNodes.TryGetValue(key, out var node))
             {
                 FuLogger.LogError($"[RedDotModule] RegisterLeaf 未找到动态节点: {key}");
                 return;
@@ -213,6 +232,9 @@ namespace Hotfix.Framework.RedDot
             RegisterLeafInternal(node, provider, triggerEvents);
         }
 
+        /// <summary>
+        /// 注册 Leaf Provider（内部实现）
+        /// </summary>
         private void RegisterLeafInternal(RedDotNode node, Func<int> provider, string[] triggerEvents)
         {
             // 先注销旧的 Leaf Provider
@@ -249,7 +271,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void UnregisterLeaf(ERedDotKey key)
         {
-            if (StaticNodes.TryGetValue(key, out var node))
+            if (m_StaticNodes.TryGetValue(key, out var node))
                 UnregisterLeafInternal(node);
         }
 
@@ -258,10 +280,13 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void UnregisterLeaf(string key)
         {
-            if (DynamicNodes.TryGetValue(key, out var node))
+            if (m_DynamicNodes.TryGetValue(key, out var node))
                 UnregisterLeafInternal(node);
         }
 
+        /// <summary>
+        /// 注销 Leaf Provider（内部实现）
+        /// </summary>
         private void UnregisterLeafInternal(RedDotNode node)
         {
             if (node.TriggerEvents != null)
@@ -283,7 +308,6 @@ namespace Hotfix.Framework.RedDot
             }
 
             node.LeafProvider = null;
-            node.InstanceLeafProvider = null;
             node.TriggerEvents = null;
         }
 
@@ -298,7 +322,6 @@ namespace Hotfix.Framework.RedDot
                 {
                     if (node.IsDirty) continue;
                     node.IsDirty = true;
-                    node.PreviousTotalCount = node.TotalCount;
                     m_DirtyNodes.Add(node);
                 }
             }
@@ -311,7 +334,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public RedDotState GetState(ERedDotKey key)
         {
-            if (!StaticNodes.TryGetValue(key, out var node))
+            if (!m_StaticNodes.TryGetValue(key, out var node))
                 return RedDotState.Empty;
 
             return new RedDotState
@@ -328,7 +351,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public RedDotState GetState(string key)
         {
-            if (!DynamicNodes.TryGetValue(key, out var node))
+            if (!m_DynamicNodes.TryGetValue(key, out var node))
                 return RedDotState.Empty;
 
             return new RedDotState
@@ -343,12 +366,12 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 是否存在静态节点
         /// </summary>
-        public bool HasNode(ERedDotKey key) => StaticNodes.ContainsKey(key);
+        public bool HasNode(ERedDotKey key) => m_StaticNodes.ContainsKey(key);
 
         /// <summary>
         /// 是否存在动态节点
         /// </summary>
-        public bool HasNode(string key) => DynamicNodes.ContainsKey(key);
+        public bool HasNode(string key) => m_DynamicNodes.ContainsKey(key);
 
         // ========== 动态节点 ==========
 
@@ -360,19 +383,19 @@ namespace Hotfix.Framework.RedDot
         /// <returns>创建的动态节点，父节点不存在时返回 null</returns>
         public RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
         {
-            if (!StaticNodes.TryGetValue(parentKey, out var parentNode))
+            if (!m_StaticNodes.TryGetValue(parentKey, out var parentNode))
             {
                 FuLogger.LogError($"[RedDotModule] 父节点不存在: {parentKey}");
                 return null;
             }
 
-            if (DynamicNodes.ContainsKey(childName))
-                return DynamicNodes[childName];
+            if (m_DynamicNodes.TryGetValue(childName, out var dynamicNode))
+                return dynamicNode;
 
             var node = RedDotNode.CreateDynamic(childName, parentNode);
             node.OnTotalCountChanged = OnNodeTotalCountChanged;
             parentNode.AddChild(node);
-            DynamicNodes.Add(childName, node);
+            m_DynamicNodes.Add(childName, node);
             FuLogger.LogInfo($"[RedDotModule] 创建动态节点: {childName}，父节点: {parentKey}");
             return node;
         }
@@ -382,235 +405,17 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void RemoveDynamicChild(string childName)
         {
-            if (!DynamicNodes.TryGetValue(childName, out var node)) return;
+            if (!m_DynamicNodes.TryGetValue(childName, out var node)) return;
 
+            var parent = node.Parent;
             UnregisterLeafInternal(node);
-            node.Parent?.RemoveChild(node);
-            DynamicNodes.Remove(childName);
+            parent?.RemoveChild(node);
+            m_DynamicNodes.Remove(childName);
             ReferencePool.Release(node);
+
+            // 移除子节点后触发父节点重算
+            parent?.ForceRecalculate();
         }
 
-        // ========== 实例红点 ==========
-
-        /// <summary>
-        /// 同步实例红点集合：根据当前 key 列表增删实例
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="instanceKeys">当前活跃的实例 Key 列表</param>
-        /// <param name="providerFactory">根据 instanceKey 创建 Leaf Provider 的工厂</param>
-        public void SyncInstances(ERedDotKey parentKey, IReadOnlyList<long> instanceKeys,
-            Func<long, Func<int>> providerFactory)
-        {
-            if (!StaticNodes.TryGetValue(parentKey, out var parentNode))
-            {
-                FuLogger.LogError($"[RedDotModule] SyncInstances 未找到父节点: {parentKey}");
-                return;
-            }
-
-            if (!m_InstanceNodes.TryGetValue(parentKey, out var existingInstances))
-            {
-                existingInstances = new Dictionary<long, string>();
-                m_InstanceNodes[parentKey] = existingInstances;
-            }
-
-            // 收集新增的 key
-            var newKeys = new HashSet<long>();
-            for (int i = 0; i < instanceKeys.Count; i++)
-            {
-                newKeys.Add(instanceKeys[i]);
-            }
-
-            // 移除不在新列表中的实例
-            var removedKeys = new List<long>();
-            foreach (var kvp in existingInstances)
-            {
-                if (!newKeys.Contains(kvp.Key))
-                    removedKeys.Add(kvp.Key);
-            }
-            foreach (var key in removedKeys)
-            {
-                RemoveDynamicChild(existingInstances[key]);
-                existingInstances.Remove(key);
-            }
-
-            // 添加新增的实例
-            for (int i = 0; i < instanceKeys.Count; i++)
-            {
-                long instanceKey = instanceKeys[i];
-                if (existingInstances.ContainsKey(instanceKey)) continue;
-
-                var childName = $"__inst__{parentKey}_{instanceKey}";
-                var node = AddDynamicChild(parentKey, childName);
-                if (node != null)
-                {
-                    var provider = providerFactory(instanceKey);
-                    RegisterLeafInternal(node, provider, null);
-                    existingInstances[instanceKey] = childName;
-                }
-            }
-
-            // 重算所有实例
-            RecalculateAllInstances(parentKey);
-        }
-
-        /// <summary>
-        /// 刷新单个实例的 Leaf Provider
-        /// </summary>
-        public void RefreshInstance(ERedDotKey parentKey, long instanceKey)
-        {
-            if (!m_InstanceNodes.TryGetValue(parentKey, out var instances)) return;
-            if (!instances.TryGetValue(instanceKey, out var childName)) return;
-            if (!DynamicNodes.TryGetValue(childName, out var node)) return;
-            if (node.LeafProvider == null) return;
-
-            var newCount = node.LeafProvider.Invoke();
-            if (node.IsRead) newCount = 0;
-            node.SetCount(newCount);
-        }
-
-        /// <summary>
-        /// 查询实例红点状态
-        /// </summary>
-        public RedDotState GetInstanceState(ERedDotKey parentKey, long instanceKey)
-        {
-            if (!m_InstanceNodes.TryGetValue(parentKey, out var instances)) return RedDotState.Empty;
-            if (!instances.TryGetValue(instanceKey, out var childName)) return RedDotState.Empty;
-            return GetState(childName);
-        }
-
-        /// <summary>
-        /// 重算某个父节点下所有实例
-        /// </summary>
-        private void RecalculateAllInstances(ERedDotKey parentKey)
-        {
-            if (!m_InstanceNodes.TryGetValue(parentKey, out var instances)) return;
-
-            m_ChangedStaticSet.Clear();
-            m_ChangedDynamicSet.Clear();
-
-            foreach (var kvp in instances)
-            {
-                if (DynamicNodes.TryGetValue(kvp.Value, out var node) && node.LeafProvider != null)
-                {
-                    var newCount = node.LeafProvider.Invoke();
-                    if (node.IsRead) newCount = 0;
-                    node.SetCount(newCount);
-                }
-            }
-
-            if (m_ChangedStaticSet.Count > 0 || m_ChangedDynamicSet.Count > 0)
-            {
-                BroadcastChangedIds();
-            }
-        }
-
-        // ========== 已读持久化 ==========
-
-        /// <summary>
-        /// 标记红点已读（计数归零 + 持久化）
-        /// </summary>
-        public void MarkRead(ERedDotKey key)
-        {
-            if (!StaticNodes.TryGetValue(key, out var node)) return;
-
-            node.IsRead = true;
-            node.SetCount(0);
-            m_ReadSet.Add((int)key);
-            SaveReadState();
-        }
-
-        /// <summary>
-        /// 标记红点已读
-        /// </summary>
-        public void MarkRead(string key)
-        {
-            if (!DynamicNodes.TryGetValue(key, out var node)) return;
-
-            node.IsRead = true;
-            node.SetCount(0);
-        }
-
-        /// <summary>
-        /// 检查是否已读
-        /// </summary>
-        public bool IsRead(ERedDotKey key) => m_ReadSet.Contains((int)key);
-
-        /// <summary>
-        /// 检查是否已读
-        /// </summary>
-        public bool IsRead(string key)
-        {
-            return DynamicNodes.TryGetValue(key, out var node) && node.IsRead;
-        }
-
-        private void LoadReadState()
-        {
-            var list = StorageModule.Instance.GetObject<List<int>>(ReadStorageKey, ReadStorageFile);
-            if (list == null) return;
-
-            foreach (var id in list)
-            {
-                m_ReadSet.Add(id);
-                var key = (ERedDotKey)id;
-                if (StaticNodes.TryGetValue(key, out var node))
-                {
-                    node.IsRead = true;
-                    node.SetCount(0);
-                }
-            }
-        }
-
-        private void SaveReadState()
-        {
-            var list = new List<int>(m_ReadSet);
-            StorageModule.Instance.SetObject(ReadStorageKey, list, ReadStorageFile);
-        }
-
-        // ========== 清理策略 ==========
-
-        /// <summary>
-        /// 尝试自动清除红点（仅对 ViewAutoClean 策略的节点生效）
-        /// </summary>
-        public void TryAutoClean(ERedDotKey key)
-        {
-            if (!StaticNodes.TryGetValue(key, out var node)) return;
-            if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
-            CleanNodeRecursive(node);
-        }
-
-        private static void CleanNodeRecursive(RedDotNode node)
-        {
-            node.SetCount(0);
-            foreach (var child in node.GetChildren())
-                CleanNodeRecursive(child);
-        }
-
-        // ========== 内部方法 ==========
-
-        /// <summary>
-        /// TotalCount 变化回调（注入到每个 RedDotNode，在 UpdateTotalCount 中触发）
-        /// 收集本帧变更的节点 Key，供 OnUpdate 批量广播
-        /// </summary>
-        private void OnNodeTotalCountChanged(RedDotNode node)
-        {
-            if (node.StaticKey.HasValue)
-                m_ChangedStaticSet.Add(node.StaticKey.Value);
-            else if (node.DynamicKey != null)
-                m_ChangedDynamicSet.Add(node.DynamicKey);
-        }
-
-        /// <summary>
-        /// 通过 EventModule 批量广播本帧变更
-        /// </summary>
-        private void BroadcastChangedIds()
-        {
-            var args = RedDotChangedEventArgs.Create();
-            foreach (var key in m_ChangedStaticSet)
-                args.ChangedStaticKeys.Add(key);
-            foreach (var key in m_ChangedDynamicSet)
-                args.ChangedDynamicKeys.Add(key);
-
-            GlobalModule.EventModule.Broadcast(this, args);
-        }
     }
 }

@@ -2,37 +2,53 @@
 
 ## 1. 简介
 
-FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 中的红点（未读标记）层级结构和计数。该模块采用树形结构管理红点节点，支持静态节点（配置表定义）和动态节点（运行时创建），计数变化时自动向上冒泡更新父节点并通知监听者刷新 UI。
+FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 中的红点（未读标记）层级结构和计数。该模块采用 **Pull 模式（Leaf Provider）** 驱动，业务模块注册计算函数，框架通过 EventModule 事件触发 + OnUpdate 批处理自动重算，最后通过 EventModule 批量广播变更通知 UI 刷新。
 
 ## 2. 核心特性
 
-- **树形层级**：红点节点按树形结构组织，子节点计数自动向上冒泡汇总
-- **静态+动态**：静态节点由 Luban 配置表 `TbRedDot` 定义（通过 `ERedDotKey` 枚举标识），动态节点支持运行时通过 string Key 创建
-- **自动冒泡**：叶子节点 `RawCount` 变化时，自动向上递归更新路径上所有父节点的 `TotalCount`
+- **Pull 模式**：业务模块通过 `RegisterLeaf` 注册 `Func<int>` 计算函数，框架自动管理重算时机
+- **OnUpdate 批处理**：多个脏节点在同一帧内统一重算、聚合、广播，避免重复计算
+- **EventModule 广播**：通过 `RedDotChangedEventArgs` 批量通知变更节点，UI 端按 Key 过滤刷新
+- **树形层级**：红点节点按树形结构组织，支持 Any/Sum 两种聚合逻辑
+- **静态+动态**：静态节点由 Luban 配置表 `TbRedDot` 定义（`ERedDotKey` 枚举），动态节点运行时通过 string Key 创建
+- **已读持久化**：`MarkRead` 通过 StorageModule 持久保存已读状态，重启后自动恢复
+- **实例红点**：`SyncInstances` 管理 per-instance 动态子节点（如每封邮件的独立红点）
 - **两种清理策略**：`Manual`（手动清除）和 `ViewAutoClean`（界面关闭自动清除）
-- **两种显示模式**：`DotOnly`（仅显示红点）、`DotNumber`（红点+数字）、`Auto`（自动）
-- **事件通知**：通过 `OnCountChanged` 事件通知监听者，注册时可选择立即通知当前状态
+- **三种显示模式**：`DotOnly`（仅显示红点）、`DotNumber`（红点+数字）、`Auto`（自动）
 
 ## 3. 核心概念
 
-### 3.1 红点树形结构
+### 3.1 数据流
 
 ```
-                    Root (汇总所有红点)
-                   /    \
-           MainUI(3)    Bag(5)
-          /    \        /    \
-    Hero(2) Mail(1)  Item(3) Equip(2)
+[业务模块] RegisterLeaf(key, () => GetCount(), "EventId")
+    ↓
+[EventModule] 事件触发 → OnLeafTriggerEvent → node.IsDirty = true
+    ↓
+[RedDotModule.OnUpdate] LeafProvider() → SetCount → UpdateTotalCount → 向上传播
+    ↓ 收集变更 Key
+[EventModule.Broadcast] RedDotChangedEventArgs(ChangedStaticKeys, ChangedDynamicKeys)
+    ↓
+[CompRedDot] 按 key 过滤 → GetState(key) → RefreshUI(Count, DisplayMode)
 ```
 
 ### 3.2 计数规则
 
-- **RawCount**：节点自身的原始计数（叶子节点设置）
+- **RawCount**：节点自身的原始计数（由 LeafProvider 计算）
 - **TotalCount**：RawCount + 所有子节点的 TotalCount 之和
-- 修改叶子节点的 RawCount 后，会自动向上冒泡重新计算路径上所有父节点的 TotalCount
-- 动态节点在 `RawCount` 归零后会自动从树中移除并回收
+- 叶子节点重算后会自动向上冒泡更新路径上所有父节点
+- 聚合逻辑受 `LogicType` 和 `IsActive` 控制
 
-### 3.3 清理策略（ERedDotCleanStrategy）
+### 3.3 聚合逻辑（ERedDotLogicType）
+
+命名空间：`Hotfix.Game.Config`
+
+| 逻辑 | 值 | 说明 |
+|------|-----|------|
+| `Sum` | 0 | 求和：父节点 TotalCount = RawCount + Σ(子节点 TotalCount) |
+| `Any` | 1 | 任一：父节点 TotalCount = RawCount + (任一子节点 TotalCount > 0 ? 1 : 0) |
+
+### 3.4 清理策略（ERedDotCleanStrategy）
 
 命名空间：`Hotfix.Game.Config`
 
@@ -41,7 +57,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 | `Manual` | 0 | 手动清除，需要业务代码显式调用 |
 | `ViewAutoClean` | 1 | 界面关闭时框架自动清除（通过 `TryAutoClean` 触发） |
 
-### 3.4 显示模式（ERedDotDisplayMode）
+### 3.5 显示模式（ERedDotDisplayMode）
 
 命名空间：`Hotfix.Game.Config`
 
@@ -49,7 +65,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 |------|-----|------|
 | `DotOnly` | 0 | 只显示红点，不显示数字 |
 | `DotNumber` | 1 | 红点+数字 |
-| `Auto` | 2 | 自动 |
+| `Auto` | 2 | =1 显示红点，>1 显示数字 |
 
 ## 4. 核心类说明
 
@@ -57,70 +73,43 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 
 红点管理模块，继承自 `ModuleBase`。系统启动时自动在 `OnInit()` 中从 Luban 配置表 `TbRedDot` 构建静态节点树。
 
-**核心属性：**
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `Instance` | `RedDotModule` | 模块静态单例 |
-
-**核心方法 — 静态节点（ERedDotKey 重载）：**
-
 ```csharp
-// 注册/注销监听
-void Register(ERedDotKey key, Action<int> onChange, bool immediateNotify = true)
-void Unregister(ERedDotKey key, Action<int> onChange)
-
-// 获取节点
-RedDotNode GetNode(ERedDotKey key)
-
-// 获取红点数量
-int GetCount(ERedDotKey key)
-
-// 检查节点是否存在
-bool HasNode(ERedDotKey key)
-
-// 设置红点数量
-void SetCount(ERedDotKey key, int count)
-
-// 增减红点数量
-void AddCount(ERedDotKey key, int value = 1)
-void SubCount(ERedDotKey key, int value = 1)
-
-// 重置红点数量为 0
-void ResetCount(ERedDotKey key)
-
-// 添加动态子节点
-RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
-
-// 自动清除（仅 ViewAutoClean 策略的节点生效）
-void TryAutoClean(ERedDotKey key)
+// 模块单例
+public static RedDotModule Instance { get; private set; }
 ```
 
-**核心方法 — 动态节点（string 重载）：**
+**核心方法：**
 
 ```csharp
-// 注册/注销监听
-void Register(string key, Action<int> onChange, bool immediateNotify = true)
-void Unregister(string key, Action<int> onChange)
-void UnregisterAll(string key)
+// === Leaf Provider 注册 ===
+void RegisterLeaf(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
+void RegisterLeaf(string key, Func<int> provider, params string[] triggerEvents)
+void UnregisterLeaf(ERedDotKey key)
+void UnregisterLeaf(string key)
 
-// 获取节点 / 数量
-RedDotNode GetNode(string key)
-int GetCount(string key)
+// === 状态查询 ===
+RedDotState GetState(ERedDotKey key)
+RedDotState GetState(string key)
+bool HasNode(ERedDotKey key)
 bool HasNode(string key)
 
-// 设置红点数量（归零时自动回收节点）
-void SetCount(string key, int count)
-void AddCount(string key, int value = 1)
-void SubCount(string key, int value = 1)
-void ResetCount(string key)
-```
+// === 动态节点 ===
+RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
+void RemoveDynamicChild(string childName)
 
-**通用方法：**
+// === 实例红点 ===
+void SyncInstances(ERedDotKey parentKey, IReadOnlyList<long> instanceKeys, Func<long, Func<int>> providerFactory)
+void RefreshInstance(ERedDotKey parentKey, long instanceKey)
+RedDotState GetInstanceState(ERedDotKey parentKey, long instanceKey)
 
-```csharp
-// 清理所有节点的监听器
-void ClearAllListeners()
+// === 已读持久化 ===
+void MarkRead(ERedDotKey key)
+void MarkRead(string key)
+bool IsRead(ERedDotKey key)
+bool IsRead(string key)
+
+// === 清理策略 ===
+void TryAutoClean(ERedDotKey key)
 ```
 
 ### 4.2 RedDotNode
@@ -133,169 +122,195 @@ void ClearAllListeners()
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `StaticKey` | `ERedDotKey?` | 静态节点 Key（配置表定义），动态节点为 null |
-| `DynamicKey` | `string` | 动态节点 Key（运行时创建），静态节点为 null |
+| `StaticKey` | `ERedDotKey?` | 静态节点 Key，动态节点为 null |
+| `DynamicKey` | `string` | 动态节点 Key，静态节点为 null |
 | `RawCount` | `int` | 节点的原始计数 |
 | `TotalCount` | `int` | 节点的总计数（自身 + 所有子节点） |
 | `Parent` | `RedDotNode` | 父节点 |
 | `DisplayMode` | `ERedDotDisplayMode` | 显示模式（来自配置表） |
 | `CleanStrategy` | `ERedDotCleanStrategy` | 清理策略（来自配置表） |
+| `LogicType` | `ERedDotLogicType` | 聚合逻辑（Sum / Any） |
+| `IsActive` | `bool` | 是否激活（false 时 TotalCount 永远为 0） |
+| `ShowOrder` | `int` | UI 显示排序权重 |
+| `IsRead` | `bool` | 是否已读 |
+| `IsDirty` | `bool` | 脏标记（本帧待重算） |
+| `LeafProvider` | `Func<int>` | 叶子计算函数 |
+| `TriggerEvents` | `string[]` | 触发重算的 EventModule 事件 ID 列表 |
 
-**事件：**
+### 4.3 RedDotState
+
+命名空间：`Hotfix.Framework.RedDot`
 
 ```csharp
-event Action<int> OnCountChanged   // 计数变化时触发，参数为 TotalCount
+public struct RedDotState
+{
+    public int Count;                    // 红点数量
+    public int ShowOrder;                // 显示排序权重
+    public bool IsActive;                // 节点是否激活
+    public ERedDotDisplayMode DisplayMode; // 显示模式
+    public static readonly RedDotState Empty; // 默认空状态
+}
 ```
 
-**核心方法：**
+### 4.4 RedDotChangedEventArgs
+
+命名空间：`Hotfix.Framework.RedDot`
 
 ```csharp
-// 创建静态节点（由 RedDotModule 内部调用）
-static RedDotNode Create(ERedDotKey key, RedDotNode parent, ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy)
+public sealed class RedDotChangedEventArgs : GameEventArgs
+{
+    public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
+    public readonly List<ERedDotKey> ChangedStaticKeys;   // 变化的静态节点
+    public readonly List<string> ChangedDynamicKeys;       // 变化的动态节点
+    public static RedDotChangedEventArgs Create();
+}
+```
 
-// 创建动态节点（默认 DotOnly + Manual）
-static RedDotNode CreateDynamic(string key, RedDotNode parent)
+### 4.5 CompRedDot（UI 组件）
 
-// 设置父节点
-void SetParent(RedDotNode parent)
+FGUI 自定义组件，放置到界面后自动解析 `customData` 中的 `red_dot:<key>` 并订阅 EventModule 变更通知。
 
-// 子节点管理
-void AddChild(RedDotNode child)
-void RemoveChild(RedDotNode child)
+**customData 格式**：`red_dot:Bag_Item`（支持与其他插件竖线分隔，如 `i18n&key|red_dot:Bag_Item`）
 
-// 设置计数（自动向上传播）
-void SetCount(int count)
+**公开方法：**
 
-// 获取子节点（只读）
-IReadOnlyList<RedDotNode> GetChildren()
-
-// 清除所有事件监听
-void ClearAllListeners()
-
-// 回收到对象池时清理
-void Clear()
+```csharp
+void SetRedDotPos(Vector2 offset = default)  // 设置红点位置，默认父容器右上角
+void SetRedDot(int redCount, ERedDotDisplayMode mode)  // 手动设置（用于列表 Item 场景）
 ```
 
 ## 5. 使用示例
 
-### 5.1 设置红点计数
+### 5.1 注册 Leaf Provider
 
 ```csharp
 using Hotfix.Framework.RedDot;
 
-// 设置邮件红点为 5
-RedDotModule.Instance.SetCount(ERedDotKey.Mail, 5);
+// 为邮件红点注册计算函数，当 "MailChanged" 事件触发时自动重算
+RedDotModule.Instance.RegisterLeaf(ERedDotKey.Mail, () =>
+{
+    return MailManager.Instance.GetUnreadCount();
+}, "MailChanged");
 
-// 邮件已被阅读后，重置红点
-RedDotModule.Instance.ResetCount(ERedDotKey.Mail);
-
-// 递增 / 递减
-RedDotModule.Instance.AddCount(ERedDotKey.Bag, 1);   // 背包红点 +1
-RedDotModule.Instance.SubCount(ERedDotKey.Bag, 1);   // 背包红点 -1
+// 注销 Leaf Provider（恢复为不活跃状态）
+RedDotModule.Instance.UnregisterLeaf(ERedDotKey.Mail);
 ```
 
-### 5.2 注册监听红点变化
+### 5.2 业务层触发重算
+
+```csharp
+using Hotfix.Framework.Event;
+
+// 邮件数据变更时广播事件，触发所有监听该事件的 Leaf Provider 重算
+GlobalModule.EventModule.Broadcast(this, MailChangedEventArgs.EventId);
+```
+
+### 5.3 监听红点变化（UI 端）
 
 ```csharp
 using Hotfix.Framework.Core;
 using Hotfix.Framework.RedDot;
-using UnityEngine;
+using Hotfix.Framework.Event;
 
-public class MailButton : MonoBehaviour
+// 方式一：使用 CompRedDot 组件（推荐）
+// 在 FGUI 编辑器中放置 CompRedDot，设置 customData = "red_dot:Mail"
+// 组件自动解析并订阅，无需任何代码
+
+// 方式二：手动订阅 EventModule
+private void Start()
 {
-    private RedDotModule m_RedDotModule;
-    private GameObject m_RedDotIcon;
+    GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
+}
 
-    private void Start()
+private void OnRedDotChanged(object sender, GameEventArgs e)
+{
+    if (e is not RedDotChangedEventArgs args) return;
+
+    foreach (var key in args.ChangedStaticKeys)
     {
-        m_RedDotModule = ModuleManager.GetModule<RedDotModule>();
-
-        // 注册监听（默认 immediateNotify = true，立即通知当前状态）
-        m_RedDotModule.Register(ERedDotKey.Mail, OnMailRedDotChanged);
-    }
-
-    private void OnMailRedDotChanged(int count)
-    {
-        // 根据计数显示/隐藏红点图标
-        m_RedDotIcon.SetActive(count > 0);
-    }
-
-    private void OnDestroy()
-    {
-        // 必须注销监听，避免内存泄漏
-        m_RedDotModule?.Unregister(ERedDotKey.Mail, OnMailRedDotChanged);
+        if (key == ERedDotKey.Mail)
+        {
+            var state = RedDotModule.Instance.GetState(key);
+            // 根据 state.Count / state.DisplayMode 更新 UI
+        }
     }
 }
 ```
 
-### 5.3 动态节点
+### 5.4 实例红点
 
 ```csharp
-using Hotfix.Framework.RedDot;
-
-// 为邮件静态节点下创建动态子节点（如具体某封邮件的红点）
-var dynamicNode = RedDotModule.Instance.AddDynamicChild(ERedDotKey.Mail, "Mail_1001");
-
-// 设置动态节点计数
-RedDotModule.Instance.SetCount("Mail_1001", 1);
-
-// 注册动态节点监听
-RedDotModule.Instance.Register("Mail_1001", (count) =>
+// 同步邮箱的实例红点（每封邮件一个独立红点）
+RedDotModule.Instance.SyncInstances(ERedDotKey.Mail, mailIds, (mailId) =>
 {
-    // 更新特定邮件项的红点状态
+    return () => MailManager.Instance.GetReadState(mailId) ? 0 : 1;
 });
 
-// 重置动态节点（归零后会自动从树中移除并回收）
-RedDotModule.Instance.ResetCount("Mail_1001");
+// 刷新单个实例
+RedDotModule.Instance.RefreshInstance(ERedDotKey.Mail, 1001);
 
-// 注销动态节点所有监听
-RedDotModule.Instance.UnregisterAll("Mail_1001");
+// 查询实例状态
+var state = RedDotModule.Instance.GetInstanceState(ERedDotKey.Mail, 1001);
 ```
 
-### 5.4 自动清除策略
+### 5.5 已读持久化
 
 ```csharp
-using Hotfix.Framework.RedDot;
+// 标记邮件红点为已读（计数归零 + 持久化，重启后保持）
+RedDotModule.Instance.MarkRead(ERedDotKey.Mail);
 
+// 检查是否已读
+if (RedDotModule.Instance.IsRead(ERedDotKey.Mail))
+{
+    // ...
+}
+```
+
+### 5.6 自动清除策略
+
+```csharp
 // 配置表中将某节点 CleanStrategy 设为 ViewAutoClean
 // 在界面关闭时调用：
 RedDotModule.Instance.TryAutoClean(ERedDotKey.Mail);
-
-// 只有 CleanStrategy == ERedDotCleanStrategy.ViewAutoClean 的节点才会被清除
-// 清除时会递归清除该节点及其所有子节点的计数
+// 只有 CleanStrategy == ERedDotCleanStrategy.ViewAutoClean 的节点才会被递归清除
 ```
 
 ## 6. 目录结构
 
 ```text
 RedDot/
-├── RedDotModule.cs                # 红点管理模块
+├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Leaf Provider、状态查询、动态节点）
+├── RedDotModule.Feature.cs        # 功能扩展（实例红点、已读持久化、清理策略、内部广播）
 ├── RedDotNode.cs                  # 红点节点
+├── RedDotState.cs                 # 状态查询结构体
+├── RedDotChangedEventArgs.cs      # EventModule 广播事件参数
 └── README.md                      # 本文档
 ```
 
 ## 7. 依赖
 
-- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`
+- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`、`GlobalModule`
 - **Hotfix.Framework.Config**：配置表系统（`ConfigModule`、Luban `TbRedDot`）
 - **Hotfix.Framework.ReferencePools**：引用池（`ReferencePool`）
-- **Hotfix.Game.Config**：配置表枚举（`ERedDotKey`、`ERedDotCleanStrategy`、`ERedDotDisplayMode`）
+- **Hotfix.Framework.Event**：事件系统（`EventModule`、`GameEventArgs`）
+- **Hotfix.Framework.Storage**：本地存储（`StorageModule`，用于已读持久化）
+- **Hotfix.Game.Config**：配置表枚举（`ERedDotKey`、`ERedDotLogicType`、`ERedDotCleanStrategy`、`ERedDotDisplayMode`）
 - **AOT.Framework.Core.Log**：日志（`FuLogger`）
 
 ## 8. 最佳实践
 
-1. **静态节点优先**：固定结构的红点用 Luban 配置表定义，运行时无需关注节点创建
-2. **动态节点按需创建**：动态内容（如具体某条消息）使用 `AddDynamicChild` 创建，归零后自动回收
-3. **UI 分离监听**：每个红点 UI 组件只监听自己关心的节点，OnDestroy 中必须调用 `Unregister`
-4. **及时注销**：界面销毁时必须注销监听，避免内存泄漏（可用 `UnregisterAll` 一次性清理动态节点）
-5. **计数汇总**：利用树形结构自动汇总，父节点无需额外计算
-6. **使用 TryAutoClean**：对于 ViewAutoClean 策略的节点，在界面关闭时统一清理
+1. **Leaf Provider 优先**：叶子节点使用 `RegisterLeaf` 注册计算函数，框架自动管理重算时机
+2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Leaf Provider 自动重算
+3. **CompRedDot 零侵入**：UI 层优先使用 CompRedDot 组件，在 FGUI 编辑器中配置 `customData` 即可，无需写代码
+4. **已读持久化**：对需要跨会话保持已读状态的红点，使用 `MarkRead`
+5. **实例红点按需管理**：动态实例红点使用 `SyncInstances` 批量管理，框架自动处理增删
+6. **聚合逻辑按需选择**：根节点用 Sum 汇总所有子红点，菜单入口用 Any 检测是否有新内容
 
 ## 9. 注意事项
 
 1. 静态节点树在 `OnInit()` 中自动构建（从配置表读取），无需手动调用初始化方法
 2. 动态节点 Key 必须唯一，重复创建同名动态节点会返回已存在的节点
-3. 动态节点 `RawCount` 归零后会自动调用 `RemoveChild` 从父节点移除，并从 `DynamicNodes` 字典中移除后回收
-4. `TryAutoClean` 只对 `CleanStrategy == ERedDotCleanStrategy.ViewAutoClean` 的节点生效
-5. 设置节点计数时，`OnCountChanged` 事件会在 `TotalCount` 实际变化时才触发（不变时不触发）
-6. 叶子节点的计数变化会递归向上冒泡更新所有父节点
+3. Leaf Provider 不应执行昂贵操作，因为可能在同一个 OnUpdate 中多次调用
+4. 同一节点不应同时注册 Leaf Provider 和手动调 SetCount（SetCount 为 internal，仅框架内部使用）
+5. `IsActive = false` 的节点 TotalCount 永远为 0，且不参与父节点聚合
+6. 已读状态仅抑制初始加载时的红点，运行时新的 Leaf Provider 计算结果会覆盖已读状态

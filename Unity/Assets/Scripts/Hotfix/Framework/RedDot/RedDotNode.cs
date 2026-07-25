@@ -5,6 +5,7 @@ using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
@@ -75,11 +76,6 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public bool IsDirty { get; internal set; }
 
-        /// <summary>
-        /// 变更前 TotalCount 快照（用于本帧变化检测）
-        /// </summary>
-        internal int PreviousTotalCount { get; set; }
-
         // ========== Leaf Provider ==========
 
         /// <summary>
@@ -88,19 +84,9 @@ namespace Hotfix.Framework.RedDot
         public Func<int> LeafProvider { get; internal set; }
 
         /// <summary>
-        /// 实例叶子节点计算函数（实例红点专用）
-        /// </summary>
-        public Func<long, int> InstanceLeafProvider { get; internal set; }
-
-        /// <summary>
         /// 触发重算的 EventModule 事件 ID 列表
         /// </summary>
         public string[] TriggerEvents { get; internal set; }
-
-        /// <summary>
-        /// 实例红点的实例计数缓存
-        /// </summary>
-        public readonly Dictionary<long, int> InstanceCounts = new();
 
         /// <summary>
         /// TotalCount 变化回调（内部使用，由 RedDotModule 设置）
@@ -170,6 +156,14 @@ namespace Hotfix.Framework.RedDot
         /// 移除子节点（动态节点归零回收时使用）
         /// </summary>
         public void RemoveChild(RedDotNode child) => m_Children.Remove(child);
+
+        /// <summary>
+        /// 强制重算 TotalCount 并向上传播（子节点增删后调用）
+        /// </summary>
+        internal void ForceRecalculate()
+        {
+            UpdateTotalCount();
+        }
 
         /// <summary>
         /// 设置节点计数并向上传播（仅 RedDotModule 内部调用）
@@ -266,11 +260,8 @@ namespace Hotfix.Framework.RedDot
             ShowOrder = 0;
             IsRead = false;
             IsDirty = false;
-            PreviousTotalCount = 0;
             LeafProvider = null;
-            InstanceLeafProvider = null;
             TriggerEvents = null;
-            InstanceCounts.Clear();
             OnTotalCountChanged = null;
             m_Children.Clear();
         }
