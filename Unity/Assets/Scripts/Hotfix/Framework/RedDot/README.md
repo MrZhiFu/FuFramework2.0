@@ -2,17 +2,17 @@
 
 ## 1. 简介
 
-FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 中的红点（未读标记）层级结构和计数。该模块采用 **Pull 模式（Leaf Provider）** 驱动，业务模块注册计算函数，框架通过 EventModule 事件触发 + OnUpdate 批处理自动重算，最后通过 EventModule 批量广播变更通知 UI 刷新。
+FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 中的红点（未读标记）层级结构和计数。该模块采用 **Pull 模式（Calculate Provider）** 驱动，业务模块注册计算函数，框架通过 EventModule 事件触发 + OnUpdate 批处理自动重算，最后通过 EventModule 批量广播变更通知 UI 刷新。
 
 ## 2. 核心特性
 
-- **Pull 模式**：业务模块通过 `RegisterLeaf` 注册 `Func<int>` 计算函数，框架自动管理重算时机
+- **Pull 模式**：业务模块通过 `Register` 注册 `Func<int>` 计算函数，框架自动管理重算时机
 - **OnUpdate 批处理**：多个脏节点在同一帧内统一重算、聚合、广播，避免重复计算
 - **EventModule 广播**：通过 `RedDotChangedEventArgs` 批量通知变更节点，UI 端按 Key 过滤刷新
 - **树形层级**：红点节点按树形结构组织，支持 Any/Sum 两种聚合逻辑
 - **静态+动态**：静态节点由 Luban 配置表 `TbRedDot` 定义（`ERedDotKey` 枚举），动态节点运行时通过 string Key 创建
 - **已读持久化**：`MarkRead` 通过 StorageModule 持久保存已读状态，重启后自动恢复
-- **实例红点**：`SyncInstances` 管理 per-instance 动态子节点（如每封邮件的独立红点）
+- **动态红点**：`SyncDynamicNodes` 管理 批量动态子节点（如每封邮件的独立红点）
 - **两种清理策略**：`Manual`（手动清除）和 `ViewAutoClean`（界面关闭自动清除）
 - **三种显示模式**：`DotOnly`（仅显示红点）、`DotNumber`（红点+数字）、`Auto`（自动）
 
@@ -21,11 +21,11 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 ### 3.1 数据流
 
 ```
-[业务模块] RegisterLeaf(key, () => GetCount(), "EventId")
+[业务模块] Register(key, () => GetCount(), "EventId")
     ↓
 [EventModule] 事件触发 → OnLeafTriggerEvent → node.IsDirty = true
     ↓
-[RedDotModule.OnUpdate] LeafProvider() → SetCount → UpdateTotalCount → 向上传播
+[RedDotModule.OnUpdate] CalculateProvider() → SetCount → UpdateTotalCount → 向上传播
     ↓ 收集变更 Key
 [EventModule.Broadcast] RedDotChangedEventArgs(ChangedStaticKeys, ChangedDynamicKeys)
     ↓
@@ -34,7 +34,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 
 ### 3.2 计数规则
 
-- **RawCount**：节点自身的原始计数（由 LeafProvider 计算）
+- **RawCount**：节点自身的原始计数（由 CalculateProvider 计算）
 - **TotalCount**：RawCount + 所有子节点的 TotalCount 之和
 - 叶子节点重算后会自动向上冒泡更新路径上所有父节点
 - 聚合逻辑受 `LogicType` 和 `IsActive` 控制
@@ -81,11 +81,11 @@ public static RedDotModule Instance { get; private set; }
 **核心方法：**
 
 ```csharp
-// === Leaf Provider 注册 ===
-void RegisterLeaf(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
-void RegisterLeaf(string key, Func<int> provider, params string[] triggerEvents)
-void UnregisterLeaf(ERedDotKey key)
-void UnregisterLeaf(string key)
+// === Calculate Provider 注册 ===
+void Register(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
+void Register(string key, Func<int> provider, params string[] triggerEvents)
+void Unregister(ERedDotKey key)
+void Unregister(string key)
 
 // === 状态查询 ===
 RedDotState GetState(ERedDotKey key)
@@ -97,10 +97,10 @@ bool HasNode(string key)
 RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
 void RemoveDynamicChild(string childName)
 
-// === 实例红点 ===
-void SyncInstances(ERedDotKey parentKey, IReadOnlyList<long> instanceKeys, Func<long, Func<int>> providerFactory)
-void RefreshInstance(ERedDotKey parentKey, long instanceKey)
-RedDotState GetInstanceState(ERedDotKey parentKey, long instanceKey)
+// === 动态红点 ===
+void SyncDynamicNodes(ERedDotKey parentKey, IReadOnlyList<long> dynamicKeys, Func<long, Func<int>> providerFactory)
+void RefreshDynamicNode(ERedDotKey parentKey, long dynamicKey)
+RedDotState GetDynamicState(ERedDotKey parentKey, long dynamicKey)
 
 // === 已读持久化 ===
 void MarkRead(ERedDotKey key)
@@ -134,7 +134,7 @@ void TryAutoClean(ERedDotKey key)
 | `ShowOrder` | `int` | UI 显示排序权重 |
 | `IsRead` | `bool` | 是否已读 |
 | `IsDirty` | `bool` | 脏标记（本帧待重算） |
-| `LeafProvider` | `Func<int>` | 叶子计算函数 |
+| `CalculateProvider` | `Func<int>` | 叶子计算函数 |
 | `TriggerEvents` | `string[]` | 触发重算的 EventModule 事件 ID 列表 |
 
 ### 4.3 RedDotState
@@ -172,28 +172,24 @@ FGUI 自定义组件，放置到界面后自动解析 `customData` 中的 `red_d
 
 **customData 格式**：`red_dot:Bag_Item`（支持与其他插件竖线分隔，如 `i18n&key|red_dot:Bag_Item`）
 
-**公开方法：**
+**说明：** CompRedDot 通过 FGUI 编辑器放置后自动工作，无公开方法。动态红点（string Key）同样支持，只需在 customData 中配置非枚举名即可。
 
-```csharp
-void SetRedDotPos(Vector2 offset = default)  // 设置红点位置，默认父容器右上角
-void SetRedDot(int redCount, ERedDotDisplayMode mode)  // 手动设置（用于列表 Item 场景）
-```
 
 ## 5. 使用示例
 
-### 5.1 注册 Leaf Provider
+### 5.1 注册 Calculate Provider
 
 ```csharp
 using Hotfix.Framework.RedDot;
 
 // 为邮件红点注册计算函数，当 "MailChanged" 事件触发时自动重算
-RedDotModule.Instance.RegisterLeaf(ERedDotKey.Mail, () =>
+RedDotModule.Instance.Register(ERedDotKey.Mail, () =>
 {
     return MailManager.Instance.GetUnreadCount();
 }, "MailChanged");
 
-// 注销 Leaf Provider（恢复为不活跃状态）
-RedDotModule.Instance.UnregisterLeaf(ERedDotKey.Mail);
+// 注销 Calculate Provider（恢复为不活跃状态）
+RedDotModule.Instance.Unregister(ERedDotKey.Mail);
 ```
 
 ### 5.2 业务层触发重算
@@ -201,7 +197,7 @@ RedDotModule.Instance.UnregisterLeaf(ERedDotKey.Mail);
 ```csharp
 using Hotfix.Framework.Event;
 
-// 邮件数据变更时广播事件，触发所有监听该事件的 Leaf Provider 重算
+// 邮件数据变更时广播事件，触发所有监听该事件的 Calculate Provider 重算
 GlobalModule.EventModule.Broadcast(this, MailChangedEventArgs.EventId);
 ```
 
@@ -237,20 +233,20 @@ private void OnRedDotChanged(object sender, GameEventArgs e)
 }
 ```
 
-### 5.4 实例红点
+### 5.4 动态红点
 
 ```csharp
-// 同步邮箱的实例红点（每封邮件一个独立红点）
-RedDotModule.Instance.SyncInstances(ERedDotKey.Mail, mailIds, (mailId) =>
+// 同步邮箱的动态红点（每封邮件一个独立红点）
+RedDotModule.Instance.SyncDynamicNodes(ERedDotKey.Mail, mailIds, (mailId) =>
 {
     return () => MailManager.Instance.GetReadState(mailId) ? 0 : 1;
 });
 
-// 刷新单个实例
-RedDotModule.Instance.RefreshInstance(ERedDotKey.Mail, 1001);
+// 刷新单个动态节点
+RedDotModule.Instance.RefreshDynamicNode(ERedDotKey.Mail, 1001);
 
-// 查询实例状态
-var state = RedDotModule.Instance.GetInstanceState(ERedDotKey.Mail, 1001);
+// 查询动态节点状态
+var state = RedDotModule.Instance.GetDynamicState(ERedDotKey.Mail, 1001);
 ```
 
 ### 5.5 已读持久化
@@ -279,8 +275,8 @@ RedDotModule.Instance.TryAutoClean(ERedDotKey.Mail);
 
 ```text
 RedDot/
-├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Leaf Provider、状态查询、动态节点）
-├── RedDotModule.Feature.cs        # 功能扩展（实例红点、已读持久化、清理策略、内部广播）
+├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Calculate Provider、状态查询、动态节点）
+├── RedDotModule.Feature.cs        # 功能扩展（动态红点、已读持久化、清理策略、内部广播）
 ├── RedDotNode.cs                  # 红点节点
 ├── RedDotState.cs                 # 状态查询结构体
 ├── RedDotChangedEventArgs.cs      # EventModule 广播事件参数
@@ -299,18 +295,18 @@ RedDot/
 
 ## 8. 最佳实践
 
-1. **Leaf Provider 优先**：叶子节点使用 `RegisterLeaf` 注册计算函数，框架自动管理重算时机
-2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Leaf Provider 自动重算
+1. **Calculate Provider 优先**：叶子节点使用 `Register` 注册计算函数，框架自动管理重算时机
+2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Calculate Provider 自动重算
 3. **CompRedDot 零侵入**：UI 层优先使用 CompRedDot 组件，在 FGUI 编辑器中配置 `customData` 即可，无需写代码
 4. **已读持久化**：对需要跨会话保持已读状态的红点，使用 `MarkRead`
-5. **实例红点按需管理**：动态实例红点使用 `SyncInstances` 批量管理，框架自动处理增删
+5. **动态红点按需管理**：动态动态红点使用 `SyncDynamicNodes` 批量管理，框架自动处理增删
 6. **聚合逻辑按需选择**：根节点用 Sum 汇总所有子红点，菜单入口用 Any 检测是否有新内容
 
 ## 9. 注意事项
 
 1. 静态节点树在 `OnInit()` 中自动构建（从配置表读取），无需手动调用初始化方法
 2. 动态节点 Key 必须唯一，重复创建同名动态节点会返回已存在的节点
-3. Leaf Provider 不应执行昂贵操作，因为可能在同一个 OnUpdate 中多次调用
-4. 同一节点不应同时注册 Leaf Provider 和手动调 SetCount（SetCount 为 internal，仅框架内部使用）
+3. Calculate Provider 不应执行昂贵操作，因为可能在同一个 OnUpdate 中多次调用
+4. 同一节点不应同时注册 Calculate Provider 和手动调 SetCount（SetCount 为 internal，仅框架内部使用）
 5. `IsActive = false` 的节点 TotalCount 永远为 0，且不参与父节点聚合
-6. 已读状态仅抑制初始加载时的红点，运行时新的 Leaf Provider 计算结果会覆盖已读状态
+6. 已读状态仅抑制初始加载时的红点，运行时新的 Calculate Provider 计算结果会覆盖已读状态

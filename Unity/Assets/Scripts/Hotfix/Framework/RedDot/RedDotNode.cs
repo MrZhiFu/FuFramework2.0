@@ -76,12 +76,12 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public bool IsDirty { get; internal set; }
 
-        // ========== Leaf Provider ==========
+        #region Leaf Provider
 
         /// <summary>
         /// 叶子节点计算函数（不为 null 时由 OnUpdate 自动调用）
         /// </summary>
-        public Func<int> LeafProvider { get; internal set; }
+        public Func<int> CalculateProvider { get; internal set; }
 
         /// <summary>
         /// 触发重算的 EventModule 事件 ID 列表
@@ -99,9 +99,19 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         private readonly List<RedDotNode> m_Children = new();
 
+        #endregion
+
         /// <summary>
         /// 从配置表创建静态节点
         /// </summary>
+        /// <param name="key">静态节点 Key</param>
+        /// <param name="parent">父节点</param>
+        /// <param name="displayMode">显示模式</param>
+        /// <param name="cleanStrategy">清理策略</param>
+        /// <param name="logicType">聚合逻辑类型</param>
+        /// <param name="isActive">是否激活</param>
+        /// <param name="showOrder">显示排序权重</param>
+        /// <returns>创建的静态节点</returns>
         public static RedDotNode Create(ERedDotKey key, RedDotNode parent,
             ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy,
             ERedDotLogicType logicType, bool isActive, int showOrder)
@@ -120,6 +130,9 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 运行时创建动态节点（默认 DotOnly + Manual + Sum）
         /// </summary>
+        /// <param name="key">动态节点 Key（string）</param>
+        /// <param name="parent">父节点</param>
+        /// <returns>创建的动态节点</returns>
         public static RedDotNode CreateDynamic(string key, RedDotNode parent)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
@@ -136,11 +149,13 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 两阶段构建 — 初始化后设置父节点
         /// </summary>
+        /// <param name="parent">父节点</param>
         public void SetParent(RedDotNode parent) => Parent = parent;
 
         /// <summary>
         /// 添加子节点
         /// </summary>
+        /// <param name="child">子节点</param>
         public void AddChild(RedDotNode child)
         {
             if (m_Children.Contains(child))
@@ -155,6 +170,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 移除子节点（动态节点归零回收时使用）
         /// </summary>
+        /// <param name="child">子节点</param>
         public void RemoveChild(RedDotNode child) => m_Children.Remove(child);
 
         /// <summary>
@@ -168,6 +184,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 设置节点计数并向上传播（仅 RedDotModule 内部调用）
         /// </summary>
+        /// <param name="count">新的 RawCount 值</param>
         internal void SetCount(int count)
         {
             if (RawCount == count) return;
@@ -207,6 +224,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// Sum 模式：累加所有子节点的 TotalCount
         /// </summary>
+        /// <returns>所有子节点 TotalCount 之和</returns>
         private int ComputeChildrenSum()
         {
             var total = 0;
@@ -220,6 +238,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// Any 模式：任一子节点 TotalCount > 0 则为 1
         /// </summary>
+        /// <returns>存在 TotalCount > 0 的子节点返回 1，否则返回 0</returns>
         private int ComputeChildrenAny()
         {
             foreach (var child in m_Children)
@@ -232,6 +251,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 获取最终计数（考虑 IsActive 和 IsRead）
         /// </summary>
+        /// <returns>IsActive 为 false 时返回 0，否则返回 TotalCount</returns>
         public int GetFinalCount()
         {
             if (!IsActive) return 0;
@@ -241,6 +261,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 获取所有子节点（只读）
         /// </summary>
+        /// <returns>子节点的只读列表</returns>
         public IReadOnlyList<RedDotNode> GetChildren() => m_Children.AsReadOnly();
 
         /// <summary>
@@ -260,7 +281,7 @@ namespace Hotfix.Framework.RedDot
             ShowOrder = 0;
             IsRead = false;
             IsDirty = false;
-            LeafProvider = null;
+            CalculateProvider = null;
             TriggerEvents = null;
             OnTotalCountChanged = null;
             m_Children.Clear();

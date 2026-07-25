@@ -44,7 +44,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 创建事件参数实例
         /// </summary>
-        /// <returns></returns>
+        /// <returns>创建的事件参数实例</returns>
         public static RedDotChangedEventArgs Create()
         {
             var redDotChangedEventArgs = ReferencePool.Acquire<RedDotChangedEventArgs>();
