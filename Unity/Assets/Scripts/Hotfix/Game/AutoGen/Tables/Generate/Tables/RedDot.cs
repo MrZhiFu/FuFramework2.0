@@ -14,12 +14,15 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class RedDot : BeanBase
     {
-        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy) 
+        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IfActive, int ShowOrder) 
         {
             this.Id = Id;
             this.ParentId = ParentId;
             this.DisplayMode = DisplayMode;
             this.CleanStrategy = CleanStrategy;
+            this.LogicType = LogicType;
+            this.IfActive = IfActive;
+            this.ShowOrder = ShowOrder;
             PostInit();
         }
 
@@ -29,6 +32,9 @@ namespace Hotfix.Game.Config.Tables
             { var _j = _buf["ParentId"]; if (_j.Tag != JSONNodeType.None && _j.Tag != JSONNodeType.NullValue) { { if(!_j.IsNumber) { throw new SerializationException(); }  ParentId = (ERedDotKey?)_j.AsInt; } } else { ParentId = null; } }
             { if(!_buf["DisplayMode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)_buf["DisplayMode"].AsInt; }
             { if(!_buf["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["CleanStrategy"].AsInt; }
+            { if(!_buf["LogicType"].IsNumber) { throw new SerializationException(); }  LogicType = (ERedDotLogicType)_buf["LogicType"].AsInt; }
+            { if(!_buf["IfActive"].IsBoolean) { throw new SerializationException(); }  IfActive = _buf["IfActive"]; }
+            { if(!_buf["ShowOrder"].IsNumber) { throw new SerializationException(); }  ShowOrder = _buf["ShowOrder"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -56,11 +62,26 @@ namespace Hotfix.Game.Config.Tables
         /// 清理策略
         /// </summary>
         public ERedDotCleanStrategy CleanStrategy { private set; get; }
+        /// <summary>
+        /// 计算逻辑类型
+        /// </summary>
+        public ERedDotLogicType LogicType { private set; get; }
+        /// <summary>
+        /// 是否激活
+        /// </summary>
+        public bool IfActive { private set; get; }
+        /// <summary>
+        /// 显示优先级
+        /// </summary>
+        public int ShowOrder { private set; get; }
         public const int __ID__ = 2013705889;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)
         {
+            
+            
+            
             
             
             
@@ -78,6 +99,9 @@ namespace Hotfix.Game.Config.Tables
             + "ParentId:" + ParentId + ","
             + "DisplayMode:" + DisplayMode + ","
             + "CleanStrategy:" + CleanStrategy + ","
+            + "LogicType:" + LogicType + ","
+            + "IfActive:" + IfActive + ","
+            + "ShowOrder:" + ShowOrder + ","
             + "}";
         }
 
