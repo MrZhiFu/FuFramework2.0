@@ -518,43 +518,4 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
     return uiEventsNameArray
 end
 
---- 生成红点注册代码的入口函数
---- 遍历组件的 displayList，查找含 i18n= 自定义数据的元素，生成 compXxx.Register(uiView, ERedDotKey.Xxx);
----@param dataList table 待填充的代码行数组
----@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件或界面类信息
-function GenCommon:GenRedDotRegister(dataList, compCls)
-    local handler = Tool:Handler()
-    local desc = handler:GetItemDesc(compCls.res)
-    local displayList = desc:GetNode("displayList")
-    if not displayList then
-        return
-    end
-    self:FindRedDotComps(displayList, dataList)
-end
-
---- 递归遍历XML节点，查找含 i18n= 自定义数据的元素
---- 匹配 i18n=ERedDotKey.Xxx 格式，生成 compXxx.Register(uiView, ERedDotKey.Xxx);
----@param xmlNode CS.FairyGUI.Utils.XML
----@param dataList table
-function GenCommon:FindRedDotComps(xmlNode, dataList)
-    local elements = xmlNode.elements
-    local cnt = elements.Count
-    for i = 1, cnt do
-        local element = elements[i - 1]
-        local name = element:GetAttribute("name") or ""
-        local customData = element:GetAttribute("customData") or ""
-
-        -- 匹配 i18n=ERedDotKey.Xxx 格式
-        local enumName = customData:match("i18n=(ERedDotKey%.%w+)")
-        if enumName then
-            local varName = Tool:FormatVarName(name)
-            table.insert(dataList, string.format(
-                "\t\t\t%s.Register(uiView, %s);\n", varName, enumName))
-        end
-
-        -- 递归处理子元素
-        self:FindRedDotComps(element, dataList)
-    end
-end
-
 return GenCommon

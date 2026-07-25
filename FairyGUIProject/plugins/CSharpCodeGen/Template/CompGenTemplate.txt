@@ -47,7 +47,6 @@ namespace #NAMESPACE#
 	        FuLogger.LogInfo($"初始化{view.UIName}界面组件-{GetType().Name}");
 	        uiView = view;
 	        InitUIEvent();
-	        InitRedDot();
 	        OnInit();
         }
 
@@ -65,13 +64,6 @@ namespace #NAMESPACE#
         private void InitUIEvent()
         {
 #INITUIEVENT#
-		/// <summary>
-		/// 初始化红点注册（自动生成，不可手动修改）
-		/// </summary>
-		private void InitRedDot()
-		{
-#RedDotRegister#
-		}
         }
 
         /// <summary>
