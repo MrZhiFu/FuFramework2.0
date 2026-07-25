@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
-using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
-using Hotfix.Game.Proto;
 
 namespace Hotfix.Framework.RedDot
 {
@@ -29,7 +26,7 @@ namespace Hotfix.Framework.RedDot
         public string DynamicKey { get; private set; }
 
         /// <summary>
-        /// 节点的原始计数
+        /// 节点的原始计数（自身，不含子节点）
         /// </summary>
         public int RawCount { get; private set; }
 
@@ -54,31 +51,88 @@ namespace Hotfix.Framework.RedDot
         public ERedDotCleanStrategy CleanStrategy { get; private set; }
 
         /// <summary>
+        /// 子节点聚合逻辑（来自配置表）
+        /// </summary>
+        public ERedDotLogicType LogicType { get; private set; }
+
+        /// <summary>
+        /// 是否激活（false 时 TotalCount 永远为 0）
+        /// </summary>
+        public bool IsActive { get; private set; }
+
+        /// <summary>
+        /// UI 显示排序权重（来自配置表）
+        /// </summary>
+        public int ShowOrder { get; private set; }
+
+        /// <summary>
+        /// 是否已读（持久化，仅抑制初始加载时的红点）
+        /// </summary>
+        public bool IsRead { get; internal set; }
+
+        /// <summary>
+        /// 脏标记（本帧待重算）
+        /// </summary>
+        public bool IsDirty { get; internal set; }
+
+        /// <summary>
+        /// 变更前 TotalCount 快照（用于本帧变化检测）
+        /// </summary>
+        internal int PreviousTotalCount { get; set; }
+
+        // ========== Leaf Provider ==========
+
+        /// <summary>
+        /// 叶子节点计算函数（不为 null 时由 OnUpdate 自动调用）
+        /// </summary>
+        public Func<int> LeafProvider { get; internal set; }
+
+        /// <summary>
+        /// 实例叶子节点计算函数（实例红点专用）
+        /// </summary>
+        public Func<long, int> InstanceLeafProvider { get; internal set; }
+
+        /// <summary>
+        /// 触发重算的 EventModule 事件 ID 列表
+        /// </summary>
+        public string[] TriggerEvents { get; internal set; }
+
+        /// <summary>
+        /// 实例红点的实例计数缓存
+        /// </summary>
+        public readonly Dictionary<long, int> InstanceCounts = new();
+
+        /// <summary>
+        /// TotalCount 变化回调（内部使用，由 RedDotModule 设置）
+        /// 用于收集本帧变更节点以批量广播
+        /// </summary>
+        internal Action<RedDotNode> OnTotalCountChanged;
+
+        /// <summary>
         /// 节点的子节点列表
         /// </summary>
         private readonly List<RedDotNode> m_Children = new();
 
         /// <summary>
-        /// 节点计数变化事件
-        /// </summary>
-        public event Action<int> OnCountChanged;
-
-        /// <summary>
         /// 从配置表创建静态节点
         /// </summary>
         public static RedDotNode Create(ERedDotKey key, RedDotNode parent,
-            ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy)
+            ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy,
+            ERedDotLogicType logicType, bool isActive, int showOrder)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
             node.StaticKey = key;
             node.Parent = parent;
             node.DisplayMode = displayMode;
             node.CleanStrategy = cleanStrategy;
+            node.LogicType = logicType;
+            node.IsActive = isActive;
+            node.ShowOrder = showOrder;
             return node;
         }
 
         /// <summary>
-        /// 运行时创建动态节点（默认 DotOnly + Manual）
+        /// 运行时创建动态节点（默认 DotOnly + Manual + Sum）
         /// </summary>
         public static RedDotNode CreateDynamic(string key, RedDotNode parent)
         {
@@ -87,6 +141,9 @@ namespace Hotfix.Framework.RedDot
             node.Parent = parent;
             node.DisplayMode = ERedDotDisplayMode.DotOnly;
             node.CleanStrategy = ERedDotCleanStrategy.Manual;
+            node.LogicType = ERedDotLogicType.Sum;
+            node.IsActive = true;
+            node.ShowOrder = 0;
             return node;
         }
 
@@ -115,9 +172,9 @@ namespace Hotfix.Framework.RedDot
         public void RemoveChild(RedDotNode child) => m_Children.Remove(child);
 
         /// <summary>
-        /// 设置节点计数，自动向上传播
+        /// 设置节点计数并向上传播（仅 RedDotModule 内部调用）
         /// </summary>
-        public void SetCount(int count)
+        internal void SetCount(int count)
         {
             if (RawCount == count) return;
 
@@ -127,21 +184,64 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 更新节点总计数，自动向上传播
+        /// 聚合逻辑受 LogicType 和 IsActive 控制
         /// </summary>
         private void UpdateTotalCount()
         {
-            var childrenTotal = 0;
-            foreach (var child in m_Children)
+            if (!IsActive)
             {
-                childrenTotal += child.TotalCount;
+                if (TotalCount != 0)
+                {
+                    TotalCount = 0;
+                    OnTotalCountChanged?.Invoke(this);
+                }
+                return;
             }
+
+            var childrenTotal = LogicType == ERedDotLogicType.Any
+                ? ComputeChildrenAny()
+                : ComputeChildrenSum();
 
             var total = RawCount + childrenTotal;
             if (TotalCount == total) return;
 
             TotalCount = total;
-            OnCountChanged?.Invoke(TotalCount); // 触发数量改变事件
+            OnTotalCountChanged?.Invoke(this);
             Parent?.UpdateTotalCount();
+        }
+
+        /// <summary>
+        /// Sum 模式：累加所有子节点的 TotalCount
+        /// </summary>
+        private int ComputeChildrenSum()
+        {
+            var total = 0;
+            foreach (var child in m_Children)
+            {
+                total += child.TotalCount;
+            }
+            return total;
+        }
+
+        /// <summary>
+        /// Any 模式：任一子节点 TotalCount > 0 则为 1
+        /// </summary>
+        private int ComputeChildrenAny()
+        {
+            foreach (var child in m_Children)
+            {
+                if (child.TotalCount > 0) return 1;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// 获取最终计数（考虑 IsActive 和 IsRead）
+        /// </summary>
+        public int GetFinalCount()
+        {
+            if (!IsActive) return 0;
+            return TotalCount;
         }
 
         /// <summary>
@@ -161,16 +261,18 @@ namespace Hotfix.Framework.RedDot
             TotalCount = 0;
             DisplayMode = ERedDotDisplayMode.DotOnly;
             CleanStrategy = ERedDotCleanStrategy.Manual;
+            LogicType = ERedDotLogicType.Sum;
+            IsActive = true;
+            ShowOrder = 0;
+            IsRead = false;
+            IsDirty = false;
+            PreviousTotalCount = 0;
+            LeafProvider = null;
+            InstanceLeafProvider = null;
+            TriggerEvents = null;
+            InstanceCounts.Clear();
+            OnTotalCountChanged = null;
             m_Children.Clear();
-            OnCountChanged = null;
-        }
-
-        /// <summary>
-        /// 清除所有事件监听
-        /// </summary>
-        public void ClearAllListeners()
-        {
-            OnCountChanged = null;
         }
     }
 }

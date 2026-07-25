@@ -2,11 +2,10 @@ using System;
 using FairyGUI;
 using UnityEngine;
 using Hotfix.Framework.UI;
-using Hotfix.Game.UI;
-using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
-using Hotfix.Game.Proto;
 using Hotfix.Framework.RedDot;
+using Hotfix.Framework.Event;
+using Hotfix.Framework.Core;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
@@ -14,14 +13,9 @@ namespace Hotfix.Game.UI
     public partial class CompRedDot
     {
         /// <summary>
-        /// 静态节点 Key（枚举，DisplayMode 由配置表决定）
+        /// 红点节点 Key（从 customData 自动解析）
         /// </summary>
-        private ERedDotKey? m_StaticKey;
-
-        /// <summary>
-        /// 动态节点 Key（字符串，默认 DotOnly）
-        /// </summary>
-        private string m_DynamicKey;
+        private ERedDotKey? m_RedDotKey;
 
         /// <summary>
         /// 缓存目标组件（用于 SetRedDotPos）
@@ -29,77 +23,29 @@ namespace Hotfix.Game.UI
         private GComponent m_Target;
 
         /// <summary>
-        /// 初始化（在 InitRedDot 之后调用）
+        /// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅 EventModule
         /// </summary>
         private void OnInit()
         {
-            InitEvent();
+            var customData = data as string;
+            if (!RedDotDataParser.TryParse(customData, out var key)) return;
+           
+            m_RedDotKey = key;
+            GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
+
+            // 立即刷新当前状态
+            var state = RedDotModule.Instance.GetState(key);
+            RefreshUI(state.Count, state.DisplayMode);
         }
 
         /// <summary>
-        /// 注册相关逻辑事件
-        /// </summary>
-        private void InitEvent() { }
-
-        /// <summary>
-        /// 销毁
+        /// 销毁：取消 EventModule 订阅
         /// </summary>
         private void OnDispose()
         {
-            if (m_StaticKey.HasValue)
-                RedDotModule.Instance.Unregister(m_StaticKey.Value, OnRedDotChanged);
-            else if (m_DynamicKey != null)
-                RedDotModule.Instance.Unregister(m_DynamicKey, OnRedDotChanged);
+            if (m_RedDotKey.HasValue)
+                GlobalModule.EventModule.Unsubscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
         }
-
-        /// <summary>
-        /// 静态节点注册（枚举，DisplayMode 由配置表决定）
-        /// </summary>
-        /// <param name="view">所属界面</param>
-        /// <param name="redKey">红点节点 Key</param>
-        public void Register(ViewBase view, ERedDotKey redKey)
-        {
-            if (view == null) return;
-
-            uiView      = view;
-            m_StaticKey = redKey;
-            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
-        }
-
-        /// <summary>
-        /// 动态节点注册（字符串，默认 DotOnly）
-        /// </summary>
-        /// <param name="view">所属界面</param>
-        /// <param name="redKey">动态红点节点 Key</param>
-        public void Register(ViewBase view, string redKey)
-        {
-            if (view == null) return;
-            if (string.IsNullOrEmpty(redKey)) return;
-
-            uiView       = view;
-            m_DynamicKey = redKey;
-            RedDotModule.Instance.Register(redKey, OnRedDotChanged);
-        }
-
-        /// <summary>
-        /// 从 RedDotNode 配置读取 DisplayMode
-        /// </summary>
-        private ERedDotDisplayMode GetDisplayMode()
-        {
-            if (m_StaticKey.HasValue)
-            {
-                var node = RedDotModule.Instance.GetNode(m_StaticKey.Value);
-                return node?.DisplayMode ?? ERedDotDisplayMode.DotOnly;
-            }
-
-            return ERedDotDisplayMode.DotOnly; // 动态节点默认 DotOnly
-        }
-
-        /// <summary>
-        /// 手动设置红点。
-        /// 如在滑动列表的Item上显示红点，红点数量变化时，需要手动调用此方法刷新红点显示。
-        /// </summary>
-        public void SetRedDot(int redCount) => OnRedDotChanged(redCount);
 
         /// <summary>
         /// 设置红点位置，默认在组件的右上角
@@ -109,54 +55,81 @@ namespace Hotfix.Game.UI
         {
             if (m_Target == null) return;
 
-            // 计算在父容器内的相对位置
             var posX = m_Target.width - width + offset.x;
             var posY = offset.y;
-
             SetXY(posX, posY);
         }
 
         /// <summary>
-        /// 红点变化事件回调
+        /// 手动设置红点显示（用于列表 Item 等脱离 RedDotModule 的场景）
         /// </summary>
         /// <param name="redCount">红点数量</param>
-        private void OnRedDotChanged(int redCount)
+        /// <param name="mode">显示模式（默认 DotOnly）</param>
+        public void SetRedDot(int redCount, ERedDotDisplayMode mode = ERedDotDisplayMode.DotOnly)
         {
-            var mode = GetDisplayMode();
+            RefreshUI(redCount, mode);
+        }
+
+        #region 内部实现
+
+        /// <summary>
+        /// EventModule 回调：本帧红点变更时检查是否需要刷新
+        /// </summary>
+        private void OnRedDotChanged(object sender, GameEventArgs e)
+        {
+            if (!m_RedDotKey.HasValue) return;
+            if (e is not RedDotChangedEventArgs args) return;
+
+            for (int i = 0; i < args.ChangedStaticKeys.Count; i++)
+            {
+                if (args.ChangedStaticKeys[i] == m_RedDotKey.Value)
+                {
+                    var state = RedDotModule.Instance.GetState(m_RedDotKey.Value);
+                    RefreshUI(state.Count, state.DisplayMode);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据显示模式刷新 UI 控件
+        /// </summary>
+        private void RefreshUI(int redCount, ERedDotDisplayMode mode)
+        {
             switch (mode)
             {
                 case ERedDotDisplayMode.DotOnly:
-                    txtCount.visible  = false;
+                    txtCount.visible = false;
                     imgRedDot.visible = redCount > 0;
                     break;
                 case ERedDotDisplayMode.DotNumber:
-                    txtCount.visible  = redCount >= 1;
+                    txtCount.visible = redCount >= 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text     = FormatRedDotCount(redCount);
+                    txtCount.text = FormatRedDotCount(redCount);
                     break;
                 case ERedDotDisplayMode.Auto:
-                    txtCount.visible  = redCount > 1;
+                    txtCount.visible = redCount > 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text     = FormatRedDotCount(redCount);
+                    txtCount.text = FormatRedDotCount(redCount);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
             }
         }
 
         /// <summary>
         /// 格式化红点数量显示
         /// </summary>
-        /// <param name="count">数量</param>
-        /// <returns>格式化后的字符串</returns>
         private static string FormatRedDotCount(int count)
         {
             return count switch
             {
                 <= 0 => "0",
                 > 99 => "99+",
-                _    => count.ToString()
+                _ => count.ToString()
             };
         }
+
+        #endregion
     }
 }

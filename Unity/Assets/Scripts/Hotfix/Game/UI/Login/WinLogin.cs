@@ -27,7 +27,6 @@ namespace Hotfix.Game.UI
             InitUIComp();
             InitUIEvent();
             InitEvent();
-            InitRedDot();
         }
 
         /// <summary>
@@ -36,21 +35,6 @@ namespace Hotfix.Game.UI
         private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
-        }
-
-        /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        private void InitRedDot()
-        {
-            // 创建红点组件并注册到 btnLogin
-            var compObj = UIPackage.CreateObjectFromURL(CompRedDot.URL);
-            if (compObj is CompRedDot compRedDot)
-            {
-                btnLogin.AddChild(compRedDot);
-                compRedDot.Register(this, ERedDotKey.Bag_Item);
-                compRedDot.SetRedDotPos();
-            }
         }
 
         /// <summary>
@@ -85,7 +69,7 @@ namespace Hotfix.Game.UI
         {
             LoginAsync().Forget();
             // PlayBgm().Forget();
-            // GlobalModule.RedDotModule.AddCount(ERedDotKey.Bag_Item);
+            // Example: RedDotModule.Instance.RegisterLeaf(ERedDotKey.Bag_Item, () => GetBagRedDotCount(), "BagChanged");
         }
 
         private void OnInputUserNameChanged(EventContext ctx)
