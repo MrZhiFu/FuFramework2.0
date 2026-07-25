@@ -14,19 +14,6 @@ namespace Hotfix.Game.UI
     public partial class CompRedDot
     {
         /// <summary>
-        /// 红点显示模式（与 ERedDotDisplayMode 枚举值对齐）
-        /// </summary>
-        public enum DisplayMode
-        {
-            /// <summary>只显示红点</summary>
-            DotOnly = 0,
-            /// <summary>红点 + 数字</summary>
-            DotNumber = 1,
-            /// <summary>=1 显示红点，>1 显示数字</summary>
-            Auto = 2
-        }
-
-        /// <summary>
         /// 静态节点 Key（枚举，DisplayMode 由配置表决定）
         /// </summary>
         private ERedDotKey? m_StaticKey;
@@ -74,7 +61,7 @@ namespace Hotfix.Game.UI
         {
             if (view == null) return;
 
-            uiView = view;
+            uiView      = view;
             m_StaticKey = redKey;
             RedDotModule.Instance.Register(redKey, OnRedDotChanged);
         }
@@ -89,7 +76,7 @@ namespace Hotfix.Game.UI
             if (view == null) return;
             if (string.IsNullOrEmpty(redKey)) return;
 
-            uiView = view;
+            uiView       = view;
             m_DynamicKey = redKey;
             RedDotModule.Instance.Register(redKey, OnRedDotChanged);
         }
@@ -97,14 +84,15 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// 从 RedDotNode 配置读取 DisplayMode
         /// </summary>
-        private DisplayMode GetDisplayMode()
+        private ERedDotDisplayMode GetDisplayMode()
         {
             if (m_StaticKey.HasValue)
             {
                 var node = RedDotModule.Instance.GetNode(m_StaticKey.Value);
-                return (DisplayMode)(int)(node?.DisplayMode ?? ERedDotDisplayMode.DotOnly);
+                return node?.DisplayMode ?? ERedDotDisplayMode.DotOnly;
             }
-            return DisplayMode.DotOnly; // 动态节点默认 DotOnly
+
+            return ERedDotDisplayMode.DotOnly; // 动态节点默认 DotOnly
         }
 
         /// <summary>
@@ -137,19 +125,19 @@ namespace Hotfix.Game.UI
             var mode = GetDisplayMode();
             switch (mode)
             {
-                case DisplayMode.DotOnly:
-                    txtCount.visible = false;
+                case ERedDotDisplayMode.DotOnly:
+                    txtCount.visible  = false;
                     imgRedDot.visible = redCount > 0;
                     break;
-                case DisplayMode.DotNumber:
-                    txtCount.visible = redCount >= 1;
+                case ERedDotDisplayMode.DotNumber:
+                    txtCount.visible  = redCount >= 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text = FormatRedDotCount(redCount);
+                    txtCount.text     = FormatRedDotCount(redCount);
                     break;
-                case DisplayMode.Auto:
-                    txtCount.visible = redCount > 1;
+                case ERedDotDisplayMode.Auto:
+                    txtCount.visible  = redCount > 1;
                     imgRedDot.visible = redCount > 0;
-                    txtCount.text = FormatRedDotCount(redCount);
+                    txtCount.text     = FormatRedDotCount(redCount);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -167,7 +155,7 @@ namespace Hotfix.Game.UI
             {
                 <= 0 => "0",
                 > 99 => "99+",
-                _ => count.ToString()
+                _    => count.ToString()
             };
         }
     }
