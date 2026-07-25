@@ -9,123 +9,74 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
-    /// RedDotModule 功能扩展：动态红点、已读持久化、清理策略、内部广播
+    /// RedDotModule 功能扩展：动态红点批量同步、已读持久化、清理策略、内部广播
     /// </summary>
     public partial class RedDotModule
     {
         #region 动态红点
 
         /// <summary>
-        /// 同步动态红点集合：根据当前 key 列表增删实例
+        /// 父节点 → 已同步的 id 集合（用于 SyncDynamic 增量更新）
+        /// </summary>
+        private readonly Dictionary<ERedDotKey, HashSet<long>> m_DynamicIdMap = new();
+
+        /// <summary>
+        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册 Calculate Provider
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
-        /// <param name="dynamicKeys">当前活跃的实例 Key 列表</param>
-        /// <param name="providerFactory">根据 dynamicKey 创建 Leaf Provider 的工厂</param>
-        public void SyncDynamicNodes(ERedDotKey parentKey, IReadOnlyList<long> dynamicKeys, Func<long, Func<int>> providerFactory)
+        /// <param name="ids">当前活跃的 id 列表</param>
+        /// <param name="provider">根据 id 返回红点数量的计算函数</param>
+        public void SyncDynamic(ERedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> provider)
         {
-            if (!m_StaticNodes.ContainsKey(parentKey))
+            if (!StaticNodeDict.ContainsKey(parentKey))
             {
-                FuLogger.LogError($"[RedDotModule] SyncDynamicNodes 未找到父节点: {parentKey}");
+                FuLogger.LogError($"[RedDotModule] SyncDynamic 未找到父节点: {parentKey}");
                 return;
             }
 
-            if (!m_DynamicInstanceMap.TryGetValue(parentKey, out var existingDynamic))
+            if (!m_DynamicIdMap.TryGetValue(parentKey, out var existing))
             {
-                existingDynamic = new Dictionary<long, string>();
-                m_DynamicInstanceMap[parentKey] = existingDynamic;
+                existing = new HashSet<long>();
+                m_DynamicIdMap[parentKey] = existing;
             }
 
-            // 收集新增的 key
-            var newDynamicKeys = new HashSet<long>();
-            for (var i = 0; i < dynamicKeys.Count; i++)
-            {
-                newDynamicKeys.Add(dynamicKeys[i]);
-            }
+            // 收集新增的 id
+            var newIds = new HashSet<long>();
+            for (var i = 0; i < ids.Count; i++)
+                newIds.Add(ids[i]);
 
             // 移除不在新列表中的实例
-            var removedDynamicKeys = new List<long>();
-            foreach (var kvp in existingDynamic)
+            var removedIds = new List<long>();
+            foreach (var id in existing)
             {
-                if (!newDynamicKeys.Contains(kvp.Key))
-                    removedDynamicKeys.Add(kvp.Key);
+                if (!newIds.Contains(id))
+                    removedIds.Add(id);
             }
 
-            foreach (var key in removedDynamicKeys)
+            foreach (var id in removedIds)
             {
-                RemoveDynamicChild(existingDynamic[key]);
-                existingDynamic.Remove(key);
+                RemoveDynamicChild(FormatDynamicKey(parentKey, id));
+                existing.Remove(id);
             }
 
-            // 添加新增的实例
-            foreach (var dynamicKey in dynamicKeys)
+            // 添加新增的实例 — 框架内部包装闭包
+            foreach (var id in ids)
             {
-                if (existingDynamic.ContainsKey(dynamicKey)) continue;
+                if (existing.Contains(id)) continue;
 
-                var childName = $"__inst__{parentKey}_{dynamicKey}";
-                var node      = AddDynamicChild(parentKey, childName);
-                if (node == null) continue;
-                var provider = providerFactory(dynamicKey);
-                RegisterInternal(node, provider, null);
-                existingDynamic[dynamicKey] = childName;
+                var dynamicKey = FormatDynamicKey(parentKey, id);
+                var idCapture  = id; // 避免闭包捕获循环变量
+                Register(parentKey, dynamicKey, () => provider(idCapture));
+                existing.Add(id);
             }
-
-            // 重算所有实例
-            RecalculateAllDynamic(parentKey);
         }
 
         /// <summary>
-        /// 刷新单个实例的 Leaf Provider
+        /// 生成动态节点 Key（格式：{parentKey}_{id}）
         /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="dynamicKey">实例 Key</param>
-        public void RefreshDynamicNode(ERedDotKey parentKey, long dynamicKey)
+        private static string FormatDynamicKey(ERedDotKey parentKey, long id)
         {
-            if (!m_DynamicInstanceMap.TryGetValue(parentKey, out var instances)) return;
-            if (!instances.TryGetValue(dynamicKey, out var childName)) return;
-            if (!m_DynamicNodes.TryGetValue(childName, out var node)) return;
-            if (node.CalculateProvider == null) return;
-
-            var newCount = node.CalculateProvider.Invoke();
-            if (node.IsRead) newCount = 0;
-            node.SetCount(newCount);
-            BroadcastChangedIds();
-        }
-
-        /// <summary>
-        /// 查询动态红点状态
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="dynamicKey">实例 Key</param>
-        /// <returns>实例的 RedDotState，未找到时返回 Empty</returns>
-        public RedDotState GetDynamicState(ERedDotKey parentKey, long dynamicKey)
-        {
-            if (!m_DynamicInstanceMap.TryGetValue(parentKey, out var instances)) return RedDotState.Empty;
-            if (!instances.TryGetValue(dynamicKey, out var childName)) return RedDotState.Empty;
-            return GetState(childName);
-        }
-
-        /// <summary>
-        /// 重算某个父节点下所有实例
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        private void RecalculateAllDynamic(ERedDotKey parentKey)
-        {
-            if (!m_DynamicInstanceMap.TryGetValue(parentKey, out var instances)) return;
-
-            foreach (var kvp in instances)
-            {
-                if (m_DynamicNodes.TryGetValue(kvp.Value, out var node) && node.CalculateProvider != null)
-                {
-                    var newCount = node.CalculateProvider.Invoke();
-                    if (node.IsRead) newCount = 0;
-                    node.SetCount(newCount);
-                }
-            }
-
-            if (m_ChangedStaticSet.Count > 0 || m_ChangedDynamicSet.Count > 0)
-            {
-                BroadcastChangedIds();
-            }
+            return $"__dyn__{parentKey}_{id}";
         }
 
         #endregion
@@ -138,7 +89,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="key">静态节点 Key</param>
         public void MarkRead(ERedDotKey key)
         {
-            if (!m_StaticNodes.TryGetValue(key, out var node)) return;
+            if (!StaticNodeDict.TryGetValue(key, out var node)) return;
 
             node.IsRead = true;
             node.SetCount(0);
@@ -153,7 +104,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="key">动态节点 Key</param>
         public void MarkRead(string key)
         {
-            if (!m_DynamicNodes.TryGetValue(key, out var node)) return;
+            if (!DynamicNodeDict.TryGetValue(key, out var node)) return;
 
             node.IsRead = true;
             node.SetCount(0);
@@ -173,7 +124,7 @@ namespace Hotfix.Framework.RedDot
         /// <returns>已读返回 true，否则返回 false</returns>
         public bool IsRead(string key)
         {
-            return m_DynamicNodes.TryGetValue(key, out var node) && node.IsRead;
+            return DynamicNodeDict.TryGetValue(key, out var node) && node.IsRead;
         }
 
         /// <summary>
@@ -190,7 +141,7 @@ namespace Hotfix.Framework.RedDot
             {
                 m_ReadSet.Add(id);
                 var key = (ERedDotKey)id;
-                if (m_StaticNodes.TryGetValue(key, out var node))
+                if (StaticNodeDict.TryGetValue(key, out var node))
                 {
                     node.IsRead = true;
                     node.SetCount(0);
@@ -217,7 +168,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="key">红点节点 Key</param>
         public void TryAutoClean(ERedDotKey key)
         {
-            if (!m_StaticNodes.TryGetValue(key, out var node)) return;
+            if (!StaticNodeDict.TryGetValue(key, out var node)) return;
             if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
             CleanNodeRecursive(node);
         }

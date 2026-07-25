@@ -12,7 +12,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 - **树形层级**：红点节点按树形结构组织，支持 Any/Sum 两种聚合逻辑
 - **静态+动态**：静态节点由 Luban 配置表 `TbRedDot` 定义（`ERedDotKey` 枚举），动态节点运行时通过 string Key 创建
 - **已读持久化**：`MarkRead` 通过 StorageModule 持久保存已读状态，重启后自动恢复
-- **动态红点**：`SyncDynamicNodes` 管理 批量动态子节点（如每封邮件的独立红点）
+- **动态红点**：`SyncDynamic` 批量管理动态子节点（如每封邮件的独立红点）
 - **两种清理策略**：`Manual`（手动清除）和 `ViewAutoClean`（界面关闭自动清除）
 - **三种显示模式**：`DotOnly`（仅显示红点）、`DotNumber`（红点+数字）、`Auto`（自动）
 
@@ -23,7 +23,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 ```
 [业务模块] Register(key, () => GetCount(), "EventId")
     ↓
-[EventModule] 事件触发 → OnLeafTriggerEvent → node.IsDirty = true
+[EventModule] 事件触发 → OnTriggerEvent → node.IsDirty = true
     ↓
 [RedDotModule.OnUpdate] CalculateProvider() → SetCount → UpdateTotalCount → 向上传播
     ↓ 收集变更 Key
@@ -82,8 +82,9 @@ public static RedDotModule Instance { get; private set; }
 
 ```csharp
 // === Calculate Provider 注册 ===
-void Register(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
-void Register(string key, Func<int> provider, params string[] triggerEvents)
+void Register(ERedDotKey key, Func<int> provider, params string[] triggerEvents)             // 静态节点
+void Register(ERedDotKey parentKey, string dynamicKey, Func<int> provider, ...triggerEvents)  // 动态节点（一步创建+注册）
+void Register(string key, Func<int> provider, params string[] triggerEvents)                  // 已有动态节点追加
 void Unregister(ERedDotKey key)
 void Unregister(string key)
 
@@ -94,13 +95,10 @@ bool HasNode(ERedDotKey key)
 bool HasNode(string key)
 
 // === 动态节点 ===
-RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
 void RemoveDynamicChild(string childName)
 
-// === 动态红点 ===
-void SyncDynamicNodes(ERedDotKey parentKey, IReadOnlyList<long> dynamicKeys, Func<long, Func<int>> providerFactory)
-void RefreshDynamicNode(ERedDotKey parentKey, long dynamicKey)
-RedDotState GetDynamicState(ERedDotKey parentKey, long dynamicKey)
+// === 动态红点批量同步 ===
+void SyncDynamic(ERedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> provider)
 
 // === 已读持久化 ===
 void MarkRead(ERedDotKey key)
@@ -236,17 +234,17 @@ private void OnRedDotChanged(object sender, GameEventArgs e)
 ### 5.4 动态红点
 
 ```csharp
-// 同步邮箱的动态红点（每封邮件一个独立红点）
-RedDotModule.Instance.SyncDynamicNodes(ERedDotKey.Mail, mailIds, (mailId) =>
-{
-    return () => MailManager.Instance.GetReadState(mailId) ? 0 : 1;
-});
+// 单个动态节点：一步创建 + 注册（事件驱动）
+RedDotModule.Instance.Register(ERedDotKey.Mail, "Mail_1001", () => GetMailCount(1001), "MailChanged");
 
-// 刷新单个动态节点
-RedDotModule.Instance.RefreshDynamicNode(ERedDotKey.Mail, 1001);
+// 批量同步（列表变化时调用，框架自动增删）
+RedDotModule.Instance.SyncDynamic(ERedDotKey.Mail, mailIds, id => GetMailCount(id));
+
+// 手动移除
+RedDotModule.Instance.RemoveDynamicChild("Mail_1001");
 
 // 查询动态节点状态
-var state = RedDotModule.Instance.GetDynamicState(ERedDotKey.Mail, 1001);
+var state = RedDotModule.Instance.GetState("Mail_1001");
 ```
 
 ### 5.5 已读持久化
@@ -299,7 +297,7 @@ RedDot/
 2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Calculate Provider 自动重算
 3. **CompRedDot 零侵入**：UI 层优先使用 CompRedDot 组件，在 FGUI 编辑器中配置 `customData` 即可，无需写代码
 4. **已读持久化**：对需要跨会话保持已读状态的红点，使用 `MarkRead`
-5. **动态红点按需管理**：动态动态红点使用 `SyncDynamicNodes` 批量管理，框架自动处理增删
+5. **动态红点按需管理**：单个动态节点用 `Register(parentKey, key, ...)` 一步创建，列表场景用 `SyncDynamic` 批量同步
 6. **聚合逻辑按需选择**：根节点用 Sum 汇总所有子红点，菜单入口用 Any 检测是否有新内容
 
 ## 9. 注意事项
