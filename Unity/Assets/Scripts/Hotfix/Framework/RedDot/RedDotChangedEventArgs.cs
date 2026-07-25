@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
 
 namespace Hotfix.Framework.RedDot
@@ -10,12 +11,12 @@ namespace Hotfix.Framework.RedDot
     /// </summary>
     public sealed class RedDotChangedEventArgs : GameEventArgs
     {
+        public override string Id => EventId;
+
         /// <summary>
         /// 事件 ID 常量（用于 Subscribe/Unsubscribe）
         /// </summary>
-        public const string EventId = "Hotfix.Framework.RedDot.RedDotChanged";
-
-        public override string Id => EventId;
+        public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
 
         /// <summary>
         /// 本帧发生变化的静态节点 Key 列表
@@ -27,15 +28,23 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public readonly List<string> ChangedDynamicKeys = new();
 
+        /// <summary>
+        /// 清空事件参数数据，用于重用
+        /// </summary>
         public override void Clear()
         {
             ChangedStaticKeys.Clear();
             ChangedDynamicKeys.Clear();
         }
 
+        /// <summary>
+        /// 创建事件参数实例
+        /// </summary>
+        /// <returns></returns>
         public static RedDotChangedEventArgs Create()
         {
-            return new RedDotChangedEventArgs();
+            var redDotChangedEventArgs = ReferencePool.Acquire<RedDotChangedEventArgs>();
+            return redDotChangedEventArgs;
         }
     }
 }

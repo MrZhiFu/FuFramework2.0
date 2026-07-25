@@ -23,13 +23,18 @@ namespace Hotfix.Game.UI
         private GComponent m_Target;
 
         /// <summary>
+        /// FGUI customData 中红点标识前缀
+        /// </summary>
+        private const string FlagRedDot = "red_dot:";
+
+        /// <summary>
         /// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅 EventModule
         /// </summary>
         private void OnInit()
         {
             var customData = data as string;
-            if (!RedDotDataParser.TryParse(customData, out var key)) return;
-           
+            if (!TryParseRedDotKey(customData, out var key)) return;
+
             m_RedDotKey = key;
             GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
 
@@ -128,6 +133,32 @@ namespace Hotfix.Game.UI
                 > 99 => "99+",
                 _ => count.ToString()
             };
+        }
+
+        /// <summary>
+        /// 解析 FGUI customData 中的 red_dot:{key} 段（支持竖线分隔组合，如 i18n&key|red_dot:Bag_Item）
+        /// </summary>
+        private static bool TryParseRedDotKey(string customData, out ERedDotKey result)
+        {
+            result = 0;
+
+            if (string.IsNullOrEmpty(customData))
+                return false;
+
+            var segStart = customData.IndexOf(FlagRedDot, StringComparison.Ordinal);
+            if (segStart < 0)
+                return false;
+
+            var dataStart = segStart + FlagRedDot.Length;
+            var pipePos = customData.IndexOf('|', dataStart);
+            var segValue = pipePos >= 0
+                ? customData.Substring(dataStart, pipePos - dataStart).Trim()
+                : customData.Substring(dataStart).Trim();
+
+            if (string.IsNullOrEmpty(segValue))
+                return false;
+
+            return Enum.TryParse(segValue, true, out result);
         }
 
         #endregion
