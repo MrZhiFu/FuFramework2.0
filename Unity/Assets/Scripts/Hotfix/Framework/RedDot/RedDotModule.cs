@@ -4,6 +4,7 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Storage;
+using Hotfix.Framework.Config;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
