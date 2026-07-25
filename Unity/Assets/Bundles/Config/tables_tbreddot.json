@@ -4,7 +4,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 0
   },
   {
@@ -13,7 +13,7 @@
     "DisplayMode": 1,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 1
   },
   {
@@ -22,7 +22,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 2
   },
   {
@@ -30,7 +30,7 @@
     "DisplayMode": 1,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 3
   },
   {
@@ -39,7 +39,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 4
   },
   {
@@ -48,7 +48,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 5
   },
   {
@@ -56,7 +56,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 6
   },
   {
@@ -65,7 +65,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 7
   },
   {
@@ -74,7 +74,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 8
   },
   {
@@ -83,7 +83,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 9
   },
   {
@@ -91,7 +91,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 10
   },
   {
@@ -100,7 +100,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IfActive": true,
+    "IsActive": true,
     "ShowOrder": 11
   }
 ]

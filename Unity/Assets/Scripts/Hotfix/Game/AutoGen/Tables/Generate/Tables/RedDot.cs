@@ -14,14 +14,14 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class RedDot : BeanBase
     {
-        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IfActive, int ShowOrder) 
+        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IsActive, int ShowOrder) 
         {
             this.Id = Id;
             this.ParentId = ParentId;
             this.DisplayMode = DisplayMode;
             this.CleanStrategy = CleanStrategy;
             this.LogicType = LogicType;
-            this.IfActive = IfActive;
+            this.IsActive = IsActive;
             this.ShowOrder = ShowOrder;
             PostInit();
         }
@@ -33,7 +33,7 @@ namespace Hotfix.Game.Config.Tables
             { if(!_buf["DisplayMode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)_buf["DisplayMode"].AsInt; }
             { if(!_buf["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["CleanStrategy"].AsInt; }
             { if(!_buf["LogicType"].IsNumber) { throw new SerializationException(); }  LogicType = (ERedDotLogicType)_buf["LogicType"].AsInt; }
-            { if(!_buf["IfActive"].IsBoolean) { throw new SerializationException(); }  IfActive = _buf["IfActive"]; }
+            { if(!_buf["IsActive"].IsBoolean) { throw new SerializationException(); }  IsActive = _buf["IsActive"]; }
             { if(!_buf["ShowOrder"].IsNumber) { throw new SerializationException(); }  ShowOrder = _buf["ShowOrder"]; }
 
             // Localization Key Begin
@@ -69,7 +69,7 @@ namespace Hotfix.Game.Config.Tables
         /// <summary>
         /// 是否激活
         /// </summary>
-        public bool IfActive { private set; get; }
+        public bool IsActive { private set; get; }
         /// <summary>
         /// 显示优先级
         /// </summary>
@@ -100,7 +100,7 @@ namespace Hotfix.Game.Config.Tables
             + "DisplayMode:" + DisplayMode + ","
             + "CleanStrategy:" + CleanStrategy + ","
             + "LogicType:" + LogicType + ","
-            + "IfActive:" + IfActive + ","
+            + "IsActive:" + IsActive + ","
             + "ShowOrder:" + ShowOrder + ","
             + "}";
         }
