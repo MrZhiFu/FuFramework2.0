@@ -21,6 +21,10 @@ namespace Hotfix.Framework.RedDot
     ///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
     ///     5. 动态红点 — SyncDynamicNode 批量管理动态子节点
     ///     6. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态(仅静态键)
+    ///        动态键不持久化，原因：
+    ///        - 动态节点由 SyncDynamicNode 批量管理，生命周期随数据列表增删
+    ///        - 下次登录数据从服务器重新拉取，本地缓存的已读状态无意义
+    ///        - 每条数据的已读/未读状态应由服务端维护，客户端无需冗余存储
     ///
     /// 使用流程：
     ///     1. 在 Luban 配置表中定义红点树结构

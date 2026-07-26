@@ -11,7 +11,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 - **EventModule 广播**：通过 `RedDotChangedEventArgs` 批量通知变更节点，UI 端按 Key 过滤刷新
 - **树形层级**：红点节点按树形结构组织，支持 Any/Sum 两种聚合逻辑
 - **静态+动态**：静态节点由 Luban 配置表 `TbRedDot` 定义（`ERedDotKey` 枚举），动态节点运行时通过 string Key 创建
-- **已读持久化**：`MarkRead` 通过 StorageModule 持久保存已读状态，重启后自动恢复
+- **已读持久化**：`MarkRead` 通过 StorageModule 持久保存已读状态（仅静态键），重启后自动恢复。动态键不持久化：其生命周期随数据列表增删，下次登录由服务端重新拉取，本地缓存无意义
 - **动态红点**：`SyncDynamicNode` 批量管理动态子节点（如每封邮件的独立红点）
 - **两种清理策略**：`Manual`（手动清除）和 `ViewAutoClean`（界面关闭自动清除）
 - **三种显示模式**：`DotOnly`（仅显示红点）、`DotNumber`（红点+数字）、`Auto`（自动）
@@ -245,6 +245,11 @@ if (RedDotModule.Instance.IsRead(ERedDotKey.Mail))
     // ...
 }
 ```
+
+> **动态键不持久化**：`MarkRead` 仅对静态枚举键进行持久化。动态键（如 `__dynamic__Mail_1001`）的已读状态不会写入 StorageModule，原因：
+> - 动态节点由 `SyncDynamicNode` 批量管理，生命周期随数据列表增删
+> - 下次登录数据从服务器重新拉取，本地缓存的已读状态无意义
+> - 每条数据的已读/未读状态应由服务端维护，客户端无需冗余存储
 
 ### 5.6 自动清除策略
 
