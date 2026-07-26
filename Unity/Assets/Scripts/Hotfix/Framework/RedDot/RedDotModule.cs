@@ -259,6 +259,9 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注册红点（内部实现）
         /// </summary>
+        /// <param name="node">目标节点</param>
+        /// <param name="calculator">红点数量计算函数</param>
+        /// <param name="triggerEvents">触发重算的事件 ID 列表</param>
         private void RegisterInternal(RedDotNode node, Func<int> calculator, string[] triggerEvents)
         {
             // 先注销旧的红点
@@ -303,6 +306,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注销红点（内部实现）
         /// </summary>
+        /// <param name="node">目标节点</param>
         private void UnregisterInternal(RedDotNode node)
         {
             if (node.TriggerEvents != null)
@@ -327,6 +331,8 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// EventModule 事件触发回调 — 标记对应节点为脏
         /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">事件参数</param>
         private void OnTriggerEvent(object sender, GameEventArgs e)
         {
             if (!m_EventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
@@ -464,6 +470,9 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 生成动态节点 Key（格式：__dynamic__{parentKey}_{id}）
         /// </summary>
+        /// <param name="parentKey">父节点 Key</param>
+        /// <param name="id">动态节点 ID</param>
+        /// <returns>格式化后的动态节点 Key</returns>
         private static string FormatDynamicKey(RedDotKey parentKey, long id)
         {
             return $"__dynamic__{parentKey}_{id}";

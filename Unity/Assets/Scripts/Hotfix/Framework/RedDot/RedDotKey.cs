@@ -21,11 +21,15 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 隐式转换：ERedDotKey 枚举 → RedDotKey（如 ERedDotKey.Mail → "Mail"）
         /// </summary>
+        /// <param name="key">ERedDotKey 枚举值</param>
+        /// <returns>对应的 RedDotKey</returns>
         public static implicit operator RedDotKey(ERedDotKey key) => new(key.ToString());
 
         /// <summary>
         /// 隐式转换：string → RedDotKey
         /// </summary>
+        /// <param name="key">字符串 Key</param>
+        /// <returns>对应的 RedDotKey</returns>
         public static implicit operator RedDotKey(string key) => new(key);
 
         public override string ToString() => m_Key ?? "";
