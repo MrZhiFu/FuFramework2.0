@@ -4,6 +4,7 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Config;
+using Hotfix.Framework.Storage;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
@@ -15,21 +16,21 @@ namespace Hotfix.Framework.RedDot
     /// 红点管理模块
     /// 功能：
     ///     1. 树形结构管理 — 支持父子节点层级关系，LogicType（Any/Sum）控制聚合
-    ///     2. calculator — 业务注册 Func<int> 计算函数，OnUpdate 批处理重算
-    ///     3. EventModule 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 ID 过滤
+    ///     2. Calculator — 业务注册 Func&lt;int&gt; 计算函数，OnUpdate 批处理重算
+    ///     3. EventModule 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 Key 过滤
     ///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
-    ///     5. 静态+动态节点 — 静态节点由配置表定义(ERedDotKey)，动态节点运行时创建(string)
+    ///     5. 统一 Key — RedDotKey 同时支持静态枚举和动态字符串，隐式转换无感
     ///     6. 动态红点 — SyncDynamicNode 批量管理动态子节点
-    ///     7. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态
+    ///     7. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态（仅静态键）
     ///
     /// 使用流程：
-    ///     1. 在Luban配置表中定义红点树结构
-    ///     2. 在UI界面中使用UI组件 CompRedDot 组件绑定红点，并填写红点枚举Id
-    ///     2. 业务模块调用 Register 注册计算函数
-    ///     3. 业务触发事件 → OnUpdate 重算 → 广播红点变更事件
-    ///     4. UI组件CompRedDot 监听广播事件，按 ID 过滤刷新 UI
+    ///     1. 在 Luban 配置表中定义红点树结构
+    ///     2. 在 UI 界面中使用 CompRedDot 组件绑定红点，填写红点枚举 ID
+    ///     3. 业务模块调用 Register 注册计算函数
+    ///     4. 业务触发事件 → OnUpdate 重算 → 广播红点变更事件
+    ///     5. UI 组件 CompRedDot 监听广播事件，按 Key 过滤刷新 UI
     /// </summary>
-    public partial class RedDotModule : ModuleBase
+    public class RedDotModule : ModuleBase
     {
         /// <summary>
         /// 模块静态单例
@@ -39,14 +40,9 @@ namespace Hotfix.Framework.RedDot
         #region 节点存储
 
         /// <summary>
-        /// 静态节点字典（配置表驱动，Key: ERedDotKey，Value: 红点节点）
+        /// 统一节点字典（Key: RedDotKey，Value: 红点节点）
         /// </summary>
-        private static readonly Dictionary<ERedDotKey, RedDotNode> StaticNodeDict = new();
-
-        /// <summary>
-        /// 动态节点字典（运行时创建，Key: string，Value: 红点节点）
-        /// </summary>
-        private static readonly Dictionary<string, RedDotNode> DynamicNodeDict = new();
+        private static readonly Dictionary<RedDotKey, RedDotNode> NodeDict = new();
 
         #endregion
 
@@ -58,14 +54,9 @@ namespace Hotfix.Framework.RedDot
         private readonly HashSet<RedDotNode> m_DirtyNodeSet = new();
 
         /// <summary>
-        /// 本帧发生变更的节点 Key（用于去重后广播）
+        /// 本帧发生变更的节点 Key 集合（用于去重后广播）
         /// </summary>
-        private readonly HashSet<ERedDotKey> m_ChangedStaticSet = new();
-
-        /// <summary>
-        /// 本帧发生变更的动态节点 Key
-        /// </summary>
-        private readonly HashSet<string> m_ChangedDynamicSet = new();
+        private readonly HashSet<RedDotKey> m_ChangedKeySet = new();
 
         #endregion
 
@@ -81,7 +72,7 @@ namespace Hotfix.Framework.RedDot
         #region 已读持久化
 
         /// <summary>
-        /// 已读节点 Key 集合（存为 ERedDotKey 的 int 值）
+        /// 已读静态节点 Key 集合（存为 ERedDotKey 的 int 值）
         /// </summary>
         private readonly HashSet<int> m_ReadSet = new();
 
@@ -94,6 +85,15 @@ namespace Hotfix.Framework.RedDot
         /// 已读状态在 StorageModule 中的文件名
         /// </summary>
         private const string ReadStorageFile = "RedDotData";
+
+        #endregion
+
+        #region 动态红点
+
+        /// <summary>
+        /// 父节点 Key → 已同步的 id 集合（用于 SyncDynamicNode 增量更新）
+        /// </summary>
+        private readonly Dictionary<RedDotKey, HashSet<long>> m_DynamicIdDict = new();
 
         #endregion
 
@@ -113,17 +113,16 @@ namespace Hotfix.Framework.RedDot
                 return;
             }
 
-            StaticNodeDict.Clear();
-            DynamicNodeDict.Clear();
+            NodeDict.Clear();
 
             var allRows = tbRedDot.All;
 
             // 阶段一：创建所有节点
             foreach (var row in allRows)
             {
-                var node = RedDotNode.Create(row.Id, null, row.DisplayMode, row.CleanStrategy, row.LogicType, row.IsActive);
+                var node = RedDotNode.Create(row);
 
-                if (!StaticNodeDict.TryAdd(row.Id, node))
+                if (!NodeDict.TryAdd(row.Id, node))
                 {
                     FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
                     ReferencePool.Release(node);
@@ -134,10 +133,10 @@ namespace Hotfix.Framework.RedDot
             foreach (var row in allRows)
             {
                 if (row.ParentId == null) continue;
-                var parentKey = row.ParentId.Value;
+                RedDotKey parentKey = row.ParentId.Value;
 
-                if (!StaticNodeDict.TryGetValue(row.Id,    out var child) ||
-                    !StaticNodeDict.TryGetValue(parentKey, out var parent))
+                if (!NodeDict.TryGetValue(row.Id,    out var child) ||
+                    !NodeDict.TryGetValue(parentKey, out var parent))
                     continue;
 
                 child.SetParent(parent);
@@ -145,7 +144,7 @@ namespace Hotfix.Framework.RedDot
             }
 
             // 注入变更追踪回调
-            foreach (var node in StaticNodeDict.Values)
+            foreach (var node in NodeDict.Values)
             {
                 node.OnTotalCountChanged = OnNodeTotalCountChanged;
             }
@@ -153,7 +152,7 @@ namespace Hotfix.Framework.RedDot
             // 加载已读状态
             LoadReadState();
 
-            FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {StaticNodeDict.Count}");
+            FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
         }
 
         /// <summary>
@@ -169,23 +168,15 @@ namespace Hotfix.Framework.RedDot
 
             m_EventToNodes.Clear();
 
-            // 清理静态节点
-            foreach (var node in StaticNodeDict.Values)
+            // 清理所有节点
+            foreach (var node in NodeDict.Values)
             {
                 ReferencePool.Release(node);
             }
 
-            // 清理动态节点
-            foreach (var node in DynamicNodeDict.Values)
-            {
-                ReferencePool.Release(node);
-            }
-
-            StaticNodeDict.Clear();
-            DynamicNodeDict.Clear();
+            NodeDict.Clear();
             m_DirtyNodeSet.Clear();
-            m_ChangedStaticSet.Clear();
-            m_ChangedDynamicSet.Clear();
+            m_ChangedKeySet.Clear();
             m_DynamicIdDict.Clear();
             m_ReadSet.Clear();
             Instance = null;
@@ -223,9 +214,9 @@ namespace Hotfix.Framework.RedDot
             }
 
             // 广播所有本帧累积的变更（脏节点 + MarkRead 等）
-            if (m_ChangedStaticSet.Count > 0 || m_ChangedDynamicSet.Count > 0)
+            if (m_ChangedKeySet.Count > 0)
             {
-                BroadcastChangedIds();
+                BroadcastChangedKeys();
             }
         }
 
@@ -234,16 +225,16 @@ namespace Hotfix.Framework.RedDot
         #region 注册
 
         /// <summary>
-        /// 注册静态红点（由业务模块调用）
+        /// 注册红点 Calculator（统一 API）
         /// </summary>
-        /// <param name="key">静态节点 Key</param>
+        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(ERedDotKey key, Func<int> calculator, params string[] triggerEvents)
+        public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
         {
-            if (!StaticNodeDict.TryGetValue(key, out var node))
+            if (!NodeDict.TryGetValue(key, out var node))
             {
-                FuLogger.LogError($"[RedDotModule] Register 未找到静态节点: {key}");
+                FuLogger.LogError($"[RedDotModule] Register 未找到节点: {key}");
                 return;
             }
 
@@ -251,30 +242,13 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注册动态节点（节点需已通过 Register(parentKey, dynamicKey, ...) 创建）
+        /// 一步创建动态节点并注册 Calculator
         /// </summary>
-        /// <param name="key">动态节点 Key</param>
+        /// <param name="parentKey">父节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        /// <param name="dynamicKey">动态节点 Key（支持 string 隐式转换）</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(string key, Func<int> calculator, params string[] triggerEvents)
-        {
-            if (!DynamicNodeDict.TryGetValue(key, out var node))
-            {
-                FuLogger.LogError($"[RedDotModule] Register 未找到动态节点: {key}");
-                return;
-            }
-
-            RegisterInternal(node, calculator, triggerEvents);
-        }
-
-        /// <summary>
-        /// 一步创建动态节点并注册
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="dynamicKey">动态节点名称</param>
-        /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(ERedDotKey parentKey, string dynamicKey, Func<int> calculator, params string[] triggerEvents)
+        public void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
         {
             var node = AddDynamicChild(parentKey, dynamicKey);
             if (node == null) return;
@@ -286,9 +260,6 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注册红点（内部实现）
         /// </summary>
-        /// <param name="node">目标节点</param>
-        /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表</param>
         private void RegisterInternal(RedDotNode node, Func<int> calculator, string[] triggerEvents)
         {
             // 先注销旧的红点
@@ -321,29 +292,18 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销静态红点（由业务模块调用）
+        /// 注销红点 Calculator（统一 API）
         /// </summary>
-        /// <param name="key">静态节点 Key</param>
-        public void Unregister(ERedDotKey key)
+        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        public void Unregister(RedDotKey key)
         {
-            if (!StaticNodeDict.TryGetValue(key, out var node)) return;
-            UnregisterInternal(node);
-        }
-
-        /// <summary>
-        /// 注销动态红点（由业务模块调用）
-        /// </summary>
-        /// <param name="key">动态节点 Key</param>
-        public void Unregister(string key)
-        {
-            if (!DynamicNodeDict.TryGetValue(key, out var node)) return;
+            if (!NodeDict.TryGetValue(key, out var node)) return;
             UnregisterInternal(node);
         }
 
         /// <summary>
         /// 注销红点（内部实现）
         /// </summary>
-        /// <param name="node">目标节点</param>
         private void UnregisterInternal(RedDotNode node)
         {
             if (node.TriggerEvents != null)
@@ -368,8 +328,6 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// EventModule 事件触发回调 — 标记对应节点为脏
         /// </summary>
-        /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
         private void OnTriggerEvent(object sender, GameEventArgs e)
         {
             if (!m_EventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
@@ -387,13 +345,13 @@ namespace Hotfix.Framework.RedDot
         #region 状态查询
 
         /// <summary>
-        /// 查询静态节点状态
+        /// 查询节点状态（统一 API）
         /// </summary>
-        /// <param name="key">静态节点 Key</param>
+        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
-        public RedDotState GetState(ERedDotKey key)
+        public RedDotState GetState(RedDotKey key)
         {
-            if (!StaticNodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
+            if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
 
             return new RedDotState
             {
@@ -404,81 +362,248 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 查询动态节点状态
+        /// 是否存在节点（统一 API）
         /// </summary>
-        /// <param name="key">动态节点 Key</param>
-        /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
-        public RedDotState GetState(string key)
-        {
-            if (!DynamicNodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
-
-            return new RedDotState
-            {
-                Count       = node.GetFinalCount(),
-                IsActive    = node.IsActive,
-                DisplayMode = node.DisplayMode
-            };
-        }
-
-        /// <summary>
-        /// 是否存在静态节点
-        /// </summary>
-        /// <param name="key">静态节点 Key</param>
+        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         /// <returns>存在返回 true，否则返回 false</returns>
-        public bool HasNode(ERedDotKey key) => StaticNodeDict.ContainsKey(key);
-
-        /// <summary>
-        /// 是否存在动态节点
-        /// </summary>
-        /// <param name="key">动态节点 Key</param>
-        /// <returns>存在返回 true，否则返回 false</returns>
-        public bool HasNode(string key) => DynamicNodeDict.ContainsKey(key);
+        public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
 
         #endregion
 
         #region 动态节点
 
         /// <summary>
-        /// 为指定静态父节点添加动态子节点
+        /// 为指定父节点添加动态子节点
         /// </summary>
-        /// <param name="parentKey">静态父节点 Key</param>
-        /// <param name="childName">动态子节点名称</param>
+        /// <param name="parentKey">父节点 Key</param>
+        /// <param name="childKey">动态子节点 Key</param>
         /// <returns>创建的动态节点，父节点不存在时返回 null</returns>
-        private RedDotNode AddDynamicChild(ERedDotKey parentKey, string childName)
+        private RedDotNode AddDynamicChild(RedDotKey parentKey, RedDotKey childKey)
         {
-            if (!StaticNodeDict.TryGetValue(parentKey, out var parentNode))
+            if (!NodeDict.TryGetValue(parentKey, out var parentNode))
             {
                 FuLogger.LogError($"[RedDotModule] 父节点不存在: {parentKey}");
                 return null;
             }
 
-            if (DynamicNodeDict.TryGetValue(childName, out var childNode))
-                return childNode;
+            if (NodeDict.TryGetValue(childKey, out var existingNode))
+                return existingNode;
 
-            var node = RedDotNode.CreateDynamic(childName, parentNode);
+            var node = RedDotNode.CreateDynamic(childKey, parentNode);
             node.OnTotalCountChanged = OnNodeTotalCountChanged;
             parentNode.AddChild(node);
-            DynamicNodeDict.Add(childName, node);
-            FuLogger.LogInfo($"[RedDotModule] 创建动态节点: {childName}，父节点: {parentKey}");
+            NodeDict.Add(childKey, node);
+            FuLogger.LogInfo($"[RedDotModule] 创建动态节点: {childKey}，父节点: {parentKey}");
             return node;
         }
 
         /// <summary>
         /// 移除动态节点
         /// </summary>
-        /// <param name="childName">动态节点名称</param>
-        private void RemoveDynamicChild(string childName)
+        /// <param name="childKey">动态节点 Key</param>
+        private void RemoveDynamicChild(RedDotKey childKey)
         {
-            if (!DynamicNodeDict.TryGetValue(childName, out var node)) return;
+            if (!NodeDict.TryGetValue(childKey, out var node)) return;
 
             var parent = node.Parent;
             UnregisterInternal(node);
             parent?.RemoveChild(node);
-            DynamicNodeDict.Remove(childName);
+            NodeDict.Remove(childKey);
             ReferencePool.Release(node);
 
             // 移除子节点后触发父节点重算
             parent?.ForceRecalculate();
+        }
+
+        /// <summary>
+        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
+        /// </summary>
+        /// <param name="parentKey">父节点 Key</param>
+        /// <param name="ids">当前活跃的 id 列表</param>
+        /// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
+        public void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
+        {
+            if (!NodeDict.ContainsKey(parentKey))
+            {
+                FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
+                return;
+            }
+
+            if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
+            {
+                existing = new HashSet<long>();
+                m_DynamicIdDict[parentKey] = existing;
+            }
+
+            // 收集新增的 id
+            var newIds = new HashSet<long>();
+            foreach (var id in ids)
+            {
+                newIds.Add(id);
+            }
+
+            // 移除不在新列表中的实例
+            var removedIds = new List<long>();
+            foreach (var id in existing)
+            {
+                if (newIds.Contains(id)) continue;
+                removedIds.Add(id);
+            }
+
+            foreach (var id in removedIds)
+            {
+                RemoveDynamicChild(FormatDynamicKey(parentKey, id));
+                existing.Remove(id);
+            }
+
+            // 添加新增的实例 — 框架内部包装闭包
+            foreach (var id in ids)
+            {
+                if (existing.Contains(id)) continue;
+
+                var dynamicKey = FormatDynamicKey(parentKey, id);
+                var idCapture  = id; // 避免闭包捕获循环变量
+
+                Register(parentKey, dynamicKey, () => calculateFun(idCapture));
+                existing.Add(id);
+            }
+        }
+
+        /// <summary>
+        /// 生成动态节点 Key（格式：__dynamic__{parentKey}_{id}）
+        /// </summary>
+        private static string FormatDynamicKey(RedDotKey parentKey, long id)
+        {
+            return $"__dynamic__{parentKey}_{id}";
+        }
+
+        #endregion
+
+        #region 已读持久化
+
+        /// <summary>
+        /// 标记红点已读（计数归零 + 持久化，仅静态键持久化）
+        /// </summary>
+        /// <param name="key">红点节点 Key</param>
+        public void MarkRead(RedDotKey key)
+        {
+            if (!NodeDict.TryGetValue(key, out var node)) return;
+
+            node.IsRead = true;
+            node.SetCount(0);
+
+            // 仅静态枚举键进行持久化
+            if (Enum.TryParse<ERedDotKey>(key.ToString(), out var staticKey))
+            {
+                m_ReadSet.Add((int)staticKey);
+                SaveReadState();
+                BroadcastChangedKeys();
+            }
+        }
+
+        /// <summary>
+        /// 检查是否已读
+        /// </summary>
+        /// <param name="key">红点节点 Key</param>
+        /// <returns>已读返回 true，否则返回 false</returns>
+        public bool IsRead(RedDotKey key)
+        {
+            // 静态键检查持久化集合
+            if (Enum.TryParse<ERedDotKey>(key.ToString(), out var staticKey))
+                return m_ReadSet.Contains((int)staticKey);
+
+            // 动态键检查节点自身标记
+            return NodeDict.TryGetValue(key, out var node) && node.IsRead;
+        }
+
+        /// <summary>
+        /// 从 StorageModule 加载已读状态
+        /// </summary>
+        private void LoadReadState()
+        {
+            if (StorageModule.Instance == null) return;
+
+            var list = StorageModule.Instance.GetObject<List<int>>(ReadStorageKey, ReadStorageFile);
+            if (list == null) return;
+
+            foreach (var id in list)
+            {
+                m_ReadSet.Add(id);
+                var staticKey = (ERedDotKey)id;
+                RedDotKey key = staticKey; // 隐式转换
+                if (NodeDict.TryGetValue(key, out var node))
+                {
+                    node.IsRead = true;
+                    node.SetCount(0);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 保存已读状态到 StorageModule
+        /// </summary>
+        private void SaveReadState()
+        {
+            var list = new List<int>(m_ReadSet);
+            StorageModule.Instance.SetObject(ReadStorageKey, list, ReadStorageFile);
+        }
+
+        #endregion
+
+        #region 清理策略
+
+        /// <summary>
+        /// 尝试自动清除红点（仅对 ViewAutoClean 策略的节点生效）
+        /// </summary>
+        /// <param name="key">红点节点 Key</param>
+        public void TryAutoClean(RedDotKey key)
+        {
+            if (!NodeDict.TryGetValue(key, out var node)) return;
+            if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
+            CleanNodeRecursive(node);
+        }
+
+        /// <summary>
+        /// 递归清除节点及所有子节点的计数
+        /// </summary>
+        /// <param name="node">起始节点</param>
+        private static void CleanNodeRecursive(RedDotNode node)
+        {
+            node.SetCount(0);
+            foreach (var child in node.GetChildren())
+            {
+                CleanNodeRecursive(child);
+            }
+        }
+
+        #endregion
+
+        #region 内部方法
+
+        /// <summary>
+        /// TotalCount 变化回调（注入到每个 RedDotNode，在 UpdateTotalCount 中触发）
+        /// 收集本帧变更的节点 Key，供 OnUpdate 批量广播
+        /// </summary>
+        /// <param name="node">发生变化的节点</param>
+        private void OnNodeTotalCountChanged(RedDotNode node)
+        {
+            m_ChangedKeySet.Add(node.Key);
+        }
+
+        /// <summary>
+        /// 通过 EventModule 批量广播本帧变更
+        /// </summary>
+        private void BroadcastChangedKeys()
+        {
+            var args = RedDotChangedEventArgs.Create();
+            foreach (var key in m_ChangedKeySet)
+            {
+                args.ChangedKeys.Add(key);
+            }
+
+            GlobalModule.EventModule.Broadcast(this, args);
+
+            m_ChangedKeySet.Clear();
         }
 
         #endregion
