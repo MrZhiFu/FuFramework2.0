@@ -16,41 +16,43 @@ namespace Hotfix.Framework.RedDot
         #region 动态红点
 
         /// <summary>
-        /// 父节点 → 已同步的 id 集合（用于 SyncDynamic 增量更新）
+        /// 父节点 → 已同步的 id 集合（用于 SyncDynamicNode 增量更新）
         /// </summary>
-        private readonly Dictionary<ERedDotKey, HashSet<long>> m_DynamicIdMap = new();
+        private readonly Dictionary<ERedDotKey, HashSet<long>> m_DynamicIdDict = new();
 
         /// <summary>
-        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册 Calculate Provider
+        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="ids">当前活跃的 id 列表</param>
-        /// <param name="provider">根据 id 返回红点数量的计算函数</param>
-        public void SyncDynamic(ERedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> provider)
+        /// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
+        public void SyncDynamicNode(ERedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
         {
             if (!StaticNodeDict.ContainsKey(parentKey))
             {
-                FuLogger.LogError($"[RedDotModule] SyncDynamic 未找到父节点: {parentKey}");
+                FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
                 return;
             }
 
-            if (!m_DynamicIdMap.TryGetValue(parentKey, out var existing))
+            if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
             {
                 existing = new HashSet<long>();
-                m_DynamicIdMap[parentKey] = existing;
+                m_DynamicIdDict[parentKey] = existing;
             }
 
             // 收集新增的 id
             var newIds = new HashSet<long>();
-            for (var i = 0; i < ids.Count; i++)
-                newIds.Add(ids[i]);
+            foreach (var id in ids)
+            {
+                newIds.Add(id);
+            }
 
             // 移除不在新列表中的实例
             var removedIds = new List<long>();
             foreach (var id in existing)
             {
-                if (!newIds.Contains(id))
-                    removedIds.Add(id);
+                if (newIds.Contains(id)) continue;
+                removedIds.Add(id);
             }
 
             foreach (var id in removedIds)
@@ -66,17 +68,18 @@ namespace Hotfix.Framework.RedDot
 
                 var dynamicKey = FormatDynamicKey(parentKey, id);
                 var idCapture  = id; // 避免闭包捕获循环变量
-                Register(parentKey, dynamicKey, () => provider(idCapture));
+                
+                Register(parentKey, dynamicKey, () => calculateFun(idCapture));
                 existing.Add(id);
             }
         }
 
         /// <summary>
-        /// 生成动态节点 Key（格式：{parentKey}_{id}）
+        /// 生成动态节点 Key（格式：__dynamic_{parentKey}_{id}）
         /// </summary>
         private static string FormatDynamicKey(ERedDotKey parentKey, long id)
         {
-            return $"__dyn__{parentKey}_{id}";
+            return $"__dynamic__{parentKey}_{id}";
         }
 
         #endregion
@@ -181,7 +184,9 @@ namespace Hotfix.Framework.RedDot
         {
             node.SetCount(0);
             foreach (var child in node.GetChildren())
+            {
                 CleanNodeRecursive(child);
+            }
         }
 
         #endregion
@@ -196,9 +201,13 @@ namespace Hotfix.Framework.RedDot
         private void OnNodeTotalCountChanged(RedDotNode node)
         {
             if (node.StaticKey.HasValue)
+            {
                 m_ChangedStaticSet.Add(node.StaticKey.Value);
+            }
             else if (node.DynamicKey != null)
+            {
                 m_ChangedDynamicSet.Add(node.DynamicKey);
+            }
         }
 
         /// <summary>
@@ -208,9 +217,13 @@ namespace Hotfix.Framework.RedDot
         {
             var args = RedDotChangedEventArgs.Create();
             foreach (var key in m_ChangedStaticSet)
+            {
                 args.ChangedStaticKeys.Add(key);
+            }
             foreach (var key in m_ChangedDynamicSet)
+            {
                 args.ChangedDynamicKeys.Add(key);
+            }
 
             GlobalModule.EventModule.Broadcast(this, args);
 

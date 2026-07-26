@@ -60,12 +60,7 @@ namespace Hotfix.Framework.RedDot
         /// 是否激活（false 时 TotalCount 永远为 0）
         /// </summary>
         public bool IsActive { get; private set; }
-
-        /// <summary>
-        /// UI 显示排序权重（来自配置表）
-        /// </summary>
-        public int ShowOrder { get; private set; }
-
+        
         /// <summary>
         /// 是否已读（持久化，仅抑制初始加载时的红点）
         /// </summary>
@@ -76,12 +71,12 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public bool IsDirty { get; internal set; }
 
-        #region Leaf Provider
+        #region calculator
 
         /// <summary>
-        /// 叶子节点计算函数（不为 null 时由 OnUpdate 自动调用）
+        /// 叶子节点红点数计算函数（不为 null 时由 OnUpdate 自动调用）
         /// </summary>
-        public Func<int> CalculateProvider { get; internal set; }
+        public Func<int> Calculator { get; internal set; }
 
         /// <summary>
         /// 触发重算的 EventModule 事件 ID 列表
@@ -110,20 +105,21 @@ namespace Hotfix.Framework.RedDot
         /// <param name="cleanStrategy">清理策略</param>
         /// <param name="logicType">聚合逻辑类型</param>
         /// <param name="isActive">是否激活</param>
-        /// <param name="showOrder">显示排序权重</param>
         /// <returns>创建的静态节点</returns>
-        public static RedDotNode Create(ERedDotKey key, RedDotNode parent,
-            ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy,
-            ERedDotLogicType logicType, bool isActive, int showOrder)
+        public static RedDotNode Create(ERedDotKey key,
+                                        RedDotNode parent,
+                                        ERedDotDisplayMode displayMode,
+                                        ERedDotCleanStrategy cleanStrategy,
+                                        ERedDotLogicType logicType,
+                                        bool isActive)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.StaticKey = key;
-            node.Parent = parent;
-            node.DisplayMode = displayMode;
+            node.StaticKey     = key;
+            node.Parent        = parent;
+            node.DisplayMode   = displayMode;
             node.CleanStrategy = cleanStrategy;
-            node.LogicType = logicType;
-            node.IsActive = isActive;
-            node.ShowOrder = showOrder;
+            node.LogicType     = logicType;
+            node.IsActive      = isActive;
             return node;
         }
 
@@ -136,13 +132,12 @@ namespace Hotfix.Framework.RedDot
         public static RedDotNode CreateDynamic(string key, RedDotNode parent)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.DynamicKey = key;
-            node.Parent = parent;
-            node.DisplayMode = ERedDotDisplayMode.DotOnly;
+            node.DynamicKey    = key;
+            node.Parent        = parent;
+            node.DisplayMode   = ERedDotDisplayMode.DotOnly;
             node.CleanStrategy = ERedDotCleanStrategy.Manual;
-            node.LogicType = ERedDotLogicType.Sum;
-            node.IsActive = true;
-            node.ShowOrder = 0;
+            node.LogicType     = ERedDotLogicType.Sum;
+            node.IsActive      = true;
             return node;
         }
 
@@ -176,10 +171,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 强制重算 TotalCount 并向上传播（子节点增删后调用）
         /// </summary>
-        internal void ForceRecalculate()
-        {
-            UpdateTotalCount();
-        }
+        internal void ForceRecalculate() => UpdateTotalCount();
 
         /// <summary>
         /// 设置节点计数并向上传播（仅 RedDotModule 内部调用）
@@ -201,17 +193,13 @@ namespace Hotfix.Framework.RedDot
         {
             if (!IsActive)
             {
-                if (TotalCount != 0)
-                {
-                    TotalCount = 0;
-                    OnTotalCountChanged?.Invoke(this);
-                }
+                if (TotalCount == 0) return;
+                TotalCount = 0;
+                OnTotalCountChanged?.Invoke(this);
                 return;
             }
 
-            var childrenTotal = LogicType == ERedDotLogicType.Any
-                ? ComputeChildrenAny()
-                : ComputeChildrenSum();
+            var childrenTotal = LogicType == ERedDotLogicType.Any ? ComputeChildrenAny() : ComputeChildrenSum();
 
             var total = RawCount + childrenTotal;
             if (TotalCount == total) return;
@@ -232,6 +220,7 @@ namespace Hotfix.Framework.RedDot
             {
                 total += child.TotalCount;
             }
+
             return total;
         }
 
@@ -243,8 +232,10 @@ namespace Hotfix.Framework.RedDot
         {
             foreach (var child in m_Children)
             {
-                if (child.TotalCount > 0) return 1;
+                if (child.TotalCount > 0)
+                    return 1;
             }
+
             return 0;
         }
 
@@ -252,11 +243,7 @@ namespace Hotfix.Framework.RedDot
         /// 获取最终计数（考虑 IsActive 和 IsRead）
         /// </summary>
         /// <returns>IsActive 为 false 时返回 0，否则返回 TotalCount</returns>
-        public int GetFinalCount()
-        {
-            if (!IsActive) return 0;
-            return TotalCount;
-        }
+        public int GetFinalCount() => !IsActive ? 0 : TotalCount;
 
         /// <summary>
         /// 获取所有子节点（只读）
@@ -265,24 +252,23 @@ namespace Hotfix.Framework.RedDot
         public IReadOnlyList<RedDotNode> GetChildren() => m_Children.AsReadOnly();
 
         /// <summary>
-        /// IReference — 回收到对象池时清理
+        /// 回收到对象池时清理
         /// </summary>
         public void Clear()
         {
-            StaticKey = null;
-            DynamicKey = null;
-            Parent = null;
-            RawCount = 0;
-            TotalCount = 0;
-            DisplayMode = ERedDotDisplayMode.DotOnly;
-            CleanStrategy = ERedDotCleanStrategy.Manual;
-            LogicType = ERedDotLogicType.Sum;
-            IsActive = true;
-            ShowOrder = 0;
-            IsRead = false;
-            IsDirty = false;
-            CalculateProvider = null;
-            TriggerEvents = null;
+            StaticKey           = null;
+            DynamicKey          = null;
+            Parent              = null;
+            RawCount            = 0;
+            TotalCount          = 0;
+            DisplayMode         = ERedDotDisplayMode.DotOnly;
+            CleanStrategy       = ERedDotCleanStrategy.Manual;
+            LogicType           = ERedDotLogicType.Sum;
+            IsActive            = true;
+            IsRead              = false;
+            IsDirty             = false;
+            Calculator          = null;
+            TriggerEvents       = null;
             OnTotalCountChanged = null;
             m_Children.Clear();
         }

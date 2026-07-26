@@ -15,15 +15,16 @@ namespace Hotfix.Framework.RedDot
     /// 红点管理模块
     /// 功能：
     ///     1. 树形结构管理 — 支持父子节点层级关系，LogicType（Any/Sum）控制聚合
-    ///     2. Leaf Provider — 业务注册 Func<int> 计算函数，OnUpdate 批处理重算
+    ///     2. calculator — 业务注册 Func<int> 计算函数，OnUpdate 批处理重算
     ///     3. EventModule 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 ID 过滤
     ///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
     ///     5. 静态+动态节点 — 静态节点由配置表定义(ERedDotKey)，动态节点运行时创建(string)
-    ///     6. 动态红点 — SyncDynamic 批量管理动态子节点
+    ///     6. 动态红点 — SyncDynamicNode 批量管理动态子节点
     ///     7. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态
     ///
     /// 使用流程：
     ///     1. 在Luban配置表中定义红点树结构
+    ///     2. 在UI界面中使用UI组件 CompRedDot 组件绑定红点，并填写红点枚举Id
     ///     2. 业务模块调用 Register 注册计算函数
     ///     3. 业务触发事件 → OnUpdate 重算 → 广播红点变更事件
     ///     4. UI组件CompRedDot 监听广播事件，按 ID 过滤刷新 UI
@@ -70,14 +71,18 @@ namespace Hotfix.Framework.RedDot
 
         #region 事件订阅反向映射
 
-        /// <summary>EventModule 事件 ID → 订阅该事件的节点集合</summary>
+        /// <summary>
+        /// EventModule 事件 ID → 订阅该事件的节点集合
+        /// </summary>
         private readonly Dictionary<string, HashSet<RedDotNode>> m_EventToNodes = new();
 
         #endregion
 
         #region 已读持久化
 
-        /// <summary>已读节点 Key 集合（存为 ERedDotKey 的 int 值）</summary>
+        /// <summary>
+        /// 已读节点 Key 集合（存为 ERedDotKey 的 int 值）
+        /// </summary>
         private readonly HashSet<int> m_ReadSet = new();
 
         /// <summary>
@@ -116,8 +121,7 @@ namespace Hotfix.Framework.RedDot
             // 阶段一：创建所有节点
             foreach (var row in allRows)
             {
-                var node = RedDotNode.Create(row.Id, null, row.DisplayMode, row.CleanStrategy,
-                                             row.LogicType, row.IsActive, row.ShowOrder);
+                var node = RedDotNode.Create(row.Id, null, row.DisplayMode, row.CleanStrategy, row.LogicType, row.IsActive);
 
                 if (!StaticNodeDict.TryAdd(row.Id, node))
                 {
@@ -142,7 +146,9 @@ namespace Hotfix.Framework.RedDot
 
             // 注入变更追踪回调
             foreach (var node in StaticNodeDict.Values)
+            {
                 node.OnTotalCountChanged = OnNodeTotalCountChanged;
+            }
 
             // 加载已读状态
             LoadReadState();
@@ -163,18 +169,24 @@ namespace Hotfix.Framework.RedDot
 
             m_EventToNodes.Clear();
 
-            // 回收节点
+            // 清理静态节点
             foreach (var node in StaticNodeDict.Values)
+            {
                 ReferencePool.Release(node);
+            }
+
+            // 清理动态节点
             foreach (var node in DynamicNodeDict.Values)
+            {
                 ReferencePool.Release(node);
+            }
 
             StaticNodeDict.Clear();
             DynamicNodeDict.Clear();
             m_DirtyNodeSet.Clear();
             m_ChangedStaticSet.Clear();
             m_ChangedDynamicSet.Clear();
-            m_DynamicIdMap.Clear();
+            m_DynamicIdDict.Clear();
             m_ReadSet.Clear();
             Instance = null;
         }
@@ -192,18 +204,18 @@ namespace Hotfix.Framework.RedDot
                 foreach (var node in m_DirtyNodeSet)
                 {
                     node.IsDirty = false;
-
-                    if (node.CalculateProvider == null) continue;
+                    if (node.Calculator == null) continue;
 
                     try
                     {
-                        var newCount              = node.CalculateProvider.Invoke();
-                        if (node.IsRead) newCount = 0;
+                        var newCount = node.Calculator.Invoke();
+                        if (node.IsRead)
+                            newCount = 0;
                         node.SetCount(newCount);
                     }
                     catch (Exception ex)
                     {
-                        FuLogger.LogError($"[RedDotModule] CalculateProvider 执行异常: {ex.Message}");
+                        FuLogger.LogError($"[RedDotModule] 红点计算函数执行异常: {ex.Message}");
                     }
                 }
 
@@ -219,15 +231,15 @@ namespace Hotfix.Framework.RedDot
 
         #endregion
 
-        #region Leaf Provider 注册
+        #region 注册
 
         /// <summary>
-        /// 为静态节点注册 Leaf Provider（由业务模块调用）
+        /// 注册静态红点（由业务模块调用）
         /// </summary>
         /// <param name="key">静态节点 Key</param>
-        /// <param name="provider">返回红点数量的计算函数</param>
+        /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(ERedDotKey key, Func<int> provider, params string[] triggerEvents)
+        public void Register(ERedDotKey key, Func<int> calculator, params string[] triggerEvents)
         {
             if (!StaticNodeDict.TryGetValue(key, out var node))
             {
@@ -235,16 +247,16 @@ namespace Hotfix.Framework.RedDot
                 return;
             }
 
-            RegisterInternal(node, provider, triggerEvents);
+            RegisterInternal(node, calculator, triggerEvents);
         }
 
         /// <summary>
-        /// 为动态节点注册 Calculate Provider（节点需已通过 Register(parentKey, dynamicKey, ...) 创建）
+        /// 注册动态节点（节点需已通过 Register(parentKey, dynamicKey, ...) 创建）
         /// </summary>
         /// <param name="key">动态节点 Key</param>
-        /// <param name="provider">返回红点数量的计算函数</param>
+        /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(string key, Func<int> provider, params string[] triggerEvents)
+        public void Register(string key, Func<int> calculator, params string[] triggerEvents)
         {
             if (!DynamicNodeDict.TryGetValue(key, out var node))
             {
@@ -252,38 +264,38 @@ namespace Hotfix.Framework.RedDot
                 return;
             }
 
-            RegisterInternal(node, provider, triggerEvents);
+            RegisterInternal(node, calculator, triggerEvents);
         }
 
         /// <summary>
-        /// 一步创建动态节点并注册 Calculate Provider
+        /// 一步创建动态节点并注册
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="dynamicKey">动态节点名称</param>
-        /// <param name="provider">返回红点数量的计算函数</param>
+        /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
-        public void Register(ERedDotKey parentKey, string dynamicKey, Func<int> provider, params string[] triggerEvents)
+        public void Register(ERedDotKey parentKey, string dynamicKey, Func<int> calculator, params string[] triggerEvents)
         {
             var node = AddDynamicChild(parentKey, dynamicKey);
             if (node == null) return;
 
-            RegisterInternal(node, provider, triggerEvents);
-            node.SetCount(provider());
+            RegisterInternal(node, calculator, triggerEvents);
+            node.SetCount(calculator());
         }
 
         /// <summary>
-        /// 注册 Leaf Provider（内部实现）
+        /// 注册红点（内部实现）
         /// </summary>
         /// <param name="node">目标节点</param>
-        /// <param name="provider">返回红点数量的计算函数</param>
+        /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表</param>
-        private void RegisterInternal(RedDotNode node, Func<int> provider, string[] triggerEvents)
+        private void RegisterInternal(RedDotNode node, Func<int> calculator, string[] triggerEvents)
         {
-            // 先注销旧的 Leaf Provider
+            // 先注销旧的红点
             UnregisterInternal(node);
 
-            node.CalculateProvider = provider;
-            node.TriggerEvents     = triggerEvents;
+            node.Calculator    = calculator;
+            node.TriggerEvents = triggerEvents;
 
             if (triggerEvents == null || triggerEvents.Length == 0) return;
 
@@ -309,27 +321,27 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销静态节点的 Leaf Provider
+        /// 注销静态红点（由业务模块调用）
         /// </summary>
         /// <param name="key">静态节点 Key</param>
         public void Unregister(ERedDotKey key)
         {
-            if (StaticNodeDict.TryGetValue(key, out var node))
-                UnregisterInternal(node);
+            if (!StaticNodeDict.TryGetValue(key, out var node)) return;
+            UnregisterInternal(node);
         }
 
         /// <summary>
-        /// 注销动态节点的 Leaf Provider
+        /// 注销动态红点（由业务模块调用）
         /// </summary>
         /// <param name="key">动态节点 Key</param>
         public void Unregister(string key)
         {
-            if (DynamicNodeDict.TryGetValue(key, out var node))
-                UnregisterInternal(node);
+            if (!DynamicNodeDict.TryGetValue(key, out var node)) return;
+            UnregisterInternal(node);
         }
 
         /// <summary>
-        /// 注销 Leaf Provider（内部实现）
+        /// 注销红点（内部实现）
         /// </summary>
         /// <param name="node">目标节点</param>
         private void UnregisterInternal(RedDotNode node)
@@ -340,20 +352,17 @@ namespace Hotfix.Framework.RedDot
                 {
                     if (string.IsNullOrEmpty(eventId)) continue;
 
-                    if (m_EventToNodes.TryGetValue(eventId, out var nodeSet))
-                    {
-                        nodeSet.Remove(node);
-                        if (nodeSet.Count == 0)
-                        {
-                            GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
-                            m_EventToNodes.Remove(eventId);
-                        }
-                    }
+                    if (!m_EventToNodes.TryGetValue(eventId, out var nodeSet)) continue;
+                    nodeSet.Remove(node);
+
+                    if (nodeSet.Count != 0) continue;
+                    GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
+                    m_EventToNodes.Remove(eventId);
                 }
             }
 
-            node.CalculateProvider = null;
-            node.TriggerEvents     = null;
+            node.Calculator    = null;
+            node.TriggerEvents = null;
         }
 
         /// <summary>
@@ -363,14 +372,13 @@ namespace Hotfix.Framework.RedDot
         /// <param name="e">事件参数</param>
         private void OnTriggerEvent(object sender, GameEventArgs e)
         {
-            if (m_EventToNodes.TryGetValue(e.Id, out var nodeSet))
+            if (!m_EventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
+
+            foreach (var node in nodeSet)
             {
-                foreach (var node in nodeSet)
-                {
-                    if (node.IsDirty) continue;
-                    node.IsDirty = true;
-                    m_DirtyNodeSet.Add(node);
-                }
+                if (node.IsDirty) continue;
+                node.IsDirty = true;
+                m_DirtyNodeSet.Add(node);
             }
         }
 
@@ -385,13 +393,11 @@ namespace Hotfix.Framework.RedDot
         /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
         public RedDotState GetState(ERedDotKey key)
         {
-            if (!StaticNodeDict.TryGetValue(key, out var node))
-                return RedDotState.Empty;
+            if (!StaticNodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
 
             return new RedDotState
             {
                 Count       = node.GetFinalCount(),
-                ShowOrder   = node.ShowOrder,
                 IsActive    = node.IsActive,
                 DisplayMode = node.DisplayMode
             };
@@ -404,13 +410,11 @@ namespace Hotfix.Framework.RedDot
         /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
         public RedDotState GetState(string key)
         {
-            if (!DynamicNodeDict.TryGetValue(key, out var node))
-                return RedDotState.Empty;
+            if (!DynamicNodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
 
             return new RedDotState
             {
                 Count       = node.GetFinalCount(),
-                ShowOrder   = node.ShowOrder,
                 IsActive    = node.IsActive,
                 DisplayMode = node.DisplayMode
             };
@@ -448,8 +452,8 @@ namespace Hotfix.Framework.RedDot
                 return null;
             }
 
-            if (DynamicNodeDict.ContainsKey(childName))
-                return DynamicNodeDict[childName];
+            if (DynamicNodeDict.TryGetValue(childName, out var childNode))
+                return childNode;
 
             var node = RedDotNode.CreateDynamic(childName, parentNode);
             node.OnTotalCountChanged = OnNodeTotalCountChanged;
@@ -460,10 +464,10 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 移除动态节点（清理 Leaf Provider 和事件订阅后回收）
+        /// 移除动态节点
         /// </summary>
         /// <param name="childName">动态节点名称</param>
-        public void RemoveDynamicChild(string childName)
+        private void RemoveDynamicChild(string childName)
         {
             if (!DynamicNodeDict.TryGetValue(childName, out var node)) return;
 

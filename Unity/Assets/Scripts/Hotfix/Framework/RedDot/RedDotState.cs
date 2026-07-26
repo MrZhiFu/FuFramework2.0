@@ -14,11 +14,6 @@ namespace Hotfix.Framework.RedDot
         public int Count;
 
         /// <summary>
-        /// UI 显示排序权重
-        /// </summary>
-        public int ShowOrder;
-
-        /// <summary>
         /// 节点是否激活
         /// </summary>
         public bool IsActive;
@@ -33,9 +28,8 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public static readonly RedDotState Empty = new()
         {
-            Count = 0,
-            ShowOrder = 0,
-            IsActive = false,
+            Count       = 0,
+            IsActive    = false,
             DisplayMode = ERedDotDisplayMode.DotOnly
         };
     }
