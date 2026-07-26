@@ -15,61 +15,73 @@ namespace Hotfix.Framework.RedDot
     ///     1. 静态节点：由 Luban 配置表定义
     ///     2. 动态节点：由运行时创建（如道具实例红点）
     /// 统一通过 RedDotKey 标识
+    ///
     /// </summary>
     public class RedDotNode : IReference
     {
         /// <summary>
         /// 节点统一标识符
+        ///
         /// </summary>
         public RedDotKey Key { get; private set; }
 
         /// <summary>
         /// 是否为静态节点（配置表定义），用于 MarkRead/IsRead 区分持久化策略
+        ///
         /// </summary>
         public bool IsStatic { get; private set; }
 
         /// <summary>
         /// 节点的原始计数（自身，不含子节点）
+        ///
         /// </summary>
         public int RawCount { get; private set; }
 
         /// <summary>
         /// 节点的总计数（自身 + 所有子节点）
+        ///
         /// </summary>
         public int TotalCount { get; private set; }
 
         /// <summary>
         /// 节点的父节点
+        ///
         /// </summary>
         public RedDotNode Parent { get; private set; }
 
         /// <summary>
         /// 默认显示模式（来自配置表）
+        ///
         /// </summary>
         public ERedDotDisplayMode DisplayMode { get; private set; }
 
         /// <summary>
         /// 清理策略（来自配置表）
+        ///
         /// </summary>
         public ERedDotCleanStrategy CleanStrategy { get; private set; }
 
         /// <summary>
         /// 子节点聚合逻辑（来自配置表）
+        ///
         /// </summary>
         public ERedDotLogicType LogicType { get; private set; }
 
         /// <summary>
         /// 是否激活（false 时 TotalCount 永远为 0）
+        ///
         /// </summary>
         public bool IsActive { get; private set; }
 
         /// <summary>
         /// 是否已读（持久化，仅抑制初始加载时的红点）
+        ///
         /// </summary>
         public bool IsRead { get; internal set; }
 
         /// <summary>
         /// 脏标记（本帧待重算）
+        ///
         /// </summary>
         public bool IsDirty { get; internal set; }
 
@@ -77,22 +89,26 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 叶子节点红点数计算函数（不为 null 时由 OnUpdate 自动调用）
+        ///
         /// </summary>
         public Func<int> Calculator { get; internal set; }
 
         /// <summary>
         /// 触发重算的 EventModule 事件 ID 列表
+        ///
         /// </summary>
         public string[] TriggerEvents { get; internal set; }
 
         /// <summary>
         /// TotalCount 变化回调（内部使用，由 RedDotModule 设置）
         /// 用于收集本帧变更节点以批量广播
+        ///
         /// </summary>
         internal Action<RedDotNode> OnTotalCountChanged;
 
         /// <summary>
         /// 节点的子节点列表
+        ///
         /// </summary>
         private readonly List<RedDotNode> m_Children = new();
 
@@ -100,6 +116,7 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 从配置表行创建静态节点
+        ///
         /// </summary>
         /// <param name="row">Luban 配置表行数据</param>
         /// <returns>创建的静态节点</returns>
@@ -117,6 +134,7 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 运行时创建动态节点（默认 DotOnly + Manual + Sum）
+        ///
         /// </summary>
         /// <param name="key">动态节点 Key</param>
         /// <param name="parent">父节点</param>
@@ -136,12 +154,14 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 两阶段构建 — 初始化后设置父节点
+        ///
         /// </summary>
         /// <param name="parent">父节点</param>
         public void SetParent(RedDotNode parent) => Parent = parent;
 
         /// <summary>
         /// 添加子节点
+        ///
         /// </summary>
         /// <param name="child">子节点</param>
         public void AddChild(RedDotNode child)
@@ -157,17 +177,20 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 移除子节点（动态节点归零回收时使用）
+        ///
         /// </summary>
         /// <param name="child">子节点</param>
         public void RemoveChild(RedDotNode child) => m_Children.Remove(child);
 
         /// <summary>
         /// 强制重算 TotalCount 并向上传播（子节点增删后调用）
+        ///
         /// </summary>
         internal void ForceRecalculate() => UpdateTotalCount();
 
         /// <summary>
         /// 设置节点计数并向上传播（仅 RedDotModule 内部调用）
+        ///
         /// </summary>
         /// <param name="count">新的 RawCount 值</param>
         internal void SetCount(int count)
@@ -181,6 +204,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 设置计数但不触发向上传播（批量操作时使用）。
         /// 调用方负责在批量操作完成后调用父节点的 ForceRecalculate。
+        ///
         /// </summary>
         /// <param name="count">新的 RawCount 值</param>
         internal void SetCountSilent(int count)
@@ -196,6 +220,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 更新节点总计数，自动向上传播
         /// 聚合逻辑受 LogicType 和 IsActive 控制
+        ///
         /// </summary>
         private void UpdateTotalCount()
         {
@@ -219,6 +244,7 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// Sum 模式：累加所有子节点的 TotalCount
+        ///
         /// </summary>
         /// <returns>所有子节点 TotalCount 之和</returns>
         private int ComputeChildrenSum()
@@ -234,6 +260,7 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// Any 模式：任一子节点 TotalCount > 0 则为 1
+        ///
         /// </summary>
         /// <returns>存在 TotalCount > 0 的子节点返回 1，否则返回 0</returns>
         private int ComputeChildrenAny()
@@ -249,18 +276,21 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 获取最终计数（考虑 IsActive 和 IsRead）
+        ///
         /// </summary>
         /// <returns>IsActive 为 false 时返回 0，否则返回 TotalCount</returns>
         public int GetFinalCount() => !IsActive ? 0 : TotalCount;
 
         /// <summary>
         /// 获取所有子节点（只读）
+        ///
         /// </summary>
         /// <returns>子节点的只读列表</returns>
         public IReadOnlyList<RedDotNode> GetChildren() => m_Children.AsReadOnly();
 
         /// <summary>
         /// 回收到对象池时清理
+        ///
         /// </summary>
         public void Clear()
         {
