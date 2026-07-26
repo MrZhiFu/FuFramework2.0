@@ -12,17 +12,20 @@ namespace Hotfix.Framework.RedDot
     public readonly struct RedDotKey : IEquatable<RedDotKey>
     {
         /// <summary>
-        /// 内部字符串值（枚举名或动态字符串）        /// </summary>
+        /// 内部字符串值（枚举名或动态字符串）
+        /// </summary>
         private readonly string m_Key;
 
         private RedDotKey(string value) => m_Key = value ?? "";
 
         /// <summary>
-        /// 隐式转换：ERedDotKey 枚举 → RedDotKey（如 ERedDotKey.Mail → "Mail"）        /// </summary>
+        /// 隐式转换：ERedDotKey 枚举 → RedDotKey（如 ERedDotKey.Mail → "Mail"）
+        /// </summary>
         public static implicit operator RedDotKey(ERedDotKey key) => new(key.ToString());
 
         /// <summary>
-        /// 隐式转换：string → RedDotKey        /// </summary>
+        /// 隐式转换：string → RedDotKey
+        /// </summary>
         public static implicit operator RedDotKey(string key) => new(key);
 
         public override string ToString() => m_Key ?? "";

@@ -32,13 +32,15 @@ namespace Hotfix.Framework.RedDot
     public class RedDotModule : ModuleBase
     {
         /// <summary>
-        /// 模块静态单例        /// </summary>
+        /// 模块静态单例
+        /// </summary>
         public static RedDotModule Instance { get; private set; }
 
         #region 节点存储
 
         /// <summary>
-        /// 统一节点字典（Key: RedDotKey，Value: 红点节点）        /// </summary>
+        /// 统一节点字典（Key: RedDotKey，Value: 红点节点）
+        /// </summary>
         private static readonly Dictionary<RedDotKey, RedDotNode> NodeDict = new();
 
         #endregion
@@ -46,11 +48,13 @@ namespace Hotfix.Framework.RedDot
         #region 脏标记批处理
 
         /// <summary>
-        /// 本帧待重算的脏节点集合        /// </summary>
+        /// 本帧待重算的脏节点集合
+        /// </summary>
         private readonly HashSet<RedDotNode> m_DirtyNodeSet = new();
 
         /// <summary>
-        /// 本帧发生变更的节点 Key 集合（用于去重后广播）        /// </summary>
+        /// 本帧发生变更的节点 Key 集合（用于去重后广播）
+        /// </summary>
         private readonly HashSet<RedDotKey> m_ChangedKeySet = new();
 
         #endregion
@@ -58,7 +62,8 @@ namespace Hotfix.Framework.RedDot
         #region 事件订阅反向映射
 
         /// <summary>
-        /// EventModule 事件 ID → 订阅该事件的节点集合        /// </summary>
+        /// EventModule 事件 ID → 订阅该事件的节点集合
+        /// </summary>
         private readonly Dictionary<string, HashSet<RedDotNode>> m_EventToNodes = new();
 
         #endregion
@@ -66,15 +71,18 @@ namespace Hotfix.Framework.RedDot
         #region 已读持久化
 
         /// <summary>
-        /// 已读静态节点 Key 集合（存为 ERedDotKey 的 int 值）        /// </summary>
+        /// 已读静态节点 Key 集合（存为 ERedDotKey 的 int 值）
+        /// </summary>
         private readonly HashSet<int> m_ReadSet = new();
 
         /// <summary>
-        /// 已读状态在 StorageModule 中的 Key        /// </summary>
+        /// 已读状态在 StorageModule 中的 Key
+        /// </summary>
         private const string ReadStorageKey = "ReadSet";
 
         /// <summary>
-        /// 已读状态在 StorageModule 中的文件名        /// </summary>
+        /// 已读状态在 StorageModule 中的文件名
+        /// </summary>
         private const string ReadStorageFile = "RedDotData";
 
         #endregion
@@ -82,7 +90,8 @@ namespace Hotfix.Framework.RedDot
         #region 动态红点
 
         /// <summary>
-        /// 父节点 Key → 已同步的 id 集合（用于 SyncDynamicNode 增量更新）        /// </summary>
+        /// 父节点 Key → 已同步的 id 集合（用于 SyncDynamicNode 增量更新）
+        /// </summary>
         private readonly Dictionary<RedDotKey, HashSet<long>> m_DynamicIdDict = new();
 
         #endregion
@@ -90,7 +99,8 @@ namespace Hotfix.Framework.RedDot
         #region 生命周期
 
         /// <summary>
-        /// 模块初始化：从 Luban 配置表构建红点树        /// </summary>
+        /// 模块初始化：从 Luban 配置表构建红点树
+        /// </summary>
         protected internal override void OnInit()
         {
             Instance = this;
@@ -145,7 +155,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 模块释放：清理事件订阅、回收节点        /// </summary>
+        /// 模块释放：清理事件订阅、回收节点
+        /// </summary>
         protected internal override void OnDispose()
         {
             // 清理事件订阅
@@ -171,7 +182,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 每帧批处理：重算脏节点 → 聚合 → 广播变更        /// </summary>
+        /// 每帧批处理：重算脏节点 → 聚合 → 广播变更
+        /// </summary>
         /// <param name="deltaTime">游戏帧间隔时间</param>
         /// <param name="unscaledDeltaTime">不受时间缩放影响的帧间隔时间</param>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
@@ -212,7 +224,8 @@ namespace Hotfix.Framework.RedDot
         #region 注册
 
         /// <summary>
-        /// 注册红点        /// </summary>
+        /// 注册红点
+        /// </summary>
         /// <param name="key">红点节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
@@ -228,7 +241,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注册动态节点        /// </summary>
+        /// 注册动态节点
+        /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="dynamicKey">动态节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
@@ -243,7 +257,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注册红点（内部实现）        /// </summary>
+        /// 注册红点（内部实现）
+        /// </summary>
         private void RegisterInternal(RedDotNode node, Func<int> calculator, string[] triggerEvents)
         {
             // 先注销旧的红点
@@ -276,7 +291,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销红点        /// </summary>
+        /// 注销红点
+        /// </summary>
         /// <param name="key">红点节点 Key</param>
         public void Unregister(RedDotKey key)
         {
@@ -285,7 +301,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销红点（内部实现）        /// </summary>
+        /// 注销红点（内部实现）
+        /// </summary>
         private void UnregisterInternal(RedDotNode node)
         {
             if (node.TriggerEvents != null)
@@ -308,7 +325,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// EventModule 事件触发回调 — 标记对应节点为脏        /// </summary>
+        /// EventModule 事件触发回调 — 标记对应节点为脏
+        /// </summary>
         private void OnTriggerEvent(object sender, GameEventArgs e)
         {
             if (!m_EventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
@@ -352,7 +370,8 @@ namespace Hotfix.Framework.RedDot
         #region 动态节点
 
         /// <summary>
-        /// 为指定父节点添加动态子节点        /// </summary>
+        /// 为指定父节点添加动态子节点
+        /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="childKey">动态子节点 Key</param>
         /// <returns>创建的动态节点，父节点不存在时返回 null</returns>
@@ -376,7 +395,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数        /// </summary>
+        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
+        /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="ids">当前活跃的 id 列表</param>
         /// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
@@ -442,7 +462,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 生成动态节点 Key（格式：__dynamic__{parentKey}_{id}）        /// </summary>
+        /// 生成动态节点 Key（格式：__dynamic__{parentKey}_{id}）
+        /// </summary>
         private static string FormatDynamicKey(RedDotKey parentKey, long id)
         {
             return $"__dynamic__{parentKey}_{id}";
@@ -453,7 +474,8 @@ namespace Hotfix.Framework.RedDot
         #region 已读持久化
 
         /// <summary>
-        /// 标记红点已读（计数归零 + 持久化，仅静态键持久化）        /// </summary>
+        /// 标记红点已读（计数归零 + 持久化，仅静态键持久化）
+        /// </summary>
         /// <param name="key">红点节点 Key</param>
         public void MarkRead(RedDotKey key)
         {
@@ -472,7 +494,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 检查是否已读        /// </summary>
+        /// 检查是否已读
+        /// </summary>
         /// <param name="key">红点节点 Key</param>
         /// <returns>已读返回 true，否则返回 false</returns>
         public bool IsRead(RedDotKey key)
@@ -486,7 +509,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 从 StorageModule 加载已读状态        /// </summary>
+        /// 从 StorageModule 加载已读状态
+        /// </summary>
         private void LoadReadState()
         {
             if (StorageModule.Instance == null) return;
@@ -508,7 +532,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 保存已读状态到 StorageModule        /// </summary>
+        /// 保存已读状态到 StorageModule
+        /// </summary>
         private void SaveReadState()
         {
             var list = new List<int>(m_ReadSet);
@@ -520,7 +545,8 @@ namespace Hotfix.Framework.RedDot
         #region 清理策略
 
         /// <summary>
-        /// 尝试自动清除红点（仅对 ViewAutoClean 策略的节点生效）        /// </summary>
+        /// 尝试自动清除红点（仅对 ViewAutoClean 策略的节点生效）
+        /// </summary>
         /// <param name="key">红点节点 Key</param>
         public void TryAutoClean(RedDotKey key)
         {
@@ -530,7 +556,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 递归清除节点及所有子节点的计数        /// </summary>
+        /// 递归清除节点及所有子节点的计数
+        /// </summary>
         /// <param name="node">起始节点</param>
         private static void CleanNodeRecursive(RedDotNode node)
         {
@@ -556,7 +583,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 通过 EventModule 批量广播本帧变更        /// </summary>
+        /// 通过 EventModule 批量广播本帧变更
+        /// </summary>
         private void BroadcastChangedKeys()
         {
             var args = RedDotChangedEventArgs.Create();

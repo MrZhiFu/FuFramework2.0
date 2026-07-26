@@ -4,23 +4,28 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
-    /// 红点节点状态        /// </summary>
+    /// 红点节点状态
+    /// </summary>
     public struct RedDotState
     {
         /// <summary>
-        /// 红点数量（TotalCount）        /// </summary>
+        /// 红点数量（TotalCount）
+        /// </summary>
         public int Count;
 
         /// <summary>
-        /// 节点是否激活        /// </summary>
+        /// 节点是否激活
+        /// </summary>
         public bool IsActive;
 
         /// <summary>
-        /// 显示模式        /// </summary>
+        /// 显示模式
+        /// </summary>
         public ERedDotDisplayMode DisplayMode;
 
         /// <summary>
-        /// 静态空状态        /// </summary>
+        /// 静态空状态
+        /// </summary>
         public static readonly RedDotState Empty = new()
         {
             Count       = 0,
