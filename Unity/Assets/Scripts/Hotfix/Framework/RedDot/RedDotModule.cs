@@ -226,7 +226,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注册红点
         /// </summary>
-        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        /// <param name="key">红点节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
         public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
@@ -243,8 +243,8 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注册动态节点
         /// </summary>
-        /// <param name="parentKey">父节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
-        /// <param name="dynamicKey">动态节点 Key（支持 string 隐式转换）</param>
+        /// <param name="parentKey">父节点 Key</param>
+        /// <param name="dynamicKey">动态节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
         /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
         public void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
@@ -293,7 +293,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 注销红点
         /// </summary>
-        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        /// <param name="key">红点节点 Key</param>
         public void Unregister(RedDotKey key)
         {
             if (!NodeDict.TryGetValue(key, out var node)) return;
@@ -344,9 +344,8 @@ namespace Hotfix.Framework.RedDot
         #region 状态查询
 
         /// <summary>
-        /// 查询节点状态（统一 API）
-        /// </summary>
-        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        /// 查询节点状态        /// </summary>
+        /// <param name="key">红点节点 Key</param>
         /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
         public RedDotState GetState(RedDotKey key)
         {
@@ -361,9 +360,8 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 是否存在节点（统一 API）
-        /// </summary>
-        /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
+        /// 是否存在节点        /// </summary>
+        /// <param name="key">红点节点 Key</param>
         /// <returns>存在返回 true，否则返回 false</returns>
         public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
 
@@ -524,7 +522,7 @@ namespace Hotfix.Framework.RedDot
             {
                 m_ReadSet.Add(id);
                 var staticKey = (ERedDotKey)id;
-                RedDotKey key = staticKey; // 隐式转换
+                RedDotKey key = staticKey;
                 if (NodeDict.TryGetValue(key, out var node))
                 {
                     node.IsRead = true;
