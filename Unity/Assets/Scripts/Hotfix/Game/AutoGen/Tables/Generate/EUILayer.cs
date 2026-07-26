@@ -17,9 +17,9 @@ namespace Hotfix.Game.Config
     public enum EUILayer
     {
         /// <summary>
-        /// 世界场景UI
+        /// 场景UI
         /// </summary>
-        WorldUI = 0,
+        SceneUI = 0,
         /// <summary>
         /// 主界面
         /// </summary>
