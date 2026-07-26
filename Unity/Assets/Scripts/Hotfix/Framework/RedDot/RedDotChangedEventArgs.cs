@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ReferencePools;
-using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
     /// 红点变更事件参数（每帧批量广播）
-    /// UI 端订阅 EventModule 的此事件，按 ChangedStaticKeys / ChangedDynamicKeys 过滤刷新
+    /// UI 端订阅 EventModule 的此事件，按 ChangedKeys 过滤刷新
     /// </summary>
     public sealed class RedDotChangedEventArgs : GameEventArgs
     {
@@ -23,22 +22,16 @@ namespace Hotfix.Framework.RedDot
         public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
 
         /// <summary>
-        /// 本帧发生变化的静态节点 Key 列表
+        /// 本帧发生变化的红点节点 Key 列表
         /// </summary>
-        public readonly List<ERedDotKey> ChangedStaticKeys = new();
-
-        /// <summary>
-        /// 本帧发生变化的动态节点 Key 列表
-        /// </summary>
-        public readonly List<string> ChangedDynamicKeys = new();
+        public readonly List<RedDotKey> ChangedKeys = new();
 
         /// <summary>
         /// 清空事件参数数据，用于重用
         /// </summary>
         public override void Clear()
         {
-            ChangedStaticKeys.Clear();
-            ChangedDynamicKeys.Clear();
+            ChangedKeys.Clear();
         }
 
         /// <summary>
