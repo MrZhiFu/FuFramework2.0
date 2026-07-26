@@ -180,17 +180,15 @@ namespace Hotfix.Framework.RedDot
 
         /// <summary>
         /// 设置计数但不触发向上传播（批量操作时使用）。
-        /// 调用方负责在批量操作完成后调用父节点的 ForceRecalculate。
+        /// 调用方负责在批量操作完成后调用父节点的强制重算(ForceRecalculate)。
         /// </summary>
         /// <param name="count">新的 RawCount 值</param>
         internal void SetCountSilent(int count)
         {
             if (RawCount == count) return;
-            RawCount = count;
-            // 叶子节点 TotalCount = RawCount（无子节点），调用方应保证仅对叶子节点使用
+            RawCount   = count;
             TotalCount = count;
             OnTotalCountChanged?.Invoke(this);
-            // 不调用 Parent?.UpdateTotalCount()
         }
 
         /// <summary>
