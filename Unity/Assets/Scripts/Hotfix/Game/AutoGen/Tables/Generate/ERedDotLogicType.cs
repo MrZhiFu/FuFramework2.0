@@ -11,10 +11,13 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 红点计算逻辑类型
+    /// </summary>
     public enum ERedDotLogicType
     {
         /// <summary>
-        /// 求和(业务代码显式调用)
+        /// 求和
         /// </summary>
         Sum = 0,
         /// <summary>

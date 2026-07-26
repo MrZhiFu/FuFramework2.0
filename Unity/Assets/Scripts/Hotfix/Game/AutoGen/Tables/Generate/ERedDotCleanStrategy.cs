@@ -11,14 +11,17 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 红点清除策略类型
+    /// </summary>
     public enum ERedDotCleanStrategy
     {
         /// <summary>
-        /// 手动清除(业务代码显式调用)
+        /// 手动清除(业务逻辑代码判断)
         /// </summary>
         Manual = 0,
         /// <summary>
-        /// 界面关闭时框架自动清除
+        /// 看过自动清除
         /// </summary>
         ViewAutoClean = 1,
     }

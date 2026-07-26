@@ -58,7 +58,7 @@ namespace Hotfix.Game.UI
             var itemConfig = ConfigModule.Instance.GetConfig<TbItem>().Get(selectBagItem.ItemId);
             txtName.text = itemConfig.Name;
             txtDesc.text = itemConfig.Desc;
-            var eIsCanUse = itemConfig.CanUse == ItemUseType.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
+            var eIsCanUse = itemConfig.CanUse == EItemUseType.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
             SetController(eIsCanUse);
         }
 

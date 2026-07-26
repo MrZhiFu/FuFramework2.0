@@ -20,12 +20,12 @@ namespace Hotfix.Game.UI
         private class ItemTypeData
         {
             /// 道具类型
-            public ItemType Type { get; }
+            public EItemType Type { get; }
 
             /// 分类名称
             public string Name { get; }
 
-            public ItemTypeData(ItemType type, string name)
+            public ItemTypeData(EItemType type, string name)
             {
                 Type = type;
                 Name = name;
@@ -69,11 +69,11 @@ namespace Hotfix.Game.UI
             m_BagItems = new List<BagItem>();
             m_Tabs = new List<ItemTypeData>
             {
-                new(ItemType.Item, "道具"),
-                new(ItemType.Equip, "装备"),
-                new(ItemType.Fragment, "碎片"),
-                new(ItemType.Material, "材料"),
-                new(ItemType.Expendable, "消耗品"),
+                new(EItemType.Item, "道具"),
+                new(EItemType.Equip, "装备"),
+                new(EItemType.Fragment, "碎片"),
+                new(EItemType.Material, "材料"),
+                new(EItemType.Expendable, "消耗品"),
             };
         }
 

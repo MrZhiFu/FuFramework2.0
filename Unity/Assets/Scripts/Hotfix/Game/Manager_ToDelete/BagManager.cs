@@ -97,7 +97,7 @@ namespace Hotfix.Game.Manager_ToDelete
         /// </summary>
         /// <param name="bagType">背包类型</param>
         /// <returns></returns>
-        public List<BagItem> GetBagItemsByType(ItemType bagType)
+        public List<BagItem> GetBagItemsByType(EItemType bagType)
         {
             var result = new List<BagItem>(m_ItemDic.Count);
             var tbItemConfig = ConfigModule.Instance.GetConfig<TbItem>();

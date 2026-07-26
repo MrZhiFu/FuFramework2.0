@@ -53,15 +53,15 @@ namespace Hotfix.Game.Config.Tables
         /// </summary>
         public ERedDotKey? ParentId { private set; get; }
         /// <summary>
-        /// 显示模式(仅显示红点/红点数目/自动)
+        /// 显示模式
         /// </summary>
         public ERedDotDisplayMode DisplayMode { private set; get; }
         /// <summary>
-        /// 清理策略(手动/看过即清理)
+        /// 清除策略
         /// </summary>
         public ERedDotCleanStrategy CleanStrategy { private set; get; }
         /// <summary>
-        /// 计算逻辑类型(求和/任意一个即可)
+        /// 计算逻辑类型
         /// </summary>
         public ERedDotLogicType LogicType { private set; get; }
         /// <summary>

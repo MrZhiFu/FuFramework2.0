@@ -11,20 +11,31 @@
 
 namespace Hotfix.Game.Config
 { 
-    public enum ItemUseType
+    /// <summary>
+    /// 道具类型
+    /// </summary>
+    public enum EItemType
     {
         /// <summary>
-        /// 不可使用
+        /// 道具
         /// </summary>
-        CanNot = 0,
+        Item = 1,
         /// <summary>
-        /// 可单个使用
+        /// 消耗品
         /// </summary>
-        UseOne = 1,
+        Expendable = 2,
         /// <summary>
-        /// 可一键全部使用
+        /// 装备
         /// </summary>
-        UseTotal = 2,
+        Equip = 3,
+        /// <summary>
+        /// 碎片
+        /// </summary>
+        Fragment = 4,
+        /// <summary>
+        /// 材料
+        /// </summary>
+        Material = 5,
     }
 
 } 

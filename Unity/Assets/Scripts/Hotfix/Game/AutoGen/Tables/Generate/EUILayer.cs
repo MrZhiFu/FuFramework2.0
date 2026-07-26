@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// UI界面层级
+    /// </summary>
     public enum EUILayer
     {
         /// <summary>

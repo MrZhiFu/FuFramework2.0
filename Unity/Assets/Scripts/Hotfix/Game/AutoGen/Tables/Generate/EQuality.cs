@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 品质
+    /// </summary>
     public enum EQuality
     {
         /// <summary>

@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 实体组
+    /// </summary>
     public enum EEntityGroup
     {
         /// <summary>

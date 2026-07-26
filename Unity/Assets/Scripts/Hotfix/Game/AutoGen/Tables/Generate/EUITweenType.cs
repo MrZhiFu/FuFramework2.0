@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// UI界面动画类型
+    /// </summary>
     public enum EUITweenType
     {
         /// <summary>

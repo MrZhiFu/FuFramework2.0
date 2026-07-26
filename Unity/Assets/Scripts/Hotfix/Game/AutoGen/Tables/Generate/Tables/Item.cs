@@ -14,7 +14,7 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class Item : BeanBase
     {
-        public Item(int Id, string Name, string Desc, string Icon, string Bg, EQuality Quality, ItemType Type, ItemSubType SubType, ItemUseType CanUse) 
+        public Item(int Id, string Name, string Desc, string Icon, string Bg, EQuality Quality, EItemType Type, EItemSubType SubType, EItemUseType CanUse) 
         {
             this.Id = Id;
             this.Name = Name;
@@ -36,9 +36,9 @@ namespace Hotfix.Game.Config.Tables
             { if(!_buf["icon"].IsString) { throw new SerializationException(); }  Icon = _buf["icon"]; }
             { if(!_buf["bg"].IsString) { throw new SerializationException(); }  Bg = _buf["bg"]; }
             { if(!_buf["quality"].IsNumber) { throw new SerializationException(); }  Quality = (EQuality)_buf["quality"].AsInt; }
-            { if(!_buf["type"].IsNumber) { throw new SerializationException(); }  Type = (ItemType)_buf["type"].AsInt; }
-            { if(!_buf["sub_type"].IsNumber) { throw new SerializationException(); }  SubType = (ItemSubType)_buf["sub_type"].AsInt; }
-            { if(!_buf["can_use"].IsNumber) { throw new SerializationException(); }  CanUse = (ItemUseType)_buf["can_use"].AsInt; }
+            { if(!_buf["type"].IsNumber) { throw new SerializationException(); }  Type = (EItemType)_buf["type"].AsInt; }
+            { if(!_buf["sub_type"].IsNumber) { throw new SerializationException(); }  SubType = (EItemSubType)_buf["sub_type"].AsInt; }
+            { if(!_buf["can_use"].IsNumber) { throw new SerializationException(); }  CanUse = (EItemUseType)_buf["can_use"].AsInt; }
 
             // Localization Key Begin
             Name_Localization_Key = Name;
@@ -87,15 +87,15 @@ namespace Hotfix.Game.Config.Tables
         /// <summary>
         /// 类型
         /// </summary>
-        public ItemType Type { private set; get; }
+        public EItemType Type { private set; get; }
         /// <summary>
         /// 子类型
         /// </summary>
-        public ItemSubType SubType { private set; get; }
+        public EItemSubType SubType { private set; get; }
         /// <summary>
         /// 能否使用
         /// </summary>
-        public ItemUseType CanUse { private set; get; }
+        public EItemUseType CanUse { private set; get; }
         public const int __ID__ = -1513240324;
         public override int GetTypeId() => __ID__;
 

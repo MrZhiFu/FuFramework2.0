@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 引导步骤类型
+    /// </summary>
     public enum EStepType
     {
         /// <summary>

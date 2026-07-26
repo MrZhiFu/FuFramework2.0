@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 声音组
+    /// </summary>
     public enum ESoundGroup
     {
         /// <summary>

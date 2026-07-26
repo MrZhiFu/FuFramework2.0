@@ -11,32 +11,23 @@
 
 namespace Hotfix.Game.Config
 { 
-    public enum ItemSubType
+    /// <summary>
+    /// 道具使用类型
+    /// </summary>
+    public enum EItemUseType
     {
         /// <summary>
-        /// 无
+        /// 不可使用
         /// </summary>
-        None = 0,
+        CanNot = 0,
         /// <summary>
-        /// 武器
+        /// 可单个使用
         /// </summary>
-        Weapon = 1,
+        UseOne = 1,
         /// <summary>
-        /// 胸
+        /// 可一键全部使用
         /// </summary>
-        Chest = 2,
-        /// <summary>
-        /// 腰带
-        /// </summary>
-        Belt = 3,
-        /// <summary>
-        /// 鞋子
-        /// </summary>
-        Boot = 4,
-        /// <summary>
-        /// 戒指
-        /// </summary>
-        Ring = 5,
+        UseTotal = 2,
     }
 
 } 

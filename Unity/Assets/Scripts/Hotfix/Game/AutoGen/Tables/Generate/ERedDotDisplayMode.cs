@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 红点显示类型
+    /// </summary>
     public enum ERedDotDisplayMode
     {
         /// <summary>
@@ -22,7 +25,7 @@ namespace Hotfix.Game.Config
         /// </summary>
         DotNumber = 1,
         /// <summary>
-        /// 自动
+        /// 红点数&gt;1时才显示数字，否则只显示红点
         /// </summary>
         Auto = 2,
     }

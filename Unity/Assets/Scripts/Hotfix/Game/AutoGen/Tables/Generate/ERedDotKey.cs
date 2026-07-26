@@ -11,6 +11,9 @@
 
 namespace Hotfix.Game.Config
 { 
+    /// <summary>
+    /// 红点枚举类型
+    /// </summary>
     public enum ERedDotKey
     {
         /// <summary>
