@@ -28,13 +28,13 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public static implicit operator RedDotKey(string key) => new(key);
 
-        public override string ToString() => m_Value;
+        public override string ToString() => m_Value ?? "";
 
         public bool Equals(RedDotKey other) => string.Equals(m_Value, other.m_Value);
 
         public override bool Equals(object obj) => obj is RedDotKey other && Equals(other);
 
-        public override int GetHashCode() => m_Value.GetHashCode();
+        public override int GetHashCode() => m_Value?.GetHashCode() ?? 0;
 
         public static bool operator ==(RedDotKey left, RedDotKey right) => left.Equals(right);
 
