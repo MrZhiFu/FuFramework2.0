@@ -15,12 +15,12 @@ namespace Hotfix.Framework.RedDot
     /// <summary>
     /// 红点管理模块
     /// 功能：
-    ///     1. 树形结构管理 — 支持父子节点层级关系，LogicType（Any/Sum）控制聚合
+    ///     1. 树形结构管理 — 支持父子节点层级关系，LogicType(Any/Sum)控制聚合
     ///     2. Calculator — 业务注册 Func&lt;int&gt; 计算函数，OnUpdate 批处理重算
-    ///     3. EventModule 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 Key 过滤
+    ///     3. 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 Key 过滤
     ///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
     ///     5. 动态红点 — SyncDynamicNode 批量管理动态子节点
-    ///     6. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态（仅静态键）
+    ///     6. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态(仅静态键)
     ///
     /// 使用流程：
     ///     1. 在 Luban 配置表中定义红点树结构
@@ -36,42 +36,38 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public static RedDotModule Instance { get; private set; }
 
-        #region 节点存储
-
         /// <summary>
-        /// 统一节点字典（Key: RedDotKey，Value: 红点节点）
+        /// 所有红点字典(Key: RedDotKey，Value: 红点节点)
         /// </summary>
         private static readonly Dictionary<RedDotKey, RedDotNode> NodeDict = new();
 
-        #endregion
+        /// <summary>
+        /// 动态子节点字典(Key：父节点，Value：父节点下的所有动态子节点集合)(用于 SyncDynamicNode 增量更新)
+        /// </summary>
+        private readonly Dictionary<RedDotKey, HashSet<long>> m_DynamicIdDict = new();
 
-        #region 脏标记批处理
 
         /// <summary>
-        /// 本帧待重算的脏节点集合
+        /// 本帧待重算的脏节点集合，用于批量重算节点
         /// </summary>
         private readonly HashSet<RedDotNode> m_DirtyNodeSet = new();
 
         /// <summary>
-        /// 本帧发生变更的节点 Key 集合（用于去重后广播）
+        /// 本帧发生变更的节点 Key 集合(用于去重后广播)
         /// </summary>
         private readonly HashSet<RedDotKey> m_ChangedKeySet = new();
 
-        #endregion
-
-        #region 事件订阅反向映射
 
         /// <summary>
-        /// EventModule 事件 ID → 订阅该事件的节点集合
+        /// 事件对应的节点字典 (key：事件ID，Value：订阅此事件的节点集合)(用于反订阅节点的事件))
         /// </summary>
         private readonly Dictionary<string, HashSet<RedDotNode>> m_EventToNodes = new();
 
-        #endregion
 
         #region 已读持久化
 
         /// <summary>
-        /// 已读静态节点 Key 集合（存为 ERedDotKey 的 int 值）
+        /// 已读静态节点 Key 集合(存为 ERedDotKey 的 int 值)
         /// </summary>
         private readonly HashSet<int> m_ReadSet = new();
 
@@ -84,15 +80,6 @@ namespace Hotfix.Framework.RedDot
         /// 已读状态在 StorageModule 中的文件名
         /// </summary>
         private const string ReadStorageFile = "RedDotData";
-
-        #endregion
-
-        #region 动态红点
-
-        /// <summary>
-        /// 父节点 Key → 已同步的 id 集合（用于 SyncDynamicNode 增量更新）
-        /// </summary>
-        private readonly Dictionary<RedDotKey, HashSet<long>> m_DynamicIdDict = new();
 
         #endregion
 
@@ -212,7 +199,7 @@ namespace Hotfix.Framework.RedDot
                 m_DirtyNodeSet.Clear();
             }
 
-            // 广播所有本帧累积的变更（脏节点 + MarkRead 等）
+            // 广播所有本帧累积的变更(脏节点 + MarkRead 等)
             if (m_ChangedKeySet.Count > 0)
             {
                 BroadcastChangedKeys();
@@ -228,7 +215,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         /// <param name="key">红点节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
+        /// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
         public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
         {
             if (!NodeDict.TryGetValue(key, out var node))
@@ -246,7 +233,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="dynamicKey">动态节点 Key</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的 EventModule 事件 ID 列表（可变参数）</param>
+        /// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
         public void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
         {
             var node = AddDynamicChild(parentKey, dynamicKey);
@@ -257,7 +244,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注册红点（内部实现）
+        /// 注册红点(内部实现)
         /// </summary>
         /// <param name="node">目标节点</param>
         /// <param name="calculator">红点数量计算函数</param>
@@ -272,7 +259,7 @@ namespace Hotfix.Framework.RedDot
 
             if (triggerEvents == null || triggerEvents.Length == 0) return;
 
-            // 订阅 EventModule 事件
+            // 订阅事件
             foreach (var eventId in triggerEvents)
             {
                 if (string.IsNullOrEmpty(eventId)) continue;
@@ -304,7 +291,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销红点（内部实现）
+        /// 注销红点(内部实现)
         /// </summary>
         /// <param name="node">目标节点</param>
         private void UnregisterInternal(RedDotNode node)
@@ -329,7 +316,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// EventModule 事件触发回调 — 标记对应节点为脏
+        ///  事件触发回调 — 标记对应节点为脏
         /// </summary>
         /// <param name="sender">事件发送者</param>
         /// <param name="e">事件参数</param>
@@ -416,22 +403,26 @@ namespace Hotfix.Framework.RedDot
 
             if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
             {
-                existing = new HashSet<long>();
+                existing                   = new HashSet<long>();
                 m_DynamicIdDict[parentKey] = existing;
             }
 
             // 收集新增 id
             var newIds = new HashSet<long>();
             foreach (var id in ids)
+            {
                 newIds.Add(id);
+            }
 
             // 找出待移除的 id
             var removedIds = new List<long>();
             foreach (var id in existing)
-                if (!newIds.Contains(id))
-                    removedIds.Add(id);
+            {
+                if (newIds.Contains(id)) continue;
+                removedIds.Add(id);
+            }
 
-            // Phase 1: 移除（跳过单次 parent 重算，最后统一重算）
+            // 阶段1: 移除(跳过单次 parent 重算，最后统一重算)
             foreach (var id in removedIds)
             {
                 var childKey = FormatDynamicKey(parentKey, id);
@@ -442,10 +433,11 @@ namespace Hotfix.Framework.RedDot
                     NodeDict.Remove(childKey);
                     ReferencePool.Release(node);
                 }
+
                 existing.Remove(id);
             }
 
-            // Phase 2: 新增（用 SetCountSilent 跳过单次 parent 重算）
+            // 阶段2: 新增(用 SetCountSilent 跳过单次 parent 重算)
             foreach (var id in ids)
             {
                 if (existing.Contains(id)) continue;
@@ -457,33 +449,30 @@ namespace Hotfix.Framework.RedDot
                 if (node == null) continue;
 
                 RegisterInternal(node, () => calculateFun(idCapture), null);
-                var count = calculateFun(idCapture);
+                var count              = calculateFun(idCapture);
                 if (node.IsRead) count = 0;
                 node.SetCountSilent(count);
                 existing.Add(id);
             }
 
-            // Phase 3: 一次性重算父节点并向上传播
+            // 阶段3: 一次性重算父节点并向上传播
             parentNode.ForceRecalculate();
         }
 
         /// <summary>
-        /// 生成动态节点 Key（格式：__dynamic__{parentKey}_{id}）
+        /// 生成动态节点 Key(格式：__dynamic__{parentKey}_{id})
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
         /// <param name="id">动态节点 ID</param>
         /// <returns>格式化后的动态节点 Key</returns>
-        private static string FormatDynamicKey(RedDotKey parentKey, long id)
-        {
-            return $"__dynamic__{parentKey}_{id}";
-        }
+        private static string FormatDynamicKey(RedDotKey parentKey, long id) => $"__dynamic__{parentKey}_{id}";
 
         #endregion
 
         #region 已读持久化
 
         /// <summary>
-        /// 标记红点已读（计数归零 + 持久化，仅静态键持久化）
+        /// 标记红点已读(计数归零 + 持久化，仅静态键持久化)
         /// </summary>
         /// <param name="key">红点节点 Key</param>
         public void MarkRead(RedDotKey key)
@@ -493,7 +482,7 @@ namespace Hotfix.Framework.RedDot
             node.IsRead = true;
             node.SetCount(0);
 
-            // 仅静态枚举键进行持久化（通过 RedDotNode.IsStatic 标记判断）
+            // 仅静态枚举键进行持久化(通过 RedDotNode.IsStatic 标记判断)
             if (node.IsStatic)
             {
                 m_ReadSet.Add((int)(ERedDotKey)Enum.Parse(typeof(ERedDotKey), key.ToString()));
@@ -530,8 +519,8 @@ namespace Hotfix.Framework.RedDot
             foreach (var id in list)
             {
                 m_ReadSet.Add(id);
-                var staticKey = (ERedDotKey)id;
-                RedDotKey key = staticKey;
+                var       staticKey = (ERedDotKey)id;
+                RedDotKey key       = staticKey;
                 if (NodeDict.TryGetValue(key, out var node))
                 {
                     node.IsRead = true;
@@ -554,7 +543,7 @@ namespace Hotfix.Framework.RedDot
         #region 清理策略
 
         /// <summary>
-        /// 尝试自动清除红点（仅对 ViewAutoClean 策略的节点生效）
+        /// 尝试自动清除红点(仅对 ViewAutoClean 策略的节点生效)
         /// </summary>
         /// <param name="key">红点节点 Key</param>
         public void TryAutoClean(RedDotKey key)
@@ -582,7 +571,7 @@ namespace Hotfix.Framework.RedDot
         #region 内部方法
 
         /// <summary>
-        /// TotalCount 变化回调（注入到每个 RedDotNode，在 UpdateTotalCount 中触发）
+        /// TotalCount 变化回调(注入到每个 RedDotNode，在 UpdateTotalCount 中触发)
         /// 收集本帧变更的节点 Key，供 OnUpdate 批量广播
         /// </summary>
         /// <param name="node">发生变化的节点</param>
@@ -592,7 +581,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 通过 EventModule 批量广播本帧变更
+        /// 批量广播本帧变更
         /// </summary>
         private void BroadcastChangedKeys()
         {

@@ -14,9 +14,9 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 内部字符串值（枚举名或动态字符串）
         /// </summary>
-        private readonly string m_Key;
+        private readonly string m_Value;
 
-        private RedDotKey(string value) => m_Key = value ?? "";
+        private RedDotKey(string value) => m_Value = value ?? "";
 
         /// <summary>
         /// 隐式转换：ERedDotKey 枚举 → RedDotKey（如 ERedDotKey.Mail → "Mail"）
@@ -32,13 +32,13 @@ namespace Hotfix.Framework.RedDot
         /// <returns>对应的 RedDotKey</returns>
         public static implicit operator RedDotKey(string key) => new(key);
 
-        public override string ToString() => m_Key ?? "";
+        public override string ToString() => m_Value ?? "";
 
-        public bool Equals(RedDotKey other) => string.Equals(m_Key, other.m_Key);
+        public bool Equals(RedDotKey other) => string.Equals(m_Value, other.m_Value);
 
         public override bool Equals(object obj) => obj is RedDotKey other && Equals(other);
 
-        public override int GetHashCode() => m_Key?.GetHashCode() ?? 0;
+        public override int GetHashCode() => m_Value?.GetHashCode() ?? 0;
 
         public static bool operator ==(RedDotKey left, RedDotKey right) => left.Equals(right);
 

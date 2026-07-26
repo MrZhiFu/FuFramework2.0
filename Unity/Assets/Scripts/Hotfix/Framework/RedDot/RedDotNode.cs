@@ -81,7 +81,7 @@ namespace Hotfix.Framework.RedDot
         public Func<int> Calculator { get; internal set; }
 
         /// <summary>
-        /// 触发重算的 EventModule 事件 ID 列表
+        /// 触发重算的事件ID列表
         /// </summary>
         public string[] TriggerEvents { get; internal set; }
 
@@ -106,8 +106,8 @@ namespace Hotfix.Framework.RedDot
         public static RedDotNode Create(RedDotRow row)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.Key            = row.Id;
-            node.IsStatic       = true;
+            node.Key           = row.Id;
+            node.IsStatic      = true;
             node.DisplayMode   = row.DisplayMode;
             node.CleanStrategy = row.CleanStrategy;
             node.LogicType     = row.LogicType;
@@ -124,9 +124,9 @@ namespace Hotfix.Framework.RedDot
         public static RedDotNode CreateDynamic(RedDotKey key, RedDotNode parent)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.Key            = key;
-            node.IsStatic       = false;
-            node.Parent         = parent;
+            node.Key           = key;
+            node.IsStatic      = false;
+            node.Parent        = parent;
             node.DisplayMode   = ERedDotDisplayMode.DotOnly;
             node.CleanStrategy = ERedDotCleanStrategy.Manual;
             node.LogicType     = ERedDotLogicType.Sum;
