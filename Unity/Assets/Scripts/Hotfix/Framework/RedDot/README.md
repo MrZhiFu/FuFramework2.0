@@ -83,7 +83,6 @@ public static RedDotModule Instance { get; private set; }
 ```csharp
 // === Calculator 注册 ===
 void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
-void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
 void Unregister(RedDotKey key)
 
 // === 状态查询 ===
@@ -221,17 +220,11 @@ private void OnRedDotChanged(object sender, GameEventArgs e)
 ### 5.4 动态红点
 
 ```csharp
-// 单个动态节点：一步创建 + 注册（事件驱动）
-RedDotModule.Instance.Register(ERedDotKey.Mail, "Mail_1001", () => GetMailCount(1001), "MailChanged");
-
-// 批量同步（列表变化时调用，框架自动增删）
+// 批量同步（列表变化时调用，框架自动增删动态节点）
 RedDotModule.Instance.SyncDynamicNode(ERedDotKey.Mail, mailIds, id => GetMailCount(id));
 
-// 注销动态节点
-RedDotModule.Instance.Unregister("Mail_1001");
-
 // 查询动态节点状态
-var state = RedDotModule.Instance.GetState("Mail_1001");
+var state = RedDotModule.Instance.GetState("__dynamic__Mail_1001");
 ```
 
 ### 5.5 已读持久化
@@ -290,7 +283,7 @@ RedDot/
 2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Calculator 自动重算
 3. **CompRedDot 零侵入**：UI 层优先使用 CompRedDot 组件，在 FGUI 编辑器中配置 `customData` 即可，无需写代码
 4. **已读持久化**：对需要跨会话保持已读状态的红点，使用 `MarkRead`
-5. **动态红点按需管理**：单个动态节点用 `Register(parentKey, key, ...)` 一步创建，列表场景用 `SyncDynamicNode` 批量同步
+5. **动态红点统一管理**：统一使用 `SyncDynamicNode` 批量同步，框架自动增量更新
 6. **聚合逻辑按需选择**：根节点用 Sum 汇总所有子红点，菜单入口用 Any 检测是否有新内容
 
 ## 9. 注意事项

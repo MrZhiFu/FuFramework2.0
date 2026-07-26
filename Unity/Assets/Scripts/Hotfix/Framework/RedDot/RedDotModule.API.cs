@@ -32,22 +32,6 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注册动态节点
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="dynamicKey">动态节点 Key</param>
-        /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
-        public void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
-        {
-            var node = AddDynamicChild(parentKey, dynamicKey);
-            if (node == null) return;
-
-            RegisterInternal(node, calculator, triggerEvents);
-            node.SetCount(calculator());
-        }
-
-        /// <summary>
         /// 注销红点
         /// </summary>
         /// <param name="key">红点节点 Key</param>
