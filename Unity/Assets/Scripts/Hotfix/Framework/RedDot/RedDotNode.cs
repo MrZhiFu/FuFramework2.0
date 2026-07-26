@@ -1,30 +1,26 @@
 using System;
 using System.Collections.Generic;
-using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
+using Hotfix.Game.Config.Tables;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
     /// <summary>
     /// 红点节点
-    /// 支持两种节点类型：
-    ///     1. 静态节点：由 Luban 配置表定义，通过 ERedDotKey 枚举标识
-    ///     2. 动态节点：由运行时创建（如道具实例红点），通过 string 标识
+    /// 支持两种来源：
+    ///     1. 静态节点：由 Luban 配置表定义
+    ///     2. 动态节点：由运行时创建（如道具实例红点）
+    /// 统一通过 RedDotKey 标识
     /// </summary>
     public class RedDotNode : IReference
     {
         /// <summary>
-        /// 静态节点 Key（配置表定义的节点），动态节点为 null
+        /// 节点统一标识符
         /// </summary>
-        public ERedDotKey? StaticKey { get; private set; }
-
-        /// <summary>
-        /// 动态节点 Key（运行时创建的节点），静态节点为 null
-        /// </summary>
-        public string DynamicKey { get; private set; }
+        public RedDotKey Key { get; private set; }
 
         /// <summary>
         /// 节点的原始计数（自身，不含子节点）
@@ -60,7 +56,7 @@ namespace Hotfix.Framework.RedDot
         /// 是否激活（false 时 TotalCount 永远为 0）
         /// </summary>
         public bool IsActive { get; private set; }
-        
+
         /// <summary>
         /// 是否已读（持久化，仅抑制初始加载时的红点）
         /// </summary>
@@ -97,43 +93,32 @@ namespace Hotfix.Framework.RedDot
         #endregion
 
         /// <summary>
-        /// 从配置表创建静态节点
+        /// 从配置表行创建静态节点
         /// </summary>
-        /// <param name="key">静态节点 Key</param>
-        /// <param name="parent">父节点</param>
-        /// <param name="displayMode">显示模式</param>
-        /// <param name="cleanStrategy">清理策略</param>
-        /// <param name="logicType">聚合逻辑类型</param>
-        /// <param name="isActive">是否激活</param>
+        /// <param name="row">Luban 配置表行数据</param>
         /// <returns>创建的静态节点</returns>
-        public static RedDotNode Create(ERedDotKey key,
-                                        RedDotNode parent,
-                                        ERedDotDisplayMode displayMode,
-                                        ERedDotCleanStrategy cleanStrategy,
-                                        ERedDotLogicType logicType,
-                                        bool isActive)
+        public static RedDotNode Create(RedDot row)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.StaticKey     = key;
-            node.Parent        = parent;
-            node.DisplayMode   = displayMode;
-            node.CleanStrategy = cleanStrategy;
-            node.LogicType     = logicType;
-            node.IsActive      = isActive;
+            node.Key            = row.Id;
+            node.DisplayMode   = row.DisplayMode;
+            node.CleanStrategy = row.CleanStrategy;
+            node.LogicType     = row.LogicType;
+            node.IsActive      = row.IsActive;
             return node;
         }
 
         /// <summary>
         /// 运行时创建动态节点（默认 DotOnly + Manual + Sum）
         /// </summary>
-        /// <param name="key">动态节点 Key（string）</param>
+        /// <param name="key">动态节点 Key</param>
         /// <param name="parent">父节点</param>
         /// <returns>创建的动态节点</returns>
-        public static RedDotNode CreateDynamic(string key, RedDotNode parent)
+        public static RedDotNode CreateDynamic(RedDotKey key, RedDotNode parent)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
-            node.DynamicKey    = key;
-            node.Parent        = parent;
+            node.Key            = key;
+            node.Parent         = parent;
             node.DisplayMode   = ERedDotDisplayMode.DotOnly;
             node.CleanStrategy = ERedDotCleanStrategy.Manual;
             node.LogicType     = ERedDotLogicType.Sum;
@@ -155,7 +140,7 @@ namespace Hotfix.Framework.RedDot
         {
             if (m_Children.Contains(child))
             {
-                FuLogger.LogWarning($"[RedDotNode] 无法添加重复的子节点, 在节点{StaticKey}下已经存在子节点{child.StaticKey}");
+                FuLogger.LogWarning($"[RedDotNode] 无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
                 return;
             }
 
@@ -256,8 +241,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         public void Clear()
         {
-            StaticKey           = null;
-            DynamicKey          = null;
+            Key                 = default;
             Parent              = null;
             RawCount            = 0;
             TotalCount          = 0;
