@@ -6,6 +6,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 
 ## 2. 核心特性
 
+- **统一 Key**：`RedDotKey` 结构体统一标识符，支持 `ERedDotKey` 和 `string` 隐式转换，消除双轨 API
 - **Pull 模式**：业务模块通过 `Register` 注册 `Func<int>` 计算函数，框架自动管理重算时机
 - **OnUpdate 批处理**：多个脏节点在同一帧内统一重算、聚合、广播，避免重复计算
 - **EventModule 广播**：通过 `RedDotChangedEventArgs` 批量通知变更节点，UI 端按 Key 过滤刷新
@@ -82,29 +83,23 @@ public static RedDotModule Instance { get; private set; }
 
 ```csharp
 // === Calculator 注册 ===
-void Register(ERedDotKey key, Func<int> calculator, params string[] triggerEvents)                       // 静态节点
-void Register(ERedDotKey parentKey, string dynamicKey, Func<int> calculator, ...triggerEvents)  // 动态节点（一步创建+注册）
-void Register(string key, Func<int> calculator, params string[] triggerEvents)                  // 已有动态节点追加
-void Unregister(ERedDotKey key)
-void Unregister(string key)
+void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
+void Register(RedDotKey parentKey, RedDotKey dynamicKey, Func<int> calculator, params string[] triggerEvents)
+void Unregister(RedDotKey key)
 
 // === 状态查询 ===
-RedDotState GetState(ERedDotKey key)
-RedDotState GetState(string key)
-bool HasNode(ERedDotKey key)
-bool HasNode(string key)
+RedDotState GetState(RedDotKey key)
+bool HasNode(RedDotKey key)
 
 // === 动态红点批量同步 ===
-void SyncDynamicNode(ERedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculator)
+void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculator)
 
 // === 已读持久化 ===
-void MarkRead(ERedDotKey key)
-void MarkRead(string key)
-bool IsRead(ERedDotKey key)
-bool IsRead(string key)
+void MarkRead(RedDotKey key)
+bool IsRead(RedDotKey key)
 
 // === 清理策略 ===
-void TryAutoClean(ERedDotKey key)
+void TryAutoClean(RedDotKey key)
 ```
 
 ### 4.2 RedDotNode
@@ -117,8 +112,7 @@ void TryAutoClean(ERedDotKey key)
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| `StaticKey` | `ERedDotKey?` | 静态节点 Key，动态节点为 null |
-| `DynamicKey` | `string` | 动态节点 Key，静态节点为 null |
+| `Key` | `RedDotKey` | 统一节点标识符（支持 `ERedDotKey` 或 `string` 隐式转换） |
 | `RawCount` | `int` | 节点的原始计数 |
 | `TotalCount` | `int` | 节点的总计数（自身 + 所有子节点） |
 | `Parent` | `RedDotNode` | 父节点 |
@@ -153,8 +147,7 @@ public struct RedDotState
 public sealed class RedDotChangedEventArgs : GameEventArgs
 {
     public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
-    public readonly List<ERedDotKey> ChangedStaticKeys;   // 变化的静态节点
-    public readonly List<string> ChangedDynamicKeys;       // 变化的动态节点
+    public readonly List<RedDotKey> ChangedKeys;   // 本帧变化的节点 Key 列表
     public static RedDotChangedEventArgs Create();
 }
 ```
@@ -267,8 +260,8 @@ RedDotModule.Instance.TryAutoClean(ERedDotKey.Mail);
 
 ```text
 RedDot/
-├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Calculator、状态查询、动态节点）
-├── RedDotModule.Feature.cs        # 功能扩展（动态红点、已读持久化、清理策略、内部广播）
+├── RedDotKey.cs                   # 统一标识符结构体
+├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Calculator、状态查询、动态节点、持久化、广播）
 ├── RedDotNode.cs                  # 红点节点
 ├── RedDotState.cs                 # 状态查询结构体
 ├── RedDotChangedEventArgs.cs      # EventModule 广播事件参数
