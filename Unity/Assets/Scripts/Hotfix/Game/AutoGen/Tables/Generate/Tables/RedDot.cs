@@ -14,7 +14,7 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class RedDot : BeanBase
     {
-        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IsActive, int ShowOrder) 
+        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IsActive) 
         {
             this.Id = Id;
             this.ParentId = ParentId;
@@ -22,7 +22,6 @@ namespace Hotfix.Game.Config.Tables
             this.CleanStrategy = CleanStrategy;
             this.LogicType = LogicType;
             this.IsActive = IsActive;
-            this.ShowOrder = ShowOrder;
             PostInit();
         }
 
@@ -34,7 +33,6 @@ namespace Hotfix.Game.Config.Tables
             { if(!_buf["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)_buf["CleanStrategy"].AsInt; }
             { if(!_buf["LogicType"].IsNumber) { throw new SerializationException(); }  LogicType = (ERedDotLogicType)_buf["LogicType"].AsInt; }
             { if(!_buf["IsActive"].IsBoolean) { throw new SerializationException(); }  IsActive = _buf["IsActive"]; }
-            { if(!_buf["ShowOrder"].IsNumber) { throw new SerializationException(); }  ShowOrder = _buf["ShowOrder"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -55,31 +53,26 @@ namespace Hotfix.Game.Config.Tables
         /// </summary>
         public ERedDotKey? ParentId { private set; get; }
         /// <summary>
-        /// 显示模式
+        /// 显示模式(仅显示红点/红点数目/自动)
         /// </summary>
         public ERedDotDisplayMode DisplayMode { private set; get; }
         /// <summary>
-        /// 清理策略
+        /// 清理策略(手动/看过即清理)
         /// </summary>
         public ERedDotCleanStrategy CleanStrategy { private set; get; }
         /// <summary>
-        /// 计算逻辑类型
+        /// 计算逻辑类型(求和/任意一个即可)
         /// </summary>
         public ERedDotLogicType LogicType { private set; get; }
         /// <summary>
-        /// 是否激活
+        /// 是否激活(总开关)
         /// </summary>
         public bool IsActive { private set; get; }
-        /// <summary>
-        /// 显示优先级
-        /// </summary>
-        public int ShowOrder { private set; get; }
         public const int __ID__ = 2013705889;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)
         {
-            
             
             
             
@@ -101,7 +94,6 @@ namespace Hotfix.Game.Config.Tables
             + "CleanStrategy:" + CleanStrategy + ","
             + "LogicType:" + LogicType + ","
             + "IsActive:" + IsActive + ","
-            + "ShowOrder:" + ShowOrder + ","
             + "}";
         }
 

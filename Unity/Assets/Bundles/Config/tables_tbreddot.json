@@ -4,8 +4,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 0
+    "IsActive": true
   },
   {
     "Id": 1001,
@@ -13,8 +12,7 @@
     "DisplayMode": 1,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 1
+    "IsActive": true
   },
   {
     "Id": 1002,
@@ -22,16 +20,14 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 2
+    "IsActive": true
   },
   {
     "Id": 2000,
     "DisplayMode": 1,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 3
+    "IsActive": true
   },
   {
     "Id": 2001,
@@ -39,8 +35,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 4
+    "IsActive": true
   },
   {
     "Id": 2002,
@@ -48,16 +43,14 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 5
+    "IsActive": true
   },
   {
     "Id": 3000,
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 6
+    "IsActive": true
   },
   {
     "Id": 3001,
@@ -65,8 +58,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 7
+    "IsActive": true
   },
   {
     "Id": 3002,
@@ -74,8 +66,7 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 8
+    "IsActive": true
   },
   {
     "Id": 3003,
@@ -83,16 +74,14 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 9
+    "IsActive": true
   },
   {
     "Id": 4000,
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 10
+    "IsActive": true
   },
   {
     "Id": 4001,
@@ -100,7 +89,6 @@
     "DisplayMode": 0,
     "CleanStrategy": 0,
     "LogicType": 0,
-    "IsActive": true,
-    "ShowOrder": 11
+    "IsActive": true
   }
 ]
