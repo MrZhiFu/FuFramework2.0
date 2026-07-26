@@ -27,7 +27,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
     ↓
 [RedDotModule.OnUpdate] Calculator() → SetCount → UpdateTotalCount → 向上传播
     ↓ 收集变更 Key
-[EventModule.Broadcast] RedDotChangedEventArgs(ChangedStaticKeys, ChangedDynamicKeys)
+[EventModule.Broadcast] RedDotChangedEventArgs(ChangedKeys)
     ↓
 [CompRedDot] 按 key 过滤 → GetState(key) → RefreshUI(Count, DisplayMode)
 ```
@@ -103,7 +103,7 @@ void TryAutoClean(RedDotKey key)
 
 ### 4.2 RedDotNode
 
-红点节点类，实现 `IReference` 接口（使用对象池管理）。分为静态节点（`StaticKey` 有值）和动态节点（`DynamicKey` 有值）。
+红点节点类，实现 `IReference` 接口（使用对象池管理）。通过 `Key` 属性和 `IsStatic` 字段区分节点来源。
 
 命名空间：`Hotfix.Framework.RedDot`
 
@@ -207,7 +207,7 @@ private void OnRedDotChanged(object sender, GameEventArgs e)
 {
     if (e is not RedDotChangedEventArgs args) return;
 
-    foreach (var key in args.ChangedStaticKeys)
+    foreach (var key in args.ChangedKeys)
     {
         if (key == ERedDotKey.Mail)
         {
@@ -227,7 +227,8 @@ RedDotModule.Instance.Register(ERedDotKey.Mail, "Mail_1001", () => GetMailCount(
 // 批量同步（列表变化时调用，框架自动增删）
 RedDotModule.Instance.SyncDynamicNode(ERedDotKey.Mail, mailIds, id => GetMailCount(id));
 
-// 手动移除
+// 注销动态节点
+RedDotModule.Instance.Unregister("Mail_1001");
 
 // 查询动态节点状态
 var state = RedDotModule.Instance.GetState("Mail_1001");
