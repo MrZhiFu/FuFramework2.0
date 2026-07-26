@@ -398,24 +398,6 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 移除动态节点
-        /// </summary>
-        /// <param name="childKey">动态节点 Key</param>
-        private void RemoveDynamicChild(RedDotKey childKey)
-        {
-            if (!NodeDict.TryGetValue(childKey, out var node)) return;
-
-            var parent = node.Parent;
-            UnregisterInternal(node);
-            parent?.RemoveChild(node);
-            NodeDict.Remove(childKey);
-            ReferencePool.Release(node);
-
-            // 移除子节点后触发父节点重算
-            parent?.ForceRecalculate();
-        }
-
-        /// <summary>
         /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
@@ -423,7 +405,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
         public void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
         {
-            if (!NodeDict.ContainsKey(parentKey))
+            if (!NodeDict.TryGetValue(parentKey, out var parentNode))
             {
                 FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
                 return;
@@ -435,28 +417,32 @@ namespace Hotfix.Framework.RedDot
                 m_DynamicIdDict[parentKey] = existing;
             }
 
-            // 收集新增的 id
+            // 收集新增 id
             var newIds = new HashSet<long>();
             foreach (var id in ids)
-            {
                 newIds.Add(id);
-            }
 
-            // 移除不在新列表中的实例
+            // 找出待移除的 id
             var removedIds = new List<long>();
             foreach (var id in existing)
-            {
-                if (newIds.Contains(id)) continue;
-                removedIds.Add(id);
-            }
+                if (!newIds.Contains(id))
+                    removedIds.Add(id);
 
+            // Phase 1: 移除（跳过单次 parent 重算，最后统一重算）
             foreach (var id in removedIds)
             {
-                RemoveDynamicChild(FormatDynamicKey(parentKey, id));
+                var childKey = FormatDynamicKey(parentKey, id);
+                if (NodeDict.TryGetValue(childKey, out var node))
+                {
+                    UnregisterInternal(node);
+                    parentNode.RemoveChild(node);
+                    NodeDict.Remove(childKey);
+                    ReferencePool.Release(node);
+                }
                 existing.Remove(id);
             }
 
-            // 添加新增的实例 — 框架内部包装闭包
+            // Phase 2: 新增（用 SetCountSilent 跳过单次 parent 重算）
             foreach (var id in ids)
             {
                 if (existing.Contains(id)) continue;
@@ -464,9 +450,18 @@ namespace Hotfix.Framework.RedDot
                 var dynamicKey = FormatDynamicKey(parentKey, id);
                 var idCapture  = id; // 避免闭包捕获循环变量
 
-                Register(parentKey, dynamicKey, () => calculateFun(idCapture));
+                var node = AddDynamicChild(parentKey, dynamicKey);
+                if (node == null) continue;
+
+                RegisterInternal(node, () => calculateFun(idCapture), null);
+                var count = calculateFun(idCapture);
+                if (node.IsRead) count = 0;
+                node.SetCountSilent(count);
                 existing.Add(id);
             }
+
+            // Phase 3: 一次性重算父节点并向上传播
+            parentNode.ForceRecalculate();
         }
 
         /// <summary>
