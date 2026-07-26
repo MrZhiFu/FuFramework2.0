@@ -4,6 +4,7 @@ using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
+using RedDotRow = Hotfix.Game.Config.Tables.RedDot;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
@@ -102,7 +103,7 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         /// <param name="row">Luban 配置表行数据</param>
         /// <returns>创建的静态节点</returns>
-        public static RedDotNode Create(RedDot row)
+        public static RedDotNode Create(RedDotRow row)
         {
             var node = ReferencePool.Acquire<RedDotNode>();
             node.Key            = row.Id;
