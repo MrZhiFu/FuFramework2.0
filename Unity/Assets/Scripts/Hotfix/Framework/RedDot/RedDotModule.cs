@@ -19,9 +19,8 @@ namespace Hotfix.Framework.RedDot
     ///     2. Calculator — 业务注册 Func&lt;int&gt; 计算函数，OnUpdate 批处理重算
     ///     3. EventModule 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 Key 过滤
     ///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
-    ///     5. 统一 Key — RedDotKey 同时支持静态枚举和动态字符串，隐式转换无感
-    ///     6. 动态红点 — SyncDynamicNode 批量管理动态子节点
-    ///     7. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态（仅静态键）
+    ///     5. 动态红点 — SyncDynamicNode 批量管理动态子节点
+    ///     6. 已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态（仅静态键）
     ///
     /// 使用流程：
     ///     1. 在 Luban 配置表中定义红点树结构
@@ -225,7 +224,7 @@ namespace Hotfix.Framework.RedDot
         #region 注册
 
         /// <summary>
-        /// 注册红点 Calculator（统一 API）
+        /// 注册红点
         /// </summary>
         /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         /// <param name="calculator">返回红点数量的计算函数</param>
@@ -242,7 +241,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 一步创建动态节点并注册 Calculator
+        /// 注册动态节点
         /// </summary>
         /// <param name="parentKey">父节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         /// <param name="dynamicKey">动态节点 Key（支持 string 隐式转换）</param>
@@ -292,7 +291,7 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// 注销红点 Calculator（统一 API）
+        /// 注销红点
         /// </summary>
         /// <param name="key">红点节点 Key（支持 ERedDotKey 或 string 隐式转换）</param>
         public void Unregister(RedDotKey key)

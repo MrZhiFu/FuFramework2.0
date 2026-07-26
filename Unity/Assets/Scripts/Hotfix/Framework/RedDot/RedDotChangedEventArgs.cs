@@ -29,10 +29,7 @@ namespace Hotfix.Framework.RedDot
         /// <summary>
         /// 清空事件参数数据，用于重用
         /// </summary>
-        public override void Clear()
-        {
-            ChangedKeys.Clear();
-        }
+        public override void Clear() => ChangedKeys.Clear();
 
         /// <summary>
         /// 创建事件参数实例

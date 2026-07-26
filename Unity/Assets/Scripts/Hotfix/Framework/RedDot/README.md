@@ -6,7 +6,6 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 
 ## 2. 核心特性
 
-- **统一 Key**：`RedDotKey` 结构体统一标识符，支持 `ERedDotKey` 和 `string` 隐式转换，消除双轨 API
 - **Pull 模式**：业务模块通过 `Register` 注册 `Func<int>` 计算函数，框架自动管理重算时机
 - **OnUpdate 批处理**：多个脏节点在同一帧内统一重算、聚合、广播，避免重复计算
 - **EventModule 广播**：通过 `RedDotChangedEventArgs` 批量通知变更节点，UI 端按 Key 过滤刷新
