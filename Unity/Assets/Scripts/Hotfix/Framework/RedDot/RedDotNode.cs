@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
 using RedDotRow = Hotfix.Game.Config.Tables.RedDot;
 
 // ReSharper disable once CheckNamespace

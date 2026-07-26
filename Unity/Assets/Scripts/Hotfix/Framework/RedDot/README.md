@@ -265,7 +265,8 @@ RedDotModule.Instance.TryAutoClean(ERedDotKey.Mail);
 ```text
 RedDot/
 ├── RedDotKey.cs                   # 统一标识符结构体
-├── RedDotModule.cs                # 核心模块（生命周期、树构建、OnUpdate、Calculator、状态查询、动态节点、持久化、广播）
+├── RedDotModule.cs                # 核心模块（生命周期、内部实现）
+├── RedDotModule.API.cs            # 公开 API（注册、查询、动态红点、已读持久化、清理策略）
 ├── RedDotNode.cs                  # 红点节点
 ├── RedDotState.cs                 # 状态查询结构体
 ├── RedDotChangedEventArgs.cs      # EventModule 广播事件参数
