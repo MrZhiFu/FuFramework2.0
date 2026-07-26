@@ -17,14 +17,14 @@ namespace Hotfix.Game.UI
         private const string FlagRedDot = "red_dot:";
 
         /// <summary>
-        /// 静态红点节点 Key（customData 解析为 ERedDotKey 枚举时使用）
+        /// 红点节点 Key（从 customData 解析）
         /// </summary>
-        private ERedDotKey? m_StaticKey;
+        private RedDotKey m_Key;
 
         /// <summary>
-        /// 动态红点节点 Key（customData 无法解析为枚举时作为 string 使用）
+        /// 是否已绑定红点 Key
         /// </summary>
-        private string m_DynamicKey;
+        private bool m_HasKey;
 
         /// <summary>
         /// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅红点变更事件
@@ -36,13 +36,14 @@ namespace Hotfix.Game.UI
 
             if (Enum.TryParse<ERedDotKey>(keyValue, true, out var staticKey))
             {
-                m_StaticKey = staticKey;
+                m_Key = staticKey;
             }
             else
             {
-                m_DynamicKey = keyValue;
+                m_Key = keyValue;
             }
 
+            m_HasKey = true;
             GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
             RefreshCurrentState();
         }
@@ -52,7 +53,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnDispose()
         {
-            if (m_StaticKey.HasValue || m_DynamicKey != null)
+            if (m_HasKey)
                 GlobalModule.EventModule.Unsubscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
         }
 
@@ -64,24 +65,13 @@ namespace Hotfix.Game.UI
         private void OnRedDotChanged(object sender, GameEventArgs e)
         {
             if (e is not RedDotChangedEventArgs args) return;
+            if (!m_HasKey) return;
 
-            if (m_StaticKey.HasValue)
+            foreach (var key in args.ChangedKeys)
             {
-                foreach (var key in args.ChangedStaticKeys)
-                {
-                    if (key != m_StaticKey.Value) continue;
-                    RefreshCurrentState();
-                    return;
-                }
-            }
-            else if (m_DynamicKey != null)
-            {
-                foreach (var key in args.ChangedDynamicKeys)
-                {
-                    if (key != m_DynamicKey) continue;
-                    RefreshCurrentState();
-                    return;
-                }
+                if (key != m_Key) continue;
+                RefreshCurrentState();
+                return;
             }
         }
 
@@ -129,10 +119,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void RefreshCurrentState()
         {
-            var state = m_StaticKey.HasValue
-                ? RedDotModule.Instance.GetState(m_StaticKey.Value)
-                : RedDotModule.Instance.GetState(m_DynamicKey);
-
+            var state = RedDotModule.Instance.GetState(m_Key);
             RefreshUI(state.Count, state.DisplayMode);
         }
 
