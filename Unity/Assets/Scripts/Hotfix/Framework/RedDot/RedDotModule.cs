@@ -254,7 +254,6 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// <summary>
         /// 注销红点(内部实现)
         /// </summary>
         /// <param name="node">目标节点</param>
@@ -326,7 +325,6 @@ namespace Hotfix.Framework.RedDot
         }
 
         /// <summary>
-        /// <summary>
         /// 生成动态节点 Key(格式：__dynamic__{parentKey}_{id})
         /// </summary>
         /// <param name="parentKey">父节点 Key</param>
@@ -338,7 +336,6 @@ namespace Hotfix.Framework.RedDot
 
         #region 已读持久化
 
-        /// <summary>
         /// <summary>
         /// 从 StorageModule 加载已读状态
         /// </summary>
@@ -376,7 +373,6 @@ namespace Hotfix.Framework.RedDot
         #region 清理策略
 
         /// <summary>
-        /// <summary>
         /// 递归清除节点及所有子节点的计数
         /// </summary>
         /// <param name="node">起始节点</param>
@@ -398,10 +394,7 @@ namespace Hotfix.Framework.RedDot
         /// 收集本帧变更的节点 Key，供 OnUpdate 批量广播
         /// </summary>
         /// <param name="node">发生变化的节点</param>
-        private void OnNodeTotalCountChanged(RedDotNode node)
-        {
-            m_ChangedKeySet.Add(node.Key);
-        }
+        private void OnNodeTotalCountChanged(RedDotNode node) => m_ChangedKeySet.Add(node.Key);
 
         /// <summary>
         /// 批量广播本帧变更
