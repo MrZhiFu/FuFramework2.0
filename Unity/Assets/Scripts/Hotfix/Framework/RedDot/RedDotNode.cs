@@ -23,6 +23,11 @@ namespace Hotfix.Framework.RedDot
         public RedDotKey Key { get; private set; }
 
         /// <summary>
+        /// 是否为静态节点（配置表定义），用于 MarkRead/IsRead 区分持久化策略
+        /// </summary>
+        public bool IsStatic { get; private set; }
+
+        /// <summary>
         /// 节点的原始计数（自身，不含子节点）
         /// </summary>
         public int RawCount { get; private set; }
@@ -101,6 +106,7 @@ namespace Hotfix.Framework.RedDot
         {
             var node = ReferencePool.Acquire<RedDotNode>();
             node.Key            = row.Id;
+            node.IsStatic       = true;
             node.DisplayMode   = row.DisplayMode;
             node.CleanStrategy = row.CleanStrategy;
             node.LogicType     = row.LogicType;
@@ -118,6 +124,7 @@ namespace Hotfix.Framework.RedDot
         {
             var node = ReferencePool.Acquire<RedDotNode>();
             node.Key            = key;
+            node.IsStatic       = false;
             node.Parent         = parent;
             node.DisplayMode   = ERedDotDisplayMode.DotOnly;
             node.CleanStrategy = ERedDotCleanStrategy.Manual;
@@ -242,6 +249,7 @@ namespace Hotfix.Framework.RedDot
         public void Clear()
         {
             Key                 = default;
+            IsStatic            = false;
             Parent              = null;
             RawCount            = 0;
             TotalCount          = 0;
