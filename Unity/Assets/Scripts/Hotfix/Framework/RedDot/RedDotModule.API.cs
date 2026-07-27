@@ -73,6 +73,12 @@ namespace Hotfix.Framework.RedDot
         /// <returns>存在返回 true，否则返回 false</returns>
         public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
 
+        /// <summary>
+        /// 获取所有节点（调试用）
+        /// </summary>
+        /// <returns>所有红点节点的只读集合</returns>
+        public IReadOnlyCollection<RedDotNode> GetAllNodes() => NodeDict.Values;
+
         #endregion
 
         #region 动态节点
