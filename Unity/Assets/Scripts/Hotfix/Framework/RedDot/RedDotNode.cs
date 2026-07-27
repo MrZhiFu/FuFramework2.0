@@ -171,6 +171,7 @@ namespace Hotfix.Framework.RedDot
         /// <param name="count">新的 RawCount 值</param>
         internal void SetCount(int count)
         {
+            if (count < 0) count = 0;
             if (RawCount == count) return;
 
             RawCount = count;
@@ -184,7 +185,9 @@ namespace Hotfix.Framework.RedDot
         /// <param name="count">新的 RawCount 值</param>
         internal void SetCountSilent(int count)
         {
+            if (count < 0) count = 0;
             if (RawCount == count) return;
+
             RawCount   = count;
             TotalCount = count;
             OnTotalCountChanged?.Invoke(this);

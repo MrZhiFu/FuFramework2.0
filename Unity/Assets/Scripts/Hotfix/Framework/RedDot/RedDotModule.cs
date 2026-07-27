@@ -139,6 +139,9 @@ namespace Hotfix.Framework.RedDot
                 node.OnTotalCountChanged = OnNodeTotalCountChanged;
             }
 
+            // 检测循环依赖，发现时切断错误关系防止运行时栈溢出
+            DetectCycleAndBreak();
+
             // 加载已读状态
             LoadReadState();
 
@@ -348,6 +351,12 @@ namespace Hotfix.Framework.RedDot
 
             foreach (var id in list)
             {
+                if (!Enum.IsDefined(typeof(ERedDotKey), id))
+                {
+                    FuLogger.LogWarning($"[RedDotModule] 已读状态中存在无效的枚举值: {id}，已跳过");
+                    continue;
+                }
+
                 m_ReadSet.Add(id);
                 var       staticKey = (ERedDotKey)id;
                 RedDotKey key       = staticKey;
@@ -410,6 +419,59 @@ namespace Hotfix.Framework.RedDot
             GlobalModule.EventModule.Broadcast(this, args);
 
             m_ChangedKeySet.Clear();
+        }
+
+        /// <summary>
+        /// 检测静态节点中的循环依赖，发现时切断错误关系并记录错误日志
+        /// </summary>
+        private void DetectCycleAndBreak()
+        {
+            var state = new Dictionary<RedDotNode, int>();
+            foreach (var node in NodeDict.Values)
+            {
+                state[node] = 0; // 0=未访问, 1=访问中, 2=已完成
+            }
+
+            foreach (var node in NodeDict.Values)
+            {
+                if (state[node] != 0) continue;
+                HasCycleDFS(node, state);
+            }
+        }
+
+        /// <summary>
+        /// 沿父链 DFS 检测环
+        /// </summary>
+        /// <param name="node">当前节点</param>
+        /// <param name="state">节点访问状态</param>
+        /// <returns>是否检测到环</returns>
+        private static bool HasCycleDFS(RedDotNode node, Dictionary<RedDotNode, int> state)
+        {
+            state[node] = 1;
+            var parent = node.Parent;
+
+            if (parent == null)
+            {
+                state[node] = 2;
+                return false;
+            }
+
+            if (state[parent] == 1)
+            {
+                FuLogger.LogError($"[RedDotModule] 检测到循环依赖: {node.Key} -> {parent.Key}，切断该关系");
+                parent.RemoveChild(node);
+                node.SetParent(null);
+                state[node] = 2;
+                return true;
+            }
+
+            if (state[parent] == 0)
+            {
+                HasCycleDFS(parent, state);
+            }
+
+            state[node] = 2;
+            return false;
         }
 
         #endregion

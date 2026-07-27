@@ -159,9 +159,9 @@ namespace Hotfix.Framework.RedDot
             node.SetCount(0);
 
             // 仅静态枚举键进行持久化(通过 RedDotNode.IsStatic 标记判断)
-            if (node.IsStatic)
+            if (node.IsStatic && key.TryGetEnumValue(out var enumValue))
             {
-                m_ReadSet.Add((int)(ERedDotKey)Enum.Parse(typeof(ERedDotKey), key.ToString()));
+                m_ReadSet.Add(enumValue);
                 SaveReadState();
                 BroadcastChangedKeys();
             }
@@ -175,8 +175,8 @@ namespace Hotfix.Framework.RedDot
         public bool IsRead(RedDotKey key)
         {
             // 静态键检查持久化集合
-            if (NodeDict.TryGetValue(key, out var node) && node.IsStatic)
-                return m_ReadSet.Contains((int)(ERedDotKey)Enum.Parse(typeof(ERedDotKey), key.ToString()));
+            if (NodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
+                return m_ReadSet.Contains(enumValue);
 
             // 动态键检查节点自身标记
             return NodeDict.TryGetValue(key, out node) && node.IsRead;
