@@ -43,11 +43,6 @@ namespace FuFramework.RedDot.Editor
         private bool m_AutoRefresh = true;
 
         /// <summary>
-        /// 是否显示树形视图
-        /// </summary>
-        private bool m_ShowTreeView = true;
-
-        /// <summary>
         /// 节点折叠状态缓存
         /// </summary>
         private readonly Dictionary<object, bool> m_FoldoutStates = new();
@@ -216,17 +211,10 @@ namespace FuFramework.RedDot.Editor
 
             m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
 
-            if (m_ShowTreeView)
+            foreach (var node in nodes)
             {
-                foreach (var node in nodes)
-                {
-                    if (GetParent(node) == null)
-                        DrawNodeTree(node, 0);
-                }
-            }
-            else
-            {
-                DrawFlatList(nodes);
+                if (GetParent(node) == null)
+                    DrawNodeTree(node, 0);
             }
 
             EditorGUILayout.EndScrollView();
@@ -247,7 +235,6 @@ namespace FuFramework.RedDot.Editor
             m_SearchFilter = GUILayout.TextField(m_SearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(150));
 
             GUILayout.Space(20);
-            m_ShowTreeView = GUILayout.Toggle(m_ShowTreeView, "树形", EditorStyles.toolbarButton, GUILayout.Width(60));
             m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
             GUILayout.FlexibleSpace();
@@ -367,23 +354,6 @@ namespace FuFramework.RedDot.Editor
             {
                 foreach (var child in children)
                     DrawNodeTree(child, indentLevel + 1);
-            }
-        }
-
-        /// <summary>
-        /// 绘制平铺列表
-        /// </summary>
-        /// <param name="nodes">所有节点</param>
-        private void DrawFlatList(List<object> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                var keyString = GetKeyString(node);
-                if (!string.IsNullOrEmpty(m_SearchFilter) &&
-                    !keyString.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                DrawNodeTree(node, 0);
             }
         }
 
