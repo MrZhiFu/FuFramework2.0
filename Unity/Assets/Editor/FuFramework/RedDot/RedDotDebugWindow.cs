@@ -16,58 +16,181 @@ namespace FuFramework.RedDot.Editor
     /// </summary>
     public class RedDotDebugWindow : EditorWindow
     {
+        /// <summary>
+        /// 打开调试面板
+        /// </summary>
         [MenuItem("FuFramework/调试/红点调试面板")]
         public static void ShowWindow()
         {
             GetWindow<RedDotDebugWindow>("红点调试");
         }
 
-        private Vector2 mScrollPos;
-        private string  mSearchFilter = "";
-        private bool    mAutoRefresh  = true;
-        private bool    mShowTreeView = true;
-        private readonly Dictionary<object, bool> mFoldoutStates = new();
-        private double  mLastRefreshTime;
+        #region 私有字段
 
-        private Type    mModuleType;
-        private object  mModuleInstance;
-        private MethodInfo mGetAllNodesMethod;
-        private MethodInfo mGetStateMethod;
-        private MethodInfo mMarkReadMethod;
-        private MethodInfo mGetChildrenMethod;
-        private PropertyInfo mKeyProperty;
-        private PropertyInfo mParentProperty;
-        private PropertyInfo mRawCountProperty;
-        private PropertyInfo mTotalCountProperty;
-        private PropertyInfo mIsActiveProperty;
-        private PropertyInfo mIsReadProperty;
-        private PropertyInfo mIsDirtyProperty;
-        private PropertyInfo mLogicTypeProperty;
-        private PropertyInfo mCleanStrategyProperty;
-        private PropertyInfo mDisplayModeProperty;
-        private PropertyInfo mCalculatorProperty;
-        private PropertyInfo mTriggerEventsProperty;
-        private PropertyInfo mIsStaticProperty;
+        /// <summary>
+        /// 滚动位置
+        /// </summary>
+        private Vector2 m_ScrollPos;
 
+        /// <summary>
+        /// 搜索过滤字符串
+        /// </summary>
+        private string m_SearchFilter = "";
+
+        /// <summary>
+        /// 是否自动刷新
+        /// </summary>
+        private bool m_AutoRefresh = true;
+
+        /// <summary>
+        /// 是否显示树形视图
+        /// </summary>
+        private bool m_ShowTreeView = true;
+
+        /// <summary>
+        /// 节点折叠状态缓存
+        /// </summary>
+        private readonly Dictionary<object, bool> m_FoldoutStates = new();
+
+        /// <summary>
+        /// 上次刷新时间
+        /// </summary>
+        private double m_LastRefreshTime;
+
+        #endregion
+
+        #region 反射缓存
+
+        /// <summary>
+        /// RedDotModule 类型
+        /// </summary>
+        private Type m_ModuleType;
+
+        /// <summary>
+        /// RedDotModule 实例
+        /// </summary>
+        private object m_ModuleInstance;
+
+        /// <summary>
+        /// GetAllNodes 方法
+        /// </summary>
+        private MethodInfo m_GetAllNodesMethod;
+
+        /// <summary>
+        /// GetState 方法
+        /// </summary>
+        private MethodInfo m_GetStateMethod;
+
+        /// <summary>
+        /// MarkRead 方法
+        /// </summary>
+        private MethodInfo m_MarkReadMethod;
+
+        /// <summary>
+        /// GetChildren 方法
+        /// </summary>
+        private MethodInfo m_GetChildrenMethod;
+
+        /// <summary>
+        /// Key 属性
+        /// </summary>
+        private PropertyInfo m_KeyProperty;
+
+        /// <summary>
+        /// Parent 属性
+        /// </summary>
+        private PropertyInfo m_ParentProperty;
+
+        /// <summary>
+        /// RawCount 属性
+        /// </summary>
+        private PropertyInfo m_RawCountProperty;
+
+        /// <summary>
+        /// TotalCount 属性
+        /// </summary>
+        private PropertyInfo m_TotalCountProperty;
+
+        /// <summary>
+        /// IsActive 属性
+        /// </summary>
+        private PropertyInfo m_IsActiveProperty;
+
+        /// <summary>
+        /// IsRead 属性
+        /// </summary>
+        private PropertyInfo m_IsReadProperty;
+
+        /// <summary>
+        /// IsDirty 属性
+        /// </summary>
+        private PropertyInfo m_IsDirtyProperty;
+
+        /// <summary>
+        /// LogicType 属性
+        /// </summary>
+        private PropertyInfo m_LogicTypeProperty;
+
+        /// <summary>
+        /// CleanStrategy 属性
+        /// </summary>
+        private PropertyInfo m_CleanStrategyProperty;
+
+        /// <summary>
+        /// DisplayMode 属性
+        /// </summary>
+        private PropertyInfo m_DisplayModeProperty;
+
+        /// <summary>
+        /// Calculator 属性
+        /// </summary>
+        private PropertyInfo m_CalculatorProperty;
+
+        /// <summary>
+        /// TriggerEvents 属性
+        /// </summary>
+        private PropertyInfo m_TriggerEventsProperty;
+
+        /// <summary>
+        /// IsStatic 属性
+        /// </summary>
+        private PropertyInfo m_IsStaticProperty;
+
+        #endregion
+
+        #region 生命周期
+
+        /// <summary>
+        /// 启用：订阅 EditorApplication.update
+        /// </summary>
         private void OnEnable()
         {
             EditorApplication.update += OnEditorUpdate;
         }
 
+        /// <summary>
+        /// 禁用：取消订阅 EditorApplication.update
+        /// </summary>
         private void OnDisable()
         {
             EditorApplication.update -= OnEditorUpdate;
         }
 
+        /// <summary>
+        /// 编辑器帧更新：定时重绘
+        /// </summary>
         private void OnEditorUpdate()
         {
-            if (!mAutoRefresh || !Application.isPlaying) return;
-            if (EditorApplication.timeSinceStartup - mLastRefreshTime < 0.5f) return;
+            if (!m_AutoRefresh || !Application.isPlaying) return;
+            if (EditorApplication.timeSinceStartup - m_LastRefreshTime < 0.5f) return;
 
-            mLastRefreshTime = EditorApplication.timeSinceStartup;
+            m_LastRefreshTime = EditorApplication.timeSinceStartup;
             Repaint();
         }
 
+        /// <summary>
+        /// 绘制 GUI
+        /// </summary>
         private void OnGUI()
         {
             DrawToolbar();
@@ -91,14 +214,13 @@ namespace FuFramework.RedDot.Editor
                 return;
             }
 
-            mScrollPos = EditorGUILayout.BeginScrollView(mScrollPos);
+            m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
 
-            if (mShowTreeView)
+            if (m_ShowTreeView)
             {
                 foreach (var node in nodes)
                 {
-                    var parent = GetParent(node);
-                    if (parent == null)
+                    if (GetParent(node) == null)
                         DrawNodeTree(node, 0);
                 }
             }
@@ -110,16 +232,23 @@ namespace FuFramework.RedDot.Editor
             EditorGUILayout.EndScrollView();
         }
 
+        #endregion
+
+        #region 工具栏
+
+        /// <summary>
+        /// 绘制顶部工具栏
+        /// </summary>
         private void DrawToolbar()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
             GUILayout.Label("搜索:", GUILayout.Width(40));
-            mSearchFilter = GUILayout.TextField(mSearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(150));
+            m_SearchFilter = GUILayout.TextField(m_SearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(150));
 
             GUILayout.Space(20);
-            mShowTreeView = GUILayout.Toggle(mShowTreeView, "树形", EditorStyles.toolbarButton, GUILayout.Width(60));
-            mAutoRefresh  = GUILayout.Toggle(mAutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
+            m_ShowTreeView = GUILayout.Toggle(m_ShowTreeView, "树形", EditorStyles.toolbarButton, GUILayout.Width(60));
+            m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
             GUILayout.FlexibleSpace();
 
@@ -135,19 +264,28 @@ namespace FuFramework.RedDot.Editor
             EditorGUILayout.EndHorizontal();
         }
 
+        #endregion
+
+        #region 节点绘制
+
+        /// <summary>
+        /// 递归绘制节点树
+        /// </summary>
+        /// <param name="node">当前节点</param>
+        /// <param name="indentLevel">缩进层级</param>
         private void DrawNodeTree(object node, int indentLevel)
         {
             if (node == null) return;
 
             var keyString = GetKeyString(node);
-            if (!string.IsNullOrEmpty(mSearchFilter))
+            if (!string.IsNullOrEmpty(m_SearchFilter))
             {
-                if (!keyString.Contains(mSearchFilter, StringComparison.OrdinalIgnoreCase))
+                if (!keyString.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
                 {
                     bool childMatches = false;
                     foreach (var child in GetChildren(node))
                     {
-                        if (GetKeyString(child).Contains(mSearchFilter, StringComparison.OrdinalIgnoreCase))
+                        if (GetKeyString(child).Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
                         {
                             childMatches = true;
                             break;
@@ -160,37 +298,36 @@ namespace FuFramework.RedDot.Editor
 
             var children = GetChildren(node);
             bool hasChildren = children.Any();
-            var totalCount = (int)(mTotalCountProperty?.GetValue(node) ?? 0);
-            var rawCount   = (int)(mRawCountProperty?.GetValue(node) ?? 0);
-            var isActive   = (bool)(mIsActiveProperty?.GetValue(node) ?? true);
-            var isRead     = (bool)(mIsReadProperty?.GetValue(node) ?? false);
-            var isDirty    = (bool)(mIsDirtyProperty?.GetValue(node) ?? false);
-            var isStatic   = (bool)(mIsStaticProperty?.GetValue(node) ?? false);
-            var logicType  = mLogicTypeProperty?.GetValue(node)?.ToString() ?? "-";
-            var cleanStrategy = mCleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
-            var displayMode   = mDisplayModeProperty?.GetValue(node)?.ToString() ?? "-";
-            var hasCalculator = mCalculatorProperty?.GetValue(node) != null;
+            var totalCount = (int)(m_TotalCountProperty?.GetValue(node) ?? 0);
+            var rawCount = (int)(m_RawCountProperty?.GetValue(node) ?? 0);
+            var isActive = (bool)(m_IsActiveProperty?.GetValue(node) ?? true);
+            var isRead = (bool)(m_IsReadProperty?.GetValue(node) ?? false);
+            var isDirty = (bool)(m_IsDirtyProperty?.GetValue(node) ?? false);
+            var isStatic = (bool)(m_IsStaticProperty?.GetValue(node) ?? false);
+            var logicType = m_LogicTypeProperty?.GetValue(node)?.ToString() ?? "-";
+            var cleanStrategy = m_CleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
+            var displayMode = m_DisplayModeProperty?.GetValue(node)?.ToString() ?? "-";
+            var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(indentLevel * 20);
 
             if (hasChildren)
             {
-                if (!mFoldoutStates.TryGetValue(node, out bool foldout))
+                if (!m_FoldoutStates.TryGetValue(node, out bool foldout))
                 {
                     foldout = true;
-                    mFoldoutStates[node] = foldout;
+                    m_FoldoutStates[node] = foldout;
                 }
 
-                mFoldoutStates[node] = EditorGUILayout.Foldout(foldout, $"{keyString}", true);
+                m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, $"{keyString}", true);
             }
             else
             {
                 GUILayout.Label($"{keyString}", GUILayout.Width(180));
             }
 
-            var typeIcon = isStatic ? "S" : "D";
-            GUILayout.Label(typeIcon, GUILayout.Width(20));
+            GUILayout.Label(isStatic ? "S" : "D", GUILayout.Width(20));
 
             var oldColor = GUI.color;
             GUI.color = isActive ? Color.green : Color.gray;
@@ -212,113 +349,155 @@ namespace FuFramework.RedDot.Editor
 
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
             {
-                var key = mKeyProperty?.GetValue(node);
+                var key = m_KeyProperty?.GetValue(node);
                 if (key != null)
-                    mMarkReadMethod?.Invoke(mModuleInstance, new[] { key });
+                    m_MarkReadMethod?.Invoke(m_ModuleInstance, new[] { key });
             }
 
             if (GUILayout.Button("刷新", GUILayout.Width(50)))
             {
-                var key = mKeyProperty?.GetValue(node);
+                var key = m_KeyProperty?.GetValue(node);
                 if (key != null)
-                    mGetStateMethod?.Invoke(mModuleInstance, new[] { key });
+                    m_GetStateMethod?.Invoke(m_ModuleInstance, new[] { key });
             }
 
             EditorGUILayout.EndHorizontal();
 
-            if (hasChildren && mFoldoutStates.TryGetValue(node, out bool open) && open)
+            if (hasChildren && m_FoldoutStates.TryGetValue(node, out bool open) && open)
             {
                 foreach (var child in children)
                     DrawNodeTree(child, indentLevel + 1);
             }
         }
 
+        /// <summary>
+        /// 绘制平铺列表
+        /// </summary>
+        /// <param name="nodes">所有节点</param>
         private void DrawFlatList(List<object> nodes)
         {
             foreach (var node in nodes)
             {
                 var keyString = GetKeyString(node);
-                if (!string.IsNullOrEmpty(mSearchFilter) &&
-                    !keyString.Contains(mSearchFilter, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(m_SearchFilter) &&
+                    !keyString.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 DrawNodeTree(node, 0);
             }
         }
 
+        /// <summary>
+        /// 全部展开
+        /// </summary>
         private void ExpandAll()
         {
             var nodes = GetAllNodes();
             if (nodes == null) return;
             foreach (var node in nodes)
-                mFoldoutStates[node] = true;
+                m_FoldoutStates[node] = true;
         }
 
+        /// <summary>
+        /// 全部折叠
+        /// </summary>
         private void CollapseAll()
         {
             var nodes = GetAllNodes();
             if (nodes == null) return;
             foreach (var node in nodes)
-                mFoldoutStates[node] = false;
+                m_FoldoutStates[node] = false;
         }
 
+        #endregion
+
+        #region 反射
+
+        /// <summary>
+        /// 确保反射缓存已初始化
+        /// </summary>
+        /// <returns>初始化成功返回 true</returns>
         private bool EnsureReflection()
         {
-            if (mModuleType != null && mModuleInstance != null) return true;
+            if (m_ModuleType != null && m_ModuleInstance != null) return true;
 
-            mModuleType = Type.GetType("Hotfix.Framework.RedDot.RedDotModule, Hotfix");
-            if (mModuleType == null) return false;
+            m_ModuleType = Type.GetType("Hotfix.Framework.RedDot.RedDotModule, Hotfix");
+            if (m_ModuleType == null) return false;
 
-            var instanceProperty = mModuleType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-            mModuleInstance = instanceProperty?.GetValue(null);
-            if (mModuleInstance == null) return false;
+            var instanceProperty = m_ModuleType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+            m_ModuleInstance = instanceProperty?.GetValue(null);
+            if (m_ModuleInstance == null) return false;
 
             var nodeType = Type.GetType("Hotfix.Framework.RedDot.RedDotNode, Hotfix");
             if (nodeType == null) return false;
 
-            mGetAllNodesMethod = mModuleType.GetMethod("GetAllNodes", BindingFlags.Public | BindingFlags.Instance);
-            mGetStateMethod    = mModuleType.GetMethod("GetState", BindingFlags.Public | BindingFlags.Instance, null, new[] { Type.GetType("Hotfix.Framework.RedDot.RedDotKey, Hotfix") }, null);
-            mMarkReadMethod    = mModuleType.GetMethod("MarkRead", BindingFlags.Public | BindingFlags.Instance, null, new[] { Type.GetType("Hotfix.Framework.RedDot.RedDotKey, Hotfix") }, null);
-            mGetChildrenMethod = nodeType.GetMethod("GetChildren", BindingFlags.Public | BindingFlags.Instance);
+            var keyType = Type.GetType("Hotfix.Framework.RedDot.RedDotKey, Hotfix");
+            if (keyType == null) return false;
 
-            mKeyProperty            = nodeType.GetProperty("Key", BindingFlags.Public | BindingFlags.Instance);
-            mParentProperty         = nodeType.GetProperty("Parent", BindingFlags.Public | BindingFlags.Instance);
-            mRawCountProperty       = nodeType.GetProperty("RawCount", BindingFlags.Public | BindingFlags.Instance);
-            mTotalCountProperty     = nodeType.GetProperty("TotalCount", BindingFlags.Public | BindingFlags.Instance);
-            mIsActiveProperty       = nodeType.GetProperty("IsActive", BindingFlags.Public | BindingFlags.Instance);
-            mIsReadProperty         = nodeType.GetProperty("IsRead", BindingFlags.Public | BindingFlags.Instance);
-            mIsDirtyProperty        = nodeType.GetProperty("IsDirty", BindingFlags.Public | BindingFlags.Instance);
-            mLogicTypeProperty      = nodeType.GetProperty("LogicType", BindingFlags.Public | BindingFlags.Instance);
-            mCleanStrategyProperty  = nodeType.GetProperty("CleanStrategy", BindingFlags.Public | BindingFlags.Instance);
-            mDisplayModeProperty    = nodeType.GetProperty("DisplayMode", BindingFlags.Public | BindingFlags.Instance);
-            mCalculatorProperty     = nodeType.GetProperty("Calculator", BindingFlags.Public | BindingFlags.Instance);
-            mTriggerEventsProperty  = nodeType.GetProperty("TriggerEvents", BindingFlags.Public | BindingFlags.Instance);
-            mIsStaticProperty       = nodeType.GetProperty("IsStatic", BindingFlags.Public | BindingFlags.Instance);
+            m_GetAllNodesMethod = m_ModuleType.GetMethod("GetAllNodes", BindingFlags.Public | BindingFlags.Instance);
+            m_GetStateMethod = m_ModuleType.GetMethod("GetState", BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+            m_MarkReadMethod = m_ModuleType.GetMethod("MarkRead", BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+            m_GetChildrenMethod = nodeType.GetMethod("GetChildren", BindingFlags.Public | BindingFlags.Instance);
+
+            m_KeyProperty = nodeType.GetProperty("Key", BindingFlags.Public | BindingFlags.Instance);
+            m_ParentProperty = nodeType.GetProperty("Parent", BindingFlags.Public | BindingFlags.Instance);
+            m_RawCountProperty = nodeType.GetProperty("RawCount", BindingFlags.Public | BindingFlags.Instance);
+            m_TotalCountProperty = nodeType.GetProperty("TotalCount", BindingFlags.Public | BindingFlags.Instance);
+            m_IsActiveProperty = nodeType.GetProperty("IsActive", BindingFlags.Public | BindingFlags.Instance);
+            m_IsReadProperty = nodeType.GetProperty("IsRead", BindingFlags.Public | BindingFlags.Instance);
+            m_IsDirtyProperty = nodeType.GetProperty("IsDirty", BindingFlags.Public | BindingFlags.Instance);
+            m_LogicTypeProperty = nodeType.GetProperty("LogicType", BindingFlags.Public | BindingFlags.Instance);
+            m_CleanStrategyProperty = nodeType.GetProperty("CleanStrategy", BindingFlags.Public | BindingFlags.Instance);
+            m_DisplayModeProperty = nodeType.GetProperty("DisplayMode", BindingFlags.Public | BindingFlags.Instance);
+            m_CalculatorProperty = nodeType.GetProperty("Calculator", BindingFlags.Public | BindingFlags.Instance);
+            m_TriggerEventsProperty = nodeType.GetProperty("TriggerEvents", BindingFlags.Public | BindingFlags.Instance);
+            m_IsStaticProperty = nodeType.GetProperty("IsStatic", BindingFlags.Public | BindingFlags.Instance);
 
             return true;
         }
 
+        /// <summary>
+        /// 获取所有节点
+        /// </summary>
+        /// <returns>所有红点节点列表</returns>
         private List<object> GetAllNodes()
         {
-            var result = mGetAllNodesMethod?.Invoke(mModuleInstance, null);
+            var result = m_GetAllNodesMethod?.Invoke(m_ModuleInstance, null);
             if (result is IEnumerable<object> enumerable) return enumerable.ToList();
             return (result as IEnumerable)?.Cast<object>().ToList() ?? new List<object>();
         }
 
-        private object GetParent(object node) => mParentProperty?.GetValue(node);
+        /// <summary>
+        /// 获取节点父节点
+        /// </summary>
+        /// <param name="node">目标节点</param>
+        /// <returns>父节点，无父节点时返回 null</returns>
+        private object GetParent(object node) => m_ParentProperty?.GetValue(node);
 
+        /// <summary>
+        /// 获取节点的所有子节点
+        /// </summary>
+        /// <param name="node">目标节点</param>
+        /// <returns>子节点集合</returns>
         private IEnumerable<object> GetChildren(object node)
         {
-            var value = mGetChildrenMethod?.Invoke(node, null);
+            var value = m_GetChildrenMethod?.Invoke(node, null);
             if (value is IEnumerable<object> enumerable) return enumerable;
             return (value as IEnumerable)?.Cast<object>() ?? Enumerable.Empty<object>();
         }
 
+        /// <summary>
+        /// 获取节点的 Key 字符串
+        /// </summary>
+        /// <param name="node">目标节点</param>
+        /// <returns>Key 字符串，无法获取时返回 &lt;null&gt;</returns>
         private string GetKeyString(object node)
         {
-            var key = mKeyProperty?.GetValue(node);
+            var key = m_KeyProperty?.GetValue(node);
             return key?.ToString() ?? "<null>";
         }
+
+        #endregion
     }
 }
 #endif
