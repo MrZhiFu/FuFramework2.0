@@ -28,6 +28,12 @@ namespace Hotfix.Framework.RedDot
                 return;
             }
 
+            if (node.GetChildren().Count > 0)
+            {
+                FuLogger.LogError($"[RedDotModule] Register 只能给叶子节点注册 Calculator: {key}");
+                return;
+            }
+
             RegisterInternal(node, calculator, triggerEvents);
         }
 

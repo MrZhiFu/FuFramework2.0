@@ -292,5 +292,6 @@ RedDot/
 2. 动态节点 Key 必须唯一，重复创建同名动态节点会返回已存在的节点
 3. Calculator 不应执行昂贵操作，因为可能在同一个 OnUpdate 中多次调用
 4. 同一节点不应同时注册 Calculator 和手动调 SetCount（SetCount 为 internal，仅框架内部使用）
-5. `IsActive = false` 的节点 TotalCount 永远为 0，且不参与父节点聚合
-6. 已读状态仅抑制初始加载时的红点，运行时新的 Calculator 计算结果会覆盖已读状态
+5. 只有叶子节点可以注册 Calculator，有子节点的父节点由子节点聚合计算 TotalCount
+6. `IsActive = false` 的节点 TotalCount 永远为 0，且不参与父节点聚合
+7. 已读状态仅抑制初始加载时的红点，运行时新的 Calculator 计算结果会覆盖已读状态
