@@ -308,9 +308,11 @@ namespace FuFramework.RedDot.Editor
             var logicType     = m_LogicTypeProperty?.GetValue(node)?.ToString()     ?? "-";
             var cleanStrategy = m_CleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
             var displayMode   = m_DisplayModeProperty?.GetValue(node)?.ToString()   ?? "-";
+
             var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
-            var triggerEvents = (string[])m_TriggerEventsProperty?.GetValue(node);
-            var triggerEventsStr = triggerEvents != null && triggerEvents.Length > 0 ? string.Join(",", triggerEvents) : "-";
+
+            var triggerEvents    = (string[])m_TriggerEventsProperty?.GetValue(node);
+            var triggerEventsStr = triggerEvents is { Length: > 0 } ? string.Join(",", triggerEvents) : "";
 
             EditorGUILayout.BeginHorizontal();
 
@@ -332,6 +334,7 @@ namespace FuFramework.RedDot.Editor
             {
                 GUILayout.Label(keyString);
             }
+
             EditorGUILayout.EndHorizontal();
 
             // 节点信息列：所有行的以下列宽固定，靠左排列
@@ -355,7 +358,7 @@ namespace FuFramework.RedDot.Editor
             if (hasCalculator)
                 GUILayout.Label("有计算函数", GUILayout.Width(80));
             if (!string.IsNullOrEmpty(triggerEventsStr))
-                GUILayout.Label($"事件: {triggerEventsStr}", GUILayout.Width(150));
+                GUILayout.Label($"触发重算事件: {triggerEventsStr}", GUILayout.Width(200));
 
             // 操作按钮：设置为已读
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
