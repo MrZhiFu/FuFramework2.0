@@ -334,19 +334,24 @@ namespace FuFramework.RedDot.Editor
 
             // 节点信息列：所有行的以下列宽固定，靠左排列
             GUILayout.Label(isStatic ? "静态" : "动态", GUILayout.Width(40));
+
+            var oldColor = GUI.color;
+            GUI.color = isActive ? Color.green : Color.gray;
             GUILayout.Label(isActive ? "激活" : "未激活", GUILayout.Width(50));
-            GUILayout.Label($"最终: {totalCount}",  GUILayout.Width(80));
-            GUILayout.Label($"原始: {rawCount}",    GUILayout.Width(80));
-            GUILayout.Label($"{logicType}",         GUILayout.Width(40));
-            GUILayout.Label($"{displayMode}",       GUILayout.Width(40));
-            GUILayout.Label($"{cleanStrategy}",     GUILayout.Width(50));
+            GUI.color = oldColor;
+
+            GUILayout.Label($"最终计数: {totalCount}",    GUILayout.Width(80));
+            GUILayout.Label($"原始计数: {rawCount}",      GUILayout.Width(80));
+            GUILayout.Label($"聚合逻辑: {logicType}",     GUILayout.Width(90));
+            GUILayout.Label($"显示模式: {displayMode}",   GUILayout.Width(130));
+            GUILayout.Label($"清理策略: {cleanStrategy}", GUILayout.Width(110));
 
             if (isRead)
                 GUILayout.Label("已读", GUILayout.Width(40));
             if (isDirty)
                 GUILayout.Label("脏", GUILayout.Width(30));
             if (hasCalculator)
-                GUILayout.Label("Calc", GUILayout.Width(50));
+                GUILayout.Label("有计算函数", GUILayout.Width(80));
 
             // 操作按钮：设置为已读
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
