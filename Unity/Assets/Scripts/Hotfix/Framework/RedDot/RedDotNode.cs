@@ -43,7 +43,7 @@ namespace Hotfix.Framework.RedDot
         public RedDotNode Parent { get; private set; }
 
         /// <summary>
-        /// 默认显示模式（来自配置表）
+        /// 显示模式（来自配置表）
         /// </summary>
         public ERedDotDisplayMode DisplayMode { get; private set; }
 
@@ -63,7 +63,7 @@ namespace Hotfix.Framework.RedDot
         public bool IsActive { get; private set; }
 
         /// <summary>
-        /// 是否已读（持久化，仅抑制初始加载时的红点）
+        /// 是否已读（持久化，仅对静态节点有效，动态节点会随时增减，没必要持久化）
         /// </summary>
         public bool IsRead { get; internal set; }
 
@@ -75,7 +75,7 @@ namespace Hotfix.Framework.RedDot
         #region calculator
 
         /// <summary>
-        /// 叶子节点红点数计算函数（不为 null 时由 OnUpdate 自动调用）
+        /// 红点数计算函数（不为 null 时由 OnUpdate 自动调用）
         /// </summary>
         public Func<int> Calculator { get; internal set; }
 

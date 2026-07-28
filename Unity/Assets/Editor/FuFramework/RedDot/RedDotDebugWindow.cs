@@ -67,89 +67,89 @@ namespace FuFramework.RedDot.Editor
         private object m_ModuleInstance;
 
         /// <summary>
-        /// GetAllNodes 方法
+        /// 获取所有节点的方法
         /// </summary>
         private MethodInfo m_GetAllNodesMethod;
 
         /// <summary>
-        /// GetState 方法
+        /// 获取节点状态的方法
         /// </summary>
         private MethodInfo m_GetStateMethod;
 
         /// <summary>
-        /// MarkRead 方法
+        /// 标记节点为已读的方法
         /// </summary>
         private MethodInfo m_MarkReadMethod;
 
         /// <summary>
-        /// GetChildren 方法
+        /// 获取子节点的方法
         /// </summary>
         private MethodInfo m_GetChildrenMethod;
 
         /// <summary>
-        /// Key 属性
+        /// 节点Key属性
         /// </summary>
         private PropertyInfo m_KeyProperty;
 
         /// <summary>
-        /// Parent 属性
+        /// 父节点属性
         /// </summary>
         private PropertyInfo m_ParentProperty;
 
         /// <summary>
-        /// RawCount 属性
+        /// 节点的原始计数（自身，不含子节点）
         /// </summary>
         private PropertyInfo m_RawCountProperty;
 
         /// <summary>
-        /// TotalCount 属性
+        /// 节点的总计数（自身 + 所有子节点）
         /// </summary>
         private PropertyInfo m_TotalCountProperty;
 
         /// <summary>
-        /// IsActive 属性
+        /// 是否是静态节点属性
+        /// </summary>
+        private PropertyInfo m_IsStaticProperty;
+
+        /// <summary>
+        /// 节点是否激活属性
         /// </summary>
         private PropertyInfo m_IsActiveProperty;
 
         /// <summary>
-        /// IsRead 属性
+        /// 节点是否已读属性
         /// </summary>
         private PropertyInfo m_IsReadProperty;
 
         /// <summary>
-        /// IsDirty 属性
+        /// 节点脏标记属性
         /// </summary>
         private PropertyInfo m_IsDirtyProperty;
 
         /// <summary>
-        /// LogicType 属性
+        /// 子节点聚合逻辑属性
         /// </summary>
         private PropertyInfo m_LogicTypeProperty;
 
         /// <summary>
-        /// CleanStrategy 属性
+        /// 节点清理策略属性
         /// </summary>
         private PropertyInfo m_CleanStrategyProperty;
 
         /// <summary>
-        /// DisplayMode 属性
+        /// 显示模式属性
         /// </summary>
         private PropertyInfo m_DisplayModeProperty;
 
         /// <summary>
-        /// Calculator 属性
+        /// 计算逻辑属性
         /// </summary>
         private PropertyInfo m_CalculatorProperty;
 
         /// <summary>
-        /// TriggerEvents 属性
+        /// 触发重算的事件ID列表属性
         /// </summary>
         private PropertyInfo m_TriggerEventsProperty;
-
-        /// <summary>
-        /// IsStatic 属性
-        /// </summary>
-        private PropertyInfo m_IsStaticProperty;
 
         #endregion
 
@@ -211,10 +211,13 @@ namespace FuFramework.RedDot.Editor
 
             m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
 
+            // 绘制节点树
             foreach (var node in nodes)
             {
                 if (GetParent(node) == null)
+                {
                     DrawNodeTree(node, 0);
+                }
             }
 
             EditorGUILayout.EndScrollView();
@@ -240,13 +243,19 @@ namespace FuFramework.RedDot.Editor
             GUILayout.FlexibleSpace();
 
             if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
+            {
                 Repaint();
+            }
 
             if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(80)))
+            {
                 ExpandAll();
+            }
 
             if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(80)))
+            {
                 CollapseAll();
+            }
 
             EditorGUILayout.EndHorizontal();
         }
@@ -264,36 +273,41 @@ namespace FuFramework.RedDot.Editor
         {
             if (node == null) return;
 
+            // 检查是否需要过滤
             var keyString = GetKeyString(node);
             if (!string.IsNullOrEmpty(m_SearchFilter))
             {
                 if (!keyString.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
                 {
+                    // 如果当前节点不匹配，检查子节点是否匹配
                     bool childMatches = false;
                     foreach (var child in GetChildren(node))
                     {
-                        if (GetKeyString(child).Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
-                        {
-                            childMatches = true;
-                            break;
-                        }
+                        if (!GetKeyString(child).Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase)) continue;
+                        childMatches = true;
+                        break;
                     }
 
                     if (!childMatches) return;
                 }
             }
 
+            // 获取节点的所有子节点
             var children = GetChildren(node);
-            bool hasChildren = children.Any();
+
+            var enumerable  = children as object[] ?? children.ToArray();
+            var hasChildren = enumerable.Any();
+
             var totalCount = (int)(m_TotalCountProperty?.GetValue(node) ?? 0);
-            var rawCount = (int)(m_RawCountProperty?.GetValue(node) ?? 0);
-            var isActive = (bool)(m_IsActiveProperty?.GetValue(node) ?? true);
-            var isRead = (bool)(m_IsReadProperty?.GetValue(node) ?? false);
-            var isDirty = (bool)(m_IsDirtyProperty?.GetValue(node) ?? false);
-            var isStatic = (bool)(m_IsStaticProperty?.GetValue(node) ?? false);
-            var logicType = m_LogicTypeProperty?.GetValue(node)?.ToString() ?? "-";
+            var rawCount   = (int)(m_RawCountProperty?.GetValue(node)   ?? 0);
+            var isActive   = (bool)(m_IsActiveProperty?.GetValue(node)  ?? true);
+            var isRead     = (bool)(m_IsReadProperty?.GetValue(node)    ?? false);
+            var isDirty    = (bool)(m_IsDirtyProperty?.GetValue(node)   ?? false);
+            var isStatic   = (bool)(m_IsStaticProperty?.GetValue(node)  ?? false);
+
+            var logicType     = m_LogicTypeProperty?.GetValue(node)?.ToString()     ?? "-";
             var cleanStrategy = m_CleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
-            var displayMode = m_DisplayModeProperty?.GetValue(node)?.ToString() ?? "-";
+            var displayMode   = m_DisplayModeProperty?.GetValue(node)?.ToString()   ?? "-";
             var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
 
             EditorGUILayout.BeginHorizontal();
@@ -301,39 +315,41 @@ namespace FuFramework.RedDot.Editor
 
             if (hasChildren)
             {
-                if (!m_FoldoutStates.TryGetValue(node, out bool foldout))
+                if (!m_FoldoutStates.TryGetValue(node, out var foldout))
                 {
-                    foldout = true;
-                    m_FoldoutStates[node] = foldout;
+                    foldout               = true;
+                    m_FoldoutStates[node] = true;
                 }
 
                 m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, $"{keyString}", true);
             }
             else
             {
-                GUILayout.Label($"{keyString}", GUILayout.Width(180));
+                GUILayout.Label($"{keyString}", GUILayout.Width(300));
             }
 
-            GUILayout.Label(isStatic ? "S" : "D", GUILayout.Width(20));
+            // 静态/动态节点标记
+            GUILayout.Label(isStatic ? "静态" : "动态", GUILayout.Width(30));
 
             var oldColor = GUI.color;
             GUI.color = isActive ? Color.green : Color.gray;
-            GUILayout.Label(isActive ? "●" : "○", GUILayout.Width(20));
+            GUILayout.Label(isActive ? "激活" : "未激活", GUILayout.Width(40));
             GUI.color = oldColor;
 
-            GUILayout.Label($"最终: {totalCount}", GUILayout.Width(60));
-            GUILayout.Label($"原始: {rawCount}", GUILayout.Width(60));
-            GUILayout.Label($"{logicType}", GUILayout.Width(40));
-            GUILayout.Label($"{displayMode}", GUILayout.Width(40));
-            GUILayout.Label($"{cleanStrategy}", GUILayout.Width(60));
+            GUILayout.Label($"最终计数: {totalCount}",    GUILayout.Width(80));
+            GUILayout.Label($"原始计数: {rawCount}",      GUILayout.Width(80));
+            GUILayout.Label($"聚合逻辑: {logicType}",     GUILayout.Width(90));
+            GUILayout.Label($"显示模式: {displayMode}",   GUILayout.Width(130));
+            GUILayout.Label($"清理策略: {cleanStrategy}", GUILayout.Width(110));
 
             if (isRead)
                 GUILayout.Label("已读", GUILayout.Width(40));
             if (isDirty)
                 GUILayout.Label("脏", GUILayout.Width(30));
             if (hasCalculator)
-                GUILayout.Label("Calc", GUILayout.Width(40));
+                GUILayout.Label("有计算函数", GUILayout.Width(80));
 
+            // 操作按钮：设置为已读
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
             {
                 var key = m_KeyProperty?.GetValue(node);
@@ -341,6 +357,7 @@ namespace FuFramework.RedDot.Editor
                     m_MarkReadMethod?.Invoke(m_ModuleInstance, new[] { key });
             }
 
+            // 操作按钮：刷新状态
             if (GUILayout.Button("刷新", GUILayout.Width(50)))
             {
                 var key = m_KeyProperty?.GetValue(node);
@@ -350,10 +367,13 @@ namespace FuFramework.RedDot.Editor
 
             EditorGUILayout.EndHorizontal();
 
-            if (hasChildren && m_FoldoutStates.TryGetValue(node, out bool open) && open)
+            // 折叠/展开子节点
+            if (hasChildren && m_FoldoutStates.TryGetValue(node, out var open) && open)
             {
-                foreach (var child in children)
+                foreach (var child in enumerable)
+                {
                     DrawNodeTree(child, indentLevel + 1);
+                }
             }
         }
 
@@ -365,7 +385,9 @@ namespace FuFramework.RedDot.Editor
             var nodes = GetAllNodes();
             if (nodes == null) return;
             foreach (var node in nodes)
+            {
                 m_FoldoutStates[node] = true;
+            }
         }
 
         /// <summary>
@@ -376,7 +398,9 @@ namespace FuFramework.RedDot.Editor
             var nodes = GetAllNodes();
             if (nodes == null) return;
             foreach (var node in nodes)
+            {
                 m_FoldoutStates[node] = false;
+            }
         }
 
         #endregion
@@ -405,23 +429,24 @@ namespace FuFramework.RedDot.Editor
             if (keyType == null) return false;
 
             m_GetAllNodesMethod = m_ModuleType.GetMethod("GetAllNodes", BindingFlags.Public | BindingFlags.Instance);
-            m_GetStateMethod = m_ModuleType.GetMethod("GetState", BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
-            m_MarkReadMethod = m_ModuleType.GetMethod("MarkRead", BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+            m_GetStateMethod    = m_ModuleType.GetMethod("GetState",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+            m_MarkReadMethod    = m_ModuleType.GetMethod("MarkRead",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+
             m_GetChildrenMethod = nodeType.GetMethod("GetChildren", BindingFlags.Public | BindingFlags.Instance);
 
-            m_KeyProperty = nodeType.GetProperty("Key", BindingFlags.Public | BindingFlags.Instance);
-            m_ParentProperty = nodeType.GetProperty("Parent", BindingFlags.Public | BindingFlags.Instance);
-            m_RawCountProperty = nodeType.GetProperty("RawCount", BindingFlags.Public | BindingFlags.Instance);
-            m_TotalCountProperty = nodeType.GetProperty("TotalCount", BindingFlags.Public | BindingFlags.Instance);
-            m_IsActiveProperty = nodeType.GetProperty("IsActive", BindingFlags.Public | BindingFlags.Instance);
-            m_IsReadProperty = nodeType.GetProperty("IsRead", BindingFlags.Public | BindingFlags.Instance);
-            m_IsDirtyProperty = nodeType.GetProperty("IsDirty", BindingFlags.Public | BindingFlags.Instance);
-            m_LogicTypeProperty = nodeType.GetProperty("LogicType", BindingFlags.Public | BindingFlags.Instance);
+            m_KeyProperty           = nodeType.GetProperty("Key",           BindingFlags.Public | BindingFlags.Instance);
+            m_ParentProperty        = nodeType.GetProperty("Parent",        BindingFlags.Public | BindingFlags.Instance);
+            m_RawCountProperty      = nodeType.GetProperty("RawCount",      BindingFlags.Public | BindingFlags.Instance);
+            m_TotalCountProperty    = nodeType.GetProperty("TotalCount",    BindingFlags.Public | BindingFlags.Instance);
+            m_IsActiveProperty      = nodeType.GetProperty("IsActive",      BindingFlags.Public | BindingFlags.Instance);
+            m_IsReadProperty        = nodeType.GetProperty("IsRead",        BindingFlags.Public | BindingFlags.Instance);
+            m_IsDirtyProperty       = nodeType.GetProperty("IsDirty",       BindingFlags.Public | BindingFlags.Instance);
+            m_LogicTypeProperty     = nodeType.GetProperty("LogicType",     BindingFlags.Public | BindingFlags.Instance);
             m_CleanStrategyProperty = nodeType.GetProperty("CleanStrategy", BindingFlags.Public | BindingFlags.Instance);
-            m_DisplayModeProperty = nodeType.GetProperty("DisplayMode", BindingFlags.Public | BindingFlags.Instance);
-            m_CalculatorProperty = nodeType.GetProperty("Calculator", BindingFlags.Public | BindingFlags.Instance);
+            m_DisplayModeProperty   = nodeType.GetProperty("DisplayMode",   BindingFlags.Public | BindingFlags.Instance);
+            m_CalculatorProperty    = nodeType.GetProperty("Calculator",    BindingFlags.Public | BindingFlags.Instance);
             m_TriggerEventsProperty = nodeType.GetProperty("TriggerEvents", BindingFlags.Public | BindingFlags.Instance);
-            m_IsStaticProperty = nodeType.GetProperty("IsStatic", BindingFlags.Public | BindingFlags.Instance);
+            m_IsStaticProperty      = nodeType.GetProperty("IsStatic",      BindingFlags.Public | BindingFlags.Instance);
 
             return true;
         }
