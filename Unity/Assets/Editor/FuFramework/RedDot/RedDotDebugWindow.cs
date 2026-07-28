@@ -311,8 +311,11 @@ namespace FuFramework.RedDot.Editor
             var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
 
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(indentLevel * 20);
 
+            // Key 区域：固定总宽，缩进在内部靠空格实现，所有层级的节点信息自然对齐
+            const int keyTotalWidth = 220;
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(keyTotalWidth));
+            GUILayout.Space(indentLevel * 20);
             if (hasChildren)
             {
                 if (!m_FoldoutStates.TryGetValue(node, out var foldout))
@@ -321,12 +324,13 @@ namespace FuFramework.RedDot.Editor
                     m_FoldoutStates[node] = true;
                 }
 
-                m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, $"{keyString}", true);
+                m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, keyString, true);
             }
             else
             {
-                GUILayout.Label($"{keyString}", GUILayout.Width(300));
+                GUILayout.Label(keyString);
             }
+            EditorGUILayout.EndHorizontal();
 
             // 静态/动态节点标记
             GUILayout.Label(isStatic ? "静态" : "动态", GUILayout.Width(30));
