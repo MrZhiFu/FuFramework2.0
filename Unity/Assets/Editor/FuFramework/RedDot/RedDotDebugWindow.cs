@@ -309,12 +309,14 @@ namespace FuFramework.RedDot.Editor
             var cleanStrategy = m_CleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
             var displayMode   = m_DisplayModeProperty?.GetValue(node)?.ToString()   ?? "-";
             var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
+            var triggerEvents = (string[])m_TriggerEventsProperty?.GetValue(node);
+            var triggerEventsStr = triggerEvents != null && triggerEvents.Length > 0 ? string.Join(",", triggerEvents) : "-";
 
             EditorGUILayout.BeginHorizontal();
 
             // Key 区域：固定宽度子 Horizontal，缩进在内部，所有层级信息列起点一致
-            const int k_KeyAreaWidth = 260;
-            EditorGUILayout.BeginHorizontal(GUILayout.Width(k_KeyAreaWidth));
+            const int keyAreaWidth = 260;
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(keyAreaWidth));
             GUILayout.Space(indentLevel * 20);
             if (hasChildren)
             {
@@ -352,6 +354,8 @@ namespace FuFramework.RedDot.Editor
                 GUILayout.Label("脏", GUILayout.Width(30));
             if (hasCalculator)
                 GUILayout.Label("有计算函数", GUILayout.Width(80));
+            if (!string.IsNullOrEmpty(triggerEventsStr))
+                GUILayout.Label($"事件: {triggerEventsStr}", GUILayout.Width(150));
 
             // 操作按钮：设置为已读
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
