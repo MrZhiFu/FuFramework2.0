@@ -311,8 +311,11 @@ namespace FuFramework.RedDot.Editor
             var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
 
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(indentLevel * 20);
 
+            // Key 区域：固定宽度子 Horizontal，缩进在内部，所有层级信息列起点一致
+            const int k_KeyAreaWidth = 260;
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(k_KeyAreaWidth));
+            GUILayout.Space(indentLevel * 20);
             if (hasChildren)
             {
                 if (!m_FoldoutStates.TryGetValue(node, out var foldout))
@@ -321,33 +324,29 @@ namespace FuFramework.RedDot.Editor
                     m_FoldoutStates[node] = true;
                 }
 
-                m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, $"{keyString}", true);
+                m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, keyString, true);
             }
             else
             {
-                GUILayout.Label($"{keyString}", GUILayout.Width(300));
+                GUILayout.Label(keyString);
             }
+            EditorGUILayout.EndHorizontal();
 
-            // 静态/动态节点标记
-            GUILayout.Label(isStatic ? "静态" : "动态", GUILayout.Width(30));
-
-            var oldColor = GUI.color;
-            GUI.color = isActive ? Color.green : Color.gray;
-            GUILayout.Label(isActive ? "激活" : "未激活", GUILayout.Width(40));
-            GUI.color = oldColor;
-
-            GUILayout.Label($"最终计数: {totalCount}",    GUILayout.Width(80));
-            GUILayout.Label($"原始计数: {rawCount}",      GUILayout.Width(80));
-            GUILayout.Label($"聚合逻辑: {logicType}",     GUILayout.Width(90));
-            GUILayout.Label($"显示模式: {displayMode}",   GUILayout.Width(130));
-            GUILayout.Label($"清理策略: {cleanStrategy}", GUILayout.Width(110));
+            // 节点信息列：所有行的以下列宽固定，靠左排列
+            GUILayout.Label(isStatic ? "静态" : "动态", GUILayout.Width(40));
+            GUILayout.Label(isActive ? "激活" : "未激活", GUILayout.Width(50));
+            GUILayout.Label($"最终: {totalCount}",  GUILayout.Width(80));
+            GUILayout.Label($"原始: {rawCount}",    GUILayout.Width(80));
+            GUILayout.Label($"{logicType}",         GUILayout.Width(40));
+            GUILayout.Label($"{displayMode}",       GUILayout.Width(40));
+            GUILayout.Label($"{cleanStrategy}",     GUILayout.Width(50));
 
             if (isRead)
                 GUILayout.Label("已读", GUILayout.Width(40));
             if (isDirty)
                 GUILayout.Label("脏", GUILayout.Width(30));
             if (hasCalculator)
-                GUILayout.Label("有计算函数", GUILayout.Width(80));
+                GUILayout.Label("Calc", GUILayout.Width(50));
 
             // 操作按钮：设置为已读
             if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
