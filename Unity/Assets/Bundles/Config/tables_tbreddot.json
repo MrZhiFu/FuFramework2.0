@@ -23,6 +23,30 @@
     "IsActive": true
   },
   {
+    "Id": 1003,
+    "ParentId": 1002,
+    "DisplayMode": 2,
+    "CleanStrategy": 0,
+    "LogicType": 0,
+    "IsActive": true
+  },
+  {
+    "Id": 1004,
+    "ParentId": 1002,
+    "DisplayMode": 2,
+    "CleanStrategy": 0,
+    "LogicType": 0,
+    "IsActive": true
+  },
+  {
+    "Id": 1005,
+    "ParentId": 1003,
+    "DisplayMode": 2,
+    "CleanStrategy": 0,
+    "LogicType": 0,
+    "IsActive": true
+  },
+  {
     "Id": 2000,
     "DisplayMode": 1,
     "CleanStrategy": 0,

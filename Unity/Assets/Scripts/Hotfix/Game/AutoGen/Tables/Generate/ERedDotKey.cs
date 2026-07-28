@@ -29,6 +29,18 @@ namespace Hotfix.Game.Config
         /// </summary>
         Bag_Skill = 1002,
         /// <summary>
+        /// 背包.技能.主动
+        /// </summary>
+        Bag_Skill_Active = 1003,
+        /// <summary>
+        /// 背包.技能.被动
+        /// </summary>
+        Bag_Skill_BeActive = 1004,
+        /// <summary>
+        /// 背包.技能.主动.释放
+        /// </summary>
+        Bag_Skill_Active_Play = 1005,
+        /// <summary>
         /// 商店
         /// </summary>
         Shop = 2000,
