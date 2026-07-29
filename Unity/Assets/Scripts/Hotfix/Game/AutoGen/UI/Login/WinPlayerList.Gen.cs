@@ -44,7 +44,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			CtrlSelected = UIView.GetController("CtrlSelected");
+			CtrlSelected = WinUI.GetController("CtrlSelected");
 			listPlayer = (GList)GetChild("_listPlayer");
 			loaderSelectedIcon = (GLoader)GetChild("_loaderSelectedIcon");
 			txtSelectedName = (GRichTextField)GetChild("_txtSelectedName");

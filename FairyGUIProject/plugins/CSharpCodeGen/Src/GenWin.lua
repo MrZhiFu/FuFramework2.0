@@ -57,9 +57,9 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             GenCommon:GenCompDefine(dataTable['#CompDefine#'], compArray, AllClsMap)-- 生成组件的定义代码，如：private GButton btnEnter;
             GenCommon:GenTransitionDefine(dataTable['#CompDefine#'], winCls)           -- 生成动效的定义代码，如：private Transition xxxAnim;
 
-            GenCommon:GenControllerInit(dataTable['#CompInit#'], winCls)-- 控制器的初始化赋值，如：CtrlSelected = UIView.GetController("CtrlSelected");
+            GenCommon:GenControllerInit(dataTable['#CompInit#'], winCls)-- 控制器的初始化赋值，如：CtrlSelected = WinUI.GetController("CtrlSelected");
             GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
-            GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = UIView.GetTransition("xxxAnim");
+            GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = WinUI.GetTransition("xxxAnim");
 
             GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
             GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
@@ -106,10 +106,10 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                 for _, k in ipairs(apiKeys) do
                     local content = table.concat(dataTable[k])
                     if content ~= "" then
-                        -- 1. UIView.GetController → m_View.GetController
-                        content = content:gsub("UIView%.GetController", "m_View.GetController")
-                        -- 2. UIView.GetTransition → m_View.GetTransition
-                        content = content:gsub("UIView%.GetTransition", "m_View.GetTransition")
+                        -- 1. WinUI.GetController → m_View.GetController
+                        content = content:gsub("WinUI%.GetController", "m_View.GetController")
+                        -- 2. WinUI.GetTransition → m_View.GetTransition
+                        content = content:gsub("WinUI%.GetTransition", "m_View.GetTransition")
                         -- 3. GetChild → m_View.GetChild
                         content = content:gsub("([^%.])GetChild%(", "%1m_View.GetChild(")
                         -- 4. AddUIListener(var.event, handler) → var.event.Set(handler)

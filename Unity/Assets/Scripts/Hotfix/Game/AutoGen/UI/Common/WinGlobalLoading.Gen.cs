@@ -21,7 +21,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			rotationAnim = UIView.GetTransition("rotation");
+			rotationAnim = WinUI.GetTransition("rotation");
         }
 
         /// <summary>

@@ -50,7 +50,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			BtnCtrl = UIView.GetController("BtnCtrl");
+			BtnCtrl = WinUI.GetController("BtnCtrl");
 			txtContent = (GRichTextField)GetChild("_txtContent");
 			btnOk = (GButton)GetChild("_btnOk");
 			btnNo = (GButton)GetChild("_btnNo");

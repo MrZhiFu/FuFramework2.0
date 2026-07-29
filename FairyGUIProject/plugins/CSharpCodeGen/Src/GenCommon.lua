@@ -238,7 +238,7 @@ function GenCommon:GenCompInit(dataList, compArray, AllClsMap)
     end
 end
 
---- 生成动效的初始化赋值C#代码：testAnim = UIView.GetTransition("TestAnim");
+--- 生成动效的初始化赋值C#代码：testAnim = WinUI.GetTransition("TestAnim");
 ---@param dataList table 待填充的代码行数组
 ---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件/界面类信息
 function GenCommon:GenTransitionInit(dataList, compCls)
@@ -267,14 +267,14 @@ function GenCommon:GenTransitionInit(dataList, compCls)
         table.insert(dataList, " = ")
 
         if Tool:StartWith(compCls.resName, "Win") then
-            table.insert(dataList, "UIView.")
+            table.insert(dataList, "WinUI.")
         end
 
         table.insert(dataList, string.format("GetTransition(\"%s\");\n", transitionName))
     end
 end
 
---- 生成控制器的初始化赋值C#代码：testCtrl = UIView.GetController("TestCtrl");
+--- 生成控制器的初始化赋值C#代码：testCtrl = WinUI.GetController("TestCtrl");
 ---@param dataList table 待填充的代码行数组
 ---@param compCls CS.FairyEditor.PublishHandler.ClassInfo 组件/界面类信息
 function GenCommon:GenControllerInit(dataList, compCls)
@@ -300,7 +300,7 @@ function GenCommon:GenControllerInit(dataList, compCls)
         table.insert(dataList, " = ")
 
         if Tool:StartWith(compCls.resName, "Win") then
-            table.insert(dataList, "UIView.")
+            table.insert(dataList, "WinUI.")
         end
 
         table.insert(dataList, string.format("GetController(\"%s\");\n", controllerName))

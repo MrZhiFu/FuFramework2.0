@@ -35,7 +35,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// UI显示对象
         /// </summary>
-        public GComponent UIView { get; private set; }
+        public GComponent WinUI { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -92,12 +92,12 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public bool Visible
         {
-            get => UIView.visible;
+            get => WinUI.visible;
             private set
             {
-                if (UIView         == null) return;
-                if (UIView.visible == value) return;
-                UIView.visible = value;
+                if (WinUI         == null) return;
+                if (WinUI.visible == value) return;
+                WinUI.visible = value;
 
                 // 触发UI显示状态变化事件
                 Broadcast(ChangeVisibleEventArgs.EventId, ChangeVisibleEventArgs.Create(this, value, null));
@@ -134,8 +134,8 @@ namespace Hotfix.Framework.UI
 
             try
             {
-                UIView               = uiView;
-                UIView.fairyBatching = true;
+                WinUI               = uiView;
+                WinUI.fairyBatching = true;
 
                 // 初始化时，设置一次UI对象全屏和安全区适配
                 _OnSafeAreaChanged();
@@ -159,21 +159,21 @@ namespace Hotfix.Framework.UI
         /// 设置UI对象
         /// </summary>
         /// <param name="view"></param>
-        protected void SetUIWin(GComponent view) => UIView = view;
+        protected void SetUIWin(GComponent view) => WinUI = view;
 
         /// <summary>
         /// 获取界面子对象。
         /// </summary>
         /// <param name="childName"></param>
         /// <returns></returns>
-        protected GObject GetChild(string childName) => UIView.GetChild(childName);
+        protected GObject GetChild(string childName) => WinUI.GetChild(childName);
 
         /// <summary>
         /// 添加界面子对象。
         /// </summary>
         /// <param name="child"></param>
         /// <returns></returns>
-        protected void AddChild(GObject child) => UIView.AddChild(child);
+        protected void AddChild(GObject child) => WinUI.AddChild(child);
 
         /// <summary>
         /// 关闭自身。
@@ -190,17 +190,17 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void _OnSafeAreaChanged()
         {
-            if (UIView == null) return;
+            if (WinUI == null) return;
             if (AdjustNotch)
             {
                 // 普通 UI 跟随 GRoot
-                UIView.SetSize(GRoot.inst.width, GRoot.inst.height);
+                WinUI.SetSize(GRoot.inst.width, GRoot.inst.height);
                 return;
             }
 
             // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域
-            UIView.SetSize(Screen.width / UIContentScaler.scaleFactor, Screen.height / UIContentScaler.scaleFactor);
-            UIView.SetXY(-SafeAreaHelper.OffsetX, -SafeAreaHelper.OffsetY);
+            WinUI.SetSize(Screen.width / UIContentScaler.scaleFactor, Screen.height / UIContentScaler.scaleFactor);
+            WinUI.SetXY(-SafeAreaHelper.OffsetX, -SafeAreaHelper.OffsetY);
         }
     }
 }

@@ -91,7 +91,7 @@ WinInfo (界面信息)
                              ↓
                     ┌─────────────────┐
                     │   WinBase      │
-                    │  - UIView       │
+                    │  - WinUI       │
                     │  - EventReg     │
                     │  - TimerReg     │
                     │  - UIEventReg   │
@@ -179,7 +179,7 @@ public void SetUIPriority(object uiView, int priority)
 | 属性 | 类型 | 说明 |
 |------|------|------|
 | SerialId | int | 界面序列编号 |
-| UIView | GComponent | FairyGUI 显示对象 |
+| WinUI | GComponent | FairyGUI 显示对象 |
 | UserData | object | 用户自定义数据 |
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
@@ -499,7 +499,7 @@ using FairyGUI;
 using UnityEngine;
 
 // 自定义主界面
-public class MainUIView : WinBase
+public class MainWinUI : WinBase
 {
     // 界面名称
     public override string UIName => "MainUI";
@@ -521,8 +521,8 @@ public class MainUIView : WinBase
     protected override void OnInit()
     {
         // 获取界面组件
-        m_StartButton = UIView.GetChild("start_btn") as GButton;
-        m_SettingButton = UIView.GetChild("setting_btn") as GButton;
+        m_StartButton = WinUI.GetChild("start_btn") as GButton;
+        m_SettingButton = WinUI.GetChild("setting_btn") as GButton;
         
         // 注册按钮事件
         AddUIListener(m_StartButton.onClick, OnStartButtonClick);
@@ -578,7 +578,7 @@ public class GameController : MonoBehaviour
         m_UIModule = ModuleManager.GetModule<UIModule>();
         
         // 打开主界面
-        m_UIModule.OpenUI<MainUIView>();
+        m_UIModule.OpenUI<MainWinUI>();
         
         // 异步打开设置界面
         OpenSettingAsync();
@@ -586,7 +586,7 @@ public class GameController : MonoBehaviour
     
     private async void OpenSettingAsync()
     {
-        var settingView = await m_UIModule.OpenUIAsync<SettingUIView>();
+        var settingView = await m_UIModule.OpenUIAsync<SettingWinUI>();
         if (settingView != null)
         {
             Debug.Log("设置界面打开成功");
@@ -596,7 +596,7 @@ public class GameController : MonoBehaviour
     private void CloseMainUI()
     {
         // 关闭主界面
-        m_UIModule.CloseUI<MainUIView>();
+        m_UIModule.CloseUI<MainWinUI>();
     }
     
     private void OnDestroy()
@@ -610,7 +610,7 @@ public class GameController : MonoBehaviour
 ### 4.3 自定义动画效果
 
 ```csharp
-public class AnimatedUIView : WinBase
+public class AnimatedWinUI : WinBase
 {
     public override string UIName => "AnimatedUI";
     // TweenType 不再通过代码 override，改为在 UIConfig 配置表中设置 EUITweenType.Custom。
@@ -620,8 +620,8 @@ public class AnimatedUIView : WinBase
     protected override void DoCustomOpenTween()
     {
         // 缩放动画
-        UIView.scale = Vector2.zero;
-        UIView.TweenScale(Vector2.one, UIConfig.TweenDuration)
+        WinUI.scale = Vector2.zero;
+        WinUI.TweenScale(Vector2.one, UIConfig.TweenDuration)
               .SetEase(EaseType.BackOut);
     }
     
@@ -629,7 +629,7 @@ public class AnimatedUIView : WinBase
     protected override GTweener DoCustomCloseTween()
     {
         // 旋转缩放动画
-        return UIView.TweenScale(Vector2.zero, UIConfig.TweenDuration)
+        return WinUI.TweenScale(Vector2.zero, UIConfig.TweenDuration)
                      .SetEase(EaseType.BackIn);
     }
 }
@@ -797,7 +797,7 @@ public class UIEventListener : MonoBehaviour
     private void OnUIVisibleChanged(object sender, GameEventArgs e)
     {
         var args = e as ChangeUIVisibleEventArgs;
-        Debug.Log($"界面可见性变化: {args.UIView.UIName}, 可见: {args.Visible}");
+        Debug.Log($"界面可见性变化: {args.WinUI.UIName}, 可见: {args.Visible}");
     }
     
     private void OnDestroy()

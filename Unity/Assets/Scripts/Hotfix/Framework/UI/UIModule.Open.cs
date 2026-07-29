@@ -130,7 +130,7 @@ namespace Hotfix.Framework.UI
                 var uiGroup = win.UIGroup;
 
                 // AddChild会自动sort++ 
-                uiGroup.AddChild(win.UIView);
+                uiGroup.AddChild(win.WinUI);
                 uiGroup.Add(win);
 
                 win._OnOpen();    // 界面打开回调

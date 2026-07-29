@@ -41,11 +41,11 @@ namespace Hotfix.Framework.UI
 
             try
             {
-                winBase.UIView?.Dispose();
+                winBase.WinUI?.Dispose();
             }
             catch (Exception e)
             {
-                FuLogger.LogWarning($"[UIInstanceObject] 释放 UIView 时出现异常: {e.Message}");
+                FuLogger.LogWarning($"[UIInstanceObject] 释放 WinUI 时出现异常: {e.Message}");
             }
 
             winBase._OnDispose();

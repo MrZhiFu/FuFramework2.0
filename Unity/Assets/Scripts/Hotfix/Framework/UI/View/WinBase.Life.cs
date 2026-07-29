@@ -38,7 +38,7 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]打开-OnOpen().");
             Visible      = true;
-            UIView.alpha = 0;
+            WinUI.alpha = 0;
 
             // 先刷新界面
             OnOpen();
@@ -47,17 +47,17 @@ namespace Hotfix.Framework.UI
             switch (TweenType)
             {
                 case EUITweenType.None:
-                    UIView.alpha = 1;
+                    WinUI.alpha = 1;
                     return;
                 case EUITweenType.Fade:
-                    UIView.TweenFade(1, TweenDuration);
+                    WinUI.TweenFade(1, TweenDuration);
                     return;
                 case EUITweenType.Custom:
-                    UIView.alpha = 1;
+                    WinUI.alpha = 1;
                     DoCustomOpenTween();
                     return;
                 default:
-                    UIView.alpha = 1;
+                    WinUI.alpha = 1;
                     return;
             }
         }
@@ -127,7 +127,7 @@ namespace Hotfix.Framework.UI
                     OnClose();
                     return;
                 case EUITweenType.Fade:
-                    UIView.TweenFade(0, TweenDuration).OnComplete(OnClose);
+                    WinUI.TweenFade(0, TweenDuration).OnComplete(OnClose);
                     return;
                 case EUITweenType.Custom:
                     CustomCloseTween();
