@@ -68,7 +68,7 @@ namespace Hotfix.Framework.UI
         private bool AdjustNotch => UIConfig?.AdjustNotch ?? true;
 
         /// <summary>
-        /// 显示时是否暂停被覆盖的界面。UIGroup 通过 view.PauseCoveredUI 外部访问，保持 public。
+        /// 显示时是否暂停被覆盖的界面。UIGroup 通过 win.PauseCoveredUI 外部访问，保持 public。
         /// </summary>
         public bool PauseCoveredUI => UIConfig?.PauseCoveredUI ?? false;
 
@@ -158,8 +158,8 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 设置UI对象
         /// </summary>
-        /// <param name="view"></param>
-        protected void SetUIWin(GComponent view) => WinUI = view;
+        /// <param name="uiComp"></param>
+        protected void SetUIWin(GComponent uiComp) => WinUI = uiComp;
 
         /// <summary>
         /// 获取界面子对象。

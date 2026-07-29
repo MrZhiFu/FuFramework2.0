@@ -208,7 +208,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 往界面组增加界面。
         /// </summary>
-        /// <param name="view">要增加的界面。</param>
+        /// <param name="win">要增加的界面。</param>
         public void Add(WinBase win)
         {
             if (Has(win.SerialId))
@@ -221,7 +221,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 从界面组移除界面。
         /// </summary>
-        /// <param name="view">要移除的界面。</param>
+        /// <param name="win">要移除的界面。</param>
         public void Remove(WinBase win)
         {
             var uiInfo = GetInfo(win);
@@ -326,7 +326,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取UI界面的界面信息。
         /// </summary>
-        /// <param name="view">界面实例。</param>
+        /// <param name="win">界面实例。</param>
         /// <returns>界面信息。</returns>
         private WinInfo GetInfo(WinBase win)
         {
