@@ -17,9 +17,9 @@ namespace Hotfix.Game.UI
 {
     public partial class CompBagItemInfo : GComponent
     {
-        private FuiEventRegister m_UIEventRegister;
-        private EventRegister m_EventRegister;
-        private TimerRegister m_TimerRegister;
+        private TimerRegister m_TimerRegister;     // 计时器注册器
+        private EventRegister m_EventRegister;     // 业务逻辑事件注册器
+        private FuiEventRegister m_UIEventRegister;// UI事件注册器
 
 		private Controller IsCanUse;
 		private GTextField txtName;
