@@ -3,13 +3,10 @@ using FairyGUI;
 using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.Core;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Asset;
 using System.Collections.Generic;
-using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI

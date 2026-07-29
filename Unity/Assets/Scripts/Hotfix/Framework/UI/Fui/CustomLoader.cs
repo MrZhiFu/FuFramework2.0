@@ -7,7 +7,6 @@ using Hotfix.Framework.Asset;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using YooAsset;
@@ -131,8 +130,10 @@ namespace Hotfix.Framework.UI
                     RemoveLeastRecentlyUsed();
 
                 // 添加新项
-                var newItem = new CacheItem(key, texture);
-                newItem.AssetHandle = assetHandle;
+                var newItem = new CacheItem(key, texture)
+                {
+                    AssetHandle = assetHandle
+                };
                 m_CacheDict[key]    = newItem;
                 m_LruList.AddFirst(newItem);
             }
