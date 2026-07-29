@@ -146,8 +146,6 @@ namespace Hotfix.Framework.UI
                 // 初始化
                 _OnInit();
 
-                // 递归初始化子组件，传递自身实例给子组件。
-                InitChildrenView(UIView);
 
                 // 注册安全区变化监听
                 SafeAreaHelper.OnSafeAreaChanged += _OnSafeAreaChanged;
@@ -158,27 +156,6 @@ namespace Hotfix.Framework.UI
             }
         }
 
-        /// <summary>
-        /// 递归初始化自定义子组件，传递自身实例给子组件。
-        /// 注：自定义子组件实现ICustomComp接口(已在导出FUI时自动实现了)
-        /// </summary>
-        private void InitChildrenView(GComponent curComp)
-        {
-            var children = curComp.GetChildren();
-            foreach (var child in children)
-            {
-                var comp = child switch
-                {
-                    GLoader loader   => loader.component,
-                    GComponent component => component,
-                    _                    => null
-                };
-
-                if (comp is not ICustomComp customComp) continue;
-                customComp.Init(this);
-                InitChildrenView(comp);
-            }
-        }
 
         /// <summary>
         /// 设置UI对象
