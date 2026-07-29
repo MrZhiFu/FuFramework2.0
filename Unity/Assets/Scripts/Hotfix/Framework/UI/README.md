@@ -13,7 +13,7 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 - **异步资源加载**：基于 YooAsset 的异步 UI 包加载机制
 - **动画效果支持**：内置淡入淡出动画，支持自定义动画效果
 - **事件驱动架构**：完整的界面打开/关闭事件通知机制
-- **模块化设计**：支持界面组件化和自定义组件扩展
+- **模块化设计**：界面组件化，自定义组件自持 Register 独立管理事件和计时器
 - **安全区适配**：自动适配刘海屏/打孔屏，GRoot 偏移到安全区内，普通 UI 自动避让，全屏 UI 可覆盖刘海
 
 ## 2. 系统架构
@@ -52,7 +52,7 @@ WinBase (抽象基类)
 IReference (引用池接口)
     ↑
 WinInfo (界面信息)
-    ├── View (WinBase)
+    ├── Win (WinBase)
     ├── Paused (是否暂停)
     └── Covered (是否被覆盖)
 ```
@@ -67,11 +67,11 @@ WinInfo (界面信息)
 │  │  - WorldUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_InstancePool (ObjectPool<WinObject>)               │   │
+│  │  m_InstancePool (ObjectPool<WinObject>)                  │   │
 │  │  - 界面实例缓存与复用                                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  PkgManager (FuiPkgManager)                            │   │
+│  │  PkgManager (FuiPkgManager)                             │   │
 │  │  - 包加载、缓存、引用计数管理                            │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
@@ -83,15 +83,15 @@ WinInfo (界面信息)
                     └────────┬────────┘
                              ↓
                     ┌─────────────────┐
-                    │   WinInfo      │
-                    │  - WinBase     │
+                    │   WinInfo       │
+                    │  - Win (WinBase)│
                     │  - Paused       │
                     │  - Covered      │
                     └────────┬────────┘
                              ↓
                     ┌─────────────────┐
-                    │   WinBase      │
-                    │  - WinUI       │
+                    │   WinBase       │
+                    │  - WinUI        │
                     │  - EventReg     │
                     │  - TimerReg     │
                     │  - UIEventReg   │
@@ -121,41 +121,41 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 | InstanceAutoReleaseInterval | float | 对象池自动释放间隔 |
 | InstanceCapacity | int | 对象池容量 |
 | InstanceExpireTime | float | 对象过期时间 |
-| UIGroupCount | int | 界面组数量 |
+| GroupCount | int | 界面组数量 |
 
 **核心方法：**
 
 ```csharp
 // 打开界面
-public void OpenUI<T>(object userData = null) where T : WinBase, new()
-public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : WinBase, new()
+public void Open<T>(object userData = null) where T : WinBase, new()
+public async UniTask<T> OpenAsync<T>(object userData = null) where T : WinBase, new()
 
 // 关闭界面
-public void CloseUI<T>() where T : WinBase
-public void CloseUI(int serialId)
-public void CloseUI(WinBase view)
-public void CloseUINow<T>() where T : WinBase
-public void CloseAllUIs()
+public void Close<T>() where T : WinBase
+public void Close(int serialId)
+public void Close(WinBase win)
+public void CloseNow<T>() where T : WinBase
+public void CloseAll()
 
 // 获取界面
-public T GetUI<T>() where T : WinBase
-public WinBase GetUI(int serialId)
-public WinBase GetTopUI(EUILayer? uiLayer = null)
-public WinBase[] GetAllLoadedUIs()
+public T Get<T>() where T : WinBase
+public WinBase Get(int serialId)
+public WinBase GetTop(EUILayer? uiLayer = null)
+public WinBase[] GetAllLoaded()
 
 // 查询界面
-public bool HasUI<T>() where T : WinBase
-public bool HasUI(int serialId)
-public bool IsLoadingUI(string uiName)
+public bool Has<T>() where T : WinBase
+public bool Has(int serialId)
+public bool IsLoading(string uiName)
 
 // 界面组管理
-public bool AddUIGroup(EUILayer layer)
-public UIGroup GetUIGroup(EUILayer layer)
-public bool HasUIGroup(EUILayer layer)
+public bool AddGroup(EUILayer layer)
+public UIGroup GetGroup(EUILayer layer)
+public bool HasGroup(EUILayer layer)
 
 // 对象池设置
-public void SetUILocked(object uiView, bool locked)
-public void SetUIPriority(object uiView, int priority)
+public void SetLocked(object uiView, bool locked)
+public void SetPriority(object uiView, int priority)
 ```
 
 **打开界面流程：**
@@ -183,13 +183,10 @@ public void SetUIPriority(object uiView, int priority)
 | UserData | object | 用户自定义数据 |
 | UIName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
-| Layer | EUILayer | 界面层级（由 UIConfig 配置表设置） |
-| AdjustNotch | bool | 是否适配刘海/打孔（由 UIConfig 配置表设置，默认true），false 时填满全屏覆盖刘海 |
-| PauseCoveredUI | bool | 是否暂停被覆盖界面（由 UIConfig 配置表设置） |
-| TweenType | EUITweenType | 动画类型（由 UIConfig 配置表设置） |
-| TweenDuration | float | 动画时长（由 UIConfig 配置表设置，默认0.3s） |
+| UIConfig | UIConfigRow | UI 配置数据（来自 UIConfig 配置表） |
 | UIGroup | UIGroup | 所属界面组 |
 | Visible | bool | 是否可见 |
+| PauseCoveredUI | bool | 是否暂停被覆盖界面（由 UIConfig 配置表设置） |
 
 **生命周期方法：**
 
@@ -278,13 +275,13 @@ public void Init(EUILayer layer)
 public void OnUpdate(float deltaTime, float unscaledDeltaTime)
 
 // 界面管理
-public void AddUI(WinBase view)
-public void RemoveUI(WinBase view)
-public bool HasUI(int serialId)
-public bool HasUI(string uiName)
-public WinBase GetUI(int serialId)
-public WinBase GetUI(string uiName)
-public WinBase[] GetAllUIs()
+public void Add(WinBase win)
+public void Remove(WinBase win)
+public bool Has(int serialId)
+public bool Has(string uiName)
+public WinBase Get(int serialId)
+public WinBase Get(string uiName)
+public WinBase[] GetAll()
 
 // 刷新界面组状态
 public void Refresh()
@@ -356,7 +353,7 @@ public void SubRef(string pkgName)
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| View | WinBase | 界面实例 |
+| Win | WinBase | 界面实例 |
 | Paused | bool | 是否暂停 |
 | Covered | bool | 是否被覆盖 |
 
@@ -368,13 +365,33 @@ public void SubRef(string pkgName)
 
 ```csharp
 // 创建
-public static WinObject Create(string uiName, WinBase viewBase)
+public static WinObject Create(string uiName, WinBase winBase)
 
 // 释放时调用
 protected override void OnRelease()
 ```
 
-### 3.7 EUILayer 枚举
+### 3.7 自定义组件
+
+自定义组件（Comp*）继承自 FairyGUI 的 GComponent / GButton 等，自行持有 `FuiEventRegister`、`EventRegister`、`TimerRegister`，在 `ConstructFromXML` 中创建、`Dispose` 中释放，无需依赖 WinBase。
+
+代理方法可在组件内部直接使用：
+
+```csharp
+// UI事件
+protected void AddUIListener(EventListener listener, EventCallback1 callback)
+protected void RemoveUIListener(EventListener listener, EventCallback1 callback)
+
+// 业务事件
+protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
+protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
+
+// 计时器
+protected void StartCountdownTimer(float duration, Action finishCallBack = null, ...)
+protected void StartIntervalTimer(float interval, Action intervalCallback, ...)
+```
+
+### 3.8 EUILayer 枚举
 
 ```csharp
 public enum EUILayer
@@ -389,7 +406,7 @@ public enum EUILayer
 }
 ```
 
-### 3.8 EUITweenType 枚举
+### 3.9 EUITweenType 枚举
 
 ```csharp
 public enum EUITweenType
@@ -400,7 +417,7 @@ public enum EUITweenType
 }
 ```
 
-### 3.9 SafeAreaHelper / GObjectSafeAreaExt
+### 3.10 SafeAreaHelper / GObjectSafeAreaExt
 
 安全区适配工具，用于刘海屏/打孔屏适配。
 
@@ -458,14 +475,12 @@ public enum EUITweenType
 // 普通 UI 跟随 GRoot，无需额外处理
 ```
 
-> AdjustNotch 参数现在通过 UIConfig 配置表设置，不再在代码中 override。在 Excel 配置表中设置 "是否适配安全区" 列即可，详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
-
-### 3.10 UI 配置表（UIConfig）
+### 3.11 UI 配置表（UIConfig）
 
 自 v2.x 起，UI 界面的基本属性（Layer、TweenType、TweenDuration、AdjustNotch、PauseCoveredUI）由 `UIConfig` 配置表驱动，不再通过代码 override。
 
 - **配置表路径**: `Config/Excels/Tables/U-UIConfig-UI配置表.xlsx`
-- **查询配置**: 运行时通过 `view.UIConfig` 获取当前 UI 的配置行，各属性自动从配置表读取
+- **查询配置**: 运行时通过 `win.UIConfig` 获取当前 UI 的配置行，各属性自动从配置表读取
 - **新增 UI**: 在 Excel 中添加一行（UIName 为 key），运行 `gen-client-json.bat` 重新生成代码
 - **配置列说明**:
 
@@ -499,19 +514,19 @@ using FairyGUI;
 using UnityEngine;
 
 // 自定义主界面
-public class MainWinUI : WinBase
+public class WinMain : WinBase
 {
     // 界面名称
-    public override string UIName => "MainUI";
+    public override string UIName => "WinMain";
     
     // UI包名称
     public override string PackageName => "Main";
     
     // 以下属性（Layer、AdjustNotch、TweenType、TweenDuration、PauseCoveredUI）
     // 不再通过代码 override，改为在 UIConfig 配置表中设置。
-    // 在 Excel 中添加一行（UIName = "MainUI"）并配置各列即可，
-    // 运行时通过 view.UIConfig 获取配置。
-    // 详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
+    // 在 Excel 中添加一行（UIName = "WinMain"）并配置各列即可，
+    // 运行时通过 win.UIConfig 获取配置。
+    // 详见 [UI 配置表（UIConfig）](#311-ui-配置表uiconfig) 小节。
     
     // 界面组件引用
     private GButton m_StartButton;
@@ -578,7 +593,7 @@ public class GameController : MonoBehaviour
         m_UIModule = ModuleManager.GetModule<UIModule>();
         
         // 打开主界面
-        m_UIModule.OpenUI<MainWinUI>();
+        m_UIModule.Open<WinMain>();
         
         // 异步打开设置界面
         OpenSettingAsync();
@@ -586,23 +601,23 @@ public class GameController : MonoBehaviour
     
     private async void OpenSettingAsync()
     {
-        var settingView = await m_UIModule.OpenUIAsync<SettingWinUI>();
-        if (settingView != null)
+        var settingWin = await m_UIModule.OpenAsync<WinSetting>();
+        if (settingWin != null)
         {
             Debug.Log("设置界面打开成功");
         }
     }
     
-    private void CloseMainUI()
+    private void CloseMainWin()
     {
         // 关闭主界面
-        m_UIModule.CloseUI<MainWinUI>();
+        m_UIModule.Close<WinMain>();
     }
     
     private void OnDestroy()
     {
         // 关闭所有界面
-        m_UIModule?.CloseAllUIs();
+        m_UIModule?.CloseAll();
     }
 }
 ```
@@ -610,11 +625,11 @@ public class GameController : MonoBehaviour
 ### 4.3 自定义动画效果
 
 ```csharp
-public class AnimatedWinUI : WinBase
+public class AnimatedWin : WinBase
 {
-    public override string UIName => "AnimatedUI";
+    public override string UIName => "AnimatedWin";
     // TweenType 不再通过代码 override，改为在 UIConfig 配置表中设置 EUITweenType.Custom。
-    // 详见 [UI 配置表（UIConfig）](#ui-配置表uiconfig) 小节。
+    // 详见 [UI 配置表（UIConfig）](#311-ui-配置表uiconfig) 小节。
     
     // 自定义打开动画
     protected override void DoCustomOpenTween()
@@ -665,7 +680,7 @@ public class UIGroupExample : MonoBehaviour
         m_UIModule = ModuleManager.GetModule<UIModule>();
         
         // 获取界面组
-        var mainUIGroup = m_UIModule.GetUIGroup(EUILayer.MainUI);
+        var mainUIGroup = m_UIModule.GetGroup(EUILayer.MainUI);
         
         // 暂停界面组
         mainUIGroup.Pause = true;
@@ -677,7 +692,7 @@ public class UIGroupExample : MonoBehaviour
         int uiCount = mainUIGroup.UICount;
         
         // 获取当前界面
-        var currentView = mainUIGroup.CurrentWinBase;
+        var currentWin = mainUIGroup.CurrentWinBase;
     }
 }
 ```
@@ -685,7 +700,7 @@ public class UIGroupExample : MonoBehaviour
 ### 4.6 事件订阅与广播
 
 ```csharp
-public class EventExampleView : WinBase
+public class EventExampleWin : WinBase
 {
     public override string UIName => "EventExample";
     
@@ -723,7 +738,7 @@ public class EventExampleView : WinBase
 ### 4.7 计时器使用
 
 ```csharp
-public class TimerExampleView : WinBase
+public class TimerExampleWin : WinBase
 {
     public override string UIName => "TimerExample";
     
@@ -773,31 +788,31 @@ public class UIEventListener : MonoBehaviour
         m_EventModule = ModuleManager.GetModule<EventModule>();
         
         // 订阅界面打开成功事件
-        m_EventModule.Subscribe(OpenUISuccessEventArgs.EventId, OnOpenUISuccess);
+        m_EventModule.Subscribe(OpenSuccessEventArgs.EventId, OnOpenSuccess);
         
         // 订阅界面关闭完成事件
-        m_EventModule.Subscribe(CloseUICompleteEventArgs.EventId, OnCloseUIComplete);
+        m_EventModule.Subscribe(CloseCompleteEventArgs.EventId, OnCloseComplete);
         
         // 订阅界面可见性变化事件
-        m_EventModule.Subscribe(ChangeUIVisibleEventArgs.EventId, OnUIVisibleChanged);
+        m_EventModule.Subscribe(ChangeVisibleEventArgs.EventId, OnVisibleChanged);
     }
     
-    private void OnOpenUISuccess(object sender, GameEventArgs e)
+    private void OnOpenSuccess(object sender, GameEventArgs e)
     {
-        var args = e as OpenUISuccessEventArgs;
-        Debug.Log($"界面打开成功: {args.WinBase.UIName}");
+        var args = e as OpenSuccessEventArgs;
+        Debug.Log($"界面打开成功: {args.Win.UIName}");
     }
     
-    private void OnCloseUIComplete(object sender, GameEventArgs e)
+    private void OnCloseComplete(object sender, GameEventArgs e)
     {
-        var args = e as CloseUICompleteEventArgs;
+        var args = e as CloseCompleteEventArgs;
         Debug.Log($"界面关闭完成: {args.UIName}");
     }
     
-    private void OnUIVisibleChanged(object sender, GameEventArgs e)
+    private void OnVisibleChanged(object sender, GameEventArgs e)
     {
-        var args = e as ChangeUIVisibleEventArgs;
-        Debug.Log($"界面可见性变化: {args.WinUI.UIName}, 可见: {args.Visible}");
+        var args = e as ChangeVisibleEventArgs;
+        Debug.Log($"界面可见性变化: {args.Win.UIName}, 可见: {args.Visible}");
     }
     
     private void OnDestroy()
@@ -807,44 +822,69 @@ public class UIEventListener : MonoBehaviour
 }
 ```
 
+### 4.9 自定义组件
+
+```csharp
+// 自定义组件（Comp*）由 FGUI 插件自动生成 .Gen.cs，手写 partial 类补充逻辑
+public partial class CompRedDot : GComponent
+{
+    private void OnInit()
+    {
+        // 初始化时 Register 已在 ConstructFromXML 中创建好，可直接使用
+        Subscribe("RedDotChanged", OnRedDotChanged);
+    }
+    
+    private void OnDispose() { }
+    
+    public void SetData(int count)
+    {
+        txtCount.text = count.ToString();
+        imgRedDot.visible = count > 0;
+    }
+    
+    private void OnRedDotChanged(object sender, GameEventArgs e)
+    {
+        // 更新红点显示
+    }
+}
+```
+
 ## 5. 目录结构
 
 ```
 Hotfix.Framework/UI/
-├── Runtime/
-│   ├── UIModule.cs                    # UI管理模块主类
-│   ├── UIModule.Open.cs               # 打开界面功能
-│   ├── UIModule.Close.cs              # 关闭界面功能
-│   ├── UIModule.Get.cs                # 获取界面功能
-│   ├── UIModule.UIGroup.cs            # 界面组管理
-│   ├── View/
-│   │   ├── WinBase.cs                # 界面基类
-│   │   ├── WinBase.Life.cs           # 生命周期方法
-│   │   ├── WinBase.EventRegister.cs  # 事件注册功能
-│   │   ├── WinBase.TimerRegister.cs  # 计时器功能
-│   │   ├── WinBase.UIEventRegister.cs# UI事件功能
-│   │   ├── WinInfo.cs                # 界面信息
-│   │   └── WinObject.cs              # 界面对象池对象
-│   ├── Misc/
-│   │   ├── UIGroup.cs                 # 界面组
-│   │   ├── EUILayer.cs                 # 界面层级枚举
-│   │   └── EUITweenType.cs             # 动画类型枚举
-│   ├── Utility/
-│   │   ├── SafeAreaHelper.cs            # 安全区辅助工具
-│   │   └── GObjectSafeAreaExt.cs        # GObject安全区扩展方法
-│   ├── Fui/
-│   │   ├── FuiPkgManager.cs           # FUI包管理器
-│   │   ├── FuiEventRegister.cs        # FUI事件注册器
-│   │   ├── ICustomComp.cs             # 自定义组件接口
-│   │   └── CustomLoader.cs            # 自定义加载器
-│   ├── Event/
-│   │   ├── OpenUISuccessEventArgs.cs  # 打开成功事件
-│   │   ├── OpenUIFailureEventArgs.cs  # 打开失败事件
-│   │   ├── CloseUICompleteEventArgs.cs# 关闭完成事件
-│   │   └── ChangeUIVisibleEventArgs.cs# 可见性变化事件
+├── UIModule.cs                    # UI管理模块主类
+├── UIModule.Open.cs               # 打开界面功能
+├── UIModule.Close.cs              # 关闭界面功能
+├── UIModule.Get.cs                # 获取界面功能
+├── UIModule.UIGroup.cs            # 界面组管理
+├── View/
+│   ├── WinBase.cs                 # 界面基类
+│   ├── WinBase.Life.cs            # 生命周期方法
+│   ├── WinBase.EventRegister.cs   # 事件注册功能
+│   ├── WinBase.TimerRegister.cs   # 计时器功能
+│   ├── WinBase.UIEventRegister.cs # UI事件功能
+│   ├── WinInfo.cs                 # 界面信息
+│   └── WinObject.cs               # 界面对象池对象
+├── Misc/
+│   ├── UIGroup.cs                 # 界面组
+│   ├── EUILayer.cs                # 界面层级枚举
+│   └── EUITweenType.cs            # 动画类型枚举
+├── Utility/
+│   ├── SafeAreaHelper.cs          # 安全区辅助工具
+│   └── GObjectSafeAreaExt.cs      # GObject安全区扩展方法
+├── Fui/
+│   ├── FuiPkgManager.cs           # FUI包管理器
+│   ├── FuiEventRegister.cs        # FUI事件注册器
+│   └── CustomLoader.cs            # 自定义加载器
+├── Event/
+│   ├── OpenSuccessEventArgs.cs    # 打开成功事件
+│   ├── OpenFailureEventArgs.cs    # 打开失败事件
+│   ├── CloseCompleteEventArgs.cs  # 关闭完成事件
+│   └── ChangeVisibleEventArgs.cs  # 可见性变化事件
 ├── Editor/
 │   ├── UITextureAssetPostprocessor.cs # 纹理资源后处理器
-└── README.md                          # 本文档
+└── README.md                      # 本文档
 ```
 
 ## 6. 依赖模块
@@ -906,7 +946,7 @@ Hotfix.Framework/UI/
 
 - 内置 EventRegister 管理业务事件
 - FuiEventRegister 管理 UI 事件
-- 全局事件广播机制
+- 自定义组件自持 Register，独立管理事件和计时器
 
 ### 7.7 安全区适配
 
@@ -953,7 +993,7 @@ A: 使用 userData 参数：
 
 ```csharp
 var data = new PlayerData { Name = "Player1", Level = 10 };
-m_UIModule.OpenUI<PlayerInfoView>(data);
+m_UIModule.Open<PlayerInfoWin>(data);
 ```
 
 在 OnInit 或 OnOpen 中通过 UserData 属性获取：
@@ -988,12 +1028,12 @@ await m_UIModule.PkgManager.AddPackageAsync("Main");
 
 ### Q4: 如何获取当前最顶部的界面？
 
-A: 使用 GetTopUI：
+A: 使用 GetTop：
 
 ```csharp
 // 获取指定层级的顶部界面
-var topView = m_UIModule.GetTopUI(EUILayer.Window);
+var topWin = m_UIModule.GetTop(EUILayer.Window);
 
 // 获取所有层级中最顶部的界面
-var topView = m_UIModule.GetTopUI();
+var topWin = m_UIModule.GetTop();
 ```
