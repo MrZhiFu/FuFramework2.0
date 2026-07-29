@@ -15,7 +15,7 @@ namespace Hotfix.Framework.UI
     /// 界面基类。
     /// 目标: 所有界面的基类，记录界面的FUI显示对象和基本信息。
     /// </summary>
-    public abstract partial class ViewBase
+    public abstract partial class WinBase
     {
         /// <summary>
         /// 界面是否已初始化。
@@ -151,7 +151,7 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception exception)
             {
-                FuLogger.LogError($"[ViewBase] UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
+                FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
             }
         }
 
@@ -180,7 +180,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         protected void CloseSelf()
         {
-            if (m_UIModule is null) throw new InvalidOperationException("[ViewBase] 关闭自身失败，UI管理模块为空。");
+            if (m_UIModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
             m_UIModule.CloseUI(this);
         }
 

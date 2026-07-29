@@ -8,7 +8,7 @@ using Hotfix.Framework.UI;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinBag : ViewBase
+    public partial class WinBag : WinBase
     {
         /// <summary>
         /// 初始化

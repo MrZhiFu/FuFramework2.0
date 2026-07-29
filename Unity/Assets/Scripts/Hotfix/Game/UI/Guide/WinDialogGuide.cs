@@ -9,7 +9,7 @@ using Hotfix.Framework.UI;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinDialogGuide : ViewBase
+    public partial class WinDialogGuide : WinBase
     {
         /// <summary>
         /// 提交按钮点击回调

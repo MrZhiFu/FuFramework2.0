@@ -6,7 +6,7 @@ namespace Hotfix.Game.UI
     /// <summary>
     /// 全局遮罩界面
     /// </summary>
-    public partial class WinGlobalMask : ViewBase
+    public partial class WinGlobalMask : WinBase
     {
         /// <summary>
         /// 初始化

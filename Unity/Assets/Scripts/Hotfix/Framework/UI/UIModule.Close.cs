@@ -33,7 +33,7 @@ namespace Hotfix.Framework.UI
         /// 关闭界面(加入待回收队列，等待update下一帧回收)。
         /// </summary>
         /// <typeparam name="T">界面类型。</typeparam>
-        public void CloseUI<T>() where T : ViewBase
+        public void CloseUI<T>() where T : WinBase
         {
             var view = GetUI<T>();
             if (view != null)
@@ -46,7 +46,7 @@ namespace Hotfix.Framework.UI
         /// 关闭界面(加入待回收队列，等待update下一帧回收)。
         /// </summary>
         /// <param name="view">要关闭的界面。</param>
-        public void CloseUI(ViewBase view)
+        public void CloseUI(WinBase view)
         {
             if (view == null)
             {
@@ -101,7 +101,7 @@ namespace Hotfix.Framework.UI
         /// 立即关闭界面(立即回收)。
         /// </summary>
         /// <typeparam name="T">界面类型。</typeparam>
-        public void CloseUINow<T>() where T : ViewBase
+        public void CloseUINow<T>() where T : WinBase
         {
             var view = GetUI<T>();
             if (view != null)
@@ -114,7 +114,7 @@ namespace Hotfix.Framework.UI
         /// 立即关闭界面(立即回收)。
         /// </summary>
         /// <param name="view">要关闭的界面。</param>
-        public void CloseUINow(ViewBase view)
+        public void CloseUINow(WinBase view)
         {
             if (view == null)
             {
@@ -183,7 +183,7 @@ namespace Hotfix.Framework.UI
         /// 回收界面实例
         /// </summary>
         /// <param name="view"></param>
-        private void RecycleUI(ViewBase view)
+        private void RecycleUI(WinBase view)
         {
             m_InstancePool.Recycle(view);
             view._OnRecycle();

@@ -4,7 +4,7 @@ using Hotfix.Framework.UI;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace #NAMESPACE#
 {
-    public partial class #WINNAME# : ViewBase
+    public partial class #WINNAME# : WinBase
     {
         // 界面基本属性(Layer、TweenType、AdjustNotch、PauseCoveredUI等)已迁移至 UIConfig 配置表，无需代码重写。
 

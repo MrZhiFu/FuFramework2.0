@@ -11,7 +11,7 @@ using Hotfix.Game.Manager_ToDelete;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinMain : ViewBase
+    public partial class WinMain : WinBase
     {
         /// <summary>
         /// 初始化

@@ -17,7 +17,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinLogin : ViewBase
+    public partial class WinLogin : WinBase
     {
         /// <summary>
         /// 初始化

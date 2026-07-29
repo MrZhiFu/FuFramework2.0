@@ -14,7 +14,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面。
         /// </summary>
-        public ViewBase View { get; private set; }
+        public WinBase View { get; private set; }
 
         /// <summary>
         /// 界面是否暂停(初始化时默认为false,即界面没有暂停)
@@ -32,7 +32,7 @@ namespace Hotfix.Framework.UI
         /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="InvalidOperationException">界面为空时抛出。</exception>
-        public static ViewInfo Create(ViewBase view)
+        public static ViewInfo Create(WinBase view)
         {
             if (view == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<ViewInfo>();

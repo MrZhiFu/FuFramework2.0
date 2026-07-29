@@ -17,7 +17,7 @@ namespace Hotfix.Framework.UI
     ///     5. 恢复。
     ///     6. 销毁。
     /// </summary>
-    public abstract partial class ViewBase
+    public abstract partial class WinBase
     {
         #region Internal Methods
 
@@ -26,7 +26,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void _OnInit()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]初始化-OnInit().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]初始化-OnInit().");
             m_UIModule.PkgManager?.AddRef(PackageName);
             OnInit();
         }
@@ -36,7 +36,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnOpen()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]打开-OnOpen().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]打开-OnOpen().");
             Visible      = true;
             UIView.alpha = 0;
 
@@ -77,7 +77,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnPause()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]暂停-OnPause().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]暂停-OnPause().");
             Visible = false;
             OnPause();
         }
@@ -87,7 +87,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnResume()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]恢复-OnResume().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]恢复-OnResume().");
             Visible = true;
             OnResume();
         }
@@ -97,7 +97,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnBeCover()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]被遮挡-OnBeCover().");
             if (!AdjustNotch) Visible = false;
             OnBeCover();
         }
@@ -107,7 +107,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnReveal()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]被遮挡恢复-OnReveal().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]被遮挡恢复-OnReveal().");
             Visible = true;
             OnReveal();
         }
@@ -117,7 +117,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnClose()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]关闭-OnClose().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]关闭-OnClose().");
             Visible = false;
 
             // 界面关闭动画
@@ -143,7 +143,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnRecycle()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]回收-OnRecycle().");
 
             SerialId = 0;
             OnRecycle();
@@ -154,7 +154,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         internal void _OnDispose()
         {
-            FuLogger.LogInfo($"[ViewBase] UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
+            FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
             m_UIModule.PkgManager.SubRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器

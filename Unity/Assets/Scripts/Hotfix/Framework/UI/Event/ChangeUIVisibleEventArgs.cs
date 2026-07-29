@@ -23,7 +23,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public ViewBase UIView { get; private set; }
+        public WinBase UIView { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -52,7 +52,7 @@ namespace Hotfix.Framework.UI
         /// <param name="visible">显示状态。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static ChangeUIVisibleEventArgs Create(ViewBase uiView, bool visible, object userData)
+        public static ChangeUIVisibleEventArgs Create(WinBase uiView, bool visible, object userData)
         {
             var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
             uiSuccessEventArgs.UIView   = uiView;

@@ -13,7 +13,7 @@ namespace Hotfix.Framework.UI
     ///     2. 取消订阅事件。
     ///     3. 分发事件。
     /// </summary>
-    public abstract partial class ViewBase
+    public abstract partial class WinBase
     {
         /// <summary>
         /// 界面事件订阅器。

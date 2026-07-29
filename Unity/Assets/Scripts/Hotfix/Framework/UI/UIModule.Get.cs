@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public ViewBase GetUI(int serialId)
+        public WinBase GetUI(int serialId)
         {
             foreach (var (_, group) in m_UIGroupDict)
             {
@@ -70,14 +70,14 @@ namespace Hotfix.Framework.UI
         /// 获取界面。
         /// </summary>
         /// <returns>要获取的界面。</returns>
-        public T GetUI<T>() where T : ViewBase => (T)GetUI(typeof(T).Name);
+        public T GetUI<T>() where T : WinBase => (T)GetUI(typeof(T).Name);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public ViewBase GetUI(string uiName)
+        public WinBase GetUI(string uiName)
         {
             uiName.NotNullOrEmpty(nameof(uiName));
 
@@ -96,25 +96,25 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
         /// <returns>最顶部的界面。</returns>
-        public ViewBase GetTopUI(EUILayer? uiLayer = null)
+        public WinBase GetTopUI(EUILayer? uiLayer = null)
         {
             // 获取指定层级的顶部界面
             if (uiLayer.HasValue)
             {
-                return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentViewBase : null;
+                return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentWinBase : null;
             }
 
             // 获取所有层级中最顶部的界面（层级值最大的）
-            ViewBase topView  = null;
+            WinBase topView  = null;
             var      maxLayer = int.MinValue;
 
             foreach (var (layer, group) in m_UIGroupDict)
             {
                 var layerValue = (int)layer;
-                if (layerValue > maxLayer && group.CurrentViewBase != null)
+                if (layerValue > maxLayer && group.CurrentWinBase != null)
                 {
                     maxLayer = layerValue;
-                    topView  = group.CurrentViewBase;
+                    topView  = group.CurrentWinBase;
                 }
             }
 
@@ -125,9 +125,9 @@ namespace Hotfix.Framework.UI
         /// 获取所有已加载的界面。
         /// </summary>
         /// <returns>所有已加载的界面。</returns>
-        public ViewBase[] GetAllLoadedUIs()
+        public WinBase[] GetAllLoadedUIs()
         {
-            var results = new List<ViewBase>();
+            var results = new List<WinBase>();
             foreach (var (_, group) in m_UIGroupDict)
             {
                 results.AddRange(group.GetAllUIs());
@@ -140,7 +140,7 @@ namespace Hotfix.Framework.UI
         /// 获取所有已加载的界面。
         /// </summary>
         /// <param name="results">所有已加载的界面。</param>
-        public void GetAllLoadedUIs(List<ViewBase> results)
+        public void GetAllLoadedUIs(List<WinBase> results)
         {
             results.NotNull(nameof(results));
 

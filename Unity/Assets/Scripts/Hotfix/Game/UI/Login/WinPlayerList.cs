@@ -17,7 +17,7 @@ using Hotfix.Game.Network;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinPlayerList : ViewBase
+    public partial class WinPlayerList : WinBase
     {
          private List<PlayerInfo> playerList = new();
          private PlayerInfo       m_SelectedPlayerInfo;

@@ -13,7 +13,7 @@ using Hotfix.Framework.Web;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinPlayerCreate : ViewBase
+    public partial class WinPlayerCreate : WinBase
     {
          /// <summary>
          /// 创建角色请求

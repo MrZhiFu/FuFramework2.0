@@ -22,7 +22,7 @@ namespace Hotfix.Framework.UI
         /// <param name="uiName"></param>
         /// <param name="viewBase"></param>
         /// <returns></returns>
-        public static ViewObject Create(string uiName, ViewBase viewBase)
+        public static ViewObject Create(string uiName, WinBase viewBase)
         {
             var uiInstanceObject = ReferencePool.Acquire<ViewObject>();
             uiInstanceObject.Initialize(uiName, viewBase);
@@ -36,8 +36,8 @@ namespace Hotfix.Framework.UI
         /// </summary>
         protected internal override void OnRelease()
         {
-            if (Target is not ViewBase viewBase)
-                throw new InvalidOperationException("[UIInstanceObject] 需要释放的目标对象不是界面基类ViewBase");
+            if (Target is not WinBase viewBase)
+                throw new InvalidOperationException("[UIInstanceObject] 需要释放的目标对象不是界面基类WinBase");
 
             try
             {

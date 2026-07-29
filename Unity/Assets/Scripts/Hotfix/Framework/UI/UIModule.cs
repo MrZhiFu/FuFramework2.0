@@ -25,7 +25,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 关闭后待回收的界面集合
         /// </summary>
-        private Queue<ViewBase> m_WaitRecycleQueue;
+        private Queue<WinBase> m_WaitRecycleQueue;
 
         /// <summary>
         /// 事件组件
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.UI
         {
             m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
-            m_WaitRecycleQueue = new Queue<ViewBase>();
+            m_WaitRecycleQueue = new Queue<WinBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
             m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<ViewObject>("UIInstanceObjectPool");

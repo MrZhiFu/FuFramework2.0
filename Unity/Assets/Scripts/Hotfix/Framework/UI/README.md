@@ -40,9 +40,9 @@ UIGroup (界面组)
 ObjectBase (对象池基类)
     ↑
 ViewObject (界面对象池对象)
-    └── Target (ViewBase)
+    └── Target (WinBase)
 
-ViewBase (抽象基类)
+WinBase (抽象基类)
     ├── 生命周期方法 (OnInit/OnOpen/OnUpdate/OnClose)
     ├── 动画方法 (DoCustomOpenTween/DoCustomCloseTween)
     ├── EventRegister (事件注册器)
@@ -52,7 +52,7 @@ ViewBase (抽象基类)
 IReference (引用池接口)
     ↑
 ViewInfo (界面信息)
-    ├── View (ViewBase)
+    ├── View (WinBase)
     ├── Paused (是否暂停)
     └── Covered (是否被覆盖)
 ```
@@ -84,13 +84,13 @@ ViewInfo (界面信息)
                              ↓
                     ┌─────────────────┐
                     │   ViewInfo      │
-                    │  - ViewBase     │
+                    │  - WinBase     │
                     │  - Paused       │
                     │  - Covered      │
                     └────────┬────────┘
                              ↓
                     ┌─────────────────┐
-                    │   ViewBase      │
+                    │   WinBase      │
                     │  - UIView       │
                     │  - EventReg     │
                     │  - TimerReg     │
@@ -110,7 +110,7 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 |------|------|------|
 | m_UIGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
 | m_LoadingDict | Dictionary<int, string> | 加载中界面字典 |
-| m_WaitRecycleQueue | Queue<ViewBase> | 待回收界面队列 |
+| m_WaitRecycleQueue | Queue<WinBase> | 待回收界面队列 |
 | m_InstancePool | ObjectPool<ViewObject> | 界面实例对象池 |
 | PkgManager | FuiPkgManager | FUI包管理器 |
 
@@ -127,24 +127,24 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 
 ```csharp
 // 打开界面
-public void OpenUI<T>(object userData = null) where T : ViewBase, new()
-public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : ViewBase, new()
+public void OpenUI<T>(object userData = null) where T : WinBase, new()
+public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : WinBase, new()
 
 // 关闭界面
-public void CloseUI<T>() where T : ViewBase
+public void CloseUI<T>() where T : WinBase
 public void CloseUI(int serialId)
-public void CloseUI(ViewBase view)
-public void CloseUINow<T>() where T : ViewBase
+public void CloseUI(WinBase view)
+public void CloseUINow<T>() where T : WinBase
 public void CloseAllUIs()
 
 // 获取界面
-public T GetUI<T>() where T : ViewBase
-public ViewBase GetUI(int serialId)
-public ViewBase GetTopUI(EUILayer? uiLayer = null)
-public ViewBase[] GetAllLoadedUIs()
+public T GetUI<T>() where T : WinBase
+public WinBase GetUI(int serialId)
+public WinBase GetTopUI(EUILayer? uiLayer = null)
+public WinBase[] GetAllLoadedUIs()
 
 // 查询界面
-public bool HasUI<T>() where T : ViewBase
+public bool HasUI<T>() where T : WinBase
 public bool HasUI(int serialId)
 public bool IsLoadingUI(string uiName)
 
@@ -163,14 +163,14 @@ public void SetUIPriority(object uiView, int priority)
 1. 检查是否已在加载中或已存在
 2. 分配临时序列号
 3. 尝试从对象池获取实例
-4. 如对象池无实例，创建新的 ViewBase 实例
+4. 如对象池无实例，创建新的 WinBase 实例
 5. 检查并加载 UI 包（异步）
 6. 创建 FairyGUI 界面组件
 7. 初始化界面（Init）
 8. 添加到界面组
 9. 触发打开回调和事件
 
-### 3.2 ViewBase
+### 3.2 WinBase
 
 界面基类，所有 UI 界面必须继承此类。
 
@@ -266,7 +266,7 @@ public void StopTimer(int timerId)
 |------|------|------|
 | Pause | bool | 是否暂停 |
 | UICount | int | 界面数量 |
-| CurrentViewBase | ViewBase | 当前（顶部）界面 |
+| CurrentWinBase | WinBase | 当前（顶部）界面 |
 
 **核心方法：**
 
@@ -278,13 +278,13 @@ public void Init(EUILayer layer)
 public void OnUpdate(float deltaTime, float unscaledDeltaTime)
 
 // 界面管理
-public void AddUI(ViewBase view)
-public void RemoveUI(ViewBase view)
+public void AddUI(WinBase view)
+public void RemoveUI(WinBase view)
 public bool HasUI(int serialId)
 public bool HasUI(string uiName)
-public ViewBase GetUI(int serialId)
-public ViewBase GetUI(string uiName)
-public ViewBase[] GetAllUIs()
+public WinBase GetUI(int serialId)
+public WinBase GetUI(string uiName)
+public WinBase[] GetAllUIs()
 
 // 刷新界面组状态
 public void Refresh()
@@ -356,7 +356,7 @@ public void SubRef(string pkgName)
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| View | ViewBase | 界面实例 |
+| View | WinBase | 界面实例 |
 | Paused | bool | 是否暂停 |
 | Covered | bool | 是否被覆盖 |
 
@@ -368,7 +368,7 @@ public void SubRef(string pkgName)
 
 ```csharp
 // 创建
-public static ViewObject Create(string uiName, ViewBase viewBase)
+public static ViewObject Create(string uiName, WinBase viewBase)
 
 // 释放时调用
 protected override void OnRelease()
@@ -446,7 +446,7 @@ public enum EUITweenType
 |------|------|
 | `IgnoreSafeArea(RelationType)` | 使组件忽略安全区，扩展到整屏覆盖刘海。适用于全屏背景、遮罩等独立元素 |
 
-**ViewBase.AdjustNotch** — 控制界面是否适配安全区：
+**WinBase.AdjustNotch** — 控制界面是否适配安全区：
 
 | 值 | 行为 | 适用场景 |
 |----|------|---------|
@@ -471,7 +471,7 @@ public enum EUITweenType
 
 | 列名 | 类型 | 说明 |
 |------|------|------|
-| UIName | string | UI 标识 key，与 ViewBase.UIName 对应 |
+| UIName | string | UI 标识 key，与 WinBase.UIName 对应 |
 | Layer | EUILayer | 界面层级（WorldUI=0, MainUI=1500, ...） |
 | TweenType | EUITweenType | 动画类型（None=0, Fade=1, Custom=2） |
 | TweenDuration | float | 动画时长（默认 0.3s） |
@@ -481,7 +481,7 @@ public enum EUITweenType
 - **代码加载方式**:
 
 ```csharp
-// ViewBase 内部自动通过 UIName 查询 UIConfig 配置表完成初始化
+// WinBase 内部自动通过 UIName 查询 UIConfig 配置表完成初始化
 // 用户无需手动调用，框架在 OnInit 阶段自动完成配置绑定
 
 // 在 UI 代码中访问当前配置
@@ -499,7 +499,7 @@ using FairyGUI;
 using UnityEngine;
 
 // 自定义主界面
-public class MainUIView : ViewBase
+public class MainUIView : WinBase
 {
     // 界面名称
     public override string UIName => "MainUI";
@@ -610,7 +610,7 @@ public class GameController : MonoBehaviour
 ### 4.3 自定义动画效果
 
 ```csharp
-public class AnimatedUIView : ViewBase
+public class AnimatedUIView : WinBase
 {
     public override string UIName => "AnimatedUI";
     // TweenType 不再通过代码 override，改为在 UIConfig 配置表中设置 EUITweenType.Custom。
@@ -677,7 +677,7 @@ public class UIGroupExample : MonoBehaviour
         int uiCount = mainUIGroup.UICount;
         
         // 获取当前界面
-        var currentView = mainUIGroup.CurrentViewBase;
+        var currentView = mainUIGroup.CurrentWinBase;
     }
 }
 ```
@@ -685,7 +685,7 @@ public class UIGroupExample : MonoBehaviour
 ### 4.6 事件订阅与广播
 
 ```csharp
-public class EventExampleView : ViewBase
+public class EventExampleView : WinBase
 {
     public override string UIName => "EventExample";
     
@@ -723,7 +723,7 @@ public class EventExampleView : ViewBase
 ### 4.7 计时器使用
 
 ```csharp
-public class TimerExampleView : ViewBase
+public class TimerExampleView : WinBase
 {
     public override string UIName => "TimerExample";
     
@@ -785,7 +785,7 @@ public class UIEventListener : MonoBehaviour
     private void OnOpenUISuccess(object sender, GameEventArgs e)
     {
         var args = e as OpenUISuccessEventArgs;
-        Debug.Log($"界面打开成功: {args.ViewBase.UIName}");
+        Debug.Log($"界面打开成功: {args.WinBase.UIName}");
     }
     
     private void OnCloseUIComplete(object sender, GameEventArgs e)
@@ -818,11 +818,11 @@ Hotfix.Framework/UI/
 │   ├── UIModule.Get.cs                # 获取界面功能
 │   ├── UIModule.UIGroup.cs            # 界面组管理
 │   ├── View/
-│   │   ├── ViewBase.cs                # 界面基类
-│   │   ├── ViewBase.Life.cs           # 生命周期方法
-│   │   ├── ViewBase.EventRegister.cs  # 事件注册功能
-│   │   ├── ViewBase.TimerRegister.cs  # 计时器功能
-│   │   ├── ViewBase.UIEventRegister.cs# UI事件功能
+│   │   ├── WinBase.cs                # 界面基类
+│   │   ├── WinBase.Life.cs           # 生命周期方法
+│   │   ├── WinBase.EventRegister.cs  # 事件注册功能
+│   │   ├── WinBase.TimerRegister.cs  # 计时器功能
+│   │   ├── WinBase.UIEventRegister.cs# UI事件功能
 │   │   ├── ViewInfo.cs                # 界面信息
 │   │   └── ViewObject.cs              # 界面对象池对象
 │   ├── Misc/

@@ -23,7 +23,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public ViewBase ViewBase { get; private set; }
+        public WinBase WinBase { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -35,7 +35,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public OpenUISuccessEventArgs()
         {
-            ViewBase = null;
+            WinBase = null;
             UserData = null;
         }
 
@@ -45,10 +45,10 @@ namespace Hotfix.Framework.UI
         /// <param name="view">打开成功的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static OpenUISuccessEventArgs Create(ViewBase view, object userData)
+        public static OpenUISuccessEventArgs Create(WinBase view, object userData)
         {
             var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
-            openUISuccessEventArgs.ViewBase = view;
+            openUISuccessEventArgs.WinBase = view;
             openUISuccessEventArgs.UserData = userData;
             return openUISuccessEventArgs;
         }
@@ -58,7 +58,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public override void Clear()
         {
-            ViewBase = null;
+            WinBase = null;
             UserData = null;
         }
     }

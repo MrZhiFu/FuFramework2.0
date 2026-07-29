@@ -23,7 +23,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T">界面类型。</typeparam>
-        public void OpenUI<T>(object userData = null) where T : ViewBase, new()
+        public void OpenUI<T>(object userData = null) where T : WinBase, new()
         {
             _OpenUIAsync<T>(userData).Forget();
         }
@@ -33,7 +33,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>界面实例。</returns>
-        public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : ViewBase, new()
+        public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : WinBase, new()
         {
             return await _OpenUIAsync<T>(userData);
         }
@@ -43,7 +43,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>界面实例。</returns>
-        private async UniTask<T> _OpenUIAsync<T>(object userData = null) where T : ViewBase, new()
+        private async UniTask<T> _OpenUIAsync<T>(object userData = null) where T : WinBase, new()
         {
             var uiName = typeof(T).Name;
 
@@ -114,7 +114,7 @@ namespace Hotfix.Framework.UI
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateFuiView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : ViewBase, new()
+        private T CreateFuiView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
         {
             try
             {

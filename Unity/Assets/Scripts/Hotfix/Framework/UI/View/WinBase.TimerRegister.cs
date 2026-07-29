@@ -12,7 +12,7 @@ namespace Hotfix.Framework.UI
     ///     1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
     ///     2. 暂停，继续，取消，停止(单个/所有)计时器。
     /// </summary>
-    public abstract partial class ViewBase
+    public abstract partial class WinBase
     {
         /// <summary>
         /// 界面计时器订阅器。

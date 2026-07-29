@@ -33,7 +33,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetGenDir, winName) --- 界面代码生成目标路径
             local compArray = Tool:GetCompArray(winCls)
 
-            -- Launcher 包使用独立模板（不继承 ViewBase，手动管理 m_View）
+            -- Launcher 包使用独立模板（不继承 WinBase，手动管理 m_View）
             local templateName = isLauncher and "Template/WinGenLauncherTemplate.txt" or "Template/WinGenTemplate.txt"
             local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
             local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码

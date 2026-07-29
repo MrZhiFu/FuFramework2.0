@@ -12,7 +12,7 @@ namespace Hotfix.Framework.UI
     ///     2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
     ///     3. 移除UI上指定组件的监听事件。
     /// </summary>
-    public abstract partial class ViewBase
+    public abstract partial class WinBase
     {
         /// <summary>
         /// UI事件订阅器
