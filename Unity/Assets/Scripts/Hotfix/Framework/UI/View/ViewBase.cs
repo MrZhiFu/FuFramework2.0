@@ -146,7 +146,6 @@ namespace Hotfix.Framework.UI
                 // 初始化
                 _OnInit();
 
-
                 // 注册安全区变化监听
                 SafeAreaHelper.OnSafeAreaChanged += _OnSafeAreaChanged;
             }
@@ -155,7 +154,6 @@ namespace Hotfix.Framework.UI
                 FuLogger.LogError($"[ViewBase] UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
             }
         }
-
 
         /// <summary>
         /// 设置UI对象
