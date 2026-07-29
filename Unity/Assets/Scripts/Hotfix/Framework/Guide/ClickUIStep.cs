@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Guide
             }
 
             // 查找目标点击UI
-            if (targetWin.UIView.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
+            if (targetWin.WinUI.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
             {
                 FuLogger.LogWarning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.TargetUI}");
                 return;

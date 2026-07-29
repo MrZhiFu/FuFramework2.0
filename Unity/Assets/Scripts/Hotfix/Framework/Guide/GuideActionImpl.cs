@@ -52,7 +52,7 @@ namespace Hotfix.Framework.Guide
         {
             FuLogger.LogInfo($"执行点击UI引导, 目标UI：{targetUI.name}");
             var winClickGuide = await GlobalModule.UIModule.OpenAsync<WinClickGuide>();
-            var targetRect = targetUI.TransformRect(new Rect(0, 0, targetUI.width, targetUI.height), winClickGuide.UIView);
+            var targetRect = targetUI.TransformRect(new Rect(0, 0, targetUI.width, targetUI.height), winClickGuide.WinUI);
             var clickArea = winClickGuide.GetClickArea();
             clickArea.size = targetRect.size;
             clickArea.position = targetRect.position;
