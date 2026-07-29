@@ -9,7 +9,7 @@ namespace Hotfix.Framework.UI
     /// 界面组中的界面信息。
     /// 目标：存储界面组中的界面信息，包括界面、是否暂停、是否被覆盖等。
     /// </summary>
-    public sealed class ViewInfo : IReference
+    public sealed class WinInfo : IReference
     {
         /// <summary>
         /// 界面。
@@ -32,10 +32,10 @@ namespace Hotfix.Framework.UI
         /// <param name="view">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="InvalidOperationException">界面为空时抛出。</exception>
-        public static ViewInfo Create(WinBase view)
+        public static WinInfo Create(WinBase view)
         {
             if (view == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
-            var uiInfo = ReferencePool.Acquire<ViewInfo>();
+            var uiInfo = ReferencePool.Acquire<WinInfo>();
             uiInfo.View    = view;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;

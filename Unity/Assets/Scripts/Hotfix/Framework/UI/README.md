@@ -39,7 +39,7 @@ UIGroup (界面组)
 
 ObjectBase (对象池基类)
     ↑
-ViewObject (界面对象池对象)
+WinObject (界面对象池对象)
     └── Target (WinBase)
 
 WinBase (抽象基类)
@@ -51,7 +51,7 @@ WinBase (抽象基类)
 
 IReference (引用池接口)
     ↑
-ViewInfo (界面信息)
+WinInfo (界面信息)
     ├── View (WinBase)
     ├── Paused (是否暂停)
     └── Covered (是否被覆盖)
@@ -67,7 +67,7 @@ ViewInfo (界面信息)
 │  │  - WorldUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_InstancePool (ObjectPool<ViewObject>)               │   │
+│  │  m_InstancePool (ObjectPool<WinObject>)               │   │
 │  │  - 界面实例缓存与复用                                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -83,7 +83,7 @@ ViewInfo (界面信息)
                     └────────┬────────┘
                              ↓
                     ┌─────────────────┐
-                    │   ViewInfo      │
+                    │   WinInfo      │
                     │  - WinBase     │
                     │  - Paused       │
                     │  - Covered      │
@@ -111,7 +111,7 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 | m_UIGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
 | m_LoadingDict | Dictionary<int, string> | 加载中界面字典 |
 | m_WaitRecycleQueue | Queue<WinBase> | 待回收界面队列 |
-| m_InstancePool | ObjectPool<ViewObject> | 界面实例对象池 |
+| m_InstancePool | ObjectPool<WinObject> | 界面实例对象池 |
 | PkgManager | FuiPkgManager | FUI包管理器 |
 
 **核心属性：**
@@ -256,7 +256,7 @@ public void StopTimer(int timerId)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_UIInfoList | FuLinkedList<ViewInfo> | 界面信息链表 |
+| m_UIInfoList | FuLinkedList<WinInfo> | 界面信息链表 |
 | m_Pause | bool | 组暂停状态 |
 | Layer | EUILayer | 界面组层级 |
 
@@ -348,7 +348,7 @@ public void SubRef(string pkgName)
 5. 加载依赖包（并行）
 6. 缓存并返回包实例
 
-### 3.5 ViewInfo
+### 3.5 WinInfo
 
 界面信息类，存储界面在组中的状态信息。
 
@@ -360,7 +360,7 @@ public void SubRef(string pkgName)
 | Paused | bool | 是否暂停 |
 | Covered | bool | 是否被覆盖 |
 
-### 3.6 ViewObject
+### 3.6 WinObject
 
 界面对象池对象，用于对象池管理界面实例。
 
@@ -368,7 +368,7 @@ public void SubRef(string pkgName)
 
 ```csharp
 // 创建
-public static ViewObject Create(string uiName, WinBase viewBase)
+public static WinObject Create(string uiName, WinBase viewBase)
 
 // 释放时调用
 protected override void OnRelease()
@@ -823,8 +823,8 @@ Hotfix.Framework/UI/
 │   │   ├── WinBase.EventRegister.cs  # 事件注册功能
 │   │   ├── WinBase.TimerRegister.cs  # 计时器功能
 │   │   ├── WinBase.UIEventRegister.cs# UI事件功能
-│   │   ├── ViewInfo.cs                # 界面信息
-│   │   └── ViewObject.cs              # 界面对象池对象
+│   │   ├── WinInfo.cs                # 界面信息
+│   │   └── WinObject.cs              # 界面对象池对象
 │   ├── Misc/
 │   │   ├── UIGroup.cs                 # 界面组
 │   │   ├── EUILayer.cs                 # 界面层级枚举

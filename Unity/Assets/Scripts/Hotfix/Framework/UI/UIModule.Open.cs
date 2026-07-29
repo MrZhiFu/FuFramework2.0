@@ -83,7 +83,7 @@ namespace Hotfix.Framework.UI
 
                 // 创建界面实例对象
                 view  = new T();
-                uiIns = ViewObject.Create(view.UIName, view);
+                uiIns = WinObject.Create(view.UIName, view);
                 m_InstancePool.Register(uiIns, true);
 
                 // UI包已经加载过，则直接创建Fui界面

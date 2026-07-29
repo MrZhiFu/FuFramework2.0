@@ -40,7 +40,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池
         /// </summary>
-        private ObjectPoolModule.ObjectPool<ViewObject> m_InstancePool;
+        private ObjectPoolModule.ObjectPool<WinObject> m_InstancePool;
 
         /// <summary>
         /// FGui的包管理器
@@ -105,7 +105,7 @@ namespace Hotfix.Framework.UI
             m_WaitRecycleQueue = new Queue<WinBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-            m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<ViewObject>("UIInstanceObjectPool");
+            m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIInstanceObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
             PkgManager    = new FuiPkgManager();

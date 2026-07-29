@@ -26,7 +26,7 @@ namespace Hotfix.Framework.UI
         public EUILayer Layer { get; private set; }
 
         /// 界面组内的界面列表
-        private readonly FuLinkedList<ViewInfo> m_UIInfoList = new();
+        private readonly FuLinkedList<WinInfo> m_UIInfoList = new();
 
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Hotfix.Framework.UI
             if (HasUI(view.SerialId))
                 throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{view.SerialId}]{view.UIName}'.");
 
-            var uiInfo = ViewInfo.Create(view);
+            var uiInfo = WinInfo.Create(view);
             m_UIInfoList.AddFirst(uiInfo);
         }
 
@@ -276,7 +276,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="viewInfo">界面信息。</param>
         /// <param name="isPause">是否暂停的标志。</param>
-        private void HandlePauseState(ViewInfo viewInfo, ref bool isPause)
+        private void HandlePauseState(WinInfo viewInfo, ref bool isPause)
         {
             // 先根据当前暂停状态执行暂停/恢复（第一个界面 isPause=false，不会触发暂停）
             if (isPause && !viewInfo.Paused)
@@ -303,7 +303,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="viewInfo">界面信息。</param>
         /// <param name="isCover">是否覆盖的标志。</param>
-        private void HandleCoverState(ViewInfo viewInfo, ref bool isCover)
+        private void HandleCoverState(WinInfo viewInfo, ref bool isCover)
         {
             if (isCover && !viewInfo.Covered)
             {
@@ -328,7 +328,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="view">界面实例。</param>
         /// <returns>界面信息。</returns>
-        private ViewInfo GetUIInfo(WinBase view)
+        private WinInfo GetUIInfo(WinBase view)
         {
             view.NotNull(nameof(view));
             foreach (var uiInfo in m_UIInfoList)

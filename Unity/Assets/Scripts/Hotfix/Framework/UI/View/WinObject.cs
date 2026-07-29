@@ -14,7 +14,7 @@ namespace Hotfix.Framework.UI
     ///     1. 创建界面实例对象。
     ///     2. 释放界面实例对象。
     /// </summary>
-    public sealed class ViewObject : ObjectBase
+    public sealed class WinObject : ObjectBase
     {
         /// <summary>
         /// 创建界面实例对象。
@@ -22,9 +22,9 @@ namespace Hotfix.Framework.UI
         /// <param name="uiName"></param>
         /// <param name="viewBase"></param>
         /// <returns></returns>
-        public static ViewObject Create(string uiName, WinBase viewBase)
+        public static WinObject Create(string uiName, WinBase viewBase)
         {
-            var uiInstanceObject = ReferencePool.Acquire<ViewObject>();
+            var uiInstanceObject = ReferencePool.Acquire<WinObject>();
             uiInstanceObject.Initialize(uiName, viewBase);
             return uiInstanceObject;
         }
