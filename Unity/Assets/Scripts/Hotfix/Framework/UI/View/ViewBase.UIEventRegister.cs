@@ -26,8 +26,9 @@ namespace Hotfix.Framework.UI
         /// <param name="callback">回调函数</param>
         public void AddUIListener(EventListener listener, EventCallback1 callback)
         {
-            listener.NotNull(       nameof(listener));
-            callback.NotNull(       nameof(callback));
+            listener.NotNull(nameof(listener));
+            callback.NotNull(nameof(callback));
+
             UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.AddUIListener(listener, callback);
         }
@@ -39,8 +40,9 @@ namespace Hotfix.Framework.UI
         /// <param name="callback">回调函数</param>
         public void SetUIListener(EventListener listener, EventCallback1 callback)
         {
-            listener.NotNull(       nameof(listener));
-            callback.NotNull(       nameof(callback));
+            listener.NotNull(nameof(listener));
+            callback.NotNull(nameof(callback));
+
             UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.SetUIListener(listener, callback);
         }
@@ -52,8 +54,9 @@ namespace Hotfix.Framework.UI
         /// <param name="callback">回调函数</param>
         public void RemoveUIListener(EventListener listener, EventCallback1 callback)
         {
-            listener.NotNull(       nameof(listener));
-            callback.NotNull(       nameof(callback));
+            listener.NotNull(nameof(listener));
+            callback.NotNull(nameof(callback));
+
             UIEventRegister.NotNull("UUI事件订阅器");
             UIEventRegister.RemoveUIListener(listener, callback);
         }
@@ -64,7 +67,8 @@ namespace Hotfix.Framework.UI
         /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
         public void ClearUIListener(EventListener listener)
         {
-            listener.NotNull(       nameof(listener));
+            listener.NotNull(nameof(listener));
+
             UIEventRegister.NotNull("UI事件订阅器");
             UIEventRegister.ClearUIListener(listener);
         }
