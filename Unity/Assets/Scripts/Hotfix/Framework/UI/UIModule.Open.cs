@@ -69,35 +69,35 @@ namespace Hotfix.Framework.UI
 
             try
             {
-                T view;
+                T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
                 var uiIns = m_InstancePool.Spawn(uiName);
                 if (uiIns != null)
                 {
-                    view = uiIns.Target as T;
+                    win = uiIns.Target as T;
 
                     // 使用临时序列号创建Fui界面
-                    return CreateFuiView(view, tempSerialId, false, userData);
+                    return CreateFuiView(win, tempSerialId, false, userData);
                 }
 
                 // 创建界面实例对象
-                view  = new T();
-                uiIns = WinObject.Create(view.UIName, view);
+                win  = new T();
+                uiIns = WinObject.Create(win.UIName, win);
                 m_InstancePool.Register(uiIns, true);
 
                 // UI包已经加载过，则直接创建Fui界面
-                if (PkgManager.HasPackage(view.PackageName))
+                if (PkgManager.HasPackage(win.PackageName))
                 {
                     // 使用临时序列号创建Fui界面
-                    return CreateFuiView(view, tempSerialId, true, userData);
+                    return CreateFuiView(win, tempSerialId, true, userData);
                 }
 
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
-                await PkgManager.AddPackageAsync(view.PackageName);
+                await PkgManager.AddPackageAsync(win.PackageName);
 
                 // 使用临时序列号创建Fui界面
-                return CreateFuiView(view, tempSerialId, true, userData);
+                return CreateFuiView(win, tempSerialId, true, userData);
             }
             finally
             {
@@ -109,38 +109,38 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 创建FUI界面
         /// </summary>
-        /// <param name="view">界面实例。</param>
+        /// <param name="win">界面实例。</param>
         /// <param name="serialId">界面序列号。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateFuiView<T>(T view, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
+        private T CreateFuiView<T>T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
         {
             try
             {
-                if (view == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
+                if (win == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
-                var uiView = UIPackage.CreateObject(view.PackageName, view.UIName) as GComponent;
+                var uiView = UIPackage.CreateObject(win.PackageName, win.UIName) as GComponent;
 
                 // 初始化界面
-                view.Init(serialId, uiView, isNewInstance, userData);
+                win.Init(serialId, uiView, isNewInstance, userData);
 
                 // FUI界面加入界面组
-                var uiGroup = view.UIGroup;
+                var uiGroup = win.UIGroup;
 
                 // AddChild会自动sort++ 
-                uiGroup.AddChild(view.UIView);
-                uiGroup.AddUI(view);
+                uiGroup.AddChild(win.UIView);
+                uiGroup.AddUI(win);
 
-                view._OnOpen();    // 界面打开回调
+                win._OnOpen();    // 界面打开回调
                 uiGroup.Refresh(); // 刷新界面组
 
                 // 广播界面打开成功事件
-                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(view, userData);
+                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(win, userData);
                 m_EventModule.Broadcast(this, openUISuccessEventArgs);
 
-                return view;
+                return win;
             }
             catch (Exception exception)
             {

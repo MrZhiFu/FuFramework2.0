@@ -23,7 +23,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取打开成功的界面。
         /// </summary>
-        public WinBase UIView { get; private set; }
+        public WinBase Win { get; private set; }
 
         /// <summary>
         /// 获取加载持续时间。
@@ -40,7 +40,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public ChangeUIVisibleEventArgs()
         {
-            UIView   = null;
+            Win   = null;
             Visible  = false;
             UserData = null;
         }
@@ -48,14 +48,14 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 创建改变界面可见状态事件。
         /// </summary>
-        /// <param name="uiView">打开成功的界面。</param>
+        /// <param name="win">打开成功的界面。</param>
         /// <param name="visible">显示状态。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static ChangeUIVisibleEventArgs Create(WinBase uiView, bool visible, object userData)
+        public static ChangeUIVisibleEventArgs Create(WinBase win, bool visible, object userData)
         {
             var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
-            uiSuccessEventArgs.UIView   = uiView;
+            uiSuccessEventArgs.Win   = win;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;
             return uiSuccessEventArgs;
@@ -66,7 +66,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public override void Clear()
         {
-            UIView   = null;
+            Win   = null;
             Visible  = false;
             UserData = null;
         }

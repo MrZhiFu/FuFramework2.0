@@ -19,14 +19,14 @@ namespace Hotfix.Framework.UI
         /// <param name="serialId">要关闭界面的序列编号。</param>
         public void CloseUI(int serialId)
         {
-            var view = GetUI(serialId);
-            if (view == null)
+            var win = GetUI(serialId);
+            if (win == null)
             {
                 FuLogger.LogError($"[UIModule] 需要关闭的UI界面View为空 '{serialId}'.");
                 return;
             }
 
-            CloseUI(view);
+            CloseUI(win);
         }
 
         /// <summary>
@@ -35,49 +35,49 @@ namespace Hotfix.Framework.UI
         /// <typeparam name="T">界面类型。</typeparam>
         public void CloseUI<T>() where T : WinBase
         {
-            var view = GetUI<T>();
-            if (view != null)
+            var win = GetUI<T>();
+            if (win != null)
             {
-                CloseUI(view);
+                CloseUI(win);
             }
         }
 
         /// <summary>
         /// 关闭界面(加入待回收队列，等待update下一帧回收)。
         /// </summary>
-        /// <param name="view">要关闭的界面。</param>
-        public void CloseUI(WinBase view)
+        /// <param name="win">要关闭的界面。</param>
+        public void CloseUI(WinBase win)
         {
-            if (view == null)
+            if (win == null)
             {
                 FuLogger.LogError("[UIModule] 需要关闭的UI界面为空");
                 return;
             }
 
-            if (view.UIGroup == null)
+            if (win.UIGroup == null)
             {
                 FuLogger.LogError("[UIModule] 需要关闭的UI界面组为空");
                 return;
             }
 
-            if (IsLoadingUI(view.SerialId))
+            if (IsLoadingUI(win.SerialId))
             {
-                m_LoadingDict.Remove(view.SerialId);
+                m_LoadingDict.Remove(win.SerialId);
                 return;
             }
 
-            var uiGroup = view.UIGroup;
+            var uiGroup = win.UIGroup;
             if (uiGroup == null) return;
 
-            uiGroup.RemoveUI(view);
-            view._OnClose();
+            uiGroup.RemoveUI(win);
+            win._OnClose();
             uiGroup.Refresh();
 
             // 抛出关闭界面完成事件
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.UIName, uiGroup);
             m_EventModule.Broadcast(this, closeUICompleteEventArgs);
 
-            m_WaitRecycleQueue.Enqueue(view);
+            m_WaitRecycleQueue.Enqueue(win);
         }
 
 
@@ -87,14 +87,14 @@ namespace Hotfix.Framework.UI
         /// <param name="serialId">要关闭界面的序列编号。</param>
         public void CloseUINow(int serialId)
         {
-            var view = GetUI(serialId);
-            if (view == null)
+            var win = GetUI(serialId);
+            if (win == null)
             {
                 FuLogger.LogError($"[UIModule] 找不到界面 '{serialId}'");
                 return;
             }
 
-            CloseUINow(view);
+            CloseUINow(win);
         }
 
         /// <summary>
@@ -103,50 +103,50 @@ namespace Hotfix.Framework.UI
         /// <typeparam name="T">界面类型。</typeparam>
         public void CloseUINow<T>() where T : WinBase
         {
-            var view = GetUI<T>();
-            if (view != null)
+            var win = GetUI<T>();
+            if (win != null)
             {
-                CloseUINow(view);
+                CloseUINow(win);
             }
         }
 
         /// <summary>
         /// 立即关闭界面(立即回收)。
         /// </summary>
-        /// <param name="view">要关闭的界面。</param>
-        public void CloseUINow(WinBase view)
+        /// <param name="win">要关闭的界面。</param>
+        public void CloseUINow(WinBase win)
         {
-            if (view == null)
+            if (win == null)
             {
                 FuLogger.LogError("[UIModule] 需要关闭的UI界面View为空");
                 return;
             }
 
-            if (view.UIGroup == null)
+            if (win.UIGroup == null)
             {
                 FuLogger.LogError("[UIModule] 需要关闭的UI界面组为空");
                 return;
             }
 
-            if (IsLoadingUI(view.SerialId))
+            if (IsLoadingUI(win.SerialId))
             {
-                m_LoadingDict.Remove(view.SerialId);
+                m_LoadingDict.Remove(win.SerialId);
                 return;
             }
 
-            var uiGroup = view.UIGroup;
+            var uiGroup = win.UIGroup;
             if (uiGroup == null) return;
 
-            uiGroup.RemoveUI(view);
-            view._OnClose();
+            uiGroup.RemoveUI(win);
+            win._OnClose();
             uiGroup.Refresh();
 
             // 抛出关闭界面完成事件
-            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(view.SerialId, view.UIName, uiGroup);
+            var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.UIName, uiGroup);
             m_EventModule.Broadcast(this, closeUICompleteEventArgs);
 
             // 立即回收界面实例对象
-            RecycleUI(view);
+            RecycleUI(win);
         }
 
         /// <summary>
@@ -182,11 +182,11 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 回收界面实例
         /// </summary>
-        /// <param name="view"></param>
-        private void RecycleUI(WinBase view)
+        /// <param name="win"></param>
+        private void RecycleUI(WinBase win)
         {
-            m_InstancePool.Recycle(view);
-            view._OnRecycle();
+            m_InstancePool.Recycle(win);
+            win._OnRecycle();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面。
         /// </summary>
-        public WinBase View { get; private set; }
+        public WinBase Win { get; private set; }
 
         /// <summary>
         /// 界面是否暂停(初始化时默认为false,即界面没有暂停)
@@ -29,14 +29,14 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 创建界面组界面信息。
         /// </summary>
-        /// <param name="view">界面。</param>
+        /// <param name="win">界面。</param>
         /// <returns>创建的界面组界面信息。</returns>
         /// <exception cref="InvalidOperationException">界面为空时抛出。</exception>
-        public static WinInfo Create(WinBase view)
+        public static WinInfo Create(WinBase win)
         {
-            if (view == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
+            if (win == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<WinInfo>();
-            uiInfo.View    = view;
+            uiInfo.Win    = win;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;
             return uiInfo;
@@ -47,7 +47,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public void Clear()
         {
-            View    = null;
+            Win    = null;
             Paused  = false;
             Covered = false;
         }

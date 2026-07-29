@@ -20,12 +20,12 @@ namespace Hotfix.Framework.UI
         /// 创建界面实例对象。
         /// </summary>
         /// <param name="uiName"></param>
-        /// <param name="viewBase"></param>
+        /// <param name="winBase"></param>
         /// <returns></returns>
-        public static WinObject Create(string uiName, WinBase viewBase)
+        public static WinObject Create(string uiName, WinBase winBase)
         {
             var uiInstanceObject = ReferencePool.Acquire<WinObject>();
-            uiInstanceObject.Initialize(uiName, viewBase);
+            uiInstanceObject.Initialize(uiName, winBase);
             return uiInstanceObject;
         }
 
@@ -36,19 +36,19 @@ namespace Hotfix.Framework.UI
         /// </summary>
         protected internal override void OnRelease()
         {
-            if (Target is not WinBase viewBase)
+            if (Target is not WinBase winBase)
                 throw new InvalidOperationException("[UIInstanceObject] 需要释放的目标对象不是界面基类WinBase");
 
             try
             {
-                viewBase.UIView?.Dispose();
+                winBase.UIView?.Dispose();
             }
             catch (Exception e)
             {
                 FuLogger.LogWarning($"[UIInstanceObject] 释放 UIView 时出现异常: {e.Message}");
             }
 
-            viewBase._OnDispose();
+            winBase._OnDispose();
         }
     }
 }

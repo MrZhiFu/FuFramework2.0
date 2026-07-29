@@ -51,7 +51,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取当前界面。
         /// </summary>
-        public WinBase CurrentWinBase => m_UIInfoList.First?.Value.View;
+        public WinBase CurrentWinBase => m_UIInfoList.First?.Value.Win;
 
         /// <summary>
         /// 初始化界面组的新实例。
@@ -78,12 +78,12 @@ namespace Hotfix.Framework.UI
             while (current != null)
             {
                 var uiInfo = current.Value;
-                var view   = uiInfo.View;
+                var win   = uiInfo.Win;
 
                 // 只更新未暂停且可见的界面
-                if (!uiInfo.Paused && view.Visible)
+                if (!uiInfo.Paused && win.Visible)
                 {
-                    view._OnUpdate(deltaTime, unscaledDeltaTime);
+                    win._OnUpdate(deltaTime, unscaledDeltaTime);
                 }
 
                 // 继续处理下一个界面
@@ -100,7 +100,7 @@ namespace Hotfix.Framework.UI
         {
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.View.SerialId == serialId)
+                if (uiInfo.Win.SerialId == serialId)
                     return true;
             }
 
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.UI
             uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.View.UIName == uiName)
+                if (uiInfo.Win.UIName == uiName)
                     return true;
             }
 
@@ -140,9 +140,9 @@ namespace Hotfix.Framework.UI
         {
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.View.SerialId == serialId)
+                if (uiInfo.Win.SerialId == serialId)
                 {
-                    return uiInfo.View;
+                    return uiInfo.Win;
                 }
             }
 
@@ -165,9 +165,9 @@ namespace Hotfix.Framework.UI
             uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.View.UIName == uiName)
+                if (uiInfo.Win.UIName == uiName)
                 {
-                    return uiInfo.View;
+                    return uiInfo.Win;
                 }
             }
 
@@ -185,7 +185,7 @@ namespace Hotfix.Framework.UI
             var i = 0;
             foreach (var uiInfo in m_UIInfoList)
             {
-                result[i++] = uiInfo.View;
+                result[i++] = uiInfo.Win;
             }
 
             return result;
@@ -201,7 +201,7 @@ namespace Hotfix.Framework.UI
             results.Clear();
             foreach (var uiInfo in m_UIInfoList)
             {
-                results.Add(uiInfo.View);
+                results.Add(uiInfo.Win);
             }
         }
 
@@ -209,12 +209,12 @@ namespace Hotfix.Framework.UI
         /// 往界面组增加界面。
         /// </summary>
         /// <param name="view">要增加的界面。</param>
-        public void AddUI(WinBase view)
+        public void AddUI(WinBase win)
         {
-            if (HasUI(view.SerialId))
-                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+            if (HasUI(win.SerialId))
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.UIName}'.");
 
-            var uiInfo = WinInfo.Create(view);
+            var uiInfo = WinInfo.Create(win);
             m_UIInfoList.AddFirst(uiInfo);
         }
 
@@ -222,14 +222,14 @@ namespace Hotfix.Framework.UI
         /// 从界面组移除界面。
         /// </summary>
         /// <param name="view">要移除的界面。</param>
-        public void RemoveUI(WinBase view)
+        public void RemoveUI(WinBase win)
         {
-            var uiInfo = GetUIInfo(view);
+            var uiInfo = GetUIInfo(win);
             if (uiInfo == null)
-                throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{view.SerialId}' ，资源名称为 '{view.UIName}' 的UI界面信息.");
+                throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.UIName}' 的UI界面信息.");
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{view.SerialId}]{view.UIName}'.");
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.UIName}'.");
 
             // 释放界面信息实例
             ReferencePool.Release(uiInfo);
@@ -253,7 +253,7 @@ namespace Hotfix.Framework.UI
                 var uiInfo = current.Value;
 
                 // 节点可能已被销毁，跳过继续处理下一个节点
-                if (uiInfo?.View == null)
+                if (uiInfo?.Win == null)
                 {
                     current = next;
                     continue;
@@ -282,16 +282,16 @@ namespace Hotfix.Framework.UI
             if (isPause && !viewInfo.Paused)
             {
                 viewInfo.Paused = true;
-                viewInfo.View._OnPause(); // 触发暂停回调
+                viewInfo.Win._OnPause(); // 触发暂停回调
             }
             else if (!isPause && viewInfo.Paused)
             {
                 viewInfo.Paused = false;
-                viewInfo.View._OnResume(); // 触发恢复回调
+                viewInfo.Win._OnResume(); // 触发恢复回调
             }
 
             // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
-            if (!isPause && viewInfo.View.PauseCoveredUI)
+            if (!isPause && viewInfo.Win.PauseCoveredUI)
             {
                 isPause = true;
             }
@@ -308,12 +308,12 @@ namespace Hotfix.Framework.UI
             if (isCover && !viewInfo.Covered)
             {
                 viewInfo.Covered = true;
-                viewInfo.View._OnBeCover(); // 触发被覆盖回调
+                viewInfo.Win._OnBeCover(); // 触发被覆盖回调
             }
             else if (!isCover && viewInfo.Covered)
             {
                 viewInfo.Covered = false;
-                viewInfo.View._OnReveal(); // 触发重新显示回调
+                viewInfo.Win._OnReveal(); // 触发重新显示回调
             }
 
             // 后续界面需要被覆盖
@@ -328,12 +328,12 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="view">界面实例。</param>
         /// <returns>界面信息。</returns>
-        private WinInfo GetUIInfo(WinBase view)
+        private WinInfo GetUIInfo(WinBase win)
         {
-            view.NotNull(nameof(view));
+            win.NotNull(nameof(win));
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.View == view)
+                if (uiInfo.Win == win)
                     return uiInfo;
             }
 
