@@ -123,7 +123,7 @@ namespace Hotfix.Game.UI
             CloseSelf();
 
             // 打开角色列表界面
-            GlobalModule.UIModule.OpenUI<WinPlayerList>();
+            GlobalModule.UIModule.Open<WinPlayerList>();
         }
 
         #region 交互事件与ListItem渲染回调处理

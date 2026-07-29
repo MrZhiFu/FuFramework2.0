@@ -85,7 +85,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面所属的界面组。
         /// </summary>
-        public UIGroup UIGroup => m_UIModule?.GetUIGroup(Layer);
+        public UIGroup UIGroup => m_UIModule?.GetGroup(Layer);
 
         /// <summary>
         /// 获取或设置界面是否可见。
@@ -100,7 +100,7 @@ namespace Hotfix.Framework.UI
                 UIView.visible = value;
 
                 // 触发UI显示状态变化事件
-                Broadcast(ChangeUIVisibleEventArgs.EventId, ChangeUIVisibleEventArgs.Create(this, value, null));
+                Broadcast(ChangeVisibleEventArgs.EventId, ChangeVisibleEventArgs.Create(this, value, null));
             }
         }
 
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.UI
         protected void CloseSelf()
         {
             if (m_UIModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
-            m_UIModule.CloseUI(this);
+            m_UIModule.Close(this);
         }
 
         /// <summary>

@@ -20,11 +20,11 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUI(int serialId)
+        public bool Has(int serialId)
         {
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.HasUI(serialId)) continue;
+                if (!group.Has(serialId)) continue;
                 return true;
             }
 
@@ -36,13 +36,13 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool HasUI(string uiName)
+        public bool Has(string uiName)
         {
             uiName.NotNullOrEmpty(nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.HasUI(uiName)) continue;
+                if (!group.Has(uiName)) continue;
                 return true;
             }
 
@@ -54,11 +54,11 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase GetUI(int serialId)
+        public WinBase Get(int serialId)
         {
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var ui = group.GetUI(serialId);
+                var ui = group.Get(serialId);
                 if (ui == null) continue;
                 return ui;
             }
@@ -70,20 +70,20 @@ namespace Hotfix.Framework.UI
         /// 获取界面。
         /// </summary>
         /// <returns>要获取的界面。</returns>
-        public T GetUI<T>() where T : WinBase => (T)GetUI(typeof(T).Name);
+        public T Get<T>() where T : WinBase => (T)Get(typeof(T).Name);
 
         /// <summary>
         /// 获取界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase GetUI(string uiName)
+        public WinBase Get(string uiName)
         {
             uiName.NotNullOrEmpty(nameof(uiName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var ui = group.GetUI(uiName);
+                var ui = group.Get(uiName);
                 if (ui == null) continue;
                 return ui;
             }
@@ -96,7 +96,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
         /// <returns>最顶部的界面。</returns>
-        public WinBase GetTopUI(EUILayer? uiLayer = null)
+        public WinBase GetTop(EUILayer? uiLayer = null)
         {
             // 获取指定层级的顶部界面
             if (uiLayer.HasValue)
@@ -125,12 +125,12 @@ namespace Hotfix.Framework.UI
         /// 获取所有已加载的界面。
         /// </summary>
         /// <returns>所有已加载的界面。</returns>
-        public WinBase[] GetAllLoadedUIs()
+        public WinBase[] GetAllLoaded()
         {
             var results = new List<WinBase>();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetAllUIs());
+                results.AddRange(group.GetAll());
             }
 
             return results.ToArray();
@@ -140,14 +140,14 @@ namespace Hotfix.Framework.UI
         /// 获取所有已加载的界面。
         /// </summary>
         /// <param name="results">所有已加载的界面。</param>
-        public void GetAllLoadedUIs(List<WinBase> results)
+        public void GetAllLoaded(List<WinBase> results)
         {
             results.NotNull(nameof(results));
 
             results.Clear();
             foreach (var (_, group) in m_UIGroupDict)
             {
-                results.AddRange(group.GetAllUIs());
+                results.AddRange(group.GetAll());
             }
         }
 
@@ -155,7 +155,7 @@ namespace Hotfix.Framework.UI
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <returns>所有正在加载界面的序列编号。</returns>
-        public int[] GetAllLoadingUISerialIds()
+        public int[] GetAllLoadingSerialIds()
         {
             var index   = 0;
             var results = new int[m_LoadingDict.Count];
@@ -171,7 +171,7 @@ namespace Hotfix.Framework.UI
         /// 获取所有正在加载界面的序列编号。
         /// </summary>
         /// <param name="results">所有正在加载界面的序列编号。</param>
-        public void GetAllLoadingUISerialIds(List<int> results)
+        public void GetAllLoadingSerialIds(List<int> results)
         {
             results.NotNull(nameof(results));
 
@@ -187,13 +187,13 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUI(int serialId) => m_LoadingDict.ContainsKey(serialId);
+        public bool IsLoading(int serialId) => m_LoadingDict.ContainsKey(serialId);
 
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoadingUI(string uiName) => m_LoadingDict.ContainsValue(uiName);
+        public bool IsLoading(string uiName) => m_LoadingDict.ContainsValue(uiName);
     }
 }

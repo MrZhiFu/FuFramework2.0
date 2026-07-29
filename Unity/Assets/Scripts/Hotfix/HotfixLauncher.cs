@@ -153,7 +153,7 @@ namespace Hotfix
         /// </summary>
         private static void EnterGame(ILaunchView launchView)
         {
-            GlobalModule.UIModule.OpenUI<WinLogin>();
+            GlobalModule.UIModule.Open<WinLogin>();
             launchView.Close();
 
             if (GameSetting.Instance.OpenGuide)

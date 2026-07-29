@@ -23,9 +23,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <typeparam name="T">界面类型。</typeparam>
-        public void OpenUI<T>(object userData = null) where T : WinBase, new()
+        public void Open<T>(object userData = null) where T : WinBase, new()
         {
-            _OpenUIAsync<T>(userData).Forget();
+            _OpenAsync<T>(userData).Forget();
         }
 
         /// <summary>
@@ -33,9 +33,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>界面实例。</returns>
-        public async UniTask<T> OpenUIAsync<T>(object userData = null) where T : WinBase, new()
+        public async UniTask<T> OpenAsync<T>(object userData = null) where T : WinBase, new()
         {
-            return await _OpenUIAsync<T>(userData);
+            return await _OpenAsync<T>(userData);
         }
 
         /// <summary>
@@ -43,22 +43,22 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>界面实例。</returns>
-        private async UniTask<T> _OpenUIAsync<T>(object userData = null) where T : WinBase, new()
+        private async UniTask<T> _OpenAsync<T>(object userData = null) where T : WinBase, new()
         {
             var uiName = typeof(T).Name;
 
             // 检查是否已经在加载中
-            if (IsLoadingUI(uiName))
+            if (IsLoading(uiName))
             {
                 FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经正在加载.");
                 return null;
             }
 
             // 检查是否已存在该界面
-            if (HasUI(uiName))
+            if (Has(uiName))
             {
                 FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经存在，不能重复打开.");
-                return GetUI<T>();
+                return Get<T>();
             }
 
             // 分配临时序列号，用于管理加载状态
@@ -131,23 +131,23 @@ namespace Hotfix.Framework.UI
 
                 // AddChild会自动sort++ 
                 uiGroup.AddChild(win.UIView);
-                uiGroup.AddUI(win);
+                uiGroup.Add(win);
 
                 win._OnOpen();    // 界面打开回调
                 uiGroup.Refresh(); // 刷新界面组
 
                 // 广播界面打开成功事件
-                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(win, userData);
+                var openUISuccessEventArgs = OpenSuccessEventArgs.Create(win, userData);
                 m_EventModule.Broadcast(this, openUISuccessEventArgs);
 
                 return win;
             }
             catch (Exception exception)
             {
-                var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
+                var openUIFailureEventArgs = OpenFailureEventArgs.Create(serialId, typeof(T).Name, userData);
                 m_EventModule.Broadcast(this, openUIFailureEventArgs);
                 FuLogger.LogError($"[UIModule] 打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
-                return GetUI(serialId) as T;
+                return Get(serialId) as T;
             }
         }
 

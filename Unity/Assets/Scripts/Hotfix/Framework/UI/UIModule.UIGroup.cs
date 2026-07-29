@@ -25,21 +25,21 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面组数量。
         /// </summary>
-        public int UIGroupCount => m_UIGroupDict.Count;
+        public int GroupCount => m_UIGroupDict.Count;
 
         /// <summary>
         /// 是否存在界面组。
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>是否存在界面组。</returns>
-        public bool HasUIGroup(EUILayer layer) => m_UIGroupDict.ContainsKey(layer);
+        public bool HasGroup(EUILayer layer) => m_UIGroupDict.ContainsKey(layer);
 
         /// <summary>
         /// 获取界面组。
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>要获取的界面组。</returns>
-        public UIGroup GetUIGroup(EUILayer layer)
+        public UIGroup GetGroup(EUILayer layer)
         {
             return m_UIGroupDict.GetValueOrDefault(layer);
         }
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.UI
         /// 获取所有界面组。
         /// </summary>
         /// <returns>所有界面组。</returns>
-        public UIGroup[] GetAllUIGroups()
+        public UIGroup[] GetAllGroups()
         {
             var index   = 0;
             var results = new UIGroup[m_UIGroupDict.Count];
@@ -64,7 +64,7 @@ namespace Hotfix.Framework.UI
         /// 获取所有界面组。
         /// </summary>
         /// <param name="results">所有界面组。</param>
-        public void GetAllUIGroups(List<UIGroup> results)
+        public void GetAllGroups(List<UIGroup> results)
         {
             results.NotNull(nameof(results));
 
@@ -80,9 +80,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="layer">界面组层级。</param>
         /// <returns>是否添加成功。</returns>
-        public bool AddUIGroup(EUILayer layer)
+        public bool AddGroup(EUILayer layer)
         {
-            if (HasUIGroup(layer))
+            if (HasGroup(layer))
             {
                 FuLogger.LogWarning($"[UIModule] UI界面组{layer}已存在!");
                 return false;

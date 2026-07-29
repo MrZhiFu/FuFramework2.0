@@ -138,9 +138,9 @@ namespace Hotfix.Game.UI
             AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
 
             if (respPlayerList.PlayerList.Count > 0)
-                GlobalModule.UIModule.OpenUI<WinPlayerList>(); // 有角色，打开角色列表界面
+                GlobalModule.UIModule.Open<WinPlayerList>(); // 有角色，打开角色列表界面
             else
-                GlobalModule.UIModule.OpenUI<WinPlayerCreate>(); // 无角色，打开角色创建界面
+                GlobalModule.UIModule.Open<WinPlayerCreate>(); // 无角色，打开角色创建界面
 
             // 关闭当前界面
             CloseSelf();

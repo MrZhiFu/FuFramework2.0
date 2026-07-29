@@ -72,7 +72,7 @@ namespace Hotfix.Game.UI
         {
             // 请求背包信息
             await BagManager.Instance.RequestGetBagInfoAsync();
-            await GlobalModule.UIModule.OpenUIAsync<WinBag>();
+            await GlobalModule.UIModule.OpenAsync<WinBag>();
         }
 
         #region 交互事件与ListItem渲染回调处理

@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Guide
             if (uiModule == null) return;
 
             // 查找目标界面
-            var targetWin = uiModule.GetUI(StepInfo.TargetWindow);
+            var targetWin = uiModule.Get(StepInfo.TargetWindow);
             if (targetWin == null)
             {
                 FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.TargetWindow}");

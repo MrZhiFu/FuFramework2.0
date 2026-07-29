@@ -6,19 +6,19 @@ using Hotfix.Framework.ReferencePools;
 namespace Hotfix.Framework.UI
 {
     /// <summary>
-    /// 关闭界面完成事件。
+    /// 打开界面失败事件。
     /// </summary>
-    public sealed class CloseUICompleteEventArgs : GameEventArgs
+    public sealed class OpenFailureEventArgs : GameEventArgs
     {
         /// <summary>
-        /// 获取关闭界面完成事件编号。
+        /// 获取打开界面失败事件编号。
         /// </summary>
         public override string Id => EventId;
 
         /// <summary>
-        /// 关闭界面完成事件编号。
+        /// 打开界面失败事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(CloseUICompleteEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取界面序列编号。
@@ -31,44 +31,44 @@ namespace Hotfix.Framework.UI
         public string UIName { get; private set; }
 
         /// <summary>
-        /// 获取界面所属的界面组。
+        /// 获取用户自定义数据。
         /// </summary>
-        public UIGroup UIGroup { get; private set; }
+        public object UserData { get; private set; }
 
         /// <summary>
-        /// 初始化关闭界面完成事件的新实例。
+        /// 初始化打开界面失败事件的新实例。
         /// </summary>
-        public CloseUICompleteEventArgs()
+        public OpenFailureEventArgs()
         {
             SerialId = 0;
             UIName   = null;
-            UIGroup  = null;
+            UserData = null;
         }
 
         /// <summary>
-        /// 创建关闭界面完成事件。
+        /// 创建打开界面失败事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="uiName">界面资源名称。</param>
-        /// <param name="uiGroup">界面所属的界面组。</param>
-        /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUICompleteEventArgs Create(int serialId, string uiName, UIGroup uiGroup)
+        /// <param name="userData">用户自定义数据。</param>
+        /// <returns>创建的打开界面失败事件。</returns>
+        public static OpenFailureEventArgs Create(int serialId, string uiName, object userData)
         {
-            var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
-            closeUICompleteEventArgs.SerialId = serialId;
-            closeUICompleteEventArgs.UIName   = uiName;
-            closeUICompleteEventArgs.UIGroup  = uiGroup;
-            return closeUICompleteEventArgs;
+            var openUIFailureEventArgs = ReferencePool.Acquire<OpenFailureEventArgs>();
+            openUIFailureEventArgs.SerialId = serialId;
+            openUIFailureEventArgs.UIName   = uiName;
+            openUIFailureEventArgs.UserData = userData;
+            return openUIFailureEventArgs;
         }
 
         /// <summary>
-        /// 清理关闭界面完成事件。
+        /// 清理打开界面失败事件。
         /// </summary>
         public override void Clear()
         {
             SerialId = 0;
             UIName   = null;
-            UIGroup  = null;
+            UserData = null;
         }
     }
 }

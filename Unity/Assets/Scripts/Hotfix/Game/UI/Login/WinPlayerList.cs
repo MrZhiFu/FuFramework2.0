@@ -94,10 +94,10 @@ namespace Hotfix.Game.UI
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
-	        await GlobalModule.UIModule.OpenUIAsync<WinMain>();
+	        await GlobalModule.UIModule.OpenAsync<WinMain>();
 
 	        // 关闭当前界面
-	        GlobalModule.UIModule.CloseUI(this);
+	        GlobalModule.UIModule.Close(this);
         }
         
         /// <summary>

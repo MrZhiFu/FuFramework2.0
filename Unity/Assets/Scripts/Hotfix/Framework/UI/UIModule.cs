@@ -126,7 +126,7 @@ namespace Hotfix.Framework.UI
             // 遍历所有UI层级，并添加UI组
             foreach (EUILayer layer in Enum.GetValues(typeof(EUILayer)))
             {
-                if (AddUIGroup(layer)) continue;
+                if (AddGroup(layer)) continue;
                 FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");
             }
         }
@@ -143,7 +143,7 @@ namespace Hotfix.Framework.UI
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var ui = m_WaitRecycleQueue.Dequeue();
-                RecycleUI(ui);
+                Recycle(ui);
             }
 
             // 驱动界面组帧更新

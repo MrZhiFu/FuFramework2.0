@@ -8,7 +8,7 @@ namespace Hotfix.Framework.UI
     /// <summary>
     /// 打开界面成功事件。
     /// </summary>
-    public sealed class OpenUISuccessEventArgs : GameEventArgs
+    public sealed class OpenSuccessEventArgs : GameEventArgs
     {
         /// <summary>
         /// 获取打开界面成功事件编号。
@@ -18,7 +18,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 打开界面成功事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(OpenUISuccessEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenSuccessEventArgs).FullName;
 
         /// <summary>
         /// 获取打开成功的界面。
@@ -33,7 +33,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public OpenUISuccessEventArgs()
+        public OpenSuccessEventArgs()
         {
             Win = null;
             UserData = null;
@@ -45,9 +45,9 @@ namespace Hotfix.Framework.UI
         /// <param name="win">打开成功的界面。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static OpenUISuccessEventArgs Create(WinBase win, object userData)
+        public static OpenSuccessEventArgs Create(WinBase win, object userData)
         {
-            var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
+            var openUISuccessEventArgs = ReferencePool.Acquire<OpenSuccessEventArgs>();
             openUISuccessEventArgs.Win = win;
             openUISuccessEventArgs.UserData = userData;
             return openUISuccessEventArgs;

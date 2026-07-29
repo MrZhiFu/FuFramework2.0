@@ -8,7 +8,7 @@ namespace Hotfix.Framework.UI
     /// <summary>
     /// 改变界面可见状态事件。
     /// </summary>
-    public sealed class ChangeUIVisibleEventArgs : GameEventArgs
+    public sealed class ChangeVisibleEventArgs : GameEventArgs
     {
         /// <summary>
         /// 获取打开界面成功事件编号。
@@ -18,7 +18,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面可见状态变化事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(ChangeUIVisibleEventArgs).FullName;
+        public static readonly string EventId = typeof(ChangeVisibleEventArgs).FullName;
 
         /// <summary>
         /// 获取打开成功的界面。
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 初始化打开界面成功事件的新实例。
         /// </summary>
-        public ChangeUIVisibleEventArgs()
+        public ChangeVisibleEventArgs()
         {
             Win   = null;
             Visible  = false;
@@ -52,9 +52,9 @@ namespace Hotfix.Framework.UI
         /// <param name="visible">显示状态。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面成功事件。</returns>
-        public static ChangeUIVisibleEventArgs Create(WinBase win, bool visible, object userData)
+        public static ChangeVisibleEventArgs Create(WinBase win, bool visible, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
+            var uiSuccessEventArgs = ReferencePool.Acquire<ChangeVisibleEventArgs>();
             uiSuccessEventArgs.Win   = win;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;

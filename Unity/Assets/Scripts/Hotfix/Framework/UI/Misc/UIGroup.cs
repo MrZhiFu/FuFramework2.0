@@ -96,7 +96,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUI(int serialId)
+        public bool Has(int serialId)
         {
             foreach (var uiInfo in m_UIInfoList)
             {
@@ -112,14 +112,14 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <typeparam name="T">界面类型。</typeparam>
         /// <returns></returns>
-        public bool HasUI<T>() where T : WinBase => HasUI(typeof(T).Name);
+        public bool Has<T>() where T : WinBase => Has(typeof(T).Name);
 
         /// <summary>
         /// 界面组中是否存在界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool HasUI(string uiName)
+        public bool Has(string uiName)
         {
             uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
@@ -136,7 +136,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase GetUI(int serialId)
+        public WinBase Get(int serialId)
         {
             foreach (var uiInfo in m_UIInfoList)
             {
@@ -153,14 +153,14 @@ namespace Hotfix.Framework.UI
         /// 从界面组中获取界面。
         /// </summary>
         /// <returns>要获取的界面。</returns>
-        public T GetUI<T>() where T : WinBase => (T)GetUI(typeof(T).Name);
+        public T Get<T>() where T : WinBase => (T)Get(typeof(T).Name);
 
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
         /// <param name="uiName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase GetUI(string uiName)
+        public WinBase Get(string uiName)
         {
             uiName.NotNullOrEmpty(nameof(uiName));
             foreach (var uiInfo in m_UIInfoList)
@@ -178,7 +178,7 @@ namespace Hotfix.Framework.UI
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <returns>界面组中的所有界面。</returns>
-        public WinBase[] GetAllUIs()
+        public WinBase[] GetAll()
         {
             var result = new WinBase[UICount];
 
@@ -195,7 +195,7 @@ namespace Hotfix.Framework.UI
         /// 从界面组中获取所有界面。
         /// </summary>
         /// <param name="results">界面组中的所有界面。</param>
-        public void GetAllUIs(List<WinBase> results)
+        public void GetAll(List<WinBase> results)
         {
             results.NotNull(nameof(results));
             results.Clear();
@@ -209,9 +209,9 @@ namespace Hotfix.Framework.UI
         /// 往界面组增加界面。
         /// </summary>
         /// <param name="view">要增加的界面。</param>
-        public void AddUI(WinBase win)
+        public void Add(WinBase win)
         {
-            if (HasUI(win.SerialId))
+            if (Has(win.SerialId))
                 throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.UIName}'.");
 
             var uiInfo = WinInfo.Create(win);
@@ -222,9 +222,9 @@ namespace Hotfix.Framework.UI
         /// 从界面组移除界面。
         /// </summary>
         /// <param name="view">要移除的界面。</param>
-        public void RemoveUI(WinBase win)
+        public void Remove(WinBase win)
         {
-            var uiInfo = GetUIInfo(win);
+            var uiInfo = GetInfo(win);
             if (uiInfo == null)
                 throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.UIName}' 的UI界面信息.");
 
@@ -328,7 +328,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="view">界面实例。</param>
         /// <returns>界面信息。</returns>
-        private WinInfo GetUIInfo(WinBase win)
+        private WinInfo GetInfo(WinBase win)
         {
             win.NotNull(nameof(win));
             foreach (var uiInfo in m_UIInfoList)
