@@ -141,7 +141,6 @@ namespace Hotfix.Game.UI
 			if (item is not CompPlayerListItem compItem) return;
 			//var data = xxxModel:GetListPlayerDataByIdx(idx);
 			var playerInfo       = playerList[idx];
-			compItem.Init(this);
 			compItem.SetData(playerInfo);
 		}
 

@@ -79,7 +79,7 @@ namespace Hotfix.Game.UI
 
         /// <summary>
         /// 销毁。
-        /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
+        /// 注意：UI事件，业务逻辑事件，计时器在 Dispose 中统一释放，无需在这里手动移除。
         /// </summary>
         private void OnDispose() { }
         
@@ -132,7 +132,6 @@ namespace Hotfix.Game.UI
             var bagItem = m_BagItems[idx];
             if (item is not CompBagItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
-            compItem.Init(uiView);
             compItem.SetData(bagItem.ItemId, bagItem.Count);
         }
 
@@ -170,7 +169,6 @@ namespace Hotfix.Game.UI
         {
             if (item is not CompTypeItem compItem) return;
             //var data = xxxModel:GetListPlayerDataByIdx(idx);
-            compItem.Init(uiView);
             compItem.SetData(m_Tabs[idx].Name);
         }
 
