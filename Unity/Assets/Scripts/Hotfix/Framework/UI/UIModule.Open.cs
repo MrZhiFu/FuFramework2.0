@@ -114,7 +114,7 @@ namespace Hotfix.Framework.UI
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateFuiView<T>T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
+        private T CreateFuiView<T>(T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
         {
             try
             {
