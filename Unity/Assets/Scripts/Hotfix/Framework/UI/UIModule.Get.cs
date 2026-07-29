@@ -105,7 +105,7 @@ namespace Hotfix.Framework.UI
             }
 
             // 获取所有层级中最顶部的界面（层级值最大的）
-            WinBase topView  = null;
+            WinBase topWin  = null;
             var      maxLayer = int.MinValue;
 
             foreach (var (layer, group) in m_UIGroupDict)
@@ -114,11 +114,11 @@ namespace Hotfix.Framework.UI
                 if (layerValue > maxLayer && group.CurrentWinBase != null)
                 {
                     maxLayer = layerValue;
-                    topView  = group.CurrentWinBase;
+                    topWin  = group.CurrentWinBase;
                 }
             }
 
-            return topView;
+            return topWin;
         }
 
         /// <summary>
