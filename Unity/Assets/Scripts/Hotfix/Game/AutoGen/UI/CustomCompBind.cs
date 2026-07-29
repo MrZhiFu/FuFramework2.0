@@ -5,7 +5,6 @@
 
 using FairyGUI;
 using UnityEngine;
-using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 namespace Hotfix.Game.UI

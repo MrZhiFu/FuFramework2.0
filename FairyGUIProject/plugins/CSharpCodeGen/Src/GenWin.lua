@@ -14,7 +14,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
     local namespace = Tool:GetExportCodeNamespace(pkgName)   --- 导出View的C#代码命名空间
 
     -- Launcher 包：Win 界面代码统一放在 Launcher/UI/ 下
-    local isLauncher = tostring(pkgName) == "Launch"
+    local isLauncher = tostring(pkgName) == "Launcher"
     local aotUiSubDir = isLauncher and "/UI" or ""
 
     -- 提前计算目标目录（Gen / 手写代码）

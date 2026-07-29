@@ -4,20 +4,22 @@
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 
 using System;
+using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FairyGUI.Utils;
 using Hotfix.Framework.UI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
-using Cysharp.Threading.Tasks;
+using Hotfix.Framework.Timer;
 
 namespace Hotfix.Game.UI
 {
-    public partial class CompBagItemInfo : GComponent, ICustomComp
+    public partial class CompBagItemInfo : GComponent
     {
-        /// 组件所属界面
-        private ViewBase uiView;
+        private FuiEventRegister m_UIEventRegister;
+        private EventRegister m_EventRegister;
+        private TimerRegister m_TimerRegister;
 
 		private Controller IsCanUse;
 		private GTextField txtName;
@@ -56,24 +58,12 @@ namespace Hotfix.Game.UI
 		{
 			base.ConstructFromXML(xml);
 			InitUIComp();
+			m_UIEventRegister = FuiEventRegister.Create();
+			m_EventRegister = EventRegister.Create();
+			m_TimerRegister = TimerRegister.Create();
+			InitUIEvent();
+			OnInit();
 		}
-
-        /// <summary>
-        /// 初始化所属界面.
-        /// 注意，如果该组件作为列表的Item使用，请在列表渲染回调方法OnRenderListXxxItem()中确保被成功调用，否则无法注册组件所属界面
-        /// </summary>
-        public void Init(ViewBase view)
-        {
-	        if (view == null)
-	        {
-		        FuLogger.LogError($"初始化{view.UIName}界面组件-{GetType().Name}失败，所属界面为空");
-		        return;
-	        }
-	        FuLogger.LogInfo($"初始化{view.UIName}界面组件-{GetType().Name}");
-	        uiView = view;
-	        InitUIEvent();
-	        OnInit();
-        }
 
         /// <summary>
         /// UI组件初始化
@@ -102,179 +92,76 @@ namespace Hotfix.Game.UI
         /// </summary>
         public override void Dispose()
         {
-            FuLogger.LogInfo($"销毁{uiView.UIName}界面组件-{GetType().Name}");
+            FuLogger.LogInfo($"销毁界面组件-{GetType().Name}");
             OnDispose();
-            uiView = null;
+            m_UIEventRegister?.Release();
+            m_EventRegister?.Release();
+            m_TimerRegister?.Release();
             base.Dispose();
         }
 
         #region UI事件处理
 
-        /// <summary>
-        /// 添加UI上指定组件的监听事件
-        /// </summary>
-        /// <param name="listener">监听者</param>
-        /// <param name="callback">回调函数</param>
-        protected void AddUIListener(EventListener listener, EventCallback1 callback) => uiView?.AddUIListener(listener, callback);
+        protected void AddUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.AddUIListener(listener, callback);
 
-        /// <summary>
-        /// 设置UI上指定组件的监听事件(会删除以前添加的事件)
-        /// </summary>
-        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
-        /// <param name="callback">回调函数</param>
-        protected void SetUIListener(EventListener listener, EventCallback1 callback) => uiView?.SetUIListener(listener, callback);
+        protected void SetUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.SetUIListener(listener, callback);
 
-        /// <summary>
-        /// 移除UI上指定组件的监听事件
-        /// </summary>
-        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
-        /// <param name="callback">回调函数</param>
-        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => uiView?.RemoveUIListener(listener, callback);
+        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.RemoveUIListener(listener, callback);
 
-        /// <summary>
-        /// 清理UI上指定组件的所有监听事件
-        /// </summary>
-        /// <param name="listener">被监听者(一般是交互组件，如Button)</param>
-        protected void ClearUIListener(EventListener listener) => uiView?.ClearUIListener(listener);
+        protected void ClearUIListener(EventListener listener) => m_UIEventRegister.ClearUIListener(listener);
 
-        /// <summary>
-        /// 清理UI上所有组件的所有监听事件
-        /// </summary>
-        protected void ClearAllUIListener() => uiView?.ClearAllUIListener();
+        protected void ClearAllUIListener() => m_UIEventRegister.ClearAllUIListener();
 
         #endregion
 
         #region 业务逻辑事件处理
 
-        /// <summary>
-        /// 订阅事件
-        /// </summary>
-        /// <param name="eventId">消息ID</param>
-        /// <param name="handler">处理对象</param>
-        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView?.Subscribe(eventId, handler);
+        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => m_EventRegister.Subscribe(eventId, handler);
 
-        /// <summary>
-        /// 取消订阅事件
-        /// </summary>
-        /// <param name="eventId">消息ID</param>
-        /// <param name="handler">处理对象</param>
-        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => uiView?.UnSubscribe(eventId, handler);
+        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => m_EventRegister.UnSubscribe(eventId, handler);
 
-        /// <summary>
-        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
-        /// </summary>
-        /// <param name="eventId">消息ID</param>
-        /// <param name="e">消息对象</param>
-        protected void Broadcast(string eventId, GameEventArgs e) => uiView?.Broadcast(eventId, e);
+        protected void Broadcast(string eventId, GameEventArgs e) => m_EventRegister.Broadcast(eventId, e);
 
-        /// <summary>
-        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="eventId">事件编号。</param>
-        protected void Broadcast(object sender, string eventId) => uiView?.Broadcast(sender, eventId);
+        protected void Broadcast(object sender, string eventId) => m_EventRegister.Broadcast(sender, eventId);
 
-        /// <summary>
-        /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">事件内容。</param>
-        protected void BroadcastNow(object sender, GameEventArgs e) => uiView?.BroadcastNow(sender, e);
+        protected void BroadcastNow(object sender, GameEventArgs e) => m_EventRegister.BroadcastNow(sender, e);
 
-        /// <summary>
-        /// 取消所有订阅
-        /// </summary>
-        protected void UnSubscribeAll() => uiView?.UnSubscribeAll();
+        protected void UnSubscribeAll() => m_EventRegister.UnSubscribeAll();
 
         #endregion
 
         #region 计时器
 
-        /// <summary>
-        /// 启动一个倒计时计时器
-        /// </summary>
-        /// <param name="duration">计时器持续时间</param>
-        /// <param name="finishCallBack">计时器结束回调</param>
-        /// <param name="updateCallBack">计时器更新回调</param>
-        /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
-            uiView?.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            m_TimerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }
 
-        /// <summary>
-        /// 启动一个时间间隔计时器
-        /// </summary>
-        /// <param name="interval">计时器间隔时间</param>
-        /// <param name="intervalCallback">计时器每次间隔回调</param>
-        /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
-        /// <param name="immediate">是否立即执行第一次回调</param>
-        /// <param name="ignoreTimeScale">是否忽略时间缩放</param>
         protected void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            uiView?.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            m_TimerRegister.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
 
-        /// <summary>
-        /// 启动一个帧间隔计时器
-        /// </summary>
-        /// <param name="frameInterval">计时器帧间隔</param>
-        /// <param name="intervalCallback">计时器每次帧间隔回调</param>
-        /// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
-        /// <param name="immediate">是否立即执行第一次回调</param>
-        /// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
         protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-            uiView?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            m_TimerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
         }
 
-        /// <summary>
-        /// 暂停计时器
-        /// </summary>
-        /// <param name="timerId"></param>
-        protected void PauseTimer(int timerId) => uiView?.PauseTimer(timerId);
+        protected void PauseTimer(int timerId) => m_TimerRegister.PauseTimer(timerId);
 
-        /// <summary>
-        /// 恢复计时器
-        /// </summary>
-        /// <param name="timerId"></param>
-        protected void ResumeTimer(int timerId) => uiView?.ResumeTimer(timerId);
+        protected void ResumeTimer(int timerId) => m_TimerRegister.ResumeTimer(timerId);
 
-        /// <summary>
-        /// 停止计时器
-        /// </summary>
-        /// <param name="timerId"></param>
-        protected void StopTimer(int timerId) => uiView.StopTimer(timerId);
+        protected void StopTimer(int timerId) => m_TimerRegister.StopTimer(timerId);
 
-        /// <summary>
-        /// 暂停所有计时器
-        /// </summary>
-        protected void PauseAllTimers() => uiView?.PauseAllTimers();
+        protected void PauseAllTimers() => m_TimerRegister.PauseAllTimers();
 
-        /// <summary>
-        /// 恢复所有计时器
-        /// </summary>
-        protected void ResumeAllTimers() => uiView?.ResumeAllTimers();
+        protected void ResumeAllTimers() => m_TimerRegister.ResumeAllTimers();
 
-        /// <summary>
-        /// 停止所有计时器
-        /// </summary>
-        protected void StopAllTimers() => uiView?.StopAllTimers();
+        protected void StopAllTimers() => m_TimerRegister.StopAllTimers();
 
-        /// <summary>
-        /// 检查计时器是否存在
-        /// </summary>
-        /// <param name="timerId"></param>
-        /// <returns></returns>
-        protected bool IsTimerExist(int timerId) => uiView != null && uiView.IsTimerExist(timerId);
+        protected bool IsTimerExist(int timerId) => m_TimerRegister.IsTimerExist(timerId);
 
-        /// <summary>
-        /// 检查计时器是否处于暂停状态
-        /// </summary>
-        /// <param name="timerId"></param>
-        /// <returns></returns>
-        protected bool IsTimerPaused(int timerId) => uiView != null && uiView.IsTimerPaused(timerId);
+        protected bool IsTimerPaused(int timerId) => m_TimerRegister.IsTimerPaused(timerId);
 
         #endregion
     }
