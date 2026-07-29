@@ -78,7 +78,7 @@ namespace Hotfix.Framework.UI
                     win = uiIns.Target as T;
 
                     // 使用临时序列号创建Fui界面
-                    return CreateFuiView(win, tempSerialId, false, userData);
+                    return CreateFuiWin(win, tempSerialId, false, userData);
                 }
 
                 // 创建界面实例对象
@@ -90,14 +90,14 @@ namespace Hotfix.Framework.UI
                 if (PkgManager.HasPackage(win.PackageName))
                 {
                     // 使用临时序列号创建Fui界面
-                    return CreateFuiView(win, tempSerialId, true, userData);
+                    return CreateFuiWin(win, tempSerialId, true, userData);
                 }
 
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
                 await PkgManager.AddPackageAsync(win.PackageName);
 
                 // 使用临时序列号创建Fui界面
-                return CreateFuiView(win, tempSerialId, true, userData);
+                return CreateFuiWin(win, tempSerialId, true, userData);
             }
             finally
             {
@@ -114,7 +114,7 @@ namespace Hotfix.Framework.UI
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateFuiView<T>(T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
+        private T CreateFuiWin<T>(T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
         {
             try
             {

@@ -159,7 +159,7 @@ namespace Hotfix.Framework.UI
         /// 设置UI对象
         /// </summary>
         /// <param name="view"></param>
-        protected void SetUIView(GComponent view) => UIView = view;
+        protected void SetUIWin(GComponent view) => UIView = view;
 
         /// <summary>
         /// 获取界面子对象。
