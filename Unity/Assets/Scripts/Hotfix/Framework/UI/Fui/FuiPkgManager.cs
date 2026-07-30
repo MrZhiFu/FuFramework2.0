@@ -162,7 +162,10 @@ namespace Hotfix.Framework.UI
             {
                 if (dep.TryGetValue("name", out var depPkgName))
                 {
-                    tasks.Add(AddPackageAsync(depPkgName));
+                    // 已加载的跳过；正在加载的说明是循环依赖，也跳过加载，但引用计数仍需增加
+                    if (!m_LoadedPkgDict.ContainsKey(depPkgName) && !m_LoadingTasks.ContainsKey(depPkgName))
+                        tasks.Add(AddPackageAsync(depPkgName));
+
                     AddRef(depPkgName);
                 }
             }
@@ -238,7 +241,9 @@ namespace Hotfix.Framework.UI
 
             // 引用计数从 0 变为 1，恢复纹理/音频资源
             if (wasZero && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+            {
                 pkg.ReloadAssets();
+            }
         }
 
         /// <summary>

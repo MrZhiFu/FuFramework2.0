@@ -95,6 +95,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         protected override async void LoadExternal()
         {
+            AssetHandle assetHandle = null;
             try
             {
                 if (url.IsNullOrWhiteSpace())
@@ -119,7 +120,6 @@ namespace Hotfix.Framework.UI
 
                 // 根据URL类型加载纹理
                 Texture2D   texture2D   = null;
-                AssetHandle assetHandle = null;
                 if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
                 {
                     // 3.从网络加载
@@ -200,11 +200,17 @@ namespace Hotfix.Framework.UI
                 return null;
             }
 
-            UtilityAOT.File.WriteAllBytes(texturePath, webBufferResult.Result);
-
             // 创建临时2x2纹理(占位)，LoadImage 内部重新分配为实际图片尺寸
             var tempTexture = new Texture2D(2, 2);
-            tempTexture.LoadImage(webBufferResult.Result);
+            if (!tempTexture.LoadImage(webBufferResult.Result))
+            {
+                FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {textureURL}");
+                Object.Destroy(tempTexture);
+                return null;
+            }
+
+            // 图片解析成功后才写入本地缓存，避免缓存损坏文件
+            UtilityAOT.File.WriteAllBytes(texturePath, webBufferResult.Result);
             return tempTexture;
         }
 
