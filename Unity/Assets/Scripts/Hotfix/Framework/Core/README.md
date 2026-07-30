@@ -110,6 +110,7 @@ Unity 帧驱动入口，继承 `MonoBehaviour`，挂接 `ModuleManager` 的生�
 |---|---|
 | `FuBidirectionalDictionary<T1, T2>` | 双向字典，支持键值互查 |
 | `FuLinkedList<T>` | 带缓存节点队列的优化链表，减少 GC |
+| `FuLRUCache<TKey, TValue>` | 泛型 LRU 缓存，支持驱逐回调，容量满自动淘汰最少使用项 |
 | `FuMultiDictionary<TKey, TValue>` | 多值字典，一键对应多个值 |
 | `TypeNamePair` | 类型+名称的组合值结构体 |
 
@@ -272,6 +273,7 @@ Core/
 │   │   ├── FuBidirectionalDictionary.cs
 │   │   ├── FuLinkedList.cs
 │   │   ├── FuLinkedListRange.cs
+│   │   ├── FuLRUCache.cs
 │   │   ├── FuMultiDictionary.cs
 │   │   └── TypeNamePair.cs
 │   ├── Extension/                 # 扩展方法
