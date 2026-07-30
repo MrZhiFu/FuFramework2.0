@@ -53,8 +53,8 @@ namespace Hotfix.Framework.UI
         /// <param name="eventArgs">事件对象</param>
         public void Broadcast(object sender, GameEventArgs eventArgs)
         {
-            sender.NotNull(       nameof(sender));
-            eventArgs.NotNull(    nameof(eventArgs));
+            sender.NotNull(nameof(sender));
+            eventArgs.NotNull(nameof(eventArgs));
             EventRegister.NotNull("事件订阅器");
             EventRegister.Broadcast(sender, eventArgs);
         }
@@ -79,8 +79,8 @@ namespace Hotfix.Framework.UI
         /// <param name="eventArgs">事件对象</param>
         public void BroadcastNow(object sender, GameEventArgs eventArgs)
         {
-            sender.NotNull(       nameof(sender));
-            eventArgs.NotNull(    nameof(eventArgs));
+            sender.NotNull(nameof(sender));
+            eventArgs.NotNull(nameof(eventArgs));
             EventRegister.NotNull("事件订阅器");
             EventRegister.BroadcastNow(sender, eventArgs);
         }

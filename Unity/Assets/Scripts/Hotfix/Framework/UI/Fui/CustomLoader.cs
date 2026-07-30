@@ -134,7 +134,7 @@ namespace Hotfix.Framework.UI
                 {
                     AssetHandle = assetHandle
                 };
-                m_CacheDict[key]    = newItem;
+                m_CacheDict[key] = newItem;
                 m_LruList.AddFirst(newItem);
             }
         }

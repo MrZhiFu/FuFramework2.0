@@ -72,19 +72,19 @@ namespace Hotfix.Framework.UI
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var uiIns = m_InstancePool.Spawn(uiName);
-                if (uiIns != null)
+                var winIns = m_WinInstancePool.Spawn(uiName);
+                if (winIns != null)
                 {
-                    win = uiIns.Target as T;
+                    win = winIns.Target as T;
 
                     // 使用临时序列号创建Fui界面
                     return CreateFuiWin(win, tempSerialId, false, userData);
                 }
 
                 // 创建界面实例对象
-                win  = new T();
-                uiIns = WinObject.Create(win.UIName, win);
-                m_InstancePool.Register(uiIns, true);
+                win    = new T();
+                winIns = WinObject.Create(win.UIName, win);
+                m_WinInstancePool.Register(winIns, true);
 
                 // UI包已经加载过，则直接创建Fui界面
                 if (PkgManager.HasPackage(win.PackageName))
@@ -133,18 +133,18 @@ namespace Hotfix.Framework.UI
                 uiGroup.AddChild(win.WinUI);
                 uiGroup.Add(win);
 
-                win._OnOpen();    // 界面打开回调
+                win._OnOpen();     // 界面打开回调
                 uiGroup.Refresh(); // 刷新界面组
 
                 // 广播界面打开成功事件
-                var openUISuccessEventArgs = OpenSuccessEventArgs.Create(win, userData);
+                var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(win, userData);
                 m_EventModule.Broadcast(this, openUISuccessEventArgs);
 
                 return win;
             }
             catch (Exception exception)
             {
-                var openUIFailureEventArgs = OpenFailureEventArgs.Create(serialId, typeof(T).Name, userData);
+                var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
                 m_EventModule.Broadcast(this, openUIFailureEventArgs);
                 FuLogger.LogError($"[UIModule] 打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
                 return Get(serialId) as T;
@@ -156,13 +156,13 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="uiView">要设置是否加锁的界面实例。</param>
         /// <param name="locked">界面实例是否加锁。</param>
-        public void SetUILocked(object uiView, bool locked) => m_InstancePool.SetLocked(uiView, locked);
+        public void SetUILocked(object uiView, bool locked) => m_WinInstancePool.SetLocked(uiView, locked);
 
         /// <summary>
         /// 设置界面实例对象的优先级。优先级小的实例会优先被释放。
         /// </summary>
         /// <param name="uiView">要设置优先级的界面实例。</param>
         /// <param name="priority">界面实例优先级。</param>
-        public void SetUIPriority(object uiView, int priority) => m_InstancePool.SetPriority(uiView, priority);
+        public void SetUIPriority(object uiView, int priority) => m_WinInstancePool.SetPriority(uiView, priority);
     }
 }

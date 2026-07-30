@@ -100,7 +100,7 @@ namespace Hotfix.Framework.UI
                 WinUI.visible = value;
 
                 // 触发UI显示状态变化事件
-                Broadcast(ChangeVisibleEventArgs.EventId, ChangeVisibleEventArgs.Create(this, value, null));
+                Broadcast(ChangeUIVisibleEventArgs.EventId, ChangeUIVisibleEventArgs.Create(this, value, null));
             }
         }
 

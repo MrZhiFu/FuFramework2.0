@@ -78,7 +78,7 @@ namespace Hotfix.Framework.UI
             while (current != null)
             {
                 var uiInfo = current.Value;
-                var win   = uiInfo.Win;
+                var win    = uiInfo.Win;
 
                 // 只更新未暂停且可见的界面
                 if (!uiInfo.Paused && win.Visible)

@@ -36,7 +36,7 @@ namespace Hotfix.Framework.UI
         {
             if (win == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
             var uiInfo = ReferencePool.Acquire<WinInfo>();
-            uiInfo.Win    = win;
+            uiInfo.Win     = win;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;
             return uiInfo;
@@ -47,7 +47,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public void Clear()
         {
-            Win    = null;
+            Win     = null;
             Paused  = false;
             Covered = false;
         }

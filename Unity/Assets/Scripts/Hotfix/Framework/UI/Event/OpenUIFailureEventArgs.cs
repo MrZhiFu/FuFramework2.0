@@ -1,5 +1,5 @@
 using Hotfix.Framework.ReferencePools;
-﻿using Hotfix.Framework.Event;
+using Hotfix.Framework.Event;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -8,7 +8,7 @@ namespace Hotfix.Framework.UI
     /// <summary>
     /// 打开界面失败事件。
     /// </summary>
-    public sealed class OpenFailureEventArgs : GameEventArgs
+    public sealed class OpenUIFailureEventArgs : GameEventArgs
     {
         /// <summary>
         /// 获取打开界面失败事件编号。
@@ -18,7 +18,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 打开界面失败事件编号。
         /// </summary>
-        public static readonly string EventId = typeof(OpenFailureEventArgs).FullName;
+        public static readonly string EventId = typeof(OpenUIFailureEventArgs).FullName;
 
         /// <summary>
         /// 获取界面序列编号。
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 初始化打开界面失败事件的新实例。
         /// </summary>
-        public OpenFailureEventArgs()
+        public OpenUIFailureEventArgs()
         {
             SerialId = 0;
             UIName   = null;
@@ -52,9 +52,9 @@ namespace Hotfix.Framework.UI
         /// <param name="uiName">界面资源名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面失败事件。</returns>
-        public static OpenFailureEventArgs Create(int serialId, string uiName, object userData)
+        public static OpenUIFailureEventArgs Create(int serialId, string uiName, object userData)
         {
-            var openUIFailureEventArgs = ReferencePool.Acquire<OpenFailureEventArgs>();
+            var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
             openUIFailureEventArgs.SerialId = serialId;
             openUIFailureEventArgs.UIName   = uiName;
             openUIFailureEventArgs.UserData = userData;

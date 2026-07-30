@@ -40,7 +40,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池
         /// </summary>
-        private ObjectPoolModule.ObjectPool<WinObject> m_InstancePool;
+        private ObjectPoolModule.ObjectPool<WinObject> m_WinInstancePool;
 
         /// <summary>
         /// FGui的包管理器
@@ -68,13 +68,14 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private const float UIInstanceExpireTime = 60f;
 
+
         /// <summary>
         /// 获取或设置界面实例对象池自动释放可释放对象的间隔秒数。
         /// </summary>
         public float InstanceAutoReleaseInterval
         {
-            get => m_InstancePool.AutoReleaseInterval;
-            set => m_InstancePool.AutoReleaseInterval = value;
+            get => m_WinInstancePool.AutoReleaseInterval;
+            set => m_WinInstancePool.AutoReleaseInterval = value;
         }
 
         /// <summary>
@@ -82,8 +83,8 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public int InstanceCapacity
         {
-            get => m_InstancePool.Capacity;
-            set => m_InstancePool.Capacity = value;
+            get => m_WinInstancePool.Capacity;
+            set => m_WinInstancePool.Capacity = value;
         }
 
         /// <summary>
@@ -91,8 +92,8 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public float InstanceExpireTime
         {
-            get => m_InstancePool.ExpireTime;
-            set => m_InstancePool.ExpireTime = value;
+            get => m_WinInstancePool.ExpireTime;
+            set => m_WinInstancePool.ExpireTime = value;
         }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace Hotfix.Framework.UI
             m_WaitRecycleQueue = new Queue<WinBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-            m_InstancePool     = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIInstanceObjectPool");
+            m_WinInstancePool  = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIInstanceObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
             PkgManager    = new FuiPkgManager();

@@ -37,7 +37,7 @@ namespace Hotfix.Framework.UI
         internal void _OnOpen()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]打开-OnOpen().");
-            Visible      = true;
+            Visible     = true;
             WinUI.alpha = 0;
 
             // 先刷新界面
