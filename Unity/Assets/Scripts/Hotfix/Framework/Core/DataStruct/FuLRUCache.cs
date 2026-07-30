@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Core
     /// </summary>
     /// <typeparam name="TKey">缓存键类型</typeparam>
     /// <typeparam name="TValue">缓存值类型</typeparam>
-    public sealed class LRUCache<TKey, TValue>
+    public sealed class FuLRUCache<TKey, TValue>
     {
         /// <summary>
         /// 缓存项
@@ -75,7 +75,7 @@ namespace Hotfix.Framework.Core
         /// <param name="capacity">最大容量，默认为 64，必须大于 0</param>
         /// <param name="onEvict">驱逐回调，当缓存项被淘汰或替换时触发。参数为（Key, Value），由调用方在此回调中释放资源。</param>
         /// <exception cref="ArgumentOutOfRangeException">maxCapacity 小于等于 0 时抛出</exception>
-        public LRUCache(int capacity = 64, Action<TKey, TValue> onEvict = null)
+        public FuLRUCache(int capacity = 64, Action<TKey, TValue> onEvict = null)
         {
             if (capacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity), "最大容量必须大于 0");
@@ -132,8 +132,9 @@ namespace Hotfix.Framework.Core
             if (m_CacheDict.TryGetValue(key, out var existingNode))
             {
                 // 替换已有项：先驱逐旧值，再更新
-                m_OnEvict?.Invoke(key, existingNode.Value.Value);
-                existingNode.Value.Value = value;
+                var cacheItem = existingNode.Value;
+                m_OnEvict?.Invoke(key, cacheItem.Value);
+                cacheItem.Value = value;
                 m_LruList.Remove(existingNode);
                 m_LruList.AddFirst(existingNode);
             }
@@ -143,9 +144,10 @@ namespace Hotfix.Framework.Core
                 if (m_CacheDict.Count >= m_Capacity)
                 {
                     var lastNode = m_LruList.Last;
+                    var lastItem = lastNode.Value;
                     m_LruList.Remove(lastNode);
-                    m_CacheDict.Remove(lastNode.Value.Key);
-                    m_OnEvict?.Invoke(lastNode.Value.Key, lastNode.Value.Value);
+                    m_CacheDict.Remove(lastItem.Key);
+                    m_OnEvict?.Invoke(lastItem.Key, lastItem.Value);
                 }
 
                 // 添加新项
@@ -165,9 +167,10 @@ namespace Hotfix.Framework.Core
             if (!m_CacheDict.TryGetValue(key, out var node))
                 return false;
 
+            var cacheItem = node.Value;
             m_LruList.Remove(node);
             m_CacheDict.Remove(key);
-            m_OnEvict?.Invoke(node.Value.Key, node.Value.Value);
+            m_OnEvict?.Invoke(cacheItem.Key, cacheItem.Value);
             return true;
         }
 

@@ -28,7 +28,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// Loader纹理LRU缓存
         /// </summary>
-        private static readonly LRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
+        private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
 
         /// <summary>
         /// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
@@ -67,6 +67,8 @@ namespace Hotfix.Framework.UI
             }
 
             entry.AssetHandle?.Release();
+            entry.AssetHandle = null;
+            entry.Texture = null;
         }
 
         /// <summary>
@@ -161,11 +163,11 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 从网络加载纹理
         /// </summary>
-        /// <param name="url">网络URL地址。</param>
+        /// <param name="textureURL">纹理URL地址。</param>
         /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<Texture2D> LoadTextureFromNetwork(string url)
+        private async UniTask<Texture2D> LoadTextureFromNetwork(string textureURL)
         {
-            var textureHashName = Utility.Hash.MD5.Hash(url);
+            var textureHashName = Utility.Hash.MD5.Hash(textureURL);
             var texturePath     = $"{CachePath}{textureHashName}.png";
 
             // 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
@@ -178,10 +180,10 @@ namespace Hotfix.Framework.UI
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
 
-            var webBufferResult = await WebModule.Instance.GetToBytes(url, null);
+            var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, null);
             if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
             {
-                FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {url}");
+                FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
                 return null;
             }
 
@@ -196,13 +198,13 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 从资源管理模块加载纹理
         /// </summary>
-        /// <param name="url">资源路径。</param>
+        /// <param name="textureURL">资源路径。</param>
         /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<AssetHandle> LoadTextureFromAsset(string url)
+        private async UniTask<AssetHandle> LoadTextureFromAsset(string textureURL)
         {
-            var assetInfo = m_AssetModule.GetAssetInfo(url);
+            var assetInfo = m_AssetModule.GetAssetInfo(textureURL);
             if (assetInfo == null) return null;
-            return await m_AssetModule.LoadAssetAsync<Texture2D>(url);
+            return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL);
         }
 
         /// <summary>
