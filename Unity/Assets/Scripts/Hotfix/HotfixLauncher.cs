@@ -45,7 +45,7 @@ using SimpleJSON;
 namespace Hotfix
 {
     /// <summary>
-    /// 热更代码入口
+    /// 热更代码启动入口
     /// </summary>
     public static class HotfixLauncher
     {
@@ -81,7 +81,7 @@ namespace Hotfix
         /// </summary>
         private static void SetupFairyGUI()
         {
-            FairyGUI.UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
+            UIObjectFactory.SetLoaderExtension(typeof(CustomLoader));
         }
 
         /// <summary>
