@@ -248,6 +248,7 @@ namespace Hotfix.Framework.UI
         public void SubRef(string pkgName)
         {
             if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
+            if (count <= 0) return; // 已归零：防止循环依赖导致重复卸载
 
             count = --m_PkgRefCountDict[pkgName];
             FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");

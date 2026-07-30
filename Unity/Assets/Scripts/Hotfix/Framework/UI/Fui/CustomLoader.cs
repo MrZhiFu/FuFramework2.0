@@ -139,6 +139,12 @@ namespace Hotfix.Framework.UI
                             assetHandle = null;
                         }
                     }
+                    else if (assetHandle.IsNotNull())
+                    {
+                        // 句柄未完成，释放并标记失败
+                        assetHandle.Release();
+                        assetHandle = null;
+                    }
                 }
 
                 // 创建纹理并缓存
@@ -155,6 +161,13 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception e)
             {
+                // 异常时确保释放资源句柄
+                if (assetHandle.IsNotNull())
+                {
+                    assetHandle.Release();
+                    assetHandle = null;
+                }
+
                 onExternalLoadFailed();
                 FuLogger.LogError(e);
             }
