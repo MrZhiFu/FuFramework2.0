@@ -135,7 +135,10 @@ namespace Hotfix.Framework.UI
                     cts.Token.ThrowIfCancellationRequested();
 
                 // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) => { LoadResAsync(assetName, extension, type, packageItem).Forget(); });
+                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
+                {
+                    LoadResAsync(assetName, extension, type, packageItem).Forget();
+                });
 
                 return loadedPackage;
             }
@@ -275,9 +278,22 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 释放指定包。
+        /// 完全卸载所有包（元数据 + GPU 资源 + FGUI 全局缓存），用于游戏退出。
         /// </summary>
-        /// <param name="pkgName">要移除的包名</param>
+        public void ReleaseAll()
+        {
+            // 释放所有已加载的包（先复制Keys避免遍历时修改集合）
+            List<string> pkgNames = new(m_LoadedPkgDict.Keys);
+            foreach (var pkgName in pkgNames)
+            {
+                ReleasePackage(pkgName);
+            }
+        }
+
+        /// <summary>
+        /// 完全卸载指定包：元数据 + GPU 资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
+        /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 GPU 资源，元数据保留）。
+        /// </summary>
         public void ReleasePackage(string pkgName)
         {
             // 1.FUI移除UIPackage包
@@ -306,19 +322,5 @@ namespace Hotfix.Framework.UI
             // 5.移除引用计数
             m_PkgRefCountDict.Remove(pkgName);
         }
-
-        /// <summary>
-        /// 释放所有包
-        /// </summary>
-        public void ReleaseAll()
-        {
-            // 释放所有已加载的包（先复制Keys避免遍历时修改集合）
-            List<string> pkgNames = new(m_LoadedPkgDict.Keys);
-            foreach (var pkgName in pkgNames)
-            {
-                ReleasePackage(pkgName);
-            }
-        }
-
     }
 }

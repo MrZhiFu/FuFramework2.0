@@ -1,5 +1,6 @@
 using System;
 using FairyGUI;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Hotfix.Framework.Web;
@@ -60,17 +61,8 @@ namespace Hotfix.Framework.UI
         {
             if (entry == null) return;
 
+            // NTexture.Dispose() 内部已调用 DestroyImmediate 销毁 native 纹理
             entry.Texture?.Dispose();
-            if (entry.Texture?.nativeTexture != null)
-            {
-                Object.Destroy(entry.Texture.nativeTexture);
-            }
-
-            if (entry.Texture?.alphaTexture != null)
-            {
-                Object.Destroy(entry.Texture.alphaTexture);
-            }
-
             entry.AssetHandle?.Release();
         }
 
