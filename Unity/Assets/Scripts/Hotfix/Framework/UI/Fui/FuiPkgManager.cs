@@ -47,11 +47,6 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
-        /// <summary>
-        /// 从Resources中加载的包名列表
-        /// </summary>
-        private readonly List<string> m_FromResourcesPackages = new() { "Launcher" };
-
         public FuiPkgManager()
         {
             // 手动管理资源
@@ -135,13 +130,6 @@ namespace Hotfix.Framework.UI
                 // 检查是否被取消
                 if (m_LoadingCts.TryGetValue(pkgName, out var cts))
                     cts.Token.ThrowIfCancellationRequested();
-
-                // 加载Resources中的包
-                if (IsFromResources(pkgName))
-                {
-                    UIPackage.AddPackage($"UI/{pkgName}/{pkgName}");
-                    return UIPackage.GetByName(pkgName);
-                }
 
                 // 加载包的描述文件
                 var pkgDesc = await LoadDesc(pkgName);
@@ -292,33 +280,26 @@ namespace Hotfix.Framework.UI
             if (UIPackage.GetByName(pkgName) == null) return;
             UIPackage.RemovePackage(pkgName);
 
-            // 2.如果是从Resources中加载的包，直接移除包，Resources加载的包会在UIPackage.RemovePackage中自动释放
-            if (IsFromResources(pkgName))
-            {
-                FuLogger.LogInfo($"[FuiPkgManager] 释放从Resources中加载的UIPackage包: {pkgName}.");
-                return;
-            }
-
-            // 3.如果是正在加载的包，取消正在加载的任务
+            // 2.如果是正在加载的包，取消正在加载的任务
             if (m_LoadingCts.TryGetValue(pkgName, out var cts))
             {
-                cts.Cancel(); // 真正取消正在进行的加载任务
+                cts.Cancel();
                 m_LoadingCts.Remove(pkgName);
                 FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
                 return;
             }
 
-            // 4.从已加载字典移除
+            // 3.从已加载字典移除
             if (!m_LoadedPkgDict.Remove(pkgName, out _)) return;
 
-            // 5.释包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
+            // 4.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
             if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var assetLoader))
             {
                 assetLoader.Release();
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
             }
 
-            // 6. 移除引用计数
+            // 5.移除引用计数
             m_PkgRefCountDict.Remove(pkgName);
         }
 
@@ -335,12 +316,5 @@ namespace Hotfix.Framework.UI
             }
         }
 
-        /// <summary>
-        /// 是否是从Resources中加载的包
-        /// </summary>
-        private bool IsFromResources(string packageName)
-        {
-            return m_FromResourcesPackages.Contains(packageName);
-        }
     }
 }
