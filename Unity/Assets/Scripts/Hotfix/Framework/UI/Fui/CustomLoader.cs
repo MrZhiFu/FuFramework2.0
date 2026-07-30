@@ -31,6 +31,11 @@ namespace Hotfix.Framework.UI
         private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
 
         /// <summary>
+        /// 正在加载中的任务字典，用于避免同一URL并发重复下载
+        /// </summary>
+        private static readonly Dictionary<string, UniTask<Texture2D>> LoadingTasks = new();
+
+        /// <summary>
         /// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
         /// </summary>
         private sealed class TextureCacheEntry
@@ -67,8 +72,6 @@ namespace Hotfix.Framework.UI
             }
 
             entry.AssetHandle?.Release();
-            entry.AssetHandle = null;
-            entry.Texture = null;
         }
 
         /// <summary>
@@ -122,8 +125,8 @@ namespace Hotfix.Framework.UI
                 Texture2D   texture2D   = null;
                 if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
                 {
-                    // 3.从网络加载
-                    texture2D = await LoadTextureFromNetwork(url);
+                    // 3.从网络加载（同一URL并发请求复用同一个下载任务）
+                    texture2D = await LoadOrGetLoadingTask(url);
                 }
                 else
                 {
@@ -170,6 +173,28 @@ namespace Hotfix.Framework.UI
 
                 onExternalLoadFailed();
                 FuLogger.LogError(e);
+            }
+        }
+
+        /// <summary>
+        /// 获取或创建网络纹理加载任务，避免同一URL并发重复下载
+        /// </summary>
+        /// <param name="textureURL">纹理URL地址。</param>
+        /// <returns>加载完成的Texture2D。</returns>
+        private async UniTask<Texture2D> LoadOrGetLoadingTask(string textureURL)
+        {
+            if (LoadingTasks.TryGetValue(textureURL, out var existingTask))
+                return await existingTask;
+
+            var task = LoadTextureFromNetwork(textureURL);
+            LoadingTasks[textureURL] = task;
+            try
+            {
+                return await task;
+            }
+            finally
+            {
+                LoadingTasks.Remove(textureURL);
             }
         }
 

@@ -297,7 +297,7 @@ namespace Hotfix.Framework.UI
             if (!m_LoadedPkgDict.Remove(pkgName, out _)) return;
 
             // 4.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
-            if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var assetLoader))
+            if (m_PkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
             {
                 assetLoader.Release();
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
