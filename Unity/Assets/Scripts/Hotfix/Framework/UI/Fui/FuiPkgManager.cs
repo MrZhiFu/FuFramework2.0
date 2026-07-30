@@ -43,7 +43,9 @@ namespace Hotfix.Framework.UI
         private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
 
         /// <summary>
-        /// 缓存包的引用计数，key:包名，value：引用数量，一个包可能被界面引用，也可能被其他包引用，当引用计数为0时，释放包
+        /// 缓存包的引用计数，key:包名，value：引用数量。
+        /// 归零时自动卸载 GPU 资源（UnloadAssets），保留包元数据。
+        /// 再次引用时自动恢复资源（ReloadAssets）。
         /// </summary>
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
@@ -222,46 +224,48 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 添加依赖包引用
+        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 GPU 资源。
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void AddRef(string pkgName)
         {
+            var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
+
             if (!m_PkgRefCountDict.TryAdd(pkgName, 1))
-            {
                 m_PkgRefCountDict[pkgName] += 1;
-            }
 
             FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+
+            // 引用计数从 0 变为 1，恢复纹理/音频资源
+            if (wasZero && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+                pkg.ReloadAssets();
         }
 
         /// <summary>
-        /// 减少依赖包引用
+        /// 减少包引用。引用计数归零时自动卸载 GPU 资源（纹理/音频），保留包元数据。
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void SubRef(string pkgName)
         {
-            if (m_PkgRefCountDict.ContainsKey(pkgName))
-            {
-                m_PkgRefCountDict[pkgName] -= 1;
-                FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+            if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
 
-                // 引用计数大于0，不释放
-                if (m_PkgRefCountDict[pkgName] > 0) return;
-            }
+            count = --m_PkgRefCountDict[pkgName];
+            FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
+
+            if (count > 0) return;
 
             if (!m_LoadedPkgDict.TryGetValue(pkgName, out var pkg)) return;
 
-            // 减少该包依赖的其他包引用
+            // 归零：卸载 GPU 资源，保留包元数据
+            pkg.UnloadAssets();
+            FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+
+            // 递归处理依赖包
             foreach (var dep in pkg.dependencies)
             {
                 if (dep.TryGetValue("name", out var depPkgName))
-                {
                     SubRef(depPkgName);
-                }
             }
-
-            ReleasePackage(pkgName);
         }
 
         /// <summary>

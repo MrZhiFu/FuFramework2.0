@@ -28,7 +28,46 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// Loader纹理LRU缓存
         /// </summary>
-        private static readonly LRUCache Cache = new(100);
+        private static readonly LRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
+
+        /// <summary>
+        /// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
+        /// </summary>
+        private sealed class TextureCacheEntry
+        {
+            /// <summary>
+            /// FairyGUI 纹理
+            /// </summary>
+            public NTexture Texture;
+
+            /// <summary>
+            /// YooAsset 资源句柄（非 YooAsset 资源时为 null）
+            /// </summary>
+            public AssetHandle AssetHandle;
+        }
+
+        /// <summary>
+        /// LRU 缓存驱逐回调：释放 NTexture 原生纹理和 YooAsset 资源句柄
+        /// </summary>
+        /// <param name="key">被淘汰的缓存键</param>
+        /// <param name="entry">被淘汰的缓存条目</param>
+        private static void OnCacheEvict(string key, TextureCacheEntry entry)
+        {
+            if (entry == null) return;
+
+            entry.Texture?.Dispose();
+            if (entry.Texture?.nativeTexture != null)
+            {
+                Object.Destroy(entry.Texture.nativeTexture);
+            }
+
+            if (entry.Texture?.alphaTexture != null)
+            {
+                Object.Destroy(entry.Texture.alphaTexture);
+            }
+
+            entry.AssetHandle?.Release();
+        }
 
         /// <summary>
         /// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
@@ -70,10 +109,9 @@ namespace Hotfix.Framework.UI
                 }
 
                 // 2.看缓存中是否有，如果有则直接使用缓存的纹理
-                var targetTexture = Cache.Get(url);
-                if (!targetTexture.IsNull())
+                if (Cache.TryGet(url, out var cachedEntry))
                 {
-                    onExternalLoadSuccess(targetTexture);
+                    onExternalLoadSuccess(cachedEntry.Texture);
                     return;
                 }
 
@@ -104,8 +142,8 @@ namespace Hotfix.Framework.UI
                 // 创建纹理并缓存
                 if (texture2D.IsNotNull())
                 {
-                    targetTexture = new NTexture(texture2D);
-                    Cache.Put(url, targetTexture, assetHandle);
+                    var targetTexture = new NTexture(texture2D);
+                    Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
                     onExternalLoadSuccess(targetTexture);
                 }
                 else
