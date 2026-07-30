@@ -47,12 +47,6 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
-        public FuiPkgManager()
-        {
-            // 手动管理资源
-            UIPackage.unloadBundleByFGUI = false;
-        }
-
         /// <summary>
         /// 是否存在指定包
         /// </summary>
