@@ -44,7 +44,7 @@ namespace Hotfix.Framework.UI
 
         /// <summary>
         /// 缓存包的引用计数，key:包名，value：引用数量。
-        /// 归零时自动卸载 GPU 资源（UnloadAssets），保留包元数据。
+        /// 归零时自动卸载 纹理/音频资源（UnloadAssets），保留包元数据。
         /// 再次引用时自动恢复资源（ReloadAssets）。
         /// </summary>
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
@@ -230,7 +230,7 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 GPU 资源。
+        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源。
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void AddRef(string pkgName)
@@ -250,7 +250,7 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 减少包引用。引用计数归零时自动卸载 GPU 资源（纹理/音频），保留包元数据。
+        /// 减少包引用。引用计数归零时自动卸载 纹理/音频资源，保留包元数据。
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void SubRef(string pkgName)
@@ -265,7 +265,7 @@ namespace Hotfix.Framework.UI
 
             if (!m_LoadedPkgDict.TryGetValue(pkgName, out var pkg)) return;
 
-            // 归零：卸载 GPU 资源，保留包元数据
+            // 归零：卸载 纹理/音频资源，保留包元数据
             pkg.UnloadAssets();
             FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
 
@@ -278,7 +278,7 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 完全卸载所有包（元数据 + GPU 资源 + FGUI 全局缓存），用于游戏退出。
+        /// 完全卸载所有包（元数据 + 纹理/音频资源 + FGUI 全局缓存），用于游戏退出。
         /// </summary>
         public void ReleaseAll()
         {
@@ -291,8 +291,8 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 完全卸载指定包：元数据 + GPU 资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
-        /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 GPU 资源，元数据保留）。
+        /// 完全卸载指定包：元数据 + 纹理/音频资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
+        /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 纹理/音频资源，元数据保留）。
         /// </summary>
         public void ReleasePackage(string pkgName)
         {
