@@ -14,6 +14,7 @@ using AOT.Launch;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
+using FairyGUI;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Timer;
@@ -155,7 +156,10 @@ namespace Hotfix
         {
             GlobalModule.UIModule.Open<WinLogin>();
             launchView.Close();
-
+            
+            // 卸载Launcher界面资源包, 防止Launcher包常驻内存
+            UIPackage.RemovePackage("UI/Launcher"); 
+            
             if (GameSetting.Instance.OpenGuide)
             {
                 GuideModule.Instance.GuideAction = new GuideActionImpl();
