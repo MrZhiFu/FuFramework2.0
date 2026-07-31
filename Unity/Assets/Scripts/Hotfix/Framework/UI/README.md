@@ -360,6 +360,16 @@ public void SubPkgRef(string pkgName)                   // 减少引用，递归
 
 > 依赖包引用与父包同步增删：A 依赖 B 时，AddPkgRef(A)/SubPkgRef(A) 递归处理 B，多个父包共享 B 时 B 计数正确累积，最后一个引用释放才卸载 B。
 
+**内部调用链：**
+
+```
+LoadPkgAsync (公共入口：缓存检查 + 去重 + 任务管理，UniTask.Defer 惰性执行)
+  └─ LoadPkgAndDepPkgAsync (自身 + 依赖)
+      ├─ LoadPkgInternalAsync (加载单个包自身)
+      │   └─ LoadDescAsync (加载 _fui.bytes) → UIPackage.AddPackage
+      └─ LoadDepPkgAsync (并行加载依赖包，跳过已加载/加载中防止循环死锁)
+```
+
 **包加载流程：**
 
 1. 检查是否已加载或正在加载
