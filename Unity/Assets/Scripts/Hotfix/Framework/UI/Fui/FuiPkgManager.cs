@@ -73,7 +73,7 @@ namespace Hotfix.Framework.UI
             // 已经加载过的包直接返回；仅当资源曾卸载（UnloadAssets 状态）时恢复，避免 UI 空白
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
             {
-                if (m_UnloadedAssetPkgSet.Contains(pkgName))
+                if (m_UnloadedAssetPkgSet.Remove(pkgName)) // 恢复后清除标记，避免反复遍历
                     loadedPkg.ReloadAssets();
                 return UniTask.FromResult(loadedPkg);
             }
@@ -172,6 +172,8 @@ namespace Hotfix.Framework.UI
         /// <param name="pkg">已加载的包，读取其依赖列表。</param>
         private async UniTask LoadDepPkgAsync(UIPackage pkg)
         {
+            if (pkg == null) return; // 防御：AddPackage 解析失败可能返回 null（仅编辑器非运行时）
+
             var tasks = new List<UniTask>();
             foreach (var dep in pkg.dependencies)
             {
