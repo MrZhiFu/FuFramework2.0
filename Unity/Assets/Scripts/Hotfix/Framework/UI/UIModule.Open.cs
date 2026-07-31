@@ -110,10 +110,10 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="win">界面实例。</param>
         /// <param name="serialId">界面序列号。</param>
-        /// <param name="isNewInstance">是否是新实例。</param>
+        /// <param name="isNewIns">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns></returns>
-        private T CreateFuiWin<T>(T win, int serialId, bool isNewInstance, object userData = null) where T : WinBase, new()
+        private T CreateFuiWin<T>(T win, int serialId, bool isNewIns, object userData = null) where T : WinBase, new()
         {
             try
             {
@@ -123,7 +123,7 @@ namespace Hotfix.Framework.UI
                 var winUI = UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent;
 
                 // 初始化界面
-                win.Init(serialId, winUI, isNewInstance, userData);
+                win.Init(serialId, winUI, isNewIns, userData);
 
                 // FUI界面加入界面组
                 var uiGroup = win.UIGroup;
