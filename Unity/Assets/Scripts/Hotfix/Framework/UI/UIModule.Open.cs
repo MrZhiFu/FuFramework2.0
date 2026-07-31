@@ -1,7 +1,6 @@
 using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace

@@ -156,12 +156,6 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 设置UI对象
-        /// </summary>
-        /// <param name="uiComp"></param>
-        protected void SetUIWin(GComponent uiComp) => WinUI = uiComp;
-
-        /// <summary>
         /// 获取界面子对象。
         /// </summary>
         /// <param name="childName"></param>
@@ -186,7 +180,7 @@ namespace Hotfix.Framework.UI
 
         /// <summary>
         /// 安全区变化回调（方向切换等）。
-        /// 全屏 UI（AdjustNotch = false）需要重新计算负偏移覆盖刘海；普通 UI 跟随 GRoot 自动适配无需处理。
+        /// 全屏 UI（AdjustNotch = false）需要重新计算负偏移覆盖刘海；普通 UI 跟随 GRoot 适配。
         /// </summary>
         private void _OnSafeAreaChanged()
         {
