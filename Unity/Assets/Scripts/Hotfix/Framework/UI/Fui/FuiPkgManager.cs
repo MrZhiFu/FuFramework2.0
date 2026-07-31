@@ -98,33 +98,42 @@ namespace Hotfix.Framework.UI
             var cts = new CancellationTokenSource();
             m_LoadingCts[pkgName] = cts;
 
-            // 创建新的加载任务（Defer惰性：此刻不执行，await 时才执行）
-            var newTask = UniTask.Defer(async () =>
-            {
-                try
-                {
-                    // 检查是否被取消
-                    cts.Token.ThrowIfCancellationRequested();
-
-                    // 等待加载包和其依赖包
-                    var pkg = await LoadPkgAndDepPkgAsync(pkgName);
-
-                    // 缓存结果
-                    m_LoadedPkgDict[pkgName] = pkg;
-
-                    return pkg;
-                }
-                finally
-                {
-                    // 加载完成后移除任务和取消令牌源
-                    m_LoadingTasks.Remove(pkgName);
-                    m_LoadingCts.Remove(pkgName);
-                }
-            });
+            // 立即启动加载任务（async 同步执行到第一个 await，不 await 也会继续并最终清理）
+            var newTask = LoadPkgTaskAsync(pkgName, cts);
 
             // 记录正在加载的任务
             m_LoadingTasks[pkgName] = newTask;
             return newTask;
+        }
+
+        /// <summary>
+        /// 执行包加载任务（含依赖），完成后缓存。即使调用方不 await 任务，也会在 PlayerLoop 中继续并最终清理。
+        /// </summary>
+        /// <param name="pkgName">包名。</param>
+        /// <param name="cts">取消令牌源。</param>
+        /// <returns>加载完成的 UI 包实例。</returns>
+        private async UniTask<UIPackage> LoadPkgTaskAsync(string pkgName, CancellationTokenSource cts)
+        {
+            try
+            {
+                // 检查是否被取消
+                cts.Token.ThrowIfCancellationRequested();
+
+                // 等待加载包和其依赖包
+                var pkg = await LoadPkgAndDepPkgAsync(pkgName);
+
+                // 缓存结果
+                m_LoadedPkgDict[pkgName] = pkg;
+
+                return pkg;
+            }
+            finally
+            {
+                // 加载完成后移除任务和取消令牌源，并释放 CTS（防止丢弃任务时残留）
+                m_LoadingTasks.Remove(pkgName);
+                m_LoadingCts.Remove(pkgName);
+                cts.Dispose();
+            }
         }
 
         /// <summary>
