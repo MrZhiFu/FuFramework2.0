@@ -27,7 +27,7 @@ UIModule (UI管理模块)
     ├── m_UIGroupDict (界面组字典)
     ├── m_LoadingDict (加载中界面字典)
     ├── m_WaitRecycleQueue (待回收界面队列)
-    ├── m_InstancePool (界面实例对象池)
+    ├── m_WinObjPool (界面实例对象池)
     └── PkgManager (FUI包管理器)
 
 GComponent (FairyGUI)
@@ -67,7 +67,7 @@ WinInfo (界面信息)
 │  │  - WorldUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_InstancePool (ObjectPool<WinObject>)                  │   │
+│  │  m_WinObjPool (ObjectPool<WinObject>)                    │   │
 │  │  - 界面实例缓存与复用                                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -111,16 +111,16 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 | m_UIGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
 | m_LoadingDict | Dictionary<int, string> | 加载中界面字典 |
 | m_WaitRecycleQueue | Queue<WinBase> | 待回收界面队列 |
-| m_InstancePool | ObjectPool<WinObject> | 界面实例对象池 |
+| m_WinObjPool | ObjectPool<WinObject> | 界面实例对象池 |
 | PkgManager | FuiPkgManager | FUI包管理器 |
 
 **核心属性：**
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| InstanceAutoReleaseInterval | float | 对象池自动释放间隔 |
-| InstanceCapacity | int | 对象池容量 |
-| InstanceExpireTime | float | 对象过期时间 |
+| WinObjPoolAutoReleaseInterval | float | 对象池自动释放间隔 |
+| WinObjPoolCapacity | int | 对象池容量 |
+| WinObjPoolExpireTime | float | 对象过期时间 |
 | GroupCount | int | 界面组数量 |
 
 **核心方法：**
@@ -154,8 +154,8 @@ public UIGroup GetGroup(EUILayer layer)
 public bool HasGroup(EUILayer layer)
 
 // 对象池设置
-public void SetLocked(object uiView, bool locked)
-public void SetPriority(object uiView, int priority)
+public void SetUILocked(object uiView, bool locked)
+public void SetUIPriority(object uiView, int priority)
 ```
 
 **打开界面流程：**
