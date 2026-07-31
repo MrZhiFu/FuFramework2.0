@@ -277,23 +277,25 @@ namespace Hotfix.Framework.UI
             count = --m_PkgRefCountDict[pkgName];
             FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
-            if (count > 0) return;
-
-            if (!m_LoadedPkgDict.TryGetValue(pkgName, out var pkg)) return;
+            // 对称于 AddPkgRef：每次调用都递归递减依赖包引用（防止多实例场景计数膨胀）
+            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+            {
+                foreach (var dep in loadedPkg.dependencies)
+                {
+                    if (dep.TryGetValue("name", out var depPkgName))
+                        SubPkgRef(depPkgName);
+                }
+            }
 
             // 归零：卸载 纹理/音频资源，保留包元数据
-            pkg.UnloadAssets();
-            FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
-
-            // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
-            if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
-                loader.UnloadAll();
-
-            // 递归处理依赖包
-            foreach (var dep in pkg.dependencies)
+            if (count == 0 && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
-                if (dep.TryGetValue("name", out var depPkgName))
-                    SubPkgRef(depPkgName);
+                pkg.UnloadAssets();
+                FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+
+                // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
+                if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+                    loader.UnloadAll();
             }
         }
 
@@ -316,11 +318,25 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public void RemovePkg(string pkgName)
         {
-            // 1.FUI移除UIPackage包
-            if (UIPackage.GetByName(pkgName) == null) return;
+            // 1.记录引用数，用于递减依赖包（A 的每个引用都对依赖贡献 1）
+            var refCount = m_PkgRefCountDict.TryGetValue(pkgName, out var rc) ? rc : 0;
+
+            // 2.FUI移除UIPackage包（先取依赖表，RemovePackage 后依赖信息可能失效）
+            var pkgToRemove = UIPackage.GetByName(pkgName);
+            if (pkgToRemove == null) return;
             UIPackage.RemovePackage(pkgName);
 
-            // 2.如果是正在加载的包，取消正在加载的任务
+            // 3.递归递减依赖包的引用计数
+            foreach (var dep in pkgToRemove.dependencies)
+            {
+                if (dep.TryGetValue("name", out var depPkgName))
+                {
+                    for (var i = 0; i < refCount; i++)
+                        SubPkgRef(depPkgName);
+                }
+            }
+
+            // 4.如果是正在加载的包，取消正在加载的任务
             if (m_LoadingCts.TryGetValue(pkgName, out var cts))
             {
                 cts.Cancel();
@@ -329,17 +345,17 @@ namespace Hotfix.Framework.UI
                 return;
             }
 
-            // 3.从已加载字典移除
+            // 5.从已加载字典移除
             if (!m_LoadedPkgDict.Remove(pkgName, out _)) return;
 
-            // 4.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
+            // 6.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
             if (m_PkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
             {
                 assetLoader.Release();
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
             }
 
-            // 5.移除引用计数
+            // 7.移除引用计数
             m_PkgRefCountDict.Remove(pkgName);
         }
     }
