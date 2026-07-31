@@ -50,11 +50,11 @@ namespace Hotfix.Framework.UI
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
         /// <summary>
-        /// 是否存在指定包
+        /// 包是否已加载。
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        public bool HasPackage(string pkgName) => m_LoadedPkgDict.ContainsKey(pkgName);
+        public bool IsLoadedPkg(string pkgName) => m_LoadedPkgDict.ContainsKey(pkgName);
 
         /// <summary>
         /// 异步加载指定包

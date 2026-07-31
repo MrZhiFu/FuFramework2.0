@@ -87,7 +87,7 @@ namespace Hotfix.Framework.UI
                 m_WinInstancePool.Register(winIns, true);
 
                 // UI包已经加载过，则直接创建Fui界面
-                if (PkgManager.HasPackage(win.PackageName))
+                if (PkgManager.IsLoadedPkg(win.PackageName))
                 {
                     // 使用临时序列号创建Fui界面
                     return CreateFuiWin(win, tempSerialId, true, userData);

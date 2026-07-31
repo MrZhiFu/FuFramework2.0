@@ -325,7 +325,7 @@ FairyGUI 包管理器，负责 UI 包的加载、缓存和卸载管理。
 
 ```csharp
 // 包管理
-public bool HasPackage(string packageName)              // 包是否已加载
+public bool IsLoadedPkg(string pkgName)                  // 包是否已加载
 public UniTask<UIPackage> LoadPkgAsync(string pkgName)  // 加载包（含依赖）
 public void ReleasePkg(string pkgName)                  // 完全卸载包（不可恢复）
 public void ReleaseAllPkg()                             // 完全卸载所有包（游戏退出）
