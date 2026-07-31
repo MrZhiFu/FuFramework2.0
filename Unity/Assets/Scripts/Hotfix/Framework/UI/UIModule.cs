@@ -18,16 +18,6 @@ namespace Hotfix.Framework.UI
     public sealed partial class UIModule : ModuleBase
     {
         /// <summary>
-        /// 正在加载中的界面字典, key为界面Id, value为界面名称
-        /// </summary>
-        private Dictionary<int, string> m_LoadingDict;
-
-        /// <summary>
-        /// 关闭后待回收的界面集合
-        /// </summary>
-        private Queue<WinBase> m_WaitRecycleQueue;
-
-        /// <summary>
         /// 事件组件
         /// </summary>
         private EventModule m_EventModule;
@@ -40,12 +30,24 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池
         /// </summary>
-        private ObjectPoolModule.ObjectPool<WinObject> m_WinInstancePool;
+        private ObjectPoolModule.ObjectPool<WinObject> m_WinObjPool;
 
         /// <summary>
         /// FGui的包管理器
         /// </summary>
         public FuiPkgManager PkgManager { get; private set; }
+
+
+        /// <summary>
+        /// 正在加载中的界面字典, key为界面Id, value为界面名称
+        /// </summary>
+        private Dictionary<int, string> m_LoadingDict;
+
+        /// <summary>
+        /// 关闭后待回收的界面集合
+        /// </summary>
+        private Queue<WinBase> m_WaitRecycleQueue;
+
 
         /// <summary>
         /// 界面自增序列号，每打开一个界面就加1
@@ -56,12 +58,12 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池自动释放可释放对象的间隔秒数
         /// </summary>
-        private const float UIInstanceAutoReleaseInterval = 60f;
+        private const float AutoReleaseInterval = 60f;
 
         /// <summary>
         /// 界面实例对象池的容量
         /// </summary>
-        private const int UIInstancePoolCapacity = 16;
+        private const int PoolCapacity = 16;
 
         /// <summary>
         /// 界面实例对象池对象过期秒数
@@ -72,28 +74,28 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取或设置界面实例对象池自动释放可释放对象的间隔秒数。
         /// </summary>
-        public float InstanceAutoReleaseInterval
+        public float WinObjPoolAutoReleaseInterval
         {
-            get => m_WinInstancePool.AutoReleaseInterval;
-            set => m_WinInstancePool.AutoReleaseInterval = value;
+            get => m_WinObjPool.AutoReleaseInterval;
+            set => m_WinObjPool.AutoReleaseInterval = value;
         }
 
         /// <summary>
         /// 获取或设置界面实例对象池的容量。
         /// </summary>
-        public int InstanceCapacity
+        public int WinObjPoolCapacity
         {
-            get => m_WinInstancePool.Capacity;
-            set => m_WinInstancePool.Capacity = value;
+            get => m_WinObjPool.Capacity;
+            set => m_WinObjPool.Capacity = value;
         }
 
         /// <summary>
         /// 获取或设置界面实例对象池对象过期秒数。
         /// </summary>
-        public float InstanceExpireTime
+        public float WinObjPoolExpireTime
         {
-            get => m_WinInstancePool.ExpireTime;
-            set => m_WinInstancePool.ExpireTime = value;
+            get => m_WinObjPool.ExpireTime;
+            set => m_WinObjPool.ExpireTime = value;
         }
 
         /// <summary>
@@ -106,16 +108,16 @@ namespace Hotfix.Framework.UI
             m_WaitRecycleQueue = new Queue<WinBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-            m_WinInstancePool  = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIInstanceObjectPool");
+            m_WinObjPool       = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
             PkgManager    = new FuiPkgManager();
 
             m_SerialId = 0;
 
-            InstanceAutoReleaseInterval = UIInstanceAutoReleaseInterval;
-            InstanceCapacity            = UIInstancePoolCapacity;
-            InstanceExpireTime          = UIInstanceExpireTime;
+            WinObjPoolAutoReleaseInterval = AutoReleaseInterval;
+            WinObjPoolCapacity            = PoolCapacity;
+            WinObjPoolExpireTime          = UIInstanceExpireTime;
 
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();

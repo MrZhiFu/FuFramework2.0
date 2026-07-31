@@ -1,5 +1,4 @@
 using System;
-﻿using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

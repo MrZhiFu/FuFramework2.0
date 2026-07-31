@@ -72,7 +72,7 @@ namespace Hotfix.Framework.UI
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winIns = m_WinInstancePool.Spawn(uiName);
+                var winIns = m_WinObjPool.Spawn(uiName);
                 if (winIns != null)
                 {
                     win = winIns.Target as T;
@@ -84,7 +84,7 @@ namespace Hotfix.Framework.UI
                 // 创建界面实例对象
                 win    = new T();
                 winIns = WinObject.Create(win.UIName, win);
-                m_WinInstancePool.Register(winIns, true);
+                m_WinObjPool.Register(winIns, true);
 
                 // UI包已经加载过，则直接创建Fui界面
                 if (PkgManager.IsLoadedPkg(win.PackageName))
@@ -156,13 +156,13 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="uiView">要设置是否加锁的界面实例。</param>
         /// <param name="locked">界面实例是否加锁。</param>
-        public void SetUILocked(object uiView, bool locked) => m_WinInstancePool.SetLocked(uiView, locked);
+        public void SetUILocked(object uiView, bool locked) => m_WinObjPool.SetLocked(uiView, locked);
 
         /// <summary>
         /// 设置界面实例对象的优先级。优先级小的实例会优先被释放。
         /// </summary>
         /// <param name="uiView">要设置优先级的界面实例。</param>
         /// <param name="priority">界面实例优先级。</param>
-        public void SetUIPriority(object uiView, int priority) => m_WinInstancePool.SetPriority(uiView, priority);
+        public void SetUIPriority(object uiView, int priority) => m_WinObjPool.SetPriority(uiView, priority);
     }
 }

@@ -185,7 +185,7 @@ namespace Hotfix.Framework.UI
         /// <param name="win"></param>
         private void Recycle(WinBase win)
         {
-            m_WinInstancePool.Recycle(win);
+            m_WinObjPool.Recycle(win);
             win._OnRecycle();
         }
     }
