@@ -167,13 +167,11 @@ namespace Hotfix.Framework.UI
             {
                 if (dep.TryGetValue("name", out var depPkgName))
                 {
-                    // 已加载的跳过；正在加载的说明是循环依赖，也跳过加载，但引用计数仍需增加
+                    // 已加载的跳过；正在加载的说明是循环依赖，也跳过加载
                     if (!m_LoadedPkgDict.ContainsKey(depPkgName) && !m_LoadingTasks.ContainsKey(depPkgName))
                     {
                         tasks.Add(LoadPkgAsync(depPkgName));
                     }
-
-                    AddPkgRef(depPkgName);
                 }
             }
 
@@ -235,7 +233,7 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源。
+        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源，并递归处理依赖包。
         /// </summary>
         /// <param name="pkgName">包名</param>
         public void AddPkgRef(string pkgName)
@@ -251,6 +249,16 @@ namespace Hotfix.Framework.UI
             if (wasZero && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
                 pkg.ReloadAssets();
+            }
+
+            // 递归处理依赖包（对称于 SubPkgRef，保证依赖包资源随父包恢复）
+            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+            {
+                foreach (var dep in loadedPkg.dependencies)
+                {
+                    if (dep.TryGetValue("name", out var depPkgName))
+                        AddPkgRef(depPkgName);
+                }
             }
         }
 
