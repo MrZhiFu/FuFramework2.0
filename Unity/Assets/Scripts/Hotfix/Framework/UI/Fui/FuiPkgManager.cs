@@ -43,7 +43,7 @@ namespace Hotfix.Framework.UI
         private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
 
         /// <summary>
-        /// 缓存包的引用计数，key:包名，value：引用数量。
+        /// 缓存包的引用计数，key:包名，value：该包被引用的次数。
         /// 归零时自动卸载 纹理/音频资源（UnloadAssets），保留包元数据。
         /// 再次引用时自动恢复资源（ReloadAssets）。
         /// </summary>
