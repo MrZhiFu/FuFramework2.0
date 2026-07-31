@@ -65,11 +65,20 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, UniTask<AssetHandle>> m_InstantiateLoadingTasks = new();
 
         /// <summary>
-        /// 实例化引用（句柄 + 引用计数）。同一路径多个实例共享句柄。
+        /// 实例化引用：句柄 + 引用计数。
+        /// 同一路径多个实例共享一个句柄，引用计数跟踪活跃实例数，
+        /// 计数归零时释放句柄（见 AssetModule.ReleaseInstantiate），让资源可被卸载。
         /// </summary>
         private sealed class InstantiateRef
         {
+            /// <summary>
+            /// 资源句柄，持有 YooAsset 的资源引用。
+            /// </summary>
             public AssetHandle Handle;
+
+            /// <summary>
+            /// 引用计数，即该路径当前活跃的实例化对象数。
+            /// </summary>
             public int RefCount;
         }
 
@@ -120,7 +129,7 @@ namespace Hotfix.Framework.Asset
         }
 
 
-        #region 异步加载资源(推荐使用)
+        #region 异步加载资源
 
         /// <summary>
         /// 异步加载资源
@@ -232,8 +241,7 @@ namespace Hotfix.Framework.Asset
 
         #endregion
 
-
-        #region 加载场景
+        #region 异步加载场景
 
         /// <summary>
         /// 异步加载场景
@@ -347,8 +355,7 @@ namespace Hotfix.Framework.Asset
 
         #endregion
 
-
-        #region 实例化游戏物体
+        #region 异步实例化游戏物体
 
         /// <summary>
         /// 异步实例化实体(推荐使用)。
@@ -371,7 +378,7 @@ namespace Hotfix.Framework.Asset
                 UniTask<AssetHandle> loadingTask;
                 if (!m_InstantiateLoadingTasks.TryGetValue(path, out loadingTask))
                 {
-                    loadingTask = LoadAssetAsync(path);
+                    loadingTask                     = LoadAssetAsync(path);
                     m_InstantiateLoadingTasks[path] = loadingTask;
                 }
 
@@ -420,7 +427,7 @@ namespace Hotfix.Framework.Asset
         public void ReleaseInstantiate(string path)
         {
             if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
-            if (entry.RefCount <= 0) return;
+            if (entry.RefCount   <= 0) return;
             if (--entry.RefCount > 0) return;
 
             entry.Handle.Release();
@@ -484,6 +491,7 @@ namespace Hotfix.Framework.Asset
                 PackageInited = false;
                 throw;
             }
+
             if (initHandler == null)
             {
                 PackageInited = false;
@@ -545,7 +553,10 @@ namespace Hotfix.Framework.Asset
         /// <param name="resourcePackage">资源信息</param>
         /// <returns></returns>
         [System.Obsolete("YooAsset v3 已移除全局默认包概念，此方法不再需要调用。")]
-        public void SetDefaultPackage(ResourcePackage resourcePackage) { /* v3 已移除 YooAssets.SetDefaultPackage */ }
+        public void SetDefaultPackage(ResourcePackage resourcePackage)
+        {
+            /* v3 已移除 YooAssets.SetDefaultPackage */
+        }
 
         /// <summary>
         /// 设置默认资源包
@@ -578,7 +589,7 @@ namespace Hotfix.Framework.Asset
         public void UnloadAsset(string packageName, string assetPath)
         {
             packageName.NotNull(nameof(packageName));
-            assetPath.NotNull(  nameof(assetPath));
+            assetPath.NotNull(nameof(assetPath));
             if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             package.TryUnloadUnusedAsset(assetPath);
         }
