@@ -32,6 +32,12 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, AssetHandle> m_HandleDict = new();
 
         /// <summary>
+        /// 正在加载中的任务去重字典，key为资源路径，value为加载任务。
+        /// 同一路径并发加载时共享任务，防止后完成句柄覆盖先完成句柄导致泄漏。
+        /// </summary>
+        private readonly Dictionary<string, UniTask<AssetHandle>> m_LoadingTasks = new();
+
+        /// <summary>
         /// 创建资源加载器
         /// </summary>
         /// <returns></returns>
@@ -106,6 +112,28 @@ namespace Hotfix.Framework.Asset
                 existingHandle.Release();
             }
 
+            // 并发去重：同一路径正在加载，共享任务（防止后完成句柄覆盖先完成句柄导致泄漏）
+            if (m_LoadingTasks.TryGetValue(path, out var loadingTask))
+                return await loadingTask;
+
+            // 创建加载任务并注册（async 同步执行到第一个 await 后注册，保证并发请求共享同一任务）
+            var task = LoadAssetHandleCoreAsync(path, loadFunc);
+            m_LoadingTasks[path] = task;
+            try
+            {
+                return await task;
+            }
+            finally
+            {
+                m_LoadingTasks.Remove(path);
+            }
+        }
+
+        /// <summary>
+        /// 实际加载资源句柄并缓存。并发请求经 LoadAssetHandleAsync 去重后共享此任务。
+        /// </summary>
+        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<UniTask<AssetHandle>> loadFunc)
+        {
             AssetHandle assetHandle = null;
             try
             {
@@ -141,7 +169,8 @@ namespace Hotfix.Framework.Asset
             handle.Release();
 
             // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
-            m_AssetModule.UnloadAsset(path);
+            if (m_AssetModule != null) // 防御：静态模块引用可能被其他实例 Clear 置 null
+                m_AssetModule.UnloadAsset(path);
 
             m_HandleDict.Remove(path);
             FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
@@ -173,8 +202,13 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 将引用归还引用池-释放资源
+        /// 将引用归还引用池-释放资源。
+        /// 归还前先 UnloadAll 释放所有句柄，保证池对象干净（否则残留句柄导致复用泄漏）。
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release()
+        {
+            UnloadAll();
+            ReferencePool.Release(this);
+        }
     }
 }
