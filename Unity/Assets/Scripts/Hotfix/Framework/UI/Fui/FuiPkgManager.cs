@@ -52,15 +52,15 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 包是否已加载。
         /// </summary>
-        /// <param name="pkgName"></param>
-        /// <returns></returns>
+        /// <param name="pkgName">包名。</param>
+        /// <returns>包已加载返回 true，否则返回 false。</returns>
         public bool IsLoadedPkg(string pkgName) => m_LoadedPkgDict.ContainsKey(pkgName);
 
         /// <summary>
-        /// 异步加载指定包
+        /// 异步加载指定包（含依赖包）。已加载或正在加载时直接返回，不重复加载。
         /// </summary>
-        /// <param name="pkgName"></param>
-        /// <returns></returns>
+        /// <param name="pkgName">包名。</param>
+        /// <returns>加载完成的 UI 包实例。</returns>
         public UniTask<UIPackage> LoadPkgAsync(string pkgName)
         {
             // 已经加载过的包直接返回
@@ -108,10 +108,10 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 异步加载指定包和所有依赖包
+        /// 异步加载指定包和所有依赖包（自身 + 依赖，无缓存检查）。
         /// </summary>
-        /// <param name="pkgName"></param>
-        /// <returns></returns>
+        /// <param name="pkgName">包名。</param>
+        /// <returns>加载完成的 UI 包实例。</returns>
         private async UniTask<UIPackage> LoadPkgAndDepPkgAsync(string pkgName)
         {
             var pkg = await LoadPkgInternalAsync(pkgName);
@@ -120,10 +120,10 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 异步加载指定包
+        /// 异步加载单个包自身（不含依赖包）。
         /// </summary>
-        /// <param name="pkgName">包名</param>
-        /// <returns></returns>
+        /// <param name="pkgName">包名。</param>
+        /// <returns>加载完成的 UI 包实例。</returns>
         private async UniTask<UIPackage> LoadPkgInternalAsync(string pkgName)
         {
             try
@@ -157,9 +157,9 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 加载指定包的依赖包
+        /// 并行加载指定包的所有依赖包（已加载或正在加载的跳过，防止循环依赖死锁）。
         /// </summary>
-        /// <param name="pkg">包</param>
+        /// <param name="pkg">已加载的包，读取其依赖列表。</param>
         private async UniTask LoadDepPkgAsync(UIPackage pkg)
         {
             var tasks = new List<UniTask>();
@@ -180,11 +180,11 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 加载包的描述文件
+        /// 加载包的描述文件（_fui.bytes）。
         /// </summary>
-        /// <param name="pkgName"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <param name="pkgName">包名。</param>
+        /// <returns>包描述文件 TextAsset。</returns>
+        /// <exception cref="InvalidOperationException">包名为空时抛出。</exception>
         private async UniTask<TextAsset> LoadDescAsync(string pkgName)
         {
             if (string.IsNullOrEmpty(pkgName)) throw new InvalidOperationException("[FuiPkgManager] 包名不能为空.");
@@ -205,12 +205,12 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 加载包中的资源文件
+        /// 异步加载包中的单个资源文件（图集、音频等），并绑定到包内资源项。
         /// </summary>
-        /// <param name="assetName">资源名</param>
-        /// <param name="extension">资源扩展名</param>
-        /// <param name="type">资源类型</param>
-        /// <param name="pkgItem">包内资源项</param>
+        /// <param name="assetName">资源名（不含扩展名）。</param>
+        /// <param name="extension">资源扩展名，如 .png、.ogg。</param>
+        /// <param name="type">资源类型，如 Texture、AudioClip。</param>
+        /// <param name="pkgItem">包内资源项，加载完成后绑定资源。</param>
         private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem pkgItem)
         {
             var pkgName  = pkgItem.owner.name;
@@ -233,9 +233,9 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源，并递归处理依赖包。
+        /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源，并递归递增依赖包引用。
         /// </summary>
-        /// <param name="pkgName">包名</param>
+        /// <param name="pkgName">包名。</param>
         public void AddPkgRef(string pkgName)
         {
             var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
@@ -266,9 +266,9 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 减少包引用。引用计数归零时自动卸载 纹理/音频资源，保留包元数据。
+        /// 减少包引用。递归递减依赖包引用；计数归零时卸载 纹理/音频资源（UnloadAssets）并释放 YooAsset 句柄（UnloadAll），保留包元数据。
         /// </summary>
-        /// <param name="pkgName">包名</param>
+        /// <param name="pkgName">包名。</param>
         public void SubPkgRef(string pkgName)
         {
             if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
@@ -315,7 +315,9 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 完全移除指定包：元数据 + 纹理/音频资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
         /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 纹理/音频资源，元数据保留）。
+        /// 移除时按引用数递归递减依赖包计数。
         /// </summary>
+        /// <param name="pkgName">要完全移除的包名。</param>
         public void RemovePkg(string pkgName)
         {
             // 1.记录引用数，用于递减依赖包（A 的每个引用都对依赖贡献 1）
