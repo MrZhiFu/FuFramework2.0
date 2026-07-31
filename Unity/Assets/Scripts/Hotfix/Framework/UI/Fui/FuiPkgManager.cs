@@ -285,6 +285,10 @@ namespace Hotfix.Framework.UI
             pkg.UnloadAssets();
             FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
 
+            // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
+            if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+                loader.UnloadAll();
+
             // 递归处理依赖包
             foreach (var dep in pkg.dependencies)
             {
