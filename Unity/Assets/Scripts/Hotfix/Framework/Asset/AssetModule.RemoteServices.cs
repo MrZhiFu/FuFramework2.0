@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using YooAsset;
 
@@ -37,12 +38,17 @@ namespace Hotfix.Framework.Asset
             /// <returns>按优先级排序的远端候选地址列表。</returns>
             public IReadOnlyList<string> GetRemoteUrls(string fileName)
             {
-                var urls = new List<string>(2);
-                if (!string.IsNullOrEmpty(HostServer))
-                    urls.Add(HostServer + fileName);
-                if (!string.IsNullOrEmpty(FallbackHostServer))
-                    urls.Add(FallbackHostServer + fileName);
-                return urls;
+                var hasHost     = !string.IsNullOrEmpty(HostServer);
+                var hasFallback = !string.IsNullOrEmpty(FallbackHostServer);
+
+                // 用数组替代 List 减少分配（最多 2 个候选地址）
+                if (hasHost && hasFallback)
+                    return new[] { HostServer + fileName, FallbackHostServer + fileName };
+                if (hasHost)
+                    return new[] { HostServer + fileName };
+                if (hasFallback)
+                    return new[] { FallbackHostServer + fileName };
+                return Array.Empty<string>();
             }
         }
     }
