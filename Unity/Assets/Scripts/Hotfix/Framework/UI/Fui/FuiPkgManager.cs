@@ -56,6 +56,16 @@ namespace Hotfix.Framework.UI
         private readonly HashSet<string> m_UnloadedAssetPkgSet = new();
 
         /// <summary>
+        /// AddPkgRef 递归调用栈中的包集合，用于防止循环依赖导致无限递归（栈溢出）。
+        /// </summary>
+        private readonly HashSet<string> m_AddPkgRefStack = new();
+
+        /// <summary>
+        /// SubPkgRef 递归调用栈中的包集合，用于防止循环依赖导致冗余递归。
+        /// </summary>
+        private readonly HashSet<string> m_SubPkgRefStack = new();
+
+        /// <summary>
         /// 包是否已加载。
         /// </summary>
         /// <param name="pkgName">包名。</param>
@@ -250,27 +260,36 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgName">包名。</param>
         public void AddPkgRef(string pkgName)
         {
-            var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
+            if (!m_AddPkgRefStack.Add(pkgName)) return; // 已在递归栈中（循环依赖），跳过
 
-            // 已存在且未归零 → 自增；不存在或已归零 → 初始化为 1
-            m_PkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
-
-            FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
-
-            // 0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
-            if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+            try
             {
-                if (wasZero)
-                {
-                    pkg.ReloadAssets();
-                    m_UnloadedAssetPkgSet.Remove(pkgName); // 资源已恢复，清除标记
-                }
+                var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
 
-                foreach (var dep in pkg.dependencies)
+                // 已存在且未归零 → 自增；不存在或已归零 → 初始化为 1
+                m_PkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
+
+                FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+
+                // 0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
+                if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
                 {
-                    if (dep.TryGetValue("name", out var depPkgName))
-                        AddPkgRef(depPkgName);
+                    if (wasZero)
+                    {
+                        pkg.ReloadAssets();
+                        m_UnloadedAssetPkgSet.Remove(pkgName); // 资源已恢复，清除标记
+                    }
+
+                    foreach (var dep in pkg.dependencies)
+                    {
+                        if (dep.TryGetValue("name", out var depPkgName))
+                            AddPkgRef(depPkgName);
+                    }
                 }
+            }
+            finally
+            {
+                m_AddPkgRefStack.Remove(pkgName);
             }
         }
 
@@ -280,31 +299,40 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgName">包名。</param>
         public void SubPkgRef(string pkgName)
         {
-            if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
-            if (count <= 0) return; // 已归零：防止循环依赖导致重复卸载
+            if (!m_SubPkgRefStack.Add(pkgName)) return; // 已在递归栈中（循环依赖），跳过
 
-            count = --m_PkgRefCountDict[pkgName];
-            FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
-
-            // 递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
-            if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+            try
             {
-                foreach (var dep in pkg.dependencies)
-                {
-                    if (dep.TryGetValue("name", out var depPkgName))
-                        SubPkgRef(depPkgName);
-                }
+                if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
+                if (count <= 0) return; // 已归零：防止循环依赖导致重复卸载
 
-                if (count == 0)
-                {
-                    pkg.UnloadAssets();
-                    m_UnloadedAssetPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
-                    FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+                count = --m_PkgRefCountDict[pkgName];
+                FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
-                    // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
-                    if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
-                        loader.UnloadAll();
+                // 递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
+                if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+                {
+                    foreach (var dep in pkg.dependencies)
+                    {
+                        if (dep.TryGetValue("name", out var depPkgName))
+                            SubPkgRef(depPkgName);
+                    }
+
+                    if (count == 0)
+                    {
+                        pkg.UnloadAssets();
+                        m_UnloadedAssetPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
+                        FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+
+                        // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
+                        if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+                            loader.UnloadAll();
+                    }
                 }
+            }
+            finally
+            {
+                m_SubPkgRefStack.Remove(pkgName);
             }
         }
 
