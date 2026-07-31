@@ -50,6 +50,12 @@ namespace Hotfix.Framework.UI
         private readonly Dictionary<string, int> m_PkgRefCountDict = new();
 
         /// <summary>
+        /// 已卸载资源（UnloadAssets）的包名集合。
+        /// 缓存命中时仅对这些包 ReloadAssets 恢复资源，避免对正常包做无谓遍历。
+        /// </summary>
+        private readonly HashSet<string> m_UnloadedPkgSet = new();
+
+        /// <summary>
         /// 包是否已加载。
         /// </summary>
         /// <param name="pkgName">包名。</param>
@@ -58,16 +64,17 @@ namespace Hotfix.Framework.UI
 
         /// <summary>
         /// 异步加载指定包（含依赖包）。已加载或正在加载时直接返回，不重复加载。
-        /// 缓存命中时主动 ReloadAssets，恢复曾 UnloadAssets 的资源（幂等，已加载则跳过）。
+        /// 缓存命中时仅对曾 UnloadAssets（资源已卸载）的包 ReloadAssets 恢复资源。
         /// </summary>
         /// <param name="pkgName">包名。</param>
         /// <returns>加载完成的 UI 包实例。</returns>
         public UniTask<UIPackage> LoadPkgAsync(string pkgName)
         {
-            // 已经加载过的包直接返回；若资源曾卸载（UnloadAssets 状态）则恢复，避免 UI 空白
+            // 已经加载过的包直接返回；仅当资源曾卸载（UnloadAssets 状态）时恢复，避免 UI 空白
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
             {
-                loadedPkg.ReloadAssets();
+                if (m_UnloadedPkgSet.Contains(pkgName))
+                    loadedPkg.ReloadAssets();
                 return UniTask.FromResult(loadedPkg);
             }
 
@@ -253,7 +260,10 @@ namespace Hotfix.Framework.UI
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
                 if (wasZero)
+                {
                     pkg.ReloadAssets();
+                    m_UnloadedPkgSet.Remove(pkgName); // 资源已恢复，清除标记
+                }
 
                 foreach (var dep in pkg.dependencies)
                 {
@@ -287,6 +297,7 @@ namespace Hotfix.Framework.UI
                 if (count == 0)
                 {
                     pkg.UnloadAssets();
+                    m_UnloadedPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
                     FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
 
                     // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
@@ -362,8 +373,9 @@ namespace Hotfix.Framework.UI
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
             }
 
-            // 7.移除引用计数
+            // 7.移除引用计数和卸载标记
             m_PkgRefCountDict.Remove(pkgName);
+            m_UnloadedPkgSet.Remove(pkgName);
         }
     }
 }
