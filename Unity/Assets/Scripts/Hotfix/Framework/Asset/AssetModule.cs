@@ -690,7 +690,7 @@ namespace Hotfix.Framework.Asset
         {
             packageName.NotNull(nameof(packageName));
             assetPath.NotNull(  nameof(assetPath));
-            var package = YooAssets.GetPackage(packageName);
+            if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             package.TryUnloadUnusedAsset(assetPath);
         }
 
