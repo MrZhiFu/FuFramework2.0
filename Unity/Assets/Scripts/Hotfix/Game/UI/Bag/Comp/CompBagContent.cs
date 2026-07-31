@@ -61,7 +61,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitRedDot()
         {
-            // Example: RedDotRegister.RegisterRedDot(this.uiView, ERedDotKey.Bag_Item, btnLogin);
+            // Example: RedDotRegister.RegisterRedDot(this.winUI, ERedDotKey.Bag_Item, btnLogin);
         }
 
         private void InitData()

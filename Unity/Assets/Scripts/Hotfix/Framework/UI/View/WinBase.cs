@@ -108,10 +108,10 @@ namespace Hotfix.Framework.UI
         /// 初始化界面。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiView">界面实例。</param>
+        /// <param name="winUI">界面实例。</param>
         /// <param name="isNewInstance">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, GComponent uiView, bool isNewInstance, object userData = null)
+        public void Init(int serialId, GComponent winUI, bool isNewInstance, object userData = null)
         {
             SerialId = serialId;
             UserData = userData;
@@ -134,7 +134,7 @@ namespace Hotfix.Framework.UI
 
             try
             {
-                WinUI               = uiView;
+                WinUI               = winUI;
                 WinUI.fairyBatching = true;
 
                 // 初始化时，设置一次UI对象全屏和安全区适配

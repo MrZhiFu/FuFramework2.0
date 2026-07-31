@@ -154,8 +154,8 @@ public UIGroup GetGroup(EUILayer layer)
 public bool HasGroup(EUILayer layer)
 
 // 对象池设置
-public void SetUILocked(object uiView, bool locked)
-public void SetUIPriority(object uiView, int priority)
+public void SetUILocked(object winUI, bool locked)
+public void SetUIPriority(object winUI, int priority)
 ```
 
 **打开界面流程：**

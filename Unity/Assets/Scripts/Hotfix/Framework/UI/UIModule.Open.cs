@@ -120,10 +120,10 @@ namespace Hotfix.Framework.UI
                 if (win == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
-                var uiView = UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent;
+                var winUI = UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent;
 
                 // 初始化界面
-                win.Init(serialId, uiView, isNewInstance, userData);
+                win.Init(serialId, winUI, isNewInstance, userData);
 
                 // FUI界面加入界面组
                 var uiGroup = win.UIGroup;
@@ -153,15 +153,15 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 设置界面实例是否加锁，如果加锁，则不会被释放(销毁)。
         /// </summary>
-        /// <param name="uiView">要设置是否加锁的界面实例。</param>
+        /// <param name="winUI">要设置是否加锁的界面实例。</param>
         /// <param name="locked">界面实例是否加锁。</param>
-        public void SetUILocked(object uiView, bool locked) => m_WinObjPool.SetLocked(uiView, locked);
+        public void SetUILocked(object winUI, bool locked) => m_WinObjPool.SetLocked(winUI, locked);
 
         /// <summary>
         /// 设置界面实例对象的优先级。优先级小的实例会优先被释放。
         /// </summary>
-        /// <param name="uiView">要设置优先级的界面实例。</param>
+        /// <param name="winUI">要设置优先级的界面实例。</param>
         /// <param name="priority">界面实例优先级。</param>
-        public void SetUIPriority(object uiView, int priority) => m_WinObjPool.SetPriority(uiView, priority);
+        public void SetUIPriority(object winUI, int priority) => m_WinObjPool.SetPriority(winUI, priority);
     }
 }
