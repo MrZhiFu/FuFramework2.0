@@ -240,24 +240,18 @@ namespace Hotfix.Framework.UI
         {
             var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
 
-            // 已存在 → 自增，不存在 → 初始化为 1
-            if (m_PkgRefCountDict.TryGetValue(pkgName, out count))
-                m_PkgRefCountDict[pkgName] = count + 1;
-            else
-                m_PkgRefCountDict[pkgName] = 1;
+            // 已存在且未归零 → 自增；不存在或已归零 → 初始化为 1
+            m_PkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
 
             FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
 
-            // 引用计数从 0 变为 1，恢复纹理/音频资源
-            if (wasZero && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+            // 合并一次查询：0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
+            if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
-                pkg.ReloadAssets();
-            }
+                if (wasZero)
+                    pkg.ReloadAssets();
 
-            // 递归处理依赖包（对称于 SubPkgRef，保证依赖包资源随父包恢复）
-            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
-            {
-                foreach (var dep in loadedPkg.dependencies)
+                foreach (var dep in pkg.dependencies)
                 {
                     if (dep.TryGetValue("name", out var depPkgName))
                         AddPkgRef(depPkgName);
@@ -277,25 +271,24 @@ namespace Hotfix.Framework.UI
             count = --m_PkgRefCountDict[pkgName];
             FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
-            // 对称于 AddPkgRef：每次调用都递归递减依赖包引用（防止多实例场景计数膨胀）
-            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+            // 合并一次查询：递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
+            if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
-                foreach (var dep in loadedPkg.dependencies)
+                foreach (var dep in pkg.dependencies)
                 {
                     if (dep.TryGetValue("name", out var depPkgName))
                         SubPkgRef(depPkgName);
                 }
-            }
 
-            // 归零：卸载 纹理/音频资源，保留包元数据
-            if (count == 0 && m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
-            {
-                pkg.UnloadAssets();
-                FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+                if (count == 0)
+                {
+                    pkg.UnloadAssets();
+                    FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
 
-                // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
-                if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
-                    loader.UnloadAll();
+                    // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
+                    if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+                        loader.UnloadAll();
+                }
             }
         }
 
@@ -304,9 +297,16 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public void RemoveAllPkg()
         {
-            // 移除所有已加载的包（先复制Keys避免遍历时修改集合）
-            List<string> pkgNames = new(m_LoadedPkgDict.Keys);
-            foreach (var pkgName in pkgNames)
+            // 先取消所有正在加载的包
+            List<string> loadingPkgNames = new(m_LoadingCts.Keys);
+            foreach (var pkgName in loadingPkgNames)
+            {
+                RemovePkg(pkgName);
+            }
+
+            // 再移除所有已加载的包（先复制Keys避免遍历时修改集合）
+            List<string> loadedPkgNames = new(m_LoadedPkgDict.Keys);
+            foreach (var pkgName in loadedPkgNames)
             {
                 RemovePkg(pkgName);
             }
@@ -320,15 +320,25 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgName">要完全移除的包名。</param>
         public void RemovePkg(string pkgName)
         {
-            // 1.记录引用数，用于递减依赖包（A 的每个引用都对依赖贡献 1）
-            var refCount = m_PkgRefCountDict.TryGetValue(pkgName, out var rc) ? rc : 0;
+            // 1.如果是正在加载的包，取消正在加载的任务
+            //   （加载中的包 GetByName 为 null，必须先于第 2 步处理）
+            if (m_LoadingCts.TryGetValue(pkgName, out var cts))
+            {
+                cts.Cancel();
+                m_LoadingCts.Remove(pkgName);
+                FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
+                return;
+            }
 
-            // 2.FUI移除UIPackage包（先取依赖表，RemovePackage 后依赖信息可能失效）
+            // 2.记录引用数，用于递减依赖包（A 的每个引用都对依赖贡献 1）
+            var refCount = m_PkgRefCountDict.GetValueOrDefault(pkgName, 0);
+
+            // 3.FUI移除UIPackage包（先取依赖表，RemovePackage 后依赖信息可能失效）
             var pkgToRemove = UIPackage.GetByName(pkgName);
             if (pkgToRemove == null) return;
             UIPackage.RemovePackage(pkgName);
 
-            // 3.递归递减依赖包的引用计数
+            // 4.递归递减依赖包的引用计数
             foreach (var dep in pkgToRemove.dependencies)
             {
                 if (dep.TryGetValue("name", out var depPkgName))
@@ -336,15 +346,6 @@ namespace Hotfix.Framework.UI
                     for (var i = 0; i < refCount; i++)
                         SubPkgRef(depPkgName);
                 }
-            }
-
-            // 4.如果是正在加载的包，取消正在加载的任务
-            if (m_LoadingCts.TryGetValue(pkgName, out var cts))
-            {
-                cts.Cancel();
-                m_LoadingCts.Remove(pkgName);
-                FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
-                return;
             }
 
             // 5.从已加载字典移除
