@@ -54,7 +54,13 @@ namespace Hotfix.Framework.Asset
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync<T>(path));
-            return handle.GetAssetObject<T>();
+
+            // GetAssetObject<T> 用 as 转换，类型不匹配时返回 null，需显式报错（否则调用方 NRE 难排查）
+            var result = handle.GetAssetObject<T>();
+            if (result == null)
+                throw new InvalidOperationException($"[AssetLoadRegister]资源{path}类型不匹配，期望类型: {typeof(T)}");
+
+            return result;
         }
 
         /// <summary>
