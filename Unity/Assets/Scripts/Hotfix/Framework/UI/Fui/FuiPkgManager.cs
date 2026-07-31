@@ -77,7 +77,7 @@ namespace Hotfix.Framework.UI
             var cts = new CancellationTokenSource();
             m_LoadingCts[pkgName] = cts;
 
-            // 创建新的加载任务（延迟执行）
+            // 创建新的加载任务（Defer惰性：此刻不执行，await 时才执行）
             var newTask = UniTask.Defer(async () =>
             {
                 try
