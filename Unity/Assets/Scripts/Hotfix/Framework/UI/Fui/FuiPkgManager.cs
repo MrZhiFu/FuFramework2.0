@@ -84,13 +84,17 @@ namespace Hotfix.Framework.UI
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
             {
                 if (m_UnloadedAssetPkgSet.Remove(pkgName)) // 恢复后清除标记，避免反复遍历
+                {
                     loadedPkg.ReloadAssets();
+                }
                 return UniTask.FromResult(loadedPkg);
             }
 
             // 如果已有正在加载的任务，直接返回任务
             if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
+            {
                 return loadingTask;
+            }
 
             FuLogger.LogInfo($"[FuiPkgManager] 添加UIPackage包: {pkgName}");
 
