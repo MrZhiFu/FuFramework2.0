@@ -18,13 +18,13 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 创建界面实例对象。
         /// </summary>
-        /// <param name="uiName"></param>
+        /// <param name="winName"></param>
         /// <param name="winBase"></param>
         /// <returns></returns>
-        public static WinObject Create(string uiName, WinBase winBase)
+        public static WinObject Create(string winName, WinBase winBase)
         {
             var winObject = ReferencePool.Acquire<WinObject>();
-            winObject.Initialize(uiName, winBase);
+            winObject.Initialize(winName, winBase);
             return winObject;
         }
 

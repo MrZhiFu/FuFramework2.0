@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinClickGuide
     {
-        public override string UIName => "WinClickGuide";      // 界面名称
+        public override string WinName => "WinClickGuide";      // 界面名称
         public override string PackageName => "Guide"; // 包名
 
 		private GGraph graphClickArea;

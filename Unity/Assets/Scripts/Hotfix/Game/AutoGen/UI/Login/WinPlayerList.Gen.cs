@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinPlayerList
     {
-        public override string UIName => "WinPlayerList";      // 界面名称
+        public override string WinName => "WinPlayerList";      // 界面名称
         public override string PackageName => "Login"; // 包名
 
 		private Controller CtrlSelected;

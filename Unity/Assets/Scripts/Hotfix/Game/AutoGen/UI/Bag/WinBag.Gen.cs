@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinBag
     {
-        public override string UIName => "WinBag";      // 界面名称
+        public override string WinName => "WinBag";      // 界面名称
         public override string PackageName => "Bag"; // 包名
 
 		private CompBagContent compContent;

@@ -34,15 +34,15 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 是否存在界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <returns>是否存在界面。</returns>
-        public bool Has(string uiName)
+        public bool Has(string winName)
         {
-            uiName.NotNullOrEmpty(nameof(uiName));
+            winName.NotNullOrEmpty(nameof(winName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                if (!group.Has(uiName)) continue;
+                if (!group.Has(winName)) continue;
                 return true;
             }
 
@@ -75,15 +75,15 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase Get(string uiName)
+        public WinBase Get(string winName)
         {
-            uiName.NotNullOrEmpty(nameof(uiName));
+            winName.NotNullOrEmpty(nameof(winName));
 
             foreach (var (_, group) in m_UIGroupDict)
             {
-                var ui = group.Get(uiName);
+                var ui = group.Get(winName);
                 if (ui == null) continue;
                 return ui;
             }
@@ -192,8 +192,8 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 是否正在加载界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <returns>是否正在加载界面。</returns>
-        public bool IsLoading(string uiName) => m_LoadingDict.ContainsValue(uiName);
+        public bool IsLoading(string winName) => m_LoadingDict.ContainsValue(winName);
     }
 }

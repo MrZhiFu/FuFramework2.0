@@ -117,14 +117,14 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面组中是否存在界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <returns>界面组中是否存在界面。</returns>
-        public bool Has(string uiName)
+        public bool Has(string winName)
         {
-            uiName.NotNullOrEmpty(nameof(uiName));
+            winName.NotNullOrEmpty(nameof(winName));
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.Win.UIName == uiName)
+                if (uiInfo.Win.WinName == winName)
                     return true;
             }
 
@@ -158,14 +158,14 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 从界面组中获取界面。
         /// </summary>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <returns>要获取的界面。</returns>
-        public WinBase Get(string uiName)
+        public WinBase Get(string winName)
         {
-            uiName.NotNullOrEmpty(nameof(uiName));
+            winName.NotNullOrEmpty(nameof(winName));
             foreach (var uiInfo in m_UIInfoList)
             {
-                if (uiInfo.Win.UIName == uiName)
+                if (uiInfo.Win.WinName == winName)
                 {
                     return uiInfo.Win;
                 }
@@ -212,7 +212,7 @@ namespace Hotfix.Framework.UI
         public void Add(WinBase win)
         {
             if (Has(win.SerialId))
-                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.UIName}'.");
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.WinName}'.");
 
             var uiInfo = WinInfo.Create(win);
             m_UIInfoList.AddFirst(uiInfo);
@@ -226,10 +226,10 @@ namespace Hotfix.Framework.UI
         {
             var uiInfo = GetInfo(win);
             if (uiInfo == null)
-                throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.UIName}' 的UI界面信息.");
+                throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.WinName}' 的UI界面信息.");
 
             if (!m_UIInfoList.Remove(uiInfo))
-                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.UIName}'.");
+                throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.WinName}'.");
 
             // 释放界面信息实例
             ReferencePool.Release(uiInfo);

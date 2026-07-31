@@ -28,7 +28,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIName { get; private set; }
+        public string WinName { get; private set; }
 
         /// <summary>
         /// 获取界面所属的界面组。
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.UI
         public CloseUICompleteEventArgs()
         {
             SerialId = 0;
-            UIName   = null;
+            WinName   = null;
             UIGroup  = null;
         }
 
@@ -49,14 +49,14 @@ namespace Hotfix.Framework.UI
         /// 创建关闭界面完成事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <param name="uiGroup">界面所属的界面组。</param>
         /// <returns>创建的关闭界面完成事件。</returns>
-        public static CloseUICompleteEventArgs Create(int serialId, string uiName, UIGroup uiGroup)
+        public static CloseUICompleteEventArgs Create(int serialId, string winName, UIGroup uiGroup)
         {
             var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId = serialId;
-            closeUICompleteEventArgs.UIName   = uiName;
+            closeUICompleteEventArgs.WinName   = winName;
             closeUICompleteEventArgs.UIGroup  = uiGroup;
             return closeUICompleteEventArgs;
         }
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.UI
         public override void Clear()
         {
             SerialId = 0;
-            UIName   = null;
+            WinName   = null;
             UIGroup  = null;
         }
     }

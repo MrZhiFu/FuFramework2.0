@@ -75,7 +75,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面名称。
         /// </summary>
-        public virtual string UIName => "";
+        public virtual string WinName => "";
 
         /// <summary>
         /// 界面资源包名称。
@@ -123,7 +123,7 @@ namespace Hotfix.Framework.UI
             m_IsInit   = true;
 
             // 加载 UI 配置表（通过 Get(string) 方法查表；StrKeyDataDict 为 protected，外部不可直接访问）
-            UIConfig = ConfigModule.Instance?.GetConfig<TbUIConfig>()?.Get(UIName);
+            UIConfig = ConfigModule.Instance?.GetConfig<TbUIConfig>()?.Get(WinName);
 
             if (!isNewInstance) return;
 
@@ -151,7 +151,7 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception exception)
             {
-                FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{UIName}] 初始化发生异常：'{exception}'.");
+                FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
             }
         }
 

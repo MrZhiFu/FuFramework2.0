@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinGlobalLoading
     {
-        public override string UIName => "WinGlobalLoading";      // 界面名称
+        public override string WinName => "WinGlobalLoading";      // 界面名称
         public override string PackageName => "Common"; // 包名
 
 		private Transition rotationAnim;

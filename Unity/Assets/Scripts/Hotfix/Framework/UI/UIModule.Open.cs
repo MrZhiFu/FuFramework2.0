@@ -45,19 +45,19 @@ namespace Hotfix.Framework.UI
         /// <returns>界面实例。</returns>
         private async UniTask<T> _OpenAsync<T>(object userData = null) where T : WinBase, new()
         {
-            var uiName = typeof(T).Name;
+            var winName = typeof(T).Name;
 
             // 检查是否已经在加载中
-            if (IsLoading(uiName))
+            if (IsLoading(winName))
             {
-                FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经正在加载.");
+                FuLogger.LogWarning($"[UIModule] 界面 {winName} 已经正在加载.");
                 return null;
             }
 
             // 检查是否已存在该界面
-            if (Has(uiName))
+            if (Has(winName))
             {
-                FuLogger.LogWarning($"[UIModule] 界面 {uiName} 已经存在，不能重复打开.");
+                FuLogger.LogWarning($"[UIModule] 界面 {winName} 已经存在，不能重复打开.");
                 return Get<T>();
             }
 
@@ -65,14 +65,14 @@ namespace Hotfix.Framework.UI
             var tempSerialId = ++m_SerialId;
 
             // 添加到加载字典
-            m_LoadingDict.TryAdd(tempSerialId, uiName);
+            m_LoadingDict.TryAdd(tempSerialId, winName);
 
             try
             {
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winObj = m_WinObjPool.Spawn(uiName);
+                var winObj = m_WinObjPool.Spawn(winName);
                 if (winObj != null)
                 {
                     win = winObj.Target as T;
@@ -83,7 +83,7 @@ namespace Hotfix.Framework.UI
 
                 // 创建界面实例对象
                 win    = new T();
-                winObj = WinObject.Create(win.UIName, win);
+                winObj = WinObject.Create(win.WinName, win);
                 m_WinObjPool.Register(winObj, true);
 
                 // UI包已经加载过，则直接创建Fui界面
@@ -121,7 +121,7 @@ namespace Hotfix.Framework.UI
                 if (win == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。
-                var uiView = UIPackage.CreateObject(win.PackageName, win.UIName) as GComponent;
+                var uiView = UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent;
 
                 // 初始化界面
                 win.Init(serialId, uiView, isNewInstance, userData);

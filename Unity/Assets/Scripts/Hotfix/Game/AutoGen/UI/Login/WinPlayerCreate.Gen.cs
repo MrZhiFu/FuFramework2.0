@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinPlayerCreate
     {
-        public override string UIName => "WinPlayerCreate";      // 界面名称
+        public override string WinName => "WinPlayerCreate";      // 界面名称
         public override string PackageName => "Login"; // 包名
 
 		private GTextField txtTitle;

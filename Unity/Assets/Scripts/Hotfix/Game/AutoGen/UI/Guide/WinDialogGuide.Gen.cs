@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinDialogGuide
     {
-        public override string UIName => "WinDialogGuide";      // 界面名称
+        public override string WinName => "WinDialogGuide";      // 界面名称
         public override string PackageName => "Guide"; // 包名
 
 		private GTextField txtContent;

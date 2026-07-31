@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinDialogMessageBox
     {
-        public override string UIName => "WinDialogMessageBox";      // 界面名称
+        public override string WinName => "WinDialogMessageBox";      // 界面名称
         public override string PackageName => "Tips"; // 包名
 
 		private Controller BtnCtrl;

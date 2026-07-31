@@ -146,7 +146,7 @@ public WinBase[] GetAllLoaded()
 // 查询界面
 public bool Has<T>() where T : WinBase
 public bool Has(int serialId)
-public bool IsLoading(string uiName)
+public bool IsLoading(string winName)
 
 // 界面组管理
 public bool AddGroup(EUILayer layer)
@@ -181,7 +181,7 @@ public void SetUIPriority(object uiView, int priority)
 | SerialId | int | 界面序列编号 |
 | WinUI | GComponent | FairyGUI 显示对象 |
 | UserData | object | 用户自定义数据 |
-| UIName | string | 界面名称（可重写） |
+| WinName | string | 界面名称（可重写） |
 | PackageName | string | UI包名称（可重写） |
 | UIConfig | UIConfigRow | UI 配置数据（来自 UIConfig 配置表） |
 | UIGroup | UIGroup | 所属界面组 |
@@ -278,9 +278,9 @@ public void OnUpdate(float deltaTime, float unscaledDeltaTime)
 public void Add(WinBase win)
 public void Remove(WinBase win)
 public bool Has(int serialId)
-public bool Has(string uiName)
+public bool Has(string winName)
 public WinBase Get(int serialId)
-public WinBase Get(string uiName)
+public WinBase Get(string winName)
 public WinBase[] GetAll()
 
 // 刷新界面组状态
@@ -386,7 +386,7 @@ public void SubPkgRef(string pkgName)                   // 减少引用，归零
 
 ```csharp
 // 创建
-public static WinObject Create(string uiName, WinBase winBase)
+public static WinObject Create(string winName, WinBase winBase)
 
 // 释放时调用
 protected override void OnRelease()
@@ -502,12 +502,12 @@ public enum EUITweenType
 
 - **配置表路径**: `Config/Excels/Tables/U-UIConfig-UI配置表.xlsx`
 - **查询配置**: 运行时通过 `win.UIConfig` 获取当前 UI 的配置行，各属性自动从配置表读取
-- **新增 UI**: 在 Excel 中添加一行（UIName 为 key），运行 `gen-client-json.bat` 重新生成代码
+- **新增 UI**: 在 Excel 中添加一行（WinName 为 key），运行 `gen-client-json.bat` 重新生成代码
 - **配置列说明**:
 
 | 列名 | 类型 | 说明 |
 |------|------|------|
-| UIName | string | UI 标识 key，与 WinBase.UIName 对应 |
+| WinName | string | UI 标识 key，与 WinBase.WinName 对应 |
 | Layer | EUILayer | 界面层级（WorldUI=0, MainUI=1500, ...） |
 | TweenType | EUITweenType | 动画类型（None=0, Fade=1, Custom=2） |
 | TweenDuration | float | 动画时长（默认 0.3s） |
@@ -517,7 +517,7 @@ public enum EUITweenType
 - **代码加载方式**:
 
 ```csharp
-// WinBase 内部自动通过 UIName 查询 UIConfig 配置表完成初始化
+// WinBase 内部自动通过 WinName 查询 UIConfig 配置表完成初始化
 // 用户无需手动调用，框架在 OnInit 阶段自动完成配置绑定
 
 // 在 UI 代码中访问当前配置
@@ -538,14 +538,14 @@ using UnityEngine;
 public class WinMain : WinBase
 {
     // 界面名称
-    public override string UIName => "WinMain";
+    public override string WinName => "WinMain";
     
     // UI包名称
     public override string PackageName => "Main";
     
     // 以下属性（Layer、AdjustNotch、TweenType、TweenDuration、PauseCoveredUI）
     // 不再通过代码 override，改为在 UIConfig 配置表中设置。
-    // 在 Excel 中添加一行（UIName = "WinMain"）并配置各列即可，
+    // 在 Excel 中添加一行（WinName = "WinMain"）并配置各列即可，
     // 运行时通过 win.UIConfig 获取配置。
     // 详见 [UI 配置表（UIConfig）](#311-ui-配置表uiconfig) 小节。
     
@@ -648,7 +648,7 @@ public class GameController : MonoBehaviour
 ```csharp
 public class AnimatedWin : WinBase
 {
-    public override string UIName => "AnimatedWin";
+    public override string WinName => "AnimatedWin";
     // TweenType 不再通过代码 override，改为在 UIConfig 配置表中设置 EUITweenType.Custom。
     // 详见 [UI 配置表（UIConfig）](#311-ui-配置表uiconfig) 小节。
     
@@ -687,7 +687,7 @@ public class AnimatedWin : WinBase
 | Guide (3500) | EUILayer.Guide | 引导界面 |
 | Loading (4000) | EUILayer.Loading | Loading界面 |
 
-代码中只需声明 UIName 和 PackageName，运行时框架自动根据 UIName 查询 UIConfig 获取层级等配置。
+代码中只需声明 WinName 和 PackageName，运行时框架自动根据 WinName 查询 UIConfig 获取层级等配置。
 
 ### 4.5 界面组操作
 
@@ -723,7 +723,7 @@ public class UIGroupExample : MonoBehaviour
 ```csharp
 public class EventExampleWin : WinBase
 {
-    public override string UIName => "EventExample";
+    public override string WinName => "EventExample";
     
     protected override void OnInit()
     {
@@ -761,7 +761,7 @@ public class EventExampleWin : WinBase
 ```csharp
 public class TimerExampleWin : WinBase
 {
-    public override string UIName => "TimerExample";
+    public override string WinName => "TimerExample";
     
     protected override void OnOpen()
     {
@@ -821,19 +821,19 @@ public class UIEventListener : MonoBehaviour
     private void OnOpenSuccess(object sender, GameEventArgs e)
     {
         var args = e as OpenSuccessEventArgs;
-        Debug.Log($"界面打开成功: {args.Win.UIName}");
+        Debug.Log($"界面打开成功: {args.Win.WinName}");
     }
     
     private void OnCloseComplete(object sender, GameEventArgs e)
     {
         var args = e as CloseCompleteEventArgs;
-        Debug.Log($"界面关闭完成: {args.UIName}");
+        Debug.Log($"界面关闭完成: {args.WinName}");
     }
     
     private void OnVisibleChanged(object sender, GameEventArgs e)
     {
         var args = e as ChangeVisibleEventArgs;
-        Debug.Log($"界面可见性变化: {args.Win.UIName}, 可见: {args.Visible}");
+        Debug.Log($"界面可见性变化: {args.Win.WinName}, 可见: {args.Visible}");
     }
     
     private void OnDestroy()

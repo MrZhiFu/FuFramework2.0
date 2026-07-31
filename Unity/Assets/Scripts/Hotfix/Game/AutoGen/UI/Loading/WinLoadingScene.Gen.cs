@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinLoadingScene
     {
-        public override string UIName => "WinLoadingScene";      // 界面名称
+        public override string WinName => "WinLoadingScene";      // 界面名称
         public override string PackageName => "Loading"; // 包名
 
 

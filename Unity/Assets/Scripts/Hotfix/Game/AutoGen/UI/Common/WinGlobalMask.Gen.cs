@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinGlobalMask
     {
-        public override string UIName => "WinGlobalMask";      // 界面名称
+        public override string WinName => "WinGlobalMask";      // 界面名称
         public override string PackageName => "Common"; // 包名
 
 

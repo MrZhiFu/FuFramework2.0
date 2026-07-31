@@ -9,7 +9,7 @@ namespace #NAMESPACE#
 {
     public partial class #WINNAME#
     {
-        public override string UIName => "#WINNAME#";      // 界面名称
+        public override string WinName => "#WINNAME#";      // 界面名称
         public override string PackageName => "#PKGNAME#"; // 包名
 
 #FieldDefine#

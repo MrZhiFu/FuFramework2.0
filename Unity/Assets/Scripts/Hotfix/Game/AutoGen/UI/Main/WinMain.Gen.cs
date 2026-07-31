@@ -9,7 +9,7 @@ namespace Hotfix.Game.UI
 {
     public partial class WinMain
     {
-        public override string UIName => "WinMain";      // 界面名称
+        public override string WinName => "WinMain";      // 界面名称
         public override string PackageName => "Main"; // 包名
 
 		private GLoader loaderBg;

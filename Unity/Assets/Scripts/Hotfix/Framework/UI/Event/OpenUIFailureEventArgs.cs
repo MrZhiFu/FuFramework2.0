@@ -28,7 +28,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取界面资源名称。
         /// </summary>
-        public string UIName { get; private set; }
+        public string WinName { get; private set; }
 
         /// <summary>
         /// 获取用户自定义数据。
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.UI
         public OpenUIFailureEventArgs()
         {
             SerialId = 0;
-            UIName   = null;
+            WinName   = null;
             UserData = null;
         }
 
@@ -49,14 +49,14 @@ namespace Hotfix.Framework.UI
         /// 创建打开界面失败事件。
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
-        /// <param name="uiName">界面资源名称。</param>
+        /// <param name="winName">界面资源名称。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建的打开界面失败事件。</returns>
-        public static OpenUIFailureEventArgs Create(int serialId, string uiName, object userData)
+        public static OpenUIFailureEventArgs Create(int serialId, string winName, object userData)
         {
             var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
             openUIFailureEventArgs.SerialId = serialId;
-            openUIFailureEventArgs.UIName   = uiName;
+            openUIFailureEventArgs.WinName   = winName;
             openUIFailureEventArgs.UserData = userData;
             return openUIFailureEventArgs;
         }
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.UI
         public override void Clear()
         {
             SerialId = 0;
-            UIName   = null;
+            WinName   = null;
             UserData = null;
         }
     }
