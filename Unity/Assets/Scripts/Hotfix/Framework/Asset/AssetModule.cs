@@ -481,9 +481,14 @@ namespace Hotfix.Framework.Asset
             initHandler.Completed += asyncOperationBase =>
             {
                 if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeeded && asyncOperationBase.IsDone)
+                {
                     taskCompletionSource.TrySetResult(true);
+                }
                 else
+                {
+                    PackageInited = false; // 初始化失败回滚标记，允许重试
                     taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
+                }
             };
             return taskCompletionSource.Task;
         }
@@ -548,7 +553,7 @@ namespace Hotfix.Framework.Asset
         public void UnloadAsset(string assetPath)
         {
             assetPath.NotNull(nameof(assetPath));
-            var package = YooAssets.GetPackage(DefaultPackageName);
+            if (!YooAssets.TryGetPackage(DefaultPackageName, out var package)) return; // 包不存在/已销毁时不抛异常
             package.TryUnloadUnusedAsset(assetPath);
         }
 
