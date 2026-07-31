@@ -165,7 +165,7 @@ namespace Hotfix.Framework.UI
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
             m_WaitRecycleQueue.Clear();
-            PkgManager.ReleaseAll();
+            PkgManager.ReleaseAllPkg();
         }
 
         /// <summary>

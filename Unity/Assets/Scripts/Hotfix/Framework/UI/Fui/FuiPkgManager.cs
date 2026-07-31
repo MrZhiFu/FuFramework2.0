@@ -52,20 +52,20 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 是否存在指定包
         /// </summary>
-        /// <param name="packageName"></param>
+        /// <param name="pkgName"></param>
         /// <returns></returns>
-        public bool HasPackage(string packageName) => m_LoadedPkgDict.ContainsKey(packageName);
+        public bool HasPackage(string pkgName) => m_LoadedPkgDict.ContainsKey(pkgName);
 
         /// <summary>
         /// 异步加载指定包
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        public UniTask<UIPackage> AddPackageAsync(string pkgName)
+        public UniTask<UIPackage> LoadPkgAsync(string pkgName)
         {
             // 已经加载过的包直接返回
-            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPackage))
-                return UniTask.FromResult(loadedPackage);
+            if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+                return UniTask.FromResult(loadedPkg);
 
             // 如果已有正在加载的任务，直接返回任务
             if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
@@ -85,20 +85,25 @@ namespace Hotfix.Framework.UI
                     // 检查是否被取消
                     cts.Token.ThrowIfCancellationRequested();
 
-                    var package = await LoadPackageAsync_(pkgName);
-                    m_LoadedPkgDict[pkgName] = package; // 缓存结果
-                    package.ReloadAssets();
+                    // 等待加载包和其依赖包
+                    var pkg = await LoadSelfPkgAndDepPkgAsync(pkgName);
 
-                    return package;
+                    // 缓存结果
+                    m_LoadedPkgDict[pkgName] = pkg;
+                    pkg.ReloadAssets();
+
+                    return pkg;
                 }
                 finally
                 {
-                    m_LoadingTasks.Remove(pkgName); // 加载完成后移除任务记录
-                    m_LoadingCts.Remove(pkgName);   // 移除取消令牌源
+                    // 加载完成后移除任务和取消令牌源
+                    m_LoadingTasks.Remove(pkgName);
+                    m_LoadingCts.Remove(pkgName);
                 }
             });
 
-            m_LoadingTasks[pkgName] = newTask; // 记录正在加载的任务
+            // 记录正在加载的任务
+            m_LoadingTasks[pkgName] = newTask;
             return newTask;
         }
 
@@ -107,11 +112,11 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        private async UniTask<UIPackage> LoadPackageAsync_(string pkgName)
+        private async UniTask<UIPackage> LoadSelfPkgAndDepPkgAsync(string pkgName)
         {
-            var package = await LoadPackageAsync__(pkgName);
-            await AddPackageDepAsync(package);
-            return package;
+            var pkg = await LoadSelfPkgAsync(pkgName);
+            await LoadDepPkgAsync(pkg);
+            return pkg;
         }
 
         /// <summary>
@@ -119,7 +124,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="pkgName">包名</param>
         /// <returns></returns>
-        private async UniTask<UIPackage> LoadPackageAsync__(string pkgName)
+        private async UniTask<UIPackage> LoadSelfPkgAsync(string pkgName)
         {
             try
             {
@@ -128,19 +133,16 @@ namespace Hotfix.Framework.UI
                     cts.Token.ThrowIfCancellationRequested();
 
                 // 加载包的描述文件
-                var pkgDesc = await LoadDesc(pkgName);
+                var pkgDesc = await LoadDescAsync(pkgName);
 
                 // 检查是否被取消
                 if (m_LoadingCts.TryGetValue(pkgName, out cts))
                     cts.Token.ThrowIfCancellationRequested();
 
                 // 加载完成后，添加到UIPackage中，并加载pkg中的资源
-                var loadedPackage = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, packageItem) =>
-                {
-                    LoadResAsync(assetName, extension, type, packageItem).Forget();
-                });
+                var loadedPkg = UIPackage.AddPackage(pkgDesc.bytes, string.Empty, (assetName, extension, type, pkgItem) => { LoadResAsync(assetName, extension, type, pkgItem).Forget(); });
 
-                return loadedPackage;
+                return loadedPkg;
             }
             catch (OperationCanceledException)
             {
@@ -157,23 +159,26 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 加载指定包的依赖包
         /// </summary>
-        /// <param name="package">包</param>
-        private async UniTask AddPackageDepAsync(UIPackage package)
+        /// <param name="pkg">包</param>
+        private async UniTask LoadDepPkgAsync(UIPackage pkg)
         {
             var tasks = new List<UniTask>();
-            foreach (var dep in package.dependencies)
+            foreach (var dep in pkg.dependencies)
             {
                 if (dep.TryGetValue("name", out var depPkgName))
                 {
                     // 已加载的跳过；正在加载的说明是循环依赖，也跳过加载，但引用计数仍需增加
                     if (!m_LoadedPkgDict.ContainsKey(depPkgName) && !m_LoadingTasks.ContainsKey(depPkgName))
-                        tasks.Add(AddPackageAsync(depPkgName));
+                    {
+                        tasks.Add(LoadPkgAsync(depPkgName));
+                    }
 
-                    AddRef(depPkgName);
+                    AddPkgRef(depPkgName);
                 }
             }
 
-            await UniTask.WhenAll(tasks); // 并行加载所有依赖
+            // 并行加载所有依赖
+            await UniTask.WhenAll(tasks);
         }
 
         /// <summary>
@@ -182,7 +187,7 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgName"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        private async UniTask<TextAsset> LoadDesc(string pkgName)
+        private async UniTask<TextAsset> LoadDescAsync(string pkgName)
         {
             if (string.IsNullOrEmpty(pkgName)) throw new InvalidOperationException("[FuiPkgManager] 包名不能为空.");
 
@@ -207,10 +212,10 @@ namespace Hotfix.Framework.UI
         /// <param name="assetName">资源名</param>
         /// <param name="extension">资源扩展名</param>
         /// <param name="type">资源类型</param>
-        /// <param name="packageItem">包内资源项</param>
-        private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem packageItem)
+        /// <param name="pkgItem">包内资源项</param>
+        private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem pkgItem)
         {
-            var pkgName  = packageItem.owner.name;
+            var pkgName  = pkgItem.owner.name;
             var rootPath = UtilityAOT.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
             var itemPath = $"{rootPath}{pkgName}/{pkgName}_{assetName}";
             var extPath  = $"{itemPath}{extension}";
@@ -226,14 +231,14 @@ namespace Hotfix.Framework.UI
             var assetObj = await resLoader.LoadAsync(extPath, type);
 
             // 绑定资源到包内资源项
-            packageItem.owner.SetItemAsset(packageItem, assetObj, DestroyMethod.Unload);
+            pkgItem.owner.SetItemAsset(pkgItem, assetObj, DestroyMethod.Unload);
         }
 
         /// <summary>
         /// 添加包引用。引用计数从 0 变为 1 时自动恢复 纹理/音频资源。
         /// </summary>
         /// <param name="pkgName">包名</param>
-        public void AddRef(string pkgName)
+        public void AddPkgRef(string pkgName)
         {
             var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
 
@@ -253,7 +258,7 @@ namespace Hotfix.Framework.UI
         /// 减少包引用。引用计数归零时自动卸载 纹理/音频资源，保留包元数据。
         /// </summary>
         /// <param name="pkgName">包名</param>
-        public void SubRef(string pkgName)
+        public void SubPkgRef(string pkgName)
         {
             if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
             if (count <= 0) return; // 已归零：防止循环依赖导致重复卸载
@@ -273,20 +278,20 @@ namespace Hotfix.Framework.UI
             foreach (var dep in pkg.dependencies)
             {
                 if (dep.TryGetValue("name", out var depPkgName))
-                    SubRef(depPkgName);
+                    SubPkgRef(depPkgName);
             }
         }
 
         /// <summary>
         /// 完全卸载所有包（元数据 + 纹理/音频资源 + FGUI 全局缓存），用于游戏退出。
         /// </summary>
-        public void ReleaseAll()
+        public void ReleaseAllPkg()
         {
             // 释放所有已加载的包（先复制Keys避免遍历时修改集合）
             List<string> pkgNames = new(m_LoadedPkgDict.Keys);
             foreach (var pkgName in pkgNames)
             {
-                ReleasePackage(pkgName);
+                ReleasePkg(pkgName);
             }
         }
 
@@ -294,7 +299,7 @@ namespace Hotfix.Framework.UI
         /// 完全卸载指定包：元数据 + 纹理/音频资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
         /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 纹理/音频资源，元数据保留）。
         /// </summary>
-        public void ReleasePackage(string pkgName)
+        public void ReleasePkg(string pkgName)
         {
             // 1.FUI移除UIPackage包
             if (UIPackage.GetByName(pkgName) == null) return;

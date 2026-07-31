@@ -190,7 +190,7 @@ namespace Hotfix
         private static UniTask LoadUIAsync()
         {
             // 添加通用UI资源包
-            return GlobalModule.UIModule.PkgManager.AddPackageAsync("Common");
+            return GlobalModule.UIModule.PkgManager.LoadPkgAsync("Common");
         }
 
 #if ENABLE_BINARY_CONFIG

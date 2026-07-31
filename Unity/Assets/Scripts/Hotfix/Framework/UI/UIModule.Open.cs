@@ -94,7 +94,7 @@ namespace Hotfix.Framework.UI
                 }
 
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
-                await PkgManager.AddPackageAsync(win.PackageName);
+                await PkgManager.LoadPkgAsync(win.PackageName);
 
                 // 使用临时序列号创建Fui界面
                 return CreateFuiWin(win, tempSerialId, true, userData);

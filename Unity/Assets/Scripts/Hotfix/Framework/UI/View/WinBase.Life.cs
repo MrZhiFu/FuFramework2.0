@@ -27,7 +27,7 @@ namespace Hotfix.Framework.UI
         private void _OnInit()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]初始化-OnInit().");
-            m_UIModule.PkgManager?.AddRef(PackageName);
+            m_UIModule.PkgManager?.AddPkgRef(PackageName);
             OnInit();
         }
 
@@ -155,7 +155,7 @@ namespace Hotfix.Framework.UI
         internal void _OnDispose()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{UIName}]被销毁-Dispose().");
-            m_UIModule.PkgManager.SubRef(PackageName);
+            m_UIModule.PkgManager.SubPkgRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器
             ReleaseUIEventRegister(); // 释放UI事件注册器
