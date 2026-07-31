@@ -583,8 +583,23 @@ namespace Hotfix.Framework.Asset
 
             // 新建一个任务，包装初始化操作
             var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            var initHandler          = InitPackage(resourcePackage, downloadURL, downloadBackupURL);
-            if (initHandler == null) throw new InvalidOperationException($"初始化资源包失败：{packageName}");
+
+            // 同步创建初始化操作：抛异常（模拟构建失败等）或返回 null（非法 PlayMode）时回滚标记，允许重试
+            InitializePackageOperation initHandler;
+            try
+            {
+                initHandler = InitPackage(resourcePackage, downloadURL, downloadBackupURL);
+            }
+            catch
+            {
+                PackageInited = false;
+                throw;
+            }
+            if (initHandler == null)
+            {
+                PackageInited = false;
+                throw new InvalidOperationException($"初始化资源包失败：{packageName}");
+            }
 
             initHandler.Completed += asyncOperationBase =>
             {
