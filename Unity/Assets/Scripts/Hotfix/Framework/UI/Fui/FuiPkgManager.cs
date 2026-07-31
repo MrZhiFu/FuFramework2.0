@@ -86,7 +86,7 @@ namespace Hotfix.Framework.UI
                     cts.Token.ThrowIfCancellationRequested();
 
                     // 等待加载包和其依赖包
-                    var pkg = await LoadSelfPkgAndDepPkgAsync(pkgName);
+                    var pkg = await LoadPkgAndDepPkgAsync(pkgName);
 
                     // 缓存结果
                     m_LoadedPkgDict[pkgName] = pkg;
@@ -112,9 +112,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="pkgName"></param>
         /// <returns></returns>
-        private async UniTask<UIPackage> LoadSelfPkgAndDepPkgAsync(string pkgName)
+        private async UniTask<UIPackage> LoadPkgAndDepPkgAsync(string pkgName)
         {
-            var pkg = await LoadSelfPkgAsync(pkgName);
+            var pkg = await LoadPkgInternalAsync(pkgName);
             await LoadDepPkgAsync(pkg);
             return pkg;
         }
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="pkgName">包名</param>
         /// <returns></returns>
-        private async UniTask<UIPackage> LoadSelfPkgAsync(string pkgName)
+        private async UniTask<UIPackage> LoadPkgInternalAsync(string pkgName)
         {
             try
             {
