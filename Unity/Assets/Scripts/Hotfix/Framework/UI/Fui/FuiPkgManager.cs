@@ -99,9 +99,8 @@ namespace Hotfix.Framework.UI
                     // 等待加载包和其依赖包
                     var pkg = await LoadPkgAndDepPkgAsync(pkgName);
 
-                    // 缓存结果
+                    // 缓存结果（首次加载 item.texture 全为 null，ReloadAssets 无操作，资源由 CreateObject 懒加载）
                     m_LoadedPkgDict[pkgName] = pkg;
-                    pkg.ReloadAssets();
 
                     return pkg;
                 }
