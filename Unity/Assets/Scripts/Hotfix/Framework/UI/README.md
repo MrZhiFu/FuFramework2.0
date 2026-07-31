@@ -327,8 +327,8 @@ FairyGUI 包管理器，负责 UI 包的加载、缓存和卸载管理。
 // 包管理
 public bool IsLoadedPkg(string pkgName)                  // 包是否已加载
 public UniTask<UIPackage> LoadPkgAsync(string pkgName)  // 加载包（含依赖）
-public void ReleasePkg(string pkgName)                  // 完全卸载包（不可恢复）
-public void ReleaseAllPkg()                             // 完全卸载所有包（游戏退出）
+public void RemovePkg(string pkgName)                  // 完全移除包（不可恢复）
+public void RemoveAllPkg()                             // 完全移除所有包（游戏退出）
 
 // 引用计数
 public void AddPkgRef(string pkgName)                   // 添加引用，0→1 时 ReloadAssets
@@ -346,8 +346,8 @@ public void SubPkgRef(string pkgName)                   // 减少引用，归零
   SubPkgRef → count--，归零时 UnloadAssets（释放纹理/音频，元数据保留）
 
 彻底卸载:
-  ReleasePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除（不可恢复）
-  ReleaseAllPkg → 全部 ReleasePkg
+  RemovePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除（不可恢复）
+  RemoveAllPkg → 全部 RemovePkg
 ```
 
 | 场景 | 包元数据 | 纹理/音频 |
@@ -355,7 +355,7 @@ public void SubPkgRef(string pkgName)                   // 减少引用，归零
 | 首次打开 | 加载（CPU 一次） | 懒加载 |
 | 所有引用清零 | 保留 | UnloadAssets 释放 |
 | 再次打开 | 缓存命中 | ReloadAssets 恢复 |
-| 游戏退出 | ReleaseAllPkg | 全部销毁 |
+| 游戏退出 | RemoveAllPkg | 全部销毁 |
 
 **包加载流程：**
 

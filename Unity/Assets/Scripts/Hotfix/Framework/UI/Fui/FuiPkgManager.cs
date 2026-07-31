@@ -283,23 +283,23 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 完全卸载所有包（元数据 + 纹理/音频资源 + FGUI 全局缓存），用于游戏退出。
+        /// 完全移除所有包（元数据 + 纹理/音频资源 + FGUI 全局缓存），用于游戏退出。
         /// </summary>
-        public void ReleaseAllPkg()
+        public void RemoveAllPkg()
         {
-            // 释放所有已加载的包（先复制Keys避免遍历时修改集合）
+            // 移除所有已加载的包（先复制Keys避免遍历时修改集合）
             List<string> pkgNames = new(m_LoadedPkgDict.Keys);
             foreach (var pkgName in pkgNames)
             {
-                ReleasePkg(pkgName);
+                RemovePkg(pkgName);
             }
         }
 
         /// <summary>
-        /// 完全卸载指定包：元数据 + 纹理/音频资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
+        /// 完全移除指定包：元数据 + 纹理/音频资源 + 从 FGUI 全局缓存移除。彻底删除，无法恢复。
         /// 日常引用计数归零时不会调用此方法，而是调用 UnloadAssets（仅释放 纹理/音频资源，元数据保留）。
         /// </summary>
-        public void ReleasePkg(string pkgName)
+        public void RemovePkg(string pkgName)
         {
             // 1.FUI移除UIPackage包
             if (UIPackage.GetByName(pkgName) == null) return;
