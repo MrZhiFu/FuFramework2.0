@@ -331,8 +331,8 @@ public void RemovePkg(string pkgName)                  // 完全移除包（不�
 public void RemoveAllPkg()                             // 完全移除所有包（游戏退出）
 
 // 引用计数
-public void AddPkgRef(string pkgName)                   // 添加引用，0→1 时 ReloadAssets
-public void SubPkgRef(string pkgName)                   // 减少引用，归零时 UnloadAssets
+public void AddPkgRef(string pkgName)                   // 添加引用，0→1 时 ReloadAssets，递归递增依赖包
+public void SubPkgRef(string pkgName)                   // 减少引用，递归递减依赖包，归零时卸载资源
 ```
 
 **引用计数与资源生命周期：**
@@ -342,20 +342,23 @@ public void SubPkgRef(string pkgName)                   // 减少引用，归零
   LoadPkgAsync → 缓存命中 || 异步加载包元数据 + 依赖包
 
 引用:
-  AddPkgRef → count++，0→1 时 ReloadAssets（恢复纹理/音频）
-  SubPkgRef → count--，归零时 UnloadAssets（释放纹理/音频，元数据保留）
+  AddPkgRef → count++，0→1 时 ReloadAssets（恢复纹理/音频），递归递增依赖包引用
+  SubPkgRef → count--，每次递归递减依赖包引用（对称于 AddPkgRef），
+              归零时 UnloadAssets（释放纹理/音频）+ UnloadAll（释放 YooAsset 句柄，让 AssetBundle 可卸载）
 
 彻底卸载:
-  RemovePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除（不可恢复）
+  RemovePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除，按引用数递归递减依赖包计数（不可恢复）
   RemoveAllPkg → 全部 RemovePkg
 ```
 
 | 场景 | 包元数据 | 纹理/音频 |
 |------|----------|-----------|
 | 首次打开 | 加载（CPU 一次） | 懒加载 |
-| 所有引用清零 | 保留 | UnloadAssets 释放 |
+| 所有引用清零 | 保留 | UnloadAssets + UnloadAll 释放 |
 | 再次打开 | 缓存命中 | ReloadAssets 恢复 |
 | 游戏退出 | RemoveAllPkg | 全部销毁 |
+
+> 依赖包引用与父包同步增删：A 依赖 B 时，AddPkgRef(A)/SubPkgRef(A) 递归处理 B，多个父包共享 B 时 B 计数正确累积，最后一个引用释放才卸载 B。
 
 **包加载流程：**
 
