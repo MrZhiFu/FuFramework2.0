@@ -58,14 +58,18 @@ namespace Hotfix.Framework.UI
 
         /// <summary>
         /// 异步加载指定包（含依赖包）。已加载或正在加载时直接返回，不重复加载。
+        /// 缓存命中时主动 ReloadAssets，恢复曾 UnloadAssets 的资源（幂等，已加载则跳过）。
         /// </summary>
         /// <param name="pkgName">包名。</param>
         /// <returns>加载完成的 UI 包实例。</returns>
         public UniTask<UIPackage> LoadPkgAsync(string pkgName)
         {
-            // 已经加载过的包直接返回
+            // 已经加载过的包直接返回；若资源曾卸载（UnloadAssets 状态）则恢复，避免 UI 空白
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+            {
+                loadedPkg.ReloadAssets();
                 return UniTask.FromResult(loadedPkg);
+            }
 
             // 如果已有正在加载的任务，直接返回任务
             if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
