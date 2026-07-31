@@ -232,72 +232,6 @@ namespace Hotfix.Framework.Asset
 
         #endregion
 
-        #region 同步加载资源(不推荐使用)
-
-        /// <summary>
-        /// 同步加载资源包内所有资源对象
-        /// </summary>
-        /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path) => GetDefaultPackage().LoadAllAssetsSync(path);
-
-        /// <summary>
-        /// 同步加载资源包内所有资源对象
-        /// </summary>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <param name="path">资源的定位地址</param>
-        public AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object => GetDefaultPackage().LoadAllAssetsSync<T>(path);
-
-        /// <summary>
-        /// 同步加载资源包内所有资源对象
-        /// </summary>
-        /// <param name="path">资源的定位地址</param>
-        /// <param name="type">子对象类型</param>
-        public AllAssetsHandle LoadAllAssetsSync(string path, Type type) => GetDefaultPackage().LoadAllAssetsSync(path, type);
-
-        /// <summary>
-        /// 同步加载包内全部资源对象
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo) => GetDefaultPackage().LoadAllAssetsSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载子资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public SubAssetsHandle LoadSubAssetSync(string path) => GetDefaultPackage().LoadSubAssetsSync(path);
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path) => GetDefaultPackage().LoadAssetSync(path);
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public AssetHandle LoadAssetSync(string path, Type type) => GetDefaultPackage().LoadAssetSync(path, type);
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public AssetHandle LoadAssetSync(AssetInfo assetInfo) => GetDefaultPackage().LoadAssetSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public AssetHandle LoadAssetSync<T>(string path) where T : Object => GetDefaultPackage().LoadAssetSync<T>(path);
-
-        #endregion
 
         #region 加载场景
 
@@ -413,23 +347,6 @@ namespace Hotfix.Framework.Asset
 
         #endregion
 
-        #region 同步加载原生文件(不推荐使用)
-
-        /// <summary>
-        /// 同步加载原生文件
-        /// </summary>
-        /// <param name="assetInfo">资源信息</param>
-        /// <returns></returns>
-        public BundleFileHandle LoadRawFileSync(AssetInfo assetInfo) => GetDefaultPackage().LoadBundleFileSync(assetInfo);
-
-        /// <summary>
-        /// 同步加载原生文件
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <returns></returns>
-        public BundleFileHandle LoadRawFileSync(string path) => GetDefaultPackage().LoadBundleFileSync(path);
-
-        #endregion
 
         #region 实例化游戏物体
 
@@ -494,34 +411,6 @@ namespace Hotfix.Framework.Asset
             }
         }
 
-        /// <summary>
-        /// 同步实例化实体(不推荐使用)。
-        /// 句柄按路径缓存并引用计数，实例销毁时调用 ReleaseInstantiate 释放。
-        /// <param name="path">资源路径</param>
-        /// </summary>
-        /// <returns>实例化后的实体。</returns>
-        public GameObject InstantiateSync(string path)
-        {
-            AssetHandle assetHandle;
-            if (m_InstantiateRefDict.TryGetValue(path, out var entry))
-            {
-                entry.RefCount++;
-                assetHandle = entry.Handle;
-            }
-            else
-            {
-                assetHandle = LoadAssetSync(path);
-                m_InstantiateRefDict[path] = new InstantiateRef { Handle = assetHandle, RefCount = 1 };
-            }
-
-            var result = assetHandle.InstantiateSync();
-            if (result == null)
-            {
-                ReleaseInstantiate(path);
-                throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
-            }
-            return result;
-        }
 
         /// <summary>
         /// 释放实例化资源的句柄引用。实例对象销毁后调用。
