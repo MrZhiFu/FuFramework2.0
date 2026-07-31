@@ -209,11 +209,13 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 将引用归还引用池-释放资源。
-        /// 归还前先 UnloadAll 释放所有句柄，保证池对象干净（否则残留句柄导致复用泄漏）。
+        /// 归还前先 UnloadAll 释放所有句柄、清空加载中去重字典，保证池对象干净
+        /// （否则残留句柄/去重任务导致复用泄漏）。
         /// </summary>
         public void Release()
         {
             UnloadAll();
+            m_LoadingTasks.Clear();
             ReferencePool.Release(this);
         }
     }
