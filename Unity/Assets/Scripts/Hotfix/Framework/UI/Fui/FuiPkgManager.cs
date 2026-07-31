@@ -240,10 +240,11 @@ namespace Hotfix.Framework.UI
         {
             var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
 
+            // 已存在 → 自增，不存在 → 初始化为 1
             if (m_PkgRefCountDict.TryGetValue(pkgName, out count))
-                m_PkgRefCountDict[pkgName] = count + 1; // 已存在 → 自增
+                m_PkgRefCountDict[pkgName] = count + 1;
             else
-                m_PkgRefCountDict[pkgName] = 1;         // 不存在 → 初始化为 1
+                m_PkgRefCountDict[pkgName] = 1;
 
             FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
 
