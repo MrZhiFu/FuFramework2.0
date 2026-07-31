@@ -358,7 +358,7 @@ namespace Hotfix.Framework.Asset
         #region 异步实例化游戏物体
 
         /// <summary>
-        /// 异步实例化实体(推荐使用)。
+        /// 异步实例化实体。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
         /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
         /// <param name="path">资源路径</param>
@@ -443,11 +443,10 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="downloadURL">热更资源包下载URL</param>
         /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
-        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
         /// <returns></returns>
-        public UniTask<bool> InitDefaultPackageAsync(string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
+        public UniTask<bool> InitDefaultPackageAsync(string downloadURL = null, string downloadBackupURL = null)
         {
-            return InitPackageAsync(DefaultPackageName, downloadURL, downloadBackupURL, isDefaultPackage);
+            return InitPackageAsync(DefaultPackageName, downloadURL, downloadBackupURL);
         }
 
         /// <summary>
@@ -456,9 +455,8 @@ namespace Hotfix.Framework.Asset
         /// <param name="packageName">包名称</param>
         /// <param name="downloadURL">热更资源包下载URL</param>
         /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
-        /// <param name="isDefaultPackage">是否是默认包，默认为true</param>
         /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
+        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null)
         {
             packageName.NotNull(nameof(packageName));
 
