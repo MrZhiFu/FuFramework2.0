@@ -34,7 +34,7 @@ namespace Hotfix.Game.Config.Tables
                 Tables.UIConfig _v;
                 { if(!_ele.IsObject) { throw new SerializationException(); }  _v = global::Hotfix.Game.Config.Tables.UIConfig.DeserializeUIConfig(_ele);  }
                 DataList.Add(_v);
-                StrKeyDataDict.Add(_v.UIName.ToString(), _v);
+                StrKeyDataDict.Add(_v.Name.ToString(), _v);
             }
             PostInit();
         }

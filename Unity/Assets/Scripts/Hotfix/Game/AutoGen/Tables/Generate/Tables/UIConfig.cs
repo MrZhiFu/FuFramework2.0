@@ -14,9 +14,9 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class UIConfig : BeanBase
     {
-        public UIConfig(string UIName, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI) 
+        public UIConfig(string Name, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI) 
         {
-            this.UIName = UIName;
+            this.Name = Name;
             this.Layer = Layer;
             this.TweenType = TweenType;
             this.TweenDuration = TweenDuration;
@@ -27,7 +27,7 @@ namespace Hotfix.Game.Config.Tables
 
         public UIConfig(JSONNode _buf)
         {
-            { if(!_buf["UIName"].IsString) { throw new SerializationException(); }  UIName = _buf["UIName"]; }
+            { if(!_buf["Name"].IsString) { throw new SerializationException(); }  Name = _buf["Name"]; }
             { if(!_buf["Layer"].IsNumber) { throw new SerializationException(); }  Layer = (EUILayer)_buf["Layer"].AsInt; }
             { if(!_buf["TweenType"].IsNumber) { throw new SerializationException(); }  TweenType = (EUITweenType)_buf["TweenType"].AsInt; }
             { if(!_buf["TweenDuration"].IsNumber) { throw new SerializationException(); }  TweenDuration = _buf["TweenDuration"]; }
@@ -47,7 +47,7 @@ namespace Hotfix.Game.Config.Tables
         /// <summary>
         /// 界面名称（主键）
         /// </summary>
-        public string UIName { private set; get; }
+        public string Name { private set; get; }
         /// <summary>
         /// 界面层级
         /// </summary>
@@ -88,7 +88,7 @@ namespace Hotfix.Game.Config.Tables
         public override string ToString()
         {
             return "{ "
-            + "UIName:" + UIName + ","
+            + "Name:" + Name + ","
             + "Layer:" + Layer + ","
             + "TweenType:" + TweenType + ","
             + "TweenDuration:" + TweenDuration + ","

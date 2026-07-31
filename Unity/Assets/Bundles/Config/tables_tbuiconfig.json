@@ -1,6 +1,6 @@
 [
   {
-    "UIName": "WinMain",
+    "Name": "WinMain",
     "Layer": 1500,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -8,7 +8,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinLogin",
+    "Name": "WinLogin",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -16,7 +16,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinPlayerList",
+    "Name": "WinPlayerList",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -24,7 +24,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinPlayerCreate",
+    "Name": "WinPlayerCreate",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -32,7 +32,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinLoginAnnouncement",
+    "Name": "WinLoginAnnouncement",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -40,7 +40,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinBag",
+    "Name": "WinBag",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -48,7 +48,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinGlobalLoading",
+    "Name": "WinGlobalLoading",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -56,7 +56,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinDialogMessageBox",
+    "Name": "WinDialogMessageBox",
     "Layer": 2500,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -64,7 +64,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinGlobalMask",
+    "Name": "WinGlobalMask",
     "Layer": 3500,
     "TweenType": 0,
     "TweenDuration": 0.3,
@@ -72,7 +72,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinClickGuide",
+    "Name": "WinClickGuide",
     "Layer": 3500,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -80,7 +80,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinDialogGuide",
+    "Name": "WinDialogGuide",
     "Layer": 3500,
     "TweenType": 1,
     "TweenDuration": 0.3,
@@ -88,7 +88,7 @@
     "PauseCoveredUI": false
   },
   {
-    "UIName": "WinLoadingScene",
+    "Name": "WinLoadingScene",
     "Layer": 2000,
     "TweenType": 1,
     "TweenDuration": 0.3,
