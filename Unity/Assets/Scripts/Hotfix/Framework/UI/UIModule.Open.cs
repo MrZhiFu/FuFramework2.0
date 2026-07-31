@@ -72,10 +72,10 @@ namespace Hotfix.Framework.UI
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winIns = m_WinObjPool.Spawn(uiName);
-                if (winIns != null)
+                var winObj = m_WinObjPool.Spawn(uiName);
+                if (winObj != null)
                 {
-                    win = winIns.Target as T;
+                    win = winObj.Target as T;
 
                     // 使用临时序列号创建Fui界面
                     return CreateFuiWin(win, tempSerialId, false, userData);
@@ -83,8 +83,8 @@ namespace Hotfix.Framework.UI
 
                 // 创建界面实例对象
                 win    = new T();
-                winIns = WinObject.Create(win.UIName, win);
-                m_WinObjPool.Register(winIns, true);
+                winObj = WinObject.Create(win.UIName, win);
+                m_WinObjPool.Register(winObj, true);
 
                 // UI包已经加载过，则直接创建Fui界面
                 if (PkgManager.IsLoadedPkg(win.PackageName))

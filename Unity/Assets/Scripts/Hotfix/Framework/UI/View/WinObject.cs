@@ -23,15 +23,13 @@ namespace Hotfix.Framework.UI
         /// <returns></returns>
         public static WinObject Create(string uiName, WinBase winBase)
         {
-            var uiInstanceObject = ReferencePool.Acquire<WinObject>();
-            uiInstanceObject.Initialize(uiName, winBase);
-            return uiInstanceObject;
+            var winObject = ReferencePool.Acquire<WinObject>();
+            winObject.Initialize(uiName, winBase);
+            return winObject;
         }
 
         /// <summary>
-        /// 释放界面实例对象。
-        /// ObjectBase.OnRelease 为 protected internal abstract，ObjectBase 现与子类同属 Hotfix 程序集，
-        /// 同程序集重写须保留 internal（写成 protected 会触发 CS0507），请勿改为 protected override。
+        /// 释放界面实例对象
         /// </summary>
         protected internal override void OnRelease()
         {
