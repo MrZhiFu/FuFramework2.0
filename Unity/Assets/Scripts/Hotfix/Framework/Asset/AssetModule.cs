@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
@@ -58,9 +59,10 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
 
         /// <summary>
-        /// 实例化引用互斥锁，保护字典操作与首次加载（防止并发覆盖句柄泄漏）。
+        /// 实例化首次加载去重字典，key:资源路径，value:加载任务。
+        /// 同一路径并发首次实例化共享任务，防止覆盖句柄泄漏。
         /// </summary>
-        private readonly AsyncLock m_InstantiateLock = new();
+        private readonly Dictionary<string, UniTask<AssetHandle>> m_InstantiateLoadingTasks = new();
 
         /// <summary>
         /// 实例化引用（句柄 + 引用计数）。同一路径多个实例共享句柄。
@@ -434,23 +436,45 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 异步实例化实体(推荐使用)。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
-        /// 注意：请勿对同一路径并发首次实例化（AsyncLock 已保护字典与首次加载，但同步/异步混用需避免）。
+        /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
         /// <param name="path">资源路径</param>
         /// </summary>
         /// <returns>实例化后的实体。</returns>
         public async UniTask<GameObject> InstantiateAsync(string path)
         {
             AssetHandle assetHandle;
-            using (await m_InstantiateLock.LockAsync())
+            if (m_InstantiateRefDict.TryGetValue(path, out var entry))
             {
-                if (m_InstantiateRefDict.TryGetValue(path, out var entry))
+                entry.RefCount++;
+                assetHandle = entry.Handle;
+            }
+            else
+            {
+                // 并发首次加载去重：同路径共享加载任务（防覆盖句柄泄漏）
+                UniTask<AssetHandle> loadingTask;
+                if (!m_InstantiateLoadingTasks.TryGetValue(path, out loadingTask))
                 {
-                    entry.RefCount++;
-                    assetHandle = entry.Handle;
+                    loadingTask = LoadAssetAsync(path);
+                    m_InstantiateLoadingTasks[path] = loadingTask;
+                }
+
+                try
+                {
+                    assetHandle = await loadingTask;
+                }
+                finally
+                {
+                    m_InstantiateLoadingTasks.Remove(path);
+                }
+
+                // 加载完成后写入引用；若期间被并发请求写入则复用（同一任务返回同一句柄，无泄漏）
+                if (m_InstantiateRefDict.TryGetValue(path, out var existing))
+                {
+                    existing.RefCount++;
+                    assetHandle = existing.Handle;
                 }
                 else
                 {
-                    assetHandle = await LoadAssetAsync(path);
                     m_InstantiateRefDict[path] = new InstantiateRef { Handle = assetHandle, RefCount = 1 };
                 }
             }
