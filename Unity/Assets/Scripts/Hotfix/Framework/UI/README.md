@@ -320,21 +320,42 @@ FairyGUI 包管理器，负责 UI 包的加载、缓存和卸载管理。
 | m_LoadingCts | Dictionary<string, CancellationTokenSource> | 取消令牌源 |
 | m_PkgAssetLoaderDict | Dictionary<string, AssetLoadRegister> | 资源加载器 |
 | m_PkgRefCountDict | Dictionary<string, int> | 包引用计数 |
-| m_FromResourcesPackages | List<string> | 从 Resources 加载的包名列表 |
 
 **核心方法：**
 
 ```csharp
 // 包管理
-public bool HasPackage(string packageName)
-public UniTask<UIPackage> AddPackageAsync(string pkgName)
-public void ReleasePackage(string pkgName)
-public void ReleaseAll()
+public bool HasPackage(string packageName)              // 包是否已加载
+public UniTask<UIPackage> LoadPkgAsync(string pkgName)  // 加载包（含依赖）
+public void ReleasePkg(string pkgName)                  // 完全卸载包（不可恢复）
+public void ReleaseAllPkg()                             // 完全卸载所有包（游戏退出）
 
 // 引用计数
-public void AddRef(string pkgName)
-public void SubRef(string pkgName)
+public void AddPkgRef(string pkgName)                   // 添加引用，0→1 时 ReloadAssets
+public void SubPkgRef(string pkgName)                   // 减少引用，归零时 UnloadAssets
 ```
+
+**引用计数与资源生命周期：**
+
+```
+加载:
+  LoadPkgAsync → 缓存命中 || 异步加载包元数据 + 依赖包
+
+引用:
+  AddPkgRef → count++，0→1 时 ReloadAssets（恢复纹理/音频）
+  SubPkgRef → count--，归零时 UnloadAssets（释放纹理/音频，元数据保留）
+
+彻底卸载:
+  ReleasePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除（不可恢复）
+  ReleaseAllPkg → 全部 ReleasePkg
+```
+
+| 场景 | 包元数据 | 纹理/音频 |
+|------|----------|-----------|
+| 首次打开 | 加载（CPU 一次） | 懒加载 |
+| 所有引用清零 | 保留 | UnloadAssets 释放 |
+| 再次打开 | 缓存命中 | ReloadAssets 恢复 |
+| 游戏退出 | ReleaseAllPkg | 全部销毁 |
 
 **包加载流程：**
 
@@ -1023,7 +1044,7 @@ private void OnBackButtonClick()
 A: 使用 PkgManager：
 
 ```csharp
-await m_UIModule.PkgManager.AddPackageAsync("Main");
+await m_UIModule.PkgManager.LoadPkgAsync("Main");
 ```
 
 ### Q4: 如何获取当前最顶部的界面？
