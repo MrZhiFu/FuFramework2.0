@@ -52,6 +52,26 @@ namespace Hotfix.Framework.Asset
         private bool PackageInited { get; set; } = false;
 
         /// <summary>
+        /// 实例化资源引用管理，key:资源路径，value:句柄 + 引用计数。
+        /// 实例化对象共享资源引用，调用方在实例销毁时通过 ReleaseInstantiate 释放。
+        /// </summary>
+        private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
+
+        /// <summary>
+        /// 实例化引用互斥锁，保护字典操作与首次加载（防止并发覆盖句柄泄漏）。
+        /// </summary>
+        private readonly AsyncLock m_InstantiateLock = new();
+
+        /// <summary>
+        /// 实例化引用（句柄 + 引用计数）。同一路径多个实例共享句柄。
+        /// </summary>
+        private sealed class InstantiateRef
+        {
+            public AssetHandle Handle;
+            public int RefCount;
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected internal override void OnInit()
@@ -89,6 +109,11 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         protected internal override void OnDispose()
         {
+            // 释放所有实例化句柄（否则实例化引用泄漏）
+            foreach (var entry in m_InstantiateRefDict.Values)
+                entry.Handle.Release();
+            m_InstantiateRefDict.Clear();
+
             UnloadAllAssetsAsync(DefaultPackageName).Forget();
         }
 
@@ -408,26 +433,85 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 异步实例化实体(推荐使用)。
+        /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
+        /// 注意：请勿对同一路径并发首次实例化（AsyncLock 已保护字典与首次加载，但同步/异步混用需避免）。
         /// <param name="path">资源路径</param>
         /// </summary>
         /// <returns>实例化后的实体。</returns>
         public async UniTask<GameObject> InstantiateAsync(string path)
         {
-            var assetHandle          = await LoadAssetAsync(path);
-            var instantiateOperation = assetHandle.InstantiateAsync();
-            await instantiateOperation;
-            return instantiateOperation.Result;
+            AssetHandle assetHandle;
+            using (await m_InstantiateLock.LockAsync())
+            {
+                if (m_InstantiateRefDict.TryGetValue(path, out var entry))
+                {
+                    entry.RefCount++;
+                    assetHandle = entry.Handle;
+                }
+                else
+                {
+                    assetHandle = await LoadAssetAsync(path);
+                    m_InstantiateRefDict[path] = new InstantiateRef { Handle = assetHandle, RefCount = 1 };
+                }
+            }
+
+            try
+            {
+                var instantiateOperation = assetHandle.InstantiateAsync();
+                await instantiateOperation;
+                if (instantiateOperation.Result == null)
+                    throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
+                return instantiateOperation.Result;
+            }
+            catch
+            {
+                ReleaseInstantiate(path); // 失败回滚引用
+                throw;
+            }
         }
 
         /// <summary>
         /// 同步实例化实体(不推荐使用)。
+        /// 句柄按路径缓存并引用计数，实例销毁时调用 ReleaseInstantiate 释放。
         /// <param name="path">资源路径</param>
         /// </summary>
         /// <returns>实例化后的实体。</returns>
         public GameObject InstantiateSync(string path)
         {
-            var assetHandle = LoadAssetSync(path);
-            return assetHandle.InstantiateSync();
+            AssetHandle assetHandle;
+            if (m_InstantiateRefDict.TryGetValue(path, out var entry))
+            {
+                entry.RefCount++;
+                assetHandle = entry.Handle;
+            }
+            else
+            {
+                assetHandle = LoadAssetSync(path);
+                m_InstantiateRefDict[path] = new InstantiateRef { Handle = assetHandle, RefCount = 1 };
+            }
+
+            var result = assetHandle.InstantiateSync();
+            if (result == null)
+            {
+                ReleaseInstantiate(path);
+                throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 释放实例化资源的句柄引用。实例对象销毁后调用。
+        /// 引用计数归零时 Release 句柄并移除，让资源可被卸载。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        public void ReleaseInstantiate(string path)
+        {
+            if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
+            if (entry.RefCount <= 0) return;
+            if (--entry.RefCount > 0) return;
+
+            entry.Handle.Release();
+            m_InstantiateRefDict.Remove(path);
         }
 
         #endregion
