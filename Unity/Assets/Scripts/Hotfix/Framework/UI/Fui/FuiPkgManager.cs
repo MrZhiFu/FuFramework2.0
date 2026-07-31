@@ -245,7 +245,7 @@ namespace Hotfix.Framework.UI
 
             FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
 
-            // 合并一次查询：0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
+            // 0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
                 if (wasZero)
@@ -271,7 +271,7 @@ namespace Hotfix.Framework.UI
             count = --m_PkgRefCountDict[pkgName];
             FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
-            // 合并一次查询：递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
+            // 递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
             {
                 foreach (var dep in pkg.dependencies)
