@@ -13,7 +13,7 @@ namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// FUI包管理器。
-    /// 目标：用于自行管理FUI包的资源加载，缓存，卸载等操作。
+    /// 目标：用于自行管理FUI包的描述文件和资源加载，缓存，卸载等操作。
     /// 功能：
     ///     1. 异步加载FUI包。
     ///     2. 缓存已加载的FUI包。
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.UI
                     // 等待加载包和其依赖包
                     var pkg = await LoadPkgAndDepPkgAsync(pkgName);
 
-                    // 缓存结果（首次加载 item.texture 全为 null，ReloadAssets 无操作，资源由 CreateObject 懒加载）
+                    // 缓存结果
                     m_LoadedPkgDict[pkgName] = pkg;
 
                     return pkg;
