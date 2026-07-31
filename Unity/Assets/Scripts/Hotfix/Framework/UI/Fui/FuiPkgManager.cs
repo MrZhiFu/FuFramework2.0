@@ -36,10 +36,11 @@ namespace Hotfix.Framework.UI
         private readonly Dictionary<string, UIPackage> m_LoadedPkgDict = new();
 
         /// <summary>
-        /// 加载任务去重字典，key:包名，value：加载任务。
-        /// 同一包仅一个加载任务，并发请求共享同一任务；任务完成后由 finally 移除。
+        /// 加载任务去重字典，key:包名，value：共享完成源。
+        /// 同一包仅一个加载任务，并发请求共享同一完成源（UniTaskCompletionSource.Task 可多次 await），
+        /// 避免 async UniTask 重复 await 报错；任务完成后由 finally 移除。
         /// </summary>
-        private readonly Dictionary<string, UniTask<UIPackage>> m_LoadingTasks = new();
+        private readonly Dictionary<string, UniTaskCompletionSource<UIPackage>> m_LoadingTasks = new();
 
         /// <summary>
         /// 加载任务取消令牌源字典，key:包名，value：CTS。
@@ -107,10 +108,10 @@ namespace Hotfix.Framework.UI
                 return UniTask.FromResult(loadedPkg);
             }
 
-            // 如果已有正在加载的任务，直接返回任务
-            if (m_LoadingTasks.TryGetValue(pkgName, out var loadingTask))
+            // 并发去重：同路径加载中，共享完成源（UniTaskCompletionSource.Task 可被多个调用者 await）
+            if (m_LoadingTasks.TryGetValue(pkgName, out var sharedSource))
             {
-                return loadingTask;
+                return sharedSource.Task;
             }
 
             FuLogger.LogInfo($"[FuiPkgManager] 添加UIPackage包: {pkgName}");
@@ -119,24 +120,24 @@ namespace Hotfix.Framework.UI
             var cts = new CancellationTokenSource();
             m_LoadingCts[pkgName] = cts;
 
-            // 立即启动加载任务（async 同步执行到第一个 await，不 await 也会继续并最终清理）
-            var newTask = LoadPkgTaskAsync(pkgName, cts);
+            // 创建共享完成源并启动加载（不再直接返回 async UniTask，避免多调用者重复 await 报错）
+            var taskSource = new UniTaskCompletionSource<UIPackage>();
+            m_LoadingTasks[pkgName] = taskSource;
+            LoadPkgTaskAsync(pkgName, cts, taskSource).Forget();
 
-            // 记录正在加载的任务
-            m_LoadingTasks[pkgName] = newTask;
-            return newTask;
+            return taskSource.Task;
         }
 
         /// <summary>
-        /// 执行包加载任务（含依赖），完成后缓存。
+        /// 执行包加载任务（含依赖），完成后写入缓存并通过 taskSource 通知所有 await 者。
         /// 立即执行（async 同步到第一个 await，续体在 PlayerLoop 调度）：即使调用方丢弃任务也会跑完，
         /// finally 统一清理 m_LoadingTasks/m_LoadingCts 并 Dispose CTS——不会因丢弃任务而残留。
         /// 取消语义：任意 await 边界检查 cts 取消则抛异常，不写入 m_LoadedPkgDict。
         /// </summary>
         /// <param name="pkgName">包名。</param>
         /// <param name="cts">取消令牌源。</param>
-        /// <returns>加载完成的 UI 包实例。</returns>
-        private async UniTask<UIPackage> LoadPkgTaskAsync(string pkgName, CancellationTokenSource cts)
+        /// <param name="taskSource">共享完成源，完成时通知所有 await LoadPkgAsync 的调用者。</param>
+        private async UniTaskVoid LoadPkgTaskAsync(string pkgName, CancellationTokenSource cts, UniTaskCompletionSource<UIPackage> taskSource)
         {
             try
             {
@@ -149,7 +150,11 @@ namespace Hotfix.Framework.UI
                 // 缓存结果
                 m_LoadedPkgDict[pkgName] = pkg;
 
-                return pkg;
+                taskSource.TrySetResult(pkg);
+            }
+            catch (Exception e)
+            {
+                taskSource.TrySetException(e); // 失败：所有 await taskSource.Task 的调用者抛异常
             }
             finally
             {

@@ -32,10 +32,11 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, AssetHandle> m_HandleDict = new();
 
         /// <summary>
-        /// 正在加载中的任务去重字典，key为资源路径，value为加载任务。
-        /// 同一路径并发加载时共享任务，防止后完成句柄覆盖先完成句柄导致泄漏。
+        /// 正在加载中的任务去重字典，key为资源路径，value为共享完成源。
+        /// 同一路径并发加载时共享完成源（UniTaskCompletionSource.Task 可被多个调用者 await），
+        /// 防止后完成句柄覆盖先完成句柄导致泄漏，也避免 async UniTask 重复 await 报错。
         /// </summary>
-        private readonly Dictionary<string, UniTask<AssetHandle>> m_LoadingTasks = new();
+        private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
 
         /// <summary>
         /// 创建资源加载器
@@ -118,16 +119,23 @@ namespace Hotfix.Framework.Asset
                 existingHandle.Release();
             }
 
-            // 并发去重：同一路径正在加载，共享任务（防止后完成句柄覆盖先完成句柄导致泄漏）
-            if (m_LoadingTasks.TryGetValue(path, out var loadingTask))
-                return await loadingTask;
+            // 并发去重：同一路径正在加载，共享完成源（UniTaskCompletionSource.Task 可多次 await）
+            if (m_LoadingTasks.TryGetValue(path, out var sharedSource))
+                return await sharedSource.Task;
 
-            // 创建加载任务并注册（async 同步执行到第一个 await 后注册，保证并发请求共享同一任务）
-            var task = LoadAssetHandleCoreAsync(path, loadFunc);
-            m_LoadingTasks[path] = task;
+            // 创建共享完成源并注册，多个并发调用者 await 同一 Task
+            var taskSource = new UniTaskCompletionSource<AssetHandle>();
+            m_LoadingTasks[path] = taskSource;
             try
             {
-                return await task;
+                var handle = await LoadAssetHandleCoreAsync(path, loadFunc);
+                taskSource.TrySetResult(handle);
+                return handle;
+            }
+            catch (Exception e)
+            {
+                taskSource.TrySetException(e); // 失败：所有 await 此 Task 的调用者抛异常
+                throw;
             }
             finally
             {
