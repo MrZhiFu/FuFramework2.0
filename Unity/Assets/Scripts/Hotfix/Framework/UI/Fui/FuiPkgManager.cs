@@ -212,6 +212,10 @@ namespace Hotfix.Framework.UI
 
             // 并行加载所有依赖
             await UniTask.WhenAll(tasks);
+
+            // 依赖加载完成后，若包已被取消则中断（防止 AddPackage 后取消不被观察的残留窗口）
+            if (m_LoadingCts.TryGetValue(pkg.name, out var cts))
+                cts.Token.ThrowIfCancellationRequested();
         }
 
         /// <summary>
