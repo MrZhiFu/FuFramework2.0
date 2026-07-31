@@ -347,8 +347,9 @@ public void SubPkgRef(string pkgName)                   // 减少引用，递归
               归零时 UnloadAssets（释放纹理/音频）+ UnloadAll（释放 YooAsset 句柄，让 AssetBundle 可卸载）
 
 彻底卸载:
-  RemovePkg → 删元数据 + 卸资源 + FGUI 全局缓存移除，按引用数递归递减依赖包计数（不可恢复）
-  RemoveAllPkg → 全部 RemovePkg
+  RemovePkg → 删元数据 + UnloadAll（释放 YooAsset 句柄）+ FGUI 全局缓存移除，
+              按引用数递归递减依赖包计数（不可恢复）
+  RemoveAllPkg → 全部 RemovePkg（先取消加载中，再移除已加载）
 ```
 
 | 场景 | 包元数据 | 纹理/音频 |
@@ -363,11 +364,12 @@ public void SubPkgRef(string pkgName)                   // 减少引用，递归
 **内部调用链：**
 
 ```
-LoadPkgAsync (公共入口：缓存检查 + 去重 + 任务管理，UniTask.Defer 惰性执行)
-  └─ LoadPkgAndDepPkgAsync (自身 + 依赖)
-      ├─ LoadPkgInternalAsync (加载单个包自身)
-      │   └─ LoadDescAsync (加载 _fui.bytes) → UIPackage.AddPackage
-      └─ LoadDepPkgAsync (并行加载依赖包，跳过已加载/加载中防止循环死锁)
+LoadPkgAsync (公共入口：缓存检查 + 去重 + 任务管理，立即执行)
+  └─ LoadPkgTaskAsync (执行加载，完成后缓存；finally 清理任务/CTS 并 Dispose；丢弃任务不残留)
+      └─ LoadPkgAndDepPkgAsync (自身 + 依赖)
+          ├─ LoadPkgInternalAsync (加载单个包自身，含取消检查)
+          │   └─ LoadDescAsync (加载 _fui.bytes) → UIPackage.AddPackage
+          └─ LoadDepPkgAsync (并行加载依赖包，跳过已加载/加载中防循环死锁；完成后取消检查)
 ```
 
 **包加载流程：**
