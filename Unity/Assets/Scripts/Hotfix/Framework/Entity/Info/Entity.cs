@@ -45,14 +45,14 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityId">实体编号。</param>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroup">实体所属的实体组。</param>
-        /// <param name="isNewInstance">是否是新实例。</param>
+        /// <param name="isNewIns">是否是新实例。</param>
         /// <param name="showEntityInfoEx">显示的实体额外信息。</param>
-        public void OnInit(int entityId, string entityAssetName, EntityGroup entityGroup, bool isNewInstance, ShowEntityInfoEx showEntityInfoEx)
+        public void OnInit(int entityId, string entityAssetName, EntityGroup entityGroup, bool isNewIns, ShowEntityInfoEx showEntityInfoEx)
         {
             Id              = entityId;
             EntityAssetName = entityAssetName;
 
-            if (isNewInstance)
+            if (isNewIns)
             {
                 EntityGroup = entityGroup;
             }

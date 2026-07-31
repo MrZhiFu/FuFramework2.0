@@ -1013,10 +1013,10 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroup">实体组。</param>
         /// <param name="entityInstance">实体实例。</param>
-        /// <param name="isNewInstance">是否是新实例。</param>
+        /// <param name="isNewIns">是否是新实例。</param>
         /// <param name="progress">加载进度。</param>
         /// <param name="showEntityInfoEx">显示的实体额外信息。</param>
-        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewInstance, float progress,
+        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewIns, float progress,
                                         ShowEntityInfoEx showEntityInfoEx)
         {
             try
@@ -1036,7 +1036,7 @@ namespace Hotfix.Framework.Entity
 
                 // 实体初始化
                 entityInfo.Status = EEntityStatus.WillInit;
-                entity.OnInit(entityId, entityAssetName, entityGroup, isNewInstance, showEntityInfoEx);
+                entity.OnInit(entityId, entityAssetName, entityGroup, isNewIns, showEntityInfoEx);
 
                 // 实体初始化完成，加入到实体组
                 entityInfo.Status = EEntityStatus.Inited;
