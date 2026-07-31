@@ -379,10 +379,11 @@ namespace Hotfix.Framework.UI
         {
             // 1.如果是正在加载的包，取消正在加载的任务
             //   （加载中的包 GetByName 为 null，必须先于第 2 步处理）
+            //   注意：只 Cancel 不移除 m_LoadingCts——任务续体需检查到已取消的 token 才能正确中断；
+            //   m_LoadingCts/m_LoadingTasks 由 LoadPkgTaskAsync 的 finally 清理，此处移除会使取消检查失效。
             if (m_LoadingCts.TryGetValue(pkgName, out var cts))
             {
                 cts.Cancel();
-                m_LoadingCts.Remove(pkgName);
                 FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
                 return;
             }
