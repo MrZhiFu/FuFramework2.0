@@ -166,7 +166,7 @@ namespace Hotfix.Framework.Asset
         private static UniTask<T> CreateHandleTask<T>(Func<T> load, Action<T, UniTaskCompletionSource<T>> bind) where T : HandleBase
         {
             var taskCompletionSource = new UniTaskCompletionSource<T>();
-            T handle = null;
+            T   handle               = null;
             try
             {
                 handle = load();
@@ -178,6 +178,7 @@ namespace Hotfix.Framework.Asset
                 handle?.Release();
                 taskCompletionSource.TrySetException(e);
             }
+
             return taskCompletionSource.Task;
         }
 
@@ -559,7 +560,7 @@ namespace Hotfix.Framework.Asset
         public ResourceDownloaderOperation CreateResourceDownloader(params string[] tags)
         {
             if (tags == null || tags.Length == 0)
-                return GetDefaultPackage().CreateResourceDownloader(new ResourceDownloaderOptions(DownloadingMaxNum, FailedTryAgainNum)); // 全部
+                return GetDefaultPackage().CreateResourceDownloader(new ResourceDownloaderOptions(DownloadingMaxNum, FailedTryAgainNum));   // 全部
             return GetDefaultPackage().CreateResourceDownloader(new ResourceDownloaderOptions(tags, DownloadingMaxNum, FailedTryAgainNum)); // 按标签
         }
 
@@ -575,7 +576,7 @@ namespace Hotfix.Framework.Asset
         public void UnloadAsset(string assetPath)
         {
             assetPath.NotNull(nameof(assetPath));
-            if (!YooAssets.IsInitialized) return; // YooAssets 未初始化（全局销毁后），防御不抛
+            if (!YooAssets.IsInitialized) return;                                      // YooAssets 未初始化（全局销毁后），防御不抛
             if (!YooAssets.TryGetPackage(DefaultPackageName, out var package)) return; // 包不存在/已销毁时不抛异常
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -590,7 +591,7 @@ namespace Hotfix.Framework.Asset
         {
             packageName.NotNull(nameof(packageName));
             assetPath.NotNull(nameof(assetPath));
-            if (!YooAssets.IsInitialized) return; // YooAssets 未初始化（全局销毁后），防御不抛
+            if (!YooAssets.IsInitialized) return;                               // YooAssets 未初始化（全局销毁后），防御不抛
             if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             package.TryUnloadUnusedAsset(assetPath);
         }
@@ -603,7 +604,7 @@ namespace Hotfix.Framework.Asset
         public async UniTaskVoid UnloadUnusedAssetsAsync(string packageName)
         {
             packageName.NotNull(nameof(packageName));
-            if (!YooAssets.IsInitialized) return; // YooAssets 未初始化（全局销毁后），防御不抛
+            if (!YooAssets.IsInitialized) return;                               // YooAssets 未初始化（全局销毁后），防御不抛
             if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             await package.UnloadUnusedAssetsAsync();
         }
@@ -630,7 +631,7 @@ namespace Hotfix.Framework.Asset
         public async UniTaskVoid ClearAllBundleFilesAsync(string packageName)
         {
             packageName.NotNull(nameof(packageName));
-            if (!YooAssets.IsInitialized) return; // YooAssets 未初始化（全局销毁后），防御不抛
+            if (!YooAssets.IsInitialized) return;                               // YooAssets 未初始化（全局销毁后），防御不抛
             if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             await package.ClearCacheAsync(new ClearCacheOptions("ClearAllBundleFiles"));
         }
@@ -642,7 +643,7 @@ namespace Hotfix.Framework.Asset
         public async UniTaskVoid ClearUnusedBundleFilesAsync(string packageName)
         {
             packageName.NotNull(nameof(packageName));
-            if (!YooAssets.IsInitialized) return; // YooAssets 未初始化（全局销毁后），防御不抛
+            if (!YooAssets.IsInitialized) return;                               // YooAssets 未初始化（全局销毁后），防御不抛
             if (!YooAssets.TryGetPackage(packageName, out var package)) return; // 包不存在/已销毁时不抛异常
             await package.ClearCacheAsync(new ClearCacheOptions("ClearUnusedBundleFiles"));
         }

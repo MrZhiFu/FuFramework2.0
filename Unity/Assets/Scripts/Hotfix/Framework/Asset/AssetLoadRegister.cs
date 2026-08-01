@@ -50,7 +50,7 @@ namespace Hotfix.Framework.Asset
         public static AssetLoadRegister Create()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            var register  = ReferencePool.Acquire<AssetLoadRegister>();
+            var register = ReferencePool.Acquire<AssetLoadRegister>();
             register.m_Released = false;
             return register;
         }
