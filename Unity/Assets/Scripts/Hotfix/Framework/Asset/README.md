@@ -139,6 +139,10 @@ loader.UnloadAll();
 loader.Release();
 ```
 
+> **实例化释放契约**：`AssetLoadRegister.InstantiateAsync` 返回的实例销毁时**不会自动释放**资源——
+> 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.Release()`（loader 生命周期管理）。
+> 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(path)`，按引用计数释放）。
+
 ### EPatchStates
 
 补丁系统更新状态枚举：
