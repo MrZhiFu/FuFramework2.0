@@ -1,6 +1,7 @@
 using YooAsset;
 using UnityEngine;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Asset;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
@@ -67,7 +68,9 @@ namespace Hotfix.Framework.Entity
                 return;
             }
 
+            var assetPath = assetOperationHandle.GetAssetInfo().AssetPath; // 释放前取路径（_assetInfo 为构造时缓存）
             assetOperationHandle.Release();
+            ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 池淘汰后显式卸载，避免 bundle 残留（AutoUnload 默认关闭）
             Destroy(entityInstance as Object);
         }
     }

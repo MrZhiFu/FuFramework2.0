@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using YooAsset;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
@@ -36,6 +37,12 @@ namespace Hotfix.Framework.Sound
             /// 声音资源。
             /// </summary>
             private object m_SoundAsset;
+
+            /// <summary>
+            /// 声音资源句柄。随播放持有，Reset 时释放（先于 UnloadAsset，使引用计数归零后可真正卸载）。
+            /// 同一路径并发播放时各自持有句柄，互不影响。
+            /// </summary>
+            private AssetHandle m_SoundAssetHandle;
 
             /// <summary>
             /// 在声音组内是否静音。
@@ -226,10 +233,11 @@ namespace Hotfix.Framework.Sound
                 soundGroup.NotNull(nameof(soundGroup));
                 m_AssetModule = ModuleManager.GetModule<AssetModule>();
 
-                m_SoundGroup   = soundGroup;
-                SerialId       = 0;
-                SoundAssetPath = null;
-                m_SoundAsset   = null;
+                m_SoundGroup       = soundGroup;
+                SerialId           = 0;
+                SoundAssetPath     = null;
+                m_SoundAsset       = null;
+                m_SoundAssetHandle = null;
                 Reset();
             }
 
@@ -274,12 +282,14 @@ namespace Hotfix.Framework.Sound
             /// 设置声音资源。
             /// </summary>
             /// <param name="soundAsset">声音资源。</param>
+            /// <param name="soundAssetHandle">声音资源句柄（随播放持有，Reset 时释放）。</param>
             /// <returns>是否设置声音资源成功。</returns>
-            internal bool SetSoundAsset(object soundAsset)
+            internal bool SetSoundAsset(object soundAsset, AssetHandle soundAssetHandle)
             {
                 Reset();
-                m_SoundAsset      = soundAsset;
-                SetSoundAssetTime = DateTime.UtcNow;
+                m_SoundAsset       = soundAsset;
+                m_SoundAssetHandle = soundAssetHandle;
+                SetSoundAssetTime  = DateTime.UtcNow;
 
                 var audioClip = soundAsset as AudioClip;
                 if (!audioClip) return false;
@@ -339,7 +349,10 @@ namespace Hotfix.Framework.Sound
                 if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
                     StartCoroutine(StopCo(fadeOutSeconds));
                 else
+                {
                     m_AudioSource.Stop();
+                    Reset(); // 停止后释放资源句柄，避免 bundle 残留（否则句柄持有到 agent 复用）
+                }
             }
 
             /// <summary>
@@ -375,6 +388,13 @@ namespace Hotfix.Framework.Sound
             /// </summary>
             public void Reset()
             {
+                // 先释放句柄再卸载资源：句柄不释放则 provider.RefCount 不为 0，UnloadAsset 的 TryUnloadUnusedAsset 永不生效
+                if (m_SoundAssetHandle != null)
+                {
+                    m_SoundAssetHandle.Release();
+                    m_SoundAssetHandle = null;
+                }
+
                 if (m_SoundAsset != null)
                 {
                     m_AssetModule.UnloadAsset(SoundAssetPath);
@@ -442,6 +462,7 @@ namespace Hotfix.Framework.Sound
             {
                 yield return FadeToVolume(m_AudioSource, 0f, fadeOutSeconds);
                 m_AudioSource.Stop();
+                Reset(); // 淡出完成后释放资源句柄
             }
 
             /// <summary>

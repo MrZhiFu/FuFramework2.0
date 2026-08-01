@@ -158,12 +158,15 @@ namespace Hotfix.Framework.Sound
 
                 if (!candidateAgent)
                 {
+                    playSoundInfo.SoundAssetHandle?.Release(); // 未被任何代理接管，释放句柄
                     errorCode = EPlaySoundErrorCode.IgnoredBecauseLowPriority;
                     return null;
                 }
 
-                if (!candidateAgent.SetSoundAsset(playSoundInfo.SoundAsset))
+                if (!candidateAgent.SetSoundAsset(playSoundInfo.SoundAsset, playSoundInfo.SoundAssetHandle))
                 {
+                    // SetSoundAsset 内部已 Reset（释放旧句柄），新句柄未被接管，需释放
+                    playSoundInfo.SoundAssetHandle?.Release();
                     errorCode = EPlaySoundErrorCode.SetSoundAssetFailure;
                     return null;
                 }

@@ -351,17 +351,23 @@ namespace Hotfix.Framework.Sound
 
             m_LoadingSoundList.Add(newSerialId);
 
-            // 加载声音资源
-            var assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
-            assetOperationHandle.Completed += OnAssetOperationHandleOnCompleted;
-            return newSerialId;
-
-            // 加载声音资源完成回调
-            void OnAssetOperationHandleOnCompleted(AssetHandle assetHandle)
+            // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
+            try
             {
-                var assetObject   = assetHandle.GetAssetObject<AudioClip>();
-                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
+                var assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
+                var assetObject          = assetOperationHandle.GetAssetObject<AudioClip>();
+                // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
+                // 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
+                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, assetOperationHandle, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
                 LoadAssetSuccessCallback(playSoundInfo);
+                return newSerialId;
+            }
+            catch
+            {
+                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试
+                m_LoadingSoundList.Remove(newSerialId);
+                m_LoadingToReleaseSet.Remove(newSerialId);
+                throw;
             }
         }
 
@@ -496,6 +502,7 @@ namespace Hotfix.Framework.Sound
                 if (playSoundInfo.SoundParams3D != null)
                     ReferencePool.Release(playSoundInfo.SoundParams3D);
 
+                playSoundInfo.SoundAssetHandle?.Release(); // 加载中被丢弃，句柄未上代理，释放之
                 m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
                 ReferencePool.Release(playSoundInfo);
                 return;
@@ -590,11 +597,20 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         private async UniTaskVoid LoadAudioMixerAsync()
         {
-            var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath);
-            if (handle.IsDone)
-                m_AudioMixer = handle.GetAssetObject<AudioMixer>();
-            else
-                FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath}");
+            try
+            {
+                var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath);
+                if (handle.Status == EOperationStatus.Succeeded)
+                    m_AudioMixer = handle.GetAssetObject<AudioMixer>();
+                else
+                    FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath} - {handle.Error}");
+
+                handle.Release(); // 释放句柄，AudioMixer 对象已由 m_AudioMixer 持有
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AudioMixerAssetPath} - {e.Message}");
+            }
         }
     }
 }

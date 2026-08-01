@@ -63,7 +63,12 @@ namespace Hotfix.Framework.UI
 
             // NTexture.Dispose() 内部已调用 DestroyImmediate 销毁 native 纹理
             entry.Texture?.Dispose();
-            entry.AssetHandle?.Release();
+            if (entry.AssetHandle != null)
+            {
+                var assetPath = entry.AssetHandle.GetAssetInfo().AssetPath; // 释放前取路径
+                entry.AssetHandle.Release();
+                ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 淘汰后显式卸载，避免 bundle 残留
+            }
         }
 
         /// <summary>
@@ -129,8 +134,10 @@ namespace Hotfix.Framework.UI
                         texture2D = assetHandle.GetAssetObject<Texture2D>();
                         if (texture2D.IsNull())
                         {
-                            // 资源存在但不是Texture2D类型，释放句柄
+                            // 资源存在但不是Texture2D类型：bundle 已加载，释放句柄并显式卸载避免残留
+                            var assetPath = assetHandle.GetAssetInfo().AssetPath;
                             assetHandle.Release();
+                            m_AssetModule.UnloadAsset(assetPath);
                             assetHandle = null;
                         }
                     }

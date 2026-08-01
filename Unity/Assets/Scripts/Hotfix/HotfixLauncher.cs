@@ -203,7 +203,9 @@ namespace Hotfix
         {
             var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
-            return ByteBuf.Wrap(assetHandle.GetAssetObject<TextAsset>().bytes);
+            var bytes      = assetHandle.GetAssetObject<TextAsset>().bytes;
+            assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+            return ByteBuf.Wrap(bytes);
         }
 #else
         /// <summary>
@@ -215,7 +217,9 @@ namespace Hotfix
         {
             var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
-            return JSON.Parse(assetHandle.GetAssetObject<TextAsset>().text);
+            var text        = assetHandle.GetAssetObject<TextAsset>().text;
+            assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+            return JSON.Parse(text);
         }
 #endif
     }

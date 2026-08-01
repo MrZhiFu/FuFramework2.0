@@ -502,19 +502,35 @@ namespace Hotfix.Framework.Entity
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
-                var assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName);
-                assetOperationHandle.Completed += handle =>
+                try
                 {
-                    // 实体信息
-                    var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
+                    var assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName);
+                    assetOperationHandle.Completed += handle =>
+                    {
+                        // 实体信息
+                        var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
 
-                    if (handle.IsDone)
-                        LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
-                    else
-                        LoadAssetFailureCallback(tcs, entityAssetName, handle.Status, handle.Error, showEntityInfo);
-                };
+                        // 用 Status 而非 IsDone 判断成功（失败句柄 IsDone 同样为 true，会误走成功回调）
+                        if (handle.Status == EOperationStatus.Succeeded)
+                            LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
+                        else
+                        {
+                            var status       = handle.Status;
+                            var errorMessage = handle.Error;
+                            handle.Release(); // 失败句柄未被实体系统接管，释放避免残留
+                            LoadAssetFailureCallback(tcs, entityAssetName, status, errorMessage, showEntityInfo);
+                        }
+                    };
 
-                return await tcs.Task;
+                    return await tcs.Task;
+                }
+                catch
+                {
+                    // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试（否则 IsLoadingEntity 恒 true）
+                    m_LoadingEntityDict.Remove(entityId);
+                    m_LoadingToReleaseSet.Remove(serialId);
+                    throw;
+                }
             }
 
             // 实体资源已经加载完成，开始显示实体

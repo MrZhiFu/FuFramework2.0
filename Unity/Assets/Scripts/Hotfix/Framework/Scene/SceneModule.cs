@@ -54,6 +54,13 @@ namespace Hotfix.Framework.Scene
         /// <summary>
         /// 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
         /// </summary>
+        /// <summary>
+        /// 正在加载中的场景路径集合（await 前置位）。
+        /// m_LoadingSceneDict 需在 await 完成后拿到 SceneHandle 才登记，await 期间无法拦截并发同路径加载；
+        /// 此集合在 await 前占位，杜绝并发重复加载导致 Dictionary.Add 抛重复 key。
+        /// </summary>
+        private readonly HashSet<string> m_LoadingSceneSet = new();
+
         private readonly Dictionary<string, SceneHandle> m_LoadedSceneDict = new();
 
         /// <summary>
@@ -140,7 +147,8 @@ namespace Hotfix.Framework.Scene
                 return false;
             }
 
-            return m_AssetModule.LoadSceneAsync(sceneAssetPath, LoadSceneMode.Single).Status != UniTaskStatus.Faulted;
+            // 仅做资源存在性检查，绝不能用 LoadSceneAsync（会真正触发一次场景加载，且句柄无法释放）
+            return m_AssetModule.HasAssetPath(sceneAssetPath);
         }
 
         /// <summary>
@@ -162,7 +170,7 @@ namespace Hotfix.Framework.Scene
         public bool IsLoading(string sceneAssetPath)
         {
             if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
-            return m_LoadingSceneDict.ContainsKey(sceneAssetPath);
+            return m_LoadingSceneSet.Contains(sceneAssetPath) || m_LoadingSceneDict.ContainsKey(sceneAssetPath);
         }
 
         /// <summary>
@@ -330,10 +338,19 @@ namespace Hotfix.Framework.Scene
             if (IsLoaded(sceneAssetPath))
                 throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 已被加载过，不能重复加载!");
 
-            var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode);
-            m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
-            sceneOperationHandle.Completed += OnLoadSceneCompleted;
-            return sceneOperationHandle;
+            // await 前置位：先登记 loading 状态拦截并发同路径加载（m_LoadingSceneDict 需 await 完成拿到 handle 才能登记）
+            m_LoadingSceneSet.Add(sceneAssetPath);
+            try
+            {
+                var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode);
+                m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
+                sceneOperationHandle.Completed += OnLoadSceneCompleted;
+                return sceneOperationHandle;
+            }
+            finally
+            {
+                m_LoadingSceneSet.Remove(sceneAssetPath); // 成功/异常均移除占位
+            }
         }
 
         #endregion
@@ -422,23 +439,26 @@ namespace Hotfix.Framework.Scene
             sceneHandle.NotNull(nameof(sceneHandle));
 
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
-            m_LoadedSceneDict.Add(assetPath, sceneHandle);
             m_LoadingSceneDict.Remove(assetPath, out var sceneHandleData);
 
             if (sceneHandleData == null) return;
-            if (sceneHandle.IsDone)
+            if (sceneHandle.Status == EOperationStatus.Succeeded)
             {
-                // 加载成功
+                // 加载成功：登记已加载字典（失败不登记，否则 IsLoaded 恒 true 导致无法重试）
+                m_LoadedSceneDict.Add(assetPath, sceneHandle);
                 FuLogger.LogInfo($"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 成功！");
                 var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
                 EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
             }
             else
             {
-                // 加载失败
-                var errorMessage = $"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.";
+                // 加载失败：先读取状态信息，再释放句柄（避免 provider/句柄残留，场景未加载时 YooAsset 无法自动回收）
+                var sceneName    = sceneHandle.SceneName;
+                var status       = sceneHandle.Status;
+                var errorMessage = $"[SceneModule] 加载场景 '{sceneName}' 失败!, 加载状态 '{status}', 错误信息 '{sceneHandle.Error}'.";
                 FuLogger.LogError(errorMessage);
-                var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneHandle.SceneName, sceneHandle.Status, errorMessage, sceneHandleData.UserData);
+                sceneHandle.Release();
+                var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneName, status, errorMessage, sceneHandleData.UserData);
                 EventRegister.Broadcast(this, loadSceneFailureEventArgs);
             }
         }
