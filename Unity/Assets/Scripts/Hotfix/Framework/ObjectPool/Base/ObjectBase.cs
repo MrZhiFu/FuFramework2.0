@@ -1,6 +1,6 @@
 using System;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.ObjectPool

@@ -7,7 +7,7 @@ using Hotfix.Framework.Asset;
 using Hotfix.Framework.Procedure;
 
 using Hotfix.Framework.ObjectPool;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace

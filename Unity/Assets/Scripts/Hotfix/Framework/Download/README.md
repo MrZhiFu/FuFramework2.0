@@ -244,7 +244,7 @@ Download/
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类、TaskPool 任务池
 - **Hotfix.Framework.Event**：事件系统
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 - **UniTask**：异步支持
 
 ## 8. 注意事项

@@ -507,7 +507,7 @@ Entity/
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类、FuLogger
 - **Hotfix.Framework.Event**：事件系统
 - **Hotfix.Framework.ObjectPool**：对象池管理
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 - **Hotfix.Framework.Asset**：资源加载
 - **Hotfix.Framework.Config**：配置表（EntityGroup 配置）
 - **UniTask**：异步加载支持

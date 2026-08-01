@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Variable;
 
 // ReSharper disable once CheckNamespace

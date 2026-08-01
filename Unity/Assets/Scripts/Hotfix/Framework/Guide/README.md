@@ -352,7 +352,7 @@ Guide/
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类
 - **Hotfix.Framework.Config**：配置表系统（TbGuide、TbGuideStep）
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 - **Hotfix.Framework.UI**：FairyGUI UI 管理
 - **FairyGUI**：引导 UI 渲染
 - **UniTask**：异步操作支持

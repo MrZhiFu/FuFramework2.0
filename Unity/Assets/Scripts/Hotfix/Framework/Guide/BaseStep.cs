@@ -1,5 +1,5 @@
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 using Hotfix.Game.Config.Tables;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentlySynchronizedField
-namespace Hotfix.Framework.ReferencePools
+namespace Hotfix.Framework.ReferencePool
 {
     public sealed partial class ReferencePoolModule
     {

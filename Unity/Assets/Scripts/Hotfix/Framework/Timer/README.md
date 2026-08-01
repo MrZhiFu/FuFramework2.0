@@ -11,7 +11,7 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 - **完整生命周期管理**：启动、暂停、恢复、停止等完整操作
 - **时间缩放控制**：支持忽略时间缩放，适用于UI动画等场景
 - **抗时间跳跃**：处理卡顿情况，确保计时准确性
-- **对象池管理**：使用 ReferencePools 实现对象复用
+- **对象池管理**：使用 ReferencePool 实现对象复用
 - **模块化设计**：支持 TimerRegister 进行分组管理
 
 ## 2. 系统架构
@@ -467,7 +467,7 @@ Timer/
 
 ### 7.4 对象池管理
 
-所有计时器类实现 `IReference` 接口，通过 ReferencePools 管理对象生命周期，减少 GC 压力。
+所有计时器类实现 `IReference` 接口，通过 ReferencePool 管理对象生命周期，减少 GC 压力。
 
 ### 7.5 分组管理
 

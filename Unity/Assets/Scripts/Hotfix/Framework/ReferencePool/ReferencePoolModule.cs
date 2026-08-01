@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ReferencePools
+namespace Hotfix.Framework.ReferencePool
 {
     /// <summary>
     /// 引用池管理模块。

@@ -600,7 +600,7 @@ Event/
 
 - Unity  : 2021.3 LTS 或更高版本
 - Hotfix.Framework.Core  : 框架核心模块
-- Hotfix.Framework.ReferencePools  : 引用池模块
+- Hotfix.Framework.ReferencePool  : 引用池模块
 
 ***
 

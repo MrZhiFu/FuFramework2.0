@@ -929,7 +929,7 @@ Hotfix.Framework/UI/
 - **Event**: 提供事件系统支持
 - **Timer**: 提供计时器功能
 - **ObjectPool**: 提供对象池管理
-- **ReferencePools**: 提供引用池管理
+- **ReferencePool**: 提供引用池管理
 - **Asset**: 提供资源加载功能
 - **Localization**: 提供本地化支持
 - **FairyGUI**: UI 框架

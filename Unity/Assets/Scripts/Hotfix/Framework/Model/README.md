@@ -233,7 +233,7 @@ Model/
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类
 - **Hotfix.Framework.Event**：事件系统
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 - **Hotfix.Framework.Storage**：本地存储（BaseSerializerModel 持久化）
 - **Newtonsoft.Json**（外部）：JSON 序列化
 

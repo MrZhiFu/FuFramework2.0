@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ReferencePools
+namespace Hotfix.Framework.ReferencePool
 {
     /// <summary>
     /// 引用池信息。

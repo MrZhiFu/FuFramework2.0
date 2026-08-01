@@ -284,7 +284,7 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 - [UniTask](https://github.com/Cysharp/UniTask) - 异步编程支持
 - Hotfix.Framework.Core - 框架核心模块
 - Hotfix.Framework.Event - 事件系统
-- Hotfix.Framework.ReferencePools - 引用池系统
+- Hotfix.Framework.ReferencePool - 引用池系统
 
 ## 9. 注意事项
 

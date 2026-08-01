@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Sound

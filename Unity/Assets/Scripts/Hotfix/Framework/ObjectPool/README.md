@@ -325,7 +325,7 @@ public delegate List<T> ReleaseObjectFilterCallback<T>(
 ```csharp
 using Hotfix.Framework.Core;
 using Hotfix.Framework.ObjectPool;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 // 定义子弹对象类
@@ -578,7 +578,7 @@ ObjectPool/
 | 模块                        | 说明                                               |
 | ------------------------- | ------------------------------------------------ |
 | Hotfix.Framework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuException、FuLogger |
-| Hotfix.Framework.ReferencePools | 提供 IReference 接口与 ReferencePoolModule             |
+| Hotfix.Framework.ReferencePool | 提供 IReference 接口与 ReferencePoolModule             |
 
 ## 8. 最佳实践
 

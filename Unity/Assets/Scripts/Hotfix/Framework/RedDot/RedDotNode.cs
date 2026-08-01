@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using Hotfix.Game.Config;
 using Hotfix.Framework.Core;
 using RedDotRow = Hotfix.Game.Config.Tables.RedDot;

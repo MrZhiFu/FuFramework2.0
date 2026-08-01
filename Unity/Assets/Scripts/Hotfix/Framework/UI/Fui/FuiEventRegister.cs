@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FairyGUI;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查

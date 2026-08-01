@@ -301,7 +301,7 @@ public enum EStartTaskStatus : byte
 ```csharp
 using Hotfix.Framework.Core;
 using Hotfix.Framework.TaskPool;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 
 public class TaskPoolExample : MonoBehaviour
 {
@@ -435,7 +435,7 @@ TaskPool/
 ### 7.3 资源复用
 
 - 任务代理通过栈结构复用，避免频繁创建销毁
-- 任务对象通过 ReferencePools 管理，减少 GC 压力
+- 任务对象通过 ReferencePool 管理，减少 GC 压力
 
 ### 7.4 状态驱动
 
@@ -453,6 +453,6 @@ TaskPool/
 
 1. **线程安全**：TaskPool 设计为单线程使用，需在主线程调用 Update
 2. **代理数量**：合理设置代理数量，过多会占用资源，过少会降低并发度
-3. **任务清理**：完成的任务会自动释放回 ReferencePools，无需手动处理
+3. **任务清理**：完成的任务会自动释放回 ReferencePool，无需手动处理
 4. **暂停机制**：暂停后不会处理新任务，但正在执行的任务会继续直到完成
 5. **错误处理**：通过 EStartTaskStatus.UnknownError 标记错误任务，会自动释放

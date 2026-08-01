@@ -295,7 +295,7 @@ Sound/
 - **Hotfix.Framework.Event**：事件系统
 - **Hotfix.Framework.Asset**：音频资源加载
 - **Hotfix.Framework.ObjectPool**：SoundAgent 对象池
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 
 ## 8. 最佳实践
 

@@ -6,7 +6,7 @@ using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using Utility = Hotfix.Framework.Core.Utility;
 
 

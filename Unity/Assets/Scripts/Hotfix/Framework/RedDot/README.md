@@ -271,7 +271,7 @@ RedDot/
 
 - **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`、`GlobalModule`
 - **Hotfix.Framework.Config**：配置表系统（`ConfigModule`、Luban `TbRedDot`）
-- **Hotfix.Framework.ReferencePools**：引用池（`ReferencePool`）
+- **Hotfix.Framework.ReferencePool**：引用池（`ReferencePool`）
 - **Hotfix.Framework.Event**：事件系统（`EventModule`、`GameEventArgs`）
 - **Hotfix.Framework.Storage**：本地存储（`StorageModule`，用于已读持久化）
 - **Hotfix.Game.Config**：配置表枚举（`ERedDotKey`、`ERedDotLogicType`、`ERedDotCleanStrategy`、`ERedDotDisplayMode`）

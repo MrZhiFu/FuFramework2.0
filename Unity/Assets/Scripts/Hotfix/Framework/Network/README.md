@@ -327,7 +327,7 @@ Network/
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类、数据结构、工具方法
 - **Hotfix.Framework.Event**：事件系统
-- **Hotfix.Framework.ReferencePools**：引用池
+- **Hotfix.Framework.ReferencePool**：引用池
 - **UniTask**：异步 RPC 支持
 
 ## 8. 最佳实践

@@ -318,7 +318,7 @@ public readonly struct ReferencePoolInfo
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 
 /// <summary>
 /// 网络消息类 - 实现 IReference 接口支持引用池
@@ -355,7 +355,7 @@ public class NetworkMessage : IReference
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 public class ReferencePoolExample : MonoBehaviour
@@ -381,7 +381,7 @@ public class ReferencePoolExample : MonoBehaviour
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 public class NetworkMessageSystem : MonoBehaviour
@@ -454,7 +454,7 @@ public class NetworkMessageSystem : MonoBehaviour
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 // 游戏事件基类
@@ -541,7 +541,7 @@ public class EventSystem : MonoBehaviour
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 public class ReferencePoolMonitor : MonoBehaviour
@@ -589,7 +589,7 @@ public class ReferencePoolMonitor : MonoBehaviour
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 /// <summary>
@@ -636,7 +636,7 @@ public class SafeObjectUsage : MonoBehaviour
 ## 6. 目录结构
 
 ```
-ReferencePools/
+ReferencePool/
 ├── ReferencePoolModule.cs                       # 引用池管理模块
 ├── ReferencePoolModule.ReferenceCollection.cs   # 引用集合实现（Stack）
 ├── IReference.cs                                # 引用接口
@@ -657,7 +657,7 @@ ReferencePools/
 ### 8.1 实现 IReference 规范
 
 ```csharp
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 
 public class MyReference : IReference
 {
@@ -687,7 +687,7 @@ public class MyReference : IReference
 
 ```csharp
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 
 public class ObjectPoolManager : MonoBehaviour
