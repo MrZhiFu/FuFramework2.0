@@ -356,8 +356,7 @@ namespace Hotfix.Framework.Asset
             else
             {
                 // 并发首次加载去重：同路径共享加载任务（防覆盖句柄泄漏）
-                UniTask<AssetHandle> loadingTask;
-                if (!m_InstantiateLoadingTasks.TryGetValue(path, out loadingTask))
+                if (!m_InstantiateLoadingTasks.TryGetValue(path, out var loadingTask))
                 {
                     loadingTask                     = LoadAssetAsync(path);
                     m_InstantiateLoadingTasks[path] = loadingTask;
