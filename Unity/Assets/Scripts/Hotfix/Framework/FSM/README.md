@@ -370,6 +370,8 @@ public class PlayerController : MonoBehaviour
 ### 5.3 使用状态机数据
 
 ```csharp
+using Hotfix.Framework.Core;
+
 // 定义状态数据
 public class EnemyAIState : FsmStateBase
 {
@@ -380,7 +382,7 @@ public class EnemyAIState : FsmStateBase
         // 初始化数据
         VarFloat detectionRange = 10f;
         VarFloat attackRange = 2f;
-        VarObject patrolPoints = ReferencePool.Acquire<VarObject>();
+        VarObject patrolPoints = GlobalModule.ReferencePoolModule.Acquire<VarObject>();
         patrolPoints.Value = new GameObject[4];
 
         Fsm.SetData("DetectionRange", detectionRange);

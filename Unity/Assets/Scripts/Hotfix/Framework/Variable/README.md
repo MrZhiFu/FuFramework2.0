@@ -131,6 +131,8 @@ public override string ToString() => Value != null ? Value.ToString() : "<Null>"
 **典型实现模式（带隐式转换）：**
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public sealed class VarInt32 : GenericVariable<int>
 {
     public VarInt32() { }
@@ -138,7 +140,7 @@ public sealed class VarInt32 : GenericVariable<int>
     // 从原生类型到变量类的隐式转换
     public static implicit operator VarInt32(int value)
     {
-        var varValue = ReferencePool.Acquire<VarInt32>();
+        var varValue = GlobalModule.ReferencePoolModule.Acquire<VarInt32>();
         varValue.Value = value;
         return varValue;
     }
@@ -151,6 +153,8 @@ public sealed class VarInt32 : GenericVariable<int>
 **VarObject 特殊实现（无隐式转换）：**
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public sealed class VarObject : GenericVariable<object>
 {
     public VarObject() { }
@@ -158,7 +162,7 @@ public sealed class VarObject : GenericVariable<object>
 }
 
 // 使用方式
-var objVar = ReferencePool.Acquire<VarObject>();
+var objVar = GlobalModule.ReferencePoolModule.Acquire<VarObject>();
 objVar.Value = anyObject;
 ```
 
@@ -219,6 +223,7 @@ objVar.Value = anyObject;
 ### 5.1 基本使用流程
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.Variable;
 using UnityEngine;
 
@@ -243,18 +248,18 @@ public class VariableExample : MonoBehaviour
         Debug.Log($"Vector: {vectorVar}");
         
         // 使用引用池获取变量
-        var pooledVar = ReferencePool.Acquire<VarInt32>();
+        var pooledVar = GlobalModule.ReferencePoolModule.Acquire<VarInt32>();
         pooledVar.Value = 200;
         Debug.Log($"Pooled Value: {pooledVar.Value}");
         
         // 释放回引用池
-        ReferencePool.Release(pooledVar);
+        GlobalModule.ReferencePoolModule.Release(pooledVar);
         
         // VarObject 使用（无隐式转换）
-        var objVar = ReferencePool.Acquire<VarObject>();
+        var objVar = GlobalModule.ReferencePoolModule.Acquire<VarObject>();
         objVar.Value = new { Name = "Test", Id = 1 };
         Debug.Log($"Object Value: {objVar.Value}");
-        ReferencePool.Release(objVar);
+        GlobalModule.ReferencePoolModule.Release(objVar);
     }
 }
 ```
@@ -262,17 +267,19 @@ public class VariableExample : MonoBehaviour
 ### 5.2 使用引用池优化
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public void ProcessVariables()
 {
     // 推荐：使用引用池获取变量
-    var tempVar = ReferencePool.Acquire<VarInt32>();
+    var tempVar = GlobalModule.ReferencePoolModule.Acquire<VarInt32>();
     tempVar.Value = 100;
     
     // 使用变量...
     ProcessValue(tempVar.Value);
     
     // 使用后释放回引用池
-    ReferencePool.Release(tempVar);
+    GlobalModule.ReferencePoolModule.Release(tempVar);
 }
 
 // 不推荐：频繁创建新实例（产生GC压力）
@@ -288,6 +295,7 @@ public void ProcessVariablesBad()
 ### 5.3 事件系统数据传递
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
 public class PlayerLevelUpEventArgs : GameEventArgs
@@ -301,7 +309,7 @@ public class PlayerLevelUpEventArgs : GameEventArgs
     
     public static PlayerLevelUpEventArgs Create(int oldLevel, int newLevel, string playerName)
     {
-        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
+        var args = GlobalModule.ReferencePoolModule.Acquire<PlayerLevelUpEventArgs>();
         args.OldLevel = oldLevel;
         args.NewLevel = newLevel;
         args.PlayerName = playerName;
@@ -368,13 +376,15 @@ public class PlayerState
 ### 5.6 批量变量处理
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public void ProcessMultipleVariables()
 {
     // 批量创建变量
     var variables = new List<VarInt32>();
     for (int i = 0; i < 100; i++)
     {
-        var var = ReferencePool.Acquire<VarInt32>();
+        var var = GlobalModule.ReferencePoolModule.Acquire<VarInt32>();
         var.Value = i * 10;
         variables.Add(var);
     }
@@ -389,7 +399,7 @@ public void ProcessMultipleVariables()
     // 批量释放
     foreach (var variable in variables)
     {
-        ReferencePool.Release(variable);
+        GlobalModule.ReferencePoolModule.Release(variable);
     }
 }
 ```
@@ -397,6 +407,8 @@ public void ProcessMultipleVariables()
 ### 5.7 自定义变量类型
 
 ```csharp
+using Hotfix.Framework.Core;
+
 // 自定义枚举变量
 public enum PlayerState
 {
@@ -412,7 +424,7 @@ public sealed class VarPlayerState : GenericVariable<PlayerState>
     
     public static implicit operator VarPlayerState(PlayerState value)
     {
-        var varValue = ReferencePool.Acquire<VarPlayerState>();
+        var varValue = GlobalModule.ReferencePoolModule.Acquire<VarPlayerState>();
         varValue.Value = value;
         return varValue;
     }
@@ -477,7 +489,7 @@ Hotfix.Framework/Variable/
 
 ## 7. 依赖模块
 
-- **ReferencePool**: 提供引用池管理，用于变量对象的复用
+- **ReferencePoolModule**: 提供引用池管理，用于变量对象的复用
 
 ## 8. 设计特点
 
@@ -485,8 +497,8 @@ Hotfix.Framework/Variable/
 
 所有变量类都实现 IReference 接口，通过引用池管理对象生命周期：
 
-- **获取**：`ReferencePool.Acquire<VarInt32>()`
-- **释放**：`ReferencePool.Release(var)`
+- **获取**：`GlobalModule.ReferencePoolModule.Acquire<VarInt32>()`
+- **释放**：`GlobalModule.ReferencePoolModule.Release(var)`
 - **复用**：释放的变量会被回收复用，减少GC压力
 
 ### 2. 隐式转换
@@ -553,6 +565,8 @@ baseVar.SetValue(200);
 ### 11.1 内存分配对比
 
 ```csharp
+using Hotfix.Framework.Core;
+
 // 方式1：使用 new（产生GC）
 for (int i = 0; i < 1000; i++)
 {
@@ -562,9 +576,9 @@ for (int i = 0; i < 1000; i++)
 // 方式2：使用引用池（无GC）
 for (int i = 0; i < 1000; i++)
 {
-    var var = ReferencePool.Acquire<VarInt32>();
+    var var = GlobalModule.ReferencePoolModule.Acquire<VarInt32>();
     var.Value = i;
-    ReferencePool.Release(var); // 释放后复用
+    GlobalModule.ReferencePoolModule.Release(var); // 释放后复用
 }
 ```
 
@@ -607,13 +621,15 @@ A: 建议：
 A: 继承 GenericVariable<T> 并实现隐式转换：
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public sealed class VarCustomType : GenericVariable<CustomType>
 {
     public VarCustomType() { }
     
     public static implicit operator VarCustomType(CustomType value)
     {
-        var varValue = ReferencePool.Acquire<VarCustomType>();
+        var varValue = GlobalModule.ReferencePoolModule.Acquire<VarCustomType>();
         varValue.Value = value;
         return varValue;
     }
@@ -629,6 +645,6 @@ A: 变量类本身不是线程安全的。在多线程环境中使用时，需�
 ### Q: 如何避免内存泄漏？
 
 A: 遵循以下原则：
-- 使用 `ReferencePool.Acquire` 获取的变量，必须使用 `ReferencePool.Release` 释放
+- 使用 `GlobalModule.ReferencePoolModule.Acquire` 获取的变量，必须使用 `GlobalModule.ReferencePoolModule.Release` 释放
 - 不要在静态变量或单例中长时间持有变量引用
 - 确保在异常情况下也能正确释放变量

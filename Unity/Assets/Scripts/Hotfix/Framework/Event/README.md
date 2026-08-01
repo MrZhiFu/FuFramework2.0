@@ -193,6 +193,8 @@ EmptyEventArgs
 ：
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public sealed class EmptyEventArgs : GameEventArgs
 {
     public override string Id => m_EventId;
@@ -202,7 +204,7 @@ public sealed class EmptyEventArgs : GameEventArgs
     
     public static EmptyEventArgs Create(string eventId)
     {
-        var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
+        var eventArgs = GlobalModule.ReferencePoolModule.Acquire<EmptyEventArgs>();
         m_EventId = eventId;
         return eventArgs;
     }
@@ -216,6 +218,8 @@ public sealed class EmptyEventArgs : GameEventArgs
 ### 5.1 定义事件
 
 ```csharp
+using Hotfix.Framework.Core;
+
 // 定义事件ID（推荐使用常量或枚举）
 public static class EventIds
 {
@@ -243,7 +247,7 @@ public class PlayerDamageEventArgs : GameEventArgs
     
     public static PlayerDamageEventArgs Create(int damage, GameObject attacker, Vector3 hitPosition)
     {
-        var args = ReferencePool.Acquire<PlayerDamageEventArgs>();
+        var args = GlobalModule.ReferencePoolModule.Acquire<PlayerDamageEventArgs>();
         args.Damage = damage;
         args.Attacker = attacker;
         args.HitPosition = hitPosition;
@@ -267,7 +271,7 @@ public class PlayerLevelUpEventArgs : GameEventArgs
     
     public static PlayerLevelUpEventArgs Create(int newLevel, int oldLevel)
     {
-        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
+        var args = GlobalModule.ReferencePoolModule.Acquire<PlayerLevelUpEventArgs>();
         args.NewLevel = newLevel;
         args.OldLevel = oldLevel;
         return args;
@@ -535,7 +539,7 @@ public class CriticalSystem : MonoBehaviour
    从 m_EventQueue 取出事件
    -> ProcessWaitRemoveHandlers() 处理待删除列表
    -> 调用所有匹配的 handler
-   -> ReferencePool.Release(args) 释放事件参数
+   -> GlobalModule.ReferencePoolModule.Release(args) 释放事件参数
 ```
 
 ### 6.2 线程安全说明
@@ -632,6 +636,8 @@ m_EventModule.Broadcast(this, GameEvents.GameStart.ToString());
 自定义事件参数应正确实现 `Clear` 方法，确保对象池正确重用：
 
 ```csharp
+using Hotfix.Framework.Core;
+
 public class MyEventArgs : GameEventArgs
 {
     public override string Id => "MyEvent";
@@ -653,7 +659,7 @@ public class MyEventArgs : GameEventArgs
     
     public static MyEventArgs Create(int intValue, string stringValue)
     {
-        var args = ReferencePool.Acquire<MyEventArgs>();
+        var args = GlobalModule.ReferencePoolModule.Acquire<MyEventArgs>();
         args.IntValue = intValue;
         args.StringValue = stringValue;
         return args;

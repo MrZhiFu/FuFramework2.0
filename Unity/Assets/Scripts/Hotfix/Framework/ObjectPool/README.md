@@ -323,6 +323,7 @@ public delegate List<T> ReleaseObjectFilterCallback<T>(
 ### 5.1 定义自定义对象类
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.ReferencePools;
 using UnityEngine;
@@ -338,7 +339,7 @@ public class BulletObject : ObjectBase
     /// </summary>
     public static BulletObject Create(string name, GameObject bulletPrefab)
     {
-        var bulletObject = ReferencePool.Acquire<BulletObject>();
+        var bulletObject = GlobalModule.ReferencePoolModule.Acquire<BulletObject>();
         var bulletInstance = Object.Instantiate(bulletPrefab);
         bulletInstance.name = name;
         
@@ -577,15 +578,17 @@ ObjectPool/
 | 模块                        | 说明                                               |
 | ------------------------- | ------------------------------------------------ |
 | Hotfix.Framework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuException、FuLogger |
-| Hotfix.Framework.ReferencePools | 提供 IReference 接口和 ReferencePool                  |
+| Hotfix.Framework.ReferencePools | 提供 IReference 接口与 ReferencePoolModule             |
 
 ## 8. 最佳实践
 
 ### 8.1 对象池设计规范
 
 ```csharp
-// 1. 使用 ReferencePool 创建对象（避免 GC）
-var obj = ReferencePool.Acquire<MyObject>();
+using Hotfix.Framework.Core;
+
+// 1. 使用引用池模块创建对象（避免 GC）
+var obj = GlobalModule.ReferencePoolModule.Acquire<MyObject>();
 
 // 2. 在 Release 中销毁 GameObject，在 Clear 中清理引用
 protected internal override void OnRelease()

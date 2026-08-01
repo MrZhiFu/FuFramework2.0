@@ -299,6 +299,7 @@ public enum EStartTaskStatus : byte
 ### 4.1 基本使用流程
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.TaskPool;
 using Hotfix.Framework.ReferencePools;
 
@@ -331,7 +332,7 @@ public class TaskPoolExample : MonoBehaviour
 
     private void AddDownloadTask(string url, string savePath)
     {
-        var task = ReferencePool.Acquire<DownloadTask>();
+        var task = GlobalModule.ReferencePoolModule.Acquire<DownloadTask>();
         task.Initialize(++m_SerialId, url, savePath);
         m_DownloadPool.AddTask(task);
     }
@@ -372,13 +373,15 @@ foreach (var info in downloadTasks)
 ### 4.3 任务管理
 
 ```csharp
+using Hotfix.Framework.Core;
+
 // 添加高优先级任务
-var highPriorityTask = ReferencePool.Acquire<CustomTask>();
+var highPriorityTask = GlobalModule.ReferencePoolModule.Acquire<CustomTask>();
 highPriorityTask.Initialize(serialId: 1, tag: "Urgent", priority: 100, userData: null);
 taskPool.AddTask(highPriorityTask);
 
 // 添加低优先级任务
-var lowPriorityTask = ReferencePool.Acquire<CustomTask>();
+var lowPriorityTask = GlobalModule.ReferencePoolModule.Acquire<CustomTask>();
 lowPriorityTask.Initialize(serialId: 2, tag: "Normal", priority: 1, userData: null);
 taskPool.AddTask(lowPriorityTask);
 
@@ -415,7 +418,7 @@ TaskPool/
 ## 6. 依赖模块
 
 - **Core**: 提供 FuLinkedList、FuException、FuGuardEx 等工具类
-- **ReferencePool**: 提供对象池管理，用于任务对象的复用
+- **ReferencePoolModule**: 提供引用池管理，用于任务对象的复用
 
 ## 7. 设计特点
 

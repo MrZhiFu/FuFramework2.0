@@ -9,7 +9,6 @@ FuFramework ReferencePool 模块是游戏框架的引用池管理系统，专门
 - **内存优化**：减少 GC 频率，提高游戏性能
 - **类型安全**：支持严格的类型检查和验证
 - **统计监控**：提供详细的引用池使用统计信息
-- **灵活配置**：支持多种严格检查模式
 - **线程安全**：使用锁机制确保多线程环境下的安全性
 
 ## 3. 核心概念
@@ -26,28 +25,18 @@ IReference (引用接口)
 【类体系】
 
 ModuleBase (框架模块基类)
-    └── ReferencePoolModule (引用池管理模块)
-        └── 管理严格检查模式配置
+    └── ReferencePoolModule (引用池管理模块，实例模块)
 
-ReferencePool (静态类)
+ReferencePoolModule (实例模块)
     ├── ReferenceCollection (内部类)   # 每个类型对应一个引用集合
-    │   ├── m_FreeQueue: Queue<IReference>  # 闲置引用队列
+    │   ├── m_FreeStack: Stack<IReference>  # 闲置引用栈
     │   ├── UsingReferenceCount            # 正在使用的引用数量
     │   ├── UnusedReferenceCount           # 闲置引用数量
     │   ├── AcquireReferenceCount          # 已获取引用数量
     │   └── ReleaseReferenceCount          # 已释放引用数量
     │
-    └── ReferenceCollectionDict: Dictionary<Type, ReferenceCollection>
+    └── m_ReferenceCollectionDict: Dictionary<Type, ReferenceCollection>
         # 类型到引用集合的映射
-
-
-【枚举】
-
-EReferenceStrictCheckType (严格检查类型)
-    ├── AlwaysEnable              # 总是启用
-    ├── OnlyEnableWhenDevelopment # 仅在开发模式启用
-    ├── OnlyEnableInEditor        # 仅在编辑器启用
-    └── AlwaysDisable             # 总是禁用
 
 
 【数据结构】
@@ -67,25 +56,15 @@ ReferencePoolInfo (结构体)
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                ReferencePoolModule                          │
-│                    (ModuleBase)                               │
+│                    (ModuleBase)                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │           m_EnableStrictCheck                       │   │
-│  │     EReferenceStrictCheckType 枚举                  │   │
-│  │     - 控制是否启用类型严格检查                      │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   ReferencePool (静态类)                    │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │         ReferenceCollectionDict                     │   │
-│  │    Dictionary<Type, ReferenceCollection>            │   │
+│  │   m_ReferenceCollectionDict: Dictionary<Type,       │   │
+│  │                ReferenceCollection>                 │   │
 │  │                                                       │   │
 │  │  ┌─────────────────┐  ┌─────────────────┐           │   │
 │  │  │ TypeA Collection│  │ TypeB Collection│           │   │
 │  │  │                 │  │                 │           │   │
-│  │  │ m_FreeQueue     │  │ m_FreeQueue     │           │   │
+│  │  │ m_FreeStack     │  │ m_FreeStack     │           │   │
 │  │  │ ┌───┬───┬───┐  │  │ ┌───┬───┬───┐  │           │   │
 │  │  │ │Ref│Ref│Ref│  │  │ │Ref│Ref│Ref│  │           │   │
 │  │  │ └───┴───┴───┘  │  │ └───┴───┴───┘  │           │   │
@@ -107,8 +86,6 @@ ReferencePoolInfo (结构体)
 
 Acquire<T>()
     │
-    ├── 检查类型 (EnableStrictCheck)
-    │
     ├── 获取/创建 ReferenceCollection
     │
     └── Acquire<T>() (ReferenceCollection)
@@ -116,9 +93,9 @@ Acquire<T>()
         ├── UsingReferenceCount++
         ├── AcquireReferenceCount++
         │
-        ├── lock (m_FreeQueue)
-        │   ├── if (m_FreeQueue.Count > 0)
-        │   │       return m_FreeQueue.Dequeue()
+        ├── lock (m_FreeStack)
+        │   ├── if (m_FreeStack.Count > 0)
+        │   │       return m_FreeStack.Pop()
         │   └── else
         │           AddReferenceCount++
         │           return new T()
@@ -131,18 +108,16 @@ Acquire<T>()
 Release(reference)
     │
     ├── 检查引用非空
-    ├── 检查类型 (EnableStrictCheck)
     │
     ├── 获取 ReferenceCollection
     │
     └── Release(reference) (ReferenceCollection)
         │
-        ├── reference.Clear()           # 清理对象状态
-        │
-        ├── lock (m_FreeQueue)
-        │   ├── if (m_FreeQueue.Contains(reference))
+        ├── lock (m_FreeStack)
+        │   ├── if (m_FreeStack.Contains(reference))   # 无条件检测，重复释放即抛异常
         │   │       throw Exception("重复释放")
-        │   └── m_FreeQueue.Enqueue(reference)
+        │   ├── reference.Clear()           # 清理对象状态（查重之后）
+        │   └── m_FreeStack.Push(reference)
         │
         ├── ReleaseReferenceCount++
         └── UsingReferenceCount--
@@ -151,9 +126,9 @@ Release(reference)
 【引用状态流转】
 
 ┌─────────────────┐     Acquire      ┌─────────────────┐
-│   引用池队列    │ ─────────────────▶ │   正在使用      │
-│  (m_FreeQueue)  │                    │  (UsingCount)   │
-│                 │ ◀───────────────── │                 │
+│   引用池栈      │ ─────────────────▶ │   正在使用      │
+│  (m_FreeStack)  │                    │  (UsingCount)   │
+│  (LIFO 后进先出) │ ◀───────────────── │                 │
 └─────────────────┘      Release       └─────────────────┘
     │    ▲                                    │
     │    │                                    │
@@ -168,22 +143,12 @@ Release(reference)
 ```
 【模块生命周期】
 
-OnInit()
-    │
-    ├── 根据 m_EnableStrictCheck 设置 EnableStrictCheck
-    │   ├── AlwaysEnable              → true
-    │   ├── OnlyEnableWhenDevelopment → Debug.isDebugBuild
-    │   ├── OnlyEnableInEditor        → Application.isEditor
-    │   └── AlwaysDisable             → false
-    │
-    └── 输出严格检查启用日志
-
 OnDispose()
     │
-    └── ReferencePool.ClearAll()
+    └── ClearAll()
         ├── 遍历所有 ReferenceCollection
         ├── 每个 collection.RemoveAll()
-        └── 清空 ReferenceCollectionDict
+        └── 清空 m_ReferenceCollectionDict
 
 
 【引用集合生命周期】
@@ -191,16 +156,16 @@ OnDispose()
 创建 (首次获取某类型引用时)
     │
     ├── new ReferenceCollection(type)
-    └── 添加到 ReferenceCollectionDict
+    └── 添加到 m_ReferenceCollectionDict
 
 使用 (Acquire/Release)
     │
-    ├── Acquire: 从队列取出或创建新对象
-    └── Release: 清理后放回队列
+    ├── Acquire: 从栈取出或创建新对象
+    └── Release: 清理后压入栈
 
 销毁 (RemoveAll/ClearAll)
     │
-    ├── 清空 m_FreeQueue
+    ├── 清空 m_FreeStack
     └── 重置所有计数器
 ```
 
@@ -228,50 +193,50 @@ public interface IReference
 - `Clear()` 方法应重置对象的所有字段到初始状态
 - 避免在 `Clear()` 中执行耗时操作
 
-### 4.2 ReferencePool (静态类)
+### 4.2 ReferencePoolModule (实例模块)
 
-引用池的核心管理类，提供全局的引用获取、释放和管理功能。
+引用池的核心管理模块，继承自 `ModuleBase`，通过 `GlobalModule.ReferencePoolModule` 提供全局的引用获取、释放和管理功能。
 
 **核心功能：**
 
 ```csharp
-public static partial class ReferencePool
+public sealed partial class ReferencePoolModule : ModuleBase
 {
-    // 严格检查开关
-    public static bool EnableStrictCheck { get; set; }
-    
-    // 引用池数量
-    public static int Count { get; }
-    
+    // 引用池数量（管理的引用类型数量）
+    public int Count { get; }
+
     // 获取引用
-    public static T Acquire<T>() where T : class, IReference, new()
-    public static IReference Acquire(Type refType)
-    
+    public T Acquire<T>() where T : class, IReference, new()
+
     // 释放引用
-    public static void Release(IReference reference)
-    
+    public void Release(IReference reference)
+
     // 添加引用到池
-    public static void Add<T>(int count) where T : class, IReference, new()
-    public static void Add(Type refType, int count)
-    
+    public void Add<T>(int count) where T : class, IReference, new()
+
     // 从池移除引用
-    public static void Remove<T>(int count) where T : class, IReference
-    public static void Remove(Type refType, int count)
-    public static void RemoveAll<T>() where T : class, IReference
-    public static void RemoveAll(Type refType)
-    
+    public void Remove<T>(int count) where T : class, IReference
+    public void RemoveAll<T>() where T : class, IReference
+
     // 清除所有引用池
-    public static void ClearAll()
-    
+    public void ClearAll()
+
     // 获取统计信息
-    public static ReferencePoolInfo[] GetAllReferencePoolInfos()
+    public ReferencePoolInfo[] GetAllReferencePoolInfos()
 }
 ```
 
 **实现细节：**
 - 使用 `Dictionary<Type, ReferenceCollection>` 管理不同类型的引用池
 - 使用 `lock` 确保线程安全
-- 严格检查模式验证类型是否合法（非空、非抽象、实现 IReference）
+
+**访问入口：**
+
+```csharp
+// 所有操作统一通过 GlobalModule.ReferencePoolModule 访问
+GlobalModule.ReferencePoolModule.Acquire<T>();
+GlobalModule.ReferencePoolModule.Release(reference);
+```
 
 ### 4.3 ReferenceCollection (内部类)
 
@@ -284,10 +249,10 @@ private sealed class ReferenceCollection
 {
     // 类型信息
     public Type RefType { get; }
-    
-    // 引用队列
-    private readonly Queue<IReference> m_FreeQueue;
-    
+
+    // 引用栈
+    private readonly Stack<IReference> m_FreeStack;
+
     // 统计信息
     public int UsingReferenceCount { get; }      // 正在使用
     public int UnusedReferenceCount { get; }     // 闲置未使用
@@ -295,23 +260,21 @@ private sealed class ReferenceCollection
     public int ReleaseReferenceCount { get; }    // 已释放总数
     public int AddReferenceCount { get; }        // 新增总数
     public int RemoveReferenceCount { get; }     // 移除总数
-    
+
     // 核心操作
     public T Acquire<T>() where T : class, IReference, new()
-    public IReference Acquire()
     public void Release(IReference reference)
     public void Add<T>(int count) where T : class, IReference, new()
-    public void Add(int count)
     public void Remove(int count)
     public void RemoveAll()
 }
 ```
 
 **实现细节：**
-- 使用 `Queue<IReference>` 存储闲置引用（FIFO）
-- 所有操作使用 `lock (m_FreeQueue)` 确保线程安全
+- 使用 `Stack<IReference>` 存储闲置引用（LIFO）
+- 所有操作使用 `lock (m_FreeStack)` 确保线程安全
 - `Release` 时自动调用 `reference.Clear()` 清理对象
-- 检测重复释放，防止逻辑错误
+- 无条件执行重复释放检测，一旦发现即抛出异常
 
 ### 4.4 ReferencePoolModule
 
@@ -320,25 +283,12 @@ private sealed class ReferenceCollection
 **核心功能：**
 
 ```csharp
-public sealed class ReferencePoolModule : ModuleBase
+public sealed partial class ReferencePoolModule : ModuleBase
 {
-    [SerializeField]
-    private EReferenceStrictCheckType m_EnableStrictCheck = EReferenceStrictCheckType.OnlyEnableInEditor;
-    
-    // 严格检查开关
-    public static bool EnableStrictCheck { get; set; }
-    
     // 生命周期
-    protected override void OnInit()     // 初始化严格检查模式
-    protected override void OnDispose()  // 清除所有引用池
+    protected internal override void OnDispose()  // 清除所有引用池
 }
 ```
-
-**严格检查模式：**
-- `AlwaysEnable`：总是启用类型检查
-- `OnlyEnableWhenDevelopment`：仅在开发模式启用
-- `OnlyEnableInEditor`：仅在编辑器启用（默认）
-- `AlwaysDisable`：总是禁用
 
 ### 4.5 ReferencePoolInfo
 
@@ -367,6 +317,7 @@ public readonly struct ReferencePoolInfo
 创建一个需要被引用池管理的类：
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 
 /// <summary>
@@ -403,6 +354,7 @@ public class NetworkMessage : IReference
 ### 5.2 基本使用示例
 
 ```csharp
+using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
@@ -411,7 +363,7 @@ public class ReferencePoolExample : MonoBehaviour
     private void Start()
     {
         // 从引用池获取消息对象
-        var message = ReferencePool.Acquire<NetworkMessage>();
+        var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
         
         // 初始化消息数据
         message.Initialize(1001, "Hello World");
@@ -420,7 +372,7 @@ public class ReferencePoolExample : MonoBehaviour
         Debug.Log($"消息ID: {message.MessageId}, 内容: {message.Content}");
         
         // 使用完毕后归还到引用池
-        ReferencePool.Release(message);
+        GlobalModule.ReferencePoolModule.Release(message);
     }
 }
 ```
@@ -428,19 +380,23 @@ public class ReferencePoolExample : MonoBehaviour
 ### 5.3 网络消息处理系统
 
 ```csharp
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using UnityEngine;
+
 public class NetworkMessageSystem : MonoBehaviour
 {
     private void OnEnable()
     {
         // 预创建一些消息对象，减少运行时分配
-        ReferencePool.Add<NetworkMessage>(10);
+        GlobalModule.ReferencePoolModule.Add<NetworkMessage>(10);
     }
     
     // 处理接收到的网络数据包
     public void ProcessNetworkPacket(byte[] packetData)
     {
         // 从引用池获取消息对象
-        var message = ReferencePool.Acquire<NetworkMessage>();
+        var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
         
         try
         {
@@ -454,7 +410,7 @@ public class NetworkMessageSystem : MonoBehaviour
         finally
         {
             // 确保消息对象被归还
-            ReferencePool.Release(message);
+            GlobalModule.ReferencePoolModule.Release(message);
         }
     }
     
@@ -467,7 +423,7 @@ public class NetworkMessageSystem : MonoBehaviour
         {
             foreach (var packet in packets)
             {
-                var message = ReferencePool.Acquire<NetworkMessage>();
+                var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
                 var parsedData = ParsePacket(packet);
                 message.Initialize(parsedData.MessageId, parsedData.Content);
                 messages.Add(message);
@@ -481,7 +437,7 @@ public class NetworkMessageSystem : MonoBehaviour
             // 批量归还所有消息对象
             foreach (var message in messages)
             {
-                ReferencePool.Release(message);
+                GlobalModule.ReferencePoolModule.Release(message);
             }
         }
     }
@@ -489,7 +445,7 @@ public class NetworkMessageSystem : MonoBehaviour
     private void OnDisable()
     {
         // 清理引用池（可选，通常由系统自动管理）
-        ReferencePool.RemoveAll<NetworkMessage>();
+        GlobalModule.ReferencePoolModule.RemoveAll<NetworkMessage>();
     }
 }
 ```
@@ -497,6 +453,10 @@ public class NetworkMessageSystem : MonoBehaviour
 ### 5.4 游戏事件系统
 
 ```csharp
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using UnityEngine;
+
 // 游戏事件基类
 public abstract class GameEvent : IReference
 {
@@ -551,7 +511,7 @@ public class EventSystem : MonoBehaviour
     // 触发玩家伤害事件
     public void TriggerDamageEvent(string source, int damage, string damageType)
     {
-        var damageEvent = ReferencePool.Acquire<PlayerDamageEvent>();
+        var damageEvent = GlobalModule.ReferencePoolModule.Acquire<PlayerDamageEvent>();
         damageEvent.Initialize(source, damage, damageType);
         m_CurrentFrameEvents.Add(damageEvent);
     }
@@ -570,7 +530,7 @@ public class EventSystem : MonoBehaviour
         // 归还所有事件对象到引用池
         foreach (var gameEvent in m_CurrentFrameEvents)
         {
-            ReferencePool.Release(gameEvent);
+            GlobalModule.ReferencePoolModule.Release(gameEvent);
         }
         m_CurrentFrameEvents.Clear();
     }
@@ -580,6 +540,10 @@ public class EventSystem : MonoBehaviour
 ### 5.5 性能监控
 
 ```csharp
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using UnityEngine;
+
 public class ReferencePoolMonitor : MonoBehaviour
 {
     [SerializeField] private bool m_ShowDebugInfo = true;
@@ -589,7 +553,7 @@ public class ReferencePoolMonitor : MonoBehaviour
         if (!m_ShowDebugInfo) return;
         
         // 获取所有引用池的统计信息
-        var poolInfos = ReferencePool.GetAllReferencePoolInfos();
+        var poolInfos = GlobalModule.ReferencePoolModule.GetAllReferencePoolInfos();
         
         foreach (var info in poolInfos)
         {
@@ -604,18 +568,19 @@ public class ReferencePoolMonitor : MonoBehaviour
     // 手动优化引用池
     public void OptimizePools()
     {
-        var poolInfos = ReferencePool.GetAllReferencePoolInfos();
+        var poolInfos = GlobalModule.ReferencePoolModule.GetAllReferencePoolInfos();
         
         foreach (var info in poolInfos)
         {
-            // 如果闲置对象过多，移除一部分
+            // 闲置对象过多，提示可手动清理
             if (info.UnusedReferenceCount > 50)
             {
-                var removeCount = info.UnusedReferenceCount - 20;
-                ReferencePool.Remove(info.Type, removeCount);
-                Debug.Log($"优化 {info.Type.Name} 引用池，移除 {removeCount} 个闲置对象");
+                Debug.Log($"提示: {info.Type.Name} 引用池闲置 {info.UnusedReferenceCount} 个，可调用 Remove<T>() 清理");
             }
         }
+        
+        // 移除指定类型的闲置对象（Remove 需显式指定泛型类型）
+        GlobalModule.ReferencePoolModule.Remove<NetworkMessage>(10);
     }
 }
 ```
@@ -623,6 +588,10 @@ public class ReferencePoolMonitor : MonoBehaviour
 ### 5.6 使用 using 语句管理生命周期
 
 ```csharp
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using UnityEngine;
+
 /// <summary>
 /// 包装器类，支持 using 语句自动释放
 /// </summary>
@@ -632,14 +601,14 @@ public class PooledObject<T> : IDisposable where T : class, IReference, new()
     
     public PooledObject()
     {
-        Value = ReferencePool.Acquire<T>();
+        Value = GlobalModule.ReferencePoolModule.Acquire<T>();
     }
     
     public void Dispose()
     {
         if (Value != null)
         {
-            ReferencePool.Release(Value);
+            GlobalModule.ReferencePoolModule.Release(Value);
             Value = null;
         }
     }
@@ -668,27 +637,28 @@ public class SafeObjectUsage : MonoBehaviour
 
 ```
 ReferencePools/
-├── 
-│   ├── ReferencePoolModule.cs                       # 引用池管理模块
-│   ├── ReferencePool.cs                             # 引用池静态类
-│   ├── ReferencePool.ReferenceCollection.cs         # 引用集合实现
-│   ├── IReference.cs                                # 引用接口
-│   ├── ReferencePoolInfo.cs                         # 引用池信息结构体
-│   └── EReferenceStrictCheckType.cs                 # 严格检查类型枚举
-└── README.md                                        # 本文档
+├── ReferencePoolModule.cs                       # 引用池管理模块
+├── ReferencePoolModule.ReferenceCollection.cs   # 引用集合实现（Stack）
+├── IReference.cs                                # 引用接口
+├── ReferencePoolInfo.cs                         # 引用池信息结构体
+└── README.md                                    # 本文档
 ```
 
 ## 7. 依赖
 
 | 模块 | 说明 |
 |------|------|
-| Hotfix.Framework.Core | 提供 ModuleBase 基类、FuException、FuLogger |
+| Hotfix.Framework.Core | 提供 ModuleBase 基类 |
+
+> 使用引用池前必须先注册 `ReferencePoolModule`（`HotfixLauncher.RegisterBaseModules()` 已保证），通过 `GlobalModule.ReferencePoolModule` 访问。
 
 ## 8. 最佳实践
 
 ### 8.1 实现 IReference 规范
 
 ```csharp
+using Hotfix.Framework.ReferencePools;
+
 public class MyReference : IReference
 {
     // 1. 所有字段都需要在 Clear 中重置
@@ -716,6 +686,10 @@ public class MyReference : IReference
 ### 8.2 预分配策略
 
 ```csharp
+using Hotfix.Framework.Core;
+using Hotfix.Framework.ReferencePools;
+using UnityEngine;
+
 public class ObjectPoolManager : MonoBehaviour
 {
     [Header("预分配配置")]
@@ -724,9 +698,9 @@ public class ObjectPoolManager : MonoBehaviour
     private void Start()
     {
         // 在游戏启动时预分配常用对象
-        ReferencePool.Add<NetworkMessage>(m_PreAllocateCount);
-        ReferencePool.Add<GameEvent>(m_PreAllocateCount);
-        ReferencePool.Add<RedDotNode>(m_PreAllocateCount);
+        GlobalModule.ReferencePoolModule.Add<NetworkMessage>(m_PreAllocateCount);
+        GlobalModule.ReferencePoolModule.Add<GameEvent>(m_PreAllocateCount);
+        GlobalModule.ReferencePoolModule.Add<RedDotNode>(m_PreAllocateCount);
     }
 }
 ```
@@ -738,6 +712,5 @@ public class ObjectPoolManager : MonoBehaviour
 3. **线程安全**：引用池操作是线程安全的，但获取的对象本身不是线程安全的
 4. **引用类型限制**：引用池只适用于类（class），不适用于结构体（struct）
 5. **构造函数要求**：类型必须有默认构造函数（`new()` 约束）
-6. **严格检查性能**：启用严格检查会影响性能，建议仅在编辑器或开发模式启用
-7. **及时释放**：使用完毕后应及时释放对象，避免长时间占用
-8. **避免持有引用**：不要在对象释放后继续持有或使用该对象
+6. **及时释放**：使用完毕后应及时释放对象，避免长时间占用
+7. **避免持有引用**：不要在对象释放后继续持有或使用该对象
