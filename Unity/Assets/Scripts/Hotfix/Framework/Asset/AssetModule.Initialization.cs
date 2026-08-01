@@ -75,8 +75,8 @@ namespace Hotfix.Framework.Asset
         /// <returns></returns>
         private InitializePackageOperation InitInHostPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
-            resPackage.NotNull(       nameof(resPackage));
-            downloadURL.NotNull(      nameof(downloadURL));
+            resPackage.NotNull(nameof(resPackage));
+            downloadURL.NotNull(nameof(downloadURL));
             downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
             IRemoteService remoteService = new RemoteServices(downloadURL, downloadBackupURL);
@@ -101,8 +101,8 @@ namespace Hotfix.Framework.Asset
         /// <returns></returns>
         private InitializePackageOperation InitInWebPlayMode(ResourcePackage resPackage, string downloadURL, string downloadBackupURL)
         {
-            resPackage.NotNull(       nameof(resPackage));
-            downloadURL.NotNull(      nameof(downloadURL));
+            resPackage.NotNull(nameof(resPackage));
+            downloadURL.NotNull(nameof(downloadURL));
             downloadBackupURL.NotNull(nameof(downloadBackupURL));
 
             var                  initOptions   = new WebPlayModeOptions();

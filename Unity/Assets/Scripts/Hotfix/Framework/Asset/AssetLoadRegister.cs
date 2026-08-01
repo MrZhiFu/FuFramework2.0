@@ -39,13 +39,20 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
 
         /// <summary>
+        /// 是否已归还对象池。防止归还后在途的加载任务把句柄写回缓存（复用泄漏）。
+        /// </summary>
+        private bool m_Released;
+
+        /// <summary>
         /// 创建资源加载器
         /// </summary>
         /// <returns></returns>
         public static AssetLoadRegister Create()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            return ReferencePool.Acquire<AssetLoadRegister>();
+            var register  = ReferencePool.Acquire<AssetLoadRegister>();
+            register.m_Released = false;
+            return register;
         }
 
         /// <summary>
@@ -96,6 +103,8 @@ namespace Hotfix.Framework.Asset
             var assetHandle          = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
             var instantiateOperation = assetHandle.InstantiateAsync();
             await instantiateOperation;
+            if (instantiateOperation.Result == null)
+                throw new InvalidOperationException($"[AssetLoadRegister]实例化资源{path}失败（资源可能不是 GameObject 或加载异常）");
             return instantiateOperation.Result;
         }
 
@@ -107,6 +116,10 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<UniTask<AssetHandle>> loadFunc)
         {
+            // 已归还对象池后禁止继续使用
+            if (m_Released)
+                throw new ObjectDisposedException(nameof(AssetLoadRegister));
+
             // 检查是否已加载
             if (m_HandleDict.TryGetValue(path, out var existingHandle))
             {
@@ -155,6 +168,14 @@ namespace Hotfix.Framework.Asset
                 if (assetHandle == null || assetHandle.AssetObject == null)
                 {
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
+                }
+
+                // 加载期间被 Release 归还对象池：句柄已不归本实例，释放并阻止写回（否则复用泄漏）
+                if (m_Released)
+                {
+                    assetHandle.Release();
+                    assetHandle = null; // 置空避免 catch 二次释放
+                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已归还对象池");
                 }
 
                 // 保存资源句柄
@@ -211,6 +232,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         public void Clear()
         {
+            m_Released = true;
             UnloadAll();
             m_AssetModule = null;
         }
@@ -222,6 +244,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         public void Release()
         {
+            m_Released = true;
             UnloadAll();
             m_LoadingTasks.Clear();
             ReferencePool.Release(this);
