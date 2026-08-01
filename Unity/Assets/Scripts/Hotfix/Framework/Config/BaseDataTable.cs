@@ -76,31 +76,17 @@ namespace Hotfix.Framework.Config
         /// <summary>
         /// 获取数据表的数量。
         /// </summary>
-        public int Count => Math.Max(LongKeyDataDict.Count, StrKeyDataDict.Count);
+        public int Count => DataList.Count;
 
         /// <summary>
         /// 获取数据表的第一个数据。
         /// </summary>
-        public T FirstOrDefault
-        {
-            get
-            {
-                if (DataList.Count == 0) return null;
-                return DataList[0];
-            }
-        }
+        public T FirstOrDefault => DataList.Count == 0 ? null : DataList[0];
 
         /// <summary>
         /// 获取数据表的最后一个数据。
         /// </summary>
-        public T LastOrDefault
-        {
-            get
-            {
-                if (DataList.Count == 0) return null;
-                return DataList[DataList.Count - 1];
-            }
-        }
+        public T LastOrDefault => DataList.Count == 0 ? null : DataList[^1];
 
         /// <summary>
         /// 获取数据表的所有数据。
