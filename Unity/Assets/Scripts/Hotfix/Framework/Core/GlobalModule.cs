@@ -1,7 +1,6 @@
 using Hotfix.Framework.UI;
 using Hotfix.Framework.FSM;
 using Hotfix.Framework.Mono;
-using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Timer;
 using Hotfix.Framework.Asset;
