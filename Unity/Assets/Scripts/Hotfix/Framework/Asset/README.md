@@ -92,7 +92,20 @@ UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, st
 ResourcePackage CreatePackage(string packageName)
 ResourcePackage TryGetPackage(string packageName)
 bool HasPackage(string packageName)
+ResourcePackage GetDefaultPackage()
+ResourcePackage GetPackage(string packageName)
 void SetDefaultPackage(ResourcePackage package)  // [Obsolete] YooAsset v3 已移除全局默认包概念
+
+// 创建下载器（不传 tags 下载全部，建议传标签只下载增量）
+ResourceDownloaderOperation CreateResourceDownloader(params string[] tags)
+
+// 资源查询（默认包未就绪时 IsNeedDownload/HasAssetPath 返回 false，不抛异常；GetAssetInfo(s) 需包已初始化）
+bool IsNeedDownload(AssetInfo assetInfo)
+bool IsNeedDownload(string path)
+AssetInfo[] GetAssetInfos(string[] assetTags)
+AssetInfo[] GetAssetInfos(string assetTag)
+AssetInfo GetAssetInfo(string path)
+bool HasAssetPath(string path)
 ```
 
 #### 资源卸载
@@ -283,7 +296,9 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 4. **`UnloadAllAssetsAsync` 挂起风险**：该操作会释放所有已加载句柄，进行中的 `LoadAssetAsync` 句柄被 Release 后 `Completed` 回调不再触发，其 UniTask 将永久挂起，请确保调用时无进行中的加载。
 5. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
 6. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset`/`UnloadUnusedAssetsAsync` 显式卸载。
-7. 热更新流程需要通过事件系统监听各个阶段的状态。
+7. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载/清理方法（`UnloadAsset`/`UnloadUnusedAssetsAsync`/`ClearAllBundleFilesAsync`/`ClearUnusedBundleFilesAsync`）及查询方法（`HasPackage`/`TryGetPackage`/`IsNeedDownload`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回），与 `UnloadAllAssetsAsync` 的 `IsInitialized` 检查一致。
+8. **`AssetLoadRegister` 对象池防护**：`Release()` 归还对象池后，在途加载任务完成时检测到已归还会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止复用泄漏）。
+9. 热更新流程需要通过事件系统监听各个阶段的状态。
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
 
