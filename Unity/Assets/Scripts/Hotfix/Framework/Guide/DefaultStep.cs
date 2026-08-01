@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config.Tables;
+using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static DefaultStep Create(GuideStep stepInfo)
         {
-            var step = ReferencePool.Acquire<DefaultStep>();
+            var step = GlobalModule.ReferencePoolModule.Acquire<DefaultStep>();
             step.StepInfo = stepInfo;
             return step;
         }

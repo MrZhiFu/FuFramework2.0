@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Storage;
 using Hotfix.Game.Config;
@@ -115,7 +114,7 @@ namespace Hotfix.Framework.RedDot
                 if (!NodeDict.TryAdd(row.Id, node))
                 {
                     FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
-                    ReferencePool.Release(node);
+                    GlobalModule.ReferencePoolModule.Release(node);
                 }
             }
 
@@ -164,7 +163,7 @@ namespace Hotfix.Framework.RedDot
             // 清理所有节点
             foreach (var node in NodeDict.Values)
             {
-                ReferencePool.Release(node);
+                GlobalModule.ReferencePoolModule.Release(node);
             }
 
             NodeDict.Clear();

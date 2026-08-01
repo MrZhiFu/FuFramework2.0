@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 ﻿// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Variable
 {
@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarCharArray(char[] value)
         {
-            var varValue = ReferencePool.Acquire<VarCharArray>();
+            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarCharArray>();
             varValue.Value = value;
             return varValue;
         }

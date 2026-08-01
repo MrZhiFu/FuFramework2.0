@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的关闭界面完成事件。</returns>
         public static CloseUICompleteEventArgs Create(int serialId, string winName, UIGroup uiGroup)
         {
-            var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
+            var closeUICompleteEventArgs = GlobalModule.ReferencePoolModule.Acquire<CloseUICompleteEventArgs>();
             closeUICompleteEventArgs.SerialId = serialId;
             closeUICompleteEventArgs.WinName   = winName;
             closeUICompleteEventArgs.UIGroup  = uiGroup;

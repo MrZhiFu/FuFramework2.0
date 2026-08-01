@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Entity
         /// <returns>创建的隐藏实体完成事件。</returns>
         public static HideEntityCompleteEventArgs Create(int entityId, string entityAssetName, EntityGroup entityGroup, object userData)
         {
-            var hideEntityCompleteEventArgs = ReferencePool.Acquire<HideEntityCompleteEventArgs>();
+            var hideEntityCompleteEventArgs = GlobalModule.ReferencePoolModule.Acquire<HideEntityCompleteEventArgs>();
             hideEntityCompleteEventArgs.EntityId        = entityId;
             hideEntityCompleteEventArgs.EntityAssetName = entityAssetName;
             hideEntityCompleteEventArgs.EntityGroup     = entityGroup;

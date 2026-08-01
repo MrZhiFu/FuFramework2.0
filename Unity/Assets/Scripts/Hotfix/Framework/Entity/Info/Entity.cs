@@ -1,7 +1,6 @@
 using System;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -237,7 +236,7 @@ namespace Hotfix.Framework.Entity
                 FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
             }
 
-            ReferencePool.Release(attachEntityInfo);
+            GlobalModule.ReferencePoolModule.Release(attachEntityInfo);
         }
 
         /// <summary>

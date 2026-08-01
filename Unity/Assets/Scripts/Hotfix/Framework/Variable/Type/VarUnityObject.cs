@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 ﻿
 using UnityEngine;
 
@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarUnityObject(Object value)
         {
-            var varValue = ReferencePool.Acquire<VarUnityObject>();
+            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarUnityObject>();
             varValue.Value = value;
             return varValue;
         }

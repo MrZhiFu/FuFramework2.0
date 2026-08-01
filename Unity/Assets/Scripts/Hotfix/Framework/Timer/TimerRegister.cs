@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Timer
         public static TimerRegister Create()
         {
             m_TimerModule = ModuleManager.GetModule<TimerModule>();
-            var register = ReferencePool.Acquire<TimerRegister>();
+            var register = GlobalModule.ReferencePoolModule.Acquire<TimerRegister>();
             m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
         }
@@ -192,6 +192,6 @@ namespace Hotfix.Framework.Timer
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => GlobalModule.ReferencePoolModule.Release(this);
     }
 }

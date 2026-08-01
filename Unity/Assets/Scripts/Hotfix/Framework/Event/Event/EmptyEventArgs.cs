@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Event
         /// <returns>空事件对象</returns>
         public static EmptyEventArgs Create(string eventId)
         {
-            var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
+            var eventArgs = GlobalModule.ReferencePoolModule.Acquire<EmptyEventArgs>();
             m_EventId = eventId;
             return eventArgs;
         }

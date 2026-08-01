@@ -1,7 +1,7 @@
 using System;
-using Hotfix.Framework.ReferencePools;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Timer
@@ -101,7 +101,7 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static IntervalTimer Create(int timerId, float interval, Action intervalCallback, int repeatCount, bool immediate, bool ignoreTimeScale)
         {
-            var timerInfo = ReferencePool.Acquire<IntervalTimer>();
+            var timerInfo = GlobalModule.ReferencePoolModule.Acquire<IntervalTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id               = timerId;

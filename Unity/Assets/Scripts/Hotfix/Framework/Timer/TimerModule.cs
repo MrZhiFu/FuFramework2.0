@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePools;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -50,7 +49,7 @@ namespace Hotfix.Framework.Timer
             foreach (var timerInfo in m_TimerDict.Values)
             {
                 timerInfo.Cts.Cancel();
-                ReferencePool.Release(timerInfo);
+                GlobalModule.ReferencePoolModule.Release(timerInfo);
             }
 
             m_TimerDict.Clear();
@@ -338,7 +337,7 @@ namespace Hotfix.Framework.Timer
             if (!m_TimerDict.Remove(timerId, out var timerInfo)) return;
             if (timerInfo == null) return;
             FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
-            ReferencePool.Release(timerInfo);
+            GlobalModule.ReferencePoolModule.Release(timerInfo);
             OnTimerFinished?.Invoke(timerId);
         }
 

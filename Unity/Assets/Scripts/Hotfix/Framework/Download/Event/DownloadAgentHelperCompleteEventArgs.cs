@@ -1,7 +1,6 @@
 using System;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
 
 namespace Hotfix.Framework.Download
 {
@@ -38,7 +37,7 @@ namespace Hotfix.Framework.Download
         public static DownloadAgentHelperCompleteEventArgs Create(long length)
         {
             if (length < 0L) throw new InvalidOperationException("下载的数据大小无效，不能为负数.");
-            var downloadAgentHelperCompleteEventArgs = ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();
+            var downloadAgentHelperCompleteEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperCompleteEventArgs>();
             downloadAgentHelperCompleteEventArgs.Length = length;
             return downloadAgentHelperCompleteEventArgs;
         }

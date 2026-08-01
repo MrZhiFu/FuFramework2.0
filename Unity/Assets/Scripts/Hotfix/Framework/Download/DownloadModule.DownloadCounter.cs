@@ -1,6 +1,5 @@
 using System;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
 
 namespace Hotfix.Framework.Download
 {
@@ -106,7 +105,7 @@ namespace Hotfix.Framework.Download
                     var downloadCounterNode = m_DownloadCounterNodeList.First.Value;
                     if (downloadCounterNode.ElapseSeconds < m_RecordInterval) break;
 
-                    ReferencePool.Release(downloadCounterNode);
+                    GlobalModule.ReferencePoolModule.Release(downloadCounterNode);
                     m_DownloadCounterNodeList.RemoveFirst();
                 }
 

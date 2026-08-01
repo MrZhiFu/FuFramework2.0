@@ -1,7 +1,6 @@
 using System;
-﻿using Hotfix.Framework.Core;
+using Hotfix.Framework.Core;
 using Hotfix.Framework.ObjectPool;
-using Hotfix.Framework.ReferencePools;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -38,7 +37,7 @@ namespace Hotfix.Framework.Entity
             if (entityAssetHandle is null) throw new InvalidOperationException("[EntityInstanceObject] 创建实体实例对象失败，实体资源句柄为空.");
             if (entityHelper is null) throw new InvalidOperationException("[EntityInstanceObject] 创建实体实例对象失败，实体辅助器为空.");
 
-            var entityInstanceObject = ReferencePool.Acquire<EntityInstanceObject>();
+            var entityInstanceObject = GlobalModule.ReferencePoolModule.Acquire<EntityInstanceObject>();
             entityInstanceObject.Initialize(name, entityInstanceGo);
             entityInstanceObject.m_EntityAssetHandle = entityAssetHandle;
             entityInstanceObject.m_EntityHelper      = entityHelper;

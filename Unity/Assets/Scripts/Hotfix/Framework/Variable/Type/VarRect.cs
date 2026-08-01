@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarRect(Rect value)
         {
-            var varValue = ReferencePool.Acquire<VarRect>();
+            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarRect>();
             varValue.Value = value;
             return varValue;
         }

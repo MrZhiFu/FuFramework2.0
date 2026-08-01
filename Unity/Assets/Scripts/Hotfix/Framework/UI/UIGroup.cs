@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePools;
 using System;
 using FairyGUI;
 using Hotfix.Framework.Core;
@@ -232,7 +231,7 @@ namespace Hotfix.Framework.UI
                 throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.WinName}'.");
 
             // 释放界面信息实例
-            ReferencePool.Release(uiInfo);
+            GlobalModule.ReferencePoolModule.Release(uiInfo);
         }
 
         /// <summary>

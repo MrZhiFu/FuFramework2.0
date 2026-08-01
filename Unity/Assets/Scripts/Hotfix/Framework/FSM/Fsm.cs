@@ -85,7 +85,7 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Length < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = ReferencePool.Acquire<Fsm>();
+            var fsm = GlobalModule.ReferencePoolModule.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -118,7 +118,7 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Count < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = ReferencePool.Acquire<Fsm>();
+            var fsm = GlobalModule.ReferencePoolModule.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -204,7 +204,7 @@ namespace Hotfix.Framework.FSM
                 foreach (var (_, data) in m_DataDict)
                 {
                     if (data == null) continue;
-                    ReferencePool.Release(data);
+                    GlobalModule.ReferencePoolModule.Release(data);
                 }
 
                 m_DataDict.Clear();
@@ -218,7 +218,7 @@ namespace Hotfix.Framework.FSM
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
-        internal void Shutdown() => ReferencePool.Release(this);
+        internal void Shutdown() => GlobalModule.ReferencePoolModule.Release(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -353,7 +353,7 @@ namespace Hotfix.Framework.FSM
 
             var oldData = GetData(name);
             if (oldData != null)
-                ReferencePool.Release(oldData);
+                GlobalModule.ReferencePoolModule.Release(oldData);
 
             m_DataDict[name] = data;
         }
@@ -369,7 +369,7 @@ namespace Hotfix.Framework.FSM
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
-            if (oldData != null) ReferencePool.Release(oldData);
+            if (oldData != null) GlobalModule.ReferencePoolModule.Release(oldData);
             return m_DataDict.Remove(name);
         }
 

@@ -14,7 +14,6 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Asset;
 using System.Collections.Generic;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
 using Utility = Hotfix.Framework.Core.Utility;
 
 namespace Hotfix.Framework.Sound
@@ -497,14 +496,14 @@ namespace Hotfix.Framework.Sound
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
                 if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams);
+                    GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams3D);
+                    GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams3D);
 
                 playSoundInfo.SoundAssetHandle?.Release(); // 加载中被丢弃，句柄未上代理，释放之
                 m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
-                ReferencePool.Release(playSoundInfo);
+                GlobalModule.ReferencePoolModule.Release(playSoundInfo);
                 return;
             }
 
@@ -530,12 +529,12 @@ namespace Hotfix.Framework.Sound
                 m_EventModule.Broadcast(this, successEventArgs);
 
                 if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams);
+                    GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Release(playSoundInfo.SoundParams3D);
+                    GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams3D);
 
-                ReferencePool.Release(playSoundInfo);
+                GlobalModule.ReferencePoolModule.Release(playSoundInfo);
                 return;
             }
 
@@ -562,12 +561,12 @@ namespace Hotfix.Framework.Sound
 
             // 释放播放相关信息，并抛出异常
             if (playSoundInfo.SoundParams != null)
-                ReferencePool.Release(playSoundInfo.SoundParams);
+                GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams);
 
             if (playSoundInfo.SoundParams3D != null)
-                ReferencePool.Release(playSoundInfo.SoundParams3D);
+                GlobalModule.ReferencePoolModule.Release(playSoundInfo.SoundParams3D);
 
-            ReferencePool.Release(playSoundInfo);
+            GlobalModule.ReferencePoolModule.Release(playSoundInfo);
             throw new InvalidOperationException(errorMessage);
         }
 

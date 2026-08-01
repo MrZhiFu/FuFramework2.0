@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePools;
 using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
@@ -159,7 +158,7 @@ namespace Hotfix.Framework.ObjectPool
                         FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {Name} 中的对象时出现异常: {e.Message}");
                     }
 
-                    ReferencePool.Release(obj);
+                    GlobalModule.ReferencePoolModule.Release(obj);
                 }
 
                 m_ObjectMultiDict.Clear();
@@ -272,7 +271,7 @@ namespace Hotfix.Framework.ObjectPool
                 m_TargetObjectDict.Remove(obj.TargetObject.Target);
 
                 obj.OnRelease();
-                ReferencePool.Release(obj);
+                GlobalModule.ReferencePoolModule.Release(obj);
                 return true;
             }
 

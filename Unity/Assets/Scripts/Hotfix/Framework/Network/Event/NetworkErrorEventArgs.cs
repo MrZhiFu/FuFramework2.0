@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Network
         public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
                                                    string errorMessage)
         {
-            var networkErrorEventArgs = ReferencePool.Acquire<NetworkErrorEventArgs>();
+            var networkErrorEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkErrorEventArgs>();
             networkErrorEventArgs.NetworkChannel  = networkChannel;
             networkErrorEventArgs.ErrorCode       = errorCode;
             networkErrorEventArgs.SocketErrorCode = socketErrorCode;

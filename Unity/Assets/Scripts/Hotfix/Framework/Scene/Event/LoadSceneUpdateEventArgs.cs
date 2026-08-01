@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的加载场景更新事件。</returns>
         public static LoadSceneUpdateEventArgs Create(string sceneAssetName, float progress, object userData)
         {
-            var loadSceneUpdateEventArgs = ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
+            var loadSceneUpdateEventArgs = GlobalModule.ReferencePoolModule.Acquire<LoadSceneUpdateEventArgs>();
             loadSceneUpdateEventArgs.SceneName = sceneAssetName;
             loadSceneUpdateEventArgs.Progress  = progress;
             loadSceneUpdateEventArgs.UserData  = userData;

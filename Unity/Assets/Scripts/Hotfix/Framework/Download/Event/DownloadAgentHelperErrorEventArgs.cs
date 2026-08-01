@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Download
 {
@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Download
         /// <returns>创建的下载代理辅助器错误事件。</returns>
         public static DownloadAgentHelperErrorEventArgs Create(bool deleteDownloading, string errorMessage)
         {
-            var downloadAgentHelperErrorEventArgs = ReferencePool.Acquire<DownloadAgentHelperErrorEventArgs>();
+            var downloadAgentHelperErrorEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperErrorEventArgs>();
             downloadAgentHelperErrorEventArgs.DeleteDownloading = deleteDownloading;
             downloadAgentHelperErrorEventArgs.ErrorMessage      = errorMessage;
             return downloadAgentHelperErrorEventArgs;

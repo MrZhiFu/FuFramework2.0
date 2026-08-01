@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config.Tables;
+using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -29,7 +29,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static DialogStep Create(GuideStep stepInfo)
         {
-            var step = ReferencePool.Acquire<DialogStep>();
+            var step = GlobalModule.ReferencePoolModule.Acquire<DialogStep>();
             step.StepInfo = stepInfo;
             return step;
         }

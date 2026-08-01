@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
@@ -127,7 +127,7 @@ namespace Hotfix.Framework.RedDot
                     UnregisterInternal(node);
                     parentNode.RemoveChild(node);
                     NodeDict.Remove(childKey);
-                    ReferencePool.Release(node);
+                    GlobalModule.ReferencePoolModule.Release(node);
                 }
 
                 existing.Remove(id);

@@ -1,6 +1,6 @@
 using YooAsset;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的加载场景失败事件。</returns>
         public static LoadSceneFailureEventArgs Create(string sceneName, EOperationStatus status, string errorMessage, object userData)
         {
-            var loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
+            var loadSceneFailureEventArgs = GlobalModule.ReferencePoolModule.Acquire<LoadSceneFailureEventArgs>();
             loadSceneFailureEventArgs.SceneName    = sceneName;
             loadSceneFailureEventArgs.ErrorMessage = errorMessage;
             loadSceneFailureEventArgs.UserData     = userData;

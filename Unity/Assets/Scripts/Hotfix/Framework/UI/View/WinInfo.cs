@@ -1,5 +1,6 @@
 using System;
 using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI
@@ -34,7 +35,7 @@ namespace Hotfix.Framework.UI
         public static WinInfo Create(WinBase win)
         {
             if (win == null) throw new InvalidOperationException("[UIInfo] ui界面逻辑实例为空.");
-            var uiInfo = ReferencePool.Acquire<WinInfo>();
+            var uiInfo = GlobalModule.ReferencePoolModule.Acquire<WinInfo>();
             uiInfo.Win     = win;
             uiInfo.Paused  = false;
             uiInfo.Covered = false;

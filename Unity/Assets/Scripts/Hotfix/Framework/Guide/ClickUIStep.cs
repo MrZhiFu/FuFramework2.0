@@ -1,7 +1,6 @@
 using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.UI;
 using Hotfix.Game.Config.Tables;
 namespace Hotfix.Framework.Guide
@@ -73,7 +72,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static ClickUIStep Create(GuideStep stepInfo)
         {
-            var step = ReferencePool.Acquire<ClickUIStep>();
+            var step = GlobalModule.ReferencePoolModule.Acquire<ClickUIStep>();
             step.StepInfo = stepInfo;
             return step;
         }

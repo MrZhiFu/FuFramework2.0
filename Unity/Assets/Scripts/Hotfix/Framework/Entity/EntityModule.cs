@@ -11,7 +11,6 @@ using AOT.Framework.Core.Log;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.ObjectPool;
-using Hotfix.Framework.ReferencePools;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -182,7 +181,7 @@ namespace Hotfix.Framework.Entity
                 entity.OnRecycle();
                 entityInfo.Status = EEntityStatus.Recycled;
                 entityGroup.RecycleEntity(entity);
-                ReferencePool.Release(entityInfo);
+                GlobalModule.ReferencePoolModule.Release(entityInfo);
             }
 
             // 遍历每个实体组，驱动每个实体组轮询
@@ -954,7 +953,7 @@ namespace Hotfix.Framework.Entity
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
-                ReferencePool.Release(showEntityInfo);
+                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
                 m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
                 return;
             }
@@ -970,7 +969,7 @@ namespace Hotfix.Framework.Entity
             // 实体资源已经加载完成，开始显示实体
             var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
             InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, progress, showEntityInfoEx);
-            ReferencePool.Release(showEntityInfo);
+            GlobalModule.ReferencePoolModule.Release(showEntityInfo);
         }
 
         /// <summary>

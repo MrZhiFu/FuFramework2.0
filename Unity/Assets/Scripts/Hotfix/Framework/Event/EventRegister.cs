@@ -29,7 +29,7 @@ namespace Hotfix.Framework.Event
         public static EventRegister Create()
         {
             m_EventModule = ModuleManager.GetModule<EventModule>();
-            return ReferencePool.Acquire<EventRegister>();
+            return GlobalModule.ReferencePoolModule.Acquire<EventRegister>();
         }
 
         /// <summary>
@@ -110,6 +110,6 @@ namespace Hotfix.Framework.Event
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => GlobalModule.ReferencePoolModule.Release(this);
     }
 }

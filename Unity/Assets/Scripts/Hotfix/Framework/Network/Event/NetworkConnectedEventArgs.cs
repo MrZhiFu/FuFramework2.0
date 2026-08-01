@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Network
         /// <returns>创建的网络连接成功事件。</returns>
         public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel, object userData)
         {
-            var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
+            var networkConnectedEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkConnectedEventArgs>();
             networkConnectedEventArgs.NetworkChannel = networkChannel;
             networkConnectedEventArgs.UserData       = userData;
             return networkConnectedEventArgs;

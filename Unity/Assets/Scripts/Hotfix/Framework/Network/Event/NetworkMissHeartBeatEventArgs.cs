@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -37,7 +37,7 @@ namespace Hotfix.Framework.Network
         /// <returns>创建的网络心跳包丢失事件。</returns>
         public static NetworkMissHeartBeatEventArgs Create(INetworkChannel networkChannel, int missCount)
         {
-            var networkMissHeartBeatEventArgs = ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
+            var networkMissHeartBeatEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkMissHeartBeatEventArgs>();
             networkMissHeartBeatEventArgs.NetworkChannel = networkChannel;
             networkMissHeartBeatEventArgs.MissCount      = missCount;
             return networkMissHeartBeatEventArgs;

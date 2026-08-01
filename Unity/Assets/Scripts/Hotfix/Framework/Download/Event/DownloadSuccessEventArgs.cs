@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Download
 {
@@ -66,7 +66,7 @@ namespace Hotfix.Framework.Download
         /// <returns>创建的下载成功事件。</returns>
         public static DownloadSuccessEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
-            var downloadSuccessEventArgs = ReferencePool.Acquire<DownloadSuccessEventArgs>();
+            var downloadSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadSuccessEventArgs>();
             downloadSuccessEventArgs.SerialId = serialId;
             downloadSuccessEventArgs.DownloadPath = downloadPath;
             downloadSuccessEventArgs.DownloadUri = downloadUri;

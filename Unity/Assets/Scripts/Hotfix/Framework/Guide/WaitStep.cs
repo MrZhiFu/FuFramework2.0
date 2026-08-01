@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config.Tables;
+using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static WaitStep Create(GuideStep stepInfo)
         {
-            var step = ReferencePool.Acquire<WaitStep>();
+            var step = GlobalModule.ReferencePoolModule.Acquire<WaitStep>();
             step.StepInfo = stepInfo;
             return step;
         }

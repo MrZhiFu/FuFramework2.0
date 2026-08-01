@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePools;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
@@ -99,7 +98,7 @@ namespace Hotfix.Framework.Event
                 {
                     var tempEvent = m_EventQueue.Dequeue();
                     HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
-                    ReferencePool.Release(tempEvent);
+                    GlobalModule.ReferencePoolModule.Release(tempEvent);
                 }
             }
         }
@@ -290,7 +289,7 @@ namespace Hotfix.Framework.Event
             }
             finally
             {
-                ReferencePool.Release(eArgs);
+                GlobalModule.ReferencePoolModule.Release(eArgs);
             }
 
             if (noHandlerException)

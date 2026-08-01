@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的激活场景被改变事件。</returns>
         public static ActiveSceneChangedEventArgs Create(UnityEngine.SceneManagement.Scene lastActiveScene, UnityEngine.SceneManagement.Scene activeScene)
         {
-            var activeSceneChangedEventArgs = ReferencePool.Acquire<ActiveSceneChangedEventArgs>();
+            var activeSceneChangedEventArgs = GlobalModule.ReferencePoolModule.Acquire<ActiveSceneChangedEventArgs>();
             activeSceneChangedEventArgs.LastActiveScene = lastActiveScene;
             activeSceneChangedEventArgs.ActiveScene     = activeScene;
             return activeSceneChangedEventArgs;

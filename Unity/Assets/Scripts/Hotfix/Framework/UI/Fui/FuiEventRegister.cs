@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using FairyGUI;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI
@@ -25,7 +26,7 @@ namespace Hotfix.Framework.UI
         /// 创建FUI事件注册器
         /// </summary>
         /// <returns></returns>
-        public static FuiEventRegister Create() => ReferencePool.Acquire<FuiEventRegister>();
+        public static FuiEventRegister Create() => GlobalModule.ReferencePoolModule.Acquire<FuiEventRegister>();
 
         /// <summary>
         /// 添加UI上指定组件的监听事件
@@ -153,6 +154,6 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Release() => ReferencePool.Release(this);
+        public void Release() => GlobalModule.ReferencePoolModule.Release(this);
     }
 }

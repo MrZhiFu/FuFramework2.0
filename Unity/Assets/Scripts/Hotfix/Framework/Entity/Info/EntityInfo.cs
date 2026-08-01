@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Entity
         public static EntityInfo Create(Entity entity)
         {
             if (entity is null) throw new InvalidOperationException("[EntityInfo] 创建实体信息失败，实体显示对象为空!");
-            var entityInfo = ReferencePool.Acquire<EntityInfo>();
+            var entityInfo = GlobalModule.ReferencePoolModule.Acquire<EntityInfo>();
             entityInfo.Entity = entity;
             entityInfo.Status = EEntityStatus.WillInit;
             return entityInfo;

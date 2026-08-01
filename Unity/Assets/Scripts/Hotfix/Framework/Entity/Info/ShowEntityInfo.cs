@@ -1,4 +1,5 @@
 using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity
@@ -41,7 +42,7 @@ namespace Hotfix.Framework.Entity
         /// <returns></returns>
         public static ShowEntityInfo Create(int serialId, int entityId, EntityGroup entityGroup, object userData)
         {
-            var showEntityInfo = ReferencePool.Acquire<ShowEntityInfo>();
+            var showEntityInfo = GlobalModule.ReferencePoolModule.Acquire<ShowEntityInfo>();
             showEntityInfo.SerialId    = serialId;
             showEntityInfo.EntityId    = entityId;
             showEntityInfo.EntityGroup = entityGroup;

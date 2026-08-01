@@ -1,5 +1,6 @@
 using UnityEngine;
 using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity
@@ -29,7 +30,7 @@ namespace Hotfix.Framework.Entity
         /// <returns></returns>
         public static AttachEntityInfo Create(Transform parentTransform, object userData)
         {
-            var attachEntityInfo = ReferencePool.Acquire<AttachEntityInfo>();
+            var attachEntityInfo = GlobalModule.ReferencePoolModule.Acquire<AttachEntityInfo>();
             attachEntityInfo.ParentTransform = parentTransform;
             attachEntityInfo.UserData        = userData;
             return attachEntityInfo;

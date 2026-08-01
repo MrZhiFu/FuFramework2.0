@@ -7,7 +7,6 @@ using Hotfix.Game.Config.Tables;
 using GuideData = Hotfix.Game.Config.Tables.Guide;
 using GuideStepData = Hotfix.Game.Config.Tables.GuideStep;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePools;
 using System.Linq;
 using UnityEngine;
 
@@ -203,7 +202,7 @@ namespace Hotfix.Framework.Guide
             // 回收当前引导的所有步骤到引用池中
             foreach (var (_, step) in m_AllStepDict)
             {
-                ReferencePool.Release(step);
+                GlobalModule.ReferencePoolModule.Release(step);
             }
 
             m_AllStepDict.Clear();
@@ -617,7 +616,7 @@ namespace Hotfix.Framework.Guide
 
             if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
             {
-                ReferencePool.Release(m_CurrentStep); // 回收当前步骤到引用池中
+                GlobalModule.ReferencePoolModule.Release(m_CurrentStep); // 回收当前步骤到引用池中
                 m_CurrentStep = nextStep;
                 ExecuteCurrentStep();
             }
@@ -652,7 +651,7 @@ namespace Hotfix.Framework.Guide
             // 回收当前引导的所有步骤到引用池中
             foreach (var (_, step) in m_AllStepDict)
             {
-                ReferencePool.Release(step);
+                GlobalModule.ReferencePoolModule.Release(step);
             }
 
             m_AllStepDict.Clear();

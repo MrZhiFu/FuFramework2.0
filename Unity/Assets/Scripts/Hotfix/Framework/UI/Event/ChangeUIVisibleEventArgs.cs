@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的打开界面成功事件。</returns>
         public static ChangeUIVisibleEventArgs Create(WinBase win, bool visible, object userData)
         {
-            var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
+            var uiSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<ChangeUIVisibleEventArgs>();
             uiSuccessEventArgs.Win   = win;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;

@@ -1,7 +1,6 @@
 using System;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
 
 namespace Hotfix.Framework.Download
 {
@@ -39,7 +38,7 @@ namespace Hotfix.Framework.Download
         {
             if (deltaLength <= 0) throw new InvalidOperationException("下载的增量数据大小必须大于0.");
 
-            var downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
+            var downloadAgentHelperUpdateLengthEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
             downloadAgentHelperUpdateLengthEventArgs.DeltaLength = deltaLength;
             return downloadAgentHelperUpdateLengthEventArgs;
         }

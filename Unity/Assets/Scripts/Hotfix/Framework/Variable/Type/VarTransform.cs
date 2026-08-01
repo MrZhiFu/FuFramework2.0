@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 ﻿using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarTransform(Transform value)
         {
-            var varValue = ReferencePool.Acquire<VarTransform>();
+            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarTransform>();
             varValue.Value = value;
             return varValue;
         }

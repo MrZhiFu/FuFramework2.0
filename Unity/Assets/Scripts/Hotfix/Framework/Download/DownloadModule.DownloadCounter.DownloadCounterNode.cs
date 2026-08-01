@@ -1,4 +1,5 @@
 using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Download
 {
@@ -26,7 +27,7 @@ namespace Hotfix.Framework.Download
                 /// <returns></returns>
                 public static DownloadCounterNode Create()
                 {
-                    return ReferencePool.Acquire<DownloadCounterNode>();
+                    return GlobalModule.ReferencePoolModule.Acquire<DownloadCounterNode>();
                 }
 
                 /// <summary>

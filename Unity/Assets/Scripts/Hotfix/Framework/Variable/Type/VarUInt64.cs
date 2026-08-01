@@ -1,4 +1,4 @@
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 ﻿// ReSharper disable once CheckNamespace
 
 namespace Hotfix.Framework.Variable
@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarUInt64(ulong value)
         {
-            var varValue = ReferencePool.Acquire<VarUInt64>();
+            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarUInt64>();
             varValue.Value = value;
             return varValue;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.ReferencePools;
 using Hotfix.Game.Config;
+using Hotfix.Framework.Core;
 using RedDotRow = Hotfix.Game.Config.Tables.RedDot;
 
 // ReSharper disable once CheckNamespace
@@ -104,7 +105,7 @@ namespace Hotfix.Framework.RedDot
         /// <returns>创建的静态节点</returns>
         public static RedDotNode Create(RedDotRow row)
         {
-            var node = ReferencePool.Acquire<RedDotNode>();
+            var node = GlobalModule.ReferencePoolModule.Acquire<RedDotNode>();
             node.Key           = row.Id;
             node.IsStatic      = true;
             node.DisplayMode   = row.DisplayMode;
@@ -122,7 +123,7 @@ namespace Hotfix.Framework.RedDot
         /// <returns>创建的动态节点</returns>
         public static RedDotNode CreateDynamic(RedDotKey key, RedDotNode parent)
         {
-            var node = ReferencePool.Acquire<RedDotNode>();
+            var node = GlobalModule.ReferencePoolModule.Acquire<RedDotNode>();
             node.Key           = key;
             node.IsStatic      = false;
             node.Parent        = parent;

@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.TaskPool;
+using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Download
 {
@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Download
             /// <returns>创建的下载任务。</returns>
             public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
             {
-                var downloadTask = ReferencePool.Acquire<DownloadTask>();
+                var downloadTask = GlobalModule.ReferencePoolModule.Acquire<DownloadTask>();
                 downloadTask.Initialize(++m_Serial, tag, priority, userData);
                 downloadTask.DownloadedFullPath = downloadedFullPath;
                 downloadTask.DownloadUri        = downloadUri;

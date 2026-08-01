@@ -71,7 +71,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建的对象不能为空.");
 
-                var tempObj = ReferencePool.Acquire<Object<T>>();
+                var tempObj = GlobalModule.ReferencePoolModule.Acquire<Object<T>>();
                 tempObj.TargetObject = obj;
                 tempObj.SpawnCount   = spawned ? 1 : 0;
 
@@ -120,7 +120,7 @@ namespace Hotfix.Framework.ObjectPool
             public void OnRelease()
             {
                 TargetObject.OnRelease();
-                ReferencePool.Release(TargetObject);
+                GlobalModule.ReferencePoolModule.Release(TargetObject);
             }
         }
     }

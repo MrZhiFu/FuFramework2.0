@@ -1,6 +1,6 @@
 using System;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Entity
         /// <returns>创建的显示实体成功事件。</returns>
         public static ShowEntitySuccessEventArgs Create(Entity entity, float duration, object userData)
         {
-            var showEntitySuccessEventArgs = ReferencePool.Acquire<ShowEntitySuccessEventArgs>();
+            var showEntitySuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<ShowEntitySuccessEventArgs>();
             showEntitySuccessEventArgs.Entity          = entity;
             showEntitySuccessEventArgs.Duration        = duration;
             showEntitySuccessEventArgs.UserData        = ((ShowEntityInfoEx)userData).UserData;

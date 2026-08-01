@@ -1,5 +1,5 @@
-using Hotfix.Framework.ReferencePools;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.Core;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace 禁用命名空间检查
@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的打开界面失败事件。</returns>
         public static OpenUIFailureEventArgs Create(int serialId, string winName, object userData)
         {
-            var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
+            var openUIFailureEventArgs = GlobalModule.ReferencePoolModule.Acquire<OpenUIFailureEventArgs>();
             openUIFailureEventArgs.SerialId = serialId;
             openUIFailureEventArgs.WinName   = winName;
             openUIFailureEventArgs.UserData = userData;

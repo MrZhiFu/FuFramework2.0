@@ -1,7 +1,7 @@
 using System;
-using Hotfix.Framework.ReferencePools;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Timer
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
         {
-            var timerInfo = ReferencePool.Acquire<FrameTimer>();
+            var timerInfo = GlobalModule.ReferencePoolModule.Acquire<FrameTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id                = timerId;

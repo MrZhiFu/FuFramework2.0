@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
@@ -37,7 +37,7 @@ namespace Hotfix.Framework.RedDot
         /// <returns>创建的事件参数实例</returns>
         public static RedDotChangedEventArgs Create()
         {
-            var redDotChangedEventArgs = ReferencePool.Acquire<RedDotChangedEventArgs>();
+            var redDotChangedEventArgs = GlobalModule.ReferencePoolModule.Acquire<RedDotChangedEventArgs>();
             return redDotChangedEventArgs;
         }
     }

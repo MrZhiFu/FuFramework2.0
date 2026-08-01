@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePools;
 using System;
 ﻿using System.Collections.Generic;
 using Hotfix.Framework.Core;
@@ -250,7 +249,7 @@ namespace Hotfix.Framework.TaskPool
             {
                 if (task.SerialId != serialId) continue;
                 m_WaitingTaskList.Remove(task);
-                ReferencePool.Release(task);
+                GlobalModule.ReferencePoolModule.Release(task);
                 return true;
             }
 
@@ -266,7 +265,7 @@ namespace Hotfix.Framework.TaskPool
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Release(task);
+                    GlobalModule.ReferencePoolModule.Release(task);
                     return true;
                 }
 
@@ -293,7 +292,7 @@ namespace Hotfix.Framework.TaskPool
                 if (task.Tag == tag)
                 {
                     m_WaitingTaskList.Remove(currentWaitingTask);
-                    ReferencePool.Release(task);
+                    GlobalModule.ReferencePoolModule.Release(task);
                     count++;
                 }
 
@@ -311,7 +310,7 @@ namespace Hotfix.Framework.TaskPool
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Release(task);
+                    GlobalModule.ReferencePoolModule.Release(task);
                     count++;
                 }
 
@@ -331,7 +330,7 @@ namespace Hotfix.Framework.TaskPool
 
             foreach (var task in m_WaitingTaskList)
             {
-                ReferencePool.Release(task);
+                GlobalModule.ReferencePoolModule.Release(task);
             }
 
             m_WaitingTaskList.Clear();
@@ -341,7 +340,7 @@ namespace Hotfix.Framework.TaskPool
                 var task = workingAgent.Task;
                 workingAgent.Reset();
                 m_FreeAgentStack.Push(workingAgent);
-                ReferencePool.Release(task);
+                GlobalModule.ReferencePoolModule.Release(task);
             }
 
             m_WorkingAgentList.Clear();
@@ -371,7 +370,7 @@ namespace Hotfix.Framework.TaskPool
                 current.Value.Reset();
                 m_FreeAgentStack.Push(current.Value);
                 m_WorkingAgentList.Remove(current);
-                ReferencePool.Release(task);
+                GlobalModule.ReferencePoolModule.Release(task);
                 current = next;
             }
         }
@@ -401,7 +400,7 @@ namespace Hotfix.Framework.TaskPool
                     m_WaitingTaskList.Remove(current);
 
                 if (status is EStartTaskStatus.Done or EStartTaskStatus.UnknownError)
-                    ReferencePool.Release(task);
+                    GlobalModule.ReferencePoolModule.Release(task);
 
                 current = next;
             }

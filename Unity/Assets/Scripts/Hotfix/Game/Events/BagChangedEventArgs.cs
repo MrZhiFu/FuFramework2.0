@@ -1,5 +1,5 @@
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ReferencePools;
+using Hotfix.Framework.Core;
 
 namespace Hotfix.Game.Events
 {
@@ -20,7 +20,7 @@ namespace Hotfix.Game.Events
         /// <returns></returns>
         public static BagChangedEventArgs Create()
         {
-            var eventArgs = ReferencePool.Acquire<BagChangedEventArgs>();
+            var eventArgs = GlobalModule.ReferencePoolModule.Acquire<BagChangedEventArgs>();
             return eventArgs;
         }
     }
