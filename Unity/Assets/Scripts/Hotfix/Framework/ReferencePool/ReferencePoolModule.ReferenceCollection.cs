@@ -73,16 +73,18 @@ namespace Hotfix.Framework.ReferencePool
             {
                 if (typeof(T) != RefType) throw new InvalidOperationException("[ReferencePoolModule.ReferenceCollection] 引用获取失败，引用类型无效.");
 
-                UsingReferenceCount++;
-                AcquireReferenceCount++;
-
                 lock (m_FreeStack)
                 {
+                    UsingReferenceCount++;
+                    AcquireReferenceCount++;
+
                     if (m_FreeStack.Count > 0)
                         return m_FreeStack.Pop() as T;
+
+                    AddReferenceCount++;
                 }
 
-                AddReferenceCount++;
+                // 对象创建在锁外，避免阻塞其他线程的获取/释放
                 return new T();
             }
 
@@ -103,10 +105,14 @@ namespace Hotfix.Framework.ReferencePool
                     // 清理引用，清除数据后方便重用该对象
                     reference.Clear();
                     m_FreeStack.Push(reference);
-                }
 
-                ReleaseReferenceCount++;
-                UsingReferenceCount--;
+                    ReleaseReferenceCount++;
+
+                    if (UsingReferenceCount <= 0)
+                        throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，使用计数已为零，存在未通过池获取的 Release 调用.");
+
+                    UsingReferenceCount--;
+                }
             }
 
             /// <summary>
