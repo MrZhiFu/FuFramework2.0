@@ -204,8 +204,7 @@ namespace Hotfix.Framework.Asset
             handle.Release();
 
             // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
-            if (m_AssetModule != null) // 防御：静态模块引用可能被其他实例 Clear 置 null
-                m_AssetModule.UnloadAsset(path);
+            m_AssetModule?.UnloadAsset(path);
 
             m_HandleDict.Remove(path);
             FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
