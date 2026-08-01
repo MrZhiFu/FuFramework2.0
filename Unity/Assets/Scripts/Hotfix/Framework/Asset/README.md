@@ -65,25 +65,6 @@ UniTask<BundleFileHandle> LoadRawFileAsync(string path)
 UniTask<BundleFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
 ```
 
-##### 同步加载资源(不推荐使用)
-
-```csharp
-AssetHandle LoadAssetSync(string path)
-AssetHandle LoadAssetSync<T>(string path) where T : Object
-AssetHandle LoadAssetSync(string path, Type type)
-AssetHandle LoadAssetSync(AssetInfo assetInfo)
-
-AllAssetsHandle LoadAllAssetsSync(string path)
-AllAssetsHandle LoadAllAssetsSync<T>(string path) where T : Object
-AllAssetsHandle LoadAllAssetsSync(string path, Type type)
-AllAssetsHandle LoadAllAssetsSync(AssetInfo assetInfo)
-
-SubAssetsHandle LoadSubAssetSync(string path)
-
-BundleFileHandle LoadRawFileSync(string path)
-BundleFileHandle LoadRawFileSync(AssetInfo assetInfo)
-```
-
 ##### 异步加载场景
 
 ```csharp
@@ -91,18 +72,21 @@ UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool a
 UniTask<SceneHandle> LoadSceneAsync(AssetInfo assetInfo, LoadSceneMode sceneMode, bool activateOnLoad = true)
 ```
 
+> 注意：`activateOnLoad=false`（预加载后手动激活）时 Provider 在手动激活前不会完成，此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 `true`）。
+
 ##### 实例化
 
 ```csharp
 UniTask<GameObject> InstantiateAsync(string path)  // 异步实例化(推荐使用)
-GameObject InstantiateSync(string path)   // 同步实例化(不推荐使用)
 ```
+
+> 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(path)` 释放引用。
 
 #### 资源包管理
 
 ```csharp
-// 初始化资源包
-UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null, bool isDefaultPackage = true)
+// 初始化资源包（同一包并发初始化共享任务，失败后可重试）
+UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null)
 
 // 资源包操作
 ResourcePackage CreatePackage(string packageName)
@@ -267,6 +251,7 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 var rawFileHandle = await assetModule.LoadRawFileAsync("Assets/Game/Data/config.json");
 byte[] fileData = rawFileHandle.GetRawFileData();
 string fileText = rawFileHandle.GetRawFileText();
+rawFileHandle.Release(); // RAW 文件句柄同为引用计数，使用完毕后必须释放
 ```
 
 ### 子资源加载（如图集中的精灵）
@@ -288,9 +273,13 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 
 ### 通用注意事项
 
-1. 使用 `AssetLoadRegister` 时，重复加载同一资源会返回已缓存的句柄
-2. 资源句柄使用完毕后需要调用 `Release()` 释放，否则会导致内存泄漏
-3. 热更新流程需要通过事件系统监听各个阶段的状态
+1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.Release()` 会自动释放其加载的所有句柄。
+2. **并发去重**：同一路径并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_LoadingTasks`/`m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
+3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
+4. **`UnloadAllAssetsAsync` 挂起风险**：该操作会释放所有已加载句柄，进行中的 `LoadAssetAsync` 句柄被 Release 后 `Completed` 回调不再触发，其 UniTask 将永久挂起，请确保调用时无进行中的加载。
+5. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
+6. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset`/`UnloadUnusedAssetsAsync` 显式卸载。
+7. 热更新流程需要通过事件系统监听各个阶段的状态。
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
 
