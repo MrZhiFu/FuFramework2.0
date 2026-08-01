@@ -79,7 +79,13 @@ namespace Hotfix.Framework.ReferencePool
                     AcquireReferenceCount++;
 
                     if (m_FreeStack.Count > 0)
-                        return m_FreeStack.Pop() as T;
+                    {
+                        var reference = m_FreeStack.Pop();
+                        if (reference is not T result)
+                            throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 引用获取失败，池中对象类型不匹配，期望 '{RefType.Name}'，实际 '{reference.GetType().Name}'.");
+
+                        return result;
+                    }
 
                     AddReferenceCount++;
                 }
