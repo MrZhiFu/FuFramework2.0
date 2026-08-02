@@ -289,6 +289,12 @@ namespace Hotfix.Framework.Entity
         public void RecycleEntity(Entity entity) => m_InstancePool.Recycle(entity.Go);
 
         /// <summary>
+        /// 回收实体实例对象到对象池。
+        /// </summary>
+        /// <param name="entityInstanceObject">要回收的实体实例对象。</param>
+        public void RecycleEntityInstanceObject(EntityInstanceObject entityInstanceObject) => m_InstancePool.Recycle(entityInstanceObject);
+
+        /// <summary>
         /// 设置实体实例对象是否被锁定。
         /// </summary>
         /// <param name="entityInstance"></param>

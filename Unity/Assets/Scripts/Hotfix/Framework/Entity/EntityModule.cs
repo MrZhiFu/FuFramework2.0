@@ -533,7 +533,18 @@ namespace Hotfix.Framework.Entity
             }
 
             // 实体资源已经加载完成，开始显示实体
-            InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityInstanceObj.Target, false, 1f, showEntityInfoEx);
+            try
+            {
+                InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityInstanceObj.Target, false, 1f, showEntityInfoEx);
+            }
+            catch
+            {
+                // 显示失败：若实体未登记（创建实体失败等），回收已获取的实例对象，避免占用对象池槽位
+                if (!HasEntity(entityId))
+                    entityGroup.RecycleEntityInstanceObject(entityInstanceObj);
+                throw;
+            }
+
             return await tcs.Task;
         }
 
@@ -968,7 +979,21 @@ namespace Hotfix.Framework.Entity
 
             // 实体资源已经加载完成，开始显示实体
             var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
-            InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, progress, showEntityInfoEx);
+            try
+            {
+                InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, progress, showEntityInfoEx);
+            }
+            catch (Exception exception)
+            {
+                // 显示失败：若实体未登记（创建实体失败等），回收已注册的实例对象，避免占用对象池槽位；并确保 tcs 完成、释放 showEntityInfo
+                if (!HasEntity(showEntityInfo.EntityId))
+                    showEntityInfo.EntityGroup.RecycleEntityInstanceObject(entityInstanceObject);
+
+                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+                tcs.TrySetException(exception);
+                return;
+            }
+
             GlobalModule.ReferencePoolModule.Release(showEntityInfo);
         }
 

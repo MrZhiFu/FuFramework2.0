@@ -143,6 +143,9 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception exception)
             {
+                // 打开失败：回收已获取的界面实例对象，避免占用对象池槽位
+                if (win != null) m_WinObjPool.Recycle(win);
+
                 var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
                 m_EventModule.Broadcast(this, openUIFailureEventArgs);
                 FuLogger.LogError($"[UIModule] 打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
