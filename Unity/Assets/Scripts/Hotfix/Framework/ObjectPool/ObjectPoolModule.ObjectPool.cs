@@ -536,23 +536,15 @@ namespace Hotfix.Framework.ObjectPool
                     toReleaseCount -= m_CachedToReleaseObjectList.Count;
                 }
 
-                // 第二阶段：根据优先级和最后使用时间，在剩余可释放候选列表中，找到超过需要释放的数量的对象，加入到待释放列表中
-                for (var i = 0; toReleaseCount > 0 && i < candidateObjects.Count; i++)
+                // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toReleaseCount 个
+                candidateObjects.Sort((a, b) =>
                 {
-                    for (var j = i + 1; j < candidateObjects.Count; j++)
-                    {
-                        // 如果当前对象的优先级高于下一个对象，或者优先级相同但最后使用时间更晚，则交换位置。
-                        if (candidateObjects[i].Priority > candidateObjects[j].Priority ||
-                            candidateObjects[i].Priority    == candidateObjects[j].Priority &&
-                            candidateObjects[i].LastUseTime > candidateObjects[j].LastUseTime)
-                        {
-                            (candidateObjects[i], candidateObjects[j]) = (candidateObjects[j], candidateObjects[i]);
-                        }
-                    }
-
-                    // 上面一层循环结束后，candidateObjects[i]的位置就是优先级最低的对象，加入到待释放列表中
+                    var priorityCmp = a.Priority.CompareTo(b.Priority);
+                    return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
+                });
+                for (var i = 0; i < toReleaseCount && i < candidateObjects.Count; i++)
+                {
                     m_CachedToReleaseObjectList.Add(candidateObjects[i]);
-                    toReleaseCount--;
                 }
 
                 return m_CachedToReleaseObjectList;
