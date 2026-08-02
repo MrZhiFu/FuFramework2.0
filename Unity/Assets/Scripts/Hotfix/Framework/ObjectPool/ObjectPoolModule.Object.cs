@@ -97,8 +97,18 @@ namespace Hotfix.Framework.ObjectPool
             public T Spawn()
             {
                 SpawnCount++;
-                TargetObject.LastUseTime = DateTime.UtcNow;
-                TargetObject.OnSpawn();
+                try
+                {
+                    TargetObject.LastUseTime = DateTime.UtcNow;
+                    TargetObject.OnSpawn();
+                }
+                catch
+                {
+                    // OnSpawn 异常时回滚计数，避免生成计数与真实状态失配
+                    SpawnCount--;
+                    throw;
+                }
+
                 return TargetObject;
             }
 
@@ -107,11 +117,12 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             public void Recycle()
             {
+                if (SpawnCount <= 0)
+                    throw new InvalidOperationException($"[ObjectPoolModule] 对象 '{Name}' 生成次数已经为 0, 回收失败.");
+
                 TargetObject.OnRecycle();
                 TargetObject.LastUseTime = DateTime.UtcNow;
                 SpawnCount--;
-                if (SpawnCount < 0)
-                    throw new InvalidOperationException($"[ObjectPoolModule] 对象 '{Name}' 生成次数已经小于 0, 回收失败.");
             }
 
             /// <summary>
@@ -119,8 +130,15 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             public void OnRelease()
             {
-                TargetObject.OnRelease();
-                GlobalModule.ReferencePoolModule.Release(TargetObject);
+                try
+                {
+                    TargetObject.OnRelease();
+                }
+                finally
+                {
+                    // 即使 OnRelease 异常也回收目标对象到引用池，避免跳过清理
+                    GlobalModule.ReferencePoolModule.Release(TargetObject);
+                }
             }
         }
     }

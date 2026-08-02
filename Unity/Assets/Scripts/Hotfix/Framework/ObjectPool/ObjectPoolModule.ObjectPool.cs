@@ -163,6 +163,9 @@ namespace Hotfix.Framework.ObjectPool
             /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
             internal override void Update(float unscaledDeltaTime)
             {
+                // 默认不自动释放时短路，避免无谓的每帧累加
+                if (AutoReleaseInterval >= float.MaxValue) return;
+
                 m_AutoReleaseTimer += unscaledDeltaTime;
 
                 // 每隔 AutoReleaseInterval 秒触发一次自动释放检查
