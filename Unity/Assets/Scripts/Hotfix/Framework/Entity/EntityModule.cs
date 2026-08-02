@@ -542,9 +542,12 @@ namespace Hotfix.Framework.Entity
                 // 显示失败：若实体未登记（创建实体失败等），回收已获取的实例对象，避免占用对象池槽位
                 if (!HasEntity(entityId))
                     entityGroup.RecycleEntityInstanceObject(entityInstanceObj);
+                GlobalModule.ReferencePoolModule.Release(showEntityInfoEx);
                 throw;
             }
 
+            // 显示完成，释放临时传递数据的引用池对象
+            GlobalModule.ReferencePoolModule.Release(showEntityInfoEx);
             return await tcs.Task;
         }
 
@@ -1020,15 +1023,21 @@ namespace Hotfix.Framework.Entity
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
+                // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
+                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
                 return;
             }
 
             m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
             exception = new InvalidOperationException($"[EntityModule]加载实体资源失败, 实体资源名称 '{entityAssetName}', 加载状态 '{status}', 错误信息 '{errorMessage}'.");
 
-            // 发送显示实体失败事件
-            var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), userData);
+            // 发送显示实体失败事件（事件参数期望 ShowEntityInfoEx，取 UserData 中的）
+            var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
+            var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), showEntityInfoEx);
             m_EventModule.Broadcast(this, showEntityFailureEventArgs);
+
+            // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
+            GlobalModule.ReferencePoolModule.Release(showEntityInfo);
 
             tcs.TrySetException(exception);
             throw exception;

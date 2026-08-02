@@ -55,6 +55,10 @@ namespace Hotfix.Framework.Entity
         /// </summary>
         public void Clear()
         {
+            // 连带释放 UserData 承载的引用池对象（ShowEntityInfoEx），避免复用丢失
+            if (UserData is ShowEntityInfoEx showEntityInfoEx)
+                GlobalModule.ReferencePoolModule.Release(showEntityInfoEx);
+
             SerialId    = 0;
             EntityId    = 0;
             EntityGroup = null;
