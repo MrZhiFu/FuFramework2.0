@@ -120,6 +120,10 @@ namespace Hotfix.Framework.UI
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]关闭-OnClose().");
             Visible = false;
 
+            // 关闭时自动清理：停止计时器、注销事件订阅，避免 invisible UI 持续响应
+            StopAllTimers();
+            UnSubscribeAll();
+
             // 界面关闭动画
             switch (TweenType)
             {
