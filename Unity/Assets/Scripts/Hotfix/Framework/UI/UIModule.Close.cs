@@ -73,6 +73,10 @@ namespace Hotfix.Framework.UI
             win._OnClose();
             uiGroup.Refresh();
 
+            // 模糊界面：隐藏/重定位模糊覆盖层
+            if (win.UIConfig?.Blur == true)
+                OnWinClosed(win);
+
             // 抛出关闭界面完成事件
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
             m_EventModule.Broadcast(this, closeUICompleteEventArgs);
@@ -140,6 +144,10 @@ namespace Hotfix.Framework.UI
             uiGroup.Remove(win);
             win._OnClose();
             uiGroup.Refresh();
+
+            // 模糊界面：隐藏/重定位模糊覆盖层
+            if (win.UIConfig?.Blur == true)
+                OnWinClosed(win);
 
             // 抛出关闭界面完成事件
             var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
