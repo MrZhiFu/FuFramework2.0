@@ -64,7 +64,22 @@ namespace Hotfix.Framework.ObjectPool
             /// <summary>
             /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
             /// </summary>
-            public override float AutoReleaseInterval { get; set; }
+            private float m_AutoReleaseInterval;
+
+            /// <summary>
+            /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
+            /// </summary>
+            public override float AutoReleaseInterval
+            {
+                get => m_AutoReleaseInterval;
+                set
+                {
+                    if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动释放间隔秒数不能小于0.");
+                    if (Mathf.Approximately(m_AutoReleaseInterval, value)) return;
+
+                    m_AutoReleaseInterval = value;
+                }
+            }
 
             /// <summary>
             /// 获取或设置对象池的优先级。该优先级会影响该池子在对象池管理模块中卸载的顺序。
