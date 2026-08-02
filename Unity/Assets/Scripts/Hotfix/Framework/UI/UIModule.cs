@@ -132,6 +132,9 @@ namespace Hotfix.Framework.UI
                 if (AddGroup(layer)) continue;
                 FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");
             }
+
+            // 初始化 UI 背景模糊功能（挂载截屏组件 + 预热 Shader）
+            InitBlur();
         }
 
         /// <summary>
@@ -168,6 +171,7 @@ namespace Hotfix.Framework.UI
             m_LoadingDict.Clear();
             m_WaitRecycleQueue.Clear();
             PkgManager.RemoveAllPkg();
+            ReleaseBlur();
         }
 
         /// <summary>
