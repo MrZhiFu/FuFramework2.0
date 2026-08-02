@@ -18,37 +18,57 @@ namespace Hotfix.Framework.ObjectPool
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
         public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
         {
+            /// <summary>
             /// 存储对象的多值字典，key为对象名称，value为对象(可为多个)。
-            /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用
+            /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用。
+            /// </summary>
             private readonly FuMultiDictionary<string, Object<T>> m_ObjectMultiDict;
 
-            /// 存储目标对象与其对应的内部对象的字典，key为目标对象，value为对应的内部对象.
+            /// <summary>
+            /// 存储目标对象与其对应的内部对象的字典，key为目标对象，value为对应的内部对象。
+            /// </summary>
             private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
 
-            /// 缓存当前所有可以释放的对象列表(未使用的、未加锁的、自定义标记为可释放的).
+            /// <summary>
+            /// 缓存当前所有可以释放的对象列表(未使用的、未加锁的、自定义标记为可释放的)。
+            /// </summary>
             private readonly List<T> m_CachedCanReleaseObjectList;
 
-            /// 缓存经过筛选函数后最终决定要释放的对象列表
+            /// <summary>
+            /// 缓存经过筛选函数后最终决定要释放的对象列表。
+            /// </summary>
             private readonly List<T> m_CachedToReleaseObjectList;
 
+            /// <summary>
             /// 默认释放对象的筛选函数(释放策略)。定义了如何从候选列表中选出要释放的对象（基于优先级和最后使用时间）。
+            /// </summary>
             private readonly ReleaseObjectFilterCallback<T> m_DefaultReleaseObjectFilterCallback;
 
 
+            /// <summary>
             /// 对象池的容量。
+            /// </summary>
             private int m_Capacity;
 
+            /// <summary>
             /// 对象过期时间秒数。一个对象闲置超过这个时间（秒），就会被标记为可释放。
+            /// </summary>
             private float m_ExpireTime;
 
 
+            /// <summary>
             /// 自动释放计时器。用于计时，每隔 AutoReleaseInterval 秒触发一次自动释放检查。
+            /// </summary>
             private float m_AutoReleaseTimer;
 
+            /// <summary>
             /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
+            /// </summary>
             public override float AutoReleaseInterval { get; set; }
 
+            /// <summary>
             /// 获取或设置对象池的优先级。该优先级会影响该池子在对象池管理模块中卸载的顺序。
+            /// </summary>
             public override int Priority { get; set; }
 
             /// <summary>
@@ -58,23 +78,31 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             public override bool AllowSpawnInUse { get; }
 
+            /// <summary>
             /// 获取对象池对象类型。
+            /// </summary>
             public override Type ObjectType => typeof(T);
 
+            /// <summary>
             /// 获取对象池中对象的数量。
+            /// </summary>
             public override int Count => m_TargetObjectDict.Count;
 
+            /// <summary>
             /// 获取对象池中能被释放的对象的数量。
+            /// </summary>
             public override int CanReleaseCount
             {
                 get
                 {
-                    _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
+                    GetCanReleaseObjects(m_CachedCanReleaseObjectList);
                     return m_CachedCanReleaseObjectList.Count;
                 }
             }
 
+            /// <summary>
             /// 获取或设置对象池的容量。
+            /// </summary>
             public override int Capacity
             {
                 get => m_Capacity;
@@ -88,7 +116,9 @@ namespace Hotfix.Framework.ObjectPool
                 }
             }
 
+            /// <summary>
             /// 获取或设置对象池对象过期秒数。
+            /// </summary>
             public override float ExpireTime
             {
                 get => m_ExpireTime;
@@ -115,7 +145,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 m_ObjectMultiDict                    = new FuMultiDictionary<string, Object<T>>();
                 m_TargetObjectDict                   = new Dictionary<object, Object<T>>();
-                m_DefaultReleaseObjectFilterCallback = _DefaultReleaseObjectFilterCallback;
+                m_DefaultReleaseObjectFilterCallback = DefaultReleaseObjectFilterCallback;
                 m_CachedCanReleaseObjectList         = new List<T>();
                 m_CachedToReleaseObjectList          = new List<T>();
 
@@ -227,7 +257,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 要回收的目标对象不能为空.");
 
-                var obj = _GetObject(target);
+                var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
                 obj.Recycle();
@@ -257,7 +287,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
 
-                var obj = _GetObject(target);
+                var obj = GetObject(target);
                 if (obj == null) return false;
 
 
@@ -317,7 +347,7 @@ namespace Hotfix.Framework.ObjectPool
                 m_AutoReleaseTimer = 0f;
 
                 // 获取所有可释放的对象
-                _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
+                GetCanReleaseObjects(m_CachedCanReleaseObjectList);
                 FuLogger.LogInfo($"[ObjectPoolModule] 尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
 
                 // 筛选需要释放的对象
@@ -337,7 +367,7 @@ namespace Hotfix.Framework.ObjectPool
             public override void ReleaseAllUnused()
             {
                 m_AutoReleaseTimer = 0f;
-                _GetCanReleaseObjects(m_CachedCanReleaseObjectList);
+                GetCanReleaseObjects(m_CachedCanReleaseObjectList);
                 foreach (var toReleaseObject in m_CachedCanReleaseObjectList)
                 {
                     ReleaseObject(toReleaseObject);
@@ -393,7 +423,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
 
-                var obj = _GetObject(target);
+                var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
                 obj.Locked = locked;
@@ -419,7 +449,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
 
-                var obj = _GetObject(target);
+                var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
 
@@ -450,7 +480,7 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             /// <param name="target"></param>
             /// <returns></returns>
-            private Object<T> _GetObject(object target)
+            private Object<T> GetObject(object target)
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
                 return m_TargetObjectDict.GetValueOrDefault(target);
@@ -460,7 +490,7 @@ namespace Hotfix.Framework.ObjectPool
             /// 获取对象池中能被释放的对象的数量
             /// </summary>
             /// <param name="results">结果列表</param>
-            private void _GetCanReleaseObjects(List<T> results)
+            private void GetCanReleaseObjects(List<T> results)
             {
                 if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
 
@@ -488,7 +518,7 @@ namespace Hotfix.Framework.ObjectPool
             /// <param name="toReleaseCount">需要释放的对象数量。</param>
             /// <param name="expireTimeThreshold">对象过期时间点(为空时表示不限制过期时间点)。</param>
             /// <returns>经筛选需要释放的对象集合。</returns>
-            private List<T> _DefaultReleaseObjectFilterCallback(List<T> candidateObjects, int toReleaseCount, DateTime? expireTimeThreshold)
+            private List<T> DefaultReleaseObjectFilterCallback(List<T> candidateObjects, int toReleaseCount, DateTime? expireTimeThreshold)
             {
                 m_CachedToReleaseObjectList.Clear();
 
