@@ -67,9 +67,9 @@
     "Layer": 2500,
     "TweenType": 1,
     "TweenDuration": 0.3,
-    "AdjustNotch": true,
+    "AdjustNotch": false,
     "PauseCoveredUI": false,
-    "Blur": false
+    "Blur": true
   },
   {
     "Name": "WinGlobalMask",
