@@ -14,7 +14,7 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class UIConfig : BeanBase
     {
-        public UIConfig(string Name, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI) 
+        public UIConfig(string Name, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI, bool Blur) 
         {
             this.Name = Name;
             this.Layer = Layer;
@@ -22,6 +22,7 @@ namespace Hotfix.Game.Config.Tables
             this.TweenDuration = TweenDuration;
             this.AdjustNotch = AdjustNotch;
             this.PauseCoveredUI = PauseCoveredUI;
+            this.Blur = Blur;
             PostInit();
         }
 
@@ -33,6 +34,7 @@ namespace Hotfix.Game.Config.Tables
             { if(!_buf["TweenDuration"].IsNumber) { throw new SerializationException(); }  TweenDuration = _buf["TweenDuration"]; }
             { if(!_buf["AdjustNotch"].IsBoolean) { throw new SerializationException(); }  AdjustNotch = _buf["AdjustNotch"]; }
             { if(!_buf["PauseCoveredUI"].IsBoolean) { throw new SerializationException(); }  PauseCoveredUI = _buf["PauseCoveredUI"]; }
+            { if(!_buf["Blur"].IsBoolean) { throw new SerializationException(); }  Blur = _buf["Blur"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -61,18 +63,23 @@ namespace Hotfix.Game.Config.Tables
         /// </summary>
         public float TweenDuration { private set; get; }
         /// <summary>
-        /// 是否适配刘海
+        /// 是否适配刘海:<br/>全屏界面一般为true<br/>弹窗一般为false
         /// </summary>
         public bool AdjustNotch { private set; get; }
         /// <summary>
-        /// 被遮挡时是否暂停
+        /// 被覆盖时是否暂停
         /// </summary>
         public bool PauseCoveredUI { private set; get; }
+        /// <summary>
+        /// 是否模糊:<br/>全屏界面一般为false<br/>弹窗一般为true
+        /// </summary>
+        public bool Blur { private set; get; }
         public const int __ID__ = -910817217;
         public override int GetTypeId() => __ID__;
 
         public  void ResolveRef(TableManager tables)
         {
+            
             
             
             
@@ -94,6 +101,7 @@ namespace Hotfix.Game.Config.Tables
             + "TweenDuration:" + TweenDuration + ","
             + "AdjustNotch:" + AdjustNotch + ","
             + "PauseCoveredUI:" + PauseCoveredUI + ","
+            + "Blur:" + Blur + ","
             + "}";
         }
 

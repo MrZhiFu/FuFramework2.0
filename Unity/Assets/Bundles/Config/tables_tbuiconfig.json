@@ -5,7 +5,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinLogin",
@@ -13,7 +14,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinPlayerList",
@@ -21,7 +23,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinPlayerCreate",
@@ -29,7 +32,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinLoginAnnouncement",
@@ -37,7 +41,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinBag",
@@ -45,7 +50,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinGlobalLoading",
@@ -53,7 +59,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinDialogMessageBox",
@@ -61,7 +68,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": true,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinGlobalMask",
@@ -69,7 +77,8 @@
     "TweenType": 0,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinClickGuide",
@@ -77,7 +86,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   },
   {
     "Name": "WinDialogGuide",
@@ -85,7 +95,8 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": true
   },
   {
     "Name": "WinLoadingScene",
@@ -93,6 +104,7 @@
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
-    "PauseCoveredUI": false
+    "PauseCoveredUI": false,
+    "Blur": false
   }
 ]
