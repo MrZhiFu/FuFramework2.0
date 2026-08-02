@@ -10,12 +10,12 @@ namespace #NAMESPACE#
 
         /// <summary>
         /// 初始化
-        /// </summary>  
+        /// </summary>
         protected override void OnInit()
         {
             InitUIComp();
             InitUIEvent();
-            InitEvent();
+            // 事件订阅已移至 OnOpen（每次打开重建），OnClose 框架自动清理
         }
 
         /// <summary>
@@ -27,17 +27,14 @@ namespace #NAMESPACE#
         }
 
         /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        
-        /// <summary>
         /// 界面打开
         /// </summary>
         protected override void OnOpen()
         {
+            InitEvent();
             Refresh();
         }
-        
+
         /// <summary>
         /// 界面关闭
         /// </summary>
