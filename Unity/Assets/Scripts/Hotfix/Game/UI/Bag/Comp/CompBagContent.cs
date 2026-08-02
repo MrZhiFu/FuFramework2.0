@@ -42,7 +42,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnInit()
         {
-            RegisterEvent();
+            InitEvent();
             
             InitData();
         }
@@ -50,7 +50,7 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void RegisterEvent()
+        private void InitEvent()
         {
             Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
         }

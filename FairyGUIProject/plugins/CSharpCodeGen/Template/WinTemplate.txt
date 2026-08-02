@@ -15,13 +15,13 @@ namespace #NAMESPACE#
         {
             InitUIComp();
             InitUIEvent();
-            // 事件订阅已移至 OnOpen（每次打开重建），OnClose 框架自动清理
+            InitEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void RegisterEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
@@ -31,7 +31,6 @@ namespace #NAMESPACE#
         /// </summary>
         protected override void OnOpen()
         {
-            RegisterEvent();
             Refresh();
         }
 

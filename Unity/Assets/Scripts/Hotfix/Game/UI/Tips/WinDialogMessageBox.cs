@@ -37,12 +37,13 @@ namespace Hotfix.Game.UI
         {
             InitUIComp();
             InitUIEvent();
+            InitEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void RegisterEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
@@ -53,7 +54,6 @@ namespace Hotfix.Game.UI
         /// </summary>
         protected override void OnOpen()
         {
-            RegisterEvent();
             if (UserData is not DialogMessageBoxData userData) return;
             m_data          = userData;
             txtContent.text = m_data.Message;

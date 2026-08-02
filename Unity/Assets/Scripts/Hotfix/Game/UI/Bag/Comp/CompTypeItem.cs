@@ -12,13 +12,13 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnInit()
         { 
-            RegisterEvent();
+            InitEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void RegisterEvent()
+        private void InitEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }

@@ -34,12 +34,13 @@ namespace Hotfix.Game.UI
         {
             InitUIComp();
             InitUIEvent();
+            InitEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void RegisterEvent()
+        private void InitEvent()
         {
             Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
             Subscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
@@ -51,7 +52,6 @@ namespace Hotfix.Game.UI
         /// </summary>
         protected override void OnOpen()
         {
-            RegisterEvent();
 	        playerList = AccountManager.Instance.PlayerList;
 	        listPlayer.numItems = playerList.Count;
             Refresh();
