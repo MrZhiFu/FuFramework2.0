@@ -21,7 +21,7 @@ namespace #NAMESPACE#
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
@@ -31,7 +31,7 @@ namespace #NAMESPACE#
         /// </summary>
         protected override void OnOpen()
         {
-            InitEvent();
+            RegisterEvent();
             Refresh();
         }
 

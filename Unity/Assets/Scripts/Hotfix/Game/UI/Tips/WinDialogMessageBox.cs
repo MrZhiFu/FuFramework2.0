@@ -1,4 +1,4 @@
-using Hotfix.Game.UI;
+﻿using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
@@ -37,31 +37,23 @@ namespace Hotfix.Game.UI
         {
             InitUIComp();
             InitUIEvent();
-            InitEvent();
-            InitRedDot();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
 
-        /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        private void InitRedDot()
-        {
-            // Example: RedDotRegister.RegisterRedDot(this, ERedDotKey.Bag_Item, btnLogin);
-        }
 
         /// <summary>
         /// 界面打开
         /// </summary>
         protected override void OnOpen()
         {
+            RegisterEvent();
             if (UserData is not DialogMessageBoxData userData) return;
             m_data          = userData;
             txtContent.text = m_data.Message;

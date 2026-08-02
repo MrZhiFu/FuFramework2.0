@@ -1,4 +1,4 @@
-using Hotfix.Game.UI;
+﻿using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
@@ -26,13 +26,12 @@ namespace Hotfix.Game.UI
         {
             InitUIComp();
             InitUIEvent();
-            InitEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
@@ -42,6 +41,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         protected override void OnOpen()
         {
+            RegisterEvent();
             Refresh();
         }
 

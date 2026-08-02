@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FairyGUI;
 using Hotfix.Framework.Event;
@@ -42,8 +42,7 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnInit()
         {
-            InitEvent();
-            InitRedDot();
+            RegisterEvent();
             
             InitData();
         }
@@ -51,18 +50,11 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
         }
 
-        /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        private void InitRedDot()
-        {
-            // Example: RedDotRegister.RegisterRedDot(this.winUI, ERedDotKey.Bag_Item, btnLogin);
-        }
 
         private void InitData()
         {

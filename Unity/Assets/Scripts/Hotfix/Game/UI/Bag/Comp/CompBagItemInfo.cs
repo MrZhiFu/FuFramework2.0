@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
@@ -21,25 +21,17 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void OnInit()
         {
-            InitEvent();
-            InitRedDot();
+            RegisterEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
         }
 
-        /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        private void InitRedDot()
-        {
-            // Example: RedDotRegister.RegisterRedDot(this.winUI, ERedDotKey.Bag_Item, btnLogin);
-        }
 
         /// <summary>
         /// 销毁。

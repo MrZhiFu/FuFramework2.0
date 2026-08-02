@@ -11,13 +11,13 @@ namespace #NAMESPACE#
         /// </summary>
         private void OnInit()
         { 
-            InitEvent();
+            RegisterEvent();
         }
 
         /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
-        private void InitEvent()
+        private void RegisterEvent()
         {
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }

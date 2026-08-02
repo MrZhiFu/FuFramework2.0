@@ -59,8 +59,7 @@ public static class HotfixProtoHandler
 ### 3.4 添加红点
 
 1. 在 `ModuleSetting/RedDotSetting` 中定义新的红点节点后保存，自动生成 `RedDotKeys` 中的 Key
-2. 在界面 `OnInit` 中使用 `RedDotRegister.RegisterRedDot` 注册
-3. 在适当时机调用 `RedDotModule.Instance.SetCount()` 更新状态
+2. 在适当时机调用 `RedDotModule.Instance.SetCount()` 更新状态
 
 ## 4. 程序集定义
 
