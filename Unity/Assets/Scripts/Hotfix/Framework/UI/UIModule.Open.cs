@@ -119,8 +119,8 @@ namespace Hotfix.Framework.UI
             {
                 if (win == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
-                // 创建FUI界面。
-                var winUI = UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent;
+                // 创建FUI界面。复用对象时直接使用已有 WinUI，避免每次新建 FairyGUI 对象造成泄漏。
+                var winUI = isNewIns ? UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent : win.WinUI;
 
                 // 初始化界面
                 win.Init(serialId, winUI, isNewIns, userData);
