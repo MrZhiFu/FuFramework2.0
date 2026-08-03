@@ -175,7 +175,7 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 将 GRoot 移动到安全区内。普通 UI 自动适配；全屏 UI 通过负偏移覆盖刘海。
+        /// 将 GRoot 缩放并移动到安全区内。
         /// </summary>
         private static void ApplyGRootSafeArea()
         {
