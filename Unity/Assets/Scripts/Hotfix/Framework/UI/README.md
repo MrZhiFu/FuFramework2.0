@@ -8,13 +8,14 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 
 - **基于 FairyGUI**：强大的 UI 框架支持，跨平台兼容
 - **完整的生命周期管理**：初始化、打开、关闭、暂停、恢复、被覆盖等完整流程
-- **多层级的 UI 分组**：支持 WorldUI、MainUI、Normal、Window、Tips、Guide、Loading 等层级
+- **多层级的 UI 分组**：支持 SceneUI、MainUI、Normal、Window、Tips、Guide、Loading 等层级
 - **对象池管理**：界面实例对象池，减少内存分配和GC压力
 - **异步资源加载**：基于 YooAsset 的异步 UI 包加载机制
 - **动画效果支持**：内置淡入淡出动画，支持自定义动画效果
 - **事件驱动架构**：完整的界面打开/关闭事件通知机制
 - **模块化设计**：界面组件化，自定义组件自持 Register 独立管理事件和计时器
 - **安全区适配**：自动适配刘海屏/打孔屏，GRoot 偏移到安全区内，普通 UI 自动避让，全屏 UI 可覆盖刘海
+- **背景模糊**：`UIConfig.Blur == true` 的界面自动获得全屏背景模糊（3D 场景 + 下方 UI 渐变为模糊，移动端友好的三级星型模糊）
 
 ## 2. 系统架构
 
@@ -28,7 +29,8 @@ UIModule (UI管理模块)
     ├── m_LoadingDict (加载中界面字典)
     ├── m_WaitRecycleQueue (待回收界面队列)
     ├── m_WinObjPool (界面实例对象池)
-    └── PkgManager (FUI包管理器)
+    ├── PkgManager (FUI包管理器)
+    └── Blur (背景模糊: UIModule.Blur + BlurCapture)
 
 GComponent (FairyGUI)
     ↑
@@ -64,7 +66,7 @@ WinInfo (界面信息)
 │                        UIModule                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  m_UIGroupDict (Dictionary<EUILayer, UIGroup>)          │   │
-│  │  - WorldUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
+│  │  - SceneUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │  m_WinObjPool (ObjectPool<WinObject>)                    │   │
@@ -432,7 +434,7 @@ protected void StartIntervalTimer(float interval, Action intervalCallback, ...)
 ```csharp
 public enum EUILayer
 {
-    WorldUI = 0,      // 世界场景UI，如HUD、血条
+    SceneUI = 0,      // 世界场景UI，如HUD、血条
     MainUI = 1500,    // 主界面
     Normal = 2000,    // 一般全屏界面
     Window = 2500,    // 窗口
@@ -497,7 +499,7 @@ public enum EUITweenType
 
 | 方法 | 说明 |
 |------|------|
-| `IgnoreSafeArea(RelationType)` | 使组件忽略安全区，扩展到整屏覆盖刘海。适用于全屏背景、遮罩等独立元素 |
+| `IgnoreSafeArea(sideExpand, relationType)` | 使组件忽略安全区，扩展到整屏覆盖刘海。`sideExpand` 为每侧额外扩展量（默认 2），`relationType` 为关联类型（默认 Size）。适用于全屏背景、遮罩等独立元素 |
 
 **WinBase.AdjustNotch** — 控制界面是否适配安全区：
 
@@ -523,11 +525,12 @@ public enum EUITweenType
 | 列名 | 类型 | 说明 |
 |------|------|------|
 | WinName | string | UI 标识 key，与 WinBase.WinName 对应 |
-| Layer | EUILayer | 界面层级（WorldUI=0, MainUI=1500, ...） |
+| Layer | EUILayer | 界面层级（SceneUI=0, MainUI=1500, ...） |
 | TweenType | EUITweenType | 动画类型（None=0, Fade=1, Custom=2） |
 | TweenDuration | float | 动画时长（默认 0.3s） |
 | AdjustNotch | bool | 是否适配安全区（默认 true） |
 | PauseCoveredUI | bool | 是否暂停被覆盖界面 |
+| Blur | bool | 是否背景模糊（全屏界面一般为 false，弹窗一般为 true） |
 
 - **代码加载方式**:
 
@@ -537,8 +540,48 @@ public enum EUITweenType
 
 // 在 UI 代码中访问当前配置
 var config = this.UIConfig;
-Debug.Log($"Layer={config.Layer}, TweenType={config.TweenType}");
+Debug.Log($"Layer={config.Layer}, TweenType={config.TweenType}, Blur={config.Blur}");
 ```
+
+### 3.12 背景模糊（Background Blur）
+
+`UIConfig.Blur == true` 的界面打开时，其背后的**全屏画面**（3D 场景 + 下方所有 UI 层）从清晰渐变为模糊 + 压暗（"快速结冰"效果），关闭时自动恢复。由 `UIModule.Blur` 协调，无需任何业务代码。
+
+**实现流程：**
+
+```
+打开 Blur=true 界面：
+  1. OnWinOpeningAsync：StageCamera 捕获"界面出现前"的完整合成帧 → 半分辨率 RT → 冻结
+  2. OnWinOpened：全屏覆盖层（GImage）采样冻结帧，渲染在界面层级下方，_BlurProgress 0→1 渐入
+  3. 关闭界面：OnWinClosed 隐藏覆盖层（叠加时重定位复用冻结帧）
+
+关闭流程：UIModule.Close → OnWinClosed → 隐藏覆盖层 / 叠加时重定位
+```
+
+**核心原理：**
+
+- **截屏**：FairyGUI `StageCamera` 的 `clearFlags=Depth`（只清深度保留颜色），其 `OnRenderImage` 的 `source` 即"场景 + UI"完整合成帧；`BlurCapture` 组件在捕获帧将其 Blit 到半分辨率 RT
+- **冻结帧**：采集于界面出现前，不含界面自身 → 无自反馈
+- **Shader**：`UIBlurBackground`（三级星型模糊 + 压暗 + 渐变，BRP 版）。半分辨率下 `_BlurSize=1.6`，`_MaskPower=0.35`，`_BlurProgress` 逐帧驱动
+
+**关键组件：**
+
+| 组件 | 职责 |
+|------|------|
+| `BlurCapture`（Utility/BlurCapture.cs） | 截屏组件（MonoBehaviour），由 `UIModule.InitBlur` 动态挂载到 StageCamera；默认禁用，非捕获帧零开销 |
+| `UIModule.Blur`（UIModule.Blur.cs） | 协调器：管理半分辨率 RT、模糊材质、全屏覆盖层、模糊界面层级集合、渐入动画 |
+
+**生命周期：**
+
+```
+UIModule.OnInit → InitBlur（挂载 BlurCapture + 异步加载 Shader）
+_OpenAsync → OnWinOpeningAsync（捕获冻结）
+CreateFuiWin → OnWinOpened（显示覆盖层 + 渐入）
+Close/CloseNow → OnWinClosed（隐藏/重定位覆盖层）
+UIModule.OnDispose → ReleaseBlur（释放 RT/材质/覆盖层/Shader 句柄）
+```
+
+**使用：** 在 `UIConfig` 配置表中将界面 `Blur` 列设为 `true` 即可（如 `WinDialogGuide`）。
 
 ## 4. 使用示例
 
@@ -694,7 +737,7 @@ public class AnimatedWin : WinBase
 
 | Layer 列值 | EUILayer 枚举 | 用途 |
 |-----------|--------------|------|
-| WorldUI (0) | EUILayer.WorldUI | 世界UI - HUD、血条等 |
+| SceneUI (0) | EUILayer.SceneUI | 世界UI - HUD、血条等 |
 | MainUI (1500) | EUILayer.MainUI | 主界面 |
 | Normal (2000) | EUILayer.Normal | 普通全屏界面 |
 | Window (2500) | EUILayer.Window | 窗口界面 |
@@ -889,11 +932,13 @@ public partial class CompRedDot : GComponent
 
 ```
 Hotfix.Framework/UI/
-├── UIModule.cs                    # UI管理模块主类
+├── UIModule.cs                    # UI管理模块主类（初始化/帧更新/释放/安全区）
 ├── UIModule.Open.cs               # 打开界面功能
 ├── UIModule.Close.cs              # 关闭界面功能
 ├── UIModule.Get.cs                # 获取界面功能
 ├── UIModule.UIGroup.cs            # 界面组管理
+├── UIModule.Blur.cs               # 背景模糊协调器
+├── UIGroup.cs                     # 界面组
 ├── View/
 │   ├── WinBase.cs                 # 界面基类
 │   ├── WinBase.Life.cs            # 生命周期方法
@@ -902,26 +947,23 @@ Hotfix.Framework/UI/
 │   ├── WinBase.UIEventRegister.cs # UI事件功能
 │   ├── WinInfo.cs                 # 界面信息
 │   └── WinObject.cs               # 界面对象池对象
-├── Misc/
-│   ├── UIGroup.cs                 # 界面组
-│   ├── EUILayer.cs                # 界面层级枚举
-│   └── EUITweenType.cs            # 动画类型枚举
 ├── Utility/
 │   ├── SafeAreaHelper.cs          # 安全区辅助工具
-│   └── GObjectSafeAreaExt.cs      # GObject安全区扩展方法
+│   ├── GObjectSafeAreaExt.cs      # GObject安全区扩展方法
+│   └── BlurCapture.cs             # 背景模糊截屏组件
 ├── Fui/
 │   ├── FuiPkgManager.cs           # FUI包管理器
 │   ├── FuiEventRegister.cs        # FUI事件注册器
 │   └── CustomLoader.cs            # 自定义加载器
 ├── Event/
-│   ├── OpenSuccessEventArgs.cs    # 打开成功事件
-│   ├── OpenFailureEventArgs.cs    # 打开失败事件
-│   ├── CloseCompleteEventArgs.cs  # 关闭完成事件
-│   └── ChangeVisibleEventArgs.cs  # 可见性变化事件
-├── Editor/
-│   ├── UITextureAssetPostprocessor.cs # 纹理资源后处理器
+│   ├── OpenUISuccessEventArgs.cs  # 打开成功事件
+│   ├── OpenUIFailureEventArgs.cs  # 打开失败事件
+│   ├── CloseUICompleteEventArgs.cs # 关闭完成事件
+│   └── ChangeUIVisibleEventArgs.cs # 可见性变化事件
 └── README.md                      # 本文档
 ```
+
+> 注：`EUILayer` / `EUITweenType` 枚举为 Luban 生成代码，位于 `Hotfix.Game.AutoGen.Tables`，不在 UI 模块目录。
 
 ## 6. 依赖模块
 
@@ -1020,6 +1062,10 @@ Hotfix.Framework/UI/
 4. **包引用计数**：注意包的引用计数管理，避免内存泄漏
 5. **动画回调**：自定义动画需要正确调用回调
 6. **事件清理**：界面关闭时清理所有事件监听
+7. **背景模糊 Shader 防剥离**：`UIBlurBackground` 仅运行时经 YooAsset 加载，构建时无材质/场景引用会被 Unity Shader Stripping 裁掉，**必须**加入 `ProjectSettings → Graphics → Always Included Shaders`
+8. **叠加模糊界面的已知限制**：顶层模糊界面关闭后，下层模糊界面背板可能出现"自身被再次模糊"的视觉瑕疵（单 Pass 冻结帧固有限制，叠加属低频场景）
+9. **模糊冻结帧特性**：模糊背景为界面打开前的静态画面，若背后有高频动画（如加载转圈），模糊后该动画静止属正常现象
+10. **模糊性能**：背景模糊有渲染开销（半分辨率 25 次采样/像素），仅弹窗等需要视觉聚焦的界面开启 `Blur`；非捕获帧 `BlurCapture` 禁用，零额外开销
 
 ## 10. 常见问题
 
