@@ -38,13 +38,18 @@ namespace Hotfix.Framework.UI
                 // 1. 清除组件所有旧关联，防止与新关联冲突
                 component.relations.ClearAll();
 
-                // 2. 负偏移：反向扩展到 GRoot 之外，覆盖刘海区域（+sideExpand 防止边界露缝）
-                var offsetX = -SafeAreaHelper.OffsetX - sideExpand;
-                var offsetY = -SafeAreaHelper.OffsetY - sideExpand;
+                // 2. 负偏移：组件是 GRoot 子节点，坐标为设计坐标（渲染 × scaleFactor）。
+                //    SafeAreaHelper.OffsetX 是屏幕像素（用于 GRoot 自身定位），此处须除以 scaleFactor
+                //    转成设计坐标，再额外偏移 sideExpand 防止边界露缝。
+                var scaleFactor = UIContentScaler.scaleFactor;
+                if (scaleFactor <= 0) scaleFactor = 1;
+
+                var offsetX = -SafeAreaHelper.OffsetX / scaleFactor - sideExpand;
+                var offsetY = -SafeAreaHelper.OffsetY / scaleFactor - sideExpand;
                 component.SetXY(offsetX, offsetY);
 
-                // 3. 整屏尺寸（含每侧扩展量）。sideExpand 为单侧扩展量，总宽高需覆盖左右/上下两侧(故需乘以2)，
-                component.SetSize(Screen.width / UIContentScaler.scaleFactor + sideExpand * 2, Screen.height / UIContentScaler.scaleFactor + sideExpand * 2);
+                // 3. 整屏尺寸（设计坐标）：屏宽/scaleFactor 为整屏宽高，+ sideExpand×2 覆盖左右/上下两侧冗余。
+                component.SetSize(Screen.width / scaleFactor + sideExpand * 2, Screen.height / scaleFactor + sideExpand * 2);
 
                 // 4. 绑定到 GRoot 根容器
                 component.AddRelation(GRoot.inst, relationType);

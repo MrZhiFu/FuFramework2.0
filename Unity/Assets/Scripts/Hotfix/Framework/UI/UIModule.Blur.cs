@@ -342,8 +342,8 @@ namespace Hotfix.Framework.UI
             m_BlurOverlay.material  = m_BlurMaterial;
             GRoot.inst.AddChild(m_BlurOverlay);
 
-            // 全屏，忽略刘海，并向外扩展30像素，避免漏缝
-            m_BlurOverlay.IgnoreSafeArea(30);
+            // 全屏，忽略刘海
+            m_BlurOverlay.IgnoreSafeArea();
         }
 
         /// <summary>
