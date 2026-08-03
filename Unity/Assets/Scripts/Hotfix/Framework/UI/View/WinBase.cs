@@ -192,9 +192,11 @@ namespace Hotfix.Framework.UI
                 return;
             }
 
-            // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域
+            // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域。
+            // WinUI 是 GRoot 子节点，坐标为设计坐标（渲染 × scaleFactor），
+            // SafeAreaHelper.OffsetX 是屏幕像素（用于 GRoot 自身定位），此处须除以 scaleFactor 转成设计坐标。
             WinUI.SetSize(Screen.width / UIContentScaler.scaleFactor, Screen.height / UIContentScaler.scaleFactor);
-            WinUI.SetXY(-SafeAreaHelper.OffsetX, -SafeAreaHelper.OffsetY);
+            WinUI.SetXY(-SafeAreaHelper.OffsetX / UIContentScaler.scaleFactor, -SafeAreaHelper.OffsetY / UIContentScaler.scaleFactor);
         }
     }
 }
