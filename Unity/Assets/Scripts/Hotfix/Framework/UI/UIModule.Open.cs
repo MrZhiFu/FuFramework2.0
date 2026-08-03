@@ -82,8 +82,9 @@ namespace Hotfix.Framework.UI
                 {
                     win = winObj.Target as T;
 
-                    // Blur=true：先截屏冻结"对话框出现前"的画面
-                    if (needBlur) await OnWinOpeningAsync();;
+                    // Blur=true：先截屏冻结"UI界面出现前"的画面
+                    if (needBlur)
+                        await OnWinOpeningAsync();
 
                     // 使用临时序列号创建Fui界面
                     return CreateFuiWin(win, tempSerialId, false, userData);
@@ -97,8 +98,9 @@ namespace Hotfix.Framework.UI
                 // UI包已经加载过，则直接创建Fui界面
                 if (PkgManager.IsLoadedPkg(win.PackageName))
                 {
-                    // Blur=true：先截屏冻结"对话框出现前"的画面
-                    if (needBlur) await OnWinOpeningAsync();;
+                    // Blur=true：先截屏冻结"UI界面出现前"的画面
+                    if (needBlur)
+                        await OnWinOpeningAsync();
 
                     // 使用临时序列号创建Fui界面
                     return CreateFuiWin(win, tempSerialId, true, userData);
@@ -107,8 +109,8 @@ namespace Hotfix.Framework.UI
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
                 await PkgManager.LoadPkgAsync(win.PackageName);
 
-                // Blur=true：先截屏冻结"对话框出现前"的画面
-                if (needBlur) await OnWinOpeningAsync();;
+                // Blur=true：先截屏冻结"UI界面出现前"的画面
+                if (needBlur) await OnWinOpeningAsync();
 
                 // 使用临时序列号创建Fui界面
                 return CreateFuiWin(win, tempSerialId, true, userData);
