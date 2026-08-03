@@ -251,8 +251,8 @@ public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     public T Spawn(string name)                     // 获取对象
     public void Recycle(T obj)                      // 回收对象
     public void Recycle(object target)              // 通过目标对象回收
-    public bool CanSpawn()                          // 检查对象是否可获取（默认名称）
-    public bool CanSpawn(string name)               // 检查指定名称对象是否可获取
+    public bool CanGet()                          // 检查对象是否可获取（默认名称）
+    public bool CanGet(string name)               // 检查指定名称对象是否可获取
 
     // 释放控制
     public bool ReleaseObject(T obj)                // 释放指定对象
@@ -506,7 +506,7 @@ public class BulletManager
     public void FireBullet(Vector3 position, Vector3 direction)
     {
         // 尝试从池中获取子弹
-        var bullet = m_BulletPool.Spawn("Bullet");
+        var bullet = m_BulletPool.Get("Bullet");
 
         if (bullet == null)
         {
@@ -550,9 +550,9 @@ var effectPool = objectPoolModule.CreateObjectPool<EffectObject>(
 );
 
 // 同一个特效可以被多次获取（引用计数++）
-var effect1 = effectPool.Spawn("Explosion");  // SpawnCount = 1
-var effect2 = effectPool.Spawn("Explosion");  // SpawnCount = 2（同一个对象）
-var effect3 = effectPool.Spawn("Explosion");  // SpawnCount = 3（同一个对象）
+var effect1 = effectPool.Get("Explosion");  // SpawnCount = 1
+var effect2 = effectPool.Get("Explosion");  // SpawnCount = 2（同一个对象）
+var effect3 = effectPool.Get("Explosion");  // SpawnCount = 3（同一个对象）
 
 // 每次回收引用计数--
 effectPool.Recycle(effect1);  // SpawnCount = 2
@@ -593,7 +593,7 @@ foreach (var info in infos)
 }
 
 // 锁定重要对象（防止被释放）
-var importantBullet = m_BulletPool.Spawn("ImportantBullet");
+var importantBullet = m_BulletPool.Get("ImportantBullet");
 m_BulletPool.SetLocked(importantBullet, true);
 
 // 设置对象优先级
@@ -728,3 +728,49 @@ public static class GameObjectPool
 5. **锁定机制**：重要对象使用 `SetLocked` 防止被自动释放
 6. **引用计数**：多实例池注意正确回收，避免内存泄漏
 7. **线程安全**：对象池操作应在主线程进行
+
+## 9. 与引用池（ReferencePool）的差异
+
+对象池与引用池是两个**目的不同**的池化系统，边界区分如下。
+
+### 9.1 本质区别
+
+| | 引用池 ReferencePool | 对象池 ObjectPool |
+|---|---|---|
+| 管理对象 | 纯 C# 数据对象（class） | Unity 场景对象（GameObject） |
+| 核心目的 | 减少 **GC 分配**频率 | 减少 **Instantiate/Destroy** 开销 |
+| 类比 | 复用"计算器"（用完清屏复用） | 复用"汽车"（用完停车库复用） |
+
+### 9.2 实现原理差异
+
+| 维度 | 引用池 | 对象池 |
+|---|---|---|
+| 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
+| 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
+| 使用状态 | 无（Release 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
+| 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动释放、优先级、锁定 |
+| 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
+| 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnRelease`） |
+
+### 9.3 使用方式差异
+
+```csharp
+// 引用池：Acquire 获取（池空自建）、Release 归还
+var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
+GlobalModule.ReferencePoolModule.Release(msg);
+
+// 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
+pool.Register(entityInstanceObject, true);
+var obj = pool.Get("EntityName");
+pool.Recycle(obj);
+```
+
+### 9.4 判断标准
+
+1. **对象是"数据"还是"实体"**：纯 C# 类 → 引用池；GameObject → 对象池
+2. **创建成本**：`new` 便宜但频繁 → 引用池（省 GC）；`Instantiate` 昂贵 → 对象池（省实例化）
+3. **是否需要使用状态**：需要计数/锁定/过期 → 对象池；不需要 → 引用池
+
+### 9.5 为什么对象池不直接 new
+
+引用池对象是无参可造的纯数据（`new T()`）；对象池对象创建需要外部资源上下文（预制体/资源句柄/Helper），对象池不持有这些信息。因此对象由创建方模块（如 EntityModule/UIModule）实例化后 `Register` 进池，对象池只负责**复用真实场景对象**。

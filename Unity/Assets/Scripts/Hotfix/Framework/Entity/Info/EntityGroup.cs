@@ -280,7 +280,7 @@ namespace Hotfix.Framework.Entity
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public EntityInstanceObject SpawnEntityInstanceObject(string name) => m_InstancePool.Spawn(name);
+        public EntityInstanceObject SpawnEntityInstanceObject(string name) => m_InstancePool.Get(name);
 
         /// <summary>
         /// 回收指定实体实例对象。

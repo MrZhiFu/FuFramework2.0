@@ -237,7 +237,7 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             /// <param name="name">对象名称。</param>
             /// <returns>要获取的对象。</returns>
-            public T Spawn(string name)
+            public T Get(string name)
             {
                 if (name == null) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 
@@ -396,14 +396,14 @@ namespace Hotfix.Framework.ObjectPool
             /// 检查对象是否存在。
             /// </summary>
             /// <returns>要检查的对象是否存在。</returns>
-            public bool CanSpawn() => CanSpawn(string.Empty);
+            public bool CanGet() => CanGet(string.Empty);
 
             /// <summary>
-            /// 检查对象是否可生成。
+            /// 检查对象是否可获取。
             /// </summary>
             /// <param name="name">对象名称。</param>
-            /// <returns>要检查的对象是否可生成。</returns>
-            public bool CanSpawn(string name)
+            /// <returns>要检查的对象是否可获取。</returns>
+            public bool CanGet(string name)
             {
                 if (name == null) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 

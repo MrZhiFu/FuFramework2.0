@@ -77,7 +77,7 @@ namespace Hotfix.Framework.UI
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winObj = m_WinObjPool.Spawn(winName);
+                var winObj = m_WinObjPool.Get(winName);
                 if (winObj != null)
                 {
                     win = winObj.Target as T;
@@ -129,7 +129,7 @@ namespace Hotfix.Framework.UI
         /// <param name="serialId">界面序列号。</param>
         /// <param name="isNewIns">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        /// <returns></returns>
+        /// <returns>创建成功返回界面实例；失败时回收实例并返回已存在界面或 null。</returns>
         private T CreateFuiWin<T>(T win, int serialId, bool isNewIns, object userData = null) where T : WinBase, new()
         {
             try

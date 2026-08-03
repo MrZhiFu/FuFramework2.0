@@ -714,3 +714,49 @@ public class ObjectPoolManager : MonoBehaviour
 5. **构造函数要求**：类型必须有默认构造函数（`new()` 约束）
 6. **及时释放**：使用完毕后应及时释放对象，避免长时间占用
 7. **避免持有引用**：不要在对象释放后继续持有或使用该对象
+
+## 9. 与对象池（ObjectPool）的差异
+
+引用池与对象池是两个**目的不同**的池化系统，边界区分如下。
+
+### 9.1 本质区别
+
+| | 引用池 ReferencePool | 对象池 ObjectPool |
+|---|---|---|
+| 管理对象 | 纯 C# 数据对象（class） | Unity 场景对象（GameObject） |
+| 核心目的 | 减少 **GC 分配**频率 | 减少 **Instantiate/Destroy** 开销 |
+| 类比 | 复用"计算器"（用完清屏复用） | 复用"汽车"（用完停车库复用） |
+
+### 9.2 实现原理差异
+
+| 维度 | 引用池 | 对象池 |
+|---|---|---|
+| 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
+| 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
+| 使用状态 | 无（Release 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
+| 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动释放、优先级、锁定 |
+| 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
+| 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnRelease`） |
+
+### 9.3 使用方式差异
+
+```csharp
+// 引用池：Acquire 获取（池空自建）、Release 归还
+var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
+GlobalModule.ReferencePoolModule.Release(msg);
+
+// 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
+pool.Register(entityInstanceObject, true);
+var obj = pool.Get("EntityName");
+pool.Recycle(obj);
+```
+
+### 9.4 判断标准
+
+1. **对象是"数据"还是"实体"**：纯 C# 类 → 引用池；GameObject → 对象池
+2. **创建成本**：`new` 便宜但频繁 → 引用池（省 GC）；`Instantiate` 昂贵 → 对象池（省实例化）
+3. **是否需要使用状态**：需要计数/锁定/过期 → 对象池；不需要 → 引用池
+
+### 9.5 为什么对象池不直接 new
+
+引用池对象是无参可造的纯数据（`new T()`）；对象池对象创建需要外部资源上下文（预制体/资源句柄/Helper），对象池不持有这些信息。因此对象由创建方模块（如 EntityModule/UIModule）实例化后 `Register` 进池，对象池只负责**复用真实场景对象**。
