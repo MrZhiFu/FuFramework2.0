@@ -18,9 +18,21 @@ namespace Hotfix.Framework.UI
     /// UI管理模块分部类之一。
     /// 目标：为 UIConfig.Blur == true 的界面提供全屏背景模糊（3D 场景 + 下方 UI）。
     /// 功能：
-    ///     1. 截屏冻结：利用 StageCamera 的 OnRenderImage 捕获"对话框出现前"的完整合成帧。
+    ///     1. 截屏冻结：利用 StageCamera 的 OnRenderImage 捕获"UI界面出现前"的完整合成帧。
     ///     2. 模糊覆盖层：全屏 GImage 采样冻结帧，渲染在对话框层级下方。
     ///     3. 渐入动画：驱动 _BlurProgress 0→1，与界面开屏 Fade 同步。
+    /// 原理：
+    ///     1. StageCamera 的 clearFlags=Depth（只清深度保留颜色），其 OnRenderImage 的 source 即
+    ///        "3D 场景 + UI"完整合成帧；BlurCapture 在捕获帧将其截取到半分辨率 RT 后冻结。
+    ///     2. 冻结帧采集于对话框上屏前，不含对话框自身，避免自反馈。
+    ///     3. 覆盖层使用三级星型模糊 Shader 采样冻结帧，_BlurSize/_MaskPower/_BlurProgress 控制
+    ///        模糊强度、压暗与渐变进度。
+    /// 流程：
+    ///     1. UIModule.OnInit → InitBlur：挂载 BlurCapture 到 StageCamera + 异步加载 Shader 创建材质。
+    ///     2. 打开 Blur=true 界面 → _OpenAsync 调 OnWinOpeningAsync：捕获一帧并冻结。
+    ///     3. CreateFuiWin → OnWinOpened：定位覆盖层到界面层级下方、注入冻结帧、播放渐入。
+    ///     4. 关闭界面 → Close/CloseNow 调 OnWinClosed：隐藏覆盖层；叠加时重定位复用冻结帧。
+    ///     5. UIModule.OnDispose → ReleaseBlur：释放 RT/材质/覆盖层/Shader 句柄。
     /// </summary>
     public sealed partial class UIModule
     {
@@ -85,6 +97,11 @@ namespace Hotfix.Framework.UI
         private CancellationTokenSource m_BlurAnimCts;
 
         /// <summary>
+        /// 是否已销毁（热更重载防护：在途 Shader 加载完成后不写回状态，防句柄/材质泄漏）。
+        /// </summary>
+        private bool m_IsDisposed;
+
+        /// <summary>
         /// 模糊 Shader 资源路径（Assets/Bundles/Shader/UIBlurBackground.shader）。
         /// </summary>
         private static string BlurShaderPath => UtilityAOT.AssetPath.GetShaderPath($"{BlurShaderName}.shader");
@@ -95,14 +112,19 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void InitBlur()
         {
+            m_IsDisposed = false;
+
             if (StageCamera.main != null)
             {
+                // 检查 StageCamera 是否已挂载截屏组件，未挂载则挂载一个。
                 var go = StageCamera.main.gameObject;
                 m_BlurCapture         = go.GetComponent<BlurCapture>() ?? go.AddComponent<BlurCapture>();
-                m_BlurCapture.enabled = false; // 默认禁用，零开销
+                m_BlurCapture.enabled = false; // 默认禁用
             }
 
             m_ShaderLoadTask = new UniTaskCompletionSource<Shader>();
+
+            // 异步加载模糊 Shader 并创建材质。
             LoadBlurShaderAsync().Forget();
         }
 
@@ -122,6 +144,15 @@ namespace Hotfix.Framework.UI
                 if (m_BlurShader == null)
                     throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");
 
+                // 模块销毁后（热更重载）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
+                if (m_IsDisposed)
+                {
+                    m_BlurShaderHandle.Release();
+                    m_BlurShaderHandle = null;
+                    m_BlurShader       = null;
+                    return;
+                }
+
                 m_BlurMaterial = new Material(m_BlurShader) { hideFlags = HideFlags.HideAndDontSave };
                 m_ShaderLoadTask.TrySetResult(m_BlurShader);
                 FuLogger.LogInfo("[UIModule] UI背景模糊 Shader 加载完成。");
@@ -129,6 +160,9 @@ namespace Hotfix.Framework.UI
             catch (Exception e)
             {
                 FuLogger.LogError($"[UIModule] UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
+
+                // 模块已销毁时不污染新任务状态
+                if (m_IsDisposed) return;
                 m_ShaderLoadTask.TrySetException(e);
             }
         }
@@ -163,19 +197,23 @@ namespace Hotfix.Framework.UI
             EnsureBlurRT();
             if (m_BlurRT == null) return;
 
-            // 武装一帧：OnRenderImage 把当前帧（对话框未上屏）合成画面截到 RT，随后冻结
-            m_BlurCapture.SinkRT  = m_BlurRT;
-            m_BlurCapture.Armed   = true;
-            m_BlurCapture.enabled = true;
+            // 捕获一帧：OnRenderImage 把当前帧（对话框未上屏）合成画面截到 RT，随后冻结
+            m_BlurCapture.m_CaptureRT = m_BlurRT;
+            m_BlurCapture.m_Capture   = true;
+            m_BlurCapture.enabled     = true;
+
+            // 等待一帧，确保截屏完成
             await UniTask.Yield();
-            m_BlurCapture.enabled = false;
-            m_BlurCapture.Armed   = false;
+
+            m_BlurCapture.enabled   = false;
+            m_BlurCapture.m_Capture = false;
         }
 
         /// <summary>
         /// 界面打开完成：显示模糊覆盖层并播放渐入动画。
         /// 在 CreateFuiWin 中 win._OnOpen() 之后调用（win.UIConfig.Blur == true）。
         /// </summary>
+        /// <param name="win">已打开的模糊界面。</param>
         private void OnWinOpened(WinBase win)
         {
             var layer = win.UIConfig?.Layer ?? EUILayer.Normal;
@@ -195,6 +233,8 @@ namespace Hotfix.Framework.UI
             m_BlurMaterial.SetFloat("_MaskPower", MaskPower);
 
             m_BlurOverlay.visible = true;
+
+            // 渐入动画：驱动 _BlurProgress 0→1，与界面开屏 Fade 同步。
             AnimateBlurIn(win.UIConfig?.TweenDuration ?? 0.3f);
         }
 
@@ -202,6 +242,7 @@ namespace Hotfix.Framework.UI
         /// 界面关闭：隐藏/重定位覆盖层。
         /// 在 Close/CloseNow 中 win._OnClose() 之后调用（win.UIConfig.Blur == true）。
         /// </summary>
+        /// <param name="win">已关闭的模糊界面。</param>
         private void OnWinClosed(WinBase win)
         {
             var layer = win.UIConfig?.Layer ?? EUILayer.Normal;
@@ -217,17 +258,22 @@ namespace Hotfix.Framework.UI
 
             // 仍有模糊界面：覆盖层重定位到剩余最上层下方（复用冻结帧，不重截）
             if (m_BlurOverlay != null)
+            {
                 m_BlurOverlay.sortingOrder = MaxActiveBlurLayer() - 1;
+
+                // 叠加打开时 OnWinOpeningAsync 可能隐藏了覆盖层，这里恢复显示，防止下层模糊界面背板丢失
+                m_BlurOverlay.visible = true;
+            }
         }
 
         /// <summary>
         /// 释放模糊资源（UIModule.OnDispose 调用）。
         /// </summary>
-        /// <summary>
-        /// 释放模糊资源（UIModule.OnDispose 调用）。
-        /// </summary>
         private void ReleaseBlur()
         {
+            // 标记已销毁：在途 Shader 加载完成后不写回状态（见 LoadBlurShaderAsync）
+            m_IsDisposed = true;
+
             CancelBlurAnim();
 
             if (m_BlurOverlay != null)
@@ -286,19 +332,24 @@ namespace Hotfix.Framework.UI
         {
             if (m_BlurOverlay != null) return;
 
-            m_BlurOverlay           = new GImage();
-            m_BlurOverlay.name      = m_BlurOverlay.gameObjectName = "__UIBlurBackground";
-            m_BlurOverlay.touchable = false; // 不拦截触摸，点击穿透到下层
+            m_BlurOverlay      = new GImage();
+            m_BlurOverlay.name = m_BlurOverlay.gameObjectName = "__UIBlurBackground";
+
+            // 不拦截触摸，点击穿透到下层
+            m_BlurOverlay.touchable = false;
             m_BlurOverlay.visible   = false;
             m_BlurOverlay.texture   = new NTexture(Texture2D.whiteTexture) { destroyMethod = DestroyMethod.None };
             m_BlurOverlay.material  = m_BlurMaterial;
             GRoot.inst.AddChild(m_BlurOverlay);
-            m_BlurOverlay.IgnoreSafeArea(); // 全屏含刘海，复用 GObjectSafeAreaExt
+
+            // 全屏，忽略刘海，并向外扩展30像素，避免漏缝
+            m_BlurOverlay.IgnoreSafeArea(30);
         }
 
         /// <summary>
         /// 播放模糊渐入动画（0→1，时长取界面 TweenDuration）。
         /// </summary>
+        /// <param name="duration">渐入动画时长（秒），&lt;=0 时直接置满。</param>
         private void AnimateBlurIn(float duration)
         {
             CancelBlurAnim();
@@ -309,6 +360,8 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 模糊渐入动画实现：逐帧驱动 _BlurProgress。
         /// </summary>
+        /// <param name="duration">渐入动画时长（秒）。</param>
+        /// <param name="ct">取消令牌，动画被取消时终止。</param>
         private async UniTask RunBlurAnimAsync(float duration, CancellationToken ct)
         {
             m_BlurMaterial.SetFloat("_BlurProgress", 0f);
@@ -344,13 +397,15 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取当前最上层模糊界面的层级数值。
         /// </summary>
+        /// <returns>当前可见模糊界面中的最大层级数值。</returns>
         private int MaxActiveBlurLayer()
         {
             var max = (int)m_ActiveBlurLayers[0];
             for (var i = 1; i < m_ActiveBlurLayers.Count; i++)
             {
-                var value            = (int)m_ActiveBlurLayers[i];
-                if (value > max) max = value;
+                var value = (int)m_ActiveBlurLayers[i];
+                if (value > max)
+                    max = value;
             }
 
             return max;
