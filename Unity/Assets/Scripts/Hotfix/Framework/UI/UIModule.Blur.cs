@@ -321,16 +321,23 @@ namespace Hotfix.Framework.UI
         {
             var w = Screen.width  / 2;
             var h = Screen.height / 2;
-            if (w        <= 0 || h                 <= 0) return;
+            if (w <= 0 || h <= 0) return;
+            
             // IsCreated() 检测：app 切后台后 RenderTexture 可能设备丢失（width/height 保留原值但已释放），需重建
-            if (m_BlurRT != null && m_BlurRT.IsCreated() && m_BlurRT.width == w && m_BlurRT.height == h) return;
+            if (m_BlurRT != null && m_BlurRT.IsCreated() && m_BlurRT.width == w && m_BlurRT.height == h) 
+                return;
 
-            if (m_BlurRT != null) m_BlurRT.Release();
+            if (m_BlurRT != null)
+                m_BlurRT.Release();
+            
             m_BlurRT = new RenderTexture(w, h, 0, RenderTextureFormat.ARGB32)
             {
                 filterMode = FilterMode.Bilinear,
                 hideFlags  = HideFlags.HideAndDontSave,
             };
+            
+            // 显式创建，使 IsCreated() 立即为 true，避免"未使用就重建"的边界分配
+            m_BlurRT.Create(); 
         }
 
         /// <summary>
