@@ -194,6 +194,7 @@ namespace Hotfix.Framework.UI
             if (m_ActiveBlurLayers.Count > 0 && m_BlurOverlay != null)
                 m_BlurOverlay.visible = false;
 
+            // 确保半分辨率截屏 RT 存在且尺寸匹配当前屏幕。
             EnsureBlurRT();
             if (m_BlurRT == null) return;
 
@@ -202,8 +203,8 @@ namespace Hotfix.Framework.UI
             m_BlurCapture.m_Capture   = true;
             m_BlurCapture.enabled     = true;
 
-            // 等待一帧，确保截屏完成
-            await UniTask.Yield();
+            // 等待本帧渲染完成（LastPostLateUpdate 阶段），确保 OnRenderImage 已把画面截到 RT，不受调用阶段影响
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             m_BlurCapture.enabled   = false;
             m_BlurCapture.m_Capture = false;
@@ -301,9 +302,15 @@ namespace Hotfix.Framework.UI
                 ModuleManager.GetModule<AssetModule>()?.UnloadAsset(BlurShaderPath);
             }
 
+            // 销毁截屏组件，避免残留（否则第三方误启用会使 StageCamera 每帧多两次 Blit）
+            if (m_BlurCapture != null)
+            {
+                UnityEngine.Object.Destroy(m_BlurCapture);
+                m_BlurCapture = null;
+            }
+
             m_BlurShader     = null;
             m_ShaderLoadTask = null;
-            m_BlurCapture    = null;
             m_ActiveBlurLayers.Clear();
         }
 
@@ -315,7 +322,8 @@ namespace Hotfix.Framework.UI
             var w = Screen.width  / 2;
             var h = Screen.height / 2;
             if (w        <= 0 || h                 <= 0) return;
-            if (m_BlurRT != null && m_BlurRT.width == w && m_BlurRT.height == h) return;
+            // IsCreated() 检测：app 切后台后 RenderTexture 可能设备丢失（width/height 保留原值但已释放），需重建
+            if (m_BlurRT != null && m_BlurRT.IsCreated() && m_BlurRT.width == w && m_BlurRT.height == h) return;
 
             if (m_BlurRT != null) m_BlurRT.Release();
             m_BlurRT = new RenderTexture(w, h, 0, RenderTextureFormat.ARGB32)
@@ -397,9 +405,11 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取当前最上层模糊界面的层级数值。
         /// </summary>
-        /// <returns>当前可见模糊界面中的最大层级数值。</returns>
+        /// <returns>当前可见模糊界面中的最大层级数值；无模糊界面时返回 0。</returns>
         private int MaxActiveBlurLayer()
         {
+            if (m_ActiveBlurLayers.Count == 0) return 0;
+
             var max = (int)m_ActiveBlurLayers[0];
             for (var i = 1; i < m_ActiveBlurLayers.Count; i++)
             {
