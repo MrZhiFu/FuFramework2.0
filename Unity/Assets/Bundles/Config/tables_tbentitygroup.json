@@ -1,37 +1,37 @@
 [
   {
     "Id": 1,
-    "InstanceAutoReleaseInterval": 60,
-    "InstanceCapacity": 16,
-    "InstanceExpireTime": 60,
-    "InstancePriority": 0
+    "PoolAutoDisposeInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTime": 60,
+    "PoolPriority": 0
   },
   {
     "Id": 2,
-    "InstanceAutoReleaseInterval": 60,
-    "InstanceCapacity": 16,
-    "InstanceExpireTime": 60,
-    "InstancePriority": 0
+    "PoolAutoDisposeInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTime": 60,
+    "PoolPriority": 0
   },
   {
     "Id": 3,
-    "InstanceAutoReleaseInterval": 60,
-    "InstanceCapacity": 16,
-    "InstanceExpireTime": 60,
-    "InstancePriority": 0
+    "PoolAutoDisposeInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTime": 60,
+    "PoolPriority": 0
   },
   {
     "Id": 4,
-    "InstanceAutoReleaseInterval": 60,
-    "InstanceCapacity": 16,
-    "InstanceExpireTime": 60,
-    "InstancePriority": 0
+    "PoolAutoDisposeInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTime": 60,
+    "PoolPriority": 0
   },
   {
     "Id": 5,
-    "InstanceAutoReleaseInterval": 60,
-    "InstanceCapacity": 16,
-    "InstanceExpireTime": 60,
-    "InstancePriority": 0
+    "PoolAutoDisposeInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTime": 60,
+    "PoolPriority": 0
   }
 ]

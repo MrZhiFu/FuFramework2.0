@@ -14,23 +14,23 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class EntityGroup : BeanBase
     {
-        public EntityGroup(EEntityGroup Id, float InstanceAutoReleaseInterval, int InstanceCapacity, float InstanceExpireTime, int InstancePriority) 
+        public EntityGroup(EEntityGroup Id, float PoolAutoDisposeInterval, int PoolCapacity, float PoolExpireTime, int PoolPriority) 
         {
             this.Id = Id;
-            this.InstanceAutoReleaseInterval = InstanceAutoReleaseInterval;
-            this.InstanceCapacity = InstanceCapacity;
-            this.InstanceExpireTime = InstanceExpireTime;
-            this.InstancePriority = InstancePriority;
+            this.PoolAutoDisposeInterval = PoolAutoDisposeInterval;
+            this.PoolCapacity = PoolCapacity;
+            this.PoolExpireTime = PoolExpireTime;
+            this.PoolPriority = PoolPriority;
             PostInit();
         }
 
         public EntityGroup(JSONNode _buf)
         {
             { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (EEntityGroup)_buf["Id"].AsInt; }
-            { if(!_buf["InstanceAutoReleaseInterval"].IsNumber) { throw new SerializationException(); }  InstanceAutoReleaseInterval = _buf["InstanceAutoReleaseInterval"]; }
-            { if(!_buf["InstanceCapacity"].IsNumber) { throw new SerializationException(); }  InstanceCapacity = _buf["InstanceCapacity"]; }
-            { if(!_buf["InstanceExpireTime"].IsNumber) { throw new SerializationException(); }  InstanceExpireTime = _buf["InstanceExpireTime"]; }
-            { if(!_buf["InstancePriority"].IsNumber) { throw new SerializationException(); }  InstancePriority = _buf["InstancePriority"]; }
+            { if(!_buf["PoolAutoDisposeInterval"].IsNumber) { throw new SerializationException(); }  PoolAutoDisposeInterval = _buf["PoolAutoDisposeInterval"]; }
+            { if(!_buf["PoolCapacity"].IsNumber) { throw new SerializationException(); }  PoolCapacity = _buf["PoolCapacity"]; }
+            { if(!_buf["PoolExpireTime"].IsNumber) { throw new SerializationException(); }  PoolExpireTime = _buf["PoolExpireTime"]; }
+            { if(!_buf["PoolPriority"].IsNumber) { throw new SerializationException(); }  PoolPriority = _buf["PoolPriority"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -49,19 +49,19 @@ namespace Hotfix.Game.Config.Tables
         /// <summary>
         /// 自动释放间隔(秒)
         /// </summary>
-        public float InstanceAutoReleaseInterval { private set; get; }
+        public float PoolAutoDisposeInterval { private set; get; }
         /// <summary>
         /// 对象池容量
         /// </summary>
-        public int InstanceCapacity { private set; get; }
+        public int PoolCapacity { private set; get; }
         /// <summary>
         /// 对象过期时间(秒)
         /// </summary>
-        public float InstanceExpireTime { private set; get; }
+        public float PoolExpireTime { private set; get; }
         /// <summary>
         /// 对象池优先级
         /// </summary>
-        public int InstancePriority { private set; get; }
+        public int PoolPriority { private set; get; }
         public const int __ID__ = -1536753069;
         public override int GetTypeId() => __ID__;
 
@@ -82,10 +82,10 @@ namespace Hotfix.Game.Config.Tables
         {
             return "{ "
             + "Id:" + Id + ","
-            + "InstanceAutoReleaseInterval:" + InstanceAutoReleaseInterval + ","
-            + "InstanceCapacity:" + InstanceCapacity + ","
-            + "InstanceExpireTime:" + InstanceExpireTime + ","
-            + "InstancePriority:" + InstancePriority + ","
+            + "PoolAutoDisposeInterval:" + PoolAutoDisposeInterval + ","
+            + "PoolCapacity:" + PoolCapacity + ","
+            + "PoolExpireTime:" + PoolExpireTime + ","
+            + "PoolPriority:" + PoolPriority + ","
             + "}";
         }
 

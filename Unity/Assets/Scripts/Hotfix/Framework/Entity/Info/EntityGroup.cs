@@ -86,20 +86,20 @@ namespace Hotfix.Framework.Entity
         /// <summary>
         /// 构造实体组实例。
         /// </summary>
-        /// <param name="groupSetting">实体组设置。</param>
+        /// <param name="row">实体组配置行。</param>
         /// <param name="groupGo">实体组对应的GameObject。</param>
         /// <param name="objectPoolModule">对象池管理模块。</param>
         public EntityGroup(EntityGroupCfg row, GameObject groupGo, ObjectPoolModule objectPoolModule)
         {
             if (row is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组设置信息为空.");
-            if (groupGo is null) throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
             Name    = row.Id.ToString();
-            GroupGo = groupGo;
+            GroupGo = groupGo ?? throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
             var poolName = $"Entity Instance Pool ({Name})";
-            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, row.InstanceCapacity, row.InstanceExpireTime, row.InstancePriority);
-            m_InstancePool.AutoDisposeInterval = row.InstanceAutoReleaseInterval;
+            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, row.PoolCapacity, row.PoolExpireTime, row.PoolPriority);
+
+            m_InstancePool.AutoDisposeInterval = row.PoolAutoDisposeInterval;
 
             m_Entities   = new FuLinkedList<Entity>();
             m_CachedNode = null;
