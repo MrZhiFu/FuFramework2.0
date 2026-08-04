@@ -181,7 +181,7 @@ namespace Hotfix.Framework.Entity
                 entity.OnRecycle();
                 entityInfo.Status = EEntityStatus.Recycled;
                 entityGroup.RecycleEntity(entity);
-                GlobalModule.ReferencePoolModule.Release(entityInfo);
+                GlobalModule.ReferencePoolModule.Recycle(entityInfo);
             }
 
             // 遍历每个实体组，驱动每个实体组轮询
@@ -542,12 +542,12 @@ namespace Hotfix.Framework.Entity
                 // 显示失败：若实体未登记（创建实体失败等），回收已获取的实例对象，避免占用对象池槽位
                 if (!HasEntity(entityId))
                     entityGroup.RecycleEntityInstanceObject(entityInstanceObj);
-                GlobalModule.ReferencePoolModule.Release(showEntityInfoEx);
+                GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
                 throw;
             }
 
             // 显示完成，释放临时传递数据的引用池对象
-            GlobalModule.ReferencePoolModule.Release(showEntityInfoEx);
+            GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
             return await tcs.Task;
         }
 
@@ -967,7 +967,7 @@ namespace Hotfix.Framework.Entity
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
-                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
                 m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
                 return;
             }
@@ -992,12 +992,12 @@ namespace Hotfix.Framework.Entity
                 if (!HasEntity(showEntityInfo.EntityId))
                     showEntityInfo.EntityGroup.RecycleEntityInstanceObject(entityInstanceObject);
 
-                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
                 tcs.TrySetException(exception);
                 return;
             }
 
-            GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+            GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
         }
 
         /// <summary>
@@ -1024,7 +1024,7 @@ namespace Hotfix.Framework.Entity
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
                 // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
-                GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
                 return;
             }
 
@@ -1037,7 +1037,7 @@ namespace Hotfix.Framework.Entity
             m_EventModule.Broadcast(this, showEntityFailureEventArgs);
 
             // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
-            GlobalModule.ReferencePoolModule.Release(showEntityInfo);
+            GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
 
             tcs.TrySetException(exception);
             throw exception;

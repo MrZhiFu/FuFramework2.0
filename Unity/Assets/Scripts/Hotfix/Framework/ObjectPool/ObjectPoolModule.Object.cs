@@ -8,7 +8,7 @@ namespace Hotfix.Framework.ObjectPool
     public sealed partial class ObjectPoolModule
     {
         /// <summary>
-        /// 内部对象。
+        /// 内部数据对象。
         /// 功能：
         ///     1. 包装一个对象池内的目标对象，创建并管理对象生命周期。
         /// </summary>
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.ObjectPool
                 finally
                 {
                     // 即使 OnRelease 异常也回收目标对象到引用池，避免跳过清理
-                    GlobalModule.ReferencePoolModule.Release(TargetObject);
+                    GlobalModule.ReferencePoolModule.Recycle(TargetObject);
                 }
             }
         }

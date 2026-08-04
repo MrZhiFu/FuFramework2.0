@@ -127,7 +127,7 @@ namespace Hotfix.Framework.RedDot
                     UnregisterInternal(node);
                     parentNode.RemoveChild(node);
                     NodeDict.Remove(childKey);
-                    GlobalModule.ReferencePoolModule.Release(node);
+                    GlobalModule.ReferencePoolModule.Recycle(node);
                 }
 
                 existing.Remove(id);

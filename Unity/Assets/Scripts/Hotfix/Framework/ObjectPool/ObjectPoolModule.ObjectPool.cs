@@ -206,7 +206,7 @@ namespace Hotfix.Framework.ObjectPool
                         FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {Name} 中的对象时出现异常: {e.Message}");
                     }
 
-                    GlobalModule.ReferencePoolModule.Release(obj);
+                    GlobalModule.ReferencePoolModule.Recycle(obj);
                 }
 
                 m_ObjectMultiDict.Clear();
@@ -319,7 +319,7 @@ namespace Hotfix.Framework.ObjectPool
                 m_TargetObjectDict.Remove(obj.TargetObject.Target);
 
                 obj.OnRelease();
-                GlobalModule.ReferencePoolModule.Release(obj);
+                GlobalModule.ReferencePoolModule.Recycle(obj);
                 return true;
             }
 

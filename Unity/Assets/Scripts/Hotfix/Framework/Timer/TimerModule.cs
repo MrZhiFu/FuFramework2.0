@@ -49,7 +49,7 @@ namespace Hotfix.Framework.Timer
             foreach (var timerInfo in m_TimerDict.Values)
             {
                 timerInfo.Cts.Cancel();
-                GlobalModule.ReferencePoolModule.Release(timerInfo);
+                GlobalModule.ReferencePoolModule.Recycle(timerInfo);
             }
 
             m_TimerDict.Clear();
@@ -337,7 +337,7 @@ namespace Hotfix.Framework.Timer
             if (!m_TimerDict.Remove(timerId, out var timerInfo)) return;
             if (timerInfo == null) return;
             FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
-            GlobalModule.ReferencePoolModule.Release(timerInfo);
+            GlobalModule.ReferencePoolModule.Recycle(timerInfo);
             OnTimerFinished?.Invoke(timerId);
         }
 

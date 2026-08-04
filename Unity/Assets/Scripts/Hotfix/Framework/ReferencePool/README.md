@@ -73,7 +73,7 @@ ReferencePoolInfo (结构体)
 │  │  │ - Using: 5      │  │ - Using: 3      │           │   │
 │  │  │ - Unused: 10    │  │ - Unused: 8     │           │   │
 │  │  │ - Acquire: 100  │  │ - Acquire: 50   │           │   │
-│  │  │ - Release: 95   │  │ - Release: 47   │           │   │
+│  │  │ - Recycle: 95   │  │ - Recycle: 47   │           │   │
 │  │  └─────────────────┘  └─────────────────┘           │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -105,13 +105,13 @@ Acquire<T>()
 
 【释放引用流程】
 
-Release(reference)
+Recycle(reference)
     │
     ├── 检查引用非空
     │
     ├── 获取 ReferenceCollection
     │
-    └── Release(reference) (ReferenceCollection)
+    └── Recycle(reference) (ReferenceCollection)
         │
         ├── lock (m_FreeStack)
         │   ├── if (m_FreeStack.Contains(reference))   # 无条件检测，重复释放即抛异常
@@ -129,7 +129,7 @@ Release(reference)
 │   引用池栈      │ ─────────────────▶ │   正在使用      │
 │  (m_FreeStack)  │                    │  (UsingCount)   │
 │  (LIFO 后进先出) │ ◀───────────────── │                 │
-└─────────────────┘      Release       └─────────────────┘
+└─────────────────┘      Recycle       └─────────────────┘
     │    ▲                                    │
     │    │                                    │
     │    └────────────────────────────────────┘
@@ -158,10 +158,10 @@ OnDispose()
     ├── new ReferenceCollection(type)
     └── 添加到 m_ReferenceCollectionDict
 
-使用 (Acquire/Release)
+使用 (Acquire/Recycle)
     │
     ├── Acquire: 从栈取出或创建新对象
-    └── Release: 清理后压入栈
+    └── Recycle: 清理后压入栈
 
 销毁 (RemoveAll/ClearAll)
     │
@@ -209,7 +209,7 @@ public sealed partial class ReferencePoolModule : ModuleBase
     public T Acquire<T>() where T : class, IReference, new()
 
     // 释放引用
-    public void Release(IReference reference)
+    public void Recycle(IReference reference)
 
     // 添加引用到池
     public void Add<T>(int count) where T : class, IReference, new()
@@ -235,7 +235,7 @@ public sealed partial class ReferencePoolModule : ModuleBase
 ```csharp
 // 所有操作统一通过 GlobalModule.ReferencePoolModule 访问
 GlobalModule.ReferencePoolModule.Acquire<T>();
-GlobalModule.ReferencePoolModule.Release(reference);
+GlobalModule.ReferencePoolModule.Recycle(reference);
 ```
 
 ### 4.3 ReferenceCollection (内部类)
@@ -263,7 +263,7 @@ private sealed class ReferenceCollection
 
     // 核心操作
     public T Acquire<T>() where T : class, IReference, new()
-    public void Release(IReference reference)
+    public void Recycle(IReference reference)
     public void Add<T>(int count) where T : class, IReference, new()
     public void Remove(int count)
     public void RemoveAll()
@@ -273,7 +273,7 @@ private sealed class ReferenceCollection
 **实现细节：**
 - 使用 `Stack<IReference>` 存储闲置引用（LIFO）
 - 所有操作使用 `lock (m_FreeStack)` 确保线程安全
-- `Release` 时自动调用 `reference.Clear()` 清理对象
+- `Recycle` 时自动调用 `reference.Clear()` 清理对象
 - 无条件执行重复释放检测，一旦发现即抛出异常
 
 ### 4.4 ReferencePoolModule
@@ -372,7 +372,7 @@ public class ReferencePoolExample : MonoBehaviour
         Debug.Log($"消息ID: {message.MessageId}, 内容: {message.Content}");
         
         // 使用完毕后归还到引用池
-        GlobalModule.ReferencePoolModule.Release(message);
+        GlobalModule.ReferencePoolModule.Recycle(message);
     }
 }
 ```
@@ -410,7 +410,7 @@ public class NetworkMessageSystem : MonoBehaviour
         finally
         {
             // 确保消息对象被归还
-            GlobalModule.ReferencePoolModule.Release(message);
+            GlobalModule.ReferencePoolModule.Recycle(message);
         }
     }
     
@@ -437,7 +437,7 @@ public class NetworkMessageSystem : MonoBehaviour
             // 批量归还所有消息对象
             foreach (var message in messages)
             {
-                GlobalModule.ReferencePoolModule.Release(message);
+                GlobalModule.ReferencePoolModule.Recycle(message);
             }
         }
     }
@@ -530,7 +530,7 @@ public class EventSystem : MonoBehaviour
         // 归还所有事件对象到引用池
         foreach (var gameEvent in m_CurrentFrameEvents)
         {
-            GlobalModule.ReferencePoolModule.Release(gameEvent);
+            GlobalModule.ReferencePoolModule.Recycle(gameEvent);
         }
         m_CurrentFrameEvents.Clear();
     }
@@ -608,7 +608,7 @@ public class PooledObject<T> : IDisposable where T : class, IReference, new()
     {
         if (Value != null)
         {
-            GlobalModule.ReferencePoolModule.Release(Value);
+            GlobalModule.ReferencePoolModule.Recycle(Value);
             Value = null;
         }
     }
@@ -733,7 +733,7 @@ public class ObjectPoolManager : MonoBehaviour
 |---|---|---|
 | 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
 | 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
-| 使用状态 | 无（Release 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
+| 使用状态 | 无（Recycle 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
 | 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动释放、优先级、锁定 |
 | 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
 | 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnRelease`） |
@@ -741,9 +741,9 @@ public class ObjectPoolManager : MonoBehaviour
 ### 9.3 使用方式差异
 
 ```csharp
-// 引用池：Acquire 获取（池空自建）、Release 归还
+// 引用池：Acquire 获取（池空自建）、Recycle 回收
 var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
-GlobalModule.ReferencePoolModule.Release(msg);
+GlobalModule.ReferencePoolModule.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
 pool.Register(entityInstanceObject, true);

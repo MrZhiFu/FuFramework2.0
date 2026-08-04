@@ -98,7 +98,7 @@ namespace Hotfix.Framework.Event
                 {
                     var tempEvent = m_EventQueue.Dequeue();
                     HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
-                    GlobalModule.ReferencePoolModule.Release(tempEvent);
+                    GlobalModule.ReferencePoolModule.Recycle(tempEvent);
                 }
             }
         }
@@ -289,7 +289,7 @@ namespace Hotfix.Framework.Event
             }
             finally
             {
-                GlobalModule.ReferencePoolModule.Release(eArgs);
+                GlobalModule.ReferencePoolModule.Recycle(eArgs);
             }
 
             if (noHandlerException)

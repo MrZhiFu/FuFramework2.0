@@ -202,7 +202,7 @@ namespace Hotfix.Framework.Guide
             // 回收当前引导的所有步骤到引用池中
             foreach (var (_, step) in m_AllStepDict)
             {
-                GlobalModule.ReferencePoolModule.Release(step);
+                GlobalModule.ReferencePoolModule.Recycle(step);
             }
 
             m_AllStepDict.Clear();
@@ -616,7 +616,7 @@ namespace Hotfix.Framework.Guide
 
             if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
             {
-                GlobalModule.ReferencePoolModule.Release(m_CurrentStep); // 回收当前步骤到引用池中
+                GlobalModule.ReferencePoolModule.Recycle(m_CurrentStep); // 回收当前步骤到引用池中
                 m_CurrentStep = nextStep;
                 ExecuteCurrentStep();
             }
@@ -651,7 +651,7 @@ namespace Hotfix.Framework.Guide
             // 回收当前引导的所有步骤到引用池中
             foreach (var (_, step) in m_AllStepDict)
             {
-                GlobalModule.ReferencePoolModule.Release(step);
+                GlobalModule.ReferencePoolModule.Recycle(step);
             }
 
             m_AllStepDict.Clear();

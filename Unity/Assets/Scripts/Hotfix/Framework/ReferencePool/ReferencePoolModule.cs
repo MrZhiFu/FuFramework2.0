@@ -47,12 +47,12 @@ namespace Hotfix.Framework.ReferencePool
         /// 将引用归还引用池。
         /// </summary>
         /// <param name="reference">要归还的引用。</param>
-        public void Release(IReference reference)
+        public void Recycle(IReference reference)
         {
             if (reference == null) throw new InvalidOperationException("[ReferencePoolModule] 要归还的引用对象为空.");
 
             var refType = reference.GetType();
-            GetReferenceCollection(refType).Release(reference);
+            GetReferenceCollection(refType).Recycle(reference);
         }
 
         /// <summary>

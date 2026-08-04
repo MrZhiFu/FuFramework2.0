@@ -246,7 +246,7 @@ namespace Hotfix.Framework.Asset
             m_Released = true;
             UnloadAll();
             m_LoadingTasks.Clear();
-            GlobalModule.ReferencePoolModule.Release(this);
+            GlobalModule.ReferencePoolModule.Recycle(this);
         }
     }
 }

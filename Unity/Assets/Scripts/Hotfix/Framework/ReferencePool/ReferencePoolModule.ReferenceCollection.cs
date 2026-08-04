@@ -21,7 +21,7 @@ namespace Hotfix.Framework.ReferencePool
             public Type RefType { get; }
 
             /// <summary>
-            /// 引用池栈, 存储闲置的引用对象。
+            /// 引用池栈, 存储闲置的引用对象，使用栈结构对缓存友好。
             /// </summary>
             private readonly Stack<IReference> m_FreeStack = new();
 
@@ -95,10 +95,10 @@ namespace Hotfix.Framework.ReferencePool
             }
 
             /// <summary>
-            /// 释放引用, 将引用归还到引用池中。
+            /// 将引用归还到引用池中。
             /// </summary>
             /// <param name="reference">要释放的引用。</param>
-            public void Release(IReference reference)
+            public void Recycle(IReference reference)
             {
                 if (reference == null) throw new InvalidOperationException("[ReferencePoolModule.ReferenceCollection] 引用释放失败，引用对象为空.");
 

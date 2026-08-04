@@ -110,6 +110,6 @@ namespace Hotfix.Framework.Event
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => GlobalModule.ReferencePoolModule.Release(this);
+        public void Release() => GlobalModule.ReferencePoolModule.Recycle(this);
     }
 }

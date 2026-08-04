@@ -747,7 +747,7 @@ public static class GameObjectPool
 |---|---|---|
 | 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
 | 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
-| 使用状态 | 无（Release 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
+| 使用状态 | 无（Recycle 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
 | 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动释放、优先级、锁定 |
 | 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
 | 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnRelease`） |
@@ -755,9 +755,9 @@ public static class GameObjectPool
 ### 9.3 使用方式差异
 
 ```csharp
-// 引用池：Acquire 获取（池空自建）、Release 归还
+// 引用池：Acquire 获取（池空自建）、Recycle 回收
 var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
-GlobalModule.ReferencePoolModule.Release(msg);
+GlobalModule.ReferencePoolModule.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
 pool.Register(entityInstanceObject, true);

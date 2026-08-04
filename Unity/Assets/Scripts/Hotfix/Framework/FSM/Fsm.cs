@@ -204,7 +204,7 @@ namespace Hotfix.Framework.FSM
                 foreach (var (_, data) in m_DataDict)
                 {
                     if (data == null) continue;
-                    GlobalModule.ReferencePoolModule.Release(data);
+                    GlobalModule.ReferencePoolModule.Recycle(data);
                 }
 
                 m_DataDict.Clear();
@@ -218,7 +218,7 @@ namespace Hotfix.Framework.FSM
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
-        internal void Shutdown() => GlobalModule.ReferencePoolModule.Release(this);
+        internal void Shutdown() => GlobalModule.ReferencePoolModule.Recycle(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -353,7 +353,7 @@ namespace Hotfix.Framework.FSM
 
             var oldData = GetData(name);
             if (oldData != null)
-                GlobalModule.ReferencePoolModule.Release(oldData);
+                GlobalModule.ReferencePoolModule.Recycle(oldData);
 
             m_DataDict[name] = data;
         }
@@ -369,7 +369,7 @@ namespace Hotfix.Framework.FSM
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
-            if (oldData != null) GlobalModule.ReferencePoolModule.Release(oldData);
+            if (oldData != null) GlobalModule.ReferencePoolModule.Recycle(oldData);
             return m_DataDict.Remove(name);
         }
 

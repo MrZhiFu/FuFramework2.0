@@ -154,6 +154,6 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Release() => GlobalModule.ReferencePoolModule.Release(this);
+        public void Release() => GlobalModule.ReferencePoolModule.Recycle(this);
     }
 }
