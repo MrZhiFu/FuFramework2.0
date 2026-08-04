@@ -7,8 +7,8 @@ namespace Hotfix.Framework.ObjectPool
     /// <summary>
     /// 对象池的基类。
     /// 功能：
-    ///     1.记录了对象池的名称、类型、数量、可释放数量、是否允许多次获取、自动释放间隔、容量、过期秒数、优先级等信息。
-    ///     2.定义了对象池轮询、关闭并清理对象池、释放对象池中的可释放对象、尝试释放对象池中的指定数量的对象、获取所有对象信息等接口。
+    ///     1.记录了对象池的名称、类型、数量、可销毁数量、是否允许多次获取、自动销毁间隔、容量、过期秒数、优先级等信息。
+    ///     2.定义了对象池轮询、关闭并清理对象池、销毁对象池中的可销毁对象、尝试销毁对象池中的指定数量的对象、获取所有对象信息等接口。
     /// </summary>
     public abstract class ObjectPoolBase
     {
@@ -44,9 +44,9 @@ namespace Hotfix.Framework.ObjectPool
         public abstract int Count { get; }
 
         /// <summary>
-        /// 获取对象池中能被释放的对象的数量。
+        /// 获取对象池中能被销毁的对象的数量。
         /// </summary>
-        public abstract int CanReleaseCount { get; }
+        public abstract int CanDisposeCount { get; }
 
         /// <summary>
         /// 获取对象池中的对象时，是否允许获取正在被使用的对象。一般都为false。
@@ -56,9 +56,9 @@ namespace Hotfix.Framework.ObjectPool
         public abstract bool AllowSpawnInUse { get; }
 
         /// <summary>
-        /// 获取或设置对象池自动释放可释放对象的间隔秒数。
+        /// 获取或设置对象池自动销毁可销毁对象的间隔秒数。
         /// </summary>
-        public abstract float AutoReleaseInterval { get; set; }
+        public abstract float AutoDisposeInterval { get; set; }
 
         /// <summary>
         /// 获取或设置对象池的容量。
@@ -86,9 +86,9 @@ namespace Hotfix.Framework.ObjectPool
         internal abstract void Update(float unscaledDeltaTime);
 
         /// <summary>
-        /// 释放对象池中的可释放对象。
+        /// 销毁对象池中的可销毁对象。
         /// </summary>
-        public abstract void Release();
+        public abstract void Dispose();
 
         /// <summary>
         /// 关闭并清理对象池。
@@ -96,9 +96,9 @@ namespace Hotfix.Framework.ObjectPool
         internal abstract void OnDispose();
 
         /// <summary>
-        /// 释放对象池中的所有未使用对象。
+        /// 销毁对象池中的所有未使用对象。
         /// </summary>
-        public abstract void ReleaseAllUnused();
+        public abstract void DisposeAllUnused();
 
         /// <summary>
         /// 获取所有对象信息。

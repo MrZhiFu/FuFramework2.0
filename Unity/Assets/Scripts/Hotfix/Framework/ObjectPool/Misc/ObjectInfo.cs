@@ -24,9 +24,9 @@ namespace Hotfix.Framework.ObjectPool
         public bool Locked { get; }
 
         /// <summary>
-        /// 获取对象自定义释放检查标记。
+        /// 获取对象自定义销毁检查标记。
         /// </summary>
-        public bool CustomCanReleaseFlag { get; }
+        public bool CustomCanDisposeFlag { get; }
 
         /// <summary>
         /// 获取对象的优先级。
@@ -53,15 +53,15 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         /// <param name="name">对象名称。</param>
         /// <param name="locked">对象是否被加锁。</param>
-        /// <param name="customCanReleaseFlag">对象自定义释放检查标记。</param>
+        /// <param name="customCanDisposeFlag">对象自定义销毁检查标记。</param>
         /// <param name="priority">对象的优先级。</param>
         /// <param name="lastUseTime">对象上次使用时间。</param>
         /// <param name="spawnCount">对象的获取计数。</param>
-        public ObjectInfo(string name, bool locked, bool customCanReleaseFlag, int priority, DateTime lastUseTime, int spawnCount)
+        public ObjectInfo(string name, bool locked, bool customCanDisposeFlag, int priority, DateTime lastUseTime, int spawnCount)
         {
             Name                 = name;
             Locked               = locked;
-            CustomCanReleaseFlag = customCanReleaseFlag;
+            CustomCanDisposeFlag = customCanDisposeFlag;
             Priority             = priority;
             LastUseTime          = lastUseTime;
             SpawnCount           = spawnCount;

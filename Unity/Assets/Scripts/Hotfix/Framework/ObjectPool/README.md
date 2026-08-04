@@ -8,9 +8,9 @@ FuFramework ObjectPool 模块是游戏框架的对象池管理系统，专门用
 
 - **对象复用机制**：减少频繁的对象创建和销毁，降低 GC 压力
 - **多类型支持**：支持任意继承自 ObjectBase 的对象类型
-- **智能释放策略**：基于优先级和最后使用时间的自动释放机制
-- **内存管理**：过期后/低内存自动释放和手动释放控制
-- **生命周期管理**：完整的对象生成、回收、释放生命周期
+- **智能销毁策略**：基于优先级和最后使用时间的自动销毁机制
+- **内存管理**：过期后/低内存自动销毁和手动销毁控制
+- **生命周期管理**：完整的对象生成、回收、销毁生命周期
 - **多池管理**：支持多个对象池并行管理
 
 ## 3. 核心概念
@@ -39,14 +39,14 @@ ObjectPoolModule.Object<T> 实现:
         └── 方法: Clear()
 
 
-【释放对象筛选函数】
-ReleaseObjectFilterCallback<T>
-    └── 签名: List<T> Filter(List<T> candidateObjects, int toReleaseCount, DateTime? expireTimeThreshold)
-    └── 用途: 自定义对象释放筛选策略
+【销毁对象筛选函数】
+DisposeObjectFilterCallback<T>
+    └── 签名: List<T> Filter(List<T> candidateObjects, int toDisposeCount, DateTime? expireTimeThreshold)
+    └── 用途: 自定义对象销毁筛选策略
 
 【数据结构】
 ObjectInfo (结构体)
-    ├── 属性: Name, Locked, CustomCanReleaseFlag, Priority, LastUseTime, SpawnCount, IsInUse
+    ├── 属性: Name, Locked, CustomCanDisposeFlag, Priority, LastUseTime, SpawnCount, IsInUse
     └── 用途: 对象信息展示（Inspector 面板）
 
 TypeNamePair (Core 模块)
@@ -88,13 +88,13 @@ TypeNamePair (Core 模块)
 注册 (Register)
     │
     ▼
-┌─────────┐     获取 (Spawn)     ┌─────────┐
+┌─────────┐     获取 (Get)      ┌─────────┐
 │  空闲   │ ───────────────────▶ │ 使用中  │
 │ (In Pool)│                     │ (In Use)│
 └─────────┘ ◀─────────────────── └─────────┘
     ▲         回收 (Recycle)
     │
-    │ 释放 (Release)
+    │ 销毁 (Dispose)
     ▼
 ┌─────────┐
 │  销毁   │
@@ -106,35 +106,35 @@ TypeNamePair (Core 模块)
 ObjectBase 生命周期:
     ├── OnSpawn()   - 对象被获取时调用
     ├── OnRecycle() - 对象被回收时调用
-    └── OnRelease() - 对象被释放时调用（抽象方法，必须实现）
+    └── OnDispose() - 对象被销毁时调用（抽象方法，必须实现）
 ```
 
-### 3.4 释放策略
+### 3.4 销毁策略
 
 ```
-【默认释放筛选策略】
+【默认销毁筛选策略】
 
-1. 过期对象优先释放
+1. 过期对象优先销毁
    - 检查对象最后使用时间
-   - 超过 ExpireTime 的对象优先释放
+   - 超过 ExpireTime 的对象优先销毁
 
-2. 优先级排序释放
-   - 优先级低的对象先释放
-   - 优先级相同，最后使用时间早的先释放
+2. 优先级排序销毁
+   - 优先级低的对象先销毁
+   - 优先级相同，最后使用时间早的先销毁
 
-【释放条件检查】
+【销毁条件检查】
 
-对象可被释放的条件:
+对象可被销毁的条件:
     ├── !IsInUse        - 对象不在使用中 (SpawnCount == 0)
     ├── !Locked         - 对象未被加锁
-    └── CustomCanReleaseFlag - 自定义释放标记为 true
+    └── CustomCanDisposeFlag - 自定义销毁标记为 true
 ```
 
 ## 4. 核心类详细说明
 
 ### 4.1 ObjectPoolModule
 
-对象池管理模块，继承自 `ModuleBase`，通过 `GlobalModule.ObjectPoolModule` 提供全局的对象池创建、获取、释放和销毁功能。
+对象池管理模块，继承自 `ModuleBase`，通过 `GlobalModule.ObjectPoolModule` 提供全局的对象池创建、获取和销毁功能。
 
 **核心功能：**
 
@@ -159,17 +159,17 @@ public sealed partial class ObjectPoolModule : ModuleBase
     public ObjectPool<T> CreateObjectPool<T>(string poolName, bool allowSpawnInUse = false) where T : ObjectBase
     public ObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime = float.MaxValue, bool allowSpawnInUse = false) where T : ObjectBase
     public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
-    public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoReleaseInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
+    public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
 
     // 销毁对象池
-    public bool DestroyObjectPool<T>() where T : ObjectBase                         // 销毁默认名称对象池
-    public bool DestroyObjectPool<T>(string poolName) where T : ObjectBase          // 销毁指定名称对象池
-    public bool DestroyObjectPool<T>(ObjectPool<T> objectPool) where T : ObjectBase // 销毁指定对象池实例
-    public bool DestroyObjectPool(ObjectPoolBase objectPool)                        // 销毁指定对象池基类实例
+    public bool DisposeObjectPool<T>() where T : ObjectBase                         // 销毁默认名称对象池
+    public bool DisposeObjectPool<T>(string poolName) where T : ObjectBase          // 销毁指定名称对象池
+    public bool DisposeObjectPool<T>(ObjectPool<T> objectPool) where T : ObjectBase // 销毁指定对象池实例
+    public bool DisposeObjectPool(ObjectPoolBase objectPool)                        // 销毁指定对象池基类实例
 
-    // 模块级释放
-    public void Release()             // 释放所有对象池中的可释放对象
-    public void ReleaseAllUnused()    // 释放所有对象池中的所有未使用对象
+    // 模块级销毁
+    public void Dispose()             // 销毁所有对象池中的可销毁对象
+    public void DisposeAllUnused()    // 销毁所有对象池中的所有未使用对象
 }
 ```
 
@@ -178,15 +178,15 @@ public sealed partial class ObjectPoolModule : ModuleBase
 | 参数 | 默认值 | 说明 |
 | ---- | ------ | ---- |
 | `capacity` | `int.MaxValue` | 对象池容量，默认不限制 |
-| `autoReleaseInterval` | `float.MaxValue` | 自动释放间隔（秒），默认 `float.MaxValue` 即**默认不自动释放** |
+| `autoDisposeInterval` | `float.MaxValue` | 自动销毁间隔（秒），默认 `float.MaxValue` 即**默认不自动销毁** |
 | `expireTime` | `float.MaxValue` | 对象过期时间（秒），默认 `float.MaxValue` 即**默认不过期** |
-| `priority` | `0` | 对象池优先级，低优先级对象池优先被释放 |
+| `priority` | `0` | 对象池优先级，低优先级对象池优先被销毁 |
 | `allowSpawnInUse` | `false` | 是否允许对象在使用中再次被获取 |
 
-> 注意：`autoReleaseInterval` 与 `expireTime` 是相互独立的两组配置。
-> `autoReleaseInterval` 控制模块轮询时是否触发“检查并释放”动作（默认不自动检查）；
-> `expireTime` 控制单个对象闲置多久后会被视为过期、纳入释放候选（默认不过期）。
-> 需要自动释放时，两者需按业务场景配合设置。
+> 注意：`autoDisposeInterval` 与 `expireTime` 是相互独立的两组配置。
+> `autoDisposeInterval` 控制模块轮询时是否触发“检查并销毁”动作（默认不自动检查）；
+> `expireTime` 控制单个对象闲置多久后会被视为过期、纳入销毁候选（默认不过期）。
+> 需要自动销毁时，两者需按业务场景配合设置。
 
 **访问入口：**
 
@@ -199,7 +199,7 @@ GlobalModule.ObjectPoolModule.GetObjectPool<T>();
 **内存管理：**
 
 - 监听 `Application.lowMemory` 事件
-- 低内存时自动调用 `ReleaseAllUnused()` 释放资源
+- 低内存时自动调用 `DisposeAllUnused()` 销毁资源
 
 ### 4.2 ObjectPoolBase
 
@@ -216,9 +216,9 @@ public abstract class ObjectPoolBase
     // 抽象属性
     public abstract Type ObjectType { get; }       // 对象类型
     public abstract int Count { get; }             // 对象数量
-    public abstract int CanReleaseCount { get; }   // 可释放对象数量
+    public abstract int CanDisposeCount { get; }   // 可销毁对象数量
     public abstract bool AllowSpawnInUse { get; }  // 是否允许多次获取
-    public abstract float AutoReleaseInterval { get; set; }  // 自动释放间隔（秒）
+    public abstract float AutoDisposeInterval { get; set; }  // 自动销毁间隔（秒）
     public abstract int Capacity { get; set; }     // 容量
     public abstract float ExpireTime { get; set; } // 过期时间（秒）
     public abstract int Priority { get; set; }     // 优先级
@@ -228,10 +228,10 @@ public abstract class ObjectPoolBase
 **抽象方法：**
 
 ```csharp
-internal abstract void Update(float unscaledDeltaTime) // 轮询更新（自动释放检查）
-public abstract void Release()                         // 释放超过容量的可释放对象
+internal abstract void Update(float unscaledDeltaTime) // 轮询更新（自动销毁检查）
+public abstract void Dispose()                         // 销毁超过容量的可销毁对象
 internal abstract void OnDispose()                     // 关闭并清理对象池
-public abstract void ReleaseAllUnused()                // 释放所有未使用对象
+public abstract void DisposeAllUnused()                // 销毁所有未使用对象
 public abstract ObjectInfo[] GetAllObjectInfos()       // 获取所有对象信息
 ```
 
@@ -248,19 +248,19 @@ public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 {
     // 对象管理
     public void Register(T obj, bool spawned)       // 注册对象到池
-    public T Spawn(string name)                     // 获取对象
+    public T Get(string name)                       // 获取对象
     public void Recycle(T obj)                      // 回收对象
     public void Recycle(object target)              // 通过目标对象回收
     public bool CanGet()                          // 检查对象是否可获取（默认名称）
     public bool CanGet(string name)               // 检查指定名称对象是否可获取
 
-    // 释放控制
-    public bool ReleaseObject(T obj)                // 释放指定对象
-    public bool ReleaseObject(object target)        // 通过目标对象释放
-    public override void Release()                  // 释放超过容量的对象
-    public void Release(ReleaseObjectFilterCallback<T> callback)                     // 使用自定义筛选函数释放
-    public void Release(int toReleaseCount, ReleaseObjectFilterCallback<T> callback) // 尝试释放指定数量
-    public override void ReleaseAllUnused()         // 释放所有未使用对象
+    // 销毁控制
+    public bool DisposeObject(T obj)                // 销毁指定对象
+    public bool DisposeObject(object target)        // 通过目标对象销毁
+    public override void Dispose()                  // 销毁超过容量的对象
+    public void Dispose(DisposeObjectFilterCallback<T> callback)                     // 使用自定义筛选函数销毁
+    public void Dispose(int toDisposeCount, DisposeObjectFilterCallback<T> callback) // 尝试销毁指定数量
+    public override void DisposeAllUnused()         // 销毁所有未使用对象
 
     // 对象属性控制
     public void SetLocked(T obj, bool locked)       // 设置锁定状态
@@ -290,7 +290,7 @@ public abstract class ObjectBase : IReference
     public bool Locked { get; set; }               // 是否被加锁
     public int Priority { get; set; }              // 优先级
     public DateTime LastUseTime { get; internal set; }  // 最后使用时间
-    public virtual bool CustomCanReleaseFlag => true;   // 自定义释放标记
+    public virtual bool CustomCanDisposeFlag => true;   // 自定义销毁标记
 }
 ```
 
@@ -306,7 +306,7 @@ protected void Initialize(string name, object target, int priority)
 // 生命周期回调
 protected internal virtual void OnSpawn() { }      // 对象被获取时
 protected internal virtual void OnRecycle() { }    // 对象被回收时
-protected internal abstract void OnRelease();      // 对象被释放时
+protected internal abstract void OnDispose();      // 对象被销毁时
 
 // 引用池接口
 public virtual void Clear()                        // 清理对象
@@ -324,7 +324,7 @@ private sealed class Object<T> : IReference where T : ObjectBase
     public string Name { get; }           // 对象名称
     public bool Locked { get; set; }      // 是否被加锁
     public int Priority { get; set; }     // 优先级
-    public bool CustomCanReleaseFlag { get; }  // 自定义释放标记
+    public bool CustomCanDisposeFlag { get; }  // 自定义销毁标记
     public DateTime LastUseTime { get; }  // 最后使用时间
     public bool IsInUse => SpawnCount > 0;  // 是否正在使用
     public int SpawnCount { get; private set; }  // 生成计数（引用计数）
@@ -336,7 +336,7 @@ private sealed class Object<T> : IReference where T : ObjectBase
 - `Create(T obj, bool spawned)` - 创建内部对象
 - `Spawn()` - 获取对象（计数+1）
 - `Recycle()` - 回收对象（计数-1）
-- `OnRelease()` - 释放对象
+- `OnDispose()` - 销毁对象
 - `Clear()` - 清理内部对象
 
 ### 4.6 ObjectInfo
@@ -348,7 +348,7 @@ public readonly struct ObjectInfo
 {
     public string Name { get; }                    // 对象名称
     public bool Locked { get; }                    // 是否被加锁
-    public bool CustomCanReleaseFlag { get; }      // 自定义释放标记
+    public bool CustomCanDisposeFlag { get; }      // 自定义销毁标记
     public int Priority { get; }                   // 优先级
     public DateTime LastUseTime { get; }           // 最后使用时间
     public int SpawnCount { get; }                 // 生成计数
@@ -356,14 +356,14 @@ public readonly struct ObjectInfo
 }
 ```
 
-### 4.7 ReleaseObjectFilterCallback<T>
+### 4.7 DisposeObjectFilterCallback<T>
 
-释放对象筛选委托，用于自定义释放策略。
+销毁对象筛选委托，用于自定义销毁策略。
 
 ```csharp
-public delegate List<T> ReleaseObjectFilterCallback<T>(
+public delegate List<T> DisposeObjectFilterCallback<T>(
     List<T> candidateObjects,      // 候选对象列表
-    int toReleaseCount,            // 需要释放的数量
+    int toDisposeCount,            // 需要销毁的数量
     DateTime? expireTimeThreshold  // 过期时间阈值（为空表示不限制）
 ) where T : ObjectBase;
 ```
@@ -428,9 +428,9 @@ public class BulletObject : ObjectBase
     }
 
     /// <summary>
-    /// 释放对象（销毁 GameObject）
+    /// 销毁对象（销毁 GameObject）
     /// </summary>
-    protected internal override void OnRelease()
+    protected internal override void OnDispose()
     {
         if (Target is GameObject gameObject)
         {
@@ -485,7 +485,7 @@ public class BulletManager
         // 创建子弹对象池
         m_BulletPool = objectPoolModule.CreateObjectPool<BulletObject>(
             poolName: "BulletPool",
-            autoReleaseInterval: 10f,         // 每10秒检查一次自动释放
+            autoDisposeInterval: 10f,         // 每10秒检查一次自动销毁
             capacity: 50,                     // 最大容量50个
             expireTime: 60f,                  // 60秒未使用则过期
             priority: 1,                      // 优先级1
@@ -532,7 +532,7 @@ public class BulletManager
     /// </summary>
     public void ClearAllBullets()
     {
-        m_BulletPool.ReleaseAllUnused();
+        m_BulletPool.DisposeAllUnused();
     }
 }
 ```
@@ -557,24 +557,24 @@ var effect3 = effectPool.Get("Explosion");  // SpawnCount = 3（同一个对象�
 // 每次回收引用计数--
 effectPool.Recycle(effect1);  // SpawnCount = 2
 effectPool.Recycle(effect2);  // SpawnCount = 1
-effectPool.Recycle(effect3);  // SpawnCount = 0（可以被释放）
+effectPool.Recycle(effect3);  // SpawnCount = 0（可以被销毁）
 ```
 
-### 5.4 自定义释放策略
+### 5.4 自定义销毁策略
 
 ```csharp
-// 定义自定义释放策略（优先释放低优先级对象）
-ReleaseObjectFilterCallback<BulletObject> customFilter = (candidates, count, expireThreshold) =>
+// 定义自定义销毁策略（优先销毁低优先级对象）
+DisposeObjectFilterCallback<BulletObject> customFilter = (candidates, count, expireThreshold) =>
 {
     // 按优先级排序（低优先级在前）
     candidates.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
-    // 返回需要释放的对象
+    // 返回需要销毁的对象
     return candidates.GetRange(0, Mathf.Min(count, candidates.Count));
 };
 
-// 使用自定义策略释放对象
-m_BulletPool.Release(customFilter);
+// 使用自定义策略销毁对象
+m_BulletPool.Dispose(customFilter);
 ```
 
 ### 5.5 对象池监控和管理
@@ -582,7 +582,7 @@ m_BulletPool.Release(customFilter);
 ```csharp
 // 获取对象池统计信息
 Debug.Log($"对象池数量: {m_BulletPool.Count}");
-Debug.Log($"可释放数量: {m_BulletPool.CanReleaseCount}");
+Debug.Log($"可销毁数量: {m_BulletPool.CanDisposeCount}");
 Debug.Log($"容量: {m_BulletPool.Capacity}");
 
 // 获取所有对象信息
@@ -592,19 +592,19 @@ foreach (var info in infos)
     Debug.Log($"对象: {info.Name}, 使用中: {info.IsInUse}, 锁定: {info.Locked}");
 }
 
-// 锁定重要对象（防止被释放）
+// 锁定重要对象（防止被销毁）
 var importantBullet = m_BulletPool.Get("ImportantBullet");
 m_BulletPool.SetLocked(importantBullet, true);
 
 // 设置对象优先级
 m_BulletPool.SetPriority(importantBullet, 100);
 
-// 手动触发释放
-m_BulletPool.Release();           // 释放超过容量的对象
-m_BulletPool.ReleaseAllUnused();  // 释放所有未使用对象
+// 手动触发销毁
+m_BulletPool.Dispose();           // 销毁超过容量的对象
+m_BulletPool.DisposeAllUnused();  // 销毁所有未使用对象
 
-// 尝试释放指定数量（需提供筛选函数，这里简单取前 N 个）
-m_BulletPool.Release(5, (candidates, count, expireThreshold) =>
+// 尝试销毁指定数量（需提供筛选函数，这里简单取前 N 个）
+m_BulletPool.Dispose(5, (candidates, count, expireThreshold) =>
     candidates.GetRange(0, Mathf.Min(count, candidates.Count)));
 ```
 
@@ -617,8 +617,8 @@ ObjectPool/
 │   └── ObjectPoolBase.cs                   # 对象池基类
 ├── Misc/
 │   ├── ObjectInfo.cs                       # 对象信息结构体
-│   └── ReleaseObjectFilterCallback.cs      # 释放筛选委托
-├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、模块级释放）
+│   └── DisposeObjectFilterCallback.cs      # 销毁筛选委托
+├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、模块级销毁）
 ├── ObjectPoolModule.Query.cs               # 对象池查询（Has/Get/GetAll）
 ├── ObjectPoolModule.PoolCreation.cs        # 对象池创建/销毁
 ├── ObjectPoolModule.ObjectPool.cs          # 泛型对象池实现
@@ -645,8 +645,8 @@ using Hotfix.Framework.Core;
 // 1. 使用引用池模块创建对象（避免 GC）
 var obj = GlobalModule.ReferencePoolModule.Acquire<MyObject>();
 
-// 2. 在 Release 中销毁 GameObject，在 Clear 中清理引用
-protected internal override void OnRelease()
+// 2. 在 OnDispose 中销毁 GameObject，在 Clear 中清理引用
+protected internal override void OnDispose()
 {
     if (Target is GameObject go)
         Object.Destroy(go);
@@ -695,7 +695,7 @@ public static class GameObjectPool
 
         return s_Module.CreateObjectPool<T>(
             poolName: poolName,
-            autoReleaseInterval: 10f,
+            autoDisposeInterval: 10f,
             capacity: capacity,
             expireTime: 60f,
             priority: 0,
@@ -724,8 +724,8 @@ public static class GameObjectPool
 1. **对象生命周期**：确保对象在回收后不再被使用，避免空引用异常
 2. **容量设置**：合理设置容量，避免内存占用过大或频繁创建销毁
 3. **过期时间**：根据对象使用频率设置合适的过期时间
-4. **自动释放间隔**：默认不自动释放（`float.MaxValue`），需要自动释放时显式设置 `autoReleaseInterval`
-5. **锁定机制**：重要对象使用 `SetLocked` 防止被自动释放
+4. **自动销毁间隔**：默认不自动销毁（`float.MaxValue`），需要自动销毁时显式设置 `autoDisposeInterval`
+5. **锁定机制**：重要对象使用 `SetLocked` 防止被自动销毁
 6. **引用计数**：多实例池注意正确回收，避免内存泄漏
 7. **线程安全**：对象池操作应在主线程进行
 
@@ -748,9 +748,9 @@ public static class GameObjectPool
 | 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
 | 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
 | 使用状态 | 无（Recycle 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
-| 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动释放、优先级、锁定 |
+| 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动销毁、优先级、锁定 |
 | 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
-| 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnRelease`） |
+| 对象接口 | `IReference`（`Clear()`） | `ObjectBase`（`OnSpawn`/`OnRecycle`/`OnDispose`） |
 
 ### 9.3 使用方式差异
 

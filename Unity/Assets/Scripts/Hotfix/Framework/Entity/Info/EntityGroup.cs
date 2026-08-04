@@ -48,12 +48,12 @@ namespace Hotfix.Framework.Entity
         public int EntityCount => m_Entities.Count;
 
         /// <summary>
-        /// 获取或设置实体组实例对象池自动释放可释放对象的间隔秒数。
+        /// 获取或设置实体组实例对象池自动销毁可销毁对象的间隔秒数。
         /// </summary>
-        public float InstanceAutoReleaseInterval
+        public float InstanceAutoDisposeInterval
         {
-            get => m_InstancePool.AutoReleaseInterval;
-            set => m_InstancePool.AutoReleaseInterval = value;
+            get => m_InstancePool.AutoDisposeInterval;
+            set => m_InstancePool.AutoDisposeInterval = value;
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Entity
 
             var poolName = $"Entity Instance Pool ({Name})";
             m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, row.InstanceCapacity, row.InstanceExpireTime, row.InstancePriority);
-            m_InstancePool.AutoReleaseInterval = row.InstanceAutoReleaseInterval;
+            m_InstancePool.AutoDisposeInterval = row.InstanceAutoReleaseInterval;
 
             m_Entities   = new FuLinkedList<Entity>();
             m_CachedNode = null;

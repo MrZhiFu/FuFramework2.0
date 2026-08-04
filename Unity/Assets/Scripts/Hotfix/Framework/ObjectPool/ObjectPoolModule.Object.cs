@@ -8,14 +8,17 @@ namespace Hotfix.Framework.ObjectPool
     public sealed partial class ObjectPoolModule
     {
         /// <summary>
-        /// 内部数据对象。
+        /// 目标对象状态包装类。
         /// 功能：
-        ///     1. 包装一个对象池内的目标对象，创建并管理对象生命周期。
+        ///     1. 记录对象池内目标对象状态的包装对象，管理目标对象的生命周期。
+        ///     2. 避免每次注册/注销对象时 new 一个包装类产生 GC
         /// </summary>
-        /// <typeparam name="T">对象类型</typeparam>
+        /// <typeparam name="T">对象池内的目标对象类型</typeparam>
         private sealed class Object<T> : IReference where T : ObjectBase
         {
-            /// 对象池内的目标对象
+            /// <summary>
+            /// 对象池内的目标对象。
+            /// </summary>
             internal T TargetObject { get; private set; }
 
             /// <summary>
@@ -24,7 +27,7 @@ namespace Hotfix.Framework.ObjectPool
             public string Name => TargetObject.Name;
 
             /// <summary>
-            /// 对象是否被加锁(加锁的对象不会被释放)。
+            /// 对象是否被加锁(加锁的对象不会被销毁)。
             /// </summary>
             public bool Locked
             {
@@ -42,9 +45,9 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 获取自定义是否可释放标记。
+            /// 获取自定义是否可销毁标记。
             /// </summary>
-            public bool CustomCanReleaseFlag => TargetObject.CustomCanReleaseFlag;
+            public bool CustomCanDisposeFlag => TargetObject.CustomCanDisposeFlag;
 
             /// <summary>
             /// 获取对象上次使用时间。
@@ -64,7 +67,7 @@ namespace Hotfix.Framework.ObjectPool
             /// <summary>
             /// 创建对象。
             /// </summary>
-            /// <param name="obj">对象。</param>
+            /// <param name="obj">对象池内的目标对象类型。</param>
             /// <param name="spawned">对象是否已被提前生成，如果是，则会调用OnSpawn。</param>
             /// <returns>创建的内部对象。</returns>
             public static Object<T> Create(T obj, bool spawned)
@@ -126,17 +129,17 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 释放对象。
+            /// 销毁对象。
             /// </summary>
-            public void OnRelease()
+            public void OnDispose()
             {
                 try
                 {
-                    TargetObject.OnRelease();
+                    TargetObject.OnDispose();
                 }
                 finally
                 {
-                    // 即使 OnRelease 异常也回收目标对象到引用池，避免跳过清理
+                    // 即使 OnDispose 异常也回收目标对象到引用池，避免跳过清理
                     GlobalModule.ReferencePoolModule.Recycle(TargetObject);
                 }
             }

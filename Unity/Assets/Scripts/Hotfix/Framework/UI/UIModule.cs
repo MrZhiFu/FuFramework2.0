@@ -58,7 +58,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池自动释放可释放对象的间隔秒数
         /// </summary>
-        private const float AutoReleaseInterval = 60f;
+        private const float AutoDisposeInterval = 60f;
 
         /// <summary>
         /// 界面实例对象池的容量
@@ -74,10 +74,10 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取或设置界面实例对象池自动释放可释放对象的间隔秒数。
         /// </summary>
-        public float WinObjPoolAutoReleaseInterval
+        public float WinObjPoolAutoDisposeInterval
         {
-            get => m_WinObjPool.AutoReleaseInterval;
-            set => m_WinObjPool.AutoReleaseInterval = value;
+            get => m_WinObjPool.AutoDisposeInterval;
+            set => m_WinObjPool.AutoDisposeInterval = value;
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Hotfix.Framework.UI
 
             m_SerialId = 0;
 
-            WinObjPoolAutoReleaseInterval = AutoReleaseInterval;
+            WinObjPoolAutoDisposeInterval = AutoDisposeInterval;
             WinObjPoolCapacity            = PoolCapacity;
             WinObjPoolExpireTime          = UIInstanceExpireTime;
 

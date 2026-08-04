@@ -8,8 +8,8 @@ namespace Hotfix.Framework.ObjectPool
     /// <summary>
     /// 对象池内的对象基类。实现了引用对象的接口。
     /// 功能：
-    ///     1. 记录了对象的基本信息，如对象名称、目标真实对象、是否被加锁、优先级、上次使用时间，自定义释放检查标记等属性。
-    ///     2. 定义了对象生成时、回收时、释放时等生命周期事件。
+    ///     1. 记录了对象的基本信息，如对象名称、目标真实对象、是否被加锁、优先级、上次使用时间，自定义销毁检查标记等属性。
+    ///     2. 定义了对象生成时、回收时、销毁时等生命周期事件。
     /// </summary>
     public abstract class ObjectBase : IReference
     {
@@ -28,8 +28,8 @@ namespace Hotfix.Framework.ObjectPool
         /// 对象上次使用时间。
         public DateTime LastUseTime { get; internal set; }
 
-        /// 自定义是否可释放标记。。默认为true。
-        public virtual bool CustomCanReleaseFlag => true;
+        /// 自定义是否可销毁标记。。默认为true。
+        public virtual bool CustomCanDisposeFlag => true;
 
 
         /// <summary>
@@ -100,8 +100,8 @@ namespace Hotfix.Framework.ObjectPool
         protected internal virtual void OnRecycle() { }
 
         /// <summary>
-        /// 释放对象时的事件。
+        /// 销毁对象时的事件。
         /// </summary>
-        protected internal abstract void OnRelease();
+        protected internal abstract void OnDispose();
     }
 }

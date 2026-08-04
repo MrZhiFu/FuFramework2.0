@@ -12,8 +12,8 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 具体管理对象的对象池。
         /// 功能：
-        ///     1. 允许/禁止自动释放：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
-        ///     2. 设置优先级：可以设置对象池的优先级，在需要强制释放对象时（如内存不足），优先释放低优先级池中的对象。
+        ///     1. 允许/禁止自动销毁：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
+        ///     2. 设置优先级：可以设置对象池的优先级，在需要强制销毁对象时（如内存不足），优先销毁低优先级池中的对象。
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
         public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
@@ -30,19 +30,19 @@ namespace Hotfix.Framework.ObjectPool
             private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
 
             /// <summary>
-            /// 缓存当前所有可以释放的对象列表(未使用的、未加锁的、自定义标记为可释放的)。
+            /// 缓存当前所有可以销毁的对象列表(未使用的、未加锁的、自定义标记为可销毁的)。
             /// </summary>
-            private readonly List<T> m_CachedCanReleaseObjectList;
+            private readonly List<T> m_CachedCanDisposeObjectList;
 
             /// <summary>
-            /// 缓存经过筛选函数后最终决定要释放的对象列表。
+            /// 缓存经过筛选函数后最终决定要销毁的对象列表。
             /// </summary>
-            private readonly List<T> m_CachedToReleaseObjectList;
+            private readonly List<T> m_CachedToDisposeObjectList;
 
             /// <summary>
-            /// 默认释放对象的筛选函数(释放策略)。定义了如何从候选列表中选出要释放的对象（基于优先级和最后使用时间）。
+            /// 默认销毁对象的筛选函数(销毁策略)。定义了如何从候选列表中选出要销毁的对象（基于优先级和最后使用时间）。
             /// </summary>
-            private readonly ReleaseObjectFilterCallback<T> m_DefaultReleaseObjectFilterCallback;
+            private readonly DisposeObjectFilterCallback<T> m_DefaultDisposeObjectFilterCallback;
 
 
             /// <summary>
@@ -51,33 +51,33 @@ namespace Hotfix.Framework.ObjectPool
             private int m_Capacity;
 
             /// <summary>
-            /// 对象过期时间秒数。一个对象闲置超过这个时间（秒），就会被标记为可释放。
+            /// 对象过期时间秒数。一个对象闲置超过这个时间（秒），就会被标记为可销毁。
             /// </summary>
             private float m_ExpireTime;
 
 
             /// <summary>
-            /// 自动释放计时器。用于计时，每隔 AutoReleaseInterval 秒触发一次自动释放检查。
+            /// 自动销毁计时器。用于计时，每隔 AutoDisposeInterval 秒触发一次自动销毁检查。
             /// </summary>
-            private float m_AutoReleaseTimer;
+            private float m_AutoDisposeTimer;
 
             /// <summary>
-            /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
+            /// 获取或设置对象池每次轮询中自动销毁可销毁对象的间隔秒数。
             /// </summary>
-            private float m_AutoReleaseInterval;
+            private float m_AutoDisposeInterval;
 
             /// <summary>
-            /// 获取或设置对象池每次轮询中自动释放可释放对象的间隔秒数。
+            /// 获取或设置对象池每次轮询中自动销毁可销毁对象的间隔秒数。
             /// </summary>
-            public override float AutoReleaseInterval
+            public override float AutoDisposeInterval
             {
-                get => m_AutoReleaseInterval;
+                get => m_AutoDisposeInterval;
                 set
                 {
-                    if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动释放间隔秒数不能小于0.");
-                    if (Mathf.Approximately(m_AutoReleaseInterval, value)) return;
+                    if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动销毁间隔秒数不能小于0.");
+                    if (Mathf.Approximately(m_AutoDisposeInterval, value)) return;
 
-                    m_AutoReleaseInterval = value;
+                    m_AutoDisposeInterval = value;
                 }
             }
 
@@ -104,14 +104,14 @@ namespace Hotfix.Framework.ObjectPool
             public override int Count => m_TargetObjectDict.Count;
 
             /// <summary>
-            /// 获取对象池中能被释放的对象的数量。
+            /// 获取对象池中能被销毁的对象的数量。
             /// </summary>
-            public override int CanReleaseCount
+            public override int CanDisposeCount
             {
                 get
                 {
-                    GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                    return m_CachedCanReleaseObjectList.Count;
+                    GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+                    return m_CachedCanDisposeObjectList.Count;
                 }
             }
 
@@ -127,7 +127,7 @@ namespace Hotfix.Framework.ObjectPool
                     if (m_Capacity == value) return;
 
                     m_Capacity = value;
-                    Release();
+                    Dispose();
                 }
             }
 
@@ -143,7 +143,7 @@ namespace Hotfix.Framework.ObjectPool
                     if (Mathf.Approximately(ExpireTime, value)) return;
 
                     m_ExpireTime = value;
-                    Release();
+                    Dispose();
                 }
             }
 
@@ -152,24 +152,24 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             /// <param name="name">对象池名称。</param>
             /// <param name="allowSpawnInUse">是否允许对象池中对象正在使用的状态下被获取。</param>
-            /// <param name="autoReleaseInterval">对象池自动释放可释放对象的间隔秒数。</param>
+            /// <param name="autoDisposeInterval">对象池自动销毁可销毁对象的间隔秒数。</param>
             /// <param name="capacity">对象池的容量。</param>
             /// <param name="expireTime">对象池对象过期秒数。</param>
             /// <param name="priority">对象池的优先级。</param>
-            public ObjectPool(string name, bool allowSpawnInUse, float autoReleaseInterval, int capacity, float expireTime, int priority) : base(name)
+            public ObjectPool(string name, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime, int priority) : base(name)
             {
                 m_ObjectMultiDict                    = new FuMultiDictionary<string, Object<T>>();
                 m_TargetObjectDict                   = new Dictionary<object, Object<T>>();
-                m_DefaultReleaseObjectFilterCallback = DefaultReleaseObjectFilterCallback;
-                m_CachedCanReleaseObjectList         = new List<T>();
-                m_CachedToReleaseObjectList          = new List<T>();
+                m_DefaultDisposeObjectFilterCallback = DefaultDisposeObjectFilterCallback;
+                m_CachedCanDisposeObjectList         = new List<T>();
+                m_CachedToDisposeObjectList          = new List<T>();
 
                 AllowSpawnInUse     = allowSpawnInUse;
-                AutoReleaseInterval = autoReleaseInterval;
+                AutoDisposeInterval = autoDisposeInterval;
                 Capacity            = capacity;
                 ExpireTime          = expireTime;
                 Priority            = priority;
-                m_AutoReleaseTimer  = 0f;
+                m_AutoDisposeTimer  = 0f;
             }
 
             /// <summary>
@@ -178,15 +178,15 @@ namespace Hotfix.Framework.ObjectPool
             /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
             internal override void Update(float unscaledDeltaTime)
             {
-                // 默认不自动释放时短路，避免无谓的每帧累加
-                if (AutoReleaseInterval >= float.MaxValue) return;
+                // 默认不自动销毁时短路，避免无谓的每帧累加
+                if (AutoDisposeInterval >= float.MaxValue) return;
 
-                m_AutoReleaseTimer += unscaledDeltaTime;
+                m_AutoDisposeTimer += unscaledDeltaTime;
 
-                // 每隔 AutoReleaseInterval 秒触发一次自动释放检查
-                if (m_AutoReleaseTimer >= AutoReleaseInterval)
+                // 每隔 AutoDisposeInterval 秒触发一次自动销毁检查
+                if (m_AutoDisposeTimer >= AutoDisposeInterval)
                 {
-                    Release();
+                    Dispose();
                 }
             }
 
@@ -199,11 +199,11 @@ namespace Hotfix.Framework.ObjectPool
                 {
                     try
                     {
-                        obj.OnRelease();
+                        obj.OnDispose();
                     }
                     catch (Exception e)
                     {
-                        FuLogger.LogWarning($"[ObjectPoolModule] 释放对象池 {Name} 中的对象时出现异常: {e.Message}");
+                        FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {Name} 中的对象时出现异常: {e.Message}");
                     }
 
                     GlobalModule.ReferencePoolModule.Recycle(obj);
@@ -211,8 +211,8 @@ namespace Hotfix.Framework.ObjectPool
 
                 m_ObjectMultiDict.Clear();
                 m_TargetObjectDict.Clear();
-                m_CachedCanReleaseObjectList.Clear();
-                m_CachedToReleaseObjectList.Clear();
+                m_CachedCanDisposeObjectList.Clear();
+                m_CachedToDisposeObjectList.Clear();
             }
 
             /// <summary>
@@ -229,7 +229,7 @@ namespace Hotfix.Framework.ObjectPool
                 m_TargetObjectDict.Add(obj.Target, tempObj);
 
                 if (Count > m_Capacity)
-                    Release();
+                    Dispose();
             }
 
             /// <summary>
@@ -278,30 +278,31 @@ namespace Hotfix.Framework.ObjectPool
                 var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
+              
                 obj.Recycle();
                 if (Count > m_Capacity && obj.SpawnCount <= 0)
                 {
-                    Release();
+                    Dispose();
                 }
             }
 
             /// <summary>
-            /// 释放指定对象。
+            /// 销毁指定对象。
             /// </summary>
-            /// <param name="obj">要释放的对象。</param>
-            /// <returns>释放对象是否成功。</returns>
-            public bool ReleaseObject(T obj)
+            /// <param name="obj">要销毁的对象。</param>
+            /// <returns>销毁对象是否成功。</returns>
+            public bool DisposeObject(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-                return ReleaseObject(obj.Target);
+                return DisposeObject(obj.Target);
             }
 
             /// <summary>
-            /// 释放指定对象。
+            /// 销毁指定对象。
             /// </summary>
-            /// <param name="target">要释放的对象。</param>
-            /// <returns>释放对象是否成功。</returns>
-            public bool ReleaseObject(object target)
+            /// <param name="target">要销毁的对象。</param>
+            /// <returns>销毁对象是否成功。</returns>
+            public bool DisposeObject(object target)
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
 
@@ -311,47 +312,47 @@ namespace Hotfix.Framework.ObjectPool
 
                 if (obj.IsInUse) return false;
                 if (obj.Locked) return false;
-                if (!obj.CustomCanReleaseFlag) return false;
+                if (!obj.CustomCanDisposeFlag) return false;
 
-                FuLogger.LogInfo($"[ObjectPoolModule] 真正释放对象池中的可释放对象 '{obj.Name}'");
+                FuLogger.LogInfo($"[ObjectPoolModule] 真正销毁对象池中的可销毁对象 '{obj.Name}'");
 
                 m_ObjectMultiDict.Remove(obj.Name, obj);
                 m_TargetObjectDict.Remove(obj.TargetObject.Target);
 
-                obj.OnRelease();
+                obj.OnDispose();
                 GlobalModule.ReferencePoolModule.Recycle(obj);
                 return true;
             }
 
             /// <summary>
-            /// 释放对象池中的可释放对象(超过容量的数量为尝试释放的对象数量)
+            /// 销毁对象池中的可销毁对象(超过容量的数量为尝试销毁的对象数量)
             /// </summary>
-            public override void Release()
+            public override void Dispose()
             {
                 var overCapacity = Count - m_Capacity;
-                Release(overCapacity, m_DefaultReleaseObjectFilterCallback);
+                Dispose(overCapacity, m_DefaultDisposeObjectFilterCallback);
             }
 
             /// <summary>
-            /// 释放对象池中的可释放对象。
+            /// 销毁对象池中的可销毁对象。
             /// </summary>
-            /// <param name="releaseObjectFilterCallback">释放对象筛选函数。</param>
-            public void Release(ReleaseObjectFilterCallback<T> releaseObjectFilterCallback)
+            /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
+            public void Dispose(DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
             {
-                Release(Count - m_Capacity, releaseObjectFilterCallback);
+                Dispose(Count - m_Capacity, releaseObjectFilterCallback);
             }
 
             /// <summary>
-            /// 尝试释放对象池中的可释放对象。
+            /// 尝试销毁对象池中的可销毁对象。
             /// </summary>
-            /// <param name="toReleaseCount">尝试释放对象数量。</param>
-            /// <param name="releaseObjectFilterCallback">释放对象筛选函数。</param>
-            public void Release(int toReleaseCount, ReleaseObjectFilterCallback<T> releaseObjectFilterCallback)
+            /// <param name="toDisposeCount">尝试销毁对象数量。</param>
+            /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
+            public void Dispose(int toDisposeCount, DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
             {
                 if (releaseObjectFilterCallback == null)
-                    throw new InvalidOperationException("[ObjectPoolModule] 释放对象筛选函数不能为空.");
+                    throw new InvalidOperationException("[ObjectPoolModule] 销毁对象筛选函数不能为空.");
 
-                if (toReleaseCount <= 0) return;
+                if (toDisposeCount <= 0) return;
 
                 // 找到对象过期时间点，最后使用时间早于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
                 DateTime? expireTimeThreshold = null;
@@ -362,33 +363,33 @@ namespace Hotfix.Framework.ObjectPool
                 }
 
                 // 重置计时器
-                m_AutoReleaseTimer = 0f;
+                m_AutoDisposeTimer = 0f;
 
-                // 获取所有可释放的对象
-                GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                FuLogger.LogInfo($"[ObjectPoolModule] 尝试释放对象池中的可释放对象-对象数量: '{m_CachedCanReleaseObjectList.Count}'");
+                // 获取所有可销毁的对象
+                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+                FuLogger.LogInfo($"[ObjectPoolModule] 尝试销毁对象池中的可销毁对象-对象数量: '{m_CachedCanDisposeObjectList.Count}'");
 
-                // 筛选需要释放的对象
-                var toReleaseObjects = releaseObjectFilterCallback(m_CachedCanReleaseObjectList, toReleaseCount, expireTimeThreshold);
-                if (toReleaseObjects is not { Count: > 0 }) return;
+                // 筛选需要销毁的对象
+                var toDisposeObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
+                if (toDisposeObjects is not { Count: > 0 }) return;
 
-                // 释放对象
-                foreach (var toReleaseObject in toReleaseObjects)
+                // 销毁对象
+                foreach (var toDisposeObject in toDisposeObjects)
                 {
-                    ReleaseObject(toReleaseObject);
+                    DisposeObject(toDisposeObject);
                 }
             }
 
             /// <summary>
-            /// 释放对象池中的所有未使用对象。
+            /// 销毁对象池中的所有未使用对象。
             /// </summary>
-            public override void ReleaseAllUnused()
+            public override void DisposeAllUnused()
             {
-                m_AutoReleaseTimer = 0f;
-                GetCanReleaseObjects(m_CachedCanReleaseObjectList);
-                foreach (var toReleaseObject in m_CachedCanReleaseObjectList)
+                m_AutoDisposeTimer = 0f;
+                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+                foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
                 {
-                    ReleaseObject(toReleaseObject);
+                    DisposeObject(toDisposeObject);
                 }
             }
 
@@ -485,7 +486,7 @@ namespace Hotfix.Framework.ObjectPool
                 {
                     foreach (var obj in objectRang)
                     {
-                        results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanReleaseFlag,
+                        results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanDisposeFlag,
                                                    obj.Priority, obj.LastUseTime, obj.SpawnCount));
                     }
                 }
@@ -505,18 +506,18 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 获取对象池中能被释放的对象的数量
+            /// 获取对象池中能被销毁的对象的数量
             /// </summary>
             /// <param name="results">结果列表</param>
-            private void GetCanReleaseObjects(List<T> results)
+            private void GetCanDisposeObjects(List<T> results)
             {
                 if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
 
                 results.Clear();
                 foreach (var (_, obj) in m_TargetObjectDict)
                 {
-                    // 如果对象正在使用中，或者被加锁，或者自定义标记为不能被释放，则跳过。
-                    if (obj.IsInUse || obj.Locked || !obj.CustomCanReleaseFlag)
+                    // 如果对象正在使用中，或者被加锁，或者自定义标记为不能被销毁，则跳过。
+                    if (obj.IsInUse || obj.Locked || !obj.CustomCanDisposeFlag)
                     {
                         continue;
                     }
@@ -526,19 +527,19 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 释放对象筛选函数。
+            /// 销毁对象筛选函数。
             /// 筛选条件：
-            /// 1.过期的对象先释放。
-            /// 2.优先级小的先释放。或者优先级相等，但是最后使用时间更早的对象先释放。
+            /// 1.过期的对象先销毁。
+            /// 2.优先级小的先销毁。或者优先级相等，但是最后使用时间更早的对象先销毁。
             /// </summary>
             /// <typeparam name="T">对象类型。</typeparam>
             /// <param name="candidateObjects">要筛选的对象集合。</param>
-            /// <param name="toReleaseCount">需要释放的对象数量。</param>
+            /// <param name="toDisposeCount">需要销毁的对象数量。</param>
             /// <param name="expireTimeThreshold">对象过期时间点(为空时表示不限制过期时间点)。</param>
-            /// <returns>经筛选需要释放的对象集合。</returns>
-            private List<T> DefaultReleaseObjectFilterCallback(List<T> candidateObjects, int toReleaseCount, DateTime? expireTimeThreshold)
+            /// <returns>经筛选需要销毁的对象集合。</returns>
+            private List<T> DefaultDisposeObjectFilterCallback(List<T> candidateObjects, int toDisposeCount, DateTime? expireTimeThreshold)
             {
-                m_CachedToReleaseObjectList.Clear();
+                m_CachedToDisposeObjectList.Clear();
 
                 // 第一阶段：根据最后使用时间筛选过期对象。
                 if (expireTimeThreshold.HasValue)
@@ -547,25 +548,25 @@ namespace Hotfix.Framework.ObjectPool
                     {
                         // 如果对象最后使用时间 > 过期时间点，说明了对象还没过期，则继续筛选。
                         if (candidateObjects[i].LastUseTime > expireTimeThreshold.Value) continue;
-                        m_CachedToReleaseObjectList.Add(candidateObjects[i]);
+                        m_CachedToDisposeObjectList.Add(candidateObjects[i]);
                         candidateObjects.RemoveAt(i);
                     }
 
-                    toReleaseCount -= m_CachedToReleaseObjectList.Count;
+                    toDisposeCount -= m_CachedToDisposeObjectList.Count;
                 }
 
-                // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toReleaseCount 个
+                // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toDisposeCount 个
                 candidateObjects.Sort((a, b) =>
                 {
                     var priorityCmp = a.Priority.CompareTo(b.Priority);
                     return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
                 });
-                for (var i = 0; i < toReleaseCount && i < candidateObjects.Count; i++)
+                for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
                 {
-                    m_CachedToReleaseObjectList.Add(candidateObjects[i]);
+                    m_CachedToDisposeObjectList.Add(candidateObjects[i]);
                 }
 
-                return m_CachedToReleaseObjectList;
+                return m_CachedToDisposeObjectList;
             }
         }
     }

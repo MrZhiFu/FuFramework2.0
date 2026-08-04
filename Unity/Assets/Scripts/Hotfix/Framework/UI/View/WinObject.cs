@@ -8,10 +8,10 @@ namespace Hotfix.Framework.UI
 {
     /// <summary>
     /// 界面实例对象。
-    /// 目标：创建和释放界面实例对象。
+    /// 目标：创建和销毁界面实例对象。
     /// 功能：
     ///     1. 创建界面实例对象。
-    ///     2. 释放界面实例对象。
+    ///     2. 销毁界面实例对象。
     /// </summary>
     public sealed class WinObject : ObjectBase
     {
@@ -29,12 +29,12 @@ namespace Hotfix.Framework.UI
         }
 
         /// <summary>
-        /// 释放界面实例对象
+        /// 销毁界面实例对象
         /// </summary>
-        protected internal override void OnRelease()
+        protected internal override void OnDispose()
         {
             if (Target is not WinBase winBase)
-                throw new InvalidOperationException("[UIInstanceObject] 需要释放的目标对象不是界面基类WinBase");
+                throw new InvalidOperationException("[UIInstanceObject] 需要销毁的目标对象不是界面基类WinBase");
 
             try
             {
@@ -42,7 +42,7 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception e)
             {
-                FuLogger.LogWarning($"[UIInstanceObject] 释放 WinUI 时出现异常: {e.Message}");
+                FuLogger.LogWarning($"[UIInstanceObject] 销毁 WinUI 时出现异常: {e.Message}");
             }
 
             winBase._OnDispose();
