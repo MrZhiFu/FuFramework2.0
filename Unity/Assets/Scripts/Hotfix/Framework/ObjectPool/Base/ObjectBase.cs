@@ -13,22 +13,34 @@ namespace Hotfix.Framework.ObjectPool
     /// </summary>
     public abstract class ObjectBase : IReference
     {
+        /// <summary>
         /// 对象名称。
+        /// </summary>
         public string Name { get; private set; }
 
-        /// 对象的目标真实对象。如GameObject
+        /// <summary>
+        /// 对象的目标真实对象。如GameObject。
+        /// </summary>
         public object Target { get; private set; }
 
+        /// <summary>
         /// 对象是否被加锁。
+        /// </summary>
         public bool Locked { get; set; }
 
+        /// <summary>
         /// 对象的优先级。
+        /// </summary>
         public int Priority { get; set; }
 
+        /// <summary>
         /// 对象上次使用时间。
+        /// </summary>
         public DateTime LastUseTime { get; internal set; }
 
-        /// 自定义是否可销毁标记。。默认为true。
+        /// <summary>
+        /// 自定义是否可销毁标记。默认为true。
+        /// </summary>
         public virtual bool CustomCanDisposeFlag => true;
 
         /// <summary>

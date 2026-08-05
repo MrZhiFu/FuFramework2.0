@@ -10,7 +10,7 @@ namespace Hotfix.Framework.ObjectPool
     /// <summary>
     /// 对象池管理模块。
     /// 功能：
-    ///     1. 提供对象池的创建、获取、销毁和销毁接口。
+    ///     1. 提供对象池的创建、获取、销毁接口。
     /// </summary>
     public sealed partial class ObjectPoolModule : ModuleBase
     {

@@ -54,21 +54,9 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 获取所有对象池。
         /// </summary>
-        /// <returns>所有对象池。</returns>
-        public ObjectPoolBase[] GetAllObjectPools() => GetAllObjectPools(false);
-
-        /// <summary>
-        /// 获取所有对象池。
-        /// </summary>
-        /// <param name="results">所有对象池。</param>
-        public void GetAllObjectPools(List<ObjectPoolBase> results) => GetAllObjectPools(false, results);
-
-        /// <summary>
-        /// 获取所有对象池。
-        /// </summary>
         /// <param name="sort">是否根据对象池的优先级排序。</param>
         /// <returns>所有对象池。</returns>
-        public ObjectPoolBase[] GetAllObjectPools(bool sort)
+        public ObjectPoolBase[] GetAllObjectPools(bool sort = false)
         {
             if (sort)
             {

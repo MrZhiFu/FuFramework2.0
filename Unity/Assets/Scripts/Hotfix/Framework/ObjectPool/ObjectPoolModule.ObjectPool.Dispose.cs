@@ -172,7 +172,7 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 获取对象池中能被销毁的对象的数量
+            /// 获取对象池中能被销毁的对象（填充到结果列表）。
             /// </summary>
             /// <param name="results">结果列表</param>
             private void GetCanDisposeObjects(List<T> results)

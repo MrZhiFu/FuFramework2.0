@@ -62,7 +62,7 @@ namespace Hotfix.Framework.ObjectPool
             private float m_AutoDisposeTimer;
 
             /// <summary>
-            /// 获取或设置对象池每次轮询中自动销毁可销毁对象的间隔秒数。
+            /// 对象池自动销毁可销毁对象的间隔秒数。
             /// </summary>
             private float m_AutoDisposeInterval;
 
@@ -358,8 +358,8 @@ namespace Hotfix.Framework.ObjectPool
             /// <summary>
             /// 获取对象。
             /// </summary>
-            /// <param name="target"></param>
-            /// <returns></returns>
+            /// <param name="target">目标对象。</param>
+            /// <returns>目标对象对应的池内对象，不存在时返回null。</returns>
             private T GetObject(object target)
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
