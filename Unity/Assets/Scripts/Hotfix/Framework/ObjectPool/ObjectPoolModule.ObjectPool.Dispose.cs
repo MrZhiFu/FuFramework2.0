@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
@@ -105,10 +106,19 @@ namespace Hotfix.Framework.ObjectPool
                 var toDisposeObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
                 if (toDisposeObjects is not { Count: > 0 }) return;
 
-                // 销毁对象
+                // 销毁对象（单个对象异常不影响整批销毁）
                 foreach (var toDisposeObject in toDisposeObjects)
                 {
-                    DisposeObject(toDisposeObject);
+                    // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
+                    var toDisposeObjectName = toDisposeObject.Name;
+                    try
+                    {
+                        DisposeObject(toDisposeObject);
+                    }
+                    catch (Exception e)
+                    {
+                        FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象 '{toDisposeObjectName}' 时出现异常: {e.Message}");
+                    }
                 }
             }
 
@@ -121,7 +131,16 @@ namespace Hotfix.Framework.ObjectPool
                 GetCanDisposeObjects(m_CachedCanDisposeObjectList);
                 foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
                 {
-                    DisposeObject(toDisposeObject);
+                    // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
+                    var toDisposeObjectName = toDisposeObject.Name;
+                    try
+                    {
+                        DisposeObject(toDisposeObject);
+                    }
+                    catch (Exception e)
+                    {
+                        FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象 '{toDisposeObjectName}' 时出现异常: {e.Message}");
+                    }
                 }
             }
 
@@ -133,6 +152,9 @@ namespace Hotfix.Framework.ObjectPool
             public bool DisposeObject(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
+#if UNITY_ASSERTIONS
+                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
+#endif
 
                 if (obj.IsInUse) return false;
                 if (obj.Locked) return false;

@@ -228,6 +228,9 @@ namespace Hotfix.Framework.ObjectPool
             public void Recycle(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+#if UNITY_ASSERTIONS
+                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
+#endif
                 obj.Recycle();
                 if (Count > m_Capacity && obj.SpawnCount <= 0)
                 {
@@ -291,6 +294,9 @@ namespace Hotfix.Framework.ObjectPool
             public void SetLocked(T obj, bool locked)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+#if UNITY_ASSERTIONS
+                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
+#endif
                 obj.Locked = locked;
             }
 
@@ -317,6 +323,9 @@ namespace Hotfix.Framework.ObjectPool
             public void SetPriority(T obj, int priority)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+#if UNITY_ASSERTIONS
+                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
+#endif
                 obj.Priority = priority;
             }
 
