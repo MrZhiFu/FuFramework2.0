@@ -31,6 +31,46 @@ namespace Hotfix.Framework.ObjectPool
         /// 自定义是否可销毁标记。。默认为true。
         public virtual bool CustomCanDisposeFlag => true;
 
+        /// <summary>
+        /// 获取对象池中对象的获取计数（引用计数）。
+        /// </summary>
+        public int SpawnCount { get; private set; }
+
+        /// <summary>
+        /// 获取对象是否正在使用中。
+        /// </summary>
+        public bool IsInUse => SpawnCount > 0;
+
+        /// <summary>
+        /// 生成对象。
+        /// </summary>
+        internal void Spawn()
+        {
+            SpawnCount++;
+            try
+            {
+                LastUseTime = DateTime.UtcNow;
+                OnSpawn();
+            }
+            catch
+            {
+                SpawnCount--;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 回收对象。
+        /// </summary>
+        internal void Recycle()
+        {
+            if (SpawnCount <= 0)
+                throw new InvalidOperationException($"[ObjectBase] 对象 '{Name}' 生成次数已经为 0, 回收失败.");
+
+            OnRecycle();
+            LastUseTime = DateTime.UtcNow;
+            SpawnCount--;
+        }
 
         /// <summary>
         /// 初始化对象基类。
@@ -75,6 +115,7 @@ namespace Hotfix.Framework.ObjectPool
             Locked      = locked;
             Priority    = priority;
             LastUseTime = DateTime.UtcNow;
+            SpawnCount  = 0;
         }
 
         /// <summary>
@@ -87,6 +128,7 @@ namespace Hotfix.Framework.ObjectPool
             Locked      = false;
             Priority    = 0;
             LastUseTime = default;
+            SpawnCount  = 0;
         }
 
         /// <summary>

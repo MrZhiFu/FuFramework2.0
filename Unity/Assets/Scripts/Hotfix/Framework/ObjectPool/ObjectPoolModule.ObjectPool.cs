@@ -16,18 +16,18 @@ namespace Hotfix.Framework.ObjectPool
         ///     2. 设置优先级：可以设置对象池的优先级，在需要强制销毁对象时（如内存不足），优先销毁低优先级池中的对象。
         /// </summary>
         /// <typeparam name="T">对象池中的对象类型。</typeparam>
-        public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
+        public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
         {
             /// <summary>
             /// 存储对象的多值字典，key为对象名称，value为对象(可为多个)。
             /// 允许同一个对象名称对应多个对象实例。这对于需要管理具有相同名称的多个对象（如子弹、特效等）非常重要，能够支持高效的对象复用。
             /// </summary>
-            private readonly FuMultiDictionary<string, Object<T>> m_ObjectMultiDict;
+            private readonly FuMultiDictionary<string, T> m_ObjectMultiDict;
 
             /// <summary>
             /// 存储目标对象与其对应的内部对象的字典，key为目标对象，value为对应的内部对象。
             /// </summary>
-            private readonly Dictionary<object, Object<T>> m_TargetObjectDict;
+            private readonly Dictionary<object, T> m_TargetObjectDict;
 
             /// <summary>
             /// 缓存当前所有可以销毁的对象列表(未使用的、未加锁的、自定义标记为可销毁的)。
@@ -158,8 +158,8 @@ namespace Hotfix.Framework.ObjectPool
             /// <param name="priority">对象池的优先级。</param>
             public ObjectPool(string name, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime, int priority) : base(name)
             {
-                m_ObjectMultiDict                    = new FuMultiDictionary<string, Object<T>>();
-                m_TargetObjectDict                   = new Dictionary<object, Object<T>>();
+                m_ObjectMultiDict                    = new FuMultiDictionary<string, T>();
+                m_TargetObjectDict                   = new Dictionary<object, T>();
                 m_DefaultDisposeObjectFilterCallback = DefaultDisposeObjectFilterCallback;
                 m_CachedCanDisposeObjectList         = new List<T>();
                 m_CachedToDisposeObjectList          = new List<T>();
@@ -173,49 +173,6 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 对象池轮询。
-            /// </summary>
-            /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-            internal override void Update(float unscaledDeltaTime)
-            {
-                // 默认不自动销毁时短路，避免无谓的每帧累加
-                if (AutoDisposeInterval >= float.MaxValue) return;
-
-                m_AutoDisposeTimer += unscaledDeltaTime;
-
-                // 每隔 AutoDisposeInterval 秒触发一次自动销毁检查
-                if (m_AutoDisposeTimer >= AutoDisposeInterval)
-                {
-                    Dispose();
-                }
-            }
-
-            /// <summary>
-            /// 关闭并清理对象池。
-            /// </summary>
-            internal override void OnDispose()
-            {
-                foreach (var (_, obj) in m_TargetObjectDict)
-                {
-                    try
-                    {
-                        obj.OnDispose();
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {Name} 中的对象时出现异常: {e.Message}");
-                    }
-
-                    GlobalModule.ReferencePoolModule.Recycle(obj);
-                }
-
-                m_ObjectMultiDict.Clear();
-                m_TargetObjectDict.Clear();
-                m_CachedCanDisposeObjectList.Clear();
-                m_CachedToDisposeObjectList.Clear();
-            }
-
-            /// <summary>
             /// 注册一个对象到对象池中。
             /// </summary>
             /// <param name="obj">对象。</param>
@@ -224,9 +181,11 @@ namespace Hotfix.Framework.ObjectPool
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
 
-                var tempObj = Object<T>.Create(obj, spawned);
-                m_ObjectMultiDict.Add(obj.Name, tempObj);
-                m_TargetObjectDict.Add(obj.Target, tempObj);
+                m_ObjectMultiDict.Add(obj.Name, obj);
+                m_TargetObjectDict.Add(obj.Target, obj);
+
+                // 对象是否提前生成，若是则直接走一次生成流程（计数+1、刷新最后使用时间、触发 OnSpawn）
+                if (spawned) obj.Spawn();
 
                 if (Count > m_Capacity)
                     Dispose();
@@ -247,11 +206,17 @@ namespace Hotfix.Framework.ObjectPool
                 {
                     // 如果允许获取正在使用的对象，则直接获取。
                     if (AllowSpawnInUse)
-                        return obj.Spawn();
+                    {
+                        obj.Spawn();
+                        return obj;
+                    }
 
                     // 如果对象没有正在使用，则直接获取。
                     if (!obj.IsInUse)
-                        return obj.Spawn();
+                    {
+                        obj.Spawn();
+                        return obj;
+                    }
                 }
 
                 return null;
@@ -264,7 +229,11 @@ namespace Hotfix.Framework.ObjectPool
             public void Recycle(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-                Recycle(obj.Target);
+                obj.Recycle();
+                if (Count > m_Capacity && obj.SpawnCount <= 0)
+                {
+                    Dispose();
+                }
             }
 
             /// <summary>
@@ -278,118 +247,11 @@ namespace Hotfix.Framework.ObjectPool
                 var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
-              
+
                 obj.Recycle();
                 if (Count > m_Capacity && obj.SpawnCount <= 0)
                 {
                     Dispose();
-                }
-            }
-
-            /// <summary>
-            /// 销毁指定对象。
-            /// </summary>
-            /// <param name="obj">要销毁的对象。</param>
-            /// <returns>销毁对象是否成功。</returns>
-            public bool DisposeObject(T obj)
-            {
-                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-                return DisposeObject(obj.Target);
-            }
-
-            /// <summary>
-            /// 销毁指定对象。
-            /// </summary>
-            /// <param name="target">要销毁的对象。</param>
-            /// <returns>销毁对象是否成功。</returns>
-            public bool DisposeObject(object target)
-            {
-                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-
-                var obj = GetObject(target);
-                if (obj == null) return false;
-
-
-                if (obj.IsInUse) return false;
-                if (obj.Locked) return false;
-                if (!obj.CustomCanDisposeFlag) return false;
-
-                FuLogger.LogInfo($"[ObjectPoolModule] 真正销毁对象池中的可销毁对象 '{obj.Name}'");
-
-                m_ObjectMultiDict.Remove(obj.Name, obj);
-                m_TargetObjectDict.Remove(obj.TargetObject.Target);
-
-                obj.OnDispose();
-                GlobalModule.ReferencePoolModule.Recycle(obj);
-                return true;
-            }
-
-            /// <summary>
-            /// 销毁对象池中的可销毁对象(超过容量的数量为尝试销毁的对象数量)
-            /// </summary>
-            public override void Dispose()
-            {
-                var overCapacity = Count - m_Capacity;
-                Dispose(overCapacity, m_DefaultDisposeObjectFilterCallback);
-            }
-
-            /// <summary>
-            /// 销毁对象池中的可销毁对象。
-            /// </summary>
-            /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
-            public void Dispose(DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
-            {
-                Dispose(Count - m_Capacity, releaseObjectFilterCallback);
-            }
-
-            /// <summary>
-            /// 尝试销毁对象池中的可销毁对象。
-            /// </summary>
-            /// <param name="toDisposeCount">尝试销毁对象数量。</param>
-            /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
-            public void Dispose(int toDisposeCount, DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
-            {
-                if (releaseObjectFilterCallback == null)
-                    throw new InvalidOperationException("[ObjectPoolModule] 销毁对象筛选函数不能为空.");
-
-                if (toDisposeCount <= 0) return;
-
-                // 找到对象过期时间点，最后使用时间早于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
-                DateTime? expireTimeThreshold = null;
-                if (m_ExpireTime < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
-                {
-                    // 过期时间点 = 当前UTC时间 - 过期时间秒数。例如，如果过期时间设置为10秒，那么过期时间点就是10秒前的时刻。任何超过10秒没被用过的对象都被视为过期。
-                    expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
-                }
-
-                // 重置计时器
-                m_AutoDisposeTimer = 0f;
-
-                // 获取所有可销毁的对象
-                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
-                FuLogger.LogInfo($"[ObjectPoolModule] 尝试销毁对象池中的可销毁对象-对象数量: '{m_CachedCanDisposeObjectList.Count}'");
-
-                // 筛选需要销毁的对象
-                var toDisposeObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
-                if (toDisposeObjects is not { Count: > 0 }) return;
-
-                // 销毁对象
-                foreach (var toDisposeObject in toDisposeObjects)
-                {
-                    DisposeObject(toDisposeObject);
-                }
-            }
-
-            /// <summary>
-            /// 销毁对象池中的所有未使用对象。
-            /// </summary>
-            public override void DisposeAllUnused()
-            {
-                m_AutoDisposeTimer = 0f;
-                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
-                foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
-                {
-                    DisposeObject(toDisposeObject);
                 }
             }
 
@@ -430,7 +292,7 @@ namespace Hotfix.Framework.ObjectPool
             public void SetLocked(T obj, bool locked)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-                SetLocked(obj.Target, locked);
+                obj.Locked = locked;
             }
 
             /// <summary>
@@ -456,7 +318,7 @@ namespace Hotfix.Framework.ObjectPool
             public void SetPriority(T obj, int priority)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-                SetPriority(obj.Target, priority);
+                obj.Priority = priority;
             }
 
             /// <summary>
@@ -471,7 +333,6 @@ namespace Hotfix.Framework.ObjectPool
                 var obj = GetObject(target);
                 if (obj == null)
                     throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
-
                 obj.Priority = priority;
             }
 
@@ -499,74 +360,10 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             /// <param name="target"></param>
             /// <returns></returns>
-            private Object<T> GetObject(object target)
+            private T GetObject(object target)
             {
                 if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
                 return m_TargetObjectDict.GetValueOrDefault(target);
-            }
-
-            /// <summary>
-            /// 获取对象池中能被销毁的对象的数量
-            /// </summary>
-            /// <param name="results">结果列表</param>
-            private void GetCanDisposeObjects(List<T> results)
-            {
-                if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
-
-                results.Clear();
-                foreach (var (_, obj) in m_TargetObjectDict)
-                {
-                    // 如果对象正在使用中，或者被加锁，或者自定义标记为不能被销毁，则跳过。
-                    if (obj.IsInUse || obj.Locked || !obj.CustomCanDisposeFlag)
-                    {
-                        continue;
-                    }
-
-                    results.Add(obj.TargetObject);
-                }
-            }
-
-            /// <summary>
-            /// 销毁对象筛选函数。
-            /// 筛选条件：
-            /// 1.过期的对象先销毁。
-            /// 2.优先级小的先销毁。或者优先级相等，但是最后使用时间更早的对象先销毁。
-            /// </summary>
-            /// <typeparam name="T">对象类型。</typeparam>
-            /// <param name="candidateObjects">要筛选的对象集合。</param>
-            /// <param name="toDisposeCount">需要销毁的对象数量。</param>
-            /// <param name="expireTimeThreshold">对象过期时间点(为空时表示不限制过期时间点)。</param>
-            /// <returns>经筛选需要销毁的对象集合。</returns>
-            private List<T> DefaultDisposeObjectFilterCallback(List<T> candidateObjects, int toDisposeCount, DateTime? expireTimeThreshold)
-            {
-                m_CachedToDisposeObjectList.Clear();
-
-                // 第一阶段：根据最后使用时间筛选过期对象。
-                if (expireTimeThreshold.HasValue)
-                {
-                    for (var i = candidateObjects.Count - 1; i >= 0; i--)
-                    {
-                        // 如果对象最后使用时间 > 过期时间点，说明了对象还没过期，则继续筛选。
-                        if (candidateObjects[i].LastUseTime > expireTimeThreshold.Value) continue;
-                        m_CachedToDisposeObjectList.Add(candidateObjects[i]);
-                        candidateObjects.RemoveAt(i);
-                    }
-
-                    toDisposeCount -= m_CachedToDisposeObjectList.Count;
-                }
-
-                // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toDisposeCount 个
-                candidateObjects.Sort((a, b) =>
-                {
-                    var priorityCmp = a.Priority.CompareTo(b.Priority);
-                    return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
-                });
-                for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
-                {
-                    m_CachedToDisposeObjectList.Add(candidateObjects[i]);
-                }
-
-                return m_CachedToDisposeObjectList;
             }
         }
     }
