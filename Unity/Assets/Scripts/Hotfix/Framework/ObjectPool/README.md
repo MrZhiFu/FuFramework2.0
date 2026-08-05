@@ -25,16 +25,9 @@ ObjectPoolBase (对象池基类)
 ObjectBase (对象基类)
     └── 用户自定义对象类 (如 BulletObject, EnemyObject)
 
-ObjectPoolModule.Object<T> (内部包装类)
-    └── 包装 ObjectBase 对象，管理生成计数
-
 
 【接口实现体系】
 ObjectBase 实现:
-    └── IReference (引用池接口)
-        └── 方法: Clear()
-
-ObjectPoolModule.Object<T> 实现:
     └── IReference (引用池接口)
         └── 方法: Clear()
 
@@ -149,10 +142,8 @@ public sealed partial class ObjectPoolModule : ModuleBase
     public bool HasObjectPool<T>(string poolName) where T : ObjectBase  // 检查指定名称对象池
     public ObjectPool<T> GetObjectPool<T>() where T : ObjectBase        // 获取对象池
     public ObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase // 获取指定名称对象池
-    public ObjectPoolBase[] GetAllObjectPools()                         // 获取所有对象池
-    public void GetAllObjectPools(List<ObjectPoolBase> results)         // 获取所有对象池（填充到列表）
-    public ObjectPoolBase[] GetAllObjectPools(bool sort)                // 获取所有对象池（按优先级排序可选）
-    public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results)
+    public ObjectPoolBase[] GetAllObjectPools(bool sort = false)           // 获取所有对象池（按优先级排序可选）
+    public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results) // 获取所有对象池（填充到列表）
 
     // 创建对象池（5 个泛型重载）
     public ObjectPool<T> CreateObjectPool<T>(bool allowSpawnInUse = false) where T : ObjectBase
@@ -273,8 +264,8 @@ public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 
 **内部数据结构：**
 
-- `FuMultiDictionary<string, Object<T>>` - 按名称存储对象（多值字典，支持同名多对象）
-- `Dictionary<object, Object<T>>` - 按目标对象快速查找
+- `FuMultiDictionary<string, T>` - 按名称存储对象（多值字典，支持同名多对象）
+- `Dictionary<object, T>` - 按目标对象快速查找
 
 ### 4.4 ObjectBase
 
@@ -291,6 +282,8 @@ public abstract class ObjectBase : IReference
     public int Priority { get; set; }              // 优先级
     public DateTime LastUseTime { get; internal set; }  // 最后使用时间
     public virtual bool CustomCanDisposeFlag => true;   // 自定义销毁标记
+    public int SpawnCount { get; private set; }       // 获取计数（引用计数）
+    public bool IsInUse => SpawnCount > 0;            // 是否正在使用
 }
 ```
 
@@ -312,34 +305,7 @@ protected internal abstract void OnDispose();      // 对象被销毁时
 public virtual void Clear()                        // 清理对象
 ```
 
-### 4.5 ObjectPoolModule.Object<T>
-
-内部对象包装类，包装 `ObjectBase` 对象并管理生成计数。
-
-**核心属性：**
-
-```csharp
-private sealed class Object<T> : IReference where T : ObjectBase
-{
-    public string Name { get; }           // 对象名称
-    public bool Locked { get; set; }      // 是否被加锁
-    public int Priority { get; set; }     // 优先级
-    public bool CustomCanDisposeFlag { get; }  // 自定义销毁标记
-    public DateTime LastUseTime { get; }  // 最后使用时间
-    public bool IsInUse => SpawnCount > 0;  // 是否正在使用
-    public int SpawnCount { get; private set; }  // 生成计数（引用计数）
-}
-```
-
-**核心方法：**
-
-- `Create(T obj, bool spawned)` - 创建内部对象
-- `Spawn()` - 获取对象（计数+1）
-- `Recycle()` - 回收对象（计数-1）
-- `OnDispose()` - 销毁对象
-- `Clear()` - 清理内部对象
-
-### 4.6 ObjectInfo
+### 4.5 ObjectInfo
 
 对象信息结构体，用于外部获取对象信息，如 Inspector 面板展示。
 
@@ -356,7 +322,7 @@ public readonly struct ObjectInfo
 }
 ```
 
-### 4.7 DisposeObjectFilterCallback<T>
+### 4.6 DisposeObjectFilterCallback<T>
 
 销毁对象筛选委托，用于自定义销毁策略。
 
@@ -622,7 +588,7 @@ ObjectPool/
 ├── ObjectPoolModule.Query.cs               # 对象池查询（Has/Get/GetAll）
 ├── ObjectPoolModule.PoolCreation.cs        # 对象池创建/销毁
 ├── ObjectPoolModule.ObjectPool.cs          # 泛型对象池实现
-├── ObjectPoolModule.Object.cs              # 内部对象包装类
+├── ObjectPoolModule.ObjectPool.Dispose.cs  # 对象池销毁与筛选
 └── README.md                               # 本文档
 ```
 
@@ -746,7 +712,7 @@ public static class GameObjectPool
 | 维度 | 引用池 | 对象池 |
 |---|---|---|
 | 对象来源 | 池空时 `Acquire<T>()` 自建（`new T()`） | 外部 `Register` 注册已创建实例，池**不创建**对象 |
-| 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, Object<T>>` |
+| 存储结构 | `Dictionary<Type, ReferenceCollection>` + `Stack<IReference>` | `FuMultiDictionary` + `Dictionary<object, T>` |
 | 使用状态 | 无（Recycle 即回池） | `SpawnCount`/`IsInUse`、`Locked`、`Priority`、`LastUseTime` |
 | 生命周期管理 | 仅 OnDispose 清空 | 容量、过期时间、自动销毁、优先级、锁定 |
 | 重复检测 | 无条件 `Stack.Contains` 检测 | Recycle 检测 `SpawnCount <= 0` |
