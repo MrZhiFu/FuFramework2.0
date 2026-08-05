@@ -25,12 +25,10 @@ ObjectPoolBase (对象池基类)
 ObjectBase (对象基类)
     └── 用户自定义对象类 (如 BulletObject, EnemyObject)
 
-
 【接口实现体系】
 ObjectBase 实现:
     └── IReference (引用池接口)
         └── 方法: Clear()
-
 
 【销毁对象筛选函数】
 DisposeObjectFilterCallback<T>

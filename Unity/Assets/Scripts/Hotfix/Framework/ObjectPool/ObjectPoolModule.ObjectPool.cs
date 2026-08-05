@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Log;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
