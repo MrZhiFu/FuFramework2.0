@@ -6,28 +6,14 @@ using AOT.Framework.Core.Log;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.ObjectPool
 {
+    /// <summary>
+    /// 对象池中对象的销毁与筛选。
+    /// 功能：
+    ///     1. 提供容量/过期驱动的销毁接口与全部闲置对象销毁。
+    ///     2. 提供销毁对象的筛选策略与过期清理。
+    /// </summary>
     public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     {
-        /// <summary>
-        /// 对象池轮询。
-        /// </summary>
-        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        internal override void Update(float unscaledDeltaTime)
-        {
-            // 默认不自动销毁时短路，避免无谓的每帧累加
-            if (AutoDisposeInterval >= float.MaxValue) return;
-
-            m_AutoDisposeTimer += unscaledDeltaTime;
-
-            // 每隔 AutoDisposeInterval 秒触发一次自动销毁检查
-            if (m_AutoDisposeTimer >= AutoDisposeInterval)
-            {
-                m_AutoDisposeTimer = 0f;
-                Dispose();
-                DisposeExpired();
-            }
-        }
-
         /// <summary>
         /// 销毁对象池中已过期的可销毁对象（不限于超容量）。
         /// 与 Dispose() 配合，使自动销毁间隔同时覆盖"超容量裁剪"与"过期闲置清理"。
@@ -59,48 +45,6 @@ namespace Hotfix.Framework.ObjectPool
         }
 
         /// <summary>
-        /// 关闭并清理对象池。
-        /// </summary>
-        internal override void OnDispose()
-        {
-            // 复制到临时列表，避免对象 OnDispose 中修改池字典导致遍历异常
-            var objects = new List<T>(m_TargetObjectDict.Count);
-            foreach (var (_, obj) in m_TargetObjectDict)
-            {
-                objects.Add(obj);
-            }
-
-            foreach (var obj in objects)
-            {
-                try
-                {
-                    obj.OnDispose();
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {Name} 中的对象时出现异常: {e.Message}");
-                }
-                finally
-                {
-                    try
-                    {
-                        // 单次回收：即使 OnDispose 异常也回收对象到引用池
-                        GlobalModule.ReferencePoolModule.Recycle(obj);
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogWarning($"[ObjectPoolModule] 回收对象池 {Name} 中的对象时出现异常: {e.Message}");
-                    }
-                }
-            }
-
-            m_ObjectMultiDict.Clear();
-            m_TargetObjectDict.Clear();
-            m_CachedCanDisposeObjectList.Clear();
-            m_CachedToDisposeObjectList.Clear();
-        }
-
-        /// <summary>
         /// 销毁对象池中的可销毁对象(超过容量的数量为尝试销毁的对象数量)
         /// </summary>
         public override void Dispose()
@@ -115,7 +59,8 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
         public void Dispose(DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
         {
-            Dispose(Count - m_Capacity, releaseObjectFilterCallback);
+            var overCapacity = Count - m_Capacity;
+            Dispose(overCapacity, releaseObjectFilterCallback);
         }
 
         /// <summary>

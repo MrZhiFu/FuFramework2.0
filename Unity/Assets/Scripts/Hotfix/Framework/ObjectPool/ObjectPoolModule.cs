@@ -45,11 +45,6 @@ namespace Hotfix.Framework.ObjectPool
         private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
 
         /// <summary>
-        /// 获取对象池数量。
-        /// </summary>
-        public int Count => m_ObjPoolDict.Count;
-
-        /// <summary>
         /// 初始化。
         /// </summary>
         protected internal override void OnInit()
@@ -107,32 +102,6 @@ namespace Hotfix.Framework.ObjectPool
         {
             FuLogger.LogInfo("[ObjectPoolModule] 低内存警告, 销毁对象池中所有未使用的资源...");
             DisposeAllUnused();
-        }
-
-        /// <summary>
-        /// 销毁所有对象池中的所有可销毁对象。
-        /// </summary>
-        public void Dispose()
-        {
-            FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中可销毁对象...");
-            GetAllObjectPools(true, m_CachedObjPoolList);
-            foreach (var objectPool in m_CachedObjPoolList)
-            {
-                objectPool.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// 销毁对象池中的所有未使用对象。
-        /// </summary>
-        public void DisposeAllUnused()
-        {
-            FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中的所有未使用对象...");
-            GetAllObjectPools(true, m_CachedObjPoolList);
-            foreach (var objectPool in m_CachedObjPoolList)
-            {
-                objectPool.DisposeAllUnused();
-            }
         }
 
         /// <summary>

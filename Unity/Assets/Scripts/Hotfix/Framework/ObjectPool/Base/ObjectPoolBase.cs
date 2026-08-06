@@ -26,9 +26,14 @@ namespace Hotfix.Framework.ObjectPool
         /// 构造函数。
         /// </summary>
         /// <param name="name">对象池名称。</param>
+        /// <exception cref="InvalidOperationException">对象池名称不能为空。</exception>
         protected ObjectPoolBase(string name)
         {
-            Name = name ?? string.Empty;
+            // 硬性要求：对象池必须命名，才能与其他同名类型池区分
+            if (string.IsNullOrEmpty(name))
+                throw new InvalidOperationException("[ObjectPoolBase] 对象池名称不能为空，对象池必须命名.");
+
+            Name = name;
         }
 
         #region 抽象属性

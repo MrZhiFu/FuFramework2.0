@@ -239,10 +239,10 @@ public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 {
     // 对象管理
     public void Register(T obj, bool spawned)       // 注册对象到池
-    public T Get(string name)                       // 获取对象
+    public T Spawn(string name)                     // 获取（生成）对象
     public void Recycle(T obj)                      // 回收对象
     public void Recycle(object target)              // 通过目标对象回收
-    public bool CanGet(string name)               // 检查指定名称对象是否可获取
+    public bool CanSpawn(string name)               // 检查指定名称对象是否可获取
 
     // 销毁控制
     public bool DisposeObject(T obj)                // 销毁指定对象
@@ -470,7 +470,7 @@ public class BulletManager
     public void FireBullet(Vector3 position, Vector3 direction)
     {
         // 尝试从池中获取子弹
-        var bullet = m_BulletPool.Get("Bullet");
+        var bullet = m_BulletPool.Spawn("Bullet");
 
         if (bullet == null)
         {
@@ -514,9 +514,9 @@ var effectPool = objectPoolModule.CreateObjectPool<EffectObject>(
 );
 
 // 同一个特效可以被多次获取（引用计数++）
-var effect1 = effectPool.Get("Explosion");  // SpawnCount = 1
-var effect2 = effectPool.Get("Explosion");  // SpawnCount = 2（同一个对象）
-var effect3 = effectPool.Get("Explosion");  // SpawnCount = 3（同一个对象）
+var effect1 = effectPool.Spawn("Explosion");  // SpawnCount = 1
+var effect2 = effectPool.Spawn("Explosion");  // SpawnCount = 2（同一个对象）
+var effect3 = effectPool.Spawn("Explosion");  // SpawnCount = 3（同一个对象）
 
 // 每次回收引用计数--
 effectPool.Recycle(effect1);  // SpawnCount = 2
@@ -557,7 +557,7 @@ foreach (var info in infos)
 }
 
 // 锁定重要对象（防止被销毁）
-var importantBullet = m_BulletPool.Get("ImportantBullet");
+var importantBullet = m_BulletPool.Spawn("ImportantBullet");
 m_BulletPool.SetLocked(importantBullet, true);
 
 // 设置对象优先级
@@ -582,11 +582,12 @@ ObjectPool/
 ├── Misc/
 │   ├── ObjectInfo.cs                       # 对象信息结构体
 │   └── DisposeObjectFilterCallback.cs      # 销毁筛选委托
-├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、模块级销毁）
-├── ObjectPoolModule.Query.cs               # 对象池查询（Has/Get/GetAll）
-├── ObjectPoolModule.PoolCreation.cs        # 对象池创建/销毁
-├── ObjectPool.cs                           # 泛型对象池实现（顶层类）
-├── ObjectPool.Dispose.cs                   # 对象池销毁与筛选
+├── Pool/
+│   ├── ObjectPool.cs                       # 泛型对象池定义（字段/属性/构造/生命周期）
+│   ├── ObjectPool.Manage.cs                # 对象存取与管理
+│   └── ObjectPool.Dispose.cs               # 对象销毁与筛选
+├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、内部方法）
+├── ObjectPoolModule.API.cs                 # 对象池管理模块公共 API（创建/查询/销毁）
 └── README.md                               # 本文档
 ```
 
@@ -725,7 +726,7 @@ GlobalModule.ReferencePoolModule.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
 pool.Register(entityInstanceObject, true);
-var obj = pool.Get("EntityName");
+var obj = pool.Spawn("EntityName");
 pool.Recycle(obj);
 ```
 

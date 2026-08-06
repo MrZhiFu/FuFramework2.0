@@ -77,7 +77,7 @@ namespace Hotfix.Framework.UI
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winObj = m_WinObjPool.Get(winName);
+                var winObj = m_WinObjPool.Spawn(winName);
                 if (winObj != null)
                 {
                     win = winObj.Target as T;
