@@ -13,35 +13,11 @@ namespace Hotfix.Framework.ObjectPool
         /// 检查是否存在对象池。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
-        /// <returns>是否存在对象池。</returns>
-        public bool HasObjectPool<T>() where T : ObjectBase
-        {
-            return HasObjectPoolInternal(new TypeNamePair(typeof(T)));
-        }
-
-        /// <summary>
-        /// 检查是否存在对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="poolName">对象池名称。</param>
         /// <returns>是否存在对象池。</returns>
         public bool HasObjectPool<T>(string poolName) where T : ObjectBase
         {
             return HasObjectPoolInternal(new TypeNamePair(typeof(T), poolName));
-        }
-
-        /// <summary>
-        /// 获取对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <returns>要获取的对象池。</returns>
-        public ObjectPool<T> GetObjectPool<T>() where T : ObjectBase
-        {
-            var typeNamePair = new TypeNamePair(typeof(T));
-            var objectPool = (ObjectPool<T>)GetObjectPoolInternal(typeNamePair);
-            if (objectPool == null)
-                throw new InvalidOperationException($"[ObjectPoolModule] 不存在对象池 '{typeNamePair}'.");
-            return objectPool;
         }
 
         /// <summary>

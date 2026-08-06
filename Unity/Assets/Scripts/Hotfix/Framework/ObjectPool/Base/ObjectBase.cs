@@ -87,12 +87,6 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 初始化对象基类。
         /// </summary>
-        /// <param name="target">对象的目标真实对象。如GameObject。</param>
-        protected void Initialize(object target) => _Initialize(null, target, false, 0);
-
-        /// <summary>
-        /// 初始化对象基类。
-        /// </summary>
         /// <param name="name">对象名称。</param>
         /// <param name="target">对象的目标真实对象。如GameObject。</param>
         protected void Initialize(string name, object target) => _Initialize(name, target, false, 0);
@@ -122,7 +116,11 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="priority">对象的优先级。</param>
         private void _Initialize(string name, object target, bool locked, int priority)
         {
-            Name        = name   ?? string.Empty;
+            // 硬性要求：对象必须命名，才能按名从对象池中获取
+            if (string.IsNullOrEmpty(name))
+                throw new InvalidOperationException("[ObjectBase] 对象名称不能为空，对象必须命名后才能注册到对象池.");
+
+            Name        = name;
             Target      = target ?? throw new InvalidOperationException($"[ObjectBase] 对象“{name}”为空.");
             Locked      = locked;
             Priority    = priority;

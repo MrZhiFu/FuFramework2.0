@@ -169,6 +169,10 @@ namespace Hotfix.Framework.ObjectPool
         private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime,
                                                           int priority) where T : ObjectBase
         {
+            // 硬性要求：对象池必须命名，才能与其他同名类型池区分
+            if (string.IsNullOrEmpty(poolName))
+                throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空，对象池必须命名.");
+
             var typeNamePair = new TypeNamePair(typeof(T), poolName);
             if (HasObjectPoolInternal(typeNamePair))
                 throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");

@@ -135,23 +135,18 @@ public sealed partial class ObjectPoolModule : ModuleBase
     // 对象池管理
     public int Count { get; }                                           // 对象池数量
 
-    // 查询对象池（泛型）
-    public bool HasObjectPool<T>() where T : ObjectBase                 // 检查对象池是否存在
-    public bool HasObjectPool<T>(string poolName) where T : ObjectBase  // 检查指定名称对象池
-    public ObjectPool<T> GetObjectPool<T>() where T : ObjectBase        // 获取对象池
+    // 查询对象池（泛型，必须指定池名）
+    public bool HasObjectPool<T>(string poolName) where T : ObjectBase     // 检查指定名称对象池
     public ObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase // 获取指定名称对象池
     public ObjectPoolBase[] GetAllObjectPools(bool sort = false)           // 获取所有对象池（按优先级排序可选）
     public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results) // 获取所有对象池（填充到列表）
 
-    // 创建对象池（5 个泛型重载）
-    public ObjectPool<T> CreateObjectPool<T>(bool allowSpawnInUse = false) where T : ObjectBase
+    // 创建对象池（3 个泛型重载，池必须命名）
     public ObjectPool<T> CreateObjectPool<T>(string poolName, bool allowSpawnInUse = false) where T : ObjectBase
-    public ObjectPool<T> CreateObjectPool<T>(int capacity, float expireTime = float.MaxValue, bool allowSpawnInUse = false) where T : ObjectBase
     public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
     public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
 
     // 销毁对象池
-    public bool DisposeObjectPool<T>() where T : ObjectBase                         // 销毁默认名称对象池
     public bool DisposeObjectPool<T>(string poolName) where T : ObjectBase          // 销毁指定名称对象池
     public bool DisposeObjectPool<T>(ObjectPool<T> objectPool) where T : ObjectBase // 销毁指定对象池实例
     public bool DisposeObjectPool(ObjectPoolBase objectPool)                        // 销毁指定对象池基类实例
@@ -177,12 +172,19 @@ public sealed partial class ObjectPoolModule : ModuleBase
 > `expireTime` 控制单个对象闲置多久后会被视为过期、纳入销毁候选（默认不过期）。
 > 需要自动销毁时，两者需按业务场景配合设置。
 
+**命名规则（硬性要求）：**
+
+> 对象池与池内对象**必须命名**：
+> - 对象池：`CreateObjectPool<T>(poolName, ...)` 必须提供非空的 `poolName`，用于区分同类型的多个池
+> - 池内对象：`ObjectBase.Initialize(name, ...)` 必须提供非空的对象名，用于 `Get(name)` 按名获取
+> - 空名在创建/注册时会抛出 `InvalidOperationException`，不允许存在无名池或无名对象
+
 **访问入口：**
 
 ```csharp
 // 所有操作统一通过 GlobalModule.ObjectPoolModule 访问
-GlobalModule.ObjectPoolModule.CreateObjectPool<T>();
-GlobalModule.ObjectPoolModule.GetObjectPool<T>();
+GlobalModule.ObjectPoolModule.CreateObjectPool<T>("池名称");
+GlobalModule.ObjectPoolModule.GetObjectPool<T>("池名称");
 ```
 
 **内存管理：**
@@ -240,7 +242,6 @@ public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     public T Get(string name)                       // 获取对象
     public void Recycle(T obj)                      // 回收对象
     public void Recycle(object target)              // 通过目标对象回收
-    public bool CanGet()                          // 检查对象是否可获取（默认名称）
     public bool CanGet(string name)               // 检查指定名称对象是否可获取
 
     // 销毁控制
@@ -288,16 +289,15 @@ public abstract class ObjectBase : IReference
 **生命周期方法：**
 
 ```csharp
-// 初始化方法（多种重载）
-protected void Initialize(object target)
+// 初始化方法（必须提供非空名称）
 protected void Initialize(string name, object target)
 protected void Initialize(string name, object target, bool locked)
 protected void Initialize(string name, object target, int priority)
 
 // 生命周期回调
-protected internal virtual void OnSpawn() { }      // 对象被获取时
-protected internal virtual void OnRecycle() { }    // 对象被回收时
-protected internal abstract void OnDispose();      // 对象被销毁时
+protected virtual void OnSpawn() { }              // 对象被获取时
+protected virtual void OnRecycle() { }            // 对象被回收时
+protected internal abstract void OnDispose();     // 对象被销毁时
 
 // 引用池接口
 public virtual void Clear()                        // 清理对象

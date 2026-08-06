@@ -256,12 +256,6 @@ namespace Hotfix.Framework.ObjectPool
             }
 
             /// <summary>
-            /// 检查对象是否存在。
-            /// </summary>
-            /// <returns>要检查的对象是否存在。</returns>
-            public bool CanGet() => CanGet(string.Empty);
-
-            /// <summary>
             /// 检查对象是否可获取。
             /// </summary>
             /// <param name="name">对象名称。</param>
