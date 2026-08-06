@@ -501,28 +501,36 @@ public class BulletManager
 }
 ```
 
-### 5.3 使用引用计数模式
+### 5.3 使用引用计数模式（AllowSpawnInUse = true）
+
+> **适用场景**：一个对象被多个独立持有者**同时共享引用**，且要等**全部释放**才销毁。
+> **典型例子**：塔防中多座塔锁定同一个敌人——"被锁定"标记是同一个对象，
+> 任何一座塔用完都不该销毁标记（否则破坏其他塔的瞄准），只有**所有塔都释放**标记才消失。
 
 ```csharp
-// 创建可在使用中再次获取的特效对象池（AllowSpawnInUse = true）
-var effectPool = objectPoolModule.CreateObjectPool<EffectObject>(
-    poolName: "EffectPool",
-    capacity: 20,
-    expireTime: 30f,
-    priority: 0,
-    allowSpawnInUse: true // 可在使用中再次获取
+// 创建"锁定标记"池（allowSpawnInUse: true = 多座塔共享同一个标记）
+var lockPool = objectPoolModule.CreateObjectPool<TargetLockObject>(
+    poolName: "TargetLockPool",
+    allowSpawnInUse: true
 );
 
-// 同一个特效可以被多次获取（引用计数++）
-var effect1 = effectPool.Spawn("Explosion");  // SpawnCount = 1
-var effect2 = effectPool.Spawn("Explosion");  // SpawnCount = 2（同一个对象）
-var effect3 = effectPool.Spawn("Explosion");  // SpawnCount = 3（同一个对象）
+// 三座塔同时锁定同一个敌人——拿到的都是同一个标记对象
+var lockA = lockPool.Spawn("Lock");   // SpawnCount = 1（塔A持有）
+var lockB = lockPool.Spawn("Lock");   // SpawnCount = 2（塔B也持有，同一个对象）
+var lockC = lockPool.Spawn("Lock");   // SpawnCount = 3（塔C也持有，同一个对象）
+// 敌人身上只显示一个"被锁定"标记，计数为 3
 
-// 每次回收引用计数--
-effectPool.Recycle(effect1);  // SpawnCount = 2
-effectPool.Recycle(effect2);  // SpawnCount = 1
-effectPool.Recycle(effect3);  // SpawnCount = 0（可以被销毁）
+// 塔A被打掉/换目标：释放自己的锁定
+lockPool.Recycle(lockA);   // SpawnCount = 2（标记不消失，塔B、塔C还在锁）
+
+lockPool.Recycle(lockB);   // SpawnCount = 1
+
+lockPool.Recycle(lockC);   // SpawnCount = 0 → 所有塔都释放，标记才消失并回收
 ```
+
+> **为什么必须用引用计数**：`false` 模式下三座塔 `Spawn` 会拿到**三个不同**的标记；
+> `true` 保证共享**同一个**，用 `SpawnCount` 记录"还有几座塔在锁"，归零才销毁。
+> 注意：`Spawn` 与 `Recycle` 必须严格配对（拿几次还几次），多还会抛异常、少会内存泄漏。
 
 ### 5.4 自定义销毁策略
 
