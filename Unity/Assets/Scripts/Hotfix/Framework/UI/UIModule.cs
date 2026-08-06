@@ -30,7 +30,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池
         /// </summary>
-        private ObjectPoolModule.ObjectPool<WinObject> m_WinObjPool;
+        private ObjectPool<WinObject> m_WinObjPool;
 
         /// <summary>
         /// FGui的包管理器

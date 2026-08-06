@@ -235,7 +235,7 @@ public abstract ObjectInfo[] GetAllObjectInfos()       // 获取所有对象信�
 **核心功能：**
 
 ```csharp
-public sealed class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
+public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 {
     // 对象管理
     public void Register(T obj, bool spawned)       // 注册对象到池
@@ -585,8 +585,8 @@ ObjectPool/
 ├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、模块级销毁）
 ├── ObjectPoolModule.Query.cs               # 对象池查询（Has/Get/GetAll）
 ├── ObjectPoolModule.PoolCreation.cs        # 对象池创建/销毁
-├── ObjectPoolModule.ObjectPool.cs          # 泛型对象池实现
-├── ObjectPoolModule.ObjectPool.Dispose.cs  # 对象池销毁与筛选
+├── ObjectPool.cs                           # 泛型对象池实现（顶层类）
+├── ObjectPool.Dispose.cs                   # 对象池销毁与筛选
 └── README.md                               # 本文档
 ```
 

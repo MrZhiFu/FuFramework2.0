@@ -19,7 +19,7 @@ namespace Hotfix.Framework.Entity
         /// <summary>
         /// 实体实例对象池。
         /// </summary>
-        private readonly ObjectPoolModule.ObjectPool<EntityInstanceObject> m_InstancePool;
+        private readonly ObjectPool<EntityInstanceObject> m_InstancePool;
 
         /// <summary>
         /// 实体组实体链表。

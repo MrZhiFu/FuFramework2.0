@@ -35,7 +35,7 @@ namespace Hotfix.Framework.ObjectPool
         private const int DefaultPriority = 0;
 
         /// <summary>
-        /// 存储所有对象池的字典, Key为对象池的类型+名称，Value为对象池。
+        /// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。
         /// </summary>
         private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
@@ -140,20 +140,14 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         /// <param name="typeNamePair">类型与名称的组合。</param>
         /// <returns>是否存在对象池。</returns>
-        private bool HasObjectPoolInternal(TypeNamePair typeNamePair)
-        {
-            return m_ObjPoolDict.ContainsKey(typeNamePair);
-        }
+        private bool HasObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.ContainsKey(typeNamePair);
 
         /// <summary>
         /// 获取对象池。
         /// </summary>
         /// <param name="typeNamePair">类型与名称的组合。</param>
         /// <returns>要获取的对象池。</returns>
-        private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair)
-        {
-            return m_ObjPoolDict.GetValueOrDefault(typeNamePair);
-        }
+        private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.GetValueOrDefault(typeNamePair);
 
         /// <summary>
         /// 创建对象池。
@@ -166,10 +160,8 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime,
-                                                          int priority) where T : ObjectBase
+        private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime, int priority) where T : ObjectBase
         {
-            // 硬性要求：对象池必须命名，才能与其他同名类型池区分
             if (string.IsNullOrEmpty(poolName))
                 throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空，对象池必须命名.");
 
@@ -200,9 +192,6 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="a">对象池a。</param>
         /// <param name="b">对象池b。</param>
         /// <returns>优先级比较结果。</returns>
-        private static int ObjectPoolComparer(ObjectPoolBase a, ObjectPoolBase b)
-        {
-            return a.Priority.CompareTo(b.Priority);
-        }
+        private static int ObjectPoolComparer(ObjectPoolBase a, ObjectPoolBase b) => a.Priority.CompareTo(b.Priority);
     }
 }
