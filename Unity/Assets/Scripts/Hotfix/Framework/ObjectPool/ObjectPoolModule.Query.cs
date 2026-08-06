@@ -37,7 +37,11 @@ namespace Hotfix.Framework.ObjectPool
         /// <returns>要获取的对象池。</returns>
         public ObjectPool<T> GetObjectPool<T>() where T : ObjectBase
         {
-            return (ObjectPool<T>)GetObjectPoolInternal(new TypeNamePair(typeof(T)));
+            var typeNamePair = new TypeNamePair(typeof(T));
+            var objectPool = (ObjectPool<T>)GetObjectPoolInternal(typeNamePair);
+            if (objectPool == null)
+                throw new InvalidOperationException($"[ObjectPoolModule] 不存在对象池 '{typeNamePair}'.");
+            return objectPool;
         }
 
         /// <summary>
@@ -48,7 +52,11 @@ namespace Hotfix.Framework.ObjectPool
         /// <returns>要获取的对象池。</returns>
         public ObjectPool<T> GetObjectPool<T>(string poolName) where T : ObjectBase
         {
-            return (ObjectPool<T>)GetObjectPoolInternal(new TypeNamePair(typeof(T), poolName));
+            var typeNamePair = new TypeNamePair(typeof(T), poolName);
+            var objectPool = (ObjectPool<T>)GetObjectPoolInternal(typeNamePair);
+            if (objectPool == null)
+                throw new InvalidOperationException($"[ObjectPoolModule] 不存在对象池 '{typeNamePair}'.");
+            return objectPool;
         }
 
         /// <summary>

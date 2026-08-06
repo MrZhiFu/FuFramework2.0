@@ -75,7 +75,14 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         protected internal override void OnDispose()
         {
-            foreach (var (typeNamePair, objPool) in m_ObjPoolDict)
+            // 复制到缓存列表，避免对象池 OnDispose 中修改模块字典导致遍历异常
+            m_CachedObjPoolList.Clear();
+            foreach (var (_, objPool) in m_ObjPoolDict)
+            {
+                m_CachedObjPoolList.Add(objPool);
+            }
+
+            foreach (var objPool in m_CachedObjPoolList)
             {
                 try
                 {
@@ -83,7 +90,7 @@ namespace Hotfix.Framework.ObjectPool
                 }
                 catch (Exception e)
                 {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
+                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {objPool.FullName} 时出现异常: {e.Message}");
                 }
             }
 

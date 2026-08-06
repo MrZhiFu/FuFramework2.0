@@ -178,7 +178,12 @@ namespace Hotfix.Framework.ObjectPool
             /// <param name="spawned">对象是否提前生成。</param>
             public void Register(T obj, bool spawned)
             {
-                if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
+                if (obj        == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
+                if (obj.Target == null) throw new InvalidOperationException("[ObjectPoolModule] 要注册的对象目标不能为空.");
+
+                // 同一目标对象不允许重复注册，避免双字典写入不一致
+                if (m_TargetObjectDict.ContainsKey(obj.Target))
+                    throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{new TypeNamePair(typeof(T), Name)}' 中已存在目标对象.");
 
                 m_ObjectMultiDict.Add(obj.Name, obj);
                 m_TargetObjectDict.Add(obj.Target, obj);
@@ -228,14 +233,7 @@ namespace Hotfix.Framework.ObjectPool
             public void Recycle(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-#if UNITY_ASSERTIONS
-                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
-#endif
-                obj.Recycle();
-                if (Count > m_Capacity && obj.SpawnCount <= 0)
-                {
-                    Dispose();
-                }
+                Recycle(obj.Target);
             }
 
             /// <summary>
@@ -294,10 +292,7 @@ namespace Hotfix.Framework.ObjectPool
             public void SetLocked(T obj, bool locked)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-#if UNITY_ASSERTIONS
-                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
-#endif
-                obj.Locked = locked;
+                SetLocked(obj.Target, locked);
             }
 
             /// <summary>
@@ -323,10 +318,7 @@ namespace Hotfix.Framework.ObjectPool
             public void SetPriority(T obj, int priority)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
-#if UNITY_ASSERTIONS
-                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
-#endif
-                obj.Priority = priority;
+                SetPriority(obj.Target, priority);
             }
 
             /// <summary>
@@ -355,8 +347,7 @@ namespace Hotfix.Framework.ObjectPool
                 {
                     foreach (var obj in objectRang)
                     {
-                        results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanDisposeFlag,
-                                                   obj.Priority, obj.LastUseTime, obj.SpawnCount));
+                        results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanDisposeFlag, obj.Priority, obj.LastUseTime, obj.SpawnCount));
                     }
                 }
 

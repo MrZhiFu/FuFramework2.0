@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
@@ -25,7 +24,39 @@ namespace Hotfix.Framework.ObjectPool
                 // 每隔 AutoDisposeInterval 秒触发一次自动销毁检查
                 if (m_AutoDisposeTimer >= AutoDisposeInterval)
                 {
+                    m_AutoDisposeTimer = 0f;
                     Dispose();
+                    DisposeExpired();
+                }
+            }
+
+            /// <summary>
+            /// 销毁对象池中已过期的可销毁对象（不限于超容量）。
+            /// 与 Dispose() 配合，使自动销毁间隔同时覆盖"超容量裁剪"与"过期闲置清理"。
+            /// </summary>
+            private void DisposeExpired()
+            {
+                // 未设置过期时间时无需处理
+                if (m_ExpireTime >= float.MaxValue) return;
+
+                var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
+                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+                foreach (var obj in m_CachedCanDisposeObjectList)
+                {
+                    // 对象闲置时间早于过期时间点，视为过期，纳入销毁
+                    if (obj.LastUseTime <= expireTimeThreshold)
+                    {
+                        // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
+                        var objName = obj.Name;
+                        try
+                        {
+                            DisposeObject(obj);
+                        }
+                        catch (Exception e)
+                        {
+                            FuLogger.LogWarning($"[ObjectPoolModule] 销毁过期对象 '{objName}' 时出现异常: {e.Message}");
+                        }
+                    }
                 }
             }
 
@@ -34,7 +65,14 @@ namespace Hotfix.Framework.ObjectPool
             /// </summary>
             internal override void OnDispose()
             {
+                // 复制到临时列表，避免对象 OnDispose 中修改池字典导致遍历异常
+                var objects = new List<T>(m_TargetObjectDict.Count);
                 foreach (var (_, obj) in m_TargetObjectDict)
+                {
+                    objects.Add(obj);
+                }
+
+                foreach (var obj in objects)
                 {
                     try
                     {
@@ -46,8 +84,15 @@ namespace Hotfix.Framework.ObjectPool
                     }
                     finally
                     {
-                        // 单次回收：即使 OnDispose 异常也回收对象到引用池
-                        GlobalModule.ReferencePoolModule.Recycle(obj);
+                        try
+                        {
+                            // 单次回收：即使 OnDispose 异常也回收对象到引用池
+                            GlobalModule.ReferencePoolModule.Recycle(obj);
+                        }
+                        catch (Exception e)
+                        {
+                            FuLogger.LogWarning($"[ObjectPoolModule] 回收对象池 {Name} 中的对象时出现异常: {e.Message}");
+                        }
                     }
                 }
 
@@ -152,9 +197,20 @@ namespace Hotfix.Framework.ObjectPool
             public bool DisposeObject(T obj)
             {
                 if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-#if UNITY_ASSERTIONS
-                Debug.Assert(obj.Target != null && m_TargetObjectDict.ContainsKey(obj.Target), obj.Name);
-#endif
+                return DisposeObject(obj.Target);
+            }
+
+            /// <summary>
+            /// 销毁指定对象。
+            /// </summary>
+            /// <param name="target">要销毁的对象。</param>
+            /// <returns>销毁对象是否成功。</returns>
+            public bool DisposeObject(object target)
+            {
+                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
+
+                var obj = GetObject(target);
+                if (obj == null) return false;
 
                 if (obj.IsInUse) return false;
                 if (obj.Locked) return false;
@@ -176,21 +232,6 @@ namespace Hotfix.Framework.ObjectPool
                 }
 
                 return true;
-            }
-
-            /// <summary>
-            /// 销毁指定对象。
-            /// </summary>
-            /// <param name="target">要销毁的对象。</param>
-            /// <returns>销毁对象是否成功。</returns>
-            public bool DisposeObject(object target)
-            {
-                if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-
-                var obj = GetObject(target);
-                if (obj == null) return false;
-
-                return DisposeObject(obj);
             }
 
             /// <summary>
