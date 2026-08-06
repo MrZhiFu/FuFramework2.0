@@ -36,7 +36,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 对象上次使用时间。
         /// </summary>
-        public DateTime LastUseTime { get; internal set; }
+        public DateTime LastUseTime { get; private set; }
 
         /// <summary>
         /// 自定义是否可销毁标记。默认为true。
@@ -146,12 +146,12 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 生成对象时的事件。
         /// </summary>
-        protected internal virtual void OnSpawn() { }
+        protected virtual void OnSpawn() { }
 
         /// <summary>
         /// 回收对象时的事件。
         /// </summary>
-        protected internal virtual void OnRecycle() { }
+        protected virtual void OnRecycle() { }
 
         /// <summary>
         /// 销毁对象时的事件。
