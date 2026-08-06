@@ -1,5 +1,4 @@
 using System;
-using Hotfix.Framework.Core;
 using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
@@ -39,11 +38,6 @@ namespace Hotfix.Framework.ObjectPool
         public DateTime LastUseTime { get; private set; }
 
         /// <summary>
-        /// 自定义是否可销毁标记。默认为true。
-        /// </summary>
-        public virtual bool CustomCanDisposeFlag => true;
-
-        /// <summary>
         /// 获取对象池中对象的获取计数（引用计数）。
         /// </summary>
         public int SpawnCount { get; private set; }
@@ -54,35 +48,9 @@ namespace Hotfix.Framework.ObjectPool
         public bool IsInUse => SpawnCount > 0;
 
         /// <summary>
-        /// 生成对象。
+        /// 自定义是否可销毁标记。默认为true。
         /// </summary>
-        internal void Spawn()
-        {
-            SpawnCount++;
-            try
-            {
-                LastUseTime = DateTime.UtcNow;
-                OnSpawn();
-            }
-            catch
-            {
-                SpawnCount--;
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 回收对象。
-        /// </summary>
-        internal void Recycle()
-        {
-            if (SpawnCount <= 0)
-                throw new InvalidOperationException($"[ObjectBase] 对象 '{Name}' 生成次数已经为 0, 回收失败.");
-
-            OnRecycle();
-            LastUseTime = DateTime.UtcNow;
-            SpawnCount--;
-        }
+        public virtual bool CustomCanDisposeFlag => true;
 
         /// <summary>
         /// 初始化对象基类。
@@ -116,7 +84,6 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="priority">对象的优先级。</param>
         private void _Initialize(string name, object target, bool locked, int priority)
         {
-            // 硬性要求：对象必须命名，才能按名从对象池中获取
             if (string.IsNullOrEmpty(name))
                 throw new InvalidOperationException("[ObjectBase] 对象名称不能为空，对象必须命名后才能注册到对象池.");
 
@@ -126,6 +93,37 @@ namespace Hotfix.Framework.ObjectPool
             Priority    = priority;
             LastUseTime = DateTime.UtcNow;
             SpawnCount  = 0;
+        }
+
+        /// <summary>
+        /// 生成对象。
+        /// </summary>
+        internal void Spawn()
+        {
+            SpawnCount++;
+            try
+            {
+                LastUseTime = DateTime.UtcNow;
+                OnSpawn();
+            }
+            catch
+            {
+                SpawnCount--;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 回收对象。
+        /// </summary>
+        internal void Recycle()
+        {
+            if (SpawnCount <= 0)
+                throw new InvalidOperationException($"[ObjectBase] 对象 '{Name}' 生成次数已经为 0, 回收失败.");
+
+            OnRecycle();
+            LastUseTime = DateTime.UtcNow;
+            SpawnCount--;
         }
 
         /// <summary>
