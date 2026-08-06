@@ -152,7 +152,7 @@ public sealed partial class ObjectPoolModule : ModuleBase
     public bool DisposeObjectPool(ObjectPoolBase objectPool)                        // 销毁指定对象池基类实例
 
     // 模块级销毁
-    public void Dispose()             // 销毁所有对象池中的可销毁对象
+    public void DisposeOverCapacity() // 销毁所有对象池中超过容量的可销毁对象
     public void DisposeAllUnused()    // 销毁所有对象池中的所有未使用对象
 }
 ```
@@ -220,7 +220,7 @@ public abstract class ObjectPoolBase
 
 ```csharp
 internal abstract void Update(float unscaledDeltaTime) // 轮询更新（自动销毁检查）
-public abstract void Dispose()                         // 销毁超过容量的可销毁对象
+public abstract void DisposeOverCapacity()             // 销毁超过容量的可销毁对象
 internal abstract void OnDispose()                     // 关闭并清理对象池
 public abstract void DisposeAllUnused()                // 销毁所有未使用对象
 public abstract ObjectInfo[] GetAllObjectInfos()       // 获取所有对象信息
@@ -247,8 +247,8 @@ public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     // 销毁控制
     public bool DisposeObject(T obj)                // 销毁指定对象
     public bool DisposeObject(object target)        // 通过目标对象销毁
-    public override void Dispose()                  // 销毁超过容量的对象
-    public void Dispose(DisposeObjectFilterCallback<T> callback)                     // 使用自定义筛选函数销毁
+    public override void DisposeOverCapacity()      // 销毁超过容量的对象
+    public void DisposeOverCapacity(DisposeObjectFilterCallback<T> callback)         // 使用自定义筛选函数销毁超容量对象
     public void Dispose(int toDisposeCount, DisposeObjectFilterCallback<T> callback) // 尝试销毁指定数量
     public override void DisposeAllUnused()         // 销毁所有未使用对象
 
@@ -564,7 +564,7 @@ m_BulletPool.SetLocked(importantBullet, true);
 m_BulletPool.SetPriority(importantBullet, 100);
 
 // 手动触发销毁
-m_BulletPool.Dispose();           // 销毁超过容量的对象
+m_BulletPool.DisposeOverCapacity();  // 销毁超过容量的对象
 m_BulletPool.DisposeAllUnused();  // 销毁所有未使用对象
 
 // 尝试销毁指定数量（需提供筛选函数，这里简单取前 N 个）

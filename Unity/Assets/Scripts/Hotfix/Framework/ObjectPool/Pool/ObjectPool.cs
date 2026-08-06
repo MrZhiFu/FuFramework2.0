@@ -125,7 +125,7 @@ namespace Hotfix.Framework.ObjectPool
                 if (m_Capacity == value) return;
 
                 m_Capacity = value;
-                Dispose();
+                DisposeOverCapacity();
             }
         }
 
@@ -141,7 +141,7 @@ namespace Hotfix.Framework.ObjectPool
                 if (Mathf.Approximately(ExpireTime, value)) return;
 
                 m_ExpireTime = value;
-                Dispose();
+                DisposeOverCapacity();
             }
         }
 
@@ -185,7 +185,7 @@ namespace Hotfix.Framework.ObjectPool
             if (m_AutoDisposeTimer >= AutoDisposeInterval)
             {
                 m_AutoDisposeTimer = 0f;
-                Dispose();
+                DisposeOverCapacity();
                 DisposeExpired();
             }
         }

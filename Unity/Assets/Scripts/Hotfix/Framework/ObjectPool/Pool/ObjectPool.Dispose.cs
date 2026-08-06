@@ -16,7 +16,7 @@ namespace Hotfix.Framework.ObjectPool
     {
         /// <summary>
         /// 销毁对象池中已过期的可销毁对象（不限于超容量）。
-        /// 与 Dispose() 配合，使自动销毁间隔同时覆盖"超容量裁剪"与"过期闲置清理"。
+        /// 与 DisposeOverCapacity() 配合，使自动销毁间隔同时覆盖"超容量裁剪"与"过期闲置清理"。
         /// </summary>
         private void DisposeExpired()
         {
@@ -45,19 +45,19 @@ namespace Hotfix.Framework.ObjectPool
         }
 
         /// <summary>
-        /// 销毁对象池中的可销毁对象(超过容量的数量为尝试销毁的对象数量)
+        /// 销毁对象池中超过容量的可销毁对象。
         /// </summary>
-        public override void Dispose()
+        public override void DisposeOverCapacity()
         {
             var overCapacity = Count - m_Capacity;
             Dispose(overCapacity, m_DefaultDisposeObjectFilterCallback);
         }
 
         /// <summary>
-        /// 销毁对象池中的可销毁对象。
+        /// 销毁对象池中超过容量的可销毁对象。
         /// </summary>
         /// <param name="releaseObjectFilterCallback">销毁对象筛选函数。</param>
-        public void Dispose(DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
+        public void DisposeOverCapacity(DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
         {
             var overCapacity = Count - m_Capacity;
             Dispose(overCapacity, releaseObjectFilterCallback);
@@ -233,6 +233,7 @@ namespace Hotfix.Framework.ObjectPool
                 var priorityCmp = a.Priority.CompareTo(b.Priority);
                 return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
             });
+            
             for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
             {
                 m_CachedToDisposeObjectList.Add(candidateObjects[i]);

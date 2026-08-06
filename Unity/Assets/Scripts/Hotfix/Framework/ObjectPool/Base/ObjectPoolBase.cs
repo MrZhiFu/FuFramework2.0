@@ -91,11 +91,6 @@ namespace Hotfix.Framework.ObjectPool
         internal abstract void Update(float unscaledDeltaTime);
 
         /// <summary>
-        /// 销毁对象池中的可销毁对象。
-        /// </summary>
-        public abstract void Dispose();
-
-        /// <summary>
         /// 关闭并清理对象池。
         /// </summary>
         internal abstract void OnDispose();
@@ -104,6 +99,11 @@ namespace Hotfix.Framework.ObjectPool
         /// 销毁对象池中的所有未使用对象。
         /// </summary>
         public abstract void DisposeAllUnused();
+
+        /// <summary>
+        /// 销毁对象池中超过容量的可销毁对象。
+        /// </summary>
+        public abstract void DisposeOverCapacity();
 
         /// <summary>
         /// 获取所有对象信息。

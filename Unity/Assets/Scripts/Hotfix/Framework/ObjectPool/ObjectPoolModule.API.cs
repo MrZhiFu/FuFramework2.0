@@ -195,15 +195,15 @@ namespace Hotfix.Framework.ObjectPool
         #region 模块级销毁
 
         /// <summary>
-        /// 销毁所有对象池中的所有可销毁对象。
+        /// 销毁所有对象池中超过容量的可销毁对象。
         /// </summary>
-        public void Dispose()
+        public void DisposeOverCapacity()
         {
-            FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中可销毁对象...");
+            FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中超过容量的可销毁对象...");
             GetAllObjectPools(true, m_CachedObjPoolList);
             foreach (var objectPool in m_CachedObjPoolList)
             {
-                objectPool.Dispose();
+                objectPool.DisposeOverCapacity();
             }
         }
 

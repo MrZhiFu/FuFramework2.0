@@ -35,7 +35,7 @@ namespace Hotfix.Framework.ObjectPool
             if (spawned) obj.Spawn();
 
             if (Count > m_Capacity)
-                Dispose();
+                DisposeOverCapacity();
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Hotfix.Framework.ObjectPool
             obj.Recycle();
             if (Count > m_Capacity && obj.SpawnCount <= 0)
             {
-                Dispose();
+                DisposeOverCapacity();
             }
         }
 
