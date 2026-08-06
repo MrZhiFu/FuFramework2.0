@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-FuFramework ObjectPool 模块是游戏框架的对象池管理系统，专门用于管理 Unity 游戏对象的创建、销毁和复用，目标是减少实例化(Instantiate)和销毁(Destroy)的开销，降低 GC 压力，提高游戏性能。
+FuFramework ObjectPool 模块是游戏框架的对象池管理系统，用于管理 `ObjectBase` 包装的 Unity 场景资源的创建、销毁和复用。资源本体 `Target` 可为任意对象（如实体实例的 GameObject、UI 窗口的 WinBase 等）；对 GameObject 类资源，可显著减少实例化(Instantiate)和销毁(Destroy)的开销，降低 GC 压力，提高游戏性能。纯 C# 数据对象请使用引用池（ReferencePool）。
 
 ## 2. 核心特性
 
