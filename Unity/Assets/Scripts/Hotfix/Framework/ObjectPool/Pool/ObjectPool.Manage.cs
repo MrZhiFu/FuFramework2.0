@@ -13,7 +13,6 @@ namespace Hotfix.Framework.ObjectPool
     /// </summary>
     public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     {
-
         /// <summary>
         /// 注册一个对象到对象池中。
         /// </summary>

@@ -185,7 +185,11 @@ namespace Hotfix.Framework.ObjectPool
             if (m_AutoDisposeTimer >= AutoDisposeInterval)
             {
                 m_AutoDisposeTimer = 0f;
+
+                // 清理超过容量的对象
                 DisposeOverCapacity();
+
+                // 清理过期对象
                 DisposeExpired();
             }
         }
@@ -231,6 +235,5 @@ namespace Hotfix.Framework.ObjectPool
             m_CachedCanDisposeObjectList.Clear();
             m_CachedToDisposeObjectList.Clear();
         }
-
     }
 }

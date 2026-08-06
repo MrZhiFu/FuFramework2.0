@@ -233,7 +233,7 @@ namespace Hotfix.Framework.ObjectPool
                 var priorityCmp = a.Priority.CompareTo(b.Priority);
                 return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
             });
-            
+
             for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
             {
                 m_CachedToDisposeObjectList.Add(candidateObjects[i]);

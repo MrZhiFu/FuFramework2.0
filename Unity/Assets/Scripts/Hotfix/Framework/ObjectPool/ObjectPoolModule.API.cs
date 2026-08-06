@@ -43,8 +43,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="priority">对象池的优先级。</param>
         /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority,
-                                                 bool allowSpawnInUse = false) where T : ObjectBase
+        public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
         {
             return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeInterval, capacity, expireTime, priority);
         }
@@ -60,8 +59,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="priority">对象池的优先级。</param>
         /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority,
-                                                 bool allowSpawnInUse = false) where T : ObjectBase
+        public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
         {
             return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, autoDisposeInterval, capacity, expireTime, priority);
         }
@@ -95,7 +93,7 @@ namespace Hotfix.Framework.ObjectPool
                 throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空.");
 
             var typeNamePair = new TypeNamePair(typeof(T), poolName);
-            var objectPool = (ObjectPool<T>)GetObjectPoolInternal(typeNamePair);
+            var objectPool   = (ObjectPool<T>)GetObjectPoolInternal(typeNamePair);
             if (objectPool == null) throw new InvalidOperationException($"[ObjectPoolModule] 不存在对象池 '{typeNamePair}'.");
             return objectPool;
         }
