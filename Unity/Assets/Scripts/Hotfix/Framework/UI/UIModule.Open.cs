@@ -72,12 +72,13 @@ namespace Hotfix.Framework.UI
             // 添加到加载字典
             m_LoadingDict.TryAdd(tempSerialId, winName);
 
+            WinObject winObj = null;
             try
             {
                 T win;
 
                 // 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-                var winObj = m_WinObjPool.Spawn(winName);
+                winObj = m_WinObjPool.Spawn(winName);
                 if (winObj != null)
                 {
                     win = winObj.Target as T;
@@ -114,6 +115,12 @@ namespace Hotfix.Framework.UI
 
                 // 使用临时序列号创建Fui界面
                 return CreateFuiWin(win, tempSerialId, true, userData);
+            }
+            catch
+            {
+                // 异步加载阶段失败（CreateFuiWin 之前）：回收已获取/注册的界面对象，避免池槽泄漏
+                if (winObj != null) m_WinObjPool.Recycle(winObj);
+                throw;
             }
             finally
             {

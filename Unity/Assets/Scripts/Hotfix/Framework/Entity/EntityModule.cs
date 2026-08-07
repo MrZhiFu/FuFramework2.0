@@ -203,7 +203,29 @@ namespace Hotfix.Framework.Entity
             m_EntityGroupDict.Clear();
             m_LoadingEntityDict.Clear();
             m_LoadingToReleaseSet.Clear();
-            m_WaitRecycleQueue.Clear();
+
+            // 排水回收队列中待回收的实体，避免 teardown 时丢弃未回收的 EntityInfo 与实体实例
+            while (m_WaitRecycleQueue.Count > 0)
+            {
+                var entityInfo = m_WaitRecycleQueue.Dequeue();
+                try
+                {
+                    var entity = entityInfo.Entity;
+                    if (entity?.EntityGroup != null)
+                    {
+                        entity.OnRecycle();
+                        entity.EntityGroup.RecycleEntity(entity);
+                    }
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[EntityModule] 释放时回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
+                }
+                finally
+                {
+                    GlobalModule.ReferencePoolModule.Recycle(entityInfo);
+                }
+            }
         }
 
         #region 实体组相关方法
@@ -525,9 +547,10 @@ namespace Hotfix.Framework.Entity
                 }
                 catch
                 {
-                    // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试（否则 IsLoadingEntity 恒 true）
+                    // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态并回收额外信息，允许重试（否则 IsLoadingEntity 恒 true）
                     m_LoadingEntityDict.Remove(entityId);
                     m_LoadingToReleaseSet.Remove(serialId);
+                    GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
                     throw;
                 }
             }
@@ -1106,6 +1129,23 @@ namespace Hotfix.Framework.Entity
             }
             catch (Exception exception)
             {
+                // 注册后初始化/显示失败：清理已登记的实体（移除字典/实体组并回收实体信息），避免僵尸实体占用对象池槽位
+                if (m_EntityDict.TryGetValue(entityId, out var registeredEntityInfo))
+                {
+                    var registeredEntity = registeredEntityInfo.Entity;
+                    try
+                    {
+                        registeredEntity.EntityGroup.RemoveEntity(registeredEntity);
+                    }
+                    catch
+                    {
+                        // 实体可能未成功加入实体组，忽略移除异常
+                    }
+
+                    m_EntityDict.Remove(entityId);
+                    GlobalModule.ReferencePoolModule.Recycle(registeredEntityInfo);
+                }
+
                 // 发送显示实体失败事件
                 var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), showEntityInfoEx);
                 m_EventModule.Broadcast(this, showEntityFailureEventArgs);

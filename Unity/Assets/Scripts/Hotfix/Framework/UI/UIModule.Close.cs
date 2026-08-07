@@ -193,8 +193,9 @@ namespace Hotfix.Framework.UI
         /// <param name="win"></param>
         private void Recycle(WinBase win)
         {
-            m_WinObjPool.Recycle(win);
+            // 先让窗口自身完成回收清理，再还回对象池；避免池超容量同步销毁后操作已销毁对象
             win._OnRecycle();
+            m_WinObjPool.Recycle(win);
         }
     }
 }

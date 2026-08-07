@@ -169,7 +169,21 @@ namespace Hotfix.Framework.UI
 
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
-            m_WaitRecycleQueue.Clear();
+
+            // 排水回收队列中待回收的界面，避免 teardown 时丢弃未回收的 WinBase/对象池槽位
+            while (m_WaitRecycleQueue.Count > 0)
+            {
+                var ui = m_WaitRecycleQueue.Dequeue();
+                try
+                {
+                    Recycle(ui);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[UIModule] 释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
+                }
+            }
+
             PkgManager.RemoveAllPkg();
             ReleaseBlur();
         }
