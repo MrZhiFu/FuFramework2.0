@@ -30,11 +30,14 @@ namespace Hotfix.Framework.ObjectPool
                 // 对象闲置时间早于过期时间点，视为过期，纳入销毁
                 if (obj.LastUseTime <= expireTimeThreshold)
                 {
+                    // 防御性 null 检查
+                    if (obj == null) continue;
+
                     // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                     var objName = obj.Name;
                     try
                     {
-                        DisposeObject(obj);
+                        DisposeObjectInternal(obj);
                     }
                     catch (Exception e)
                     {
@@ -97,11 +100,14 @@ namespace Hotfix.Framework.ObjectPool
             // 销毁对象（单个对象异常不影响整批销毁）
             foreach (var toDisposeObject in toDisposeObjects)
             {
+                // 防御自定义筛选器返回 null 对象
+                if (toDisposeObject == null) continue;
+
                 // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                 var toDisposeObjectName = toDisposeObject.Name;
                 try
                 {
-                    DisposeObject(toDisposeObject);
+                    DisposeObjectInternal(toDisposeObject);
                 }
                 catch (Exception e)
                 {
@@ -119,11 +125,14 @@ namespace Hotfix.Framework.ObjectPool
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
             foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
             {
+                // 防御自定义筛选器返回 null 对象
+                if (toDisposeObject == null) continue;
+
                 // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                 var toDisposeObjectName = toDisposeObject.Name;
                 try
                 {
-                    DisposeObject(toDisposeObject);
+                    DisposeObjectInternal(toDisposeObject);
                 }
                 catch (Exception e)
                 {
@@ -155,6 +164,16 @@ namespace Hotfix.Framework.ObjectPool
             var obj = GetObject(target);
             if (obj == null) return false;
 
+            return DisposeObjectInternal(obj);
+        }
+
+        /// <summary>
+        /// 销毁池内已知可销毁的对象（内部批量销毁使用，跳过字典查找与归属校验）。
+        /// </summary>
+        /// <param name="obj">要销毁的对象。</param>
+        /// <returns>销毁对象是否成功。</returns>
+        private bool DisposeObjectInternal(T obj)
+        {
             if (obj.IsInUse) return false;
             if (obj.Locked) return false;
             if (!obj.CustomCanDisposeFlag) return false;

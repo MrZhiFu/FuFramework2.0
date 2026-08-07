@@ -186,11 +186,16 @@ namespace Hotfix.Framework.ObjectPool
             {
                 m_AutoDisposeTimer = 0f;
 
-                // 清理超过容量的对象
-                DisposeOverCapacity();
-
-                // 清理过期对象
-                DisposeExpired();
+                if (Count > m_Capacity)
+                {
+                    // 超容量：默认筛选器一次选出"过期对象 + 超容量部分"销毁，无需再单独清过期（避免二次全量扫描）
+                    DisposeOverCapacity();
+                }
+                else
+                {
+                    // 未超容量：只需清理过期对象
+                    DisposeExpired();
+                }
             }
         }
 
