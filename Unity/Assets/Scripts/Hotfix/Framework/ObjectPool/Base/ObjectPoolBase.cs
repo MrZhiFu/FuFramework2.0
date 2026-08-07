@@ -61,9 +61,9 @@ namespace Hotfix.Framework.ObjectPool
         public abstract bool AllowSpawnInUse { get; }
 
         /// <summary>
-        /// 获取或设置对象池自动销毁可销毁对象的间隔秒数。
+        /// 获取或设置对象池自动销毁检查的间隔秒数。
         /// </summary>
-        public abstract float AutoDisposeInterval { get; set; }
+        public abstract float AutoDisposeCheckInterval { get; set; }
 
         /// <summary>
         /// 获取或设置对象池的容量。

@@ -144,7 +144,7 @@ public sealed partial class ObjectPoolModule : ModuleBase
     // 创建对象池（3 个泛型重载，池必须命名）
     public ObjectPool<T> CreateObjectPool<T>(string poolName, bool allowSpawnInUse = false) where T : ObjectBase
     public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
-    public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
+    public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeCheckInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
 
     // 销毁对象池
     public bool DisposeObjectPool<T>(string poolName) where T : ObjectBase          // 销毁指定名称对象池
@@ -162,13 +162,13 @@ public sealed partial class ObjectPoolModule : ModuleBase
 | 参数 | 默认值 | 说明 |
 | ---- | ------ | ---- |
 | `capacity` | `int.MaxValue` | 对象池容量，默认不限制 |
-| `autoDisposeInterval` | `float.MaxValue` | 自动销毁间隔（秒），默认 `float.MaxValue` 即**默认不自动销毁** |
+| `autoDisposeCheckInterval` | `float.MaxValue` | 自动销毁检查间隔（秒），默认 `float.MaxValue` 即**默认不自动销毁** |
 | `expireTime` | `float.MaxValue` | 对象过期时间（秒），默认 `float.MaxValue` 即**默认不过期** |
 | `priority` | `0` | 对象池优先级，低优先级对象池优先被销毁 |
 | `allowSpawnInUse` | `false` | 是否允许对象在使用中再次被获取 |
 
-> 注意：`autoDisposeInterval` 与 `expireTime` 是相互独立的两组配置。
-> `autoDisposeInterval` 控制模块轮询时是否触发“检查并销毁”动作（默认不自动检查）；
+> 注意：`autoDisposeCheckInterval` 与 `expireTime` 是相互独立的两组配置。
+> `autoDisposeCheckInterval` 控制模块轮询时是否触发“检查并销毁”动作（默认不自动检查）；
 > `expireTime` 控制单个对象闲置多久后会被视为过期、纳入销毁候选（默认不过期）。
 > 需要自动销毁时，两者需按业务场景配合设置。
 
@@ -209,7 +209,7 @@ public abstract class ObjectPoolBase
     public abstract int Count { get; }             // 对象数量
     public abstract int CanDisposeCount { get; }   // 可销毁对象数量
     public abstract bool AllowSpawnInUse { get; }  // 是否允许多次获取
-    public abstract float AutoDisposeInterval { get; set; }  // 自动销毁间隔（秒）
+    public abstract float AutoDisposeCheckInterval { get; set; }  // 自动销毁检查间隔（秒）
     public abstract int Capacity { get; set; }     // 容量
     public abstract float ExpireTime { get; set; } // 过期时间（秒）
     public abstract int Priority { get; set; }     // 优先级
@@ -449,7 +449,7 @@ public class BulletManager
         // 创建子弹对象池
         m_BulletPool = objectPoolModule.CreateObjectPool<BulletObject>(
             poolName: "BulletPool",
-            autoDisposeInterval: 10f,         // 每10秒检查一次自动销毁
+            autoDisposeCheckInterval: 10f,         // 每10秒检查一次自动销毁
             capacity: 50,                     // 最大容量50个
             expireTime: 60f,                  // 60秒未使用则过期
             priority: 1,                      // 优先级1
@@ -668,7 +668,7 @@ public static class GameObjectPool
 
         return s_Module.CreateObjectPool<T>(
             poolName: poolName,
-            autoDisposeInterval: 10f,
+            autoDisposeCheckInterval: 10f,
             capacity: capacity,
             expireTime: 60f,
             priority: 0,
@@ -697,7 +697,7 @@ public static class GameObjectPool
 1. **对象生命周期**：确保对象在回收后不再被使用，避免空引用异常
 2. **容量设置**：合理设置容量，避免内存占用过大或频繁创建销毁
 3. **过期时间**：根据对象使用频率设置合适的过期时间
-4. **自动销毁间隔**：默认不自动销毁（`float.MaxValue`），需要自动销毁时显式设置 `autoDisposeInterval`
+4. **自动销毁检查间隔**：默认不自动销毁（`float.MaxValue`），需要自动销毁时显式设置 `autoDisposeCheckInterval`
 5. **锁定机制**：重要对象使用 `SetLocked` 防止被自动销毁
 6. **引用计数**：多实例池注意正确回收，避免内存泄漏
 7. **线程安全**：对象池操作应在主线程进行

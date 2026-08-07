@@ -55,27 +55,27 @@ namespace Hotfix.Framework.ObjectPool
 
 
         /// <summary>
-        /// 自动销毁计时器。用于计时，每隔 AutoDisposeInterval 秒触发一次自动销毁检查。
+        /// 自动销毁计时器。用于计时，每隔 AutoDisposeCheckInterval 秒触发一次自动销毁检查。
         /// </summary>
         private float m_AutoDisposeTimer;
 
         /// <summary>
-        /// 对象池自动销毁可销毁对象的间隔秒数。
+        /// 对象池自动销毁检查的间隔秒数。
         /// </summary>
-        private float m_AutoDisposeInterval;
+        private float m_AutoDisposeCheckInterval;
 
         /// <summary>
-        /// 获取或设置对象池每次轮询中自动销毁可销毁对象的间隔秒数。
+        /// 获取或设置对象池每次轮询中自动销毁检查的间隔秒数。
         /// </summary>
-        public override float AutoDisposeInterval
+        public override float AutoDisposeCheckInterval
         {
-            get => m_AutoDisposeInterval;
+            get => m_AutoDisposeCheckInterval;
             set
             {
-                if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动销毁间隔秒数不能小于0.");
-                if (Mathf.Approximately(m_AutoDisposeInterval, value)) return;
+                if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动销毁检查间隔秒数不能小于0.");
+                if (Mathf.Approximately(m_AutoDisposeCheckInterval, value)) return;
 
-                m_AutoDisposeInterval = value;
+                m_AutoDisposeCheckInterval = value;
             }
         }
 
@@ -150,11 +150,11 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         /// <param name="name">对象池名称。</param>
         /// <param name="allowSpawnInUse">是否允许对象池中对象正在使用的状态下被获取。</param>
-        /// <param name="autoDisposeInterval">对象池自动销毁可销毁对象的间隔秒数。</param>
+        /// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
-        internal ObjectPool(string name, bool allowSpawnInUse, float autoDisposeInterval, int capacity, float expireTime, int priority) : base(name)
+        internal ObjectPool(string name, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTime, int priority) : base(name)
         {
             m_ObjectMultiDict                    = new FuMultiDictionary<string, T>();
             m_TargetObjectDict                   = new Dictionary<object, T>();
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.ObjectPool
             m_CachedToDisposeObjectList          = new List<T>();
 
             AllowSpawnInUse     = allowSpawnInUse;
-            AutoDisposeInterval = autoDisposeInterval;
+            AutoDisposeCheckInterval = autoDisposeCheckInterval;
             Capacity            = capacity;
             ExpireTime          = expireTime;
             Priority            = priority;
@@ -177,12 +177,12 @@ namespace Hotfix.Framework.ObjectPool
         internal override void Update(float unscaledDeltaTime)
         {
             // 默认不自动销毁时短路，避免无谓的每帧累加
-            if (AutoDisposeInterval >= float.MaxValue) return;
+            if (AutoDisposeCheckInterval >= float.MaxValue) return;
 
             m_AutoDisposeTimer += unscaledDeltaTime;
 
-            // 每隔 AutoDisposeInterval 秒触发一次自动销毁检查
-            if (m_AutoDisposeTimer >= AutoDisposeInterval)
+            // 每隔 AutoDisposeCheckInterval 秒触发一次自动销毁检查
+            if (m_AutoDisposeTimer >= AutoDisposeCheckInterval)
             {
                 m_AutoDisposeTimer = 0f;
 

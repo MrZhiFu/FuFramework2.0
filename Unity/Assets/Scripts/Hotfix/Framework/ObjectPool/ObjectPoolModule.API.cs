@@ -30,7 +30,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <returns>创建的对象池。</returns>
         public ObjectPool<T> CreateObjectPool<T>(string poolName, bool allowSpawnInUse = false) where T : ObjectBase
         {
-            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeInterval, DefaultCapacity, DefaultExpireTime, DefaultPriority);
+            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeCheckInterval, DefaultCapacity, DefaultExpireTime, DefaultPriority);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <returns>创建的对象池。</returns>
         public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
         {
-            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeInterval, capacity, expireTime, priority);
+            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeCheckInterval, capacity, expireTime, priority);
         }
 
         /// <summary>
@@ -53,15 +53,15 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="poolName">对象池名称。</param>
-        /// <param name="autoDisposeInterval">对象池自动销毁可销毁对象的间隔秒数。</param>
+        /// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
         /// <param name="expireTime">对象池对象过期秒数。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <returns>创建的对象池。</returns>
-        public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
+        public ObjectPool<T> CreateObjectPool<T>(string poolName, float autoDisposeCheckInterval, int capacity, float expireTime, int priority, bool allowSpawnInUse = false) where T : ObjectBase
         {
-            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, autoDisposeInterval, capacity, expireTime, priority);
+            return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTime, priority);
         }
 
         #endregion
