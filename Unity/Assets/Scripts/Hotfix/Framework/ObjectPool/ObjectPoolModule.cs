@@ -59,9 +59,17 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            foreach (var (_, objPool) in m_ObjPoolDict)
+            // 单个对象池异常不影响其他池更新，避免异常传播到帧循环
+            foreach (var (typeNamePair, objPool) in m_ObjPoolDict)
             {
-                objPool.Update(unscaledDeltaTime);
+                try
+                {
+                    objPool.Update(unscaledDeltaTime);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {typeNamePair} 时出现异常: {e.Message}");
+                }
             }
         }
 
