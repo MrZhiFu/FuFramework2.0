@@ -27,12 +27,12 @@ namespace Hotfix.Framework.ObjectPool
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
             foreach (var obj in m_CachedCanDisposeObjectList)
             {
+                // 防御性 null 检查（在解引用前）
+                if (obj == null) continue;
+
                 // 对象闲置时间早于过期时间点，视为过期，纳入销毁
                 if (obj.LastUseTime <= expireTimeThreshold)
                 {
-                    // 防御性 null 检查
-                    if (obj == null) continue;
-
                     // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                     var objName = obj.Name;
                     try

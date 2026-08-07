@@ -101,6 +101,7 @@ namespace Hotfix.Framework.ObjectPool
         internal void Spawn()
         {
             SpawnCount++;
+            var lastUseTime = LastUseTime;
             try
             {
                 LastUseTime = DateTime.UtcNow;
@@ -109,6 +110,7 @@ namespace Hotfix.Framework.ObjectPool
             catch
             {
                 SpawnCount--;
+                LastUseTime = lastUseTime;
                 throw;
             }
         }

@@ -168,7 +168,7 @@ namespace Hotfix.Framework.ObjectPool
 
             var obj = GetObject(target);
             if (obj == null)
-                throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”..");
+                throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
             obj.Priority = priority;
         }
 

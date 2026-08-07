@@ -78,6 +78,9 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         protected internal override void OnDispose()
         {
+            // 先退订低内存回调，避免销毁循环期间低内存事件触发 DisposeAllUnused 修改正在遍历的缓存列表
+            Application.lowMemory -= OnLowMemory;
+
             // 复制到缓存列表，避免对象池 OnDispose 中修改模块字典导致遍历异常
             m_CachedObjPoolList.Clear();
             foreach (var (_, objPool) in m_ObjPoolDict)
@@ -99,8 +102,6 @@ namespace Hotfix.Framework.ObjectPool
 
             m_ObjPoolDict.Clear();
             m_CachedObjPoolList.Clear();
-
-            Application.lowMemory -= OnLowMemory;
         }
 
         /// <summary>
