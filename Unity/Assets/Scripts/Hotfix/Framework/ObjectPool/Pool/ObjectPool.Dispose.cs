@@ -25,6 +25,9 @@ namespace Hotfix.Framework.ObjectPool
 
             var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+
+            // 快照到独立列表，避免 DisposeObjectInternal 内 OnDispose 重入清空被遍历的缓存列表
+            m_CachedToDisposeObjectList.Clear();
             foreach (var obj in m_CachedCanDisposeObjectList)
             {
                 // 防御性 null 检查（在解引用前）
@@ -32,17 +35,20 @@ namespace Hotfix.Framework.ObjectPool
 
                 // 对象闲置时间早于过期时间点，视为过期，纳入销毁
                 if (obj.LastUseTime <= expireTimeThreshold)
+                    m_CachedToDisposeObjectList.Add(obj);
+            }
+
+            foreach (var obj in m_CachedToDisposeObjectList)
+            {
+                // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
+                var objName = obj.Name;
+                try
                 {
-                    // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
-                    var objName = obj.Name;
-                    try
-                    {
-                        DisposeObjectInternal(obj);
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogWarning($"[ObjectPoolModule] 销毁过期对象 '{objName}' 时出现异常: {e.Message}");
-                    }
+                    DisposeObjectInternal(obj);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁过期对象 '{objName}' 时出现异常: {e.Message}");
                 }
             }
         }
@@ -123,11 +129,18 @@ namespace Hotfix.Framework.ObjectPool
         {
             m_AutoDisposeTimer = 0f;
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
+
+            // 快照到独立列表，避免 DisposeObjectInternal 内 OnDispose 重入清空被遍历的缓存列表
+            m_CachedToDisposeObjectList.Clear();
             foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
             {
-                // 防御自定义筛选器返回 null 对象
+                // 防御性 null 检查
                 if (toDisposeObject == null) continue;
+                m_CachedToDisposeObjectList.Add(toDisposeObject);
+            }
 
+            foreach (var toDisposeObject in m_CachedToDisposeObjectList)
+            {
                 // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                 var toDisposeObjectName = toDisposeObject.Name;
                 try

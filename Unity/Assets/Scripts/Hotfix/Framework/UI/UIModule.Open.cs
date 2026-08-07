@@ -119,7 +119,18 @@ namespace Hotfix.Framework.UI
             catch
             {
                 // 异步加载阶段失败（CreateFuiWin 之前）：回收已获取/注册的界面对象，避免池槽泄漏
-                if (winObj != null) m_WinObjPool.Recycle(winObj);
+                // 可能已被 CreateFuiWin 回收，二次回收异常忽略以保留原始异常
+                if (winObj != null)
+                {
+                    try
+                    {
+                        m_WinObjPool.Recycle(winObj);
+                    }
+                    catch
+                    {
+                        // 忽略二次回收异常，避免掩盖原始异常
+                    }
+                }
                 throw;
             }
             finally
