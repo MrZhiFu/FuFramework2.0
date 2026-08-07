@@ -90,7 +90,7 @@ namespace Hotfix.Framework.ObjectPool
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
             FuLogger.LogInfo($"[ObjectPoolModule] 尝试销毁对象池中的可销毁对象-对象数量: '{m_CachedCanDisposeObjectList.Count}'");
 
-            // 筛选需要销毁的对象
+            // 再次按照过滤器函数筛选需要销毁的对象
             var toDisposeObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
             if (toDisposeObjects is not { Count: > 0 }) return;
 
@@ -218,7 +218,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 for (var i = candidateObjects.Count - 1; i >= 0; i--)
                 {
-                    // 如果对象最后使用时间 > 过期时间点，说明了对象还没过期，则继续筛选。
+                    // 对象最后使用时间比过期时间点晚（更近）= 还没闲置到 expireTime，未过期，跳过
                     if (candidateObjects[i].LastUseTime > expireTimeThreshold.Value) continue;
                     m_CachedToDisposeObjectList.Add(candidateObjects[i]);
                     candidateObjects.RemoveAt(i);
