@@ -38,10 +38,10 @@ namespace Hotfix.Framework.ObjectPool
         }
 
         /// <summary>
-        /// 从对象池获取（生成）对象。
+        /// 从对象池获取对象。
         /// </summary>
         /// <param name="name">对象名称。</param>
-        /// <returns>要获取（生成）的对象，池中无可用对象时返回null。</returns>
+        /// <returns>要获取的对象，池中无可用对象时返回null。</returns>
         public T Spawn(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
@@ -98,10 +98,10 @@ namespace Hotfix.Framework.ObjectPool
         }
 
         /// <summary>
-        /// 检查对象是否可获取（生成）。
+        /// 检查对象是否可获取。
         /// </summary>
         /// <param name="name">对象名称。</param>
-        /// <returns>要检查的对象是否可获取（生成）。</returns>
+        /// <returns>要检查的对象是否可获取。</returns>
         public bool CanSpawn(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
