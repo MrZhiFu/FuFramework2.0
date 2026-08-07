@@ -238,7 +238,7 @@ public abstract ObjectInfo[] GetAllObjectInfos()       // 获取所有对象信�
 public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 {
     // 对象管理
-    public void Register(T obj, bool spawned)       // 注册对象到池
+    public void Register(T obj, bool inUse)         // 注册对象到池
     public T Spawn(string name)                     // 获取（生成）对象
     public void Recycle(T obj)                      // 回收对象
     public void Recycle(object target)              // 通过目标对象回收
@@ -260,6 +260,31 @@ public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
     public override ObjectInfo[] GetAllObjectInfos() // 获取所有对象信息
 }
 ```
+
+**`Register` 的 `inUse` 参数说明：**
+
+`Register(T obj, bool inUse)` 把对象放进池里，`inUse` 决定它注册后是"空闲待命"还是"已在用"：
+
+| `inUse` | 含义 | 注册后状态 | 适用场景 |
+|---|---|---|---|
+| `false` | 放进池里当**库存** | `SpawnCount = 0`，空闲待命，等 `Spawn` 来取 | **预加载**：提前造好一批备用 |
+| `true` | 放进池里**已经被人用了** | `SpawnCount = 1`，触发 `OnSpawn()`，调用方可直接使用 | **现造现用**：`Spawn` 没取到时空新建一个 |
+
+```csharp
+// 预加载（inUse = false）：造好放池里当库存
+for (int i = 0; i < 10; i++)
+    m_BulletPool.Register(BulletObject.Create($"Bullet_{i}", prefab), false);
+
+// 现造现用（inUse = true）：Spawn 取不到 → 新建并标记为在用
+var bullet = m_BulletPool.Spawn("Bullet");
+if (bullet == null)
+{
+    bullet = BulletObject.Create($"Bullet_{Time.time}", prefab);
+    m_BulletPool.Register(bullet, true);
+}
+```
+
+> 注意：`inUse = true` 注册的对象 `SpawnCount > 0`（使用中），**不会被再次 `Spawn` 取走、也不会被自动销毁**。用完后必须 `Recycle` 一次（计数归零）它才回到空闲状态。预加载误用 `true` 会导致池里永远没有空闲对象。
 
 **内部数据结构：**
 

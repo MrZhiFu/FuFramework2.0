@@ -17,8 +17,8 @@ namespace Hotfix.Framework.ObjectPool
         /// 注册一个对象到对象池中。
         /// </summary>
         /// <param name="obj">对象。</param>
-        /// <param name="spawned">对象是否提前生成。</param>
-        public void Register(T obj, bool spawned)
+        /// <param name="inUse">对象注册时是否已处于使用中。</param>
+        public void Register(T obj, bool inUse)
         {
             if (obj        == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
             if (obj.Target == null) throw new InvalidOperationException("[ObjectPoolModule] 要注册的对象目标不能为空.");
@@ -30,8 +30,8 @@ namespace Hotfix.Framework.ObjectPool
             m_ObjectMultiDict.Add(obj.Name, obj);
             m_TargetObjectDict.Add(obj.Target, obj);
 
-            // 对象是否提前生成，若是则直接走一次生成流程（计数+1、刷新最后使用时间、触发 OnSpawn）
-            if (spawned) obj.Spawn();
+            // 对象是否已处于使用中，若是则直接走一次生成流程（计数+1、刷新最后使用时间、触发 OnSpawn）
+            if (inUse) obj.Spawn();
 
             if (Count > m_Capacity)
                 DisposeOverCapacity();

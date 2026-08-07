@@ -272,8 +272,8 @@ namespace Hotfix.Framework.Entity
         /// 创建并注册一个指定实体实例对象。
         /// </summary>
         /// <param name="obj"></param>
-        /// <param name="spawned"></param>
-        public void RegisterEntityInstanceObject(EntityInstanceObject obj, bool spawned) => m_InstancePool.Register(obj, spawned);
+        /// <param name="inUse">对象注册时是否已处于使用中。</param>
+        public void RegisterEntityInstanceObject(EntityInstanceObject obj, bool inUse) => m_InstancePool.Register(obj, inUse);
 
         /// <summary>
         /// 生成一个指定实体实例对象。
