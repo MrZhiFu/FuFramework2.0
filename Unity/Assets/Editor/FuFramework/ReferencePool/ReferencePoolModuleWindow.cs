@@ -15,7 +15,7 @@ namespace FuFramework.ReferencePool.Editor
     /// 功能：
     ///     1. 展示所有引用池及其统计信息（类型、闲置、使用中、累计获取/释放/新增/移除）。
     ///     2. 支持按类型名过滤搜索、自动刷新、全部展开/折叠。
-    ///     3. 支持模块级/单池级一键清空（清空所有引用池、清空指定类型池）。
+    ///     3. 支持模块级/单池级一键移除（移除所有引用池、移除指定类型闲置引用）。
     /// </summary>
     public class ReferencePoolModuleWindow : EditorWindow
     {
@@ -98,14 +98,14 @@ namespace FuFramework.ReferencePool.Editor
         private MethodInfo m_GetAllReferencePoolInfosMethod;
 
         /// <summary>
-        /// ReferencePoolModule.ClearAll 方法
+        /// ReferencePoolModule.RemoveAllPools 方法
         /// </summary>
-        private MethodInfo m_ModuleClearAllMethod;
+        private MethodInfo m_ModuleRemoveAllPoolsMethod;
 
         /// <summary>
-        /// ReferencePoolModule.RemoveAll<T> 泛型方法定义
+        /// ReferencePoolModule.RemoveAllUnused<T> 泛型方法定义
         /// </summary>
-        private MethodInfo m_RemoveAllGenericMethod;
+        private MethodInfo m_RemoveAllUnusedGenericMethod;
 
         /// <summary>
         /// ReferencePoolInfo.Type 属性
@@ -256,7 +256,7 @@ namespace FuFramework.ReferencePool.Editor
         #region 模块概览
 
         /// <summary>
-        /// 绘制模块级概览与一键清空操作
+        /// 绘制模块级概览与一键移除操作
         /// </summary>
         private void DrawModuleOverview()
         {
@@ -264,15 +264,15 @@ namespace FuFramework.ReferencePool.Editor
             EditorGUILayout.LabelField($"引用池总个数：{count}");
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("清空所有引用池", GUILayout.Width(200)))
+            if (GUILayout.Button("移除所有引用池", GUILayout.Width(200)))
             {
                 try
                 {
-                    m_ModuleClearAllMethod?.Invoke(m_ModuleInstance, null);
+                    m_ModuleRemoveAllPoolsMethod?.Invoke(m_ModuleInstance, null);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"清空所有引用池失败，异常为“{e.InnerException?.Message ?? e.Message}”.");
+                    Debug.LogError($"移除所有引用池失败，异常为“{e.InnerException?.Message ?? e.Message}”.");
                 }
             }
 
@@ -378,16 +378,16 @@ namespace FuFramework.ReferencePool.Editor
         private void DrawPoolActions(Type poolType)
         {
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("清空该类型池", GUILayout.Width(160)))
+            if (GUILayout.Button("移除该类型闲置引用", GUILayout.Width(160)))
             {
                 try
                 {
-                    var removeAllMethod = m_RemoveAllGenericMethod?.MakeGenericMethod(poolType);
-                    removeAllMethod?.Invoke(m_ModuleInstance, null);
+                    var removeAllUnusedMethod = m_RemoveAllUnusedGenericMethod?.MakeGenericMethod(poolType);
+                    removeAllUnusedMethod?.Invoke(m_ModuleInstance, null);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"清空引用池 {poolType.Name} 失败，异常为“{e.InnerException?.Message ?? e.Message}”.");
+                    Debug.LogError($"移除引用池 {poolType.Name} 的闲置引用失败，异常为“{e.InnerException?.Message ?? e.Message}”.");
                 }
             }
 
@@ -453,10 +453,10 @@ namespace FuFramework.ReferencePool.Editor
             if (m_ModuleInstance == null) return false;
 
             // ReferencePoolModule 成员
-            m_ModuleCountProperty             = m_ReferencePoolModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
-            m_GetAllReferencePoolInfosMethod  = m_ReferencePoolModuleType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Instance);
-            m_ModuleClearAllMethod            = m_ReferencePoolModuleType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Instance);
-            m_RemoveAllGenericMethod          = m_ReferencePoolModuleType.GetMethod("RemoveAll", BindingFlags.Public | BindingFlags.Instance);
+            m_ModuleCountProperty              = m_ReferencePoolModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
+            m_GetAllReferencePoolInfosMethod   = m_ReferencePoolModuleType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Instance);
+            m_ModuleRemoveAllPoolsMethod       = m_ReferencePoolModuleType.GetMethod("RemoveAllPools", BindingFlags.Public | BindingFlags.Instance);
+            m_RemoveAllUnusedGenericMethod     = m_ReferencePoolModuleType.GetMethod("RemoveAllUnused", BindingFlags.Public | BindingFlags.Instance);
 
             // ReferencePoolInfo 成员
             m_InfoTypeProperty                  = m_ReferencePoolInfoType.GetProperty("Type", BindingFlags.Public | BindingFlags.Instance);
@@ -481,8 +481,8 @@ namespace FuFramework.ReferencePool.Editor
             m_GetModuleMethod                      = null;
             m_ModuleCountProperty                  = null;
             m_GetAllReferencePoolInfosMethod       = null;
-            m_ModuleClearAllMethod                 = null;
-            m_RemoveAllGenericMethod               = null;
+            m_ModuleRemoveAllPoolsMethod           = null;
+            m_RemoveAllUnusedGenericMethod         = null;
             m_InfoTypeProperty                     = null;
             m_InfoUnusedReferenceCountProperty     = null;
             m_InfoUsingReferenceCountProperty      = null;

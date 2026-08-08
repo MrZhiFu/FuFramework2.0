@@ -52,28 +52,28 @@ namespace Hotfix.Framework.ReferencePool
         }
 
         /// <summary>
-        /// 从指定类型的引用池中移除指定数量的引用。
+        /// 从指定类型的引用池中移除指定数量的闲置引用（使用中的引用不受影响，被移除的对象直接丢弃）。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
-        /// <param name="count">移除数量。</param>
-        public void Remove<T>(int count) where T : class, IReference
+        /// <param name="count">移除数量，超过闲置总数时移除全部闲置引用。</param>
+        public void RemoveUnused<T>(int count) where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).Remove(count);
         }
 
         /// <summary>
-        /// 从指定类型的引用池中移除所有的引用。
+        /// 移除指定类型引用池中的所有闲置引用（使用中的引用不受影响，该类型条目保留在字典中）。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
-        public void RemoveAll<T>() where T : class, IReference
+        public void RemoveAllUnused<T>() where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).RemoveAll();
         }
 
         /// <summary>
-        /// 清除所有引用池。
+        /// 移除所有引用池：清空各类型的闲置引用并删除全部类型条目（引用池数量归零，使用中的引用不受影响）。
         /// </summary>
-        public void ClearAll()
+        public void RemoveAllPools()
         {
             lock (m_ReferenceCollectionDict)
             {

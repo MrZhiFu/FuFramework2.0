@@ -145,7 +145,7 @@ Recycle(reference)
 
 OnDispose()
     │
-    └── ClearAll()
+    └── RemoveAllPools()
         ├── 遍历所有 ReferenceCollection
         ├── 每个 collection.RemoveAll()
         └── 清空 m_ReferenceCollectionDict
@@ -163,7 +163,7 @@ OnDispose()
     ├── Acquire: 从栈取出或创建新对象
     └── Recycle: 清理后压入栈
 
-销毁 (RemoveAll/ClearAll)
+销毁 (RemoveAllUnused/RemoveAllPools)
     │
     ├── 清空 m_FreeStack
     └── 重置所有计数器
@@ -214,12 +214,12 @@ public sealed partial class ReferencePoolModule : ModuleBase
     // 添加引用到池
     public void Add<T>(int count) where T : class, IReference, new()
 
-    // 从池移除引用
-    public void Remove<T>(int count) where T : class, IReference
-    public void RemoveAll<T>() where T : class, IReference
+    // 从池移除闲置引用
+    public void RemoveUnused<T>(int count) where T : class, IReference
+    public void RemoveAllUnused<T>() where T : class, IReference
 
-    // 清除所有引用池
-    public void ClearAll()
+    // 移除所有引用池
+    public void RemoveAllPools()
 
     // 获取统计信息
     public ReferencePoolInfo[] GetAllReferencePoolInfos()
@@ -445,7 +445,7 @@ public class NetworkMessageSystem : MonoBehaviour
     private void OnDisable()
     {
         // 清理引用池（可选，通常由系统自动管理）
-        GlobalModule.ReferencePoolModule.RemoveAll<NetworkMessage>();
+        GlobalModule.ReferencePoolModule.RemoveAllUnused<NetworkMessage>();
     }
 }
 ```
@@ -575,12 +575,12 @@ public class ReferencePoolMonitor : MonoBehaviour
             // 闲置对象过多，提示可手动清理
             if (info.UnusedReferenceCount > 50)
             {
-                Debug.Log($"提示: {info.Type.Name} 引用池闲置 {info.UnusedReferenceCount} 个，可调用 Remove<T>() 清理");
+                Debug.Log($"提示: {info.Type.Name} 引用池闲置 {info.UnusedReferenceCount} 个，可调用 RemoveUnused<T>() 清理");
             }
         }
         
-        // 移除指定类型的闲置对象（Remove 需显式指定泛型类型）
-        GlobalModule.ReferencePoolModule.Remove<NetworkMessage>(10);
+        // 移除指定类型的闲置对象（RemoveUnused 需显式指定泛型类型）
+        GlobalModule.ReferencePoolModule.RemoveUnused<NetworkMessage>(10);
     }
 }
 ```

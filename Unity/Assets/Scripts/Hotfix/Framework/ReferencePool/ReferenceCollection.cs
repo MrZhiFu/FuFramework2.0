@@ -140,9 +140,9 @@ namespace Hotfix.Framework.ReferencePool
         }
 
         /// <summary>
-        /// 从引用池中移除指定数量的引用。
+        /// 从引用池中移除指定数量的闲置引用。
         /// </summary>
-        /// <param name="count">移除数量。</param>
+        /// <param name="count">移除数量，超过闲置总数时移除全部闲置引用。</param>
         public void Remove(int count)
         {
             lock (m_FreeStack)
@@ -159,7 +159,7 @@ namespace Hotfix.Framework.ReferencePool
         }
 
         /// <summary>
-        /// 从引用池中移除所有的引用。
+        /// 从引用池中移除所有的闲置引用。
         /// </summary>
         public void RemoveAll()
         {

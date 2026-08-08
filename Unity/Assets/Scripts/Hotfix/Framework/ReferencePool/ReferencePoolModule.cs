@@ -23,7 +23,7 @@ namespace Hotfix.Framework.ReferencePool
         /// </summary>
         protected internal override void OnDispose()
         {
-            ClearAll();
+            RemoveAllPools();
         }
 
         /// <summary>
