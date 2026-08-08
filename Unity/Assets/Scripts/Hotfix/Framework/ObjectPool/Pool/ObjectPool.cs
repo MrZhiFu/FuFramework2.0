@@ -51,7 +51,7 @@ namespace Hotfix.Framework.ObjectPool
         /// <summary>
         /// 对象过期时间秒数。一个对象闲置超过这个时间（秒），就会被标记为可销毁。
         /// </summary>
-        private float m_ExpireTime;
+        private float m_ExpireTimeAfterIdle;
 
 
         /// <summary>
@@ -131,17 +131,18 @@ namespace Hotfix.Framework.ObjectPool
 
         /// <summary>
         /// 获取或设置对象池对象过期秒数。
+        /// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
         /// </summary>
-        public override float ExpireTime
+        public override float ExpireTimeAfterIdle
         {
-            get => m_ExpireTime;
+            get => m_ExpireTimeAfterIdle;
             set
             {
                 if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能小于0.");
-                if (Mathf.Approximately(ExpireTime, value)) return;
+                if (Mathf.Approximately(ExpireTimeAfterIdle, value)) return;
 
-                m_ExpireTime = value;
-                DisposeOverCapacity();
+                m_ExpireTimeAfterIdle = value;
+                DisposeExpired();
             }
         }
 
@@ -152,9 +153,9 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="allowSpawnInUse">是否允许对象池中对象正在使用的状态下被获取。</param>
         /// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="expireTimeAfterIdle">对象闲置超过该秒数即视为过期。</param>
         /// <param name="priority">对象池的优先级。</param>
-        internal ObjectPool(string name, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTime, int priority) : base(name)
+        internal ObjectPool(string name, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTimeAfterIdle, int priority) : base(name)
         {
             m_ObjectMultiDict                    = new FuMultiDictionary<string, T>();
             m_TargetObjectDict                   = new Dictionary<object, T>();
@@ -165,7 +166,7 @@ namespace Hotfix.Framework.ObjectPool
             AllowSpawnInUse     = allowSpawnInUse;
             AutoDisposeCheckInterval = autoDisposeCheckInterval;
             Capacity            = capacity;
-            ExpireTime          = expireTime;
+            ExpireTimeAfterIdle          = expireTimeAfterIdle;
             Priority            = priority;
             m_AutoDisposeTimer  = 0f;
         }

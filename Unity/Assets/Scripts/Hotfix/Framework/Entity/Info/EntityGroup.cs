@@ -67,11 +67,12 @@ namespace Hotfix.Framework.Entity
 
         /// <summary>
         /// 获取或设置实体组实例对象池对象过期秒数。
+        /// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
         /// </summary>
-        public float PoolExpireTime
+        public float PoolExpireTimeAfterIdle
         {
-            get => m_EntityPool.ExpireTime;
-            set => m_EntityPool.ExpireTime = value;
+            get => m_EntityPool.ExpireTimeAfterIdle;
+            set => m_EntityPool.ExpireTimeAfterIdle = value;
         }
 
         /// <summary>
@@ -97,9 +98,9 @@ namespace Hotfix.Framework.Entity
             GroupGo = groupGo ?? throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
             var poolName = $"EntityPool-{Name}";
-            m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>(poolName, row.PoolCapacity, row.PoolExpireTime, row.PoolPriority);
+            m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>(poolName, row.PoolCapacity, row.PoolExpireTimeAfterIdle, row.PoolPriority);
 
-            m_EntityPool.AutoDisposeCheckInterval = row.PoolAutoDisposeInterval;
+            m_EntityPool.AutoDisposeCheckInterval = row.PoolAutoDisposeCheckInterval;
 
             m_Entities   = new FuLinkedList<Entity>();
             m_CachedNode = null;

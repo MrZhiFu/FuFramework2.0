@@ -263,7 +263,7 @@ protected virtual void InternalSetVisible(bool visible)
 | `EntityCount` | `int` | 组内实体数量 |
 | `PoolAutoDisposeCheckInterval` | `float` | 实例池自动销毁检查间隔 |
 | `PoolCapacity` | `int` | 实例池容量 |
-| `PoolExpireTime` | `float` | 实例过期时间 |
+| `PoolExpireTimeAfterIdle` | `float` | 实例闲置超过该秒数即视为过期 |
 | `PoolObjectPriority` | `int` | 实例优先级 |
 
 **核心方法：**
@@ -469,7 +469,7 @@ if (m_EntityModule.HasEntityGroup("BulletGroup"))
 
     // 配置对象池参数
     group.PoolCapacity = 50;
-    group.PoolExpireTime = 60f;
+    group.PoolExpireTimeAfterIdle = 60f;
     group.PoolObjectPriority = 0;
 
     // 查询组内实体

@@ -14,12 +14,12 @@ namespace Hotfix.Game.Config.Tables
 {
     public sealed partial class EntityGroup : BeanBase
     {
-        public EntityGroup(EEntityGroup Id, float PoolAutoDisposeInterval, int PoolCapacity, float PoolExpireTime, int PoolPriority) 
+        public EntityGroup(EEntityGroup Id, float PoolAutoDisposeCheckInterval, int PoolCapacity, float PoolExpireTimeAfterIdle, int PoolPriority) 
         {
             this.Id = Id;
-            this.PoolAutoDisposeInterval = PoolAutoDisposeInterval;
+            this.PoolAutoDisposeCheckInterval = PoolAutoDisposeCheckInterval;
             this.PoolCapacity = PoolCapacity;
-            this.PoolExpireTime = PoolExpireTime;
+            this.PoolExpireTimeAfterIdle = PoolExpireTimeAfterIdle;
             this.PoolPriority = PoolPriority;
             PostInit();
         }
@@ -27,9 +27,9 @@ namespace Hotfix.Game.Config.Tables
         public EntityGroup(JSONNode _buf)
         {
             { if(!_buf["Id"].IsNumber) { throw new SerializationException(); }  Id = (EEntityGroup)_buf["Id"].AsInt; }
-            { if(!_buf["PoolAutoDisposeInterval"].IsNumber) { throw new SerializationException(); }  PoolAutoDisposeInterval = _buf["PoolAutoDisposeInterval"]; }
+            { if(!_buf["PoolAutoDisposeCheckInterval"].IsNumber) { throw new SerializationException(); }  PoolAutoDisposeCheckInterval = _buf["PoolAutoDisposeCheckInterval"]; }
             { if(!_buf["PoolCapacity"].IsNumber) { throw new SerializationException(); }  PoolCapacity = _buf["PoolCapacity"]; }
-            { if(!_buf["PoolExpireTime"].IsNumber) { throw new SerializationException(); }  PoolExpireTime = _buf["PoolExpireTime"]; }
+            { if(!_buf["PoolExpireTimeAfterIdle"].IsNumber) { throw new SerializationException(); }  PoolExpireTimeAfterIdle = _buf["PoolExpireTimeAfterIdle"]; }
             { if(!_buf["PoolPriority"].IsNumber) { throw new SerializationException(); }  PoolPriority = _buf["PoolPriority"]; }
 
             // Localization Key Begin
@@ -47,19 +47,19 @@ namespace Hotfix.Game.Config.Tables
         /// </summary>
         public EEntityGroup Id { private set; get; }
         /// <summary>
-        /// 自动释放间隔(秒)
+        /// 实体对象池自动销毁检查间隔(秒)
         /// </summary>
-        public float PoolAutoDisposeInterval { private set; get; }
+        public float PoolAutoDisposeCheckInterval { private set; get; }
         /// <summary>
-        /// 对象池容量
+        /// 实体对象池容量
         /// </summary>
         public int PoolCapacity { private set; get; }
         /// <summary>
-        /// 对象过期时间(秒)
+        /// 实体对象闲置后过期秒数
         /// </summary>
-        public float PoolExpireTime { private set; get; }
+        public float PoolExpireTimeAfterIdle { private set; get; }
         /// <summary>
-        /// 对象池优先级
+        /// 实体对象池优先级
         /// </summary>
         public int PoolPriority { private set; get; }
         public const int __ID__ = -1536753069;
@@ -82,9 +82,9 @@ namespace Hotfix.Game.Config.Tables
         {
             return "{ "
             + "Id:" + Id + ","
-            + "PoolAutoDisposeInterval:" + PoolAutoDisposeInterval + ","
+            + "PoolAutoDisposeCheckInterval:" + PoolAutoDisposeCheckInterval + ","
             + "PoolCapacity:" + PoolCapacity + ","
-            + "PoolExpireTime:" + PoolExpireTime + ","
+            + "PoolExpireTimeAfterIdle:" + PoolExpireTimeAfterIdle + ","
             + "PoolPriority:" + PoolPriority + ","
             + "}";
         }

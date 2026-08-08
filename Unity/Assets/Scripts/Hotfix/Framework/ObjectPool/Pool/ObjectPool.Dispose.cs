@@ -21,9 +21,9 @@ namespace Hotfix.Framework.ObjectPool
         private void DisposeExpired()
         {
             // 未设置过期时间时无需处理
-            if (m_ExpireTime >= float.MaxValue) return;
+            if (m_ExpireTimeAfterIdle >= float.MaxValue) return;
 
-            var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
+            var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
 
             // 快照到独立列表，避免 DisposeObjectInternal 内 OnDispose 重入清空被遍历的缓存列表
@@ -86,10 +86,10 @@ namespace Hotfix.Framework.ObjectPool
 
             // 找到对象过期时间点，最后使用时间早于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
             DateTime? expireTimeThreshold = null;
-            if (m_ExpireTime < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
+            if (m_ExpireTimeAfterIdle < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
             {
                 // 过期时间点 = 当前UTC时间 - 过期时间秒数。例如，如果过期时间设置为10秒，那么过期时间点就是10秒前的时刻。任何超过10秒没被用过的对象都被视为过期。
-                expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTime);
+                expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
             }
 
             // 重置计时器
@@ -250,7 +250,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 for (var i = candidateObjects.Count - 1; i >= 0; i--)
                 {
-                    // 对象最后使用时间比过期时间点晚（更近）= 还没闲置到 expireTime，未过期，跳过
+                    // 对象最后使用时间比过期时间点晚（更近）= 还没闲置到 expireTimeAfterIdle，未过期，跳过
                     if (candidateObjects[i].LastUseTime > expireTimeThreshold.Value) continue;
                     m_CachedToDisposeObjectList.Add(candidateObjects[i]);
                     candidateObjects.RemoveAt(i);

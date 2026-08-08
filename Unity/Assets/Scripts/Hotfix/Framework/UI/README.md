@@ -120,9 +120,9 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| WinObjPoolAutoDisposeCheckInterval | float | 对象池自动销毁检查间隔 |
-| WinObjPoolCapacity | int | 对象池容量 |
-| WinObjPoolExpireTime | float | 对象过期时间 |
+| PoolAutoDisposeCheckInterval | float | 对象池自动销毁检查间隔 |
+| PoolCapacity | int | 对象池容量 |
+| PoolExpireTimeAfterIdle | float | 对象闲置超过该秒数即视为过期 |
 | GroupCount | int | 界面组数量 |
 
 **核心方法：**

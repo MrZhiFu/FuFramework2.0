@@ -58,23 +58,23 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池自动销毁检查的间隔秒数
         /// </summary>
-        private const float AutoDisposeCheckInterval = 60f;
+        private const float DefaultAutoDisposeCheckInterval = 60f;
 
         /// <summary>
         /// 界面实例对象池的容量
         /// </summary>
-        private const int PoolCapacity = 16;
+        private const int DefaultPoolCapacity = 16;
 
         /// <summary>
         /// 界面实例对象池对象过期秒数
         /// </summary>
-        private const float PoolExpireTime = 60f;
+        private const float DefaultPoolExpireTimeAfterIdle = 60f;
 
 
         /// <summary>
         /// 获取或设置界面实例对象池自动销毁检查的间隔秒数。
         /// </summary>
-        public float WinObjPoolAutoDisposeCheckInterval
+        public float PoolAutoDisposeCheckInterval
         {
             get => m_WinObjPool.AutoDisposeCheckInterval;
             set => m_WinObjPool.AutoDisposeCheckInterval = value;
@@ -83,7 +83,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 获取或设置界面实例对象池的容量。
         /// </summary>
-        public int WinObjPoolCapacity
+        public int PoolCapacity
         {
             get => m_WinObjPool.Capacity;
             set => m_WinObjPool.Capacity = value;
@@ -91,11 +91,12 @@ namespace Hotfix.Framework.UI
 
         /// <summary>
         /// 获取或设置界面实例对象池对象过期秒数。
+        /// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
         /// </summary>
-        public float WinObjPoolExpireTime
+        public float PoolExpireTimeAfterIdle
         {
-            get => m_WinObjPool.ExpireTime;
-            set => m_WinObjPool.ExpireTime = value;
+            get => m_WinObjPool.ExpireTimeAfterIdle;
+            set => m_WinObjPool.ExpireTimeAfterIdle = value;
         }
 
         /// <summary>
@@ -115,9 +116,9 @@ namespace Hotfix.Framework.UI
 
             m_SerialId = 0;
 
-            WinObjPoolAutoDisposeCheckInterval = AutoDisposeCheckInterval;
-            WinObjPoolCapacity            = PoolCapacity;
-            WinObjPoolExpireTime          = PoolExpireTime;
+            PoolAutoDisposeCheckInterval = DefaultAutoDisposeCheckInterval;
+            PoolCapacity                 = DefaultPoolCapacity;
+            PoolExpireTimeAfterIdle      = DefaultPoolExpireTimeAfterIdle;
 
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();

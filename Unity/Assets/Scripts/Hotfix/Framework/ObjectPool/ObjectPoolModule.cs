@@ -135,10 +135,11 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
         /// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
         /// <param name="capacity">对象池的容量。</param>
-        /// <param name="expireTime">对象池对象过期秒数。</param>
+        /// <param name="expireTimeAfterIdle">对象闲置超过该秒数即视为过期。</param>
         /// <param name="priority">对象池的优先级。</param>
         /// <returns>创建的对象池。</returns>
-        private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTime, int priority) where T : ObjectBase
+        private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTimeAfterIdle, int priority)
+            where T : ObjectBase
         {
             if (string.IsNullOrEmpty(poolName))
                 throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空，对象池必须命名.");
@@ -147,7 +148,7 @@ namespace Hotfix.Framework.ObjectPool
             if (HasObjectPoolInternal(typeNamePair))
                 throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");
 
-            var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTime, priority);
+            var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTimeAfterIdle, priority);
             m_ObjPoolDict.Add(typeNamePair, objectPool);
             return objectPool;
         }

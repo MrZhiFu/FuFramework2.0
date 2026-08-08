@@ -72,8 +72,9 @@ namespace Hotfix.Framework.ObjectPool
 
         /// <summary>
         /// 获取或设置对象池对象过期秒数。
+        /// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
         /// </summary>
-        public abstract float ExpireTime { get; set; }
+        public abstract float ExpireTimeAfterIdle { get; set; }
 
         /// <summary>
         /// 获取或设置对象池的优先级。
