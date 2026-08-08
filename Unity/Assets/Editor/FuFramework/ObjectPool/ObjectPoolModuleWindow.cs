@@ -549,8 +549,10 @@ namespace FuFramework.ObjectPool.Editor
             GUI.color = isInUse ? Color.green : baseColor;
             GUILayout.Label(allowInUse ? spawnCount.ToString() : (isInUse ? "是" : "否"), GUILayout.Width(60));
 
+            // "可销毁"列：显示当前是否真的可销毁（未使用 + 未加锁 + 允许销毁），与 DisposeObjectInternal 判定一致。
+            // 不能用 CustomCanDisposeFlag（恒为 true 的静态标记），否则使用中对象会误显示"可销毁=是"。
             GUI.color = baseColor;
-            GUILayout.Label(canDispose ? "是" : "否", GUILayout.Width(60));
+            GUILayout.Label(isDisposable ? "是" : "否", GUILayout.Width(60));
 
             GUI.color = baseColor;
             GUILayout.Label(priority.ToString(),                                                                      GUILayout.Width(60));
