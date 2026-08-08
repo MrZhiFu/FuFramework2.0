@@ -19,6 +19,11 @@ namespace Hotfix.Framework.ObjectPool
         public string Name { get; }
 
         /// <summary>
+        /// 获取对象的目标真实对象。如GameObject。
+        /// </summary>
+        public object Target { get; }
+
+        /// <summary>
         /// 获取对象是否被加锁。
         /// </summary>
         public bool Locked { get; }
@@ -52,14 +57,16 @@ namespace Hotfix.Framework.ObjectPool
         /// 初始化对象信息的新实例。
         /// </summary>
         /// <param name="name">对象名称。</param>
+        /// <param name="target">对象的目标真实对象。如GameObject。</param>
         /// <param name="locked">对象是否被加锁。</param>
         /// <param name="customCanDisposeFlag">对象自定义销毁检查标记。</param>
         /// <param name="priority">对象的优先级。</param>
         /// <param name="lastUseTime">对象上次使用时间。</param>
         /// <param name="spawnCount">对象的获取计数。</param>
-        public ObjectInfo(string name, bool locked, bool customCanDisposeFlag, int priority, DateTime lastUseTime, int spawnCount)
+        public ObjectInfo(string name, object target, bool locked, bool customCanDisposeFlag, int priority, DateTime lastUseTime, int spawnCount)
         {
             Name                 = name;
+            Target               = target;
             Locked               = locked;
             CustomCanDisposeFlag = customCanDisposeFlag;
             Priority             = priority;

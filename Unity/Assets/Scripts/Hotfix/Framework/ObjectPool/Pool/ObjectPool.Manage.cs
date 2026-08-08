@@ -183,7 +183,7 @@ namespace Hotfix.Framework.ObjectPool
             {
                 foreach (var obj in objectRang)
                 {
-                    results.Add(new ObjectInfo(obj.Name, obj.Locked, obj.CustomCanDisposeFlag, obj.Priority, obj.LastUseTime, obj.SpawnCount));
+                    results.Add(new ObjectInfo(obj.Name, obj.Target, obj.Locked, obj.CustomCanDisposeFlag, obj.Priority, obj.LastUseTime, obj.SpawnCount));
                 }
             }
 

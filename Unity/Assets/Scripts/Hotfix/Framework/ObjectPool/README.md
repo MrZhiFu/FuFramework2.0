@@ -336,6 +336,7 @@ public virtual void Clear()                        // 清理对象
 public readonly struct ObjectInfo
 {
     public string Name { get; }                    // 对象名称
+    public object Target { get; }                  // 目标真实对象（如 GameObject）
     public bool Locked { get; }                    // 是否被加锁
     public bool CustomCanDisposeFlag { get; }      // 自定义销毁标记
     public int Priority { get; }                   // 优先级
