@@ -759,7 +759,7 @@ var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
 GlobalModule.ReferencePoolModule.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
-pool.Register(entityInstanceObject, true);
+pool.Register(obj, true);
 var obj = pool.Spawn("EntityName");
 pool.Recycle(obj);
 ```

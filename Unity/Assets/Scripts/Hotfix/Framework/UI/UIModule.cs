@@ -68,7 +68,7 @@ namespace Hotfix.Framework.UI
         /// <summary>
         /// 界面实例对象池对象过期秒数
         /// </summary>
-        private const float UIInstanceExpireTime = 60f;
+        private const float PoolExpireTime = 60f;
 
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Hotfix.Framework.UI
 
             WinObjPoolAutoDisposeCheckInterval = AutoDisposeCheckInterval;
             WinObjPoolCapacity            = PoolCapacity;
-            WinObjPoolExpireTime          = UIInstanceExpireTime;
+            WinObjPoolExpireTime          = PoolExpireTime;
 
             // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
             SafeAreaHelper.Refresh();

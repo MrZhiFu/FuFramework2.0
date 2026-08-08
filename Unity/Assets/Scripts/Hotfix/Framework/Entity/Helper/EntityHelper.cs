@@ -39,12 +39,12 @@ namespace Hotfix.Framework.Entity
         /// <summary>
         /// 创建实体。
         /// </summary>
-        /// <param name="entityInstance">实体实例。</param>
+        /// <param name="entityGo">实体实例。</param>
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <returns>实体。</returns>
-        public Entity CreateEntity(object entityInstance, EntityGroup entityGroup)
+        public Entity CreateEntity(object entityGo, EntityGroup entityGroup)
         {
-            var go = entityInstance as GameObject;
+            var go = entityGo as GameObject;
             if (!go)
             {
                 FuLogger.LogError("[EntityHelper]创建实体失败，实体实例不是GameObject.");
@@ -59,8 +59,8 @@ namespace Hotfix.Framework.Entity
         /// 释放实体。
         /// </summary>
         /// <param name="entityAssetHandle">要释放的实体资源句柄。</param>
-        /// <param name="entityInstance">要释放的实体实例。</param>
-        public void ReleaseEntity(object entityAssetHandle, object entityInstance)
+        /// <param name="entityGo">要释放的实体实例。</param>
+        public void ReleaseEntity(object entityAssetHandle, object entityGo)
         {
             if (entityAssetHandle is not AssetHandle assetOperationHandle)
             {
@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Entity
             var assetPath = assetOperationHandle.GetAssetInfo().AssetPath; // 释放前取路径（_assetInfo 为构造时缓存）
             assetOperationHandle.Release();
             ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 池淘汰后显式卸载，避免 bundle 残留（AutoUnload 默认关闭）
-            Destroy(entityInstance as Object);
+            Destroy(entityGo as Object);
         }
     }
 }

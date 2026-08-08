@@ -120,7 +120,7 @@ UI 管理模块，继承自 ModuleBase，负责所有 UI 界面的统一管理�
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| WinObjPoolAutoReleaseInterval | float | 对象池自动释放间隔 |
+| WinObjPoolAutoDisposeCheckInterval | float | 对象池自动销毁检查间隔 |
 | WinObjPoolCapacity | int | 对象池容量 |
 | WinObjPoolExpireTime | float | 对象过期时间 |
 | GroupCount | int | 界面组数量 |

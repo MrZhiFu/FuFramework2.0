@@ -89,9 +89,9 @@ namespace Hotfix.Framework.Entity
         private ObjectPoolModule m_ObjectPoolModule;
 
         /// <summary>
-        /// 实体实例对象池根节点
+        /// 实体对象根节点
         /// </summary>
-        private Transform m_InstanceRoot;
+        private Transform m_EntityRoot;
 
         /// <summary>
         /// 获取实体数量。
@@ -133,9 +133,9 @@ namespace Hotfix.Framework.Entity
                 return;
             }
 
-            // 创建实体实例对象池根节点
-            m_InstanceRoot = new GameObject("Entity Instances").transform;
-            m_InstanceRoot.localScale = Vector3.one;
+            // 创建实体对象根节点
+            m_EntityRoot            = new GameObject("EntityObject").transform;
+            m_EntityRoot.localScale = Vector3.one;
 
             // 创建实体辅助器
             var entityHelperGo = new GameObject("Entity Helper");
@@ -300,7 +300,7 @@ namespace Hotfix.Framework.Entity
             }
 
             var entityGroupGo = new GameObject($"Entity Group - {groupName}");
-            entityGroupGo.transform.SetParent(m_InstanceRoot);
+            entityGroupGo.transform.SetParent(m_EntityRoot);
             entityGroupGo.transform.localScale = Vector3.one;
             var entityGroup = new EntityGroup(row, entityGroupGo, m_ObjectPoolModule);
             m_EntityGroupDict.Add(groupName, entityGroup);
@@ -513,12 +513,12 @@ namespace Hotfix.Framework.Entity
 
             // 创建一个加载实体资源的任务，先从对象池获取实体，没有才从资源加载
             var tcs               = new UniTaskCompletionSource<Entity>();
-            var entityInstanceObj = entityGroup.SpawnEntityInstanceObject(entityAssetName);
+            var entityObj = entityGroup.SpawnEntityObject(entityAssetName);
 
             // 实体额外信息
             var showEntityInfoEx = ShowEntityInfoEx.Create(entityLogicType, userData);
 
-            if (entityInstanceObj is null)
+            if (entityObj is null)
             {
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
@@ -558,13 +558,13 @@ namespace Hotfix.Framework.Entity
             // 实体资源已经加载完成，开始显示实体
             try
             {
-                InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityInstanceObj.Target, false, 1f, showEntityInfoEx);
+                InternalShowEntity(tcs, entityId, entityAssetName, entityGroup, entityObj.Target, false, 1f, showEntityInfoEx);
             }
             catch
             {
                 // 显示失败：若实体未登记（创建实体失败等），回收已获取的实例对象，避免占用对象池槽位
                 if (!HasEntity(entityId))
-                    entityGroup.RecycleEntityInstanceObject(entityInstanceObj);
+                    entityGroup.RecycleEntityObject(entityObj);
                 GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
                 throw;
             }
@@ -999,21 +999,21 @@ namespace Hotfix.Framework.Entity
             m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
 
             // 实例化实体
-            var entityInstanceGo     = m_EntityHelper.InstantiateEntity(entityAssetHandle);
-            var entityInstanceObject = EntityInstanceObject.Create(entityAssetName, entityAssetHandle, entityInstanceGo, m_EntityHelper);
-            showEntityInfo.EntityGroup.RegisterEntityInstanceObject(entityInstanceObject, true);
+            var entityGo     = m_EntityHelper.InstantiateEntity(entityAssetHandle);
+            var entityObject = EntityObject.Create(entityAssetName, entityAssetHandle, entityGo, m_EntityHelper);
+            showEntityInfo.EntityGroup.RegisterEntityObject(entityObject, true);
 
             // 实体资源已经加载完成，开始显示实体
             var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
             try
             {
-                InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityInstanceObject.Target, true, progress, showEntityInfoEx);
+                InternalShowEntity(tcs, showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup, entityObject.Target, true, progress, showEntityInfoEx);
             }
             catch (Exception exception)
             {
                 // 显示失败：若实体未登记（创建实体失败等），回收已注册的实例对象，避免占用对象池槽位；并确保 tcs 完成、释放 showEntityInfo
                 if (!HasEntity(showEntityInfo.EntityId))
-                    showEntityInfo.EntityGroup.RecycleEntityInstanceObject(entityInstanceObject);
+                    showEntityInfo.EntityGroup.RecycleEntityObject(entityObject);
 
                 GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
                 tcs.TrySetException(exception);
@@ -1055,7 +1055,7 @@ namespace Hotfix.Framework.Entity
             exception = new InvalidOperationException($"[EntityModule]加载实体资源失败, 实体资源名称 '{entityAssetName}', 加载状态 '{status}', 错误信息 '{errorMessage}'.");
 
             // 发送显示实体失败事件（事件参数期望 ShowEntityInfoEx，取 UserData 中的）
-            var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;
+            var showEntityInfoEx           = showEntityInfo.UserData as ShowEntityInfoEx;
             var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), showEntityInfoEx);
             m_EventModule.Broadcast(this, showEntityFailureEventArgs);
 
@@ -1084,17 +1084,17 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityId">实体编号。</param>
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroup">实体组。</param>
-        /// <param name="entityInstance">实体实例。</param>
-        /// <param name="isNewIns">是否是新实例。</param>
+        /// <param name="entityGo">实体实例。</param>
+        /// <param name="isNewEntity">是否是新实例。</param>
         /// <param name="progress">加载进度。</param>
         /// <param name="showEntityInfoEx">显示的实体额外信息。</param>
-        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityInstance, bool isNewIns, float progress,
+        private void InternalShowEntity(UniTaskCompletionSource<Entity> tcs, int entityId, string entityAssetName, EntityGroup entityGroup, object entityGo, bool isNewEntity, float progress,
                                         ShowEntityInfoEx showEntityInfoEx)
         {
             try
             {
                 // 创建实体
-                var entity = m_EntityHelper.CreateEntity(entityInstance, entityGroup);
+                var entity = m_EntityHelper.CreateEntity(entityGo, entityGroup);
                 if (entity is null)
                 {
                     var exception = new InvalidOperationException("[EntityModule] 创建实体失败，实体帮助器返回的实体为空!");
@@ -1108,7 +1108,7 @@ namespace Hotfix.Framework.Entity
 
                 // 实体初始化
                 entityInfo.Status = EEntityStatus.WillInit;
-                entity.OnInit(entityId, entityAssetName, entityGroup, isNewIns, showEntityInfoEx);
+                entity.OnInit(entityId, entityAssetName, entityGroup, isNewEntity, showEntityInfoEx);
 
                 // 实体初始化完成，加入到实体组
                 entityInfo.Status = EEntityStatus.Inited;

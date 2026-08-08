@@ -34,7 +34,7 @@ namespace Hotfix.Framework.UI
         protected internal override void OnDispose()
         {
             if (Target is not WinBase winBase)
-                throw new InvalidOperationException("[UIInstanceObject] 需要销毁的目标对象不是界面基类WinBase");
+                throw new InvalidOperationException("[WinObject] 需要销毁的目标对象不是界面基类WinBase");
 
             try
             {
@@ -42,7 +42,7 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception e)
             {
-                FuLogger.LogWarning($"[UIInstanceObject] 销毁 WinUI 时出现异常: {e.Message}");
+                FuLogger.LogWarning($"[WinObject] 销毁 WinUI 时出现异常: {e.Message}");
             }
 
             winBase._OnDispose();

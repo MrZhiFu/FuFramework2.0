@@ -19,7 +19,7 @@ namespace Hotfix.Framework.Entity
         /// <summary>
         /// 实体实例对象池。
         /// </summary>
-        private readonly ObjectPool<EntityInstanceObject> m_InstancePool;
+        private readonly ObjectPool<EntityObject> m_EntityPool;
 
         /// <summary>
         /// 实体组实体链表。
@@ -50,37 +50,37 @@ namespace Hotfix.Framework.Entity
         /// <summary>
         /// 获取或设置实体组实例对象池自动销毁检查的间隔秒数。
         /// </summary>
-        public float InstanceAutoDisposeCheckInterval
+        public float PoolAutoDisposeCheckInterval
         {
-            get => m_InstancePool.AutoDisposeCheckInterval;
-            set => m_InstancePool.AutoDisposeCheckInterval = value;
+            get => m_EntityPool.AutoDisposeCheckInterval;
+            set => m_EntityPool.AutoDisposeCheckInterval = value;
         }
 
         /// <summary>
         /// 获取或设置实体组实例对象池的容量。
         /// </summary>
-        public int InstanceCapacity
+        public int PoolCapacity
         {
-            get => m_InstancePool.Capacity;
-            set => m_InstancePool.Capacity = value;
+            get => m_EntityPool.Capacity;
+            set => m_EntityPool.Capacity = value;
         }
 
         /// <summary>
         /// 获取或设置实体组实例对象池对象过期秒数。
         /// </summary>
-        public float InstanceExpireTime
+        public float PoolExpireTime
         {
-            get => m_InstancePool.ExpireTime;
-            set => m_InstancePool.ExpireTime = value;
+            get => m_EntityPool.ExpireTime;
+            set => m_EntityPool.ExpireTime = value;
         }
 
         /// <summary>
         /// 获取或设置实体组实例对象池的优先级。
         /// </summary>
-        public int InstancePriority
+        public int PoolObjectPriority
         {
-            get => m_InstancePool.Priority;
-            set => m_InstancePool.Priority = value;
+            get => m_EntityPool.Priority;
+            set => m_EntityPool.Priority = value;
         }
 
         /// <summary>
@@ -96,10 +96,10 @@ namespace Hotfix.Framework.Entity
             Name    = row.Id.ToString();
             GroupGo = groupGo ?? throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
-            var poolName = $"Entity Instance Pool ({Name})";
-            m_InstancePool = objectPoolModule.CreateObjectPool<EntityInstanceObject>(poolName, row.PoolCapacity, row.PoolExpireTime, row.PoolPriority);
+            var poolName = $"EntityPool-{Name}";
+            m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>(poolName, row.PoolCapacity, row.PoolExpireTime, row.PoolPriority);
 
-            m_InstancePool.AutoDisposeCheckInterval = row.PoolAutoDisposeInterval;
+            m_EntityPool.AutoDisposeCheckInterval = row.PoolAutoDisposeInterval;
 
             m_Entities   = new FuLinkedList<Entity>();
             m_CachedNode = null;
@@ -273,49 +273,49 @@ namespace Hotfix.Framework.Entity
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="inUse">对象注册时是否已处于使用中。</param>
-        public void RegisterEntityInstanceObject(EntityInstanceObject obj, bool inUse) => m_InstancePool.Register(obj, inUse);
+        public void RegisterEntityObject(EntityObject obj, bool inUse) => m_EntityPool.Register(obj, inUse);
 
         /// <summary>
         /// 生成一个指定实体实例对象。
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public EntityInstanceObject SpawnEntityInstanceObject(string name) => m_InstancePool.Spawn(name);
+        public EntityObject SpawnEntityObject(string name) => m_EntityPool.Spawn(name);
 
         /// <summary>
         /// 回收指定实体实例对象。
         /// </summary>
         /// <param name="entity"></param>
-        public void RecycleEntity(Entity entity) => m_InstancePool.Recycle(entity.Go);
+        public void RecycleEntity(Entity entity) => m_EntityPool.Recycle(entity.Go);
 
         /// <summary>
         /// 回收实体实例对象到对象池。
         /// </summary>
-        /// <param name="entityInstanceObject">要回收的实体实例对象。</param>
-        public void RecycleEntityInstanceObject(EntityInstanceObject entityInstanceObject) => m_InstancePool.Recycle(entityInstanceObject);
+        /// <param name="entityObject">要回收的实体实例对象。</param>
+        public void RecycleEntityObject(EntityObject entityObject) => m_EntityPool.Recycle(entityObject);
 
         /// <summary>
         /// 设置实体实例对象是否被锁定。
         /// </summary>
-        /// <param name="entityInstance"></param>
+        /// <param name="entityGo"></param>
         /// <param name="locked"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void SetEntityInstanceLocked(object entityInstance, bool locked)
+        public void SetEntityObjectLocked(object entityGo, bool locked)
         {
-            if (entityInstance is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
-            m_InstancePool.SetLocked(entityInstance, locked);
+            if (entityGo is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
+            m_EntityPool.SetLocked(entityGo, locked);
         }
 
         /// <summary>
         /// 设置实体实例对象优先级。
         /// </summary>
-        /// <param name="entityInstance"></param>
+        /// <param name="entityGo"></param>
         /// <param name="priority"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void SetEntityInstancePriority(object entityInstance, int priority)
+        public void SetEntityObjectPriority(object entityGo, int priority)
         {
-            if (entityInstance is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
-            m_InstancePool.SetPriority(entityInstance, priority);
+            if (entityGo is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
+            m_EntityPool.SetPriority(entityGo, priority);
         }
     }
 }

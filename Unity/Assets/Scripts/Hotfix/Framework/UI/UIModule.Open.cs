@@ -145,20 +145,20 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="win">界面实例。</param>
         /// <param name="serialId">界面序列号。</param>
-        /// <param name="isNewIns">是否是新实例。</param>
+        /// <param name="isNewWin">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>创建成功返回界面实例；失败时回收实例并返回已存在界面或 null。</returns>
-        private T CreateFuiWin<T>(T win, int serialId, bool isNewIns, object userData = null) where T : WinBase, new()
+        private T CreateFuiWin<T>(T win, int serialId, bool isNewWin, object userData = null) where T : WinBase, new()
         {
             try
             {
                 if (win == null) throw new InvalidOperationException($"[UIModule] 创建界面实例{typeof(T).Name}失败.");
 
                 // 创建FUI界面。复用对象时直接使用已有 WinUI，避免每次新建 FairyGUI 对象造成泄漏。
-                var winUI = isNewIns ? UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent : win.WinUI;
+                var winUI = isNewWin ? UIPackage.CreateObject(win.PackageName, win.WinName) as GComponent : win.WinUI;
 
                 // 初始化界面
-                win.Init(serialId, winUI, isNewIns, userData);
+                win.Init(serialId, winUI, isNewWin, userData);
 
                 // FUI界面加入界面组
                 var uiGroup = win.UIGroup;

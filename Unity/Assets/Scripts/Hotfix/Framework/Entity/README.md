@@ -7,7 +7,7 @@ FuFramework Entity 模块是游戏框架的实体管理系统，提供实体的�
 ## 2. 核心特性
 
 - **显示逻辑分离**：`Entity` (MonoBehaviour) 负责显示，`EntityLogic` 负责逻辑，通过委托模式解耦
-- **对象池管理**：实体实例通过 `EntityInstanceObject` + `ObjectPool` 实现高效复用
+- **对象池管理**：实体实例通过 `EntityObject` + `ObjectPool` 实现高效复用
 - **完整生命周期**：覆盖从 Unknown 到 Recycled 的 9 个状态阶段
 - **实体分组**：通过 `EntityGroup` 管理组内实体和对象池
 - **父子依附**：支持实体间的父子依附关系（AttachEntity / DetachEntity）
@@ -195,7 +195,7 @@ void GetChildEntities(Entity parentEntity, List<Entity> results)
 
 ```csharp
 void OnInit(int entityId, string entityAssetName, EntityGroup entityGroup,
-    bool isNewInstance, ShowEntityInfoEx showEntityInfoEx)
+    bool isNewEntity, ShowEntityInfoEx showEntityInfoEx)
 void OnUpdate(float deltaTime, float unscaledDeltaTime)
 void OnShow(ShowEntityInfoEx entityInfoEx)
 void OnHide(bool isShutdown, object userData)
@@ -261,10 +261,10 @@ protected virtual void InternalSetVisible(bool visible)
 | `Name` | `string` | 组名称 |
 | `GroupGo` | `GameObject` | 组对应的 GameObject |
 | `EntityCount` | `int` | 组内实体数量 |
-| `InstanceAutoReleaseInterval` | `float` | 实例池自动释放间隔 |
-| `InstanceCapacity` | `int` | 实例池容量 |
-| `InstanceExpireTime` | `float` | 实例过期时间 |
-| `InstancePriority` | `int` | 实例优先级 |
+| `PoolAutoDisposeCheckInterval` | `float` | 实例池自动销毁检查间隔 |
+| `PoolCapacity` | `int` | 实例池容量 |
+| `PoolExpireTime` | `float` | 实例过期时间 |
+| `PoolObjectPriority` | `int` | 实例优先级 |
 
 **核心方法：**
 
@@ -286,11 +286,11 @@ void AddEntity(Entity entity)
 void RemoveEntity(Entity entity)
 
 // 对象池
-void RegisterEntityInstanceObject(EntityInstanceObject obj, bool spawned)
-EntityInstanceObject SpawnEntityInstanceObject(string name)
+void RegisterEntityObject(EntityObject obj, bool spawned)
+EntityObject SpawnEntityObject(string name)
 void RecycleEntity(Entity entity)
-void SetEntityInstanceLocked(object entityInstance, bool locked)
-void SetEntityInstancePriority(object entityInstance, int priority)
+void SetEntityObjectLocked(object entityGo, bool locked)
+void SetEntityObjectPriority(object entityGo, int priority)
 ```
 
 ### 4.5 EEntityStatus
@@ -329,7 +329,7 @@ void AddChildEntity(Entity childEntity)
 void RemoveChildEntity(Entity childEntity)
 ```
 
-### 4.7 EntityInstanceObject
+### 4.7 EntityObject
 
 实体实例对象（继承 `ObjectBase`），包装实体资源和辅助器，用于对象池管理。
 
@@ -346,8 +346,8 @@ void RemoveChildEntity(Entity childEntity)
 
 ```csharp
 GameObject InstantiateEntity(object entityAssetHandle)
-Entity CreateEntity(object entityInstance, EntityGroup entityGroup)
-void ReleaseEntity(object entityAssetHandle, object entityInstance)
+Entity CreateEntity(object entityGo, EntityGroup entityGroup)
+void ReleaseEntity(object entityAssetHandle, object entityGo)
 ```
 
 ### 4.10 相关事件
@@ -468,9 +468,9 @@ if (m_EntityModule.HasEntityGroup("BulletGroup"))
     var group = m_EntityModule.GetEntityGroup("BulletGroup");
 
     // 配置对象池参数
-    group.InstanceCapacity = 50;
-    group.InstanceExpireTime = 60f;
-    group.InstancePriority = 0;
+    group.PoolCapacity = 50;
+    group.PoolExpireTime = 60f;
+    group.PoolObjectPriority = 0;
 
     // 查询组内实体
     var entities = group.GetAllEntities();
@@ -488,7 +488,7 @@ Entity/
 │   ├── EntityGroup.cs                    # 实体组
 │   ├── EntityInfo.cs                     # 实体信息
 │   ├── EntityLogic.cs                    # 实体逻辑基类
-│   ├── EntityInstanceObject.cs           # 实体实例对象 (对象池)
+│   ├── EntityObject.cs           # 实体实例对象 (对象池)
 │   ├── EEntityStatus.cs                  # 实体状态枚举
 │   ├── AttachEntityInfo.cs              # 附加实体信息
 │   ├── ShowEntityInfo.cs                 # 显示实体信息

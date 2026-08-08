@@ -109,9 +109,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         /// <param name="serialId">界面序列编号。</param>
         /// <param name="winUI">界面实例。</param>
-        /// <param name="isNewIns">是否是新实例。</param>
+        /// <param name="isNewWin">是否是新实例。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public void Init(int serialId, GComponent winUI, bool isNewIns, object userData = null)
+        public void Init(int serialId, GComponent winUI, bool isNewWin, object userData = null)
         {
             SerialId = serialId;
             UserData = userData;
@@ -125,7 +125,7 @@ namespace Hotfix.Framework.UI
             // 加载 UI 配置表（通过 Get(string) 方法查表；StrKeyDataDict 为 protected，外部不可直接访问）
             UIConfig = ConfigModule.Instance?.GetConfig<TbUIConfig>()?.Get(WinName);
 
-            if (!isNewIns) return;
+            if (!isNewWin) return;
 
             // 创建UI事件注册器，事件注册器，计时器注册器
             UIEventRegister = FuiEventRegister.Create();
