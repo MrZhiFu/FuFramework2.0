@@ -315,11 +315,12 @@ namespace FuFramework.ReferencePool.Editor
 
             var unusedCount = (int)(m_InfoUnusedReferenceCountProperty?.GetValue(info) ?? 0);
             var usingCount  = (int)(m_InfoUsingReferenceCountProperty?.GetValue(info)    ?? 0);
+            var totalCount  = usingCount + unusedCount;
 
             // 引用池类型名（Foldout 标题）用青色高亮
             var foldoutOldColor = GUI.color;
             GUI.color             = Color.cyan;
-            m_FoldoutStates[poolType] = EditorGUILayout.Foldout(isOpen, $"{typeName} ({usingCount}/{unusedCount})", true);
+            m_FoldoutStates[poolType] = EditorGUILayout.Foldout(isOpen, $"{typeName} ({usingCount}/{totalCount})", true);
             GUI.color             = foldoutOldColor;
             if (!m_FoldoutStates[poolType]) return;
 
