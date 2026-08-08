@@ -28,7 +28,7 @@ ModuleBase (框架模块基类)
     └── ReferencePoolModule (引用池管理模块，实例模块)
 
 ReferencePoolModule (实例模块)
-    ├── ReferenceCollection (内部类)   # 每个类型对应一个引用集合
+    ├── ReferenceCollection (顶层 internal 类) # 每个类型对应一个引用集合
     │   ├── m_FreeStack: Stack<IReference>  # 闲置引用栈
     │   ├── UsingReferenceCount            # 正在使用的引用数量
     │   ├── UnusedReferenceCount           # 闲置引用数量
@@ -238,14 +238,14 @@ GlobalModule.ReferencePoolModule.Acquire<T>();
 GlobalModule.ReferencePoolModule.Recycle(reference);
 ```
 
-### 4.3 ReferenceCollection (内部类)
+### 4.3 ReferenceCollection (顶层 internal 类)
 
 特定类型的引用集合管理，每个类型对应一个 ReferenceCollection。
 
 **核心功能：**
 
 ```csharp
-private sealed class ReferenceCollection
+internal sealed class ReferenceCollection
 {
     // 类型信息
     public Type RefType { get; }
@@ -637,11 +637,12 @@ public class SafeObjectUsage : MonoBehaviour
 
 ```
 ReferencePool/
-├── ReferencePoolModule.cs                       # 引用池管理模块
-├── ReferencePoolModule.ReferenceCollection.cs   # 引用集合实现（Stack）
-├── IReference.cs                                # 引用接口
-├── ReferencePoolInfo.cs                         # 引用池信息结构体
-└── README.md                                    # 本文档
+├── ReferencePoolModule.cs                     # 引用池管理模块（内部管理 + 生命周期）
+├── ReferencePoolModule.API.cs                 # 引用池管理模块公共 API
+├── ReferenceCollection.cs                     # 引用集合（Stack），顶层 internal 类
+├── IReference.cs                              # 引用接口
+├── ReferencePoolInfo.cs                       # 引用池信息结构体
+└── README.md                                  # 本文档
 ```
 
 ## 7. 依赖
