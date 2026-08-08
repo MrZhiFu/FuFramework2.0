@@ -22,7 +22,14 @@ namespace FuFramework.RedDot.Editor
         [MenuItem("FuFramework/调试/红点调试面板")]
         public static void ShowWindow()
         {
-            GetWindow<RedDotDebugWindow>("红点调试");
+            var window = GetWindow<RedDotDebugWindow>("红点调试");
+
+            // 初始位置居中显示，初始宽高 1000x800
+            const float width  = 1000f;
+            const float height = 800f;
+            var x = (Screen.currentResolution.width  - width)  / 2f;
+            var y = (Screen.currentResolution.height - height) / 2f;
+            window.position = new Rect(x, y, width, height);
         }
 
         #region 私有字段

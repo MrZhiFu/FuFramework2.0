@@ -25,7 +25,15 @@ namespace FuFramework.ObjectPool.Editor
         [MenuItem("FuFramework/调试/对象池调试面板")]
         public static void ShowWindow()
         {
-            GetWindow<ObjectPoolModuleWindow>("对象池调试");
+            var window = GetWindow<ObjectPoolModuleWindow>("对象池调试");
+            window.minSize = new Vector2(800, 800);
+
+            // 初始位置居中显示
+            const float width  = 1000f;
+            const float height = 600f;
+            var x = (Screen.currentResolution.width  - width)  / 2f;
+            var y = (Screen.currentResolution.height - height) / 2f;
+            window.position = new Rect(x, y, width, height);
         }
 
         #region 私有字段
@@ -110,11 +118,6 @@ namespace FuFramework.ObjectPool.Editor
         private PropertyInfo m_PoolNameProperty;
 
         /// <summary>
-        /// 对象池完整名称属性
-        /// </summary>
-        private PropertyInfo m_PoolFullNameProperty;
-
-        /// <summary>
         /// 对象池对象类型属性
         /// </summary>
         private PropertyInfo m_PoolObjectTypeProperty;
@@ -147,7 +150,7 @@ namespace FuFramework.ObjectPool.Editor
         /// <summary>
         /// 对象池过期时间属性
         /// </summary>
-        private PropertyInfo m_PoolExpireTimeProperty;
+        private PropertyInfo m_PoolExpireTimeAfterIdleProperty;
 
         /// <summary>
         /// 对象池优先级属性
@@ -370,13 +373,14 @@ namespace FuFramework.ObjectPool.Editor
         {
             if (pool == null) return;
 
-            var fullName  = m_PoolFullNameProperty?.GetValue(pool) as string ?? "<Unknown>";
-            var poolCount = (int)(m_PoolCountProperty?.GetValue(pool) ?? 0);
+            var poolName        = m_PoolNameProperty?.GetValue(pool) as string ?? "<Unknown>";
+            var poolCount       = (int)(m_PoolCountProperty?.GetValue(pool) ?? 0);
+            var poolUsingCount  = CountInUseObjects(pool);
 
             // 搜索过滤：池名或池内对象名匹配才展示
             if (!string.IsNullOrEmpty(m_SearchFilter))
             {
-                if (!fullName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+                if (!poolName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
                 {
                     var objectInfos = GetPoolInfos(pool);
                     var objectMatch = false;
@@ -405,10 +409,10 @@ namespace FuFramework.ObjectPool.Editor
                 m_FoldoutStates[pool] = true;
             }
 
-            // 对象池完整名称（Foldout 标题）用青色高亮
+            // 对象池名称（Foldout 标题）用青色高亮
             var foldoutOldColor = GUI.color;
             GUI.color             = Color.cyan;
-            m_FoldoutStates[pool] = EditorGUILayout.Foldout(isOpen, $"{fullName} (数量: {poolCount})", true);
+            m_FoldoutStates[pool] = EditorGUILayout.Foldout(isOpen, $"{poolName} ({poolUsingCount}/{poolCount})", true);
             GUI.color             = foldoutOldColor;
             if (!m_FoldoutStates[pool]) return;
 
@@ -464,7 +468,7 @@ namespace FuFramework.ObjectPool.Editor
             var allowInUse    = (bool)(m_PoolAllowSpawnInUseProperty?.GetValue(pool)           ?? false);
             var autoDispose   = (float)(m_PoolAutoDisposeCheckIntervalProperty?.GetValue(pool) ?? 0f);
             var capacity      = (int)(m_PoolCapacityProperty?.GetValue(pool)                   ?? 0);
-            var expireTime    = (float)(m_PoolExpireTimeProperty?.GetValue(pool)               ?? 0f);
+            var expireTime    = (float)(m_PoolExpireTimeAfterIdleProperty?.GetValue(pool)      ?? 0f);
             var priority      = (int)(m_PoolPriorityProperty?.GetValue(pool)                   ?? 0);
             var canDisposeCnt = (int)(m_PoolCanDisposeCountProperty?.GetValue(pool)            ?? 0);
 
@@ -475,7 +479,7 @@ namespace FuFramework.ObjectPool.Editor
             DrawColumnSeparator();
             GUILayout.Label($"可释放数量: {canDisposeCnt}", GUILayout.Width(120));
             DrawColumnSeparator();
-            GUILayout.Label($"对象过期时间: {FormatTime(expireTime)}", GUILayout.Width(120));
+            GUILayout.Label($"闲置后过期时间: {FormatTime(expireTime)}", GUILayout.Width(120));
             DrawColumnSeparator();
             GUILayout.Label($"销毁检查间隔: {FormatTime(autoDispose)}", GUILayout.Width(120));
             DrawColumnSeparator();
@@ -666,14 +670,13 @@ namespace FuFramework.ObjectPool.Editor
 
             // ObjectPoolBase 成员
             m_PoolNameProperty                     = m_ObjectPoolBaseType.GetProperty("Name",                     BindingFlags.Public | BindingFlags.Instance);
-            m_PoolFullNameProperty                 = m_ObjectPoolBaseType.GetProperty("FullName",                 BindingFlags.Public | BindingFlags.Instance);
             m_PoolObjectTypeProperty               = m_ObjectPoolBaseType.GetProperty("ObjectType",               BindingFlags.Public | BindingFlags.Instance);
             m_PoolCountProperty                    = m_ObjectPoolBaseType.GetProperty("Count",                    BindingFlags.Public | BindingFlags.Instance);
             m_PoolCanDisposeCountProperty          = m_ObjectPoolBaseType.GetProperty("CanDisposeCount",          BindingFlags.Public | BindingFlags.Instance);
             m_PoolAllowSpawnInUseProperty          = m_ObjectPoolBaseType.GetProperty("AllowSpawnInUse",          BindingFlags.Public | BindingFlags.Instance);
             m_PoolAutoDisposeCheckIntervalProperty = m_ObjectPoolBaseType.GetProperty("AutoDisposeCheckInterval", BindingFlags.Public | BindingFlags.Instance);
             m_PoolCapacityProperty                 = m_ObjectPoolBaseType.GetProperty("Capacity",                 BindingFlags.Public | BindingFlags.Instance);
-            m_PoolExpireTimeProperty               = m_ObjectPoolBaseType.GetProperty("ExpireTime",               BindingFlags.Public | BindingFlags.Instance);
+            m_PoolExpireTimeAfterIdleProperty      = m_ObjectPoolBaseType.GetProperty("ExpireTimeAfterIdle",     BindingFlags.Public | BindingFlags.Instance);
             m_PoolPriorityProperty                 = m_ObjectPoolBaseType.GetProperty("Priority",                 BindingFlags.Public | BindingFlags.Instance);
             m_PoolDisposeAllUnusedMethod           = m_ObjectPoolBaseType.GetMethod("DisposeAllUnused",    BindingFlags.Public        | BindingFlags.Instance);
             m_PoolDisposeOverCapacityMethod        = m_ObjectPoolBaseType.GetMethod("DisposeOverCapacity", BindingFlags.Public        | BindingFlags.Instance);
@@ -707,14 +710,13 @@ namespace FuFramework.ObjectPool.Editor
             m_ModuleDisposeAllUnusedMethod         = null;
             m_ModuleDisposeOverCapacityMethod      = null;
             m_PoolNameProperty                     = null;
-            m_PoolFullNameProperty                 = null;
             m_PoolObjectTypeProperty               = null;
             m_PoolCountProperty                    = null;
             m_PoolCanDisposeCountProperty          = null;
             m_PoolAllowSpawnInUseProperty          = null;
             m_PoolAutoDisposeCheckIntervalProperty = null;
             m_PoolCapacityProperty                 = null;
-            m_PoolExpireTimeProperty               = null;
+            m_PoolExpireTimeAfterIdleProperty      = null;
             m_PoolPriorityProperty                 = null;
             m_PoolDisposeAllUnusedMethod           = null;
             m_PoolDisposeOverCapacityMethod        = null;
@@ -749,6 +751,28 @@ namespace FuFramework.ObjectPool.Editor
         {
             var result = m_PoolGetAllObjectInfosMethod?.Invoke(pool, null);
             return result as IEnumerable;
+        }
+
+        /// <summary>
+        /// 统计对象池中正在使用（IsInUse）的对象数量
+        /// </summary>
+        /// <param name="pool">对象池实例</param>
+        /// <returns>正在使用的对象数量</returns>
+        private int CountInUseObjects(object pool)
+        {
+            var count = 0;
+            var infos = GetPoolInfos(pool);
+            if (infos == null) return 0;
+
+            foreach (var info in infos)
+            {
+                if (info == null) continue;
+
+                if (m_InfoIsInUseProperty?.GetValue(info) is bool isInUse && isInUse)
+                    count++;
+            }
+
+            return count;
         }
 
         /// <summary>
