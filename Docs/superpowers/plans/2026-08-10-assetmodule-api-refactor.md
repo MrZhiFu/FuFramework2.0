@@ -299,45 +299,62 @@ git commit -m "[AI]refactor: 移除空壳 AssetModuleInspector（调试界面已
 
 ---
 
-### Task 4: 同步 AssetModule README 接口清单
+### Task 4: 同步 AssetModule README 接口清单（至最终代码形态）
 
 **Files:**
 - Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md`
 
 **Interfaces:**
-- Consumes: Task 2 重构后的实际接口清单
-- Produces: README 与代码一致（无已删接口残留）
+- Consumes: 重构后最终代码形态——9 个 public 方法（`LoadAssetAsync` ×3 / `LoadSceneAsync` / `InstantiateAsync` / `ReleaseInstantiate` / `UnloadAsset` / `GetAssetInfo` / `HasAssetPath`）；**无公开属性**（`DefaultPackageName` 私有，`PlayMode`/`AsyncSystemMaxSlicePerFrame`/`DownloadingMaxNum`/`FailedTryAgainNum` 已删）；**无包初始化接口**（InitPackageAsync 组已删，包初始化由 AOT `LaunchAssetHelper` 完成）；`GetAssetInfo` 默认包未就绪返回 null
+- Produces: README 与最终代码一致（无已删接口残留、无过期语义）
 
-- [ ] **Step 1: 更新「主要属性」表**
+- [ ] **Step 1: 删除「主要属性」表**
 
-删除 `DownloadingMaxNum`、`FailedTryAgainNum` 两行；保留 `PlayMode`/`DefaultPackageName`/`AsyncSystemMaxSlicePerFrame` 但标注为内部属性（`public` → `private`，仅模块内部读取）。
+AssetModule 重构后无任何公开属性（`PlayMode`/`AsyncSystemMaxSlicePerFrame`/`DownloadingMaxNum`/`FailedTryAgainNum` 已删，`DefaultPackageName` 为私有），整表删除。
 
 - [ ] **Step 2: 更新「资源加载方法」**
 
-- 异步加载资源块：保留 `LoadAssetAsync` 的 3 个 string 重载；删除 `LoadAssetAsync(AssetInfo)`、全部 `LoadAllAssetsAsync` 4 行、全部 `LoadSubAssetsAsync` 4 行、`LoadRawFileAsync` 2 行。
-- 异步加载场景块：保留 `LoadSceneAsync(string, ...)`；删除 `LoadSceneAsync(AssetInfo, ...)` 行。
+- 异步加载资源块：仅保留 `LoadAssetAsync` 3 个 string 重载；删除 `LoadAssetAsync(AssetInfo)`、`LoadAllAssetsAsync` ×4、`LoadSubAssetsAsync` ×4、`LoadRawFileAsync` ×2。
+- 异步加载场景块：仅保留 `LoadSceneAsync(string, ...)`；删除 `LoadSceneAsync(AssetInfo, ...)`。
 - 实例化块：`InstantiateAsync` 与 `ReleaseInstantiate` 保留不变。
 
-- [ ] **Step 3: 更新「资源包管理」**
+- [ ] **Step 3: 「资源包管理」整节改写为「资源查询」**
 
-删除 `SetDefaultPackage`（已过期、代码中不存在）、`HasPackage`、`GetPackage`、`CreateResourceDownloader`、`IsNeedDownload` ×2、`GetAssetInfos` ×2、`InitPackageAsync`/`InitDefaultPackageAsync`/`CreatePackage`/`TryGetPackage`（热更侧包初始化子系统已整体删除，见 Task 5）行；保留 `GetAssetInfo`/`HasAssetPath`；`GetDefaultPackage` 现为私有，从 README 移除。
+删除 `InitPackageAsync`/`InitDefaultPackageAsync`/`CreatePackage`/`TryGetPackage`/`GetPackage`/`HasPackage`/`SetDefaultPackage`/`CreateResourceDownloader`/`GetDefaultPackage`/`IsNeedDownload` ×2/`GetAssetInfos` ×2（全部已删或私有）；节标题改为「资源查询」，仅保留：
 
-- [ ] **Step 4: 更新「资源卸载」**
+```csharp
+AssetInfo GetAssetInfo(string path)   // 默认包未就绪返回 null
+bool HasAssetPath(string path)
+```
 
-仅保留 `UnloadAsset(string assetPath)` 1 行；删除 `UnloadAsset(package,path)` 双参、`UnloadAllAssetsAsync`、`UnloadUnusedAssetsAsync`、`ClearAllBundleFilesAsync`、`ClearUnusedBundleFilesAsync`（这些接口已删或已收窄私有）。
+- [ ] **Step 4: 「资源卸载」仅保留一行**
 
-- [ ] **Step 5: 更新「使用示例」**
+仅保留 `void UnloadAsset(string assetPath)`；删除双参 `UnloadAsset(package,path)`、`UnloadAllAssetsAsync`、`UnloadUnusedAssetsAsync`、`ClearAllBundleFilesAsync`、`ClearUnusedBundleFilesAsync`。
 
-- 「加载原生文件」示例（使用已删的 `LoadRawFileAsync`）→ 删除，或替换为 `LoadAssetAsync<TextAsset>` + `GetAssetObject` 取 `bytes` 的等价写法。
-- 「子资源加载」示例（使用已删的 `LoadSubAssetsAsync<Sprite>`）→ 删除。
-- 「初始化资源包」示例（使用已删的 `InitPackageAsync`）→ 删除。
-- 核对其余示例（`LoadAssetAsync<GameObject>`/`InstantiateAsync`/`LoadSceneAsync`/`AssetLoadRegister`）均为保留接口，不改。
+- [ ] **Step 5: 更新「初始化流程」**
 
-- [ ] **Step 6: 提交**
+原文「从 AssetSetting 读取配置参数 → 初始化 YooAsset」已过时（AssetModule 不再初始化 YooAsset/默认包）。改为：**YooAsset 与默认资源包初始化由 AOT 启动流程 `LaunchAssetHelper` 完成**，AssetModule 仅缓存默认包名、提供资源加载/卸载/查询。
+
+- [ ] **Step 6: 更新「使用示例」**
+
+- 删除「初始化资源包」示例（`InitPackageAsync`）。
+- 删除「加载原生文件」示例（`LoadRawFileAsync`）。
+- 删除「子资源加载」示例（`LoadSubAssetsAsync<Sprite>`）。
+- 保留「异步加载资源」（`LoadAssetAsync<GameObject>`/`InstantiateAsync`/`AssetLoadRegister`）与「加载场景」（`LoadSceneAsync`）。
+
+- [ ] **Step 7: 修正 GetAssetInfo 语义注释**
+
+README 中凡描述 `GetAssetInfo`「默认包必须已初始化，否则同步抛 YooPackageInvalidException」处，改为「默认包未就绪时返回 null」。
+
+- [ ] **Step 8: 修正「注意事项」中引用已删接口的条目**
+
+`注意事项`第 1/2/4/6/7 条引用了 `UnloadAllAssetsAsync`/`UnloadUnusedAssetsAsync`/`ClearAllBundleFilesAsync`/`ClearUnusedBundleFilesAsync`/`IsNeedDownload`/`GetAssetInfos` 等已删接口，删除或改写为仍存在的接口（`UnloadAsset`/`AssetLoadRegister`）。逐条核对，确保 README 全文不再出现已删 API 名。
+
+- [ ] **Step 9: 提交**
 
 ```bash
 git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md"
-git commit -m "[AI]docs: 同步 AssetModule README 接口清单（清理已删接口、标注私有属性）"
+git commit -m "[AI]docs: 同步 AssetModule README 至最终 9 接口（删已删接口、改初始化流程与 GetAssetInfo 语义）"
 ```
 
 ---
