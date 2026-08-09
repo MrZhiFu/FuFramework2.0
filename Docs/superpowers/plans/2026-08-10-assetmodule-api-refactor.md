@@ -421,6 +421,79 @@ git commit -m "[AI]refactor: 删除热更侧包初始化子系统（InitPackageA
 
 ---
 
+### Task 6: 移除 `GetDefaultPackage()`，改用 `YooAssets.TryGetPackage` + 判空
+
+> 执行期新增（2026-08-10）。用户确认：`GetDefaultPackage()` 用 `YooAssets.GetPackage`（包不存在**同步抛异常**），改为 `YooAssets.TryGetPackage(DefaultPackageName, out var package)` + 判空，防御风格与 `UnloadAsset`/`TryGetReadyPackage` 一致。注意 `TryGetPackage` 内部 `CheckInitialized()` 在 YooAssets 未初始化时抛异常，必须先判 `!YooAssets.IsInitialized` 短路。
+
+**Files:**
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.API.cs`（4 个加载方法 + GetAssetInfo 改用 TryGetPackage 模式）
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.cs`（删除 `GetDefaultPackage()` 方法）
+
+**Interfaces:**
+- Consumes: Task 5 后 `AssetModule.API.cs`（9 个 public）与 `AssetModule.cs`（含 `GetDefaultPackage()` 私有方法，行 127）
+- Produces: `GetDefaultPackage()` 删除；4 个加载方法在包未就绪时返回 faulted UniTask（`UniTask.FromException<T>`，保持 CreateHandleTask 契约）；`GetAssetInfo` 包未就绪返回 null（调用方 `CustomLoader.cs:249` 已判空）
+
+- [ ] **Step 1: 删除 `AssetModule.cs` 的 `GetDefaultPackage()` 方法**
+
+删除（`AssetModule.cs` 约 125-127 行）：
+
+```csharp
+        /// <summary>
+        /// 获取默认资源包
+        /// </summary>
+        /// <returns></returns>
+        private ResourcePackage GetDefaultPackage() => YooAssets.GetPackage(DefaultPackageName);
+```
+
+核对 `using YooAsset;` 仍需要（`TryGetReadyPackage` 用 `out ResourcePackage`）。
+
+- [ ] **Step 2: 改 `AssetModule.API.cs` 的 4 个加载方法**
+
+`LoadAssetAsync(string)` / `<T>(string)` / `(string, Type)` / `LoadSceneAsync(string, ...)` 均改为：
+
+```csharp
+public UniTask<AssetHandle> LoadAssetAsync(string path)
+{
+    // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
+    if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+        return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+    return CreateHandleTask(() => package.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+}
+```
+
+- `LoadAssetAsync<T>`：返回类型 `UniTask<AssetHandle>`，lambda 调 `package.LoadAssetAsync<T>(path)`。
+- `LoadAssetAsync(string, Type)`：返回 `UniTask<AssetHandle>`，lambda 调 `package.LoadAssetAsync(path, type)`。
+- `LoadSceneAsync`：返回 `UniTask<SceneHandle>`，fail 路径 `UniTask.FromException<SceneHandle>`，lambda 调 `package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad)`。
+
+- [ ] **Step 3: 改 `GetAssetInfo` 为防御返回 null**
+
+```csharp
+public AssetInfo GetAssetInfo(string path)
+{
+    // 默认包未就绪返回 null（调用方已判空），避免同步抛异常
+    if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)) return null;
+    return package.GetAssetInfo(path);
+}
+```
+
+- [ ] **Step 4: 复核无 `GetDefaultPackage` 残留**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+grep -rn "GetDefaultPackage" Unity/Assets/Scripts --include=*.cs
+```
+
+预期 0 命中。
+
+- [ ] **Step 5: 提交**
+
+```bash
+git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/"
+git commit -m "[AI]refactor: AssetModule 移除 GetDefaultPackage()，改用 YooAssets.TryGetPackage + 判空（防御包未就绪）"
+```
+
+---
+
 ## 完成标准（全局验证）
 
 - [ ] Task 1-3 各经 unity-cli 编译零错误
