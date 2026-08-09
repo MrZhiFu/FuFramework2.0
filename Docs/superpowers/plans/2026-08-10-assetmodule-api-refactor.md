@@ -1,0 +1,350 @@
+# AssetModule API 提取与接口清理 Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 将 AssetModule 的 public API 提取到 `AssetModule.API.cs` 分部文件，删除 25 个零调用死接口，无外部读取者成员收窄为 private，并重命名初始化文件、删除空 Inspector、同步 README。
+
+**Architecture:** 参考 ReferencePool 模块已完成的「`ReferencePoolModule.cs`（私有状态+生命周期）+ `ReferencePoolModule.API.cs`（全部 public）」partial 拆分模式。纯重构，保留接口签名与行为完全不变（仅位置迁移与可见性收窄）。
+
+**Tech Stack:** C# (Hotfix / HybridCLR)、Unity、YooAsset、UniTask、unity-cli（编译验证）。
+
+## Global Constraints
+
+- **编译门禁**：每个代码任务结束必须经 unity-cli 编译**零错误**。前置检查：`unity-cli system ping` 返回 `"pong"`（若未返回，请用户先打开 Unity 项目）。具体编译触发命令以 `unity-cli tool list` 列出的可用工具为准。
+- **行为不变**：保留的 13 个 public 接口签名与实现**逐字迁移**，禁止改动逻辑。
+- **partial 共享**：`AssetModule` 是 partial class，API 文件可无障碍访问主文件的私有字段（`m_InstantiateRefDict`/`m_InitPackageTasks` 等）与私有方法（`GetDefaultPackage`/`CreateHandleTask`）。
+- **提交规范**：遵循 `Docs/Git提交规范.md`，消息格式 `[AI]refactor: ...` / `[AI]docs: ...`。
+- **代码风格**：遵循 `Docs/代码风格规范.md`（注释用 `/// <summary>`、方法 PascalCase）。
+- **交流语言**：代码注释与提交信息使用中文。
+
+**当前文件基线**（重构前）：
+- `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.cs`（725 行，public/private/生命周期混合）
+- `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs`（私有初始化模式，待改名）
+- `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs.meta`
+- `Unity/Assets/Editor/FuFramework/Assets/Inspector/AssetModuleInspector.cs` + `.meta`（空壳，待删）
+- `Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md`
+
+---
+
+### Task 1: 重命名 `AssetModule.Initialization.cs` → `AssetModule.InitPackageMode.cs`
+
+**Files:**
+- Rename: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs` → `AssetModule.InitPackageMode.cs`
+- Rename: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs.meta` → `AssetModule.InitPackageMode.cs.meta`
+- Modify: `AssetModule.InitPackageMode.cs` 内类文档注释（第 8 行）
+
+**Interfaces:**
+- Consumes: 无（纯文件改名，partial class 名不变）
+- Produces: 新文件名 `AssetModule.InitPackageMode.cs`，内容与类名不变
+
+该 partial 装的不是模块初始化（`OnInit` 在主文件），而是**资源包初始化模式**分支逻辑（`InitPackage` 按 `EPlayMode` 分发到 `InitInEditorSimulateMode`/`InitInOfflinePlayMode`/`InitInHostPlayMode`/`InitInWebPlayMode`），改名消除歧义。
+
+- [ ] **Step 1: 用 git mv 改名文件与 meta**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+git mv "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs" "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.InitPackageMode.cs"
+git mv "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.Initialization.cs.meta" "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.InitPackageMode.cs.meta"
+```
+
+> 用 `git mv` 保证 `.meta` 内容（含 GUID）原样保留，Unity 不重新生成 GUID。
+
+- [ ] **Step 2: 更新类文档注释**
+
+在 `AssetModule.InitPackageMode.cs` 中，把类文档注释由「初始化加载模式」改为「资源包初始化模式」：
+
+```csharp
+    /// <summary>
+    /// 资源包初始化模式。
+    /// 根据运行模式（EditorSimulate/Offline/Host/Web）初始化资源包的文件系统与参数。
+    /// </summary>
+```
+
+（原第 8 行为 `/// <summary>\n    /// 初始化加载模式\n    /// </summary>`，仅替换说明文字，保留其余注释。）
+
+- [ ] **Step 3: 编译验证**
+
+经 unity-cli 触发 Unity 编译。预期 0 错误（partial 类名未变，纯文件改名不影响编译）。若报找不到 `AssetModule`，检查是否误改类名。
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add -A "Unity/Assets/Scripts/Hotfix/Framework/Asset/"
+git commit -m "[AI]refactor: AssetModule 初始化文件重命名为 InitPackageMode，明确资源包初始化模式语义"
+```
+
+---
+
+### Task 2: 提取 public API 至 `AssetModule.API.cs`，删除死接口，收窄私有
+
+**Files:**
+- Create: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.API.cs`
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.cs`
+
+**Interfaces:**
+- Consumes: `AssetModule.cs` 保留的私有成员（字段 `m_InstantiateRefDict`/`m_InstantiateLoadingTasks`/`m_IsDisposed`/`m_InitedPackageSet`/`m_InitPackageTasks`、嵌套类 `InstantiateRef`、私有方法 `GetDefaultPackage()`/`CreateHandleTask()`/`TryGetReadyPackage()`、私有属性 `PlayMode`/`DefaultPackageName`/`AsyncSystemMaxSlicePerFrame`）
+- Produces: 新的 `AssetModule.API.cs`，含 13 个 public 成员（签名见下方清单）
+
+**迁移总览（3 类操作，行号基于重构前 `AssetModule.cs`）：**
+
+**① 移入 `AssetModule.API.cs`（13 个 public，逐字迁移，body 一字不改）：**
+
+| 成员 | 原行号 |
+|---|---|
+| `LoadAssetAsync(string)` | 193-194 |
+| `LoadAssetAsync<T>(string)` | 202-203 |
+| `LoadAssetAsync(string, Type)` | 211-212 |
+| `LoadSceneAsync(string, LoadSceneMode, bool)` | 266-267 |
+| `InstantiateAsync(string)` | 346-406 |
+| `ReleaseInstantiate(string)` | 414-427 |
+| `InitDefaultPackageAsync(string, string)` | 439-442 |
+| `InitPackageAsync(string, string, string)` | 451-508 |
+| `CreatePackage(string)` | 515 |
+| `TryGetPackage(string)` | 522-526 |
+| `UnloadAsset(string)` | 575-581 |
+| `GetAssetInfo(string)` | 709 |
+| `HasAssetPath(string)` | 717-721 |
+
+**② 删除（25 个零调用死接口/成员）：**
+
+| 删除 | 原行号 |
+|---|---|
+| 属性 `DownloadingMaxNum` | 38-41 |
+| 属性 `FailedTryAgainNum` | 43-46 |
+| `LoadAssetAsync(AssetInfo)` | 219-220 |
+| `LoadAllAssetsAsync<T>` | 227-228 |
+| `LoadAllAssetsAsync(string, Type)` | 236-237 |
+| `LoadAllAssetsAsync(string)` | 243-244 |
+| `LoadAllAssetsAsync(AssetInfo)` | 250-251 |
+| `LoadSceneAsync(AssetInfo, …)` | 276-277 |
+| `LoadSubAssetsAsync(string)` | 287-288 |
+| `LoadSubAssetsAsync<T>` | 295-296 |
+| `LoadSubAssetsAsync(string, Type)` | 304-305 |
+| `LoadSubAssetsAsync(AssetInfo)` | 312-313 |
+| `LoadRawFileAsync(AssetInfo)` | 324-325 |
+| `LoadRawFileAsync(string)` | 332-333 |
+| `HasPackage(string)` | 533-537 |
+| `GetPackage(string)` | 550 |
+| `CreateResourceDownloader(params string[])` | 559-564 |
+| `UnloadAsset(string, string)` 双参 | 589-596 |
+| `UnloadUnusedAssetsAsync(string)` | 603-609 |
+| `ClearAllBundleFilesAsync(string)` | 630-636 |
+| `ClearUnusedBundleFilesAsync(string)` | 642-648 |
+| `IsNeedDownload(AssetInfo)` | 671-675 |
+| `IsNeedDownload(string)` | 683-687 |
+| `GetAssetInfos(string[])` | 695 |
+| `GetAssetInfos(string)` | 703 |
+
+**③ 收窄为 private（留在主文件，无外部读取者）：**
+
+| 成员 | 操作 |
+|---|---|
+| 属性 `PlayMode` | `public EPlayMode PlayMode { get; private set; }` → `private EPlayMode PlayMode { get; set; }` |
+| 属性 `DefaultPackageName` | 同上 |
+| 属性 `AsyncSystemMaxSlicePerFrame` | 同上 |
+| `GetDefaultPackage()` | `public` → `private` |
+| `UnloadAllAssetsAsync(string)` | `public` → `private` |
+
+- [ ] **Step 1: 创建 `AssetModule.API.cs`**
+
+写入以下文件骨架，并按迁移表 ① 把对应 public 成员的 body **逐字**（含全部 XML 注释）粘贴到对应 region 下：
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using YooAsset;
+using Hotfix.Framework.Core;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
+
+// ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace Hotfix.Framework.Asset
+{
+    /// <summary>
+    /// 资源管理模块的公共 API。
+    /// 功能：
+    ///     1. 异步加载资源/场景，异步实例化游戏物体。
+    ///     2. 资源包初始化与访问。
+    ///     3. 资源卸载与查询。
+    /// </summary>
+    public partial class AssetModule : ModuleBase
+    {
+        #region 异步加载资源
+
+        // LoadAssetAsync(string) / <T> / (string, Type) 三个重载逐字移入
+
+        #endregion
+
+        #region 异步加载场景
+
+        // LoadSceneAsync(string, LoadSceneMode, bool activateOnLoad = true) 逐字移入
+
+        #endregion
+
+        #region 异步实例化游戏物体
+
+        // InstantiateAsync(string) / ReleaseInstantiate(string) 逐字移入
+
+        #endregion
+
+        #region 资源包
+
+        // InitDefaultPackageAsync / InitPackageAsync / CreatePackage / TryGetPackage 逐字移入
+
+        #endregion
+
+        #region 卸载资源
+
+        // UnloadAsset(string) 逐字移入
+
+        #endregion
+
+        #region Get
+
+        // GetAssetInfo(string) / HasAssetPath(string) 逐字移入
+
+        #endregion
+    }
+}
+```
+
+> 提示：body 中引用的 `GetDefaultPackage()`/`CreateHandleTask()` 是主文件私有成员，partial 可直接访问，无需改动。`InitPackageAsync` body 中 `DefaultPackageName` 现在是私有属性，partial 同样可访问。
+
+- [ ] **Step 2: 从 `AssetModule.cs` 删除迁移①的 13 个成员**（连同各自 XML 注释与所在 region 头，保留主文件私有成员）
+
+- [ ] **Step 3: 从 `AssetModule.cs` 删除迁移②的 25 个成员**（连同 XML 注释；删除后空 region 头一并移除，如"异步加载子资源对象""异步加载原生文件"整个 region）
+
+- [ ] **Step 4: 收窄迁移③的 5 个成员为 private**（改修饰符）
+
+- [ ] **Step 5: 调整 `AssetModule.cs` 的 using**
+
+重构后主文件只保留私有状态/生命周期/私有辅助，不再引用 `UnityEngine`/`UnityEngine.SceneManagement`/`Object`，删除后最终 using 应为：
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using YooAsset;
+using Hotfix.Framework.Core;
+using AOT.Launch;
+using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Framework.Core.Log;
+```
+
+同时核对：主文件应保留的成员只有 3 个私有属性、5 个字段、`InstantiateRef` 嵌套类、`OnInit`/`OnDispose`、`CreateHandleTask`、`GetDefaultPackage`（private）、`UnloadAllAssetsAsync`（private）、`TryGetReadyPackage`（private）。
+
+- [ ] **Step 6: 编译验证**
+
+经 unity-cli 触发 Unity 编译，预期 0 错误。常见报错排查：
+- 报 `Object`/`LoadSceneMode`/`GameObject` 找不到 → API 文件缺 `UnityEngine`/`UnityEngine.SceneManagement`/`Object` alias using。
+- 报 `NotNull` 找不到 → API 文件缺 `using Hotfix.Framework.Core;`。
+- 报 `m_InstantiateRefDict` 找不到 → API 文件缺 `using System.Collections.Generic;`。
+- 报某成员不存在 → 删除清单里误删了仍在调用的接口；`grep` 复核。
+
+- [ ] **Step 7: 复核删除接口无调用残留**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+grep -rnE "LoadAllAssetsAsync|LoadSubAssetsAsync|LoadRawFileAsync|IsNeedDownload|GetAssetInfos|CreateResourceDownloader|UnloadUnusedAssetsAsync|ClearAllBundleFilesAsync|ClearUnusedBundleFilesAsync|HasPackage\b|GetPackage\b|UnloadAsset\([^)]*," Unity/Assets/Scripts --include=*.cs | grep -v "AssetModule.API.cs"
+```
+
+预期仅命中 `AssetModule.API.cs` 以外的 0 行。若命中，说明有遗漏调用方，需在 Task 2 内一并修正（改用保留接口或直接走 YooAsset）。
+
+- [ ] **Step 8: 提交**
+
+```bash
+git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/"
+git commit -m "[AI]refactor: AssetModule 提取 public API 至 AssetModule.API，清理 25 个零调用接口，收窄私有"
+```
+
+> `.meta`：新建的 `AssetModule.API.cs` 的 `.meta` 由 Unity 编译时生成，编译后 `git status` 若出现则一并 `git add`（若未生成，则等 Task 3 后统一提交）。
+
+---
+
+### Task 3: 删除空壳 `AssetModuleInspector.cs`
+
+**Files:**
+- Delete: `Unity/Assets/Editor/FuFramework/Assets/Inspector/AssetModuleInspector.cs`
+- Delete: `Unity/Assets/Editor/FuFramework/Assets/Inspector/AssetModuleInspector.cs.meta`
+
+**Interfaces:**
+- Consumes: 无（该 Inspector 为空壳，全部逻辑被注释，顶部 TODO 指向已放弃的调试界面）
+- Produces: 删除后 `FuFramework/Assets/Inspector/` 目录为空 → 连同空目录 `.meta` 一并删除（若存在）
+
+- [ ] **Step 1: 删除文件与 meta**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+git rm "Unity/Assets/Editor/FuFramework/Assets/Inspector/AssetModuleInspector.cs"
+git rm "Unity/Assets/Editor/FuFramework/Assets/Inspector/AssetModuleInspector.cs.meta"
+rmdir "Unity/Assets/Editor/FuFramework/Assets/Inspector" 2>/dev/null || true
+git rm "Unity/Assets/Editor/FuFramework/Assets/Inspector.meta" 2>/dev/null || true
+```
+
+> 若 `Inspector.meta` 不存在或 `rm` 报目录非空，保留原样；Unity 会在下次导入时清理孤儿 meta。参考 ReferencePool 重构中"移除空 Inspector 目录 meta"的处理。
+
+- [ ] **Step 2: 编译验证**
+
+经 unity-cli 触发 Unity 编译，预期 0 错误（Editor 代码删除不影响 Hotfix）。
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add -A "Unity/Assets/Editor/FuFramework/Assets/"
+git commit -m "[AI]refactor: 移除空壳 AssetModuleInspector（调试界面已确定不做）"
+```
+
+---
+
+### Task 4: 同步 AssetModule README 接口清单
+
+**Files:**
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md`
+
+**Interfaces:**
+- Consumes: Task 2 重构后的实际接口清单
+- Produces: README 与代码一致（无已删接口残留）
+
+- [ ] **Step 1: 更新「主要属性」表**
+
+删除 `DownloadingMaxNum`、`FailedTryAgainNum` 两行；保留 `PlayMode`/`DefaultPackageName`/`AsyncSystemMaxSlicePerFrame` 但标注为内部属性（`public` → `private`，仅模块内部读取）。
+
+- [ ] **Step 2: 更新「资源加载方法」**
+
+- 异步加载资源块：保留 `LoadAssetAsync` 的 3 个 string 重载；删除 `LoadAssetAsync(AssetInfo)`、全部 `LoadAllAssetsAsync` 4 行、全部 `LoadSubAssetsAsync` 4 行、`LoadRawFileAsync` 2 行。
+- 异步加载场景块：保留 `LoadSceneAsync(string, ...)`；删除 `LoadSceneAsync(AssetInfo, ...)` 行。
+- 实例化块：`InstantiateAsync` 与 `ReleaseInstantiate` 保留不变。
+
+- [ ] **Step 3: 更新「资源包管理」**
+
+删除 `SetDefaultPackage`（已过期、代码中不存在）、`HasPackage`、`GetPackage`、`CreateResourceDownloader`、`IsNeedDownload` ×2、`GetAssetInfos` ×2 行；保留 `InitPackageAsync`/`CreatePackage`/`TryGetPackage`/`GetAssetInfo`/`HasAssetPath`；`GetDefaultPackage` 现为私有，从 README 移除。
+
+- [ ] **Step 4: 更新「资源卸载」**
+
+仅保留 `UnloadAsset(string assetPath)` 1 行；删除 `UnloadAsset(package,path)` 双参、`UnloadAllAssetsAsync`、`UnloadUnusedAssetsAsync`、`ClearAllBundleFilesAsync`、`ClearUnusedBundleFilesAsync`（这些接口已删或已收窄私有）。
+
+- [ ] **Step 5: 更新「使用示例」**
+
+- 「加载原生文件」示例（使用已删的 `LoadRawFileAsync`）→ 删除，或替换为 `LoadAssetAsync<TextAsset>` + `GetAssetObject` 取 `bytes` 的等价写法。
+- 「子资源加载」示例（使用已删的 `LoadSubAssetsAsync<Sprite>`）→ 删除。
+- 核对其余示例（`InitPackageAsync`/`LoadAssetAsync<GameObject>`/`InstantiateAsync`/`LoadSceneAsync`/`AssetLoadRegister`）均为保留接口，不改。
+
+- [ ] **Step 6: 提交**
+
+```bash
+git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md"
+git commit -m "[AI]docs: 同步 AssetModule README 接口清单（清理已删接口、标注私有属性）"
+```
+
+---
+
+## 完成标准（全局验证）
+
+- [ ] Task 1-3 各经 unity-cli 编译零错误
+- [ ] `AssetModule.cs` 不再含任何 public 方法（仅私有成员 + 生命周期）
+- [ ] 全库 `grep` 无已删接口调用残留
+- [ ] 编辑器 Play 冒烟：框架正常启动，资源加载路径可用（`HotfixLauncher.MainAsync` 完成启动流程，LoadAssetAsync 链路正常）
+- [ ] README 与重构后接口一致
