@@ -5,7 +5,8 @@ using YooAsset;
 namespace Hotfix.Framework.Asset
 {
     /// <summary>
-    /// 初始化加载模式
+    /// 资源包初始化模式。
+    /// 根据运行模式（EditorSimulate/Offline/Host/Web）初始化资源包的文件系统与参数。
     /// </summary>
     public partial class AssetModule
     {
