@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path)
-            => CreateHandleTask(p => p.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+            => CreateHandleTask(package => package.LoadAssetAsync(path), (handle, tcs) => { handle.Completed += completedHandle => tcs.TrySetResult(completedHandle); });
 
         /// <summary>
         /// 异步加载资源
@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Asset
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
-            => CreateHandleTask(p => p.LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+            => CreateHandleTask(package => package.LoadAssetAsync<T>(path), (handle, tcs) => { handle.Completed += completedHandle => tcs.TrySetResult(completedHandle); });
 
         /// <summary>
         /// 异步加载资源
@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="type">资源类型</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
-            => CreateHandleTask(p => p.LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+            => CreateHandleTask(package => package.LoadAssetAsync(path, type), (handle, tcs) => { handle.Completed += completedHandle => tcs.TrySetResult(completedHandle); });
 
         #endregion
 
@@ -60,7 +60,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="activateOnLoad">是否加载完成自动激活</param>
         /// <returns></returns>
         public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
-            => CreateHandleTask(p => p.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+            => CreateHandleTask(package => package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (handle, tcs) => { handle.Completed += completedHandle => tcs.TrySetResult(completedHandle); });
 
         #endregion
 
