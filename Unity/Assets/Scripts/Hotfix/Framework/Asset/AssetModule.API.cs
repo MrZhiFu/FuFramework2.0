@@ -27,7 +27,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path)
-            => CreateHandleTask(() => GetDefaultPackage().LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        {
+            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+            return CreateHandleTask(() => package.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        }
 
         /// <summary>
         /// 异步加载资源
@@ -36,7 +41,12 @@ namespace Hotfix.Framework.Asset
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
-            => CreateHandleTask(() => GetDefaultPackage().LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        {
+            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+            return CreateHandleTask(() => package.LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        }
 
         /// <summary>
         /// 异步加载资源
@@ -45,7 +55,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="type">资源类型</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
-            => CreateHandleTask(() => GetDefaultPackage().LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        {
+            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+            return CreateHandleTask(() => package.LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        }
 
         #endregion
 
@@ -61,7 +76,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="activateOnLoad">是否加载完成自动激活</param>
         /// <returns></returns>
         public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
-            => CreateHandleTask(() => GetDefaultPackage().LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        {
+            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<SceneHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+            return CreateHandleTask(() => package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+        }
 
         #endregion
 
@@ -180,9 +200,14 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 获取资源信息。
-        /// 注意：默认包必须已初始化，否则同步抛 YooPackageInvalidException。
+        /// 注意：默认包未就绪时返回 null（调用方已判空），避免同步抛异常。
         /// </summary>
-        public AssetInfo GetAssetInfo(string path) => GetDefaultPackage().GetAssetInfo(path);
+        public AssetInfo GetAssetInfo(string path)
+        {
+            // 默认包未就绪返回 null（调用方已判空），避免同步抛异常
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)) return null;
+            return package.GetAssetInfo(path);
+        }
 
         /// <summary>
         /// 检查指定的资源路径是否有效。

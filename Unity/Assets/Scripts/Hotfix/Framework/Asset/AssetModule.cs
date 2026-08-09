@@ -121,12 +121,6 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 获取默认资源包
-        /// </summary>
-        /// <returns></returns>
-        private ResourcePackage GetDefaultPackage() => YooAssets.GetPackage(DefaultPackageName);
-
-        /// <summary>
         /// 强制卸载所有资源。
         /// 注意：该方法请在合适的时机调用。Package在销毁的时候也会自动调用该方法。
         /// 警告：此操作会释放所有已加载句柄；进行中的 LoadAssetAsync 句柄被 Release 后
