@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
@@ -27,12 +26,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path)
-        {
-            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
-                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
-            return CreateHandleTask(() => package.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
-        }
+            => CreateHandleTask(p => p.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
 
         /// <summary>
         /// 异步加载资源
@@ -41,12 +35,7 @@ namespace Hotfix.Framework.Asset
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
-        {
-            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
-                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
-            return CreateHandleTask(() => package.LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
-        }
+            => CreateHandleTask(p => p.LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
 
         /// <summary>
         /// 异步加载资源
@@ -55,12 +44,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="type">资源类型</param>
         /// <returns></returns>
         public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
-        {
-            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
-                return UniTask.FromException<AssetHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
-            return CreateHandleTask(() => package.LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
-        }
+            => CreateHandleTask(p => p.LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
 
         #endregion
 
@@ -76,12 +60,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="activateOnLoad">是否加载完成自动激活</param>
         /// <returns></returns>
         public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
-        {
-            // 默认包未就绪：转 faulted UniTask（保持 CreateHandleTask 的契约），不同步抛
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
-                return UniTask.FromException<SceneHandle>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
-            return CreateHandleTask(() => package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
-        }
+            => CreateHandleTask(p => p.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
 
         #endregion
 

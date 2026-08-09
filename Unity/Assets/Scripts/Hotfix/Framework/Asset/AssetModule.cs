@@ -94,20 +94,24 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 将 YooAsset 异步句柄包装为 UniTask 的通用逻辑。
-        /// 同步异常（YooAssets 未初始化、包不存在等）统一转为 faulted UniTask，
-        /// 避免包装方法同步抛异常（对非 async 调用方如 `.Status` 检查会直接崩溃）。
+        /// 将默认资源包上发起的 YooAsset 异步句柄包装为 UniTask。
+        /// YooAssets 未初始化或默认包不存在时返回 faulted UniTask，保持"不同步抛异常"契约；
+        /// 同步异常（句柄加载后立即失效等）同样转为 faulted UniTask。
         /// </summary>
         /// <typeparam name="T">句柄类型。</typeparam>
-        /// <param name="load">发起加载并返回句柄。</param>
+        /// <param name="load">以默认资源包发起加载并返回句柄。</param>
         /// <param name="bind">将句柄的 Completed 事件绑定到完成源。</param>
-        private static UniTask<T> CreateHandleTask<T>(Func<T> load, Action<T, UniTaskCompletionSource<T>> bind) where T : HandleBase
+        private UniTask<T> CreateHandleTask<T>(Func<ResourcePackage, T> load, Action<T, UniTaskCompletionSource<T>> bind) where T : HandleBase
         {
+            // 默认包未就绪：转 faulted UniTask（不同步抛，保持契约）
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<T>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+
             var taskCompletionSource = new UniTaskCompletionSource<T>();
             T   handle               = null;
             try
             {
-                handle = load();
+                handle = load(package);
                 bind(handle, taskCompletionSource);
             }
             catch (Exception e)
