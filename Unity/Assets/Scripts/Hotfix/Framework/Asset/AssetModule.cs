@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
-using AOT.Launch;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 
@@ -20,32 +19,9 @@ namespace Hotfix.Framework.Asset
     public partial class AssetModule : ModuleBase
     {
         /// <summary>
-        /// 资源运行模式。
-        /// </summary>
-        private EPlayMode PlayMode { get; set; }
-
-        /// <summary>
         /// 默认资源包名称
         /// </summary>
         private string DefaultPackageName { get; set; }
-
-        /// <summary>
-        /// YooAsset异步系统参数-每帧执行消耗的最大时间切片（单位：毫秒）
-        /// </summary>
-        private int AsyncSystemMaxSlicePerFrame { get; set; }
-
-        /// <summary>
-        /// 已成功完成初始化的资源包集合（含启动流程 LaunchAssetHelper 预初始化的默认包）。
-        /// 用于避免重复初始化。
-        /// </summary>
-        private readonly HashSet<string> m_InitedPackageSet = new();
-
-        /// <summary>
-        /// 资源包初始化任务去重字典，key:包名，value:共享完成源。
-        /// 同一包并发初始化共享任务（UniTaskCompletionSource.Task 可多次 await），
-        /// 防止二次调用直接返回未就绪的 true，也允许初始化失败后重试。
-        /// </summary>
-        private readonly Dictionary<string, UniTaskCompletionSource<bool>> m_InitPackageTasks = new();
 
         /// <summary>
         /// 是否已销毁。防止销毁后在途的 InstantiateAsync 任务把已失效句柄写回引用字典。
@@ -92,29 +68,10 @@ namespace Hotfix.Framework.Asset
             // 热更重载场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
             m_IsDisposed = false;
 
-            // 获取资源管理模块配置数据
-            PlayMode                    = GameSetting.Instance.PlayMode;
-            DefaultPackageName          = GameSetting.Instance.DefaultPackageName;
-            AsyncSystemMaxSlicePerFrame = GameSetting.Instance.AsyncSystemMaxSlicePerFrame;
+            // 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
+            DefaultPackageName = GameSetting.Instance.DefaultPackageName;
 
-            FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{PlayMode}");
-
-            // 初始化YooAsset（启动阶段 LaunchAssetHelper 可能已初始化，避免二次初始化）
-            if (LaunchAssetHelper.YooAssetInitialized)
-            {
-                // 启动流程已初始化 YooAsset 并创建/初始化默认包，标记默认包已初始化，避免热更侧重复初始化默认包
-                m_InitedPackageSet.Add(DefaultPackageName);
-            }
-            else
-            {
-                YooAssets.Initialize();
-
-                // 设置异步系统参数，每帧执行消耗的最大时间切片（单位：毫秒）
-                YooAssets.SetAsyncOperationMaxTimeSlice(AsyncSystemMaxSlicePerFrame);
-
-                LaunchAssetHelper.YooAssetInitialized = true;
-            }
-
+            FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{GameSetting.Instance.PlayMode}");
             FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
         }
 
@@ -132,10 +89,6 @@ namespace Hotfix.Framework.Asset
 
             // 清理在途实例化加载任务（其句柄已随 UnloadAllAssets 释放，任务完成回调不得再写回引用字典）
             m_InstantiateLoadingTasks.Clear();
-
-            // 清理包初始化状态（热更重载 OnInit 会按 LaunchAssetHelper.YooAssetInitialized 重新标记）
-            m_InitedPackageSet.Clear();
-            m_InitPackageTasks.Clear();
 
             UnloadAllAssetsAsync(DefaultPackageName).Forget();
         }

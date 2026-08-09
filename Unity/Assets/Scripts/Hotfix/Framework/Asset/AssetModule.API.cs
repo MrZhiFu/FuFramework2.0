@@ -15,8 +15,7 @@ namespace Hotfix.Framework.Asset
     /// 资源管理模块的公共 API。
     /// 功能：
     ///     1. 异步加载资源/场景，异步实例化游戏物体。
-    ///     2. 资源包初始化与访问。
-    ///     3. 资源卸载与查询。
+    ///     2. 资源卸载与查询。
     /// </summary>
     public partial class AssetModule : ModuleBase
     {
@@ -156,105 +155,6 @@ namespace Hotfix.Framework.Asset
             // 需 UnloadAsset 才能真正释放，否则该 prefab 的 bundle 永久残留（内存只增不减）。
             // 若其他系统仍持有同一资源句柄，TryUnloadUnusedAsset 会因引用计数 >0 而跳过，共享安全。
             UnloadAsset(path);
-        }
-
-        #endregion
-
-        #region 资源包
-
-        /// <summary>
-        /// 初始化默认资源包。
-        /// </summary>
-        /// <param name="downloadURL">热更资源包下载URL</param>
-        /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
-        /// <returns></returns>
-        public UniTask<bool> InitDefaultPackageAsync(string downloadURL = null, string downloadBackupURL = null)
-        {
-            return InitPackageAsync(DefaultPackageName, downloadURL, downloadBackupURL);
-        }
-
-        /// <summary>
-        /// 初始化资源包。
-        /// </summary>
-        /// <param name="packageName">包名称</param>
-        /// <param name="downloadURL">热更资源包下载URL</param>
-        /// <param name="downloadBackupURL">备用热更资源包下载URL</param>
-        /// <returns></returns>
-        public UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null)
-        {
-            packageName.NotNull(nameof(packageName));
-
-            // 包已完成初始化（含启动流程 LaunchAssetHelper 预初始化的默认包），直接返回
-            if (m_InitedPackageSet.Contains(packageName))
-            {
-                return UniTask.FromResult(true);
-            }
-
-            // 并发去重：同一包初始化中共享完成源（UniTaskCompletionSource.Task 可多次 await），
-            // 避免二次调用在首次初始化完成前直接返回未就绪的 true
-            if (m_InitPackageTasks.TryGetValue(packageName, out var sharedTask))
-            {
-                return sharedTask.Task;
-            }
-
-            var taskCompletionSource = new UniTaskCompletionSource<bool>();
-            m_InitPackageTasks[packageName] = taskCompletionSource;
-
-            try
-            {
-                // 创建资源包（不存在时）。v3 移除了全局默认包概念，只需创建包即可，通过包名访问
-                var resourcePackage = TryGetPackage(packageName);
-                if (resourcePackage == null)
-                    resourcePackage = CreatePackage(packageName);
-
-                // 同步创建初始化操作：抛异常（模拟构建失败等）或返回 null（非法 PlayMode）时回滚，允许重试
-                var initHandler = InitPackage(resourcePackage, downloadURL, downloadBackupURL);
-                if (initHandler == null)
-                {
-                    m_InitPackageTasks.Remove(packageName);
-                    taskCompletionSource.TrySetException(new InvalidOperationException($"初始化资源包失败：{packageName}"));
-                    return taskCompletionSource.Task;
-                }
-
-                initHandler.Completed += asyncOperationBase =>
-                {
-                    m_InitPackageTasks.Remove(packageName); // 完成后移除，失败也允许重试
-                    if (asyncOperationBase.Error == null && asyncOperationBase.Status == EOperationStatus.Succeeded && asyncOperationBase.IsDone)
-                    {
-                        m_InitedPackageSet.Add(packageName);
-                        taskCompletionSource.TrySetResult(true);
-                    }
-                    else
-                    {
-                        taskCompletionSource.TrySetException(new Exception(asyncOperationBase.Error));
-                    }
-                };
-            }
-            catch (Exception e)
-            {
-                m_InitPackageTasks.Remove(packageName);
-                taskCompletionSource.TrySetException(e);
-            }
-
-            return taskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 创建资源包
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        /// <returns></returns>
-        public ResourcePackage CreatePackage(string packageName) => YooAssets.CreatePackage(packageName);
-
-        /// <summary>
-        /// 尝试获取资源包
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        /// <returns></returns>
-        public ResourcePackage TryGetPackage(string packageName)
-        {
-            if (!YooAssets.IsInitialized) return null; // YooAssets 未初始化（全局销毁后），防御不抛
-            return YooAssets.TryGetPackage(packageName, out var package) ? package : null;
         }
 
         #endregion
