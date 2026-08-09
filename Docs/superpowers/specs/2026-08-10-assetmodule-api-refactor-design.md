@@ -147,3 +147,9 @@ public partial class AssetModule : ModuleBase
 
 - **Commit 1**：`[AI]refactor: AssetModule 提取 public API 至 AssetModule.API，清理零调用接口，收窄私有，重命名 InitPackageMode`（代码重构 + 删除 Inspector，必须同落保证编译通过）。
 - **Commit 2**：`[AI]docs: 同步 AssetModule README 接口清单`。
+
+## 8. 执行期补充决策（2026-08-10）
+
+用户确认：热更侧包初始化子系统（`InitDefaultPackageAsync`/`InitPackageAsync`/`CreatePackage`/`TryGetPackage` + `AssetModule.InitPackageMode.cs` + `RemoteServices.cs`）与 AOT `LaunchAssetHelper` 启动初始化几乎 1:1 重复且**全库零调用**（默认包已由启动流程初始化），**整体删除**，包初始化能力由 `LaunchAssetHelper.InitPackageAsync` 独占。原 2.1 决策表「包初始化组保留 public」作废。
+
+删除后 AssetModule 公开 API 收敛为 **9 个**：`LoadAssetAsync` ×3、`LoadSceneAsync`、`InstantiateAsync`、`ReleaseInstantiate`、`UnloadAsset`、`GetAssetInfo`、`HasAssetPath`。实现见计划 Task 5。

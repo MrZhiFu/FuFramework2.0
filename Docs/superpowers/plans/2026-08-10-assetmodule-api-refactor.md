@@ -320,7 +320,7 @@ git commit -m "[AI]refactor: 移除空壳 AssetModuleInspector（调试界面已
 
 - [ ] **Step 3: 更新「资源包管理」**
 
-删除 `SetDefaultPackage`（已过期、代码中不存在）、`HasPackage`、`GetPackage`、`CreateResourceDownloader`、`IsNeedDownload` ×2、`GetAssetInfos` ×2 行；保留 `InitPackageAsync`/`CreatePackage`/`TryGetPackage`/`GetAssetInfo`/`HasAssetPath`；`GetDefaultPackage` 现为私有，从 README 移除。
+删除 `SetDefaultPackage`（已过期、代码中不存在）、`HasPackage`、`GetPackage`、`CreateResourceDownloader`、`IsNeedDownload` ×2、`GetAssetInfos` ×2、`InitPackageAsync`/`InitDefaultPackageAsync`/`CreatePackage`/`TryGetPackage`（热更侧包初始化子系统已整体删除，见 Task 5）行；保留 `GetAssetInfo`/`HasAssetPath`；`GetDefaultPackage` 现为私有，从 README 移除。
 
 - [ ] **Step 4: 更新「资源卸载」**
 
@@ -330,13 +330,93 @@ git commit -m "[AI]refactor: 移除空壳 AssetModuleInspector（调试界面已
 
 - 「加载原生文件」示例（使用已删的 `LoadRawFileAsync`）→ 删除，或替换为 `LoadAssetAsync<TextAsset>` + `GetAssetObject` 取 `bytes` 的等价写法。
 - 「子资源加载」示例（使用已删的 `LoadSubAssetsAsync<Sprite>`）→ 删除。
-- 核对其余示例（`InitPackageAsync`/`LoadAssetAsync<GameObject>`/`InstantiateAsync`/`LoadSceneAsync`/`AssetLoadRegister`）均为保留接口，不改。
+- 「初始化资源包」示例（使用已删的 `InitPackageAsync`）→ 删除。
+- 核对其余示例（`LoadAssetAsync<GameObject>`/`InstantiateAsync`/`LoadSceneAsync`/`AssetLoadRegister`）均为保留接口，不改。
 
 - [ ] **Step 6: 提交**
 
 ```bash
 git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/README.md"
 git commit -m "[AI]docs: 同步 AssetModule README 接口清单（清理已删接口、标注私有属性）"
+```
+
+---
+
+### Task 5: 删除热更侧包初始化子系统（包初始化完全委托 AOT 启动流程）
+
+> 执行期新增（2026-08-10）。用户确认：热更侧包初始化子系统与 AOT `LaunchAssetHelper` 启动初始化几乎 1:1 重复且**全库零调用**（默认包已由启动流程初始化），故整体删除。包初始化能力由 `LaunchAssetHelper.InitPackageAsync` 独占。
+
+**Files:**
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.API.cs`（删 4 个包初始化 public 方法 + `#region 资源包`，更新类文档）
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.cs`（删 2 属性 + 2 字段 + OnInit if/else 块 + OnDispose 2 行清理，去 `using AOT.Launch;`）
+- Delete: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.InitPackageMode.cs` + `.meta`
+- Delete: `Unity/Assets/Scripts/Hotfix/Framework/Asset/RemoteServices.cs` + `.meta`
+
+**Interfaces:**
+- Consumes: Task 2 重构后的 `AssetModule.API.cs`（含 4 个待删包方法）与 `AssetModule.cs`（含 `PlayMode`/`AsyncSystemMaxSlicePerFrame` 私有属性）
+- Produces: AssetModule 公开 API 收敛为 **9 个**：`LoadAssetAsync` ×3、`LoadSceneAsync`、`InstantiateAsync`、`ReleaseInstantiate`、`UnloadAsset`、`GetAssetInfo`、`HasAssetPath`
+
+**删除明细（行号基于 Task 2 提交 `308b4058` 后的文件）：**
+
+| 位置 | 删除 |
+|---|---|
+| `AssetModule.API.cs` | `InitDefaultPackageAsync`（171-174）、`InitPackageAsync`（183-240）、`CreatePackage`（247）、`TryGetPackage`（254-258）、整个 `#region 资源包`（163-260） |
+| `AssetModule.cs` | 属性 `PlayMode`（25）、属性 `AsyncSystemMaxSlicePerFrame`（35）、字段 `m_InitedPackageSet`（41）、字段 `m_InitPackageTasks`（48）、OnInit 的 if/else YooAssets 初始化块（102-116）及其两行属性赋值（96、98）、OnDispose 的 `m_InitedPackageSet.Clear()`/`m_InitPackageTasks.Clear()` 两行（137-138） |
+| 文件删除 | `AssetModule.InitPackageMode.cs` + `.meta`、`RemoteServices.cs` + `.meta` |
+
+- [ ] **Step 1: 修改 `AssetModule.API.cs`**
+
+- 删除 `#region 资源包` 整块（`InitDefaultPackageAsync`/`InitPackageAsync`/`CreatePackage`/`TryGetPackage` 及其 XML 注释）。
+- 类文档注释「功能」去掉「2. 资源包初始化与访问。」一行，重排序号为「1. 异步加载资源/场景，异步实例化游戏物体。2. 资源卸载与查询。」。
+- 核对 usings：删包方法后仍全部需要（`YooAsset` 仍用于 `AssetHandle`/`SceneHandle`/`AssetInfo`/`YooAssets`；`Hotfix.Framework.Core` 仍用于 `ModuleBase`/`NotNull`）。
+
+- [ ] **Step 2: 修改 `AssetModule.cs`**
+
+- 删除 `PlayMode`/`AsyncSystemMaxSlicePerFrame` 两个私有属性。
+- 删除 `m_InitedPackageSet`/`m_InitPackageTasks` 两个字段。
+- `OnInit` 简化为（其余注释保留）：
+
+```csharp
+protected internal override void OnInit()
+{
+    // 热更重载场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
+    m_IsDisposed = false;
+
+    // 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
+    DefaultPackageName = GameSetting.Instance.DefaultPackageName;
+
+    FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{GameSetting.Instance.PlayMode}");
+    FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
+}
+```
+
+- `OnDispose` 删除 `m_InitedPackageSet.Clear();`/`m_InitPackageTasks.Clear();` 两行及对应注释。
+- 删除 `using AOT.Launch;`（`LaunchAssetHelper` 不再被引用）；保留其余 7 条 using（`GameSetting`/`FuLogger` 仍用）。
+
+- [ ] **Step 3: 删除两个文件及 meta**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+git rm "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.InitPackageMode.cs"
+git rm "Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.InitPackageMode.cs.meta"
+git rm "Unity/Assets/Scripts/Hotfix/Framework/Asset/RemoteServices.cs"
+git rm "Unity/Assets/Scripts/Hotfix/Framework/Asset/RemoteServices.cs.meta"
+```
+
+- [ ] **Step 4: 复核无调用残留**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+grep -rnE "InitPackageAsync|InitDefaultPackageAsync|CreatePackage|TryGetPackage|RemoteServices|InitPackage\b|InitInEditorSimulateMode|InitInOfflinePlayMode|InitInHostPlayMode|InitInWebPlayMode" Unity/Assets/Scripts/Hotfix --include=*.cs
+```
+
+预期 0 命中（AOT `LaunchAssetHelper.InitPackageAsync`/`CreateDownloader` 与私有 `RemoteServices` 属 AOT 层，不在此 grep 路径内）。
+
+- [ ] **Step 5: 提交**
+
+```bash
+git add -A "Unity/Assets/Scripts/Hotfix/Framework/Asset/"
+git commit -m "[AI]refactor: 删除热更侧包初始化子系统（InitPackageAsync/InitPackageMode.cs/RemoteServices.cs），包初始化委托 AOT 启动流程"
 ```
 
 ---
