@@ -36,8 +36,8 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 实例化首次加载去重字典，key:资源路径，value:加载任务。
         /// 同一路径并发首次实例化共享任务，防止覆盖句柄泄漏。
-        /// 注意：此字典存的是 LoadAssetAsync 返回的 UniTaskCompletionSource.Task（可多次 await），
-        /// 切勿改成 async 方法返回值（async UniTask 只能 await 一次）。
+        /// 注意：LoadAssetAsync 返回 async UniTask，同一 pending 任务并发 await 会抛
+        /// "Already continuation registered"（UniTask 单 continuation 限制），并发窗口极短时适用。
         /// </summary>
         private readonly Dictionary<string, UniTask<AssetHandle>> m_InstantiateLoadingTasks = new();
 
@@ -93,34 +93,14 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 将默认资源包上发起的 YooAsset 异步句柄包装为 UniTask。
-        /// YooAssets 未初始化或默认包不存在时返回 faulted UniTask，保持"不同步抛异常"契约；
-        /// 同步异常（句柄加载后立即失效等）同样转为 faulted UniTask。
+        /// 获取默认资源包；YooAssets 未初始化或默认包不存在时抛异常。
+        /// 在 async 方法中调用时异常会被捕获为 faulted UniTask，保持"不同步抛"契约。
         /// </summary>
-        /// <typeparam name="T">句柄类型。</typeparam>
-        /// <param name="load">以默认资源包发起加载并返回句柄。</param>
-        /// <param name="bind">将句柄的 Completed 事件绑定到完成源。</param>
-        private UniTask<T> CreateHandleTask<T>(Func<ResourcePackage, T> load, Action<T, UniTaskCompletionSource<T>> bind) where T : HandleBase
+        private ResourcePackage GetReadyDefaultPackage()
         {
-            // 默认包未就绪：转 faulted UniTask（不同步抛，保持契约）
             if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
-                return UniTask.FromException<T>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
-
-            var taskCompletionSource = new UniTaskCompletionSource<T>();
-            T   handle               = null;
-            try
-            {
-                handle = load(package);
-                bind(handle, taskCompletionSource);
-            }
-            catch (Exception e)
-            {
-                // bind 失败（如句柄加载后立即失效）时释放已创建的句柄，避免残留
-                handle?.Release();
-                taskCompletionSource.TrySetException(e);
-            }
-
-            return taskCompletionSource.Task;
+                throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
+            return package;
         }
 
         /// <summary>

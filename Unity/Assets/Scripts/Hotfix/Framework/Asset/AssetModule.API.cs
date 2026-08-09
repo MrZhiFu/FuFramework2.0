@@ -25,12 +25,12 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync(string path)
+        public async UniTask<AssetHandle> LoadAssetAsync(string path)
         {
-            return CreateHandleTask(package => package.LoadAssetAsync(path), (handle, tcs) =>
-            {
-                handle.Completed += completedHandle => tcs.TrySetResult(completedHandle);
-            });
+            var package = GetReadyDefaultPackage();
+            var handle  = package.LoadAssetAsync(path);
+            await handle;
+            return handle;
         }
 
         /// <summary>
@@ -39,12 +39,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
+        public async UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
-            return CreateHandleTask(package => package.LoadAssetAsync<T>(path), (handle, tcs) =>
-            {
-                handle.Completed += completedHandle => tcs.TrySetResult(completedHandle);
-            });
+            var package = GetReadyDefaultPackage();
+            var handle  = package.LoadAssetAsync<T>(path);
+            await handle;
+            return handle;
         }
 
         /// <summary>
@@ -53,12 +53,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
         /// <returns></returns>
-        public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
+        public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
-            return CreateHandleTask(package => package.LoadAssetAsync(path, type), (handle, tcs) =>
-            {
-                handle.Completed += completedHandle => tcs.TrySetResult(completedHandle);
-            });
+            var package = GetReadyDefaultPackage();
+            var handle  = package.LoadAssetAsync(path, type);
+            await handle;
+            return handle;
         }
 
         #endregion
@@ -74,14 +74,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="sceneMode">场景模式</param>
         /// <param name="activateOnLoad">是否加载完成自动激活</param>
         /// <returns></returns>
-        public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
+        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
         {
-            return CreateHandleTask(
-                package => package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad),
-                (handle, tcs) =>
-                {
-                    handle.Completed += completedHandle => tcs.TrySetResult(completedHandle);
-                });
+            var package = GetReadyDefaultPackage();
+            var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad);
+            await handle;
+            return handle;
         }
 
         #endregion
@@ -213,7 +211,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 检查指定的资源路径是否有效。
         /// 注意：默认包未初始化/不存在时返回 false，避免同步抛异常。
-        /// 与 GetAssetInfo/CreateHandleTask 仅判包是否存在不同，IsLocationValid 依赖已初始化的资源清单，
+        /// 与 GetAssetInfo/GetReadyDefaultPackage 仅判包是否存在不同，IsLocationValid 依赖已初始化的资源清单，
         /// 故此处用 TryGetReadyPackage 额外校验包初始化状态（EOperationStatus.Succeeded）。
         /// </summary>
         /// <param name="path">要检查的资源路径。</param>
