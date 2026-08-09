@@ -22,20 +22,9 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 核心管理器，继承自 `ModuleBase`。负责整个系统的初始化、配置读取以及全局资源操作。
 
-#### 主要属性
-
-| 属性                            | 类型          | 说明               |
-| ----------------------------- | ----------- | ---------------- |
-| `PlayMode`                    | `EPlayMode` | 资源运行模式           |
-| `DefaultPackageName`          | `string`    | 默认资源包名称          |
-| `DownloadingMaxNum`           | `int`       | 资源下载最大并发数量       |
-| `FailedTryAgainNum`           | `int`       | 资源下载失败重试次数       |
-| `AsyncSystemMaxSlicePerFrame` | `int`       | 异步系统每帧最大时间切片（毫秒） |
-
 #### 初始化流程
 
-1. 从 `AssetSetting` 读取配置参数
-2. 初始化 YooAsset 并设置异步系统参数
+YooAsset 与默认资源包的初始化由 AOT 启动流程 `LaunchAssetHelper` 完成；`AssetModule` 仅缓存默认包名，提供资源加载、卸载与查询能力。
 
 #### 资源加载方法
 
@@ -46,30 +35,12 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 UniTask<AssetHandle> LoadAssetAsync(string path)
 UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
 UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
-UniTask<AssetHandle> LoadAssetAsync(AssetInfo assetInfo)
-
-// 加载全部资源
-UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path)
-UniTask<AllAssetsHandle> LoadAllAssetsAsync<T>(string path) where T : Object
-UniTask<AllAssetsHandle> LoadAllAssetsAsync(string path, Type type)
-UniTask<AllAssetsHandle> LoadAllAssetsAsync(AssetInfo assetInfo)
-
-// 加载子资源
-UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path)
-UniTask<SubAssetsHandle> LoadSubAssetsAsync<T>(string path) where T : Object
-UniTask<SubAssetsHandle> LoadSubAssetsAsync(string path, Type type)
-UniTask<SubAssetsHandle> LoadSubAssetsAsync(AssetInfo assetInfo)
-
-// 加载原生文件
-UniTask<BundleFileHandle> LoadRawFileAsync(string path)
-UniTask<BundleFileHandle> LoadRawFileAsync(AssetInfo assetInfo)
 ```
 
 ##### 异步加载场景
 
 ```csharp
 UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
-UniTask<SceneHandle> LoadSceneAsync(AssetInfo assetInfo, LoadSceneMode sceneMode, bool activateOnLoad = true)
 ```
 
 > 注意：`activateOnLoad=false`（预加载后手动激活）时 Provider 在手动激活前不会完成，此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 `true`）。
@@ -82,29 +53,10 @@ UniTask<GameObject> InstantiateAsync(string path)  // 异步实例化(推荐使�
 
 > 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(path)` 释放引用。
 
-#### 资源包管理
+#### 资源查询
 
 ```csharp
-// 初始化资源包（同一包并发初始化共享任务，失败后可重试）
-UniTask<bool> InitPackageAsync(string packageName, string downloadURL = null, string downloadBackupURL = null)
-
-// 资源包操作
-ResourcePackage CreatePackage(string packageName)
-ResourcePackage TryGetPackage(string packageName)
-bool HasPackage(string packageName)
-ResourcePackage GetDefaultPackage()
-ResourcePackage GetPackage(string packageName)
-void SetDefaultPackage(ResourcePackage package)  // [Obsolete] YooAsset v3 已移除全局默认包概念
-
-// 创建下载器（不传 tags 下载全部，建议传标签只下载增量）
-ResourceDownloaderOperation CreateResourceDownloader(params string[] tags)
-
-// 资源查询（默认包未就绪时 IsNeedDownload/HasAssetPath 返回 false，不抛异常；GetAssetInfo(s) 需包已初始化）
-bool IsNeedDownload(AssetInfo assetInfo)
-bool IsNeedDownload(string path)
-AssetInfo[] GetAssetInfos(string[] assetTags)
-AssetInfo[] GetAssetInfos(string assetTag)
-AssetInfo GetAssetInfo(string path)
+AssetInfo GetAssetInfo(string path)   // 默认包未就绪返回 null
 bool HasAssetPath(string path)
 ```
 
@@ -112,11 +64,6 @@ bool HasAssetPath(string path)
 
 ```csharp
 void UnloadAsset(string assetPath)
-void UnloadAsset(string packageName, string assetPath)
-UniTaskVoid UnloadAllAssetsAsync(string packageName)
-UniTaskVoid UnloadUnusedAssetsAsync(string packageName)
-UniTaskVoid ClearAllBundleFilesAsync(string packageName)
-UniTaskVoid ClearUnusedBundleFilesAsync(string packageName)
 ```
 
 ### AssetLoadRegister
@@ -195,30 +142,14 @@ loader.Release();
 
 ## 5. 配置说明
 
-资源系统的配置位于 `AssetSetting` (ScriptableObject) 中：
+资源系统配置统一维护在 `GameSetting`（MonoBehaviour 单例）中，包括运行模式、默认资源包名称、下载并发与重试参数、异步系统时间切片、CDN 根地址等。
 
-| 配置项                           | 类型          | 说明               |
-| ----------------------------- | ----------- | ---------------- |
-| `PlayMode`                    | `EPlayMode` | 运行模式             |
-| `DefaultPackageName`          | `string`    | 默认资源包名称          |
-| `DownloadingMaxNum`           | `int`       | 最大并发下载数          |
-| `FailedTryAgainNum`           | `int`       | 下载失败重试次数         |
-| `AsyncSystemMaxSlicePerFrame` | `int`       | 异步系统每帧最大时间切片（毫秒） |
+- 运行模式与默认资源包名称：`AssetModule` 启动时读取，用于缓存默认包名与日志输出。
+- 下载并发数、失败重试次数、异步系统每帧最大时间切片：由 AOT 启动流程 `LaunchAssetHelper` 读取并应用于 YooAsset（下载器与异步系统参数）。
+
+> 重构后 `AssetModule` 不再直接初始化 YooAsset / 默认资源包，也不对外暴露下载与异步系统参数属性。
 
 ## 6. 使用示例
-
-### 初始化资源包
-
-```csharp
-var assetModule = ModuleManager.GetModule<AssetModule>();
-
-// HostPlayMode 需要传入下载地址
-bool success = await assetModule.InitPackageAsync(
-    "DefaultPackage",
-    downloadURL: "https://your-cdn.com/assets/",
-    downloadBackupURL: "https://your-backup-cdn.com/assets/"
-);
-```
 
 ### 异步加载资源
 
@@ -262,23 +193,7 @@ loader.Release(); // 会自动卸载通过此 loader 加载的所有资源
 await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadSceneMode.Single);
 ```
 
-### 加载原生文件
-
-```csharp
-var rawFileHandle = await assetModule.LoadRawFileAsync("Assets/Game/Data/config.json");
-byte[] fileData = rawFileHandle.GetRawFileData();
-string fileText = rawFileHandle.GetRawFileText();
-rawFileHandle.Release(); // RAW 文件句柄同为引用计数，使用完毕后必须释放
-```
-
-### 子资源加载（如图集中的精灵）
-
-```csharp
-var subAssetsHandle = await assetModule.LoadSubAssetsAsync<Sprite>("Assets/Game/Atlases/UIAtlas.spriteatlas");
-Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
-```
-
-## 8. 依赖
+## 7. 依赖
 
 - [YooAsset](https://www.yooasset.com/) - 资源管理核心
 - [UniTask](https://github.com/Cysharp/UniTask) - 异步编程支持
@@ -286,19 +201,18 @@ Sprite[] sprites = subAssetsHandle.GetSubAssetObjects<Sprite>();
 - Hotfix.Framework.Event - 事件系统
 - Hotfix.Framework.ReferencePool - 引用池系统
 
-## 9. 注意事项
+## 8. 注意事项
 
 ### 通用注意事项
 
 1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.Release()` 会自动释放其加载的所有句柄。
-2. **并发去重**：同一路径并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_LoadingTasks`/`m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
+2. **并发去重**：同一路径并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
-4. **`UnloadAllAssetsAsync` 挂起风险**：该操作会释放所有已加载句柄，进行中的 `LoadAssetAsync` 句柄被 Release 后 `Completed` 回调不再触发，其 UniTask 将永久挂起，请确保调用时无进行中的加载。
-5. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
-6. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset`/`UnloadUnusedAssetsAsync` 显式卸载。
-7. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载/清理方法（`UnloadAsset`/`UnloadUnusedAssetsAsync`/`ClearAllBundleFilesAsync`/`ClearUnusedBundleFilesAsync`）及查询方法（`HasPackage`/`TryGetPackage`/`IsNeedDownload`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回），与 `UnloadAllAssetsAsync` 的 `IsInitialized` 检查一致。
-8. **`AssetLoadRegister` 对象池防护**：`Release()` 归还对象池后，在途加载任务完成时检测到已归还会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止复用泄漏）。
-9. 热更新流程需要通过事件系统监听各个阶段的状态。
+4. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
+5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
+6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
+7. **`AssetLoadRegister` 对象池防护**：`Release()` 归还对象池后，在途加载任务完成时检测到已归还会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止复用泄漏）。
+8. 热更新流程需要通过事件系统监听各个阶段的状态。
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
 
