@@ -191,6 +191,8 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 检查指定的资源路径是否有效。
         /// 注意：默认包未初始化/不存在时返回 false，避免同步抛异常。
+        /// 与 GetAssetInfo/CreateHandleTask 仅判包是否存在不同，IsLocationValid 依赖已初始化的资源清单，
+        /// 故此处用 TryGetReadyPackage 额外校验包初始化状态（EOperationStatus.Succeeded）。
         /// </summary>
         /// <param name="path">要检查的资源路径。</param>
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>
