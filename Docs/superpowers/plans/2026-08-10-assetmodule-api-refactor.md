@@ -494,6 +494,91 @@ git commit -m "[AI]refactor: AssetModule 移除 GetDefaultPackage()，改用 Yoo
 
 ---
 
+### Task 7: 提取 `CreateHandleTask` 守卫，加载方法恢复单行表达式体
+
+> 执行期新增（2026-08-10）。用户确认：Task 6 在 4 个加载方法处各写了一段 `if (!YooAssets.IsInitialized || !TryGetPackage(...)) return UniTask.FromException<T>(...)` 守卫，重复 4 次。提取到收口方法 `CreateHandleTask`（4 处加载全部走它），调用点恢复单行表达式体。守卫与 faulted-task 契约集中一处。
+
+**Files:**
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.cs`（`CreateHandleTask` 去 `static`、`Func<T>` → `Func<ResourcePackage, T>`、顶部加守卫）
+- Modify: `Unity/Assets/Scripts/Hotfix/Framework/Asset/AssetModule.API.cs`（4 个加载方法恢复单行）
+
+**Interfaces:**
+- Consumes: Task 6 后 `CreateHandleTask`（static，`Func<T>`）与 4 个加载方法（6 行守卫块）
+- Produces: `CreateHandleTask<T>(Func<ResourcePackage, T> load, Action<T, UniTaskCompletionSource<T>> bind)`（实例方法，含包未就绪守卫）；4 个加载方法单行 `p => p.Xxx(...)`
+
+- [ ] **Step 1: 改 `AssetModule.cs` 的 `CreateHandleTask`**
+
+替换为（含去 `static`、签名改 `Func<ResourcePackage, T>`、顶部守卫；`DefaultPackageName` 是实例属性，故去 `static`）：
+
+```csharp
+        /// <summary>
+        /// 将默认资源包上发起的 YooAsset 异步句柄包装为 UniTask。
+        /// YooAssets 未初始化或默认包不存在时返回 faulted UniTask，保持"不同步抛异常"契约；
+        /// 同步异常（句柄加载后立即失效等）同样转为 faulted UniTask。
+        /// </summary>
+        /// <typeparam name="T">句柄类型。</typeparam>
+        /// <param name="load">以默认资源包发起加载并返回句柄。</param>
+        /// <param name="bind">将句柄的 Completed 事件绑定到完成源。</param>
+        private UniTask<T> CreateHandleTask<T>(Func<ResourcePackage, T> load, Action<T, UniTaskCompletionSource<T>> bind) where T : HandleBase
+        {
+            // 默认包未就绪：转 faulted UniTask（不同步抛，保持契约）
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+                return UniTask.FromException<T>(new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}"));
+
+            var taskCompletionSource = new UniTaskCompletionSource<T>();
+            T   handle               = null;
+            try
+            {
+                handle = load(package);
+                bind(handle, taskCompletionSource);
+            }
+            catch (Exception e)
+            {
+                // bind 失败（如句柄加载后立即失效）时释放已创建的句柄，避免残留
+                handle?.Release();
+                taskCompletionSource.TrySetException(e);
+            }
+
+            return taskCompletionSource.Task;
+        }
+```
+
+- [ ] **Step 2: 改 `AssetModule.API.cs` 的 4 个加载方法为单行**
+
+```csharp
+public UniTask<AssetHandle> LoadAssetAsync(string path)
+    => CreateHandleTask(p => p.LoadAssetAsync(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+
+public UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
+    => CreateHandleTask(p => p.LoadAssetAsync<T>(path), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+
+public UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
+    => CreateHandleTask(p => p.LoadAssetAsync(path, type), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+
+public UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
+    => CreateHandleTask(p => p.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad), (h, t) => { h.Completed += h2 => t.TrySetResult(h2); });
+```
+
+`GetAssetInfo` 保持 Task 6 版本不动（fail 返回 null，语义不同）。
+
+- [ ] **Step 3: 复核 `CreateHandleTask` 调用方**
+
+```bash
+cd "D:/_WorkSpace/Unity/FuFramework2.0"
+grep -rn "CreateHandleTask" Unity/Assets/Scripts --include=*.cs
+```
+
+预期仅 5 处：`AssetModule.cs` 定义 + `AssetModule.API.cs` 4 个加载方法。确认没有其他 `Func<T>` 形式调用残留。
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add "Unity/Assets/Scripts/Hotfix/Framework/Asset/"
+git commit -m "[AI]refactor: 提取 CreateHandleTask 包未就绪守卫，加载方法恢复单行表达式体"
+```
+
+---
+
 ## 完成标准（全局验证）
 
 - [ ] Task 1-3 各经 unity-cli 编译零错误
