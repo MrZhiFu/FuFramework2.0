@@ -16,7 +16,7 @@ Asset 模块（基于 YooAsset 的资源管理模块）当前把**公开 API、�
 - 空壳 `AssetModuleInspector.cs` 全部逻辑被注释，顶部 TODO「后续考虑使用单独的调试界面去显示模块数据」，但该调试界面已确定不做（YooAsset 自带调试窗口）。
 
 **② 接口冗余**
-经全库（`Unity/` 内全部 .cs）外部调用审计，约 20 个 public 接口零调用，属死接口：
+经全库（`Unity/` 内全部 .cs）外部调用审计，25 个 public 接口/成员零调用，属死接口：
 - 纯 YooAsset 透传：`LoadAllAssetsAsync`×4、`LoadSubAssetsAsync`×4、`LoadRawFileAsync`×2、`GetAssetInfos`×2、`CreateResourceDownloader`、`HasPackage`、`GetPackage`。
 - AssetInfo 重载无人用：`LoadAssetAsync(AssetInfo)`、`LoadSceneAsync(AssetInfo,…)`。
 - 卸载/清理变体无人用：`UnloadAsset(package,path)` 双参、`UnloadUnusedAssetsAsync`、`ClearAllBundleFilesAsync`、`ClearUnusedBundleFilesAsync`。
@@ -89,7 +89,7 @@ public partial class AssetModule : ModuleBase
 }
 ```
 
-### 3.2 删除项（20 个）
+### 3.2 删除项（25 个，含重载与属性）
 
 | 删除 | 原因 |
 |---|---|
