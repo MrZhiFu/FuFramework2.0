@@ -44,6 +44,12 @@ namespace Hotfix.Framework.Asset
         private bool m_Released;
 
         /// <summary>
+        /// 生命周期版本号。归还对象池时递增；在途加载任务恢复时比对版本，
+        /// 防止实例被 Release+复用后旧生命周期的续延污染新实例（m_Released 会被 Create 重置，单靠它挡不住）。
+        /// </summary>
+        private int m_Version;
+
+        /// <summary>
         /// 创建资源加载器
         /// </summary>
         /// <returns></returns>
@@ -162,6 +168,7 @@ namespace Hotfix.Framework.Asset
         private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
             AssetHandle assetHandle = null;
+            var version = m_Version; // 捕获生命周期版本，恢复后比对以识别 Release+复用
             try
             {
                 assetHandle = await loadFunc(path);
@@ -170,8 +177,8 @@ namespace Hotfix.Framework.Asset
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                 }
 
-                // 加载期间被 Release 归还对象池：句柄已不归本实例，释放并阻止写回（否则复用泄漏）
-                if (m_Released)
+                // 加载期间实例被 Release（m_Released）或被 Release+复用（版本变化）：句柄已不归本实例，释放并阻止写回（否则复用泄漏）
+                if (m_Released || m_Version != version)
                 {
                     assetHandle.Release();
                     assetHandle = null; // 置空避免 catch 二次释放
@@ -232,6 +239,7 @@ namespace Hotfix.Framework.Asset
         public void Clear()
         {
             m_Released = true;
+            unchecked { m_Version++; }
             UnloadAll();
             m_LoadingTasks.Clear();
         }
@@ -244,6 +252,7 @@ namespace Hotfix.Framework.Asset
         public void Release()
         {
             m_Released = true;
+            unchecked { m_Version++; }
             UnloadAll();
             m_LoadingTasks.Clear();
             GlobalModule.ReferencePoolModule.Recycle(this);

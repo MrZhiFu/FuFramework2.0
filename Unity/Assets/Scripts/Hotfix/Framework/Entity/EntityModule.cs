@@ -1005,7 +1005,15 @@ namespace Hotfix.Framework.Entity
             m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
 
             // 实例化实体
-            var entityGo     = m_EntityHelper.InstantiateEntity(entityAssetHandle);
+            var entityGo = m_EntityHelper.InstantiateEntity(entityAssetHandle);
+            if (entityGo == null)
+            {
+                // 资源不是 GameObject 或句柄无效：释放句柄、回收信息、完成 tcs，避免句柄/池对象泄漏与 await 挂起
+                m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
+                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 资源不是 GameObject，无法实例化。"));
+                return;
+            }
             var entityObject = EntityObject.Create(entityAssetName, entityAssetHandle, entityGo, m_EntityHelper);
             showEntityInfo.EntityGroup.RegisterEntityObject(entityObject, true);
 

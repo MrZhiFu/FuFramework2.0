@@ -495,6 +495,7 @@ namespace Hotfix.Framework.Sound
             if (m_LoadingToReleaseSet.Contains(playSoundInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
+                m_LoadingSoundList.Remove(playSoundInfo.SerialId); // 停止加载的声音也从加载列表移除，避免 IsLoadingSound 恒 true
                 if (playSoundInfo.SoundParams != null)
                     GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
 
@@ -550,6 +551,15 @@ namespace Hotfix.Framework.Sound
             if (errorCodeValue == EPlaySoundErrorCode.IgnoredBecauseLowPriority)
             {
                 FuLogger.LogInfo(errorMessage);
+
+                // 与其他失败分支一致，释放播放相关信息（否则低优先级声音每次泄漏 3 个池对象）
+                if (playSoundInfo.SoundParams != null)
+                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+
+                if (playSoundInfo.SoundParams3D != null)
+                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
+
+                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
                 return;
             }
 
