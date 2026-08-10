@@ -207,7 +207,7 @@ namespace Hotfix
             {
                 var textAsset = assetHandle.GetAssetObject<TextAsset>();
                 if (textAsset == null)
-                    throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
+                    throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
                 return ByteBuf.Wrap(textAsset.bytes);
             }
             finally
@@ -229,7 +229,7 @@ namespace Hotfix
             {
                 var textAsset = assetHandle.GetAssetObject<TextAsset>();
                 if (textAsset == null)
-                    throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
+                    throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
                 return JSON.Parse(textAsset.text);
             }
             finally
