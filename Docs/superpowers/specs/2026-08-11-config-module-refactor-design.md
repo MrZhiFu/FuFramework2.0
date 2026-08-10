@@ -30,7 +30,7 @@ Config 模块（配置表管理系统，含 `ConfigModule` / `IDataTable` / `Bas
 1. **对齐模块统一模式**：`ConfigModule` 拆出 `ConfigModule.API.cs` 分部，对齐 ReferencePool / AssetModule。
 2. **优化数据结构与性能**：`SortedDictionary` → `Dictionary`，删除无效类型名缓存，收敛冗余查询。
 3. **修正接口语义缺陷**：`AddConfig` 返回 `bool` + 告警、`CfgNames` 返回快照、string 接口空名卫语句、README 只读契约。
-4. **契约加固**：`All` / `ToArray` 复用实现、`FuGuard` / `FuException` 卫语句、README 补充「名称 = 类名」约束。
+4. **契约加固**：`All` / `ToArray` 复用实现、`FuGuardEx` 卫语句（抛 `ArgumentNullException`）、README 补充「名称 = 类名」约束。
 5. **新增只读调试面板**：仿 ReferencePoolModuleWindow，提供配置查询调试能力。
 
 ### 2.2 已确认的关键决策
@@ -105,9 +105,9 @@ public sealed partial class ConfigModule : ModuleBase
 | `Count` | 不变，`m_CfgDataDict.Count` |
 | `CfgNames` | `IEnumerable<string>` → `string[]` 快照（`Keys.ToArray()`），外部遍历不弱一致 |
 | `GetConfig<T>()` | **单次查询**：`var cfg = GetConfig(typeof(T).Name); return cfg == null ? default : (T)cfg;` 消除 HasConfig 预检 + 双 GetTypeName 冗余 |
-| `GetConfig(string)` | 首行 `FuGuard.NotNullOrEmpty(cfgName, nameof(cfgName))`，空名抛 `FuException` |
+| `GetConfig(string)` | 首行 `cfgName.NotNullOrEmpty(nameof(cfgName))`，空名抛 `ArgumentNullException` |
 | `HasConfig(string)` | 加空名卫语句（泛型版名称源自 `typeof(T).Name` 不会为空，无需守卫） |
-| `AddConfig` | `void` → **`bool`**：`FuGuard.NotNullOrEmpty(cfgName)` + `FuGuard.NotNull(cfgValue)`；重复时 `FuLogger.LogWarning` 并返回 `false`；成功 `true` |
+| `AddConfig` | `void` → **`bool`**：`cfgName.NotNullOrEmpty(nameof(cfgName))` + `cfgValue.NotNull(nameof(cfgValue))`；重复时 `FuLogger.LogWarning` 并返回 `false`；成功 `true` |
 | `RemoveConfig<T>` / `RemoveConfig(string)` | 加空名卫语句，其余不变 |
 | `RemoveAllConfigs` | 不变 |
 
