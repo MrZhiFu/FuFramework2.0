@@ -254,8 +254,15 @@ namespace Hotfix.Framework.Sound
                 if (!m_IsAppPause && !IsPlaying && m_AudioSource.clip && Time >= Length)
                 {
                     FuLogger.LogInfo($"[SoundModule.SoundAgent] 声音 '{m_AudioSource.clip.name}' 播放完成!");
-                    m_OnPlayEnd?.Invoke();
-                    Reset();
+                    try
+                    {
+                        m_OnPlayEnd?.Invoke();
+                    }
+                    finally
+                    {
+                        Reset(); // 回调抛异常也必须释放句柄/资源，否则句柄泄漏且每帧重复回调
+                    }
+
                     return;
                 }
 

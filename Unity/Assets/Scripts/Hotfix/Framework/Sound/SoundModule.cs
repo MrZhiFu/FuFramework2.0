@@ -345,31 +345,45 @@ namespace Hotfix.Framework.Sound
                 FuLogger.LogError(errorMessage);
                 var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
                 m_EventModule.Broadcast(this, failureEventArgs);
+                // 播放未发起，回收已创建的参数对象，避免泄漏
+                if (soundParams != null)
+                    GlobalModule.ReferencePoolModule.Recycle(soundParams);
+                if (soundParams3D != null)
+                    GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
                 return newSerialId;
             }
 
             m_LoadingSoundList.Add(newSerialId);
 
             // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
+            AssetHandle assetOperationHandle = null;
+            PlaySoundInfo playSoundInfo      = null;
             try
             {
-                var assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
-                var assetObject          = assetOperationHandle.GetAssetObject<AudioClip>();
+                assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
+                var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
                 // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
                 // 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
-                var playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, assetOperationHandle, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
+                playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, assetOperationHandle, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
                 LoadAssetSuccessCallback(playSoundInfo);
                 return newSerialId;
             }
             catch
             {
-                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态并回收参数对象，允许重试
+                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试
                 m_LoadingSoundList.Remove(newSerialId);
                 m_LoadingToReleaseSet.Remove(newSerialId);
-                if (soundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(soundParams);
-                if (soundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
+                // 仅当参数尚未交接给 LoadAssetSuccessCallback（异常发生在 PlaySoundInfo.Create 之前，playSoundInfo 为 null）时，
+                // 才在此回收参数并释放句柄；若回调已接管（playSoundInfo 非空），句柄/参数已由其失败分支释放/回收，再回收会双重回收。
+                if (playSoundInfo == null)
+                {
+                    assetOperationHandle?.Release();
+                    if (soundParams != null)
+                        GlobalModule.ReferencePoolModule.Recycle(soundParams);
+                    if (soundParams3D != null)
+                        GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
+                }
+
                 throw;
             }
         }

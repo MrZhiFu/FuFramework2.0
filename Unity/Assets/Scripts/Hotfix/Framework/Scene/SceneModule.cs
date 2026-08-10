@@ -117,6 +117,7 @@ namespace Hotfix.Framework.Scene
             m_LoadedSceneDict.Clear();
             m_LoadingSceneDict.Clear();
             m_UnloadingSceneDict.Clear();
+            m_LoadingSceneSet.Clear(); // 若不清理，热更重载后 IsLoading 对旧路径恒 true，LoadScene 永久拒绝
 
             EventRegister.Release();
             EventRegister = null;
