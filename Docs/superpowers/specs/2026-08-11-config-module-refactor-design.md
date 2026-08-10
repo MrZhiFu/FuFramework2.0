@@ -106,8 +106,8 @@ public sealed partial class ConfigModule : ModuleBase
 | `CfgNames` | `IEnumerable<string>` → `string[]` 快照（`Keys.ToArray()`），外部遍历不弱一致 |
 | `GetConfig<T>()` | **单次查询**：`var cfg = GetConfig(typeof(T).Name); return cfg == null ? default : (T)cfg;` 消除 HasConfig 预检 + 双 GetTypeName 冗余 |
 | `GetConfig(string)` | 首行 `FuGuard.NotNullOrEmpty(cfgName, nameof(cfgName))`，空名抛 `FuException` |
-| `HasConfig<T>` / `HasConfig(string)` | 加空名卫语句 |
-| `AddConfig` | `void` → **`bool`**：`FuGuard.NotNull(cfgValue)`；重复时 `FuLogger.LogWarning` 并返回 `false`；成功 `true` |
+| `HasConfig(string)` | 加空名卫语句（泛型版名称源自 `typeof(T).Name` 不会为空，无需守卫） |
+| `AddConfig` | `void` → **`bool`**：`FuGuard.NotNullOrEmpty(cfgName)` + `FuGuard.NotNull(cfgValue)`；重复时 `FuLogger.LogWarning` 并返回 `false`；成功 `true` |
 | `RemoveConfig<T>` / `RemoveConfig(string)` | 加空名卫语句，其余不变 |
 | `RemoveAllConfigs` | 不变 |
 
@@ -145,7 +145,7 @@ public sealed partial class ConfigModule : ModuleBase
 ┌─ 工具栏：表名搜索框 | 自动刷新(0.5s节流) | 刷新按钮
 ├─ 模块概览：配置表总数 N
 └─ 配置表列表（Foldout，按表名搜索过滤）
-   ├─ 表名（青色高亮）+ 数据行数 + 加载状态
+   ├─ 表名（青色高亮）+ 数据行数（面板只列出已注册即已加载的表，无单独加载状态）
    ├─ [展开] 加载信息统计行：类型名 | long key 数量 | string key 数量（反射 protected
    │          字段 LongKeyDataDict/StrKeyDataDict → IDictionary.Count；仅 string key → 判为本地化表）
    ├─ [展开] 表内搜索框（字段值模糊过滤）
