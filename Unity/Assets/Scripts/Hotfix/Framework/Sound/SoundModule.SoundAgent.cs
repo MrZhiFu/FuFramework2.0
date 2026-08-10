@@ -402,6 +402,7 @@ namespace Hotfix.Framework.Sound
                     m_AssetModule.UnloadAsset(SoundAssetPath);
                     m_SoundAsset = null;
                 }
+                SoundAssetPath = null; // 清理陈旧路径，避免后续误用
 
                 transform.localPosition = Vector3.zero;
                 m_AudioSource.clip      = null;

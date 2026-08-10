@@ -72,6 +72,7 @@ namespace Hotfix.Framework.Asset
         /// 异步加载场景。
         /// 注意：activateOnLoad=false（预加载后手动激活）时，Provider 在手动激活前不会完成，
         /// 此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 true）的场景加载。
+        /// LocalPhysicsMode 固定为 None，未开放自定义。
         /// 返回的 SceneHandle 使用完毕后必须调用 Release()（成功或失败均需释放），否则资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
@@ -151,9 +152,13 @@ namespace Hotfix.Framework.Asset
             {
                 var instantiateOperation = assetHandle.InstantiateAsync();
                 await instantiateOperation;
-                // 模块销毁后：句柄已随 OnDispose 释放，不返回孤儿实例，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
+                // 模块销毁后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
                 if (m_IsDisposed)
+                {
+                    if (instantiateOperation.Result != null)
+                        Object.Destroy(instantiateOperation.Result);
                     throw new ObjectDisposedException(nameof(AssetModule));
+                }
                 if (instantiateOperation.Result == null)
                     throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
                 return instantiateOperation.Result;

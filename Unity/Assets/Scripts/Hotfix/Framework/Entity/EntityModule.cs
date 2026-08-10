@@ -523,36 +523,40 @@ namespace Hotfix.Framework.Entity
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
+                // 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
+                AssetHandle assetOperationHandle;
                 try
                 {
-                    var assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName);
-                    assetOperationHandle.Completed += handle =>
-                    {
-                        // 实体信息
-                        var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
-
-                        // 用 Status 而非 IsDone 判断成功（失败句柄 IsDone 同样为 true，会误走成功回调）
-                        if (handle.Status == EOperationStatus.Succeeded)
-                            LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
-                        else
-                        {
-                            var status       = handle.Status;
-                            var errorMessage = handle.Error;
-                            handle.Release(); // 失败句柄未被实体系统接管，释放避免残留
-                            LoadAssetFailureCallback(tcs, entityAssetName, status, errorMessage, showEntityInfo);
-                        }
-                    };
-
-                    return await tcs.Task;
+                    assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName);
                 }
                 catch
                 {
-                    // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态并回收额外信息，允许重试（否则 IsLoadingEntity 恒 true）
                     m_LoadingEntityDict.Remove(entityId);
                     m_LoadingToReleaseSet.Remove(serialId);
                     GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
                     throw;
                 }
+
+                // 订阅完成回调：回调内部已接管并连带回收 showEntityInfoEx（ShowEntityInfo.Clear → UserData）；
+                // 若回调抛异常或 tcs 完成异常，直接传播，此处不再二次回收（否则引用池抛"该对象已经被释放"掩盖真实异常）
+                assetOperationHandle.Completed += handle =>
+                {
+                    // 实体信息
+                    var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
+
+                    // 用 Status 而非 IsDone 判断成功（失败句柄 IsDone 同样为 true，会误走成功回调）
+                    if (handle.Status == EOperationStatus.Succeeded)
+                        LoadAssetSuccessCallback(tcs, entityAssetName, handle, handle.Progress, showEntityInfo);
+                    else
+                    {
+                        var status       = handle.Status;
+                        var errorMessage = handle.Error;
+                        handle.Release(); // 失败句柄未被实体系统接管，释放避免残留
+                        LoadAssetFailureCallback(tcs, entityAssetName, status, errorMessage, showEntityInfo);
+                    }
+                };
+
+                return await tcs.Task;
             }
 
             // 实体资源已经加载完成，开始显示实体

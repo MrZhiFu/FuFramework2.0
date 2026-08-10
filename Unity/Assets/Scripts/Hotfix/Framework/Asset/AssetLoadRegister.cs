@@ -220,21 +220,20 @@ namespace Hotfix.Framework.Asset
 
             foreach (var path in paths)
             {
-                Unload(path);
+                Unload(path); // 内部已 m_HandleDict.Remove(path)
             }
-
-            m_HandleDict.Clear();
         }
 
         /// <summary>
-        /// 清理引用。
+        /// 清理引用（IReference 归还对象池时调用）。
+        /// 注意：m_AssetModule 是静态字段（所有实例共享），且每次 Create() 都会重新赋值，
+        /// 此处不得置 null——否则任一实例归还都会破坏其他存活实例的模块引用。
         /// </summary>
         public void Clear()
         {
             m_Released = true;
             UnloadAll();
             m_LoadingTasks.Clear();
-            m_AssetModule = null;
         }
 
         /// <summary>
