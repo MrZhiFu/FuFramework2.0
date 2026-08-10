@@ -992,6 +992,8 @@ namespace Hotfix.Framework.Entity
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
                 GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
                 m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
+                // 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
+                tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 加载中已被隐藏，取消显示。"));
                 return;
             }
 
@@ -1048,6 +1050,8 @@ namespace Hotfix.Framework.Entity
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
                 // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
                 GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                // 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
+                tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 加载失败且加载中已被隐藏。"));
                 return;
             }
 

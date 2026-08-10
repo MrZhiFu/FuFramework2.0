@@ -287,12 +287,14 @@ namespace Hotfix.Framework.Sound
             internal bool SetSoundAsset(object soundAsset, AssetHandle soundAssetHandle)
             {
                 Reset();
+                // 先校验资源类型：非 AudioClip 时不设置状态（m_SoundAsset/m_SoundAssetHandle 保持 null），
+                // 避免后续 Reset 因 m_SoundAsset 非空而调 UnloadAsset(null) 抛异常；句柄由调用方（SoundGroup）释放。
+                var audioClip = soundAsset as AudioClip;
+                if (!audioClip) return false;
+
                 m_SoundAsset       = soundAsset;
                 m_SoundAssetHandle = soundAssetHandle;
                 SetSoundAssetTime  = DateTime.UtcNow;
-
-                var audioClip = soundAsset as AudioClip;
-                if (!audioClip) return false;
                 m_AudioSource.clip = audioClip;
                 return true;
             }

@@ -78,6 +78,11 @@ namespace Hotfix.Framework.Scene
         /// </summary>
         private AssetModule m_AssetModule;
 
+        /// <summary>
+        /// 是否已销毁（热更重载/模块释放）。防止在途场景加载完成后把句柄写回已销毁模块。
+        /// </summary>
+        private bool m_IsDisposed;
+
         /// 事件订阅器
         private EventRegister EventRegister { get; set; }
 
@@ -87,6 +92,7 @@ namespace Hotfix.Framework.Scene
         protected internal override void OnInit()
         {
             Instance = this;
+            m_IsDisposed = false;
             EventRegister = EventRegister.Create();
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
         }
@@ -107,6 +113,8 @@ namespace Hotfix.Framework.Scene
         /// </summary>
         protected internal override void OnDispose()
         {
+            m_IsDisposed = true;
+
             // 反向遍历已加载的场景，卸载所有已加载的场景
             var loadedScenePaths = new string[m_LoadedSceneDict.Count];
             m_LoadedSceneDict.Keys.CopyTo(loadedScenePaths, 0);
@@ -343,6 +351,12 @@ namespace Hotfix.Framework.Scene
             try
             {
                 var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode);
+                // 模块已销毁（热更重载期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
+                if (m_IsDisposed)
+                {
+                    sceneOperationHandle.Release();
+                    throw new ObjectDisposedException(nameof(SceneModule));
+                }
                 m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
                 sceneOperationHandle.Completed += OnLoadSceneCompleted;
                 return sceneOperationHandle;
@@ -400,11 +414,12 @@ namespace Hotfix.Framework.Scene
                 }
                 else
                 {
-                    // 卸载失败
+                    // 卸载失败：场景仍已加载，恢复登记以便重试卸载（不释放句柄——场景仍存在，YooAsset 的 sceneUnloaded 钩子不会触发，句柄仍有效）
                     m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
                     if (sceneHandle == null) return;
                     FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
+                    m_LoadedSceneDict.Add(sceneAssetPath, sceneHandle);
                     var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
                     EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
                 }
@@ -440,6 +455,13 @@ namespace Hotfix.Framework.Scene
 
             var assetPath = sceneHandle.GetAssetInfo().AssetPath;
             m_LoadingSceneDict.Remove(assetPath, out var sceneHandleData);
+
+            // 模块已销毁（OnDispose 已清空字典）：不登记，释放句柄避免泄漏
+            if (m_IsDisposed)
+            {
+                sceneHandle.Release();
+                return;
+            }
 
             if (sceneHandleData == null) return;
             if (sceneHandle.Status == EOperationStatus.Succeeded)

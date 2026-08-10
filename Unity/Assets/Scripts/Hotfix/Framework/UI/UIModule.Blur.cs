@@ -161,6 +161,10 @@ namespace Hotfix.Framework.UI
             {
                 FuLogger.LogError($"[UIModule] UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
 
+                // 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留到模块销毁才释放
+                m_BlurShaderHandle?.Release();
+                m_BlurShaderHandle = null;
+
                 // 模块已销毁时不污染新任务状态
                 if (m_IsDisposed) return;
                 m_ShaderLoadTask.TrySetException(e);

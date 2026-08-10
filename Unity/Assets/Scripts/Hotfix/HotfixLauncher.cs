@@ -203,9 +203,17 @@ namespace Hotfix
         {
             var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
-            var bytes      = assetHandle.GetAssetObject<TextAsset>().bytes;
-            assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
-            return ByteBuf.Wrap(bytes);
+            try
+            {
+                var textAsset = assetHandle.GetAssetObject<TextAsset>();
+                if (textAsset == null)
+                    throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
+                return ByteBuf.Wrap(textAsset.bytes);
+            }
+            finally
+            {
+                assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+            }
         }
 #else
         /// <summary>
@@ -217,9 +225,17 @@ namespace Hotfix
         {
             var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
-            var text        = assetHandle.GetAssetObject<TextAsset>().text;
-            assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
-            return JSON.Parse(text);
+            try
+            {
+                var textAsset = assetHandle.GetAssetObject<TextAsset>();
+                if (textAsset == null)
+                    throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
+                return JSON.Parse(textAsset.text);
+            }
+            finally
+            {
+                assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+            }
         }
 #endif
     }
