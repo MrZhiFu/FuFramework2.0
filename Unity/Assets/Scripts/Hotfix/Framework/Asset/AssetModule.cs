@@ -86,10 +86,10 @@ namespace Hotfix.Framework.Asset
                 entry.Handle.Release();
             m_InstantiateRefDict.Clear();
 
-            // 清理在途实例化加载任务（其句柄已随 UnloadAllAssets 释放，任务完成回调不得再写回引用字典）
+            // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 m_IsDisposed 检查自行释放句柄，不得再写回引用字典）。
+            // 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
+            // 且热更重载时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
             m_InstantiateLoadingTasks.Clear();
-
-            UnloadAllAssetsAsync(DefaultPackageName).Forget();
         }
 
         /// <summary>
@@ -101,21 +101,6 @@ namespace Hotfix.Framework.Asset
             if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
                 throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
             return package;
-        }
-
-        /// <summary>
-        /// 强制卸载所有资源。
-        /// 注意：该方法请在合适的时机调用。Package在销毁的时候也会自动调用该方法。
-        /// 警告：此操作会释放所有已加载句柄；进行中的 LoadAssetAsync 句柄被 Release 后
-        /// Completed 回调不再触发，其 UniTask 将永久挂起，请确保调用时无进行中的加载。
-        /// </summary>
-        /// <param name="packageName">资源包名称</param>
-        private async UniTaskVoid UnloadAllAssetsAsync(string packageName)
-        {
-            packageName.NotNull(nameof(packageName));
-            if (!YooAssets.IsInitialized) return;
-            if (!YooAssets.TryGetPackage(packageName, out var package)) return;
-            await package.UnloadAllAssetsAsync();
         }
 
         /// <summary>

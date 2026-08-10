@@ -98,17 +98,6 @@ namespace Hotfix.Framework.Scene
         }
 
         /// <summary>
-        /// 帧更新
-        /// </summary>
-        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-        {
-            foreach (var (_, sceneHandleData) in m_LoadingSceneDict)
-            {
-                OnLoadSceneUpdate(sceneHandleData.SceneHandle);
-            }
-        }
-
-        /// <summary>
         /// 释放
         /// </summary>
         protected internal override void OnDispose()
@@ -350,7 +339,8 @@ namespace Hotfix.Framework.Scene
             m_LoadingSceneSet.Add(sceneAssetPath);
             try
             {
-                var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode);
+                var sceneName = GetSceneName(sceneAssetPath);
+                var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
                 // 模块已销毁（热更重载期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
                 if (m_IsDisposed)
                 {
@@ -431,17 +421,14 @@ namespace Hotfix.Framework.Scene
         #region 加载场景回调
 
         /// <summary>
-        /// 加载场景更新回调。
+        /// 加载场景进度回调（LoadSceneAsync 每帧上报，供加载界面显示进度）。
         /// </summary>
-        /// <param name="sceneHandle"></param>
-        private void OnLoadSceneUpdate(SceneHandle sceneHandle)
+        /// <param name="sceneName">场景名称。</param>
+        /// <param name="progress">加载进度（0~1）。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        private void OnLoadSceneProgress(string sceneName, float progress, object userData)
         {
-            sceneHandle.NotNull(nameof(sceneHandle));
-            var assetPath = sceneHandle.GetAssetInfo().AssetPath;
-            if (!m_LoadingSceneDict.TryGetValue(assetPath, out var value)) return;
-
-            FuLogger.LogInfo($"[SceneModule] 加载场景中 '{sceneHandle.SceneName}' 进度--{sceneHandle.Progress}.");
-            var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneHandle.SceneName, sceneHandle.Progress, value.UserData);
+            var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneName, progress, userData);
             EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
         }
 

@@ -73,16 +73,31 @@ namespace Hotfix.Framework.Asset
         /// 注意：activateOnLoad=false（预加载后手动激活）时，Provider 在手动激活前不会完成，
         /// 此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 true）的场景加载。
         /// LocalPhysicsMode 固定为 None，未开放自定义。
+        /// onProgress：加载进度回调（0~1），每帧上报一次直至加载完成；不需要进度时传 null。
         /// 返回的 SceneHandle 使用完毕后必须调用 Release()（成功或失败均需释放），否则资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="sceneMode">场景模式</param>
         /// <param name="activateOnLoad">是否加载完成自动激活</param>
+        /// <param name="onProgress">加载进度回调（可选）。</param>
         /// <returns></returns>
-        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
+        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true, Action<float> onProgress = null)
         {
             var package = GetReadyDefaultPackage();
             var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad);
+
+            // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）
+            if (onProgress != null)
+            {
+                while (!handle.IsDone)
+                {
+                    onProgress(handle.Progress);
+                    await UniTask.Yield();
+                }
+
+                onProgress(handle.Progress);
+            }
+
             await handle;
             return handle;
         }
