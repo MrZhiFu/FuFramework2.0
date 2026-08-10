@@ -61,7 +61,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径。</param>
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
-            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync<T>(path));
+            var handle = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync<T>);
 
             // GetAssetObject<T> 用 as 转换，类型不匹配时返回 null，需显式报错（否则调用方 NRE 难排查）
             var result = handle.GetAssetObject<T>();
@@ -79,7 +79,7 @@ namespace Hotfix.Framework.Asset
         /// <returns></returns>
         public async UniTask<Object> LoadAsync(string path, Type type)
         {
-            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path, type));
+            var handle = await LoadAssetHandleAsync(path, p => m_AssetModule.LoadAssetAsync(p, type));
             return handle.AssetObject;
         }
 
@@ -89,7 +89,7 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径。</param>
         public async UniTask<Object> LoadAsync(string path)
         {
-            var handle = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
+            var handle = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync);
             return handle.AssetObject;
         }
 
@@ -100,7 +100,7 @@ namespace Hotfix.Framework.Asset
         /// <returns>实例化后的实体。</returns>
         public async UniTask<GameObject> InstantiateAsync(string path)
         {
-            var assetHandle          = await LoadAssetHandleAsync(path, () => m_AssetModule.LoadAssetAsync(path));
+            var assetHandle          = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync);
             var instantiateOperation = assetHandle.InstantiateAsync();
             await instantiateOperation;
             if (instantiateOperation.Result == null)
@@ -112,9 +112,9 @@ namespace Hotfix.Framework.Asset
         /// 加载资源句柄的通用逻辑。
         /// </summary>
         /// <param name="path">资源路径。</param>
-        /// <param name="loadFunc">实际加载资源的异步函数。</param>
+        /// <param name="loadFunc">以路径发起加载的异步函数。</param>
         /// <returns>资源句柄。</returns>
-        private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<UniTask<AssetHandle>> loadFunc)
+        private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
             // 已归还对象池后禁止继续使用
             if (m_Released)
@@ -159,12 +159,12 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 实际加载资源句柄并缓存。并发请求经 LoadAssetHandleAsync 去重后共享此任务。
         /// </summary>
-        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<UniTask<AssetHandle>> loadFunc)
+        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
             AssetHandle assetHandle = null;
             try
             {
-                assetHandle = await loadFunc();
+                assetHandle = await loadFunc(path);
                 if (assetHandle == null || assetHandle.AssetObject == null)
                 {
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
@@ -233,6 +233,7 @@ namespace Hotfix.Framework.Asset
         {
             m_Released = true;
             UnloadAll();
+            m_LoadingTasks.Clear();
             m_AssetModule = null;
         }
 

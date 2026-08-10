@@ -21,7 +21,8 @@ namespace Hotfix.Framework.Asset
         #region 异步加载资源
 
         /// <summary>
-        /// 异步加载资源
+        /// 异步加载资源。
+        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns></returns>
@@ -34,7 +35,8 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 异步加载资源
+        /// 异步加载资源。
+        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
@@ -48,7 +50,8 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 异步加载资源
+        /// 异步加载资源。
+        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
@@ -69,6 +72,7 @@ namespace Hotfix.Framework.Asset
         /// 异步加载场景。
         /// 注意：activateOnLoad=false（预加载后手动激活）时，Provider 在手动激活前不会完成，
         /// 此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 true）的场景加载。
+        /// 返回的 SceneHandle 使用完毕后必须调用 Release()（成功或失败均需释放），否则资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="sceneMode">场景模式</param>
@@ -132,6 +136,9 @@ namespace Hotfix.Framework.Asset
                 if (m_InstantiateRefDict.TryGetValue(path, out var existing))
                 {
                     existing.RefCount++;
+                    // 复用并发写入的条目：若句柄不同（共享任务被移除重建，见 m_InstantiateLoadingTasks 单 continuation 限制），
+                    // 释放本次加载的句柄，避免其 provider 引用计数永久残留
+                    if (!ReferenceEquals(existing.Handle, assetHandle)) assetHandle.Release();
                     assetHandle = existing.Handle;
                 }
                 else
@@ -144,6 +151,9 @@ namespace Hotfix.Framework.Asset
             {
                 var instantiateOperation = assetHandle.InstantiateAsync();
                 await instantiateOperation;
+                // 模块销毁后：句柄已随 OnDispose 释放，不返回孤儿实例，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
+                if (m_IsDisposed)
+                    throw new ObjectDisposedException(nameof(AssetModule));
                 if (instantiateOperation.Result == null)
                     throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
                 return instantiateOperation.Result;
