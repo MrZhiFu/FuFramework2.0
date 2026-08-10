@@ -363,9 +363,13 @@ namespace Hotfix.Framework.Sound
             }
             catch
             {
-                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试
+                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态并回收参数对象，允许重试
                 m_LoadingSoundList.Remove(newSerialId);
                 m_LoadingToReleaseSet.Remove(newSerialId);
+                if (soundParams != null)
+                    GlobalModule.ReferencePoolModule.Recycle(soundParams);
+                if (soundParams3D != null)
+                    GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
                 throw;
             }
         }

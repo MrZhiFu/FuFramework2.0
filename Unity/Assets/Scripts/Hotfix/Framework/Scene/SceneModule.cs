@@ -239,8 +239,8 @@ namespace Hotfix.Framework.Scene
         /// <returns>正在加载场景的资源路径。</returns>
         public string[] GetAllLoadingSceneAssetPaths()
         {
-            var results = new string[m_LoadingSceneDict.Count];
-            m_LoadingSceneDict.Keys.CopyTo(results, 0);
+            var results = new string[m_LoadingSceneSet.Count];
+            m_LoadingSceneSet.CopyTo(results);
             return results;
         }
 
@@ -252,7 +252,7 @@ namespace Hotfix.Framework.Scene
         {
             if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
             results.Clear();
-            results.AddRange(m_LoadingSceneDict.Keys);
+            results.AddRange(m_LoadingSceneSet);
         }
 
         /// <summary>
@@ -428,6 +428,8 @@ namespace Hotfix.Framework.Scene
         /// <param name="userData">用户自定义数据。</param>
         private void OnLoadSceneProgress(string sceneName, float progress, object userData)
         {
+            // 模块已销毁（热更/卸载，EventRegister 已置 null）：不再广播进度，避免 NRE
+            if (m_IsDisposed) return;
             var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneName, progress, userData);
             EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
         }

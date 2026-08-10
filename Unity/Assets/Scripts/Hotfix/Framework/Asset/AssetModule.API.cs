@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
+using AOT.Framework.Core.Log;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -86,20 +87,36 @@ namespace Hotfix.Framework.Asset
             var package = GetReadyDefaultPackage();
             var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad);
 
-            // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）
+            // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）。
+            // onProgress 回调异常不阻断加载（否则句柄无法返回导致泄漏），记录并继续。
             if (onProgress != null)
             {
                 while (!handle.IsDone)
                 {
-                    onProgress(handle.Progress);
+                    TryReportProgress(onProgress, handle.Progress);
                     await UniTask.Yield();
                 }
 
-                onProgress(handle.Progress);
+                TryReportProgress(onProgress, handle.Progress);
             }
 
             await handle;
             return handle;
+        }
+
+        /// <summary>
+        /// 上报场景加载进度；回调异常记录日志但不抛出（防止回调异常导致句柄无法返回而泄漏）。
+        /// </summary>
+        private static void TryReportProgress(Action<float> onProgress, float progress)
+        {
+            try
+            {
+                onProgress(progress);
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
+            }
         }
 
         #endregion
