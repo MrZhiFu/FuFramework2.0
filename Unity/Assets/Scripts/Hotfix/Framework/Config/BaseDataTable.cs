@@ -16,12 +16,12 @@ namespace Hotfix.Framework.Config
         /// <summary>
         /// 数据表每行数据的字典映射关系。key为long类型的id，value为具体的数据表类型。
         /// </summary>
-        protected readonly SortedDictionary<long, T> LongKeyDataDict = new();
+        protected readonly Dictionary<long, T> LongKeyDataDict = new();
 
         /// <summary>
         /// 数据表每行数据的字典映射关系。key为string类型的id，value为具体的数据表类型。
         /// </summary>
-        protected readonly SortedDictionary<string, T> StrKeyDataDict = new();
+        protected readonly Dictionary<string, T> StrKeyDataDict = new();
 
         /// <summary>
         /// 数据表的数据列表。
@@ -91,15 +91,7 @@ namespace Hotfix.Framework.Config
         /// <summary>
         /// 获取数据表的所有数据。
         /// </summary>
-        public T[] All
-        {
-            get
-            {
-                var results = new T[DataList.Count];
-                DataList.CopyTo(results, 0);
-                return results;
-            }
-        }
+        public T[] All => ToArray();
 
         /// <summary>
         /// 数据表List转化为数组。
