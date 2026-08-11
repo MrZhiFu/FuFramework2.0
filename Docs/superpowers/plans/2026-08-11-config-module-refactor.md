@@ -216,14 +216,14 @@ namespace Hotfix.Framework.Config
 
 - [ ] **Step 3: 校验无残留引用**
 
-Run（确认无任何残留）:
+Run（仅检查本任务改动的两个文件；`SortedDictionary` 属 Task 2 的 BaseDataTable 改动范围，此处不查）:
 
 ```bash
 cd "D:/_WorkSpace/Unity/FuFramework2.0/Unity/Assets/Scripts/Hotfix/Framework/Config"
-grep -rn "m_CfgNameTypeDict\|GetTypeName\|ConcurrentDictionary\|SortedDictionary" .
+grep -n "m_CfgNameTypeDict\|GetTypeName\|ConcurrentDictionary" ConfigModule.cs ConfigModule.API.cs
 ```
 
-Expected: 无输出（Config 目录内无这些符号残留）。
+Expected: 无输出（ConfigModule 两个文件内无这些符号残留）。
 
 - [ ] **Step 4: 校验分部一致性**
 
