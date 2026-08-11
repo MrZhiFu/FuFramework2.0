@@ -485,7 +485,16 @@ namespace FuFramework.Config.Editor
 				var prop = row.GetType().GetProperty(name);
 				if (prop != null)
 				{
-					var value = prop.GetValue(row);
+					object value;
+					try
+					{
+						value = prop.GetValue(row);
+					}
+					catch (Exception)
+					{
+						continue;
+					}
+
 					if (value != null) return $"[{index}] {value}";
 				}
 			}
