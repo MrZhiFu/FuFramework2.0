@@ -67,7 +67,7 @@ bool HasConfig<T>() where T : IDataTable
 bool HasConfig(string cfgName)
 
 // 添加配置表
-void AddConfig(string cfgName, IDataTable cfgValue)
+bool AddConfig(string cfgName, IDataTable cfgValue)
 
 // 移除配置表
 bool RemoveConfig<T>() where T : IDataTable
@@ -76,7 +76,7 @@ void RemoveAllConfigs()
 
 // 属性
 int Count                        // 配置表数量
-IEnumerable<string> CfgNames     // 所有配置表名称
+string[] CfgNames        // 所有配置表名称（快照）
 ```
 
 **静态属性：**
@@ -136,7 +136,7 @@ public interface IDataTable<T> : IDataTable where T : class
 
 ### 4.3 BaseDataTable<T>
 
-配置表基类，实现 `IDataTable<T>` 接口，提供 `SortedDictionary<long, T>` 和 `SortedDictionary<string, T>` 两种索引实现，以及完整的集合操作（Find、ForEach、Max、Min、Sum）。
+配置表基类，实现 `IDataTable<T>` 接口，提供 `Dictionary<long, T>` 和 `Dictionary<string, T>` 两种索引实现，以及完整的集合操作（Find、ForEach、Max、Min、Sum）。
 
 `LoadAsync()` 方法为抽象方法，由子类实现具体的加载逻辑。
 
@@ -219,29 +219,38 @@ var totalPrice = itemTable.Sum(i => i.Price);
 
 ```text
 Config/
-├── ConfigModule.cs           # 配置管理模块
+├── ConfigModule.cs           # 配置管理模块（私有状态 + 生命周期）
+├── ConfigModule.API.cs       # 配置管理模块公共 API（分部）
 ├── BaseDataTable.cs          # 配置表基类 (双重索引)
 ├── IDataTable.cs             # 配置表接口定义
 └── README.md                 # 本文档
 ```
 
-## 7. 依赖
+## 7. 调试面板
+
+编辑器菜单 `FuFramework/调试/配置调试面板` 提供只读配置查询面板（仅 Play 模式）：
+- 展示所有配置表及加载信息（类型、行数、long/string key 数量）。
+- 展开配置表查看行数据，再展开行查看字段键值对。
+- 支持表名搜索过滤、表内字段值模糊搜索、自动刷新。
+
+## 8. 依赖
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类
 - **System.Threading.Tasks**：异步加载支持
 - **Luban**（外部）：配置表生成工具
 
-## 8. 最佳实践
+## 9. 最佳实践
 
 1. **集中注册**：在游戏启动流程中统一注册所有配置表
 2. **缓存引用**：频繁查询的配置表可缓存本地引用，避免重复调用 `GetConfig`
 3. **空值检查**：`Get` 方法在数据不存在时返回 `default(T)`（class 类型为 null），始终检查返回值
-4. **线程安全**：配置数据读取通过 `ConcurrentDictionary` 保证线程安全
+4. **只读契约**：配置表在启动期 `LoadConfigAsync` 一次性加载，加载后只读；内部使用普通 `Dictionary`，加载期单线程注册，读取路径无锁且最快
 5. **合理使用聚合**：`Max`、`Min`、`Sum` 遍历整个数据表，大数据量时注意性能
 
-## 9. 注意事项
+## 10. 注意事项
 
 1. 配置表名称使用类名（`typeof(T).Name`），需确保类和名称一致
-2. 重复添加同名配置表会被忽略（`AddConfig` 内部检查存在性）
-3. 配置数据读取是线程安全的，但不会对配置行数据本身加锁
-4. 使用 Luban 生成的配置表需实现 `IDataTable<T>` 接口并继承 `BaseDataTable<T>`
+2. 配置表名称 = 类名（`typeof(T).Name` / `nameof(TbXxx)` 必须一致），注册与泛型查询依赖该约定
+3. 重复添加同名配置表返回 `false` 并 `FuLogger.LogWarning` 告警；string 版本接口（`GetConfig`/`HasConfig`/`RemoveConfig`）对空名称抛 `ArgumentNullException`
+4. 配置数据读取是线程安全的，但不会对配置行数据本身加锁
+5. 使用 Luban 生成的配置表需实现 `IDataTable<T>` 接口并继承 `BaseDataTable<T>`
