@@ -154,6 +154,18 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception e)
             {
+                // 失败/取消清理（防僵尸包与孤立 loader）：
+                // 1. AddPackage 可能已在依赖加载前执行（LoadPkgInternalAsync），取消后 FGUI 静态表残留包，需移除；
+                // 2. LoadDescAsync 已创建的资源加载器需回收——仅当 m_LoadingCts 中仍是本任务的 cts 才清理，
+                //    避免误删取消后立即重载的新任务刚创建的 loader。
+                if (UIPackage.GetByName(pkgName) != null)
+                    UIPackage.RemovePackage(pkgName);
+                if (m_LoadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)
+                    && m_PkgAssetLoaderDict.Remove(pkgName, out var loader))
+                {
+                    loader.Dispose();
+                }
+
                 taskSource.TrySetException(e); // 失败：所有 await taskSource.Task 的调用者抛异常
             }
             finally
@@ -260,11 +272,13 @@ namespace Hotfix.Framework.UI
             var descPath = $"{rootPath}{pkgName}/{pkgName}_fui.bytes";
 
             m_PkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
-            if (descLoader == null)
-            {
-                descLoader                    = new AssetLoadRegister();
-                m_PkgAssetLoaderDict[pkgName] = descLoader;
-            }
+            if (descLoader != null)
+                return await descLoader.LoadAsync<TextAsset>(descPath);
+
+            // 创建包描述文件加载器对应的资源加载器注册
+            descLoader = new AssetLoadRegister();
+
+            m_PkgAssetLoaderDict[pkgName] = descLoader;
 
             // 等待描述文件加载完成
             return await descLoader.LoadAsync<TextAsset>(descPath);
@@ -438,10 +452,10 @@ namespace Hotfix.Framework.UI
             // 4.递归递减依赖包的引用计数
             foreach (var dep in pkgToRemove.dependencies)
             {
-                if (dep.TryGetValue("name", out var depPkgName))
+                if (!dep.TryGetValue("name", out var depPkgName)) continue;
+                for (var i = 0; i < refCount; i++)
                 {
-                    for (var i = 0; i < refCount; i++)
-                        SubPkgRef(depPkgName);
+                    SubPkgRef(depPkgName);
                 }
             }
 
