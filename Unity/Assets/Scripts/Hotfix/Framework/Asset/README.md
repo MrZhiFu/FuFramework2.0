@@ -13,8 +13,8 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
   - `OfflinePlayMode`: 单机模式，读取 StreamingAssets。
   - `HostPlayMode`: 联机模式，支持资源热更新。
   - `WebPlayMode`: WebGL 模式，支持微信/字节小游戏适配。
-- **资源注册器**：提供 `AssetLoadRegister` 辅助类，方便在特定业务逻辑中加载资源并管理其引用与释放。
-- **引用池集成**：`AssetLoadRegister` 实现 `IReference` 接口，支持引用池管理。
+- **资源注册器**：提供 `AssetLoadRegister` 辅助类，作为"逻辑分组的资源装载器"（如 UI 包）整组加载、整组释放。
+- **整组释放**：`AssetLoadRegister.UnloadAll()` 临时卸载、`Dispose()` 永久废弃，一键释放整组句柄让 AssetBundle 可卸载。
 
 ## 3. 核心类说明
 
@@ -40,10 +40,11 @@ UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
 ##### 异步加载场景
 
 ```csharp
-UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true)
+UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true, Action<float> onProgress = null)
 ```
 
 > 注意：`activateOnLoad=false`（预加载后手动激活）时 Provider 在手动激活前不会完成，此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 `true`）。
+> `onProgress`：加载进度回调（0~1），每帧上报一次直至加载完成；不需要进度时传 `null`。
 
 ##### 实例化
 
@@ -68,20 +69,19 @@ void UnloadAsset(string assetPath)
 
 ### AssetLoadRegister
 
-资源加载注册器，实现了 `IReference` 接口，方便使用引用池管理。
+资源加载注册器（纯实例类，非池化）。作为「逻辑分组的资源装载器」使用（如 UI 包）：一组资源整组加载、整组释放，每个实例归单一调用方持有。
 
 #### 主要功能
 
 - 加载资源（仅提供异步加载接口）
 - 记录加载过的资源句柄，避免重复加载
-- 自动管理资源引用计数
-- 支持一键卸载所有资源
+- 支持一键卸载所有资源（临时 `UnloadAll` / 永久 `Dispose`）
 
 #### 使用方法
 
 ```csharp
-// 从引用池获取
-var loader = AssetLoadRegister.Create();
+// 创建资源装载器（纯实例类，直接 new）
+var loader = new AssetLoadRegister();
 
 // 加载资源
 var prefab = await loader.LoadAsync<GameObject>("Assets/Game/Prefabs/MyHero.prefab");
@@ -92,15 +92,15 @@ var go = await loader.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
 // 卸载指定资源
 loader.Unload("Assets/Game/Prefabs/MyHero.prefab");
 
-// 卸载所有资源
+// 临时卸载所有资源（装载器保留可复用，供重载）
 loader.UnloadAll();
 
-// 归还引用池（会自动调用 UnloadAll）
-loader.Release();
+// 永久废弃装载器（释放全部句柄并标记废弃，在途加载据此中止）
+loader.Dispose();
 ```
 
 > **实例化释放契约**：`AssetLoadRegister.InstantiateAsync` 返回的实例销毁时**不会自动释放**资源——
-> 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.Release()`（loader 生命周期管理）。
+> 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
 > 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(path)`，按引用计数释放）。
 
 ### EPatchStates
@@ -174,7 +174,7 @@ if (assetHandle.AssetObject != null)
 GameObject instance = await assetModule.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
 
 // 使用 AssetLoadRegister (推荐用于 UI 或特定逻辑块)
-var loader = AssetLoadRegister.Create();
+var loader = new AssetLoadRegister();
 
 // 加载资源
 var prefab = await loader.LoadAsync<GameObject>("Assets/Game/Prefabs/MyHero.prefab");
@@ -183,8 +183,8 @@ var instance1 = Object.Instantiate(prefab);
 // 或直接加载并实例化
 var instance2 = await loader.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
 
-// 业务结束时释放
-loader.Release(); // 会自动卸载通过此 loader 加载的所有资源
+// 业务结束时卸载所有资源（装载器保留可复用，或改用 Dispose() 永久废弃）
+loader.UnloadAll();
 ```
 
 ### 加载场景
@@ -199,19 +199,18 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 - [UniTask](https://github.com/Cysharp/UniTask) - 异步编程支持
 - Hotfix.Framework.Core - 框架核心模块
 - Hotfix.Framework.Event - 事件系统
-- Hotfix.Framework.ReferencePool - 引用池系统
 
 ## 8. 注意事项
 
 ### 通用注意事项
 
-1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.Release()` 会自动释放其加载的所有句柄。
+1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
 2. **并发去重**：同一路径并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
 4. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
-7. **`AssetLoadRegister` 对象池防护**：`Release()` 归还对象池后，在途加载任务完成时检测到已归还会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止复用泄漏）。
+7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。
 8. 热更新流程需要通过事件系统监听各个阶段的状态。
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
