@@ -46,6 +46,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 生命周期版本号。归还对象池时递增；在途加载任务恢复时比对版本，
         /// 防止实例被 Release+复用后旧生命周期的续延污染新实例（m_Released 会被 Create 重置，单靠它挡不住）。
+        /// 仅做相等比较，溢出（2^31 次归还）回绕后新旧值仍不相等，故无害，无需 unchecked。
         /// </summary>
         private int m_Version;
 
@@ -239,7 +240,7 @@ namespace Hotfix.Framework.Asset
         public void Clear()
         {
             m_Released = true;
-            unchecked { m_Version++; }
+            m_Version++;
             UnloadAll();
             m_LoadingTasks.Clear();
         }
@@ -252,7 +253,7 @@ namespace Hotfix.Framework.Asset
         public void Release()
         {
             m_Released = true;
-            unchecked { m_Version++; }
+            m_Version++;
             UnloadAll();
             m_LoadingTasks.Clear();
             GlobalModule.ReferencePoolModule.Recycle(this);
