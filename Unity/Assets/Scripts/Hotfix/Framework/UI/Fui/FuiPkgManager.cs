@@ -451,7 +451,7 @@ namespace Hotfix.Framework.UI
             // 6.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
             if (m_PkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
             {
-                assetLoader.UnloadAll(); // 释放 YooAsset 句柄让 AssetBundle 可卸载（纯实例类，弃引用由 GC 回收）
+                assetLoader.Dispose(); // 永久废弃：释放 YooAsset 句柄让 AssetBundle 可卸载 + 标记废弃（在途加载据此中止）
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
             }
 

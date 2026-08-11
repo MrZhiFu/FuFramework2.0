@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Asset
 {
     /// <summary>
-    /// 资源加载注册器（纯实例类，非池化）。
+    /// 资源加载注册器。
     /// 功能：
     ///     1.异步加载资源。
     ///     2.记录加载过的资源句柄，避免重复加载。
@@ -38,6 +38,12 @@ namespace Hotfix.Framework.Asset
         /// 防止后完成句柄覆盖先完成句柄导致泄漏，也避免 async UniTask 重复 await 报错。
         /// </summary>
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
+
+        /// <summary>
+        /// 是否已废弃（调用方永久放弃本装载器）。防止废弃后在途的加载任务把句柄写回缓存（句柄将无人释放而泄漏）。
+        /// 非池化、无复用，故无需版本计数；仅需此标志即可让在途续延中止。
+        /// </summary>
+        private bool m_Disposed;
 
         /// <summary>
         /// 创建资源加载器。
@@ -162,6 +168,14 @@ namespace Hotfix.Framework.Asset
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                 }
 
+                // 加载期间装载器已被废弃（Dispose）：句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏）
+                if (m_Disposed)
+                {
+                    assetHandle.Release();
+                    assetHandle = null; // 置空避免 catch 二次释放
+                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃");
+                }
+
                 // 保存资源句柄
                 m_HandleDict[path] = assetHandle;
                 FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
@@ -205,6 +219,18 @@ namespace Hotfix.Framework.Asset
             {
                 Unload(path);
             }
+        }
+
+        /// <summary>
+        /// 废弃装载器：调用方永久放弃，释放全部句柄并标记废弃。
+        /// 在途加载任务完成时会检查 m_Disposed 中止（释放句柄、不写回缓存），避免句柄无人释放而泄漏。
+        /// 与 UnloadAll 的区别：UnloadAll 用于临时释放（调用方仍会复用本装载器），Dispose 用于永久丢弃。
+        /// </summary>
+        public void Dispose()
+        {
+            m_Disposed = true;
+            UnloadAll();
+            m_LoadingTasks.Clear();
         }
     }
 }
