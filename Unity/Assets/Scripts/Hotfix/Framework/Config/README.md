@@ -7,7 +7,7 @@ FuFramework Config 模块是游戏框架的配置数据管理系统，提供统�
 ## 2. 核心特性
 
 - **统一管理**：所有配置表通过 `ConfigModule` 集中管理，提供一致的访问接口
-- **线程安全**：内部使用 `ConcurrentDictionary` 确保多线程环境下的数据安全
+- **只读契约**：配置表启动期一次性加载，加载后只读；内部使用普通 `Dictionary`，读取路径无锁且最快
 - **异步加载**：配置表通过 `IDataTable.LoadAsync()` 支持异步加载，避免阻塞主线程
 - **双重索引**：`BaseDataTable<T>` 同时按 `long` Id 和 `string` Key 建立索引，支持灵活查询
 - **类型安全**：通过泛型接口确保配置数据的类型安全
@@ -32,11 +32,8 @@ IDataTable (配置表基础接口)
 ┌─────────────────────────────────────────────────────────────┐
 │                     ConfigModule                             │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_CfgNameTypeDict (ConcurrentDictionary<Type,string>)│ │
-│  │  - 类型→配置表名称映射                                │   │
-│  ├─────────────────────────────────────────────────────┤   │
-│  │  m_CfgDataDict (ConcurrentDictionary<string, IDataTable>)│
-│  │  - 按名称索引所有配置表                                │   │
+│  │  m_CfgDataDict (Dictionary<string, IDataTable>)     │   │
+│  │  - 按名称索引所有配置表                              │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -249,8 +246,7 @@ Config/
 
 ## 10. 注意事项
 
-1. 配置表名称使用类名（`typeof(T).Name`），需确保类和名称一致
-2. 配置表名称 = 类名（`typeof(T).Name` / `nameof(TbXxx)` 必须一致），注册与泛型查询依赖该约定
-3. 重复添加同名配置表返回 `false` 并 `FuLogger.LogWarning` 告警；string 版本接口（`GetConfig`/`HasConfig`/`RemoveConfig`）对空名称抛 `ArgumentNullException`
-4. 配置数据读取是线程安全的，但不会对配置行数据本身加锁
-5. 使用 Luban 生成的配置表需实现 `IDataTable<T>` 接口并继承 `BaseDataTable<T>`
+1. 配置表名称 = 类名（`typeof(T).Name` / `nameof(TbXxx)` 必须一致），注册与泛型查询依赖该约定
+2. 重复添加同名配置表返回 `false` 并 `FuLogger.LogWarning` 告警；string 版本接口（`GetConfig`/`HasConfig`/`RemoveConfig`）对空名称抛 `ArgumentNullException`
+3. 配置表在启动期一次性加载，加载后只读（无运行时重载路径）
+4. 使用 Luban 生成的配置表需实现 `IDataTable<T>` 接口并继承 `BaseDataTable<T>`
