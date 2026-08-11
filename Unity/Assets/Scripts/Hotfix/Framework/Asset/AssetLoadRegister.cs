@@ -45,6 +45,12 @@ namespace Hotfix.Framework.Asset
         private bool m_Disposed;
 
         /// <summary>
+        /// 是否处于临时卸载状态（UnloadAll 置位）。防止"卸载后、重载前"的在途加载把句柄重新缓存（ref→0 内存不释放）。
+        /// 与 m_Disposed 的区别：UnloadAll 后装载器仍可复用（新加载请求会清除此标记）；Dispose 永久废弃不可复用。
+        /// </summary>
+        private bool m_Unloaded;
+
+        /// <summary>
         /// 资源加载注册器。纯实例类：每次 new 创建独立装载器，调用方持有，用完 UnloadAll/Dispose 后弃引用由 GC 回收。
         /// </summary>
         public AssetLoadRegister()
@@ -111,6 +117,9 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
+            // 新的加载请求意味着装载器正在被再次使用（如重载），清除临时卸载标记
+            m_Unloaded = false;
+
             // 检查是否已加载
             if (m_HandleDict.TryGetValue(path, out var existingHandle))
             {
@@ -161,8 +170,9 @@ namespace Hotfix.Framework.Asset
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                 }
 
-                // 加载期间装载器已被废弃（Dispose）：句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏）
-                if (m_Disposed)
+                // 加载期间装载器已被废弃（Dispose）或处于临时卸载（UnloadAll 且无新加载接管）：
+                // 句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏 / ref→0 后资源被重新缓存）
+                if (m_Disposed || m_Unloaded)
                 {
                     assetHandle.Release();
                     assetHandle = null; // 置空避免 catch 二次释放
@@ -202,10 +212,13 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 卸载所有已经加载的资源。
+        /// 卸载所有已经加载的资源（临时卸载：装载器保留可复用）。
+        /// 置 m_Unloaded 标记：卸载后在途的加载完成时不得写回缓存（防 ref→0 后资源句柄被重新缓存、内存不释放）。
         /// </summary>
         public void UnloadAll()
         {
+            m_Unloaded = true;
+
             // 先复制路径列表，避免遍历时集合被修改
             var paths = new List<string>(m_HandleDict.Keys);
             foreach (var path in paths)
