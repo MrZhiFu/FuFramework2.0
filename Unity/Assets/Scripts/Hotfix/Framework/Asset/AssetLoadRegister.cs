@@ -177,8 +177,9 @@ namespace Hotfix.Framework.Asset
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                 }
 
-                // 加载期间实例被 Release（m_Released）或被 Release+复用（版本变化）：句柄已不归本实例，释放并阻止写回（否则复用泄漏）
-                if (m_Released || m_Version != version)
+                // 加载期间实例被 Release 或 Release+复用：句柄已不归本实例，释放并阻止写回（否则复用泄漏）。
+                // 注意：Release/Clear 都会递增 m_Version，故仅比对版本即可同时覆盖"已释放"与"已释放又复用"两种情况。
+                if (m_Version != version)
                 {
                     assetHandle.Release();
                     assetHandle = null; // 置空避免 catch 二次释放
