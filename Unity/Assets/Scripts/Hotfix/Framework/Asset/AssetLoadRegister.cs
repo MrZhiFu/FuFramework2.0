@@ -18,7 +18,7 @@ namespace Hotfix.Framework.Asset
     ///     3.异步实例化游戏物体。
     ///     4.卸载资源。
     /// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
-    /// 不使用引用池——每个实例归单一调用方持有，用完 UnloadAll 后弃引用由 GC 回收，无复用竞态，无需生命周期版本计数。
+    /// 每个实例归单一调用方持有，用完 UnloadAll 后弃引用由 GC 回收，无复用竞态，无需生命周期版本计数。
     /// </summary>
     public class AssetLoadRegister
     {
@@ -41,7 +41,6 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 是否已废弃（调用方永久放弃本装载器）。防止废弃后在途的加载任务把句柄写回缓存（句柄将无人释放而泄漏）。
-        /// 非池化、无复用，故无需版本计数；仅需此标志即可让在途续延中止。
         /// </summary>
         private bool m_Disposed;
 
