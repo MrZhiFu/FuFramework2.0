@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ReferencePool;
 using UnityEngine;
 using YooAsset;
 using Object = UnityEngine.Object;
@@ -12,20 +11,21 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Asset
 {
     /// <summary>
-    /// 资源加载注册器。
+    /// 资源加载注册器（纯实例类，非池化）。
     /// 功能：
     ///     1.异步加载资源。
     ///     2.记录加载过的资源句柄，避免重复加载。
     ///     3.异步实例化游戏物体。
     ///     4.卸载资源。
+    /// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
+    /// 不使用引用池——每个实例归单一调用方持有，用完 UnloadAll 后弃引用由 GC 回收，无复用竞态，无需生命周期版本计数。
     /// </summary>
-    public class AssetLoadRegister : IReference
+    public class AssetLoadRegister
     {
         /// <summary>
-        /// 资源管理模块。静态字段（所有实例共享），且每次 Create() 都会重新赋值，
-        /// 不得置 null——否则任一实例归还都会破坏其他存活实例的模块引用。
+        /// 资源管理模块（实例持有，构造时获取）。
         /// </summary>
-        private static AssetModule m_AssetModule;
+        private readonly AssetModule m_AssetModule;
 
         /// <summary>
         /// 缓存已经加载的资源句柄，key为资源路径，value为资源句柄
@@ -40,27 +40,17 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
 
         /// <summary>
-        /// 是否已归还对象池。防止归还后在途的加载任务把句柄写回缓存（复用泄漏）。
+        /// 创建资源加载器。
         /// </summary>
-        private bool m_Released;
+        /// <returns>资源加载注册器。</returns>
+        public static AssetLoadRegister Create() => new();
 
         /// <summary>
-        /// 生命周期版本号。归还对象池时递增；在途加载任务恢复时比对版本，
-        /// 防止实例被 Release+复用后旧生命周期的续延污染新实例（m_Released 会被 Create 重置，单靠它挡不住）。
-        /// 仅做相等比较，溢出（2^31 次归还）回绕后新旧值仍不相等，故无害，无需 unchecked。
+        /// 资源加载注册器。纯实例类：每次创建独立装载器，调用方持有，用完 UnloadAll 后弃引用由 GC 回收。
         /// </summary>
-        private int m_Version;
-
-        /// <summary>
-        /// 创建资源加载器
-        /// </summary>
-        /// <returns></returns>
-        public static AssetLoadRegister Create()
+        public AssetLoadRegister()
         {
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            var register = GlobalModule.ReferencePoolModule.Acquire<AssetLoadRegister>();
-            register.m_Released = false;
-            return register;
         }
 
         /// <summary>
@@ -122,10 +112,6 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
-            // 已归还对象池后禁止继续使用
-            if (m_Released)
-                throw new ObjectDisposedException(nameof(AssetLoadRegister));
-
             // 检查是否已加载
             if (m_HandleDict.TryGetValue(path, out var existingHandle))
             {
@@ -168,22 +154,12 @@ namespace Hotfix.Framework.Asset
         private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
         {
             AssetHandle assetHandle = null;
-            var version = m_Version; // 捕获生命周期版本，恢复后比对以识别 Release+复用
             try
             {
                 assetHandle = await loadFunc(path);
                 if (assetHandle == null || assetHandle.AssetObject == null)
                 {
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
-                }
-
-                // 加载期间实例被 Release 或 Release+复用：句柄已不归本实例，释放并阻止写回（否则复用泄漏）。
-                // 注意：Release/Clear 都会递增 m_Version，故仅比对版本即可同时覆盖"已释放"与"已释放又复用"两种情况。
-                if (m_Version != version)
-                {
-                    assetHandle.Release();
-                    assetHandle = null; // 置空避免 catch 二次释放
-                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已归还对象池");
                 }
 
                 // 保存资源句柄
@@ -212,7 +188,7 @@ namespace Hotfix.Framework.Asset
             handle.Release();
 
             // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
-            m_AssetModule?.UnloadAsset(path);
+            m_AssetModule.UnloadAsset(path);
 
             m_HandleDict.Remove(path);
             FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
@@ -229,25 +205,6 @@ namespace Hotfix.Framework.Asset
             {
                 Unload(path);
             }
-        }
-
-        /// <summary>
-        /// 清理引用（IReference 归还对象池时调用）。
-        /// </summary>
-        public void Clear()
-        {
-            m_Released = true;
-            m_Version++;
-            UnloadAll();
-            m_LoadingTasks.Clear();
-        }
-
-        /// <summary>
-        /// 将引用归还引用池（池的 Recycle 会调用 Clear() 完成统一清理：释放句柄、清空缓存与去重任务）。
-        /// </summary>
-        public void Release()
-        {
-            GlobalModule.ReferencePoolModule.Recycle(this);
         }
     }
 }
