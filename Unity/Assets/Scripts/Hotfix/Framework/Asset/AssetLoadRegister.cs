@@ -22,7 +22,8 @@ namespace Hotfix.Framework.Asset
     public class AssetLoadRegister : IReference
     {
         /// <summary>
-        /// 资源管理模块
+        /// 资源管理模块。静态字段（所有实例共享），且每次 Create() 都会重新赋值，
+        /// 不得置 null——否则任一实例归还都会破坏其他存活实例的模块引用。
         /// </summary>
         private static AssetModule m_AssetModule;
 
@@ -69,8 +70,6 @@ namespace Hotfix.Framework.Asset
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             var handle = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync<T>);
-
-            // GetAssetObject<T> 用 as 转换，类型不匹配时返回 null，需显式报错（否则调用方 NRE 难排查）
             var result = handle.GetAssetObject<T>();
             if (result == null)
                 throw new InvalidOperationException($"[AssetLoadRegister]资源{path}类型不匹配，期望类型: {typeof(T)}");
@@ -225,17 +224,14 @@ namespace Hotfix.Framework.Asset
         {
             // 先复制路径列表，避免遍历时集合被修改
             var paths = new List<string>(m_HandleDict.Keys);
-
             foreach (var path in paths)
             {
-                Unload(path); // 内部已 m_HandleDict.Remove(path)
+                Unload(path);
             }
         }
 
         /// <summary>
         /// 清理引用（IReference 归还对象池时调用）。
-        /// 注意：m_AssetModule 是静态字段（所有实例共享），且每次 Create() 都会重新赋值，
-        /// 此处不得置 null——否则任一实例归还都会破坏其他存活实例的模块引用。
         /// </summary>
         public void Clear()
         {
@@ -246,16 +242,10 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 将引用归还引用池-释放资源。
-        /// 归还前先 UnloadAll 释放所有句柄、清空加载中去重字典，保证池对象干净
-        /// （否则残留句柄/去重任务导致复用泄漏）。
+        /// 将引用归还引用池（池的 Recycle 会调用 Clear() 完成统一清理：释放句柄、清空缓存与去重任务）。
         /// </summary>
         public void Release()
         {
-            m_Released = true;
-            m_Version++;
-            UnloadAll();
-            m_LoadingTasks.Clear();
             GlobalModule.ReferencePoolModule.Recycle(this);
         }
     }
