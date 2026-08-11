@@ -100,7 +100,8 @@ namespace Hotfix.Framework.UI
             // 已经加载过的包直接返回；仅当资源曾卸载（UnloadAssets 状态）时恢复，避免 UI 空白
             if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
             {
-                if (m_UnloadedAssetPkgSet.Remove(pkgName)) // 恢复后清除标记，避免反复遍历
+                // 恢复后清除标记，避免反复遍历
+                if (m_UnloadedAssetPkgSet.Remove(pkgName))
                 {
                     loadedPkg.ReloadAssets();
                 }
@@ -161,7 +162,7 @@ namespace Hotfix.Framework.UI
                 if (UIPackage.GetByName(pkgName) != null)
                     UIPackage.RemovePackage(pkgName);
                 if (m_LoadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)
-                    && m_PkgAssetLoaderDict.Remove(pkgName, out var loader))
+                                                                          && m_PkgAssetLoaderDict.Remove(pkgName, out var loader))
                 {
                     loader.Dispose();
                 }
@@ -254,7 +255,9 @@ namespace Hotfix.Framework.UI
 
             // 依赖加载完成后，若包已被取消则中断（防止 AddPackage 后取消不被观察的残留窗口）
             if (m_LoadingCts.TryGetValue(pkg.name, out var cts))
+            {
                 cts.Token.ThrowIfCancellationRequested();
+            }
         }
 
         /// <summary>
@@ -343,7 +346,9 @@ namespace Hotfix.Framework.UI
                     foreach (var dep in pkg.dependencies)
                     {
                         if (dep.TryGetValue("name", out var depPkgName))
+                        {
                             AddPkgRef(depPkgName);
+                        }
                     }
                 }
             }
@@ -362,12 +367,15 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgName">包名。</param>
         public void SubPkgRef(string pkgName)
         {
-            if (!m_SubPkgRefStack.Add(pkgName)) return; // 已在递归栈中（循环依赖），跳过
+            // 已在递归栈中（循环依赖），跳过
+            if (!m_SubPkgRefStack.Add(pkgName)) return;
 
             try
             {
                 if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
-                if (count <= 0) return; // 已归零：防止循环依赖导致重复卸载
+
+                // 已归零：防止循环依赖导致重复卸载
+                if (count <= 0) return;
 
                 count = --m_PkgRefCountDict[pkgName];
                 FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
@@ -378,7 +386,9 @@ namespace Hotfix.Framework.UI
                     foreach (var dep in pkg.dependencies)
                     {
                         if (dep.TryGetValue("name", out var depPkgName))
+                        {
                             SubPkgRef(depPkgName);
+                        }
                     }
 
                     if (count == 0)
@@ -389,7 +399,9 @@ namespace Hotfix.Framework.UI
 
                         // 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
                         if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+                        {
                             loader.UnloadAll();
+                        }
                     }
                 }
             }
@@ -465,7 +477,8 @@ namespace Hotfix.Framework.UI
             // 6.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
             if (m_PkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
             {
-                assetLoader.Dispose(); // 永久废弃：释放 YooAsset 句柄让 AssetBundle 可卸载 + 标记废弃（在途加载据此中止）
+                // 永久废弃：释放 YooAsset 句柄让 AssetBundle 可卸载 + 标记废弃（在途加载据此中止）
+                assetLoader.Dispose();
                 FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
             }
 
