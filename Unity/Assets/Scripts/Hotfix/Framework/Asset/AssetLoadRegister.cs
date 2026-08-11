@@ -46,13 +46,7 @@ namespace Hotfix.Framework.Asset
         private bool m_Disposed;
 
         /// <summary>
-        /// 创建资源加载器。
-        /// </summary>
-        /// <returns>资源加载注册器。</returns>
-        public static AssetLoadRegister Create() => new();
-
-        /// <summary>
-        /// 资源加载注册器。纯实例类：每次创建独立装载器，调用方持有，用完 UnloadAll 后弃引用由 GC 回收。
+        /// 资源加载注册器。纯实例类：每次 new 创建独立装载器，调用方持有，用完 UnloadAll/Dispose 后弃引用由 GC 回收。
         /// </summary>
         public AssetLoadRegister()
         {

@@ -262,7 +262,7 @@ namespace Hotfix.Framework.UI
             m_PkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
             if (descLoader == null)
             {
-                descLoader                    = AssetLoadRegister.Create();
+                descLoader                    = new AssetLoadRegister();
                 m_PkgAssetLoaderDict[pkgName] = descLoader;
             }
 
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.UI
             m_PkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
             if (resLoader == null)
             {
-                resLoader                     = AssetLoadRegister.Create();
+                resLoader                     = new AssetLoadRegister();
                 m_PkgAssetLoaderDict[pkgName] = resLoader;
             }
 
