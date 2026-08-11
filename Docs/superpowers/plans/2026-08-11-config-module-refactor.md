@@ -966,7 +966,21 @@ git commit -m "[AI]feat: 新增 ConfigModuleWindow 配置调试面板（只读�
 
 > 说明：原第 1 条已含「配置表名称使用类名…」，此条将其明确为约束；替换后需重新核对第 9 节编号连续。
 
-- [ ] **Step 4: 更新目录结构与新增调试面板章节**
+- [ ] **Step 4: 修正 BaseDataTable 描述中的容器类型**
+
+在 `README.md` 的「4.3 BaseDataTable<T>」段（约 139 行）中，将：
+
+```markdown
+提供 `SortedDictionary<long, T>` 和 `SortedDictionary<string, T>` 两种索引实现
+```
+
+替换为：
+
+```markdown
+提供 `Dictionary<long, T>` 和 `Dictionary<string, T>` 两种索引实现
+```
+
+- [ ] **Step 5: 更新目录结构与新增调试面板章节**
 
 将第 6 节「目录结构」代码块：
 
@@ -1002,7 +1016,7 @@ Config/
 
 > 说明：原文档第 7-9 节（依赖/最佳实践/注意事项）编号需对应顺延（7→8、8→9、9→10），各节标题与内容不变。
 
-- [ ] **Step 5: 提交**
+- [ ] **Step 6: 提交**
 
 ```bash
 cd "D:/_WorkSpace/Unity/FuFramework2.0"
