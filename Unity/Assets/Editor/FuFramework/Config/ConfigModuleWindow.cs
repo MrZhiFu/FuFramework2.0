@@ -16,6 +16,7 @@ namespace FuFramework.Config.Editor
 	///     1. 展示所有配置表及其加载信息（类型、数据行数、long/string key 数量）。
 	///     2. 展开配置表查看行数据，再展开行查看字段键值对。
 	///     3. 支持表名搜索过滤、表内字段值模糊搜索、自动刷新。
+	///     4. 支持实时编辑配置行简单值字段（Id/Key 锁定、字段级撤销、编辑高亮）。
 	/// </summary>
 	public class ConfigModuleWindow : EditorWindow
 	{
@@ -518,6 +519,95 @@ namespace FuFramework.Config.Editor
 		}
 
 		/// <summary>
+		/// 绘制可编辑字段：渲染类型化控件、写回内存、编辑高亮与字段级撤销。
+		/// </summary>
+		/// <param name="row">行对象</param>
+		/// <param name="prop">属性</param>
+		/// <param name="currentValue">当前值</param>
+		private void DrawEditableField(object row, PropertyInfo prop, object currentValue)
+		{
+			var isEdited = m_FieldOriginalValues.TryGetValue(row, out var origDict)
+			               && origDict.ContainsKey(prop.Name);
+			var isWriteFail = m_WriteFailTimes.TryGetValue(row, out var failDict)
+			                  && failDict.TryGetValue(prop.Name, out var failTime)
+			                  && EditorApplication.timeSinceStartup - failTime < 2.0;
+
+			// 已编辑字段黄色高亮；写失败红色（优先显示）
+			var fieldOldColor = GUI.color;
+			if (isWriteFail) GUI.color = Color.red;
+			else if (isEdited) GUI.color = Color.yellow;
+
+			object newValue;
+			try
+			{
+				newValue = RenderFieldControl(prop, currentValue);
+			}
+			catch (Exception e)
+			{
+				GUI.color = fieldOldColor;
+				Debug.LogError($"[ConfigDebug] 渲染 {prop.Name} 失败：{e.Message}");
+				return;
+			}
+
+			GUI.color = fieldOldColor;
+
+			// 值变化 → 记录原值并写回活配置对象
+			if (!Equals(newValue, currentValue))
+			{
+				if (origDict == null)
+				{
+					origDict = new Dictionary<string, object>();
+					m_FieldOriginalValues[row] = origDict;
+				}
+
+				if (!origDict.ContainsKey(prop.Name)) origDict[prop.Name] = currentValue;
+
+				try
+				{
+					prop.SetValue(row, newValue);
+					if (failDict != null) failDict.Remove(prop.Name);
+				}
+				catch (Exception e)
+				{
+					if (failDict == null)
+					{
+						failDict = new Dictionary<string, double>();
+						m_WriteFailTimes[row] = failDict;
+					}
+
+					failDict[prop.Name] = EditorApplication.timeSinceStartup;
+					Debug.LogError($"[ConfigDebug] 写入 {prop.Name} 失败：{e.Message}");
+				}
+			}
+
+			// 已编辑字段提供「重置」按钮
+			if (isEdited && origDict != null && origDict.TryGetValue(prop.Name, out var originalValue))
+			{
+				if (GUILayout.Button("重置", GUILayout.Width(40)))
+				{
+					try
+					{
+						prop.SetValue(row, originalValue);
+						origDict.Remove(prop.Name);
+						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+						if (failDict != null) failDict.Remove(prop.Name);
+					}
+					catch (Exception e)
+					{
+						if (failDict == null)
+						{
+							failDict = new Dictionary<string, double>();
+							m_WriteFailTimes[row] = failDict;
+						}
+
+						failDict[prop.Name] = EditorApplication.timeSinceStartup;
+						Debug.LogError($"[ConfigDebug] 重置 {prop.Name} 失败：{e.Message}");
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// 绘制单行（Foldout + 字段键值对）
 		/// </summary>
 		/// <param name="row">行对象</param>
@@ -540,6 +630,7 @@ namespace FuFramework.Config.Editor
 				foreach (var prop in row.GetType().GetProperties())
 				{
 					object value;
+					var readOk = true;
 					try
 					{
 						value = prop.GetValue(row);
@@ -547,12 +638,23 @@ namespace FuFramework.Config.Editor
 					catch (Exception e)
 					{
 						value = $"<读取异常: {e.Message}>";
+						readOk = false;
 					}
 
 					EditorGUILayout.BeginHorizontal();
 					GUILayout.Label(prop.Name, GUILayout.MinWidth(120));
 					DrawColumnSeparator();
-					GUILayout.Label(value?.ToString() ?? "null");
+
+					// 可编辑字段渲染编辑控件；读取失败或不可编辑则只读展示
+					if (readOk && IsEditableProperty(prop))
+					{
+						DrawEditableField(row, prop, value);
+					}
+					else
+					{
+						GUILayout.Label(value?.ToString() ?? "null");
+					}
+
 					EditorGUILayout.EndHorizontal();
 				}
 			}
