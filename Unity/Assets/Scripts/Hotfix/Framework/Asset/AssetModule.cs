@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_InstantiateLoadingTasks = new();
 
         /// <summary>
-        /// 模块生命周期代际。OnDispose 递增，使旧生命周期在途的 InstantiateAsync
+        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的 InstantiateAsync
         /// 在 ReInit（OnInit 重置 m_IsDisposed）后仍能识别并拒绝把旧句柄写回新生命周期。
         /// </summary>
         private int m_LifecycleEpoch;
@@ -106,7 +106,7 @@ namespace Hotfix.Framework.Asset
         private ResourcePackage GetReadyDefaultPackage()
         {
             if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)
-                || package.InitializeStatus != EOperationStatus.Succeeded)
+                                         || package.InitializeStatus != EOperationStatus.Succeeded)
                 throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
             return package;
         }
