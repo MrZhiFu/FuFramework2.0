@@ -500,7 +500,7 @@ namespace FuFramework.Config.Editor
 
 			// 其余整型族：经 IntField/LongField 转换回目标类型；输入越界时回退当前值（避免 OverflowException 中断 OnGUI）
 			if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short)
-				|| type == typeof(ushort) || type == typeof(uint))
+				|| type == typeof(ushort))
 			{
 				try
 				{
@@ -512,8 +512,13 @@ namespace FuFramework.Config.Editor
 				}
 			}
 
+			// uint 走 LongField（long 覆盖 uint 全范围，避免 > int.MaxValue 时被误当越界吞掉）
+			if (type == typeof(uint))
+				return unchecked((uint)EditorGUILayout.LongField((uint)currentValue, GUILayout.MinWidth(120)));
+
+			// ulong 用位重解释转 long（装箱 ulong 拆箱 ulong 合法，unchecked 强转不抛，任意值不崩溃）
 			if (type == typeof(ulong))
-				return unchecked((ulong)EditorGUILayout.LongField(Convert.ToInt64(currentValue), GUILayout.MinWidth(120)));
+				return unchecked((ulong)EditorGUILayout.LongField(unchecked((long)(ulong)currentValue), GUILayout.MinWidth(120)));
 
 			return currentValue; // 不可编辑类型不应到达此分支
 		}
@@ -554,18 +559,19 @@ namespace FuFramework.Config.Editor
 			// 值变化 → 记录原值并写回活配置对象
 			if (!Equals(newValue, currentValue))
 			{
-				if (origDict == null)
-				{
-					origDict = new Dictionary<string, object>();
-					m_FieldOriginalValues[row] = origDict;
-				}
-
-				if (!origDict.ContainsKey(prop.Name)) origDict[prop.Name] = currentValue;
-
 				try
 				{
 					prop.SetValue(row, newValue);
-					if (failDict != null) failDict.Remove(prop.Name);
+					// 写成功后记录原值；写失败不缓存，避免出现误导性的"已编辑"高亮与重置按钮
+					if (origDict == null)
+					{
+						origDict = new Dictionary<string, object>();
+						m_FieldOriginalValues[row] = origDict;
+					}
+
+					if (!origDict.ContainsKey(prop.Name)) origDict[prop.Name] = currentValue;
+					if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
+						m_WriteFailTimes.Remove(row);
 				}
 				catch (Exception e)
 				{
@@ -590,7 +596,8 @@ namespace FuFramework.Config.Editor
 						prop.SetValue(row, originalValue);
 						origDict.Remove(prop.Name);
 						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
-						if (failDict != null) failDict.Remove(prop.Name);
+						if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
+							m_WriteFailTimes.Remove(row);
 					}
 					catch (Exception e)
 					{
