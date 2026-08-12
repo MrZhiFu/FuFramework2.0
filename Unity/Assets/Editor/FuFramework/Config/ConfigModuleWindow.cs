@@ -77,6 +77,19 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		private double m_LastRefreshTime;
 
+		/// <summary>
+		/// 字段编辑撤销缓存：行对象引用 → 属性名 → 原始值。
+		/// 首次编辑某字段时记录原值，供「重置」回滚与「编辑高亮」判定。
+		/// 行是活配置对象（Luban bean 未重写 Equals，引用相等作 key 安全）。
+		/// </summary>
+		private readonly Dictionary<object, Dictionary<string, object>> m_FieldOriginalValues = new();
+
+		/// <summary>
+		/// 写回失败时间戳缓存：行对象引用 → 属性名 → 失败时刻（EditorApplication.timeSinceStartup）。
+		/// 失败后 2 秒内该字段红色标注；成功后移除。
+		/// </summary>
+		private readonly Dictionary<object, Dictionary<string, double>> m_WriteFailTimes = new();
+
 		#endregion
 
 		#region 反射缓存
@@ -431,6 +444,71 @@ namespace FuFramework.Config.Editor
 		}
 
 		/// <summary>
+		/// 判断属性是否可编辑：有 setter（含私有）、类型为简单值类型、且非身份字段。
+		/// </summary>
+		/// <param name="prop">属性</param>
+		/// <returns>是否可编辑</returns>
+		private static bool IsEditableProperty(PropertyInfo prop)
+		{
+			// 身份字段锁定（修改会破坏 LongKeyDataDict/StrKeyDataDict 索引）
+			if (prop.Name == "Id" || prop.Name == "Key") return false;
+			if (prop.GetSetMethod(true) == null) return false;
+
+			var type = prop.PropertyType;
+			if (type.IsEnum) return true;
+			if (type == typeof(string) || type == typeof(bool)) return true;
+			if (type == typeof(byte) || type == typeof(sbyte)) return true;
+			if (type == typeof(short) || type == typeof(ushort)) return true;
+			if (type == typeof(int) || type == typeof(uint)) return true;
+			if (type == typeof(long) || type == typeof(ulong)) return true;
+			if (type == typeof(float) || type == typeof(double)) return true;
+			return false;
+		}
+
+		/// <summary>
+		/// 渲染属性对应类型化控件并返回新值。
+		/// 数值控件内建校验：无效输入不提交，返回值恒为最后一个有效值。
+		/// </summary>
+		/// <param name="prop">属性</param>
+		/// <param name="currentValue">当前值</param>
+		/// <returns>控件返回的新值</returns>
+		private static object RenderFieldControl(PropertyInfo prop, object currentValue)
+		{
+			var type = prop.PropertyType;
+
+			if (type == typeof(string))
+				return EditorGUILayout.TextField((string)currentValue, GUILayout.MinWidth(120));
+
+			if (type == typeof(bool))
+				return EditorGUILayout.Toggle((bool)currentValue, GUILayout.MinWidth(120));
+
+			if (type.IsEnum)
+				return EditorGUILayout.EnumPopup((Enum)currentValue, GUILayout.MinWidth(120));
+
+			if (type == typeof(int))
+				return EditorGUILayout.IntField((int)currentValue, GUILayout.MinWidth(120));
+
+			if (type == typeof(long))
+				return EditorGUILayout.LongField((long)currentValue, GUILayout.MinWidth(120));
+
+			if (type == typeof(float))
+				return EditorGUILayout.FloatField((float)currentValue, GUILayout.MinWidth(120));
+
+			if (type == typeof(double))
+				return EditorGUILayout.DoubleField((double)currentValue, GUILayout.MinWidth(120));
+
+			// 其余整型族：经 IntField/LongField 转换回目标类型
+			if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short)
+				|| type == typeof(ushort) || type == typeof(uint))
+				return Convert.ChangeType(EditorGUILayout.IntField(Convert.ToInt32(currentValue), GUILayout.MinWidth(120)), type);
+
+			if (type == typeof(ulong))
+				return unchecked((ulong)EditorGUILayout.LongField((long)currentValue, GUILayout.MinWidth(120)));
+
+			return currentValue; // 不可编辑类型不应到达此分支
+		}
+
+		/// <summary>
 		/// 绘制单行（Foldout + 字段键值对）
 		/// </summary>
 		/// <param name="row">行对象</param>
@@ -551,6 +629,8 @@ namespace FuFramework.Config.Editor
 			m_RowsCache.Clear();
 			m_RowSearchFilters.Clear();
 			m_RowFoldoutStates.Clear();
+			m_FieldOriginalValues.Clear();
+			m_WriteFailTimes.Clear();
 		}
 
 		#endregion
