@@ -296,23 +296,32 @@ namespace Hotfix.Framework.UI
         /// <param name="pkgItem">包内资源项，加载完成后绑定资源。</param>
         private async UniTaskVoid LoadResAsync(string assetName, string extension, Type type, PackageItem pkgItem)
         {
-            var pkgName  = pkgItem.owner.name;
-            var rootPath = UtilityAOT.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
-            var itemPath = $"{rootPath}{pkgName}/{pkgName}_{assetName}";
-            var extPath  = $"{itemPath}{extension}";
-
-            // 等待资源文件加载完成
-            m_PkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
-            if (resLoader == null)
+            try
             {
-                resLoader                     = new AssetLoadRegister();
-                m_PkgAssetLoaderDict[pkgName] = resLoader;
+                var pkgName  = pkgItem.owner.name;
+                var rootPath = UtilityAOT.AssetPath.GetUIRootPath(); //"Assets/Bundles/UI/";
+                var itemPath = $"{rootPath}{pkgName}/{pkgName}_{assetName}";
+                var extPath  = $"{itemPath}{extension}";
+
+                // 等待资源文件加载完成
+                m_PkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
+                if (resLoader == null)
+                {
+                    resLoader                     = new AssetLoadRegister();
+                    m_PkgAssetLoaderDict[pkgName] = resLoader;
+                }
+
+                var assetObj = await resLoader.LoadAsync(extPath, type);
+
+                // 绑定资源到包内资源项
+                pkgItem.owner.SetItemAsset(pkgItem, assetObj, DestroyMethod.Unload);
             }
-
-            var assetObj = await resLoader.LoadAsync(extPath, type);
-
-            // 绑定资源到包内资源项
-            pkgItem.owner.SetItemAsset(pkgItem, assetObj, DestroyMethod.Unload);
+            catch (Exception e)
+            {
+                // 加载失败或装载器已被 RemovePkg/RemoveAllPkg Dispose（在途任务）：记录日志，跳过资源绑定，
+                // 避免 fire-and-forget 未观察异常静默（包项缺资源下次 ReloadAssets 可恢复）
+                FuLogger.LogError($"[FuiPkgManager] 包 '{pkgItem.owner.name}' 资源 '{assetName}' 加载失败: {e.Message}");
+            }
         }
 
         /// <summary>

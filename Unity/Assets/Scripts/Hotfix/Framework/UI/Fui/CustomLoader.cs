@@ -152,8 +152,18 @@ namespace Hotfix.Framework.UI
                 // 创建纹理并缓存
                 if (texture2D.IsNotNull())
                 {
+                    // asset 路径并发加载去重：期间他人已缓存同 URL 则直接复用，释放本次加载的句柄，
+                    // 避免二次 Cache.Put 驱逐首个仍显示的纹理（显示问题）；网络路径已由 LoadingTasks 去重
+                    if (assetHandle != null && Cache.TryGet(url, out var existingEntry))
+                    {
+                        assetHandle.Release();
+                        onExternalLoadSuccess(existingEntry.Texture);
+                        return;
+                    }
+
                     var targetTexture = new NTexture(texture2D);
                     Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
+                    assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
                     onExternalLoadSuccess(targetTexture);
                 }
                 else

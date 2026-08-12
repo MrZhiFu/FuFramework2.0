@@ -213,6 +213,7 @@ namespace Hotfix
             finally
             {
                 assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+                GlobalModule.AssetModule.UnloadAsset(configPath); // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
             }
         }
 #else
@@ -235,6 +236,7 @@ namespace Hotfix
             finally
             {
                 assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+                GlobalModule.AssetModule.UnloadAsset(cfgPath); // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
             }
         }
 #endif
