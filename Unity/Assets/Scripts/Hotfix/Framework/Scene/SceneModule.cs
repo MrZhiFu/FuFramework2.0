@@ -83,6 +83,12 @@ namespace Hotfix.Framework.Scene
         /// </summary>
         private bool m_IsDisposed;
 
+        /// <summary>
+        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的场景加载 await 后
+        /// 仍能识别并拒绝把旧句柄写回新生命周期（m_IsDisposed 会被 OnInit 重置，无法覆盖跨 ReInit 窗口）。
+        /// </summary>
+        private int m_LifecycleEpoch;
+
         /// 事件订阅器
         private EventRegister EventRegister { get; set; }
 
@@ -103,6 +109,7 @@ namespace Hotfix.Framework.Scene
         protected internal override void OnDispose()
         {
             m_IsDisposed = true;
+            m_LifecycleEpoch++; // 递增生命周期代数：在途场景加载 await 后据此识别旧生命周期，拒绝写回新生命周期
 
             // 反向遍历已加载的场景，卸载所有已加载的场景
             var loadedScenePaths = new string[m_LoadedSceneDict.Count];
@@ -338,12 +345,13 @@ namespace Hotfix.Framework.Scene
 
             // await 前置位：先登记 loading 状态拦截并发同路径加载（m_LoadingSceneDict 需 await 完成拿到 handle 才能登记）
             m_LoadingSceneSet.Add(sceneAssetPath);
+            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧在途加载据此识别并拒绝写回新生命周期
             try
             {
                 var sceneName = GetSceneName(sceneAssetPath);
                 var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
-                // 模块已销毁（热更重载期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
-                if (m_IsDisposed)
+                // 模块已销毁/生命周期变更（热更重载期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     sceneOperationHandle.Release();
                     throw new ObjectDisposedException(nameof(SceneModule));
@@ -410,6 +418,14 @@ namespace Hotfix.Framework.Scene
                     if (sceneHandle == null) return;
                     FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
+
+                    // 模块已销毁（OnDispose 已清空登记字典）：不再恢复登记（避免残留），显式释放句柄兜底，防卸载失败句柄泄漏
+                    if (m_IsDisposed)
+                    {
+                        sceneHandle.Release();
+                        return;
+                    }
+
                     m_LoadedSceneDict.Add(sceneAssetPath, sceneHandle);
                     var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
                     EventRegister.Broadcast(this, unloadSceneFailureEventArgs);

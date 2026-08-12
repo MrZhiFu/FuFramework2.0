@@ -74,6 +74,12 @@ namespace Hotfix.Framework.Entity
         private bool m_IsShutdown;
 
         /// <summary>
+        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的实体加载完成回调
+        /// 在 ReInit 后仍能识别并拒绝把旧句柄写回新生命周期（防跨代注入 + 句柄泄漏）。
+        /// </summary>
+        private int m_LifecycleEpoch;
+
+        /// <summary>
         /// 事件管理模块
         /// </summary>
         private EventModule m_EventModule;
@@ -199,7 +205,14 @@ namespace Hotfix.Framework.Entity
             Instance = null;
 
             m_IsShutdown = true;
+            m_LifecycleEpoch++; // 递增生命周期代数：在途实体加载完成回调据此识别旧生命周期，拒绝写回新生命周期
             HideAllLoadedEntities();
+
+            // 显式销毁各实体组对象池（含其中所有实体对象持有的句柄），句柄释放收敛到本模块，
+            // 不依赖 ObjectPoolModule 逆序销毁的隐式顺序（否则单独 Dispose 或注册顺序变化时句柄永久泄漏）
+            foreach (var (_, entityGroup) in m_EntityGroupDict)
+                entityGroup.DisposeEntityPool(m_ObjectPoolModule);
+
             m_EntityGroupDict.Clear();
             m_LoadingEntityDict.Clear();
             m_LoadingToReleaseSet.Clear();
@@ -523,6 +536,7 @@ namespace Hotfix.Framework.Entity
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
+                var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧任务据此识别并拒绝写回新生命周期
                 // 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
                 AssetHandle assetOperationHandle;
                 try
@@ -541,6 +555,15 @@ namespace Hotfix.Framework.Entity
                 // 若回调抛异常或 tcs 完成异常，直接传播，此处不再二次回收（否则引用池抛"该对象已经被释放"掩盖真实异常）
                 assetOperationHandle.Completed += handle =>
                 {
+                    // 生命周期变更（热更重载）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
+                    if (lifecycleEpoch != m_LifecycleEpoch)
+                    {
+                        handle.Release();
+                        GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+                        tcs.TrySetException(new ObjectDisposedException(nameof(EntityModule)));
+                        return;
+                    }
+
                     // 实体信息
                     var showEntityInfo = ShowEntityInfo.Create(serialId, entityId, entityGroup, showEntityInfoEx);
 
@@ -985,9 +1008,9 @@ namespace Hotfix.Framework.Entity
         {
             if (showEntityInfo is null)
             {
-                var exception = new InvalidOperationException("[EntityModule]加载实体资源成功, 但是显示时的实体信息为空.");
-                tcs.TrySetException(exception);
-                throw exception;
+                // tcs 已 faulted：统一由 await tcs.Task 抛出，不在此 throw（避免从 Completed 同步回调逃逸造成双通道）
+                tcs.TrySetException(new InvalidOperationException("[EntityModule]加载实体资源成功, 但是显示时的实体信息为空."));
+                return;
             }
 
             // 如果实体已经在加载中，则释放资源并忽略
@@ -1052,9 +1075,9 @@ namespace Hotfix.Framework.Entity
             Exception exception;
             if (showEntityInfo is null)
             {
-                exception = new InvalidOperationException("[EntityModule]加载实体资源失败, 显示时的实体信息为空.");
-                tcs.TrySetException(exception);
-                throw exception;
+                // tcs 已 faulted：统一由 await tcs.Task 抛出，不在此 throw（避免从 Completed 同步回调逃逸造成双通道）
+                tcs.TrySetException(new InvalidOperationException("[EntityModule]加载实体资源失败, 显示时的实体信息为空."));
+                return;
             }
 
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
@@ -1078,8 +1101,7 @@ namespace Hotfix.Framework.Entity
             // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
             GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
 
-            tcs.TrySetException(exception);
-            throw exception;
+            tcs.TrySetException(exception); // 统一由 await tcs.Task 抛出，不再 throw（避免从 Completed 同步回调逃逸）
         }
 
         #endregion

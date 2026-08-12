@@ -318,5 +318,16 @@ namespace Hotfix.Framework.Entity
             if (entityGo is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
             m_EntityPool.SetPriority(entityGo, priority);
         }
+
+        /// <summary>
+        /// 销毁实体组对象池及其所有实体对象（释放句柄）。
+        /// 供模块 OnDispose 显式清理本组持有的句柄，不依赖 ObjectPoolModule 逆序销毁的隐式顺序。
+        /// </summary>
+        /// <param name="objectPoolModule">对象池管理模块。</param>
+        public void DisposeEntityPool(ObjectPoolModule objectPoolModule)
+        {
+            if (objectPoolModule is null) throw new InvalidOperationException("[EntityGroup] 销毁实体组对象池失败，对象池管理模块为空.");
+            objectPoolModule.DisposeObjectPool(m_EntityPool);
+        }
     }
 }

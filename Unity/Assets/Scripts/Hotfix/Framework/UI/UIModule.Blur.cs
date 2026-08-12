@@ -102,6 +102,12 @@ namespace Hotfix.Framework.UI
         private bool m_IsDisposed;
 
         /// <summary>
+        /// 模块生命周期代数。ReleaseBlur（OnDispose）递增，使旧生命周期在途的 Shader 加载
+        /// 在 ReInit 后仍能识别并拒绝覆盖新生命周期状态（m_IsDisposed 会被 InitBlur 重置，无法覆盖跨 ReInit 窗口）。
+        /// </summary>
+        private int m_LifecycleEpoch;
+
+        /// <summary>
         /// 模糊 Shader 资源路径（Assets/Bundles/Shader/UIBlurBackground.shader）。
         /// </summary>
         private static string BlurShaderPath => UtilityAOT.AssetPath.GetShaderPath($"{BlurShaderName}.shader");
@@ -133,40 +139,44 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private async UniTaskVoid LoadBlurShaderAsync()
         {
+            // 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
+            AssetHandle handle = null;
+            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧任务据此识别并拒绝覆盖新任务状态
             try
             {
                 var assetModule = ModuleManager.GetModule<AssetModule>();
                 if (assetModule == null)
                     throw new InvalidOperationException("[UIModule] 资源模块不存在。");
 
-                m_BlurShaderHandle = await assetModule.LoadAssetAsync<Shader>(BlurShaderPath);
-                m_BlurShader       = m_BlurShaderHandle.GetAssetObject<Shader>();
-                if (m_BlurShader == null)
+                handle = await assetModule.LoadAssetAsync<Shader>(BlurShaderPath);
+                var shader = handle.GetAssetObject<Shader>();
+                if (shader == null)
                     throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");
 
-                // 模块销毁后（热更重载）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
-                if (m_IsDisposed)
+                // 模块已销毁/生命周期变更（热更重载）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
-                    m_BlurShaderHandle.Release();
-                    m_BlurShaderHandle = null;
-                    m_BlurShader       = null;
+                    handle.Release();
+                    handle = null;
                     return;
                 }
 
-                m_BlurMaterial = new Material(m_BlurShader) { hideFlags = HideFlags.HideAndDontSave };
-                m_ShaderLoadTask.TrySetResult(m_BlurShader);
+                m_BlurShaderHandle = handle;
+                handle             = null; // 所有权已转移给模块字段，catch 不再释放
+                m_BlurShader       = shader;
+                m_BlurMaterial     = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+                m_ShaderLoadTask.TrySetResult(shader);
                 FuLogger.LogInfo("[UIModule] UI背景模糊 Shader 加载完成。");
             }
             catch (Exception e)
             {
                 FuLogger.LogError($"[UIModule] UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
 
-                // 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留到模块销毁才释放
-                m_BlurShaderHandle?.Release();
-                m_BlurShaderHandle = null;
+                // 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留
+                if (handle != null) handle.Release();
 
-                // 模块已销毁时不污染新任务状态
-                if (m_IsDisposed) return;
+                // 模块已销毁/生命周期变更时不污染新任务状态
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch) return;
                 m_ShaderLoadTask.TrySetException(e);
             }
         }
@@ -278,6 +288,7 @@ namespace Hotfix.Framework.UI
         {
             // 标记已销毁：在途 Shader 加载完成后不写回状态（见 LoadBlurShaderAsync）
             m_IsDisposed = true;
+            m_LifecycleEpoch++; // 递增生命周期代数：在途 Shader 加载恢复后据此识别旧生命周期，拒绝覆盖新任务状态
 
             CancelBlurAnim();
 

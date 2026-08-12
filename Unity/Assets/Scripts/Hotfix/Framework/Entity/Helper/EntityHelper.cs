@@ -15,25 +15,21 @@ namespace Hotfix.Framework.Entity
     public class EntityHelper : MonoBehaviour
     {
         /// <summary>
-        /// 资源操作句柄。
-        /// </summary>
-        private AssetHandle m_AssetOperationHandle;
-
-        /// <summary>
         /// 同步实例化实体。
         /// </summary>
         /// <param name="entityAssetHandle">要实例化的实体资源句柄。</param>
         /// <returns>实例化后的实体。</returns>
         public GameObject InstantiateEntity(object entityAssetHandle)
         {
-            m_AssetOperationHandle = entityAssetHandle as AssetHandle;
-            if (m_AssetOperationHandle is null)
+            // 句柄仅在本方法内使用（局部变量），不长期持有引用，避免保留已释放句柄的误导性死状态
+            var assetOperationHandle = entityAssetHandle as AssetHandle;
+            if (assetOperationHandle is null)
             {
                 FuLogger.LogError("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
                 return null;
             }
 
-            return m_AssetOperationHandle.InstantiateSync();
+            return assetOperationHandle.InstantiateSync();
         }
 
         /// <summary>
