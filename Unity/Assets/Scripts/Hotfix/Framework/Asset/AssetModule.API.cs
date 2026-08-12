@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Asset
         /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
-        /// <returns></returns>
+        /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path)
         {
             var package = GetReadyDefaultPackage();
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
-        /// <returns></returns>
+        /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
             var package = GetReadyDefaultPackage();
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
-        /// <returns></returns>
+        /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
             var package = GetReadyDefaultPackage();
@@ -70,22 +70,20 @@ namespace Hotfix.Framework.Asset
         #region 异步加载场景
 
         /// <summary>
-        /// 异步加载场景。
-        /// 注意：activateOnLoad=false（预加载后手动激活）时，Provider 在手动激活前不会完成，
-        /// 此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 true）的场景加载。
+        /// 异步加载场景（加载完成自动激活）。
         /// LocalPhysicsMode 固定为 None，未开放自定义。
         /// onProgress：加载进度回调（0~1），每帧上报一次直至加载完成；不需要进度时传 null。
-        /// 返回的 SceneHandle 使用完毕后必须调用 Release()（成功或失败均需释放），否则资源永不卸载。
+        /// 加载失败时内部释放句柄并抛异常，调用方无需也无法释放失败句柄。
+        /// 返回的 SceneHandle 使用完毕后必须调用 Release()，否则资源永不卸载。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="sceneMode">场景模式</param>
-        /// <param name="activateOnLoad">是否加载完成自动激活</param>
         /// <param name="onProgress">加载进度回调（可选）。</param>
-        /// <returns></returns>
-        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true, Action<float> onProgress = null)
+        /// <returns>场景句柄，使用完毕须调用 Release。</returns>
+        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action<float> onProgress = null)
         {
             var package = GetReadyDefaultPackage();
-            var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, activateOnLoad);
+            var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, true);
 
             // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）。
             // onProgress 回调异常不阻断加载（否则句柄无法返回导致泄漏），记录并继续。
@@ -101,6 +99,12 @@ namespace Hotfix.Framework.Asset
             }
 
             await handle;
+            if (handle.Status != EOperationStatus.Succeeded)
+            {
+                handle.Release();
+                throw new InvalidOperationException($"[AssetModule]场景加载失败：{path}");
+            }
+
             return handle;
         }
 
@@ -127,12 +131,13 @@ namespace Hotfix.Framework.Asset
         /// 异步实例化实体。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
         /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
-        /// <param name="path">资源路径</param>
         /// </summary>
+        /// <param name="path">资源路径</param>
         /// <returns>实例化后的实体。</returns>
         public async UniTask<GameObject> InstantiateAsync(string path)
         {
             if (m_IsDisposed) throw new ObjectDisposedException(nameof(AssetModule));
+            var lifecycleEpoch = m_LifecycleEpoch;
 
             AssetHandle assetHandle;
             if (m_InstantiateRefDict.TryGetValue(path, out var entry))
@@ -142,34 +147,28 @@ namespace Hotfix.Framework.Asset
             }
             else
             {
-                // 并发首次加载去重：同路径共享加载任务（防覆盖句柄泄漏）
-                if (!m_InstantiateLoadingTasks.TryGetValue(path, out var loadingTask))
+                // 并发首次加载去重：共享完成源（UniTaskCompletionSource.Task 可被多个调用方 await）
+                if (!m_InstantiateLoadingTasks.TryGetValue(path, out var sharedSource))
                 {
-                    loadingTask                     = LoadAssetAsync(path);
-                    m_InstantiateLoadingTasks[path] = loadingTask;
+                    sharedSource = new UniTaskCompletionSource<AssetHandle>();
+                    m_InstantiateLoadingTasks[path] = sharedSource;
+                    LoadAsyncForInstantiate(path, sharedSource, lifecycleEpoch).Forget();
                 }
 
-                try
-                {
-                    assetHandle = await loadingTask;
-                }
-                finally
-                {
-                    m_InstantiateLoadingTasks.Remove(path);
-                }
+                assetHandle = await sharedSource.Task;
 
-                // 模块销毁后：句柄可能已被 UnloadAllAssets 释放，不得再写回引用字典
-                if (m_IsDisposed)
+                // 模块销毁/生命周期变更后：句柄可能已被释放，不得再写回引用字典
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
-                    if (assetHandle.IsValid) assetHandle.Release();
+                    if (assetHandle != null && assetHandle.IsValid) assetHandle.Release();
                     throw new ObjectDisposedException(nameof(AssetModule));
                 }
 
-                // 加载完成后写入引用；若期间被并发请求写入则复用（同一任务返回同一句柄，无泄漏）
+                // 加载完成后写入引用；若期间被并发请求写入则复用
                 if (m_InstantiateRefDict.TryGetValue(path, out var existing))
                 {
                     existing.RefCount++;
-                    // 复用并发写入的条目：若句柄不同（共享任务被移除重建，见 m_InstantiateLoadingTasks 单 continuation 限制），
+                    // 复用并发写入的条目：若句柄不同（共享源已移除后被重建，见 LoadAsyncForInstantiate finally 移除），
                     // 释放本次加载的句柄，避免其 provider 引用计数永久残留
                     if (!ReferenceEquals(existing.Handle, assetHandle)) assetHandle.Release();
                     assetHandle = existing.Handle;
@@ -184,8 +183,8 @@ namespace Hotfix.Framework.Asset
             {
                 var instantiateOperation = assetHandle.InstantiateAsync();
                 await instantiateOperation;
-                // 模块销毁后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
-                if (m_IsDisposed)
+                // 模块销毁/生命周期变更后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     if (instantiateOperation.Result != null)
                         Object.Destroy(instantiateOperation.Result);
@@ -202,6 +201,38 @@ namespace Hotfix.Framework.Asset
             }
         }
 
+        /// <summary>
+        /// 首次实例化共享加载：同一路径多个并发调用方 await 同一完成源，共享单个句柄。
+        /// 加载完成或失败后向完成源写入结果并移除去重项；模块销毁/生命周期变更时释放句柄并向等待方抛异常。
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="sharedSource">共享完成源</param>
+        /// <param name="lifecycleEpoch">发起时的模块生命周期代际</param>
+        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, int lifecycleEpoch)
+        {
+            AssetHandle handle = null;
+            try
+            {
+                handle = await LoadAssetAsync(path);
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                {
+                    if (handle != null && handle.IsValid) handle.Release();
+                    sharedSource.TrySetException(new ObjectDisposedException(nameof(AssetModule)));
+                    return;
+                }
+
+                sharedSource.TrySetResult(handle);
+            }
+            catch (Exception e)
+            {
+                if (handle != null && handle.IsValid) handle.Release();
+                sharedSource.TrySetException(e);
+            }
+            finally
+            {
+                m_InstantiateLoadingTasks.Remove(path);
+            }
+        }
 
         /// <summary>
         /// 释放实例化资源的句柄引用。实例对象销毁后调用。
@@ -229,14 +260,14 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 卸载指定资源。
-        /// 注意：如果该资源还在被使用，该方法会无效
+        /// 注意：如果该资源还在被使用，该方法会无效。
+        /// 默认包未就绪（含初始化未完成/失败）时不抛异常，避免 YooAsset CheckInitialized 抛 YooPackageInvalidException。
         /// </summary>
         /// <param name="assetPath">资源路径</param>
         public void UnloadAsset(string assetPath)
         {
             assetPath.NotNull(nameof(assetPath));
-            if (!YooAssets.IsInitialized) return;                                      // YooAssets 未初始化（全局销毁后），防御不抛
-            if (!YooAssets.TryGetPackage(DefaultPackageName, out var package)) return; // 包不存在/已销毁时不抛异常
+            if (!TryGetReadyPackage(out var package)) return; // 防御：包未初始化/不存在/未就绪不抛
             package.TryUnloadUnusedAsset(assetPath);
         }
 
@@ -246,20 +277,21 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 获取资源信息。
-        /// 注意：默认包未就绪时返回 null（调用方已判空），避免同步抛异常。
+        /// 注意：默认包未就绪（含初始化未完成/失败）时返回 null，避免同步抛异常。
         /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <returns>资源信息，默认包未就绪时返回 null。</returns>
         public AssetInfo GetAssetInfo(string path)
         {
             // 默认包未就绪返回 null（调用方已判空），避免同步抛异常
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)) return null;
+            if (!TryGetReadyPackage(out var package)) return null;
             return package.GetAssetInfo(path);
         }
 
         /// <summary>
         /// 检查指定的资源路径是否有效。
-        /// 注意：默认包未初始化/不存在时返回 false，避免同步抛异常。
-        /// 与 GetAssetInfo/GetReadyDefaultPackage 仅判包是否存在不同，IsLocationValid 依赖已初始化的资源清单，
-        /// 故此处用 TryGetReadyPackage 额外校验包初始化状态（EOperationStatus.Succeeded）。
+        /// 注意：默认包未初始化/不存在/未就绪时返回 false，避免同步抛异常。
+        /// IsLocationValid 依赖已初始化的资源清单，故用 TryGetReadyPackage 校验包初始化状态（EOperationStatus.Succeeded）。
         /// </summary>
         /// <param name="path">要检查的资源路径。</param>
         /// <returns>如果资源路径有效，则返回 true；否则返回 false。</returns>

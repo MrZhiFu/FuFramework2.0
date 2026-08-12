@@ -34,12 +34,18 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
 
         /// <summary>
-        /// 实例化首次加载去重字典，key:资源路径，value:加载任务。
-        /// 同一路径并发首次实例化共享任务，防止覆盖句柄泄漏。
-        /// 注意：LoadAssetAsync 返回 async UniTask，同一 pending 任务并发 await 会抛
-        /// "Already continuation registered"（UniTask 单 continuation 限制），并发窗口极短时适用。
+        /// 实例化首次加载去重字典，key:资源路径，value:共享完成源。
+        /// 同一路径并发首次实例化共享完成源（UniTaskCompletionSource.Task 可被多个调用方 await），
+        /// 防止同一 pending 任务被二次 await 抛 "Already continuation registered"，
+        /// 也保证同一路径仅加载一次、仅产生一个句柄。
         /// </summary>
-        private readonly Dictionary<string, UniTask<AssetHandle>> m_InstantiateLoadingTasks = new();
+        private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_InstantiateLoadingTasks = new();
+
+        /// <summary>
+        /// 模块生命周期代际。OnDispose 递增，使旧生命周期在途的 InstantiateAsync
+        /// 在 ReInit（OnInit 重置 m_IsDisposed）后仍能识别并拒绝把旧句柄写回新生命周期。
+        /// </summary>
+        private int m_LifecycleEpoch;
 
         /// <summary>
         /// 实例化引用：句柄 + 引用计数。
@@ -80,6 +86,7 @@ namespace Hotfix.Framework.Asset
         protected internal override void OnDispose()
         {
             m_IsDisposed = true;
+            m_LifecycleEpoch++;
 
             // 释放所有实例化句柄（否则实例化引用泄漏）
             foreach (var entry in m_InstantiateRefDict.Values)
@@ -98,7 +105,8 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         private ResourcePackage GetReadyDefaultPackage()
         {
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package))
+            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)
+                || package.InitializeStatus != EOperationStatus.Succeeded)
                 throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
             return package;
         }
