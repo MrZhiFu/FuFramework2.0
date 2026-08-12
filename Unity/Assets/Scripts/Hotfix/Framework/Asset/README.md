@@ -40,11 +40,12 @@ UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
 ##### 异步加载场景
 
 ```csharp
-UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, bool activateOnLoad = true, Action<float> onProgress = null)
+UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action<float> onProgress = null)
 ```
 
-> 注意：`activateOnLoad=false`（预加载后手动激活）时 Provider 在手动激活前不会完成，此 UniTask 将一直挂起——当前包装仅支持自动激活（默认 `true`）。
+> 固定自动激活（`LocalPhysicsMode.None`），未开放自定义。
 > `onProgress`：加载进度回调（0~1），每帧上报一次直至加载完成；不需要进度时传 `null`。
+> 加载失败时内部释放句柄并抛异常，调用方无需也无法释放失败句柄。
 
 ##### 实例化
 
@@ -53,6 +54,7 @@ UniTask<GameObject> InstantiateAsync(string path)  // 异步实例化(推荐使�
 ```
 
 > 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(path)` 释放引用。
+> 注意：模块热更重载（`OnDispose`/`ReInit`）后旧生命周期存活的实例**不得再调用** `ReleaseInstantiate`，以免误释放新生命周期同路径引用（详见 8.注意事项）。
 
 #### 资源查询
 
@@ -205,7 +207,7 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 ### 通用注意事项
 
 1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
-2. **并发去重**：同一路径并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
+2. **并发去重**：同一路径（`AssetLoadRegister` 为同一路径+类型）并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
 4. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
