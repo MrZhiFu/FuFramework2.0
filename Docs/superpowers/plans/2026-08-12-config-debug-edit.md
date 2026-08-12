@@ -116,13 +116,22 @@ private static object RenderFieldControl(PropertyInfo prop, object currentValue)
     if (type == typeof(double))
         return EditorGUILayout.DoubleField((double)currentValue, GUILayout.MinWidth(120));
 
-    // 其余整型族：经 IntField/LongField 转换回目标类型
+    // 其余整型族：经 IntField/LongField 转换回目标类型；输入越界时回退当前值（避免 OverflowException 中断 OnGUI）
     if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short)
         || type == typeof(ushort) || type == typeof(uint))
-        return Convert.ChangeType(EditorGUILayout.IntField(Convert.ToInt32(currentValue), GUILayout.MinWidth(120)), type);
+    {
+        try
+        {
+            return Convert.ChangeType(EditorGUILayout.IntField(Convert.ToInt32(currentValue), GUILayout.MinWidth(120)), type);
+        }
+        catch (OverflowException)
+        {
+            return currentValue;
+        }
+    }
 
     if (type == typeof(ulong))
-        return unchecked((ulong)EditorGUILayout.LongField((long)currentValue, GUILayout.MinWidth(120)));
+        return unchecked((ulong)EditorGUILayout.LongField(Convert.ToInt64(currentValue), GUILayout.MinWidth(120)));
 
     return currentValue; // 不可编辑类型不应到达此分支
 }
