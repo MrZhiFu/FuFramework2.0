@@ -397,7 +397,8 @@ namespace Hotfix.Framework.Sound
             /// </summary>
             public void Reset()
             {
-                // 先释放句柄再卸载资源：句柄不释放则 provider.RefCount 不为 0，UnloadAsset 的 TryUnloadUnusedAsset 永不生效
+                // 先释放句柄再卸载资源（托管操作，即使组件已被 Unity teardown 销毁也执行）：
+                // 句柄不释放则 provider.RefCount 不为 0，UnloadAsset 的 TryUnloadUnusedAsset 永不生效
                 if (m_SoundAssetHandle != null)
                 {
                     m_SoundAssetHandle.Release();
@@ -410,6 +411,9 @@ namespace Hotfix.Framework.Sound
                     m_SoundAsset = null;
                 }
                 SoundAssetPath = null; // 清理陈旧路径，避免后续误用
+
+                // Unity 停止 Play 时组件可能已被 teardown 销毁：防御后续 Unity 对象访问（transform/AudioSource），避免"对象已销毁仍访问"警告
+                if (this == null) return;
 
                 transform.localPosition = Vector3.zero;
                 m_AudioSource.clip      = null;

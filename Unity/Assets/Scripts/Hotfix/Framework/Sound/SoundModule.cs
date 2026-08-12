@@ -142,7 +142,15 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         protected internal override void OnDispose()
         {
-            StopAllLoadedSounds();
+            // 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨热更重载残留）。
+            // Unity 停止 Play 时场景对象（SoundGroup/SoundAgent）可能已被 teardown 先于 ModuleManager.Dispose 销毁，跳过已销毁组。
+            foreach (var (_, soundGroup) in m_SoundGroupDict)
+            {
+                if (soundGroup == null) continue;
+                soundGroup.ResetAllAgents();
+                UnityEngine.Object.Destroy(soundGroup.gameObject);
+            }
+
             m_SoundGroupDict.Clear();
             m_LoadingSoundList.Clear();
             m_LoadingToReleaseSet.Clear();
@@ -449,6 +457,8 @@ namespace Hotfix.Framework.Sound
             {
                 m_LoadingToReleaseSet.Add(serialId);
             }
+
+            m_LoadingSoundList.Clear(); // 与 StopSound 对称：停止后不再占用加载列表，避免 IsLoadingSound 恒 true / serialId 残留
         }
 
         #endregion
@@ -544,16 +554,22 @@ namespace Hotfix.Framework.Sound
                         soundAgent.SetWorldPosition(playSoundInfo.SoundParams3D.WorldPosition);
                 }
 
-                var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
-                m_EventModule.Broadcast(this, successEventArgs);
+                try
+                {
+                    var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
+                    m_EventModule.Broadcast(this, successEventArgs);
+                }
+                finally
+                {
+                    // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
+                    if (playSoundInfo.SoundParams != null)
+                        GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
 
-                if (playSoundInfo.SoundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                    if (playSoundInfo.SoundParams3D != null)
+                        GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
 
-                if (playSoundInfo.SoundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
-
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                }
                 return;
             }
 
@@ -583,19 +599,24 @@ namespace Hotfix.Framework.Sound
 
             FuLogger.LogError(errorMessage);
 
-            // 派发播放失败事件
-            var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
-            m_EventModule.Broadcast(this, failureEventArgs);
+            // 派发播放失败事件（与 IgnoredBecauseLowPriority 分支一致：仅事件上报，不向调用方抛异常，
+            // 统一"播放失败通过 PlaySoundFailureEventArgs 通知"契约，避免裸 await 调用方产生未处理异步异常）
+            try
+            {
+                var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
+                m_EventModule.Broadcast(this, failureEventArgs);
+            }
+            finally
+            {
+                // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
+                if (playSoundInfo.SoundParams != null)
+                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
 
-            // 释放播放相关信息，并抛出异常
-            if (playSoundInfo.SoundParams != null)
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                if (playSoundInfo.SoundParams3D != null)
+                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
 
-            if (playSoundInfo.SoundParams3D != null)
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
-
-            GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
-            throw new InvalidOperationException(errorMessage);
+                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+            }
         }
 
         /// <summary>

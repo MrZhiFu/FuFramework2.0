@@ -141,11 +141,11 @@ namespace Hotfix.Framework.Sound
                     }
 
                     // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
+                    // 不移除 break：须扫描全部代理以选出优先级最低者替换，否则首个较低优先级代理会截断后续更高优先级的声音
                     if (soundAgent.Priority < playSoundInfo.SoundParams.Priority)
                     {
                         if (!candidateAgent || soundAgent.Priority < candidateAgent.Priority)
                             candidateAgent = soundAgent;
-                        break;
                     }
 
                     // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
@@ -258,6 +258,19 @@ namespace Hotfix.Framework.Sound
                 {
                     if (soundAgent.IsPlaying)
                         soundAgent.Stop(fadeOutSeconds);
+                }
+            }
+
+            /// <summary>
+            /// 重置所有声音播放代理（释放句柄，含暂停/停止状态未播放的代理）。
+            /// 供模块 OnDispose 使用，避免热更重载时暂停中 agent 的句柄/bundle 残留。
+            /// </summary>
+            public void ResetAllAgents()
+            {
+                foreach (var soundAgent in m_SoundAgents)
+                {
+                    if (soundAgent == null) continue; // Unity teardown 时 agent 组件可能已销毁
+                    soundAgent.Reset();
                 }
             }
         }
