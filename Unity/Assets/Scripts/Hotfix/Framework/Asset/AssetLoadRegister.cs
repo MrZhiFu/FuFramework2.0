@@ -28,16 +28,47 @@ namespace Hotfix.Framework.Asset
         private readonly AssetModule m_AssetModule;
 
         /// <summary>
-        /// 缓存已经加载的资源句柄，key为资源路径，value为资源句柄
+        /// 加载缓存键：资源路径 + 加载类型。
+        /// 同一路径以不同类型加载时视为不同条目，避免不同型 LoadAsync 相互驱逐/误释放共享句柄
+        /// （否则 LoadAsync&lt;T1&gt;(path) 缓存句柄会被 LoadAsync&lt;T2&gt;(path) 的类型不匹配分支驱逐卸载）。
         /// </summary>
-        private readonly Dictionary<string, AssetHandle> m_HandleDict = new();
+        private readonly struct LoadKey : IEquatable<LoadKey>
+        {
+            public readonly string Path;
+            public readonly Type Type;
+
+            public LoadKey(string path, Type type)
+            {
+                Path = path;
+                Type = type;
+            }
+
+            public bool Equals(LoadKey other) => Path == other.Path && Type == other.Type;
+
+            public override bool Equals(object obj) => obj is LoadKey other && Equals(other);
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hash = Path != null ? Path.GetHashCode() : 0;
+                    hash = (hash * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                    return hash;
+                }
+            }
+        }
 
         /// <summary>
-        /// 正在加载中的任务去重字典，key为资源路径，value为共享完成源。
-        /// 同一路径并发加载时共享完成源（UniTaskCompletionSource.Task 可被多个调用者 await），
+        /// 缓存已经加载的资源句柄，key为资源路径+类型，value为资源句柄
+        /// </summary>
+        private readonly Dictionary<LoadKey, AssetHandle> m_HandleDict = new();
+
+        /// <summary>
+        /// 正在加载中的任务去重字典，key为资源路径+类型，value为共享完成源。
+        /// 同一路径+类型并发加载时共享完成源（UniTaskCompletionSource.Task 可被多个调用者 await），
         /// 防止后完成句柄覆盖先完成句柄导致泄漏，也避免 async UniTask 重复 await 报错。
         /// </summary>
-        private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
+        private readonly Dictionary<LoadKey, UniTaskCompletionSource<AssetHandle>> m_LoadingTasks = new();
 
         /// <summary>
         /// 是否已废弃（调用方永久放弃本装载器）。防止废弃后在途的加载任务把句柄写回缓存（句柄将无人释放而泄漏）。
@@ -68,8 +99,9 @@ namespace Hotfix.Framework.Asset
             var result = handle.GetAssetObject<T>();
             if (result == null)
             {
-                // 类型不匹配：失效缓存并释放句柄，避免错误类型句柄永久滞留缓存（资源被钉死无法卸载）
-                m_HandleDict.Remove(path);
+                // 类型不匹配：失效该 (path,type) 缓存并释放句柄，避免错误类型句柄永久滞留缓存（资源被钉死无法卸载）。
+                // 仅影响该类型条目，不影响同路径其他类型条目（缓存按 path+type 分 key）。
+                m_HandleDict.Remove(new LoadKey(path, typeof(T)));
                 handle.Release();
                 m_AssetModule.UnloadAsset(path);
                 throw new InvalidOperationException($"[AssetLoadRegister]资源{path}类型不匹配，期望类型: {typeof(T)}");
@@ -126,20 +158,22 @@ namespace Hotfix.Framework.Asset
             // 新的加载请求意味着装载器正在被再次使用（如重载），清除临时卸载标记
             m_Unloaded = false;
 
+            var key = new LoadKey(path, assetType);
+
             // 检查是否已加载
-            if (m_HandleDict.TryGetValue(path, out var existingHandle))
+            if (m_HandleDict.TryGetValue(key, out var existingHandle))
             {
                 // 验证资源是否仍然有效
                 if (existingHandle.AssetObject != null)
                     return existingHandle;
 
                 // 资源已失效，清理后重新加载
-                m_HandleDict.Remove(path);
+                m_HandleDict.Remove(key);
                 existingHandle.Release();
             }
 
-            // 并发去重：同一路径正在加载，共享完成源（UniTaskCompletionSource.Task 可多次 await）
-            if (m_LoadingTasks.TryGetValue(path, out var sharedSource))
+            // 并发去重：同一路径+类型正在加载，共享完成源（UniTaskCompletionSource.Task 可多次 await）
+            if (m_LoadingTasks.TryGetValue(key, out var sharedSource))
             {
                 var sharedHandle = await sharedSource.Task;
                 // 等待期间可能被 Dispose/UnloadAll：句柄可能已被释放，不得返回给调用方
@@ -154,7 +188,7 @@ namespace Hotfix.Framework.Asset
 
             // 创建共享完成源并注册，多个并发调用者 await 同一 Task
             var taskSource = new UniTaskCompletionSource<AssetHandle>();
-            m_LoadingTasks[path] = taskSource;
+            m_LoadingTasks[key] = taskSource;
             try
             {
                 var handle = await LoadAssetHandleCoreAsync(path, assetType);
@@ -168,7 +202,7 @@ namespace Hotfix.Framework.Asset
             }
             finally
             {
-                m_LoadingTasks.Remove(path);
+                m_LoadingTasks.Remove(key);
             }
         }
 
@@ -201,7 +235,7 @@ namespace Hotfix.Framework.Asset
                 }
 
                 // 保存资源句柄
-                m_HandleDict[path] = assetHandle;
+                m_HandleDict[new LoadKey(path, assetType)] = assetHandle;
                 FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
                 return assetHandle;
             }
@@ -216,20 +250,37 @@ namespace Hotfix.Framework.Asset
         /// 卸载已经加载的指定资源。
         /// 1.释放资源句柄，即减少引用计数。
         /// 2.尝试卸载资源，即引用计数为零时，才会真正卸载资源。
+        /// 注意：若该资源仍在加载中（尚未入缓存），本方法不生效，需在加载完成后调用；
+        /// 若要阻止在途加载完成时写回缓存，请用 UnloadAll（置 m_Unloaded）或 Dispose。
         /// </summary>
         /// <param name="path">资源路径。</param>
         public void Unload(string path)
         {
-            if (!m_HandleDict.TryGetValue(path, out var handle)) return;
+            // 同一路径可能以多种类型缓存（按 path+type 分 key），全部卸载
+            List<LoadKey> matchedKeys = null;
+            foreach (var key in m_HandleDict.Keys)
+            {
+                if (key.Path == path)
+                {
+                    matchedKeys ??= new List<LoadKey>();
+                    matchedKeys.Add(key);
+                }
+            }
 
-            // 释放资源句柄，即减少引用计数
-            handle.Release();
+            if (matchedKeys == null) return;
+            foreach (var key in matchedKeys)
+            {
+                if (!m_HandleDict.TryGetValue(key, out var handle)) continue;
 
-            // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
-            m_AssetModule.UnloadAsset(path);
+                // 释放资源句柄，即减少引用计数
+                handle.Release();
 
-            m_HandleDict.Remove(path);
-            FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
+                // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
+                m_AssetModule.UnloadAsset(path);
+
+                m_HandleDict.Remove(key);
+                FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
+            }
         }
 
         /// <summary>
@@ -240,11 +291,20 @@ namespace Hotfix.Framework.Asset
         {
             m_Unloaded = true;
 
-            // 先复制路径列表，避免遍历时集合被修改
-            var paths = new List<string>(m_HandleDict.Keys);
-            foreach (var path in paths)
+            // 先复制 key 列表，避免遍历时集合被修改；直接按 key 卸载（比逐个 Unload 再按 path 扫字典更省）
+            var keys = new List<LoadKey>(m_HandleDict.Keys);
+            foreach (var key in keys)
             {
-                Unload(path);
+                if (!m_HandleDict.TryGetValue(key, out var handle)) continue;
+
+                // 释放资源句柄，即减少引用计数
+                handle.Release();
+
+                // 尝试卸载资源，即引用计数为零时，才会真正卸载资源
+                m_AssetModule.UnloadAsset(key.Path);
+
+                m_HandleDict.Remove(key);
+                FuLogger.LogInfo($"[AssetLoadRegister]释放{key.Path}资源完成.");
             }
         }
 

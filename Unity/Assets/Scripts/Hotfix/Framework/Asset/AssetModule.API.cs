@@ -23,7 +23,9 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 异步加载资源。
-        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
+        /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
+        /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
+        /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
@@ -37,7 +39,9 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 异步加载资源。
-        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
+        /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
+        /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
+        /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
@@ -52,7 +56,9 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 异步加载资源。
-        /// 注意：返回的句柄使用完毕后必须调用 Release()（成功或失败均需释放），否则 provider 引用计数不归零、资源永不卸载。
+        /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
+        /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
+        /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
@@ -87,6 +93,7 @@ namespace Hotfix.Framework.Asset
 
             // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）。
             // onProgress 回调异常不阻断加载（否则句柄无法返回导致泄漏），记录并继续。
+            // 注：未设超时上限——场景加载挂起属极端情况，正常路径依赖 YooAsset/SceneManager 完成；如需超时保护可在此加时间上限。
             if (onProgress != null)
             {
                 while (!handle.IsDone)
@@ -214,6 +221,15 @@ namespace Hotfix.Framework.Asset
             try
             {
                 handle = await LoadAssetAsync(path);
+                // YooAsset await 不抛异常：资源加载失败时返回的是 Failed 句柄，必须显式校验 Status 并释放，
+                // 否则 Failed 句柄流入引用字典（依赖下游 InstantiateAsync 失败才兜底释放，绕路且隐蔽）。
+                if (handle == null || handle.Status != EOperationStatus.Succeeded)
+                {
+                    if (handle != null && handle.IsValid) handle.Release();
+                    sharedSource.TrySetException(new InvalidOperationException($"[AssetModule]资源{path}加载失败"));
+                    return;
+                }
+
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     if (handle != null && handle.IsValid) handle.Release();
@@ -237,10 +253,13 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 释放实例化资源的句柄引用。实例对象销毁后调用。
         /// 引用计数归零时 Release 句柄并移除，让资源可被卸载。
+        /// 注意：模块 OnDispose（热更重载）后引用字典已清空，旧生命周期存活的实例不得在模块重载（ReInit）后调用本方法，
+        /// 否则可能误命中新生命周期同路径条目——引用计数归零并卸载新句柄，导致仍存活的实例资源被卸载。
         /// </summary>
         /// <param name="path">资源路径。</param>
         public void ReleaseInstantiate(string path)
         {
+            if (m_IsDisposed) return; // 模块已销毁：引用字典已清空，直接忽略（防旧生命周期误调用）
             if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
             if (entry.RefCount   <= 0) return;
             if (--entry.RefCount > 0) return;
