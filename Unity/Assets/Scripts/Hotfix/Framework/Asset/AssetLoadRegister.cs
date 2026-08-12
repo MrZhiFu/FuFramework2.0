@@ -64,10 +64,16 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径。</param>
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
-            var handle = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync<T>);
+            var handle = await LoadAssetHandleAsync(path, typeof(T));
             var result = handle.GetAssetObject<T>();
             if (result == null)
+            {
+                // 类型不匹配：失效缓存并释放句柄，避免错误类型句柄永久滞留缓存（资源被钉死无法卸载）
+                m_HandleDict.Remove(path);
+                handle.Release();
+                m_AssetModule.UnloadAsset(path);
                 throw new InvalidOperationException($"[AssetLoadRegister]资源{path}类型不匹配，期望类型: {typeof(T)}");
+            }
 
             return result;
         }
@@ -77,10 +83,10 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
-        /// <returns></returns>
+        /// <returns>加载的资源对象。</returns>
         public async UniTask<Object> LoadAsync(string path, Type type)
         {
-            var handle = await LoadAssetHandleAsync(path, p => m_AssetModule.LoadAssetAsync(p, type));
+            var handle = await LoadAssetHandleAsync(path, type);
             return handle.AssetObject;
         }
 
@@ -90,18 +96,18 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径。</param>
         public async UniTask<Object> LoadAsync(string path)
         {
-            var handle = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync);
+            var handle = await LoadAssetHandleAsync(path, null);
             return handle.AssetObject;
         }
 
         /// <summary>
         /// 异步实例化实体。
-        /// <param name="path">资源路径</param>
         /// </summary>
+        /// <param name="path">资源路径</param>
         /// <returns>实例化后的实体。</returns>
         public async UniTask<GameObject> InstantiateAsync(string path)
         {
-            var assetHandle          = await LoadAssetHandleAsync(path, m_AssetModule.LoadAssetAsync);
+            var assetHandle          = await LoadAssetHandleAsync(path, null);
             var instantiateOperation = assetHandle.InstantiateAsync();
             await instantiateOperation;
             if (instantiateOperation.Result == null)
@@ -113,9 +119,9 @@ namespace Hotfix.Framework.Asset
         /// 加载资源句柄的通用逻辑。
         /// </summary>
         /// <param name="path">资源路径。</param>
-        /// <param name="loadFunc">以路径发起加载的异步函数。</param>
+        /// <param name="assetType">资源类型，null 表示不指定类型。</param>
         /// <returns>资源句柄。</returns>
-        private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
+        private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Type assetType)
         {
             // 新的加载请求意味着装载器正在被再次使用（如重载），清除临时卸载标记
             m_Unloaded = false;
@@ -134,14 +140,24 @@ namespace Hotfix.Framework.Asset
 
             // 并发去重：同一路径正在加载，共享完成源（UniTaskCompletionSource.Task 可多次 await）
             if (m_LoadingTasks.TryGetValue(path, out var sharedSource))
-                return await sharedSource.Task;
+            {
+                var sharedHandle = await sharedSource.Task;
+                // 等待期间可能被 Dispose/UnloadAll：句柄可能已被释放，不得返回给调用方
+                if (m_Disposed || m_Unloaded)
+                {
+                    sharedHandle?.Release();
+                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
+                }
+
+                return sharedHandle;
+            }
 
             // 创建共享完成源并注册，多个并发调用者 await 同一 Task
             var taskSource = new UniTaskCompletionSource<AssetHandle>();
             m_LoadingTasks[path] = taskSource;
             try
             {
-                var handle = await LoadAssetHandleCoreAsync(path, loadFunc);
+                var handle = await LoadAssetHandleCoreAsync(path, assetType);
                 taskSource.TrySetResult(handle);
                 return handle;
             }
@@ -159,12 +175,17 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 实际加载资源句柄并缓存。并发请求经 LoadAssetHandleAsync 去重后共享此任务。
         /// </summary>
-        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Func<string, UniTask<AssetHandle>> loadFunc)
+        /// <param name="path">资源路径。</param>
+        /// <param name="assetType">资源类型，null 表示不指定类型。</param>
+        /// <returns>资源句柄。</returns>
+        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType)
         {
             AssetHandle assetHandle = null;
             try
             {
-                assetHandle = await loadFunc(path);
+                assetHandle = assetType == null
+                    ? await m_AssetModule.LoadAssetAsync(path)
+                    : await m_AssetModule.LoadAssetAsync(path, assetType);
                 if (assetHandle == null || assetHandle.AssetObject == null)
                 {
                     throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
@@ -176,7 +197,7 @@ namespace Hotfix.Framework.Asset
                 {
                     assetHandle.Release();
                     assetHandle = null; // 置空避免 catch 二次释放
-                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃");
+                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
                 }
 
                 // 保存资源句柄
