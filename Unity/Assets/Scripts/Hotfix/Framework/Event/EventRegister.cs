@@ -14,8 +14,9 @@ namespace Hotfix.Framework.Event
     /// </summary>
     public sealed class EventRegister : IReference
     {
-        /// 事件管理模块
-        private static EventModule m_EventModule;
+        /// 事件管理模块（实例字段：每个订阅器持有自己的引用，池化对象 Clear 置 null 不影响其他实例。
+        /// 原为 static——单实例 Clear 会清空共享引用，后续实例的 UnSubscribeAll 访问 null 抛 NRE）
+        private EventModule m_EventModule;
 
         /// <summary>
         /// 事件处理多值字典，key为事件ID，value为事件处理对象列表。
@@ -28,8 +29,9 @@ namespace Hotfix.Framework.Event
         /// <returns></returns>
         public static EventRegister Create()
         {
-            m_EventModule = ModuleManager.GetModule<EventModule>();
-            return GlobalModule.ReferencePoolModule.Acquire<EventRegister>();
+            var register = GlobalModule.ReferencePoolModule.Acquire<EventRegister>();
+            register.m_EventModule = ModuleManager.GetModule<EventModule>();
+            return register;
         }
 
         /// <summary>

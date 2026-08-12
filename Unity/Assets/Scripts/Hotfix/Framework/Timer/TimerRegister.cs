@@ -17,9 +17,10 @@ namespace Hotfix.Framework.Timer
     public class TimerRegister : IReference
     {
         /// <summary>
-        /// 计时器管理模块
+        /// 计时器管理模块（实例字段：每个注册器持有自己的引用，池化对象 Clear 置 null 不影响其他实例。
+        /// 原为 static——单实例 Clear 会清空共享引用，后续实例的 StopAllTimers/OnTimerFinished 访问 null 抛 NRE）
         /// </summary>
-        private static TimerModule m_TimerModule;
+        private TimerModule m_TimerModule;
 
         /// <summary>
         /// 记录所有计时器任务的列表
@@ -32,9 +33,9 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static TimerRegister Create()
         {
-            m_TimerModule = ModuleManager.GetModule<TimerModule>();
             var register = GlobalModule.ReferencePoolModule.Acquire<TimerRegister>();
-            m_TimerModule.OnTimerFinished += register.OnTimerFinished;
+            register.m_TimerModule = ModuleManager.GetModule<TimerModule>();
+            register.m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
         }
 
