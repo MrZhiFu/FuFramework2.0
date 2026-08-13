@@ -222,6 +222,17 @@ namespace FuFramework.Config.Editor
 			GUILayout.Space(20);
 			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
+			GUILayout.Space(10);
+			if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				ExpandAllTables();
+			}
+
+			if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				CollapseAllTables();
+			}
+
 			GUILayout.FlexibleSpace();
 
 			if (GUILayout.Button("记录变更", EditorStyles.toolbarButton, GUILayout.Width(80)))
@@ -235,6 +246,32 @@ namespace FuFramework.Config.Editor
 			}
 
 			EditorGUILayout.EndHorizontal();
+		}
+
+		/// <summary>
+		/// 全部展开：展开所有配置表的折叠项。
+		/// </summary>
+		private void ExpandAllTables()
+		{
+			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			if (cfgNames == null) return;
+			foreach (var cfgName in cfgNames)
+			{
+				m_TableFoldoutStates[cfgName] = true;
+			}
+		}
+
+		/// <summary>
+		/// 全部折叠：折叠所有配置表的折叠项。
+		/// </summary>
+		private void CollapseAllTables()
+		{
+			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			if (cfgNames == null) return;
+			foreach (var cfgName in cfgNames)
+			{
+				m_TableFoldoutStates[cfgName] = false;
+			}
 		}
 
 		#endregion
