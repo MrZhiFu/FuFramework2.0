@@ -156,6 +156,76 @@ namespace FuFramework.Config.Editor
 		}
 
 		/// <summary>
+		/// 窗口销毁：若存在变更记录，弹窗询问是否保存（确定→记录变更导出；取消→放弃）。
+		/// 用 delayCall 延迟到销毁后的编辑器帧，避免 OnDestroy 期间弹窗异常。
+		/// </summary>
+		private void OnDestroy()
+		{
+			if (m_FieldOriginalValues.Count == 0) return;
+			EditorApplication.delayCall += PromptSaveChangesOnClose;
+		}
+
+		/// <summary>
+		/// 关闭窗口时的变更保存询问。
+		/// </summary>
+		private void PromptSaveChangesOnClose()
+		{
+			if (m_FieldOriginalValues.Count == 0) return;
+			var summary = BuildChangeSummary();
+			var ok = EditorUtility.DisplayDialog("配置调试", $"发现存在变更值
+{summary}
+
+是否需要保存变更记录？", "确定", "取消");
+			if (ok)
+			{
+				try
+				{
+					ExportChangeLog();
+				}
+				catch (Exception e)
+				{
+					Debug.LogError($"[ConfigDebug] 保存变更记录失败：{e.Message}");
+				}
+			}
+		}
+
+		/// <summary>
+		/// 生成变更简要信息（受影响表名、变更行数/字段数）。
+		/// </summary>
+		/// <returns>简要信息字符串</returns>
+		private string BuildChangeSummary()
+		{
+			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var affectedTables = new List<string>();
+			var rowCount = 0;
+			var fieldCount = 0;
+
+			if (cfgNames != null)
+			{
+				foreach (var cfgName in cfgNames)
+				{
+					var table = m_GetConfigMethod?.Invoke(m_ModuleInstance, new object[] { cfgName });
+					if (table == null) continue;
+
+					var rows = GetRows(table, cfgName);
+					var hasChange = false;
+					foreach (var row in rows)
+					{
+						if (!m_FieldOriginalValues.TryGetValue(row, out var orig)) continue;
+						hasChange = true;
+						rowCount++;
+						fieldCount += orig.Count;
+					}
+
+					if (hasChange) affectedTables.Add(cfgName);
+				}
+			}
+
+			return $"变更：{affectedTables.Count} 个表、{rowCount} 行、{fieldCount} 个字段
+{string.Join("、", affectedTables)}";
+		}
+
+		/// <summary>
 		/// 编辑器帧更新：定时重绘
 		/// </summary>
 		private void OnEditorUpdate()
