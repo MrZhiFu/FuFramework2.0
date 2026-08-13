@@ -86,7 +86,7 @@ using System.Text;
 				sb.AppendLine($"## {cfgName}");
 				foreach (var row in changedRows)
 				{
-					sb.AppendLine($"### 行 {GetRowIdentity(row)}");
+					sb.AppendLine($"### id {GetRowIdentity(row)}");
 					var orig = m_FieldOriginalValues[row];
 					foreach (var kv in orig)
 					{
