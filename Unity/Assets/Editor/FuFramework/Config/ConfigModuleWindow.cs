@@ -715,18 +715,23 @@ namespace FuFramework.Config.Editor
 				}
 			}
 
-			// 已编辑字段提供「重置」按钮
-			if (isEdited && origDict != null && origDict.TryGetValue(prop.Name, out var originalValue))
+			// 已编辑或非法输入时提供「重置」按钮：已编辑恢复原值；非法输入清除在途文本恢复显示
+			var hasOriginal = isEdited && origDict != null && origDict.TryGetValue(prop.Name, out var originalValue);
+			if (hasOriginal || isInvalidInput)
 			{
 				if (GUILayout.Button("重置", GUILayout.Width(40)))
 				{
 					try
 					{
-						prop.SetValue(row, originalValue);
-						// 重置后清空该字段在途编辑文本，避免下一帧从 m_FieldEditText 读回旧文本再次提交（击穿重置）
-						if (m_FieldEditText.TryGetValue(row, out var pendingEditDict)) pendingEditDict.Remove(prop.Name);
-						origDict.Remove(prop.Name);
-						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+						if (hasOriginal)
+						{
+							prop.SetValue(row, originalValue);
+							origDict.Remove(prop.Name);
+							if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+						}
+
+						// 重置后清空该字段在途编辑文本（已编辑恢复原值、非法输入清除），避免下一帧读回旧文本
+						if (m_FieldEditText.TryGetValue(row, out var resetEditDict)) resetEditDict.Remove(prop.Name);
 						if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
 							m_WriteFailTimes.Remove(row);
 					}
