@@ -733,6 +733,7 @@ namespace FuFramework.Config.Editor
 
 						// 重置后清空该字段在途编辑文本（已编辑恢复原值、非法输入清除），避免下一帧读回旧文本
 						if (m_FieldEditText.TryGetValue(row, out var resetEditDict)) resetEditDict.Remove(prop.Name);
+						GUIUtility.keyboardControl = 0; // 释放输入框焦点，立即显示重置后的值（否则需等失焦才刷新）
 						if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
 							m_WriteFailTimes.Remove(row);
 					}
