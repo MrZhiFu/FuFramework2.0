@@ -716,7 +716,8 @@ namespace FuFramework.Config.Editor
 			}
 
 			// 已编辑或非法输入时提供「重置」按钮：已编辑恢复原值；非法输入清除在途文本恢复显示
-			var hasOriginal = isEdited && origDict != null && origDict.TryGetValue(prop.Name, out var originalValue);
+			object originalValue = null;
+			var hasOriginal = isEdited && origDict != null && origDict.TryGetValue(prop.Name, out originalValue);
 			if (hasOriginal || isInvalidInput)
 			{
 				if (GUILayout.Button("重置", GUILayout.Width(40)))
