@@ -576,7 +576,17 @@ namespace FuFramework.Config.Editor
 						m_FieldOriginalValues[row] = origDict;
 					}
 
-					if (!origDict.ContainsKey(prop.Name)) origDict[prop.Name] = currentValue;
+					if (!origDict.ContainsKey(prop.Name))
+					{
+						origDict[prop.Name] = currentValue;
+					}
+					else if (Equals(newValue, origDict[prop.Name]))
+					{
+						// 值改回原值：清除撤销缓存条目（面板高亮消失，导出不再出现无意义变更）
+						origDict.Remove(prop.Name);
+						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+					}
+
 					if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
 						m_WriteFailTimes.Remove(row);
 				}
@@ -764,6 +774,8 @@ namespace FuFramework.Config.Editor
 							newValue = "<读取异常>";
 						}
 
+						// 跳过旧值等于新值的无意义条目（防御撤销缓存未清理的残留）
+						if (Equals(kv.Value, newValue)) continue;
 						sb.AppendLine($"- {ToExcelColumnName(kv.Key)}：{FormatValue(kv.Value)} → {FormatValue(newValue)}");
 					}
 
