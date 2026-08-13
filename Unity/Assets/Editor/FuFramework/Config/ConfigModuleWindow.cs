@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -538,7 +539,7 @@ namespace FuFramework.Config.Editor
 				return EditorGUILayout.EnumPopup((Enum)currentValue, GUILayout.MinWidth(120));
 
 			// 数值类型：TextField + TryParse 校验——仅在文本可完整解析时提交；
-			// 非法输入不提交（值不变），避免 Unity 数值控件把乱填文本提交为 0。
+			// 非法输入不提交（值不变）；失焦时恢复显示原配置值，避免非法文本红框停留。
 			if (IsNumericType(type))
 			{
 				if (!m_FieldEditText.TryGetValue(row, out var editDict))
@@ -550,8 +551,18 @@ namespace FuFramework.Config.Editor
 				if (!editDict.TryGetValue(prop.Name, out var pending))
 					pending = Convert.ToString(currentValue, CultureInfo.InvariantCulture);
 
+				// 唯一控件名（按行引用 + 属性名），用于失焦检测
+				var controlName = $"cfg_edit_{RuntimeHelpers.GetHashCode(row)}_{prop.Name}";
+				GUI.SetNextControlName(controlName);
 				var text = EditorGUILayout.TextField(pending, GUILayout.MinWidth(120));
 				editDict[prop.Name] = text;
+
+				// 失焦且文本非法：清除在途文本，恢复显示原配置值（值保持 currentValue 不变）
+				if (GUI.GetNameOfFocusedControl() != controlName && !TryParseNumeric(type, text, out _))
+				{
+					editDict.Remove(prop.Name);
+					return currentValue;
+				}
 
 				return TryParseNumeric(type, text, out var parsed) ? parsed : currentValue;
 			}
