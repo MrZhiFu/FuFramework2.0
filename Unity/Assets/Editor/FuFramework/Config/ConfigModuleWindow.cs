@@ -2,7 +2,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -214,6 +216,11 @@ namespace FuFramework.Config.Editor
 			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
 			GUILayout.FlexibleSpace();
+
+			if (GUILayout.Button("记录变更", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				ExportChangeLog();
+			}
 
 			if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
 			{
@@ -704,6 +711,145 @@ namespace FuFramework.Config.Editor
 		private static void DrawColumnSeparator()
 		{
 			GUILayout.Label("|", GUILayout.Width(12));
+		}
+
+		/// <summary>
+		/// 记录变更：遍历所有已编辑配置，生成 Markdown 变更文档并保存，供手动填回源 Excel。
+		/// 数据来源为编辑功能撤销缓存（行引用 → 属性名 → 原值），新值实时读取行对象。
+		/// </summary>
+		private void ExportChangeLog()
+		{
+			if (m_FieldOriginalValues.Count == 0)
+			{
+				EditorUtility.DisplayDialog("记录变更", "当前没有需要记录的变更。", "确定");
+				return;
+			}
+
+			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			if (cfgNames == null || cfgNames.Length == 0) return;
+
+			var sb = new StringBuilder();
+			sb.AppendLine("# 配置变更记录");
+			sb.AppendLine($"生成时间：{DateTime.Now:yyyy-MM-dd HH:mm}");
+			sb.AppendLine();
+
+			foreach (var cfgName in cfgNames)
+			{
+				var table = m_GetConfigMethod?.Invoke(m_ModuleInstance, new object[] { cfgName });
+				if (table == null) continue;
+
+				var rows = GetRows(table, cfgName);
+				var changedRows = new List<object>();
+				foreach (var row in rows)
+				{
+					if (m_FieldOriginalValues.ContainsKey(row)) changedRows.Add(row);
+				}
+
+				if (changedRows.Count == 0) continue;
+
+				sb.AppendLine($"## {cfgName}");
+				foreach (var row in changedRows)
+				{
+					sb.AppendLine($"### 行 {GetRowIdentity(row)}");
+					var orig = m_FieldOriginalValues[row];
+					foreach (var kv in orig)
+					{
+						object newValue;
+						try
+						{
+							newValue = row.GetType().GetProperty(kv.Key)?.GetValue(row);
+						}
+						catch (Exception)
+						{
+							newValue = "<读取异常>";
+						}
+
+						sb.AppendLine($"- {ToExcelColumnName(kv.Key)}：{FormatValue(kv.Value)} → {FormatValue(newValue)}");
+					}
+
+					sb.AppendLine();
+				}
+			}
+
+			var path = EditorUtility.SaveFilePanel("保存配置变更记录", "", "配置变更记录", "md");
+			if (string.IsNullOrEmpty(path)) return; // 用户取消
+
+			try
+			{
+				File.WriteAllText(path, sb.ToString());
+				EditorUtility.DisplayDialog("记录变更", $"变更记录已保存：{path}", "确定");
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"[ConfigDebug] 保存变更记录失败：{e.Message}");
+				EditorUtility.DisplayDialog("记录变更", $"保存失败：{e.Message}", "确定");
+			}
+		}
+
+		/// <summary>
+		/// 获取行身份值（优先 Id/Key 属性，缺失返回空串）。
+		/// </summary>
+		/// <param name="row">行对象</param>
+		/// <returns>行身份值字符串</returns>
+		private static string GetRowIdentity(object row)
+		{
+			foreach (var name in new[] { "Id", "Key" })
+			{
+				var prop = row.GetType().GetProperty(name);
+				if (prop != null)
+				{
+					object value;
+					try
+					{
+						value = prop.GetValue(row);
+					}
+					catch (Exception)
+					{
+						continue;
+					}
+
+					if (value != null) return value.ToString();
+				}
+			}
+
+			return "";
+		}
+
+		/// <summary>
+		/// C# 属性名转 Excel 列名（CamelCase → snake_case）：SubType → sub_type、Id → id。
+		/// 仅用于变更文档展示；若出现缩写列名（如 HP）转换不完美，用户可对照源表自行匹配。
+		/// </summary>
+		/// <param name="propName">C# 属性名</param>
+		/// <returns>snake_case 列名</returns>
+		private static string ToExcelColumnName(string propName)
+		{
+			var sb = new StringBuilder();
+			for (var i = 0; i < propName.Length; i++)
+			{
+				var c = propName[i];
+				if (char.IsUpper(c))
+				{
+					if (i > 0) sb.Append('_');
+					sb.Append(char.ToLowerInvariant(c));
+				}
+				else
+				{
+					sb.Append(c);
+				}
+			}
+
+			return sb.ToString();
+		}
+
+		/// <summary>
+		/// 格式化字段值用于文档展示：枚举 `ToString()` 天然输出枚举名（如 White），null 显示空串。
+		/// </summary>
+		/// <param name="value">字段值</param>
+		/// <returns>展示字符串</returns>
+		private static string FormatValue(object value)
+		{
+			if (value == null) return "";
+			return value.ToString();
 		}
 
 		#endregion
