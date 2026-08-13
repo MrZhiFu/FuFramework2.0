@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -92,6 +93,12 @@ namespace FuFramework.Config.Editor
 		/// 失败后 2 秒内该字段红色标注；成功后移除。
 		/// </summary>
 		private readonly Dictionary<object, Dictionary<string, double>> m_WriteFailTimes = new();
+
+		/// <summary>
+		/// 数值字段在途编辑文本缓存：行引用 → 属性名 → 用户正在输入的文本。
+		/// 数值字段用 TextField + TryParse 校验，仅在文本可完整解析时提交，避免 Unity 数值控件对非法输入提交 0。
+		/// </summary>
+		private readonly Dictionary<object, Dictionary<string, string>> m_FieldEditText = new();
 
 		#endregion
 
@@ -474,13 +481,14 @@ namespace FuFramework.Config.Editor
 		}
 
 		/// <summary>
-		/// 渲染属性对应类型化控件并返回新值。
-		/// 数值控件内建校验：无效输入不提交，返回值恒为最后一个有效值。
+		/// 渲染属性对应控件并返回新值。
+		/// string/bool/enum 用类型化控件；数值类型用 TextField + TryParse 校验（非法输入不提交）。
 		/// </summary>
+		/// <param name="row">行对象</param>
 		/// <param name="prop">属性</param>
 		/// <param name="currentValue">当前值</param>
-		/// <returns>控件返回的新值</returns>
-		private static object RenderFieldControl(PropertyInfo prop, object currentValue)
+		/// <returns>新值（非法数值输入返回 currentValue，值不变）</returns>
+		private object RenderFieldControl(object row, PropertyInfo prop, object currentValue)
 		{
 			var type = prop.PropertyType;
 
@@ -493,41 +501,84 @@ namespace FuFramework.Config.Editor
 			if (type.IsEnum)
 				return EditorGUILayout.EnumPopup((Enum)currentValue, GUILayout.MinWidth(120));
 
-			if (type == typeof(int))
-				return EditorGUILayout.IntField((int)currentValue, GUILayout.MinWidth(120));
-
-			if (type == typeof(long))
-				return EditorGUILayout.LongField((long)currentValue, GUILayout.MinWidth(120));
-
-			if (type == typeof(float))
-				return EditorGUILayout.FloatField((float)currentValue, GUILayout.MinWidth(120));
-
-			if (type == typeof(double))
-				return EditorGUILayout.DoubleField((double)currentValue, GUILayout.MinWidth(120));
-
-			// 其余整型族：经 IntField/LongField 转换回目标类型；输入越界时回退当前值（避免 OverflowException 中断 OnGUI）
-			if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short)
-				|| type == typeof(ushort))
+			// 数值类型：TextField + TryParse 校验——仅在文本可完整解析时提交；
+			// 非法输入不提交（值不变），避免 Unity 数值控件把乱填文本提交为 0。
+			if (IsNumericType(type))
 			{
-				try
+				if (!m_FieldEditText.TryGetValue(row, out var editDict))
 				{
-					return Convert.ChangeType(EditorGUILayout.IntField(Convert.ToInt32(currentValue), GUILayout.MinWidth(120)), type);
+					editDict = new Dictionary<string, string>();
+					m_FieldEditText[row] = editDict;
 				}
-				catch (OverflowException)
-				{
-					return currentValue;
-				}
+
+				if (!editDict.TryGetValue(prop.Name, out var pending))
+					pending = Convert.ToString(currentValue, CultureInfo.InvariantCulture);
+
+				var text = EditorGUILayout.TextField(pending, GUILayout.MinWidth(120));
+				editDict[prop.Name] = text;
+
+				return TryParseNumeric(type, text, out var parsed) ? parsed : currentValue;
 			}
 
-			// uint 走 LongField（long 覆盖 uint 全范围，避免 > int.MaxValue 时被误当越界吞掉）
-			if (type == typeof(uint))
-				return unchecked((uint)EditorGUILayout.LongField((uint)currentValue, GUILayout.MinWidth(120)));
+			return currentValue;
+		}
 
-			// ulong 用位重解释转 long（装箱 ulong 拆箱 ulong 合法，unchecked 强转不抛，任意值不崩溃）
-			if (type == typeof(ulong))
-				return unchecked((ulong)EditorGUILayout.LongField(unchecked((long)(ulong)currentValue), GUILayout.MinWidth(120)));
+		/// <summary>
+		/// 判断类型是否为数值类型（走 TextField + TryParse 校验路径）。
+		/// </summary>
+		/// <param name="type">属性类型</param>
+		/// <returns>是否数值类型</returns>
+		private static bool IsNumericType(Type type)
+		{
+			return type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort)
+				|| type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong)
+				|| type == typeof(float) || type == typeof(double);
+		}
 
-			return currentValue; // 不可编辑类型不应到达此分支
+		/// <summary>
+		/// 尝试把文本解析为指定数值类型（不变文化）；解析失败或超出范围返回 false。
+		/// </summary>
+		/// <param name="type">目标类型</param>
+		/// <param name="text">文本</param>
+		/// <param name="value">解析结果</param>
+		/// <returns>是否解析成功</returns>
+		private static bool TryParseNumeric(Type type, string text, out object value)
+		{
+			value = null;
+			try
+			{
+				if (type == typeof(int))
+				{
+					if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
+				}
+				else if (type == typeof(long))
+				{
+					if (long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
+				}
+				else if (type == typeof(float))
+				{
+					if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
+				}
+				else if (type == typeof(double))
+				{
+					if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
+				}
+				else if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) || type == typeof(uint))
+				{
+					if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) { value = Convert.ChangeType(v, type); return true; }
+				}
+				else if (type == typeof(ulong))
+				{
+					if (ulong.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
+				}
+			}
+			catch (Exception)
+			{
+				value = null;
+				return false;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -543,16 +594,21 @@ namespace FuFramework.Config.Editor
 			var isWriteFail = m_WriteFailTimes.TryGetValue(row, out var failDict)
 			                  && failDict.TryGetValue(prop.Name, out var failTime)
 			                  && EditorApplication.timeSinceStartup - failTime < 2.0;
+			// 数值字段在途文本非法（TryParse 失败）→ 红色提示，值不提交
+			var isInvalidInput = IsNumericType(prop.PropertyType)
+					     && m_FieldEditText.TryGetValue(row, out var editDict)
+					     && editDict.TryGetValue(prop.Name, out var editText)
+					     && !TryParseNumeric(prop.PropertyType, editText, out _);
 
-			// 已编辑字段黄色高亮；写失败红色（优先显示）
+			// 已编辑字段黄色高亮；写失败/非法输入红色（优先显示）
 			var fieldOldColor = GUI.color;
-			if (isWriteFail) GUI.color = Color.red;
+			if (isWriteFail || isInvalidInput) GUI.color = Color.red;
 			else if (isEdited) GUI.color = Color.yellow;
 
 			object newValue;
 			try
 			{
-				newValue = RenderFieldControl(prop, currentValue);
+				newValue = RenderFieldControl(row, prop, currentValue);
 			}
 			catch (Exception e)
 			{
@@ -907,6 +963,7 @@ namespace FuFramework.Config.Editor
 			m_RowFoldoutStates.Clear();
 			m_FieldOriginalValues.Clear();
 			m_WriteFailTimes.Clear();
+			m_FieldEditText.Clear();
 		}
 
 		#endregion
