@@ -172,10 +172,7 @@ namespace FuFramework.Config.Editor
 		{
 			if (m_FieldOriginalValues.Count == 0) return;
 			var summary = BuildChangeSummary();
-			var ok = EditorUtility.DisplayDialog("配置调试", $"发现存在变更值
-{summary}
-
-是否需要保存变更记录？", "确定", "取消");
+			var ok = EditorUtility.DisplayDialog("配置调试", $"发现存在变更值\n{summary}\n\n是否需要保存变更记录？", "确定", "取消");
 			if (ok)
 			{
 				try
