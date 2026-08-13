@@ -563,9 +563,18 @@ namespace FuFramework.Config.Editor
 				{
 					if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)) { value = v; return true; }
 				}
-				else if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) || type == typeof(uint))
+				else if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort))
 				{
 					if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) { value = Convert.ChangeType(v, type); return true; }
+				}
+				else if (type == typeof(uint))
+				{
+					// uint 用 long.TryParse 覆盖全范围（0..uint.MaxValue），避免 > int.MaxValue 时无法编辑
+					if (long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) && v >= 0 && v <= uint.MaxValue)
+					{
+						value = (uint)v;
+						return true;
+					}
 				}
 				else if (type == typeof(ulong))
 				{
@@ -667,6 +676,8 @@ namespace FuFramework.Config.Editor
 					try
 					{
 						prop.SetValue(row, originalValue);
+						// 重置后清空该字段在途编辑文本，避免下一帧从 m_FieldEditText 读回旧文本再次提交（击穿重置）
+						if (m_FieldEditText.TryGetValue(row, out var pendingEditDict)) pendingEditDict.Remove(prop.Name);
 						origDict.Remove(prop.Name);
 						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
 						if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
