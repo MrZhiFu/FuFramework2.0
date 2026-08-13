@@ -218,8 +218,7 @@ namespace FuFramework.Config.Editor
 				}
 			}
 
-			return $"变更：{affectedTables.Count} 个表、{rowCount} 行、{fieldCount} 个字段
-{string.Join("、", affectedTables)}";
+			return $"变更：{affectedTables.Count} 个表、{rowCount} 行、{fieldCount} 个字段\n{string.Join("、", affectedTables)}";
 		}
 
 		/// <summary>
