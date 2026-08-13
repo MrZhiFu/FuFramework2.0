@@ -222,17 +222,6 @@ namespace FuFramework.Config.Editor
 			GUILayout.Space(20);
 			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
-			GUILayout.Space(10);
-			if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(80)))
-			{
-				ExpandAllTables();
-			}
-
-			if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(80)))
-			{
-				CollapseAllTables();
-			}
-
 			GUILayout.FlexibleSpace();
 
 			if (GUILayout.Button("记录变更", EditorStyles.toolbarButton, GUILayout.Width(80)))
@@ -243,6 +232,16 @@ namespace FuFramework.Config.Editor
 			if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
 			{
 				Repaint();
+			}
+
+			if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				ExpandAllTables();
+			}
+
+			if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				CollapseAllTables();
 			}
 
 			EditorGUILayout.EndHorizontal();
