@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
@@ -16,7 +17,7 @@ namespace Hotfix.Framework.Asset
     ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步资源加载相关接口。
     ///     2. 提供默认资源包的资源加载、卸载与查询能力。
     /// </summary>
-    public partial class AssetModule : ModuleBase
+    public partial class AssetModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 默认资源包名称
@@ -27,6 +28,12 @@ namespace Hotfix.Framework.Asset
         /// 是否已销毁。防止销毁后在途的 InstantiateAsync 任务把已失效句柄写回引用字典。
         /// </summary>
         private bool m_IsDisposed;
+
+        /// <summary>
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架 ReInit 前经 DrainCancelledAsync 等待排水。
+        /// </summary>
+        private CancellationScope m_Scope = new();
 
         /// <summary>
         /// 实例化资源引用管理，key:资源路径，value:句柄 + 引用计数。
@@ -90,12 +97,25 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架热更重载排水。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected internal override void OnInit()
         {
             // 热更重载场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
             m_IsDisposed = false;
+
+            // 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
+            m_Scope = new CancellationScope();
 
             // 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
             DefaultPackageName = GameSetting.Instance.DefaultPackageName;
@@ -111,6 +131,8 @@ namespace Hotfix.Framework.Asset
         {
             m_IsDisposed = true;
             m_LifecycleEpoch++;
+
+            m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
 
             // 释放所有实例化句柄（否则实例化引用泄漏）
             foreach (var entry in m_InstantiateRefDict.Values)

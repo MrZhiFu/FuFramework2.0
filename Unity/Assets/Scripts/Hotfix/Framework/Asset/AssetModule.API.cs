@@ -26,15 +26,31 @@ namespace Hotfix.Framework.Asset
         /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
         /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
         /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
+        /// 注意3：模块销毁（OnDispose）时本方法会抛 OperationCanceledException（句柄已自动释放并卸载），调用方可按需捕获。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path)
         {
-            var package = GetReadyDefaultPackage();
-            var handle  = package.LoadAssetAsync(path);
-            await handle;
-            return handle;
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            {
+                var package = GetReadyDefaultPackage();
+                var handle  = package.LoadAssetAsync(path);
+                try
+                {
+                    // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
+                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    return handle;
+                }
+                catch (OperationCanceledException)
+                {
+                    // 取消路径必须配对：Release 句柄 + UnloadAsset 卸载 bundle（AutoUnloadBundleWhenUnused=false 下仅 Release 不卸载）
+                    handle.Release();
+                    UnloadAsset(path);
+                    throw;
+                }
+            }
         }
 
         /// <summary>
@@ -42,16 +58,32 @@ namespace Hotfix.Framework.Asset
         /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
         /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
         /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
+        /// 注意3：模块销毁（OnDispose）时本方法会抛 OperationCanceledException（句柄已自动释放并卸载），调用方可按需捕获。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
-            var package = GetReadyDefaultPackage();
-            var handle  = package.LoadAssetAsync<T>(path);
-            await handle;
-            return handle;
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            {
+                var package = GetReadyDefaultPackage();
+                var handle  = package.LoadAssetAsync<T>(path);
+                try
+                {
+                    // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
+                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    return handle;
+                }
+                catch (OperationCanceledException)
+                {
+                    // 取消路径必须配对：Release 句柄 + UnloadAsset 卸载 bundle（AutoUnloadBundleWhenUnused=false 下仅 Release 不卸载）
+                    handle.Release();
+                    UnloadAsset(path);
+                    throw;
+                }
+            }
         }
 
         /// <summary>
@@ -59,16 +91,32 @@ namespace Hotfix.Framework.Asset
         /// 注意1：YooAsset 的 await 不抛异常——资源加载失败时本方法仍返回句柄，其 Status 为 Failed、AssetObject 为 null，
         /// 调用方必须先检查 handle.Status == EOperationStatus.Succeeded 再使用资源。
         /// 注意2：返回的句柄无论成败均须调用 Release()（失败不释放则 provider 引用计数不归零、资源永不卸载）。
+        /// 注意3：模块销毁（OnDispose）时本方法会抛 OperationCanceledException（句柄已自动释放并卸载），调用方可按需捕获。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
-            var package = GetReadyDefaultPackage();
-            var handle  = package.LoadAssetAsync(path, type);
-            await handle;
-            return handle;
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            {
+                var package = GetReadyDefaultPackage();
+                var handle  = package.LoadAssetAsync(path, type);
+                try
+                {
+                    // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
+                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    return handle;
+                }
+                catch (OperationCanceledException)
+                {
+                    // 取消路径必须配对：Release 句柄 + UnloadAsset 卸载 bundle（AutoUnloadBundleWhenUnused=false 下仅 Release 不卸载）
+                    handle.Release();
+                    UnloadAsset(path);
+                    throw;
+                }
+            }
         }
 
         #endregion
@@ -88,31 +136,40 @@ namespace Hotfix.Framework.Asset
         /// <returns>场景句柄，使用完毕须调用 Release。</returns>
         public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action<float> onProgress = null)
         {
-            var package = GetReadyDefaultPackage();
-            var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, true);
-
-            // 可选进度上报：每帧轮询 handle.Progress 直到加载完成（供加载界面显示进度）。
-            // onProgress 回调异常不阻断加载（否则句柄无法返回导致泄漏），记录并继续。
-            // 注：未设超时上限——场景加载挂起属极端情况，正常路径依赖 YooAsset/SceneManager 完成；如需超时保护可在此加时间上限。
-            if (onProgress != null)
+            m_Scope.Token.ThrowIfCancellationRequested();
+            using (m_Scope.Begin())
             {
-                while (!handle.IsDone)
+                var package = GetReadyDefaultPackage();
+                var handle  = package.LoadSceneAsync(path, sceneMode, LocalPhysicsMode.None, true);
+                try
                 {
-                    TryReportProgress(onProgress, handle.Progress);
-                    await UniTask.Yield();
+                    // 可选进度上报：每帧轮询 handle.Progress 直到加载完成；同时观察取消令牌
+                    if (onProgress != null)
+                    {
+                        while (!handle.IsDone)
+                        {
+                            m_Scope.Token.ThrowIfCancellationRequested();
+                            TryReportProgress(onProgress, handle.Progress);
+                            await UniTask.Yield();
+                        }
+                        TryReportProgress(onProgress, handle.Progress);
+                    }
+
+                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    if (handle.Status != EOperationStatus.Succeeded)
+                    {
+                        handle.Release();
+                        throw new InvalidOperationException($"[AssetModule]场景加载失败：{path}");
+                    }
+                    return handle;
                 }
-
-                TryReportProgress(onProgress, handle.Progress);
+                catch (OperationCanceledException)
+                {
+                    // 取消：释放场景句柄（场景走 SceneManager 生命周期，不调 UnloadAsset）
+                    handle.Release();
+                    throw;
+                }
             }
-
-            await handle;
-            if (handle.Status != EOperationStatus.Succeeded)
-            {
-                handle.Release();
-                throw new InvalidOperationException($"[AssetModule]场景加载失败：{path}");
-            }
-
-            return handle;
         }
 
         /// <summary>
