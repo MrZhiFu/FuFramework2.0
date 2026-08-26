@@ -117,16 +117,21 @@ namespace Hotfix.Framework.Core
         }
 
         /// <summary>
-        /// 重启游戏（如设置界面重启）。
-        /// 依次释放所有模块、重新初始化模块、重新运行 AOT 启动流程。
+        /// 重启游戏（如设置界面重启）。兼容旧入口：转异步流程 fire-and-forget。
+        /// 依次释放所有模块、等待 ICancelAsync 模块排水完毕、重新初始化模块、重新运行 AOT 启动流程。
         /// </summary>
-        public void RestartGame()
+        public void RestartGame() => RestartGameAsync().Forget();
+
+        /// <summary>
+        /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待 ICancelAsync 排水 → ReInit → 重跑启动。
+        /// 排水保证 ReInit 前旧生命周期在途任务已全部清理，杜绝旧任务写回新生命周期。
+        /// </summary>
+        public async UniTask RestartGameAsync()
         {
             DisposeModules?.Invoke();
+            await ModuleManager.DrainCancelledAsync();
             ReInitModules?.Invoke();
-
-            // 重新运行 AOT 启动流程（重新显示加载界面并重进热更入口）
-            LaunchProcess.RunAsync().Forget();
+            await LaunchProcess.RunAsync();
         }
 
         /// <summary>

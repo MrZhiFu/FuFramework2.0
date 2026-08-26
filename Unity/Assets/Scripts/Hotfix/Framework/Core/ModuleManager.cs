@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
@@ -177,6 +178,19 @@ namespace Hotfix.Framework.Core
             {
                 ModuleList[i].OnInit();
                 FuLogger.LogInfo($"<color=#00FBD5>------重新初始化模块: {i + 1}.{ModuleList[i].GetType().Name}</color>");
+            }
+        }
+
+        /// <summary>
+        /// 等待所有实现 ICancelAsync 的模块完成取消排水（在途任务全部清理完毕）。
+        /// 供热更重载 RestartGame 在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
+        /// </summary>
+        public static async UniTask DrainCancelledAsync()
+        {
+            foreach (var module in ModuleList)
+            {
+                if (module is ICancelAsync cancellable)
+                    await cancellable.CancelAsync();
             }
         }
     }
