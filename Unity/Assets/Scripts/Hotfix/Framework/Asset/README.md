@@ -22,6 +22,12 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 核心管理器，继承自 `ModuleBase`。负责整个系统的初始化、配置读取以及全局资源操作。
 
+> **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
+> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架热更重载 `RestartGame` 会在 ReInit 前
+> `await` 各模块 `CancelAsync` 排水，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
+> `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
+
 #### 初始化流程
 
 YooAsset 与默认资源包的初始化由 AOT 启动流程 `LaunchAssetHelper` 完成；`AssetModule` 仅缓存默认包名，提供资源加载、卸载与查询能力。
@@ -105,6 +111,12 @@ loader.Dispose();
 > **实例化释放契约**：`AssetLoadRegister.InstantiateAsync` 返回的实例销毁时**不会自动释放**资源——
 > 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
 > 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(result)`，按引用计数释放，且自动防跨代际误释放）。
+
+> **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
+> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架热更重载 `RestartGame` 会在 ReInit 前
+> `await` 各模块 `CancelAsync` 排水，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
+> `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 
 ## 4. 运行模式详解
 

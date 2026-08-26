@@ -47,6 +47,14 @@ OnInit → OnUpdate(每帧) → OnLateUpdate(每帧) → OnFixedUpdate(固定帧
                     └──────────────────┘
 ```
 
+### ICancelAsync 可取消异步对象
+
+实现 `ICancelAsync`（`Token` + `CancelAsync`）的对象，其所有异步操作随对象销毁而取消，且可被 await 等待清理完成。
+- `Token`：对象销毁（`OnDispose`/`Dispose`）时触发，在途操作观察它并中止。
+- `CancelAsync()`：触发取消并等待所有在途操作完成清理后才返回（可重入、幂等）。
+- 实现方式：组合 `CancellationScope`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()`、`finally` 归零。
+- 框架集成：热更重载 `RestartGameAsync` 在 Dispose 与 ReInit 之间 `await ModuleManager.DrainCancelledAsync()` 等待排水，根除旧任务写回新生命周期。
+
 ## 4. 核心类说明
 
 ### 4.1 ModuleBase
