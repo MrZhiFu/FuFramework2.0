@@ -134,10 +134,12 @@ namespace Hotfix.Framework.Asset
 
             m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
 
-            // 释放所有实例化句柄（否则实例化引用泄漏）
-            foreach (var entry in m_InstantiateRefDict.Values)
+            // 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
+            // （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。
+            foreach (var kvp in m_InstantiateRefDict)
             {
-                entry.Handle.Release();
+                kvp.Value.Handle.Release();
+                UnloadAsset(kvp.Key);
             }
             m_InstantiateRefDict.Clear();
 

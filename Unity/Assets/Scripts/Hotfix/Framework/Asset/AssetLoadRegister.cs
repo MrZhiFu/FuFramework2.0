@@ -89,7 +89,9 @@ namespace Hotfix.Framework.Asset
         private bool m_Unloaded;
 
         /// <summary>
-        /// 取消令牌：装载器永久废弃（Dispose）后触发，在途加载观察它并中止。
+        /// 取消令牌：装载器永久废弃（Dispose）后触发，拒绝新的加载请求。
+        /// 注：在途加载的真正取消由 AssetModule 自身的 Token 承担（模块加载内部观察），本 Token 是排水/准入代理——
+        /// 业务可 await CancelAsync 等待在途加载清理完毕，卸载装载器请先 Dispose 再 await CancelAsync。
         /// </summary>
         public CancellationToken Token => m_Scope.Token;
 
@@ -234,6 +236,8 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType)
         {
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
+
             using (m_Scope.Begin()) // 登记在途：Dispose 排水时等待本操作清理完毕
             {
                 AssetHandle assetHandle = null;
