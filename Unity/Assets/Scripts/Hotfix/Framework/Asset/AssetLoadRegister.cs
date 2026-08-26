@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
@@ -20,12 +21,18 @@ namespace Hotfix.Framework.Asset
     /// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
     /// 每个实例归单一调用方持有，用完 UnloadAll 后弃引用由 GC 回收，无复用竞态，无需生命周期版本计数。
     /// </summary>
-    public class AssetLoadRegister
+    public class AssetLoadRegister : ICancelAsync
     {
         /// <summary>
         /// 资源管理模块（实例持有，构造时获取）。
         /// </summary>
         private readonly AssetModule m_AssetModule;
+
+        /// <summary>
+        /// 取消范围：Dispose 时 Cancel，在途加载随装载器销毁而取消；UnloadAll（临时卸载）不取消，装载器可复用。
+        /// 业务可 await CancelAsync 等待在途加载清理完毕。
+        /// </summary>
+        private readonly CancellationScope m_Scope = new();
 
         /// <summary>
         /// 加载缓存键：资源路径 + 加载类型。
@@ -80,6 +87,16 @@ namespace Hotfix.Framework.Asset
         /// 与 m_Disposed 的区别：UnloadAll 后装载器仍可复用（新加载请求会清除此标记）；Dispose 永久废弃不可复用。
         /// </summary>
         private bool m_Unloaded;
+
+        /// <summary>
+        /// 取消令牌：装载器永久废弃（Dispose）后触发，在途加载观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途加载完成清理（释放句柄 + 卸载资源）后才返回。可重入、幂等。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// <summary>
         /// 资源加载注册器。纯实例类：每次 new 创建独立装载器，调用方持有，用完 UnloadAll/Dispose 后弃引用由 GC 回收。
@@ -217,39 +234,42 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType)
         {
-            AssetHandle assetHandle = null;
-            try
+            using (m_Scope.Begin()) // 登记在途：Dispose 排水时等待本操作清理完毕
             {
-                assetHandle = assetType == null
-                    ? await m_AssetModule.LoadAssetAsync(path)
-                    : await m_AssetModule.LoadAssetAsync(path, assetType);
-                if (assetHandle == null || assetHandle.AssetObject == null)
+                AssetHandle assetHandle = null;
+                try
                 {
-                    throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
-                }
+                    assetHandle = assetType == null
+                        ? await m_AssetModule.LoadAssetAsync(path)
+                        : await m_AssetModule.LoadAssetAsync(path, assetType);
+                    if (assetHandle == null || assetHandle.AssetObject == null)
+                    {
+                        throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
+                    }
 
-                // 加载期间装载器已被废弃（Dispose）或处于临时卸载（UnloadAll 且无新加载接管）：
-                // 句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏 / ref→0 后资源被重新缓存）
-                if (m_Disposed || m_Unloaded)
+                    // 加载期间装载器已被废弃（Dispose）或处于临时卸载（UnloadAll 且无新加载接管）：
+                    // 句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏 / ref→0 后资源被重新缓存）
+                    if (m_Disposed || m_Unloaded)
+                    {
+                        assetHandle.Release();
+                        // 补 UnloadAsset：仅 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
+                        // 若该资源仅由本次被中止的加载加载过、装载器后续不再加载它，bundle 将永久残留；
+                        // 已释放后 TryUnloadUnusedAsset 对仍被其他系统持有的句柄（引用计数 >0）安全跳过，共享无虞
+                        m_AssetModule.UnloadAsset(path);
+                        assetHandle = null; // 置空避免 catch 二次释放
+                        throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
+                    }
+
+                    // 保存资源句柄
+                    m_HandleDict[new LoadKey(path, assetType)] = assetHandle;
+                    FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
+                    return assetHandle;
+                }
+                catch
                 {
-                    assetHandle.Release();
-                    // 补 UnloadAsset：仅 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
-                    // 若该资源仅由本次被中止的加载加载过、装载器后续不再加载它，bundle 将永久残留；
-                    // 已释放后 TryUnloadUnusedAsset 对仍被其他系统持有的句柄（引用计数 >0）安全跳过，共享无虞
-                    m_AssetModule.UnloadAsset(path);
-                    assetHandle = null; // 置空避免 catch 二次释放
-                    throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
+                    assetHandle?.Release();
+                    throw;
                 }
-
-                // 保存资源句柄
-                m_HandleDict[new LoadKey(path, assetType)] = assetHandle;
-                FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
-                return assetHandle;
-            }
-            catch
-            {
-                assetHandle?.Release();
-                throw;
             }
         }
 
@@ -322,6 +342,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         public void Dispose()
         {
+            m_Scope.Cancel(); // 永久废弃：取消在途加载
             m_Disposed = true;
             UnloadAll();
             m_LoadingTasks.Clear();
