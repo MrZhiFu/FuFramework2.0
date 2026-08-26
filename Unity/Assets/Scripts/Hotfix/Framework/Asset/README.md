@@ -50,11 +50,12 @@ UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action
 ##### 实例化
 
 ```csharp
-UniTask<GameObject> InstantiateAsync(string path)  // 异步实例化(推荐使用)
+UniTask<InstantiateResult> InstantiateAsync(string path)  // 异步实例化(推荐使用)
+void ReleaseInstantiate(InstantiateResult result)          // 实例销毁时释放引用
 ```
 
-> 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(path)` 释放引用。
-> 注意：模块热更重载（`OnDispose`/`ReInit`）后旧生命周期存活的实例**不得再调用** `ReleaseInstantiate`，以免误释放新生命周期同路径引用（详见 8.注意事项）。
+> 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(result)` 释放引用（`result` 为 `InstantiateAsync` 返回的结果，携带资源路径与创建时生命周期代数）。
+> 热更重载（`OnDispose`/`ReInit`）后旧生命周期存活的实例再调用 `ReleaseInstantiate` 会被代际校验识别并忽略，**不会误释放**新生命周期同路径引用（详见 8.注意事项）。
 
 #### 资源查询
 
@@ -103,17 +104,7 @@ loader.Dispose();
 
 > **实例化释放契约**：`AssetLoadRegister.InstantiateAsync` 返回的实例销毁时**不会自动释放**资源——
 > 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
-> 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(path)`，按引用计数释放）。
-
-### EPatchStates
-
-补丁系统更新状态枚举：
-
-- `UpdateVersion` - 更新资源版本
-- `UpdateManifest` - 更新补丁清单
-- `CreateDownloader` - 创建下载器
-- `Download` - 下载远端文件
-- `UpdateDone` - 更新流程完毕
+> 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(result)`，按引用计数释放，且自动防跨代际误释放）。
 
 ## 4. 运行模式详解
 
@@ -172,8 +163,9 @@ if (assetHandle.AssetObject != null)
     assetHandle.Release();
 }
 
-// 直接异步加载并实例化 GameObject
-GameObject instance = await assetModule.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
+// 直接异步加载并实例化 GameObject（实例销毁时须调用 ReleaseInstantiate(result) 释放引用）
+var result = await assetModule.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
+GameObject instance = result.Instance;
 
 // 使用 AssetLoadRegister (推荐用于 UI 或特定逻辑块)
 var loader = new AssetLoadRegister();
@@ -206,7 +198,7 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 
 ### 通用注意事项
 
-1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(path)`；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
+1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期代数，热更重载后旧实例释放会被识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
 2. **并发去重**：同一路径（`AssetLoadRegister` 为同一路径+类型）并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
 4. **`m_IsDisposed` 与热更重载**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，热更重载后可正常使用。

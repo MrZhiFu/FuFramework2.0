@@ -157,6 +157,8 @@ namespace Hotfix.Framework.UI
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     handle.Release();
+                    // 跨生命周期中止：已成功加载的 shader 仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
+                    assetModule.UnloadAsset(BlurShaderPath);
                     handle = null;
                     return;
                 }

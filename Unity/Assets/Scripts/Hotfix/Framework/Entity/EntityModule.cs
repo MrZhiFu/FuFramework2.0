@@ -559,6 +559,10 @@ namespace Hotfix.Framework.Entity
                     if (lifecycleEpoch != m_LifecycleEpoch)
                     {
                         handle.Release();
+                        // 加载成功即已占用 bundle：跨生命周期中止仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载，
+                        // 配对显式卸载防旧生命周期实体 prefab 的 bundle 常驻（失败句柄未获取 bundle 无需卸载）
+                        if (handle.Status == EOperationStatus.Succeeded)
+                            m_AssetModule.UnloadAsset(entityAssetName);
                         GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
                         tcs.TrySetException(new ObjectDisposedException(nameof(EntityModule)));
                         return;

@@ -155,6 +155,9 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄。</returns>
         private async UniTask<AssetHandle> LoadAssetHandleAsync(string path, Type assetType)
         {
+            // 已废弃（Dispose）后直接拒绝新加载，避免发起真实加载后在核心检测到 m_Disposed 才释放（浪费性加载且语义混乱）
+            if (m_Disposed) throw new ObjectDisposedException(nameof(AssetLoadRegister));
+
             // 新的加载请求意味着装载器正在被再次使用（如重载），清除临时卸载标记
             m_Unloaded = false;
 
@@ -230,6 +233,10 @@ namespace Hotfix.Framework.Asset
                 if (m_Disposed || m_Unloaded)
                 {
                     assetHandle.Release();
+                    // 补 UnloadAsset：仅 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
+                    // 若该资源仅由本次被中止的加载加载过、装载器后续不再加载它，bundle 将永久残留；
+                    // 已释放后 TryUnloadUnusedAsset 对仍被其他系统持有的句柄（引用计数 >0）安全跳过，共享无虞
+                    m_AssetModule.UnloadAsset(path);
                     assetHandle = null; // 置空避免 catch 二次释放
                     throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
                 }

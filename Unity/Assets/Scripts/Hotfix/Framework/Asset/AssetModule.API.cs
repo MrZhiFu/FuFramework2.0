@@ -137,11 +137,13 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 异步实例化实体。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
+        /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：热更重载（OnDispose/ReInit）后
+        /// 旧生命周期存活的实例调用 ReleaseInstantiate 会被代际校验识别并忽略，杜绝误释放新生命周期同路径引用。
         /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
         /// </summary>
         /// <param name="path">资源路径</param>
-        /// <returns>实例化后的实体。</returns>
-        public async UniTask<GameObject> InstantiateAsync(string path)
+        /// <returns>实例化结果，实例销毁时调用 ReleaseInstantiate(result) 释放引用。</returns>
+        public async UniTask<InstantiateResult> InstantiateAsync(string path)
         {
             if (m_IsDisposed) throw new ObjectDisposedException(nameof(AssetModule));
             var lifecycleEpoch = m_LifecycleEpoch;
@@ -167,7 +169,13 @@ namespace Hotfix.Framework.Asset
                 // 模块销毁/生命周期变更后：句柄可能已被释放，不得再写回引用字典
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
-                    if (assetHandle != null && assetHandle.IsValid) assetHandle.Release();
+                    if (assetHandle != null && assetHandle.IsValid)
+                    {
+                        assetHandle.Release();
+                        // 跨生命周期中止：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，
+                        // 配对 UnloadAsset 防该 prefab 的 bundle 常驻（新生命周期不再加载同路径时永不释放）
+                        UnloadAsset(path);
+                    }
                     throw new ObjectDisposedException(nameof(AssetModule));
                 }
 
@@ -177,7 +185,10 @@ namespace Hotfix.Framework.Asset
                     existing.RefCount++;
                     // 复用并发写入的条目：若句柄不同（共享源已移除后被重建，见 LoadAsyncForInstantiate finally 移除），
                     // 释放本次加载的句柄，避免其 provider 引用计数永久残留
-                    if (!ReferenceEquals(existing.Handle, assetHandle)) assetHandle.Release();
+                    if (!ReferenceEquals(existing.Handle, assetHandle))
+                    {
+                        assetHandle.Release();
+                    }
                     assetHandle = existing.Handle;
                 }
                 else
@@ -199,11 +210,21 @@ namespace Hotfix.Framework.Asset
                 }
                 if (instantiateOperation.Result == null)
                     throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
-                return instantiateOperation.Result;
+
+                // 携带当前生命周期代数返回：销毁时经 ReleaseInstantiate(result) 校验代际，热更重载后旧实例释放被识别并忽略
+                return new InstantiateResult
+                {
+                    Instance = instantiateOperation.Result,
+                    Path = path,
+                    LifecycleEpoch = lifecycleEpoch,
+                };
             }
             catch
             {
-                ReleaseInstantiate(path); // 失败回滚引用
+                // 生命周期已变更（热更重载）时不得回滚引用：引用字典已被 OnDispose 清空，
+                // 且可能已存在新生命周期同路径条目，误回滚会卸载新生命周期存活的实例资源；仅在本代际时回滚本次占用
+                if (lifecycleEpoch == m_LifecycleEpoch)
+                    ReleaseInstantiateInternal(path);
                 throw;
             }
         }
@@ -232,7 +253,12 @@ namespace Hotfix.Framework.Asset
 
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
-                    if (handle != null && handle.IsValid) handle.Release();
+                    if (handle != null && handle.IsValid)
+                    {
+                        handle.Release();
+                        // 跨生命周期中止：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
+                        UnloadAsset(path);
+                    }
                     sharedSource.TrySetException(new ObjectDisposedException(nameof(AssetModule)));
                     return;
                 }
@@ -246,20 +272,42 @@ namespace Hotfix.Framework.Asset
             }
             finally
             {
-                m_InstantiateLoadingTasks.Remove(path);
+                // 跨生命周期防护：仅当共享源仍是本任务注册的条目时才移除，防止旧生命周期在途任务的
+                // finally 误删新生命周期（ReInit 后）同路径刚注册的去重项，导致后续并发请求重复发起加载
+                if (m_InstantiateLoadingTasks.TryGetValue(path, out var current) && ReferenceEquals(current, sharedSource))
+                    m_InstantiateLoadingTasks.Remove(path);
             }
         }
 
         /// <summary>
-        /// 释放实例化资源的句柄引用。实例对象销毁后调用。
+        /// 释放实例化资源的句柄引用。实例对象销毁后调用，传入 InstantiateAsync 返回的 InstantiateResult。
         /// 引用计数归零时 Release 句柄并移除，让资源可被卸载。
-        /// 注意：模块 OnDispose（热更重载）后引用字典已清空，旧生命周期存活的实例不得在模块重载（ReInit）后调用本方法，
-        /// 否则可能误命中新生命周期同路径条目——引用计数归零并卸载新句柄，导致仍存活的实例资源被卸载。
+        /// 热更重载（OnDispose/ReInit）后旧生命周期存活的实例携带旧代际结果调用本方法时会被代际校验识别并忽略，
+        /// 杜绝误命中新生命周期同路径条目、导致仍存活的实例资源被静默卸载。
+        /// </summary>
+        /// <param name="result">InstantiateAsync 返回的实例化结果。</param>
+        public void ReleaseInstantiate(InstantiateResult result)
+        {
+            if (m_IsDisposed) return; // 模块已销毁：引用字典已清空，直接忽略（含 null 参数，teardown 防御不抛）
+            if (result == null) throw new ArgumentNullException(nameof(result)); // 存活模块传入 null 属调用方 bug，快速失败
+            if (result.LifecycleEpoch != m_LifecycleEpoch)
+            {
+                // 跨生命周期释放：旧代际实例在热更重载后误调用，直接忽略防误卸载新生命周期同路径引用；
+                // 属调用方违反"重载后不得对旧实例释放"契约，告警便于定位
+                FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果代际 {result.LifecycleEpoch}，当前代际 {m_LifecycleEpoch}）。热更重载后请勿对旧生命周期实例调用 ReleaseInstantiate。");
+                return;
+            }
+
+            ReleaseInstantiateInternal(result.Path);
+        }
+
+        /// <summary>
+        /// 按路径释放实例化引用（引用计数归零时释放句柄并移除，让资源可被卸载）。
+        /// 供本模块内部（ReleaseInstantiate / 实例化失败回滚）使用，不校验生命周期代际。
         /// </summary>
         /// <param name="path">资源路径。</param>
-        public void ReleaseInstantiate(string path)
+        private void ReleaseInstantiateInternal(string path)
         {
-            if (m_IsDisposed) return; // 模块已销毁：引用字典已清空，直接忽略（防旧生命周期误调用）
             if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
             if (entry.RefCount   <= 0) return;
             if (--entry.RefCount > 0) return;

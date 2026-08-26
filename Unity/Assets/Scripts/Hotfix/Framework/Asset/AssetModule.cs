@@ -5,6 +5,7 @@ using YooAsset;
 using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Asset
@@ -66,6 +67,29 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
+        /// 实例化结果。携带实例对象、资源路径与创建时的模块生命周期代数。
+        /// 实例销毁时调用 AssetModule.ReleaseInstantiate(result) 释放引用；
+        /// 热更重载（OnDispose/ReInit）后旧代际结果会被代际校验识别并忽略，避免误释放新生命周期同路径引用。
+        /// </summary>
+        public sealed class InstantiateResult
+        {
+            /// <summary>
+            /// 实例化出的 GameObject 对象。
+            /// </summary>
+            public GameObject Instance { get; internal set; }
+
+            /// <summary>
+            /// 实例来源的资源路径。
+            /// </summary>
+            public string Path { get; internal set; }
+
+            /// <summary>
+            /// 创建本结果时的模块生命周期代数。
+            /// </summary>
+            public int LifecycleEpoch { get; internal set; }
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected internal override void OnInit()
@@ -90,7 +114,9 @@ namespace Hotfix.Framework.Asset
 
             // 释放所有实例化句柄（否则实例化引用泄漏）
             foreach (var entry in m_InstantiateRefDict.Values)
+            {
                 entry.Handle.Release();
+            }
             m_InstantiateRefDict.Clear();
 
             // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 m_IsDisposed 检查自行释放句柄，不得再写回引用字典）。
