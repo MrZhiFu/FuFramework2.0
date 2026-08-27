@@ -45,7 +45,13 @@ FuFramework Scene 模块是游戏框架的场景管理系统，基于 YooAsset �
 
 ### 4.1 SceneModule
 
-场景管理模块，继承自 `ModuleBase`。
+场景管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。
+
+> **可取消异步**：`SceneModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块销毁（`OnDispose`）时触发 `Token` 取消，在途场景加载随之中止（释放句柄、不登记加载字典，
+> 抛 `OperationCanceledException`），加载/卸载完成回调也不再广播事件与登记，杜绝旧生命周期残留。
+> 框架重启 `RestartGame` 会在重启前 `await` 各模块 `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；
+> `OnInit` 重建 `CancellationScope`（新 Token = 新生命周期），重启后可正常使用。
 
 **核心方法：**
 
@@ -195,3 +201,4 @@ Scene/
 2. 使用 `Additive` 模式加载的场景需要手动卸载
 3. 场景加载是异步操作，不要在加载完成前访问场景内容
 4. 激活场景切换会触发 `ActiveSceneChangedEventArgs` 事件
+5. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途场景加载被中止（句柄释放、抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常加载

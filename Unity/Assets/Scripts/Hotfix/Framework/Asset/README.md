@@ -20,11 +20,11 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 
 ### AssetModule
 
-核心管理器，继承自 `ModuleBase`。负责整个系统的初始化、配置读取以及全局资源操作。
+核心管理器，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。负责整个系统的初始化、配置读取以及全局资源操作。
 
 > **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
-> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在 ReInit 前
+> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在重启前
 > `await` 各模块 `CancelAsync` 等待清理，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
 > `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 
@@ -60,8 +60,8 @@ UniTask<InstantiateResult> InstantiateAsync(string path)  // 异步实例化(推
 void ReleaseInstantiate(InstantiateResult result)          // 实例销毁时释放引用
 ```
 
-> 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(result)` 释放引用（`result` 为 `InstantiateAsync` 返回的结果，携带资源路径与创建时生命周期代数）。
-> 重启（`OnDispose`/`ReInit`）后旧生命周期存活的实例再调用 `ReleaseInstantiate` 会被代际校验识别并忽略，**不会误释放**新生命周期同路径引用（详见 8.注意事项）。
+> 同一 prefab 多实例共享句柄并引用计数，实例销毁时需调用 `ReleaseInstantiate(result)` 释放引用（`result` 为 `InstantiateAsync` 返回的结果，携带资源路径与创建时捕获的生命周期 `Token`）。
+> 重启（`OnDispose`/`重新初始化`）后旧生命周期存活的实例再调用 `ReleaseInstantiate` 会被 Token 校验识别并忽略，**不会误释放**新生命周期同路径引用（详见 8.注意事项）。
 
 #### 资源查询
 
@@ -114,7 +114,7 @@ loader.Dispose();
 
 > **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
-> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在 ReInit 前
+> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在重启前
 > `await` 各模块 `CancelAsync` 等待清理，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
 > `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 
@@ -210,10 +210,10 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 
 ### 通用注意事项
 
-1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期代数，重启后旧实例释放会被识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
+1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期 `Token`，重启后旧实例释放会被 Token 校验识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
 2. **并发去重**：同一路径（`AssetLoadRegister` 为同一路径+类型）并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
-4. **`m_IsDisposed` 与重启**：模块销毁（`OnDispose`）后 `InstantiateAsync` 抛 `ObjectDisposedException`；`ModuleManager.ReInit` 会重置销毁标记，重启后可正常使用。
+4. **取消与重启**：模块销毁（`OnDispose`）后 Token 取消，`InstantiateAsync` 入口抛 `OperationCanceledException`；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
 7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。

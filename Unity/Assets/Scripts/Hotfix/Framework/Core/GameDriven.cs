@@ -124,7 +124,7 @@ namespace Hotfix.Framework.Core
         /// <summary>
         /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待所有 ICancelAsync 模块取消清理完毕 → 完整重跑启动流程。
         /// 完整启动（LaunchProcess）负责资源热更（版本/清单/下载），并由 HotfixLauncher.MainAsync 重启路径
-        /// 在重新加载配置后分阶段 ReInit 模块（基础模块先、依赖配置的功能模块后）再进入游戏。
+        /// 在重新加载配置后分阶段 重新初始化 模块（基础模块先、依赖配置的功能模块后）再进入游戏。
         /// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期。
         /// </summary>
         private async UniTask RestartGameAsync()

@@ -50,10 +50,18 @@ OnInit → OnUpdate(每帧) → OnLateUpdate(每帧) → OnFixedUpdate(固定帧
 ### ICancelAsync 可取消异步对象
 
 实现 `ICancelAsync`（`Token` + `CancelAsync`）的对象，其所有异步操作随对象销毁而取消，且可被 await 等待清理完成。
-- `Token`：对象销毁（`OnDispose`/`Dispose`）时触发，在途操作观察它并中止。
-- `CancelAsync()`：触发取消并等待所有在途操作完成清理后才返回（可重入、幂等）。
-- 实现方式：组合 `CancellationScope`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()`、`finally` 归零。
-- 框架集成：重启 `RestartGameAsync` 在 Dispose 与 ReInit 之间 `await ModuleManager.CancelAllAsync()` 等待取消清理，根除旧任务写回新生命周期。
+
+```csharp
+public interface ICancelAsync
+{
+    CancellationToken Token { get; }   // 对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止
+    UniTask CancelAsync();             // 触发取消并等待所有在途操作完成清理后才返回（可重入、幂等）
+}
+```
+
+- **实现方式**：组合 `CancellationScope`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()` 登记、`finally` 归零；`Begin()` 返回 struct `BeginScope`，`using` 直接调用 Dispose，零装箱零分配（勿经 `IDisposable` 接口使用）。
+- **框架集成**：重启 `RestartGameAsync` 在 Dispose 与 重新初始化 之间 `await ModuleManager.CancelAllAsync()` 逐个等待取消清理，根除旧生命周期任务写回新生命周期。
+- **已接入模块**：Asset/Scene/Entity/UI/Sound/Web 六个模块及 `AssetLoadRegister`；接入要点（组合 `CancellationScope`、`OnInit` 重建、`OnDispose` Cancel）见各模块 README。
 
 ## 4. 核心类说明
 
@@ -277,6 +285,9 @@ Core/
 │   ├── ModuleManager.cs           # 模块管理器
 │   ├── GlobalModule.cs            # 全局模块访问入口
 │   ├── GameDriven.cs              # 帧驱动 + 游戏控制中枢
+│   ├── Async/                     # 可取消异步基础设施
+│   │   ├── ICancelAsync.cs        # 可取消异步对象接口
+│   │   └── CancellationScope.cs   # 取消范围登记助手（CTS + 在途计数 + 全部完成信号）
 │   ├── DataStruct/                # 数据结构
 │   │   ├── FuBidirectionalDictionary.cs
 │   │   ├── FuLinkedList.cs

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using YooAsset;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace Hotfix.Framework.Entity
     ///     5. 管理实体的对象池。
     ///     6. 管理实体的依赖资源加载。
     /// </summary>
-    public sealed class EntityModule : ModuleBase
+    public sealed class EntityModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 模块单例
@@ -74,10 +75,20 @@ namespace Hotfix.Framework.Entity
         private bool m_IsShutdown;
 
         /// <summary>
-        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的实体加载完成回调
-        /// 在 ReInit 后仍能识别并拒绝把旧句柄写回新生命周期（防跨代注入 + 句柄泄漏）。
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+        /// OnDispose 时 Cancel，在途实体加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
         /// </summary>
-        private int m_LifecycleEpoch;
+        private CancellationScope m_Scope = new();
+
+        /// <summary>
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// <summary>
         /// 事件管理模块
@@ -116,7 +127,8 @@ namespace Hotfix.Framework.Entity
         protected internal override void OnInit()
         {
             Instance = this;
-            m_IsShutdown = false; // 重启 ReInit 时重置关闭标记（OnDispose 曾置位）
+            m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
+            m_IsShutdown = false; // 重启时重置关闭标记（OnDispose 曾置位）
 
             m_AssetModule      = ModuleManager.GetModule<AssetModule>();
             m_EventModule      = ModuleManager.GetModule<EventModule>();
@@ -206,7 +218,7 @@ namespace Hotfix.Framework.Entity
             Instance = null;
 
             m_IsShutdown = true;
-            m_LifecycleEpoch++; // 递增生命周期代数：在途实体加载完成回调据此识别旧生命周期，拒绝写回新生命周期
+            m_Scope.Cancel(); // 随模块销毁取消在途实体加载
             HideAllLoadedEntities();
 
             // 显式销毁各实体组对象池（含其中所有实体对象持有的句柄），句柄释放收敛到本模块，
@@ -549,7 +561,7 @@ namespace Hotfix.Framework.Entity
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
-                var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧任务据此识别并拒绝写回新生命周期
+                var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝写回新生命周期
                 // 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
                 AssetHandle assetOperationHandle;
                 try
@@ -569,7 +581,7 @@ namespace Hotfix.Framework.Entity
                 assetOperationHandle.Completed += handle =>
                 {
                     // 生命周期变更（重启）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
-                    if (lifecycleEpoch != m_LifecycleEpoch)
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                     {
                         handle.Release();
                         // 加载成功即已占用 bundle：跨生命周期中止仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载，
@@ -577,7 +589,7 @@ namespace Hotfix.Framework.Entity
                         if (handle.Status == EOperationStatus.Succeeded)
                             m_AssetModule.UnloadAsset(entityAssetName);
                         GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
-                        tcs.TrySetException(new ObjectDisposedException(nameof(EntityModule)));
+                        tcs.TrySetException(new OperationCanceledException(capturedToken));
                         return;
                     }
 

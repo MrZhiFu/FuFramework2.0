@@ -97,15 +97,20 @@ namespace Hotfix.Framework.UI
         private CancellationTokenSource m_BlurAnimCts;
 
         /// <summary>
-        /// 是否已销毁（重启防护：在途 Shader 加载完成后不写回状态，防句柄/材质泄漏）。
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 InitBlur 重建（新生命周期 = 新 Token）。
+        /// ReleaseBlur（OnDispose）时 Cancel，在途 Shader 加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
         /// </summary>
-        private bool m_IsDisposed;
+        private CancellationScope m_Scope = new();
 
         /// <summary>
-        /// 模块生命周期代数。ReleaseBlur（OnDispose）递增，使旧生命周期在途的 Shader 加载
-        /// 在 ReInit 后仍能识别并拒绝覆盖新生命周期状态（m_IsDisposed 会被 InitBlur 重置，无法覆盖跨 ReInit 窗口）。
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
         /// </summary>
-        private int m_LifecycleEpoch;
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// <summary>
         /// 模糊 Shader 资源路径（Assets/Bundles/Shader/UIBlurBackground.shader）。
@@ -118,7 +123,7 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void InitBlur()
         {
-            m_IsDisposed = false;
+            m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
 
             if (StageCamera.main != null)
             {
@@ -141,7 +146,7 @@ namespace Hotfix.Framework.UI
         {
             // 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
             AssetHandle handle = null;
-            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧任务据此识别并拒绝覆盖新任务状态
+            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
             try
             {
                 var assetModule = ModuleManager.GetModule<AssetModule>();
@@ -154,7 +159,7 @@ namespace Hotfix.Framework.UI
                     throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");
 
                 // 模块已销毁/生命周期变更（重启）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                 {
                     handle.Release();
                     // 跨生命周期中止：已成功加载的 shader 仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
@@ -178,7 +183,7 @@ namespace Hotfix.Framework.UI
                 if (handle != null) handle.Release();
 
                 // 模块已销毁/生命周期变更时不污染新任务状态
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch) return;
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token) return;
                 m_ShaderLoadTask.TrySetException(e);
             }
         }
@@ -288,9 +293,8 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void ReleaseBlur()
         {
-            // 标记已销毁：在途 Shader 加载完成后不写回状态（见 LoadBlurShaderAsync）
-            m_IsDisposed = true;
-            m_LifecycleEpoch++; // 递增生命周期代数：在途 Shader 加载恢复后据此识别旧生命周期，拒绝覆盖新任务状态
+            // 随模块销毁取消在途 Shader 加载（完成后不写回状态，见 LoadBlurShaderAsync）
+            m_Scope.Cancel();
 
             CancelBlurAnim();
 

@@ -2,7 +2,7 @@ using System;
 using ProtoBuf;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Web
             {
                 if (m_SendingProtoBufList.Count >= MaxConnectionPerServer || m_WaitingProtoBufQueue.Count <= 0) return;
                 var webProtoBufData = m_WaitingProtoBufQueue.Dequeue();
-                MakeProtoBufBytesRequest(webProtoBufData);
+                MakeProtoBufBytesRequest(webProtoBufData).Forget();
                 m_SendingProtoBufList.Add(webProtoBufData);
             }
         }
@@ -77,7 +77,7 @@ namespace Hotfix.Framework.Web
         /// 执行ProtoBuf字节请求
         /// </summary>
         /// <param name="webData">ProtoBuf请求数据</param>
-        private async void MakeProtoBufBytesRequest(WebProtoBufData webData)
+        private async UniTaskVoid MakeProtoBufBytesRequest(WebProtoBufData webData)
         {
 #if UNITY_WEBGL
             var unityWebRequest = webData.IsGet ? UnityWebRequest.Get(webData.URL) : UnityWebRequest.PostWwwForm(webData.URL, string.Empty);
@@ -95,11 +95,11 @@ namespace Hotfix.Framework.Web
                 m_SendingProtoBufList.Remove(webData);
                 if (unityWebRequest.result != UnityWebRequest.Result.Success || unityWebRequest.error != null)
                 {
-                    webData.Task.TrySetException(new Exception(unityWebRequest.error));
+                    webData.CompletionSource.TrySetException(new Exception(unityWebRequest.error));
                     return;
                 }
 
-                webData.Task.SetResult(new WebBufferResult(webData.UserData, unityWebRequest.downloadHandler.data));
+                webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, unityWebRequest.downloadHandler.data));
             };
 #else
             try
@@ -119,26 +119,26 @@ namespace Hotfix.Framework.Web
                 m_MemoryStream.Position = 0;
                 if (responseStream != null)
                     await responseStream.CopyToAsync(m_MemoryStream);
-                webData.Task.SetResult(new WebBufferResult(webData.UserData, m_MemoryStream.ToArray())); // 将流的内容复制到内存流中并转换为byte数组
+                webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, m_MemoryStream.ToArray())); // 将流的内容复制到内存流中并转换为byte数组
             }
             catch (WebException e)
             {
                 // 捕获超时异常
                 if (e.Status == WebExceptionStatus.Timeout)
                 {
-                    webData.Task.SetException(new TimeoutException(e.Message));
+                    webData.CompletionSource.TrySetException(new TimeoutException(e.Message));
                     return;
                 }
 
-                webData.Task.SetException(e);
+                webData.CompletionSource.TrySetException(e);
             }
             catch (IOException e)
             {
-                webData.Task.SetException(e);
+                webData.CompletionSource.TrySetException(e);
             }
             catch (Exception e)
             {
-                webData.Task.SetException(e);
+                webData.CompletionSource.TrySetException(e);
             }
             finally
             {
@@ -157,7 +157,7 @@ namespace Hotfix.Framework.Web
         /// <remarks>
         /// 此方法用于向指定的URL发送POST请求，并接收响应。请求的消息体由参数message提供，而响应则会被解析为指定的泛型类型T。
         /// </remarks>
-        public async Task<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
+        public async UniTask<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
         {
             var webBufferResult = await PostInner(url, message);
             if (!webBufferResult.IsNotNull()) return default;
@@ -181,9 +181,10 @@ namespace Hotfix.Framework.Web
         /// <param name="message">消息对象</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns>返回WebBufferResult类型的异步任务</returns>
-        private Task<WebBufferResult> PostInner(string url, MessageObject message, object userData = null)
+        private UniTask<WebBufferResult> PostInner(string url, MessageObject message, object userData = null)
         {
-            var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();
+            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, null);
             var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());
             var messageHttpObject = new MessageHttpObject

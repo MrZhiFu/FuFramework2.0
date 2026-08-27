@@ -54,7 +54,13 @@ FuFramework Sound 模块是游戏框架的声音管理系统，基于 Unity Audi
 
 ### 4.1 SoundModule
 
-声音管理模块，继承自 `ModuleBase`。
+声音管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。
+
+> **可取消异步**：`SoundModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块销毁（`OnDispose`）时触发 `Token` 取消，在途音频/AudioMixer 加载随之中止（释放句柄、清理 loading 状态，
+> 抛 `OperationCanceledException`），不再写回模块字段。框架重启 `RestartGame` 会在重启前 `await` 各模块
+> `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；`OnInit` 重建 `CancellationScope`
+> （新 Token = 新生命周期），重启后可正常使用。
 
 **核心属性：**
 
@@ -312,3 +318,4 @@ Sound/
 3. 3D 声音绑定实体后，声音会跟随实体位置移动
 4. 声音组音量变化会自动应用到该组内所有正在播放的声音
 5. 音频资源需提前通过 YooAsset 打包为 AssetBundle
+6. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途音频/AudioMixer 加载被中止（句柄释放、抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用

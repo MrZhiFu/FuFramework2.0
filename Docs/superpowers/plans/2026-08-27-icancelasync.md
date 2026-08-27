@@ -128,7 +128,7 @@ using Cysharp.Threading.Tasks;
 namespace Hotfix.Framework.Core
 {
     /// <summary>
-    /// 取消范围簿记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
+    /// 取消范围登记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
     /// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
     /// 主线程模型（PlayerLoop 驱动）下普通 ++/-- 即可，无需原子操作。
     /// </summary>
@@ -197,7 +197,7 @@ Expected: `errorCount: 0`（新增文件无引用依赖，独立可编译）。
 
 ```bash
 git add Unity/Assets/Scripts/Hotfix/Framework/Core/ICancelAsync.cs Unity/Assets/Scripts/Hotfix/Framework/Core/CancellationScope.cs
-git commit -m "[AI]feat: 新增 ICancelAsync 接口与 CancellationScope 取消簿记（struct BeginScope 零分配、普通计数主线程模型）"
+git commit -m "[AI]feat: 新增 ICancelAsync 接口与 CancellationScope 取消登记（struct BeginScope 零分配、普通计数主线程模型）"
 ```
 
 ---

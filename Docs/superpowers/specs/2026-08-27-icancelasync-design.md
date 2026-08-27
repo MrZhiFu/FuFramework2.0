@@ -2,7 +2,7 @@
 
 > 日期：2026-08-27
 > 分支：`refactor/framework-modules-to-hotfix`
-> 范围：`Unity/Assets/Scripts/Hotfix/Framework/Core/`（新增 `ICancelAsync`/`CancellationScope`）+ `Unity/Assets/Scripts/Hotfix/Framework/Asset/`（AssetModule/AssetLoadRegister 接入）+ `GameDriven`/`ModuleManager`（ReInit 接线）
+> 范围：`Unity/Assets/Scripts/Hotfix/Framework/Core/`（新增 `ICancelAsync`/`CancellationScope`）+ `Unity/Assets/Scripts/Hotfix/Framework/Asset/`（AssetModule/AssetLoadRegister 接入）+ `GameDriven`/`ModuleManager`（重新初始化 接线）
 
 ## 1. 背景与问题
 
@@ -22,9 +22,9 @@
 ## 2. 目标
 
 1. **提供 `ICancelAsync` 接口**：实现者的所有异步操作随对象销毁而取消，且可被 `await` 等待清理完成。
-2. **提供 `CancellationScope` 簿记助手**：内部 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
+2. **提供 `CancellationScope` 登记助手**：内部 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
 3. **AssetModule / AssetLoadRegister 接入**：异步操作观察自身 Token，取消路径统一「Release + UnloadAsset + 抛 OperationCanceledException」，从机制上消灭 bundle 泄漏与跨生命周期写回。
-4. **框架接线**：`RestartGame` 的 Dispose 与 ReInit 之间插入「等待所有 ICancelAsync 模块取消清理完毕」，使 ReInit 前旧生命周期零在途残留——epoch 逐点校验可退役。
+4. **框架接线**：`RestartGame` 的 Dispose 与 重新初始化 之间插入「等待所有 ICancelAsync 模块取消清理完毕」，使 重新初始化 前旧生命周期零在途残留——epoch 逐点校验可退役。
 
 ### 2.1 已确认的关键决策
 
@@ -38,7 +38,7 @@
 | 取消语义 | `OperationCanceledException` + 取消路径 `Release()` + `UnloadAsset()` | 与 YooAsset「业务失败不抛」契约区分；从机制上消灭 `AutoUnloadBundleWhenUnused=false` 下的 bundle 泄漏 |
 | `AssetLoadRegister.UnloadAll` | **不取消 Token**，保留 `m_Unloaded` 标记 | UnloadAll 是临时卸载（装载器可复用），取消 Token 会破坏复用；仅 `Dispose` 永久废弃触发取消 |
 | 与 `m_IsDisposed`/epoch 关系 | **机制上替换，实施分两步**：第一版 Token 与现有守卫并存（epoch 作安全带），稳定后再逐步剥离 | 避免一次性大改风险 |
-| `RestartGame` | 改为异步流（`RestartGameAsync`），调用方 `.Forget()` | 与代码库 fire-and-forget 惯例一致；是「先取消清理再 ReInit」的必要条件 |
+| `RestartGame` | 改为异步流（`RestartGameAsync`），调用方 `.Forget()` | 与代码库 fire-and-forget 惯例一致；是「先取消清理再 重新初始化」的必要条件 |
 | `CancelAsyncExtensions`（Break 糖） | **不做** | YAGNI：接口上已有 `CancelAsync()`，无真实调用方；fire-and-forget `Break()` 会诱导跳过 await，削弱「等待取消清理」保证 |
 | 生命周期 Token 重建 | 每次 `OnInit` 重建 `CancellationScope`（新生命周期 = 新 Token） | 等价于 epoch：旧 Token 已取消 = 旧生命周期 |
 
@@ -47,7 +47,7 @@
 ```
 Framework/Core/
 ├── ICancelAsync.cs          # [新增] 接口
-├── CancellationScope.cs     # [新增] 取消范围簿记助手
+├── CancellationScope.cs     # [新增] 取消范围登记助手
 └── ModuleManager.cs         # [修改] 新增 CancelAllAsync()
 
 Framework/Asset/
@@ -55,12 +55,12 @@ Framework/Asset/
 ├── AssetModule.API.cs       # [修改] 异步方法 Begin/End + ToUniTask(token) 取消竞速 + 取消路径清理
 └── AssetLoadRegister.cs     # [修改] 持有 CancellationScope；Dispose Cancel；UnloadAll 保留 m_Unloaded
 
-Framework/Core/GameDriven.cs  # [修改] RestartGame → RestartGameAsync（Dispose → 取消清理 → ReInit → 重跑启动）
+Framework/Core/GameDriven.cs  # [修改] RestartGame → RestartGameAsync（Dispose → 取消清理 → 重新初始化 → 重跑启动）
 
 Hotfix/External/YooAsset.UniTask/  # [新增] 拷贝自 YooAsset Samples~ 的扩展文件（HandleBaseExtensions.cs + AsyncOperationBaseExtensions.cs），须定义宏 YOOASSET_UNITASK_SUPPORT 后编译生效
 ```
 
-### 3.1 接口与簿记助手
+### 3.1 接口与登记助手
 
 ```csharp
 /// <summary>
@@ -80,7 +80,7 @@ public interface ICancelAsync
 }
 
 /// <summary>
-/// 取消范围簿记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
+/// 取消范围登记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
 /// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
 /// </summary>
 public sealed class CancellationScope
@@ -179,7 +179,7 @@ public async UniTask<AssetHandle> LoadAssetAsync(string path)
 - `Dispose`：`m_Scope.Cancel()`（永久废弃 → 取消在途）。
 - `UnloadAll`：**不取消 Token**，保留 `m_Unloaded` 标记（临时卸载，装载器可复用）。
 
-### 4.3 框架接线（根治 ReInit）
+### 4.3 框架接线（根治 重新初始化）
 
 ```csharp
 // GameDriven.RestartGame() → RestartGameAsync()：
@@ -211,7 +211,7 @@ public static async UniTask CancelAllAsync()
 | 角色 | 用法 |
 |---|---|
 | **实现者** | 组合 `CancellationScope` 并转发 `Token`/`CancelAsync`；内部异步操作 `using (m_Scope.Begin()) { ... }`，await 与自身 Token 竞速 |
-| **销毁者** | 框架 ReInit：`ModuleManager.CancelAllAsync()` 逐个 `await CancelAsync()`；对象自身 `OnDispose`/`Dispose` 内部 `m_Scope.Cancel()` |
+| **销毁者** | 框架 重新初始化：`ModuleManager.CancelAllAsync()` 逐个 `await CancelAsync()`；对象自身 `OnDispose`/`Dispose` 内部 `m_Scope.Cancel()` |
 | **业务调用方** | 零改动：照常 `await`，对象销毁即自动取消；可选 `catch (OperationCanceledException)`；持有 loader 的业务永久弃用时 `await loader.CancelAsync()` |
 
 ## 5. 与现有机制的关系（替换，分两步）
@@ -225,25 +225,20 @@ public static async UniTask CancelAllAsync()
 
 Token **只在对象销毁时取消**（`OnDispose`/`Dispose`），对象存活期间入口检查直接通过，正常业务零影响。入口检查仅拦截「已销毁对象上的新操作」——该场景本就是调用方 bug，现有代码已抛 `ObjectDisposedException` 响亮失败，第一版行为不变；第二版换为 `OperationCanceledException`，同样响亮失败，`AssetLoadRegister`/`UnloadAll`（临时卸载）不取消 Token，装载器可复用，重启后 `OnInit` 重建 `CancellationScope`（新 Token），业务无需感知取消。
 
-### 5.2 第二阶段（phase 2）epoch 剥离迁移路径
+### 5.2 第二阶段（phase 2）epoch 剥离（已执行完成）
 
-前置条件：**重启冒烟验证通过**（在途加载/实例化被中止时句柄释放 + bundle 卸载配对、重启后新生命周期正常）后再动。迁移顺序：
+前置条件：重启冒烟验证通过。已完成：
 
-1. **AssetModule 内部在途守卫**：将「读取当前 `Token` 属性」改为「入口捕获 + 比较」。注意 ReInit 后 `m_Scope` 重建、`Token` 属性返回**新** token（未取消），直接读属性会误判旧生命周期「还活着」，必须捕获式：
-   ```csharp
-   var capturedToken = m_Scope.Token;   // 入口捕获（替换 lifecycleEpoch = m_LifecycleEpoch）
-   // await 后：if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token) { 拒绝 }
-   // catch 回滚守卫：if (capturedToken == m_Scope.Token) ReleaseInstantiateInternal(path);
-   ```
-   涉及 `InstantiateAsync` 的 3 处检查 + catch 守卫 + `LoadAsyncForInstantiate`。
-2. **`InstantiateResult.LifecycleEpoch` 标记保留 int**：结果对象被调用方长期持有，若嵌入 `CancellationToken` 会持有已取消的旧 CTS 引用、阻止其 GC（含回调注册），int 更轻更安全。
-3. **Entity/Scene/UIModule.Blur 逐个接入 ICancelAsync**：各自持有 `CancellationScope`（OnDispose Cancel、OnInit 重建），再删除各自的 `m_LifecycleEpoch` 逐点校验。在此之前 epoch 是其唯一生命周期守卫，**不可提前删**。
-4. **`m_IsDisposed` 同理由 `Token.IsCancellationRequested` 取代**；「对象销毁后发起新操作」改由 Token 入口检查拦截，异常类型 `ObjectDisposedException` → `OperationCanceledException`（代码库 catch 均通用捕获，无专门分支依赖）。
+1. **AssetModule 内部在途守卫 → 捕获式 Token**：`capturedToken = m_Scope.Token`，await 后 `capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token` 拒绝写回；catch 回滚 `capturedToken == m_Scope.Token` 才回滚。涉及 `InstantiateAsync` 的检查 + catch 守卫 + `LoadAsyncForInstantiate`。
+2. **`InstantiateResult` 携带捕获的 `Token`（替代 int 标记）**：`ReleaseInstantiate` 以 `result.Token != m_Scope.Token` 识别并忽略旧生命周期释放。全库 epoch 计数器清零。
+3. **Entity/Scene/UIModule.Blur/SoundModule/WebModule 接入 ICancelAsync**：各自持有 `CancellationScope`（OnDispose Cancel、OnInit 重建），删除各自的 `m_LifecycleEpoch`/`m_IsDisposed` 逐点校验；WebModule 同步完成 Task→UniTask 迁移。
+4. **`m_IsDisposed` → `Token.IsCancellationRequested`**；「对象销毁后发起新操作」由 Token 入口检查拦截，异常类型 `ObjectDisposedException` → `OperationCanceledException`。
 
 ## 6. 范围与阶段
 
-- **第一阶段（本次实现）**：`ICancelAsync` + `CancellationScope` + AssetModule/AssetLoadRegister 接入 + `RestartGameAsync`/`CancelAllAsync` 接线 + 同步 README。
-- **后续阶段**：Entity/Scene/Sound/UIModule 等其他消费模块迁移；再逐步剥除各自 epoch/`m_IsDisposed`。
+- **第一阶段**：`ICancelAsync` + `CancellationScope` + AssetModule/AssetLoadRegister 接入 + `RestartGameAsync`/`CancelAllAsync` 接线 + 同步 README。
+- **第二阶段**：epoch/`m_IsDisposed` 剥离（Asset/Scene/Entity/UIModule.Blur/Sound/Web 接入 ICancelAsync，全库零 epoch）。
+- **遗留**：WebModule 非 WebGL 分支 `HttpWebRequest` 的 Task 依赖（待迁移 `UnityWebRequest` 彻底合规「杜绝 Task」铁律）。
 
 ## 7. 验证方式
 

@@ -179,7 +179,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 异步实例化实体。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
-        /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：重启（OnDispose/ReInit）后
+        /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：重启（OnDispose/重新初始化）后
         /// 旧生命周期存活的实例调用 ReleaseInstantiate 会被代际校验识别并忽略，杜绝误释放新生命周期同路径引用。
         /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
         /// </summary>
@@ -187,8 +187,8 @@ namespace Hotfix.Framework.Asset
         /// <returns>实例化结果，实例销毁时调用 ReleaseInstantiate(result) 释放引用。</returns>
         public async UniTask<InstantiateResult> InstantiateAsync(string path)
         {
-            if (m_IsDisposed) throw new ObjectDisposedException(nameof(AssetModule));
-            var lifecycleEpoch = m_LifecycleEpoch;
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁（Token 取消）则拒绝，抛 OperationCanceledException
+            var capturedToken = m_Scope.Token;            // 在途守卫 + 结果标记：捕获本生命周期 Token（旧 Token 被取消或更换即识别为旧生命周期）
 
             AssetHandle assetHandle;
             if (m_InstantiateRefDict.TryGetValue(path, out var entry))
@@ -203,13 +203,13 @@ namespace Hotfix.Framework.Asset
                 {
                     sharedSource = new UniTaskCompletionSource<AssetHandle>();
                     m_InstantiateLoadingTasks[path] = sharedSource;
-                    LoadAsyncForInstantiate(path, sharedSource, lifecycleEpoch).Forget();
+                    LoadAsyncForInstantiate(path, sharedSource, capturedToken).Forget();
                 }
 
                 assetHandle = await sharedSource.Task;
 
                 // 模块销毁/生命周期变更后：句柄可能已被释放，不得再写回引用字典
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                 {
                     if (assetHandle != null && assetHandle.IsValid)
                     {
@@ -218,7 +218,7 @@ namespace Hotfix.Framework.Asset
                         // 配对 UnloadAsset 防该 prefab 的 bundle 常驻（新生命周期不再加载同路径时永不释放）
                         UnloadAsset(path);
                     }
-                    throw new ObjectDisposedException(nameof(AssetModule));
+                    throw new OperationCanceledException(capturedToken);
                 }
 
                 // 加载完成后写入引用；若期间被并发请求写入则复用
@@ -244,29 +244,29 @@ namespace Hotfix.Framework.Asset
                 var instantiateOperation = assetHandle.InstantiateAsync();
                 await instantiateOperation;
                 
-                // 模块销毁/生命周期变更后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 ObjectDisposedException（catch 中 ReleaseInstantiate 兜底回滚）
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                // 模块销毁/生命周期变更后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 OperationCanceledException（catch 中 ReleaseInstantiate 兜底回滚）
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                 {
                     if (instantiateOperation.Result != null)
                         Object.Destroy(instantiateOperation.Result);
-                    throw new ObjectDisposedException(nameof(AssetModule));
+                    throw new OperationCanceledException(capturedToken);
                 }
                 if (instantiateOperation.Result == null)
                     throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
 
-                // 携带当前生命周期代数返回：销毁时经 ReleaseInstantiate(result) 校验代际，重启后旧实例释放被识别并忽略
+                // 携带捕获的生命周期 Token 返回：销毁时经 ReleaseInstantiate(result) 校验 Token，重启后旧实例释放被识别并忽略
                 return new InstantiateResult
                 {
                     Instance = instantiateOperation.Result,
                     Path = path,
-                    LifecycleEpoch = lifecycleEpoch,
+                    Token = capturedToken,
                 };
             }
             catch
             {
                 // 生命周期已变更（重启）时不得回滚引用：引用字典已被 OnDispose 清空，
                 // 且可能已存在新生命周期同路径条目，误回滚会卸载新生命周期存活的实例资源；仅在本代际时回滚本次占用
-                if (lifecycleEpoch == m_LifecycleEpoch)
+                if (capturedToken == m_Scope.Token)
                     ReleaseInstantiateInternal(path);
                 throw;
             }
@@ -275,19 +275,19 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 释放实例化资源的句柄引用。实例对象销毁后调用，传入 InstantiateAsync 返回的 InstantiateResult。
         /// 引用计数归零时 Release 句柄并移除，让资源可被卸载。
-        /// 重启（OnDispose/ReInit）后旧生命周期存活的实例携带旧代际结果调用本方法时会被代际校验识别并忽略，
+        /// 重启（OnDispose/重新初始化）后旧生命周期存活的实例携带旧代际结果调用本方法时会被代际校验识别并忽略，
         /// 杜绝误命中新生命周期同路径条目、导致仍存活的实例资源被静默卸载。
         /// </summary>
         /// <param name="result">InstantiateAsync 返回的实例化结果。</param>
         public void ReleaseInstantiate(InstantiateResult result)
         {
-            if (m_IsDisposed) return; // 模块已销毁：引用字典已清空，直接忽略（含 null 参数，teardown 防御不抛）
+            if (Token.IsCancellationRequested) return; // 模块已销毁：引用字典已清空，直接忽略（含 null 参数，teardown 防御不抛）
             if (result == null) throw new ArgumentNullException(nameof(result)); // 存活模块传入 null 属调用方 bug，快速失败
-            if (result.LifecycleEpoch != m_LifecycleEpoch)
+            if (result.Token != m_Scope.Token)
             {
-                // 跨生命周期释放：旧代际实例在重启后误调用，直接忽略防误卸载新生命周期同路径引用；
+                // 跨生命周期释放：旧生命周期结果携带的 Token 与当前不同，直接忽略防误卸载新生命周期同路径引用；
                 // 属调用方违反"重启后不得对旧实例释放"契约，告警便于定位
-                FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果代际 {result.LifecycleEpoch}，当前代际 {m_LifecycleEpoch}）。重启后请勿对旧生命周期实例调用 ReleaseInstantiate。");
+                FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果 Token 属于旧生命周期）。重启后请勿对旧生命周期实例调用 ReleaseInstantiate。");
                 return;
             }
 

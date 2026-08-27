@@ -15,7 +15,7 @@ namespace Hotfix.Framework.UI
     /// UI管理模块。
     /// 目标：用于管理所有UI界面的加载，关闭，释放等操作。
     /// </summary>
-    public sealed partial class UIModule : ModuleBase
+    public sealed partial class UIModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 事件组件

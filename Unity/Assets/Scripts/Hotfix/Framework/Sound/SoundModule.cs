@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using YooAsset;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -8,13 +9,11 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Config.Tables;
 using SoundGroupCfg = Hotfix.Game.Config.Tables.SoundGroup;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Asset;
 using System.Collections.Generic;
 using Hotfix.Framework.Event;
-using Utility = Hotfix.Framework.Core.Utility;
 
 namespace Hotfix.Framework.Sound
 {
@@ -25,12 +24,28 @@ namespace Hotfix.Framework.Sound
     ///     2. 提供声音播放、暂停、继续、停止等接口。
     ///     3. 提供声音组管理接口。
     /// </summary>
-    public sealed partial class SoundModule : ModuleBase
+    public sealed partial class SoundModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 模块单例
         /// </summary>
         public static SoundModule Instance { get; private set; }
+
+        /// <summary>
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+        /// OnDispose 时 Cancel，在途音频/混音器加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
+        /// </summary>
+        private CancellationScope m_Scope = new();
+
+        /// <summary>
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// <summary>
         /// 声音组字典，Key为声音组名称，Value为声音组对象
@@ -93,6 +108,7 @@ namespace Hotfix.Framework.Sound
         protected internal override void OnInit()
         {
             Instance = this;
+            m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
 
             m_Serial = 0;
 
@@ -142,6 +158,8 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         protected internal override void OnDispose()
         {
+            m_Scope.Cancel(); // 随模块销毁取消在途音频/混音器加载
+
             // 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨重启残留）。
             // Unity 停止 Play 时场景对象（SoundGroup/SoundAgent）可能已被 teardown 先于 ModuleManager.Dispose 销毁，跳过已销毁组。
             foreach (var (_, soundGroup) in m_SoundGroupDict)
@@ -376,6 +394,7 @@ namespace Hotfix.Framework.Sound
             try
             {
                 assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
+                m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
                 var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
                 // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
                 // 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
@@ -655,6 +674,12 @@ namespace Hotfix.Framework.Sound
             try
             {
                 var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath);
+                if (m_Scope.Token.IsCancellationRequested)
+                {
+                    // SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏
+                    handle.Release();
+                    return;
+                }
                 if (handle.Status == EOperationStatus.Succeeded)
                     m_AudioMixer = handle.GetAssetObject<AudioMixer>();
                 else

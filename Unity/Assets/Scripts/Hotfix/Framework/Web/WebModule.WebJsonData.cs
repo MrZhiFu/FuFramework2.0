@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -24,12 +24,12 @@ namespace Hotfix.Framework.Web
             /// <summary>
             /// 字符串结果的任务完成源
             /// </summary>
-            public readonly TaskCompletionSource<WebStringResult> UniTaskCompletionStringSource;
+            public readonly UniTaskCompletionSource<WebStringResult> UniTaskCompletionStringSource;
 
             /// <summary>
             /// 字节数组结果的任务完成源
             /// </summary>
-            public readonly TaskCompletionSource<WebBufferResult> UniTaskCompletionBytesSource;
+            public readonly UniTaskCompletionSource<WebBufferResult> UniTaskCompletionBytesSource;
 
             /// <summary>
             /// 初始化Web JSON请求数据（用于字节数组结果的GET/POST请求）
@@ -39,7 +39,7 @@ namespace Hotfix.Framework.Web
             /// <param name="isGet">是否为GET请求</param>
             /// <param name="source">字节数组结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, bool isGet, TaskCompletionSource<WebBufferResult> source, object userData = null) : base(isGet, url, userData)
+            public WebJsonData(string url, Dictionary<string, string> header, bool isGet, UniTaskCompletionSource<WebBufferResult> source, object userData = null) : base(isGet, url, userData)
             {
                 Header = header;
                 UniTaskCompletionBytesSource = source;
@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Web
             /// <param name="isGet">是否为GET请求</param>
             /// <param name="source">字符串结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, bool isGet, TaskCompletionSource<WebStringResult> source, object userData = null) : base(isGet, url, userData)
+            public WebJsonData(string url, Dictionary<string, string> header, bool isGet, UniTaskCompletionSource<WebStringResult> source, object userData = null) : base(isGet, url, userData)
             {
                 Header = header;
                 UniTaskCompletionStringSource = source;
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.Web
             /// <param name="form">表单数据</param>
             /// <param name="source">字符串结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebStringResult> source, object userData = null) :
+            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebStringResult> source, object userData = null) :
                 base(false, url, userData)
             {
                 Header = header;
@@ -83,7 +83,7 @@ namespace Hotfix.Framework.Web
             /// <param name="form">表单数据</param>
             /// <param name="source">字节数组结果的任务完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, TaskCompletionSource<WebBufferResult> source, object userData = null) :
+            public WebJsonData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebBufferResult> source, object userData = null) :
                 base(false, url, userData)
             {
                 Header = header;

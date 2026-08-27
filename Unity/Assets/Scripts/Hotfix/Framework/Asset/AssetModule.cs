@@ -25,13 +25,8 @@ namespace Hotfix.Framework.Asset
         private string DefaultPackageName { get; set; }
 
         /// <summary>
-        /// 是否已销毁。防止销毁后在途的 InstantiateAsync 任务把已失效句柄写回引用字典。
-        /// </summary>
-        private bool m_IsDisposed;
-
-        /// <summary>
         /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
-        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启注册/ReInit 前经 CancelAllAsync 等待取消清理完成。
+        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
         /// </summary>
         private CancellationScope m_Scope = new();
 
@@ -48,12 +43,6 @@ namespace Hotfix.Framework.Asset
         /// 也保证同一路径仅加载一次、仅产生一个句柄。
         /// </summary>
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_InstantiateLoadingTasks = new();
-
-        /// <summary>
-        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的 InstantiateAsync
-        /// 在 ReInit（OnInit 重置 m_IsDisposed）后仍能识别并拒绝把旧句柄写回新生命周期。
-        /// </summary>
-        private int m_LifecycleEpoch;
 
         /// <summary>
         /// 实例化引用：句柄 + 引用计数。
@@ -74,9 +63,9 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 实例化结果。携带实例对象、资源路径与创建时的模块生命周期代数。
+        /// 实例化结果。携带实例对象、资源路径与创建时捕获的生命周期 Token。
         /// 实例销毁时调用 AssetModule.ReleaseInstantiate(result) 释放引用；
-        /// 重启（OnDispose/ReInit）后旧代际结果会被代际校验识别并忽略，避免误释放新生命周期同路径引用。
+        /// 重启（OnDispose/重新初始化）后旧生命周期结果携带的 Token 与当前不同，会被识别并忽略，避免误释放新生命周期同路径引用。
         /// </summary>
         public sealed class InstantiateResult
         {
@@ -91,9 +80,9 @@ namespace Hotfix.Framework.Asset
             public string Path { get; internal set; }
 
             /// <summary>
-            /// 创建本结果时的模块生命周期代数。
+            /// 创建本结果时捕获的生命周期 Token（旧生命周期结果重启后据此识别并忽略释放）。
             /// </summary>
-            public int LifecycleEpoch { get; internal set; }
+            public CancellationToken Token { get; internal set; }
         }
 
         /// <summary>
@@ -111,9 +100,6 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         protected internal override void OnInit()
         {
-            // 重启场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
-            m_IsDisposed = false;
-
             // 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
             m_Scope = new CancellationScope();
 
@@ -129,9 +115,6 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         protected internal override void OnDispose()
         {
-            m_IsDisposed = true;
-            m_LifecycleEpoch++;
-
             m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
 
             // 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
@@ -143,7 +126,7 @@ namespace Hotfix.Framework.Asset
             }
             m_InstantiateRefDict.Clear();
 
-            // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 m_IsDisposed 检查自行释放句柄，不得再写回引用字典）。
+            // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 Token 取消检查自行释放句柄，不得再写回引用字典）。
             // 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
             // 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
             m_InstantiateLoadingTasks.Clear();
@@ -193,8 +176,8 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="sharedSource">共享完成源</param>
-        /// <param name="lifecycleEpoch">发起时的模块生命周期代际</param>
-        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, int lifecycleEpoch)
+        /// <param name="capturedToken">发起时捕获的生命周期 Token（旧 Token 被 OnDispose 取消或已换成新 Token 即识别为旧生命周期）。</param>
+        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, CancellationToken capturedToken)
         {
             AssetHandle handle = null;
             try
@@ -210,7 +193,7 @@ namespace Hotfix.Framework.Asset
                     return;
                 }
 
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                 {
                     if (handle.IsValid)
                     {
@@ -219,7 +202,7 @@ namespace Hotfix.Framework.Asset
                         // 跨生命周期中止：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
                         UnloadAsset(path);
                     }
-                    sharedSource.TrySetException(new ObjectDisposedException(nameof(AssetModule)));
+                    sharedSource.TrySetException(new OperationCanceledException(capturedToken));
                     return;
                 }
 
@@ -233,7 +216,7 @@ namespace Hotfix.Framework.Asset
             finally
             {
                 // 跨生命周期防护：仅当共享源仍是本任务注册的条目时才移除，防止旧生命周期在途任务的
-                // finally 误删新生命周期（ReInit 后）同路径刚注册的去重项，导致后续并发请求重复发起加载
+                // finally 误删新生命周期（重新初始化后）同路径刚注册的去重项，导致后续并发请求重复发起加载
                 if (m_InstantiateLoadingTasks.TryGetValue(path, out var current) && ReferenceEquals(current, sharedSource))
                     m_InstantiateLoadingTasks.Remove(path);
             }

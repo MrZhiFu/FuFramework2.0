@@ -2,13 +2,14 @@
 
 ## 1. 简介
 
-FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `System.Net.WebRequest`（非 WebGL 平台）和 `UnityWebRequest`（WebGL 平台）实现高效的 Web 请求处理。该模块支持 JSON 字符串、字节数组和 ProtoBuf 三种请求/响应格式，提供请求队列和并发控制能力，并通过 `Task<T>` 支持 async/await 异步模式。
+FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `System.Net.WebRequest`（非 WebGL 平台）和 `UnityWebRequest`（WebGL 平台）实现高效的 Web 请求处理。该模块支持 JSON 字符串、字节数组和 ProtoBuf 三种请求/响应格式，提供请求队列和并发控制能力，并通过 `UniTask` 支持 async/await 异步模式。该模块实现 `ICancelAsync`（可取消异步对象），模块销毁时在途请求随之中止。
 
 ## 2. 核心特性
 
 - **多格式支持**：JSON 字符串、字节数组（Buffer）、ProtoBuf 三种请求/响应格式
 - **请求队列**：内置请求队列，支持并发控制（`MaxConnectionPerServer`）
-- **异步支持**：基于 `Task<T>`（`TaskCompletionSource<T>`）的 async/await 异步请求
+- **异步支持**：基于 `UniTask<T>`（`UniTaskCompletionSource<T>`）的 async/await 异步请求
+- **可取消异步**：实现 `ICancelAsync`（`Token` + `CancelAsync`），模块销毁时在途请求随之中止，新请求被拒绝
 - **JSON 结果封装**：统一的 `HttpJsonResult` 响应结构（Code/Message/Data — PascalCase）
 - **泛型结果解析**：`HttpJsonResultData<T>` 封装解析结果，`IsSuccess` 为独立属性
 - **ProtoBuf 序列化**：使用 `application/x-protobuf` content type，内置消息路由
@@ -52,7 +53,13 @@ FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `Syste
 
 ### 4.1 WebModule
 
-Web 管理模块，继承自 `ModuleBase`。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。请求队列在 `OnUpdate` 中轮询处理。
+Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。请求队列在 `OnUpdate` 中轮询处理。
+
+> **可取消异步**：`WebModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块销毁（`OnDispose`）时触发 `Token` 取消，在途请求随之中止；此后发起的新请求被入口检查拒绝
+> （`Token.ThrowIfCancellationRequested()` 抛 `OperationCanceledException`），杜绝旧生命周期请求写回。
+> 框架重启 `RestartGame` 会在重启前 `await` 各模块 `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；
+> `OnInit` 重建 `CancellationScope`（新 Token = 新生命周期），重启后可正常使用。
 
 **核心属性：**
 
@@ -67,35 +74,35 @@ Web 管理模块，继承自 `ModuleBase`。通过 `ModuleManager.GetModule<WebM
 
 ```csharp
 // GET 请求，返回字符串
-Task<WebStringResult> GetToString(string url, object userData = null)
-Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
-Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebStringResult> GetToString(string url, object userData = null)
+UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
+UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
 
 // POST 请求，返回字符串
-Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
-Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
 ```
 
 **核心方法 — 字节数组请求：**
 
 ```csharp
 // GET 请求，返回字节数组
-Task<WebBufferResult> GetToBytes(string url, object userData = null)
-Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
-Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
 
 // POST 请求，返回字节数组
-Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
-Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
 ```
 
 **核心方法 — ProtoBuf 请求：**
 
 ```csharp
 // 发送 ProtoBuf POST 请求
-Task<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
+UniTask<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
 ```
 
 ### 4.2 WebData（内部类 base）
@@ -104,7 +111,7 @@ Web 请求数据基类 `WebData`，实现 `IDisposable`。包含请求的基本�
 
 ### 4.3 WebJsonData（内部类）
 
-JSON 格式请求数据类，继承 `WebData`。内部使用 `TaskCompletionSource<WebStringResult>` 或 `TaskCompletionSource<WebBufferResult>` 管理异步结果。POST 请求的 `Form` 类型为 `Dictionary<string, object>`。
+JSON 格式请求数据类，继承 `WebData`。内部使用 `UniTaskCompletionSource<WebStringResult>` 或 `UniTaskCompletionSource<WebBufferResult>` 管理异步结果。POST 请求的 `Form` 类型为 `Dictionary<string, object>`。
 
 ### 4.4 WebProtoBufData（内部类）
 
@@ -211,7 +218,7 @@ using Hotfix.Framework.Web;
 
 public class WebExample
 {
-    public async Task<string> FetchServerData()
+    public async UniTask<string> FetchServerData()
     {
         // 简单的 GET 请求
         var result = await WebModule.Instance.GetToString("https://api.example.com/server/info");
@@ -221,7 +228,7 @@ public class WebExample
     }
 
     // 带查询参数
-    public async Task<string> FetchWithQuery()
+    public async UniTask<string> FetchWithQuery()
     {
         var query = new Dictionary<string, string>
         {
@@ -238,7 +245,7 @@ public class WebExample
     }
 
     // 带请求头
-    public async Task<string> FetchWithHeader()
+    public async UniTask<string> FetchWithHeader()
     {
         var header = new Dictionary<string, string>
         {
@@ -259,10 +266,10 @@ public class WebExample
 ### 5.2 POST JSON 请求
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
-public async Task<string> LoginRequest()
+public async UniTask<string> LoginRequest()
 {
     // POST 参数使用 Dictionary<string, object>
     var formData = new Dictionary<string, object>
@@ -283,7 +290,7 @@ public async Task<string> LoginRequest()
 ### 5.3 解析 JSON 结果为强类型
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
 // 定义响应数据类
@@ -293,7 +300,7 @@ public class LoginResponse
     public string UserName { get; set; }
 }
 
-public async Task<LoginResponse> LoginAndParse()
+public async UniTask<LoginResponse> LoginAndParse()
 {
     var formData = new Dictionary<string, object>
     {
@@ -328,7 +335,7 @@ using System.Threading.Tasks;
 using System.Text;
 using Hotfix.Framework.Web;
 
-public async Task DownloadConfigFile()
+public async UniTask DownloadConfigFile()
 {
     // GET 字节数组请求
     var bufferResult = await WebModule.Instance.GetToBytes(
@@ -344,10 +351,10 @@ public async Task DownloadConfigFile()
 ### 5.5 带 UserData 的请求
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
-public async Task FetchWithUserData()
+public async UniTask FetchWithUserData()
 {
     // userData 在请求时会原样传递到结果中，方便识别请求来源
     var result = await WebModule.Instance.GetToString(
@@ -363,11 +370,11 @@ public async Task FetchWithUserData()
 ### 5.6 ProtoBuf 请求
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 using Hotfix.Framework.Network;
 
-public async Task SendProtoBufRequest()
+public async UniTask SendProtoBufRequest()
 {
     var request = new MyRequestMessage { /* ... */ };
 
@@ -402,7 +409,7 @@ var tasks = new[]
     WebModule.Instance.GetToString("https://api.example.com/data4"),
 };
 
-var results = await Task.WhenAll(tasks);
+var results = await UniTask.WhenAll(tasks);
 ```
 
 ## 6. 目录结构
@@ -424,15 +431,16 @@ Web/
 
 ## 7. 依赖
 
-- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`
+- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`、`ICancelAsync`/`CancellationScope`
 - **Hotfix.Framework.Network**：ProtoBuf 消息路由（`MessageObject`、`IResponseMessage`、`SerializerHelper`）
 - **Newtonsoft.Json**（外部）：JSON 序列化/反序列化
 - **AOT.Framework.Core.Log**：日志（`FuLogger`）
 - **AOT.Framework.Core.Utility**：工具类（`UtilityAOT.Json.ToJson`）
+- **UniTask**：异步请求支持（`UniTaskCompletionSource<T>`）
 
 ## 8. 最佳实践
 
-1. **错误处理**：使用 try-catch 捕获 `Task` 中抛出的异常（超时、网络错误等）
+1. **错误处理**：使用 try-catch 捕获 `UniTask` 中抛出的异常（超时、网络错误等）
 2. **超时设置**：根据请求类型设置合理的超时时间，通过 `Timeout` 属性配置
 3. **并发控制**：合理配置 `MaxConnectionPerServer`，避免服务器压力过大
 4. **强类型解析**：使用 `ToHttpJsonResultData<T>()` 扩展方法将 JSON 字符串解析为强类型对象
@@ -441,7 +449,7 @@ Web/
 
 ## 9. 注意事项
 
-1. 所有请求方法返回 `Task<T>`（基于 `TaskCompletionSource<T>`），非 `UniTask`
+1. 所有请求方法返回 `UniTask<T>`（基于 `UniTaskCompletionSource<T>`）；队列处理使用 fire-and-forget（`Forget()`）驱动，调用方应 `await` 或处理异常
 2. POST 方法的 body 参数类型为 `Dictionary<string, object>`（序列化为 JSON 发送），非原始字符串
 3. `HttpJsonResult` 的属性使用 PascalCase（`Code`、`Message`、`Data`），JSON 序列化时映射为小写
 4. `HttpJsonResultData<T>` 的 `IsSuccess` 是独立属性（setter 为 public），由 `HttpJsonResultHelper` 设置
@@ -449,3 +457,5 @@ Web/
 6. `WebBufferResult` / `WebStringResult` 使用 `Result` 属性（非 `Data`）
 7. WebGL 平台使用 `UnityWebRequest`，非 WebGL 平台使用 `System.Net.WebRequest`
 8. GET 请求的 `queryString` 参数会通过 `UrlHandler` 自动拼接到 URL 上
+9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
+10. **遗留（非 WebGL）**：`HttpWebRequest` 传输路径内部仍 await 原生 .NET `Task`（与 `WebModule` 对外的 `UniTask` API 无关），待迁移 `UnityWebRequest` 后彻底合规「杜绝 Task」铁律；WebGL 分支无此问题

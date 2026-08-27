@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 namespace Hotfix.Framework.Core
 {
     /// <summary>
-    /// 取消范围簿记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
+    /// 取消范围登记：内部持有 CTS + 在途计数 + 「全部完成」TCS，供模块/装载器组合复用。
     /// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
     /// 主线程模型（PlayerLoop 驱动）下普通 ++/-- 即可，无需原子操作。
     /// </summary>

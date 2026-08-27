@@ -1,8 +1,9 @@
 using System;
+using System.Threading;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
@@ -19,12 +20,28 @@ namespace Hotfix.Framework.Web
     /// 功能：
     ///     1.实现HTTP GET和POST请求功能。
     /// </summary>
-    public partial class WebModule : ModuleBase
+    public partial class WebModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 模块单例
         /// </summary>
         public static WebModule Instance { get; private set; }
+
+        /// <summary>
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+        /// OnDispose 时 Cancel，在途 Web 请求随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
+        /// </summary>
+        private CancellationScope m_Scope = new();
+
+        /// <summary>
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// 用于构建URL的StringBuilder
         private readonly StringBuilder m_UrlStr = new(256);
@@ -59,6 +76,7 @@ namespace Hotfix.Framework.Web
         protected internal override void OnInit()
         {
             Instance = this;
+            m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
         }
 
         /// <summary>
@@ -73,9 +91,9 @@ namespace Hotfix.Framework.Web
                     var webJsonData = m_WaitingNormalQueue.Dequeue();
 
                     if (webJsonData.UniTaskCompletionStringSource != null)
-                        MakeJsonStringRequest(webJsonData);
+                        MakeJsonStringRequest(webJsonData).Forget();
                     else
-                        MakeJsonBytesRequest(webJsonData);
+                        MakeJsonBytesRequest(webJsonData).Forget();
 
                     m_SendingNormalList.Add(webJsonData);
                 }
@@ -89,6 +107,8 @@ namespace Hotfix.Framework.Web
         /// </summary>
         protected internal override void OnDispose()
         {
+            m_Scope.Cancel(); // 随模块销毁取消在途 Web 请求
+
             while (m_WaitingNormalQueue.Count > 0)
             {
                 var webData = m_WaitingNormalQueue.Dequeue();
@@ -116,7 +136,7 @@ namespace Hotfix.Framework.Web
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> GetToString(string url, object userData = null)
+        public UniTask<WebStringResult> GetToString(string url, object userData = null)
         {
             return GetToString(url, null, null, userData);
         }
@@ -127,7 +147,7 @@ namespace Hotfix.Framework.Web
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> GetToBytes(string url, object userData = null)
+        public UniTask<WebBufferResult> GetToBytes(string url, object userData = null)
         {
             return GetToBytes(url, null, null, userData);
         }
@@ -139,7 +159,7 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
+        public UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
         {
             return GetToString(url, queryString, null, userData);
         }
@@ -151,7 +171,7 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
+        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
         {
             return GetToBytes(url, queryString, null, userData);
         }
@@ -164,10 +184,11 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
+        public UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
                                                  object userData = null)
         {
-            var uniTaskCompletionSource = new TaskCompletionSource<WebStringResult>();
+            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
             url = UrlHandler(url, queryString);
 
             var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, userData);
@@ -178,7 +199,7 @@ namespace Hotfix.Framework.Web
         /// <summary>
         /// 处理JSON字符串请求
         /// </summary>
-        private async void MakeJsonStringRequest(WebJsonData webJsonData)
+        private async UniTaskVoid MakeJsonStringRequest(WebJsonData webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
@@ -214,7 +235,7 @@ namespace Hotfix.Framework.Web
                 }
 
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
-                webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
+                webJsonData.UniTaskCompletionStringSource.TrySetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
             };
 #else
             try
@@ -248,29 +269,29 @@ namespace Hotfix.Framework.Web
                 using var reader  = new StreamReader(responseStream);
                 var       content = await reader.ReadToEndAsync();
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {content}");
-                webJsonData.UniTaskCompletionStringSource.SetResult(new WebStringResult(webJsonData.UserData, content));
+                webJsonData.UniTaskCompletionStringSource.TrySetResult(new WebStringResult(webJsonData.UserData, content));
             }
             catch (WebException e)
             {
                 // 捕获超时异常
                 if (e.Status == WebExceptionStatus.Timeout)
                 {
-                    webJsonData.UniTaskCompletionStringSource.SetException(new TimeoutException(e.Message));
+                    webJsonData.UniTaskCompletionStringSource.TrySetException(new TimeoutException(e.Message));
                     return;
                 }
 
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
-                webJsonData.UniTaskCompletionStringSource.SetException(e);
+                webJsonData.UniTaskCompletionStringSource.TrySetException(e);
             }
             catch (IOException e)
             {
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
-                webJsonData.UniTaskCompletionStringSource.SetException(e);
+                webJsonData.UniTaskCompletionStringSource.TrySetException(e);
             }
             catch (Exception e)
             {
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
-                webJsonData.UniTaskCompletionStringSource.SetException(e);
+                webJsonData.UniTaskCompletionStringSource.TrySetException(e);
             }
             finally
             {
@@ -282,7 +303,7 @@ namespace Hotfix.Framework.Web
         /// <summary>
         /// 处理JSON字节数组请求
         /// </summary>
-        private async void MakeJsonBytesRequest(WebJsonData webJsonData)
+        private async UniTaskVoid MakeJsonBytesRequest(WebJsonData webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
@@ -318,7 +339,7 @@ namespace Hotfix.Framework.Web
                 }
 
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
-                webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, unityWebRequest.downloadHandler.data));
+                webJsonData.UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(webJsonData.UserData, unityWebRequest.downloadHandler.data));
             };
 #else
             try
@@ -353,7 +374,7 @@ namespace Hotfix.Framework.Web
                 await responseStream.CopyToAsync(m_MemoryStream);
                 var resultData = m_MemoryStream.ToArray();
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {resultData}");
-                webJsonData.UniTaskCompletionBytesSource.SetResult(new WebBufferResult(webJsonData.UserData, resultData)); // 将流的内容复制到内存流中并转换为byte数组
+                webJsonData.UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(webJsonData.UserData, resultData)); // 将流的内容复制到内存流中并转换为byte数组
             }
             catch (WebException e)
             {
@@ -362,21 +383,21 @@ namespace Hotfix.Framework.Web
                 // 捕获超时异常
                 if (e.Status == WebExceptionStatus.Timeout)
                 {
-                    webJsonData.UniTaskCompletionBytesSource.SetException(new TimeoutException(e.Message));
+                    webJsonData.UniTaskCompletionBytesSource.TrySetException(new TimeoutException(e.Message));
                     return;
                 }
 
-                webJsonData.UniTaskCompletionBytesSource.SetException(e);
+                webJsonData.UniTaskCompletionBytesSource.TrySetException(e);
             }
             catch (IOException e)
             {
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
-                webJsonData.UniTaskCompletionBytesSource.SetException(e);
+                webJsonData.UniTaskCompletionBytesSource.TrySetException(e);
             }
             catch (Exception e)
             {
                 FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {e.Message}");
-                webJsonData.UniTaskCompletionBytesSource.SetException(e);
+                webJsonData.UniTaskCompletionBytesSource.TrySetException(e);
             }
             finally
             {
@@ -394,9 +415,10 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
-            var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();
+            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, queryString);
 
             var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, userData);
@@ -411,7 +433,7 @@ namespace Hotfix.Framework.Web
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
             => PostToString(url, from, null, null, userData);
 
         /// <summary>
@@ -421,7 +443,7 @@ namespace Hotfix.Framework.Web
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
             => PostToBytes(url, from, null, null, userData);
 
         /// <summary>
@@ -432,7 +454,7 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
             => PostToString(url, from, queryString, null, userData);
 
         /// <summary>
@@ -443,7 +465,7 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
             => PostToBytes(url, from, queryString, null, userData);
 
         /// <summary>
@@ -455,9 +477,10 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
-            var uniTaskCompletionSource = new TaskCompletionSource<WebStringResult>();
+            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
             url = UrlHandler(url, queryString);
 
             var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, userData);
@@ -474,9 +497,10 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public Task<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
         {
-            var uniTaskCompletionSource = new TaskCompletionSource<WebBufferResult>();
+            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, queryString);
 
             var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, userData);

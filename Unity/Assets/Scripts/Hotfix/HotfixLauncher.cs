@@ -72,7 +72,7 @@ namespace Hotfix
             // 配置表必须在依赖它的模块（Sound、Entity 等）初始化前加载
             await InitDependenciesAsync(launchView);
 
-            // 功能模块：首次启动注册 / 重启 ReInit（配置已加载）
+            // 功能模块：首次启动注册 / 重启重新初始化（配置已加载）
             RegisterFeatureModules();
 
             EnterGame(launchView);
@@ -144,7 +144,7 @@ namespace Hotfix
 
         /// <summary>
         /// 初始化框架依赖：加载配置表与公共 UI 资源包、设置多语言 Provider。
-        /// 须在依赖配置数据的功能模块（Sound/Entity 等）注册或 ReInit 之前调用。
+        /// 须在依赖配置数据的功能模块（Sound/Entity 等）注册或重新初始化之前调用。
         /// </summary>
         private static async UniTask InitDependenciesAsync(ILaunchView launchView)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
@@ -22,7 +23,7 @@ namespace Hotfix.Framework.Scene
     ///     1. 配合资源管理模块，管理场景资源的加载、卸载。
     ///     2. 提供场景加载进度，加载成功、加载失败，卸载成功、卸载失败的事件。
     /// </summary>
-    public sealed class SceneModule : ModuleBase
+    public sealed class SceneModule : ModuleBase, ICancelAsync
     {
         /// <summary>
         /// 模块单例
@@ -79,15 +80,20 @@ namespace Hotfix.Framework.Scene
         private AssetModule m_AssetModule;
 
         /// <summary>
-        /// 是否已销毁（重启/模块释放）。防止在途场景加载完成后把句柄写回已销毁模块。
+        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+        /// OnDispose 时 Cancel，在途场景加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
         /// </summary>
-        private bool m_IsDisposed;
+        private CancellationScope m_Scope = new();
 
         /// <summary>
-        /// 模块生命周期代数。OnDispose 递增，使旧生命周期在途的场景加载 await 后
-        /// 仍能识别并拒绝把旧句柄写回新生命周期（m_IsDisposed 会被 OnInit 重置，无法覆盖跨 ReInit 窗口）。
+        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
         /// </summary>
-        private int m_LifecycleEpoch;
+        public CancellationToken Token => m_Scope.Token;
+
+        /// <summary>
+        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+        /// </summary>
+        public UniTask CancelAsync() => m_Scope.CancelAsync();
 
         /// 事件订阅器
         private EventRegister EventRegister { get; set; }
@@ -98,7 +104,7 @@ namespace Hotfix.Framework.Scene
         protected internal override void OnInit()
         {
             Instance = this;
-            m_IsDisposed = false;
+            m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
             EventRegister = EventRegister.Create();
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
         }
@@ -108,8 +114,7 @@ namespace Hotfix.Framework.Scene
         /// </summary>
         protected internal override void OnDispose()
         {
-            m_IsDisposed = true;
-            m_LifecycleEpoch++; // 递增生命周期代数：在途场景加载 await 后据此识别旧生命周期，拒绝写回新生命周期
+            m_Scope.Cancel(); // 随模块销毁取消在途场景加载
 
             // 反向遍历已加载的场景，卸载所有已加载的场景
             var loadedScenePaths = new string[m_LoadedSceneDict.Count];
@@ -345,16 +350,16 @@ namespace Hotfix.Framework.Scene
 
             // await 前置位：先登记 loading 状态拦截并发同路径加载（m_LoadingSceneDict 需 await 完成拿到 handle 才能登记）
             m_LoadingSceneSet.Add(sceneAssetPath);
-            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧在途加载据此识别并拒绝写回新生命周期
+            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
             try
             {
                 var sceneName = GetSceneName(sceneAssetPath);
                 var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
-                // 模块已销毁/生命周期变更（重启期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
-                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                // 模块已销毁/生命周期变更（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                 {
                     sceneOperationHandle.Release();
-                    throw new ObjectDisposedException(nameof(SceneModule));
+                    throw new OperationCanceledException(capturedToken);
                 }
                 m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
                 sceneOperationHandle.Completed += OnLoadSceneCompleted;
@@ -420,7 +425,7 @@ namespace Hotfix.Framework.Scene
                     m_UnloadingSceneDict.Remove(sceneAssetPath);
 
                     // 模块已销毁（OnDispose 已清空登记字典）：不再恢复登记（避免残留），显式释放句柄兜底，防卸载失败句柄泄漏
-                    if (m_IsDisposed)
+                    if (Token.IsCancellationRequested)
                     {
                         sceneHandle.Release();
                         return;
@@ -446,7 +451,7 @@ namespace Hotfix.Framework.Scene
         private void OnLoadSceneProgress(string sceneName, float progress, object userData)
         {
             // 模块已销毁（热更/卸载，EventRegister 已置 null）：不再广播进度，避免 NRE
-            if (m_IsDisposed) return;
+            if (Token.IsCancellationRequested) return;
             var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneName, progress, userData);
             EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
         }
@@ -463,7 +468,7 @@ namespace Hotfix.Framework.Scene
             m_LoadingSceneDict.Remove(assetPath, out var sceneHandleData);
 
             // 模块已销毁（OnDispose 已清空字典）：不登记，释放句柄避免泄漏
-            if (m_IsDisposed)
+            if (Token.IsCancellationRequested)
             {
                 sceneHandle.Release();
                 return;

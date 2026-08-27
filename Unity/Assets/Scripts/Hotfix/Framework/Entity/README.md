@@ -52,7 +52,14 @@ Unknown → WillInit → Inited → WillShow → Showed → WillHide → Hidden 
 
 ### 4.1 EntityModule
 
-实体管理模块，继承自 `ModuleBase`。
+实体管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。
+
+> **可取消异步**：`EntityModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
+> 模块销毁（`OnDispose`）时触发 `Token` 取消，在途 `ShowEntityAsync` 的资源加载随之中止：完成回调识别
+> 捕获的旧生命周期 `Token`，释放句柄（成功加载的配对 `UnloadAsset` 防 bundle 残留）、回收临时数据并向 await 方
+> 抛 `OperationCanceledException`，绝不写回新生命周期。框架重启 `RestartGame` 会在重启前 `await` 各模块
+> `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；`OnInit` 重建 `CancellationScope`
+> （新 Token = 新生命周期）并重置关闭标记，重启后可正常使用。
 
 **静态属性：**
 
@@ -529,3 +536,4 @@ Entity/
 4. `Entity.Id` 在回收后会重置为 0
 5. 不要在 `OnHide` / `OnRecycle` 中持有外部引用，可能导致内存泄漏
 6. 同一 `entityId` 不能重复显示，必须等待前一个实体隐藏完成后才能重新使用该 Id
+7. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途 `ShowEntityAsync` 抛 `OperationCanceledException`（句柄已释放、资源已卸载）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
