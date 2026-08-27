@@ -171,7 +171,7 @@ namespace Hotfix.Framework.UI
             m_UIGroupDict.Clear();
             m_LoadingDict.Clear();
 
-            // 排水回收队列中待回收的界面，避免 teardown 时丢弃未回收的 WinBase/对象池槽位
+            // 清空回收队列中待回收的界面，避免 teardown 时丢弃未回收的 WinBase/对象池槽位
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var ui = m_WaitRecycleQueue.Dequeue();

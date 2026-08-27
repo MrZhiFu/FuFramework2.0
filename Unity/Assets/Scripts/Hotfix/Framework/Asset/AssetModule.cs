@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
-        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架 ReInit 前经 DrainCancelledAsync 等待排水。
+        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启注册/ReInit 前经 CancelAllAsync 等待取消清理完成。
         /// </summary>
         private CancellationScope m_Scope = new();
 
@@ -76,7 +76,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 实例化结果。携带实例对象、资源路径与创建时的模块生命周期代数。
         /// 实例销毁时调用 AssetModule.ReleaseInstantiate(result) 释放引用；
-        /// 热更重载（OnDispose/ReInit）后旧代际结果会被代际校验识别并忽略，避免误释放新生命周期同路径引用。
+        /// 重启（OnDispose/ReInit）后旧代际结果会被代际校验识别并忽略，避免误释放新生命周期同路径引用。
         /// </summary>
         public sealed class InstantiateResult
         {
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Asset
         public CancellationToken Token => m_Scope.Token;
 
         /// <summary>
-        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架热更重载排水。
+        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启取消清理。
         /// </summary>
         public UniTask CancelAsync() => m_Scope.CancelAsync();
 
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         protected internal override void OnInit()
         {
-            // 热更重载场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
+            // 重启场景下 OnDispose 后可能再次 OnInit（ModuleManager.ReInit），重置销毁标记
             m_IsDisposed = false;
 
             // 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
@@ -145,7 +145,7 @@ namespace Hotfix.Framework.Asset
 
             // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 m_IsDisposed 检查自行释放句柄，不得再写回引用字典）。
             // 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
-            // 且热更重载时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
+            // 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
             m_InstantiateLoadingTasks.Clear();
         }
 

@@ -97,7 +97,7 @@ namespace Hotfix.Framework.UI
         private CancellationTokenSource m_BlurAnimCts;
 
         /// <summary>
-        /// 是否已销毁（热更重载防护：在途 Shader 加载完成后不写回状态，防句柄/材质泄漏）。
+        /// 是否已销毁（重启防护：在途 Shader 加载完成后不写回状态，防句柄/材质泄漏）。
         /// </summary>
         private bool m_IsDisposed;
 
@@ -141,7 +141,7 @@ namespace Hotfix.Framework.UI
         {
             // 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
             AssetHandle handle = null;
-            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧任务据此识别并拒绝覆盖新任务状态
+            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧任务据此识别并拒绝覆盖新任务状态
             try
             {
                 var assetModule = ModuleManager.GetModule<AssetModule>();
@@ -153,7 +153,7 @@ namespace Hotfix.Framework.UI
                 if (shader == null)
                     throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");
 
-                // 模块已销毁/生命周期变更（热更重载）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
+                // 模块已销毁/生命周期变更（重启）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     handle.Release();

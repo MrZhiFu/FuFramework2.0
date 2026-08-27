@@ -263,7 +263,7 @@ namespace Hotfix.Framework.Sound
 
             /// <summary>
             /// 重置所有声音播放代理（释放句柄，含暂停/停止状态未播放的代理）。
-            /// 供模块 OnDispose 使用，避免热更重载时暂停中 agent 的句柄/bundle 残留。
+            /// 供模块 OnDispose 使用，避免重启时暂停中 agent 的句柄/bundle 残留。
             /// </summary>
             public void ResetAllAgents()
             {

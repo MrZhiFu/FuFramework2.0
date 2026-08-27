@@ -11,8 +11,8 @@ using Hotfix.Framework.Config;
 namespace Hotfix.Framework.Localization
 {
     /// <summary>
-    /// 本地化多语言提供着
-    /// 负责根据当前语言环境返回对应的本地化文本
+    /// 本地化多语言提供者。
+    ///   负责根据当前语言环境返回对应的本地化文本
     /// </summary>
     public class LocalizationProvider : ILocalizationProvider
     {

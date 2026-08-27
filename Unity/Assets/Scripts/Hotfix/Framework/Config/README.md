@@ -248,5 +248,5 @@ Config/
 
 1. 配置表名称 = 类名（`typeof(T).Name` / `nameof(TbXxx)` 必须一致），注册与泛型查询依赖该约定
 2. 重复添加同名配置表返回 `false` 并 `FuLogger.LogWarning` 告警；string 版本接口（`GetConfig`/`HasConfig`/`RemoveConfig`）对空名称抛 `ArgumentNullException`
-3. 配置表在启动期一次性加载，加载后只读（无运行时重载路径）
+3. 配置表在启动期一次性加载，加载后只读（无运行时重新加载路径）
 4. 使用 Luban 生成的配置表需实现 `IDataTable<T>` 接口并继承 `BaseDataTable<T>`

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 提供 `ICancelAsync` 接口（`Token` + `CancelAsync`），实现者的所有异步操作随对象销毁而取消且可被 await 等待排水；AssetModule/AssetLoadRegister 接入，热更重载 ReInit 前等待排水，根除跨生命周期写回与 bundle 泄漏。
+**Goal:** 提供 `ICancelAsync` 接口（`Token` + `CancelAsync`），实现者的所有异步操作随对象销毁而取消且可被 await 等待排水；AssetModule/AssetLoadRegister 接入，重启 ReInit 前等待排水，根除跨生命周期写回与 bundle 泄漏。
 
 **Architecture:** 以 `CancellationScope`（内部 CTS + 在途计数 + 「全部完成」TCS）组合实现 `ICancelAsync`；异步方法用 `Begin/End` 登记在途、经 YooAsset 官方 UniTask 集成 `ToUniTask(token, cancelImmediately)` 与自身 Token 竞速，取消路径统一「Release + UnloadAsset + 抛 OperationCanceledException」。框架 `RestartGameAsync` 在 Dispose 与 ReInit 之间插入 `ModuleManager.DrainCancelledAsync()` 等待排水。
 
@@ -219,7 +219,7 @@ git commit -m "[AI]feat: 新增 ICancelAsync 接口与 CancellationScope 取消�
 ```csharp
         /// <summary>
         /// 等待所有实现 ICancelAsync 的模块完成取消排水（在途任务全部清理完毕）。
-        /// 供热更重载 RestartGame 在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
+        /// 供重启 RestartGame 在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
         /// </summary>
         public static async UniTask DrainCancelledAsync()
         {
@@ -305,7 +305,7 @@ git commit -m "[AI]feat: ModuleManager 新增 DrainCancelledAsync，GameDriven.R
         public CancellationToken Token => m_Scope.Token;
 
         /// <summary>
-        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架热更重载排水。
+        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启排水。
         /// </summary>
         public UniTask CancelAsync() => m_Scope.CancelAsync();
 ```
@@ -486,7 +486,7 @@ git commit -m "[AI]feat: AssetModule 接入 ICancelAsync（LoadAssetAsync/LoadSc
             }
 ```
 
-> 说明：装载器在途加载不把自身 Token 传入模块 API（避免改签名）；Dispose 后模块加载自然完成时由既有 `m_Disposed` 守卫清理（Release+Unload+抛），排水等待该清理完成。模块自身销毁（热更重载）时其 Token 取消 → 模块加载抛 OCE 传播到装载器，二者正确组合。
+> 说明：装载器在途加载不把自身 Token 传入模块 API（避免改签名）；Dispose 后模块加载自然完成时由既有 `m_Disposed` 守卫清理（Release+Unload+抛），排水等待该清理完成。模块自身销毁（重启）时其 Token 取消 → 模块加载抛 OCE 传播到装载器，二者正确组合。
 
 - [ ] **Step 4: 编译验证**
 
@@ -517,7 +517,7 @@ git commit -m "[AI]feat: AssetLoadRegister 接入 ICancelAsync（Dispose 取消�
 ```markdown
 > **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
-> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架热更重载 `RestartGame` 会在 ReInit 前
+> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在 ReInit 前
 > `await` 各模块 `CancelAsync` 排水，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
 > `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 ```
@@ -533,7 +533,7 @@ git commit -m "[AI]feat: AssetLoadRegister 接入 ICancelAsync（Dispose 取消�
 - `Token`：对象销毁（`OnDispose`/`Dispose`）时触发，在途操作观察它并中止。
 - `CancelAsync()`：触发取消并等待所有在途操作完成清理后才返回（可重入、幂等）。
 - 实现方式：组合 `CancellationScope`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()`、`finally` 归零。
-- 框架集成：热更重载 `RestartGameAsync` 在 Dispose 与 ReInit 之间 `await ModuleManager.DrainCancelledAsync()` 等待排水，根除旧任务写回新生命周期。
+- 框架集成：重启 `RestartGameAsync` 在 Dispose 与 ReInit 之间 `await ModuleManager.DrainCancelledAsync()` 等待排水，根除旧任务写回新生命周期。
 ```
 
 - [ ] **Step 3: Commit**
@@ -578,5 +578,5 @@ git commit -m "[AI]feat: 新增 ICancelAsync/CancellationScope，AssetModule/Ass
 - [ ] **Step 3: 手动冒烟（Unity 编辑器，可选但推荐）**
 
 1. 编辑器 Play，确认框架启动、资源加载/实例化/场景加载路径可用（既有功能无回归）。
-2. 热更重载冒烟：在途 `InstantiateAsync`/实体加载/Shader 加载被中止时，句柄释放 + bundle 卸载（`UnloadAsset` 配对）；重载后新生命周期加载正常。
+2. 重启冒烟：在途 `InstantiateAsync`/实体加载/Shader 加载被中止时，句柄释放 + bundle 卸载（`UnloadAsset` 配对）；重载后新生命周期加载正常。
 3. `await loader.CancelAsync()` 排水后，确认在途计数归零、无 bundle 残留。

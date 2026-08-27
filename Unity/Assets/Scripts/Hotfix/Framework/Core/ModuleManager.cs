@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Core
 {
     /// <summary>
@@ -31,77 +31,43 @@ namespace Hotfix.Framework.Core
         /// <returns>要获取的模块实例。</returns>
         public static T GetModule<T>() where T : ModuleBase
         {
-            var type = typeof(T);
             foreach (var module in ModuleList)
             {
-                if (module.GetType() == type)
-                    return module as T;
+                if (module is T result)
+                    return result;
             }
 
             return null;
         }
 
         /// <summary>
-        /// 注册游戏框架模块（泛型版本，内部委托给 Type 版本）。
+        /// 注册游戏框架模块
+        /// 首次启动创建注册；重启时模块单例已存活，直接重新初始化（OnInit）。
         /// </summary>
         /// <typeparam name="T">模块类型</typeparam>
-        public static void RegisterModule<T>() where T : ModuleBase => RegisterModule(typeof(T));
-
-        /// <summary>
-        /// 注册游戏框架模块（Type 版本，支持热更模块）。
-        /// </summary>
-        /// <param name="moduleType">模块类型</param>
-        public static void RegisterModule(Type moduleType)
+        public static void RegisterModule<T>() where T : ModuleBase, new()
         {
-            if (!typeof(ModuleBase).IsAssignableFrom(moduleType))
+            var module = GetModule<T>();
+            if (module != null)
             {
-                FuLogger.LogError($"类型 {moduleType.Name} 不是有效的ModuleBase类型!");
+                // 模块单例已存活，重新初始化，避免重复注册
+                FuLogger.LogInfo($"<color=#00FBD5>------重新初始化模块: {typeof(T).Name}</color>");
+                module.OnInit();
                 return;
             }
 
             try
             {
-                // 检查模块是否已存在
-                if (GetModule(moduleType) != null)
-                {
-                    FuLogger.LogWarning($"模块 {moduleType.Name} 已经注册");
-                    return;
-                }
-
-                // 通过反射创建模块实例
-                var module = (ModuleBase)Activator.CreateInstance(moduleType);
-
-                if (module == null)
-                {
-                    throw new Exception($"注册模块 {moduleType.Name} 失败: 无法创建模块实例!");
-                }
-
-                // 按注册顺序添加到列表末尾并初始化
-                ModuleList.Add(module);
-                module.OnInit();
-
-                FuLogger.LogInfo($"<color=#00FBD5>------注册模块 {moduleType.Name} 成功!</color>");
+                // 首次启动：编译期创建注册
+                var newModule = new T();
+                ModuleList.Add(newModule);
+                newModule.OnInit();
+                FuLogger.LogInfo($"<color=#00FBD5>------注册模块 {typeof(T).Name} 成功!</color>");
             }
             catch (Exception e)
             {
-                FuLogger.LogError($"注册模块 {moduleType.Name} 失败: {e.Message}");
+                FuLogger.LogError($"注册模块 {typeof(T).Name} 失败: {e.Message}");
             }
-        }
-
-        /// <summary>
-        /// 获取游戏框架模块（Type 版本，支持热更模块查询）。
-        /// </summary>
-        /// <param name="moduleType">模块类型</param>
-        /// <returns>模块实例，未找到返回 null</returns>
-        public static ModuleBase GetModule(Type moduleType)
-        {
-            foreach (var module in ModuleList)
-            {
-                if (module.GetType() == moduleType)
-                    return module;
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -149,11 +115,10 @@ namespace Hotfix.Framework.Core
         }
 
         /// <summary>
-        /// 释放框架模块
+        /// 释放框架模块(逆序释放,后注册的先关闭)
         /// </summary>
         public static void Dispose()
         {
-            // 逆序释放所有模块(后注册的先关闭)
             for (var i = ModuleList.Count - 1; i >= 0; i--)
             {
                 var module = ModuleList[i];
@@ -170,27 +135,16 @@ namespace Hotfix.Framework.Core
         }
 
         /// <summary>
-        /// 重新初始化框架模块
+        /// 取消所有实现了ICancelAsync接口的模块的异步任务，并等待其在途任务清理完毕，保证旧生命周期无在途异步任务残留。
         /// </summary>
-        public static void ReInit()
-        {
-            for (var i = 0; i < ModuleList.Count; i++)
-            {
-                ModuleList[i].OnInit();
-                FuLogger.LogInfo($"<color=#00FBD5>------重新初始化模块: {i + 1}.{ModuleList[i].GetType().Name}</color>");
-            }
-        }
-
-        /// <summary>
-        /// 等待所有实现 ICancelAsync 的模块完成取消排水（在途任务全部清理完毕）。
-        /// 热更重载（RestartGameAsync）在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
-        /// </summary>
-        public static async UniTask DrainCancelledAsync()
+        public static async UniTask CancelAllAsync()
         {
             foreach (var module in ModuleList)
             {
                 if (module is ICancelAsync cancellable)
+                {
                     await cancellable.CancelAsync();
+                }
             }
         }
     }

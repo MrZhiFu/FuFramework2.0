@@ -142,7 +142,7 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         protected internal override void OnDispose()
         {
-            // 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨热更重载残留）。
+            // 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨重启残留）。
             // Unity 停止 Play 时场景对象（SoundGroup/SoundAgent）可能已被 teardown 先于 ModuleManager.Dispose 销毁，跳过已销毁组。
             foreach (var (_, soundGroup) in m_SoundGroupDict)
             {
@@ -157,6 +157,13 @@ namespace Hotfix.Framework.Sound
 
             SceneManager.sceneLoaded   -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
+            // 销毁 AudioListener 挂载的 SoundListener 对象（OnInit 会重建），避免重启后重复对象泄漏
+            if (m_AudioListener != null)
+            {
+                UnityEngine.Object.Destroy(m_AudioListener.gameObject);
+                m_AudioListener = null;
+            }
 
             Instance = null;
         }

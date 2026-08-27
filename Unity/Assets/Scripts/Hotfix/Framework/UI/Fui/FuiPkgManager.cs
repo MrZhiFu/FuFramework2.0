@@ -158,7 +158,7 @@ namespace Hotfix.Framework.UI
                 // 失败/取消清理（防僵尸包与孤立 loader）：
                 // 1. AddPackage 可能已在依赖加载前执行（LoadPkgInternalAsync），取消后 FGUI 静态表残留包，需移除；
                 // 2. LoadDescAsync 已创建的资源加载器需回收——仅当 m_LoadingCts 中仍是本任务的 cts 才清理，
-                //    避免误删取消后立即重载的新任务刚创建的 loader。
+                //    避免误删取消后立即重新加载的新任务刚创建的 loader。
                 if (UIPackage.GetByName(pkgName) != null)
                     UIPackage.RemovePackage(pkgName);
                 if (m_LoadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)

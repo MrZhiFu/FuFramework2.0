@@ -116,6 +116,7 @@ namespace Hotfix.Framework.Entity
         protected internal override void OnInit()
         {
             Instance = this;
+            m_IsShutdown = false; // 重启 ReInit 时重置关闭标记（OnDispose 曾置位）
 
             m_AssetModule      = ModuleManager.GetModule<AssetModule>();
             m_EventModule      = ModuleManager.GetModule<EventModule>();
@@ -217,7 +218,7 @@ namespace Hotfix.Framework.Entity
             m_LoadingEntityDict.Clear();
             m_LoadingToReleaseSet.Clear();
 
-            // 排水回收队列中待回收的实体，避免 teardown 时丢弃未回收的 EntityInfo 与实体实例
+            // 清空回收队列中待回收的实体，避免 teardown 时丢弃未回收的 EntityInfo 与实体实例
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var entityInfo = m_WaitRecycleQueue.Dequeue();
@@ -238,6 +239,18 @@ namespace Hotfix.Framework.Entity
                 {
                     GlobalModule.ReferencePoolModule.Recycle(entityInfo);
                 }
+            }
+
+            // 销毁实体根节点与辅助器（OnInit 会重建），避免重启后重复对象泄漏
+            if (m_EntityRoot != null)
+            {
+                UnityEngine.Object.Destroy(m_EntityRoot.gameObject);
+                m_EntityRoot = null;
+            }
+            if (m_EntityHelper != null)
+            {
+                UnityEngine.Object.Destroy(m_EntityHelper.gameObject);
+                m_EntityHelper = null;
             }
         }
 
@@ -536,7 +549,7 @@ namespace Hotfix.Framework.Entity
                 var serialId = ++m_Serial;
                 m_LoadingEntityDict.Add(entityId, serialId);
 
-                var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧任务据此识别并拒绝写回新生命周期
+                var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧任务据此识别并拒绝写回新生命周期
                 // 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
                 AssetHandle assetOperationHandle;
                 try
@@ -555,7 +568,7 @@ namespace Hotfix.Framework.Entity
                 // 若回调抛异常或 tcs 完成异常，直接传播，此处不再二次回收（否则引用池抛"该对象已经被释放"掩盖真实异常）
                 assetOperationHandle.Completed += handle =>
                 {
-                    // 生命周期变更（热更重载）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
+                    // 生命周期变更（重启）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
                     if (lifecycleEpoch != m_LifecycleEpoch)
                     {
                         handle.Release();

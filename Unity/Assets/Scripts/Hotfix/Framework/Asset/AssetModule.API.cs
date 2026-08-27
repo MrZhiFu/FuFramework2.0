@@ -32,8 +32,8 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path)
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
-            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync(path);
@@ -65,8 +65,8 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
-            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync<T>(path);
@@ -98,8 +98,8 @@ namespace Hotfix.Framework.Asset
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
         public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使排水计数失效
-            using (m_Scope.Begin()) // 登记在途：OnDispose 排水时等待本操作清理完毕
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync(path, type);
@@ -179,7 +179,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 异步实例化实体。
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
-        /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：热更重载（OnDispose/ReInit）后
+        /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：重启（OnDispose/ReInit）后
         /// 旧生命周期存活的实例调用 ReleaseInstantiate 会被代际校验识别并忽略，杜绝误释放新生命周期同路径引用。
         /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
         /// </summary>
@@ -254,7 +254,7 @@ namespace Hotfix.Framework.Asset
                 if (instantiateOperation.Result == null)
                     throw new InvalidOperationException($"[AssetModule]实例化资源{path}失败");
 
-                // 携带当前生命周期代数返回：销毁时经 ReleaseInstantiate(result) 校验代际，热更重载后旧实例释放被识别并忽略
+                // 携带当前生命周期代数返回：销毁时经 ReleaseInstantiate(result) 校验代际，重启后旧实例释放被识别并忽略
                 return new InstantiateResult
                 {
                     Instance = instantiateOperation.Result,
@@ -264,7 +264,7 @@ namespace Hotfix.Framework.Asset
             }
             catch
             {
-                // 生命周期已变更（热更重载）时不得回滚引用：引用字典已被 OnDispose 清空，
+                // 生命周期已变更（重启）时不得回滚引用：引用字典已被 OnDispose 清空，
                 // 且可能已存在新生命周期同路径条目，误回滚会卸载新生命周期存活的实例资源；仅在本代际时回滚本次占用
                 if (lifecycleEpoch == m_LifecycleEpoch)
                     ReleaseInstantiateInternal(path);
@@ -275,7 +275,7 @@ namespace Hotfix.Framework.Asset
         /// <summary>
         /// 释放实例化资源的句柄引用。实例对象销毁后调用，传入 InstantiateAsync 返回的 InstantiateResult。
         /// 引用计数归零时 Release 句柄并移除，让资源可被卸载。
-        /// 热更重载（OnDispose/ReInit）后旧生命周期存活的实例携带旧代际结果调用本方法时会被代际校验识别并忽略，
+        /// 重启（OnDispose/ReInit）后旧生命周期存活的实例携带旧代际结果调用本方法时会被代际校验识别并忽略，
         /// 杜绝误命中新生命周期同路径条目、导致仍存活的实例资源被静默卸载。
         /// </summary>
         /// <param name="result">InstantiateAsync 返回的实例化结果。</param>
@@ -285,9 +285,9 @@ namespace Hotfix.Framework.Asset
             if (result == null) throw new ArgumentNullException(nameof(result)); // 存活模块传入 null 属调用方 bug，快速失败
             if (result.LifecycleEpoch != m_LifecycleEpoch)
             {
-                // 跨生命周期释放：旧代际实例在热更重载后误调用，直接忽略防误卸载新生命周期同路径引用；
-                // 属调用方违反"重载后不得对旧实例释放"契约，告警便于定位
-                FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果代际 {result.LifecycleEpoch}，当前代际 {m_LifecycleEpoch}）。热更重载后请勿对旧生命周期实例调用 ReleaseInstantiate。");
+                // 跨生命周期释放：旧代际实例在重启后误调用，直接忽略防误卸载新生命周期同路径引用；
+                // 属调用方违反"重启后不得对旧实例释放"契约，告警便于定位
+                FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果代际 {result.LifecycleEpoch}，当前代际 {m_LifecycleEpoch}）。重启后请勿对旧生命周期实例调用 ReleaseInstantiate。");
                 return;
             }
 

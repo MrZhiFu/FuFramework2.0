@@ -79,7 +79,7 @@ namespace Hotfix.Framework.Scene
         private AssetModule m_AssetModule;
 
         /// <summary>
-        /// 是否已销毁（热更重载/模块释放）。防止在途场景加载完成后把句柄写回已销毁模块。
+        /// 是否已销毁（重启/模块释放）。防止在途场景加载完成后把句柄写回已销毁模块。
         /// </summary>
         private bool m_IsDisposed;
 
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.Scene
             m_LoadedSceneDict.Clear();
             m_LoadingSceneDict.Clear();
             m_UnloadingSceneDict.Clear();
-            m_LoadingSceneSet.Clear(); // 若不清理，热更重载后 IsLoading 对旧路径恒 true，LoadScene 永久拒绝
+            m_LoadingSceneSet.Clear(); // 若不清理，重启后 IsLoading 对旧路径恒 true，LoadScene 永久拒绝
 
             EventRegister.Release();
             EventRegister = null;
@@ -345,12 +345,12 @@ namespace Hotfix.Framework.Scene
 
             // await 前置位：先登记 loading 状态拦截并发同路径加载（m_LoadingSceneDict 需 await 完成拿到 handle 才能登记）
             m_LoadingSceneSet.Add(sceneAssetPath);
-            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：热更重载后旧在途加载据此识别并拒绝写回新生命周期
+            var lifecycleEpoch = m_LifecycleEpoch; // 发起时生命周期代数：重启后旧在途加载据此识别并拒绝写回新生命周期
             try
             {
                 var sceneName = GetSceneName(sceneAssetPath);
                 var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
-                // 模块已销毁/生命周期变更（热更重载期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
+                // 模块已销毁/生命周期变更（重启期间在途加载）：释放句柄、不登记，抛 ObjectDisposedException
                 if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
                 {
                     sceneOperationHandle.Release();

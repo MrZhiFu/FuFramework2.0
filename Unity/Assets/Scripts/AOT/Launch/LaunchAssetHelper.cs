@@ -72,6 +72,11 @@ namespace AOT.Launch
             // 获取或创建默认资源包（v3 移除了 SetDefaultPackage，改为自行持有引用）。
             DefaultPackage = YooAssets.TryGetPackage(DefaultPackageName, out var existingPackage) ? existingPackage : YooAssets.CreatePackage(DefaultPackageName);
 
+            // 重启场景：包已初始化则跳过重复初始化（YooAsset 会抛 already initialized）。
+            // 版本检查/清单更新/下载等资源热更操作是独立的，不依赖重新初始化包。
+            if (DefaultPackage.InitializeStatus == EOperationStatus.Succeeded)
+                return;
+
             // 根据运行模式初始化资源包
             var initOperation = InitByPlayMode(url, backupUrl);
             if (initOperation == null)

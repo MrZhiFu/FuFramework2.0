@@ -1,8 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
-using AOT.Framework.Core.Log;
 using AOT.Launch;
 using UnityEngine;
 
@@ -33,19 +31,14 @@ namespace Hotfix.Framework.Core
         public Action OnFixedUpdate;
 
         /// <summary>
-        /// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
-        /// </summary>
-        public Action DisposeModules;
-
-        /// <summary>
-        /// 重新初始化全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.ReInit。
-        /// </summary>
-        public Action ReInitModules;
-
-        /// <summary>
         /// 框架模块每秒更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.PerSecondUpdate。
         /// </summary>
         public Action OnPerSecondUpdate;
+
+        /// <summary>
+        /// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
+        /// </summary>
+        public Action DisposeModules;
 
         /// <summary>
         /// 每秒更新累计时间
@@ -64,6 +57,19 @@ namespace Hotfix.Framework.Core
             {
                 m_PerSecondUpdateTimer -= 1f;
                 OnPerSecondUpdate?.Invoke();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                PauseGame();
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RestartGame();
+            }
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                QuitGame();
             }
         }
 
@@ -91,7 +97,6 @@ namespace Hotfix.Framework.Core
             DisposeModules?.Invoke();
 
             DisposeModules    = null;
-            ReInitModules     = null;
             OnUpdate          = null;
             OnLateUpdate      = null;
             OnFixedUpdate     = null;
@@ -103,34 +108,29 @@ namespace Hotfix.Framework.Core
         /// <summary>
         /// 暂停游戏。
         /// </summary>
-        public void PauseGame()
-        {
-            GameSetting.Instance.PauseGame();
-        }
+        public void PauseGame() => GameSetting.Instance.PauseGame();
 
         /// <summary>
         /// 恢复游戏。
         /// </summary>
-        public void ResumeGame()
-        {
-            GameSetting.Instance.ResumeGame();
-        }
+        public void ResumeGame() => GameSetting.Instance.ResumeGame();
 
         /// <summary>
         /// 重启游戏（如设置界面重启）。兼容旧入口：转异步流程 fire-and-forget。
-        /// 依次释放所有模块、等待 ICancelAsync 模块排水完毕、重新初始化模块、重新运行 AOT 启动流程。
+        /// 依次释放所有模块、等待 ICancelAsync 模块取消清理完毕、重新初始化模块、重新运行 AOT 启动流程。
         /// </summary>
         public void RestartGame() => RestartGameAsync().Forget();
 
         /// <summary>
-        /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待 ICancelAsync 排水 → ReInit → 重跑启动。
-        /// 排水保证 ReInit 前旧生命周期在途任务已全部清理，杜绝旧任务写回新生命周期。
+        /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待所有 ICancelAsync 模块取消清理完毕 → 完整重跑启动流程。
+        /// 完整启动（LaunchProcess）负责资源热更（版本/清单/下载），并由 HotfixLauncher.MainAsync 重启路径
+        /// 在重新加载配置后分阶段 ReInit 模块（基础模块先、依赖配置的功能模块后）再进入游戏。
+        /// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期。
         /// </summary>
-        public async UniTask RestartGameAsync()
+        private async UniTask RestartGameAsync()
         {
             DisposeModules?.Invoke();
-            await ModuleManager.DrainCancelledAsync();
-            ReInitModules?.Invoke();
+            await ModuleManager.CancelAllAsync();
             await LaunchProcess.RunAsync();
         }
 

@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Core
         public CancellationToken Token => m_Cts.Token;
 
         /// <summary>
-        /// 同步触发取消（供 OnDispose/Dispose 等同步销毁钩子调用）；排水等待由 CancelAsync 负责。
+        /// 同步触发取消（供 OnDispose/Dispose 等同步销毁钩子调用）；取消清理等待由 CancelAsync 负责。
         /// </summary>
         public void Cancel() => m_Cts.Cancel();
 

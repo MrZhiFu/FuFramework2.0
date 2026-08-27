@@ -83,14 +83,14 @@ namespace Hotfix.Framework.Asset
         private bool m_Disposed;
 
         /// <summary>
-        /// 是否处于临时卸载状态（UnloadAll 置位）。防止"卸载后、重载前"的在途加载把句柄重新缓存（ref→0 内存不释放）。
+        /// 是否处于临时卸载状态（UnloadAll 置位）。防止"卸载后、复用前"的在途加载把句柄重新缓存（ref→0 内存不释放）。
         /// 与 m_Disposed 的区别：UnloadAll 后装载器仍可复用（新加载请求会清除此标记）；Dispose 永久废弃不可复用。
         /// </summary>
         private bool m_Unloaded;
 
         /// <summary>
         /// 取消令牌：装载器永久废弃（Dispose）后触发，拒绝新的加载请求。
-        /// 注：在途加载的真正取消由 AssetModule 自身的 Token 承担（模块加载内部观察），本 Token 是排水/准入代理——
+        /// 注：在途加载的真正取消由 AssetModule 自身的 Token 承担（模块加载内部观察），本 Token 是取消清理/准入代理——
         /// 业务可 await CancelAsync 等待在途加载清理完毕，卸载装载器请先 Dispose 再 await CancelAsync。
         /// </summary>
         public CancellationToken Token => m_Scope.Token;
@@ -177,7 +177,7 @@ namespace Hotfix.Framework.Asset
             // 已废弃（Dispose）后直接拒绝新加载，避免发起真实加载后在核心检测到 m_Disposed 才释放（浪费性加载且语义混乱）
             if (m_Disposed) throw new ObjectDisposedException(nameof(AssetLoadRegister));
 
-            // 新的加载请求意味着装载器正在被再次使用（如重载），清除临时卸载标记
+            // 新的加载请求意味着装载器正在被再次使用（如复用），清除临时卸载标记
             m_Unloaded = false;
 
             var key = new LoadKey(path, assetType);
@@ -238,7 +238,7 @@ namespace Hotfix.Framework.Asset
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
 
-            using (m_Scope.Begin()) // 登记在途：Dispose 排水时等待本操作清理完毕
+            using (m_Scope.Begin()) // 登记在途：Dispose 取消时等待本操作清理完毕
             {
                 AssetHandle assetHandle = null;
                 try
