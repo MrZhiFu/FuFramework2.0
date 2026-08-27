@@ -183,7 +183,7 @@ namespace Hotfix.Framework.Core
 
         /// <summary>
         /// 等待所有实现 ICancelAsync 的模块完成取消排水（在途任务全部清理完毕）。
-        /// 供热更重载 RestartGame 在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
+        /// 热更重载（RestartGameAsync）在 Dispose 之后、ReInit 之前调用，保证旧生命周期零在途残留。
         /// </summary>
         public static async UniTask DrainCancelledAsync()
         {

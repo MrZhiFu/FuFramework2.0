@@ -12,12 +12,23 @@ namespace Hotfix.Framework.Core
     /// </summary>
     public sealed class CancellationScope
     {
+        /// <summary>
+        /// 取消令牌源。Cancel/CancelAsync 触发取消，Token 供在途操作观察。
+        /// </summary>
         private CancellationTokenSource m_Cts = new();
+
+        /// <summary>
+        /// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
+        /// </summary>
         private int m_InFlightCount;
+
+        /// <summary>
+        /// 「全部完成」信号。在途计数归零时完成，唤醒等待 CancelAsync 的调用方；惰性创建。
+        /// </summary>
         private UniTaskCompletionSource m_AllDoneTcs;
 
         /// <summary>
-        /// 取消令牌。
+        /// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
         /// </summary>
         public CancellationToken Token => m_Cts.Token;
 
@@ -41,6 +52,7 @@ namespace Hotfix.Framework.Core
         /// 在途操作入口调用；返回的 BeginScope 必须 Dispose（用 using）以归零计数。
         /// 返回 struct 而非 IDisposable 接口：using 直接调用 Dispose，零装箱零分配（勿通过 IDisposable 接口使用，否则装箱）。
         /// </summary>
+        /// <returns>在途操作作用域，操作清理完成后必须 Dispose（用 using）。</returns>
         public BeginScope Begin()
         {
             m_InFlightCount++; // 主线程模型，普通递增即可
@@ -53,13 +65,30 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public readonly struct BeginScope : IDisposable
         {
+            /// <summary>
+            /// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
+            /// </summary>
             private readonly CancellationScope m_Owner;
-            internal BeginScope(CancellationScope owner) { m_Owner = owner; }
 
+            /// <summary>
+            /// 创建在途操作作用域。
+            /// </summary>
+            /// <param name="owner">所属的取消范围。</param>
+            internal BeginScope(CancellationScope owner)
+            {
+                m_Owner = owner;
+            }
+
+            /// <summary>
+            /// 结束在途操作：递减所属范围的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
+            /// 调用方应始终通过 using 释放本作用域，勿手动重复 Dispose。
+            /// </summary>
             public void Dispose()
             {
                 if (--m_Owner.m_InFlightCount == 0) // 主线程模型，普通递减即可
+                {
                     m_Owner.m_AllDoneTcs?.TrySetResult();
+                }
             }
         }
     }
