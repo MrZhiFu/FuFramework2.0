@@ -171,5 +171,92 @@ namespace Hotfix.Framework.Asset
             if (!YooAssets.TryGetPackage(DefaultPackageName, out package)) return false;
             return package.InitializeStatus == EOperationStatus.Succeeded;
         }
+
+        /// <summary>
+        /// 上报场景加载进度；回调异常记录日志但不抛出（防止回调异常导致句柄无法返回而泄漏）。
+        /// </summary>
+        private static void TryReportProgress(Action<float> onProgress, float progress)
+        {
+            try
+            {
+                onProgress(progress);
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 首次实例化共享加载：同一路径多个并发调用方 await 同一完成源，共享单个句柄。
+        /// 加载完成或失败后向完成源写入结果并移除去重项；模块销毁/生命周期变更时释放句柄并向等待方抛异常。
+        /// </summary>
+        /// <param name="path">资源路径</param>
+        /// <param name="sharedSource">共享完成源</param>
+        /// <param name="lifecycleEpoch">发起时的模块生命周期代际</param>
+        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, int lifecycleEpoch)
+        {
+            AssetHandle handle = null;
+            try
+            {
+                handle = await LoadAssetAsync(path);
+
+                // YooAsset await 不抛异常：资源加载失败时返回的是 Failed 句柄，必须显式校验 Status 并释放，
+                // 否则 Failed 句柄流入引用字典（依赖下游 InstantiateAsync 失败才兜底释放，绕路且隐蔽）。
+                if (handle is not { Status: EOperationStatus.Succeeded })
+                {
+                    if (handle is { IsValid: true }) handle.Release();
+                    sharedSource.TrySetException(new InvalidOperationException($"[AssetModule]资源{path}加载失败"));
+                    return;
+                }
+
+                if (m_IsDisposed || lifecycleEpoch != m_LifecycleEpoch)
+                {
+                    if (handle.IsValid)
+                    {
+                        handle.Release();
+
+                        // 跨生命周期中止：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
+                        UnloadAsset(path);
+                    }
+                    sharedSource.TrySetException(new ObjectDisposedException(nameof(AssetModule)));
+                    return;
+                }
+
+                sharedSource.TrySetResult(handle);
+            }
+            catch (Exception e)
+            {
+                if (handle != null && handle.IsValid) handle.Release();
+                sharedSource.TrySetException(e);
+            }
+            finally
+            {
+                // 跨生命周期防护：仅当共享源仍是本任务注册的条目时才移除，防止旧生命周期在途任务的
+                // finally 误删新生命周期（ReInit 后）同路径刚注册的去重项，导致后续并发请求重复发起加载
+                if (m_InstantiateLoadingTasks.TryGetValue(path, out var current) && ReferenceEquals(current, sharedSource))
+                    m_InstantiateLoadingTasks.Remove(path);
+            }
+        }
+
+        /// <summary>
+        /// 按路径释放实例化引用（引用计数归零时释放句柄并移除，让资源可被卸载）。
+        /// 供本模块内部（ReleaseInstantiate / 实例化失败回滚）使用，不校验生命周期代际。
+        /// </summary>
+        /// <param name="path">资源路径。</param>
+        private void ReleaseInstantiateInternal(string path)
+        {
+            if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
+            if (entry.RefCount   <= 0) return;
+            if (--entry.RefCount > 0) return;
+
+            entry.Handle.Release();
+            m_InstantiateRefDict.Remove(path);
+
+            // 引用归零后显式卸载：句柄 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
+            // 需 UnloadAsset 才能真正释放，否则该 prefab 的 bundle 永久残留（内存只增不减）。
+            // 若其他系统仍持有同一资源句柄，TryUnloadUnusedAsset 会因引用计数 >0 而跳过，共享安全。
+            UnloadAsset(path);
+        }
     }
 }
