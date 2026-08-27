@@ -225,6 +225,21 @@ public static async UniTask DrainCancelledAsync()
 
 Token **只在对象销毁时取消**（`OnDispose`/`Dispose`），对象存活期间入口检查直接通过，正常业务零影响。入口检查仅拦截「已销毁对象上的新操作」——该场景本就是调用方 bug，现有代码已抛 `ObjectDisposedException` 响亮失败，第一版行为不变；第二版换为 `OperationCanceledException`，同样响亮失败，`AssetLoadRegister`/`UnloadAll`（临时卸载）不取消 Token，装载器可复用，重载后 `OnInit` 重建 `CancellationScope`（新 Token），业务无需感知取消。
 
+### 5.2 第二阶段（phase 2）epoch 剥离迁移路径
+
+前置条件：**热更重载冒烟验证通过**（在途加载/实例化被中止时句柄释放 + bundle 卸载配对、重载后新生命周期正常）后再动。迁移顺序：
+
+1. **AssetModule 内部在途守卫**：将「读取当前 `Token` 属性」改为「入口捕获 + 比较」。注意 ReInit 后 `m_Scope` 重建、`Token` 属性返回**新** token（未取消），直接读属性会误判旧生命周期「还活着」，必须捕获式：
+   ```csharp
+   var capturedToken = m_Scope.Token;   // 入口捕获（替换 lifecycleEpoch = m_LifecycleEpoch）
+   // await 后：if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token) { 拒绝 }
+   // catch 回滚守卫：if (capturedToken == m_Scope.Token) ReleaseInstantiateInternal(path);
+   ```
+   涉及 `InstantiateAsync` 的 3 处检查 + catch 守卫 + `LoadAsyncForInstantiate`。
+2. **`InstantiateResult.LifecycleEpoch` 标记保留 int**：结果对象被调用方长期持有，若嵌入 `CancellationToken` 会持有已取消的旧 CTS 引用、阻止其 GC（含回调注册），int 更轻更安全。
+3. **Entity/Scene/UIModule.Blur 逐个接入 ICancelAsync**：各自持有 `CancellationScope`（OnDispose Cancel、OnInit 重建），再删除各自的 `m_LifecycleEpoch` 逐点校验。在此之前 epoch 是其唯一生命周期守卫，**不可提前删**。
+4. **`m_IsDisposed` 同理由 `Token.IsCancellationRequested` 取代**；「对象销毁后发起新操作」改由 Token 入口检查拦截，异常类型 `ObjectDisposedException` → `OperationCanceledException`（代码库 catch 均通用捕获，无专门分支依赖）。
+
 ## 6. 范围与阶段
 
 - **第一阶段（本次实现）**：`ICancelAsync` + `CancellationScope` + AssetModule/AssetLoadRegister 接入 + `RestartGameAsync`/`DrainCancelledAsync` 接线 + 同步 README。
