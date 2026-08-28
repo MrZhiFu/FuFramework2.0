@@ -52,14 +52,15 @@ FuFramework Scene 模块是游戏框架的场景管理系统，基于 YooAsset �
 > 抛 `OperationCanceledException`），加载/卸载完成回调也不再广播事件与登记，杜绝旧生命周期残留。
 > 框架重启 `RestartGame` 会在重启前 `await` 各模块 `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；
 > `OnInit` 重建 `CancellationScope`（新 Token = 新生命周期），重启后可正常使用。
+> `LoadScene`/`LoadSceneByName` 的 `CancellationToken` 参数**必传**（调用方生命周期令牌，窗口传 `WinBase.Token`），与模块自身 Token 竞速。
 
 **核心方法：**
 
 ```csharp
-// 加载场景
-UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode = LoadSceneMode.Additive,
+// 加载场景（token 必传：调用方生命周期取消令牌）
+UniTask<SceneHandle> LoadScene(string sceneAssetPath, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive,
     object userData = null)
-UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive,
+UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive,
     object userData = null)
 
 // 卸载场景
@@ -112,10 +113,12 @@ public class SceneExample
 
     public async UniTask LoadGameSceneAsync()
     {
+        var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；窗口传 WinBase.Token
         // 异步加载场景
         SceneHandle handle = await m_SceneModule.LoadScene(
-            sceneAssetPath: "Assets/Game/Scenes/GameScene.unity",
-            sceneMode: LoadSceneMode.Single
+            "Assets/Game/Scenes/GameScene.unity",
+            token,
+            LoadSceneMode.Single
         );
 
         Debug.Log("场景加载完成");

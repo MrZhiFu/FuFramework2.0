@@ -72,6 +72,9 @@ public interface ICancelAsync
 >
 > **使用分界**：需要被 `await` 等待清理的对象（模块/装载器）用 `ICancelAsync`（`CancellationScope` 实现）；仅中止自身在途请求、无需等待排水的消费方
 > （如 UI 窗口）用 `LifecycleCancellationSource`（`Recreate` 重建生命周期令牌）+ token 传参即可。
+>
+> **铁律（编译期强制）**：网络/资源类异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数**必传**（无默认值）——
+> 窗口传 `WinBase.Token`、模块内部传自身 `m_Scope.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
 
 ## 4. 核心类说明
 

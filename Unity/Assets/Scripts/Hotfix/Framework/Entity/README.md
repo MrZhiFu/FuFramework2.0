@@ -60,6 +60,7 @@ Unknown → WillInit → Inited → WillShow → Showed → WillHide → Hidden 
 > 抛 `OperationCanceledException`，绝不写回新生命周期。框架重启 `RestartGame` 会在重启前 `await` 各模块
 > `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；`OnInit` 重建 `CancellationScope`
 > （新 Token = 新生命周期）并重置关闭标记，重启后可正常使用。
+> `ShowEntityAsync` 的 `CancellationToken` 参数**必传**（调用方生命周期令牌，窗口传 `WinBase.Token`），与模块自身 Token 竞速。
 
 **静态属性：**
 
@@ -122,13 +123,13 @@ bool IsValidEntity(Entity entity)
 **显示/隐藏实体方法：**
 
 ```csharp
-// 显示实体（泛型）
-UniTask<Entity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName)
+// 显示实体（泛型，token 必传）
+UniTask<Entity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName, CancellationToken token)
     where T : EntityLogic
 
-// 显示实体（Type 参数 + userData）
+// 显示实体（Type 参数 + token + userData）
 UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName,
-    string entityGroupName, object userData = null)
+    string entityGroupName, CancellationToken token, object userData = null)
 
 // 隐藏实体
 void HideEntity(int entityId)
@@ -427,11 +428,13 @@ public class BulletManager
 
     public async UniTask<Entity> FireBullet(int entityId, Vector3 direction)
     {
+        var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；窗口传 WinBase.Token
         // 显示实体
         var entity = await m_EntityModule.ShowEntityAsync<BulletLogic>(
             entityId,
             "Assets/Prefabs/Bullet.prefab",
-            "BulletGroup"
+            "BulletGroup",
+            token
         );
 
         return entity;

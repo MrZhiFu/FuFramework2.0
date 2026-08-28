@@ -37,16 +37,16 @@ YooAsset 与默认资源包的初始化由 AOT 启动流程 `LaunchAssetHelper` 
 ##### 异步加载资源(推荐使用)
 
 ```csharp
-// 按路径加载
-UniTask<AssetHandle> LoadAssetAsync(string path)
-UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
-UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
+// 按路径加载（token 必传：调用方生命周期取消令牌，如窗口关闭时中止）
+UniTask<AssetHandle> LoadAssetAsync(string path, CancellationToken token)
+UniTask<AssetHandle> LoadAssetAsync<T>(string path, CancellationToken token) where T : Object
+UniTask<AssetHandle> LoadAssetAsync(string path, Type type, CancellationToken token)
 ```
 
 ##### 异步加载场景
 
 ```csharp
-UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action<float> onProgress = null)
+UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, CancellationToken token, Action<float> onProgress = null)
 ```
 
 > 固定自动激活（`LocalPhysicsMode.None`），未开放自定义。
@@ -56,7 +56,7 @@ UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action
 ##### 实例化
 
 ```csharp
-UniTask<InstantiateResult> InstantiateAsync(string path)  // 异步实例化(推荐使用)
+UniTask<InstantiateResult> InstantiateAsync(string path, CancellationToken token)  // 异步实例化(推荐使用)
 void ReleaseInstantiate(InstantiateResult result)          // 实例销毁时释放引用
 ```
 
@@ -161,9 +161,10 @@ loader.Dispose();
 ```csharp
 // 获取 AssetModule 模块
 var assetModule = ModuleManager.GetModule<AssetModule>();
+var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；窗口传 WinBase.Token、模块内部传自身 scope Token
 
 // 异步加载 GameObject
-var assetHandle = await assetModule.LoadAssetAsync<GameObject>("Assets/Game/Prefabs/MyCube.prefab");
+var assetHandle = await assetModule.LoadAssetAsync<GameObject>("Assets/Game/Prefabs/MyCube.prefab", token);
 if (assetHandle.AssetObject != null)
 {
     // 实例化到场景
@@ -176,7 +177,7 @@ if (assetHandle.AssetObject != null)
 }
 
 // 直接异步加载并实例化 GameObject（实例销毁时须调用 ReleaseInstantiate(result) 释放引用）
-var result = await assetModule.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab");
+var result = await assetModule.InstantiateAsync("Assets/Game/Prefabs/MyHero.prefab", token);
 GameObject instance = result.Instance;
 
 // 使用 AssetLoadRegister (推荐用于 UI 或特定逻辑块)
@@ -196,7 +197,7 @@ loader.UnloadAll();
 ### 加载场景
 
 ```csharp
-await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadSceneMode.Single);
+await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadSceneMode.Single, token);
 ```
 
 ## 7. 依赖
@@ -213,7 +214,7 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期 `Token`，重启后旧实例释放会被 Token 校验识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
 2. **并发去重**：同一路径（`AssetLoadRegister` 为同一路径+类型）并发加载共享 `UniTaskCompletionSource`（可多次 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks` 中存储的 `UniTask` 改为 async 方法返回值（async UniTask 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
-4. **取消与重启**：模块销毁（`OnDispose`）后 Token 取消，`InstantiateAsync` 入口抛 `OperationCanceledException`；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。
+4. **取消与重启**：异步加载方法 **`CancellationToken` 参数必传**（调用方生命周期令牌），内部与模块自身 Token **linked 竞速**——调用方取消（如界面关闭）或模块销毁（`OnDispose`）任一触发即中止（释放句柄 + 卸载资源，抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
 7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。

@@ -238,7 +238,7 @@ Token **只在对象销毁时取消**（`OnDispose`/`Dispose`），对象存活�
 
 - **第一阶段**：`ICancelAsync` + `CancellationScope` + AssetModule/AssetLoadRegister 接入 + `RestartGameAsync`/`CancelAllAsync` 接线 + 同步 README。
 - **第二阶段**：epoch/`m_IsDisposed` 剥离（Asset/Scene/Entity/UIModule.Blur/Sound/Web 接入 ICancelAsync，全库零 epoch）。
-- **遗留**：WebModule 非 WebGL 分支 `HttpWebRequest` 的 Task 依赖（待迁移 `UnityWebRequest` 彻底合规「杜绝 Task」铁律）。
+- **遗留（已迁移）**：WebModule 非 WebGL 分支 `HttpWebRequest` 的 Task 依赖已迁移 `UnityWebRequest` 全平台统一，彻底合规「杜绝 Task」铁律。
 
 ## 7. 验证方式
 

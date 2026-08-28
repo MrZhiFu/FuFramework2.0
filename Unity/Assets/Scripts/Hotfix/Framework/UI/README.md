@@ -195,6 +195,12 @@ public void SetUIPriority(object winUI, int priority)
 | UIGroup | UIGroup | 所属界面组 |
 | Visible | bool | 是否可见 |
 | PauseCoveredUI | bool | 是否暂停被覆盖界面（由 UIConfig 配置表设置） |
+| Token | CancellationToken | 界面生命周期取消令牌（protected） |
+
+> **生命周期取消令牌**：`WinBase` 内建 `LifecycleCancellationSource`，每次打开（`_OnOpen`）重建 Token（新生命周期）、
+> 关闭（`_OnClose`）取消、销毁（`_OnDispose`）释放。窗口内发起的异步任务（网络请求/资源加载）应传 `Token`，
+> 界面关闭时自动取消（抛 `OperationCanceledException`，窗口内 await 建议捕获）。框架异步 API（Web/Asset/Entity/Scene）的
+> `CancellationToken` 参数必传。
 
 **生命周期方法：**
 

@@ -73,37 +73,40 @@ Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异
 **核心方法 — 字符串请求：**
 
 ```csharp
-// GET 请求，返回字符串
-UniTask<WebStringResult> GetToString(string url, object userData = null)
-UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
-UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+// GET 请求，返回字符串（token 必传：调用方生命周期取消令牌，如窗口关闭时中止）
+UniTask<WebStringResult> GetToString(string url, CancellationToken token, object userData = null)
+UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 
 // POST 请求，返回字符串
-UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
-UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 ```
 
 **核心方法 — 字节数组请求：**
 
 ```csharp
 // GET 请求，返回字节数组
-UniTask<WebBufferResult> GetToBytes(string url, object userData = null)
-UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
-UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, CancellationToken token, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 
 // POST 请求，返回字节数组
-UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
-UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 ```
 
 **核心方法 — ProtoBuf 请求：**
 
 ```csharp
 // 发送 ProtoBuf POST 请求
-UniTask<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
+UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
 ```
+
+> **`CancellationToken` 必传（无默认值）**：所有请求方法要求调用方提供取消令牌——窗口等生命周期所有者传 `Token`，模块内部传模块自身 `m_Scope.Token`。
+> 调用方取消（如界面关闭）或模块销毁时，在途请求随之中止（抛 `OperationCanceledException`，调用方按需捕获）。
 
 ### 4.2 WebData（内部类 base）
 
@@ -212,16 +215,20 @@ public sealed class WebStringResult
 ### 5.1 GET 字符串请求
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Web;
 
 public class WebExample
 {
+    // 调用方生命周期取消令牌（必传）。实际应从生命周期所有者获取——如窗口用 WinBase.Token、模块用自身 scope Token
+    private readonly CancellationToken token = default;
+
     public async UniTask<string> FetchServerData()
     {
         // 简单的 GET 请求
-        var result = await WebModule.Instance.GetToString("https://api.example.com/server/info");
+        var result = await WebModule.Instance.GetToString("https://api.example.com/server/info", token);
 
         // result.Result 为服务器返回的原始字符串
         return result.Result;
@@ -238,7 +245,8 @@ public class WebExample
 
         var result = await WebModule.Instance.GetToString(
             "https://api.example.com/server/list",
-            query
+            query,
+            token
         );
 
         return result.Result;
@@ -255,7 +263,8 @@ public class WebExample
         var result = await WebModule.Instance.GetToString(
             "https://api.example.com/server/info",
             null,      // 无 queryString
-            header
+            header,
+            token
         );
 
         return result.Result;
@@ -266,11 +275,13 @@ public class WebExample
 ### 5.2 POST JSON 请求
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
 public async UniTask<string> LoginRequest()
 {
+    var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；实际取自窗口 Token 等生命周期所有者
     // POST 参数使用 Dictionary<string, object>
     var formData = new Dictionary<string, object>
     {
@@ -280,7 +291,8 @@ public async UniTask<string> LoginRequest()
 
     var result = await WebModule.Instance.PostToString(
         "https://api.example.com/auth/login",
-        formData
+        formData,
+        token
     );
 
     return result.Result;
@@ -290,6 +302,7 @@ public async UniTask<string> LoginRequest()
 ### 5.3 解析 JSON 结果为强类型
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
@@ -302,6 +315,7 @@ public class LoginResponse
 
 public async UniTask<LoginResponse> LoginAndParse()
 {
+    var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
     var formData = new Dictionary<string, object>
     {
         { "username", "player1" },
@@ -311,7 +325,8 @@ public async UniTask<LoginResponse> LoginAndParse()
     // 1. 获取原始 JSON 字符串
     var stringResult = await WebModule.Instance.PostToString(
         "https://api.example.com/auth/login",
-        formData
+        formData,
+        token
     );
 
     // 2. 通过扩展方法解析为强类型结果
@@ -331,15 +346,18 @@ public async UniTask<LoginResponse> LoginAndParse()
 ### 5.4 字节数组请求
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using System.Text;
 using Hotfix.Framework.Web;
 
 public async UniTask DownloadConfigFile()
 {
+    var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
     // GET 字节数组请求
     var bufferResult = await WebModule.Instance.GetToBytes(
-        "https://cdn.example.com/asset/config.json"
+        "https://cdn.example.com/asset/config.json",
+        token
     );
 
     // bufferResult.Result 为 byte[]
@@ -351,14 +369,17 @@ public async UniTask DownloadConfigFile()
 ### 5.5 带 UserData 的请求
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 
 public async UniTask FetchWithUserData()
 {
+    var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
     // userData 在请求时会原样传递到结果中，方便识别请求来源
     var result = await WebModule.Instance.GetToString(
         "https://api.example.com/data",
+        token,
         userData: "RequestFromMainUI"
     );
 
@@ -370,18 +391,21 @@ public async UniTask FetchWithUserData()
 ### 5.6 ProtoBuf 请求
 
 ```csharp
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Web;
 using Hotfix.Framework.Network;
 
 public async UniTask SendProtoBufRequest()
 {
+    var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
     var request = new MyRequestMessage { /* ... */ };
 
     // Post<T> 负责序列化、发送、接收、反序列化全过程
     MyResponseMessage response = await WebModule.Instance.Post<MyResponseMessage>(
         "https://api.example.com/proto/endpoint",
-        request
+        request,
+        token
     );
 
     if (response != null)
@@ -401,12 +425,13 @@ WebModule.Instance.MaxConnectionPerServer = 3;
 WebModule.Instance.Timeout = 10f;
 
 // 并发发送多个请求（自动排队，控制在 MaxConnectionPerServer 以内）
+var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
 var tasks = new[]
 {
-    WebModule.Instance.GetToString("https://api.example.com/data1"),
-    WebModule.Instance.GetToString("https://api.example.com/data2"),
-    WebModule.Instance.GetToString("https://api.example.com/data3"),
-    WebModule.Instance.GetToString("https://api.example.com/data4"),
+    WebModule.Instance.GetToString("https://api.example.com/data1", token),
+    WebModule.Instance.GetToString("https://api.example.com/data2", token),
+    WebModule.Instance.GetToString("https://api.example.com/data3", token),
+    WebModule.Instance.GetToString("https://api.example.com/data4", token),
 };
 
 var results = await UniTask.WhenAll(tasks);
@@ -447,7 +472,7 @@ Web/
 
 ## 9. 注意事项
 
-1. 所有请求方法返回 `UniTask<T>`（基于 `UniTaskCompletionSource<T>`）；队列处理为 fire-and-forget（发起即返回，结果经完成回调写回 TCS），调用方应 `await` 或处理异常
+1. 所有请求方法返回 `UniTask<T>`（基于 `UniTaskCompletionSource<T>`）且 **`CancellationToken` 参数必传**（无默认值）；队列处理为 fire-and-forget（发起即返回，结果经完成回调写回 TCS），调用方应 `await` 或处理异常
 2. POST 方法的 body 参数类型为 `Dictionary<string, object>`（序列化为 JSON 发送），非原始字符串
 3. `HttpJsonResult` 的属性使用 PascalCase（`Code`、`Message`、`Data`），JSON 序列化时映射为小写
 4. `HttpJsonResultData<T>` 的 `IsSuccess` 是独立属性（setter 为 public），由 `HttpJsonResultHelper` 设置
@@ -457,3 +482,4 @@ Web/
 8. GET 请求的 `queryString` 参数会通过 `UrlHandler` 自动拼接到 URL 上
 9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
 10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒
+11. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_Scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）
