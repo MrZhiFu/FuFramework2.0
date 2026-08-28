@@ -12,14 +12,15 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Asset
 {
     /// <summary>
-    /// 资源加载注册器。
+    /// 资源加载注册器，实现 ICancelAsync（可取消异步对象）。
     /// 功能：
     ///     1.异步加载资源。
     ///     2.记录加载过的资源句柄，避免重复加载。
     ///     3.异步实例化游戏物体。
     ///     4.卸载资源。
     /// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
-    /// 每个实例归单一调用方持有，用完 UnloadAll 后弃引用由 GC 回收，无复用竞态，无需生命周期版本计数。
+    /// 每个实例归单一调用方持有，用完 UnloadAll（临时卸载，装载器可复用）或 Dispose（永久废弃，在途加载随之取消）后弃引用由 GC 回收。
+    /// 装载器自身即异步链的生命周期所有者：内部透传 m_Scope.Token 给 AssetModule，不接收调用方 token（整组加载/整组释放模型）。
     /// </summary>
     public class AssetLoadRegister : ICancelAsync
     {
@@ -41,19 +42,45 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         private readonly struct LoadKey : IEquatable<LoadKey>
         {
+            /// <summary>
+            /// 资源路径。
+            /// </summary>
             public readonly string Path;
+
+            /// <summary>
+            /// 加载类型（null 表示不指定类型）。
+            /// </summary>
             public readonly Type Type;
 
+            /// <summary>
+            /// 构造缓存键。
+            /// </summary>
+            /// <param name="path">资源路径。</param>
+            /// <param name="type">加载类型。</param>
             public LoadKey(string path, Type type)
             {
                 Path = path;
                 Type = type;
             }
 
+            /// <summary>
+            /// 判断与另一缓存键是否相等（路径与类型均相同）。
+            /// </summary>
+            /// <param name="other">另一缓存键。</param>
+            /// <returns>是否相等。</returns>
             public bool Equals(LoadKey other) => Path == other.Path && Type == other.Type;
 
+            /// <summary>
+            /// 判断与对象是否相等。
+            /// </summary>
+            /// <param name="obj">比较对象。</param>
+            /// <returns>是否相等。</returns>
             public override bool Equals(object obj) => obj is LoadKey other && Equals(other);
 
+            /// <summary>
+            /// 计算哈希值（组合路径与类型哈希）。
+            /// </summary>
+            /// <returns>哈希值。</returns>
             public override int GetHashCode()
             {
                 unchecked
@@ -66,7 +93,7 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 缓存已经加载的资源句柄，key为资源路径+类型，value为资源句柄
+        /// 缓存已经加载的资源句柄，key 为资源路径 + 类型，value 为资源句柄。
         /// </summary>
         private readonly Dictionary<LoadKey, AssetHandle> m_HandleDict = new();
 
@@ -112,6 +139,8 @@ namespace Hotfix.Framework.Asset
         /// 异步加载资源。
         /// </summary>
         /// <param name="path">资源路径。</param>
+        /// <typeparam name="T">资源类型。</typeparam>
+        /// <returns>加载的资源对象；类型不匹配时释放句柄并抛异常。</returns>
         public async UniTask<T> LoadAsync<T>(string path) where T : Object
         {
             var handle = await LoadAssetHandleAsync(path, typeof(T));
@@ -130,10 +159,10 @@ namespace Hotfix.Framework.Asset
         }
 
         /// <summary>
-        /// 异步加载资源
+        /// 异步加载资源。
         /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="type">资源类型</param>
+        /// <param name="path">资源路径。</param>
+        /// <param name="type">资源类型。</param>
         /// <returns>加载的资源对象。</returns>
         public async UniTask<Object> LoadAsync(string path, Type type)
         {
@@ -145,6 +174,7 @@ namespace Hotfix.Framework.Asset
         /// 异步加载资源。
         /// </summary>
         /// <param name="path">资源路径。</param>
+        /// <returns>加载的资源对象。</returns>
         public async UniTask<Object> LoadAsync(string path)
         {
             var handle = await LoadAssetHandleAsync(path, null);
