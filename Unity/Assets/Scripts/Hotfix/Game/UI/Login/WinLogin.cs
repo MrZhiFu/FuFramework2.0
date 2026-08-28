@@ -1,4 +1,6 @@
-﻿using Hotfix.Game.UI;
+﻿using System;
+using System.Threading;
+using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
@@ -118,32 +120,43 @@ namespace Hotfix.Game.UI
                 Platform = UtilityAOT.Application.PlatformName
             };
 
-            var respLogin = await WebModule.Instance.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
-            if (respLogin.ErrorCode > 0)
+            try
             {
-                FuLogger.LogError("登录失败，错误信息:" + respLogin.ErrorCode);
-                return;
-            }
+                var respLogin = await WebModule.Instance.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req);
+                if (respLogin.ErrorCode > 0)
+                {
+                    FuLogger.LogError("登录失败，错误信息:" + respLogin.ErrorCode);
+                    return;
+                }
 
-            // 获取角色列表
-            var reqPlayerList  = new ReqPlayerList { Id = respLogin.Id };
-            var respPlayerList = await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
-            if (respPlayerList.ErrorCode > 0)
+                // 获取角色列表
+                var reqPlayerList  = new ReqPlayerList { Id = respLogin.Id };
+                var respPlayerList = await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}", reqPlayerList);
+                if (respPlayerList.ErrorCode > 0)
+                {
+                    FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);
+                    return;
+                }
+
+                // 将角色列表保存到Manager中
+                AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
+
+                if (respPlayerList.PlayerList.Count > 0)
+                    GlobalModule.UIModule.Open<WinPlayerList>(); // 有角色，打开角色列表界面
+                else
+                    GlobalModule.UIModule.Open<WinPlayerCreate>(); // 无角色，打开角色创建界面
+
+                // 关闭当前界面
+                CloseSelf();
+            }
+            catch (OperationCanceledException)
             {
-                FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);
-                return;
+                // 重启/模块销毁导致在途登录请求取消：界面随框架销毁，静默返回
             }
-
-            // 将角色列表保存到Manager中
-            AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
-
-            if (respPlayerList.PlayerList.Count > 0)
-                GlobalModule.UIModule.Open<WinPlayerList>(); // 有角色，打开角色列表界面
-            else
-                GlobalModule.UIModule.Open<WinPlayerCreate>(); // 无角色，打开角色创建界面
-
-            // 关闭当前界面
-            CloseSelf();
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[WinLogin] 登录请求异常: {e.Message}");
+            }
         }
 
         // public async UniTaskVoid PlayBgm()

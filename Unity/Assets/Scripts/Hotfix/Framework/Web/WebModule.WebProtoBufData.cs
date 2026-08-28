@@ -34,6 +34,15 @@ namespace Hotfix.Framework.Web
                 SendData = sendData;
                 CompletionSource = task;
             }
+
+            /// <summary>
+            /// 释放资源，取消未完成的任务。
+            /// </summary>
+            public override void Dispose()
+            {
+                CompletionSource?.TrySetCanceled();
+                base.Dispose();
+            }
         }
     }
 }

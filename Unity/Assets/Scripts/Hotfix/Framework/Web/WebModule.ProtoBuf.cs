@@ -1,16 +1,11 @@
 using System;
 using ProtoBuf;
-using System.IO;
-using System.Net;
 using Cysharp.Threading.Tasks;
+using UnityEngine.Networking;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
 using Hotfix.Framework.Network;
-
-#if UNITY_WEBGL
-using UnityEngine.Networking;
-#endif
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -44,7 +39,7 @@ namespace Hotfix.Framework.Web
             {
                 if (m_SendingProtoBufList.Count >= MaxConnectionPerServer || m_WaitingProtoBufQueue.Count <= 0) return;
                 var webProtoBufData = m_WaitingProtoBufQueue.Dequeue();
-                MakeProtoBufBytesRequest(webProtoBufData).Forget();
+                MakeProtoBufBytesRequest(webProtoBufData);
                 m_SendingProtoBufList.Add(webProtoBufData);
             }
         }
@@ -70,81 +65,51 @@ namespace Hotfix.Framework.Web
             }
 
             m_SendingProtoBufList.Clear();
-            m_MemoryStream.Dispose();
         }
 
         /// <summary>
         /// 执行ProtoBuf字节请求
         /// </summary>
         /// <param name="webData">ProtoBuf请求数据</param>
-        private async UniTaskVoid MakeProtoBufBytesRequest(WebProtoBufData webData)
+        private void MakeProtoBufBytesRequest(WebProtoBufData webData)
         {
-#if UNITY_WEBGL
+            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var unityWebRequest = webData.IsGet ? UnityWebRequest.Get(webData.URL) : UnityWebRequest.PostWwwForm(webData.URL, string.Empty);
 
             unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
-            {
-                unityWebRequest.SetRequestHeader("Content-Type", ProtoBufContentType);
-                var postData = webData.SendData;
-                unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
-            }
+            unityWebRequest.SetRequestHeader("Content-Type", ProtoBufContentType);
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.SendData);
 
             var asyncOperation = unityWebRequest.SendWebRequest();
             asyncOperation.completed += _ =>
             {
-                m_SendingProtoBufList.Remove(webData);
-                if (unityWebRequest.result != UnityWebRequest.Result.Success || unityWebRequest.error != null)
+                try
                 {
-                    webData.CompletionSource.TrySetException(new Exception(unityWebRequest.error));
-                    return;
-                }
+                    // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                    {
+                        webData.CompletionSource.TrySetCanceled();
+                        return;
+                    }
 
-                webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, unityWebRequest.downloadHandler.data));
+                    m_SendingProtoBufList.Remove(webData);
+                    if (unityWebRequest.result != UnityWebRequest.Result.Success)
+                    {
+                        // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
+                        if (IsUnityWebRequestTimeout(unityWebRequest))
+                            webData.CompletionSource.TrySetException(new TimeoutException(unityWebRequest.error));
+                        else
+                            webData.CompletionSource.TrySetException(new Exception(unityWebRequest.error));
+                        return;
+                    }
+
+                    webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, unityWebRequest.downloadHandler.data));
+                }
+                finally
+                {
+                    unityWebRequest.Dispose(); // 无论成败均释放原生资源（UnityWebRequest 官方要求）
+                }
             };
-#else
-            try
-            {
-                var request = WebRequest.CreateHttp(webData.URL);
-                request.Method      = webData.IsGet ? WebRequestMethods.Http.Get : WebRequestMethods.Http.Post;
-                request.Timeout     = (int)RequestTimeout.TotalMilliseconds; // 设置请求超时时间
-                request.ContentType = ProtoBufContentType;
-                var postData = webData.SendData;
-                request.ContentLength = postData.Length;
-                await using var requestStream = request.GetRequestStream();
-                await requestStream.WriteAsync(postData, 0, postData.Length);
-
-                using var       response       = (HttpWebResponse)await request.GetResponseAsync();
-                await using var responseStream = response.GetResponseStream();
-                m_MemoryStream.SetLength(response.ContentLength);
-                m_MemoryStream.Position = 0;
-                if (responseStream != null)
-                    await responseStream.CopyToAsync(m_MemoryStream);
-                webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, m_MemoryStream.ToArray())); // 将流的内容复制到内存流中并转换为byte数组
-            }
-            catch (WebException e)
-            {
-                // 捕获超时异常
-                if (e.Status == WebExceptionStatus.Timeout)
-                {
-                    webData.CompletionSource.TrySetException(new TimeoutException(e.Message));
-                    return;
-                }
-
-                webData.CompletionSource.TrySetException(e);
-            }
-            catch (IOException e)
-            {
-                webData.CompletionSource.TrySetException(e);
-            }
-            catch (Exception e)
-            {
-                webData.CompletionSource.TrySetException(e);
-            }
-            finally
-            {
-                m_SendingProtoBufList.Remove(webData);
-            }
-#endif
         }
 
         /// <summary>

@@ -18,6 +18,11 @@ namespace Hotfix.Framework.Web
         /// </summary>
         public object UserData { get; }
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="userData">用户自定义数据</param>
+        /// <param name="result">请求结果</param>
         public WebBufferResult(object userData, byte[] result)
         {
             UserData = userData;

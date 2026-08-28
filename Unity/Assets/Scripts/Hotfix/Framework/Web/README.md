@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `System.Net.WebRequest`（非 WebGL 平台）和 `UnityWebRequest`（WebGL 平台）实现高效的 Web 请求处理。该模块支持 JSON 字符串、字节数组和 ProtoBuf 三种请求/响应格式，提供请求队列和并发控制能力，并通过 `UniTask` 支持 async/await 异步模式。该模块实现 `ICancelAsync`（可取消异步对象），模块销毁时在途请求随之中止。
+FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `UnityWebRequest` 实现高效的 Web 请求处理（全平台统一，含 WebGL）。该模块支持 JSON 字符串、字节数组和 ProtoBuf 三种请求/响应格式，提供请求队列和并发控制能力，并通过 `UniTask` 支持 async/await 异步模式。该模块实现 `ICancelAsync`（可取消异步对象），模块销毁时在途请求随之中止。
 
 ## 2. 核心特性
 
@@ -212,7 +212,7 @@ public sealed class WebStringResult
 ### 5.1 GET 字符串请求
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Web;
 
@@ -331,7 +331,7 @@ public async UniTask<LoginResponse> LoginAndParse()
 ### 5.4 字节数组请求
 
 ```csharp
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Text;
 using Hotfix.Framework.Web;
 
@@ -421,9 +421,7 @@ Web/
 ├── WebModule.WebJsonData.cs        # JSON 请求数据类（内部）
 ├── WebModule.WebProtoBufData.cs    # ProtoBuf 请求数据类（内部）
 ├── WebModule.ProtoBuf.cs           # ProtoBuf 请求处理
-├── HttpJsonResult.cs               # HTTP JSON 原始响应结构
-├── HttpJsonResultData.cs           # JSON 解析后的泛型结果数据
-├── HttpJsonResultHelper.cs         # JSON 结果解析扩展方法
+├── HttpJsonResultHelper.cs         # HTTP JSON 结果结构（HttpJsonResult/HttpJsonResultData）与解析扩展
 ├── WebBufferResult.cs              # 字节数组结果封装
 ├── WebStringResult.cs              # 字符串结果封装
 └── README.md                       # 本文档
@@ -449,13 +447,13 @@ Web/
 
 ## 9. 注意事项
 
-1. 所有请求方法返回 `UniTask<T>`（基于 `UniTaskCompletionSource<T>`）；队列处理使用 fire-and-forget（`Forget()`）驱动，调用方应 `await` 或处理异常
+1. 所有请求方法返回 `UniTask<T>`（基于 `UniTaskCompletionSource<T>`）；队列处理为 fire-and-forget（发起即返回，结果经完成回调写回 TCS），调用方应 `await` 或处理异常
 2. POST 方法的 body 参数类型为 `Dictionary<string, object>`（序列化为 JSON 发送），非原始字符串
 3. `HttpJsonResult` 的属性使用 PascalCase（`Code`、`Message`、`Data`），JSON 序列化时映射为小写
 4. `HttpJsonResultData<T>` 的 `IsSuccess` 是独立属性（setter 为 public），由 `HttpJsonResultHelper` 设置
 5. `HttpJsonResultData<T>` 没有 `Message` 属性，错误时通过 `Code` 判断
 6. `WebBufferResult` / `WebStringResult` 使用 `Result` 属性（非 `Data`）
-7. WebGL 平台使用 `UnityWebRequest`，非 WebGL 平台使用 `System.Net.WebRequest`
+7. 全平台统一使用 `UnityWebRequest`；请求结束在完成回调中调用 `Dispose` 释放原生资源（官方强制，成败皆需）
 8. GET 请求的 `queryString` 参数会通过 `UrlHandler` 自动拼接到 URL 上
 9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
-10. **遗留（非 WebGL）**：`HttpWebRequest` 传输路径内部仍 await 原生 .NET `Task`（与 `WebModule` 对外的 `UniTask` API 无关），待迁移 `UnityWebRequest` 后彻底合规「杜绝 Task」铁律；WebGL 分支无此问题
+10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒

@@ -1,4 +1,6 @@
-﻿using Hotfix.Game.UI;
+﻿using System;
+using System.Threading;
+using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
@@ -85,37 +87,48 @@ namespace Hotfix.Game.UI
                 Name = inputUserName.text
             };
 
-            // 创建角色
-            var respPlayerCreate =
-                await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
-            if (respPlayerCreate.ErrorCode > 0)
+            try
             {
-                FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
-                return;
+                // 创建角色
+                var respPlayerCreate =
+                    await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
+                if (respPlayerCreate.ErrorCode > 0)
+                {
+                    FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
+                    return;
+                }
+
+                if (respPlayerCreate.PlayerInfo != null)
+                    FuLogger.LogInfo("创建角色成功");
+
+                // 获取角色列表
+                var reqPlayerList = new ReqPlayerList { Id = m_Req.Id };
+                var respPlayerList =
+                    await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+                        reqPlayerList);
+                if (respPlayerList.ErrorCode > 0)
+                {
+                    FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);
+                    return;
+                }
+
+                // 将角色列表保存到Manager中
+                AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
+
+                // 关闭当前界面
+                CloseSelf();
+
+                // 打开角色列表界面
+                GlobalModule.UIModule.Open<WinPlayerList>();
             }
-
-            if (respPlayerCreate.PlayerInfo != null)
-                FuLogger.LogInfo("创建角色成功");
-
-            // 获取角色列表
-            var reqPlayerList = new ReqPlayerList { Id = m_Req.Id };
-            var respPlayerList =
-                await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
-                    reqPlayerList);
-            if (respPlayerList.ErrorCode > 0)
+            catch (OperationCanceledException)
             {
-                FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);
-                return;
+                // 重启/模块销毁导致在途请求取消：界面随框架销毁，静默返回
             }
-
-            // 将角色列表保存到Manager中
-            AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
-
-            // 关闭当前界面
-            CloseSelf();
-
-            // 打开角色列表界面
-            GlobalModule.UIModule.Open<WinPlayerList>();
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[WinPlayerCreate] 创建角色请求异常: {e.Message}");
+            }
         }
 
         #region 交互事件与ListItem渲染回调处理
