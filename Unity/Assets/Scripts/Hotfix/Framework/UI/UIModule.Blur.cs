@@ -153,7 +153,7 @@ namespace Hotfix.Framework.UI
                 if (assetModule == null)
                     throw new InvalidOperationException("[UIModule] 资源模块不存在。");
 
-                handle = await assetModule.LoadAssetAsync<Shader>(BlurShaderPath);
+                handle = await assetModule.LoadAssetAsync<Shader>(BlurShaderPath, m_Scope.Token);
                 var shader = handle.GetAssetObject<Shader>();
                 if (shader == null)
                     throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");

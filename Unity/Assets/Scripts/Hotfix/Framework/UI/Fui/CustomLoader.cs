@@ -37,6 +37,20 @@ namespace Hotfix.Framework.UI
         private static readonly Dictionary<string, UniTask<Texture2D>> LoadingTasks = new();
 
         /// <summary>
+        /// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
+        /// </summary>
+        private readonly LifecycleCancellationSource m_Cancellation = new();
+
+        /// <summary>
+        /// 释放：取消本加载器在途的纹理加载，并释放底层。
+        /// </summary>
+        public override void Dispose()
+        {
+            m_Cancellation.Dispose();
+            base.Dispose();
+        }
+
+        /// <summary>
         /// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
         /// </summary>
         private sealed class TextureCacheEntry
@@ -227,7 +241,7 @@ namespace Hotfix.Framework.UI
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
 
-            var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, null);
+            var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_Cancellation.Token);
             if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
             {
                 FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
@@ -257,7 +271,7 @@ namespace Hotfix.Framework.UI
         {
             var assetInfo = m_AssetModule.GetAssetInfo(textureURL);
             if (assetInfo == null) return null;
-            return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL);
+            return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL, m_Cancellation.Token);
         }
 
         /// <summary>

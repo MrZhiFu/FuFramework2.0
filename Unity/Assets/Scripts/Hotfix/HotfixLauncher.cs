@@ -213,7 +213,7 @@ namespace Hotfix
         private static async Task<ByteBuf> ConfigBufferLoader(string file)
         {
             var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
-            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath);
+            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath, GlobalModule.AssetModule.Token);
             try
             {
                 var textAsset = assetHandle.GetAssetObject<TextAsset>();
@@ -236,7 +236,7 @@ namespace Hotfix
         private static async Task<JSONNode> ConfigLoader(string file)
         {
             var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
-            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath);
+            var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
             try
             {
                 var textAsset = assetHandle.GetAssetObject<TextAsset>();

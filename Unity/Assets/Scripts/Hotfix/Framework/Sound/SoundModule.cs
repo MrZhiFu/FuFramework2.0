@@ -393,7 +393,7 @@ namespace Hotfix.Framework.Sound
             PlaySoundInfo playSoundInfo      = null;
             try
             {
-                assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath);
+                assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_Scope.Token);
                 m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
                 var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
                 // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
@@ -673,7 +673,7 @@ namespace Hotfix.Framework.Sound
         {
             try
             {
-                var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath);
+                var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath, m_Scope.Token);
                 if (m_Scope.Token.IsCancellationRequested)
                 {
                     // SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏

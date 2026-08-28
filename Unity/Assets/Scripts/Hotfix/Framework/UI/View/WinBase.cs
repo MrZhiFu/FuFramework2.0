@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
@@ -26,6 +27,17 @@ namespace Hotfix.Framework.UI
         /// UI管理模块
         /// </summary>
         private UIModule m_UIModule;
+
+        /// <summary>
+        /// 界面生命周期取消源：每次打开（_OnOpen）重建 Token，关闭（_OnClose）取消，销毁（_OnDispose）释放。
+        /// 窗口内发起的异步任务（网络请求/资源加载）应传 Token，随界面关闭自动取消。
+        /// </summary>
+        private readonly LifecycleCancellationSource m_Cancellation = new();
+
+        /// <summary>
+        /// 界面生命周期取消令牌：窗口内 await 统一传参，界面关闭（_OnClose）时触发取消。
+        /// </summary>
+        protected CancellationToken Token => m_Cancellation.Token;
 
         /// <summary>
         /// 界面序列编号。

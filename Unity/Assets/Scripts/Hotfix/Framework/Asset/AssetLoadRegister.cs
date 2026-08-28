@@ -244,8 +244,8 @@ namespace Hotfix.Framework.Asset
                 try
                 {
                     assetHandle = assetType == null
-                        ? await m_AssetModule.LoadAssetAsync(path)
-                        : await m_AssetModule.LoadAssetAsync(path, assetType);
+                        ? await m_AssetModule.LoadAssetAsync(path, m_Scope.Token)
+                        : await m_AssetModule.LoadAssetAsync(path, assetType, m_Scope.Token);
                     if (assetHandle == null || assetHandle.AssetObject == null)
                     {
                         throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");

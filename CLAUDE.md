@@ -16,12 +16,13 @@
 
 ## 代码铁律
 
-**必须严格遵守**，以下四项为硬性铁律，禁止以任何理由违反：
+**必须严格遵守**，以下五项为硬性铁律，禁止以任何理由违反：
 
 1. **杜绝使用原生 `Task`**，一律使用 `UniTask` 代替；
 2. **杜绝使用 Unity 协程（`Coroutine`）**，一律使用 `UniTask` 代替；
 3. **杜绝使用 LINQ**，一律使用手写循环与缓存代替；
-4. **运行时杜绝使用反射（`Reflection`）**。
+4. **运行时杜绝使用反射（`Reflection`）**；
+5. **每个异步链必须有生命周期所有者**：发起异步任务的顶层对象持有 `LifecycleCancellationSource` 并于生命周期结束 `Cancel`（窗口 OnClose、模块 OnDispose）；helper 方法透传调用方的 `CancellationToken`，不自持；网络/资源类异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数必传（无默认值）。
 
 ## 交流语言
 

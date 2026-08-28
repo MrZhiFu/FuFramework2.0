@@ -177,12 +177,13 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <param name="sharedSource">共享完成源</param>
         /// <param name="capturedToken">发起时捕获的生命周期 Token（旧 Token 被 OnDispose 取消或已换成新 Token 即识别为旧生命周期）。</param>
-        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, CancellationToken capturedToken)
+        /// <param name="callerToken">调用方取消令牌（如窗口关闭），取消时中止加载。</param>
+        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, CancellationToken capturedToken, CancellationToken callerToken)
         {
             AssetHandle handle = null;
             try
             {
-                handle = await LoadAssetAsync(path);
+                handle = await LoadAssetAsync(path, callerToken);
 
                 // YooAsset await 不抛异常：资源加载失败时返回的是 Failed 句柄，必须显式校验 Status 并释放，
                 // 否则 Failed 句柄流入引用字典（依赖下游 InstantiateAsync 失败才兜底释放，绕路且隐蔽）。
@@ -193,7 +194,7 @@ namespace Hotfix.Framework.Asset
                     return;
                 }
 
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || callerToken.IsCancellationRequested)
                 {
                     if (handle.IsValid)
                     {

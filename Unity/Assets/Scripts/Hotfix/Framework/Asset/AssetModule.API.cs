@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
@@ -30,17 +31,19 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
-        public async UniTask<AssetHandle> LoadAssetAsync(string path)
+        public async UniTask<AssetHandle> LoadAssetAsync(string path, CancellationToken token)
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+            token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
             using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync(path);
                 try
                 {
                     // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
-                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    await handle.ToUniTask(cancellationToken: linkedCts.Token, cancelImmediately: true);
                     return handle;
                 }
                 catch (OperationCanceledException)
@@ -63,17 +66,19 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
-        public async UniTask<AssetHandle> LoadAssetAsync<T>(string path) where T : Object
+        public async UniTask<AssetHandle> LoadAssetAsync<T>(string path, CancellationToken token) where T : Object
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+            token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
             using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync<T>(path);
                 try
                 {
                     // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
-                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    await handle.ToUniTask(cancellationToken: linkedCts.Token, cancelImmediately: true);
                     return handle;
                 }
                 catch (OperationCanceledException)
@@ -96,17 +101,19 @@ namespace Hotfix.Framework.Asset
         /// <param name="path">资源路径</param>
         /// <param name="type">资源类型</param>
         /// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
-        public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type)
+        public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type, CancellationToken token)
         {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：取消后拒绝新操作，防新在途使取消等待失效
+            m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+            token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
             using (m_Scope.Begin()) // 登记在途：OnDispose 取消时等待本操作清理完毕
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadAssetAsync(path, type);
                 try
                 {
                     // YooAsset 官方 UniTask 集成：cancelImmediately=true 时 Token 取消立即完成 await 并抛 OperationCanceledException
-                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    await handle.ToUniTask(cancellationToken: linkedCts.Token, cancelImmediately: true);
                     return handle;
                 }
                 catch (OperationCanceledException)
@@ -134,10 +141,12 @@ namespace Hotfix.Framework.Asset
         /// <param name="sceneMode">场景模式</param>
         /// <param name="onProgress">加载进度回调（可选）。</param>
         /// <returns>场景句柄，使用完毕须调用 Release。</returns>
-        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Action<float> onProgress = null)
+        public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, CancellationToken token, Action<float> onProgress = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
             using (m_Scope.Begin())
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
             {
                 var package = GetReadyDefaultPackage();
                 var handle  = package.LoadSceneAsync(path, sceneMode);
@@ -148,14 +157,14 @@ namespace Hotfix.Framework.Asset
                     {
                         while (!handle.IsDone)
                         {
-                            m_Scope.Token.ThrowIfCancellationRequested();
+                            linkedCts.Token.ThrowIfCancellationRequested();
                             TryReportProgress(onProgress, handle.Progress);
                             await UniTask.Yield();
                         }
                         TryReportProgress(onProgress, handle.Progress);
                     }
 
-                    await handle.ToUniTask(cancellationToken: m_Scope.Token, cancelImmediately: true);
+                    await handle.ToUniTask(cancellationToken: linkedCts.Token, cancelImmediately: true);
                     if (handle.Status != EOperationStatus.Succeeded)
                     {
                         handle.Release();
@@ -185,9 +194,10 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <returns>实例化结果，实例销毁时调用 ReleaseInstantiate(result) 释放引用。</returns>
-        public async UniTask<InstantiateResult> InstantiateAsync(string path)
+        public async UniTask<InstantiateResult> InstantiateAsync(string path, CancellationToken token)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁（Token 取消）则拒绝，抛 OperationCanceledException
+            token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
             var capturedToken = m_Scope.Token;            // 在途守卫 + 结果标记：捕获本生命周期 Token（旧 Token 被取消或更换即识别为旧生命周期）
 
             AssetHandle assetHandle;
@@ -203,13 +213,13 @@ namespace Hotfix.Framework.Asset
                 {
                     sharedSource = new UniTaskCompletionSource<AssetHandle>();
                     m_InstantiateLoadingTasks[path] = sharedSource;
-                    LoadAsyncForInstantiate(path, sharedSource, capturedToken).Forget();
+                    LoadAsyncForInstantiate(path, sharedSource, capturedToken, token).Forget();
                 }
 
                 assetHandle = await sharedSource.Task;
 
-                // 模块销毁/生命周期变更后：句柄可能已被释放，不得再写回引用字典
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                // 模块销毁/生命周期变更/调用方取消后：句柄可能已被释放，不得再写回引用字典
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
                     if (assetHandle != null && assetHandle.IsValid)
                     {
@@ -244,8 +254,8 @@ namespace Hotfix.Framework.Asset
                 var instantiateOperation = assetHandle.InstantiateAsync();
                 await instantiateOperation;
                 
-                // 模块销毁/生命周期变更后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 OperationCanceledException（catch 中 ReleaseInstantiate 兜底回滚）
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                // 模块销毁/生命周期变更/调用方取消后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 OperationCanceledException（catch 中 ReleaseInstantiate 兜底回滚）
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
                     if (instantiateOperation.Result != null)
                         Object.Destroy(instantiateOperation.Result);

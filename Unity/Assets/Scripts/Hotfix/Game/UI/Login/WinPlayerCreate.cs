@@ -91,7 +91,7 @@ namespace Hotfix.Game.UI
             {
                 // 创建角色
                 var respPlayerCreate =
-                    await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req);
+                    await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_Req, Token);
                 if (respPlayerCreate.ErrorCode > 0)
                 {
                     FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
@@ -105,7 +105,7 @@ namespace Hotfix.Game.UI
                 var reqPlayerList = new ReqPlayerList { Id = m_Req.Id };
                 var respPlayerList =
                     await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
-                        reqPlayerList);
+                        reqPlayerList, Token);
                 if (respPlayerList.ErrorCode > 0)
                 {
                     FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);

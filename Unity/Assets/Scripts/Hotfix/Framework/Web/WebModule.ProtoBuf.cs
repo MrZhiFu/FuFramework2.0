@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using ProtoBuf;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
@@ -86,7 +87,7 @@ namespace Hotfix.Framework.Web
                 try
                 {
                     // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
-                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webData.Token.IsCancellationRequested)
                     {
                         webData.CompletionSource.TrySetCanceled();
                         return;
@@ -122,9 +123,9 @@ namespace Hotfix.Framework.Web
         /// <remarks>
         /// 此方法用于向指定的URL发送POST请求，并接收响应。请求的消息体由参数message提供，而响应则会被解析为指定的泛型类型T。
         /// </remarks>
-        public async UniTask<T> Post<T>(string url, MessageObject message) where T : MessageObject, IResponseMessage
+        public async UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
         {
-            var webBufferResult = await PostInner(url, message);
+            var webBufferResult = await PostInner(url, message, token);
             if (!webBufferResult.IsNotNull()) return default;
             var messageObjectHttp = SerializerHelper.Deserialize<MessageHttpObject>(webBufferResult.Result);
             if (!messageObjectHttp.IsNotNull() || messageObjectHttp.Id == default) return default;
@@ -146,7 +147,7 @@ namespace Hotfix.Framework.Web
         /// <param name="message">消息对象</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns>返回WebBufferResult类型的异步任务</returns>
-        private UniTask<WebBufferResult> PostInner(string url, MessageObject message, object userData = null)
+        private UniTask<WebBufferResult> PostInner(string url, MessageObject message, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -159,7 +160,7 @@ namespace Hotfix.Framework.Web
                 Body     = SerializerHelper.Serialize(message),
             };
             var sendData = SerializerHelper.Serialize(messageHttpObject);
-            var webData  = new WebProtoBufData(url, sendData, uniTaskCompletionSource, userData);
+            var webData  = new WebProtoBufData(url, sendData, uniTaskCompletionSource, token, userData);
             m_WaitingProtoBufQueue.Enqueue(webData);
             return uniTaskCompletionSource.Task;
         }

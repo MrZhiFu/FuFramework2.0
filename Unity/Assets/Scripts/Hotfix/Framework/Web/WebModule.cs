@@ -139,9 +139,9 @@ namespace Hotfix.Framework.Web
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebStringResult> GetToString(string url, object userData = null)
+        public UniTask<WebStringResult> GetToString(string url, CancellationToken token, object userData = null)
         {
-            return GetToString(url, null, null, userData);
+            return GetToString(url, null, null, token, userData);
         }
 
         /// <summary>
@@ -150,21 +150,9 @@ namespace Hotfix.Framework.Web
         /// <param name="url">请求地址</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, object userData = null)
+        public UniTask<WebBufferResult> GetToBytes(string url, CancellationToken token, object userData = null)
         {
-            return GetToBytes(url, null, null, userData);
-        }
-
-        /// <summary>
-        /// 发送Get 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="queryString">请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, object userData = null)
-        {
-            return GetToString(url, queryString, null, userData);
+            return GetToBytes(url, null, null, token, userData);
         }
 
         /// <summary>
@@ -174,9 +162,21 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, object userData = null)
+        public UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
         {
-            return GetToBytes(url, queryString, null, userData);
+            return GetToString(url, queryString, null, token, userData);
+        }
+
+        /// <summary>
+        /// 发送Get 请求
+        /// </summary>
+        /// <param name="url">请求地址</param>
+        /// <param name="queryString">请求参数</param>
+        /// <param name="userData">用户自定义数据</param>
+        /// <returns></returns>
+        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+        {
+            return GetToBytes(url, queryString, null, token, userData);
         }
 
         /// <summary>
@@ -188,14 +188,14 @@ namespace Hotfix.Framework.Web
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
         private UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
-                                                     object userData = null)
+                                                     CancellationToken token, object userData = null)
         {
             // 模块已销毁（Token 取消）则拒绝新请求
             m_Scope.Token.ThrowIfCancellationRequested();
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
             url = UrlHandler(url, queryString);
 
-            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, userData);
+            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, token, userData);
             m_WaitingNormalQueue.Enqueue(webJsonData);
             return uniTaskCompletionSource.Task;
         }
@@ -233,7 +233,7 @@ namespace Hotfix.Framework.Web
                 try
                 {
                     // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
-                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webJsonData.Token.IsCancellationRequested)
                     {
                         webJsonData.UniTaskCompletionStringSource.TrySetCanceled();
                         return;
@@ -295,7 +295,7 @@ namespace Hotfix.Framework.Web
                 try
                 {
                     // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
-                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webJsonData.Token.IsCancellationRequested)
                     {
                         webJsonData.UniTaskCompletionBytesSource.TrySetCanceled();
                         return;
@@ -331,13 +331,13 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, queryString);
 
-            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, userData);
+            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, token, userData);
             m_WaitingNormalQueue.Enqueue(webJsonData);
             return uniTaskCompletionSource.Task;
         }
@@ -349,8 +349,8 @@ namespace Hotfix.Framework.Web
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, object userData = null)
-            => PostToString(url, from, null, null, userData);
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
+            => PostToString(url, from, null, null, token, userData);
 
         /// <summary>
         /// 发送Post 请求
@@ -359,8 +359,8 @@ namespace Hotfix.Framework.Web
         /// <param name="from">请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, object userData = null)
-            => PostToBytes(url, from, null, null, userData);
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
+            => PostToBytes(url, from, null, null, token, userData);
 
         /// <summary>
         /// 发送Post 请求
@@ -370,8 +370,8 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-            => PostToString(url, from, queryString, null, userData);
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+            => PostToString(url, from, queryString, null, token, userData);
 
         /// <summary>
         /// 发送Post 请求
@@ -381,8 +381,8 @@ namespace Hotfix.Framework.Web
         /// <param name="queryString">URl请求参数</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, object userData = null)
-            => PostToBytes(url, from, queryString, null, userData);
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
+            => PostToBytes(url, from, queryString, null, token, userData);
 
         /// <summary>
         /// 发送Post 请求
@@ -393,13 +393,13 @@ namespace Hotfix.Framework.Web
         /// <param name="header">请求头</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
             url = UrlHandler(url, queryString);
 
-            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, userData);
+            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, token, userData);
             m_WaitingNormalQueue.Enqueue(webJsonData);
             return uniTaskCompletionSource.Task;
         }
@@ -411,15 +411,16 @@ namespace Hotfix.Framework.Web
         /// <param name="from">表单请求参数</param>
         /// <param name="queryString">URl请求参数</param>
         /// <param name="header">请求头</param>
+        /// <param name="token">调用方取消令牌（窗口等，界面关闭时中止）。</param>
         /// <param name="userData">用户自定义数据</param>
         /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, object userData = null)
+        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, queryString);
 
-            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, userData);
+            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, token, userData);
             m_WaitingNormalQueue.Enqueue(webJsonData);
             return uniTaskCompletionSource.Task;
         }

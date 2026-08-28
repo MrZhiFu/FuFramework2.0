@@ -1,3 +1,4 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
@@ -28,7 +29,7 @@ namespace Hotfix.Framework.Web
             /// <param name="sendData">要发送的Protocol Buffer序列化数据</param>
             /// <param name="task">请求任务的完成源</param>
             /// <param name="userData">用户自定义数据</param>
-            public WebProtoBufData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, object userData) : base(false, url, userData)
+            public WebProtoBufData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, CancellationToken token, object userData) : base(false, url, token, userData)
             {
                 task.CheckNull(nameof(task));
                 SendData = sendData;

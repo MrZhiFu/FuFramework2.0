@@ -317,11 +317,11 @@ namespace Hotfix.Framework.Scene
         /// <param name="sceneAssetName">场景资源路径。</param>
         /// <param name="sceneMode">加载模式。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
+        public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetName)) throw new InvalidOperationException("[SceneModule] 场景资源名称不能为空!.");
             var sceneAssetPath = UtilityAOT.AssetPath.GetScenePath(sceneAssetName);
-            return LoadScene(sceneAssetPath, sceneMode, userData);
+            return LoadScene(sceneAssetPath, token, sceneMode, userData);
         }
 
 
@@ -331,7 +331,7 @@ namespace Hotfix.Framework.Scene
         /// <param name="sceneAssetPath">场景资源路径。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="sceneMode"></param>
-        public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
+        public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
             if (string.IsNullOrEmpty(sceneAssetPath))
                 throw new InvalidOperationException("[SceneModule] 场景资源路径不能为空!.");
@@ -354,9 +354,9 @@ namespace Hotfix.Framework.Scene
             try
             {
                 var sceneName = GetSceneName(sceneAssetPath);
-                var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
-                // 模块已销毁/生命周期变更（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, token, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
+                // 模块已销毁/生命周期变更/调用方取消（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
                     sceneOperationHandle.Release();
                     throw new OperationCanceledException(capturedToken);

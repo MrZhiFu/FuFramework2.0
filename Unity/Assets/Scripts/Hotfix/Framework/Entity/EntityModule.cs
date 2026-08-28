@@ -525,9 +525,9 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <typeparam name="T">实体逻辑类型。</typeparam>
-        public UniTask<Entity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName) where T : EntityLogic
+        public UniTask<Entity> ShowEntityAsync<T>(int entityId, string entityAssetName, string entityGroupName, CancellationToken token) where T : EntityLogic
         {
-            return ShowEntityAsync(entityId, typeof(T), entityAssetName, entityGroupName);
+            return ShowEntityAsync(entityId, typeof(T), entityAssetName, entityGroupName, token);
         }
 
         /// <summary>
@@ -538,7 +538,7 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityAssetName">实体资源名称。</param>
         /// <param name="entityGroupName">实体组名称。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, object userData = null)
+        public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, CancellationToken token, object userData = null)
         {
             if (m_EntityHelper is null) throw new InvalidOperationException("[EntityModule] 显示实体失败, 请先设置实体辅助器.");
             if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 显示实体失败, 实体资源名称不能为空.");
@@ -566,7 +566,7 @@ namespace Hotfix.Framework.Entity
                 AssetHandle assetOperationHandle;
                 try
                 {
-                    assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName);
+                    assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName, token);
                 }
                 catch
                 {

@@ -37,6 +37,7 @@ namespace Hotfix.Framework.UI
         internal void _OnOpen()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]打开-OnOpen().");
+            m_Cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
             Visible     = true;
             WinUI.alpha = 0;
 
@@ -118,6 +119,7 @@ namespace Hotfix.Framework.UI
         internal void _OnClose()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]关闭-OnClose().");
+            m_Cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
             Visible = false;
 
             // 界面关闭动画
@@ -155,6 +157,7 @@ namespace Hotfix.Framework.UI
         internal void _OnDispose()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
+            m_Cancellation.Dispose(); // 真销毁，永久释放取消源
             m_UIModule.PkgManager.SubPkgRef(PackageName);
 
             ReleaseEventRegister();   // 释放事件注册器
