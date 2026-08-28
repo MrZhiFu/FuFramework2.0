@@ -30,7 +30,8 @@ public sealed class ClientMessageDecoderHandler : DefaultMessageDecoderHandler
 		{
 			reader.TryReadBigEndian(out uint value);
 			MessageObjectHeader messageObjectHeader = new MessageObjectHeader();
-			reader.TryReadBigEndian(out short value2);
+			// OperationType 按 1 字节读，与客户端头布局一致（14 字节：Length4 + Op1 + ZipFlag1 + UniqueId4 + MessageId4）
+			reader.TryReadBigEndian(out byte value2);
 			reader.TryReadBigEndian(out byte value3);
 			reader.TryReadBigEndian(out int value4);
 			reader.TryReadBigEndian(out int value5);
