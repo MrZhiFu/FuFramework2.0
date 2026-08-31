@@ -8,17 +8,6 @@ namespace Hotfix.Framework.Web
     public sealed class WebStringResult
     {
         /// <summary>
-        /// 初始化Web字符串请求结果
-        /// </summary>
-        /// <param name="userData">用户自定义数据</param>
-        /// <param name="result">请求返回的字符串结果</param>
-        public WebStringResult(object userData, string result)
-        {
-            UserData = userData;
-            Result   = result;
-        }
-
-        /// <summary>
         /// 获取请求返回的字符串结果
         /// </summary>
         public string Result { get; }
@@ -33,5 +22,16 @@ namespace Hotfix.Framework.Web
         /// </summary>
         /// <returns>返回格式化的结果字符串</returns>
         public override string ToString() => $"[Result]:{Result}";
+
+        /// <summary>
+        /// 初始化Web字符串请求结果
+        /// </summary>
+        /// <param name="userData">用户自定义数据</param>
+        /// <param name="result">请求返回的字符串结果</param>
+        public WebStringResult(object userData, string result)
+        {
+            UserData = userData;
+            Result   = result;
+        }
     }
 }

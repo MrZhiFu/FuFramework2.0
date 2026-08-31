@@ -1,28 +1,26 @@
 using System;
 using System.Text;
 using System.Threading;
+using ProtoBuf;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
+using Hotfix.Framework.Network;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// Web管理模块。
+    /// Web 管理模块。
     /// 功能：
     ///     1.实现HTTP GET和POST请求功能。
+    /// 对外公共接口见 WebModule.API.cs。
     /// </summary>
     public partial class WebModule : ModuleBase, ICancelAsync
     {
-        /// <summary>
-        /// 模块单例
-        /// </summary>
-        public static WebModule Instance { get; private set; }
-
         /// <summary>
         /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
         /// OnDispose 时 Cancel，在途 Web 请求随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
@@ -30,79 +28,73 @@ namespace Hotfix.Framework.Web
         private CancellationScope m_Scope = new();
 
         /// <summary>
-        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
-        /// </summary>
-        public CancellationToken Token => m_Scope.Token;
-
-        /// <summary>
-        /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
-        /// </summary>
-        public UniTask CancelAsync() => m_Scope.CancelAsync();
-
-        /// <summary>
-        /// 用于构建URL的StringBuilder
+        /// 用于构建 URL 的 StringBuilder。
         /// </summary>
         private readonly StringBuilder m_UrlStr = new(256);
 
         /// <summary>
-        /// 等待处理的普通请求队列
+        /// 等待处理的 Json 格式请求队列。
         /// </summary>
-        private readonly Queue<WebJsonData> m_WaitingNormalQueue = new(256);
+        private readonly Queue<WebJsonDataBase> m_WaitingJsonQueue = new(256);
 
         /// <summary>
-        /// 正在处理的普通请求列表
+        /// 正在发送的 Json 格式请求列表。
         /// </summary>
-        private readonly List<WebJsonData> m_SendingNormalList = new(16);
+        private readonly List<WebJsonDataBase> m_SendingJsonList = new(16);
 
         /// <summary>
-        /// 获取或设置超时时间(秒)
+        /// 等待处理的 ProtoBuf 请求队列。
         /// </summary>
-        public float Timeout { get; set; } = 5f;
+        private readonly Queue<WebProtoBufData> m_WaitingPbQueue = new(256);
 
         /// <summary>
-        /// 获取或设置每个服务器的最大连接数
+        /// 正在处理的 ProtoBuf 请求列表。
         /// </summary>
-        public int MaxConnectionPerServer { get; set; } = 8;
+        private readonly List<WebProtoBufData> m_SendingPbList = new(16);
 
         /// <summary>
-        /// 获取或设置请求超时时间
+        /// ProtoBuf 内容类型常量。
         /// </summary>
-        public TimeSpan RequestTimeout => TimeSpan.FromSeconds(Timeout);
+        private const string ProtoBufContentType = "application/x-protobuf";
 
         /// <summary>
-        /// 初始化
+        /// 初始化。
         /// </summary>
         protected internal override void OnInit()
         {
             Instance = this;
-            m_Scope = new CancellationScope(); 
+            m_Scope  = new CancellationScope();
         }
 
         /// <summary>
-        /// 轮询处理请求队列
+        /// 轮询处理请求队列。
         /// </summary>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            lock (m_UrlStr)
+            // 主线程模型（ModuleManager 驱动 + UWR 完成回调同在主线程）：队列/列表访问无需加锁
+            if (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
             {
-                if (m_SendingNormalList.Count < MaxConnectionPerServer && m_WaitingNormalQueue.Count > 0)
+                var webJsonData = m_WaitingJsonQueue.Dequeue();
+
+                switch (webJsonData)
                 {
-                    var webJsonData = m_WaitingNormalQueue.Dequeue();
-
-                    if (webJsonData.UniTaskCompletionStringSource != null)
-                        MakeJsonStringRequest(webJsonData);
-                    else
-                        MakeJsonBytesRequest(webJsonData);
-
-                    m_SendingNormalList.Add(webJsonData);
+                    case WebJsonStringData stringData:
+                        MakeJsonStringRequest(stringData);
+                        break;
+                    case WebJsonBytesData bytesData:
+                        MakeJsonBytesRequest(bytesData);
+                        break;
                 }
 
-                UpdateProtoBuf();
+                m_SendingJsonList.Add(webJsonData);
             }
+
+            // 更新处理 ProtoBuf 请求队列
+            UpdateProtoBuf();
         }
 
         /// <summary>
-        /// 释放
+        /// 释放。
         /// </summary>
         protected internal override void OnDispose()
         {
@@ -110,104 +102,40 @@ namespace Hotfix.Framework.Web
             m_Scope.Cancel();
 
             // 清理等待处理的请求队列
-            while (m_WaitingNormalQueue.Count > 0)
+            while (m_WaitingJsonQueue.Count > 0)
             {
-                var webData = m_WaitingNormalQueue.Dequeue();
-                webData.Dispose();
-            }
-            m_WaitingNormalQueue.Clear();
-            
-            // 清理正在处理的请求列表
-            while (m_SendingNormalList.Count > 0)
-            {
-                var webData = m_SendingNormalList[0];
-                m_SendingNormalList.RemoveAt(0);
+                var webData = m_WaitingJsonQueue.Dequeue();
                 webData.Dispose();
             }
 
-            m_SendingNormalList.Clear();
-            
-            // 清理ProtoBuf
+            m_WaitingJsonQueue.Clear();
+
+            // 清理正在处理的请求列表
+            while (m_SendingJsonList.Count > 0)
+            {
+                var webData = m_SendingJsonList[0];
+                m_SendingJsonList.RemoveAt(0);
+                webData.Dispose();
+            }
+
+            m_SendingJsonList.Clear();
+
+            // 清理 ProtoBuf
             ShutdownProtoBuf();
 
             Instance = null;
         }
 
-        /// <summary>
-        /// 发送Get 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> GetToString(string url, CancellationToken token, object userData = null)
-        {
-            return GetToString(url, null, null, token, userData);
-        }
+        #region JSON 请求处理
 
         /// <summary>
-        /// 发送Get 请求
+        /// 处理 JSON 字符串请求。
         /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, CancellationToken token, object userData = null)
-        {
-            return GetToBytes(url, null, null, token, userData);
-        }
-
-        /// <summary>
-        /// 发送Get 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="queryString">请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
-        {
-            return GetToString(url, queryString, null, token, userData);
-        }
-
-        /// <summary>
-        /// 发送Get 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="queryString">请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
-        {
-            return GetToBytes(url, queryString, null, token, userData);
-        }
-
-        /// <summary>
-        /// 发送Get 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="queryString">请求参数</param>
-        /// <param name="header">请求头</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        private UniTask<WebStringResult> GetToString(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
-                                                     CancellationToken token, object userData = null)
-        {
-            // 模块已销毁（Token 取消）则拒绝新请求
-            m_Scope.Token.ThrowIfCancellationRequested();
-            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
-            url = UrlHandler(url, queryString);
-
-            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, token, userData);
-            m_WaitingNormalQueue.Enqueue(webJsonData);
-            return uniTaskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 处理JSON字符串请求
-        /// </summary>
-        private void MakeJsonStringRequest(WebJsonData webJsonData)
+        private void MakeJsonStringRequest(WebJsonStringData webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
-            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+            var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
 
             unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
@@ -239,7 +167,7 @@ namespace Hotfix.Framework.Web
                         return;
                     }
 
-                    m_SendingNormalList.Remove(webJsonData);
+                    m_SendingJsonList.Remove(webJsonData);
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {
                         FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
@@ -263,13 +191,13 @@ namespace Hotfix.Framework.Web
         }
 
         /// <summary>
-        /// 处理JSON字节数组请求
+        /// 处理 JSON 字节数组请求。
         /// </summary>
-        private void MakeJsonBytesRequest(WebJsonData webJsonData)
+        private void MakeJsonBytesRequest(WebJsonBytesData webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
-            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+            var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
 
             unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
@@ -301,7 +229,7 @@ namespace Hotfix.Framework.Web
                         return;
                     }
 
-                    m_SendingNormalList.Remove(webJsonData);
+                    m_SendingJsonList.Remove(webJsonData);
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {
                         FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
@@ -323,114 +251,124 @@ namespace Hotfix.Framework.Web
             };
         }
 
+        #endregion
+
+        #region ProtoBuf 请求处理
+
         /// <summary>
-        /// 发送Get 请求
+        /// 更新处理 ProtoBuf 请求队列。
         /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="queryString">请求参数</param>
-        /// <param name="header">请求头</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> GetToBytes(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
+        private void UpdateProtoBuf()
+        {
+            // 主线程模型：与 OnUpdate 同线程，无需加锁
+            if (m_SendingPbList.Count >= MaxConnectionPerServer || m_WaitingPbQueue.Count <= 0) return;
+            var webProtoBufData = m_WaitingPbQueue.Dequeue();
+            MakeProtoBufBytesRequest(webProtoBufData);
+            m_SendingPbList.Add(webProtoBufData);
+        }
+
+        /// <summary>
+        /// 关闭 ProtoBuf 请求处理，清理资源。
+        /// </summary>
+        private void ShutdownProtoBuf()
+        {
+            while (m_WaitingPbQueue.Count > 0)
+            {
+                var webData = m_WaitingPbQueue.Dequeue();
+                webData.Dispose();
+            }
+
+            m_WaitingPbQueue.Clear();
+
+            while (m_SendingPbList.Count > 0)
+            {
+                var webData = m_SendingPbList[0];
+                m_SendingPbList.RemoveAt(0);
+                webData.Dispose();
+            }
+
+            m_SendingPbList.Clear();
+        }
+
+        /// <summary>
+        /// 执行 ProtoBuf 字节请求。
+        /// </summary>
+        /// <param name="webData">ProtoBuf 请求数据。</param>
+        private void MakeProtoBufBytesRequest(WebProtoBufData webData)
+        {
+            var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+            var unityWebRequest = webData.IsGet ? UnityWebRequest.Get(webData.URL) : UnityWebRequest.PostWwwForm(webData.URL, string.Empty);
+
+            unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
+            unityWebRequest.SetRequestHeader("Content-Type", ProtoBufContentType);
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.SendData);
+
+            var asyncOperation = unityWebRequest.SendWebRequest();
+            asyncOperation.completed += _ =>
+            {
+                try
+                {
+                    // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
+                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webData.Token.IsCancellationRequested)
+                    {
+                        webData.CompletionSource.TrySetCanceled();
+                        return;
+                    }
+
+                    m_SendingPbList.Remove(webData);
+                    if (unityWebRequest.result != UnityWebRequest.Result.Success)
+                    {
+                        // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
+                        if (IsUnityWebRequestTimeout(unityWebRequest))
+                            webData.CompletionSource.TrySetException(new TimeoutException(unityWebRequest.error));
+                        else
+                            webData.CompletionSource.TrySetException(new Exception(unityWebRequest.error));
+                        return;
+                    }
+
+                    webData.CompletionSource.TrySetResult(new WebBufferResult(webData.UserData, unityWebRequest.downloadHandler.data));
+                }
+                finally
+                {
+                    unityWebRequest.Dispose(); // 无论成败均释放原生资源（UnityWebRequest 官方要求）
+                }
+            };
+        }
+
+        /// <summary>
+        /// 内部 Post 请求处理方法。
+        /// </summary>
+        /// <param name="url">请求 URL。</param>
+        /// <param name="message">消息对象。</param>
+        /// <param name="token">调用方取消令牌。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        /// <returns>返回 WebBufferResult 类型的异步任务。</returns>
+        private UniTask<WebBufferResult> PostInternal(string url, MessageObject message, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
-            url = UrlHandler(url, queryString);
-
-            var webJsonData = new WebJsonData(url, header, true, uniTaskCompletionSource, token, userData);
-            m_WaitingNormalQueue.Enqueue(webJsonData);
+            url = UrlHandler(url, null);
+            var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());
+            var messageHttpObject = new MessageHttpObject
+            {
+                Id       = id,
+                UniqueId = message.UniqueId,
+                Body     = SerializerHelper.Serialize(message),
+            };
+            var sendData = SerializerHelper.Serialize(messageHttpObject);
+            var webData  = new WebProtoBufData(url, sendData, uniTaskCompletionSource, token, userData);
+            m_WaitingPbQueue.Enqueue(webData);
             return uniTaskCompletionSource.Task;
         }
 
-        /// <summary>
-        /// 发送Post 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
-            => PostToString(url, from, null, null, token, userData);
+        #endregion
 
         /// <summary>
-        /// 发送Post 请求
+        /// URL 标准化。
         /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, CancellationToken token, object userData = null)
-            => PostToBytes(url, from, null, null, token, userData);
-
-        /// <summary>
-        /// 发送Post 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">表单请求参数</param>
-        /// <param name="queryString">URl请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
-            => PostToString(url, from, queryString, null, token, userData);
-
-        /// <summary>
-        /// 发送Post 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">表单请求参数</param>
-        /// <param name="queryString">URl请求参数</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, CancellationToken token, object userData = null)
-            => PostToBytes(url, from, queryString, null, token, userData);
-
-        /// <summary>
-        /// 发送Post 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">表单请求参数</param>
-        /// <param name="queryString">URl请求参数</param>
-        /// <param name="header">请求头</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebStringResult> PostToString(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
-        {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
-            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
-            url = UrlHandler(url, queryString);
-
-            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, token, userData);
-            m_WaitingNormalQueue.Enqueue(webJsonData);
-            return uniTaskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// 发送Post 请求
-        /// </summary>
-        /// <param name="url">请求地址</param>
-        /// <param name="from">表单请求参数</param>
-        /// <param name="queryString">URl请求参数</param>
-        /// <param name="header">请求头</param>
-        /// <param name="token">调用方取消令牌（窗口等，界面关闭时中止）。</param>
-        /// <param name="userData">用户自定义数据</param>
-        /// <returns></returns>
-        public UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
-        {
-            m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
-            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
-            url = UrlHandler(url, queryString);
-
-            var webJsonData = new WebJsonData(url, header, from, uniTaskCompletionSource, token, userData);
-            m_WaitingNormalQueue.Enqueue(webJsonData);
-            return uniTaskCompletionSource.Task;
-        }
-
-        /// <summary>
-        /// URL 标准化
-        /// </summary>
-        /// <param name="url">原始URL</param>
-        /// <param name="queryString">查询参数字典</param>
-        /// <returns>标准化后的URL</returns>
+        /// <param name="url">原始 URL。</param>
+        /// <param name="queryString">查询参数字典。</param>
+        /// <returns>标准化后的 URL。</returns>
         private string UrlHandler(string url, Dictionary<string, string> queryString)
         {
             m_UrlStr.Clear();
@@ -461,8 +399,9 @@ namespace Hotfix.Framework.Web
         /// <returns>是否超时。</returns>
         private static bool IsUnityWebRequestTimeout(UnityWebRequest unityWebRequest)
         {
-            return unityWebRequest.error != null
-                && unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (unityWebRequest.error == null) return false;
+
+            return unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) < 0;
         }
     }
 }

@@ -1,0 +1,57 @@
+using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+
+// ReSharper disable once CheckNamespace
+namespace Hotfix.Framework.Web
+{
+    /// <summary>
+    /// 字符串结果 JSON 请求数据（GetToString / PostToString）。
+    /// </summary>
+    public sealed class WebJsonStringData : WebJsonDataBase
+    {
+        /// <summary>
+        /// 字符串结果的任务完成源。
+        /// </summary>
+        public readonly UniTaskCompletionSource<WebStringResult> UniTaskCompletionStringSource;
+
+        /// <summary>
+        /// 初始化字符串结果的 GET 请求。
+        /// </summary>
+        /// <param name="url">请求 URL。</param>
+        /// <param name="header">请求头信息。</param>
+        /// <param name="isGet">是否为 GET 请求。</param>
+        /// <param name="source">字符串结果的任务完成源。</param>
+        /// <param name="token">调用方取消令牌。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public WebJsonStringData(string url, Dictionary<string, string> header, bool isGet, UniTaskCompletionSource<WebStringResult> source, CancellationToken token, object userData = null)
+            : base(isGet, url, header, token, userData)
+        {
+            UniTaskCompletionStringSource = source;
+        }
+
+        /// <summary>
+        /// 初始化字符串结果的 POST 请求。
+        /// </summary>
+        /// <param name="url">请求 URL。</param>
+        /// <param name="header">请求头信息。</param>
+        /// <param name="form">表单数据。</param>
+        /// <param name="source">字符串结果的任务完成源。</param>
+        /// <param name="token">调用方取消令牌。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public WebJsonStringData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebStringResult> source, CancellationToken token, object userData = null)
+            : base(false, url, header, form, token, userData)
+        {
+            UniTaskCompletionStringSource = source;
+        }
+
+        /// <summary>
+        /// 释放资源，取消未完成的任务。
+        /// </summary>
+        public override void Dispose()
+        {
+            UniTaskCompletionStringSource?.TrySetCanceled();
+            base.Dispose();
+        }
+    }
+}

@@ -23,25 +23,26 @@ FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `Unity
 ┌─────────────────────────────────────────────────────────────┐
 │                       WebModule                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WaitingNormalQueue (Queue<WebJsonData>)          │   │
+│  │  m_WaitingJsonQueue (Queue<WebJsonData>)            │   │
 │  │  - JSON 请求等待队列                                 │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_SendingNormalList (List<WebJsonData>)            │   │
+│  │  m_SendingJsonList (List<WebJsonData>)              │   │
 │  │  - JSON 正在处理的请求列表                           │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WaitingProtoBufQueue / m_SendingProtoBufList     │   │
+│  │  m_WaitingPbQueue / m_SendingPbList                 │   │
 │  │  - ProtoBuf 请求队列                                │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
            ┌──────────────────┼──────────────────┐
            ▼                  ▼                  ▼
-   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-   │ WebJsonData  │  │WebProtoBufData│ │   WebData    │
-   │ (JSON 请求)   │  │(ProtoBuf请求) │ │   (基类)     │
-   └──────────────┘  └──────────────┘  └──────────────┘
+   ┌────────────────┐  ┌─────────────────┐  ┌─────────────┐
+   │ WebJsonDataBase │  │ WebProtoBufData │  │ WebDataBase │
+   │ (JSON 基类)     │  │ (ProtoBuf请求)   │  │  (基类)      │
+   │ String/Bytes    │  │                 │  │             │
+   └────────────────┘  └─────────────────┘  └─────────────┘
            │                  │
            ▼                  ▼
    ┌──────────────┐  ┌──────────────┐
@@ -112,11 +113,15 @@ UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) w
 
 Web 请求数据基类 `WebData`，实现 `IDisposable`。包含请求的基本信息：`IsGet`（是否 GET）、`URL`、`UserData`。
 
-### 4.3 WebJsonData（内部类）
+### 4.3 WebJsonDataBase（基类）与子类
 
-JSON 格式请求数据类，继承 `WebData`。内部使用 `UniTaskCompletionSource<WebStringResult>` 或 `UniTaskCompletionSource<WebBufferResult>` 管理异步结果。POST 请求的 `Form` 类型为 `Dictionary<string, object>`。
+JSON 请求数据基类（抽象），继承 `WebDataBase`，承载请求头 `Header` 与表单 `Form`。按结果类型拆分子类：
+- `WebJsonStringData`：字符串结果（`GetToString`/`PostToString`），持有 `UniTaskCompletionSource<WebStringResult>`；
+- `WebJsonBytesData`：字节数组结果（`GetToBytes`/`PostToBytes`），持有 `UniTaskCompletionSource<WebBufferResult>`。
 
-### 4.4 WebProtoBufData（内部类）
+POST 请求的 `Form` 类型为 `Dictionary<string, object>`。`OnUpdate` 出队后按子类类型分流到对应的请求处理。
+
+### 4.4 WebProtoBufData
 
 ProtoBuf 格式请求数据类，继承 `WebData`。使用 `application/x-protobuf` content type，内部 `SendData` 为 `byte[]`。
 
@@ -441,14 +446,19 @@ var results = await UniTask.WhenAll(tasks);
 
 ```text
 Web/
-├── WebModule.cs                    # Web 管理模块（GET/POST 字符串和字节数组）
-├── WebModule.WebData.cs            # Web 请求数据基类（内部）
-├── WebModule.WebJsonData.cs        # JSON 请求数据类（内部）
-├── WebModule.WebProtoBufData.cs    # ProtoBuf 请求数据类（内部）
-├── WebModule.ProtoBuf.cs           # ProtoBuf 请求处理
-├── HttpJsonResultHelper.cs         # HTTP JSON 结果结构（HttpJsonResult/HttpJsonResultData）与解析扩展
-├── WebBufferResult.cs              # 字节数组结果封装
-├── WebStringResult.cs              # 字符串结果封装
+├── WebModule.cs                    # Web 管理模块（字段/生命周期/JSON+ProtoBuf 请求处理）
+├── WebModule.API.cs                # Web 管理模块公共 API（GET/POST 字符串/字节/ProtoBuf）
+├── Data/                           # 请求数据类
+│   ├── Base/                       # 请求数据基类
+│   │   ├── WebDataBase.cs          # Web 请求数据基类
+│   │   └── WebJsonDataBase.cs      # JSON 请求数据基类（抽象）
+│   ├── WebJsonStringData.cs        # 字符串结果 JSON 请求数据
+│   ├── WebJsonBytesData.cs         # 字节数组结果 JSON 请求数据
+│   └── WebProtoBufData.cs          # ProtoBuf 请求数据
+├── Result/                         # 请求结果类
+│   ├── HttpJsonResultHelper.cs     # HTTP JSON 结果结构（HttpJsonResult/HttpJsonResultData）与解析扩展
+│   ├── WebBufferResult.cs          # 字节数组结果封装
+│   └── WebStringResult.cs          # 字符串结果封装
 └── README.md                       # 本文档
 ```
 
