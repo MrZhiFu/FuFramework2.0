@@ -4,7 +4,6 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Utility;
 namespace Hotfix.Framework.Network
 {
     /// <summary>
