@@ -1,5 +1,5 @@
 using System;
-﻿// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace
 
 namespace Hotfix.Framework.Core
 {

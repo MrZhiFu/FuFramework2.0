@@ -1,5 +1,5 @@
 using System;
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using EntityGroupCfg = Hotfix.Game.Config.Tables.EntityGroup;

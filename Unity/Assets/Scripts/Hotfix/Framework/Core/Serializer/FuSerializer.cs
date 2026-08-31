@@ -1,5 +1,5 @@
 using System;
-﻿using System.IO;
+using System.IO;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace

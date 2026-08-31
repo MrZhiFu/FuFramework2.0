@@ -1,5 +1,5 @@
 using Hotfix.Framework.Core;
-﻿using UnityEngine;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Variable

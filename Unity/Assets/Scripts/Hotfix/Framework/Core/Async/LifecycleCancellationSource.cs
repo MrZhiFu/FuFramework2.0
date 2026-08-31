@@ -36,7 +36,9 @@ namespace Hotfix.Framework.Core
         {
             var old = m_Cts;
             m_Cts = new CancellationTokenSource();
-            old?.Cancel(); // 先取消再释放：对已释放源 Cancel 会抛 ObjectDisposedException
+            
+            // 先取消再释放
+            old?.Cancel(); 
             old?.Dispose();
         }
 

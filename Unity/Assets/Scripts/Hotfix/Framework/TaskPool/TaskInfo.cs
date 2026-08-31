@@ -1,6 +1,5 @@
 using System;
-﻿using System.Runtime.InteropServices;
-using Hotfix.Framework.Core;
+using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.TaskPool

@@ -21,6 +21,8 @@ namespace Hotfix.Framework.Core
         UniTask CancelAsync();
     }
 
+    
+    
     /// <summary>
     /// 取消范围登记：实现 ICancelAsync（可取消 + 可 await 排水等待），内部持有 CTS + 在途计数 + 「全部完成」TCS，
     /// 供模块/装载器组合复用。
@@ -75,7 +77,9 @@ namespace Hotfix.Framework.Core
             m_InFlightCount++;
             return new BeginScope(this);
         }
-
+        
+        
+        
         /// <summary>
         /// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
         /// 共享同一 CancellationScope 引用，按值复制无堆分配。
