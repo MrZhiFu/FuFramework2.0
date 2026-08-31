@@ -6,9 +6,9 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// Web ProtoBuf 请求数据类，用于处理 Protocol Buffer 格式的 Web 请求。
+    /// Web Pb 请求数据类，用于处理 Protocol Buffer（ProtoBuf）格式的 Web 请求。
     /// </summary>
-    public sealed class WebProtoBufData : WebDataBase
+    public sealed class WebPbData : WebDataBase
     {
         /// <summary>
         /// 请求任务的完成源，用于异步操作的控制和结果返回。
@@ -21,14 +21,14 @@ namespace Hotfix.Framework.Web
         public readonly byte[] SendData;
 
         /// <summary>
-        /// 初始化 Web ProtoBuf 请求数据。
+        /// 初始化 Web Pb 请求数据。
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="sendData">要发送的 Protocol Buffer 序列化数据。</param>
         /// <param name="task">请求任务的完成源。</param>
         /// <param name="token">调用方取消令牌。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public WebProtoBufData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, CancellationToken token, object userData) : base(false, url, token, userData)
+        public WebPbData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, CancellationToken token, object userData) : base(false, url, token, userData)
         {
             task.CheckNull(nameof(task));
             SendData = sendData;

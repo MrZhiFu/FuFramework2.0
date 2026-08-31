@@ -6,9 +6,9 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// HTTP JSON结果数据类。
+    /// HTTP JSON 结果数据类。
     /// 功能：
-    ///     1.该类用于封装HTTP请求的返回结果，提供统一的结构以便于处理和解析响应数据。
+    ///     1.该类用于封装 HTTP 请求的返回结果，提供统一的结构以便于处理和解析响应数据。
     /// </summary>
     /// <typeparam name="T">消息类型，表示返回的数据对象的类型。</typeparam>
     public sealed class HttpJsonResultData<T>
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.Web
     public sealed class HttpJsonResult
     {
         /// <summary>
-        /// 响应码0表示响应成功
+        /// 响应码 0 表示响应成功。
         /// </summary>
         [JsonProperty(PropertyName = "code")]
         public int Code { get; set; }
@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Web
         public string Message { get; set; }
 
         /// <summary>
-        /// 响应数据.
+        /// 响应数据。
         /// </summary>
         [JsonProperty(PropertyName = "data")]
         public string Data { get; set; }

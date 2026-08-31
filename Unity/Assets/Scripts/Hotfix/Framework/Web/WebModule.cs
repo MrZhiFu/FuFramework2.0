@@ -43,19 +43,86 @@ namespace Hotfix.Framework.Web
         private readonly List<WebJsonDataBase> m_SendingJsonList = new(16);
 
         /// <summary>
-        /// 等待处理的 ProtoBuf 请求队列。
+        /// 等待处理的 Pb 请求队列。
         /// </summary>
-        private readonly Queue<WebProtoBufData> m_WaitingPbQueue = new(256);
+        private readonly Queue<WebPbData> m_WaitingPbQueue = new(256);
 
         /// <summary>
-        /// 正在处理的 ProtoBuf 请求列表。
+        /// 正在处理的 Pb 请求列表。
         /// </summary>
-        private readonly List<WebProtoBufData> m_SendingPbList = new(16);
+        private readonly List<WebPbData> m_SendingPbList = new(16);
 
         /// <summary>
-        /// ProtoBuf 内容类型常量。
+        /// Pb 内容类型常量。
         /// </summary>
-        private const string ProtoBufContentType = "application/x-protobuf";
+        private const string PbContentType = "application/x-protobuf";
+
+        #region 请求入队
+
+        /// <summary>
+        /// GET 字符串请求入队（公共 API 核心）。
+        /// </summary>
+        private UniTask<WebStringResult> GetToStringReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
+                                                     CancellationToken token, object userData = null)
+        {
+            // 模块已销毁（Token 取消）则拒绝新请求
+            m_Scope.Token.ThrowIfCancellationRequested();
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
+            url = UrlHandler(url, queryString);
+
+            var webJsonData = new WebJsonStringData(url, header, true, uniTaskCompletionSource, token, userData);
+            m_WaitingJsonQueue.Enqueue(webJsonData);
+            return uniTaskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// GET 字节数组请求入队（公共 API 核心）。
+        /// </summary>
+        private UniTask<WebBufferResult> GetToBytesReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
+        {
+            // 模块已销毁（Token 取消）则拒绝新请求
+            m_Scope.Token.ThrowIfCancellationRequested();
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
+            url = UrlHandler(url, queryString);
+
+            var webJsonData = new WebJsonBytesData(url, header, true, uniTaskCompletionSource, token, userData);
+            m_WaitingJsonQueue.Enqueue(webJsonData);
+            return uniTaskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// POST 字符串请求入队（公共 API 核心）。
+        /// </summary>
+        private UniTask<WebStringResult> PostToStringReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token,
+                                                      object userData = null)
+        {
+            // 模块已销毁（Token 取消）则拒绝新请求
+            m_Scope.Token.ThrowIfCancellationRequested();
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
+            url = UrlHandler(url, queryString);
+
+            var webJsonData = new WebJsonStringData(url, header, from, uniTaskCompletionSource, token, userData);
+            m_WaitingJsonQueue.Enqueue(webJsonData);
+            return uniTaskCompletionSource.Task;
+        }
+
+        /// <summary>
+        /// POST 字节数组请求入队（公共 API 核心）。
+        /// </summary>
+        private UniTask<WebBufferResult> PostToBytesReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token,
+                                                     object userData = null)
+        {
+            // 模块已销毁（Token 取消）则拒绝新请求
+            m_Scope.Token.ThrowIfCancellationRequested();
+            var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
+            url = UrlHandler(url, queryString);
+
+            var webJsonData = new WebJsonBytesData(url, header, from, uniTaskCompletionSource, token, userData);
+            m_WaitingJsonQueue.Enqueue(webJsonData);
+            return uniTaskCompletionSource.Task;
+        }
+
+        #endregion
 
         /// <summary>
         /// 初始化。
@@ -75,12 +142,12 @@ namespace Hotfix.Framework.Web
             if (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
             {
                 var webJsonData = m_WaitingJsonQueue.Dequeue();
-                MakeJsonRequest(webJsonData);
+                SendJsonReq(webJsonData);
                 m_SendingJsonList.Add(webJsonData);
             }
 
-            // 更新处理 ProtoBuf 请求队列
-            UpdateProtoBuf();
+            // 更新处理 Pb 请求队列
+            UpdatePbReq();
         }
 
         /// <summary>
@@ -91,7 +158,18 @@ namespace Hotfix.Framework.Web
             // 随模块销毁取消在途 Web 请求
             m_Scope.Cancel();
 
-            // 清理等待处理的请求队列
+            // 清空 JSON / Pb 请求队列与列表，取消未完成任务
+            ClearJsonReq();
+            ClearPbReq();
+
+            Instance = null;
+        }
+
+        /// <summary>
+        /// 清空 JSON 请求队列与列表，取消未完成的任务。
+        /// </summary>
+        private void ClearJsonReq()
+        {
             while (m_WaitingJsonQueue.Count > 0)
             {
                 var webData = m_WaitingJsonQueue.Dequeue();
@@ -100,7 +178,6 @@ namespace Hotfix.Framework.Web
 
             m_WaitingJsonQueue.Clear();
 
-            // 清理正在处理的请求列表
             while (m_SendingJsonList.Count > 0)
             {
                 var webData = m_SendingJsonList[0];
@@ -109,27 +186,22 @@ namespace Hotfix.Framework.Web
             }
 
             m_SendingJsonList.Clear();
-
-            // 清理 ProtoBuf
-            ShutdownProtoBuf();
-
-            Instance = null;
         }
 
         #region JSON 请求处理
 
         /// <summary>
-        /// 构建并发送 JSON 请求（GET/POST），完成回调按子类结果类型写回。
+        /// 构建并发送 JSON 请求（GET/POST），完成回调按子类结果类型（字符串或字节数组）写回。
         /// </summary>
-        /// <param name="webJsonData">JSON 请求数据（字符串或字节数组结果）。</param>
-        private void MakeJsonRequest(WebJsonDataBase webJsonData)
+        /// <param name="webJsonData">JSON 请求数据（WebJsonStringData 或 WebJsonBytesData）。</param>
+        private void SendJsonReq(WebJsonDataBase webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
             var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
 
-            unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
+            unityWebRequest.timeout = (int)ReqTimeout.TotalSeconds;
             if (webJsonData.Form is { Count: > 0 })
             {
                 unityWebRequest.SetRequestHeader("Content-Type", "application/json");
@@ -183,24 +255,23 @@ namespace Hotfix.Framework.Web
 
         #endregion
 
-        #region ProtoBuf 请求处理
+        #region Pb 请求处理
 
         /// <summary>
-        /// 更新处理 ProtoBuf 请求队列。
+        /// 更新处理 Pb 请求队列。
         /// </summary>
-        private void UpdateProtoBuf()
+        private void UpdatePbReq()
         {
-            // 主线程模型：与 OnUpdate 同线程，无需加锁
             if (m_SendingPbList.Count >= MaxConnectionPerServer || m_WaitingPbQueue.Count <= 0) return;
-            var webProtoBufData = m_WaitingPbQueue.Dequeue();
-            MakeProtoBufBytesRequest(webProtoBufData);
-            m_SendingPbList.Add(webProtoBufData);
+            var webPbData = m_WaitingPbQueue.Dequeue();
+            SendPbReq(webPbData);
+            m_SendingPbList.Add(webPbData);
         }
 
         /// <summary>
-        /// 关闭 ProtoBuf 请求处理，清理资源。
+        /// 清空 Pb 请求队列与列表，取消未完成的任务。
         /// </summary>
-        private void ShutdownProtoBuf()
+        private void ClearPbReq()
         {
             while (m_WaitingPbQueue.Count > 0)
             {
@@ -221,16 +292,16 @@ namespace Hotfix.Framework.Web
         }
 
         /// <summary>
-        /// 执行 ProtoBuf 字节请求。
+        /// 构建并发送 Pb 请求，完成回调写回字节结果。
         /// </summary>
-        /// <param name="webData">ProtoBuf 请求数据。</param>
-        private void MakeProtoBufBytesRequest(WebProtoBufData webData)
+        /// <param name="webData">Pb 请求数据。</param>
+        private void SendPbReq(WebPbData webData)
         {
             var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var unityWebRequest = webData.IsGet ? UnityWebRequest.Get(webData.URL) : UnityWebRequest.PostWwwForm(webData.URL, string.Empty);
 
-            unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
-            unityWebRequest.SetRequestHeader("Content-Type", ProtoBufContentType);
+            unityWebRequest.timeout = (int)ReqTimeout.TotalSeconds;
+            unityWebRequest.SetRequestHeader("Content-Type", PbContentType);
             unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.SendData);
 
             var asyncOperation = unityWebRequest.SendWebRequest();
@@ -266,14 +337,14 @@ namespace Hotfix.Framework.Web
         }
 
         /// <summary>
-        /// 内部 Post 请求处理方法。
+        /// Pb POST 请求入队（公共 API 核心）。
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="message">消息对象。</param>
         /// <param name="token">调用方取消令牌。</param>
         /// <param name="userData">用户自定义数据。</param>
         /// <returns>返回 WebBufferResult 类型的异步任务。</returns>
-        private UniTask<WebBufferResult> PostInternal(string url, MessageObject message, CancellationToken token, object userData = null)
+        private UniTask<WebBufferResult> PostPbReq(string url, MessageObject message, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -286,7 +357,7 @@ namespace Hotfix.Framework.Web
                 Body     = SerializerHelper.Serialize(message),
             };
             var sendData = SerializerHelper.Serialize(messageHttpObject);
-            var webData  = new WebProtoBufData(url, sendData, uniTaskCompletionSource, token, userData);
+            var webData  = new WebPbData(url, sendData, uniTaskCompletionSource, token, userData);
             m_WaitingPbQueue.Enqueue(webData);
             return uniTaskCompletionSource.Task;
         }
@@ -331,7 +402,7 @@ namespace Hotfix.Framework.Web
         {
             if (unityWebRequest.error == null) return false;
 
-            return unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) < 0;
+            return unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

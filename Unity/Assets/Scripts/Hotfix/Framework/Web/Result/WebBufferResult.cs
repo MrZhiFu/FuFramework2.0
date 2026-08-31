@@ -2,9 +2,9 @@
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// Web缓冲区结果类。
+    /// Web 字节数组结果类。
     /// 功能：
-    ///     1.用于封装Web请求的缓冲区结果，包含用户自定义数据和请求结果。
+    ///     1.用于封装 Web 请求的字节数组结果，包含用户自定义数据和请求结果。
     /// </summary>
     public sealed class WebBufferResult
     {
