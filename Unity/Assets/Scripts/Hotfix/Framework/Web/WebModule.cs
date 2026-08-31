@@ -75,17 +75,7 @@ namespace Hotfix.Framework.Web
             if (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
             {
                 var webJsonData = m_WaitingJsonQueue.Dequeue();
-
-                switch (webJsonData)
-                {
-                    case WebJsonStringData stringData:
-                        MakeJsonStringRequest(stringData);
-                        break;
-                    case WebJsonBytesData bytesData:
-                        MakeJsonBytesRequest(bytesData);
-                        break;
-                }
-
+                MakeJsonRequest(webJsonData);
                 m_SendingJsonList.Add(webJsonData);
             }
 
@@ -129,9 +119,10 @@ namespace Hotfix.Framework.Web
         #region JSON 请求处理
 
         /// <summary>
-        /// 处理 JSON 字符串请求。
+        /// 构建并发送 JSON 请求（GET/POST），完成回调按子类结果类型写回。
         /// </summary>
-        private void MakeJsonStringRequest(WebJsonStringData webJsonData)
+        /// <param name="webJsonData">JSON 请求数据（字符串或字节数组结果）。</param>
+        private void MakeJsonRequest(WebJsonDataBase webJsonData)
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
@@ -163,7 +154,7 @@ namespace Hotfix.Framework.Web
                     // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
                     if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webJsonData.Token.IsCancellationRequested)
                     {
-                        webJsonData.UniTaskCompletionStringSource.TrySetCanceled();
+                        webJsonData.CompleteCanceled();
                         return;
                     }
 
@@ -173,76 +164,15 @@ namespace Hotfix.Framework.Web
                         FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
 
                         // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
-                        if (IsUnityWebRequestTimeout(unityWebRequest))
-                            webJsonData.UniTaskCompletionStringSource.TrySetException(new TimeoutException(unityWebRequest.error));
+                        if (IsTimeout(unityWebRequest))
+                            webJsonData.CompleteError(new TimeoutException(unityWebRequest.error));
                         else
-                            webJsonData.UniTaskCompletionStringSource.TrySetException(new Exception(unityWebRequest.error));
+                            webJsonData.CompleteError(new Exception(unityWebRequest.error));
                         return;
                     }
 
-                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.text}");
-                    webJsonData.UniTaskCompletionStringSource.TrySetResult(new WebStringResult(webJsonData.UserData, unityWebRequest.downloadHandler.text));
-                }
-                finally
-                {
-                    unityWebRequest.Dispose(); // 无论成败均释放原生资源（UnityWebRequest 官方要求）
-                }
-            };
-        }
-
-        /// <summary>
-        /// 处理 JSON 字节数组请求。
-        /// </summary>
-        private void MakeJsonBytesRequest(WebJsonBytesData webJsonData)
-        {
-            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
-
-            var capturedToken   = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
-            var unityWebRequest = webJsonData.IsGet ? UnityWebRequest.Get(webJsonData.URL) : UnityWebRequest.PostWwwForm(webJsonData.URL, string.Empty);
-
-            unityWebRequest.timeout = (int)RequestTimeout.TotalSeconds;
-            if (webJsonData.Form is { Count: > 0 })
-            {
-                unityWebRequest.SetRequestHeader("Content-Type", "application/json");
-                var body     = UtilityAOT.Json.ToJson(webJsonData.Form);
-                var postData = Encoding.UTF8.GetBytes(body);
-                unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
-            }
-
-            if (webJsonData.Header is { Count: > 0 })
-            {
-                foreach (var kv in webJsonData.Header)
-                {
-                    unityWebRequest.SetRequestHeader(kv.Key, kv.Value);
-                }
-            }
-
-            var asyncOperation = unityWebRequest.SendWebRequest();
-            asyncOperation.completed += _ =>
-            {
-                try
-                {
-                    // 模块已销毁/生命周期变更（重启）：旧在途请求按取消处理，不再写回结果
-                    if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || webJsonData.Token.IsCancellationRequested)
-                    {
-                        webJsonData.UniTaskCompletionBytesSource.TrySetCanceled();
-                        return;
-                    }
-
-                    m_SendingJsonList.Remove(webJsonData);
-                    if (unityWebRequest.result != UnityWebRequest.Result.Success)
-                    {
-                        FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.error}");
-                        // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
-                        if (IsUnityWebRequestTimeout(unityWebRequest))
-                            webJsonData.UniTaskCompletionBytesSource.TrySetException(new TimeoutException(unityWebRequest.error));
-                        else
-                            webJsonData.UniTaskCompletionBytesSource.TrySetException(new Exception(unityWebRequest.error));
-                        return;
-                    }
-
-                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)} \n Content: {unityWebRequest.downloadHandler.data}");
-                    webJsonData.UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(webJsonData.UserData, unityWebRequest.downloadHandler.data));
+                    FuLogger.LogInfo($"Web Response: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
+                    webJsonData.Complete(unityWebRequest);
                 }
                 finally
                 {
@@ -319,7 +249,7 @@ namespace Hotfix.Framework.Web
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {
                         // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
-                        if (IsUnityWebRequestTimeout(unityWebRequest))
+                        if (IsTimeout(unityWebRequest))
                             webData.CompletionSource.TrySetException(new TimeoutException(unityWebRequest.error));
                         else
                             webData.CompletionSource.TrySetException(new Exception(unityWebRequest.error));
@@ -397,7 +327,7 @@ namespace Hotfix.Framework.Web
         /// </summary>
         /// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
         /// <returns>是否超时。</returns>
-        private static bool IsUnityWebRequestTimeout(UnityWebRequest unityWebRequest)
+        private static bool IsTimeout(UnityWebRequest unityWebRequest)
         {
             if (unityWebRequest.error == null) return false;
 

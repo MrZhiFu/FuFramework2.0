@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine.Networking;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -48,5 +50,22 @@ namespace Hotfix.Framework.Web
             Header = header;
             Form   = form;
         }
+
+        /// <summary>
+        /// 请求成功：按子类结果类型提取并写回结果。
+        /// </summary>
+        /// <param name="request">已完成的请求。</param>
+        public abstract void Complete(UnityWebRequest request);
+
+        /// <summary>
+        /// 请求取消：取消未完成的任务。
+        /// </summary>
+        public abstract void CompleteCanceled();
+
+        /// <summary>
+        /// 请求失败：向任务完成源写入异常。
+        /// </summary>
+        /// <param name="exception">异常。</param>
+        public abstract void CompleteError(Exception exception);
     }
 }

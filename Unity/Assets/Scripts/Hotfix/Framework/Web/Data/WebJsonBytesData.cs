@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine.Networking;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -44,6 +46,26 @@ namespace Hotfix.Framework.Web
         {
             UniTaskCompletionBytesSource = source;
         }
+
+        /// <summary>
+        /// 请求成功：提取字节数组结果并写回任务完成源。
+        /// </summary>
+        /// <param name="request">已完成的请求。</param>
+        public override void Complete(UnityWebRequest request)
+        {
+            UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
+        }
+
+        /// <summary>
+        /// 请求取消：取消未完成的任务。
+        /// </summary>
+        public override void CompleteCanceled() => UniTaskCompletionBytesSource.TrySetCanceled();
+
+        /// <summary>
+        /// 请求失败：向任务完成源写入异常。
+        /// </summary>
+        /// <param name="exception">异常。</param>
+        public override void CompleteError(Exception exception) => UniTaskCompletionBytesSource.TrySetException(exception);
 
         /// <summary>
         /// 释放资源，取消未完成的任务。
