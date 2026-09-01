@@ -63,7 +63,7 @@ namespace Hotfix.Framework.Web
         /// GET 字符串请求入队（公共 API 核心）。
         /// </summary>
         private UniTask<WebStringResult> GetToStringReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
-                                                     CancellationToken token, object userData = null)
+                                                        CancellationToken token, object userData = null)
         {
             // 模块已销毁或调用方已取消则拒绝新请求
             m_Scope.Token.ThrowIfCancellationRequested();
@@ -95,8 +95,9 @@ namespace Hotfix.Framework.Web
         /// <summary>
         /// POST 字符串请求入队（公共 API 核心）。
         /// </summary>
-        private UniTask<WebStringResult> PostToStringReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token,
-                                                      object userData = null)
+        private UniTask<WebStringResult> PostToStringReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header,
+                                                         CancellationToken token,
+                                                         object userData = null)
         {
             // 模块已销毁或调用方已取消则拒绝新请求
             m_Scope.Token.ThrowIfCancellationRequested();
@@ -113,7 +114,7 @@ namespace Hotfix.Framework.Web
         /// POST 字节数组请求入队（公共 API 核心）。
         /// </summary>
         private UniTask<WebBufferResult> PostToBytesReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token,
-                                                     object userData = null)
+                                                        object userData = null)
         {
             // 模块已销毁或调用方已取消则拒绝新请求
             m_Scope.Token.ThrowIfCancellationRequested();
@@ -205,13 +206,13 @@ namespace Hotfix.Framework.Web
         {
             FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
 
-            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+            var capturedToken = m_Scope.Token;     // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var sendingList   = m_SendingJsonList; // 捕获发送列表引用，完成回调不捕获 this（模块实例）
-            var inFlight      = m_Scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+            var inFlight      = m_Scope.Begin();   // 登记在途：CancelAsync 等待本请求清理完毕
 
-            UnityWebRequest unityWebRequest = null;
-            CancellationTokenSource linkedCts = null;
-            var abortRegistration = default(CancellationTokenRegistration);
+            UnityWebRequest         unityWebRequest   = null;
+            CancellationTokenSource linkedCts         = null;
+            var                     abortRegistration = default(CancellationTokenRegistration);
             try
             {
                 // POST 手动构造（避免 PostWwwForm 先生成空 WWWForm 再被替换的重复分配）
@@ -251,7 +252,7 @@ namespace Hotfix.Framework.Web
                 // Abort 防御包裹：请求可能已由回调释放（Abort 与 completed 同在主线程，实际不并发，纯防御）。
                 if (capturedToken.CanBeCanceled || webJsonData.Token.CanBeCanceled)
                 {
-                    linkedCts         = CancellationTokenSource.CreateLinkedTokenSource(capturedToken, webJsonData.Token);
+                    linkedCts = CancellationTokenSource.CreateLinkedTokenSource(capturedToken, webJsonData.Token);
                     abortRegistration = linkedCts.Token.Register(() =>
                     {
                         try
@@ -297,10 +298,10 @@ namespace Hotfix.Framework.Web
                     }
                     finally
                     {
-                        abortRegistration.Dispose();  // 注销取消回调，释放对请求的引用
-                        linkedCts?.Dispose();         // 释放链接 CTS（可能未创建）
-                        unityWebRequest.Dispose();     // 无论成败均释放原生资源（UnityWebRequest 官方要求）
-                        inFlight.Dispose();            // 结束在途登记，CancelAsync 据此等待清理完毕
+                        abortRegistration.Dispose(); // 注销取消回调，释放对请求的引用
+                        linkedCts?.Dispose();        // 释放链接 CTS（可能未创建）
+                        unityWebRequest.Dispose();   // 无论成败均释放原生资源（UnityWebRequest 官方要求）
+                        inFlight.Dispose();          // 结束在途登记，CancelAsync 据此等待清理完毕
                     }
                 };
                 return true;
@@ -366,13 +367,13 @@ namespace Hotfix.Framework.Web
         /// <returns>是否成功发起并登记在途；构造失败返回 false（已回写异常，调用方不会挂起）。</returns>
         private bool SendPbReq(WebPbData webData)
         {
-            var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+            var capturedToken = m_Scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var sendingList   = m_SendingPbList; // 捕获发送列表引用，完成回调不捕获 this（模块实例）
             var inFlight      = m_Scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
 
-            UnityWebRequest unityWebRequest = null;
-            CancellationTokenSource linkedCts = null;
-            var abortRegistration = default(CancellationTokenRegistration);
+            UnityWebRequest         unityWebRequest   = null;
+            CancellationTokenSource linkedCts         = null;
+            var                     abortRegistration = default(CancellationTokenRegistration);
             try
             {
                 // Pb 请求一律 POST；手动构造避免 PostWwwForm 先生成空 WWWForm 的重复分配
@@ -392,7 +393,7 @@ namespace Hotfix.Framework.Web
                 // Abort 防御包裹：请求可能已由回调释放（Abort 与 completed 同在主线程，实际不并发，纯防御）。
                 if (capturedToken.CanBeCanceled || webData.Token.CanBeCanceled)
                 {
-                    linkedCts         = CancellationTokenSource.CreateLinkedTokenSource(capturedToken, webData.Token);
+                    linkedCts = CancellationTokenSource.CreateLinkedTokenSource(capturedToken, webData.Token);
                     abortRegistration = linkedCts.Token.Register(() =>
                     {
                         try
@@ -435,10 +436,10 @@ namespace Hotfix.Framework.Web
                     }
                     finally
                     {
-                        abortRegistration.Dispose();  // 注销取消回调，释放对请求的引用
-                        linkedCts?.Dispose();         // 释放链接 CTS（可能未创建）
-                        unityWebRequest.Dispose();     // 无论成败均释放原生资源（UnityWebRequest 官方要求）
-                        inFlight.Dispose();            // 结束在途登记，CancelAsync 据此等待清理完毕
+                        abortRegistration.Dispose(); // 注销取消回调，释放对请求的引用
+                        linkedCts?.Dispose();        // 释放链接 CTS（可能未创建）
+                        unityWebRequest.Dispose();   // 无论成败均释放原生资源（UnityWebRequest 官方要求）
+                        inFlight.Dispose();          // 结束在途登记，CancelAsync 据此等待清理完毕
                     }
                 };
                 return true;
@@ -466,7 +467,7 @@ namespace Hotfix.Framework.Web
         private UniTask<WebBufferResult> PostPbReq(string url, MessageObject message, CancellationToken token, object userData = null)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
-            token.ThrowIfCancellationRequested(); // 调用方已取消则拒绝新请求
+            token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
             url = UrlHandler(url, null);
             var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());

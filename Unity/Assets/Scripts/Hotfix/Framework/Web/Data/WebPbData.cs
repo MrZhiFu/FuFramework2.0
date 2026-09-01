@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Web
         public WebPbData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, CancellationToken token, object userData) : base(false, url, token, userData)
         {
             task.CheckNull(nameof(task));
-            SendData = sendData;
+            SendData         = sendData;
             CompletionSource = task;
         }
 

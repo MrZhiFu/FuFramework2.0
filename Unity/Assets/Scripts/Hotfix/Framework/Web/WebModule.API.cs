@@ -195,8 +195,7 @@ namespace Hotfix.Framework.Web
             var messageType = ProtoMessageIdHandler.GetRespTypeById(messageObjectHttp.Id);
             if (messageType != typeof(T))
             {
-                throw new InvalidOperationException(
-                    $"响应消息类型不匹配: 期望 '{typeof(T).FullName}', 实际 '{messageType?.FullName ?? "未知"}'");
+                throw new InvalidOperationException($"响应消息类型不匹配: 期望 '{typeof(T).FullName}', 实际 '{messageType?.FullName ?? "未知"}'");
             }
 
             T result;

@@ -41,7 +41,8 @@ namespace Hotfix.Framework.Web
         /// <param name="source">字符串结果的任务完成源。</param>
         /// <param name="token">调用方取消令牌。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public WebJsonStringData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebStringResult> source, CancellationToken token, object userData = null)
+        public WebJsonStringData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebStringResult> source, CancellationToken token,
+                                 object userData = null)
             : base(false, url, header, form, token, userData)
         {
             UniTaskCompletionStringSource = source;
