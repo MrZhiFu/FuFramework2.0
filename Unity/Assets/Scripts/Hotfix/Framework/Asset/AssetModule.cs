@@ -6,7 +6,6 @@ using YooAsset;
 using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Asset
@@ -14,7 +13,7 @@ namespace Hotfix.Framework.Asset
     /// <summary>
     /// 资源管理模块。
     /// 功能：
-    ///     1. 封装了YooAsset的资源管理接口，提供更高级的UniTask异步资源加载相关接口。
+    ///     1. 封装了 YooAsset 的资源管理接口，提供更高级的 UniTask 异步资源加载相关接口。
     ///     2. 提供默认资源包的资源加载、卸载与查询能力。
     /// </summary>
     public partial class AssetModule : ModuleBase, ICancelAsync
@@ -31,59 +30,18 @@ namespace Hotfix.Framework.Asset
         private CancellationScope m_Scope = new();
 
         /// <summary>
-        /// 实例化资源引用管理，key:资源路径，value:句柄 + 引用计数。
+        /// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
         /// 实例化对象共享资源引用，调用方在实例销毁时通过 ReleaseInstantiate 释放。
         /// </summary>
         private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
 
         /// <summary>
-        /// 实例化首次加载去重字典，key:资源路径，value:共享完成源。
+        /// 实例化首次加载去重字典，key 为资源路径，value 为共享完成源。
         /// 同一路径并发首次实例化共享完成源（UniTaskCompletionSource.Task 可被多个调用方 await），
         /// 防止同一 pending 任务被二次 await 抛 "Already continuation registered"，
         /// 也保证同一路径仅加载一次、仅产生一个句柄。
         /// </summary>
         private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_InstantiateLoadingTasks = new();
-
-        /// <summary>
-        /// 实例化引用：句柄 + 引用计数。
-        /// 同一路径多个实例共享一个句柄，引用计数跟踪活跃实例数，
-        /// 计数归零时释放句柄（见 AssetModule.ReleaseInstantiate），让资源可被卸载。
-        /// </summary>
-        private sealed class InstantiateRef
-        {
-            /// <summary>
-            /// 资源句柄，持有 YooAsset 的资源引用。
-            /// </summary>
-            public AssetHandle Handle;
-
-            /// <summary>
-            /// 引用计数，即该路径当前活跃的实例化对象数。
-            /// </summary>
-            public int RefCount;
-        }
-
-        /// <summary>
-        /// 实例化结果。携带实例对象、资源路径与创建时捕获的生命周期 Token。
-        /// 实例销毁时调用 AssetModule.ReleaseInstantiate(result) 释放引用；
-        /// 重启（OnDispose/重新初始化）后旧生命周期结果携带的 Token 与当前不同，会被识别并忽略，避免误释放新生命周期同路径引用。
-        /// </summary>
-        public sealed class InstantiateResult
-        {
-            /// <summary>
-            /// 实例化出的 GameObject 对象。
-            /// </summary>
-            public GameObject Instance { get; internal set; }
-
-            /// <summary>
-            /// 实例来源的资源路径。
-            /// </summary>
-            public string Path { get; internal set; }
-
-            /// <summary>
-            /// 创建本结果时捕获的生命周期 Token（旧生命周期结果重启后据此识别并忽略释放）。
-            /// </summary>
-            public CancellationToken Token { get; internal set; }
-        }
 
         /// <summary>
         /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
@@ -124,6 +82,7 @@ namespace Hotfix.Framework.Asset
                 kvp.Value.Handle.Release();
                 UnloadAsset(kvp.Key);
             }
+
             m_InstantiateRefDict.Clear();
 
             // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 Token 取消检查自行释放句柄，不得再写回引用字典）。
@@ -200,9 +159,10 @@ namespace Hotfix.Framework.Asset
                     {
                         handle.Release();
 
-                        // 跨生命周期中止：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
+                        // 中止路径（调用方取消/跨生命周期）：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
                         UnloadAsset(path);
                     }
+
                     sharedSource.TrySetException(new OperationCanceledException(capturedToken));
                     return;
                 }
@@ -211,7 +171,7 @@ namespace Hotfix.Framework.Asset
             }
             catch (Exception e)
             {
-                if (handle != null && handle.IsValid) handle.Release();
+                if (handle is { IsValid: true }) handle.Release();
                 sharedSource.TrySetException(e);
             }
             finally
