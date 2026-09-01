@@ -402,16 +402,26 @@ public async UniTask SendPbRequest()
     var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）
     var request = new MyRequestMessage { /* ... */ };
 
-    // Post<T> 负责序列化、发送、接收、反序列化全过程
-    MyResponseMessage response = await WebModule.Instance.Post<MyResponseMessage>(
-        "https://api.example.com/proto/endpoint",
-        request,
-        token
-    );
-
-    if (response != null)
+    try
     {
-        // 处理响应
+        // Post<T> 负责序列化、发送、接收、反序列化全过程。
+        // 协议失败（响应消息头解析失败/Id 无效/类型不匹配/反序列化失败）抛 InvalidOperationException，
+        // 网络/超时抛对应异常，调用方取消抛 OperationCanceledException——均需 try-catch 或交由上层统一处理。
+        MyResponseMessage response = await WebModule.Instance.Post<MyResponseMessage>(
+            "https://api.example.com/proto/endpoint",
+            request,
+            token
+        );
+
+        // 业务处理（response 恒非 null）
+    }
+    catch (OperationCanceledException)
+    {
+        // 界面关闭/模块销毁导致的请求取消：按生命周期契约静默返回
+    }
+    catch (Exception e)
+    {
+        UnityEngine.Debug.LogError($"Pb 请求异常: {e.Message}");
     }
 }
 ```
@@ -488,4 +498,5 @@ Web/
 8. GET 请求的 `queryString` 参数会通过 `UrlHandler` 自动拼接到 URL 上
 9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
 10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒
-11. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_Scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）
+11. **`Post<T>` 协议契约**：`Post<T>` 不做静默失败——响应消息头解析失败（`MessageHttpObject` 为空/Id 无效）、响应类型与 `T` 不匹配、反序列化失败时均抛 `InvalidOperationException`（含 URL 与期望/实际类型），返回的 `T` 恒非 null；调用方应 try-catch 或交由上层统一处理
+12. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_Scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）

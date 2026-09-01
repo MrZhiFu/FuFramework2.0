@@ -176,20 +176,43 @@ namespace Hotfix.Framework.Web
         public async UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
         {
             var webBufferResult = await PostPbReq(url, message, token);
-            if (!webBufferResult.IsNotNull()) return default;
+            if (webBufferResult.IsNull())
+                throw new InvalidOperationException($"Web 请求未返回结果: {url}");
 
-            var messageObjectHttp = SerializerHelper.Deserialize<MessageHttpObject>(webBufferResult.Result);
+            MessageHttpObject messageObjectHttp;
+            try
+            {
+                messageObjectHttp = SerializerHelper.Deserialize<MessageHttpObject>(webBufferResult.Result);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"响应消息头反序列化失败: {url} ({e.Message})", e);
+            }
 
-            if (!messageObjectHttp.IsNotNull() || messageObjectHttp.Id == default) return default;
+            if (messageObjectHttp.IsNull() || messageObjectHttp.Id == default)
+                throw new InvalidOperationException($"响应消息头解析失败（消息为空或 Id 无效）: {url}");
 
             var messageType = ProtoMessageIdHandler.GetRespTypeById(messageObjectHttp.Id);
             if (messageType != typeof(T))
             {
-                FuLogger.LogError($"Response message type is invalid. Expected '{typeof(T).FullName}', actual '{messageType.FullName}'.");
-                return default;
+                throw new InvalidOperationException(
+                    $"响应消息类型不匹配: 期望 '{typeof(T).FullName}', 实际 '{messageType?.FullName ?? "未知"}'");
             }
 
-            return SerializerHelper.Deserialize<T>(messageObjectHttp.Body);
+            T result;
+            try
+            {
+                result = SerializerHelper.Deserialize<T>(messageObjectHttp.Body);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"响应消息体反序列化失败: {messageType.FullName} ({e.Message})", e);
+            }
+
+            if (result.IsNull())
+                throw new InvalidOperationException($"响应消息体反序列化为空: {messageType.FullName}");
+
+            return result;
         }
 
         #endregion

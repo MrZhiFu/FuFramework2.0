@@ -185,6 +185,11 @@ namespace Hotfix.Framework.UI
                     onExternalLoadFailed();
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // 加载器被移除/销毁（Dispose）时取消在途下载：预期关停，静默释放句柄即可，不回调不刷错误日志
+                assetHandle?.Release();
+            }
             catch (Exception e)
             {
                 // 异常时确保释放资源句柄
