@@ -133,7 +133,7 @@ namespace Hotfix.Framework.UI
                 }
 
                 // 根据URL类型加载纹理
-                Texture2D   texture2D   = null;
+                Texture2D texture2D = null;
                 if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
                 {
                     // 3.从网络加载（同一URL并发请求复用同一个下载任务）
@@ -188,7 +188,7 @@ namespace Hotfix.Framework.UI
             catch (Exception e)
             {
                 // 异常时确保释放资源句柄
-                if (assetHandle.IsNotNull())
+                if (assetHandle != null)
                 {
                     assetHandle.Release();
                     assetHandle = null;
