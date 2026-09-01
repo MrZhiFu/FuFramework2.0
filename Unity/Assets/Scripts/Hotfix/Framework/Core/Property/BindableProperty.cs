@@ -16,30 +16,30 @@ namespace Hotfix.Framework.Core
         /// <summary>
         /// 值
         /// </summary>
-        private T m_value;
+        private T m_Value;
 
         /// <summary>
         /// 值变化事件
         /// </summary>
-        private Action<T> m_onValueChanged;
+        private Action<T> m_OnValueChanged;
 
         /// <summary>
         /// 值
         /// </summary>
         public T Value
         {
-            get => m_value;
+            get => m_Value;
             set
             {
-                if (Equals(m_value, value)) return;
-                m_value = value;
-                m_onValueChanged?.Invoke(m_value);
+                if (Equals(m_Value, value)) return;
+                m_Value = value;
+                m_OnValueChanged?.Invoke(m_Value);
             }
         }
 
         private BindableProperty()
         {
-            m_onValueChanged = null;
+            m_OnValueChanged = null;
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Core
         /// <param name="defaultValue">默认值</param>
         public BindableProperty(T defaultValue = default) : this()
         {
-            m_value = defaultValue;
+            m_Value = defaultValue;
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Hotfix.Framework.Core
         public BindableProperty<T> Register(Action<T> callback)
         {
             callback.NotNull(nameof(callback));
-            m_onValueChanged += callback;
+            m_OnValueChanged += callback;
             return this;
         }
 
@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Core
         public BindableProperty<T> RegisterWithInitValue(Action<T> callback)
         {
             callback.NotNull(nameof(callback));
-            callback?.Invoke(m_value);
+            callback?.Invoke(m_Value);
             return Register(callback);
         }
 
@@ -82,7 +82,7 @@ namespace Hotfix.Framework.Core
         public void UnRegister(Action<T> callback)
         {
             callback.NotNull(nameof(callback));
-            m_onValueChanged -= callback;
+            m_OnValueChanged -= callback;
         }
 
         /// <summary>
@@ -90,8 +90,8 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public void Clear()
         {
-            m_value = default;
-            m_onValueChanged = null;
+            m_Value = default;
+            m_OnValueChanged = null;
         }
     }
 }

@@ -17,7 +17,9 @@ namespace Hotfix.Framework.Core
     /// <typeparam name="T">要序列化的数据类型。</typeparam>
     public abstract class FuSerializer<T>
     {
+        /// <summary>
         /// 最新的序列化回调函数的版本
+        /// </summary>
         private byte m_LatestSerializeCbVersion;
 
 
@@ -28,10 +30,12 @@ namespace Hotfix.Framework.Core
         /// <param name="data">要序列化的数据。</param>
         /// <returns>是否序列化数据成功。</returns>
         public delegate bool SerializeCallback(Stream stream, T data);
-        
-        /// 序列化回调函数的字典, key:回调函数的版本--Value:回调函数
+
+        /// <summary>
+        /// 序列化回调函数的字典, key:回调函数的版本, value:回调函数
+        /// </summary>
         private readonly Dictionary<byte, SerializeCallback> m_SerializeCbDict;
-        
+
 
         /// <summary>
         /// 反序列化回调函数。
@@ -40,7 +44,9 @@ namespace Hotfix.Framework.Core
         /// <returns>反序列化的数据。</returns>
         public delegate T DeserializeCallback(Stream stream);
 
-        /// 反序列化回调函数的字典, key:回调函数的版本--Value:回调函数
+        /// <summary>
+        /// 反序列化回调函数的字典, key:回调函数的版本, value:回调函数
+        /// </summary>
         private readonly Dictionary<byte, DeserializeCallback> m_DeserializeCbDict;
 
 
@@ -53,7 +59,9 @@ namespace Hotfix.Framework.Core
         /// <returns>是否从指定流获取指定键的值成功。</returns>
         public delegate bool TryGetValueCallback(Stream stream, string key, out object value);
 
-        /// 取值回调函数的字典, key:回调函数的版本--Value:回调函数
+        /// <summary>
+        /// 取值回调函数的字典, key:回调函数的版本, value:回调函数
+        /// </summary>
         private readonly Dictionary<byte, TryGetValueCallback> m_TryGetValueCbDict;
 
 
@@ -151,7 +159,7 @@ namespace Hotfix.Framework.Core
             var header2 = (byte)stream.ReadByte();
 
             if (header0 != header[0] || header1 != header[1] || header2 != header[2])
-                throw new InvalidOperationException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 文件中为 '{ (char)header0}{(char)header1}{(char)header2}'.");
+                throw new InvalidOperationException($"标头无效, 需要 '{(char)header[0]}{(char)header[1]}{(char)header[2]}', 文件中为 '{(char)header0}{(char)header1}{(char)header2}'.");
 
             var version = (byte)stream.ReadByte();
             if (!m_DeserializeCbDict.TryGetValue(version, out var callback))
