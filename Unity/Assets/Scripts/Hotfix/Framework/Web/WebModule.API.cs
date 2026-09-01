@@ -13,8 +13,9 @@ namespace Hotfix.Framework.Web
     /// <summary>
     /// Web 管理模块的公共 API。
     /// 功能：
-    ///     1. 提供 GET/POST 的字符串、字节数组、ProtoBuf 三种请求接口。
-    ///     2. 提供超时与并发配置。
+    ///     1. 提供 GET/POST 请求：字符串（GetToString/PostToString）、字节数组（GetToBytes/PostToBytes）、Pb 强类型（Post&lt;T&gt;）。
+    ///     2. 提供超时（Timeout/ReqTimeout）与每服务器并发上限（MaxConnectionPerServer）配置。
+    ///     3. 实现 ICancelAsync：Token 观察生命周期取消，CancelAsync 供框架重启排水等待。
     /// </summary>
     public partial class WebModule
     {
@@ -160,18 +161,20 @@ namespace Hotfix.Framework.Web
 
         #endregion
 
-        #region Post 返回Pb对象的请求
+        #region POST 返回 Pb 对象的请求
 
         /// <summary>
-        /// 发送 Pb POST 请求。
+        /// 发送 Pb POST 请求，负责序列化、发送、接收、反序列化全过程。
         /// </summary>
         /// <param name="url">目标服务器的 URL 地址。</param>
         /// <param name="message">要发送的消息对象，必须继承自 MessageObject。</param>
         /// <param name="token">调用方取消令牌。</param>
         /// <typeparam name="T">返回的数据类型，必须继承自 MessageObject 并且实现 IResponseMessage 接口。</typeparam>
-        /// <returns>返回一个任务对象，该任务完成时将包含从服务器接收到的响应数据，数据类型为 T。</returns>
+        /// <returns>反序列化后的响应数据，成功时恒非 null。</returns>
         /// <remarks>
-        /// 此方法用于向指定的 URL 发送 POST 请求，并接收响应。请求的消息体由参数 message 提供，而响应则会被解析为指定的泛型类型 T。
+        /// 协议失败（响应消息头反序列化失败、消息为空或 Id 无效、响应类型与 T 不匹配、消息体反序列化失败）抛
+        /// <see cref="InvalidOperationException"/>；网络错误/超时抛 <see cref="TimeoutException"/> 或通用异常；
+        /// 调用方取消抛 <see cref="OperationCanceledException"/>。调用方应 try-catch 或交由上层统一处理。
         /// </remarks>
         public async UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
         {

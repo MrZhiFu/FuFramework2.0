@@ -25,14 +25,15 @@ namespace Hotfix.Framework.Web
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="sendData">要发送的 Protocol Buffer 序列化数据。</param>
-        /// <param name="task">请求任务的完成源。</param>
+        /// <param name="source">请求任务的完成源。</param>
         /// <param name="token">调用方取消令牌。</param>
         /// <param name="userData">用户自定义数据。</param>
-        public WebPbData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> task, CancellationToken token, object userData) : base(false, url, token, userData)
+        public WebPbData(string url, byte[] sendData, UniTaskCompletionSource<WebBufferResult> source, CancellationToken token, object userData = null)
+            : base(false, url, token, userData)
         {
-            task.CheckNull(nameof(task));
+            source.CheckNull(nameof(source));
             SendData         = sendData;
-            CompletionSource = task;
+            CompletionSource = source;
         }
 
         /// <summary>

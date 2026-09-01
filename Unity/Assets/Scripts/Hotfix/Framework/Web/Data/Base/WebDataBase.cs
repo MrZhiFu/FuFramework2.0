@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Web
         }
 
         /// <summary>
-        /// 释放资源。
+        /// 释放资源。基类默认空实现，子类重写为取消未完成的任务（TrySetCanceled）。
         /// </summary>
         public virtual void Dispose() { }
     }
