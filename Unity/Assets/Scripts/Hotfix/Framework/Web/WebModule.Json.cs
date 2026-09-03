@@ -17,6 +17,21 @@ namespace Hotfix.Framework.Web
     public partial class WebModule
     {
         /// <summary>
+        /// 更新处理 JSON 请求队列。
+        /// </summary>
+        private void UpdateJsonReq()
+        {
+            // 每帧填满全部空闲并发槽位（而非每帧仅发一个），提升吞吐
+            while (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
+            {
+                var webJsonData = m_WaitingJsonQueue.Dequeue();
+                // 构造失败（非法 URL/Header 等）已回写异常并返回 false，不入发送列表
+                if (SendJsonReq(webJsonData))
+                    m_SendingJsonList.Add(webJsonData);
+            }
+        }
+
+        /// <summary>
         /// 清空 JSON 请求队列与列表，取消未完成的任务。
         /// </summary>
         private void ClearJsonReq()

@@ -186,7 +186,7 @@ namespace Hotfix.Framework.Web
             m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
             token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
-            url = UrlHandler(url, null);
+            url = NormalizeURL(url, null);
             var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());
             var messageHttpObject = new MessageHttpObject
             {

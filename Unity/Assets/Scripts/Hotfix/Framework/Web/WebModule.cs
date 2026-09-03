@@ -64,7 +64,7 @@ namespace Hotfix.Framework.Web
             // 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
             m_Scope.Token.ThrowIfCancellationRequested();
             token.ThrowIfCancellationRequested();
-            url = UrlHandler(url, queryString);
+            url = NormalizeURL(url, queryString);
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
             var webJsonData = new WebJsonStringData(url, header, true, uniTaskCompletionSource, token, userData);
@@ -80,7 +80,7 @@ namespace Hotfix.Framework.Web
             // 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
             m_Scope.Token.ThrowIfCancellationRequested();
             token.ThrowIfCancellationRequested();
-            url = UrlHandler(url, queryString);
+            url = NormalizeURL(url, queryString);
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
             var webJsonData = new WebJsonBytesData(url, header, true, uniTaskCompletionSource, token, userData);
@@ -98,7 +98,7 @@ namespace Hotfix.Framework.Web
             // 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
             m_Scope.Token.ThrowIfCancellationRequested();
             token.ThrowIfCancellationRequested();
-            url = UrlHandler(url, queryString);
+            url = NormalizeURL(url, queryString);
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
             var webJsonData = new WebJsonStringData(url, header, from, uniTaskCompletionSource, token, userData);
@@ -115,7 +115,7 @@ namespace Hotfix.Framework.Web
             // 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
             m_Scope.Token.ThrowIfCancellationRequested();
             token.ThrowIfCancellationRequested();
-            url = UrlHandler(url, queryString);
+            url = NormalizeURL(url, queryString);
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
             var webJsonData = new WebJsonBytesData(url, header, from, uniTaskCompletionSource, token, userData);
@@ -139,14 +139,8 @@ namespace Hotfix.Framework.Web
         /// </summary>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            // 主线程模型（ModuleManager 驱动 + UWR 完成回调同在主线程）：队列/列表访问无需加锁
-            while (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
-            {
-                var webJsonData = m_WaitingJsonQueue.Dequeue();
-                // 构造失败（非法 URL/Header 等）已回写异常并返回 false，不入发送列表
-                if (SendJsonReq(webJsonData))
-                    m_SendingJsonList.Add(webJsonData);
-            }
+            // 更新处理 JSON 请求队列
+            UpdateJsonReq();
 
             // 更新处理 Pb 请求队列
             UpdatePbReq();
@@ -173,7 +167,7 @@ namespace Hotfix.Framework.Web
         /// <param name="url">原始 URL。</param>
         /// <param name="queryString">查询参数字典。</param>
         /// <returns>标准化后的 URL。</returns>
-        private string UrlHandler(string url, Dictionary<string, string> queryString)
+        private string NormalizeURL(string url, Dictionary<string, string> queryString)
         {
             m_UrlStr.Clear();
             m_UrlStr.Append(url);
