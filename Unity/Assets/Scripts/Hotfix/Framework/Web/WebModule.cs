@@ -305,7 +305,7 @@ namespace Hotfix.Framework.Web
 
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {
-                        FuLogger.LogInfo($"Web Response: {webData.URL} \n Content: {unityWebRequest.error}");
+                        FuLogger.LogError($"Web Response: {webData.URL} \n Content: {unityWebRequest.error}");
 
                         // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
                         if (IsTimeout(unityWebRequest))

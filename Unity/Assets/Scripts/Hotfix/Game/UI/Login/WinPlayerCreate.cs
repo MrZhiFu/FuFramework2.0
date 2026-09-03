@@ -123,7 +123,7 @@ namespace Hotfix.Game.UI
             }
             catch (OperationCanceledException)
             {
-                // 重启/模块销毁导致在途请求取消：界面随框架销毁，静默返回
+                // 界面关闭/销毁或重启导致在途创建角色请求取消：按生命周期契约静默返回
             }
             catch (Exception e)
             {

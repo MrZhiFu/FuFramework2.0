@@ -58,19 +58,6 @@ namespace Hotfix.Framework.Core
                 m_PerSecondUpdateTimer -= 1f;
                 OnPerSecondUpdate?.Invoke();
             }
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                PauseGame();
-            }
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                RestartGame();
-            }
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                QuitGame();
-            }
         }
 
         /// <summary>
