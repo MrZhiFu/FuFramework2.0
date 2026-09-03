@@ -28,6 +28,28 @@ FuFramework Asset 模块是基于 [YooAsset](https://www.yooasset.com/) 进行�
 > `await` 各模块 `CancelAsync` 等待清理，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
 > `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 
+#### 取消语义边界（YooAsset 底层行为）
+
+**取消保证的是"调用方逻辑立即中断、不拿结果、不泄漏句柄"，而非"底层网络传输立即中止"。**
+
+取消路径分两层：
+1. **UniTask 层**：`handle.ToUniTask(cancellationToken, cancelImmediately: true)` 在 Token 取消时**立即**完成 await 并抛 `OperationCanceledException`——不等 YooAsset 加载完成；
+2. **AssetModule 层**：`catch (OCE)` 里执行 `handle.Release()`（引用计数归零）+ `UnloadAsset(path)`（尝试卸载）。
+
+对**加载中的资源**，YooAsset 底层的行为（依据 YooAsset 3.0.5 源码）：
+
+| 层面 | 取消后行为 |
+|------|-----------|
+| UniTask await | 立即抛 OCE，调用方不等 YooAsset |
+| 句柄/引用 | `RefCount` 归零，调用方不再持有引用 |
+| Provider | **不销毁、继续被调度逐帧驱动**——加载中（`IsLoading`）的 Provider `CanDestroyProvider()` 返回 false（`ProviderBase`） |
+| 在途下载/解压 | **不中止**，继续到自然完成（`TryUnloadUnusedAsset` 走不到强制销毁路径，`ShouldAbortDownload` 不被置位） |
+| bundle 卸载 | 仅当"已完成 + `RefCount==0`"且开 `AutoUnloadBundleWhenUnused` 才真正卸载 |
+
+**结论**：取消后加载中的 bundle 会下载/解压完并入缓存（下次加载直接命中），只是本次调用方不再拿到句柄。这符合 YooAsset 设计——在途下载通常值得下完缓存，中途掐断反而浪费已下载部分。真正的中止（`AbortOperation`/`RequestForceDestroy`）只在**全局销毁**（包销毁/`YooAssets.Destroy`）时发生。
+
+> 取消路径的 `UnloadAsset(path)` 对在途资源实际是**空操作**（Provider 不可销毁），仅在"已加载完成但恰在取消瞬间"的边界才真正卸载——防御性调用，与 YooAsset 语义一致，无泄漏。
+
 #### 初始化流程
 
 YooAsset 与默认资源包的初始化由 AOT 启动流程 `LaunchAssetHelper` 完成；`AssetModule` 仅缓存默认包名，提供资源加载、卸载与查询能力。
@@ -222,7 +244,7 @@ Asset/
 1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期 `Token`，重启后旧实例释放会被 Token 校验识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
 2. **并发去重**：同一路径（`AssetLoadRegister` 为同一路径+类型）并发加载共享 `UniTaskCompletionSource`（其 `Task` 可被多个调用方 await），失败会传播给所有等待者；切勿把 `m_InstantiateLoadingTasks`/`m_LoadingTasks` 中存储的完成源直接替换为 async 方法的返回值（async 方法返回的 `UniTask` 只能 await 一次）。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
-4. **取消与重启**：异步加载方法 **`CancellationToken` 参数必传**（调用方生命周期令牌），内部与模块自身 Token **linked 竞速**——调用方取消（如界面关闭）或模块销毁（`OnDispose`）任一触发即中止（释放句柄 + 卸载资源，抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。
+4. **取消与重启**：异步加载方法 **`CancellationToken` 参数必传**（调用方生命周期令牌），内部与模块自身 Token **linked 竞速**——调用方取消（如界面关闭）或模块销毁（`OnDispose`）任一触发即中止（释放句柄 + 卸载资源，抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。取消的底层语义边界（在途下载是否中止、bundle 何时卸载）详见 §3「取消语义边界」。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
 7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。
