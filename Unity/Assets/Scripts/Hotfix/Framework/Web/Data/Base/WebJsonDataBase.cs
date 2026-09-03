@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using UnityEngine.Networking;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// Web JSON 请求数据基类：承载 JSON 请求的公共信息（Header/Form），具体结果类型由子类决定。
+    /// Web JSON 请求数据基类：承载 JSON 请求的公共信息（Header/Form）。
+    /// 完成写回协议继承自 WebDataBase，由子类（字符串/字节数组）实现。
     /// </summary>
     public abstract class WebJsonDataBase : WebDataBase
     {
@@ -50,22 +50,5 @@ namespace Hotfix.Framework.Web
             Header = header;
             Form   = form;
         }
-
-        /// <summary>
-        /// 请求成功：按子类结果类型提取并写回结果。
-        /// </summary>
-        /// <param name="request">已完成的请求。</param>
-        public abstract void Complete(UnityWebRequest request);
-
-        /// <summary>
-        /// 请求取消：取消未完成的任务。
-        /// </summary>
-        public abstract void CompleteCanceled();
-
-        /// <summary>
-        /// 请求失败：向任务完成源写入异常。
-        /// </summary>
-        /// <param name="exception">异常。</param>
-        public abstract void CompleteError(Exception exception);
     }
 }

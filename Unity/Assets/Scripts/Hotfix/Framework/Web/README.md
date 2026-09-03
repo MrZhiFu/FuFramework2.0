@@ -54,7 +54,7 @@ FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `Unity
 
 ### 4.1 WebModule
 
-Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。请求队列在 `OnUpdate` 中轮询处理。
+Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。采用 **partial class 拆分**：`WebModule.cs`（字段/请求入队/生命周期/共享骨架）、`WebModule.API.cs`（公共 API）、`WebModule.Json.cs`（JSON 请求处理）、`WebModule.Pb.cs`（Pb 请求处理）。请求队列在 `OnUpdate` 中轮询处理（经 `UpdateJsonReq`/`UpdatePbReq` 填满并发槽位，完成回调统一经共享骨架 `SendRequest` 写回）。
 
 > **可取消异步**：`WebModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块销毁（`OnDispose`）时触发 `Token` 取消，在途请求随之中止；此后发起的新请求被入口检查拒绝
@@ -107,7 +107,7 @@ UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) w
 
 ### 4.2 WebDataBase（基类）
 
-Web 请求数据基类 `WebDataBase`，实现 `IDisposable`。包含请求的基本信息：`IsGet`（是否 GET）、`URL`、`UserData`、`Token`（调用方取消令牌）。`WebJsonDataBase` 与 `WebPbData` 继承自它。
+Web 请求数据基类 `WebDataBase`，实现 `IDisposable`。包含请求的基本信息：`IsGet`（是否 GET）、`URL`、`UserData`、`Token`（调用方取消令牌），并定义**完成写回协议**：`Complete(UnityWebRequest)`（请求成功，按子类结果类型写回）、`CompleteCanceled()`（取消）、`CompleteError(Exception)`（失败）。`WebJsonDataBase` 与 `WebPbData` 继承自它并实现该协议。
 
 ### 4.3 WebJsonDataBase（基类）与子类
 
@@ -115,11 +115,11 @@ JSON 请求数据基类（抽象），继承 `WebDataBase`，承载请求头 `He
 - `WebJsonStringData`：字符串结果（`GetToString`/`PostToString`），持有 `UniTaskCompletionSource<WebStringResult>`；
 - `WebJsonBytesData`：字节数组结果（`GetToBytes`/`PostToBytes`），持有 `UniTaskCompletionSource<WebBufferResult>`。
 
-POST 请求的 `Form` 类型为 `Dictionary<string, object>`。`OnUpdate` 出队后由 `SendJsonReq` 构建并发送，完成回调按子类结果类型（字符串/字节数组）写回。
+POST 请求的 `Form` 类型为 `Dictionary<string, object>`。`OnUpdate` 经 `UpdateJsonReq` 出队后由 `SendJsonReq` 构建并发送，完成回调经共享骨架 `SendRequest` 按子类完成写回协议（字符串/字节数组）写回。
 
 ### 4.4 WebPbData
 
-Pb 请求数据类，继承 `WebDataBase`。使用 `application/x-protobuf` content type，内部 `SendData` 为 `byte[]`。
+Pb 请求数据类，继承 `WebDataBase`。使用 `application/x-protobuf` content type，内部 `SendData` 为 `byte[]`。实现完成写回协议：`Complete` 提取字节数组为 `WebBufferResult` 写回任务完成源。`OnUpdate` 经 `UpdatePbReq` 出队后由 `SendPbReq` 构建并发送，完成回调同样经共享骨架 `SendRequest` 写回。
 
 ### 4.5 HttpJsonResult
 
@@ -452,11 +452,13 @@ var results = await UniTask.WhenAll(tasks);
 
 ```text
 Web/
-├── WebModule.cs                    # Web 管理模块（字段/生命周期/JSON+Pb 请求处理）
+├── WebModule.cs                    # Web 管理模块（字段/请求入队/生命周期/共享发送骨架）
 ├── WebModule.API.cs                # Web 管理模块公共 API（GET/POST 字符串/字节/Pb）
+├── WebModule.Json.cs               # JSON 请求处理（出队/构建/发送，partial）
+├── WebModule.Pb.cs                 # Pb 请求处理（出队/构建/发送，partial）
 ├── Data/                           # 请求数据类
 │   ├── Base/                       # 请求数据基类
-│   │   ├── WebDataBase.cs          # Web 请求数据基类
+│   │   ├── WebDataBase.cs          # Web 请求数据基类（基本信息 + 完成写回协议）
 │   │   └── WebJsonDataBase.cs      # JSON 请求数据基类（抽象）
 │   ├── WebJsonStringData.cs        # 字符串结果 JSON 请求数据
 │   ├── WebJsonBytesData.cs         # 字节数组结果 JSON 请求数据
@@ -495,7 +497,7 @@ Web/
 5. `HttpJsonResultData<T>` 没有 `Message` 属性，错误时通过 `Code` 判断
 6. `WebBufferResult` / `WebStringResult` 使用 `Result` 属性（非 `Data`）
 7. 全平台统一使用 `UnityWebRequest`；请求结束在完成回调中调用 `Dispose` 释放原生资源（官方强制，成败皆需）
-8. GET 请求的 `queryString` 参数会通过 `UrlHandler` 自动拼接到 URL 上
+8. GET 请求的 `queryString` 参数会通过 `NormalizeURL` 自动拼接到 URL 上
 9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
 10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒
 11. **`Post<T>` 协议契约**：`Post<T>` 不做静默失败——响应消息头解析失败（`MessageHttpObject` 为空/Id 无效）、响应类型与 `T` 不匹配、反序列化失败时均抛 `InvalidOperationException`（含 URL 与期望/实际类型），返回的 `T` 恒非 null；调用方应 try-catch 或交由上层统一处理

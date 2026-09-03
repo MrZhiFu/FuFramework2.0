@@ -1,11 +1,15 @@
 using System;
 using System.Threading;
+using UnityEngine.Networking;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
 {
     /// <summary>
-    /// Web 请求数据的基类，包含请求的基本信息。
+    /// Web 请求数据的基类，包含请求的基本信息与结果写回协议。
+    /// 功能：
+    ///     1. 承载请求基本信息（IsGet/URL/UserData/Token）。
+    ///     2. 定义完成写回协议（Complete/CompleteCanceled/CompleteError），由子类实现写入对应任务完成源。
     /// </summary>
     public abstract class WebDataBase : IDisposable
     {
@@ -43,6 +47,23 @@ namespace Hotfix.Framework.Web
             URL      = url;
             Token    = token;
         }
+
+        /// <summary>
+        /// 请求成功：按子类结果类型提取并写回结果。
+        /// </summary>
+        /// <param name="request">已完成的请求。</param>
+        public abstract void Complete(UnityWebRequest request);
+
+        /// <summary>
+        /// 请求取消：取消未完成的任务。
+        /// </summary>
+        public abstract void CompleteCanceled();
+
+        /// <summary>
+        /// 请求失败：向任务完成源写入异常。
+        /// </summary>
+        /// <param name="exception">异常。</param>
+        public abstract void CompleteError(Exception exception);
 
         /// <summary>
         /// 释放资源。基类默认空实现，子类重写为取消未完成的任务（TrySetCanceled）。

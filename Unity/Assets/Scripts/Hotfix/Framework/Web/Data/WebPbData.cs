@@ -1,4 +1,6 @@
+using System;
 using System.Threading;
+using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
@@ -35,6 +37,26 @@ namespace Hotfix.Framework.Web
             SendData         = sendData;
             CompletionSource = source;
         }
+
+        /// <summary>
+        /// 请求成功：提取字节数组结果并写回任务完成源。
+        /// </summary>
+        /// <param name="request">已完成的请求。</param>
+        public override void Complete(UnityWebRequest request)
+        {
+            CompletionSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
+        }
+
+        /// <summary>
+        /// 请求取消：取消未完成的任务。
+        /// </summary>
+        public override void CompleteCanceled() => CompletionSource.TrySetCanceled();
+
+        /// <summary>
+        /// 请求失败：向任务完成源写入异常。
+        /// </summary>
+        /// <param name="exception">异常。</param>
+        public override void CompleteError(Exception exception) => CompletionSource.TrySetException(exception);
 
         /// <summary>
         /// 释放资源，取消未完成的任务。
