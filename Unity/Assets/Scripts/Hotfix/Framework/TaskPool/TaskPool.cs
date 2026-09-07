@@ -81,7 +81,7 @@ namespace Hotfix.Framework.TaskPool
             if (Paused) return;
 
             _ProcessRunningTasks(deltaTime, unscaledDeltaTime); // 处理正在运行的任务
-            _ProcessWaitingTasks();                                 // 处理正在等待的任务
+            _ProcessWaitingTasks();                             // 处理正在等待的任务
         }
 
         /// <summary>
@@ -120,7 +120,8 @@ namespace Hotfix.Framework.TaskPool
             {
                 var workingTask = workingAgent.Task;
                 if (workingTask.SerialId != serialId) continue;
-                return new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority, workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
+                return new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority, workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing,
+                                    workingTask.Description);
             }
 
             foreach (var waitingTask in m_WaitingTaskList)

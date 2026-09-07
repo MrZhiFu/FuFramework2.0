@@ -49,7 +49,7 @@ namespace Hotfix.Framework.Download
         /// <summary>
         /// 下载任务的任务池
         /// </summary>
-        private readonly Hotfix.Framework.TaskPool.TaskPool<DownloadTask> m_TaskPool = new();
+        private readonly TaskPool.TaskPool<DownloadTask> m_TaskPool = new();
 
         /// <summary>
         /// 下载计数器，1秒更新一次，10秒记录一次，用于计算下载速度
