@@ -4,6 +4,7 @@ using ProtoBuf;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 using Hotfix.Framework.Network;
+using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -50,6 +51,7 @@ namespace Hotfix.Framework.Web
                 // 构建/发送失败：释放原生资源并回写异常，避免调用方永久挂起
                 unityWebRequest?.Dispose();
                 webData.CompleteError(e);
+                RecordBuildFailed(webData, e);
                 return false;
             }
 
@@ -109,7 +111,21 @@ namespace Hotfix.Framework.Web
             };
             var sendData = SerializerHelper.Serialize(messageHttpObject);
             var webData  = new WebPbData(url, sendData, uniTaskCompletionSource, token, userData);
-            m_WaitingPbQueue.Enqueue(webData);
+
+            // 记录 Pb 请求消息的类 JSON 预览（仅调试开启时生成；存紧凑文本，面板端缩进美化），序列化异常则留空
+            if (DebugRecordingEnabled)
+            {
+                try
+                {
+                    webData.DebugRequestBody = JsonConvert.SerializeObject(message);
+                }
+                catch
+                {
+                    webData.DebugRequestBody = null;
+                }
+            }
+
+            EnqueuePbReq(webData);
             return uniTaskCompletionSource.Task;
         }
     }

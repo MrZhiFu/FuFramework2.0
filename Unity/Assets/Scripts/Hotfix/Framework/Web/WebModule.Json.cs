@@ -52,6 +52,7 @@ namespace Hotfix.Framework.Web
                 // 构建/发送失败：释放原生资源并回写异常，避免调用方永久挂起
                 unityWebRequest?.Dispose();
                 webJsonData.CompleteError(e);
+                RecordBuildFailed(webJsonData, e);
                 return false;
             }
 
@@ -83,6 +84,9 @@ namespace Hotfix.Framework.Web
                     unityWebRequest.SetRequestHeader("Content-Type", "application/json");
                     var body     = UtilityAOT.Json.ToJson(webJsonData.Form);
                     var postData = Encoding.UTF8.GetBytes(body);
+
+                    // 记录请求体紧凑文本供调试面板展开预览（仅调试开启时；面板端再缩进美化，避免运行期多余序列化）
+                    if (DebugRecordingEnabled) webJsonData.DebugRequestBody = body;
                     unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
                 }
                 else if (!webJsonData.IsGet)

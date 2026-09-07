@@ -34,6 +34,26 @@ namespace Hotfix.Framework.Web
         public CancellationToken Token { get; }
 
         /// <summary>
+        /// 请求入队时间（UTC），供调试统计计算等待/总耗时。
+        /// </summary>
+        internal DateTime EnqueueTimeUtc { get; set; }
+
+        /// <summary>
+        /// 请求开始发送时间（UTC），供调试统计计算等待耗时。
+        /// </summary>
+        internal DateTime SendTimeUtc { get; set; }
+
+        /// <summary>
+        /// 是否已被调试面板急救取消。置位后在途请求完成回调不再重复记账。
+        /// </summary>
+        internal bool IsDebugCanceled { get; set; }
+
+        /// <summary>
+        /// 已发送的请求体文本（JSON POST 序列化文本），供调试面板在最近请求记录中展示/复制。
+        /// </summary>
+        internal string DebugRequestBody { get; set; }
+
+        /// <summary>
         /// 初始化 Web 请求数据。
         /// </summary>
         /// <param name="isGet">是否为 GET 请求。</param>

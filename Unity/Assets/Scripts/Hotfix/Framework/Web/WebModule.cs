@@ -75,7 +75,7 @@ namespace Hotfix.Framework.Web
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
             var webJsonData = new WebJsonStringData(url, header, true, uniTaskCompletionSource, token, userData);
-            m_WaitingJsonQueue.Enqueue(webJsonData);
+            EnqueueJsonReq(webJsonData);
             return uniTaskCompletionSource.Task;
         }
 
@@ -97,7 +97,7 @@ namespace Hotfix.Framework.Web
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
             var webJsonData = new WebJsonBytesData(url, header, true, uniTaskCompletionSource, token, userData);
-            m_WaitingJsonQueue.Enqueue(webJsonData);
+            EnqueueJsonReq(webJsonData);
             return uniTaskCompletionSource.Task;
         }
 
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Web
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
             var webJsonData = new WebJsonStringData(url, header, from, uniTaskCompletionSource, token, userData);
-            m_WaitingJsonQueue.Enqueue(webJsonData);
+            EnqueueJsonReq(webJsonData);
             return uniTaskCompletionSource.Task;
         }
 
@@ -146,7 +146,7 @@ namespace Hotfix.Framework.Web
             var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
             var webJsonData = new WebJsonBytesData(url, header, from, uniTaskCompletionSource, token, userData);
-            m_WaitingJsonQueue.Enqueue(webJsonData);
+            EnqueueJsonReq(webJsonData);
             return uniTaskCompletionSource.Task;
         }
 
@@ -267,6 +267,7 @@ namespace Hotfix.Framework.Web
             // 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
             var capturedToken = m_Scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
             var inFlight      = m_Scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+            if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
 
             // 任一 token 取消即 Abort 中断传输，避免在途请求等到超时才被回收；完成回调中注销。
             // 模块 scope token 恒可取消；仅在存在可取消 token 时创建链接源，减少无谓分配。
@@ -300,22 +301,37 @@ namespace Hotfix.Framework.Web
                     if (capturedToken.IsCancellationRequested || webData.Token.IsCancellationRequested)
                     {
                         webData.CompleteCanceled();
+                        RecordResult(EWebRequestResult.Canceled, webData, 0, 0, "调用方或模块取消");
                         return;
                     }
 
+                    // 已被调试面板急救取消：终止态已登记，不再写回与重复记账，仅释放资源
+                    if (webData.IsDebugCanceled) return;
+
+                    var sendBytes = GetUploadBytes(unityWebRequest);
+                    var recvBytes = GetDownloadBytes(unityWebRequest);
+
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {
-                        FuLogger.LogError($"Web Response: {webData.URL} \n Content: {unityWebRequest.error}");
+                        var errorText = unityWebRequest.error;
+                        FuLogger.LogError($"Web Response: {webData.URL} \n Content: {errorText}");
 
                         // 超时抛 TimeoutException（保持旧 HttpWebRequest 契约），其余抛通用异常
                         if (IsTimeout(unityWebRequest))
-                            webData.CompleteError(new TimeoutException(unityWebRequest.error));
+                        {
+                            webData.CompleteError(new TimeoutException(errorText));
+                            RecordResult(EWebRequestResult.Timeout, webData, sendBytes, recvBytes, errorText);
+                        }
                         else
-                            webData.CompleteError(new Exception(unityWebRequest.error));
+                        {
+                            webData.CompleteError(new Exception(errorText));
+                            RecordResult(EWebRequestResult.Failed, webData, sendBytes, recvBytes, errorText);
+                        }
                         return;
                     }
 
                     webData.Complete(unityWebRequest);
+                    RecordResult(EWebRequestResult.Success, webData, sendBytes, recvBytes, null);
                 }
                 finally
                 {
@@ -341,5 +357,19 @@ namespace Hotfix.Framework.Web
 
             return unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
         }
+
+        /// <summary>
+        /// 获取请求上传的字节数（GET 无上传体时为 0）。须在请求释放前调用。
+        /// </summary>
+        /// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
+        /// <returns>上传字节数。</returns>
+        private static int GetUploadBytes(UnityWebRequest unityWebRequest) => unityWebRequest.uploadHandler?.data?.Length ?? 0;
+
+        /// <summary>
+        /// 获取请求下载的字节数。须在请求释放前调用。
+        /// </summary>
+        /// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
+        /// <returns>下载字节数。</returns>
+        private static int GetDownloadBytes(UnityWebRequest unityWebRequest) => unityWebRequest.downloadHandler?.data?.Length ?? 0;
     }
 }
