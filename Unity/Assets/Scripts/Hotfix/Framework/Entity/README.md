@@ -52,7 +52,7 @@ Unknown → WillInit → Inited → WillShow → Showed → WillHide → Hidden 
 
 ### 4.1 EntityModule
 
-实体管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。
+实体管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过静态单例 `EntityModule.Instance` 获取。采用 **partial class 拆分**：`EntityModule.cs`（字段/生命周期/私有处理与加载回调）、`EntityModule.API.cs`（公共 API，本小节列出的公开接口均出自该文件）。
 
 > **可取消异步**：`EntityModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块销毁（`OnDispose`）时触发 `Token` 取消，在途 `ShowEntityAsync` 的资源加载随之中止：完成回调识别
@@ -492,7 +492,8 @@ if (m_EntityModule.HasEntityGroup("BulletGroup"))
 
 ```text
 Entity/
-├── EntityModule.cs                       # 实体管理模块
+├── EntityModule.cs                       # 实体管理模块（字段/生命周期/私有实现）
+├── EntityModule.API.cs                   # 实体管理模块公共 API
 ├── Info/
 │   ├── Entity.cs                         # 实体显示类 (MonoBehaviour)
 │   ├── EntityGroup.cs                    # 实体组
