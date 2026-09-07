@@ -1425,8 +1425,8 @@ namespace FuFramework.Web.Editor
         /// <returns>缩进美化后的文本</returns>
         private static string IndentJson(string json)
         {
-            var sb     = new StringBuilder(json.Length + 64);
-            var indent = 0;
+            var sb       = new StringBuilder(json.Length + 64);
+            var indent   = 0;
             var inString = false;
 
             for (var i = 0; i < json.Length; i++)
