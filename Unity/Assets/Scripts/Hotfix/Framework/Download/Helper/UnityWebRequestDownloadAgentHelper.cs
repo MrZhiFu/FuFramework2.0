@@ -1,9 +1,9 @@
 using System;
-using UnityEngine;
 using UnityEngine.Networking;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download
 {
     /// <summary>
@@ -25,7 +25,7 @@ namespace Hotfix.Framework.Download
     ///     2. 支持断点续传。
     ///     3. 提供下载进度事件和下载完成事件。
     /// </summary>
-    public sealed partial class UnityWebRequestDownloadAgentHelper
+    public sealed class UnityWebRequestDownloadAgentHelper
     {
         /// <summary>
         /// 范围不适用错误码。
@@ -43,7 +43,7 @@ namespace Hotfix.Framework.Download
         /// <summary>
         /// 缓存目标数据的字节数组。
         /// </summary>
-        private readonly byte[] m_CachedBytes = new byte[CachedBytesLength];
+        internal readonly byte[] m_CachedBytes = new byte[CachedBytesLength];
 
         /// <summary>
         /// 记录是否已销毁。
@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Download
         /// <summary>
         /// Unity WebRequest。
         /// </summary>
-        private UnityWebRequest m_UnityWebRequest;
+        internal UnityWebRequest m_UnityWebRequest;
 
         /// <summary>
         /// 事件管理模块。
@@ -140,10 +140,7 @@ namespace Hotfix.Framework.Download
         /// <summary>
         /// 释放资源。
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+        public void Dispose() => Dispose(true);
 
         /// <summary>
         /// 释放资源。

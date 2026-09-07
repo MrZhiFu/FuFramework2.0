@@ -21,16 +21,18 @@ FuFramework Download 模块是游戏框架的下载管理系统，基于任务�
 ┌─────────────────────────────────────────────────────────────┐
 │                     DownloadModule                           │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_DownloadTaskPool (TaskPool<DownloadTask>)        │   │
-│  │  - 任务调度与并发控制                                │   │
+│  │  m_TaskPool (TaskPool<DownloadTask>)                │   │
+│  │  任务调度与并发控制，内嵌 N 个 DownloadAgent：        │   │
+│  │    DownloadAgent → UnityWebRequestDownloadAgentHelper │   │
+│  │                → DownloadHandler（接收数据流）        │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_DownloadAgentList (List<DownloadAgent>)          │   │
-│  │  - 执行实际下载请求                                  │   │
+│  │  m_DownloadingTaskDict (serialId → DownloadData)    │   │
+│  │  下载中任务登记，并持有异步完成信号(Tcs)              │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_DownloadCounter (DownloadCounter)                │   │
-│  │  - 实时下载速度计算                                  │   │
+│  │  m_DownloadCounter (DownloadCounter + CounterNode)  │   │
+│  │  实时下载速度计算                                    │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -47,7 +49,7 @@ Todo → Doing → Done
 
 ### 4.1 DownloadModule
 
-下载管理模块，继承自 `ModuleBase`。
+下载管理模块，继承自 `ModuleBase`。采用分片组织：`DownloadModule.cs` 承载生命周期与内部实现，公共 API（单例 `Instance`、配置属性及添加/移除/查询接口）统一收敛在 `DownloadModule.API.cs`。模块内部实现类均已独立为 `Task/`、`Agent/` 下的顶层 `internal` 类，不再作为模块嵌套类。
 
 **核心属性：**
 
@@ -86,35 +88,38 @@ int RemoveAllDownloads()
 
 ### 4.2 DownloadAgent
 
-下载代理（内部类），封装 `UnityWebRequest` 执行实际下载。
+下载代理（模块内部实现类，位于 `Agent/DownloadAgent.cs`，实现 `ITaskAgent<DownloadTask>`）。每个代理持有一个 `UnityWebRequestDownloadAgentHelper`，真正驱动一次下载。
 
 **核心功能：**
-- 通过 `UnityWebRequestDownloadAgentHelper` 执行 HTTP 下载
-- 管理下载超时和错误处理
-- 更新下载进度和速度
+- 通过 `UnityWebRequestDownloadAgentHelper` + `DownloadHandler` 执行 HTTP 下载
+- 以文件流增量写盘，结合 HTTP Range 实现断点续传
+- 管理下载超时与错误处理
+- 驱动模块的进度/成功/失败事件与速度统计
 
 ### 4.3 DownloadTask
 
-下载任务（内部类），继承 `TaskBase`，封装单次下载的元数据。
+下载任务（模块内部实现类，位于 `Task/DownloadTask.cs`），继承 `TaskBase`，封装单次下载的元数据，并经引用池创建与复用。
 
 | 属性 | 说明 |
 |------|------|
-| `DownloadPath` | 本地保存路径 |
+| `Status` | 下载任务状态（`DownloadTaskStatus`：Todo/Doing/Done/Error） |
+| `DownloadedFullPath` | 下载后存放全路径 |
 | `DownloadUri` | 远程下载地址 |
+| `FlushSize` | 缓冲区写入磁盘的临界大小（字节） |
 | `Timeout` | 超时时间（秒） |
-| `DownloadedBytes` | 已下载字节数 |
-| `TotalBytes` | 总字节数 |
+
+> `SerialId`/`Tag`/`Priority`/`UserData`/`Description` 等继承自 `TaskBase`。
 
 ### 4.4 DownloadCounter
 
-下载计数器（内部类），使用链表节点记录历史下载量，实时计算下载速度。
+下载计数器（模块内部实现类，位于 `Agent/DownloadCounter.cs`），使用链表节点（`DownloadCounterNode`）记录历史下载量，实时计算下载速度。
 
-### 4.5 UnityWebRequestDownloadAgentHelper
+### 4.5 UnityWebRequestDownloadAgentHelper 与 DownloadHandler
 
-基于 `UnityWebRequest` 的下载辅助器，支持：
+`UnityWebRequestDownloadAgentHelper`（位于 `Helper/UnityWebRequestDownloadAgentHelper.cs`）是基于 `UnityWebRequest` 的下载辅助器，支持：
 - HTTP Range 断点续传
-- 自定义 `DownloadHandler` 接收数据流
-- 下载进度和速度回调
+- 证书校验（同文件内的 `DownloadCertificateHandler`，当前恒通过）
+- 通过独立的 `DownloadHandler`（`Helper/DownloadHandler.cs`，继承 `DownloadHandlerScript`）接收数据流，并广播字节/长度更新事件
 
 ### 4.6 下载事件
 
@@ -195,8 +200,8 @@ var eventModule = ModuleManager.GetModule<EventModule>();
 eventModule.Subscribe(DownloadUpdateEventArgs.EventId, (sender, e) =>
 {
     var args = e as DownloadUpdateEventArgs;
-    float progress = (float)args.DownloadedBytes / args.TotalBytes;
-    Debug.Log($"下载进度: {progress:P1}，速度: {m_DownloadModule.CurrentSpeed / 1024}KB/s");
+    // 更新事件仅携带当前已下载字节数（CurrentLength），不含总大小；进度请由业务侧自行比对期望文件长度
+    Debug.Log($"已下载: {args.CurrentLength} 字节，速度: {m_DownloadModule.CurrentSpeed / 1024}KB/s");
 });
 
 // 监听下载完成
@@ -219,32 +224,42 @@ m_DownloadModule.Paused = false;
 
 ## 6. 目录结构
 
+代码位于 `Assets/Scripts/Hotfix/Framework/Download/`：
+
 ```text
 Download/
-├── Runtime/
-│   ├── DownloadModule.cs                          # 下载管理模块
-│   ├── DownloadModule.DownloadAgent.cs            # 下载代理
-│   ├── DownloadModule.DownloadCounter.cs          # 下载计数器
-│   ├── DownloadModule.DownloadCounter.DownloadCounterNode.cs
-│   ├── DownloadModule.DownloadData.cs             # 下载数据包装
-│   ├── DownloadModule.DownloadTask.cs             # 下载任务
-│   ├── DownloadModule.DownloadTaskStatus.cs       # 任务状态枚举
-│   ├── Helper/
-│   │   ├── UnityWebRequestDownloadAgentHelper.cs  # UnityWebRequest 下载辅助器
-│   │   └── UnityWebRequestDownloadAgentHelper.DownloadHandler.cs
-│   ├── Event/
-│   │   ├── DownloadStartEventArgs.cs
-│   │   ├── DownloadUpdateEventArgs.cs
-│   │   ├── DownloadSuccessEventArgs.cs
-│   │   └── DownloadFailureEventArgs.cs
-└── README.md                                      # 本文档
+├── DownloadModule.cs                          # 模块核心（生命周期 / 内部实现 / 私有回调）
+├── DownloadModule.API.cs                      # 模块公共 API（单例 Instance / 属性 / 添加·移除·查询接口）
+├── Task/                                      # 下载任务域（顶层 internal 类）
+│   ├── DownloadTask.cs                        # 下载任务（继承 TaskBase）
+│   ├── DownloadTaskStatus.cs                  # 下载任务状态枚举
+│   └── DownloadData.cs                        # 下载中登记数据（含异步完成信号）
+├── Agent/                                     # 下载执行与统计（顶层 internal 类）
+│   ├── DownloadAgent.cs                       # 下载代理（实现 ITaskAgent<DownloadTask>）
+│   ├── DownloadCounter.cs                     # 下载速度计数器
+│   └── DownloadCounterNode.cs                 # 计数器链表节点
+├── Helper/
+│   ├── UnityWebRequestDownloadAgentHelper.cs  # UnityWebRequest 下载辅助器（含 DownloadCertificateHandler）
+│   └── DownloadHandler.cs                     # 数据流接收处理器
+├── Event/
+│   ├── DownloadStartEventArgs.cs              # 下载开始事件
+│   ├── DownloadUpdateEventArgs.cs             # 下载进度更新事件
+│   ├── DownloadSuccessEventArgs.cs            # 下载成功事件
+│   ├── DownloadFailureEventArgs.cs            # 下载失败事件
+│   ├── DownloadAgentHelperCompleteEventArgs.cs
+│   ├── DownloadAgentHelperErrorEventArgs.cs
+│   ├── DownloadAgentHelperUpdateBytesEventArgs.cs
+│   └── DownloadAgentHelperUpdateLengthEventArgs.cs
+└── README.md                                  # 本文档
 ```
 
 ## 7. 依赖
 
-- **Hotfix.Framework.Core**：提供 ModuleBase 基类、TaskPool 任务池
+- **Hotfix.Framework.Core**：提供 ModuleBase、GlobalModule 等基础能力
+- **Hotfix.Framework.TaskPool**：任务池（TaskPool/TaskBase/ITaskAgent），负责 DownloadTask 调度与 DownloadAgent 管理
 - **Hotfix.Framework.Event**：事件系统
 - **Hotfix.Framework.ReferencePool**：引用池
+- **UnityEngine.Networking**：UnityWebRequest / DownloadHandlerScript 底层下载
 - **UniTask**：异步支持
 
 ## 8. 注意事项

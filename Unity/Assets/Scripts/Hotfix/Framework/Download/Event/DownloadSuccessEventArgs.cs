@@ -67,11 +67,11 @@ namespace Hotfix.Framework.Download
         public static DownloadSuccessEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
             var downloadSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadSuccessEventArgs>();
-            downloadSuccessEventArgs.SerialId = serialId;
-            downloadSuccessEventArgs.DownloadPath = downloadPath;
-            downloadSuccessEventArgs.DownloadUri = downloadUri;
+            downloadSuccessEventArgs.SerialId      = serialId;
+            downloadSuccessEventArgs.DownloadPath  = downloadPath;
+            downloadSuccessEventArgs.DownloadUri   = downloadUri;
             downloadSuccessEventArgs.CurrentLength = currentLength;
-            downloadSuccessEventArgs.UserData = userData;
+            downloadSuccessEventArgs.UserData      = userData;
             return downloadSuccessEventArgs;
         }
     }
