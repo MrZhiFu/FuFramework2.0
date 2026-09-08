@@ -1079,91 +1079,91 @@ namespace FuFramework.Web.Editor
         /// 取 WebModuleDebugInfo/WebLiveRequestInfo 布尔属性
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>布尔值</returns>
-        private bool GetBoolProp(object target, string name)
+        private bool GetBoolProp(object target, string propName)
         {
-            return GetPropValue(target, name) is bool value && value;
+            return GetPropValue(target, propName) is true;
         }
 
         /// <summary>
         /// 取 WebModuleDebugInfo/WebLogEntry 整型属性
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>整型值</returns>
-        private int GetIntProp(object target, string name)
+        private int GetIntProp(object target, string propName)
         {
-            return GetPropValue(target, name) is int value ? value : 0;
+            return GetPropValue(target, propName) is int value ? value : 0;
         }
 
         /// <summary>
         /// 取长整型属性
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>长整型值</returns>
-        private long GetLongProp(object target, string name)
+        private long GetLongProp(object target, string propName)
         {
-            return GetPropValue(target, name) is long value ? value : 0L;
+            return GetPropValue(target, propName) is long value ? value : 0L;
         }
 
         /// <summary>
         /// 取字符串属性
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>字符串值</returns>
-        private string GetStringProp(object target, string name)
+        private string GetStringProp(object target, string propName)
         {
-            return GetPropValue(target, name) as string;
+            return GetPropValue(target, propName) as string;
         }
 
         /// <summary>
         /// 取 DateTime 属性
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>日期时间值</returns>
-        private DateTime GetDateTimeProp(object target, string name)
+        private DateTime GetDateTimeProp(object target, string propName)
         {
-            return GetPropValue(target, name) is DateTime value ? value : default;
+            return GetPropValue(target, propName) is DateTime value ? value : default;
         }
 
         /// <summary>
         /// 取对象属性（如 Data）
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>对象值</returns>
-        private static object GetObjectProp(object target, string name)
+        private static object GetObjectProp(object target, string propName)
         {
-            return target?.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
+            return target?.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
         }
 
         /// <summary>
         /// 取枚举属性（装箱值）
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>枚举装箱值</returns>
-        private static object GetEnumProp(object target, string name)
+        private static object GetEnumProp(object target, string propName)
         {
-            return target?.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
+            return target?.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
         }
 
         /// <summary>
         /// 取属性值（使用缓存属性）
         /// </summary>
         /// <param name="target">装箱对象</param>
-        /// <param name="name">属性名</param>
+        /// <param name="propName">属性名</param>
         /// <returns>属性值</returns>
-        private object GetPropValue(object target, string name)
+        private object GetPropValue(object target, string propName)
         {
             var props = SelectPropCache(target);
             if (props == null) return null;
 
-            return props.TryGetValue(name, out var prop) ? prop.GetValue(target) : null;
+            return props.TryGetValue(propName, out var prop) ? prop.GetValue(target) : null;
         }
 
         /// <summary>
@@ -1197,9 +1197,12 @@ namespace FuFramework.Web.Editor
         /// <returns>中文状态文本</returns>
         private static string MapStateText(string stateName)
         {
-            if (stateName == "Waiting") return "等待";
-            if (stateName == "Sending") return "发送中";
-            return stateName;
+            return stateName switch
+            {
+                "Waiting" => "等待",
+                "Sending" => "发送中",
+                _         => stateName
+            };
         }
 
         #endregion
@@ -1515,9 +1518,12 @@ namespace FuFramework.Web.Editor
         /// <returns>格式化文本</returns>
         private static string FormatMs(int ms)
         {
-            if (ms < 0) return "0ms";
-            if (ms < 1000) return $"{ms}ms";
-            return $"{ms / 1000f:0.00}s";
+            return ms switch
+            {
+                < 0    => "0ms",
+                < 1000 => $"{ms}ms",
+                _      => $"{ms / 1000f:0.00}s"
+            };
         }
 
         /// <summary>
@@ -1527,9 +1533,12 @@ namespace FuFramework.Web.Editor
         /// <returns>格式化文本</returns>
         private static string FormatBytes(long bytes)
         {
-            if (bytes < 1024) return $"{bytes}B";
-            if (bytes < 1024 * 1024) return $"{bytes / 1024f:0.0}KB";
-            return $"{bytes / (1024f * 1024f):0.0}MB";
+            return bytes switch
+            {
+                < 1024        => $"{bytes}B",
+                < 1024 * 1024 => $"{bytes / 1024f:0.0}KB",
+                _             => $"{bytes / (1024f * 1024f):0.0}MB"
+            };
         }
 
         /// <summary>
