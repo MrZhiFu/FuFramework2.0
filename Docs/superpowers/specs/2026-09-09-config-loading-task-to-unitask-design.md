@@ -77,7 +77,7 @@
 - 三处私有字段（map / list / one 三种分支）：`private readonly System.Func<System.Threading.Tasks.Task<JSONNode>> _loadFunc;` → `Func<UniTask<JSONNode>> _loadFunc;`。
 - 三处构造函数参数：`System.Func<System.Threading.Tasks.Task<JSONNode>> loadFunc` → `Func<UniTask<JSONNode>> loadFunc`。
 - 三处 `public override async System.Threading.Tasks.Task LoadAsync()` → `public override async UniTask LoadAsync()`。
-- **注释**：`_loadFunc` 私有字段、构造函数（含 `loadFunc` 参数）、`LoadAsync`、`ResolveRef`、`TranslateText`、`PostInit` partial 声明补全中文注释。`LoadAsync` 注明「从 loader 取 JSON、清空字典、逐行反序列化、排序后调用 `PostInit`」。
+- **注释**：`_loadFunc` 私有字段、构造函数（含 `loadFunc` 参数）、`LoadAsync`、`ResolveRef`、`TranslateText`、`PostInit` partial 声明补全中文注释。`LoadAsync` 注明「从 loader 取 JSON、清空字典、逐行反序列化、排序后调用 `PostInit`」。`PostInit` 注释需写明**典型场景**：「给某张表预计算、排序、建字典索引等"只靠本表数据就能完成"的收尾工作」，并注明「分部初始化钩子，由使用方补实现」。
 
 - 头部追加 `using Cysharp.Threading.Tasks;`（已有 `using Luban;` / `using System;` / `using Hotfix.Framework.Config;`）。
 - `LoadAsync(System.Func<string, System.Threading.Tasks.Task<ByteBuf>> loader)` → `Func<string, UniTask<ByteBuf>> loader`。
@@ -107,7 +107,7 @@
 - `ResolveRef(tables)` / `TranslateText(translator)`：`<summary>` + `<param>`。
 - `ToString()`：`<summary>`。
 - `__ID__` / `GetTypeId()`：`<summary>`。
-- `PostInit()` partial：`<summary>`（注明「分部初始化钩子，由使用方补实现」）。
+- `PostInit()` partial：`<summary>`（注明「分部初始化钩子，由使用方补实现」），并写明**典型场景**：「给某张表预计算、排序、建字典索引等"只靠本表数据就能完成"的收尾工作」。
 - 字段：已有 `escape_comment` 的保留；`Xxx_Localization_Key`（多语言 key）、`Xxx_Index`、`GetTypeId` 等补充 `///` 说明。索引字段、`_Ref` 引用字段补「存储 xxx 的引用对象」类说明。
 - `__bean.is_value_type`（struct）/ 抽象类型分支：保持结构不改，仅在生成的成员处补注释。
 
