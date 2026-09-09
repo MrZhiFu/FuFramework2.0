@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using SimpleJSON;
 using Hotfix.Framework.Config;
 {{namespace_with_grace_begin __namespace}}
@@ -16,6 +17,10 @@ using Hotfix.Framework.Config;
 
         private ConfigModule m_ConfigModule;
 
+        /// <summary>
+        /// 初始化表管理器（关联配置模块并清空已有配置）
+        /// </summary>
+        /// <param name="configModule">配置管理模块</param>
         public void Init(ConfigModule configModule)
         {
             m_ConfigModule = configModule;
@@ -28,10 +33,12 @@ using Hotfix.Framework.Config;
         public bool IsLoaded { get; private set; }
 
         /// <summary>
-        /// 异步加载配置文件
+        /// 异步加载全部配置表
         /// </summary>
-        /// <param name="loader">加载器</param>
-        public async System.Threading.Tasks.Task LoadAsync(System.Func<string, System.Threading.Tasks.Task<JSONNode>> loader)
+        /// <param name="loader">取配置表 JSON 的加载委托</param>
+        /// <returns>全部表加载完成</returns>
+        /// <remarks>逐表建立、并行 await，全部完成后刷新引用</remarks>
+        public async UniTask LoadAsync(System.Func<string, UniTask<JSONNode>> loader)
         {
             if (IsLoaded)
             {
@@ -39,7 +46,7 @@ using Hotfix.Framework.Config;
             }
             IsLoaded = false;
             m_ConfigModule.RemoveAllConfigs();
-            var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
+            var loadTasks = new System.Collections.Generic.List<UniTask>();
     
             {{~for table in __tables ~}}
             {{format_property_name __code_style table.name}} = new {{table.full_name}}(() => loader("{{table.output_data_file}}"));
@@ -48,16 +55,16 @@ using Hotfix.Framework.Config;
 
             {{~end~}}
     
-            await System.Threading.Tasks.Task.WhenAll(loadTasks);
+            await UniTask.WhenAll(loadTasks);
     
             Refresh();
             IsLoaded = true;
         }
 
         /// <summary>
-        /// 设置本地化的适配器
+        /// 为所有配置表设置本地化翻译器
         /// </summary>
-        /// <param name="translator">适配器对象</param>
+        /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
         /// <exception cref="InvalidOperationException">如果未加载完成将抛出此异常</exception>
         public void SetTranslateText(System.Func<string, string, string> translator)
         {
@@ -70,6 +77,9 @@ using Hotfix.Framework.Config;
             {{~end~}}
         }
 
+        /// <summary>
+        /// 解析所有配置表的跨表引用（表之间已加载完毕）
+        /// </summary>
         private void ResolveRef()
         {
             {{~for table in __tables ~}}
@@ -77,12 +87,19 @@ using Hotfix.Framework.Config;
             {{~end~}}
         }
     
+        /// <summary>
+        /// 刷新所有配置表（先 PostInit 再做跨表引用解析）
+        /// </summary>
         public void Refresh()
         {
             PostInit();
             ResolveRef();
         }
     
+        /// <summary>
+        /// 分部初始化钩子，由使用方补实现。
+        /// 典型场景：给某张表预计算、排序、建字典索引等"只靠本表数据就能完成"的收尾工作
+        /// </summary>
         partial void PostInit();
     }
 {{namespace_with_grace_end __namespace}}
