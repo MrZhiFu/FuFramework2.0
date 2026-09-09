@@ -20,7 +20,7 @@ namespace Hotfix.Game.Events
         /// <returns></returns>
         public static BagChangedEventArgs Create()
         {
-            var eventArgs = GlobalModule.ReferencePoolModule.Acquire<BagChangedEventArgs>();
+            var eventArgs = ReferencePool.Acquire<BagChangedEventArgs>();
             return eventArgs;
         }
     }

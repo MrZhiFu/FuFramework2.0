@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -42,7 +41,7 @@ namespace Hotfix.Framework.Entity
         /// <returns></returns>
         public static ShowEntityInfo Create(int serialId, int entityId, EntityGroup entityGroup, object userData)
         {
-            var showEntityInfo = GlobalModule.ReferencePoolModule.Acquire<ShowEntityInfo>();
+            var showEntityInfo = ReferencePool.Acquire<ShowEntityInfo>();
             showEntityInfo.SerialId    = serialId;
             showEntityInfo.EntityId    = entityId;
             showEntityInfo.EntityGroup = entityGroup;
@@ -57,7 +56,7 @@ namespace Hotfix.Framework.Entity
         {
             // 连带释放 UserData 承载的引用池对象（ShowEntityInfoEx），避免复用丢失
             if (UserData is ShowEntityInfoEx showEntityInfoEx)
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+                ReferencePool.Recycle(showEntityInfoEx);
 
             SerialId    = 0;
             EntityId    = 0;

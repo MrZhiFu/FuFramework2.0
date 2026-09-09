@@ -1,5 +1,5 @@
 using System;
-using Hotfix.Framework.ReferencePool;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event

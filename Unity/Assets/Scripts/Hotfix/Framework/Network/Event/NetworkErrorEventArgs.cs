@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Network
         public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
                                                    string errorMessage)
         {
-            var networkErrorEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkErrorEventArgs>();
+            var networkErrorEventArgs = ReferencePool.Acquire<NetworkErrorEventArgs>();
             networkErrorEventArgs.NetworkChannel  = networkChannel;
             networkErrorEventArgs.ErrorCode       = errorCode;
             networkErrorEventArgs.SocketErrorCode = socketErrorCode;

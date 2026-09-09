@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.Core
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 具体管理对象的对象池。
@@ -227,7 +227,7 @@ namespace Hotfix.Framework.Core
                     try
                     {
                         // 单次回收：即使 OnDispose 异常也回收对象到引用池
-                        GlobalModule.ReferencePoolModule.Recycle(obj);
+                        ReferencePool.Recycle(obj);
                     }
                     catch (Exception e)
                     {

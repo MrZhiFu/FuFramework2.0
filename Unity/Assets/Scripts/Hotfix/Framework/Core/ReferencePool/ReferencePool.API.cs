@@ -1,30 +1,29 @@
 using System;
-using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ReferencePool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
-    /// 引用池管理模块的公共 API。
+    /// 引用池的公共 API。
     /// 功能：
     ///     1. 从引用池获取引用。
     ///     2. 将引用归还引用池。
     ///     3. 获取引用池的数量。
     /// </summary>
-    public sealed partial class ReferencePoolModule : ModuleBase
+    public static partial class ReferencePool
     {
         /// <summary>
         /// 获取引用池的数量。
         /// </summary>
         // ReSharper disable once InconsistentlySynchronizedField
-        public int Count => m_ReferenceCollectionDict.Count;
+        public static int Count => m_ReferenceCollectionDict.Count;
 
         /// <summary>
         /// 从引用池获取引用。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <returns>引用。</returns>
-        public T Acquire<T>() where T : class, IReference, new()
+        public static T Acquire<T>() where T : class, IReference, new()
         {
             return GetReferenceCollection(typeof(T)).Acquire<T>();
         }
@@ -33,9 +32,9 @@ namespace Hotfix.Framework.ReferencePool
         /// 将引用归还引用池。
         /// </summary>
         /// <param name="reference">要归还的引用。</param>
-        public void Recycle(IReference reference)
+        public static void Recycle(IReference reference)
         {
-            if (reference == null) throw new InvalidOperationException("[ReferencePoolModule] 要归还的引用对象为空.");
+            if (reference == null) throw new InvalidOperationException("[ReferencePool] 要归还的引用对象为空.");
 
             var refType = reference.GetType();
             GetReferenceCollection(refType).Recycle(reference);
@@ -46,7 +45,7 @@ namespace Hotfix.Framework.ReferencePool
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <param name="count">追加数量。</param>
-        public void Add<T>(int count) where T : class, IReference, new()
+        public static void Add<T>(int count) where T : class, IReference, new()
         {
             GetReferenceCollection(typeof(T)).Add<T>(count);
         }
@@ -56,7 +55,7 @@ namespace Hotfix.Framework.ReferencePool
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <param name="count">移除数量，超过闲置总数时移除全部闲置引用。</param>
-        public void RemoveUnused<T>(int count) where T : class, IReference
+        public static void RemoveUnused<T>(int count) where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).Remove(count);
         }
@@ -65,32 +64,16 @@ namespace Hotfix.Framework.ReferencePool
         /// 移除指定类型引用池中的所有闲置引用（使用中的引用不受影响，该类型条目保留在字典中）。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
-        public void RemoveAllUnused<T>() where T : class, IReference
+        public static void RemoveAllUnused<T>() where T : class, IReference
         {
             GetReferenceCollection(typeof(T)).RemoveAll();
-        }
-
-        /// <summary>
-        /// 移除所有引用池：清空各类型的闲置引用并删除全部类型条目（引用池数量归零，使用中的引用不受影响）。
-        /// </summary>
-        public void RemoveAllPools()
-        {
-            lock (m_ReferenceCollectionDict)
-            {
-                foreach (var (_, refCollection) in m_ReferenceCollectionDict)
-                {
-                    refCollection.RemoveAll();
-                }
-
-                m_ReferenceCollectionDict.Clear();
-            }
         }
 
         /// <summary>
         /// 获取所有引用池的信息。
         /// </summary>
         /// <returns>所有引用池的信息。</returns>
-        public ReferencePoolInfo[] GetAllReferencePoolInfos()
+        public static ReferencePoolInfo[] GetAllReferencePoolInfos()
         {
             var index = 0;
 

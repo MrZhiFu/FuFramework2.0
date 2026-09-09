@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的加载场景失败事件。</returns>
         public static LoadSceneFailureEventArgs Create(string sceneName, EOperationStatus status, string errorMessage, object userData)
         {
-            var loadSceneFailureEventArgs = GlobalModule.ReferencePoolModule.Acquire<LoadSceneFailureEventArgs>();
+            var loadSceneFailureEventArgs = ReferencePool.Acquire<LoadSceneFailureEventArgs>();
             loadSceneFailureEventArgs.SceneName    = sceneName;
             loadSceneFailureEventArgs.ErrorMessage = errorMessage;
             loadSceneFailureEventArgs.UserData     = userData;

@@ -380,9 +380,9 @@ namespace Hotfix.Framework.Sound
                 m_EventModule.Broadcast(this, failureEventArgs);
                 // 播放未发起，回收已创建的参数对象，避免泄漏
                 if (soundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(soundParams);
+                    ReferencePool.Recycle(soundParams);
                 if (soundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
+                    ReferencePool.Recycle(soundParams3D);
                 return newSerialId;
             }
 
@@ -413,9 +413,9 @@ namespace Hotfix.Framework.Sound
                 {
                     assetOperationHandle?.Release();
                     if (soundParams != null)
-                        GlobalModule.ReferencePoolModule.Recycle(soundParams);
+                        ReferencePool.Recycle(soundParams);
                     if (soundParams3D != null)
-                        GlobalModule.ReferencePoolModule.Recycle(soundParams3D);
+                        ReferencePool.Recycle(soundParams3D);
                 }
 
                 throw;
@@ -551,14 +551,14 @@ namespace Hotfix.Framework.Sound
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
                 m_LoadingSoundList.Remove(playSoundInfo.SerialId); // 停止加载的声音也从加载列表移除，避免 IsLoadingSound 恒 true
                 if (playSoundInfo.SoundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
 
                 playSoundInfo.SoundAssetHandle?.Release(); // 加载中被丢弃，句柄未上代理，释放之
                 m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                ReferencePool.Recycle(playSoundInfo);
                 return;
             }
 
@@ -589,12 +589,12 @@ namespace Hotfix.Framework.Sound
                 {
                     // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
                     if (playSoundInfo.SoundParams != null)
-                        GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                        ReferencePool.Recycle(playSoundInfo.SoundParams);
 
                     if (playSoundInfo.SoundParams3D != null)
-                        GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
+                        ReferencePool.Recycle(playSoundInfo.SoundParams3D);
 
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                    ReferencePool.Recycle(playSoundInfo);
                 }
                 return;
             }
@@ -614,12 +614,12 @@ namespace Hotfix.Framework.Sound
 
                 // 与其他失败分支一致，释放播放相关信息（否则低优先级声音每次泄漏 3 个池对象）
                 if (playSoundInfo.SoundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
 
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                ReferencePool.Recycle(playSoundInfo);
                 return;
             }
 
@@ -636,12 +636,12 @@ namespace Hotfix.Framework.Sound
             {
                 // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
                 if (playSoundInfo.SoundParams != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams);
 
                 if (playSoundInfo.SoundParams3D != null)
-                    GlobalModule.ReferencePoolModule.Recycle(playSoundInfo.SoundParams3D);
+                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
 
-                GlobalModule.ReferencePoolModule.Recycle(playSoundInfo);
+                ReferencePool.Recycle(playSoundInfo);
             }
         }
 

@@ -1,6 +1,5 @@
 using FairyGUI;
 using UnityEngine;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 
 using AOT.Launch;
@@ -20,7 +19,7 @@ using Hotfix.Framework.Timer;
 using Hotfix.Framework.Mono;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.FSM;
-using Hotfix.Framework.ReferencePool;
+using Hotfix.Framework.ObjectPool;
 
 using Hotfix.Framework.UI;
 using Hotfix.Framework.Procedure;
@@ -103,7 +102,11 @@ namespace Hotfix
             GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
             GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
             GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
-            GameDriven.Instance.DisposeModules    = ModuleManager.Dispose;
+            GameDriven.Instance.DisposeModules    = () =>
+            {
+                ModuleManager.Dispose();
+                ReferencePool.ClearAll();
+            };
         }
 
         /// <summary>
@@ -112,7 +115,6 @@ namespace Hotfix
         private static void RegisterBaseModules()
         {
             ModuleManager.RegisterModule<ConfigModule>();
-            ModuleManager.RegisterModule<ReferencePoolModule>();
             ModuleManager.RegisterModule<FsmModule>();
             ModuleManager.RegisterModule<ProcedureModule>();
             ModuleManager.RegisterModule<EventModule>();
@@ -209,7 +211,7 @@ namespace Hotfix
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        private static async Task<ByteBuf> ConfigBufferLoader(string file)
+        private static async UniTask<ByteBuf> ConfigBufferLoader(string file)
         {
             var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath, GlobalModule.AssetModule.Token);
@@ -232,7 +234,7 @@ namespace Hotfix
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        private static async Task<JSONNode> ConfigLoader(string file)
+        private static async UniTask<JSONNode> ConfigLoader(string file)
         {
             var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
             var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);

@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarVector4(Vector4 value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarVector4>();
+            var varValue = ReferencePool.Acquire<VarVector4>();
             varValue.Value = value;
             return varValue;
         }

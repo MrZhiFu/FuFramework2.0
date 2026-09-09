@@ -29,7 +29,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static DialogStep Create(GuideStep stepInfo)
         {
-            var step = GlobalModule.ReferencePoolModule.Acquire<DialogStep>();
+            var step = ReferencePool.Acquire<DialogStep>();
             step.StepInfo = stepInfo;
             return step;
         }

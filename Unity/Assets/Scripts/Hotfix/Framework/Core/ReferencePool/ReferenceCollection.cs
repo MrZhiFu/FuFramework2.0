@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable InconsistentlySynchronizedField
-namespace Hotfix.Framework.ReferencePool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 引用集合(使用栈存储)，即一个引用类型对应一个引用信息集合。
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.ReferencePool
         /// <returns>引用对象。</returns>
         public T Acquire<T>() where T : class, IReference, new()
         {
-            if (typeof(T) != RefType) throw new InvalidOperationException("[ReferencePoolModule.ReferenceCollection] 引用获取失败，引用类型无效.");
+            if (typeof(T) != RefType) throw new InvalidOperationException("[ReferencePool.ReferenceCollection] 引用获取失败，引用类型无效.");
 
             lock (m_FreeStack)
             {
@@ -80,7 +80,7 @@ namespace Hotfix.Framework.ReferencePool
                 {
                     var reference = m_FreeStack.Pop();
                     if (reference is not T result)
-                        throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 引用获取失败，池中对象类型不匹配，期望 '{RefType.Name}'，实际 '{reference.GetType().Name}'.");
+                        throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 引用获取失败，池中对象类型不匹配，期望 '{RefType.Name}'，实际 '{reference.GetType().Name}'.");
 
                     return result;
                 }
@@ -98,13 +98,13 @@ namespace Hotfix.Framework.ReferencePool
         /// <param name="reference">要释放的引用。</param>
         public void Recycle(IReference reference)
         {
-            if (reference == null) throw new InvalidOperationException("[ReferencePoolModule.ReferenceCollection] 引用释放失败，引用对象为空.");
+            if (reference == null) throw new InvalidOperationException("[ReferencePool.ReferenceCollection] 引用释放失败，引用对象为空.");
 
             lock (m_FreeStack)
             {
                 // 重复释放检测：无条件保留，杜绝同一对象被同时交给多个持有者
                 if (m_FreeStack.Contains(reference))
-                    throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，该对象已经被释放.");
+                    throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，该对象已经被释放.");
 
                 // 清理引用，清除数据后方便重用该对象
                 reference.Clear();
@@ -113,7 +113,7 @@ namespace Hotfix.Framework.ReferencePool
                 ReleaseReferenceCount++;
 
                 if (UsingReferenceCount <= 0)
-                    throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，使用计数已为零，存在未通过池获取的 Release 调用.");
+                    throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 引用实例{reference.GetType().Name}释放失败，使用计数已为零，存在未通过池获取的 Release 调用.");
 
                 UsingReferenceCount--;
             }
@@ -126,7 +126,7 @@ namespace Hotfix.Framework.ReferencePool
         /// <param name="count">添加数量。</param>
         public void Add<T>(int count) where T : class, IReference, new()
         {
-            if (typeof(T) != RefType) throw new InvalidOperationException($"[ReferencePoolModule.ReferenceCollection] 添加引用失败，类型{typeof(T).Name}不是引用池类型.");
+            if (typeof(T) != RefType) throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 添加引用失败，类型{typeof(T).Name}不是引用池类型.");
 
             lock (m_FreeStack)
             {

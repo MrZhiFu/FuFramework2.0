@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarColor32(Color32 value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarColor32>();
+            var varValue = ReferencePool.Acquire<VarColor32>();
             varValue.Value = value;
             return varValue;
         }

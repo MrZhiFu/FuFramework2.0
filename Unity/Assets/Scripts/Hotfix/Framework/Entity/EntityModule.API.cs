@@ -357,7 +357,7 @@ namespace Hotfix.Framework.Entity
                 {
                     m_LoadingEntityDict.Remove(entityId);
                     m_LoadingToReleaseSet.Remove(serialId);
-                    GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+                    ReferencePool.Recycle(showEntityInfoEx);
                     throw;
                 }
 
@@ -373,7 +373,7 @@ namespace Hotfix.Framework.Entity
                         // 配对显式卸载防旧生命周期实体 prefab 的 bundle 常驻（失败句柄未获取 bundle 无需卸载）
                         if (handle.Status == EOperationStatus.Succeeded)
                             m_AssetModule.UnloadAsset(entityAssetName);
-                        GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+                        ReferencePool.Recycle(showEntityInfoEx);
                         tcs.TrySetException(new OperationCanceledException(capturedToken));
                         return;
                     }
@@ -406,12 +406,12 @@ namespace Hotfix.Framework.Entity
                 // 显示失败：若实体未登记（创建实体失败等），回收已获取的实例对象，避免占用对象池槽位
                 if (!HasEntity(entityId))
                     entityGroup.RecycleEntityObject(entityObj);
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+                ReferencePool.Recycle(showEntityInfoEx);
                 throw;
             }
 
             // 显示完成，释放临时传递数据的引用池对象
-            GlobalModule.ReferencePoolModule.Recycle(showEntityInfoEx);
+            ReferencePool.Recycle(showEntityInfoEx);
             return await tcs.Task;
         }
 

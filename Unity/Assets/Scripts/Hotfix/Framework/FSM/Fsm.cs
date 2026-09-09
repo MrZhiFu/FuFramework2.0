@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Variable;
 
 // ReSharper disable once CheckNamespace
@@ -85,7 +84,7 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Length < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = GlobalModule.ReferencePoolModule.Acquire<Fsm>();
+            var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -118,7 +117,7 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Count < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
-            var fsm = GlobalModule.ReferencePoolModule.Acquire<Fsm>();
+            var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
@@ -204,7 +203,7 @@ namespace Hotfix.Framework.FSM
                 foreach (var (_, data) in m_DataDict)
                 {
                     if (data == null) continue;
-                    GlobalModule.ReferencePoolModule.Recycle(data);
+                    ReferencePool.Recycle(data);
                 }
 
                 m_DataDict.Clear();
@@ -218,7 +217,7 @@ namespace Hotfix.Framework.FSM
         /// <summary>
         /// 关闭并清理有限状态机。
         /// </summary>
-        internal void Shutdown() => GlobalModule.ReferencePoolModule.Recycle(this);
+        internal void Shutdown() => ReferencePool.Recycle(this);
 
         /// <summary>
         /// 是否存在有限状态机状态。
@@ -353,7 +352,7 @@ namespace Hotfix.Framework.FSM
 
             var oldData = GetData(name);
             if (oldData != null)
-                GlobalModule.ReferencePoolModule.Recycle(oldData);
+                ReferencePool.Recycle(oldData);
 
             m_DataDict[name] = data;
         }
@@ -369,7 +368,7 @@ namespace Hotfix.Framework.FSM
             if (m_DataDict == null) return false;
 
             var oldData = GetData(name);
-            if (oldData != null) GlobalModule.ReferencePoolModule.Recycle(oldData);
+            if (oldData != null) ReferencePool.Recycle(oldData);
             return m_DataDict.Remove(name);
         }
 

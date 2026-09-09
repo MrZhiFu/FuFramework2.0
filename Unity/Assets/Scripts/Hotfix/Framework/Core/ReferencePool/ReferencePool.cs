@@ -1,29 +1,36 @@
 using System;
 using System.Collections.Generic;
-using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ReferencePool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
-    /// 引用池管理模块。
+    /// 引用池。
     /// 功能：
     ///     1. 管理各引用类型下的引用集合字典。
-    ///     2. 提供模块生命周期管理。
+    ///     2. 提供引用池的全局清理。
     /// </summary>
-    public sealed partial class ReferencePoolModule : ModuleBase
+    public static partial class ReferencePool
     {
         /// <summary>
         /// 记录指定类型下的引用对象集合的字典, key:指定类型--Value:该类型下的引用对象信息集合
         /// </summary>
-        private readonly Dictionary<Type, ReferenceCollection> m_ReferenceCollectionDict = new();
+        private static readonly Dictionary<Type, ReferenceCollection> m_ReferenceCollectionDict = new();
 
         /// <summary>
-        /// 释放。
+        /// 移除所有引用池：清空各类型的闲置引用并删除全部类型条目（引用池数量归零，使用中的引用不受影响）。
         /// </summary>
-        protected internal override void OnDispose()
+        public static void ClearAll()
         {
-            RemoveAllPools();
+            lock (m_ReferenceCollectionDict)
+            {
+                foreach (var (_, refCollection) in m_ReferenceCollectionDict)
+                {
+                    refCollection.RemoveAll();
+                }
+
+                m_ReferenceCollectionDict.Clear();
+            }
         }
 
         /// <summary>
@@ -31,9 +38,9 @@ namespace Hotfix.Framework.ReferencePool
         /// </summary>
         /// <param name="refType">引用类型。</param>
         /// <returns>引用信息集合。</returns>
-        private ReferenceCollection GetReferenceCollection(Type refType)
+        private static ReferenceCollection GetReferenceCollection(Type refType)
         {
-            if (refType == null) throw new InvalidOperationException("[ReferencePoolModule] 引用类型为空.");
+            if (refType == null) throw new InvalidOperationException("[ReferencePool] 引用类型为空.");
 
             ReferenceCollection referenceCollection;
             lock (m_ReferenceCollectionDict)

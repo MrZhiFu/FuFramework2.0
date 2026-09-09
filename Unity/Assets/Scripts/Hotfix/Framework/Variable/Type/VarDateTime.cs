@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarDateTime(DateTime value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarDateTime>();
+            var varValue = ReferencePool.Acquire<VarDateTime>();
             varValue.Value = value;
             return varValue;
         }

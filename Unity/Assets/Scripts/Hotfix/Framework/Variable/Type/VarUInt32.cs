@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarUInt32(uint value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarUInt32>();
+            var varValue = ReferencePool.Acquire<VarUInt32>();
             varValue.Value = value;
             return varValue;
         }

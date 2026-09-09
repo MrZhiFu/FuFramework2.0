@@ -643,13 +643,13 @@ namespace FuFramework.ObjectPool.Editor
         {
             if (m_ModuleInstance != null) return true;
 
-            m_ObjectPoolModuleType = Type.GetType("Hotfix.Framework.Core.ObjectPoolModule, Hotfix");
+            m_ObjectPoolModuleType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectPoolModule, Hotfix");
             if (m_ObjectPoolModuleType == null) return false;
 
-            m_ObjectPoolBaseType = Type.GetType("Hotfix.Framework.Core.ObjectPoolBase, Hotfix");
+            m_ObjectPoolBaseType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectPoolBase, Hotfix");
             if (m_ObjectPoolBaseType == null) return false;
 
-            m_ObjectInfoType = Type.GetType("Hotfix.Framework.Core.ObjectInfo, Hotfix");
+            m_ObjectInfoType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectPoolInfo, Hotfix");
             if (m_ObjectInfoType == null) return false;
 
             // ObjectPoolModule 没有静态 Instance，通过 ModuleManager.GetModule(Type) 获取热更实例

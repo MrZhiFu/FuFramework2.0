@@ -47,7 +47,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的打开界面成功事件。</returns>
         public static OpenUISuccessEventArgs Create(WinBase win, object userData)
         {
-            var openUISuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<OpenUISuccessEventArgs>();
+            var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
             openUISuccessEventArgs.Win = win;
             openUISuccessEventArgs.UserData = userData;
             return openUISuccessEventArgs;

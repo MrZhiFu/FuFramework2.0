@@ -4,6 +4,7 @@ using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.ObjectPool;
 using System.Collections.Generic;
 using Hotfix.Game.Config;
 

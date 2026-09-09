@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Download
                 var downloadCounterNode = m_DownloadCounterNodeList.First.Value;
                 if (downloadCounterNode.ElapseSeconds < m_RecordInterval) break;
 
-                GlobalModule.ReferencePoolModule.Recycle(downloadCounterNode);
+                ReferencePool.Recycle(downloadCounterNode);
                 m_DownloadCounterNodeList.RemoveFirst();
             }
 

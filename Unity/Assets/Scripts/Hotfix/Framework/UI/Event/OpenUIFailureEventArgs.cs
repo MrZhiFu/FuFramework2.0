@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的打开界面失败事件。</returns>
         public static OpenUIFailureEventArgs Create(int serialId, string winName, object userData)
         {
-            var openUIFailureEventArgs = GlobalModule.ReferencePoolModule.Acquire<OpenUIFailureEventArgs>();
+            var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
             openUIFailureEventArgs.SerialId = serialId;
             openUIFailureEventArgs.WinName   = winName;
             openUIFailureEventArgs.UserData = userData;

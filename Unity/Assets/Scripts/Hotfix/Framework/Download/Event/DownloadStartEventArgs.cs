@@ -66,7 +66,7 @@ namespace Hotfix.Framework.Download
         /// <returns>创建的下载开始事件。</returns>
         public static DownloadStartEventArgs Create(int serialId, string downloadPath, string downloadUri, long currentLength, object userData)
         {
-            var downloadStartEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadStartEventArgs>();
+            var downloadStartEventArgs = ReferencePool.Acquire<DownloadStartEventArgs>();
             downloadStartEventArgs.SerialId      = serialId;
             downloadStartEventArgs.DownloadPath  = downloadPath;
             downloadStartEventArgs.DownloadUri   = downloadUri;

@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Network
         /// <returns>创建的网络连接成功事件。</returns>
         public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel, object userData)
         {
-            var networkConnectedEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkConnectedEventArgs>();
+            var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
             networkConnectedEventArgs.NetworkChannel = networkChannel;
             networkConnectedEventArgs.UserData       = userData;
             return networkConnectedEventArgs;

@@ -54,7 +54,7 @@ namespace Hotfix.Framework.UI
         /// <returns>创建的打开界面成功事件。</returns>
         public static ChangeUIVisibleEventArgs Create(WinBase win, bool visible, object userData)
         {
-            var uiSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<ChangeUIVisibleEventArgs>();
+            var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
             uiSuccessEventArgs.Win   = win;
             uiSuccessEventArgs.Visible  = visible;
             uiSuccessEventArgs.UserData = userData;

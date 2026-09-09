@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.Core
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 销毁对象筛选函数。

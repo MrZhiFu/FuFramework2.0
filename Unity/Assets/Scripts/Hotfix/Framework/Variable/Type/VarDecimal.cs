@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarDecimal(decimal value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarDecimal>();
+            var varValue = ReferencePool.Acquire<VarDecimal>();
             varValue.Value = value;
             return varValue;
         }

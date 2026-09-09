@@ -1,6 +1,5 @@
 using System;
 using YooAsset;
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Sound
@@ -76,7 +75,7 @@ namespace Hotfix.Framework.Sound
             public static PlaySoundInfo Create(int serialId, string soundName, object soundAsset, AssetHandle soundAssetHandle, SoundGroup soundGroup, SoundParams soundParams, SoundParams3D soundParams3D,
                                                object userData, Action onPlayEnd)
             {
-                var playSoundInfo = GlobalModule.ReferencePoolModule.Acquire<PlaySoundInfo>();
+                var playSoundInfo = ReferencePool.Acquire<PlaySoundInfo>();
                 playSoundInfo.SerialId          = serialId;
                 playSoundInfo.SoundAssetPath    = soundName;
                 playSoundInfo.SoundAsset        = soundAsset;

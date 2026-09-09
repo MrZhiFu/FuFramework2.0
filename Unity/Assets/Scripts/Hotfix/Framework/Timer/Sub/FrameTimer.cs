@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
         {
-            var timerInfo = GlobalModule.ReferencePoolModule.Acquire<FrameTimer>();
+            var timerInfo = ReferencePool.Acquire<FrameTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id                = timerId;

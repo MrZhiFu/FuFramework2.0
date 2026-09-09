@@ -9,6 +9,7 @@ using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;
+using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity
@@ -171,7 +172,7 @@ namespace Hotfix.Framework.Entity
                 entity.OnRecycle();
                 entityInfo.Status = EEntityStatus.Recycled;
                 entityGroup.RecycleEntity(entity);
-                GlobalModule.ReferencePoolModule.Recycle(entityInfo);
+                ReferencePool.Recycle(entityInfo);
             }
 
             // 遍历每个实体组，驱动每个实体组轮询
@@ -220,7 +221,7 @@ namespace Hotfix.Framework.Entity
                 }
                 finally
                 {
-                    GlobalModule.ReferencePoolModule.Recycle(entityInfo);
+                    ReferencePool.Recycle(entityInfo);
                 }
             }
 
@@ -262,7 +263,7 @@ namespace Hotfix.Framework.Entity
             if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                ReferencePool.Recycle(showEntityInfo);
                 m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
                 // 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
                 tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 加载中已被隐藏，取消显示。"));
@@ -278,7 +279,7 @@ namespace Hotfix.Framework.Entity
             {
                 // 资源不是 GameObject 或句柄无效：释放句柄、回收信息、完成 tcs，避免句柄/池对象泄漏与 await 挂起
                 m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                ReferencePool.Recycle(showEntityInfo);
                 tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 资源不是 GameObject，无法实例化。"));
                 return;
             }
@@ -298,12 +299,12 @@ namespace Hotfix.Framework.Entity
                 if (!HasEntity(showEntityInfo.EntityId))
                     showEntityInfo.EntityGroup.RecycleEntityObject(entityObject);
 
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                ReferencePool.Recycle(showEntityInfo);
                 tcs.TrySetException(exception);
                 return;
             }
 
-            GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+            ReferencePool.Recycle(showEntityInfo);
         }
 
         /// <summary>
@@ -330,7 +331,7 @@ namespace Hotfix.Framework.Entity
             {
                 m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
                 // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
-                GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+                ReferencePool.Recycle(showEntityInfo);
                 // 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
                 tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 加载失败且加载中已被隐藏。"));
                 return;
@@ -345,7 +346,7 @@ namespace Hotfix.Framework.Entity
             m_EventModule.Broadcast(this, showEntityFailureEventArgs);
 
             // 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
-            GlobalModule.ReferencePoolModule.Recycle(showEntityInfo);
+            ReferencePool.Recycle(showEntityInfo);
 
             tcs.TrySetException(exception); // 统一由 await tcs.Task 抛出，不再 throw（避免从 Completed 同步回调逃逸）
         }
@@ -427,7 +428,7 @@ namespace Hotfix.Framework.Entity
                     }
 
                     m_EntityDict.Remove(entityId);
-                    GlobalModule.ReferencePoolModule.Recycle(registeredEntityInfo);
+                    ReferencePool.Recycle(registeredEntityInfo);
                 }
 
                 // 发送显示实体失败事件

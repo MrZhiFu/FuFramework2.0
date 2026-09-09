@@ -72,7 +72,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static ClickUIStep Create(GuideStep stepInfo)
         {
-            var step = GlobalModule.ReferencePoolModule.Acquire<ClickUIStep>();
+            var step = ReferencePool.Acquire<ClickUIStep>();
             step.StepInfo = stepInfo;
             return step;
         }

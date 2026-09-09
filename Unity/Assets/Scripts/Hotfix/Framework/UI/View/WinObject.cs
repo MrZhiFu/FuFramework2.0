@@ -1,6 +1,7 @@
 using System;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI
@@ -22,7 +23,7 @@ namespace Hotfix.Framework.UI
         /// <returns></returns>
         public static WinObject Create(string winName, WinBase winBase)
         {
-            var winObject = GlobalModule.ReferencePoolModule.Acquire<WinObject>();
+            var winObject = ReferencePool.Acquire<WinObject>();
             winObject.Initialize(winName, winBase);
             return winObject;
         }

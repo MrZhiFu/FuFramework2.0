@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity
@@ -48,7 +47,7 @@ namespace Hotfix.Framework.Entity
         public static EntityInfo Create(Entity entity)
         {
             if (entity is null) throw new InvalidOperationException("[EntityInfo] 创建实体信息失败，实体显示对象为空!");
-            var entityInfo = GlobalModule.ReferencePoolModule.Acquire<EntityInfo>();
+            var entityInfo = ReferencePool.Acquire<EntityInfo>();
             entityInfo.Entity = entity;
             entityInfo.Status = EEntityStatus.WillInit;
             return entityInfo;

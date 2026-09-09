@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static DefaultStep Create(GuideStep stepInfo)
         {
-            var step = GlobalModule.ReferencePoolModule.Acquire<DefaultStep>();
+            var step = ReferencePool.Acquire<DefaultStep>();
             step.StepInfo = stepInfo;
             return step;
         }

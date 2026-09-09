@@ -2,7 +2,7 @@ using System;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.Core
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象池的基类。

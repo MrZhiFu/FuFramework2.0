@@ -1,7 +1,7 @@
 
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Framework.ReferencePool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 引用接口。

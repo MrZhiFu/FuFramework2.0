@@ -1,4 +1,3 @@
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Sound
@@ -88,7 +87,7 @@ namespace Hotfix.Framework.Sound
         /// 创建播放声音参数。
         /// </summary>
         /// <returns>创建的播放声音参数。</returns>
-        public static SoundParams Create() => GlobalModule.ReferencePoolModule.Acquire<SoundParams>();
+        public static SoundParams Create() => ReferencePool.Acquire<SoundParams>();
 
         /// <summary>
         /// 清理播放声音参数。

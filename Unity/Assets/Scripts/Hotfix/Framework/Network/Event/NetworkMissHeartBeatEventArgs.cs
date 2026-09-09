@@ -37,7 +37,7 @@ namespace Hotfix.Framework.Network
         /// <returns>创建的网络心跳包丢失事件。</returns>
         public static NetworkMissHeartBeatEventArgs Create(INetworkChannel networkChannel, int missCount)
         {
-            var networkMissHeartBeatEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkMissHeartBeatEventArgs>();
+            var networkMissHeartBeatEventArgs = ReferencePool.Acquire<NetworkMissHeartBeatEventArgs>();
             networkMissHeartBeatEventArgs.NetworkChannel = networkChannel;
             networkMissHeartBeatEventArgs.MissCount      = missCount;
             return networkMissHeartBeatEventArgs;

@@ -62,7 +62,7 @@ namespace Hotfix.Framework.Download
             if (offset < 0  || offset          >= bytes.Length) throw new InvalidOperationException("数据流的偏移不正确.");
             if (length <= 0 || offset + length > bytes.Length) throw new InvalidOperationException("数据流的长度不正确.");
 
-            var downloadAgentHelperUpdateBytesEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
+            var downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
             downloadAgentHelperUpdateBytesEventArgs.m_Bytes = bytes;
             downloadAgentHelperUpdateBytesEventArgs.Offset  = offset;
             downloadAgentHelperUpdateBytesEventArgs.Length  = length;

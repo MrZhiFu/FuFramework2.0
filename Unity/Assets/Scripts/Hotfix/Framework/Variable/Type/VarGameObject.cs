@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarGameObject(GameObject value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarGameObject>();
+            var varValue = ReferencePool.Acquire<VarGameObject>();
             varValue.Value = value;
             return varValue;
         }

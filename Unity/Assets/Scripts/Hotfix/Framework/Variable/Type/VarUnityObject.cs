@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarUnityObject(Object value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarUnityObject>();
+            var varValue = ReferencePool.Acquire<VarUnityObject>();
             varValue.Value = value;
             return varValue;
         }

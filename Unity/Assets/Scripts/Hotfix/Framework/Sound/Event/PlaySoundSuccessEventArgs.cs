@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Sound
         /// <returns>创建的播放声音成功事件。</returns>
         public static PlaySoundSuccessEventArgs Create(int serialId, string soundAssetName, object userData)
         {
-            var playSoundSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<PlaySoundSuccessEventArgs>();
+            var playSoundSuccessEventArgs = ReferencePool.Acquire<PlaySoundSuccessEventArgs>();
             playSoundSuccessEventArgs.SerialId       = serialId;
             playSoundSuccessEventArgs.SoundAssetName = soundAssetName;
             playSoundSuccessEventArgs.UserData       = userData;

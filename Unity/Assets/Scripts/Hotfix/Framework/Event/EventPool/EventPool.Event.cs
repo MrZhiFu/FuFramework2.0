@@ -1,5 +1,4 @@
 using System;
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -32,7 +31,7 @@ namespace Hotfix.Framework.Event
             /// <returns></returns>
             public static Event Create(object sender, T eventArgs)
             {
-                var eventNodeNode = GlobalModule.ReferencePoolModule.Acquire<Event>();
+                var eventNodeNode = ReferencePool.Acquire<Event>();
                 eventNodeNode.Sender    = sender;
                 eventNodeNode.EventArgs = eventArgs;
                 return eventNodeNode;

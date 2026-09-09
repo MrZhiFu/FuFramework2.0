@@ -39,7 +39,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的加载场景成功事件。</returns>
         public static LoadSceneSuccessEventArgs Create(string sceneName, object userData)
         {
-            var loadSceneSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<LoadSceneSuccessEventArgs>();
+            var loadSceneSuccessEventArgs = ReferencePool.Acquire<LoadSceneSuccessEventArgs>();
             loadSceneSuccessEventArgs.SceneName = sceneName;
             loadSceneSuccessEventArgs.UserData  = userData;
             return loadSceneSuccessEventArgs;

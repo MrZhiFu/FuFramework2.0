@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Download
         {
             if (deltaLength <= 0) throw new InvalidOperationException("下载的增量数据大小必须大于0.");
 
-            var downloadAgentHelperUpdateLengthEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
+            var downloadAgentHelperUpdateLengthEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateLengthEventArgs>();
             downloadAgentHelperUpdateLengthEventArgs.DeltaLength = deltaLength;
             return downloadAgentHelperUpdateLengthEventArgs;
         }

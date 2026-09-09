@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarMaterial(Material value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarMaterial>();
+            var varValue = ReferencePool.Acquire<VarMaterial>();
             varValue.Value = value;
             return varValue;
         }

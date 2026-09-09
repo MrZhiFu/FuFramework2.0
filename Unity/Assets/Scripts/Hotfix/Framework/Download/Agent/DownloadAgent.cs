@@ -124,7 +124,7 @@ namespace Hotfix.Framework.Download
             // 调用下载代理辅助器错误事件
             var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, "Timeout");
             _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-            GlobalModule.ReferencePoolModule.Recycle(downloadAgentHelperErrorEventArgs);
+            ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Hotfix.Framework.Download
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
                 _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                GlobalModule.ReferencePoolModule.Recycle(downloadAgentHelperErrorEventArgs);
+                ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
                 return EStartTaskStatus.UnknownError;
             }
         }
@@ -258,7 +258,7 @@ namespace Hotfix.Framework.Download
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
                 _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                GlobalModule.ReferencePoolModule.Recycle(downloadAgentHelperErrorEventArgs);
+                ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
             }
         }
 

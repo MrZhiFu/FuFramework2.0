@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarDouble(double value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarDouble>();
+            var varValue = ReferencePool.Acquire<VarDouble>();
             varValue.Value = value;
             return varValue;
         }

@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarQuaternion(Quaternion value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarQuaternion>();
+            var varValue = ReferencePool.Acquire<VarQuaternion>();
             varValue.Value = value;
             return varValue;
         }

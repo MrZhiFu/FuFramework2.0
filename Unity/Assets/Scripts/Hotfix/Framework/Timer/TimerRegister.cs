@@ -2,7 +2,6 @@ using System;
 using Hotfix.Framework.Core;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Timer
@@ -33,7 +32,7 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static TimerRegister Create()
         {
-            var register = GlobalModule.ReferencePoolModule.Acquire<TimerRegister>();
+            var register = ReferencePool.Acquire<TimerRegister>();
             register.m_TimerModule = ModuleManager.GetModule<TimerModule>();
             register.m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
@@ -193,6 +192,6 @@ namespace Hotfix.Framework.Timer
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => GlobalModule.ReferencePoolModule.Recycle(this);
+        public void Release() => ReferencePool.Recycle(this);
     }
 }

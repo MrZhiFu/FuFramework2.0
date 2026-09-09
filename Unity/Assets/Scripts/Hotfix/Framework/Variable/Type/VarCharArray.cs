@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Variable
         /// <param name="value">值。</param>
         public static implicit operator VarCharArray(char[] value)
         {
-            var varValue = GlobalModule.ReferencePoolModule.Acquire<VarCharArray>();
+            var varValue = ReferencePool.Acquire<VarCharArray>();
             varValue.Value = value;
             return varValue;
         }

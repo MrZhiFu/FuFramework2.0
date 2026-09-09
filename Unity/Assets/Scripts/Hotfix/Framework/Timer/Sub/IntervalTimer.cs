@@ -101,7 +101,7 @@ namespace Hotfix.Framework.Timer
         /// <returns></returns>
         public static IntervalTimer Create(int timerId, float interval, Action intervalCallback, int repeatCount, bool immediate, bool ignoreTimeScale)
         {
-            var timerInfo = GlobalModule.ReferencePoolModule.Acquire<IntervalTimer>();
+            var timerInfo = ReferencePool.Acquire<IntervalTimer>();
             if (timerInfo == null) return null;
 
             timerInfo.Id               = timerId;

@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Download
         /// <returns>创建的下载代理辅助器错误事件。</returns>
         public static DownloadAgentHelperErrorEventArgs Create(bool deleteDownloading, string errorMessage)
         {
-            var downloadAgentHelperErrorEventArgs = GlobalModule.ReferencePoolModule.Acquire<DownloadAgentHelperErrorEventArgs>();
+            var downloadAgentHelperErrorEventArgs = ReferencePool.Acquire<DownloadAgentHelperErrorEventArgs>();
             downloadAgentHelperErrorEventArgs.DeleteDownloading = deleteDownloading;
             downloadAgentHelperErrorEventArgs.ErrorMessage      = errorMessage;
             return downloadAgentHelperErrorEventArgs;

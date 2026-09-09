@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的卸载场景成功事件。</returns>
         public static UnloadSceneSuccessEventArgs Create(string sceneName, object userData)
         {
-            var unloadSceneSuccessEventArgs = GlobalModule.ReferencePoolModule.Acquire<UnloadSceneSuccessEventArgs>();
+            var unloadSceneSuccessEventArgs = ReferencePool.Acquire<UnloadSceneSuccessEventArgs>();
             unloadSceneSuccessEventArgs.SceneName = sceneName;
             unloadSceneSuccessEventArgs.UserData  = userData;
             return unloadSceneSuccessEventArgs;

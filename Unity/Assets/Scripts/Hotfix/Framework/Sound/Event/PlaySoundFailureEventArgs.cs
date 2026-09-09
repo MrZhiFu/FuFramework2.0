@@ -60,7 +60,7 @@ namespace Hotfix.Framework.Sound
         /// <returns>创建的播放声音失败事件。</returns>
         public static PlaySoundFailureEventArgs Create(int serialId, string soundAssetName, string soundGroupName, EPlaySoundErrorCode errorCode)
         {
-            var playSoundFailureEventArgs = GlobalModule.ReferencePoolModule.Acquire<PlaySoundFailureEventArgs>();
+            var playSoundFailureEventArgs = ReferencePool.Acquire<PlaySoundFailureEventArgs>();
             playSoundFailureEventArgs.SerialId       = serialId;
             playSoundFailureEventArgs.SoundAssetName = soundAssetName;
             playSoundFailureEventArgs.SoundGroupName = soundGroupName;

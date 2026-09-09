@@ -1,5 +1,4 @@
 using UnityEngine;
-using Hotfix.Framework.ReferencePool;
 using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Sound
@@ -28,7 +27,7 @@ namespace Hotfix.Framework.Sound
         /// <returns>创建的播放声音信息。</returns>
         public static SoundParams3D Create(Entity.Entity bindingEntity, Vector3 worldPosition)
         {
-            var playSoundInfo = GlobalModule.ReferencePoolModule.Acquire<SoundParams3D>();
+            var playSoundInfo = ReferencePool.Acquire<SoundParams3D>();
             playSoundInfo.BindingEntity = bindingEntity;
             playSoundInfo.WorldPosition = worldPosition;
             return playSoundInfo;

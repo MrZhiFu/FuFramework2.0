@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Scene
         /// <returns>创建的加载场景更新事件。</returns>
         public static LoadSceneUpdateEventArgs Create(string sceneAssetName, float progress, object userData)
         {
-            var loadSceneUpdateEventArgs = GlobalModule.ReferencePoolModule.Acquire<LoadSceneUpdateEventArgs>();
+            var loadSceneUpdateEventArgs = ReferencePool.Acquire<LoadSceneUpdateEventArgs>();
             loadSceneUpdateEventArgs.SceneName = sceneAssetName;
             loadSceneUpdateEventArgs.Progress  = progress;
             loadSceneUpdateEventArgs.UserData  = userData;

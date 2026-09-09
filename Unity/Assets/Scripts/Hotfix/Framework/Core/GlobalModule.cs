@@ -4,9 +4,8 @@ using Hotfix.Framework.Mono;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Timer;
 using Hotfix.Framework.Asset;
+using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.Procedure;
-
-using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable once CheckNamespace
@@ -19,7 +18,6 @@ namespace Hotfix.Framework.Core
     /// </summary>
     public static class GlobalModule
     {
-        private static ReferencePoolModule m_ReferencePoolModule; // 引用池模块
         private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
         private static EventModule         m_EventModule;         // 事件管理模块
         private static AssetModule         m_AssetModule;         // 资源管理模块
@@ -31,11 +29,6 @@ namespace Hotfix.Framework.Core
         private static MonoModule          m_MonoModule;          // Mono管理模块
         // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
         // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
-
-        /// <summary>
-        /// 获取引用池模块。
-        /// </summary>
-        public static ReferencePoolModule ReferencePoolModule => m_ReferencePoolModule ??= ModuleManager.GetModule<ReferencePoolModule>();
 
         /// <summary>
         /// 获取对象池模块。

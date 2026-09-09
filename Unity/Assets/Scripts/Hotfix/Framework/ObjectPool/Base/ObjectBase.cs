@@ -1,8 +1,8 @@
 using System;
-using Hotfix.Framework.ReferencePool;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.Core
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象池内的对象基类。实现了引用对象的接口。

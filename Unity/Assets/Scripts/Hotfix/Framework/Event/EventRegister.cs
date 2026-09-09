@@ -1,6 +1,5 @@
 using System;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
@@ -29,7 +28,7 @@ namespace Hotfix.Framework.Event
         /// <returns></returns>
         public static EventRegister Create()
         {
-            var register = GlobalModule.ReferencePoolModule.Acquire<EventRegister>();
+            var register = ReferencePool.Acquire<EventRegister>();
             register.m_EventModule = ModuleManager.GetModule<EventModule>();
             return register;
         }
@@ -112,6 +111,6 @@ namespace Hotfix.Framework.Event
         /// <summary>
         /// 将引用归还引用池-释放资源
         /// </summary>
-        public void Release() => GlobalModule.ReferencePoolModule.Recycle(this);
+        public void Release() => ReferencePool.Recycle(this);
     }
 }

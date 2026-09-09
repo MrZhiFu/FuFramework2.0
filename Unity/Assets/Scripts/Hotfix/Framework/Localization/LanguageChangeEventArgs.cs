@@ -34,7 +34,7 @@ namespace Hotfix.Framework.Localization
         /// <returns>创建的本地化语言改变事件。</returns>
         public static LanguageChangeEventArgs Create(ELanguage oldELanguage, ELanguage eLanguage)
         {
-            var localizationLanguageChangeEventArgs = GlobalModule.ReferencePoolModule.Acquire<LanguageChangeEventArgs>();
+            var localizationLanguageChangeEventArgs = ReferencePool.Acquire<LanguageChangeEventArgs>();
             localizationLanguageChangeEventArgs.OldELanguage = oldELanguage;
             localizationLanguageChangeEventArgs.ELanguage    = eLanguage;
             return localizationLanguageChangeEventArgs;

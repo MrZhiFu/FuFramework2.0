@@ -114,7 +114,7 @@ namespace Hotfix.Framework.RedDot
                 if (!NodeDict.TryAdd(row.Id, node))
                 {
                     FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
-                    GlobalModule.ReferencePoolModule.Recycle(node);
+                    ReferencePool.Recycle(node);
                 }
             }
 
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.RedDot
             // 清理所有节点
             foreach (var node in NodeDict.Values)
             {
-                GlobalModule.ReferencePoolModule.Recycle(node);
+                ReferencePool.Recycle(node);
             }
 
             NodeDict.Clear();

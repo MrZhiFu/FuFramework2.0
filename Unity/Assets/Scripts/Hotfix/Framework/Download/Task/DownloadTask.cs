@@ -70,7 +70,7 @@ namespace Hotfix.Framework.Download
         /// <returns>创建的下载任务。</returns>
         public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
         {
-            var downloadTask = GlobalModule.ReferencePoolModule.Acquire<DownloadTask>();
+            var downloadTask = ReferencePool.Acquire<DownloadTask>();
             downloadTask.Initialize(++m_Serial, tag, priority, userData);
             downloadTask.DownloadedFullPath = downloadedFullPath;
             downloadTask.DownloadUri        = downloadUri;

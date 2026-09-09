@@ -1,6 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.ReferencePool;
+using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Timer

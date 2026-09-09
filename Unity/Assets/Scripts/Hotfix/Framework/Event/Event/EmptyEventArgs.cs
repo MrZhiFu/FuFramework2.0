@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Event
         /// <returns>空事件对象</returns>
         public static EmptyEventArgs Create(string eventId)
         {
-            var eventArgs = GlobalModule.ReferencePoolModule.Acquire<EmptyEventArgs>();
+            var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
             m_EventId = eventId;
             return eventArgs;
         }

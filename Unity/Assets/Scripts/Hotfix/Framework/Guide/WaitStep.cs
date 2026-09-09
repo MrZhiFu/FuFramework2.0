@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Guide
         /// <returns></returns>
         public static WaitStep Create(GuideStep stepInfo)
         {
-            var step = GlobalModule.ReferencePoolModule.Acquire<WaitStep>();
+            var step = ReferencePool.Acquire<WaitStep>();
             step.StepInfo = stepInfo;
             return step;
         }

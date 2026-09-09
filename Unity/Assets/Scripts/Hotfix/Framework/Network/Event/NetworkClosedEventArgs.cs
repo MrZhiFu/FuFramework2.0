@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Network
         /// <returns>创建的网络连接关闭事件。</returns>
         public static NetworkClosedEventArgs Create(INetworkChannel networkChannel)
         {
-            var networkClosedEventArgs = GlobalModule.ReferencePoolModule.Acquire<NetworkClosedEventArgs>();
+            var networkClosedEventArgs = ReferencePool.Acquire<NetworkClosedEventArgs>();
             networkClosedEventArgs.NetworkChannel = networkChannel;
             return networkClosedEventArgs;
         }

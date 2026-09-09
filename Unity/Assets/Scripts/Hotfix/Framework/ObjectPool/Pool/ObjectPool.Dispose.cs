@@ -4,7 +4,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.Core
+namespace Hotfix.Framework.ObjectPool
 {
     /// <summary>
     /// 对象池中对象的销毁与筛选。
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.Core
             finally
             {
                 // 即使 OnDispose 异常也回收对象到引用池，避免跳过清理
-                GlobalModule.ReferencePoolModule.Recycle(obj);
+                ReferencePool.Recycle(obj);
             }
 
             return true;
