@@ -9,6 +9,10 @@
 /// <summary>
 /// {{escape_comment __bean.comment}}
 /// </summary>
+{{~else~}}
+/// <summary>
+/// {{__name}} 数据类
+/// </summary>
 {{~end~}}
 {{~
 func get_ref_name
@@ -88,6 +92,9 @@ end
     public {{class_modifier __bean}} partial class {{__name}} : {{if parent_def_type}}{{__bean.parent}}{{else}}BeanBase{{end}}
     {{~end~}}
     {
+        /// <summary>
+        /// 创建 {{__name}} 实例
+        /// </summary>
         public {{__name}}({{get_param_def_list(__bean)}}) {{if parent_def_type}} : base({{get_param_name_list(__bean.parent_def_type)}}) {{end}}
         {
             {{~ for field in export_fields
@@ -108,6 +115,10 @@ end
             PostInit();
         }
 
+        /// <summary>
+        /// 从 ByteBuf 反序列化创建 {{__name}} 实例
+        /// </summary>
+        /// <param name="_buf">配置数据流</param>
         public {{__name}}(ByteBuf _buf) {{if parent_def_type}} : base(_buf) {{end}}
         {
             {{~ for field in export_fields
@@ -134,6 +145,11 @@ end
             PostInit();
         }
 
+        /// <summary>
+        /// 反序列化创建 {{__name}} 实例
+        /// </summary>
+        /// <param name="_buf">配置数据流</param>
+        /// <returns>反序列化后的 {{__name}}</returns>
         public static {{__name}} Deserialize{{__name}}(ByteBuf _buf)
         {
             {{~if __bean.is_abstract_type~}}
@@ -176,10 +192,20 @@ end
         {{~end~}}
         {{~end~}}
         {{~if !__bean.is_abstract_type && !__bean.is_value_type~}}
+        /// <summary>
+        /// 本 bean 的类型标识常量
+        /// </summary>
         public const int __ID__ = {{__bean.id}};
+        /// <summary>
+        /// 获取 bean 类型标识
+        /// </summary>
         public override int GetTypeId() => __ID__;
         {{~end~}}
 
+        /// <summary>
+        /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
+        /// </summary>
+        /// <param name="tables">表管理器，用于跨表查找</param>
         public {{method_modifier __bean}} void ResolveRef({{__manager_name}} tables)
         {
             {{~if parent_def_type~}}
@@ -191,6 +217,10 @@ end
             PostResolveRef();
         }
 
+        /// <summary>
+        /// 用指定翻译器刷新本 bean 的多语言字段
+        /// </summary>
+        /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
         public void TranslateText(System.Func<string, string, string> translator)
         {
             {{~if parent_def_type~}}
@@ -203,6 +233,9 @@ end
             {{~end~}}
         }
 
+        /// <summary>
+        /// 返回本对象的字段字符串表示
+        /// </summary>
         public override string ToString()
         {
             return "{{full_name}}{ "
@@ -212,7 +245,14 @@ end
             + "}";
         }
 
+        /// <summary>
+        /// 分部初始化钩子，由使用方补实现。
+        /// 典型场景：给某张表预计算、排序、建字典索引等"只靠本表数据就能完成"的收尾工作
+        /// </summary>
         partial void PostInit();
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
         partial void PostResolveRef();
     }
 {{namespace_with_grace_end __namespace_with_top_module}}
