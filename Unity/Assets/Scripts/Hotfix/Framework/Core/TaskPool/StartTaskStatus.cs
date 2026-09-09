@@ -1,6 +1,6 @@
 // ReSharper disable once CheckNamespace
 
-namespace Hotfix.Framework.TaskPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 开始处理任务时的状态。

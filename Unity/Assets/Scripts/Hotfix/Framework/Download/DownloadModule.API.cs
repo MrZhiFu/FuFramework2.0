@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.TaskPool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download

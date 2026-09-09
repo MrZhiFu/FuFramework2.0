@@ -1,7 +1,7 @@
 using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.TaskPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 任务基类。

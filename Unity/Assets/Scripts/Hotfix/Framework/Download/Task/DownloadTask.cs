@@ -1,4 +1,3 @@
-using Hotfix.Framework.TaskPool;
 using Hotfix.Framework.Core;
 
 namespace Hotfix.Framework.Download

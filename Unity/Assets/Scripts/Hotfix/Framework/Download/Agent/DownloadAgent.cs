@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.TaskPool;
 
 namespace Hotfix.Framework.Download
 {

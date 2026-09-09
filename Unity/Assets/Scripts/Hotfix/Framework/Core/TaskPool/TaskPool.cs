@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.TaskPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 任务池。
