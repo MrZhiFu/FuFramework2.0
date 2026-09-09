@@ -6,7 +6,6 @@ using Hotfix.Framework.Timer;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Procedure;
 
-using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.ReferencePool;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global

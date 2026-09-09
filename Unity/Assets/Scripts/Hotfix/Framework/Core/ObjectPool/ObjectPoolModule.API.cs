@@ -4,7 +4,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ObjectPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 对象池管理模块的公共 API。

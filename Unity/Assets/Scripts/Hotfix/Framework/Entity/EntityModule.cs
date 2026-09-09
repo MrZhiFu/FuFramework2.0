@@ -9,7 +9,6 @@ using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;
-using Hotfix.Framework.ObjectPool;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity

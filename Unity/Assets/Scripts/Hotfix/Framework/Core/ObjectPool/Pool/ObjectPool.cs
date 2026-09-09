@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ObjectPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 具体管理对象的对象池。

@@ -1,6 +1,5 @@
 using System;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.ObjectPool;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace

@@ -5,7 +5,7 @@ using AOT.Framework.Core.Log;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace Hotfix.Framework.ObjectPool
+namespace Hotfix.Framework.Core
 {
     /// <summary>
     /// 对象池管理模块。

@@ -1,6 +1,5 @@
 using System;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
