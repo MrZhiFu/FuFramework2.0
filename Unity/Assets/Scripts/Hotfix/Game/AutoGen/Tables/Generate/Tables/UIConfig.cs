@@ -48,22 +48,22 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 UIConfig 实例(外部使用)
         /// </summary>
-        /// <param name="Name">界面名称（主键）</param>
-        /// <param name="Layer">界面层级</param>
-        /// <param name="TweenType">动画类型</param>
-        /// <param name="TweenDuration">动画时长（秒）</param>
-        /// <param name="AdjustNotch">是否适配刘海:<br/>全屏界面一般为true<br/>弹窗一般为false</param>
-        /// <param name="PauseCoveredUI">被覆盖时是否暂停</param>
-        /// <param name="Blur">是否模糊:<br/>全屏界面一般为false<br/>弹窗一般为true</param>
-        public UIConfig(string Name, EUILayer Layer, EUITweenType TweenType, float TweenDuration, bool AdjustNotch, bool PauseCoveredUI, bool Blur) 
+        /// <param name="name">界面名称（主键）</param>
+        /// <param name="layer">界面层级</param>
+        /// <param name="tweenType">动画类型</param>
+        /// <param name="tweenDuration">动画时长（秒）</param>
+        /// <param name="adjustNotch">是否适配刘海:<br/>全屏界面一般为true<br/>弹窗一般为false</param>
+        /// <param name="pauseCoveredUI">被覆盖时是否暂停</param>
+        /// <param name="blur">是否模糊:<br/>全屏界面一般为false<br/>弹窗一般为true</param>
+        public UIConfig(string name, EUILayer layer, EUITweenType tweenType, float tweenDuration, bool adjustNotch, bool pauseCoveredUI, bool blur) 
         {
-            Name = Name;
-            Layer = Layer;
-            TweenType = TweenType;
-            TweenDuration = TweenDuration;
-            AdjustNotch = AdjustNotch;
-            PauseCoveredUI = PauseCoveredUI;
-            Blur = Blur;
+            Name = name;
+            Layer = layer;
+            TweenType = tweenType;
+            TweenDuration = tweenDuration;
+            AdjustNotch = adjustNotch;
+            PauseCoveredUI = pauseCoveredUI;
+            Blur = blur;
             OnInit();
         }
 

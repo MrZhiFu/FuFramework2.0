@@ -54,23 +54,23 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 Property 实例(外部使用)
         /// </summary>
-        /// <param name="PhysicalAttack">物理攻击</param>
-        /// <param name="MagicAttack">魔法攻击</param>
-        /// <param name="PhysicalDefense">物理防御</param>
-        /// <param name="MagicDefense">魔法防御</param>
-        /// <param name="Life">生命值</param>
-        /// <param name="Crit">暴击</param>
+        /// <param name="physicalAttack">物理攻击</param>
+        /// <param name="magicAttack">魔法攻击</param>
+        /// <param name="physicalDefense">物理防御</param>
+        /// <param name="magicDefense">魔法防御</param>
+        /// <param name="life">生命值</param>
+        /// <param name="crit">暴击</param>
         /// <param name="burstDamage">爆伤</param>
         /// <param name="precise">精准</param>
         /// <param name="block">格挡</param>
-        public Property(int PhysicalAttack, int MagicAttack, int PhysicalDefense, int MagicDefense, int Life, int Crit, int burstDamage, int precise, int block) 
+        public Property(int physicalAttack, int magicAttack, int physicalDefense, int magicDefense, int life, int crit, int burstDamage, int precise, int block) 
         {
-            PhysicalAttack = PhysicalAttack;
-            MagicAttack = MagicAttack;
-            PhysicalDefense = PhysicalDefense;
-            MagicDefense = MagicDefense;
-            Life = Life;
-            Crit = Crit;
+            PhysicalAttack = physicalAttack;
+            MagicAttack = magicAttack;
+            PhysicalDefense = physicalDefense;
+            MagicDefense = magicDefense;
+            Life = life;
+            Crit = crit;
             BurstDamage = burstDamage;
             Precise = precise;
             Block = block;

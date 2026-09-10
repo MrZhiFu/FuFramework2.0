@@ -54,26 +54,26 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 GuideStep 实例(外部使用)
         /// </summary>
-        /// <param name="Id">步骤ID</param>
-        /// <param name="GuideId">所属引导ID</param>
-        /// <param name="StepType">步骤类型</param>
-        /// <param name="NextStepId">下一步骤ID(空=结束)</param>
-        /// <param name="CanJump">是否可跳过</param>
-        /// <param name="TargetWindow">目标窗口</param>
-        /// <param name="TargetUI">目标UI</param>
-        /// <param name="DialogContent">对话内容</param>
-        /// <param name="WaitTime">等待时间(秒)</param>
-        public GuideStep(int Id, int GuideId, EStepType StepType, int? NextStepId, bool CanJump, string TargetWindow, string TargetUI, string DialogContent, float WaitTime) 
+        /// <param name="id">步骤ID</param>
+        /// <param name="guideId">所属引导ID</param>
+        /// <param name="stepType">步骤类型</param>
+        /// <param name="nextStepId">下一步骤ID(空=结束)</param>
+        /// <param name="canJump">是否可跳过</param>
+        /// <param name="targetWindow">目标窗口</param>
+        /// <param name="targetUI">目标UI</param>
+        /// <param name="dialogContent">对话内容</param>
+        /// <param name="waitTime">等待时间(秒)</param>
+        public GuideStep(int id, int guideId, EStepType stepType, int? nextStepId, bool canJump, string targetWindow, string targetUI, string dialogContent, float waitTime) 
         {
-            Id = Id;
-            GuideId = GuideId;
-            StepType = StepType;
-            NextStepId = NextStepId;
-            CanJump = CanJump;
-            TargetWindow = TargetWindow;
-            TargetUI = TargetUI;
-            DialogContent = DialogContent;
-            WaitTime = WaitTime;
+            Id = id;
+            GuideId = guideId;
+            StepType = stepType;
+            NextStepId = nextStepId;
+            CanJump = canJump;
+            TargetWindow = targetWindow;
+            TargetUI = targetUI;
+            DialogContent = dialogContent;
+            WaitTime = waitTime;
             OnInit();
         }
 

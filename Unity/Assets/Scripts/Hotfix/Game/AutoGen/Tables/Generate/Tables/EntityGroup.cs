@@ -42,18 +42,18 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 EntityGroup 实例(外部使用)
         /// </summary>
-        /// <param name="Id">实体组ID</param>
-        /// <param name="PoolAutoDisposeCheckInterval">实体对象池自动销毁检查间隔(秒)</param>
-        /// <param name="PoolCapacity">实体对象池容量</param>
-        /// <param name="PoolExpireTimeAfterIdle">实体对象闲置后过期秒数</param>
-        /// <param name="PoolPriority">实体对象池优先级</param>
-        public EntityGroup(EEntityGroup Id, float PoolAutoDisposeCheckInterval, int PoolCapacity, float PoolExpireTimeAfterIdle, int PoolPriority) 
+        /// <param name="id">实体组ID</param>
+        /// <param name="poolAutoDisposeCheckInterval">实体对象池自动销毁检查间隔(秒)</param>
+        /// <param name="poolCapacity">实体对象池容量</param>
+        /// <param name="poolExpireTimeAfterIdle">实体对象闲置后过期秒数</param>
+        /// <param name="poolPriority">实体对象池优先级</param>
+        public EntityGroup(EEntityGroup id, float poolAutoDisposeCheckInterval, int poolCapacity, float poolExpireTimeAfterIdle, int poolPriority) 
         {
-            Id = Id;
-            PoolAutoDisposeCheckInterval = PoolAutoDisposeCheckInterval;
-            PoolCapacity = PoolCapacity;
-            PoolExpireTimeAfterIdle = PoolExpireTimeAfterIdle;
-            PoolPriority = PoolPriority;
+            Id = id;
+            PoolAutoDisposeCheckInterval = poolAutoDisposeCheckInterval;
+            PoolCapacity = poolCapacity;
+            PoolExpireTimeAfterIdle = poolExpireTimeAfterIdle;
+            PoolPriority = poolPriority;
             OnInit();
         }
 

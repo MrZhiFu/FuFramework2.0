@@ -45,20 +45,20 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 RedDot 实例(外部使用)
         /// </summary>
-        /// <param name="Id">节点ID</param>
-        /// <param name="ParentId">父节点ID(空=根节点)</param>
-        /// <param name="DisplayMode">显示模式</param>
-        /// <param name="CleanStrategy">清除策略</param>
-        /// <param name="LogicType">计算逻辑类型</param>
-        /// <param name="IsActive">是否激活(总开关)</param>
-        public RedDot(ERedDotKey Id, ERedDotKey? ParentId, ERedDotDisplayMode DisplayMode, ERedDotCleanStrategy CleanStrategy, ERedDotLogicType LogicType, bool IsActive) 
+        /// <param name="id">节点ID</param>
+        /// <param name="parentId">父节点ID(空=根节点)</param>
+        /// <param name="displayMode">显示模式</param>
+        /// <param name="cleanStrategy">清除策略</param>
+        /// <param name="logicType">计算逻辑类型</param>
+        /// <param name="isActive">是否激活(总开关)</param>
+        public RedDot(ERedDotKey id, ERedDotKey? parentId, ERedDotDisplayMode displayMode, ERedDotCleanStrategy cleanStrategy, ERedDotLogicType logicType, bool isActive) 
         {
-            Id = Id;
-            ParentId = ParentId;
-            DisplayMode = DisplayMode;
-            CleanStrategy = CleanStrategy;
-            LogicType = LogicType;
-            IsActive = IsActive;
+            Id = id;
+            ParentId = parentId;
+            DisplayMode = displayMode;
+            CleanStrategy = cleanStrategy;
+            LogicType = logicType;
+            IsActive = isActive;
             OnInit();
         }
 

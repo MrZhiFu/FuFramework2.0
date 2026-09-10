@@ -36,14 +36,14 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 Guide 实例(外部使用)
         /// </summary>
-        /// <param name="Id">引导ID</param>
-        /// <param name="Name">引导名称</param>
-        /// <param name="StartStepId">起始步骤ID</param>
-        public Guide(int Id, string Name, int StartStepId) 
+        /// <param name="id">引导ID</param>
+        /// <param name="name">引导名称</param>
+        /// <param name="startStepId">起始步骤ID</param>
+        public Guide(int id, string name, int startStepId) 
         {
-            Id = Id;
-            Name = Name;
-            StartStepId = StartStepId;
+            Id = id;
+            Name = name;
+            StartStepId = startStepId;
             OnInit();
         }
 

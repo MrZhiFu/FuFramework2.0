@@ -78,7 +78,7 @@ end
 func get_param_def_list(bean)
     paramList = []
     while bean
-        tempList = bean.export_fields |array.each do; ret (declaring_type_name $0.ctype) + ' ' + (format_field_name __code_style $0.name); end
+        tempList = bean.export_fields |array.each do; ret (declaring_type_name $0.ctype) + ' ' + (lower_case_first (format_property_name __code_style $0.name)); end
         paramList = tempList + paramList
         bean = bean.parent_def_type
     end
@@ -89,7 +89,7 @@ func get_param_name_list(bean)
     paramList = []
     index = 0
     while bean
-        tempList = bean.export_fields |array.each do; ret (format_field_name __code_style $0.name); end
+        tempList = bean.export_fields |array.each do; ret (lower_case_first (format_property_name __code_style $0.name)); end
         paramList = tempList + paramList
         bean = bean.parent_def_type
     end
@@ -161,14 +161,14 @@ end
         /// 创建 {{__name}} 实例(外部使用)
         /// </summary>
         {{~ for field in export_fields ~}}
-        /// <param name="{{format_field_name __code_style field.name}}">{{escape_comment field.comment}}</param>
+        /// <param name="{{lower_case_first (format_property_name __code_style field.name)}}">{{escape_comment field.comment}}</param>
         {{~ end ~}}
         public {{__name}}({{get_param_def_list(__bean)}}) {{if parent_def_type}} : base({{get_param_name_list(__bean.parent_def_type)}}) {{end}}
         {
             {{~ for field in export_fields
             fieldName = format_property_name __code_style field.name
             ~}}
-            {{fieldName}} = {{format_field_name __code_style field.name}};
+            {{fieldName}} = {{lower_case_first (format_property_name __code_style field.name)}};
             {{~if can_generate_ref field~}}
             this.{{get_ref_name field}} = null;
             {{~end~}}

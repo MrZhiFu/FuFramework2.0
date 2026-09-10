@@ -33,12 +33,12 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 PropItem 实例(外部使用)
         /// </summary>
-        /// <param name="Id">道具id</param>
-        /// <param name="Count">道具数量</param>
-        public PropItem(int Id, int Count) 
+        /// <param name="id">道具id</param>
+        /// <param name="count">道具数量</param>
+        public PropItem(int id, int count) 
         {
-            Id = Id;
-            Count = Count;
+            Id = id;
+            Count = count;
             OnInit();
         }
 

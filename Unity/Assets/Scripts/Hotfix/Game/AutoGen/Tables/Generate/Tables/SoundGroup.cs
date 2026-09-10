@@ -42,18 +42,18 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 SoundGroup 实例(外部使用)
         /// </summary>
-        /// <param name="Id">声音组ID</param>
-        /// <param name="Mute">默认静音</param>
-        /// <param name="Volume">默认音量</param>
-        /// <param name="AgentCount">播放代理数</param>
-        /// <param name="AllowBeReplacedBySamePriority">允许同优先级替换</param>
-        public SoundGroup(ESoundGroup Id, bool Mute, float Volume, int AgentCount, bool AllowBeReplacedBySamePriority) 
+        /// <param name="id">声音组ID</param>
+        /// <param name="mute">默认静音</param>
+        /// <param name="volume">默认音量</param>
+        /// <param name="agentCount">播放代理数</param>
+        /// <param name="allowBeReplacedBySamePriority">允许同优先级替换</param>
+        public SoundGroup(ESoundGroup id, bool mute, float volume, int agentCount, bool allowBeReplacedBySamePriority) 
         {
-            Id = Id;
-            Mute = Mute;
-            Volume = Volume;
-            AgentCount = AgentCount;
-            AllowBeReplacedBySamePriority = AllowBeReplacedBySamePriority;
+            Id = id;
+            Mute = mute;
+            Volume = volume;
+            AgentCount = agentCount;
+            AllowBeReplacedBySamePriority = allowBeReplacedBySamePriority;
             OnInit();
         }
 

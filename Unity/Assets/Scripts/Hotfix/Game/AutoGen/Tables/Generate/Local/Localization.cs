@@ -73,37 +73,37 @@ namespace Hotfix.Game.Config
         /// 创建 Localization 实例(外部使用)
         /// </summary>
         /// <param name="key">ID</param>
-        /// <param name="ChineseSimplified">简体中文</param>
-        /// <param name="ChineseTraditional">繁体中文</param>
-        /// <param name="English">英语</param>
-        /// <param name="Japanese">日语</param>
-        /// <param name="Korean">韩语</param>
-        /// <param name="Thai">泰语</param>
-        /// <param name="Indonesian">印尼语</param>
-        /// <param name="French">法语</param>
-        /// <param name="German">德语</param>
-        /// <param name="Russian">俄语</param>
-        /// <param name="Italian">意大利语</param>
-        /// <param name="PortuguesePortugal">葡萄牙语</param>
-        /// <param name="Spanish">西班牙语</param>
-        /// <param name="Vietnamese">越南语</param>
-        public Localization(string key, string ChineseSimplified, string ChineseTraditional, string English, string Japanese, string Korean, string Thai, string Indonesian, string French, string German, string Russian, string Italian, string PortuguesePortugal, string Spanish, string Vietnamese) 
+        /// <param name="chineseSimplified">简体中文</param>
+        /// <param name="chineseTraditional">繁体中文</param>
+        /// <param name="english">英语</param>
+        /// <param name="japanese">日语</param>
+        /// <param name="korean">韩语</param>
+        /// <param name="thai">泰语</param>
+        /// <param name="indonesian">印尼语</param>
+        /// <param name="french">法语</param>
+        /// <param name="german">德语</param>
+        /// <param name="russian">俄语</param>
+        /// <param name="italian">意大利语</param>
+        /// <param name="portuguesePortugal">葡萄牙语</param>
+        /// <param name="spanish">西班牙语</param>
+        /// <param name="vietnamese">越南语</param>
+        public Localization(string key, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portuguesePortugal, string spanish, string vietnamese) 
         {
             Key = key;
-            ChineseSimplified = ChineseSimplified;
-            ChineseTraditional = ChineseTraditional;
-            English = English;
-            Japanese = Japanese;
-            Korean = Korean;
-            Thai = Thai;
-            Indonesian = Indonesian;
-            French = French;
-            German = German;
-            Russian = Russian;
-            Italian = Italian;
-            PortuguesePortugal = PortuguesePortugal;
-            Spanish = Spanish;
-            Vietnamese = Vietnamese;
+            ChineseSimplified = chineseSimplified;
+            ChineseTraditional = chineseTraditional;
+            English = english;
+            Japanese = japanese;
+            Korean = korean;
+            Thai = thai;
+            Indonesian = indonesian;
+            French = french;
+            German = german;
+            Russian = russian;
+            Italian = italian;
+            PortuguesePortugal = portuguesePortugal;
+            Spanish = spanish;
+            Vietnamese = vietnamese;
             OnInit();
         }
 
