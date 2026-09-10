@@ -5,7 +5,6 @@ using Hotfix.Framework.Event;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Storage;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace

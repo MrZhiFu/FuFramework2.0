@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace Hotfix.Framework.Config
 {
@@ -32,7 +32,7 @@ namespace Hotfix.Framework.Config
         /// 异步加载数据表。
         /// </summary>
         /// <returns></returns>
-        public abstract Task LoadAsync();
+        public abstract UniTask LoadAsync();
 
         /// <summary>
         /// 通过int类型的id获取数据。

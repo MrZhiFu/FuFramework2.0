@@ -84,7 +84,7 @@ public class DefTable : DefTypeBase
 
     public List<ITableValidator> Validators { get; } = new();
 
-    public string OutputDataFile => string.IsNullOrWhiteSpace(_outputFile) ? FullName.Replace('.', '_').ToLower() : _outputFile;
+    public string OutputDataFile => string.IsNullOrWhiteSpace(_outputFile) ? Name.ToLower() : _outputFile;
 
     public override void Compile()
     {

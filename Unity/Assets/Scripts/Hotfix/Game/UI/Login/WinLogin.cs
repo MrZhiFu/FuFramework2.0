@@ -2,7 +2,6 @@
 using System.Threading;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 using Cysharp.Threading.Tasks;
 using FairyGUI;

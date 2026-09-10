@@ -3,7 +3,6 @@ using AOT.Framework.Core.Utility;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 using Utility = Hotfix.Framework.Core.Utility;

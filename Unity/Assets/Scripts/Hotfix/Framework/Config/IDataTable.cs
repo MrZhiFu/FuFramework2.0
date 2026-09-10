@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace Hotfix.Framework.Config
 {
@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Config
         /// 异步加载
         /// </summary>
         /// <returns></returns>
-        Task LoadAsync();
+        UniTask LoadAsync();
 
         /// <summary>
         /// 获取数据表中对象的数量

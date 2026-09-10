@@ -1,89 +1,101 @@
+using System;
 using Luban;
-using Cysharp.Threading.Tasks;
 using SimpleJSON;
 using Hotfix.Framework.Config;
+using Cysharp.Threading.Tasks;
 {{
     func index_type_name
         ret (declaring_type_name $0.type)
     end
-    
+
     func table_union_map_type_name
-        ret 'System.Collections.Generic.Dictionary<(' + (array.each __table.index_list @index_type_name | array.join ', ') + '), ' + (declaring_type_name __value_type)  + '>'
+        ret 'Dictionary<(' + (array.each __table.index_list @index_type_name | array.join ', ') + '), ' + (value_simple_name)  + '>'
     end
-    
+
     func table_key_list
         varName = $0
         indexList = __table.index_list |array.each do; ret varName + '.' + (format_property_name __code_style $0.index_field.name); end;
         ret array.join indexList ', '
     end
-    
+
     func table_param_def_list
         paramList = __table.index_list |array.each do; ret (declaring_type_name $0.type) + ' ' + $0.index_field.name; end
         ret array.join paramList ', '
     end
-    
+
     func table_param_name_list
         paramList = __table.index_list |array.each do; ret $0.index_field.name; end
         ret array.join paramList ', '
     end
+
+    func value_simple_name
+        ret __value_type.def_bean.name
+    end
+
+    func value_var_name
+        ret (lower_case_first (__value_type.def_bean.name))
+    end
 }}
-{{namespace_with_grace_begin __namespace_with_top_module}}
+// ReSharper disable once CheckNamespace
+{{namespace_with_grace_begin __top_module}}
     {{~if __table.comment != '' ~}}
     /// <summary>
     /// {{escape_comment __table.comment}}
     /// </summary>
     {{~end~}}
-    public partial class {{__name}} : BaseDataTable<{{declaring_type_name __value_type}}>
+    public partial class {{__name}} : BaseDataTable<{{value_simple_name}}>
     {
+        {{~if __table.is_map_table ~}}
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly System.Func<UniTask<JSONNode>> _loadFunc;
+        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public {{__name}}(System.Func<UniTask<JSONNode>> loadFunc)
-        {{~if __table.is_map_table ~}}        
-        {
-            _loadFunc = loadFunc;
-        }
+        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_LoadFunc = loadFunc;
+
         /// <summary>
         /// 异步加载本表数据
         /// </summary>
         /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var jsonNode = await _loadFunc();
+            var jsonNode = await m_LoadFunc();
+
             DataList.Clear();
             LongKeyDataDict.Clear();
             StrKeyDataDict.Clear();
-            foreach(var _ele in jsonNode.Children)
+
+            foreach(var node in jsonNode.Children)
             {
-                {{declaring_type_name __value_type}} _v;
-                {{deserialize '_v' '_ele' __value_type}}
-                DataList.Add(_v);
+                if (!node.IsObject) throw new SerializationException();  
+                var {{value_var_name}} = {{value_simple_name}}.Deserialize{{value_simple_name}}(node);
+                DataList.Add({{value_var_name}});
                 {{~if __key_type.type_name != 'string' ~}}
-                LongKeyDataDict.Add((long)_v.{{format_property_name __code_style __table.index_field.name}}, _v);
+                LongKeyDataDict.Add({{~if __key_type.type_name == 'enum'~}}(long){{~end~}}{{value_var_name}}.{{format_property_name __code_style __table.index_field.name}}, {{value_var_name}});
                 {{~end~}}
-                StrKeyDataDict.Add(_v.{{format_property_name __code_style __table.index_field.name}}.ToString(), _v);
+                StrKeyDataDict.Add({{value_var_name}}.{{format_property_name __code_style __table.index_field.name}}.ToString(), {{value_var_name}});
             }
-            PostInit();
+
+            OnInit();
         }
         {{~if __value_type.is_dynamic~}}
-        //public T GetOrDefaultAs<T>({{declaring_type_name __key_type}} key) where T : {{declaring_type_name __value_type}} => _dataMap.TryGetValue(key, out var v) ? (T)v : null;
-        //public T GetAs<T>({{declaring_type_name __key_type}} key) where T : {{declaring_type_name __value_type}} => (T)_dataMap[key];
+        //public T GetOrDefaultAs<T>({{declaring_type_name __key_type}} key) where T : {{value_simple_name}} => _dataMap.TryGetValue(key, out var v) ? (T)v : null;
+        //public T GetAs<T>({{declaring_type_name __key_type}} key) where T : {{value_simple_name}} => (T)_dataMap[key];
         {{~end~}}
-    
+
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
-        /// <param name="tables">表管理器，用于跨表查找</param>
-        public void ResolveRef({{__manager_name}} tables)
+        /// <param name="tableManager">表管理器，用于跨表查找</param>
+        public void ResolveRef({{__manager_name}} tableManager)
         {
             foreach(var value in DataList)
             {
-                value.ResolveRef(tables);
+                value.ResolveRef(tableManager);
             }
         }
 
@@ -91,7 +103,7 @@ using Hotfix.Framework.Config;
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
         /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
-        public void TranslateText(System.Func<string, string, string> translator)
+        public void TranslateText(Func<string, string, string> translator)
         {
             foreach(var v in DataList)
             {
@@ -100,51 +112,55 @@ using Hotfix.Framework.Config;
         }
 
         {{~else if __table.is_list_table ~}}
+        private readonly List<{{value_simple_name}}> _dataList;
+
         {{~if __table.is_union_index~}}
         private {{table_union_map_type_name}} _dataMapUnion;
         {{~else if !__table.index_list.empty?~}}
         {{~for idx in __table.index_list~}}
-        private System.Collections.Generic.Dictionary<{{declaring_type_name idx.type}}, {{declaring_type_name __value_type}}> _dataMap_{{idx.index_field.name}};
+        private Dictionary<{{declaring_type_name idx.type}}, {{value_simple_name}}> _dataMap_{{idx.index_field.name}};
         {{~end~}}
         {{~end~}}
+
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly System.Func<UniTask<JSONNode>> _loadFunc;
-    
+        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public {{__name}}(System.Func<UniTask<JSONNode>> loadFunc)
+        public {{__name}}(Func<UniTask<JSONNode>> loadFunc)
         {
-            _loadFunc = loadFunc;
+            m_LoadFunc = loadFunc;
+            _dataList = new List<{{value_simple_name}}>();
             {{~if __table.is_union_index~}}
             _dataMapUnion = new {{table_union_map_type_name}}();
             {{~else if !__table.index_list.empty?~}}
             {{~for idx in __table.index_list~}}
-            _dataMap_{{idx.index_field.name}} = new System.Collections.Generic.Dictionary<{{declaring_type_name idx.type}}, {{declaring_type_name __value_type}}>();
+            _dataMap_{{idx.index_field.name}} = new Dictionary<{{declaring_type_name idx.type}}, {{value_simple_name}}>();
             {{~end~}}
             {{~end~}}
         }
-    
+
         /// <summary>
         /// 异步加载本表数据
         /// </summary>
         /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            JSONNode _json = await _loadFunc();
-            DataList.Clear();
-            foreach(var _ele in _json.Children)
+            var jsonNode = await m_LoadFunc();
+
+            _dataList.Clear();
+            foreach(var node in jsonNode.Children)
             {
-                {{declaring_type_name __value_type}} _v;
-                {{deserialize '_v' '_ele' __value_type}}
-                DataList.Add(_v);
+                if (!node.IsObject) throw new SerializationException();  
+                _dataList.Add({{value_simple_name}}.Deserialize{{value_simple_name}}(node));
             }
             {{~if __table.is_union_index~}}
             _dataMapUnion.Clear();
-            foreach(var _v in DataList)
+            foreach(var _v in _dataList)
             {
                 _dataMapUnion.Add(({{table_key_list "_v"}}), _v);
             }
@@ -152,34 +168,34 @@ using Hotfix.Framework.Config;
             {{~for idx in __table.index_list~}}
             _dataMap_{{idx.index_field.name}}.Clear();
             {{~end~}}
-            foreach(var _v in DataList)
+            foreach(var _v in _dataList)
             {
                 {{~for idx in __table.index_list~}}
                 _dataMap_{{idx.index_field.name}}.Add(_v.{{format_property_name __code_style idx.index_field.name}}, _v);
                 {{~end~}}
             }
             {{~end~}}
-            PostInit();
+            OnInit();
         }
-    
-        //public System.Collections.Generic.List<{{declaring_type_name __value_type}}> DataList => DataList;
+
+        public List<{{value_simple_name}}> DataList => _dataList;
         {{~if __table.is_union_index~}}
-        public {{declaring_type_name __value_type}} Get({{table_param_def_list}}) => _dataMapUnion.TryGetValue(({{table_param_name_list}}), out {{declaring_type_name __value_type}} __v) ? __v : null;
+        public {{value_simple_name}} Get({{table_param_def_list}}) => _dataMapUnion.TryGetValue(({{table_param_name_list}}), out {{value_simple_name}} __v) ? __v : null;
         {{~else if !__table.index_list.empty? ~}}
         {{~for idx in __table.index_list~}}
-        public {{declaring_type_name __value_type}} GetBy{{format_property_name __code_style idx.index_field.name}}({{declaring_type_name idx.type}} key) => _dataMap_{{idx.index_field.name}}.TryGetValue(key, out {{declaring_type_name __value_type}} __v) ? __v : null;
+        public {{value_simple_name}} GetBy{{format_property_name __code_style idx.index_field.name}}({{declaring_type_name idx.type}} key) => _dataMap_{{idx.index_field.name}}.TryGetValue(key, out {{value_simple_name}} __v) ? __v : null;
         {{~end~}}
         {{~end~}}
-    
+
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
-        /// <param name="tables">表管理器，用于跨表查找</param>
-        public void ResolveRef({{__manager_name}} tables)
+        /// <param name="tableManager">表管理器，用于跨表查找</param>
+        public void ResolveRef({{__manager_name}} tableManager)
         {
-            foreach(var _v in DataList)
+            foreach(var _v in _dataList)
             {
-                _v.ResolveRef(tables);
+                _v.ResolveRef(tableManager);
             }
         }
 
@@ -187,7 +203,7 @@ using Hotfix.Framework.Config;
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
         /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
-        public void TranslateText(System.Func<string, string, string> translator)
+        public void TranslateText(Func<string, string, string> translator)
         {
             foreach(var v in DataList)
             {
@@ -196,69 +212,62 @@ using Hotfix.Framework.Config;
         }
 
         {{~else~}}
-    
-        private {{declaring_type_name __value_type}} _data;
-        public {{declaring_type_name __value_type}} Data => _data;
+
+        private {{value_simple_name}} _data;
+        public {{value_simple_name}} Data => _data;
+
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly System.Func<UniTask<JSONNode>> _loadFunc;
-    
+        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public {{__name}}(System.Func<UniTask<JSONNode>> loadFunc)
-        {
-            _loadFunc = loadFunc;
-        }
-    
+        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_LoadFunc = loadFunc;
+
         /// <summary>
         /// 异步加载本表数据
         /// </summary>
-        /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
+        /// <remarks>从 loader 取 JSON、逐条反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            JSONNode _json = await _loadFunc();
-            int n = _json.Count;
-            if (n != 1) throw new SerializationException("table mode=one, but size != 1");
-            {{deserialize '_data' '_json[0]' __value_type}}
+            var jsonNode = await m_LoadFunc();
+
+            _data = {{value_simple_name}}.Deserialize{{value_simple_name}}(jsonNode[0]);
+            OnInit();
         }
-    
+
         {{~ for field in __value_type.def_bean.hierarchy_export_fields ~}}
         {{~if field.comment != '' ~}}
-        /// <summary>
-        /// {{escape_comment field.comment}}
-        /// </summary>
+        /// <summary> {{escape_comment field.comment}} </summary>
         {{~end~}}
         public {{declaring_type_name field.ctype}} {{format_property_name __code_style field.name}} => _data.{{format_property_name __code_style field.name}};
         {{~end~}}
-    
+
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
-        /// <param name="tables">表管理器，用于跨表查找</param>
-        public void ResolveRef({{__manager_name}} tables)
+        /// <param name="tableManager">表管理器，用于跨表查找</param>
+        public void ResolveRef({{__manager_name}} tableManager)
         {
-            _data.ResolveRef(tables);
+            _data.ResolveRef(tableManager);
         }
 
         /// <summary>
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
         /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
-        public void TranslateText(System.Func<string, string, string> translator)
+        public void TranslateText(Func<string, string, string> translator)
         {
             _data.TranslateText(translator);
         }
         {{~end~}}
-
-
-
         /// <summary>
         /// 分部初始化钩子，由使用方补实现。
-        /// 典型场景：给某张表预计算、排序、建字典索引等"只靠本表数据就能完成"的收尾工作
+        /// 典型场景：完成一些给该表预计算、排序、建字典索引等"只靠本表数据就能完成"的预处理收尾工作
         /// </summary>
-        partial void PostInit();
+        partial void OnInit();
     }
-{{namespace_with_grace_end __namespace_with_top_module}}
+{{namespace_with_grace_end __top_module}}

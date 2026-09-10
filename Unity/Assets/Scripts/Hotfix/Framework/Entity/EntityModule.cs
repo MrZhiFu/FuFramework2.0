@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Config;
-using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;

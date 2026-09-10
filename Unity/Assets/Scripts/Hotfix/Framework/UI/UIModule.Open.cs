@@ -3,7 +3,7 @@ using FairyGUI;
 using Cysharp.Threading.Tasks;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Config;
-using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI

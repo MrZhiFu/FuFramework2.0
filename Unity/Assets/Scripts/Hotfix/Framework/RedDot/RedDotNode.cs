@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using AOT.Framework.Core.Log;
 using Hotfix.Game.Config;
 using Hotfix.Framework.Core;
-using RedDotRow = Hotfix.Game.Config.Tables.RedDot;
+using RedDotRow = Hotfix.Game.Config.RedDot;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot

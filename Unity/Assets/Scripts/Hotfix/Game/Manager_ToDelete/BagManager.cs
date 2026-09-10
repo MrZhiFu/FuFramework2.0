@@ -5,7 +5,6 @@ using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Events;

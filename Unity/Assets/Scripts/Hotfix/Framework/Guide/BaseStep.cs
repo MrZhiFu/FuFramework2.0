@@ -1,7 +1,7 @@
 using Hotfix.Framework.Core;
 using UnityEngine;
 
-using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>

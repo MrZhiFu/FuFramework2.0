@@ -47,6 +47,6 @@ public class CodeWriter
         {
             sb.AppendLine(line);
         }
-        return sb.ToString();
+        return sb.ToString().TrimEnd('\r', '\n');
     }
 }

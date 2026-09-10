@@ -75,6 +75,16 @@ public class CsharpTemplateExtension : ScriptObject
         return type.Apply(DataToStringVisitor.Ins, name);
     }
 
+    public static string PadRight(string s, int totalWidth)
+    {
+        return s.PadRight(totalWidth);
+    }
+
+    public static string LowerCaseFirst(string s)
+    {
+        return string.IsNullOrEmpty(s) ? s : char.ToLowerInvariant(s[0]) + s.Substring(1);
+    }
+
     public static string GetValueOfNullableType(TType type, string varName)
     {
         return type.Apply(IsRawNullableTypeVisitor.Ins) ? varName : $"{varName}.Value";

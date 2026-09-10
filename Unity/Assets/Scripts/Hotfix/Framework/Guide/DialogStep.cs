@@ -1,4 +1,4 @@
-using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Guide
 {

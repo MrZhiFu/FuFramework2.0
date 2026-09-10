@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using EntityGroupCfg = Hotfix.Game.Config.Tables.EntityGroup;
+using EntityGroupCfg = Hotfix.Game.Config.EntityGroup;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace

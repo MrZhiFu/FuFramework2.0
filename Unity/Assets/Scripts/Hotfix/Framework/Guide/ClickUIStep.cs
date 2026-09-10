@@ -2,7 +2,7 @@ using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.UI;
-using Hotfix.Game.Config.Tables;
+using Hotfix.Game.Config;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>

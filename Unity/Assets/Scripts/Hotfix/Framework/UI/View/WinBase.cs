@@ -5,9 +5,8 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 using Hotfix.Framework.Config;
-using Hotfix.Game.Config.Tables;
 using Hotfix.Game.Config;
-using UIConfigRow = Hotfix.Game.Config.Tables.UIConfig;
+using UIConfigRow = Hotfix.Game.Config.UIConfig;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI
