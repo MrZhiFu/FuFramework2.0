@@ -48,28 +48,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Luban.Bson\Luban.Bson.csproj" />
-      <ProjectReference Include="..\Luban.Cpp\Luban.Cpp.csproj" />
+      <!-- 仅保留本项目实际使用的 code target / 数据格式 / 加载器（其余语言平台工程已从构建中移除） -->
       <ProjectReference Include="..\Luban.CSharp\Luban.CSharp.csproj" />
       <ProjectReference Include="..\Luban.Core\Luban.Core.csproj" />
-      <ProjectReference Include="..\Luban.Dart\Luban.Dart.csproj" />
       <ProjectReference Include="..\Luban.DataTarget.Builtin\Luban.DataTarget.Builtin.csproj" />
       <ProjectReference Include="..\Luban.DataLoader.Builtin\Luban.DataLoader.Builtin.csproj" />
       <ProjectReference Include="..\Luban.DataValidator.Builtin\Luban.DataValidator.Builtin.csproj" />
-      <ProjectReference Include="..\Luban.FlatBuffers\Luban.FlatBuffers.csproj" />
-      <ProjectReference Include="..\Luban.Gdscript\Luban.Gdscript.csproj" />
-      <ProjectReference Include="..\Luban.Golang\Luban.Golang.csproj" />
-      <ProjectReference Include="..\Luban.Javascript\Luban.Javascript.csproj" />
-      <ProjectReference Include="..\Luban.Java\Luban.Java.csproj" />
       <ProjectReference Include="..\Luban.L10N\Luban.L10N.csproj" />
-      <ProjectReference Include="..\Luban.Lua\Luban.Lua.csproj" />
-      <ProjectReference Include="..\Luban.MsgPack\Luban.MsgPack.csproj" />
-      <ProjectReference Include="..\Luban.PHP\Luban.PHP.csproj" />
-      <ProjectReference Include="..\Luban.Protobuf\Luban.Protobuf.csproj" />
-      <ProjectReference Include="..\Luban.Python\Luban.Python.csproj" />
-      <ProjectReference Include="..\Luban.Rust\Luban.Rust.csproj" />
       <ProjectReference Include="..\Luban.Schema.Builtin\Luban.Schema.Builtin.csproj" />
-      <ProjectReference Include="..\Luban.Typescript\Luban.Typescript.csproj" />
     </ItemGroup>
 
     <ItemGroup>
