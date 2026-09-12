@@ -6,9 +6,16 @@
 //   3. 移除 HandleBaseConfiguredSource.cancelImmediately 字段及其赋值 —— 上游该字段写而不读，属死代码。
 //      注：UniTask 原版会在 GetResult 中读它，在「cancelImmediately 且令牌已取消」路径上跳过「重置状态 +
 //      注销取消注册 + 归还对象池」三步（TaskTracker.RemoveTracking 两条路径都会做，非差异点），实例交由 GC
-//      回收；YooAsset 复制时把 GetResult 简化为无条件 TryReturn，该读取随之丢失。本工程只删死字段
-//      （行为与上游一致），未恢复 UniTask 的这条收尾跳过；
-//   4. 补充中文 XML 文档注释。
+//      回收；YooAsset 复制时把 GetResult 简化为无条件 TryReturn，该读取随之丢失。本工程只删该死字段，
+//      其暴露的缺陷按第 4 条修复；
+//   4. 【缺陷修复】TryReturn 内补两处（上游 Samples 自带缺陷，已实测复现）：
+//      a. 归还池前调用 RemoveCompleted() 退订句柄完成回调（须在 handle = default 之前）—— 取消路径
+//         不经过 HandleCompleted，上游会把「仍订阅着句柄」的实例归还池；旧句柄完成时回调打在池中实例上
+//         污染其 core，且实例复用时退订错误的句柄；
+//      b. 归还池前置 completed = true —— 入池后陈旧 PlayerLoop 槽位或残留完成回调触发时，会在各自首句的
+//         completed 判定直接返回，不再把池中实例的 core 置为已完成（否则下次复用「出生即完成」：
+//         await 不等待、取消被吞）。详见 Asset/README.md §8；
+//   5. 补充中文 XML 文档注释。
 // 其余逻辑与上游一致；标识符沿用上游命名，便于与上游比对同步。
 
 using System;
@@ -321,12 +328,23 @@ namespace Cysharp.Threading.Tasks
             /// <returns>归还成功返回 true。</returns>
             private bool TryReturn()
             {
+                // 取消路径（令牌回调直接 TrySetCanceled）不经过 HandleCompleted，若不在此处退订，
+                // 实例会带着仍然有效的句柄完成订阅回到池中：旧句柄完成时回调会打在池中实例上污染其 core，
+                // 且在实例被复用后退订错误的句柄、虚假完成新操作。必须在 handle = default 之前调用。
+                RemoveCompleted();
+
                 TaskTracker.RemoveTracking(this);
                 core.Reset();
                 handle            = default;
                 progress          = default;
                 cancellationToken = default;
                 cancellationTokenRegistration.Dispose();
+
+                // 归还池前标记已结束：入池后若陈旧 PlayerLoop 槽位（MoveNext 首句）或残留完成回调
+                // （HandleCompleted 首句）触发，会各自在 completed 判定处直接返回，不再触碰 core。
+                // 否则池中实例的 core 会被置为已完成，导致下次复用「出生即完成」——await 不等且取消失效。
+                completed = true;
+
                 return pool.TryPush(this);
             }
         }
