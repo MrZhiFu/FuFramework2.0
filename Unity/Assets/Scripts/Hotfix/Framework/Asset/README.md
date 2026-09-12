@@ -134,11 +134,10 @@ loader.Dispose();
 > 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
 > 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(result)`，按引用计数释放，且自动防跨代际误释放）。
 
-> **可取消异步**：`AssetModule`/`AssetLoadRegister` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
-> 模块/装载器销毁（`OnDispose`/`Dispose`）时触发 `Token` 取消，其所有在途异步操作随之取消并自动清理
-> （`Release` + `UnloadAsset`，抛 `OperationCanceledException`）。框架重启 `RestartGame` 会在重启前
-> `await` 各模块 `CancelAsync` 等待清理，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
-> `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
+> **可取消异步**：`AssetLoadRegister` 与 `AssetModule` 遵循同一套 `ICancelAsync` 契约（`Token` + `CancelAsync`）——
+> 装载器 `Dispose()` 时触发 `Token` 取消，在途加载随之取消并自动清理（`Release` + `UnloadAsset`，抛 `OperationCanceledException`）；
+> 业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理；`UnloadAll`（临时卸载）不取消 Token、装载器可复用。
+> 完整说明（含 `RestartGame` 重启约定）见上方 §3「AssetModule」的「可取消异步」。
 
 ### HandleBaseExtensions（YooAsset → UniTask 适配层）
 
