@@ -1,14 +1,10 @@
 using FairyGUI;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-
 using AOT.Launch;
-using AOT.Framework.Core.Log;
 using AOT.Framework.ModuleSetting.Runtime;
-
-using Hotfix.Game.UI;
-using Hotfix.Game.Config;
-
+using AOT.Framework.Core.Log;
+using AOT.Framework.Core.Utility;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Guide;
 using Hotfix.Framework.RedDot;
@@ -19,10 +15,9 @@ using Hotfix.Framework.Timer;
 using Hotfix.Framework.Mono;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.FSM;
-using Hotfix.Framework.ObjectPool;
-
 using Hotfix.Framework.UI;
 using Hotfix.Framework.Procedure;
+using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.Localization;
 using Hotfix.Framework.Model;
 using Hotfix.Framework.Scene;
@@ -31,8 +26,8 @@ using Hotfix.Framework.Sound;
 using Hotfix.Framework.Web;
 using Hotfix.Framework.Download;
 using Hotfix.Framework.Entity;
-
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
+using Hotfix.Game.UI;
+using Hotfix.Game.Config;
 
 #if ENABLE_BINARY_CONFIG
 using Luban;
@@ -57,10 +52,10 @@ namespace Hotfix
 
             // 初始化协议消息处理器：
             InitProto();
-            
+
             // 初始化 FairyGUI相关：注册自定义加载器（CustomLoader）与自定义组件绑定（CustomCompBind）。
             InitFGUI();
-            
+
             // 将 ModuleManager 生命周期方法挂接到 GameDriven 委托
             HookGameDriven();
 
@@ -102,7 +97,7 @@ namespace Hotfix
             GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
             GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
             GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
-            GameDriven.Instance.DisposeModules    = () =>
+            GameDriven.Instance.DisposeModules = () =>
             {
                 ModuleManager.Dispose();
                 ReferencePool.ClearAll();
@@ -168,10 +163,10 @@ namespace Hotfix
         {
             GlobalModule.UIModule.Open<WinLogin>();
             launchView.Close();
-            
+
             // 卸载Launcher界面资源包, 防止Launcher包常驻内存
-            UIPackage.RemovePackage("UI/Launcher"); 
-            
+            UIPackage.RemovePackage("UI/Launcher");
+
             // 引导
             if (GameSetting.Instance.OpenGuide)
             {
@@ -224,8 +219,10 @@ namespace Hotfix
             }
             finally
             {
-                assetHandle.Release(); // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
-                GlobalModule.AssetModule.UnloadAsset(configPath); // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
+                // 启动一次性加载，解析后释放句柄，避免 provider 引用残留
+                // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
+                assetHandle.Release(); 
+                GlobalModule.AssetModule.UnloadAsset(configPath);
             }
         }
 #else
@@ -247,8 +244,10 @@ namespace Hotfix
             }
             finally
             {
-                assetHandle.Release(); // 解析后释放句柄，避免 provider 引用残留
-                GlobalModule.AssetModule.UnloadAsset(cfgPath); // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
+                // 解析后释放句柄，避免 provider 引用残留
+                // AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
+                assetHandle.Release();
+                GlobalModule.AssetModule.UnloadAsset(cfgPath);
             }
         }
 #endif
