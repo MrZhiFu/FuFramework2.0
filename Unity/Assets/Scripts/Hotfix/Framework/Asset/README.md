@@ -140,6 +140,22 @@ loader.Dispose();
 > `await` 各模块 `CancelAsync` 等待清理，保证旧生命周期无在途残留；业务弃用装载器时也可 `await loader.CancelAsync()` 等待清理。
 > `UnloadAll`（临时卸载）不取消 Token，装载器可复用。
 
+### HandleBaseExtensions（YooAsset → UniTask 适配层）
+
+位于 `YooAsset.UniTask/`，为 YooAsset 的 `HandleBase` 提供**带取消能力**的等待入口。
+它是本模块「UniTask 异步支持」以及上方「取消语义边界」中 `handle.ToUniTask(token, cancelImmediately: true)` 的**实际实现来源**。
+
+YooAsset 自带的 `OperationAwaiter`（即实例方法 `HandleBase.GetAwaiter()`）只支持裸 `await`，**不接受 `CancellationToken`**——
+本模块「取消令牌必传 + 与调用方/模块令牌 linked 竞速」的语义无法用它实现，故需要这层扩展。
+
+```csharp
+UniTask ToUniTask(this HandleBase handle, IProgress<float> progress = null, PlayerLoopTiming timing = PlayerLoopTiming.Update, CancellationToken cancellationToken = default, bool cancelImmediately = false)
+```
+
+- 经 `TaskPool` 池化复用，由 `PlayerLoop` 逐帧驱动：每帧轮询句柄完成状态并上报加载进度。
+- 完成回调按句柄具体类型（`AssetHandle`/`SceneHandle`/`SubAssetsHandle`/`BundleFileHandle`/`AllAssetsHandle`）**强类型**订阅，规避 IL2CPP 逆变委托崩溃。
+- 当前工程仅使用 `ToUniTask` 一个方法（`AssetModule.API.cs` 四处，均传 `cancellationToken` + `cancelImmediately: true`）。上游同名文件中的 `GetAwaiter` / `WithCancellation` 已确认为死代码后移除，详见 §8。
+
 ## 4. 运行模式详解
 
 ### EditorSimulateMode（编辑器模拟模式）
@@ -228,6 +244,8 @@ Asset/
 ├── AssetModule.InstantiateData.cs   # 实例化数据类（InstantiateRef / InstantiateResult）
 ├── AssetLoadRegister.cs             # 资源加载注册器（逻辑分组的资源装载器）
 ├── AssetLoadRegister.LoadKey.cs     # 加载缓存键（资源路径 + 加载类型）
+├── YooAsset.UniTask/                # YooAsset → UniTask 适配层（官方 Samples 植入，见 §3 末 / §8）
+│   └── HandleBaseExtensions.cs      # 句柄的 ToUniTask：带进度上报与取消令牌的等待
 └── README.md                        # 本文档
 ```
 
@@ -236,6 +254,20 @@ Asset/
 - [YooAsset](https://www.yooasset.com/) - 资源管理核心
 - [UniTask](https://github.com/Cysharp/UniTask) - 异步编程支持
 - Hotfix.Framework.Core - 框架核心模块
+- `YooAsset.UniTask/HandleBaseExtensions.cs` - **手工植入**的官方集成代码，来源 `YooAsset 3.0.5 Samples~/UniTask Sample/UniTask/Runtime/External/YooAsset/`。相对上游已作五处改造：
+  1. 剥离 `#if YOOASSET_UNITASK_SUPPORT` 守卫（本工程刻意启用该集成）；
+  2. 移除 `GetAwaiter` / `WithCancellation` —— 前者被 YooAsset 的 `HandleBase.GetAwaiter()` 实例方法遮蔽，**永不会被编译器选中**；后者全工程零调用点，二者均为死代码；
+  3. 移除 `HandleBaseConfiguredSource.cancelImmediately` 字段及其赋值 —— 上游该字段**写而不读**，属死代码。注：UniTask 原版（`UniTask.Delay.cs` 的各 promise 源）会在 `GetResult` 中读它，在「`cancelImmediately` 且令牌已取消」路径上**跳过「重置状态 + 注销取消注册 + 归还对象池」三步**（`TaskTracker.RemoveTracking` 两条路径都会做，**不是差异点**），实例交由 GC 回收；YooAsset 复制时把 `GetResult` 简化为无条件 `TryReturn()`，该读取随之丢失。本工程只删该死字段，其暴露的缺陷按第 4 条修复；
+  4. **【缺陷修复】** `TryReturn` 内补两处，修复「取消之后，同一池实例被复用即失效」：
+     - **a. 归还池前 `RemoveCompleted()` 退订句柄完成回调**（必须在 `handle = default` 之前，否则引用已丢、退订不掉）—— 退订只发生在 `HandleCompleted()` 内，而**取消路径（令牌回调直接 `TrySetCanceled`）从不经过它**，于是上游会把「仍订阅着句柄」的实例归还池：旧句柄完成时回调打在池中实例上污染其 `core`，且实例复用时 `RemoveCompleted()` 会退订**错误的新句柄**；
+     - **b. 归还池前 `completed = true`** —— 入池后若陈旧 PlayerLoop 槽位（`MoveNext` 首句）或残留完成回调（`HandleCompleted` 首句）触发，会在各自的 `completed` 判定处直接返回，**不再触碰 `core`**。
+
+     > **已实测确认（状态级，与帧时序无关）**：修复前，取消后复用同一池实例时 `Create` 取出的 `core` 已是 `Succeeded`（断言「新建后应为 Pending」触发）→ source「出生即完成」→ 调用方 `await` 不等待、`OperationCanceledException` 不再抛出（`AssetModule` 的取消清理被跳过）。修复后每次复用 `core` 恒为 `Pending`、取消正常抛出 OCE、断言零命中；在最紧的 1 帧窗口下旧句柄完成也不再触发任何回调（退订生效）。
+     >
+     > **未证实（代码推演）**：陈旧回调若落在「实例正被新操作使用中」的时刻，是否会造成跨操作串扰（切断新句柄的完成订阅、虚假完成新操作）。`EditorSimulateMode` 下所有资源加载均**约 1 帧**完成（已实测：1KB 与 5.9MB 同为 1 帧，故与资源体积无关），没有足够时间分辨率观测，**未验证**；若将来切到 `OfflinePlayMode` / `HostPlayMode`（真实 AssetBundle、跨多帧），可回头补验。
+  5. 补中文 XML 注释。
+
+  > **升级提醒**：本文件已偏离上游，不能整份覆盖，需逐项比对上游 `Samples~` 手工同步（标识符沿用上游命名，即为便于比对）。
 
 ## 9. 注意事项
 
@@ -248,6 +280,9 @@ Asset/
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
 7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。
+8. **不要假设裸 `await handle` 是安全/免异常的**：`await handle`（不写 `ToUniTask`）会绑定到 YooAsset 的**实例方法** `HandleBase.GetAwaiter()`，而它在句柄无效时会先经 `CheckValidWithWarning()` 判定失败并 **抛 `InvalidOperationException`**，并非"安全完成"。
+   `HandleBaseExtensions` 上游版本里的 `GetAwaiter` 扩展曾试图在 `!handle.IsValid` 时返回 `CompletedTask`，但它被实例方法遮蔽（C# 中实例方法优先于扩展方法），**从来没有生效过**，故已移除。
+   需要取消能力、或需要"句柄无效时安全完成"时，一律显式调用 `handle.ToUniTask(cancellationToken: token, cancelImmediately: true)`。
 
 ### WebGL / 小游戏平台注意事项（详情参考：https://www.yooasset.com/docs/MiniGame）
 
