@@ -5,7 +5,6 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Extension;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Event;
 using Utility = Hotfix.Framework.Core.Utility;
 
@@ -17,7 +16,7 @@ namespace Hotfix.Framework.Network
     /// 默认网络频道帮助器。
     /// 功能：
     ///     1. 初始化网络频道帮助器。
-    ///     2. 反射注册包和包处理函数。
+    ///     2. 显式装配包和包处理函数（不再反射扫描程序集，见 <see cref="RegisterDefaultHandlers"/>）。
     ///     3. 发送默认的包和包处理函数。
     /// </summary>
     public class DefaultNetworkChannelHelper : INetworkChannelHelper, IReference
@@ -42,156 +41,80 @@ namespace Hotfix.Framework.Network
         private static EventModule m_Event;
 
         /// <summary>
-        /// 包处理器类型缓存。
-        /// 说明：原实现每次创建频道都会做一次全程序集扫描 + 逐个类型做接口判断，
-        /// 这里把「类型发现」降级为进程内一次性执行并缓存结果；处理器的实例仍按频道创建
-        /// （处理器内部各自持有解析状态，不能跨频道共享）。
-        /// 受限于「不引入代码生成器」的约束，类型发现本身仍基于反射，属于铁律 4 的降级处理：
-        /// 理想方案是由代码生成器产出静态映射表，彻底消除运行时反射。
+        /// 自定义包处理器注册委托集合（显式注册入口）。
+        ///
+        /// 说明（项目铁律 4：运行时杜绝反射）：
+        ///     原实现通过 <c>UtilityAOT.Assembly.GetTypes()</c> 扫描全部已加载程序集 + 接口判断 +
+        ///     <c>Activator.CreateInstance</c> 来发现并创建包处理器，现已改为
+        ///     「显式装配框架自带的 7 个处理器」（见 <see cref="RegisterDefaultHandlers"/>）。
+        ///     因此，**新增自定义处理器必须显式注册**，不再靠反射扫描自动发现：
+        ///         1) 调用 <see cref="AddCustomHandlerRegistrar"/> 注册装配委托；或
+        ///         2) 派生本类并重写 <see cref="RegisterCustomHandlers"/>。
+        ///     处理器实例按频道创建（处理器内部各自持有解析状态，不能跨频道共享）。
+        ///
+        /// 仅限启动期调用，之后不再变更。
         /// </summary>
-        private static class PacketHandlerTypeCache
-        {
-            internal static List<Type> ReceiveHeaderTypes;
-            internal static List<Type> ReceiveBodyTypes;
-            internal static List<Type> SendHeaderTypes;
-            internal static List<Type> SendBodyTypes;
-            internal static List<Type> HeartBeatTypes;
-            internal static List<Type> CompressTypes;
-            internal static List<Type> DecompressTypes;
-        }
+        private static readonly List<Action<INetworkChannel>> s_CustomHandlerRegistrars = new();
 
-        private static readonly object s_HandlerTypeCacheLock = new();
-        private static          bool   s_HandlerTypeCacheReady;
+        private static readonly object s_CustomHandlerRegistrarsLock = new();
 
         /// <summary>
-        /// 一次性扫描程序集并缓存各类包处理器类型。
+        /// 显式注册一个自定义包处理器装配委托。
+        /// 委托会在每个频道 Initialize 时、框架默认处理器装配完成之后被调用。
         /// </summary>
-        private static void EnsureHandlerTypeCache()
+        /// <param name="registrar">装配委托，参数为待装配的网络频道</param>
+        public static void AddCustomHandlerRegistrar(Action<INetworkChannel> registrar)
         {
-            if (s_HandlerTypeCacheReady) return;
-            lock (s_HandlerTypeCacheLock)
+            registrar.NotNull(nameof(registrar));
+            lock (s_CustomHandlerRegistrarsLock)
             {
-                if (s_HandlerTypeCacheReady) return;
-
-                var receiveHeaderTypes = new List<Type>();
-                var receiveBodyTypes   = new List<Type>();
-                var sendHeaderTypes    = new List<Type>();
-                var sendBodyTypes      = new List<Type>();
-                var heartBeatTypes     = new List<Type>();
-                var compressTypes      = new List<Type>();
-                var decompressTypes    = new List<Type>();
-
-                var packetReceiveHeaderHandlerBaseType = typeof(IPacketReceiveHeaderHandler);
-                var packetReceiveBodyHandlerBaseType   = typeof(IPacketReceiveBodyHandler);
-                var packetSendHeaderHandlerBaseType    = typeof(IPacketSendHeaderHandler);
-                var packetSendBodyHandlerBaseType      = typeof(IPacketSendBodyHandler);
-                var packetHeartBeatHandlerBaseType     = typeof(IPacketHeartBeatHandler);
-                var messageCompressHandlerBaseType     = typeof(IMessageCompressHandler);
-                var messageDecompressHandlerBaseType   = typeof(IMessageDecompressHandler);
-                var packetHandlerBaseType              = typeof(IPacketHandler);
-
-                var types = UtilityAOT.Assembly.GetTypes();
-                foreach (var type in types)
-                {
-                    if (!type.IsClass || type.IsAbstract) continue;
-                    if (!type.IsImplWithInterface(packetHandlerBaseType)) continue;
-
-                    if (type.IsImplWithInterface(packetReceiveHeaderHandlerBaseType))
-                    {
-                        receiveHeaderTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(packetReceiveBodyHandlerBaseType))
-                    {
-                        receiveBodyTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(packetSendHeaderHandlerBaseType))
-                    {
-                        sendHeaderTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(packetSendBodyHandlerBaseType))
-                    {
-                        sendBodyTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(packetHeartBeatHandlerBaseType))
-                    {
-                        heartBeatTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(messageCompressHandlerBaseType))
-                    {
-                        compressTypes.Add(type);
-                    }
-                    else if (type.IsImplWithInterface(messageDecompressHandlerBaseType))
-                    {
-                        decompressTypes.Add(type);
-                    }
-                }
-
-                PacketHandlerTypeCache.ReceiveHeaderTypes = receiveHeaderTypes;
-                PacketHandlerTypeCache.ReceiveBodyTypes   = receiveBodyTypes;
-                PacketHandlerTypeCache.SendHeaderTypes    = sendHeaderTypes;
-                PacketHandlerTypeCache.SendBodyTypes      = sendBodyTypes;
-                PacketHandlerTypeCache.HeartBeatTypes     = heartBeatTypes;
-                PacketHandlerTypeCache.CompressTypes      = compressTypes;
-                PacketHandlerTypeCache.DecompressTypes    = decompressTypes;
-
-                s_HandlerTypeCacheReady = true;
+                s_CustomHandlerRegistrars.Add(registrar);
             }
         }
 
-        private void RegisterReceiveHeaderHandlers(List<Type> types)
+        /// <summary>
+        /// 装配框架自带的默认包处理器。
+        ///
+        /// 说明（项目铁律 4）：原实现由反射扫描全部已加载程序集发现 IPacketHandler 实现并逐个实例化，
+        /// 现改为显式列出。下表即原扫描结果中的框架侧实现类（框架外的实现由生成物追加注册并覆盖，见下）：
+        ///     接收包头 → DefaultPacketReceiveHeaderHandler
+        ///     接收包体 → DefaultPacketReceiveBodyHandler
+        ///     发送包头 → DefaultPacketSendHeaderHandler
+        ///     发送包体 → DefaultPacketSendBodyHandler
+        ///     心跳     → BasePacketHeartBeatHandler（兜底，可被框架外实现覆盖）
+        ///     压缩     → DefaultMessageCompressHandler
+        ///     解压     → DefaultMessageDecompressHandler
+        ///
+        /// 心跳处理器：此处装配的是框架基类 BasePacketHeartBeatHandler，仅作为**兜底默认**。
+        ///     原实现靠反射扫描，会同时命中基类与该基类的游戏侧派生类
+        ///     Hotfix.Game.Network.DefaultPacketHeartBeatHandler；由于 RegisterHeartBeatHandler 是
+        ///     「后注册覆盖」，而编译产物中基类排在派生类之后，框架扫描的结果是**基类生效**
+        ///     （基类 Handler() 仅抛 NotImplementedException）。
+        ///     此前运行期之所以正常，是因为游戏侧 WinPlayerList.OnBtnLoginClick 在
+        ///     CreateNetworkChannel（内部即触发本方法）之后又手动注册了一次该派生类。
+        ///     现由生成物 Generated/ProtoMessageRegistry.g.cs 登记装配委托，在本方法之后追加注册
+        ///     框架外的具体处理器（见 <see cref="AddCustomHandlerRegistrar"/>），
+        ///     使框架侧自洽、不再依赖游戏侧的手动补注册；最终生效者仍是游戏侧实现（后注册者生效）。
+        /// </summary>
+        protected virtual void RegisterDefaultHandlers()
         {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterHandler((IPacketReceiveHeaderHandler)Activator.CreateInstance(types[i]));
-            }
+            var channel = m_NetworkChannel;
+
+            channel.RegisterHandler(new DefaultPacketReceiveHeaderHandler());
+            channel.RegisterHandler(new DefaultPacketReceiveBodyHandler());
+            channel.RegisterHandler(new DefaultPacketSendHeaderHandler());
+            channel.RegisterHandler(new DefaultPacketSendBodyHandler());
+            channel.RegisterHeartBeatHandler(new BasePacketHeartBeatHandler());
+            channel.RegisterMessageCompressHandler(new DefaultMessageCompressHandler());
+            channel.RegisterMessageDecompressHandler(new DefaultMessageDecompressHandler());
         }
 
-        private void RegisterReceiveBodyHandlers(List<Type> types)
+        /// <summary>
+        /// 自定义处理器装配钩子。派生类可重写以补充或替换包处理器。
+        /// 在框架默认处理器装配之后调用。
+        /// </summary>
+        protected virtual void RegisterCustomHandlers()
         {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterHandler((IPacketReceiveBodyHandler)Activator.CreateInstance(types[i]));
-            }
-        }
-
-        private void RegisterSendHeaderHandlers(List<Type> types)
-        {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterHandler((IPacketSendHeaderHandler)Activator.CreateInstance(types[i]));
-            }
-        }
-
-        private void RegisterSendBodyHandlers(List<Type> types)
-        {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterHandler((IPacketSendBodyHandler)Activator.CreateInstance(types[i]));
-            }
-        }
-
-        private void RegisterHeartBeatHandlers(List<Type> types)
-        {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterHeartBeatHandler((IPacketHeartBeatHandler)Activator.CreateInstance(types[i]));
-            }
-        }
-
-        private void RegisterCompressHandlers(List<Type> types)
-        {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterMessageCompressHandler((IMessageCompressHandler)Activator.CreateInstance(types[i]));
-            }
-        }
-
-        private void RegisterDecompressHandlers(List<Type> types)
-        {
-            for (var i = 0; i < types.Count; i++)
-            {
-                m_NetworkChannel.RegisterMessageDecompressHandler((IMessageDecompressHandler)Activator.CreateInstance(types[i]));
-            }
         }
 
         /// <summary>
@@ -202,16 +125,18 @@ namespace Hotfix.Framework.Network
         {
             m_NetworkChannel = netChannel;
 
-            // 注册包和包处理函数（类型发现只在首次执行，结果被缓存）。
-            EnsureHandlerTypeCache();
+            // 显式装配包处理器：框架默认 7 个 → 派生类钩子 → 显式注册的自定义委托。
+            // 新增自定义处理器必须显式注册，不再依赖反射扫描程序集。
+            RegisterDefaultHandlers();
+            RegisterCustomHandlers();
 
-            RegisterReceiveHeaderHandlers(PacketHandlerTypeCache.ReceiveHeaderTypes);
-            RegisterReceiveBodyHandlers(PacketHandlerTypeCache.ReceiveBodyTypes);
-            RegisterSendHeaderHandlers(PacketHandlerTypeCache.SendHeaderTypes);
-            RegisterSendBodyHandlers(PacketHandlerTypeCache.SendBodyTypes);
-            RegisterHeartBeatHandlers(PacketHandlerTypeCache.HeartBeatTypes);
-            RegisterCompressHandlers(PacketHandlerTypeCache.CompressTypes);
-            RegisterDecompressHandlers(PacketHandlerTypeCache.DecompressTypes);
+            lock (s_CustomHandlerRegistrarsLock)
+            {
+                for (var i = 0; i < s_CustomHandlerRegistrars.Count; i++)
+                {
+                    s_CustomHandlerRegistrars[i]?.Invoke(m_NetworkChannel);
+                }
+            }
 
             Event.Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
             Event.Subscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);

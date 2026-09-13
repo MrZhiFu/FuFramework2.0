@@ -9,7 +9,13 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Network
 {
     /// <summary>
-    /// 网络非RPC返回消息处理器属性定义
+    /// 网络非RPC返回消息处理器属性定义。
+    ///
+    /// 说明（项目铁律 4：运行时杜绝反射）：
+    ///     「方法发现」（<c>Type.GetMethods</c> + <c>MethodInfo.IsDefined</c>）属于本类的残留反射：
+    ///     用户方法可能是游戏侧类型的私有方法，生成期无法为其构造委托，故仍按方法名定位 MethodInfo。
+    ///     但「强类型委托构造」已改为消费生成物 <c>Generated/ProtoMessageRegistry.g.cs</c>
+    ///     （见 <see cref="MessageDelegateFactory.Create"/>），不再有 <c>MakeGenericMethod</c> 反射调用。
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class MessageHandlerAttribute : Attribute
@@ -195,50 +201,32 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 泛型委托工厂的入口方法（仅注册阶段使用一次）。
-        /// </summary>
-        private static readonly MethodInfo s_CreateInvokeDelegateMethod =
-            typeof(MessageHandlerAttribute).GetMethod(nameof(CreateInvokeDelegateGeneric), BindingFlags.Static | BindingFlags.NonPublic);
-
-        /// <summary>
         /// 创建强类型消息处理委托。
-        /// 说明：受「不引入代码生成器」约束，这里仍使用反射构造泛型方法，但只在注册阶段执行一次；
-        /// 收包阶段直接调用缓存委托，不再有每包 MethodInfo.Invoke 的反射开销。
-        /// 无法生成强类型委托的环境（如部分 AOT 配置）会退化为反射调用，仅保证功能可用。
+        /// 说明（项目铁律 4）：消息类型 -&gt; 强类型委托的构造已由生成物
+        /// <c>Generated/ProtoMessageRegistry.g.cs</c> 在编译期静态分派
+        /// （<see cref="MessageDelegateFactory.Create"/>），不再使用
+        /// <c>MethodInfo.MakeGenericMethod</c> / <c>GetMethod</c> 运行时反射。
+        /// 仅在注册阶段执行一次；收包阶段直接调用缓存委托，不再有每包 MethodInfo.Invoke 的反射开销。
+        /// 消息类型未出现在生成表中（proto 变更后未重新生成）或无法生成强类型委托的环境
+        /// （如部分 AOT 配置）会退化为反射调用，仅保证功能可用。
         /// </summary>
+        /// <param name="method">注册阶段匹配到的用户方法</param>
+        /// <param name="messageHandler">消息处理对象实例</param>
         private Action<IMessageHandler, MessageObject> CreateInvokeDelegate(MethodInfo method, IMessageHandler messageHandler)
         {
-            if (s_CreateInvokeDelegateMethod != null)
+            try
             {
-                try
-                {
-                    return (Action<IMessageHandler, MessageObject>)s_CreateInvokeDelegateMethod
-                        .MakeGenericMethod(MessageType)
-                        .Invoke(null, new object[] { method, messageHandler });
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"创建消息处理委托失败，退化为反射调用：{method.Name} {e.Message}");
-                }
+                var invokeDelegate = MessageDelegateFactory.Create(MessageType, method, messageHandler);
+                if (invokeDelegate != null) return invokeDelegate;
+
+                FuLogger.LogWarning($"消息类型未在生成的委托工厂中，退化为反射调用：{MessageType.FullName}.{method.Name}");
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogWarning($"创建消息处理委托失败，退化为反射调用：{method.Name} {e.Message}");
             }
 
             return (_, message) => method.Invoke(method.IsStatic ? null : messageHandler, new object[] { message });
-        }
-
-        /// <summary>
-        /// 构造强类型委托：TMessage 由 MessageType 在注册阶段确定。
-        /// </summary>
-        private static Action<IMessageHandler, MessageObject> CreateInvokeDelegateGeneric<TMessage>(MethodInfo method, IMessageHandler messageHandler)
-            where TMessage : MessageObject
-        {
-            if (method.IsStatic)
-            {
-                var staticDelegate = (Action<TMessage>)method.CreateDelegate(typeof(Action<TMessage>));
-                return (_, message) => staticDelegate((TMessage)message);
-            }
-
-            var instanceDelegate = (Action<TMessage>)method.CreateDelegate(typeof(Action<TMessage>), messageHandler);
-            return (_, message) => instanceDelegate((TMessage)message);
         }
     }
 }

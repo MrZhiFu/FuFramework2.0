@@ -24,16 +24,12 @@ Game Hotfix 模块是游戏的可热更新代码部分，通过 HybridCLR 技术
 public static async UniTask Main()
 ```
 
-### 2.2 HotfixProtoHandler - 协议程序集标记
+### 2.2 协议消息注册（原 HotfixProtoHandler 已移除）
 
-用于标记协议所在的程序集，供 `ProtoMessageIdHandler` 初始化时使用。
-
-```csharp
-public static class HotfixProtoHandler
-{
-    public static Assembly CurrentAssembly => typeof(HotfixProtoHandler).Assembly;
-}
-```
+`ProtoMessageIdHandler.Init()` 现在**无需程序集参数**：消息 ID ↔ 类型的映射由生成物
+`Framework/Network/Generated/ProtoMessageRegistry.g.cs` 在**编译期**固化，不再扫描程序集、
+不再读取特性（故原先用于「标记协议程序集」的 `HotfixProtoHandler` 已删除）。
+proto 变更后请重新运行 `Tools/gen-proto-registry.py`（Windows 用 `.bat`）刷新生成物。
 
 ## 3. 使用说明
 

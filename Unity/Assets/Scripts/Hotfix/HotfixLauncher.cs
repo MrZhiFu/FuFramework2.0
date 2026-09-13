@@ -76,7 +76,8 @@ namespace Hotfix
         /// </summary>
         private static void InitProto()
         {
-            ProtoMessageIdHandler.Init(HotfixProtoHandler.CurrentAssembly);
+            // 协议注册表已由生成物编译期固化，无需再传入程序集（原先的 HotfixProtoHandler 标记随之移除）。
+            ProtoMessageIdHandler.Init();
         }
 
         /// <summary>

@@ -907,10 +907,13 @@ namespace Hotfix.Framework.Network
             protected void ProcessReceive() { }
 
             /// <summary>
-            /// 单个数据包的包体长度上限。
+            /// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
             /// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
+            /// 默认值依据：本项目 proto 未使用 bytes 大字段（仅 repeated/map 的常规消息），
+            /// 实际消息体在 KB 量级，1 MiB 是宽松的健全性上限；若后续协议引入大消息，
+            /// 由具体通道实现（TCP / WebSocket）在合适时机调高本值即可。
             /// </summary>
-            protected const int MaxPacketBodyLength = 1024 * 1024;
+            protected static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
 
             /// <summary>
             /// 校验包头中的包长度并换算包体长度。

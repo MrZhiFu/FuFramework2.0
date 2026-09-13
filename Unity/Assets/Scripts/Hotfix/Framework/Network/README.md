@@ -2,13 +2,14 @@
 
 ## 1. 简介
 
-FuFramework Network 模块是游戏框架的网络通信系统，提供完整的客户端-服务器通信能力。该模块采用分层架构设计，支持 TCP 和 WebSocket 两种传输协议，内置包序列化/反序列化管线、心跳机制、RPC 调用、消息压缩等功能。消息处理使用特性驱动的反射注册机制，支持请求-响应、服务器推送和心跳四种消息模式。
+FuFramework Network 模块是游戏框架的网络通信系统，提供完整的客户端-服务器通信能力。该模块采用分层架构设计，支持 TCP 和 WebSocket 两种传输协议，内置包序列化/反序列化管线、心跳机制、RPC 调用、消息压缩等功能。消息处理使用**生成期静态注册表**（无运行时反射），支持请求-响应、服务器推送和心跳四种消息模式。
 
 ## 2. 核心特性
 
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
-- **特性驱动注册**：`[MessageHandler]` + `[MessageTypeHandler]` 自动注册消息处理器
+- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[MessageHandler]` 仅作为声明，注册数据由 `Tools/gen-proto-registry.py` 扫描源码生成静态表（proto 或处理器变更后需重新运行）
+- **显式装配包处理器**：`DefaultNetworkChannelHelper` 直接装配框架自带的 7 个处理器，不再反射扫描程序集；自定义处理器须通过 `AddCustomHandlerRegistrar` 或重写 `RegisterCustomHandlers` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
 - **异步 RPC**：基于 `UniTask` 的异步 RPC 调用，支持超时机制
@@ -106,33 +107,52 @@ public interface INetworkChannel
 }
 ```
 
-### 4.3 消息处理器注册
+### 4.3 消息注册（生成期静态表，无运行时反射）
 
-**方式一：类级别注册 `[MessageTypeHandler]`**
+协议消息与消息处理方法的注册数据全部由生成脚本产出，不再于运行时扫描程序集 / 读取特性。
+
+**方式一：协议消息 —— 类级别 `[MessageTypeHandler(消息ID)]`**
 
 ```csharp
-[MessageTypeHandler]
-public class LoginMessageHandler
+[ProtoContract]
+[MessageTypeHandler(6553610)]
+public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
+```
+
+生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Generated/ProtoMessageRegistry.g.cs` 中的
+`MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
+
+**方式二：用户处理方法 —— 方法级别 `[MessageHandler(typeof(消息类型), nameof(方法名))]`**
+
+```csharp
+public sealed class BagManager : Singleton<BagManager>, IMessageHandler
 {
-    [MessageHandler]
-    public void HandleLoginResponse(object sender, LoginResponse response)
-    {
-        // 处理登录响应
-    }
+    [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
+    private void NotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
 }
 ```
 
-**方式二：方法级别注册 `[MessageHandler]`**
+生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，产出「处理器类型 → (消息类型, 方法名)」静态表；
+运行时 `ProtoMessageHandler.Add(this)` 依据该表注册，不再用 `GetCustomAttribute` 发现方法。
+
+> **重要**：新增 / 删除协议消息，修改消息ID，或新增 `[MessageHandler]` 方法后，
+> 必须重新运行 `Tools/gen-proto-registry.bat`（Windows）或 `Tools/gen-proto-registry.sh`（macOS/Linux），
+> 否则注册表与实际代码不一致（未登记的处理器类型会在运行时报错日志）。
+
+**包处理器装配（`DefaultNetworkChannelHelper`）**
+
+框架自带的 7 个包处理器（接收包头/包体、发送包头/包体、心跳、压缩、解压）由
+`RegisterDefaultHandlers()` 显式装配，不再反射扫描 `IPacketHandler` 实现。
+需要替换或补充处理器时：
 
 ```csharp
-public class GameMessageHandler
+// 1) 静态注册入口（对所有 DefaultNetworkChannelHelper 生效，建议启动期调用一次）
+DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
 {
-    [MessageHandler]
-    private void OnPlayerMove(PlayerMoveNotify notify)
-    {
-        // 处理玩家移动通知
-    }
-}
+    channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.DefaultPacketHeartBeatHandler());
+});
+
+// 2) 或派生 DefaultNetworkChannelHelper 并重写 RegisterCustomHandlers()
 ```
 
 ### 4.4 消息基类
@@ -288,8 +308,12 @@ Network/
 │   ├── NetworkModule.ReceiveState.cs                 # 接收状态
 │   ├── NetworkModule.SendState.cs                    # 发送状态
 │   ├── NetworkModule.RpcState.cs                     # RPC 状态
-│   ├── ProtoMessageHandler.cs                        # 消息处理器注册
-│   ├── ProtoMessageIdHandler.cs                      # 消息 ID 映射
+│   ├── ProtoMessageHandler.cs                        # 消息处理器注册（消费生成静态表）
+│   ├── ProtoMessageIdHandler.cs                      # 消息 ID 映射（消费生成静态表）
+│   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
+│   ├── MessageDelegateFactory.cs                     # 强类型处理委托工厂（手写部分）
+│   ├── Generated/
+│   │   └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 │   ├── Base/
 │   │   ├── EAddressFamily.cs                         # 地址类型枚举
 │   │   ├── EServiceType.cs                           # 服务类型枚举
