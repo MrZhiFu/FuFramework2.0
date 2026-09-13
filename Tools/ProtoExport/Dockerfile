@@ -5,10 +5,10 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ProtoExport/ProtoExport.csproj", "ProtoExport/"]
-RUN dotnet restore "ProtoExport/ProtoExport.csproj"
+COPY ["ProtoExport.csproj", "./"]
+RUN dotnet restore "ProtoExport.csproj"
 COPY . .
-WORKDIR "/src/ProtoExport"
+WORKDIR "/src"
 RUN dotnet build "ProtoExport.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

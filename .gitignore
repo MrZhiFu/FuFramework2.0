@@ -19,6 +19,7 @@ Unity/HybridCLRData/LocalIl2CppData-WindowsEditor
 Unity/HybridCLRData/hybridclr_repo
 Unity/HybridCLRData/il2cpp_plus_repo
 Tools/Geek.MsgPackTool-src/.idea
+Tools/.idea
 Server/**/bin
 Unity/.cache.meta
 docker/mongo/database
