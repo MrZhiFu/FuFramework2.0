@@ -9,7 +9,7 @@
 
 | 目录 | 类型 | 说明 |
 |---|---|---|
-| `ProtoExport/` | .NET 工具工程 | **协议导出工具**：读取 `Protobuf/Proto/*.proto`，生成客户端 / 服务端 C#。由 `Protobuf/Proto2CsExport_*.bat/.sh` 以 `dotnet ProtoExport.dll` 调用。<br>其 `Dockerfile`、`ProtoExport.sln`、`.gitignore`、`.dockerignore` 随工程置于本目录内（构建上下文 = `ProtoExport/`）。 |
+| `ProtoExport/` | .NET 工具工程 | **协议导出工具**：读取 `Protobuf/Proto/*.proto`，生成客户端 / 服务端 C#。由 `Protobuf/Proto2CsExport_*.bat/.sh` 以 `dotnet ProtoExport.dll` 调用。详见 `ProtoExport/README.md`。<br>其 `Dockerfile`、`ProtoExport.sln`、`.gitignore`、`.dockerignore` 随工程置于本目录内（构建上下文 = `ProtoExport/`）。 |
 | `UnityCli/` | 集成脚本 | **unity-cli**（让 Claude Code 通过 TCP 操控 Unity Editor）的安装脚本与说明。详见 `UnityCli/README.md`。<br>安装：Windows 双击 `install-unity-cli.bat`，macOS 运行 `bash install-unity-cli.sh`。 |
 | `HttpCDN/` | 辅助资源 | **本地 CDN 测试服务**：`miniserve.exe` + 各平台 CDN 根目录（`CDN/Android`、`CDN/IOS`、`CDN/Windows`）。<br>由编辑器菜单 `FuFramework/启动HttpCDN服务器(用于模拟资源更新)` 启动（见 `Assets/Editor/.../Misc/ExeRunner.cs`），服务于 `http://localhost:8080`。 |
 | `FairyGUI-Editor-master/` | 三方源码 | 从 GitHub 下载的 **FairyGUI 编辑器源码**（`plugin/` 插件示例：CustomInspector、CustomInspectorTs、HelloWorld、LuaAPI、TsAPI；`ui/` 编辑器 UI 源码）。<br>**仅供编写 FairyGUI 编辑器插件时参考，非本项目的构建依赖，亦无任何脚本引用。** |
