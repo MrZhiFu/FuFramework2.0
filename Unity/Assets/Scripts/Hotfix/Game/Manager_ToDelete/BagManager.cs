@@ -27,8 +27,14 @@ namespace Hotfix.Game.Manager_ToDelete
         /// 监听道具变化通知
         /// </summary>
         /// <param name="msg"></param>
+        /// <remarks>
+        /// 可见性契约：生成物 Generated/ProtoMessageRegistry.g.cs 会为 [MessageHandler] 方法生成
+        /// 直接委托（<c>((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)</c>），
+        /// 因此本方法必须是 internal 或 public（不能是 private / protected），否则生成脚本会报错。
+        /// 详见 Framework/Network/README.md「消息注册」章节。
+        /// </remarks>
         [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
-        private void NotifyBagInfoChanged(NotifyBagInfoChanged msg)
+        internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg)
         {
             foreach (var keyValuePair in msg.ItemDic)
             {

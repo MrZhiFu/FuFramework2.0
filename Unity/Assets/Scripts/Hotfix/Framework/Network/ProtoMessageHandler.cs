@@ -9,6 +9,8 @@ namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 用户消息处理方法的登记项（由生成物 <c>ProtoMessageRegistry</c> 填充）。
+    /// 说明：持有的是**生成期产出的直接委托**，不再持有方法名 / MethodInfo，
+    /// 因此运行期无需按名字查找方法，也不存在任何反射。
     /// </summary>
     public readonly struct ProtoMessageHandlerMethod
     {
@@ -18,14 +20,21 @@ namespace Hotfix.Framework.Network
         public Type MessageType { get; }
 
         /// <summary>
-        /// [MessageHandler] 声明的方法名。
+        /// [MessageHandler] 声明的方法名。仅用于日志与去重比对，不参与方法查找。
         /// </summary>
         public string MethodName { get; }
 
-        public ProtoMessageHandlerMethod(Type messageType, string methodName)
+        /// <summary>
+        /// 生成期产出的直接委托，形如
+        /// <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>。
+        /// </summary>
+        public Action<IMessageHandler, MessageObject> Invoke { get; }
+
+        public ProtoMessageHandlerMethod(Type messageType, string methodName, Action<IMessageHandler, MessageObject> invoke)
         {
             MessageType = messageType;
             MethodName  = methodName;
+            Invoke      = invoke;
         }
     }
 
@@ -35,12 +44,10 @@ namespace Hotfix.Framework.Network
     /// 说明（项目铁律 4：运行时杜绝反射）：
     ///     「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」原先通过
     ///     <c>Type.GetMethods</c> + <c>MethodInfo.GetCustomAttribute</c> 在注册时读取特性获得，
-    ///     现改由生成期扫描源码产出的静态表提供（生成脚本 Tools/gen-proto-registry.py）。
+    ///     现改由生成期扫描源码产出的静态表提供（生成脚本 Tools/gen-proto-registry.py）：
+    ///     生成物直接产出**强类型委托**，注册时仅做绑定，运行期零反射
+    ///     （无 GetMethods / IsDefined / GetCustomAttribute / CreateDelegate / MethodInfo.Invoke）。
     ///     新增 [MessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
-    ///
-    ///     残留反射：命中方法后仍需 <c>Type.GetMethods</c> 按方法名定位 MethodInfo
-    ///     （用户方法可能是游戏侧类型的私有方法，生成期无法为其构造委托）——
-    ///     这是本模块唯一保留的注册期反射，且仅在 Add/Remove 时执行一次。
     /// </summary>
     public static class ProtoMessageHandler
     {
@@ -89,13 +96,10 @@ namespace Hotfix.Framework.Network
             {
                 var entry = registeredMethods[i];
 
-                // 显式构造特性实例（原先由 GetCustomAttribute 反射创建，构造参数在生成期已确定）。
-                var messageHandlerAttribute = new MessageHandlerAttribute(entry.MessageType, entry.MethodName);
-
-                var isAddSuccess = messageHandlerAttribute.Add(messageHandler);
-                if (!isAddSuccess)
+                if (entry.Invoke == null)
                 {
-                    FuLogger.LogError("初始化消息处理器：" + type.FullName + "->" + entry.MethodName + " 失败");
+                    FuLogger.LogError("生成注册表中的处理委托为空：" + type.FullName + "->" + entry.MethodName +
+                                      "，请重新运行 Tools/gen-proto-registry.py 后再试");
                     continue;
                 }
 
@@ -107,6 +111,9 @@ namespace Hotfix.Framework.Network
                     continue;
                 }
 
+                // 绑定生成期产出的强类型委托：运行期不再查找方法、不再构造委托。
+                var messageHandlerAttribute = new MessageHandlerAttribute(entry.MessageType, entry.MethodName);
+                messageHandlerAttribute.Bind(messageHandler, entry.Invoke);
                 list.Add(messageHandlerAttribute);
             }
         }

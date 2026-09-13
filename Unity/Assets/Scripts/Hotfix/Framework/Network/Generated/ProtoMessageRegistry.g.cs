@@ -10,11 +10,11 @@
 //     否则运行时注册表会与实际代码不一致。
 //
 //     本文件取代了原先运行时的 Assembly.GetTypes() 全程序集扫描与特性反射读取，
+//     并直接产出强类型处理委托（不再有 MethodInfo / CreateDelegate / GetMethods），
 //     以满足项目铁律 4（运行时杜绝反射）。
 // </auto-generated>
 
 using System;
-using System.Reflection;
 using Hotfix.Game.Proto;
 
 // ReSharper disable once CheckNamespace
@@ -22,8 +22,8 @@ namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 协议消息注册表（生成物）。
-    /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法」以及强类型委托工厂，
-    /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性。
+    /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法（直接委托）」，
+    /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性、不再查找方法。
     /// </summary>
     internal static class ProtoMessageRegistry
     {
@@ -81,14 +81,17 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 方法名) 清单。
+        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
         /// 共 1 个类型。
+        /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
+        /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterMessageHandlerMethods()
         {
             ProtoMessageHandler.RegisterHandlerType(typeof(Hotfix.Game.Manager_ToDelete.BagManager), new[]
             {
-                new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChanged"),
+                new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChanged",
+                    static (handler, message) => ((Hotfix.Game.Manager_ToDelete.BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)),
             });
         }
 
@@ -114,54 +117,6 @@ namespace Hotfix.Framework.Network
                 // IPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/DefaultPacketHeartBeatHandler.cs
                 channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.DefaultPacketHeartBeatHandler());
             });
-        }
-    }
-
-    /// <summary>
-    /// 消息处理委托工厂（生成部分）。
-    /// 把「消息类型 -&gt; 强类型委托构造」的映射在编译期固化，
-    /// 取代原先 MessageHandlerAttribute 中的 MethodInfo.MakeGenericMethod 运行时反射。
-    /// 手写部分（MessageDelegateFactory.cs）提供 CreateTyped&lt;T&gt; 泛型实现。
-    /// </summary>
-    internal static partial class MessageDelegateFactory
-    {
-        /// <summary>
-        /// 按消息类型静态分派到 CreateTyped&lt;T&gt;。
-        /// 返回 null 表示消息类型未出现在注册表中（proto 变更后未重新生成），
-        /// 调用方退化为 MethodInfo.Invoke，保证功能可用。
-        /// </summary>
-        internal static Action<IMessageHandler, MessageObject> Create(Type messageType, MethodInfo method, IMessageHandler messageHandler)
-        {
-            if (messageType == typeof(ReqHeartBeat)) return CreateTyped<ReqHeartBeat>(method, messageHandler);
-            if (messageType == typeof(NotifyHeartBeat)) return CreateTyped<NotifyHeartBeat>(method, messageHandler);
-            if (messageType == typeof(NotifyServerFullyLoaded)) return CreateTyped<NotifyServerFullyLoaded>(method, messageHandler);
-            if (messageType == typeof(ReqBagInfo)) return CreateTyped<ReqBagInfo>(method, messageHandler);
-            if (messageType == typeof(RespBagInfo)) return CreateTyped<RespBagInfo>(method, messageHandler);
-            if (messageType == typeof(NotifyBagItem)) return CreateTyped<NotifyBagItem>(method, messageHandler);
-            if (messageType == typeof(NotifyBagInfoChanged)) return CreateTyped<NotifyBagInfoChanged>(method, messageHandler);
-            if (messageType == typeof(ReqComposePet)) return CreateTyped<ReqComposePet>(method, messageHandler);
-            if (messageType == typeof(RespComposePet)) return CreateTyped<RespComposePet>(method, messageHandler);
-            if (messageType == typeof(ReqUseItem)) return CreateTyped<ReqUseItem>(method, messageHandler);
-            if (messageType == typeof(RespUseItem)) return CreateTyped<RespUseItem>(method, messageHandler);
-            if (messageType == typeof(ReqDiscardItem)) return CreateTyped<ReqDiscardItem>(method, messageHandler);
-            if (messageType == typeof(RespDiscardItem)) return CreateTyped<RespDiscardItem>(method, messageHandler);
-            if (messageType == typeof(ReqSellItem)) return CreateTyped<ReqSellItem>(method, messageHandler);
-            if (messageType == typeof(RespItemChange)) return CreateTyped<RespItemChange>(method, messageHandler);
-            if (messageType == typeof(ReqAddItem)) return CreateTyped<ReqAddItem>(method, messageHandler);
-            if (messageType == typeof(RespAddItem)) return CreateTyped<RespAddItem>(method, messageHandler);
-            if (messageType == typeof(ReqRemoveItem)) return CreateTyped<ReqRemoveItem>(method, messageHandler);
-            if (messageType == typeof(RespRemoveItem)) return CreateTyped<RespRemoveItem>(method, messageHandler);
-            if (messageType == typeof(ReqLogin)) return CreateTyped<ReqLogin>(method, messageHandler);
-            if (messageType == typeof(RespLogin)) return CreateTyped<RespLogin>(method, messageHandler);
-            if (messageType == typeof(ReqPlayerCreate)) return CreateTyped<ReqPlayerCreate>(method, messageHandler);
-            if (messageType == typeof(RespPlayerCreate)) return CreateTyped<RespPlayerCreate>(method, messageHandler);
-            if (messageType == typeof(ReqPlayerList)) return CreateTyped<ReqPlayerList>(method, messageHandler);
-            if (messageType == typeof(RespPlayerList)) return CreateTyped<RespPlayerList>(method, messageHandler);
-            if (messageType == typeof(ReqPlayerLogin)) return CreateTyped<ReqPlayerLogin>(method, messageHandler);
-            if (messageType == typeof(RespPlayerLogin)) return CreateTyped<RespPlayerLogin>(method, messageHandler);
-            if (messageType == typeof(RespErrorCode)) return CreateTyped<RespErrorCode>(method, messageHandler);
-            if (messageType == typeof(RespPrompt)) return CreateTyped<RespPrompt>(method, messageHandler);
-            return null;
         }
     }
 }

@@ -128,12 +128,24 @@ public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 public sealed class BagManager : Singleton<BagManager>, IMessageHandler
 {
     [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
-    private void NotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
+    internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
 }
 ```
 
-生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，产出「处理器类型 → (消息类型, 方法名)」静态表；
-运行时 `ProtoMessageHandler.Add(this)` 依据该表注册，不再用 `GetCustomAttribute` 发现方法。
+生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**直接委托**：
+
+```csharp
+new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChanged",
+    static (handler, message) => ((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)),
+```
+
+运行时 `ProtoMessageHandler.Add(this)` 只做「绑定委托」，**不查找方法、不使用任何反射**
+（无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）。
+
+> **可见性契约（重要）**：由于生成物直接调用该方法，`[MessageHandler]` 标注的方法
+> **必须是 `internal` 或 `public`**（默认的 `private` 会导致生成脚本**报错并中止**，
+> 报错信息会指出文件、行号与方法名）。方法参数类型必须与 `typeof(...)` 声明的消息类型一致。
+> 生成物位于同程序集 `Hotfix.Framework.Network`，故 `internal` 即可。
 
 > **重要**：新增 / 删除协议消息，修改消息ID，或新增 `[MessageHandler]` 方法后，
 > 必须重新运行 `Tools/gen-proto-registry.bat`（Windows）或 `Tools/gen-proto-registry.sh`（macOS/Linux），
@@ -311,7 +323,6 @@ Network/
 │   ├── ProtoMessageHandler.cs                        # 消息处理器注册（消费生成静态表）
 │   ├── ProtoMessageIdHandler.cs                      # 消息 ID 映射（消费生成静态表）
 │   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
-│   ├── MessageDelegateFactory.cs                     # 强类型处理委托工厂（手写部分）
 │   ├── Generated/
 │   │   └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 │   ├── Base/
@@ -321,7 +332,7 @@ Network/
 │   │   ├── IResponseMessage.cs                       # 响应消息接口
 │   │   ├── INotifyMessage.cs                         # 推送消息接口
 │   │   ├── IHeartBeatMessage.cs                      # 心跳消息接口
-│   │   ├── MessageHandlerAttribute.cs                # 消息处理器特性
+│   │   ├── MessageHandlerAttribute.cs                # 消息处理器特性（声明用；方法须 internal/public）
 │   │   ├── MessageTypeHandlerAttribute.cs            # 消息类型处理器特性
 │   │   ├── MessageObject.cs                          # 消息基类
 │   │   └── NetworkErrorCode.cs                       # 网络错误码

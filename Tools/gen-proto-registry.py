@@ -15,6 +15,11 @@ gen-proto-registry.py
           INotifyMessage / IHeartBeatMessage
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> [MessageHandler(typeof(消息类型), nameof(方法名))]（用户消息处理方法）
+          连同**所在类型**与方法可见性一起解析，产出**直接委托**：
+              new ProtoMessageHandlerMethod(typeof(X), "OnX",
+                  static (handler, message) => ((Ns.Handler)handler).OnX((X)message))
+          可见性契约：目标方法必须为 internal 或 public，否则**报错并中止生成**
+          （生成物位于同程序集，需要能直接调用该方法）。
        -> 实现 IMessageHandler 的类型（用于区分「已登记但无处理方法」与「未登记」）
     3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Helper/）
        -> 框架外「具体（非抽象）」的包处理器实现：实现 IPacketReceiveHeaderHandler /
@@ -28,8 +33,9 @@ gen-proto-registry.py
 背景（项目铁律 4：运行时杜绝反射）：
     原实现于启动时通过 Assembly.GetTypes() 扫描全部已加载程序集，读取特性构建
     「消息ID <-> 类型」映射，并用 MakeGenericMethod + CreateDelegate 构造强类型委托；
+    用户 [MessageHandler] 方法靠 GetMethods + GetCustomAttribute 发现；
     包处理器同样靠扫描 + Activator.CreateInstance 发现。本脚本把这些工作全部前移到生成期，
-    产出静态注册表，运行时只做字典写入 / 显式装配。
+    产出静态注册表与直接委托，运行时只做字典写入 / 绑定 / 显式装配，**零反射**。
 
 本脚本可重复执行（幂等覆盖生成物）。proto 变更（新增/删除消息、改 ID、改接口）、
 新增 [MessageHandler] 方法、新增或调整框架外包处理器后，必须重新运行：
@@ -88,6 +94,14 @@ RE_MSG_HANDLER_ATTR = re.compile(
     r"(?:nameof\s*\(\s*([\w\.]+)\s*\)|\"([^\"]+)\")\s*\)\s*\]"
 )
 
+# 方法声明（用于读取 [MessageHandler] 目标的可见性与首参类型）
+RE_METHOD_DECL = re.compile(
+    r"^\s*(?P<mods>(?:(?:public|internal|protected|private|static|virtual|override|sealed|"
+    r"async|extern|unsafe|partial|new|readonly)\s+)*)"
+    r"(?:[\w\.<>\[\],\?]+\s+)?(?P<name>\w+)\s*\(\s*(?P<param>[\w\.<>\[\],\?]*)?",
+    re.MULTILINE,
+)
+
 RE_NAMESPACE = re.compile(r"^\s*namespace\s+([\w\.]+)", re.MULTILINE)
 RE_TYPE_DECL = re.compile(r"\b(?:class|struct)\s+(\w+)")
 
@@ -97,7 +111,7 @@ IFACE_RESPONSE = "IResponseMessage"
 IFACE_NOTIFY = "INotifyMessage"
 IFACE_HEARTBEAT = "IHeartBeatMessage"
 
-# 包处理器接口（顺序 = 原 ProtoMessageIdHandler 之外那套扫描的 else-if 优先级，
+# 包处理器接口（顺序 = 原扫描的 else-if 优先级；
 # 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致）
 PACKET_INTERFACE_ORDER = [
     ("IPacketReceiveHeaderHandler", "channel.RegisterHandler((IPacketReceiveHeaderHandler)new {fq}());"),
@@ -122,6 +136,88 @@ KIND_NONE = "EMessageKind.None"
 def read_text(path: str) -> str:
     with open(path, "r", encoding="utf-8-sig", errors="replace") as fp:
         return fp.read()
+
+
+def strip_comments(text: str) -> str:
+    """把 // 行注释、/* */ 块注释（含 /// XML 文档注释）替换为等长空白。
+
+    等长替换保证字符偏移与行号不变，后续 enclosing_* 等定位仍然有效。
+    目的：避免把「文档注释/示例代码里写到的 [MessageHandler(...)]」当成真实声明
+    （本脚本自身的类注释里就有这种示例）。
+    已知边界：不解析插值字符串 `$"{...}"` 中的嵌套引号。
+    """
+    out = []
+    i, n = 0, len(text)
+    mode = None  # None | line | block | str | verbatim
+    while i < n:
+        c = text[i]
+        nxt = text[i + 1] if i + 1 < n else ""
+
+        if mode == "line":
+            if c in "\r\n":
+                mode = None
+                out.append(c)
+            else:
+                out.append(" ")
+            i += 1
+            continue
+
+        if mode == "block":
+            if c == "*" and nxt == "/":
+                mode = None
+                out.append("  ")
+                i += 2
+                continue
+            out.append(c if c in "\r\n" else " ")
+            i += 1
+            continue
+
+        if mode == "str":
+            out.append(c)
+            if c == "\\" and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if c == '"':
+                mode = None
+            i += 1
+            continue
+
+        if mode == "verbatim":
+            out.append(c)
+            if c == '"':
+                if nxt == '"':
+                    out.append(nxt)
+                    i += 2
+                    continue
+                mode = None
+            i += 1
+            continue
+
+        if c == "/" and nxt == "/":
+            mode = "line"
+            out.append("  ")
+            i += 2
+            continue
+        if c == "/" and nxt == "*":
+            mode = "block"
+            out.append("  ")
+            i += 2
+            continue
+        if c == '"':
+            j = len(out) - 1
+            while j >= 0 and out[j] in " \t":
+                j -= 1
+            mode = "verbatim" if j >= 0 and out[j] == "@" else "str"
+        out.append(c)
+        i += 1
+
+    return "".join(out)
+
+
+def read_code(path: str) -> str:
+    """读取源码并剥离注释（扫描一律走这里，避免命中文档注释里的示例）。"""
+    return strip_comments(read_text(path))
 
 
 def iter_cs_files(root: str):
@@ -153,6 +249,18 @@ def split_bases(text: str):
 
 def simple_name(identifier: str) -> str:
     return identifier.split(".")[-1].strip()
+
+
+def method_is_accessible(mods: str) -> bool:
+    """生成物需要直接调用目标方法：仅 public / internal 可及。
+
+    C# 无修饰符即 private，故必须显式出现 public 或 internal；
+    只要出现 private / protected（含 protected internal / private protected）即不可及。
+    """
+    tokens = mods.split()
+    if "private" in tokens or "protected" in tokens:
+        return False
+    return "public" in tokens or "internal" in tokens
 
 
 def enclosing_type_name(text: str, pos: int):
@@ -202,7 +310,7 @@ def scan_proto_messages():
         raise SystemExit("[错误] 未找到 proto 目录：%s" % PROTO_DIR)
 
     for path in iter_cs_files(PROTO_DIR):
-        text = read_text(path)
+        text = read_code(path)
         rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
 
         ns = enclosing_namespace(text, len(text))
@@ -264,83 +372,18 @@ def scan_proto_messages():
 
 
 # ---------------------------------------------------------------------------
-# 2. 扫描热更源码：[MessageHandler] 方法与 IMessageHandler 实现类型
+# 2. 扫描热更源码：全量类型索引
 # ---------------------------------------------------------------------------
 
 
-def scan_message_handler_methods():
-    """返回 (handlers, manual_message_types, warnings)。
-
-    handlers: dict[(namespace, type)] -> list of (message_type, method_name)
-    manual_message_types: list[str]  [MessageHandler] 引用到的消息类型（用于补全委托工厂）
-    """
-    handlers = {}
-    manual_message_types = []
-    warnings = []
-
-    for path in iter_cs_files(HOTFIX_ROOT):
-        if is_generated_output(path):
-            continue
-
-        text = read_text(path)
-        rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
-
-        for m in RE_MSG_HANDLER_ATTR.finditer(text):
-            message_type = simple_name(m.group(1))
-            method_name = m.group(2) or m.group(3)
-            type_name = enclosing_type_name(text, m.start())
-            if type_name is None:
-                warnings.append(
-                    "%s: 第 %d 行的 [MessageHandler] 未能定位所属类型，已跳过。"
-                    % (rel, text.count("\n", 0, m.start()) + 1)
-                )
-                continue
-
-            ns = enclosing_namespace(text, m.start())
-            handlers.setdefault((ns, type_name), []).append((message_type, method_name))
-            if message_type not in manual_message_types:
-                manual_message_types.append(message_type)
-
-    return handlers, manual_message_types, warnings
-
-
-def scan_message_handler_types():
-    """返回所有实现 IMessageHandler 的类型（含无 [MessageHandler] 方法的类型）。"""
-    results = set()
-    for path in iter_cs_files(HOTFIX_ROOT):
-        if is_generated_output(path):
-            continue
-        text = read_text(path)
-        for decl in RE_CLASS_DECL.finditer(text):
-            if re.search(r"\bIMessageHandler\b", decl.group(2)) is None:
-                continue
-            results.add((enclosing_namespace(text, decl.start()), decl.group(1)))
-    return results
-
-
-# ---------------------------------------------------------------------------
-# 3. 扫描框架外的包处理器实现
-# ---------------------------------------------------------------------------
-
-
-def scan_external_packet_handlers():
-    """返回 (handlers, warnings)。
-
-    handlers: list of dict(fq, iface, register, file, depth)
-      * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 DefaultNetworkChannelHelper
-        显式装配，见 RegisterDefaultHandlers）。
-      * 只取具体类型（跳过 abstract / static）。
-      * 接口判定含继承链，故「派生自框架基类」的游戏侧实现同样能被识别。
-      * 每个类型只按 PACKET_INTERFACE_ORDER 的首个命中接口注册一次，与原扫描的 else-if 一致。
-      * 排序：继承深度浅的在前（后注册者覆盖），同深度按全名排序，保证幂等且「更具体的实现生效」。
-    """
+def scan_class_index():
+    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 声明（首次出现优先）。"""
     decls = []
     by_name = {}
-
     for path in iter_cs_files(HOTFIX_ROOT):
         if is_generated_output(path):
             continue
-        text = read_text(path)
+        text = read_code(path)
         rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
         for m in RE_CLASS_DECL_ANY.finditer(text):
             decl = {
@@ -353,8 +396,135 @@ def scan_external_packet_handlers():
             }
             decls.append(decl)
             by_name.setdefault(decl["name"], decl)
+    return decls, by_name
 
-    # 递归解析接口（含继承链）
+
+# ---------------------------------------------------------------------------
+# 3. 扫描 [MessageHandler] 方法：产出直接委托
+# ---------------------------------------------------------------------------
+
+
+def scan_message_handler_methods(by_name):
+    """返回 (handlers, message_type_namespaces, errors, warnings, registered_type_names)。
+
+    handlers: dict[(namespace, type)] -> list of dict(message_type, method_name, invoke)
+      invoke 为生成期产出的直接委托表达式：
+          static (handler, message) => ((Ns.Handler)handler).OnX((X)message)
+    errors: 可见性/定位问题（非空则中止生成）
+    """
+    handlers = {}
+    message_type_namespaces = set()
+    errors = []
+    warnings = []
+
+    for path in iter_cs_files(HOTFIX_ROOT):
+        if is_generated_output(path):
+            continue
+
+        text = read_code(path)
+        rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
+
+        for m in RE_MSG_HANDLER_ATTR.finditer(text):
+            message_type = simple_name(m.group(1))
+            method_name = m.group(2) or m.group(3)
+            line = text.count("\n", 0, m.start()) + 1
+
+            type_name = enclosing_type_name(text, m.start())
+            if type_name is None:
+                warnings.append(
+                    "%s: 第 %d 行的 [MessageHandler] 未能定位所属类型，已跳过。" % (rel, line)
+                )
+                continue
+
+            ns = enclosing_namespace(text, m.start())
+
+            # --- 定位目标方法并校验可见性 ---
+            decl = RE_METHOD_DECL.search(text, m.end())
+            if decl is None or decl.group("name") != method_name:
+                errors.append(
+                    "%s: 第 %d 行 [MessageHandler(..., %s)] 之后未找到同名方法声明，"
+                    "无法生成直接委托。请确认方法紧跟在特性之后。"
+                    % (rel, line, method_name)
+                )
+                continue
+
+            mods = decl.group("mods") or ""
+            if not method_is_accessible(mods):
+                errors.append(
+                    "%s: 第 %d 行的方法 %s.%s 不可访问（修饰符：%s）。"
+                    "生成物需要直接调用该方法，请将其改为 internal 或 public。"
+                    % (rel, line, type_name, method_name, mods.strip() or "(无修饰符，即 private)")
+                )
+                continue
+
+            # --- 参数类型自检：应与 [MessageHandler] 声明的消息类型一致 ---
+            param = simple_name(decl.group("param") or "")
+            if param != message_type:
+                warnings.append(
+                    "%s: 第 %d 行的方法 %s.%s 首参类型为 '%s'，与 [MessageHandler] 声明的消息类型 '%s' 不一致；"
+                    "生成的直接委托会据此做强制转换，若无法编译请核对（原实现会在注册期抛异常）。"
+                    % (rel, line, type_name, method_name, param or "(无)", message_type)
+                )
+
+            # --- 解析消息类型所在命名空间（生成物据此补 using）---
+            msg_decl = by_name.get(message_type)
+            if msg_decl is not None and msg_decl["namespace"]:
+                message_type_namespaces.add(msg_decl["namespace"])
+            else:
+                warnings.append(
+                    "%s: 第 %d 行的消息类型 %s 未在热更源码中定位到声明，"
+                    "生成物将依赖既有 using 解析该类型；若编译报错请检查其所在命名空间。"
+                    % (rel, line, message_type)
+                )
+
+            handler_fq = ("%s.%s" % (ns, type_name)) if ns else type_name
+            invoke = "static (handler, message) => ((%s)handler).%s((%s)message)" % (
+                handler_fq,
+                method_name,
+                message_type,
+            )
+
+            handlers.setdefault((ns, type_name), []).append(
+                {
+                    "message_type": message_type,
+                    "method_name": method_name,
+                    "invoke": invoke,
+                }
+            )
+
+    return handlers, message_type_namespaces, errors, warnings
+
+
+def scan_message_handler_types():
+    """返回所有实现 IMessageHandler 的类型（含无 [MessageHandler] 方法的类型）。"""
+    results = set()
+    for path in iter_cs_files(HOTFIX_ROOT):
+        if is_generated_output(path):
+            continue
+        text = read_code(path)
+        for decl in RE_CLASS_DECL.finditer(text):
+            if re.search(r"\bIMessageHandler\b", decl.group(2)) is None:
+                continue
+            results.add((enclosing_namespace(text, decl.start()), decl.group(1)))
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 4. 扫描框架外的包处理器实现
+# ---------------------------------------------------------------------------
+
+
+def scan_external_packet_handlers(decls, by_name):
+    """返回 (handlers, warnings)。
+
+    handlers: list of dict(fq, name, iface, register, file, depth)
+      * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 DefaultNetworkChannelHelper
+        显式装配，见 RegisterDefaultHandlers）。
+      * 只取具体类型（跳过 abstract / static）。
+      * 接口判定含继承链，故「派生自框架基类」的游戏侧实现同样能被识别。
+      * 每个类型只按 PACKET_INTERFACE_ORDER 的首个命中接口注册一次，与原扫描的 else-if 一致。
+      * 排序：继承深度浅的在前（后注册者覆盖），同深度按全名排序，保证幂等且「更具体的实现生效」。
+    """
     iface_memo = {}
 
     def resolve_ifaces(name, seen=None):
@@ -412,8 +582,7 @@ def scan_external_packet_handlers():
         if is_under(decl["path"], NETWORK_HELPER_DIR):
             continue
 
-        mods = decl["mods"]
-        if re.search(r"\b(abstract|static)\b", mods):
+        if re.search(r"\b(abstract|static)\b", decl["mods"]):
             # 与原扫描一致：跳过抽象类型（静态类不是可实例化的处理器）
             continue
 
@@ -451,7 +620,7 @@ def scan_external_packet_handlers():
 
 
 # ---------------------------------------------------------------------------
-# 4. 生成
+# 5. 生成
 # ---------------------------------------------------------------------------
 
 HEADER = """// <auto-generated>
@@ -466,18 +635,18 @@ HEADER = """// <auto-generated>
 //     否则运行时注册表会与实际代码不一致。
 //
 //     本文件取代了原先运行时的 Assembly.GetTypes() 全程序集扫描与特性反射读取，
+//     并直接产出强类型处理委托（不再有 MethodInfo / CreateDelegate / GetMethods），
 //     以满足项目铁律 4（运行时杜绝反射）。
 // </auto-generated>
 
 using System;
-using System.Reflection;
 {proto_usings}// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
 {{
     /// <summary>
     /// 协议消息注册表（生成物）。
-    /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法」以及强类型委托工厂，
-    /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性。
+    /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法（直接委托）」，
+    /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性、不再查找方法。
     /// </summary>
     internal static class ProtoMessageRegistry
     {{
@@ -506,8 +675,10 @@ namespace Hotfix.Framework.Network
 {message_registrations}        }}
 
         /// <summary>
-        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 方法名) 清单。
+        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
         /// 共 {handler_type_count} 个类型。
+        /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
+        /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterMessageHandlerMethods()
         {{
@@ -532,32 +703,15 @@ namespace Hotfix.Framework.Network
 
 {external_handler_registrations}        }}
     }}
-
-    /// <summary>
-    /// 消息处理委托工厂（生成部分）。
-    /// 把「消息类型 -&gt; 强类型委托构造」的映射在编译期固化，
-    /// 取代原先 MessageHandlerAttribute 中的 MethodInfo.MakeGenericMethod 运行时反射。
-    /// 手写部分（MessageDelegateFactory.cs）提供 CreateTyped&lt;T&gt; 泛型实现。
-    /// </summary>
-    internal static partial class MessageDelegateFactory
-    {{
-        /// <summary>
-        /// 按消息类型静态分派到 CreateTyped&lt;T&gt;。
-        /// 返回 null 表示消息类型未出现在注册表中（proto 变更后未重新生成），
-        /// 调用方退化为 MethodInfo.Invoke，保证功能可用。
-        /// </summary>
-        internal static Action<IMessageHandler, MessageObject> Create(Type messageType, MethodInfo method, IMessageHandler messageHandler)
-        {{
-{delegate_switch}            return null;
-        }}
-    }}
 }}
 """
 
 
-def build_output(messages, proto_namespaces, handlers, handler_types, manual_message_types, external_handlers):
+def build_output(messages, proto_namespaces, message_type_namespaces, handlers, handler_types, external_handlers):
     # ---- using ----
-    ns_list = sorted(proto_namespaces) if proto_namespaces else [DEFAULT_PROTO_NAMESPACE]
+    ns_list = sorted(set(proto_namespaces) | set(message_type_namespaces))
+    if not ns_list:
+        ns_list = [DEFAULT_PROTO_NAMESPACE]
     proto_usings = "".join("using %s;\n" % ns for ns in ns_list)
     if proto_usings:
         proto_usings += "\n"
@@ -571,7 +725,7 @@ def build_output(messages, proto_namespaces, handlers, handler_types, manual_mes
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
 
-    # ---- 消息处理方法注册 ----
+    # ---- 消息处理方法注册（直接委托）----
     lines = []
     registered_types = []
     for (ns, type_name) in sorted(handlers.keys()):
@@ -582,10 +736,11 @@ def build_output(messages, proto_namespaces, handlers, handler_types, manual_mes
             "            ProtoMessageHandler.RegisterHandlerType(typeof(%s), new[]\n            {\n"
             % full_name
         )
-        for (message_type, method_name) in entries:
+        for entry in entries:
             lines.append(
-                '                new ProtoMessageHandlerMethod(typeof(%s), "%s"),\n'
-                % (message_type, method_name)
+                '                new ProtoMessageHandlerMethod(typeof(%s), "%s",\n'
+                "                    %s),\n"
+                % (entry["message_type"], entry["method_name"], entry["invoke"])
             )
         lines.append("            });\n")
 
@@ -618,23 +773,6 @@ def build_output(messages, proto_namespaces, handlers, handler_types, manual_mes
             "            // 未扫描到框架外的包处理器实现（Framework/Network/Helper/ 之外）。\n"
         )
 
-    # ---- 委托工厂分派 ----
-    delegate_types = []
-    for msg in messages:
-        if msg["type"] not in delegate_types:
-            delegate_types.append(msg["type"])
-    for name in manual_message_types:
-        if name not in delegate_types:
-            delegate_types.append(name)
-
-    lines = []
-    for name in delegate_types:
-        lines.append(
-            "            if (messageType == typeof(%s)) return CreateTyped<%s>(method, messageHandler);\n"
-            % (name, name)
-        )
-    delegate_switch = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
-
     return HEADER.format(
         script="Tools/gen-proto-registry.py",
         proto_usings=proto_usings,
@@ -644,12 +782,11 @@ def build_output(messages, proto_namespaces, handlers, handler_types, manual_mes
         message_registrations=message_registrations,
         handler_registrations=handler_registrations,
         external_handler_registrations=external_handler_registrations,
-        delegate_switch=delegate_switch,
     )
 
 
 # ---------------------------------------------------------------------------
-# 5. 校验
+# 6. 校验
 # ---------------------------------------------------------------------------
 
 
@@ -688,11 +825,12 @@ def main() -> int:
     print("[gen-proto-registry] 扫描 proto: %s" % PROTO_DIR)
 
     messages, proto_namespaces, proto_warnings = scan_proto_messages()
-    handlers, manual_message_types, handler_warnings = scan_message_handler_methods()
+    decls, by_name = scan_class_index()
+    handlers, msg_ns, handler_errors, handler_warnings = scan_message_handler_methods(by_name)
     handler_types = scan_message_handler_types()
-    external_handlers, external_warnings = scan_external_packet_handlers()
+    external_handlers, external_warnings = scan_external_packet_handlers(decls, by_name)
 
-    errors = validate(messages)
+    errors = validate(messages) + handler_errors
     warnings = proto_warnings + handler_warnings + external_warnings
 
     for w in warnings:
@@ -700,11 +838,11 @@ def main() -> int:
     for e in errors:
         print("[错误] %s" % e)
     if errors:
-        print("[gen-proto-registry] 生成中止：注册表存在冲突，请先修复协议定义。")
+        print("[gen-proto-registry] 生成中止：请先修复上述问题（生成物未更新）。")
         return 1
 
     content = build_output(
-        messages, proto_namespaces, handlers, handler_types, manual_message_types, external_handlers
+        messages, proto_namespaces, msg_ns, handlers, handler_types, external_handlers
     )
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
@@ -721,7 +859,7 @@ def main() -> int:
         )
     )
     for h in external_handlers:
-        print("    [外部处理器] %-28s %s  (%s)" % (h["iface"], h["fq"], h["depth"]))
+        print("    [外部处理器] %-28s %s  (depth=%s)" % (h["iface"], h["fq"], h["depth"]))
     return 0
 
 
