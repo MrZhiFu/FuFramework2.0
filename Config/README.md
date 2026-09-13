@@ -1,30 +1,42 @@
-# Luban
+# Config 配置表
 
-![icon](docs/images/logo.png)
+本目录是**项目配置表的源数据与生成入口**（基于 [Luban](https://github.com/focus-creative-games/luban)，MIT 许可）。
 
-[![license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT) ![star](https://img.shields.io/github/stars/focus-creative-games/luban?style=flat-square)
+> **Luban 工具本体**（源码 / 构建脚本 / 可执行产物）已移至 **`Tools/Luban/`** —— 详见 `Tools/Luban/README.md`。
 
-luban是一个强大、易用、优雅、稳定的游戏配置解决方案。它设计目标为满足从小型到超大型游戏项目的简单到复杂的游戏配置工作流需求。
+---
 
-luban可以处理丰富的文件类型，支持主流的语言，可以生成多种导出格式，支持丰富的数据检验功能，具有良好的跨平台能力，并且生成极快。
-luban有清晰优雅的生成管线设计，支持良好的模块化和插件化，方便开发者进行二次开发。开发者很容易就能将luban适配到自己的配置格式，定制出满足项目要求的强大的配置工具。
+## 目录结构
 
-luban标准化了游戏配置开发工作流，可以极大提升策划和程序的工作效率。
+| 项 | 说明 |
+|---|---|
+| `Defines/` | 表结构定义（schema，XML） |
+| `Excels/` | 配置源数据（`.xlsx`） |
+| `luban.conf` | Luban 工程配置：表定义、数据目录、导出目标（`client` / `server`） |
+| `gen-*.bat` / `gen-*.sh` | 生成脚本（见下） |
+| `配置表定义相关说明/` | 表定义相关的图文说明 |
 
-## 核心特性
+## 生成脚本
 
-- 丰富的源数据格式。支持excel族(csv,xls,xlsx,xlsm)、json、xml、yaml、lua等
-- 丰富的导出格式。 支持生成binary、json、bson、xml、lua、yaml等格式数据
-- 增强的excel格式。可以简洁地配置出像简单列表、子结构、结构列表，以及任意复杂的深层次的嵌套结构
-- 完备的类型系统。不仅能表达常见的规范行列表，由于**支持OOP类型继承**，能灵活优雅表达行为树、技能、剧情、副本之类复杂GamePlay数据
-- 支持多种的语言。内置支持生成c#、java、go、cpp、lua、python、typescript、rust、php、erlang 等语言代码，同时还能通过protobuf之类消息方案支持其他语言
-- 支持主流的消息方案。 protobuf(schema + binary + json)、flatbuffers(schema + json)、msgpack(binary)
-- 强大的数据校验能力。ref引用检查、path资源路径、range范围检查等等
-- 完善的本地化支持
-- 支持所有主流的游戏引擎和平台。支持Unity、Unreal、Cocos2x、Godot、微信小游戏等
-- 良好的跨平台能力。能在Win,Linux,Mac平台良好运行。
-- 支持所有主流的热更新方案。hybridclr、ilruntime、{x,t,s}lua、puerts等
-- 清晰优雅的生成管线，很容易在luban基础上进行二次开发，定制出适合自己项目风格的配置工具。
+**必须在 `Config/` 目录下运行**（脚本以相对路径引用 `./Luban.conf` 与 `../Tools/Luban/bin/Luban.dll`）。
+
+| 脚本 | 目标 | 数据产出 | 代码产出 |
+|---|---|---|---|
+| `gen-client-bin.bat` / `.sh` | 客户端 | `Unity/Assets/Bundles/Config` | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/{Generate,LanguageKey}` |
+| `gen-client-json.bat` / `.sh` | 客户端 | 同上（JSON 变体） | 同上 |
+| `gen-server-bin.bat` / `.sh` | 服务端 | `Server/FuFramework.Config/Json` | `Server/FuFramework.Config/Config` |
+| `gen-server-json.bat` / `.sh` | 服务端 | 同上（JSON 变体） | 同上 |
+
+**前置**：一般**无需构建**（`Tools/Luban/bin/Luban.dll` 已入库）；仅当改动过 Luban 源码时，先跑 `Tools/Luban/build-luban.bat` 重新构建。
+
+## 工作流（改表）
+
+1. 编辑 `Excels/*.xlsx`（如涉及结构变更，同时改 `Defines/`）；
+2. 在 `Config/` 下运行对应的 `gen-*.bat`；
+3. 回 Unity 触发重新编译；
+4. 提交生成的代码与数据。
+
+---
 
 ## 修改和增加
 
@@ -92,18 +104,12 @@ C-Achievement-s-成就表-AAA-BBB.xlsx => `Tb`Achievement, 当前导出目标为
 
 C-Achievement-c-成就表-AAA-BBB-CCC.xlsx => `Tb`Achievement, 当前导出目标为 `c` 时才会导出
 
-## 文档
+## 上游参考
 
-- [官方文档](https://luban.doc.code-philosophy.com/)
-- [快速上手](https://luban.doc.code-philosophy.com/docs/beginner/quickstart)
-- **示例项目** ([github](https://github.com/focus-creative-games/luban_examples)) ([gitee](https://gitee.com/focus-creative-games/luban_examples))
+- Luban 官方文档：<https://luban.doc.code-philosophy.com/>
+- 上游源码（本项目检出）：`Tools/Luban/source/`（含其 `README.md`、`LICENSE`）
+- 示例项目：<https://github.com/focus-creative-games/luban_examples>
 
-## 支持与联系
+## License
 
-- QQ群: 692890842 （Luban开发交流群）
-- discord: https://discord.gg/dGY4zzGMJ4
-- 邮箱: luban@code-philosophy.com
-
-## license
-
-Luban is licensed under the [MIT](https://github.com/focus-creative-games/luban/blob/main/LICENSE) license
+Luban 采用 [MIT](https://github.com/focus-creative-games/luban/blob/main/LICENSE) 许可。

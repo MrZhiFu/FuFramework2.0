@@ -1,4 +1,4 @@
-dotnet ./Tools/Luban/Luban.dll \
+dotnet ../Tools/Luban/bin/Luban.dll \
     -t client \
     -d bin \
     -c cs-bin \
