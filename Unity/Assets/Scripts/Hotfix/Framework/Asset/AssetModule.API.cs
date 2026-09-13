@@ -203,7 +203,8 @@ namespace Hotfix.Framework.Asset
         /// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
         /// 返回 InstantiateResult（携带实例与创建时生命周期代数）：重启（OnDispose/重新初始化）后
         /// 旧生命周期存活的实例调用 ReleaseInstantiate 会被代际校验识别并忽略，杜绝误释放新生命周期同路径引用。
-        /// 注意：同步/异步首次实例化请勿混用同一路径（首次加载去重仅覆盖异步路径）。
+        /// 注意：句柄按路径在 m_InstantiateRefDict 中登记并引用计数，释放权唯一归属该计数；
+        /// 并发首次实例化时各调用方各自加载，多加载出的句柄在登记后立即释放（YooAsset 按 provider 去重，不会重复 IO）。
         /// </summary>
         /// <param name="path">资源路径</param>
         /// <param name="token">取消令牌</param>
@@ -217,57 +218,45 @@ namespace Hotfix.Framework.Asset
             AssetHandle assetHandle;
             if (m_InstantiateRefDict.TryGetValue(path, out var entry))
             {
+                // 快路径：已登记则直接复用，不触碰 YooAsset
                 entry.RefCount++;
                 assetHandle = entry.Handle;
             }
             else
             {
-                // 并发首次加载去重：共享完成源（UniTaskCompletionSource.Task 可被多个调用方 await）
-                if (!m_InstantiateLoadingTasks.TryGetValue(path, out var sharedSource))
-                {
-                    sharedSource                    = new UniTaskCompletionSource<AssetHandle>();
-                    m_InstantiateLoadingTasks[path] = sharedSource;
-                    LoadAsyncForInstantiate(path, sharedSource, capturedToken, token).Forget();
-                }
+                // 每个调用方各自加载并持有自己的句柄（不用模块级共享句柄）：
+                // YooAsset 按 provider 去重（同路径并发加载复用同一 provider 与其加载操作，不会重复 IO），
+                // 而共享一个句柄会让「谁有权释放」失去归属者——首个恢复的等待者会先释放，后恢复的等待者此时
+                // 尚未登记，于是拿到一个已失效的句柄而假失败。各自持有后，取消只减少自己那份引用计数，
+                // 物理上不可能牵连其他调用方。
+                var loadedHandle = await LoadAssetAsync(path, token);
 
-                assetHandle = await sharedSource.Task;
-
-                // 模块销毁/生命周期变更/调用方取消后：句柄可能已被释放，不得再写回引用字典
+                // 模块销毁/生命周期变更/调用方取消：释放本次句柄，不登记、不实例化
                 if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
-                    // 仅当该句柄尚未被任何等待者登记进引用字典时才由本调用方释放：
-                    // 共享加载只产出这一个句柄（引用计数 1），一旦有等待者登记，释放权即归 m_InstantiateRefDict 的引用计数；
-                    // 此处无条件 Release 会把它从其他仍存活的调用方手中抽走，导致其 InstantiateAsync 因句柄失效而假失败
-                    var adopted = m_InstantiateRefDict.TryGetValue(path, out var adoptedEntry)
-                               && ReferenceEquals(adoptedEntry.Handle, assetHandle);
-                    if (!adopted && assetHandle is { IsValid: true })
-                    {
-                        assetHandle.Release();
+                    loadedHandle.Release();
 
-                        // 中止路径（调用方取消/跨生命周期）：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，
-                        // 配对 UnloadAsset 防该 prefab 的 bundle 常驻（新生命周期不再加载同路径时永不释放）
-                        UnloadAsset(path);
-                    }
-
+                    // 加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留；
+                    // 若其他调用方仍持有同一 provider（各自的句柄），引用计数 >0，此次卸载会被安全跳过
+                    UnloadAsset(path);
                     throw new OperationCanceledException(capturedToken);
                 }
 
-                // 加载完成后写入引用；若期间被并发请求写入则复用
+                // 加载期间可能已被并发请求登记：复用其句柄，并释放本次多加载出来的那一份，使引用计数归位
                 if (m_InstantiateRefDict.TryGetValue(path, out var existing))
                 {
                     existing.RefCount++;
-                    // 复用并发写入的条目：若句柄不同（共享源已移除后被重建，见 LoadAsyncForInstantiate finally 移除），
-                    // 释放本次加载的句柄，避免其 provider 引用计数永久残留
-                    if (!ReferenceEquals(existing.Handle, assetHandle))
+                    if (!ReferenceEquals(existing.Handle, loadedHandle))
                     {
-                        assetHandle.Release();
+                        loadedHandle.Release();
                     }
 
                     assetHandle = existing.Handle;
                 }
                 else
                 {
-                    m_InstantiateRefDict[path] = new InstantiateRef { Handle = assetHandle, RefCount = 1 };
+                    m_InstantiateRefDict[path] = new InstantiateRef { Handle = loadedHandle, RefCount = 1 };
+                    assetHandle = loadedHandle;
                 }
             }
 

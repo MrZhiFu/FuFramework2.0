@@ -36,14 +36,6 @@ namespace Hotfix.Framework.Asset
         private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
 
         /// <summary>
-        /// 实例化首次加载去重字典，key 为资源路径，value 为共享完成源。
-        /// 同一路径并发首次实例化共享完成源（UniTaskCompletionSource.Task 可被多个调用方 await），
-        /// 防止同一 pending 任务被二次 await 抛 "Already continuation registered"，
-        /// 也保证同一路径仅加载一次、仅产生一个句柄。
-        /// </summary>
-        private readonly Dictionary<string, UniTaskCompletionSource<AssetHandle>> m_InstantiateLoadingTasks = new();
-
-        /// <summary>
         /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
         /// </summary>
         public CancellationToken Token => m_Scope.Token;
@@ -85,10 +77,8 @@ namespace Hotfix.Framework.Asset
 
             m_InstantiateRefDict.Clear();
 
-            // 清理在途实例化加载任务（模块已销毁，任务完成回调会经 Token 取消检查自行释放句柄，不得再写回引用字典）。
             // 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
             // 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
-            m_InstantiateLoadingTasks.Clear();
         }
 
         /// <summary>
@@ -126,60 +116,6 @@ namespace Hotfix.Framework.Asset
             catch (Exception e)
             {
                 FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 首次实例化共享加载：同一路径多个并发调用方 await 同一完成源，共享单个句柄。
-        /// 加载完成或失败后向完成源写入结果并移除去重项；模块销毁/生命周期变更时释放句柄并向等待方抛异常。
-        /// </summary>
-        /// <param name="path">资源路径</param>
-        /// <param name="sharedSource">共享完成源</param>
-        /// <param name="capturedToken">发起时捕获的生命周期 Token（旧 Token 被 OnDispose 取消或已换成新 Token 即识别为旧生命周期）。</param>
-        /// <param name="callerToken">调用方取消令牌（如窗口关闭），取消时中止加载。</param>
-        private async UniTaskVoid LoadAsyncForInstantiate(string path, UniTaskCompletionSource<AssetHandle> sharedSource, CancellationToken capturedToken, CancellationToken callerToken)
-        {
-            AssetHandle handle = null;
-            try
-            {
-                handle = await LoadAssetAsync(path, callerToken);
-
-                // YooAsset await 不抛异常：资源加载失败时返回的是 Failed 句柄，必须显式校验 Status 并释放，
-                // 否则 Failed 句柄流入引用字典（依赖下游 InstantiateAsync 失败才兜底释放，绕路且隐蔽）。
-                if (handle is not { Status: EOperationStatus.Succeeded })
-                {
-                    if (handle is { IsValid: true }) handle.Release();
-                    sharedSource.TrySetException(new InvalidOperationException($"[AssetModule]资源{path}加载失败"));
-                    return;
-                }
-
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || callerToken.IsCancellationRequested)
-                {
-                    if (handle.IsValid)
-                    {
-                        handle.Release();
-
-                        // 中止路径（调用方取消/跨生命周期）：加载成功的句柄仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
-                        UnloadAsset(path);
-                    }
-
-                    sharedSource.TrySetException(new OperationCanceledException(capturedToken));
-                    return;
-                }
-
-                sharedSource.TrySetResult(handle);
-            }
-            catch (Exception e)
-            {
-                if (handle is { IsValid: true }) handle.Release();
-                sharedSource.TrySetException(e);
-            }
-            finally
-            {
-                // 跨生命周期防护：仅当共享源仍是本任务注册的条目时才移除，防止旧生命周期在途任务的
-                // finally 误删新生命周期（重新初始化后）同路径刚注册的去重项，导致后续并发请求重复发起加载
-                if (m_InstantiateLoadingTasks.TryGetValue(path, out var current) && ReferenceEquals(current, sharedSource))
-                    m_InstantiateLoadingTasks.Remove(path);
             }
         }
 
