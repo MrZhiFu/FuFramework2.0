@@ -27,7 +27,7 @@
 | `gen-server-bin.bat` / `.sh` | 服务端 | `Server/FuFramework.Config/Json` | `Server/FuFramework.Config/Config` |
 | `gen-server-json.bat` / `.sh` | 服务端 | 同上（JSON 变体） | 同上 |
 
-**前置**：一般**无需构建**（`Tools/Luban/bin/Luban.dll` 已入库）；仅当改动过 Luban 源码时，先跑 `Tools/Luban/build-luban.bat` 重新构建。
+**前置**：通常无需额外操作——脚本会在 `Tools/Luban/bin/Luban.dll` 缺失时（换机 / 新 clone）**自动先构建**（约数秒）；仅当**改动过 Luban 源码**时，才需手动跑 `Tools/Luban/build-luban.bat` 重建。
 
 ## 工作流（改表）
 

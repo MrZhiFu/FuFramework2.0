@@ -13,19 +13,23 @@
 | 目录 / 文件 | 说明 |
 |---|---|
 | `source/` | Luban 上游源码：`src/`（各 .NET 工程）、`docs/`、`scripts/`、`Tools/`、`LICENSE`、`README*.md` |
-| `bin/` | 由 `source/src` 构建出的可执行产物（`Luban.dll` 等）。**已入库**——不改源码时可直接使用，无需构建 |
-| `build-luban.bat` / `.sh` | 从 `source/src` **重新构建**到 `bin/` |
+| `bin/` | 由 `source/src` 构建出的可执行产物（`Luban.dll` 等）。**不入库**（已 gitignore）——**换机/新 clone 后需构建一次**（见下） |
+| `build-luban.bat` / `.sh` | 从 `source/src` 构建到 `bin/`（会**先清空 `bin/` 再重建**） |
 
-## 构建（仅在改动 Luban 源码时需要）
+## 构建
+
+**通常无需手动构建**：`Config/gen-*.bat/.sh` 会在检测到 `bin/Luban.dll` **缺失时自动先构建**（换机 / 新 clone 后直接跑生成脚本即可）。
+
+仅当**改动了 Luban 源码**时，需要手动重建：
 
 ```bat
-:: Windows（双击或命令行）
+:: Windows（双击或命令行；末尾加 ci 可免 pause，供脚本调用）
 Tools\Luban\build-luban.bat
 ```
 ```bash
 bash Tools/Luban/build-luban.sh
 ```
-> 构建会**先清空 `bin/` 再重建**。
+> `bin/` 不入库，故重建**不会**产生 git 变更。
 
 ## 使用
 

@@ -1,3 +1,8 @@
+if [ ! -f ../Tools/Luban/bin/Luban.dll ]; then
+    echo "[Luban] bin/Luban.dll not found, building first ..."
+    bash ../Tools/Luban/build-luban.sh
+fi
+
 dotnet ../Tools/Luban/bin/Luban.dll \
     -t client \
     -d json \

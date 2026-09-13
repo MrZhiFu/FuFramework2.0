@@ -1,3 +1,10 @@
+@echo off
+rem Build Luban first if the binary is missing (fresh clone / other machine).
+if not exist "..\Tools\Luban\bin\Luban.dll" (
+    echo [Luban] bin/Luban.dll not found, building first ...
+    call "..\Tools\Luban\build-luban.bat" ci
+)
+
 dotnet ../Tools/Luban/bin/Luban.dll ^
     -t client ^
     -d bin ^
