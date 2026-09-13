@@ -14,7 +14,7 @@
 | `Excels/` | 配置源数据（`.xlsx`） |
 | `luban.conf` | Luban 工程配置：表定义、数据目录、导出目标（`client` / `server`） |
 | `gen-*.bat` / `gen-*.sh` | 生成脚本（见下） |
-| `配置表定义相关说明/` | 表定义相关的图文说明 |
+| `配置表定义相关说明/` | 表定义相关的图文说明（内容已整理为下方「配置表定义参考」一节） |
 
 ## 生成脚本
 
@@ -35,6 +35,86 @@
 2. 在 `Config/` 下运行对应的 `gen-*.bat`；
 3. 回 Unity 触发重新编译；
 4. 提交生成的代码与数据。
+
+## 配置表定义参考
+
+> 本节为 `配置表定义相关说明/` 下 4 张图的**文本整理**（原图见该目录）。
+> 对应数据文件：`Excels/__enums__.xlsx`（枚举）、`Excels/__beans__.xlsx`（类结构）、`Excels/__tables__.xlsx`（表）。
+
+### 1. 基本数据类型与容器类型
+
+| 类型 | 说明 |
+|---|---|
+| `byte` | 对应 C# 的 `byte`（uint8_t）；可填空，自动赋默认值 |
+| `short` | 对应 C# 的 `short`（int16_t）；可填空，自动赋默认值 |
+| `int` | 对应 C# 的 `int`（int32_t）；可填空，自动赋默认值 |
+| `long` | 对应 C# 的 `long`（int64_t）；可填空，自动赋默认值 |
+| `float` | 对应 C# 的 `float`；可填空，自动赋默认值 |
+| `double` | 对应 C# 的 `double`；可填空，自动赋默认值 |
+| `bool` | `true` / `false` / `0` / `1` 都能识别，**大小写不敏感**（如 `True`、`TRUE` 亦有效）；可填空，自动赋默认值 |
+| `string` | 对应 C# 的 `string`；可填空，自动赋默认值 |
+| `text` | 本地化（多语言 key）；可填空，自动赋默认值 |
+| `datetime` | 对应 C# 的 `long`，值为自 UTC `1970-01-01 00:00:00` 起的**秒数**；**不可填空**。数据格式：`yyyy-mm-dd hh:mm:ss`，或 `yyyy-mm-dd hh:mm`（自动补秒 0）、`yyyy-mm-dd hh`（自动补时分秒 0）、`yyyy-mm-dd`（补 0） |
+
+**容器类型**（`#sep` 为元素分隔符）：
+
+| 类型 | 生成的 C# 类型 | 数据格式 |
+|---|---|---|
+| `(array#sep),T` | `T[]` | `1,2,3,4` |
+| `(list#sep),T` | `List<T>` | `1,2,3,4` |
+| `(set#sep),T` | `HashSet<T>`（要求元素唯一） | `1,2,3,4` |
+| `(map#sep),T` | `Dictionary<K,V>`（要求键唯一） | `1:1,2:3` |
+
+> **可空**：基本类型与自定义类型都支持可空类型，语法 `<类型>?`（如 `int?`、`Color?`，与 C# 相同）；**容器类型不支持可空**，其 key / value 也不支持可空。
+
+### 2. 枚举类型（`Excels/__enums__.xlsx`）
+
+每个枚举一段，`##var` 行为字段说明、`##` 行起为数据：
+
+| 字段 | 说明 |
+|---|---|
+| `full_name` | 枚举**全名**（含模块与名字），如 `item.EQuality` |
+| `flags` | 是否为**位标记**枚举（每个枚举项为位标记数据，例如 `System.IO.FileMode` 填数据时可以 `READ\|WRITE` 这样表达） |
+| `unique` | 枚举项是否唯一 |
+| `group` / `comment` / `tags` | 分组 / 注释 / 标签 |
+| `items` 下：`name` / `alias` / `value` / `comment` / `tags` | 枚举名 / 别名 / 值 / 注释 / 标签 |
+
+示例：
+- `item.EQuality`（`flags=false`、`unique=true`）：`WHITE`=1（白/最差品质）、`BLUE`=2（蓝/蓝色的）、`PURPLE`=3（紫/紫色的）、`RED`=4（红/最高品质）
+- `test.AccessFlag`（`flags=true`、`unique=true`）：`WRITE`=1、`READ`=2、`TRUNCATE`=4、`NEW`=8、`READ_WRITE`=（`WRITE\|READ`，位标记使用示例）
+
+### 3. 类结构类型（`Excels/__beans__.xlsx`）
+
+| 字段 | 说明 |
+|---|---|
+| `full_name` | 结构**全名**（含模块与名字），如 `Property` |
+| `parent` | 父类（支持继承） |
+| `valueType` | 值类型标记 |
+| `sep` | 分割符（用于该结构的紧凑格式中分隔字段） |
+| `alias` / `comment` / `group` / `tags` | 别名 / 注释 / 分组 / 标签 |
+| `fields` 下：`name` / `alias` / `type` / `group` / `comment` / `tags` / `variants` | 字段名 / 字段别名 / 类型 / 分组 / 注释 / 标签 / 字段变体 |
+
+示例：
+- `Property`（别名「属性」）：字段 `PhysicalAttack`（int，物理攻击）、`MagicAttack`（int，魔法攻击）、`PhysicalDefense`（int，物理防御）、`MagicDefense`（int，魔法防御）、`Life`（int，生命值）、`Crit`（int，暴击）、`burstDamage`（int，爆伤）、`precise`（int，精准）、`block`（int，格挡）
+- `PropItem`（分割符 `;`）：`Id`（int，道具id）、`Count`（int，道具数量）
+
+### 4. 复杂类型（类 / 容器）的紧凑格式
+
+在**标题头**上以 `#format=xxx` 指定该列的解析格式（三选一：`lite` / `json` / `lua`）。
+
+**`lite` 格式（推荐）**：luban 独有，**无字段名**，比 json / lua 更简洁且解析更高效，适合非常复杂的嵌套结构。指定方式：`position#format=lite`。
+- `vec3` 数据 `(1.0,2.0,3.0)` → `{1.0, 2.0, 3.0}`
+- `class User{ int id; string name; vec3 pos; }` → `{1, xxxx, {1,2,3}}`
+
+**`json` 格式**：指定方式：`position#format=json`。
+- `vec3` `(1.0,2.0,3.0)` → `{"x":1.0, "y":2.0, "z":3.0}`
+- `User` → `{"id":1, "name":"xxxx", "pos":{"x":1, "y":2, "z":3}}`
+
+**`lua` 格式**：指定方式：`position#format=lua`。
+- `vec3` `(1.0,2.0,3.0)` → `{x=1.0, y=2.0, z=3.0}`
+- `User` → `{id=1, name="xxxx", pos={x=1, y=2, z=3}}`
+
+> 实践建议：**简单**复合数据用流式格式，**复杂**复合数据用 `lite`，仅在必要时才用 `json` / `lua`。
 
 ---
 
