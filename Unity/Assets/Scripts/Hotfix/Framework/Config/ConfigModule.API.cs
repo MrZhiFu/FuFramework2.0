@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
@@ -27,7 +26,15 @@ namespace Hotfix.Framework.Config
         /// <summary>
         /// 获取所有配置表名称。
         /// </summary>
-        public string[] CfgNames => m_CfgDataDict.Keys.ToArray();
+        public string[] CfgNames
+        {
+            get
+            {
+                var names = new string[m_CfgDataDict.Count];
+                m_CfgDataDict.Keys.CopyTo(names, 0);
+                return names;
+            }
+        }
 
         /// <summary>
         /// 获取指定配置表。
