@@ -74,6 +74,8 @@ UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, Cancel
 > 固定自动激活（`LocalPhysicsMode.None`），未开放自定义。
 > `onProgress`：加载进度回调（0~1），每帧上报一次直至加载完成；不需要进度时传 `null`。
 > 加载失败时内部释放句柄并抛异常，调用方无需也无法释放失败句柄。
+> **已知边界（有意保留，未修改）**：取消与失败路径**只 `Release()` 句柄、不调 `UnloadAsset`**（场景 bundle 的生命周期交由 SceneManager/YooAsset 管理，与资源侧不对称）。而 YooAsset 的场景 `providerKey` **每次加载都唯一**（`$"{AssetKey}-{++实例序号}"`，见 `ResourceManager.cs:174`），故取消/失败后该 SceneProvider 引用计数为 0 **却仍留在 provider 表中并持有共享的 bundle loader**，只能靠后续同路径的 `UnloadAsset` 或整包销毁回收。后果：取消或失败一次场景加载，若其 bundle 已加载成功（失败点在场景句柄级而非 bundle 级），该 bundle 会**驻留到整包销毁**。
+> —— 属「驻留」而非「泄漏」（最终仍会被回收），且贸然补 `UnloadAsset` 可能影响「场景重载命中缓存」一类行为，故仅记录、暂不修改。
 
 ##### 实例化
 
