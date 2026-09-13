@@ -152,6 +152,11 @@ namespace Hotfix.Framework.Download
 
         private void Reset()
         {
+            foreach (var downloadCounterNode in m_DownloadCounterNodeList)
+            {
+                ReferencePool.Recycle(downloadCounterNode);
+            }
+
             m_DownloadCounterNodeList.Clear();
             CurrentSpeed  = 0f;
             m_Accumulator = 0f;

@@ -120,10 +120,16 @@ namespace Hotfix.Framework.Guide
         }
 
         /// <summary>
-        /// 取消步骤
+        /// 取消步骤。
+        /// 已完成的步骤直接返回：Complete() 在置为 Completed 后会调用 JumpToStep(NextStepId)，
+        /// 而 JumpToStep 会对「当前步」再调一次 Cancel()；若此处把 Completed 覆写为 Cancelled，
+        /// 该步的 IsCompleted 将恒为 false，且会多触发一次 OnCancel（如 ClickUIStep 会多走一遍
+        /// 解绑 / EndClickUIGuide）。取消语义只对「尚未完成」的步骤有意义。
         /// </summary>
         public void Cancel()
         {
+            if (State == EStepState.Completed) return;
+
             State = EStepState.Cancelled;
             OnCancel();
         }

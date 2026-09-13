@@ -33,9 +33,24 @@ namespace Hotfix.Framework.ObjectPool
         private readonly List<T> m_CachedCanDisposeObjectList;
 
         /// <summary>
-        /// 缓存经过筛选函数后最终决定要销毁的对象列表。
+        /// 缓存默认销毁筛选函数返回的待销毁对象列表（仅由 DefaultDisposeObjectFilterCallback 写入）。
+        /// 调用方读取后必须立即拷贝到自己的快照列表中再遍历，避免嵌套重入时被清空而破坏遍历。
         /// </summary>
         private readonly List<T> m_CachedToDisposeObjectList;
+
+        /// <summary>
+        /// 本池专属的“本轮待销毁对象”快照字段（正常路径零分配）。
+        /// 与筛选函数返回值字段 m_CachedToDisposeObjectList 分离：后者会被筛选函数反复 Clear/重填，
+        /// 若共用会在嵌套重入时破坏正在遍历的列表。该字段仅在非重入时复用；发生嵌套重入
+        /// （OnDispose 内再次进入销毁流程，如回收超容量）时由 BeginTodoSnapshot 改用局部列表，
+        /// 避免覆写外层正在遍历的同一字段。
+        /// </summary>
+        private readonly List<T> m_CachedTodoSnapshot;
+
+        /// <summary>
+        /// 快照字段 m_CachedTodoSnapshot 是否正被销毁遍历占用（用于识别嵌套重入）。
+        /// </summary>
+        private bool m_TodoSnapshotInUse;
 
         /// <summary>
         /// 默认销毁对象的筛选函数(销毁策略)。定义了如何从候选列表中选出要销毁的对象（基于优先级和最后使用时间）。
@@ -103,13 +118,20 @@ namespace Hotfix.Framework.ObjectPool
 
         /// <summary>
         /// 获取对象池中能被销毁的对象的数量。
+        /// 只读统计，不复用 m_CachedCanDisposeObjectList 共享缓存（该缓存会被销毁流程反复 Clear/重填，
+        /// 读属性直接改写会踩掉其他流程正在使用的数据），改为独立计数遍历。
         /// </summary>
         public override int CanDisposeCount
         {
             get
             {
-                GetCanDisposeObjects(m_CachedCanDisposeObjectList);
-                return m_CachedCanDisposeObjectList.Count;
+                var count = 0;
+                foreach (var (_, obj) in m_TargetObjectDict)
+                {
+                    if (IsCanDisposeObject(obj)) count++;
+                }
+
+                return count;
             }
         }
 
@@ -162,6 +184,7 @@ namespace Hotfix.Framework.ObjectPool
             m_DefaultDisposeObjectFilterCallback = DefaultDisposeObjectFilterCallback;
             m_CachedCanDisposeObjectList         = new List<T>();
             m_CachedToDisposeObjectList          = new List<T>();
+            m_CachedTodoSnapshot                 = new List<T>();
 
             AllowSpawnInUse     = allowSpawnInUse;
             AutoDisposeCheckInterval = autoDisposeCheckInterval;
@@ -185,7 +208,10 @@ namespace Hotfix.Framework.ObjectPool
             // 每隔 AutoDisposeCheckInterval 秒触发一次自动销毁检查
             if (m_AutoDisposeTimer >= AutoDisposeCheckInterval)
             {
-                m_AutoDisposeTimer = 0f;
+                // 减去一个检查间隔而非直接清零：把余数留到下一次累加，消除检查间隔漂移。
+                // 计时器只在这一次检查完成后推进，其他流程（Dispose/DisposeAllUnused）不得重置，
+                // 否则持续回收会让自动销毁检查被反复推迟（饿死）。
+                m_AutoDisposeTimer = Mathf.Max(0f, m_AutoDisposeTimer - AutoDisposeCheckInterval);
 
                 if (Count > m_Capacity)
                 {
@@ -212,8 +238,23 @@ namespace Hotfix.Framework.ObjectPool
                 objects.Add(obj);
             }
 
+            // 先统计处于使用中的对象数量，再汇总成一条告警：
+            // 正常退出（EntityModule/UIModule teardown 时实体/界面仍存活）会有大量在用对象，
+            // 逐条告警会刷屏淹没真正的告警，这里只提示总量。
+            var inUseCount = 0;
             foreach (var obj in objects)
             {
+                if (obj.IsInUse) inUseCount++;
+            }
+
+            if (inUseCount > 0)
+            {
+                FuLogger.LogWarning($"[ObjectPoolModule] 对象池 {Name} 关闭时仍有 {inUseCount} 个对象处于使用中，将被强制回收（存在未归还对象，请检查回收时序）。");
+            }
+
+            foreach (var obj in objects)
+            {
+                // 使用中的对象也会被强制回收（否则这些对象会残留在引用池外、无法清理）
                 try
                 {
                     obj.OnDispose();
@@ -240,6 +281,8 @@ namespace Hotfix.Framework.ObjectPool
             m_TargetObjectDict.Clear();
             m_CachedCanDisposeObjectList.Clear();
             m_CachedToDisposeObjectList.Clear();
+            m_CachedTodoSnapshot.Clear();
+            m_TodoSnapshotInUse = false;
         }
     }
 }

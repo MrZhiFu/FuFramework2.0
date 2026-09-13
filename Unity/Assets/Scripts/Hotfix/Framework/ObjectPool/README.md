@@ -379,7 +379,7 @@ public class BulletObject : ObjectBase
     /// </summary>
     public static BulletObject Create(string name, GameObject bulletPrefab)
     {
-        var bulletObject = GlobalModule.ReferencePoolModule.Acquire<BulletObject>();
+        var bulletObject = ReferencePool.Acquire<BulletObject>();
         var bulletInstance = Object.Instantiate(bulletPrefab);
         bulletInstance.name = name;
 
@@ -630,7 +630,7 @@ ObjectPool/
 | 模块                        | 说明                                               |
 | ------------------------- | ------------------------------------------------ |
 | Hotfix.Framework.Core          | 提供 ModuleBase 基类、TypeNamePair、FuLogger |
-| Hotfix.Framework.ReferencePool | 提供 IReference 接口，通过 `GlobalModule.ReferencePoolModule` 访问引用池 |
+| Hotfix.Framework.ReferencePool | 提供 IReference 接口，通过 `ReferencePool` 访问引用池 |
 
 > 使用对象池前必须先注册 `ObjectPoolModule`（`HotfixLauncher.RegisterBaseModules()` 已保证），通过 `GlobalModule.ObjectPoolModule` 访问。
 
@@ -642,7 +642,7 @@ ObjectPool/
 using Hotfix.Framework.Core;
 
 // 1. 使用引用池模块创建对象（避免 GC）
-var obj = GlobalModule.ReferencePoolModule.Acquire<MyObject>();
+var obj = ReferencePool.Acquire<MyObject>();
 
 // 2. 在 OnDispose 中销毁 GameObject，在 Clear 中清理引用
 protected internal override void OnDispose()
@@ -755,8 +755,8 @@ public static class GameObjectPool
 
 ```csharp
 // 引用池：Acquire 获取（池空自建）、Recycle 回收
-var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
-GlobalModule.ReferencePoolModule.Recycle(msg);
+var msg = ReferencePool.Acquire<NetworkMessage>();
+ReferencePool.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
 pool.Register(obj, true);

@@ -63,6 +63,18 @@ namespace Hotfix.Framework.Sound
         private readonly HashSet<int> m_LoadingToReleaseSet = new();
 
         /// <summary>
+        /// 由模块内部创建、所有权归模块的 SoundParams 集合。
+        /// 用于区分参数来源：仅模块自身 Acquire 创建的参数由模块负责回收；
+        /// 调用方传入的 SoundParams 所有权归调用方，模块不回收（避免回收调用方仍在复用的对象）。
+        /// </summary>
+        private readonly HashSet<SoundParams> m_OwnedSoundParams = new();
+
+        /// <summary>
+        /// 由模块内部创建、所有权归模块的 SoundParams3D 集合（用途同 m_OwnedSoundParams）。
+        /// </summary>
+        private readonly HashSet<SoundParams3D> m_OwnedSoundParams3D = new();
+
+        /// <summary>
         /// 资源管理模块
         /// </summary>
         private AssetModule m_AssetModule;
@@ -172,6 +184,9 @@ namespace Hotfix.Framework.Sound
             m_SoundGroupDict.Clear();
             m_LoadingSoundList.Clear();
             m_LoadingToReleaseSet.Clear();
+            // 丢弃所有权登记（对应参数对象已在上述取消/回收路径归还，或随重启一并作废），避免跨重启残留引用
+            m_OwnedSoundParams.Clear();
+            m_OwnedSoundParams3D.Clear();
 
             SceneManager.sceneLoaded   -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
@@ -296,6 +311,36 @@ namespace Hotfix.Framework.Sound
         #region 播放声音
 
         /// <summary>
+        /// 创建并登记一个所有权归模块的 3D 播放参数（模块负责其在播放结束/失败后的回收）。
+        /// </summary>
+        private SoundParams3D CreateOwnedSoundParams3D(Entity.Entity bindingEntity, Vector3 worldPosition)
+        {
+            var soundParams3D = SoundParams3D.Create(bindingEntity, worldPosition);
+            m_OwnedSoundParams3D.Add(soundParams3D);
+            return soundParams3D;
+        }
+
+        /// <summary>
+        /// 回收模块内部创建的播放参数；调用方传入的参数不回收（所有权归调用方）。
+        /// </summary>
+        private void RecycleSoundParams(SoundParams soundParams)
+        {
+            if (soundParams is null) return;
+            if (!m_OwnedSoundParams.Remove(soundParams)) return; // 非模块创建：所有权归调用方，不回收
+            ReferencePool.Recycle(soundParams);
+        }
+
+        /// <summary>
+        /// 回收模块内部创建的 3D 播放参数；调用方传入的参数不回收（所有权归调用方）。
+        /// </summary>
+        private void RecycleSoundParams3D(SoundParams3D soundParams3D)
+        {
+            if (soundParams3D is null) return;
+            if (!m_OwnedSoundParams3D.Remove(soundParams3D)) return; // 非模块创建：所有权归调用方，不回收
+            ReferencePool.Recycle(soundParams3D);
+        }
+
+        /// <summary>
         /// 播放声音(在指定3D位置播放)
         /// </summary>
         /// <param name="soundAssetName">声音资源名称。</param>
@@ -303,14 +348,14 @@ namespace Hotfix.Framework.Sound
         /// <param name="worldPosition">声音所在的世界坐标。</param>
         /// <param name="extension">声音资源扩展名。</param>
         /// <param name="serialId">序列编号(如果不传入使用默认时，会自动自增后分配一个序列Id)</param>
-        /// <param name="soundParams">播放时的声音参数。</param>
+        /// <param name="soundParams">播放时的声音参数。<b>所有权契约：调用方传入的 SoundParams 所有权归调用方，模块不回收，调用方需自行管理（复用/归还）；传 null 时由模块内部创建并在播放结束/失败后回收。</b></param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="onPlayEnd">播放结束回调。</param>
         /// <returns>声音的序列编号。</returns>
         public UniTask<int> PlaySound3DPos(string soundAssetName, string groupName, Vector3 worldPosition, string extension = ".mp3", int serialId = -1,
                                            SoundParams soundParams = null, object userData = null, Action onPlayEnd = null)
         {
-            var soundParams3D = SoundParams3D.Create(null, worldPosition);
+            var soundParams3D = CreateOwnedSoundParams3D(null, worldPosition);
             return PlaySound(soundAssetName, groupName, extension, serialId, soundParams, soundParams3D, userData, onPlayEnd);
         }
 
@@ -320,7 +365,7 @@ namespace Hotfix.Framework.Sound
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="groupName">声音组名称。</param>
         /// <param name="bindingEntity">声音绑定的实体。</param>
-        /// <param name="soundParams">播放时的声音参数。</param>
+        /// <param name="soundParams">播放时的声音参数。<b>所有权契约：调用方传入的 SoundParams 所有权归调用方，模块不回收，调用方需自行管理（复用/归还）；传 null 时由模块内部创建并在播放结束/失败后回收。</b></param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="extension">声音资源扩展名。</param>
         /// <param name="serialId">序列编号(如果不传入使用默认时，会自动自增后分配一个序列Id)</param>
@@ -329,7 +374,7 @@ namespace Hotfix.Framework.Sound
         public async UniTask<int> PlaySoundToEntity(string soundAssetName, string groupName, Entity.Entity bindingEntity, string extension = ".mp3", int serialId = -1,
                                                     SoundParams soundParams = null, object userData = null, Action onPlayEnd = null)
         {
-            var soundParams3D = SoundParams3D.Create(bindingEntity, Vector3.zero);
+            var soundParams3D = CreateOwnedSoundParams3D(bindingEntity, Vector3.zero);
             return await PlaySound(soundAssetName, groupName, extension, serialId, soundParams, soundParams3D, userData, onPlayEnd);
         }
 
@@ -339,8 +384,14 @@ namespace Hotfix.Framework.Sound
         /// <param name="soundAssetName">声音资源名称。</param>
         /// <param name="groupName">声音组名称。</param>
         /// <param name="extension">声音资源扩展名。</param>
-        /// <param name="soundParams">播放时的声音参数。</param>
-        /// <param name="soundParams3D"></param>
+        /// <param name="soundParams">
+        /// 播放时的声音参数。<b>所有权契约：调用方传入的 SoundParams 所有权归调用方，模块不回收（调用方自行复用或归还）；
+        /// 传 null 时由模块内部创建，播放结束/失败/异常后由模块负责回收。</b>
+        /// </param>
+        /// <param name="soundParams3D">
+        /// 播放时的3D声音参数。<b>所有权契约：调用方传入的 SoundParams3D 所有权归调用方，模块不回收；
+        /// 经 PlaySound3DPos / PlaySoundToEntity 传入的由模块内部创建，播放结束/失败/异常后由模块负责回收。</b>
+        /// </param>
         /// <param name="userData">用户自定义数据。</param>
         /// <param name="serialId">序列编号(如果不传入使用默认时，会自动自增后分配一个序列Id)</param>
         /// <param name="onPlayEnd">播放结束回调。</param>
@@ -348,51 +399,59 @@ namespace Hotfix.Framework.Sound
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int serialId = -1, SoundParams soundParams = null,
                                             SoundParams3D soundParams3D = null, object userData = null, Action onPlayEnd = null)
         {
-            var soundAssetPath = UtilityAOT.AssetPath.GetSoundPath(soundAssetName, extension);
-            soundParams ??= SoundParams.Create();
-
-            int newSerialId;
-            if (serialId >= 0)
-                newSerialId = serialId;
-            else
-                newSerialId = ++m_Serial;
-
-            string               errorMessage = null;
-            EPlaySoundErrorCode? errorCode    = null;
-
-            // 检查声音组是否存在
-            var soundGroup = GetSoundGroup(groupName);
-            if (!soundGroup)
-            {
-                errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
-                errorMessage = $"[SoundModule] 播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 不存在!";
-            }
-            else if (soundGroup.SoundAgentCount <= 0)
-            {
-                errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
-                errorMessage = $"[SoundModule]  播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 没有声音播放代理!";
-            }
-
-            if (errorCode.HasValue)
-            {
-                FuLogger.LogError(errorMessage);
-                var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-                m_EventModule.Broadcast(this, failureEventArgs);
-                // 播放未发起，回收已创建的参数对象，避免泄漏
-                if (soundParams != null)
-                    ReferencePool.Recycle(soundParams);
-                if (soundParams3D != null)
-                    ReferencePool.Recycle(soundParams3D);
-                return newSerialId;
-            }
-
-            m_LoadingSoundList.Add(newSerialId);
-
-            // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
+            // 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
+            // GetSoundPath、SoundParams.Create（已登记进 m_OwnedSoundParams）、GetSoundGroup（groupName 为空会抛）
+            // 任一处抛出，若不回收已 Acquire 并登记的参数对象，这些参数将永远不会归还引用池。
             AssetHandle assetOperationHandle = null;
             PlaySoundInfo playSoundInfo      = null;
+            var newSerialId                  = -1;
+
             try
             {
+                var soundAssetPath = UtilityAOT.AssetPath.GetSoundPath(soundAssetName, extension);
+
+                // 仅在模块内部创建时才登记所有权（调用方传入的参数归调用方，模块不回收）
+                if (soundParams is null)
+                {
+                    soundParams = SoundParams.Create();
+                    m_OwnedSoundParams.Add(soundParams);
+                }
+
+                if (serialId >= 0)
+                    newSerialId = serialId;
+                else
+                    newSerialId = ++m_Serial;
+
+                string               errorMessage = null;
+                EPlaySoundErrorCode? errorCode    = null;
+
+                // 检查声音组是否存在
+                var soundGroup = GetSoundGroup(groupName);
+                if (!soundGroup)
+                {
+                    errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
+                    errorMessage = $"[SoundModule] 播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 不存在!";
+                }
+                else if (soundGroup.SoundAgentCount <= 0)
+                {
+                    errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
+                    errorMessage = $"[SoundModule]  播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 没有声音播放代理!";
+                }
+
+                if (errorCode.HasValue)
+                {
+                    FuLogger.LogError(errorMessage);
+                    var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
+                    m_EventModule.Broadcast(this, failureEventArgs);
+                    // 播放未发起，回收模块内部创建的参数对象（调用方传入的不回收），避免泄漏
+                    RecycleSoundParams(soundParams);
+                    RecycleSoundParams3D(soundParams3D);
+                    return newSerialId;
+                }
+
+                m_LoadingSoundList.Add(newSerialId);
+
+                // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
                 assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_Scope.Token);
                 m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
                 var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
@@ -404,18 +463,17 @@ namespace Hotfix.Framework.Sound
             }
             catch
             {
-                // LoadAssetAsync 抛异常（包未就绪等）：清理 loading/待释放状态，允许重试
+                // 异常（路径/参数创建/声音组校验/包未就绪/自身销毁取消等）：清理 loading/待释放状态，允许重试
                 m_LoadingSoundList.Remove(newSerialId);
                 m_LoadingToReleaseSet.Remove(newSerialId);
-                // 仅当参数尚未交接给 LoadAssetSuccessCallback（异常发生在 PlaySoundInfo.Create 之前，playSoundInfo 为 null）时，
-                // 才在此回收参数并释放句柄；若回调已接管（playSoundInfo 非空），句柄/参数已由其失败分支释放/回收，再回收会双重回收。
+                // 仅当参数尚未交接给 LoadAssetSuccessCallback（playSoundInfo 为 null）时才在此回收参数并释放句柄；
+                // playSoundInfo 非空即表示已交接给回调，回调内部已保证（含 PlaySound 抛出的交接失败分支）
+                // 自行释放句柄并回收全部池对象，此处再回收会双重回收。
                 if (playSoundInfo == null)
                 {
                     assetOperationHandle?.Release();
-                    if (soundParams != null)
-                        ReferencePool.Recycle(soundParams);
-                    if (soundParams3D != null)
-                        ReferencePool.Recycle(soundParams3D);
+                    RecycleSoundParams(soundParams);
+                    RecycleSoundParams3D(soundParams3D);
                 }
 
                 throw;
@@ -550,11 +608,8 @@ namespace Hotfix.Framework.Sound
             {
                 m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
                 m_LoadingSoundList.Remove(playSoundInfo.SerialId); // 停止加载的声音也从加载列表移除，避免 IsLoadingSound 恒 true
-                if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams);
-
-                if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
+                RecycleSoundParams(playSoundInfo.SoundParams);
+                RecycleSoundParams3D(playSoundInfo.SoundParams3D);
 
                 playSoundInfo.SoundAssetHandle?.Release(); // 加载中被丢弃，句柄未上代理，释放之
                 m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
@@ -564,36 +619,64 @@ namespace Hotfix.Framework.Sound
 
             m_LoadingSoundList.Remove(playSoundInfo.SerialId);
 
-            // 使用声音播放代理播放声音
-            var soundAgent = playSoundInfo.SoundGroup.PlaySound(playSoundInfo, out var errorCode);
+            // 使用声音播放代理播放声音。
+            // 以「是否真正交接给代理」为唯一所有权标志：PlaySound 正常返回即完成交接
+            // （成功由代理持有资源句柄，失败分支内部已释放句柄并下面各自清理池对象）；
+            // 若 PlaySound 抛出则视为未交接，由 finally 统一回收 Params/Params3D/PlaySoundInfo 并释放句柄，
+            // 否则异常经外层 catch 逃逸（那里以 playSoundInfo != null 判定"已交接"而跳过清理）→ 4 类池对象/句柄全泄漏。
+            SoundAgent soundAgent = null;
+            EPlaySoundErrorCode? errorCode = null;
+            var handedOver = false;
+            try
+            {
+                soundAgent = playSoundInfo.SoundGroup.PlaySound(playSoundInfo, out errorCode);
+                handedOver = true;
+            }
+            catch
+            {
+                // 交接未完成：释放尚未被代理接管的句柄与资源，池对象回收交由 finally 统一处理
+                m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
+                playSoundInfo.SoundAssetHandle?.Release();
+                m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
+                throw;
+            }
+            finally
+            {
+                if (!handedOver)
+                {
+                    RecycleSoundParams(playSoundInfo.SoundParams);
+                    RecycleSoundParams3D(playSoundInfo.SoundParams3D);
+                    ReferencePool.Recycle(playSoundInfo);
+                }
+            }
 
             // 播放声音成功--派发成功事件, 释放播放参数信息对象
             if (soundAgent)
             {
-                FuLogger.LogInfo($"[SoundModule]播放声音 '{playSoundInfo.SoundAssetPath}' 成功, 声音组 '{playSoundInfo.SoundGroup.Name}'");
-                if (playSoundInfo.SoundParams3D != null)
-                {
-                    // 播放3D声音设置，如果绑定了实体，则设置的绑定实体，否则设置世界坐标
-                    if (playSoundInfo.SoundParams3D.BindingEntity)
-                        soundAgent.SetBindingEntity(playSoundInfo.SoundParams3D.BindingEntity);
-                    else
-                        soundAgent.SetWorldPosition(playSoundInfo.SoundParams3D.WorldPosition);
-                }
-
+                // LogInfo、SetBindingEntity / SetWorldPosition（访问已销毁的实体或组件时可能抛异常）与 Broadcast
+                // 一并纳入同一 try/finally：任一环节抛出都能回收 3 个池对象，避免异常路径泄漏。
+                // 此分支意味着 PlaySound 已正常返回即「已交接给代理」（上层 finally 因 handedOver=true 未回收），
+                // 故此处是本分支内唯一的回收点，恰好回收一次，不存在二次回收。
                 try
                 {
+                    FuLogger.LogInfo($"[SoundModule]播放声音 '{playSoundInfo.SoundAssetPath}' 成功, 声音组 '{playSoundInfo.SoundGroup.Name}'");
+                    if (playSoundInfo.SoundParams3D != null)
+                    {
+                        // 播放3D声音设置，如果绑定了实体，则设置的绑定实体，否则设置世界坐标
+                        if (playSoundInfo.SoundParams3D.BindingEntity)
+                            soundAgent.SetBindingEntity(playSoundInfo.SoundParams3D.BindingEntity);
+                        else
+                            soundAgent.SetWorldPosition(playSoundInfo.SoundParams3D.WorldPosition);
+                    }
+
                     var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
                     m_EventModule.Broadcast(this, successEventArgs);
                 }
                 finally
                 {
-                    // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
-                    if (playSoundInfo.SoundParams != null)
-                        ReferencePool.Recycle(playSoundInfo.SoundParams);
-
-                    if (playSoundInfo.SoundParams3D != null)
-                        ReferencePool.Recycle(playSoundInfo.SoundParams3D);
-
+                    // 无论设置绑定/世界坐标或事件订阅者是否抛异常，都回收播放参数池对象（否则异常时每次泄漏 3 个池对象）
+                    RecycleSoundParams(playSoundInfo.SoundParams);
+                    RecycleSoundParams3D(playSoundInfo.SoundParams3D);
                     ReferencePool.Recycle(playSoundInfo);
                 }
                 return;
@@ -613,12 +696,8 @@ namespace Hotfix.Framework.Sound
                 FuLogger.LogInfo(errorMessage);
 
                 // 与其他失败分支一致，释放播放相关信息（否则低优先级声音每次泄漏 3 个池对象）
-                if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams);
-
-                if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
-
+                RecycleSoundParams(playSoundInfo.SoundParams);
+                RecycleSoundParams3D(playSoundInfo.SoundParams3D);
                 ReferencePool.Recycle(playSoundInfo);
                 return;
             }
@@ -635,12 +714,8 @@ namespace Hotfix.Framework.Sound
             finally
             {
                 // 无论事件订阅者是否抛异常，都回收播放参数池对象（否则回调异常时每次泄漏 3 个池对象）
-                if (playSoundInfo.SoundParams != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams);
-
-                if (playSoundInfo.SoundParams3D != null)
-                    ReferencePool.Recycle(playSoundInfo.SoundParams3D);
-
+                RecycleSoundParams(playSoundInfo.SoundParams);
+                RecycleSoundParams3D(playSoundInfo.SoundParams3D);
                 ReferencePool.Recycle(playSoundInfo);
             }
         }

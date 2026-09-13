@@ -24,10 +24,7 @@ IReference (引用接口)
 
 【类体系】
 
-ModuleBase (框架模块基类)
-    └── ReferencePoolModule (引用池管理模块，实例模块)
-
-ReferencePoolModule (实例模块)
+ReferencePool (引用池静态基座：纯 C# 静态类，不继承 ModuleBase、不参与模块生命周期，由各模块直接静态调用)
     ├── ReferenceCollection (顶层 internal 类) # 每个类型对应一个引用集合
     │   ├── m_FreeStack: Stack<IReference>  # 闲置引用栈
     │   ├── UsingReferenceCount            # 正在使用的引用数量
@@ -55,8 +52,8 @@ ReferencePoolInfo (结构体)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                ReferencePoolModule                          │
-│                    (ModuleBase)                              │
+│                ReferencePool                          │
+│                    (静态基座)                                 │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │   m_ReferenceCollectionDict: Dictionary<Type,       │   │
 │  │                ReferenceCollection>                 │   │
@@ -145,7 +142,7 @@ Recycle(reference)
 
 OnDispose()
     │
-    └── RemoveAllPools()
+    └── ClearAll()
         ├── 遍历所有 ReferenceCollection
         ├── 每个 collection.RemoveAll()
         └── 清空 m_ReferenceCollectionDict
@@ -163,10 +160,10 @@ OnDispose()
     ├── Acquire: 从栈取出或创建新对象
     └── Recycle: 清理后压入栈
 
-销毁 (RemoveAllUnused/RemoveAllPools)
+销毁 (RemoveAllUnused/ClearAll)
     │
-    ├── 清空 m_FreeStack
-    └── 重置所有计数器
+    └── 清空 m_FreeStack（RemoveAllUnused 清单个类型；ClearAll 清全部类型）
+        （保留类型条目与计数器，使之后的迟到 Recycle 仍然自洽）
 ```
 
 ## 4. 核心类详细说明
@@ -193,36 +190,36 @@ public interface IReference
 - `Clear()` 方法应重置对象的所有字段到初始状态
 - 避免在 `Clear()` 中执行耗时操作
 
-### 4.2 ReferencePoolModule (实例模块)
+### 4.2 ReferencePool (静态基座)
 
-引用池的核心管理模块，继承自 `ModuleBase`，通过 `GlobalModule.ReferencePoolModule` 提供全局的引用获取、释放和管理功能。
+引用池静态基座（不继承 `ModuleBase`、不参与模块生命周期），提供全局的引用获取、归还与管理功能，由各模块直接静态调用。
 
 **核心功能：**
 
 ```csharp
-public sealed partial class ReferencePoolModule : ModuleBase
+public static partial class ReferencePool
 {
     // 引用池数量（管理的引用类型数量）
-    public int Count { get; }
+    public static int Count { get; }
 
     // 获取引用
-    public T Acquire<T>() where T : class, IReference, new()
+    public static T Acquire<T>() where T : class, IReference, new()
 
-    // 释放引用
-    public void Recycle(IReference reference)
+    // 归还引用
+    public static void Recycle(IReference reference)
 
     // 添加引用到池
-    public void Add<T>(int count) where T : class, IReference, new()
+    public static void Add<T>(int count) where T : class, IReference, new()
 
     // 从池移除闲置引用
-    public void RemoveUnused<T>(int count) where T : class, IReference
-    public void RemoveAllUnused<T>() where T : class, IReference
+    public static void RemoveUnused<T>(int count) where T : class, IReference
+    public static void RemoveAllUnused<T>() where T : class, IReference
 
-    // 移除所有引用池
-    public void RemoveAllPools()
+    // 全局清理
+    public static void ClearAll()
 
     // 获取统计信息
-    public ReferencePoolInfo[] GetAllReferencePoolInfos()
+    public static ReferencePoolInfo[] GetAllReferencePoolInfos()
 }
 ```
 
@@ -233,9 +230,9 @@ public sealed partial class ReferencePoolModule : ModuleBase
 **访问入口：**
 
 ```csharp
-// 所有操作统一通过 GlobalModule.ReferencePoolModule 访问
-GlobalModule.ReferencePoolModule.Acquire<T>();
-GlobalModule.ReferencePoolModule.Recycle(reference);
+// 所有操作统一通过 ReferencePool 访问
+ReferencePool.Acquire<T>();
+ReferencePool.Recycle(reference);
 ```
 
 ### 4.3 ReferenceCollection (顶层 internal 类)
@@ -276,17 +273,17 @@ internal sealed class ReferenceCollection
 - `Recycle` 时自动调用 `reference.Clear()` 清理对象
 - 无条件执行重复释放检测，一旦发现即抛出异常
 
-### 4.4 ReferencePoolModule
+### 4.4 ReferencePool
 
-引用池管理模块，继承自 `ModuleBase`，负责模块的生命周期管理。
+引用池静态基座，**无模块生命周期**；仅提供停机/重启时的全局清理入口。
 
 **核心功能：**
 
 ```csharp
-public sealed partial class ReferencePoolModule : ModuleBase
+public static partial class ReferencePool
 {
-    // 生命周期
-    protected internal override void OnDispose()  // 清除所有引用池
+    // 全局清理：清空各类型的闲置引用（保留类型条目与计数器，故之后的迟到 Recycle 仍自洽）
+    public static void ClearAll()
 }
 ```
 
@@ -363,7 +360,7 @@ public class ReferencePoolExample : MonoBehaviour
     private void Start()
     {
         // 从引用池获取消息对象
-        var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
+        var message = ReferencePool.Acquire<NetworkMessage>();
         
         // 初始化消息数据
         message.Initialize(1001, "Hello World");
@@ -372,7 +369,7 @@ public class ReferencePoolExample : MonoBehaviour
         Debug.Log($"消息ID: {message.MessageId}, 内容: {message.Content}");
         
         // 使用完毕后归还到引用池
-        GlobalModule.ReferencePoolModule.Recycle(message);
+        ReferencePool.Recycle(message);
     }
 }
 ```
@@ -389,14 +386,14 @@ public class NetworkMessageSystem : MonoBehaviour
     private void OnEnable()
     {
         // 预创建一些消息对象，减少运行时分配
-        GlobalModule.ReferencePoolModule.Add<NetworkMessage>(10);
+        ReferencePool.Add<NetworkMessage>(10);
     }
     
     // 处理接收到的网络数据包
     public void ProcessNetworkPacket(byte[] packetData)
     {
         // 从引用池获取消息对象
-        var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
+        var message = ReferencePool.Acquire<NetworkMessage>();
         
         try
         {
@@ -410,7 +407,7 @@ public class NetworkMessageSystem : MonoBehaviour
         finally
         {
             // 确保消息对象被归还
-            GlobalModule.ReferencePoolModule.Recycle(message);
+            ReferencePool.Recycle(message);
         }
     }
     
@@ -423,7 +420,7 @@ public class NetworkMessageSystem : MonoBehaviour
         {
             foreach (var packet in packets)
             {
-                var message = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
+                var message = ReferencePool.Acquire<NetworkMessage>();
                 var parsedData = ParsePacket(packet);
                 message.Initialize(parsedData.MessageId, parsedData.Content);
                 messages.Add(message);
@@ -437,7 +434,7 @@ public class NetworkMessageSystem : MonoBehaviour
             // 批量归还所有消息对象
             foreach (var message in messages)
             {
-                GlobalModule.ReferencePoolModule.Recycle(message);
+                ReferencePool.Recycle(message);
             }
         }
     }
@@ -445,7 +442,7 @@ public class NetworkMessageSystem : MonoBehaviour
     private void OnDisable()
     {
         // 清理引用池（可选，通常由系统自动管理）
-        GlobalModule.ReferencePoolModule.RemoveAllUnused<NetworkMessage>();
+        ReferencePool.RemoveAllUnused<NetworkMessage>();
     }
 }
 ```
@@ -511,7 +508,7 @@ public class EventSystem : MonoBehaviour
     // 触发玩家伤害事件
     public void TriggerDamageEvent(string source, int damage, string damageType)
     {
-        var damageEvent = GlobalModule.ReferencePoolModule.Acquire<PlayerDamageEvent>();
+        var damageEvent = ReferencePool.Acquire<PlayerDamageEvent>();
         damageEvent.Initialize(source, damage, damageType);
         m_CurrentFrameEvents.Add(damageEvent);
     }
@@ -530,7 +527,7 @@ public class EventSystem : MonoBehaviour
         // 归还所有事件对象到引用池
         foreach (var gameEvent in m_CurrentFrameEvents)
         {
-            GlobalModule.ReferencePoolModule.Recycle(gameEvent);
+            ReferencePool.Recycle(gameEvent);
         }
         m_CurrentFrameEvents.Clear();
     }
@@ -553,7 +550,7 @@ public class ReferencePoolMonitor : MonoBehaviour
         if (!m_ShowDebugInfo) return;
         
         // 获取所有引用池的统计信息
-        var poolInfos = GlobalModule.ReferencePoolModule.GetAllReferencePoolInfos();
+        var poolInfos = ReferencePool.GetAllReferencePoolInfos();
         
         foreach (var info in poolInfos)
         {
@@ -568,7 +565,7 @@ public class ReferencePoolMonitor : MonoBehaviour
     // 手动优化引用池
     public void OptimizePools()
     {
-        var poolInfos = GlobalModule.ReferencePoolModule.GetAllReferencePoolInfos();
+        var poolInfos = ReferencePool.GetAllReferencePoolInfos();
         
         foreach (var info in poolInfos)
         {
@@ -580,7 +577,7 @@ public class ReferencePoolMonitor : MonoBehaviour
         }
         
         // 移除指定类型的闲置对象（RemoveUnused 需显式指定泛型类型）
-        GlobalModule.ReferencePoolModule.RemoveUnused<NetworkMessage>(10);
+        ReferencePool.RemoveUnused<NetworkMessage>(10);
     }
 }
 ```
@@ -601,14 +598,14 @@ public class PooledObject<T> : IDisposable where T : class, IReference, new()
     
     public PooledObject()
     {
-        Value = GlobalModule.ReferencePoolModule.Acquire<T>();
+        Value = ReferencePool.Acquire<T>();
     }
     
     public void Dispose()
     {
         if (Value != null)
         {
-            GlobalModule.ReferencePoolModule.Recycle(Value);
+            ReferencePool.Recycle(Value);
             Value = null;
         }
     }
@@ -637,8 +634,8 @@ public class SafeObjectUsage : MonoBehaviour
 
 ```
 ReferencePool/
-├── ReferencePoolModule.cs                     # 引用池管理模块（内部管理 + 生命周期）
-├── ReferencePoolModule.API.cs                 # 引用池管理模块公共 API
+├── ReferencePool.cs                     # 引用池管理模块（内部管理 + 生命周期）
+├── ReferencePool.API.cs                 # 引用池管理模块公共 API
 ├── ReferenceCollection.cs                     # 引用集合（Stack），顶层 internal 类
 ├── IReference.cs                              # 引用接口
 ├── ReferencePoolInfo.cs                       # 引用池信息结构体
@@ -651,7 +648,7 @@ ReferencePool/
 |------|------|
 | Hotfix.Framework.Core | 提供 ModuleBase 基类 |
 
-> 使用引用池前必须先注册 `ReferencePoolModule`（`HotfixLauncher.RegisterBaseModules()` 已保证），通过 `GlobalModule.ReferencePoolModule` 访问。
+> 使用引用池前必须先注册 `ReferencePool`（`HotfixLauncher.RegisterBaseModules()` 已保证），通过 `ReferencePool` 访问。
 
 ## 8. 最佳实践
 
@@ -699,9 +696,9 @@ public class ObjectPoolManager : MonoBehaviour
     private void Start()
     {
         // 在游戏启动时预分配常用对象
-        GlobalModule.ReferencePoolModule.Add<NetworkMessage>(m_PreAllocateCount);
-        GlobalModule.ReferencePoolModule.Add<GameEvent>(m_PreAllocateCount);
-        GlobalModule.ReferencePoolModule.Add<RedDotNode>(m_PreAllocateCount);
+        ReferencePool.Add<NetworkMessage>(m_PreAllocateCount);
+        ReferencePool.Add<GameEvent>(m_PreAllocateCount);
+        ReferencePool.Add<RedDotNode>(m_PreAllocateCount);
     }
 }
 ```
@@ -743,8 +740,8 @@ public class ObjectPoolManager : MonoBehaviour
 
 ```csharp
 // 引用池：Acquire 获取（池空自建）、Recycle 回收
-var msg = GlobalModule.ReferencePoolModule.Acquire<NetworkMessage>();
-GlobalModule.ReferencePoolModule.Recycle(msg);
+var msg = ReferencePool.Acquire<NetworkMessage>();
+ReferencePool.Recycle(msg);
 
 // 对象池：Register 注册、Get 获取（池空返回 null）、Recycle 回收
 pool.Register(obj, true);

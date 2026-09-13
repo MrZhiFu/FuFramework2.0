@@ -18,8 +18,14 @@ namespace Hotfix.Framework.Core
         private static readonly Dictionary<Type, ReferenceCollection> m_ReferenceCollectionDict = new();
 
         /// <summary>
-        /// 移除所有引用池：清空各类型的闲置引用并删除全部类型条目（引用池数量归零，使用中的引用不受影响）。
+        /// 移除所有引用池中的闲置引用（保留类型条目与计数，使用中的引用不受影响）。
         /// </summary>
+        /// <remarks>
+        /// 保留类型条目与计数、仅释放闲置引用；不取消任何在途异步，也不回收使用中的引用。
+        /// 因此本方法不依赖调用时机：类型条目与其「使用中」计数被保留（而非连条目一起清空），
+        /// 在途异步结束后的迟到 Recycle 仍会落回原集合并与该计数自洽，不会落到重建的零计数空集合上而误报「使用计数已为零」，
+        /// 也就不会把异常逃逸到无 try/catch 的 <c>ModuleManager.Update</c> 中断整帧。
+        /// </remarks>
         public static void ClearAll()
         {
             lock (m_ReferenceCollectionDict)
@@ -28,8 +34,6 @@ namespace Hotfix.Framework.Core
                 {
                     refCollection.RemoveAll();
                 }
-
-                m_ReferenceCollectionDict.Clear();
             }
         }
 

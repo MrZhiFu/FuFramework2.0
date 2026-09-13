@@ -26,30 +26,29 @@ namespace Hotfix.Framework.ObjectPool
             var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
 
-            // 快照到独立列表，避免 DisposeObjectInternal 内 OnDispose 重入清空被遍历的缓存列表
-            m_CachedToDisposeObjectList.Clear();
-            foreach (var obj in m_CachedCanDisposeObjectList)
+            // 用本池专属快照承载"本轮待销毁对象"：DisposeObjectInternal 内 OnDispose 可能重入本池的
+            // Dispose/DisposeExpired（例如回收超容量），若直接遍历共享字段会被嵌套调用清空，
+            // 导致本批剩余对象被静默跳过。快照字段正常路径零分配，嵌套重入时自动退化为局部列表。
+            var toDisposeObjects = BeginTodoSnapshot(m_CachedCanDisposeObjectList.Count);
+            try
             {
-                // 防御性 null 检查（在解引用前）
-                if (obj == null) continue;
+                for (var i = 0; i < m_CachedCanDisposeObjectList.Count; i++)
+                {
+                    var obj = m_CachedCanDisposeObjectList[i];
 
-                // 对象闲置时间早于过期时间点，视为过期，纳入销毁
-                if (obj.LastUseTime <= expireTimeThreshold)
-                    m_CachedToDisposeObjectList.Add(obj);
+                    // 防御性 null 检查（在解引用前）
+                    if (obj == null) continue;
+
+                    // 对象闲置时间早于过期时间点，视为过期，纳入销毁
+                    if (obj.LastUseTime <= expireTimeThreshold)
+                        toDisposeObjects.Add(obj);
+                }
+
+                DisposeTodoObjects(toDisposeObjects);
             }
-
-            foreach (var obj in m_CachedToDisposeObjectList)
+            finally
             {
-                // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
-                var objName = obj.Name;
-                try
-                {
-                    DisposeObjectInternal(obj);
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁过期对象 '{objName}' 时出现异常: {e.Message}");
-                }
+                EndTodoSnapshot(toDisposeObjects);
             }
         }
 
@@ -92,33 +91,35 @@ namespace Hotfix.Framework.ObjectPool
                 expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
             }
 
-            // 重置计时器
-            m_AutoDisposeTimer = 0f;
+            // 注意：这里不再重置 m_AutoDisposeTimer。持续回收会反复调用本方法，重置计时器会让
+            // 自动销毁检查被无限推迟（饿死）；计时器只由 Update 的一次检查完成后推进。
 
             // 获取所有可销毁的对象
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
             FuLogger.LogInfo($"[ObjectPoolModule] 尝试销毁对象池中的可销毁对象-对象数量: '{m_CachedCanDisposeObjectList.Count}'");
 
             // 再次按照过滤器函数筛选需要销毁的对象
-            var toDisposeObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
-            if (toDisposeObjects is not { Count: > 0 }) return;
+            var filteredObjects = releaseObjectFilterCallback(m_CachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
+            if (filteredObjects is not { Count: > 0 }) return;
 
-            // 销毁对象（单个对象异常不影响整批销毁）
-            foreach (var toDisposeObject in toDisposeObjects)
+            // 快照到本池专属字段：filteredObjects 通常是共享字段（DefaultDisposeObjectFilterCallback 的返回值），
+            // 销毁过程中若重入本池 Dispose（回收超容量）会被嵌套 Clear，破坏正在遍历的列表
+            var toDisposeObjects = BeginTodoSnapshot(filteredObjects.Count);
+            try
             {
-                // 防御自定义筛选器返回 null 对象
-                if (toDisposeObject == null) continue;
+                for (var i = 0; i < filteredObjects.Count; i++)
+                {
+                    // 防御自定义筛选器返回 null 对象
+                    if (filteredObjects[i] == null) continue;
 
-                // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
-                var toDisposeObjectName = toDisposeObject.Name;
-                try
-                {
-                    DisposeObjectInternal(toDisposeObject);
+                    toDisposeObjects.Add(filteredObjects[i]);
                 }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象 '{toDisposeObjectName}' 时出现异常: {e.Message}");
-                }
+
+                DisposeTodoObjects(toDisposeObjects);
+            }
+            finally
+            {
+                EndTodoSnapshot(toDisposeObjects);
             }
         }
 
@@ -127,20 +128,70 @@ namespace Hotfix.Framework.ObjectPool
         /// </summary>
         public override void DisposeAllUnused()
         {
-            m_AutoDisposeTimer = 0f;
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
 
-            // 快照到独立列表，避免 DisposeObjectInternal 内 OnDispose 重入清空被遍历的缓存列表
-            m_CachedToDisposeObjectList.Clear();
-            foreach (var toDisposeObject in m_CachedCanDisposeObjectList)
+            // 快照到本池专属字段，避免 DisposeObjectInternal 内 OnDispose 重入清空正在遍历的共享列表
+            var toDisposeObjects = BeginTodoSnapshot(m_CachedCanDisposeObjectList.Count);
+            try
             {
-                // 防御性 null 检查
-                if (toDisposeObject == null) continue;
-                m_CachedToDisposeObjectList.Add(toDisposeObject);
-            }
+                for (var i = 0; i < m_CachedCanDisposeObjectList.Count; i++)
+                {
+                    // 防御性 null 检查
+                    if (m_CachedCanDisposeObjectList[i] == null) continue;
 
-            foreach (var toDisposeObject in m_CachedToDisposeObjectList)
+                    toDisposeObjects.Add(m_CachedCanDisposeObjectList[i]);
+                }
+
+                DisposeTodoObjects(toDisposeObjects);
+            }
+            finally
             {
+                EndTodoSnapshot(toDisposeObjects);
+            }
+        }
+
+        /// <summary>
+        /// 获取承载“本轮待销毁对象”的快照列表。
+        /// 非重入时返回本池专属字段 m_CachedTodoSnapshot（零分配）；重入（OnDispose 内再次进入销毁流程）
+        /// 时返回新分配的局部列表，避免覆写外层正在遍历的同一字段。
+        /// 必须与 EndTodoSnapshot 成对使用（放在 try/finally 中）。
+        /// </summary>
+        /// <param name="capacity">快照预期容量（仅用于重入分支局部列表的初始容量）。</param>
+        /// <returns>已清空的快照列表。</returns>
+        private List<T> BeginTodoSnapshot(int capacity)
+        {
+            // 已有销毁遍历占用快照字段（嵌套重入），改用局部列表避免互相覆写
+            if (m_TodoSnapshotInUse) return new List<T>(capacity);
+
+            m_TodoSnapshotInUse = true;
+            m_CachedTodoSnapshot.Clear();
+            return m_CachedTodoSnapshot;
+        }
+
+        /// <summary>
+        /// 结束快照使用。仅当快照是本池专属字段时才清空并释放占用标记（重入分支的局部列表无需处理）。
+        /// </summary>
+        /// <param name="snapshot">BeginTodoSnapshot 返回的列表。</param>
+        private void EndTodoSnapshot(List<T> snapshot)
+        {
+            if (!ReferenceEquals(snapshot, m_CachedTodoSnapshot)) return;
+
+            m_CachedTodoSnapshot.Clear();
+            m_TodoSnapshotInUse = false;
+        }
+
+        /// <summary>
+        /// 批量销毁快照中的对象。单个对象异常不影响整批销毁。
+        /// 按索引遍历而非 foreach：即使嵌套流程改动了列表也不会抛“集合已被修改”异常。
+        /// </summary>
+        /// <param name="toDisposeObjects">本轮待销毁对象快照。</param>
+        private void DisposeTodoObjects(List<T> toDisposeObjects)
+        {
+            for (var i = 0; i < toDisposeObjects.Count; i++)
+            {
+                var toDisposeObject = toDisposeObjects[i];
+                if (toDisposeObject == null) continue;
+
                 // 提前捕获对象名，销毁后对象会被回收清理，Name 变为空
                 var toDisposeObjectName = toDisposeObject.Name;
                 try
@@ -191,9 +242,11 @@ namespace Hotfix.Framework.ObjectPool
             if (obj.Locked) return false;
             if (!obj.CustomCanDisposeFlag) return false;
 
-            FuLogger.LogInfo($"[ObjectPoolModule] 真正销毁对象池中的可销毁对象 '{obj.Name}'");
+            // 提前捕获名称：OnDispose 会清空对象状态（Name 置空），后续告警需要它
+            var objName = obj.Name;
+            FuLogger.LogInfo($"[ObjectPoolModule] 真正销毁对象池中的可销毁对象 '{objName}'");
 
-            m_ObjectMultiDict.Remove(obj.Name, obj);
+            m_ObjectMultiDict.Remove(objName, obj);
             m_TargetObjectDict.Remove(obj.Target);
 
             try
@@ -202,12 +255,28 @@ namespace Hotfix.Framework.ObjectPool
             }
             finally
             {
-                // 即使 OnDispose 异常也回收对象到引用池，避免跳过清理
-                ReferencePool.Recycle(obj);
+                // 即使 OnDispose 异常也回收对象到引用池，避免跳过清理。
+                // 回收自身必须兜底（与 ObjectPool.OnDispose、RemoveDeadObject 对齐）：重复回收时
+                // 引用池会抛异常，不拦截会直接从公开的 DisposeObject(target) 抛给调用方。
+                try
+                {
+                    ReferencePool.Recycle(obj);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ObjectPoolModule] 回收已销毁的对象 '{objName}' 时出现异常: {e.Message}");
+                }
             }
 
             return true;
         }
+
+        /// <summary>
+        /// 判断对象是否属于可销毁候选（未使用中、未加锁、自定义标记允许销毁）。
+        /// </summary>
+        /// <param name="obj">要判断的对象。</param>
+        /// <returns>是否可销毁。</returns>
+        private static bool IsCanDisposeObject(T obj) => obj != null && !obj.IsInUse && !obj.Locked && obj.CustomCanDisposeFlag;
 
         /// <summary>
         /// 获取对象池中能被销毁的对象（填充到结果列表）。
@@ -221,10 +290,7 @@ namespace Hotfix.Framework.ObjectPool
             foreach (var (_, obj) in m_TargetObjectDict)
             {
                 // 如果对象正在使用中，或者被加锁，或者自定义标记为不能被销毁，则跳过。
-                if (obj.IsInUse || obj.Locked || !obj.CustomCanDisposeFlag)
-                {
-                    continue;
-                }
+                if (!IsCanDisposeObject(obj)) continue;
 
                 results.Add(obj);
             }
@@ -235,6 +301,8 @@ namespace Hotfix.Framework.ObjectPool
         /// 筛选条件：
         /// 1.过期的对象先销毁。
         /// 2.优先级小的先销毁。或者优先级相等，但是最后使用时间更早的对象先销毁。
+        /// 注意：返回值是共享字段 m_CachedToDisposeObjectList（每次调用会先 Clear），
+        /// 调用方必须在返回后立即拷贝快照再遍历，否则嵌套重入会破坏正在遍历的列表。
         /// </summary>
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="candidateObjects">要筛选的对象集合。</param>

@@ -332,7 +332,7 @@ public class TaskPoolExample : MonoBehaviour
 
     private void AddDownloadTask(string url, string savePath)
     {
-        var task = GlobalModule.ReferencePoolModule.Acquire<DownloadTask>();
+        var task = ReferencePool.Acquire<DownloadTask>();
         task.Initialize(++m_SerialId, url, savePath);
         m_DownloadPool.AddTask(task);
     }
@@ -376,12 +376,12 @@ foreach (var info in downloadTasks)
 using Hotfix.Framework.Core;
 
 // 添加高优先级任务
-var highPriorityTask = GlobalModule.ReferencePoolModule.Acquire<CustomTask>();
+var highPriorityTask = ReferencePool.Acquire<CustomTask>();
 highPriorityTask.Initialize(serialId: 1, tag: "Urgent", priority: 100, userData: null);
 taskPool.AddTask(highPriorityTask);
 
 // 添加低优先级任务
-var lowPriorityTask = GlobalModule.ReferencePoolModule.Acquire<CustomTask>();
+var lowPriorityTask = ReferencePool.Acquire<CustomTask>();
 lowPriorityTask.Initialize(serialId: 2, tag: "Normal", priority: 1, userData: null);
 taskPool.AddTask(lowPriorityTask);
 

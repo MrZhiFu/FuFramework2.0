@@ -30,14 +30,17 @@ namespace Hotfix.Framework.Core
 
         /// <summary>
         /// 将引用归还引用池。
+        /// 注意：始终按引用的**运行时类型**定位集合（类型由 <see cref="object.GetType"/> 取得），
+        /// 与 <see cref="Acquire{T}"/> 的入池键一致；不可改为按编译期静态类型定位，
+        /// 否则以基类静态类型传入（如 GameEventArgs）会归错集合。
         /// </summary>
         /// <param name="reference">要归还的引用。</param>
         public static void Recycle(IReference reference)
         {
             if (reference == null) throw new InvalidOperationException("[ReferencePool] 要归还的引用对象为空.");
 
-            var refType = reference.GetType();
-            GetReferenceCollection(refType).Recycle(reference);
+            // 多态入口：静态类型不可知，只能按运行时真实类型定位集合
+            GetReferenceCollection(reference.GetType()).Recycle(reference);
         }
 
         /// <summary>

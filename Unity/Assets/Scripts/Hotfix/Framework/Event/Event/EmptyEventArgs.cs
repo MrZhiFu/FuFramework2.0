@@ -12,9 +12,20 @@ namespace Hotfix.Framework.Event
     public sealed class EmptyEventArgs : GameEventArgs
     {
         public override string Id => m_EventId;
-        private static  string m_EventId = typeof(EmptyEventArgs).FullName;
 
-        public override void Clear() { }
+        /// <summary>
+        /// 事件编号。
+        /// 必须为实例字段：事件在下一帧才分发，静态字段会被同帧抛出的其它事件编号覆盖。
+        /// </summary>
+        private string m_EventId = typeof(EmptyEventArgs).FullName;
+
+        /// <summary>
+        /// 清理引用(归还引用池时调用)。
+        /// </summary>
+        public override void Clear()
+        {
+            m_EventId = typeof(EmptyEventArgs).FullName;
+        }
 
         /// <summary>
         /// 创建空事件
@@ -24,7 +35,7 @@ namespace Hotfix.Framework.Event
         public static EmptyEventArgs Create(string eventId)
         {
             var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
-            m_EventId = eventId;
+            eventArgs.m_EventId = eventId;
             return eventArgs;
         }
     }

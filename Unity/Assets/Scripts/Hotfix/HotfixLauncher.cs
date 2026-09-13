@@ -97,11 +97,10 @@ namespace Hotfix
             GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
             GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
             GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
-            GameDriven.Instance.DisposeModules = () =>
-            {
-                ModuleManager.Dispose();
-                ReferencePool.ClearAll();
-            };
+            // 注意：引用池清理（ReferencePool.ClearAll）不在此处挂接。
+            // 其契约要求必须在「所有在途异步取消完毕」之后调用，故统一放到
+            // GameDriven.RestartGameAsync 的 ModuleManager.CancelAllAsync() 之后。
+            GameDriven.Instance.DisposeModules = ModuleManager.Dispose;
         }
 
         /// <summary>

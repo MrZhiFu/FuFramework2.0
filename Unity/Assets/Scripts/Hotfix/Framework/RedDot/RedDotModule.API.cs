@@ -12,6 +12,18 @@ namespace Hotfix.Framework.RedDot
     /// </summary>
     public partial class RedDotModule
     {
+        /// <summary>
+        /// SyncDynamicNode 的复用缓存：本次同步收集到的"新增 id"集合。
+        /// 列表类红点高频刷新时复用同一实例，避免每次调用分配 HashSet 造成高频 GC。
+        /// 仅由 SyncDynamicNode 单线程使用，调用前先 Clear。
+        /// </summary>
+        private readonly HashSet<long> m_SyncNewIdSet = new();
+
+        /// <summary>
+        /// SyncDynamicNode 的复用缓存：本次同步待移除的 id 列表（复用避免每次分配 List）。
+        /// </summary>
+        private readonly List<long> m_SyncRemovedIdList = new();
+
         #region 注册
 
         /// <summary>
@@ -103,15 +115,17 @@ namespace Hotfix.Framework.RedDot
                 m_DynamicIdDict[parentKey] = existing;
             }
 
-            // 收集新增 id
-            var newIds = new HashSet<long>();
+            // 收集新增 id（复用模块级缓存，避免每次调用分配 2×HashSet + 1×List 引起高频 GC）
+            var newIds = m_SyncNewIdSet;
+            newIds.Clear();
             foreach (var id in ids)
             {
                 newIds.Add(id);
             }
 
             // 找出待移除的 id
-            var removedIds = new List<long>();
+            var removedIds = m_SyncRemovedIdList;
+            removedIds.Clear();
             foreach (var id in existing)
             {
                 if (newIds.Contains(id)) continue;

@@ -40,9 +40,17 @@ namespace Hotfix.Framework.ObjectPool
         private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
         /// <summary>
-        /// 缓存所有对象池的列表。销毁所有对象池时使用。
+        /// 缓存所有对象池的列表。对外 API（DisposeOverCapacity/DisposeAllUnused）与 OnDispose 使用。
         /// </summary>
         private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
+
+        /// <summary>
+        /// OnUpdate 专用的对象池快照列表。
+        /// 不得与 m_CachedObjPoolList 共用：池的 Update 回调里可能触发模块级操作
+        /// （DisposeOverCapacity/DisposeAllUnused 会清空并重填 m_CachedObjPoolList），
+        /// 共用会导致正在遍历的列表被清空、异常被吞、本帧其后的池不再更新。
+        /// </summary>
+        private readonly List<ObjectPoolBase> m_CachedUpdatePoolList = new();
 
         /// <summary>
         /// 初始化。
@@ -59,17 +67,34 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            // 单个对象池异常不影响其他池更新，避免异常传播到帧循环
-            foreach (var (typeNamePair, objPool) in m_ObjPoolDict)
+            // 整段更新循环必须被 try/catch 包住：字典枚举器在池更新过程中被增删对象池时会抛异常，
+            // 一旦逃逸到 ModuleManager.Update（无保护）会导致本帧后续所有模块停止更新。
+            // 同时先快照到缓存列表再遍历，避免更新过程中增删对象池使字典枚举器失效。
+            try
             {
-                try
+                // 使用 OnUpdate 专属字段，避免池的 Update 回调里触发模块级操作（清空共享缓存）破坏遍历
+                m_CachedUpdatePoolList.Clear();
+                foreach (var (_, objPool) in m_ObjPoolDict)
                 {
-                    objPool.Update(unscaledDeltaTime);
+                    m_CachedUpdatePoolList.Add(objPool);
                 }
-                catch (Exception e)
+
+                // 单个对象池异常不影响其他池更新
+                foreach (var objPool in m_CachedUpdatePoolList)
                 {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {typeNamePair} 时出现异常: {e.Message}");
+                    try
+                    {
+                        objPool.Update(unscaledDeltaTime);
+                    }
+                    catch (Exception e)
+                    {
+                        FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {objPool.FullName} 时出现异常: {e.Message}");
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogWarning($"[ObjectPoolModule] 遍历对象池列表时出现异常: {e.Message}");
             }
         }
 
@@ -102,6 +127,7 @@ namespace Hotfix.Framework.ObjectPool
 
             m_ObjPoolDict.Clear();
             m_CachedObjPoolList.Clear();
+            m_CachedUpdatePoolList.Clear();
         }
 
         /// <summary>

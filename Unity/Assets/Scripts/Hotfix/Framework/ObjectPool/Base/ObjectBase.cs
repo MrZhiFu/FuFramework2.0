@@ -117,15 +117,24 @@ namespace Hotfix.Framework.ObjectPool
 
         /// <summary>
         /// 回收对象。
+        /// 与 Spawn() 的"事件抛异常即回滚"对称：无论 OnRecycle() 是否抛异常，都必须推进状态
+        /// （生成计数递减 + 刷新最后使用时间），否则对象会因事件异常而永久停留在 IsInUse 状态，
+        /// 既无法再次被获取，也无法被销毁。异常照常向上抛出，由调用方感知。
         /// </summary>
         internal void Recycle()
         {
             if (SpawnCount <= 0)
                 throw new InvalidOperationException($"[ObjectBase] 对象 '{Name}' 生成次数已经为 0, 回收失败.");
 
-            OnRecycle();
-            LastUseTime = DateTime.UtcNow;
-            SpawnCount--;
+            try
+            {
+                OnRecycle();
+            }
+            finally
+            {
+                SpawnCount--;
+                LastUseTime = DateTime.UtcNow;
+            }
         }
 
         /// <summary>

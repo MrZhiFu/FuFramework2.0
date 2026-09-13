@@ -28,7 +28,7 @@ FuFramework Guide 模块是游戏框架的新手引导系统，采用配置表�
 │  │  m_AllStepDict (Dictionary<int, BaseStep>)          │   │
 │  │  - 当前引导的所有步骤                                │   │
 │  ├─────────────────────────────────────────────────────┤   │
-│  │  m_StepHistoryStack (Stack<BaseStep>)               │   │
+│  │  m_StepHistoryStack (Stack<int>)                    │   │
 │  │  - 步骤历史记录栈                                   │   │
 │  ├─────────────────────────────────────────────────────┤   │
 │  │  m_GuideCompletionCacheDict (Dictionary<int, bool>) │   │
@@ -371,6 +371,7 @@ Guide/
 1. 引导过程中通过 `m_CurrentStep.Update(deltaTime)` 驱动步骤帧更新，不会阻塞主循环
 2. `ClickUIStep` 需要目标 UI 已加载到场景中（通过 `UIModule.GetUI` 查找）
 3. 引导完成状态通过 `PlayerPrefs` 持久化（key 格式：`Guide_Completed_{guideId}`）
-4. `GoToPreviousStep` 依赖 `m_StepHistoryStack`，在构建新引导时会清空历史栈
+4. `GoToPreviousStep` 依赖 `m_StepHistoryStack`（存 stepId），在构建新引导时会清空历史栈
 5. 调用 `InterruptGuide()` 会取消当前步骤并清空引导数据
 6. `ForceNextStep` 在下一步不存在时自动调用 `FinishGuide` 完成引导
+7. 步骤实例在整条引导生命周期内常驻 `m_AllStepDict`，仅在 `ClearGuideData`（完成/中断/模块销毁）统一回收到引用池；回退与跳转取回的是**同一实例**，状态不丢失，且不存在重复归还

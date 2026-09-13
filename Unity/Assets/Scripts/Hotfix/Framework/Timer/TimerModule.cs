@@ -46,13 +46,21 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         protected internal override void OnDispose()
         {
-            foreach (var timerInfo in m_TimerDict.Values)
+            // 先快照容器内容并清空字典，再逐个取消/回收：
+            // Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → 从 m_TimerDict 移除并 ReferencePool.Recycle(timerInfo)。
+            // 若边遍历边取消，会同时踩到「遍历中修改容器」与「同一 timerInfo 被二次回收」（ReleaseTimer 再 Recycle 一次）；
+            // 先 Clear 后，延续里的 ReleaseTimer 找不到条目会直接返回，回收由本方法唯一负责。
+            if (m_TimerDict.Count == 0) return;
+
+            var timerSnapshot = new List<TimerBase>(m_TimerDict.Values);
+            m_TimerDict.Clear();
+
+            for (var i = 0; i < timerSnapshot.Count; i++)
             {
+                var timerInfo = timerSnapshot[i];
                 timerInfo.Cts.Cancel();
                 ReferencePool.Recycle(timerInfo);
             }
-
-            m_TimerDict.Clear();
         }
 
         #region Public Methods
@@ -237,9 +245,15 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         public void StopAllTimers()
         {
-            foreach (var timerInfo in m_TimerDict.Values)
+            // 先快照再取消：Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → m_TimerDict.Remove。
+            // 若直接遍历 m_TimerDict.Values 边取消边移除，会触发「遍历中修改容器」抛异常。
+            // 此处不清字典也不回收（与 OnDispose 不同）：延续里的 ReleaseTimer 仍需负责回收与派发 OnTimerFinished。
+            if (m_TimerDict.Count == 0) return;
+
+            var timerSnapshot = new List<TimerBase>(m_TimerDict.Values);
+            for (var i = 0; i < timerSnapshot.Count; i++)
             {
-                timerInfo.Cts.Cancel();
+                timerSnapshot[i].Cts.Cancel();
             }
         }
 

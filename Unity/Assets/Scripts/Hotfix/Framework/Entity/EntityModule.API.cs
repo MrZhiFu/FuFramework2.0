@@ -703,16 +703,33 @@ namespace Hotfix.Framework.Entity
             // 创建附加实体信息
             var attachEntityInfo = AttachEntityInfo.Create(parentTransform, userData);
 
-            // 解除之前的附加关系
-            DetachEntity(childEntity.Id, attachEntityInfo);
+            // attachEntityInfo 的所有权：中间任一步骤抛异常（DetachEntity 失败、AddChildEntity 子实体重复等）都会
+            // 跳过 OnAttachTo，导致该池对象永不归还；用 handedOver 标志区分"是否已交接"，
+            // 未交接则在 finally 中兜底回收，已交接则由 childEntity.OnAttachTo 内部唯一负责回收（其成功/异常路径均回收）。
+            var handedOver = false;
+            try
+            {
+                // 解除之前的附加关系
+                DetachEntity(childEntity.Id, attachEntityInfo);
 
-            // 附加到新的父实体
-            childEntityInfo.ParentEntity = parentEntity;
-            parentEntityInfo.AddChildEntity(childEntity);
+                // 附加到新的父实体
+                childEntityInfo.ParentEntity = parentEntity;
+                parentEntityInfo.AddChildEntity(childEntity);
 
-            // 通知父实体有新子实体附加进来，通知子实体被附加到新的父实体上
-            parentEntity.OnAttached(childEntity, attachEntityInfo);
-            childEntity.OnAttachTo(parentEntity, attachEntityInfo);
+                // 通知父实体有新子实体附加进来
+                parentEntity.OnAttached(childEntity, attachEntityInfo);
+
+                // 通知子实体被附加到新的父实体上：OnAttachTo 内部负责回收 attachEntityInfo
+                handedOver = true;
+                childEntity.OnAttachTo(parentEntity, attachEntityInfo);
+            }
+            finally
+            {
+                if (!handedOver)
+                {
+                    ReferencePool.Recycle(attachEntityInfo);
+                }
+            }
         }
 
         #endregion

@@ -198,14 +198,15 @@ using Hotfix.Framework.Core;
 public sealed class EmptyEventArgs : GameEventArgs
 {
     public override string Id => m_EventId;
-    private static string m_EventId = typeof(EmptyEventArgs).FullName;
-    
-    public override void Clear() { }
-    
+    // 实例字段：事件下一帧才分发，若用静态字段会被同帧抛出的其它事件编号覆盖
+    private string m_EventId = typeof(EmptyEventArgs).FullName;
+
+    public override void Clear() => m_EventId = typeof(EmptyEventArgs).FullName;
+
     public static EmptyEventArgs Create(string eventId)
     {
-        var eventArgs = GlobalModule.ReferencePoolModule.Acquire<EmptyEventArgs>();
-        m_EventId = eventId;
+        var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
+        eventArgs.m_EventId = eventId;
         return eventArgs;
     }
 }
@@ -247,7 +248,7 @@ public class PlayerDamageEventArgs : GameEventArgs
     
     public static PlayerDamageEventArgs Create(int damage, GameObject attacker, Vector3 hitPosition)
     {
-        var args = GlobalModule.ReferencePoolModule.Acquire<PlayerDamageEventArgs>();
+        var args = ReferencePool.Acquire<PlayerDamageEventArgs>();
         args.Damage = damage;
         args.Attacker = attacker;
         args.HitPosition = hitPosition;
@@ -271,7 +272,7 @@ public class PlayerLevelUpEventArgs : GameEventArgs
     
     public static PlayerLevelUpEventArgs Create(int newLevel, int oldLevel)
     {
-        var args = GlobalModule.ReferencePoolModule.Acquire<PlayerLevelUpEventArgs>();
+        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
         args.NewLevel = newLevel;
         args.OldLevel = oldLevel;
         return args;
@@ -539,7 +540,7 @@ public class CriticalSystem : MonoBehaviour
    从 m_EventQueue 取出事件
    -> ProcessWaitRemoveHandlers() 处理待删除列表
    -> 调用所有匹配的 handler
-   -> GlobalModule.ReferencePoolModule.Release(args) 释放事件参数
+   -> ReferencePool.Recycle(args) 释放事件参数
 ```
 
 ### 6.2 线程安全说明
@@ -659,7 +660,7 @@ public class MyEventArgs : GameEventArgs
     
     public static MyEventArgs Create(int intValue, string stringValue)
     {
-        var args = GlobalModule.ReferencePoolModule.Acquire<MyEventArgs>();
+        var args = ReferencePool.Acquire<MyEventArgs>();
         args.IntValue = intValue;
         args.StringValue = stringValue;
         return args;
@@ -757,5 +758,5 @@ private void Update()
 4. 异常处理  ：事件处理函数中的异常会被捕获并记录，不会影响其他处理函数
 5. 对象池  ：事件参数对象会自动通过引用池管理，无需手动释放，但需正确实现 `Clear` 方法
 6. 延迟取消订阅  ：取消订阅会在下一帧事件处理前生效，当前帧仍会收到事件
-7. 空事件ID  ：使用 `EmptyEventArgs` 时，事件ID会被静态变量共享，注意并发问题
+7. 空事件ID  ：`EmptyEventArgs` 的事件ID为实例字段，同帧多个不同ID不会互相覆盖
 

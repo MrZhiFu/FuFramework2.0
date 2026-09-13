@@ -162,17 +162,30 @@ namespace Hotfix.Framework.Entity
             // 回收待回收的实体
             while (m_WaitRecycleQueue.Count > 0)
             {
-                EntityInfo  entityInfo  = m_WaitRecycleQueue.Dequeue();
-                Entity      entity      = entityInfo.Entity;
-                EntityGroup entityGroup = entity.EntityGroup;
+                EntityInfo entityInfo = m_WaitRecycleQueue.Dequeue();
 
-                if (entityGroup is null) throw new InvalidOperationException($"[EntityModule] 回收实体失败, 实体{entity.EntityAssetName}所属的实体组为空.");
+                // ObjectPoolModule.Recycle 在池中找不到目标时会抛异常；若让其逃逸会中断模块帧循环，
+                // 且 entityInfo 会因跳过回收而泄漏，故逐项 try/catch/finally 兜底。
+                try
+                {
+                    Entity      entity      = entityInfo.Entity;
+                    EntityGroup entityGroup = entity.EntityGroup;
 
-                entityInfo.Status = EEntityStatus.WillRecycle;
-                entity.OnRecycle();
-                entityInfo.Status = EEntityStatus.Recycled;
-                entityGroup.RecycleEntity(entity);
-                ReferencePool.Recycle(entityInfo);
+                    if (entityGroup is null) throw new InvalidOperationException($"[EntityModule] 回收实体失败, 实体{entity.EntityAssetName}所属的实体组为空.");
+
+                    entityInfo.Status = EEntityStatus.WillRecycle;
+                    entity.OnRecycle();
+                    entityInfo.Status = EEntityStatus.Recycled;
+                    entityGroup.RecycleEntity(entity);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[EntityModule] 回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
+                }
+                finally
+                {
+                    ReferencePool.Recycle(entityInfo);
+                }
             }
 
             // 遍历每个实体组，驱动每个实体组轮询
@@ -193,16 +206,9 @@ namespace Hotfix.Framework.Entity
             m_Scope.Cancel(); // 随模块销毁取消在途实体加载
             HideAllLoadedEntities();
 
-            // 显式销毁各实体组对象池（含其中所有实体对象持有的句柄），句柄释放收敛到本模块，
-            // 不依赖 ObjectPoolModule 逆序销毁的隐式顺序（否则单独 Dispose 或注册顺序变化时句柄永久泄漏）
-            foreach (var (_, entityGroup) in m_EntityGroupDict)
-                entityGroup.DisposeEntityPool(m_ObjectPoolModule);
-
-            m_EntityGroupDict.Clear();
-            m_LoadingEntityDict.Clear();
-            m_LoadingToReleaseSet.Clear();
-
-            // 清空回收队列中待回收的实体，避免 teardown 时丢弃未回收的 EntityInfo 与实体实例
+            // 先排空待回收队列，再销毁各实体组对象池：顺序不可颠倒。
+            // 排空时 RecycleEntity → 对象池 Recycle 要求目标仍登记在池中；若先销毁池，
+            // 这里必定抛“找不到目标对象”并被 catch 降级为告警，回收实际失效（实体未被登记回收）。
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var entityInfo = m_WaitRecycleQueue.Dequeue();
@@ -224,6 +230,15 @@ namespace Hotfix.Framework.Entity
                     ReferencePool.Recycle(entityInfo);
                 }
             }
+
+            // 显式销毁各实体组对象池（含其中所有实体对象持有的句柄），句柄释放收敛到本模块，
+            // 不依赖 ObjectPoolModule 逆序销毁的隐式顺序（否则单独 Dispose 或注册顺序变化时句柄永久泄漏）
+            foreach (var (_, entityGroup) in m_EntityGroupDict)
+                entityGroup.DisposeEntityPool(m_ObjectPoolModule);
+
+            m_EntityGroupDict.Clear();
+            m_LoadingEntityDict.Clear();
+            m_LoadingToReleaseSet.Clear();
 
             // 销毁实体根节点与辅助器（OnInit 会重建），避免重启后重复对象泄漏
             if (m_EntityRoot != null)
@@ -285,7 +300,22 @@ namespace Hotfix.Framework.Entity
             }
 
             var entityObject = EntityObject.Create(entityAssetName, entityAssetHandle, entityGo, m_EntityHelper);
-            showEntityInfo.EntityGroup.RegisterEntityObject(entityObject, true);
+
+            // 注册失败时 ObjectPool.Register 会抛异常（目标真实对象已被 Unity 销毁的假 null、目标重复注册等），
+            // 而本回调由 YooAsset 的 Completed 同步调用：异常若逃逸会中断回调，tcs 永不完成（await 永久挂起）、
+            // showEntityInfo 泄漏，故此处兜底置异常并回收信息（与上方各失败分支风格一致）。
+            // 注意：死目标分支在 Register 内部已由 RemoveDeadObject 完成 OnDispose（释放实体句柄）与引用池回收，
+            // 此处不可再对 entityObject 调 RecycleEntityObject（该目标已解除登记，重复回收会抛“找不到目标对象”）。
+            try
+            {
+                showEntityInfo.EntityGroup.RegisterEntityObject(entityObject, true);
+            }
+            catch (Exception e)
+            {
+                ReferencePool.Recycle(showEntityInfo);
+                tcs.TrySetException(e);
+                return;
+            }
 
             // 实体资源已经加载完成，开始显示实体
             var showEntityInfoEx = showEntityInfo.UserData as ShowEntityInfoEx;

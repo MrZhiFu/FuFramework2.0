@@ -1,5 +1,6 @@
 using Hotfix.Game.Config;
 using Hotfix.Framework.Core;
+using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Guide
 {
     /// <summary>
@@ -13,12 +14,22 @@ namespace Hotfix.Framework.Guide
         protected override void OnExecute()
         {
             base.OnExecute();
+
+            // 空判与 ClickUIStep 保持一致：GuideAction 为 null 时告警并返回，
+            // 否则 NRE 会被 GuideModule 的 catch 吞成静默跳步。
+            if (GuideAction == null)
+            {
+                FuLogger.LogWarning("[DialogStep] 无法执行引导，引导动作执行器为null");
+                return;
+            }
+
             GuideAction.DoDialogGuide(StepInfo.DialogContent, Complete);
         }
 
         protected override void OnComplete()
         {
-            GuideAction.EndDialogGuide();
+            // 与 ClickUIStep.OnComplete / WaitStep 一致，用 ?. 空判
+            GuideAction?.EndDialogGuide();
             base.OnComplete();
         }
 

@@ -76,17 +76,29 @@ namespace Hotfix.Framework.UI
             var current = m_UIInfoList.First;
             while (current != null)
             {
+                // 先缓存下一个节点：win._OnUpdate 是用户代码，可能在其中关闭自身
+                //（UIModule.Close → UIGroup.Remove → FuLinkedList.Remove 会 detach 本节点，
+                // 使 current.Next 变为 null，并把节点回收进节点缓存队列供复用）。
+                // 若在回调之后才读 current.Next，本帧该组后续窗口会被全部跳过，节点被复用后还可能跳进「新」节点。
+                // 与 EntityGroup.Update 的 m_CachedNode 预取写法保持一致。
+                var next = current.Next;
+
+                // 当前节点可能在本帧更早的某个窗口回调里已被关闭（例如前一个窗口关闭了「下一个」窗口）：
+                // FuLinkedList.Remove 会 detach 该节点并把它回收进节点缓存队列（_ReleaseNode 把 Value 置为
+                // default=null），此时节点引用仍非 null 但 Value 已为空，直接解引用 uiInfo.Win 会抛
+                // NullReferenceException。故先从 Value 取出一份再判空，本帧被关闭的节点一律跳过、不予驱动。
                 var uiInfo = current.Value;
-                var win    = uiInfo.Win;
+
+                // 先推进到回调前缓存的节点，保证回调中关闭自身/关闭下一个节点都不会漏掉本帧后续窗口
+                current = next;
+
+                if (uiInfo?.Win == null) continue;
 
                 // 只更新未暂停且可见的界面
-                if (!uiInfo.Paused && win.Visible)
+                if (!uiInfo.Paused && uiInfo.Win.Visible)
                 {
-                    win._OnUpdate(deltaTime, unscaledDeltaTime);
+                    uiInfo.Win._OnUpdate(deltaTime, unscaledDeltaTime);
                 }
-
-                // 继续处理下一个界面
-                current = current.Next;
             }
         }
 

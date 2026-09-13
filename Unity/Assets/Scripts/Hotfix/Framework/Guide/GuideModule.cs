@@ -6,7 +6,6 @@ using Hotfix.Game.Config;
 using GuideData = Hotfix.Game.Config.Guide;
 using GuideStepData = Hotfix.Game.Config.GuideStep;
 using AOT.Framework.Core.Log;
-using System.Linq;
 using UnityEngine;
 
 namespace Hotfix.Framework.Guide
@@ -54,9 +53,10 @@ namespace Hotfix.Framework.Guide
         private readonly Dictionary<int, BaseStep> m_AllStepDict = new();
 
         /// <summary>
-        /// 步骤历史记录栈
+        /// 步骤历史记录栈。
+        /// 只记录步骤 ID：步骤实例推进后会被回收，存实例会拿到已被 Clear 的死对象，故回退时按 ID 重新取回。
         /// </summary>
-        private readonly Stack<BaseStep> m_StepHistoryStack = new();
+        private readonly Stack<int> m_StepHistoryStack = new();
 
         /// <summary>
         /// 缓存完成的引导，key为引导ID，Value为是否完成
@@ -265,29 +265,47 @@ namespace Hotfix.Framework.Guide
         }
 
         /// <summary>
-        /// 完成当前步骤并进入下一步
+        /// 完成当前步骤并进入下一步。
+        /// 推进方说明：权威推进方是 BaseStep.Complete 内部的 JumpToStep(NextStepId)（Cancel 当前步骤 + 记入历史 + 执行下一步），
+        /// WaitStep/DialogStep/ClickUIStep 都是直接调 Complete() 靠它推进的；故本方法只在「末步」这一分支调 MoveToNextStep() 收尾，
+        /// 其余情况不再调，否则一次调用会跨两步、历史栈错位、且被跨过的步骤未经 Cancel（仍挂监听、仍在执行态）。
         /// </summary>
         public void CompleteCurrentStep()
         {
-            if (m_CurrentStep == null) return;
+            var completedStep = m_CurrentStep;
+            if (completedStep == null) return;
 
-            if (!m_CurrentStep.CanComplete())
+            if (!completedStep.CanComplete())
             {
-                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 当前无法完成");
+                FuLogger.LogWarning($"[GuideModule] 步骤 {completedStep.StepInfo.Id} 当前无法完成");
                 return;
             }
 
             try
             {
-                m_CurrentStep.Complete();
-                m_StepHistoryStack.Push(m_CurrentStep);
-                OnStepCompleted?.Invoke(m_CurrentStep);
+                // 顺序：先 Complete（推进）再广播完成事件，二者不可调换。
+                // 若在推进前广播，此刻该步仍为 Executing、CanComplete() 仍为 true、m_CurrentStep 仍是该步，
+                // 监听者在回调里 SkipCurrentStep/JumpToStep/StartGuide 会先推进一次，返回后 Complete 内部的
+                // JumpToStep(NextStepId) 分支又会推进一次 → 一步跨两步。
+                // 历史不在此重复记录：推进时 JumpToStep 已把当前步骤记入历史，再记一次会让同一 ID 入栈两次。
+                completedStep.Complete();
 
-                MoveToNextStep();
+                // 事件针对「被完成的那一步」：completedStep 是推进前捕获的当前步，此刻其 State 已为 Completed，
+                // 监听者看到的是「旧步已完成、当前步已切换」的一致状态（不是切换后的新步）。
+                OnStepCompleted?.Invoke(completedStep);
+
+                // 末步（无 NextStepId）时 BaseStep.Complete 不会推进，需在此收尾结束引导。
+                // 放在广播之后：FinishGuide 会回收步骤实例并把 StepInfo 置空，先回收会把死对象交给监听者。
+                // 仅当当前步仍是被完成的那一步（Complete 与监听者都未推动）时才收尾，避免重复推进。
+                if (ReferenceEquals(m_CurrentStep, completedStep))
+                {
+                    MoveToNextStep();
+                }
             }
             catch (Exception e)
             {
-                FuLogger.LogError($"[GuideModule] 完成步骤失败 {m_CurrentStep.StepInfo.Id}: {e.Message}");
+                // StepInfo 可能已被回收（FinishGuide → ClearGuideData 会置空），故用 ?. 取 ID
+                FuLogger.LogError($"[GuideModule] 完成步骤失败 {completedStep.StepInfo?.Id}: {e.Message}");
                 ForceNextStep();
             }
         }
@@ -303,7 +321,7 @@ namespace Hotfix.Framework.Guide
             {
                 FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_CurrentStep.StepInfo.Id}");
                 m_CurrentStep.Cancel();
-                m_StepHistoryStack.Push(m_CurrentStep);
+                PushStepHistory(m_CurrentStep);
                 MoveToNextStep();
             }
             else
@@ -325,11 +343,17 @@ namespace Hotfix.Framework.Guide
 
             m_CurrentStep?.Cancel();
 
-            var previousStep = m_StepHistoryStack.Pop();
+            var previousStepId = m_StepHistoryStack.Pop();
+            if (!m_AllStepDict.TryGetValue(previousStepId, out var previousStep))
+            {
+                FuLogger.LogWarning($"[GuideModule] 历史步骤已不可用: {previousStepId}");
+                return;
+            }
+
             m_CurrentStep = previousStep;
             ExecuteCurrentStep();
 
-            FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStep.StepInfo.Id}");
+            FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStepId}");
         }
 
         /// <summary>
@@ -348,7 +372,7 @@ namespace Hotfix.Framework.Guide
             if (m_CurrentStep != null)
             {
                 m_CurrentStep.Cancel();
-                m_StepHistoryStack.Push(m_CurrentStep);
+                PushStepHistory(m_CurrentStep);
             }
 
             m_CurrentStep = m_AllStepDict[stepId];
@@ -528,12 +552,10 @@ namespace Hotfix.Framework.Guide
             m_AllStepDict.Clear();
             m_StepHistoryStack.Clear();
 
-            var guideSteps = m_StepDataDict.Values
-                .Where(s => s.GuideId == guide.Id)
-                .ToList();
-
-            foreach (var stepInfo in guideSteps)
+            foreach (var stepInfo in m_StepDataDict.Values)
             {
+                if (stepInfo.GuideId != guide.Id) continue;
+
                 var step = CreateStep(stepInfo);
                 if (step == null) continue;
 
@@ -613,16 +635,33 @@ namespace Hotfix.Framework.Guide
         {
             var nextStepId = m_CurrentStep?.StepInfo?.NextStepId;
 
-            if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
-            {
-                ReferencePool.Recycle(m_CurrentStep); // 回收当前步骤到引用池中
-                m_CurrentStep = nextStep;
-                ExecuteCurrentStep();
-            }
-            else
+            if (!nextStepId.HasValue)
             {
                 FinishGuide();
+                return;
             }
+
+            // 步骤实例在整条引导生命周期内常驻 m_AllStepDict（BuildStepNodes 构建，ClearGuideData 统一回收）。
+            // 中途不回收：唯一回收点才能杜绝「同一实例被重复归还」；回退/跳转也因此拿到同一实例、状态不丢失。
+            if (!m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
+            {
+                FinishGuide();
+                return;
+            }
+
+            m_CurrentStep = nextStep;
+            ExecuteCurrentStep();
+        }
+
+        /// <summary>
+        /// 记录步骤历史(记录 ID；步骤实例在引导结束前常驻字典，回退时按 ID 取回同一实例)
+        /// </summary>
+        /// <param name="step">步骤实例</param>
+        private void PushStepHistory(BaseStep step)
+        {
+            if (step?.StepInfo == null) return;
+
+            m_StepHistoryStack.Push(step.StepInfo.Id);
         }
 
         /// <summary>
@@ -647,7 +686,7 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private void ClearGuideData()
         {
-            // 回收当前引导的所有步骤到引用池中
+            // 回收当前引导的所有步骤到引用池中（引导生命周期内步骤的唯一回收点）
             foreach (var (_, step) in m_AllStepDict)
             {
                 ReferencePool.Recycle(step);

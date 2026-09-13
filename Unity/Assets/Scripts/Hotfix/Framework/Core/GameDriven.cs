@@ -37,6 +37,7 @@ namespace Hotfix.Framework.Core
 
         /// <summary>
         /// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
+        /// 仅负责模块自身的同步清理，不包含 ReferencePool.ClearAll（后者在排水之后调用，仅释放闲置引用）。
         /// </summary>
         public Action DisposeModules;
 
@@ -123,15 +124,21 @@ namespace Hotfix.Framework.Core
         }
 
         /// <summary>
-        /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待所有 ICancelAsync 模块取消清理完毕 → 完整重跑启动流程。
+        /// 重启游戏异步流程：Dispose（同步清理 + 各自 Cancel）→ 等待所有 ICancelAsync 模块取消清理完毕 → 释放引用池闲置对象 → 完整重跑启动流程。
         /// 完整启动（LaunchProcess）负责资源热更（版本/清单/下载），并由 HotfixLauncher.MainAsync 重启路径
         /// 在重新加载配置后分阶段 重新初始化 模块（基础模块先、依赖配置的功能模块后）再进入游戏。
-        /// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期。
+        /// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期；
+        /// 随后 ReferencePool.ClearAll 释放各引用池的闲置对象（保留类型条目与计数，迟到 Recycle 仍自洽），
+        /// 为新一轮生命周期回收内存。
         /// </summary>
         private async UniTask RestartGameAsync()
         {
             DisposeModules?.Invoke();
             await ModuleManager.CancelAllAsync();
+
+            // 排水完成后释放引用池闲置对象（保留类型条目与计数，故不依赖排水“彻底完成”这一强假设）
+            ReferencePool.ClearAll();
+
             await LaunchProcess.RunAsync();
         }
     }
