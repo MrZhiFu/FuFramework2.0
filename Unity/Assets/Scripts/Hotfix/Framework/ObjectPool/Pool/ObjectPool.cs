@@ -273,6 +273,11 @@ namespace Hotfix.Framework.ObjectPool
 
             foreach (var obj in objects)
             {
+                // 重入保护：本方法可能被某个 obj.OnDispose() 内部触发的销毁重入，此时同批剩余对象已被内层
+                // 循环处理过（OnDispose 会清空对象状态、Name 置空，与 DisposeObjectInternal 的跳过判断对齐）。
+                // 若不跳过，它们会被二次 OnDispose + 二次 ReferencePool.Recycle（并被 catch 成误导性告警）。
+                if (string.IsNullOrEmpty(obj.Name)) continue;
+
                 // 先在两个字典中解除登记，再调用用户回调 OnDispose()（与 DisposeObjectInternal 的做法一致）：
                 // OnDispose 是用户代码（EntityObject 会销毁 GameObject、WinObject 会触发回调），可能重入本池
                 // （Spawn/Recycle/DisposeObject）。若此时对象仍登记在册，Spawn 的无效对象分支会经

@@ -55,6 +55,13 @@ namespace Hotfix.Framework.RedDot
         private readonly HashSet<RedDotNode> m_DirtyNodeSet = new();
 
         /// <summary>
+        /// 本帧脏节点重算用的快照列表（双缓冲）。
+        /// Calculator 为用户代码，可能经 BroadcastNow 触发 OnTriggerEvent 改动 m_DirtyNodeSet，
+        /// 故必须先快照再遍历，且遍历期间新增的脏节点不得被本轮清理丢弃。
+        /// </summary>
+        private readonly List<RedDotNode> m_DirtySnapshot = new();
+
+        /// <summary>
         /// 本帧发生变更的节点 Key 集合(用于去重后广播)
         /// </summary>
         private readonly HashSet<RedDotKey> m_ChangedKeySet = new();
@@ -167,6 +174,7 @@ namespace Hotfix.Framework.RedDot
 
             NodeDict.Clear();
             m_DirtyNodeSet.Clear();
+            m_DirtySnapshot.Clear();
             m_ChangedKeySet.Clear();
             m_DynamicIdDict.Clear();
             m_ReadSet.Clear();
@@ -183,8 +191,23 @@ namespace Hotfix.Framework.RedDot
             // 处理脏节点
             if (m_DirtyNodeSet.Count > 0)
             {
-                foreach (var node in m_DirtyNodeSet)
+                // 先快照：Calculator 为用户代码，执行期间可能经 BroadcastNow 触发 OnTriggerEvent 改动
+                // m_DirtyNodeSet。直接 foreach 活集合会抛「集合已修改」；若遍历后整体 Clear，遍历期间
+                // 新加入的脏节点又会被丢弃、永不重算。故快照到缓存列表，逐个处理并从活集合移除。
+                m_DirtySnapshot.Clear();
+                foreach (var dirtyNode in m_DirtyNodeSet)
                 {
+                    m_DirtySnapshot.Add(dirtyNode);
+                }
+
+                for (var i = 0; i < m_DirtySnapshot.Count; i++)
+                {
+                    var node = m_DirtySnapshot[i];
+
+                    // 先移出活集合：若 Calculator 在重算期间（经 BroadcastNow）把本节点重新标记为脏，
+                    // 它会重新加入活集合，留待下一帧重算，不会被本轮末尾的清理误删。
+                    m_DirtyNodeSet.Remove(node);
+
                     node.IsDirty = false;
                     if (node.Calculator == null) continue;
 
@@ -203,7 +226,7 @@ namespace Hotfix.Framework.RedDot
                     }
                 }
 
-                m_DirtyNodeSet.Clear();
+                m_DirtySnapshot.Clear();
             }
 
             // 广播所有本帧累积的变更(脏节点 + MarkRead 等)

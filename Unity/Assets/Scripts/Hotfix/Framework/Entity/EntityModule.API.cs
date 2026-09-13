@@ -653,6 +653,21 @@ namespace Hotfix.Framework.Entity
         }
 
         /// <summary>
+        /// 附加子实体（直接附加到父实体自身的 Transform 上）。
+        /// 必须显式提供此三参重载：上面两个四参重载的末参都有默认值，
+        /// 三参调用会同时匹配二者且无更优候选，编译期直接报 CS0121（重载歧义）。
+        /// </summary>
+        /// <param name="childEntity">要附加的子实体。</param>
+        /// <param name="parentEntity">被附加的父实体。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void AttachEntity(Entity childEntity, Entity parentEntity, object userData)
+        {
+            if (childEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 子实体不存在.");
+            if (parentEntity is null) throw new InvalidOperationException("[EntityModule] 附加子实体失败, 父实体不存在.");
+            AttachEntity(childEntity.Id, parentEntity.Id, userData, (Transform)null);
+        }
+
+        /// <summary>
         /// 附加子实体。
         /// </summary>
         /// <param name="childEntityId">要附加的子实体的实体编号。</param>
@@ -687,6 +702,18 @@ namespace Hotfix.Framework.Entity
             }
 
             AttachEntity(childEntityId, parentEntityId, userData, parentTransform);
+        }
+
+        /// <summary>
+        /// 附加子实体（直接附加到父实体自身的 Transform 上）。
+        /// 与上方 Entity 版三参重载同理：两个四参重载末参都有默认值，三参调用会报 CS0121（重载歧义）。
+        /// </summary>
+        /// <param name="childEntityId">要附加的子实体的实体编号。</param>
+        /// <param name="parentEntityId">被附加的父实体的实体编号。</param>
+        /// <param name="userData">用户自定义数据。</param>
+        public void AttachEntity(int childEntityId, int parentEntityId, object userData)
+        {
+            AttachEntity(childEntityId, parentEntityId, userData, (Transform)null);
         }
 
         /// <summary>

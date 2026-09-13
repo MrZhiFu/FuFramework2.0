@@ -21,6 +21,17 @@ namespace Hotfix.Framework.Storage
     public class StorageHelper
     {
         /// <summary>
+        /// 浮点相等判定容差。
+        /// 勿用 float.Epsilon/double.Epsilon（均为最小非零次正规数），Math.Abs(a - b) &lt; Epsilon 实际等价于精确相等。
+        /// </summary>
+        private const float FloatCompareEpsilon = 1e-6f;
+
+        /// <summary>
+        /// 双精度相等判定容差（同 FloatCompareEpsilon 说明）。
+        /// </summary>
+        private const double DoubleCompareEpsilon = 1e-12;
+
+        /// <summary>
         /// 文件名
         /// </summary>
         public string FileName { get; private set; }
@@ -420,7 +431,7 @@ namespace Hotfix.Framework.Storage
         public void SetFloat(string dataName, float value)
         {
             var oldValue = Data.GetFloat(dataName);
-            if (Math.Abs(oldValue - value) < float.Epsilon) return;
+            if (Math.Abs(oldValue - value) < FloatCompareEpsilon) return;
             Data.SetFloat(dataName, value);
             IsDirty = true;
         }
@@ -433,7 +444,7 @@ namespace Hotfix.Framework.Storage
         public void SetDouble(string dataName, double value)
         {
             var oldValue = Data.GetDouble(dataName);
-            if (Math.Abs(oldValue - value) < double.Epsilon) return;
+            if (Math.Abs(oldValue - value) < DoubleCompareEpsilon) return;
             Data.SetDouble(dataName, value);
             IsDirty = true;
         }

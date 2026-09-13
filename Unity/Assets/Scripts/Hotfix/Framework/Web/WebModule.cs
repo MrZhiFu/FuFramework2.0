@@ -308,8 +308,11 @@ namespace Hotfix.Framework.Web
                     // 已被调试面板急救取消：终止态已登记，不再写回与重复记账，仅释放资源
                     if (webData.IsDebugCanceled) return;
 
-                    var sendBytes = GetUploadBytes(unityWebRequest);
-                    var recvBytes = GetDownloadBytes(unityWebRequest);
+                    // 收发字节数仅供调试记账（RecordResult 关闭时直接短路），且计长会二次访问 downloadHandler.data，
+                    // 故仅在调试记录开启时统计，关闭时按 0 传递
+                    var debugRecording = DebugRecordingEnabled;
+                    var sendBytes      = debugRecording ? GetUploadBytes(unityWebRequest) : 0;
+                    var recvBytes      = debugRecording ? GetDownloadBytes(unityWebRequest) : 0;
 
                     if (unityWebRequest.result != UnityWebRequest.Result.Success)
                     {

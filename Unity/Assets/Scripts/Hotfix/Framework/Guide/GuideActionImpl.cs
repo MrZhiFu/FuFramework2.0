@@ -12,8 +12,17 @@ namespace Hotfix.Framework.Guide
     /// <summary>
     /// 引导动作执行实现
     /// </summary>
-    public class GuideActionImpl : IGuideAction, IDisposable
+    public class GuideActionImpl : IGuideAction, IDisposable, ICancelAsync
     {
+        /// <summary>
+        /// 模块级取消范围：两条引导异步链（点击UI引导 / 对话引导）在其中有在途登记。
+        /// 作用：引导模块（GuideModule，实现 ICancelAsync）在框架重启时经它排水等待——
+        /// ModuleManager.CancelAllAsync 保证旧生命周期的引导链清理完毕后才 ReferencePool.ClearAll。
+        /// 生命周期 = 本执行器的一次存活期（Dispose 时取消）；展示周期的取消仍由下面两个
+        /// LifecycleCancellationSource 负责（Recreate/Cancel 按轮次重建）。
+        /// </summary>
+        private readonly CancellationScope m_ModuleScope = new();
+
         /// <summary>
         /// 点击UI引导异步链的生命周期取消源（本类即该异步链的所有者，随会话常驻）。
         /// 生命周期 = 一次「点击UI引导」的展示周期：DoClickUIGuide 用 Recreate 开启新一轮令牌，
@@ -74,11 +83,26 @@ namespace Hotfix.Framework.Guide
         }
 
         /// <summary>
-        /// 释放：取消并释放两条引导链的生命周期取消源，避免 CTS 泄漏。
+        /// 取消令牌：随本执行器销毁（Dispose）触发，在途引导链观察它并中止。
+        /// </summary>
+        public CancellationToken Token => m_ModuleScope.Token;
+
+        /// <summary>
+        /// 触发取消并等待两条引导异步链清理完毕后才返回（可重入、幂等）。
+        /// 由持有方（GuideModule.CancelAsync）在框架重启时 await，保证排水完成。
+        /// </summary>
+        public UniTask CancelAsync() => m_ModuleScope.CancelAsync();
+
+        /// <summary>
+        /// 释放：先取消模块级取消范围（令等待排水的 CancelAsync 得以观察），再取消并释放两条引导链的
+        /// 生命周期取消源（中止在途链，避免 CTS 泄漏）。
         /// 由持有方（引导模块，见 GuideModule.GuideAction）在销毁时调用；本类不再复用时只走 Dispose，复用场景走 Recreate。
+        /// 注意：这里只 Cancel 不 Dispose 模块级取消范围——框架重启要在 Dispose 之后经 GuideModule.CancelAsync
+        /// 等待在途链清理完毕；CTS 随本实例被 GC 回收。
         /// </summary>
         public void Dispose()
         {
+            m_ModuleScope.Cancel();
             m_ClickGuideCancellation.Dispose();
             m_DialogGuideCancellation.Dispose();
         }
@@ -103,6 +127,9 @@ namespace Hotfix.Framework.Guide
             // 整条链包 try/catch：原实现只在 await 之后按令牌兜底（仅覆盖「窗口已创建且已取消」），
             // 若 OpenAsync / 取区域过程中抛异常（如重启引导时界面已被销毁），异常会跳出整个兜底分支，
             // 只留一条 UniTask 调度器日志，引导窗滞留在屏幕上 → 这里补上异常路径的回收。
+            // 在途登记：使引导模块（GuideModule.CancelAsync）在框架重启时能等到本链清理完毕再返回。
+            using var inFlight = m_ModuleScope.Begin();
+
             try
             {
                 FuLogger.LogInfo($"执行点击UI引导, 目标UI：{targetUI.name}");
@@ -140,6 +167,9 @@ namespace Hotfix.Framework.Guide
             // 整条链包 try/catch（与 ExecuteClickUIGuideAsync 同款）：原实现只在 await 之后按令牌兜底，
             // 若 OpenAsync 过程中抛异常（如重启引导时对话框界面已被销毁），异常会跳出兜底分支，
             // 对话框可能滞留在屏幕上 → 这里补上异常路径的关闭。
+            // 在途登记（同 ExecuteClickUIGuideAsync）：框架重启时引导模块经此等待本链清理完毕。
+            using var inFlight = m_ModuleScope.Begin();
+
             try
             {
                 FuLogger.LogInfo("执行对话引导");

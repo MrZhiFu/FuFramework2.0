@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -245,11 +246,28 @@ namespace Hotfix.Framework.FSM
         /// </summary>
         public void Clear()
         {
-            CurrentStateBase?.OnLeave(true);
+            // 逐项异常隔离：OnLeave/OnDestroy/Recycle 都是用户代码（OnDestroy 可能回收池对象、抛异常），
+            // 任一抛出都不应中断后续状态与数据对象的回收、也不应让本 Fsm 回不了池——
+            // 回收语义单调：进入 Clear 就必须把 Fsm 完整复位并归还引用池。
+            try
+            {
+                CurrentStateBase?.OnLeave(true);
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[Fsm] 状态 {CurrentStateBase?.GetType().Name} OnLeave 异常: {e.Message}");
+            }
 
             foreach (var (_, state) in m_StateDict)
             {
-                state.OnDestroy();
+                try
+                {
+                    state.OnDestroy();
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogError($"[Fsm] 状态 {state.GetType().Name} OnDestroy 异常: {e.Message}");
+                }
             }
 
             Name  = null;
@@ -264,9 +282,16 @@ namespace Hotfix.Framework.FSM
                 m_RecycledData.Clear();
                 foreach (var (_, data) in m_DataDict)
                 {
-                    // 仅回收池化对象；普通对象丢弃引用即可
-                    if (data is IReference reference && m_RecycledData.Add(reference))
-                        ReferencePool.Recycle(reference);
+                    try
+                    {
+                        // 仅回收池化对象；普通对象丢弃引用即可
+                        if (data is IReference reference && m_RecycledData.Add(reference))
+                            ReferencePool.Recycle(reference);
+                    }
+                    catch (Exception e)
+                    {
+                        FuLogger.LogError($"[Fsm] 数据对象回收异常: {e.Message}");
+                    }
                 }
                 m_RecycledData.Clear();
 

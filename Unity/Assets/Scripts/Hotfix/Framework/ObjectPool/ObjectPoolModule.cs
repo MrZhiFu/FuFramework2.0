@@ -190,8 +190,23 @@ namespace Hotfix.Framework.ObjectPool
         private bool DisposeObjectPoolInternal(TypeNamePair typeNamePair)
         {
             if (!m_ObjPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
-            objectPool.OnDispose();
-            return m_ObjPoolDict.Remove(typeNamePair);
+
+            // 先摘除登记再 OnDispose：OnDispose 会强制回收池内对象（用户代码，可能重入本模块的
+            // Spawn/Recycle/DisposeObjectPool）。若先 OnDispose 再移除，重入期间本池仍可见，
+            // 可能被重复销毁或对同批对象二次回收；且 OnDispose 抛异常时池会永久残留在字典里。
+            m_ObjPoolDict.Remove(typeNamePair);
+
+            try
+            {
+                objectPool.OnDispose();
+            }
+            catch (Exception e)
+            {
+                // 池已完成销毁收尾且已摘除登记：异常不应逃逸中断调用方（如模块 teardown 循环）。
+                FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
+            }
+
+            return true;
         }
 
         /// <summary>

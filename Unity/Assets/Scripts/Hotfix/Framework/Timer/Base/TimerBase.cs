@@ -29,6 +29,15 @@ namespace Hotfix.Framework.Timer
         public bool IsPaused { get; internal set; }
 
         /// <summary>
+        /// 是否需要执行首帧「立即」回调。
+        /// 由启动入口（TimerModule.StartIntervalTimer/StartFrameTimer 的 immediate 参数）置位，
+        /// 由 TimerModule 在「计时器已入字典、异步链已起」之后调用 RunImmediate 执行一次并复位。
+        /// 不在 Create 内执行：Create 发生在入字典之前，此时用户回调抛异常或回调内调 Stop* 都会
+        /// 作用在「已 Acquire 但不在字典中」的计时器上（既不回收也停不到，引用池计数永久虚高）。
+        /// </summary>
+        public bool Immediate { get; internal set; }
+
+        /// <summary>
         /// 取消计时器的令牌
         /// </summary>
         public CancellationTokenSource Cts { get; protected set; }
@@ -60,6 +69,7 @@ namespace Hotfix.Framework.Timer
             Cts = null;
 
             IsPaused        = false;
+            Immediate       = false;
             IgnoreTimeScale = false;
 
             // 复位更新时机为默认值：所有启动入口（TimerModule/TimerRegister）的默认值均为 Update，
@@ -79,5 +89,11 @@ namespace Hotfix.Framework.Timer
         /// 当计时器完成时调用
         /// </summary>
         public virtual void OnComplete() { }
+
+        /// <summary>
+        /// 执行首帧「立即」回调（默认无；时间/帧间隔计时器按各自的次数口径覆写）。
+        /// 由 TimerModule 在计时器入字典、起链之后调用一次，抛异常由异步链的 finally 统一回收。
+        /// </summary>
+        public virtual void RunImmediate() { }
     }
 }

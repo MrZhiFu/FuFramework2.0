@@ -1,4 +1,5 @@
 using System;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -27,15 +28,44 @@ namespace Hotfix.Framework.Timer
         private readonly List<int> m_TimerList = new();
 
         /// <summary>
+        /// 批量操作（PauseAll/ResumeAll/StopAll）的复用快照缓冲。
+        /// 这些操作会经 m_TimerModule 触发 OnTimerFinished → m_TimerList.Remove，边遍历边移除会
+        /// 「遍历中修改容器」；先快照到本缓冲再遍历即可。复用实例字段避免每次 ToArray 分配。
+        /// </summary>
+        private readonly List<int> m_TempTimerList = new();
+
+        /// <summary>
         /// 创建计时器注册器
         /// </summary>
-        /// <returns></returns>
+        /// <returns>计时器注册器；计时器管理模块不存在时返回 null（并回收本次获取的实例，避免引用池泄漏）</returns>
         public static TimerRegister Create()
         {
             var register = ReferencePool.Acquire<TimerRegister>();
             register.m_TimerModule = ModuleManager.GetModule<TimerModule>();
+
+            // 原实现未判空：模块不存在时下一行直接 NRE，且 Acquire 出来的 register 永不回收
+            //（引用池「使用中」计数永久虚高）。
+            if (register.m_TimerModule == null)
+            {
+                FuLogger.LogError("[TimerRegister] 计时器管理模块不存在，创建计时器注册器失败.");
+                ReferencePool.Recycle(register);
+                return null;
+            }
+
             register.m_TimerModule.OnTimerFinished += register.OnTimerFinished;
             return register;
+        }
+
+        /// <summary>
+        /// 把 m_TimerList 快照到复用缓冲（供批量操作遍历；避免 ToArray 分配与遍历中修改容器）
+        /// </summary>
+        private void SnapshotTimerIds()
+        {
+            m_TempTimerList.Clear();
+            for (var i = 0; i < m_TimerList.Count; i++)
+            {
+                m_TempTimerList.Add(m_TimerList[i]);
+            }
         }
 
         /// <summary>
@@ -132,11 +162,15 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         public void PauseAllTimers()
         {
-            var timerIds = m_TimerList.ToArray();
-            foreach (var timerId in timerIds)
+            if (m_TimerModule == null) return;
+
+            SnapshotTimerIds();
+            for (var i = 0; i < m_TempTimerList.Count; i++)
             {
-                m_TimerModule.PauseTimer(timerId);
+                m_TimerModule.PauseTimer(m_TempTimerList[i]);
             }
+
+            m_TempTimerList.Clear();
         }
 
         /// <summary>
@@ -144,11 +178,15 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         public void ResumeAllTimers()
         {
-            var timerIds = m_TimerList.ToArray();
-            foreach (var timerId in timerIds)
+            if (m_TimerModule == null) return;
+
+            SnapshotTimerIds();
+            for (var i = 0; i < m_TempTimerList.Count; i++)
             {
-                m_TimerModule.ResumeTimer(timerId);
+                m_TimerModule.ResumeTimer(m_TempTimerList[i]);
             }
+
+            m_TempTimerList.Clear();
         }
 
         /// <summary>
@@ -156,11 +194,15 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         public void StopAllTimers()
         {
-            var timerIds = m_TimerList.ToArray();
-            foreach (var timerId in timerIds)
+            if (m_TimerModule == null) return;
+
+            SnapshotTimerIds();
+            for (var i = 0; i < m_TempTimerList.Count; i++)
             {
-                StopTimer(timerId);
+                StopTimer(m_TempTimerList[i]);
             }
+
+            m_TempTimerList.Clear();
         }
 
         /// <summary>
@@ -168,25 +210,31 @@ namespace Hotfix.Framework.Timer
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerExist(int timerId) => m_TimerModule.IsTimerExist(timerId);
+        public bool IsTimerExist(int timerId) => m_TimerModule != null && m_TimerModule.IsTimerExist(timerId);
 
         /// <summary>
         /// 检查计时器是否处于暂停状态
         /// </summary>
         /// <param name="timerId"></param>
         /// <returns></returns>
-        public bool IsTimerPaused(int timerId) => m_TimerModule.IsTimerPaused(timerId);
+        public bool IsTimerPaused(int timerId) => m_TimerModule != null && m_TimerModule.IsTimerPaused(timerId);
 
         /// <summary>
-        /// 清理
+        /// 清理。
+        /// 判空原因：Create 在模块缺失时会 Recycle 半成品实例，Recycle → Clear 会走到这里，
+        /// 原实现对 m_TimerModule 直接解引用会 NRE（掩盖 Create 的失败路径）。
         /// </summary>
         public void Clear()
         {
-            StopAllTimers();
-            m_TimerList.Clear();
-            m_TimerModule.OnTimerFinished -= OnTimerFinished;
+            if (m_TimerModule != null)
+            {
+                StopAllTimers();
+                m_TimerModule.OnTimerFinished -= OnTimerFinished;
+                m_TimerModule = null;
+            }
 
-            m_TimerModule = null;
+            m_TimerList.Clear();
+            m_TempTimerList.Clear();
         }
 
         /// <summary>

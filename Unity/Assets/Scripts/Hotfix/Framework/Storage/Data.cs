@@ -53,7 +53,8 @@ namespace Hotfix.Framework.Storage
             var       settingCount = binaryReader.Read7BitEncodedInt32();
             for (var i = 0; i < settingCount; i++)
             {
-                m_DataDict.Add(binaryReader.ReadString(), binaryReader.ReadString());
+                // 用索引器赋值而非 Add：Add 遇到重复键（文件被外部篡改/旧版本残留）会抛异常导致整份存档读取失败
+                m_DataDict[binaryReader.ReadString()] = binaryReader.ReadString();
             }
         }
 
@@ -224,11 +225,12 @@ namespace Hotfix.Framework.Storage
         public void SetDouble(string dataName, double value) => m_DataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// 向指定本地存储的数据项写入字符串值。
+        /// 向指定本地存储的数据项写入字符串值。null 归一为空串：
+        /// BinaryWriter.Write(string) 不接受 null，写入 null 会在 Serialize 阶段抛 ArgumentNullException 导致整份存档保存失败。
         /// </summary>
         /// <param name="dataName">要写入本地存储的数据项的名称。</param>
-        /// <param name="value">要写入的字符串值。</param>
-        public void SetString(string dataName, string value) => m_DataDict[dataName] = value;
+        /// <param name="value">要写入的字符串值（null 视为空串）。</param>
+        public void SetString(string dataName, string value) => m_DataDict[dataName] = value ?? string.Empty;
 
         #endregion
     }

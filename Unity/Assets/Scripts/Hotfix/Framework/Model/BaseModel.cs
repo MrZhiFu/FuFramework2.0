@@ -22,8 +22,19 @@ namespace Hotfix.Framework.Model
         internal void Init()
         {
             EventRegister = EventRegister.Create();
-            OnInitData();
-            RegisterEvents();
+            try
+            {
+                OnInitData();
+                RegisterEvents();
+            }
+            catch
+            {
+                // 初始化失败：立刻归还注册器再上抛。否则半初始化的 Model 若不再走 Dispose，
+                // 这个已取出的注册器永远不回引用池（引用池计数不归零）。
+                EventRegister.Release();
+                EventRegister = null;
+                throw;
+            }
         }
 
         /// <summary>
@@ -31,9 +42,17 @@ namespace Hotfix.Framework.Model
         /// </summary>
         internal void Dispose()
         {
-            OnDispose();
-            EventRegister?.Release();
-            EventRegister = null;
+            // OnDispose 是用户代码：即便抛异常也必须归还事件注册器并置空，
+            // 否则注册器（及其订阅表）永久泄漏。
+            try
+            {
+                OnDispose();
+            }
+            finally
+            {
+                EventRegister?.Release();
+                EventRegister = null;
+            }
         }
 
 

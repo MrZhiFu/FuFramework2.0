@@ -44,6 +44,13 @@ namespace Hotfix.Framework.UI
         private Dictionary<int, string> m_LoadingDict;
 
         /// <summary>
+        /// 已被 CloseAllLoading 取消的在途加载序列号集合。
+        /// _OpenAsync 在每个 await 之后的取消校验点比对本集合，命中即销毁半成品实例并中止，
+        /// 避免「CloseAllLoading 只清字典，在途加载照常完成并注册窗口」。
+        /// </summary>
+        private HashSet<int> m_CancelLoadingSet;
+
+        /// <summary>
         /// 关闭后待回收的界面集合
         /// </summary>
         private Queue<WinBase> m_WaitRecycleQueue;
@@ -114,6 +121,7 @@ namespace Hotfix.Framework.UI
         {
             m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
             m_LoadingDict      = new Dictionary<int, string>();
+            m_CancelLoadingSet = new HashSet<int>();
             m_WaitRecycleQueue = new Queue<WinBase>();
 
             m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
@@ -222,13 +230,15 @@ namespace Hotfix.Framework.UI
 
                     try
                     {
-                        // 与正常关闭一致：先出组（回收 WinInfo），再走窗口关闭回调。
+                        // 只做出组（回收 WinInfo）；不调用 win._OnClose()——
+                        // teardown 阶段窗口的 WinUI 可能已被销毁（FairyGUI 显示对象失效），
+                        // 走关闭动画/可见性设置会 NRE；窗口自身的清理由下方队列排空的
+                        // Recycle（_OnRecycle）与对象池销毁时的 _OnDispose 负责。
                         group.Remove(win);
-                        win._OnClose();
                     }
                     catch (Exception e)
                     {
-                        FuLogger.LogWarning($"[UIModule] 释放时关闭界面 '{win.WinName}' 出现异常: {e.Message}");
+                        FuLogger.LogWarning($"[UIModule] 释放时回收界面信息 '{win.WinName}' 出现异常: {e}");
                     }
                     finally
                     {
@@ -243,13 +253,9 @@ namespace Hotfix.Framework.UI
                 groupWins.Clear();
             }
 
-            m_UIGroupDict.Clear();
-            m_LoadingDict.Clear();
-
-            // 清空快照列表：避免持有已销毁的界面组引用（与 ObjectPoolModule.OnDispose 清理缓存列表一致）
-            m_CachedUpdateGroupList.Clear();
-
-            // 清空回收队列中待回收的界面，避免 teardown 时丢弃未回收的 WinBase/对象池槽位
+            // 先排空回收队列（窗口完成 _OnRecycle 并归还对象池），再销毁界面组：
+            // 顺序不可颠倒——组的 Dispose 会递归销毁其下的显示对象（含仍挂在组内的窗口 WinUI），
+            // 若先销毁组，回收队列中的窗口 WinUI 已被销毁，_OnRecycle 将操作已销毁对象。
             while (m_WaitRecycleQueue.Count > 0)
             {
                 var ui = m_WaitRecycleQueue.Dequeue();
@@ -262,6 +268,30 @@ namespace Hotfix.Framework.UI
                     FuLogger.LogWarning($"[UIModule] 释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
                 }
             }
+
+            // 逐个销毁界面组：UIGroup 是挂在 GRoot.inst 下的 GComponent，只 Clear 字典会把它永久留在
+            // GRoot 下（每次模块重启泄漏一组 GComponent 及其关系/子对象）。GObject.Dispose 内部会
+            // RemoveFromParent 并释放关系与子对象，故无需再单独 RemoveChild。
+            foreach (var (_, group) in m_UIGroupDict)
+            {
+                if (group == null) continue;
+
+                try
+                {
+                    group.Dispose();
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[UIModule] 释放界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
+                }
+            }
+
+            m_UIGroupDict.Clear();
+            m_LoadingDict.Clear();
+            m_CancelLoadingSet.Clear();
+
+            // 清空快照列表：避免持有已销毁的界面组引用（与 ObjectPoolModule.OnDispose 清理缓存列表一致）
+            m_CachedUpdateGroupList.Clear();
 
             PkgManager.RemoveAllPkg();
             ReleaseBlur();

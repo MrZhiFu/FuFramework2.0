@@ -89,6 +89,17 @@ namespace Hotfix.Framework.Timer
         }
 
         /// <summary>
+        /// 执行首帧「立即」回调：次数口径与 Update 内一致（先计数再回调）。
+        /// 由 TimerModule 在「计时器入字典、异步链起」之后调用（见 TimerBase.Immediate），
+        /// 用户回调抛异常时由异步链 finally → ReleaseTimer 正常回收。
+        /// </summary>
+        public override void RunImmediate()
+        {
+            ExecutedCount++;
+            IntervalCallback?.Invoke();
+        }
+
+        /// <summary>
         /// 创建帧间隔计时器
         /// 功能：从对象池获取实例并初始化参数，支持立即执行第一次回调
         /// 注意：帧间隔计时器始终忽略时间缩放，确保与帧率同步
@@ -116,12 +127,9 @@ namespace Hotfix.Framework.Timer
             timerInfo.Cts               = new CancellationTokenSource();
             timerInfo.PlayerLoopTiming  = playerLoopTiming;
 
-            // 是否立即执行第一次回调
-            if (immediate)
-            {
-                timerInfo.ExecutedCount++;
-                intervalCallback?.Invoke();
-            }
+            // 首帧回调不在此执行（此处尚未入字典、尚未起链）：只登记标记，由 TimerModule 在
+            // 入字典 + 起链之后调用 RunImmediate 执行一次（见 TimerBase.Immediate）。
+            timerInfo.Immediate = immediate;
 
             return timerInfo;
         }

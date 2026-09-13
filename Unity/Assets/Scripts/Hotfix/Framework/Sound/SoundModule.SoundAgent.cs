@@ -421,6 +421,7 @@ namespace Hotfix.Framework.Sound
                     m_SoundAsset = null;
                 }
                 SoundAssetPath = null; // 清理陈旧路径，避免后续误用
+                SerialId       = 0;    // 清除序列编号：否则 StopSound(serialId) 会误匹配到已重置（未在播放）的代理
 
                 // Unity 停止 Play 时组件可能已被 teardown 销毁：防御后续 Unity 对象访问（transform/AudioSource），避免"对象已销毁仍访问"警告
                 if (this == null) return;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -59,12 +60,34 @@ namespace Hotfix.Framework.FSM
         /// </summary>
         protected internal override void OnDispose()
         {
-            foreach (var fsm in m_FsmDict)
+            // 先快照再逐项 Shutdown：Shutdown → ReferencePool.Recycle → Fsm.Clear → 用户 OnLeave/OnDestroy
+            // 可能重入 FsmModule（DestroyFsm/CreateFsm）修改 m_FsmDict——直接遍历会「遍历中修改容器」，
+            // 且首个异常会让剩余 Fsm 永不 Shutdown。快照口径与 OnUpdate 一致。
+            m_TempFsmList.Clear();
+            foreach (var fsmPair in m_FsmDict)
             {
-                fsm.Value.Shutdown();
+                m_TempFsmList.Add(fsmPair.Value);
             }
 
+            // 先清字典再 Shutdown：期间重入的 DestroyFsm 因找不到条目直接返回 false，不会二次 Shutdown
             m_FsmDict.Clear();
+
+            for (var i = 0; i < m_TempFsmList.Count; i++)
+            {
+                var fsm = m_TempFsmList[i];
+                if (fsm == null) continue;
+
+                // 单个 Fsm 的用户清理代码抛异常不应中断其余 Fsm 的关闭
+                try
+                {
+                    fsm.Shutdown();
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogError($"[FsmModule] 销毁有限状态机失败 {fsm.Name}: {e.Message}");
+                }
+            }
+
             m_TempFsmList.Clear();
         }
 

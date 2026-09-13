@@ -107,8 +107,9 @@ namespace Hotfix.Framework.UI
                     if (needBlur)
                         await OnWinOpeningAsync();
 
-                    // 模块已销毁：销毁已获取的界面实例对象并中止，不再创建/登记窗口
-                    if (token.IsCancellationRequested)
+                    // 模块已销毁（token 取消）或本次加载已被 CloseAllLoading 取消：销毁已获取的界面实例对象
+                    // 并中止，不再创建/登记窗口（否则 CloseAll 之后窗口仍会照常上屏）。
+                    if (token.IsCancellationRequested || IsLoadingAborted(tempSerialId))
                     {
                         DestroyWinObject(winObj);
                         return null;
@@ -120,6 +121,42 @@ namespace Hotfix.Framework.UI
 
                 // 创建界面实例对象
                 win    = new T();
+
+                // 键统一：对象池的登记键（WinObject.Create 用 win.WinName）与查询键必须一致。
+                // 上面的 Spawn 只能用类型名（生成器保证与 WinName 相同）；一旦二者不一致，
+                // 池会登记在 WinName 下却按类型名查找，导致复用永久失效。故此处用真实 WinName 再查一次池。
+                if (winName != win.WinName)
+                {
+                    winName = win.WinName;
+
+                    var pooledObj = m_WinObjPool.Spawn(winName);
+                    var pooledWin = pooledObj?.Target as T;
+                    if (pooledObj != null && pooledWin == null)
+                    {
+                        DestroyWinObject(pooledObj);
+                        pooledObj = null;
+                    }
+
+                    if (pooledObj != null)
+                    {
+                        // 命中真实 WinName 键的池实例：改用它（上面 new T() 仅用于读取名称，无资源持有）
+                        win    = pooledWin;
+                        winObj = pooledObj;
+
+                        // Blur=true：先截屏冻结"UI界面出现前"的画面
+                        if (needBlur) await OnWinOpeningAsync();
+
+                        if (token.IsCancellationRequested || IsLoadingAborted(tempSerialId))
+                        {
+                            DestroyWinObject(winObj);
+                            return null;
+                        }
+
+                        // 使用临时序列号创建Fui界面
+                        return CreateFuiWin(win, tempSerialId, false, userData);
+                    }
+                }
+
                 winObj = WinObject.Create(win.WinName, win);
                 m_WinObjPool.Register(winObj, true);
 
@@ -130,7 +167,7 @@ namespace Hotfix.Framework.UI
                     if (needBlur)
                         await OnWinOpeningAsync();
 
-                    if (token.IsCancellationRequested)
+                    if (token.IsCancellationRequested || IsLoadingAborted(tempSerialId))
                     {
                         DestroyWinObject(winObj);
                         return null;
@@ -143,7 +180,7 @@ namespace Hotfix.Framework.UI
                 // UI包没有加载过，则等待加载UI包，加载完成后再创建Fui界面
                 await PkgManager.LoadPkgAsync(win.PackageName);
 
-                if (token.IsCancellationRequested)
+                if (token.IsCancellationRequested || IsLoadingAborted(tempSerialId))
                 {
                     DestroyWinObject(winObj);
                     return null;
@@ -152,7 +189,7 @@ namespace Hotfix.Framework.UI
                 // Blur=true：先截屏冻结"UI界面出现前"的画面
                 if (needBlur) await OnWinOpeningAsync();
 
-                if (token.IsCancellationRequested)
+                if (token.IsCancellationRequested || IsLoadingAborted(tempSerialId))
                 {
                     DestroyWinObject(winObj);
                     return null;
@@ -171,10 +208,18 @@ namespace Hotfix.Framework.UI
             }
             finally
             {
-                // 确保从加载字典中移除
+                // 确保从加载字典与在途取消集合中移除（本方法无论走哪条路径/是否被中止都会执行）
                 m_LoadingDict.Remove(tempSerialId);
+                m_CancelLoadingSet.Remove(tempSerialId);
             }
         }
+
+        /// <summary>
+        /// 本次打开的加载是否已被 CloseAllLoading 取消。
+        /// </summary>
+        /// <param name="tempSerialId">本次加载的临时序列号。</param>
+        /// <returns>是否已被取消。</returns>
+        private bool IsLoadingAborted(int tempSerialId) => m_CancelLoadingSet.Contains(tempSerialId);
 
         /// <summary>
         /// 创建FUI界面
@@ -199,6 +244,12 @@ namespace Hotfix.Framework.UI
 
                 // 初始化界面
                 win.Init(serialId, winUI, !reuse, userData);
+
+                // Init 内部 catch 会吞掉初始化异常，此时窗口可能已半初始化（WinUI 已赋值但成员未就绪）。
+                // 不能继续 AddChild 上屏，统一抛异常走本方法既有的失败分支
+                //（移除组内残留 + 销毁半成品 + 广播 OpenUIFailureEventArgs）。
+                if (win.InitFailed)
+                    throw new InvalidOperationException($"[UIModule] 界面 '{win.WinName}' 初始化失败，中止打开。");
 
                 // FUI界面加入界面组
                 var uiGroup = win.UIGroup;

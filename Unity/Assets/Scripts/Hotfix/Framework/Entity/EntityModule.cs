@@ -233,8 +233,21 @@ namespace Hotfix.Framework.Entity
 
             // 显式销毁各实体组对象池（含其中所有实体对象持有的句柄），句柄释放收敛到本模块，
             // 不依赖 ObjectPoolModule 逆序销毁的隐式顺序（否则单独 Dispose 或注册顺序变化时句柄永久泄漏）
+            // 逐组 try/catch：任一组的 DisposeEntityPool 抛异常不得中断 teardown（否则本组之后的实体组
+            // 对象池永久残留、异常还会逃逸到 ModuleManager 的销毁循环影响后续模块）。
             foreach (var (_, entityGroup) in m_EntityGroupDict)
-                entityGroup.DisposeEntityPool(m_ObjectPoolModule);
+            {
+                if (entityGroup == null) continue;
+
+                try
+                {
+                    entityGroup.DisposeEntityPool(m_ObjectPoolModule);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[EntityModule] 销毁实体组 '{entityGroup.Name}' 的对象池时出现异常: {e.Message}");
+                }
+            }
 
             m_EntityGroupDict.Clear();
             m_LoadingEntityDict.Clear();
@@ -423,7 +436,12 @@ namespace Hotfix.Framework.Entity
 
                 // 实体初始化
                 entityInfo.Status = EEntityStatus.WillInit;
-                entity.OnInit(entityId, entityAssetName, entityGroup, isNewEntity, showEntityInfoEx);
+
+                // 初始化失败（前置校验失败/逻辑组件创建失败 → Logic 为空）时抛异常走本方法既有的失败分支：
+                // 移除实体登记与实体组、回收实体信息、广播失败事件并让 tcs 异常。
+                // 不能无视返回值照常继续：那会把无逻辑的实体当作成功上报，随后每帧 Logic.OnUpdate/CachedTransform NRE。
+                if (!entity.OnInit(entityId, entityAssetName, entityGroup, isNewEntity, showEntityInfoEx))
+                    throw new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 初始化失败（实体逻辑为空）。");
 
                 // 实体初始化完成，加入到实体组
                 entityInfo.Status = EEntityStatus.Inited;

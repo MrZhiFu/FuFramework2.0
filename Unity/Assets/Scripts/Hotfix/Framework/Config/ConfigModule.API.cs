@@ -38,13 +38,19 @@ namespace Hotfix.Framework.Config
 
         /// <summary>
         /// 获取指定配置表。
+        /// 键解析：优先类型全名（跨命名空间同名表可区分），未命中回退类名（兼容以 nameof(TbXxx) 注册的表管理器）。
         /// </summary>
         /// <typeparam name="T">配置表类型</typeparam>
-        /// <returns>配置表，不存在时返回 default</returns>
+        /// <returns>配置表，不存在或键上的表类型非 T 时返回 default</returns>
         public T GetConfig<T>() where T : IDataTable
         {
-            var cfg = GetConfig(typeof(T).Name);
-            return cfg == null ? default : (T)cfg;
+            var type = typeof(T);
+
+            if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T fullNameTyped)
+                return fullNameTyped;
+
+            // 类型不匹配时返回 default 而非强制转换：跨命名空间同名表在注册期会被短名键覆盖，强转必抛 InvalidCastException
+            return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T typed ? typed : default;
         }
 
         /// <summary>
@@ -60,12 +66,18 @@ namespace Hotfix.Framework.Config
 
         /// <summary>
         /// 检查是否存在指定配置表。
+        /// 键解析与 <see cref="GetConfig{T}"/> 一致（全名优先、类名回退），并要求键上的表类型确为 T。
         /// </summary>
         /// <typeparam name="T">配置表类型</typeparam>
         /// <returns>是否存在</returns>
         public bool HasConfig<T>() where T : IDataTable
         {
-            return HasConfig(typeof(T).Name);
+            var type = typeof(T);
+
+            if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
+                return true;
+
+            return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T;
         }
 
         /// <summary>
@@ -101,12 +113,18 @@ namespace Hotfix.Framework.Config
 
         /// <summary>
         /// 移除指定配置表。
+        /// 键解析与 <see cref="GetConfig{T}"/> 一致（全名优先、类名回退），并要求键上的表类型确为 T。
         /// </summary>
         /// <typeparam name="T">配置表类型</typeparam>
         /// <returns>是否移除成功</returns>
         public bool RemoveConfig<T>() where T : IDataTable
         {
-            return RemoveConfig(typeof(T).Name);
+            var type = typeof(T);
+
+            if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
+                return m_CfgDataDict.Remove(type.FullName);
+
+            return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T && m_CfgDataDict.Remove(type.Name);
         }
 
         /// <summary>

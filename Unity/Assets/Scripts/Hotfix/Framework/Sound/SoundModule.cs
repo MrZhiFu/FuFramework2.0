@@ -175,6 +175,11 @@ namespace Hotfix.Framework.Sound
 
             // 添加AudioListener组件
             var audioListener = new GameObject($"SoundListener");
+
+            // 监听器由模块持有、跨场景复用：LoadSceneMode.Single 会销毁场景内非常驻对象，
+            // 不标记 DontDestroyOnLoad 则切场景后 m_AudioListener 变成已销毁对象（RefreshAudioListener 抛异常）。
+            UnityEngine.Object.DontDestroyOnLoad(audioListener);
+
             m_AudioListener = audioListener.GetOrAddComponent<AudioListener>();
 
             // 获取声音组配置表
@@ -309,6 +314,11 @@ namespace Hotfix.Framework.Sound
 
             var soundGroupGo = new GameObject($"Sound Group - {groupName}");
             soundGroupGo.transform.localScale = Vector3.one;
+
+            // 声音组由模块持有、跨场景复用：LoadSceneMode.Single 会销毁场景内非常驻对象，
+            // 不标记 DontDestroyOnLoad 则切场景后组与组内 agent 全部失效（模块持有的引用变成已销毁对象）。
+            UnityEngine.Object.DontDestroyOnLoad(soundGroupGo);
+
             var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
             soundGroup.Init(row);
             m_SoundGroupDict.Add(groupName, soundGroup);
@@ -781,6 +791,10 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         private void RefreshAudioListener()
         {
+            // Unity 假 null 防护：SoundListener 对象可能已被销毁（场景 teardown / 模块重启先于本回调），
+            // 直接访问 m_AudioListener.enabled 会抛 MissingReferenceException 并逃逸到 SceneManager 回调。
+            if (m_AudioListener == null) return;
+
             m_AudioListener.enabled = UnityEngine.Object.FindObjectsOfType<AudioListener>().Length <= 1;
         }
 

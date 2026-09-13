@@ -145,7 +145,20 @@ namespace Hotfix.Framework.Timer
         /// <returns>计时器Id，失败返回-1</returns>
         private int StartTimer(Func<TimerBase> createFunc, string timerTypeName)
         {
-            var timerInfo = createFunc();
+            // Create 不再执行 immediate 首帧回调（见 TimerBase.Immediate）：回调统一在计时器入字典、
+            // 起链之后由 ExecuteTimerAsync 执行，故这里不会因用户回调抛异常而漏回收已 Acquire 的实例。
+            TimerBase timerInfo;
+            try
+            {
+                timerInfo = createFunc();
+            }
+            catch (Exception e)
+            {
+                // 兜底：Create 内的 Acquire/字段初始化失败时无实例可回收（引用池 Acquire 失败返回 null 而非抛异常），
+                // 此处只保证不把异常抛给调用方（与其它失败路径一致返回 -1）。
+                FuLogger.LogError($"[TimerModule] 启动{timerTypeName}失败: {e.Message}\n{e.StackTrace}");
+                return -1;
+            }
 
             if (timerInfo == null)
             {
@@ -153,10 +166,13 @@ namespace Hotfix.Framework.Timer
                 return -1;
             }
 
-            m_TimerDict[timerInfo.Id] = timerInfo;
+            // 先取 Id 再起链：链的首帧回调（或同步完成路径）可能立刻回收本实例并把 Id 复位为 -1，
+            // 事后读 timerInfo.Id 会拿到被复用/已回收实例的值。
+            var timerId = timerInfo.Id;
+            m_TimerDict[timerId] = timerInfo;
             ExecuteTimerAsync(timerInfo).Forget();
 
-            return timerInfo.Id;
+            return timerId;
         }
 
         /// <summary>
@@ -293,17 +309,31 @@ namespace Hotfix.Framework.Timer
         /// <param name="timer">计时器对象</param>
         private async UniTaskVoid ExecuteTimerAsync(TimerBase timer)
         {
+            // 链开头固定 Id 与令牌，整条链只用局部量：
+            // OnDispose 会在本链仍存活时取消并回收计时器实例（Cts 被 Clear 释放、Id 复位），
+            // 若最后仍读 timer.Id 去 ReleaseTimer，可能摘到复用实例的条目或二次回收。
+            var timerId        = timer.Id;
+            var token          = timer.Cts.Token;
             var lastUpdateTime = timer.IgnoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
             var lastFrameCount = UnityEngine.Time.frameCount;
 
             try
             {
+                // 首帧「立即」回调：在计时器已入字典、本链已起之后执行，故回调内 StopTimer/StopAllTimers
+                // 能停到它，抛出时也会走 finally → ReleaseTimer 正常回收（原实现放在 Create 内、
+                // 入字典之前，异常会留下「已 Acquire 但不在字典」的计时器：既不回收也停不到）。
+                if (timer.Immediate)
+                {
+                    timer.Immediate = false;
+                    timer.RunImmediate();
+                }
+
                 while (!timer.IsCompleted)
                 {
                     if (timer.IsPaused)
                     {
                         // 暂停时等待恢复，如果等待过程中被取消，则跳出循环，执行 finally 块，清理资源
-                        await UniTask.WaitUntil(() => !timer.IsPaused, cancellationToken: timer.Cts.Token);
+                        await UniTask.WaitUntil(() => !timer.IsPaused, cancellationToken: token);
                         lastUpdateTime = timer.IgnoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
                         lastFrameCount = UnityEngine.Time.frameCount;
                         continue;
@@ -332,13 +362,13 @@ namespace Hotfix.Framework.Timer
                         break;
                     }
 
-                    await UniTask.Yield(timer.PlayerLoopTiming, timer.Cts.Token);
+                    await UniTask.Yield(timer.PlayerLoopTiming, token);
                 }
             }
             finally
             {
-                // 计时器结束/取消时清理资源
-                ReleaseTimer(timer.Id);
+                // 计时器结束/取消时清理资源（用链开头固定的 Id，绝不读可能已被回收复用的实例字段）
+                ReleaseTimer(timerId);
             }
         }
 

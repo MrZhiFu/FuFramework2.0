@@ -23,6 +23,18 @@ namespace Hotfix.Framework.UI
         private bool m_IsInit;
 
         /// <summary>
+        /// 本次初始化是否失败（Init 内部捕获到异常）。
+        /// 失败后窗口可能处于半初始化状态（WinUI 已赋值但事件/数据未就绪），调用方必须据此走失败分支，
+        /// 不能继续把半成品上屏（否则后续访问成员 NRE）。
+        /// </summary>
+        private bool m_InitFailed;
+
+        /// <summary>
+        /// 本次初始化是否失败（仅框架内部使用）。
+        /// </summary>
+        internal bool InitFailed => m_InitFailed;
+
+        /// <summary>
         /// UI包引用是否已添加（_OnInit 中 AddPkgRef 后置位）。
         /// 半成品实例（未走到 _OnInit 或其中途失败）为 false，销毁时不得 SubPkgRef：
         /// 它从未加过引用，递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。
@@ -110,7 +122,8 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public bool Visible
         {
-            get => WinUI.visible;
+            // WinUI 可能为空（半成品实例，Init 未走完）：与 setter 一致判空，避免读属性抛 NRE
+            get => WinUI != null && WinUI.visible;
             private set
             {
                 if (WinUI         == null) return;
@@ -134,8 +147,9 @@ namespace Hotfix.Framework.UI
         /// <param name="userData">用户自定义数据。</param>
         public void Init(int serialId, GComponent winUI, bool isNewWin, object userData = null)
         {
-            SerialId = serialId;
-            UserData = userData;
+            SerialId      = serialId;
+            UserData      = userData;
+            m_InitFailed  = false; // 每次初始化重置失败标记；失败路径统一在下方 catch 置位
 
             // 已经初始化过且界面对象可用：不再初始化，只保留本次 SerialId/UserData（对象池复用路径）。
             // winUI 为空说明上次初始化未走完（半成品实例，WinUI 未赋值），此时不能早退：
@@ -177,6 +191,9 @@ namespace Hotfix.Framework.UI
             }
             catch (Exception exception)
             {
+                // 标记失败：调用方（UIModule.CreateFuiWin）据此走失败分支（销毁半成品 + 广播失败事件），
+                // 不能吞掉异常后照常把半初始化窗口上屏（后续访问未就绪成员会 NRE）。
+                m_InitFailed = true;
                 FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
             }
         }

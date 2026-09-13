@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Config;
 using Hotfix.Game.Config;
@@ -18,7 +20,7 @@ namespace Hotfix.Framework.Guide
     ///     3. 缓存完成的引导。
     ///     4. 提供引导相关事件。
     /// </summary>
-    public class GuideModule : ModuleBase
+    public class GuideModule : ModuleBase, ICancelAsync
     {
         #region 私有字段
 
@@ -26,6 +28,23 @@ namespace Hotfix.Framework.Guide
         /// 模块单例
         /// </summary>
         public static GuideModule Instance { get; private set; }
+
+        /// <summary>
+        /// 引导动作执行器（公开属性 <see cref="GuideAction"/> 的后备字段）
+        /// </summary>
+        private IGuideAction m_GuideAction;
+
+        /// <summary>
+        /// 引导动作执行器的可取消异步视图（若其实现 ICancelAsync）。
+        /// 生命周期：随 <see cref="GuideAction"/> 赋值捕获；OnDispose 置空 GuideAction 后仍保留本引用——
+        /// 框架重启的 ModuleManager.CancelAllAsync 必须在 OnDispose 之后经它等待两条引导异步链排水完毕。
+        /// </summary>
+        private ICancelAsync m_GuideActionCancellable;
+
+        /// <summary>
+        /// 引导存档是否有未落盘的改动（见 OnPerSecondUpdate）
+        /// </summary>
+        private bool m_GuideDataDirty;
 
         /// <summary>
         /// 当前引导
@@ -127,9 +146,40 @@ namespace Hotfix.Framework.Guide
         public BaseStep CurrentStep => m_CurrentStep;
 
         /// <summary>
-        /// 执行引导动作接口
+        /// 执行引导动作接口。
+        /// 赋值时一并捕获其 ICancelAsync 视图，供本模块的 CancelAsync 排水（见 m_GuideActionCancellable）。
         /// </summary>
-        public IGuideAction GuideAction { get; set; }
+        public IGuideAction GuideAction
+        {
+            get => m_GuideAction;
+            set
+            {
+                m_GuideAction           = value;
+                m_GuideActionCancellable = value as ICancelAsync;
+            }
+        }
+
+        #endregion
+
+        #region ICancelAsync（框架重启排水）
+
+        /// <summary>
+        /// 取消令牌：跟随引导动作执行器的模块级取消范围（两条引导异步链在其中登记在途）。
+        /// OnDispose → 引导动作 Dispose 后取消。
+        /// </summary>
+        public CancellationToken Token => m_GuideActionCancellable?.Token ?? default;
+
+        /// <summary>
+        /// 触发取消并等待两条引导异步链（点击UI引导 / 对话引导）清理完毕后返回，可重入、幂等。
+        /// 供框架重启（ModuleManager.CancelAllAsync）在 OnDispose 之后等待旧生命周期的在途链结束，
+        /// 避免 ReferencePool.ClearAll 在链仍存活时执行。
+        /// 未挂接执行器（或执行器未实现 ICancelAsync）时无在途链可排水，直接返回。
+        /// </summary>
+        public UniTask CancelAsync()
+        {
+            var cancellable = m_GuideActionCancellable;
+            return cancellable == null ? UniTask.CompletedTask : cancellable.CancelAsync();
+        }
 
         #endregion
 
@@ -186,8 +236,30 @@ namespace Hotfix.Framework.Guide
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
-            if (m_CurrentStep is { IsExecuting: true })
-                m_CurrentStep.Update(deltaTime);
+            var step = m_CurrentStep;
+            if (step == null) return;
+
+            if (step.IsExecuting)
+                step.Update(deltaTime);
+
+            // 末步收尾（唯一权威推进点）：
+            // BaseStep.Complete() 只在存在 NextStepId 时经 JumpToStep 推进；末步（无 NextStepId）完成后
+            // 无人调用 MoveToNextStep → FinishGuide，引导会永久停留在 Completed 状态——OnGuideFinished 与
+            // MarkGuideAsCompleted 永不触发、下次启动重放整条引导（ClickUIStep/WaitStep/DefaultStep 直接调
+            // Complete()，都不经过 CompleteCurrentStep，故必须在此兜底收尾）。
+            // 条件用「仍是被更新过的那一步」判定：若 Update 内部已经 Complete 并推进（m_CurrentStep 已换），
+            // ReferenceEquals 不成立，不会重复推进；仅当步骤常驻未推进时才收尾。MoveToNextStep 无 Next 即 FinishGuide，
+            // 回收仍由 ClearGuideData 单点负责。
+            if (ReferenceEquals(m_CurrentStep, step) && step.IsCompleted)
+                MoveToNextStep();
+        }
+
+        /// <summary>
+        /// 每秒更新：把引导存档的脏位合并落盘（见 MarkGuideAsCompleted）。
+        /// </summary>
+        protected internal override void OnPerSecondUpdate()
+        {
+            FlushGuideData();
         }
 
         /// <summary>
@@ -197,6 +269,9 @@ namespace Hotfix.Framework.Guide
         {
             // 中断当前引导
             InterruptGuide();
+
+            // 落盘未提交的引导存档（见 MarkGuideAsCompleted：完成/中断路径只标脏，不帧内同步落盘）
+            FlushGuideData();
 
             // 回收当前引导的所有步骤到引用池中
             foreach (var (_, step) in m_AllStepDict)
@@ -219,9 +294,13 @@ namespace Hotfix.Framework.Guide
             OnStepExecuting    = null;
             OnStepCompleted    = null;
 
-            // 释放引导动作持有者（其内部持有 LifecycleCancellationSource，需随模块销毁释放）
-            (GuideAction as IDisposable)?.Dispose();
-            GuideAction = null;
+            // 释放引导动作持有者（其内部持有 LifecycleCancellationSource 与模块级取消范围，需随模块销毁释放）
+            (m_GuideAction as IDisposable)?.Dispose();
+
+            // 这里刻意直接置后备字段而不走 GuideAction 属性 setter：setter 会一并清空
+            // m_GuideActionCancellable，而框架重启（DisposeModules → CancelAllAsync）必须在 OnDispose 之后
+            // 仍能经它排水等待两条引导异步链清理完毕。该引用由下一次 GuideAction 赋值覆盖。
+            m_GuideAction = null;
 
             Instance = null;
         }
@@ -455,7 +534,9 @@ namespace Hotfix.Framework.Guide
         public void MarkGuideAsCompleted(int guideId)
         {
             PlayerPrefs.SetInt($"Guide_Completed_{guideId}", 1);
-            PlayerPrefs.Save();
+            // PlayerPrefs.Save() 是同步全量落盘，直接在引导完成/中断路径调用会在帧内阻塞主线程；
+            // 故只标脏位，由 OnPerSecondUpdate 合并落盘（至多每秒一次）、OnDispose 兜底落盘。
+            m_GuideDataDirty                    = true;
             m_GuideCompletionCacheDict[guideId] = true;
 
             FuLogger.LogInfo($"[GuideModule] 标记引导为已完成: {guideId}");
@@ -469,6 +550,9 @@ namespace Hotfix.Framework.Guide
         {
             PlayerPrefs.DeleteKey($"Guide_Completed_{guideId}");
             m_GuideCompletionCacheDict.Remove(guideId);
+
+            // 删除同样是未落盘的改动，与 MarkGuideAsCompleted 共用同一延迟落盘路径
+            m_GuideDataDirty = true;
 
             FuLogger.LogInfo($"[GuideModule] 重置引导状态: {guideId}");
         }
@@ -553,6 +637,13 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private void BuildStepNodes(GuideData guide)
         {
+            // 先回收再 Clear：步骤实例在整条引导生命周期内常驻 m_AllStepDict（唯一回收点是 ClearGuideData），
+            // 若此处直接 Clear 而不回收，残留实例会永久滞留在引用池的「使用中」计数里（漏回收）。
+            foreach (var (_, step) in m_AllStepDict)
+            {
+                ReferencePool.Recycle(step);
+            }
+
             m_AllStepDict.Clear();
             m_StepHistoryStack.Clear();
 
@@ -604,32 +695,58 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private void ExecuteCurrentStep()
         {
-            if (m_CurrentStep == null)
+            var step = m_CurrentStep;
+            if (step == null)
             {
                 FinishGuide();
                 return;
             }
 
-            if (!m_CurrentStep.CanExecute())
+            if (!step.CanExecute())
             {
-                FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 条件不满足，尝试跳过");
+                FuLogger.LogWarning($"[GuideModule] 步骤 {step.StepInfo.Id} 条件不满足，尝试跳过");
                 ForceNextStep();
                 return;
             }
 
+            // 局部快照：Execute() 可能同步链式推进（DefaultStep 立即 Complete → JumpToStep / 末步 FinishGuide），
+            // 事后读 m_CurrentStep 会拿到末端步骤、甚至已被 ClearGuideData 回收的死对象；
+            // 故事件参数、日志、catch 一律用快照，绝不二次解引用 m_CurrentStep（其可能已被置空/回收）。
+            var guideId  = CurrentGuideId ?? 0;
+            var stepId   = step.StepInfo.Id;
+            var stepType = step.StepInfo.StepType;
+
             try
             {
-                m_CurrentStep.Execute();
-                OnStepExecuting?.Invoke(m_CurrentStep);
-                OnStepChanged?.Invoke(CurrentGuideId ?? 0, CurrentStepId ?? 0);
+                // 事件前置：先广播「本步即将执行」，再执行步骤本体。
+                // 若放在 Execute() 之后，DefaultStep 的立即 Complete 链会把 m_CurrentStep 推进到末端步骤
+                // （末步还会经 FinishGuide 回收本步），监听者将收到错误的步骤、甚至已回池的死对象。
+                OnStepExecuting?.Invoke(step);
+                OnStepChanged?.Invoke(guideId, stepId);
 
-                FuLogger.LogInfo($"[GuideModule] 执行步骤: {m_CurrentStep.StepInfo.Id} ({m_CurrentStep.StepInfo.StepType})");
+                // 监听者可能已推动流程（SkipCurrentStep/JumpToStep/InterruptGuide/Complete）：
+                // 此时本步已不是当前步，不再执行，避免覆盖新当前步的执行态与计时。
+                if (ReferenceEquals(m_CurrentStep, step))
+                    step.Execute();
+
+                FuLogger.LogInfo($"[GuideModule] 执行步骤: {stepId} ({stepType})");
             }
             catch (Exception e)
             {
-                FuLogger.LogError($"[GuideModule] 执行步骤失败 {m_CurrentStep.StepInfo.Id}: {e.Message}");
+                FuLogger.LogError($"[GuideModule] 执行步骤失败 {stepId}: {e.Message}");
                 ForceNextStep();
             }
+        }
+
+        /// <summary>
+        /// 把标脏的引导存档合并落盘（PlayerPrefs.Save 为同步全量落盘，只在每秒更新与模块释放时调用）。
+        /// </summary>
+        private void FlushGuideData()
+        {
+            if (!m_GuideDataDirty) return;
+
+            m_GuideDataDirty = false;
+            PlayerPrefs.Save();
         }
 
         /// <summary>

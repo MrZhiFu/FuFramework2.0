@@ -59,11 +59,15 @@ namespace Hotfix.Framework.Model
         public void RemoveModel<T>()
         {
             var key = typeof(T);
-            if (!m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
 
-            var model = m_ModelDict[key];
-            if (m_ModelDict.Remove(key))
-                model.Dispose();
+            // 先摘除字典项并按结果判定：不存在时不可再索引取值（否则键不存在必抛 KeyNotFoundException）
+            if (!m_ModelDict.Remove(key, out var model))
+            {
+                FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
+                return;
+            }
+
+            model.Dispose();
         }
 
         /// <summary>

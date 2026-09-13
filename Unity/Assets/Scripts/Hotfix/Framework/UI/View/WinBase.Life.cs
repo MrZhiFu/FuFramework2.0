@@ -123,6 +123,15 @@ namespace Hotfix.Framework.UI
             m_Cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
             Visible = false;
 
+            // 关闭动画需要 WinUI；若为空/已销毁（teardown 阶段关闭仍打开的窗口、或半成品实例）
+            // 则跳过动画直接走 OnClose()。TweenType 的默认值为 Fade，原实现无守卫会直接 NRE
+            // （与 _OnRecycle 的 GTween.Kill 守卫同口径）。
+            if (WinUI == null)
+            {
+                OnClose();
+                return;
+            }
+
             // 界面关闭动画
             switch (TweenType)
             {
@@ -148,6 +157,13 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]回收-OnRecycle().");
 
+            // 终止挂在 WinUI 上的补间动画（打开/关闭渐变）：
+            // _OnClose 若走 Fade/Custom 分支，会给 WinUI 挂一个 OnComplete(OnClose) 的 tween；窗口回收
+            //（对象池复用）或销毁后该 tween 仍可能到期，届时会回调用户 OnClose()、甚至写入已销毁的 GObject。
+            // 用 complete:true kill：tween 立即走到终点并回调一次 OnComplete——既清掉过期 tween，
+            // 又保证用户的 OnClose() 钩子恰好被触发一次（自然完成时 _killed 已置位，不会再重复回调）。
+            if (WinUI != null) GTween.Kill(WinUI, true);
+
             SerialId = 0;
             OnRecycle();
         }
@@ -158,6 +174,12 @@ namespace Hotfix.Framework.UI
         internal void _OnDispose()
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
+
+            // 终止 WinUI 上残留的补间：不清 complete——WinObject.OnDispose 已先 WinUI.Dispose()，
+            // 此时驱动 tween 走到终点会向已销毁的 GObject 写属性（NRE）。这里只解除注册、丢弃补间即可。
+            // 用户的 OnClose() 钩子由 _OnRecycle 的 complete kill 保证触发（销毁前必先经过回收）。
+            if (WinUI != null) GTween.Kill(WinUI);
+
             m_Cancellation.Dispose(); // 真销毁，永久释放取消源
 
             // 半成品实例（Init 未走完，UI模块未绑定/未加过包引用）销毁时不得递减引用计数：

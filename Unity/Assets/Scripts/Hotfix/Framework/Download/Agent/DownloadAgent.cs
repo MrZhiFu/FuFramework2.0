@@ -257,7 +257,14 @@ namespace Hotfix.Framework.Download
         /// </summary>
         private bool IsOwnEvent(object sender)
         {
+            // 内部超时/异常路径：代理由自身直接调用回调
             if (ReferenceEquals(sender, this)) return true;
+
+            // 完成/错误事件：由 UnityWebRequestDownloadAgentHelper.OnUpdate 以 helper 自身为 sender 广播
+            //（该 helper 并不继承 DownloadHandler，故必须单独判定，否则完成/失败会被拦死、下载永不成功）
+            if (ReferenceEquals(sender, m_Helper)) return true;
+
+            // 数据/长度事件：由 helper 持有的 DownloadHandler 在其 ReceiveData 中以 handler 自身为 sender 广播
             return sender is DownloadHandler handler && ReferenceEquals(handler.Owner, m_Helper);
         }
 

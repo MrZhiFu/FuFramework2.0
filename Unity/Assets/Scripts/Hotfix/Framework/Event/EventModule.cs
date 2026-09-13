@@ -74,17 +74,20 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 订阅事件处理函数。
+        /// 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 EventRegister、多个模块）同时订阅，
+        /// 由事件池按 (id, handler) 条目引用计数，退订时各自递减自己那一份。
+        /// 此处若因已存在而早退，后者的订阅不会被计数，前者的退订会把它一并移除（静默丢订阅）。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要订阅的事件处理函数。</param>
         public void Subscribe(string id, EventHandler<GameEventArgs> handler)
         {
-            if (Check(id, handler)) return;
             m_EventPool.Subscribe(id, handler);
         }
 
         /// <summary>
         /// 取消订阅事件处理函数。
+        /// 只递减本订阅者那一份计数，其余订阅者不受影响；未订阅过（条目不存在）时直接忽略。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要取消订阅的事件处理函数。</param>

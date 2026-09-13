@@ -48,6 +48,12 @@ namespace Hotfix.Framework.Model
         private StorageModule _storageModule;
 
         /// <summary>
+        /// 加载是否失败。失败（存档损坏/反序列化异常）后禁止回写：
+        /// 此时对象内为「半残值」，OnDispose 无条件的全量保存会覆写掉磁盘上尚可修复的原始存档。
+        /// </summary>
+        private bool m_LoadFailed;
+
+        /// <summary>
         /// 获取存储的文件名（可重写以自定义）
         /// </summary>
         protected virtual string GetFileName() => GetType().Name;
@@ -99,7 +105,9 @@ namespace Hotfix.Framework.Model
             }
             catch (System.Exception ex)
             {
-                FuLogger.LogError($"读取Model数据{m_FileName}出错：{ex.Message}");
+                // 置失败标记：本次对象内容不可信（可能只填充了部分字段），禁止后续保存覆写磁盘原始存档
+                m_LoadFailed = true;
+                FuLogger.LogError($"读取Model数据{m_FileName}出错：{ex.Message}（已跳过回写，避免覆盖磁盘原始存档）");
             }
         }
 
@@ -111,6 +119,13 @@ namespace Hotfix.Framework.Model
             if (_storageModule == null)
             {
                 FuLogger.LogWarning($"无法保存{m_FileName}，数据保存管理器未找到!");
+                return;
+            }
+
+            // 加载失败时对象内为半残值：回写会用残缺数据覆盖磁盘原始存档，导致坏档不可恢复，故整体跳过保存
+            if (m_LoadFailed)
+            {
+                FuLogger.LogWarning($"无法保存{m_FileName}，数据加载失败（存档可能损坏），为避免覆盖原始存档已跳过保存!");
                 return;
             }
 

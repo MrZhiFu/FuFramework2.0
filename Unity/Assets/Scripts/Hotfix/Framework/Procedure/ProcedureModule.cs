@@ -1,4 +1,5 @@
 using System;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.FSM;
 using Hotfix.Framework.Core;
 
@@ -67,9 +68,18 @@ namespace Hotfix.Framework.Procedure
         public void InitProcedures(ProcedureBase[] procedure)
         {
             if (m_FsmModule == null) throw new InvalidOperationException("[ProcedureModule] 有限状态机管理模块不能为空");
-            
+
+            // 二次初始化不静默忽略（原 ??= 会把重复调用当成无事发生，沿用上一份状态集合）：
+            // 显式告警并销毁旧状态机后按本次传入的流程集合重建。
+            if (m_ProcedureFsm != null)
+            {
+                FuLogger.LogWarning("[ProcedureModule] 流程状态机已存在，销毁旧实例并按本次传入的流程集合重建.");
+                m_FsmModule.DestroyFsm(m_ProcedureFsm);
+                m_ProcedureFsm = null;
+            }
+
             // ReSharper disable once CoVariantArrayConversion
-            m_ProcedureFsm ??= m_FsmModule.CreateFsm(this, procedure);
+            m_ProcedureFsm = m_FsmModule.CreateFsm(this, procedure);
             if (m_ProcedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 创建流程管理模块失败.");
         }
 

@@ -43,9 +43,11 @@ namespace Hotfix.Framework.Timer
 
 
         /// <summary>
-        /// 计时器名称
+        /// 计时器名称。
+        /// 两个回调都要空判：updateCallBack 是启动入口的默认参数（可为 null），PauseTimer/ResumeTimer/
+        /// StopTimer 的日志与 GetAllTimerNames 都会读本属性，缺 ?. 会在所有平台直接 NRE。
         /// </summary>
-        public override string Name => $"类型：一次性计时器, Id：{Id}, 完成回调：{FinishCallBack?.Method.Name}, 帧更新回调：{UpdateCallBack.Method.Name}";
+        public override string Name => $"类型：一次性计时器, Id：{Id}, 完成回调：{FinishCallBack?.Method.Name}, 帧更新回调：{UpdateCallBack?.Method.Name}";
 
         /// <summary>
         /// 是否已完成（剩余时间小于等于0）

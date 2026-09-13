@@ -308,16 +308,22 @@ namespace Hotfix.Framework.UI
             if (isPause && !viewInfo.Paused)
             {
                 viewInfo.Paused = true;
-                viewInfo.Win._OnPause(); // 触发暂停回调
+                viewInfo.Win._OnPause(); // 触发暂停回调（用户代码）
             }
             else if (!isPause && viewInfo.Paused)
             {
                 viewInfo.Paused = false;
-                viewInfo.Win._OnResume(); // 触发恢复回调
+                viewInfo.Win._OnResume(); // 触发恢复回调（用户代码）
             }
 
+            // 用户回调内可能关闭自身：UIModule.Close → UIGroup.Remove → WinInfo.Clear() 会把 Win 置空
+            // 并把 WinInfo 回收进引用池。此处必须重新读取并判空，否则下一行解引用 viewInfo.Win 会抛
+            // NullReferenceException 并经由 Refresh 逃逸到公开 API。
+            var win = viewInfo.Win;
+            if (win == null) return;
+
             // 如果当前界面要求暂停被覆盖的界面，则后续界面进入暂停状态
-            if (!isPause && viewInfo.Win.PauseCoveredUI)
+            if (!isPause && win.PauseCoveredUI)
             {
                 isPause = true;
             }
@@ -331,15 +337,20 @@ namespace Hotfix.Framework.UI
         /// <param name="isCover">是否覆盖的标志。</param>
         private void HandleCoverState(WinInfo viewInfo, ref bool isCover)
         {
+            // 与 HandlePauseState 同型：本方法紧随 HandlePauseState 执行，其 _OnPause/_OnResume 回调
+            // 可能已经关闭自身（WinInfo.Win 被置空并回收）。必须先判空再解引用，否则 NRE 逃逸到公开 API。
+            var win = viewInfo.Win;
+            if (win == null) return;
+
             if (isCover && !viewInfo.Covered)
             {
                 viewInfo.Covered = true;
-                viewInfo.Win._OnBeCover(); // 触发被覆盖回调
+                win._OnBeCover(); // 触发被覆盖回调（用户代码）
             }
             else if (!isCover && viewInfo.Covered)
             {
                 viewInfo.Covered = false;
-                viewInfo.Win._OnReveal(); // 触发重新显示回调
+                win._OnReveal(); // 触发重新显示回调（用户代码）
             }
 
             // 后续界面需要被覆盖

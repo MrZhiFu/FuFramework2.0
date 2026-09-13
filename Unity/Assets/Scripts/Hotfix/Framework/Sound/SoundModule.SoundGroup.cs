@@ -129,6 +129,14 @@ namespace Hotfix.Framework.Sound
 
                 if (playSoundInfo is null) return null;
 
+                var targetPriority = playSoundInfo.SoundParams.Priority;
+
+                // 分两级候选，避免「同优先级替换」把已选出的严格更低优先级候选顶替掉
+                //（那会变成停掉同优先级、保留更低优先级，与注释意图相反）：
+                //   - lowerPriorityCandidate：严格更低优先级中优先级最低者（须扫描全部代理，不能提前 break）
+                //   - samePriorityCandidate ：同优先级中 SetSoundAssetTime 最早者，仅在无任何更低优先级候选时兜底
+                SoundAgent lowerPriorityCandidate = null;
+                SoundAgent samePriorityCandidate  = null;
 
                 // 遍历所有声音播放代理，找到合适的代理播放声音
                 foreach (var soundAgent in m_SoundAgents)
@@ -142,19 +150,22 @@ namespace Hotfix.Framework.Sound
 
                     // 2.所有的代理都在播放声音，则找到优先级较低的代理，将其设置为候选代理
                     // 不移除 break：须扫描全部代理以选出优先级最低者替换，否则首个较低优先级代理会截断后续更高优先级的声音
-                    if (soundAgent.Priority < playSoundInfo.SoundParams.Priority)
+                    if (soundAgent.Priority < targetPriority)
                     {
-                        if (!candidateAgent || soundAgent.Priority < candidateAgent.Priority)
-                            candidateAgent = soundAgent;
+                        if (lowerPriorityCandidate == null || soundAgent.Priority < lowerPriorityCandidate.Priority)
+                            lowerPriorityCandidate = soundAgent;
                     }
-
                     // 3.所有的代理都在播放声音，且找不到优先级较低的代理，则判断声音组中的声音是否设置了允许被同优先级声音替换，如果允许，则使用同优先级的代理作为候选代理。
-                    if (AllowBeReplacedBySamePriority && soundAgent.Priority == playSoundInfo.SoundParams.Priority)
+                    else if (AllowBeReplacedBySamePriority && soundAgent.Priority == targetPriority)
                     {
-                        if (!candidateAgent || soundAgent.SetSoundAssetTime < candidateAgent.SetSoundAssetTime)
-                            candidateAgent = soundAgent;
+                        if (samePriorityCandidate == null || soundAgent.SetSoundAssetTime < samePriorityCandidate.SetSoundAssetTime)
+                            samePriorityCandidate = soundAgent;
                     }
                 }
+
+                // 更低优先级候选优先于同优先级替换：只有完全没有更低优先级候选时才允许同优先级替换
+                if (candidateAgent == null)
+                    candidateAgent = lowerPriorityCandidate ?? samePriorityCandidate;
 
                 if (!candidateAgent)
                 {

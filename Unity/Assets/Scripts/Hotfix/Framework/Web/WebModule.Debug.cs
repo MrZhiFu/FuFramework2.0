@@ -245,10 +245,26 @@ namespace Hotfix.Framework.Web
             var infos      = new WebLiveRequestInfo[totalCount];
             var index      = 0;
 
-            AppendLiveJsonInfos(infos, ref index, m_WaitingJsonQueue, EWebRequestState.Waiting);
-            AppendLiveJsonInfos(infos, ref index, m_SendingJsonList,  EWebRequestState.Sending);
-            AppendLivePbInfos(infos, ref index, m_WaitingPbQueue, EWebRequestState.Waiting);
-            AppendLivePbInfos(infos, ref index, m_SendingPbList,  EWebRequestState.Sending);
+            // 直接 foreach 具体容器（Queue/List 的结构化枚举器），避免经 IEnumerable<T> 迭代产生装箱分配
+            foreach (var data in m_WaitingJsonQueue)
+            {
+                infos[index++] = CreateJsonLiveInfo(data, EWebRequestState.Waiting);
+            }
+
+            foreach (var data in m_SendingJsonList)
+            {
+                infos[index++] = CreateJsonLiveInfo(data, EWebRequestState.Sending);
+            }
+
+            foreach (var data in m_WaitingPbQueue)
+            {
+                infos[index++] = CreatePbLiveInfo(data, EWebRequestState.Waiting);
+            }
+
+            foreach (var data in m_SendingPbList)
+            {
+                infos[index++] = CreatePbLiveInfo(data, EWebRequestState.Sending);
+            }
 
             return infos;
         }
@@ -284,8 +300,16 @@ namespace Hotfix.Framework.Web
             m_CanceledCount   = 0;
             m_SentBytes       = 0;
             m_RecvBytes       = 0;
-            m_DebugLogHead    = 0;
-            m_DebugLogCount   = 0;
+
+            // 逐槽位置 default 释放记录引用（URL/Error/RequestBody 等字符串），
+            // 仅重置 head/count 会让旧记录一直被数组钉住、无法回收
+            for (var i = 0; i < DebugLogCapacity; i++)
+            {
+                m_DebugLogRing[i] = default;
+            }
+
+            m_DebugLogHead  = 0;
+            m_DebugLogCount = 0;
         }
 
         /// <summary>
@@ -457,33 +481,25 @@ namespace Hotfix.Framework.Web
         #region 实时快照辅助
 
         /// <summary>
-        /// 将 JSON 请求容器中的请求填入实时快照数组。
+        /// 由 JSON 请求数据构造实时快照项。
         /// </summary>
-        /// <param name="infos">实时快照数组。</param>
-        /// <param name="index">当前写入索引（引用）。</param>
-        /// <param name="container">JSON 请求容器。</param>
+        /// <param name="data">JSON 请求数据。</param>
         /// <param name="state">请求状态。</param>
-        private static void AppendLiveJsonInfos(WebLiveRequestInfo[] infos, ref int index, IEnumerable<WebJsonDataBase> container, EWebRequestState state)
+        /// <returns>实时快照项。</returns>
+        private static WebLiveRequestInfo CreateJsonLiveInfo(WebJsonDataBase data, EWebRequestState state)
         {
-            foreach (var data in container)
-            {
-                infos[index++] = new WebLiveRequestInfo(state, false, data.IsGet, data.URL, data.EnqueueTimeUtc, data.SendTimeUtc, data.Token.IsCancellationRequested, data);
-            }
+            return new WebLiveRequestInfo(state, false, data.IsGet, data.URL, data.EnqueueTimeUtc, data.SendTimeUtc, data.Token.IsCancellationRequested, data);
         }
 
         /// <summary>
-        /// 将 Pb 请求容器中的请求填入实时快照数组。
+        /// 由 Pb 请求数据构造实时快照项。
         /// </summary>
-        /// <param name="infos">实时快照数组。</param>
-        /// <param name="index">当前写入索引（引用）。</param>
-        /// <param name="container">Pb 请求容器。</param>
+        /// <param name="data">Pb 请求数据。</param>
         /// <param name="state">请求状态。</param>
-        private static void AppendLivePbInfos(WebLiveRequestInfo[] infos, ref int index, IEnumerable<WebPbData> container, EWebRequestState state)
+        /// <returns>实时快照项。</returns>
+        private static WebLiveRequestInfo CreatePbLiveInfo(WebPbData data, EWebRequestState state)
         {
-            foreach (var data in container)
-            {
-                infos[index++] = new WebLiveRequestInfo(state, true, data.IsGet, data.URL, data.EnqueueTimeUtc, data.SendTimeUtc, data.Token.IsCancellationRequested, data);
-            }
+            return new WebLiveRequestInfo(state, true, data.IsGet, data.URL, data.EnqueueTimeUtc, data.SendTimeUtc, data.Token.IsCancellationRequested, data);
         }
 
         #endregion

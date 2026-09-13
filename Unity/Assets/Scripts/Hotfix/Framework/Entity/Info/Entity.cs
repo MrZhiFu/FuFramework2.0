@@ -46,7 +46,9 @@ namespace Hotfix.Framework.Entity
         /// <param name="entityGroup">实体所属的实体组。</param>
         /// <param name="isNewEntity">是否是新实例。</param>
         /// <param name="showEntityInfoEx">显示的实体额外信息。</param>
-        public void OnInit(int entityId, string entityAssetName, EntityGroup entityGroup, bool isNewEntity, ShowEntityInfoEx showEntityInfoEx)
+        /// <returns>是否初始化成功。任一前置校验失败或逻辑组件创建失败时返回 false（Logic 仍为 null），
+        /// 调用方必须据此走失败分支，否则会照常上报成功、随后每帧 Logic.OnUpdate/CachedTransform NRE。</returns>
+        public bool OnInit(int entityId, string entityAssetName, EntityGroup entityGroup, bool isNewEntity, ShowEntityInfoEx showEntityInfoEx)
         {
             Id              = entityId;
             EntityAssetName = entityAssetName;
@@ -58,19 +60,19 @@ namespace Hotfix.Framework.Entity
             else if (EntityGroup != entityGroup)
             {
                 FuLogger.LogError("[Entity]初始化实体失败, 非新实例实体的实体组不一致!");
-                return;
+                return false;
             }
 
             if (showEntityInfoEx is null)
             {
                 FuLogger.LogError("[Entity]初始化实体失败, 显示的实体额外信息为空!");
-                return;
+                return false;
             }
 
             if (showEntityInfoEx.EntityLogicType is null)
             {
                 FuLogger.LogError("[Entity]初始化实体失败, 显示的实体的逻辑类型为空!");
-                return;
+                return false;
             }
 
             if (Logic)
@@ -92,7 +94,7 @@ namespace Hotfix.Framework.Entity
                 if (Logic is null)
                 {
                     FuLogger.LogError($"[Entity]初始化实体失败, 添加实体{entityAssetName}逻辑组件失败!");
-                    return;
+                    return false;
                 }
             }
 
@@ -102,8 +104,12 @@ namespace Hotfix.Framework.Entity
             }
             catch (Exception exception)
             {
+                // 保持原有宽容语义：逻辑组件 OnInit 抛异常只记录，实体仍视为初始化成功
+                //（Logic 非空，后续回调仍有对象可调）。本方法只对「Logic 为空」的致命失败返回 false。
                 FuLogger.LogError($"[Entity]初始化实体失败, 实体'[{Id}]-{entityAssetName}逻辑组件(OnInit)时发生异常: {exception}");
             }
+
+            return true;
         }
 
         /// <summary>

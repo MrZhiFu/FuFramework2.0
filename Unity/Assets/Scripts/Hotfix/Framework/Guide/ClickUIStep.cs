@@ -20,24 +20,47 @@ namespace Hotfix.Framework.Guide
         /// </summary>
         private GComponent m_TargetUI;
 
+        /// <summary>
+        /// 执行步骤。
+        /// 失败路径统一走 ForceNextStep()（而不是静默 return）：本步状态已由基类 Execute() 置为 Executing，
+        /// 静默返回会让步骤永久停在 Executing——既不再有人推进（引导静默死锁），也不会被回收。
+        /// 且 GuideAction 判空必须排在 onClick.Add(Complete) 之前：否则「无执行器」时会先给目标 UI 挂上
+        /// 点击回调再返回，回调无人解绑（Clear/OnCancel 都会 Remove，但步骤已死锁在 Executing）。
+        /// </summary>
         protected override void OnExecute()
         {
             base.OnExecute();
+
+            // 判空引导动作执行器（置于 Add 监听之前）
+            if (GuideAction == null)
+            {
+                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：引导动作执行器为null，跳过该步骤");
+                GuideModule.Instance?.ForceNextStep();
+                return;
+            }
+
             var uiModule = ModuleManager.GetModule<UIModule>();
-            if (uiModule == null) return;
+            if (uiModule == null)
+            {
+                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：UIModule 不存在，跳过该步骤");
+                GuideModule.Instance?.ForceNextStep();
+                return;
+            }
 
             // 查找目标界面
             var targetWin = uiModule.Get(StepInfo.TargetWindow);
             if (targetWin == null)
             {
-                FuLogger.LogWarning($"[ClickUIStep] 找不到目标界面: {StepInfo.TargetWindow}");
+                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标界面: {StepInfo.TargetWindow}，跳过该步骤");
+                GuideModule.Instance?.ForceNextStep();
                 return;
             }
 
             // 查找目标点击UI
             if (targetWin.WinUI.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
             {
-                FuLogger.LogWarning($"[ClickUIStep] 找不到目标点击UI: {StepInfo.TargetUI}");
+                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标点击UI: {StepInfo.TargetUI}，跳过该步骤");
+                GuideModule.Instance?.ForceNextStep();
                 return;
             }
 
@@ -47,12 +70,6 @@ namespace Hotfix.Framework.Guide
             m_TargetUI.onClick.Add(Complete);
 
             // 执行点击UI引导
-            if (GuideAction == null)
-            {
-                FuLogger.LogWarning("[ClickUIStep] 无法执行引导，引导动作执行器为null");
-                return;
-            }
-
             GuideAction.DoClickUIGuide(m_TargetUI);
         }
 

@@ -111,6 +111,9 @@ void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action)
 void ForEachEvent(Action<object, GameEventArgs> action)
 ```
 
+> `Subscribe` 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 `EventRegister`、多个模块）共享订阅，
+> 由事件池按 `(id, handler)` 引用计数，`Unsubscribe` 只递减本订阅者那一份（详见 4.3）。
+
 ***
 
 ### 4.2 EventRegister
@@ -154,15 +157,19 @@ void Release()                          // 归还引用池
 
 - 线程安全的事件队列  ：使用 `Queue<Event>` 存储待处理事件
 - 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
-- 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 实现线程安全的取消订阅
+- 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 实现线程安全的取消订阅（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
+- 引用计数订阅  ：同一 `(id, handler)` 被多个订阅者（多个 `EventRegister`、多个模块）共享时按份计数，`Subscribe` 计 +1、`Unsubscribe` 计 -1，归零才真正移除条目；单个订阅者退订不影响其他订阅者
 - 锁机制  ：使用 `m_EventHandlerLock` 保证线程安全
 
 工作流程：
 
-1. 订阅阶段  ：`Subscribe` 将处理函数添加到多值字典
-2. 取消订阅阶段  ：`Unsubscribe` 将待取消的handler添加到待删除列表
+1. 订阅阶段  ：`Subscribe` 将处理函数添加到多值字典（已存在则引用计数 +1，不重复入字典）
+2. 取消订阅阶段  ：`Unsubscribe` 引用计数递减，归零才把 handler 添加到待删除列表
 3. 事件处理阶段  ：`Update` 从队列取出事件，先处理待删除列表，再调用处理函数
 4. 清理阶段  ：事件处理完成后，通过引用池释放事件参数
+
+> 注意：事件参数在分发结束（`Broadcast` 的下一帧分发或 `BroadcastNow` 立即分发）后即被回收并 `Clear`，
+> 处理函数**不得转发或缓存收到的 `eArgs`**，否则后续处理函数会观测到已清空的数据；需要转发时请新建事件参数对象。
 
 ***
 

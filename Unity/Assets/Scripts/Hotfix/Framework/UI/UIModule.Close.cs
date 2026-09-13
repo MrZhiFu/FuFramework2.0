@@ -60,6 +60,9 @@ namespace Hotfix.Framework.UI
                 return;
             }
 
+            // 防御性守卫：已加载窗口的 SerialId 取自其加载完成时的临时序列号，加载完成时已从
+            // m_LoadingDict 移除，故正常流程下该分支不可达（历史上为"加载中被关闭"遗留）。
+            // 在途加载的中止统一由 CloseAllLoading → m_CancelLoadingSet 在 _OpenAsync 的取消校验点处理。
             if (IsLoading(win.SerialId))
             {
                 m_LoadingDict.Remove(win.SerialId);
@@ -184,6 +187,14 @@ namespace Hotfix.Framework.UI
         /// </summary>
         public void CloseAllLoading()
         {
+            // 只清字典不够：在途的 _OpenAsync 仍会在 await 之后继续创建并注册窗口（CloseAll 后界面上屏）。
+            // 先把在途序列号登记进取消集合，_OpenAsync 在每个 await 后的取消校验点命中即销毁半成品实例并中止；
+            // 再清空加载字典（IsLoading/GetAllLoadingSerialIds 立即反映"无加载中"）。
+            foreach (var (serialId, _) in m_LoadingDict)
+            {
+                m_CancelLoadingSet.Add(serialId);
+            }
+
             m_LoadingDict.Clear();
         }
 
@@ -193,9 +204,17 @@ namespace Hotfix.Framework.UI
         /// <param name="win"></param>
         private void Recycle(WinBase win)
         {
-            // 先让窗口自身完成回收清理，再还回对象池；避免池超容量同步销毁后操作已销毁对象
-            win._OnRecycle();
-            m_WinObjPool.Recycle(win);
+            // 先让窗口自身完成回收清理，再还回对象池；避免池超容量同步销毁后操作已销毁对象。
+            // _OnRecycle 是用户代码，不能让它抛异常时跳过 Recycle——否则池槽位永久不归还
+            //（对象池内部认为该对象仍"使用中"，直到 ObjectPoolModule 强制回收并告警）。
+            try
+            {
+                win._OnRecycle();
+            }
+            finally
+            {
+                m_WinObjPool.Recycle(win);
+            }
         }
     }
 }

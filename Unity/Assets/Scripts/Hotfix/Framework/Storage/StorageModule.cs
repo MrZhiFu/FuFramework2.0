@@ -181,8 +181,9 @@ namespace Hotfix.Framework.Storage
             // 检查目录是否存在
             if (!Directory.Exists(path)) return;
 
-            // 加载所有数据文件
-            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+            // 加载所有数据文件。数据文件恒由 StorageHelper 写在 DirRoot 根层（FilePath = DirRoot/文件名），
+            // 故仅扫描根层：无需递归遍历（避免无谓 IO；也避免不同子目录下同名文件被 Path.GetFileName 合并）
+            var files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
             foreach (var filePath in files)
             {
                 var fileName = Path.GetFileName(filePath);
@@ -238,10 +239,9 @@ namespace Hotfix.Framework.Storage
             if (!m_Helpers.TryGetValue(fileName, out var helper)) return;
             helper.RemoveAllData();
 
-            // 删除数据文件
-            var dataPath = Path.Combine(Application.persistentDataPath, DirRoot, fileName);
-            if (Directory.Exists(dataPath))
-                UtilityAOT.File.Delete(dataPath);
+            // 删除数据文件：helper.FilePath 指向具体文件（非目录）且与保存路径完全一致（已规范化为 /），
+            // 必须按文件删除，否则磁盘文件残留，下次启动 LoadAll 会把已删存档重新读回（存档复活）
+            UtilityAOT.File.Delete(helper.FilePath);
 
             m_Helpers.Remove(fileName);
         }

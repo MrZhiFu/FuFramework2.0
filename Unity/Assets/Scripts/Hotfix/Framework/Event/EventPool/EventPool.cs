@@ -43,9 +43,19 @@ namespace Hotfix.Framework.Event
         private readonly FuMultiDictionary<string, EventHandler<T>> m_EventHandlerMultiDict;
 
         /// <summary>
-        /// 待删除的事件处理器列表（线程安全的取消订阅方案，确保事件处理时使用的是最新的处理函数handler列表）
+        /// 待删除的事件处理器列表（线程安全的取消订阅方案，确保事件处理时使用的是最新的处理函数handler列表）。
+        /// 同一 (id, handler) 只登记一条（引用计数归零才登记、期间重新订阅即撤销登记），
+        /// 否则「退订 → 重订阅」交错时，重复的登记会把后来者的订阅一并移除。
         /// </summary>
         private readonly List<(string id, EventHandler<T> handler)> m_WaitRemoveHandlerList;
+
+        /// <summary>
+        /// (id, handler) 条目的订阅引用计数：多个订阅者（如多个 EventRegister、多个模块）共享同一处理函数时，
+        /// 各自计一份，退订只递减自己那一份，归零才真正移除条目。
+        /// 仅在非 AllowDuplicateHandler 模式下使用（该模式按「同 handler 多条目」语义处理，不参与计数）。
+        /// 不变式：计数 &gt; 0 ⇔ 条目在 m_EventHandlerMultiDict 中；计数 == 0 ⇔ 条目仍在字典中但已登记待移除。
+        /// </summary>
+        private readonly Dictionary<(string id, EventHandler<T> handler), int> m_HandlerRefCountDict;
 
         /// <summary>
         /// 事件处理器的同步锁
@@ -96,11 +106,12 @@ namespace Hotfix.Framework.Event
         /// <param name="mode">事件池模式。</param>
         public EventPool(EEventPoolMode mode)
         {
-            m_PoolMode        = mode;
+            m_PoolMode              = mode;
             m_DefaultHandler        = null;
             m_EventQueue            = new Queue<Event>();
             m_EventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<T>>();
             m_WaitRemoveHandlerList = new List<(string, EventHandler<T>)>();
+            m_HandlerRefCountDict   = new Dictionary<(string, EventHandler<T>), int>();
         }
 
         /// <summary>
@@ -186,12 +197,31 @@ namespace Hotfix.Framework.Event
                     // 此处只补回收节点；batch[processed+1..Count) 是「出队但未分发」——EventArgs 仍由本池持有，
                     // 必须与节点一并回收：Event.Clear() 只把 EventArgs 置 null 而不回收，漏掉会让
                     // ReferencePool 的事件参数计数永久漂移（未分发即丢弃的路径不能指望 HandleEvent 兜底）。
+                    // 每个回收各自 try/catch（与 Clear 的排水写法一致，见 Clear）：ReferencePool.Recycle 一旦抛异常，
+                    // 不得中断整轮兜底——否则其后节点全部不再归还（计数永久漂移），且异常会顶替原始异常掩盖真正的故障点。
                     for (var i = processed; i < batch.Count; i++)
                     {
                         var unhandledEvent = batch[i];
                         if (i > processed)
-                            ReferencePool.Recycle(unhandledEvent.EventArgs);
-                        ReferencePool.Recycle(unhandledEvent);
+                        {
+                            try
+                            {
+                                ReferencePool.Recycle(unhandledEvent.EventArgs);
+                            }
+                            catch (Exception exception)
+                            {
+                                FuLogger.LogError($"[EventPool]兜底回收未分发事件参数异常:{exception}");
+                            }
+                        }
+
+                        try
+                        {
+                            ReferencePool.Recycle(unhandledEvent);
+                        }
+                        catch (Exception exception)
+                        {
+                            FuLogger.LogError($"[EventPool]兜底回收事件节点异常:{exception}");
+                        }
                     }
                 }
             }
@@ -212,6 +242,7 @@ namespace Hotfix.Framework.Event
                 Clear();
                 m_EventHandlerMultiDict.Clear();
                 m_WaitRemoveHandlerList.Clear();
+                m_HandlerRefCountDict.Clear();
                 m_DefaultHandler = null;
             }
         }
@@ -279,6 +310,8 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 订阅事件处理函数。
+        /// 同一 (id, handler) 可被多个订阅者重复订阅：非 AllowDuplicateHandler 模式下按条目引用计数（每订阅一次计一份，
+        /// 分发时只调用一次），退订只递减自己那一份。AllowDuplicateHandler 模式下仍按「同 handler 多条目」语义逐条新增。
         /// </summary>
         public void Subscribe(string id, EventHandler<T> handler)
         {
@@ -289,21 +322,34 @@ namespace Hotfix.Framework.Event
                 if (!m_EventHandlerMultiDict.Contains(id))
                 {
                     m_EventHandlerMultiDict.Add(id, handler);
+                    // 用索引器而非 Add：不变式保证此处无该键（计数键与字典条目同生共死），
+                    // 索引器写法在不变式万一被破坏时退化为「重置为 1」而非抛出异常逃逸到调用方。
+                    m_HandlerRefCountDict[(id, handler)] = 1;
                     return;
                 }
 
                 if ((m_PoolMode & EEventPoolMode.AllowMultiHandler) != EEventPoolMode.AllowMultiHandler)
                     throw new InvalidOperationException($"[EventPool]事件 '{id}' 不允许多次注册处理函数!");
 
-                if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) != EEventPoolMode.AllowDuplicateHandler && Check(id, handler))
-                    throw new InvalidOperationException($"[EventPool]事件 '{id}' 不允许重复注册处理函数!");
+                if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) == EEventPoolMode.AllowDuplicateHandler)
+                {
+                    m_EventHandlerMultiDict.Add(id, handler);
+                    return;
+                }
 
-                m_EventHandlerMultiDict.Add(id, handler);
+                // 同一 (id, handler) 已存在：引用计数 +1，不重复入字典（分发时仍只调用一次）。
+                // 计数为 0 表示条目此前已登记待移除（尚未被 ProcessWaitRemoveHandlers 摘除），
+                // 本次订阅即撤销该登记，令订阅立即生效——否则「退订 → 重订阅」在同一轮分发前交错时，新订阅会被延迟删除吞掉。
+                var key = (id, handler);
+                m_HandlerRefCountDict.TryGetValue(key, out var refCount);
+                m_HandlerRefCountDict[key] = refCount + 1;
+                m_WaitRemoveHandlerList.Remove(key);
             }
         }
 
         /// <summary>
         /// 取消订阅事件处理函数。
+        /// 引用计数 &gt; 1 时只递减自己那一份（其它订阅者的订阅保持有效）；归零才登记延迟移除。
         /// </summary>
         public void Unsubscribe(string id, EventHandler<T> handler)
         {
@@ -312,7 +358,24 @@ namespace Hotfix.Framework.Event
             // 先将待取消的handler添加到待删除列表，在事件处理时统一移除
             lock (m_EventHandlerLock)
             {
-                m_WaitRemoveHandlerList.Add((id, handler));
+                var key = (id, handler);
+                if (m_HandlerRefCountDict.TryGetValue(key, out var refCount))
+                {
+                    if (refCount > 1)
+                    {
+                        m_HandlerRefCountDict[key] = refCount - 1;
+                        return;
+                    }
+
+                    // 归零（重复退订时 refCount 已为 0，保持 0 不再递减）：登记延迟移除，登记去重保证一条
+                    m_HandlerRefCountDict[key] = 0;
+                    if (!m_WaitRemoveHandlerList.Contains(key))
+                        m_WaitRemoveHandlerList.Add(key);
+                    return;
+                }
+
+                // 未计数的订阅（AllowDuplicateHandler 模式下同一 handler 有多条目）：每次退订登记一条，逐条摘除
+                m_WaitRemoveHandlerList.Add(key);
             }
         }
 
@@ -329,6 +392,8 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 抛出事件（线程安全，延迟处理）。
+        /// 注意：分发结束即回收事件参数并 Clear（见 HandleEvent），处理函数不得转发或缓存收到的 eArgs，
+        /// 否则其它处理函数/后续帧会观测到已被清空的数据；需要转发时请新建事件参数对象。
         /// </summary>
         public void Broadcast(object sender, T eArgs)
         {
@@ -343,6 +408,7 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
+        /// 注意：本方法返回时事件参数已被回收并 Clear，处理函数不得转发或缓存收到的 eArgs（同 Broadcast）。
         /// </summary>
         public void BroadcastNow(object sender, T eArgs)
         {
@@ -442,6 +508,8 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 处理事件结点。
+        /// 本方法无条件拥有 eArgs：返回前（含异常路径）必定回收并 Clear 它，故处理函数不得转发或缓存收到的 eArgs，
+        /// 否则转发目标会观测到已清空的数据，且与「回池后可能被复用」形成脏读。需要转发时请新建事件参数对象。
         /// </summary>
         private void HandleEvent(object sender, T eArgs)
         {
@@ -576,7 +644,13 @@ namespace Hotfix.Framework.Event
 
                 foreach (var (id, handler) in m_WaitRemoveHandlerList)
                 {
+                    var key = (id, handler);
+
+                    // 登记之后又被重新订阅（Subscribe 会撤销登记，此处为双保险）：计数回到正数则不摘除
+                    if (m_HandlerRefCountDict.TryGetValue(key, out var refCount) && refCount > 0) continue;
+
                     m_EventHandlerMultiDict.Remove(id, handler);
+                    m_HandlerRefCountDict.Remove(key);
                 }
 
                 m_WaitRemoveHandlerList.Clear();

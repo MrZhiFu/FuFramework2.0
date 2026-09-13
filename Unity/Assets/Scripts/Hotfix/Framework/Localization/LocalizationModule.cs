@@ -55,9 +55,12 @@ namespace Hotfix.Framework.Localization
                 var oldLanguage = m_Language;
                 m_Language = value;
 
-                // 保存设置
-                _storageModule.SetString("Language", value.ToString());
-                _storageModule.Save();
+                // 保存设置（数据保存模块缺失时跳过保存，语言切换本身仍生效）
+                if (_storageModule != null)
+                {
+                    _storageModule.SetString("Language", value.ToString());
+                    _storageModule.Save();
+                }
 
                 // 发送本地化语言改变事件
                 var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
@@ -133,6 +136,14 @@ namespace Hotfix.Framework.Localization
 
             m_EventModule = ModuleManager.GetModule<EventModule>();
             _storageModule = StorageModule.Instance;
+
+            // 数据保存模块缺失（模块注册顺序调整/初始化失败）时退化为系统语言，不能直接解引用（否则 NRE 中断本模块初始化）
+            if (_storageModule == null)
+            {
+                FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
+                m_Language = SystemLanguage;
+                return;
+            }
 
             var value = _storageModule.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))

@@ -32,9 +32,22 @@ namespace Hotfix.Framework.UI
         private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
 
         /// <summary>
-        /// 正在加载中的任务字典，用于避免同一URL并发重复下载
+        /// 正在加载中的任务字典，用于避免同一URL并发重复下载。
+        /// 值为 SharedLoad 包装而非裸 UniTask：便于按引用判断字典中登记的仍是本次任务——
+        /// 发起者被取消后其它消费者会重新登记新任务，无条件 Remove 会把新任务摘掉。
         /// </summary>
-        private static readonly Dictionary<string, UniTask<Texture2D>> LoadingTasks = new();
+        private static readonly Dictionary<string, SharedLoad> LoadingTasks = new();
+
+        /// <summary>
+        /// 共享下载任务包装。
+        /// </summary>
+        private sealed class SharedLoad
+        {
+            /// <summary>
+            /// 共享的网络纹理加载任务。
+            /// </summary>
+            public UniTask<Texture2D> Task;
+        }
 
         /// <summary>
         /// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
@@ -42,10 +55,18 @@ namespace Hotfix.Framework.UI
         private readonly LifecycleCancellationSource m_Cancellation = new();
 
         /// <summary>
+        /// 本加载器是否已被释放。
+        /// LifecycleCancellationSource.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
+        /// 故不能用 Token 判断"本 loader 已销毁"，需显式标记。
+        /// </summary>
+        private bool m_IsDisposed;
+
+        /// <summary>
         /// 释放：取消本加载器在途的纹理加载，并释放底层。
         /// </summary>
         public override void Dispose()
         {
+            m_IsDisposed = true;
             m_Cancellation.Dispose();
             base.Dispose();
         }
@@ -175,9 +196,15 @@ namespace Hotfix.Framework.UI
                         return;
                     }
 
-                    // 该纹理归 YooAsset 所有，生命周期由句柄决定：此处仅引用，禁止在缓存淘汰时销毁
-                    // （destroyMethod 默认值为 Destroy，会对 provider 缓存的纹理执行 DestroyImmediate，导致其它仍显示该纹理的 GLoader 破图）
-                    var targetTexture = new NTexture(texture2D) { destroyMethod = DestroyMethod.None };
+                    // 按来源区分纹理归属：
+                    //  - asset 路径（assetHandle != null）的纹理归 YooAsset provider 所有，生命周期由句柄决定：
+                    //    此处仅引用，禁止在缓存淘汰时销毁（destroyMethod 默认 Destroy 会对 provider 缓存的纹理执行
+                    //    DestroyImmediate，导致其它仍显示该纹理的 GLoader 破图）。
+                    //  - 网络/本地文件路径（assetHandle == null）的纹理由 LoadTextureFromNetwork/LoadTextureFromFile
+                    //    new Texture2D + LoadImage 创建，无他人持有，必须在 LRU 淘汰时销毁，
+                    //    否则原生 Texture2D 永久泄漏（DestroyMethod.None 只解引用、不销毁 native 纹理）。
+                    var destroyMethod = assetHandle != null ? DestroyMethod.None : DestroyMethod.Destroy;
+                    var targetTexture = new NTexture(texture2D) { destroyMethod = destroyMethod };
                     Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
                     assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
                     onExternalLoadSuccess(targetTexture);
@@ -213,18 +240,48 @@ namespace Hotfix.Framework.UI
         /// <returns>加载完成的Texture2D。</returns>
         private async UniTask<Texture2D> LoadOrGetLoadingTask(string textureURL)
         {
-            if (LoadingTasks.TryGetValue(textureURL, out var existingTask))
-                return await existingTask;
+            if (!LoadingTasks.TryGetValue(textureURL, out var existing))
+                return await StartSharedLoad(textureURL);
 
-            var task = LoadTextureFromNetwork(textureURL);
-            LoadingTasks[textureURL] = task;
             try
             {
-                return await task;
+                // 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
+                // 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
+                return await existing.Task.AttachExternalCancellation(m_Cancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // 本 loader 自身被移除（Dispose）：预期关停，静默上抛由 LoadExternal 的 catch 处理。
+                // 注意不能用 m_Cancellation.Token 判断——Dispose 后它已退化为 default(None)。
+                if (m_IsDisposed) throw;
+
+                // 否则是共享下载任务随其发起者（第一个 loader）Dispose 被取消：不能静默返回，
+                // 否则本次消费者会无声失去加载结果。为本次等待重新发起一次独立（仍共享）下载。
+                return await StartSharedLoad(textureURL);
+            }
+        }
+
+        /// <summary>
+        /// 发起（或复用）共享的网络纹理加载任务：同一 URL 的并发请求共用同一个下载任务。
+        /// 任务绑定首个发起者的令牌——其 Dispose 会取消任务，但等待中的其它消费者会在
+        /// LoadOrGetLoadingTask 的取消分支重新发起，不会静默失去结果。
+        /// </summary>
+        /// <param name="textureURL">纹理URL地址。</param>
+        /// <returns>加载完成的Texture2D。</returns>
+        private async UniTask<Texture2D> StartSharedLoad(string textureURL)
+        {
+            var sharedLoad = new SharedLoad { Task = LoadTextureFromNetwork(textureURL) };
+            LoadingTasks[textureURL] = sharedLoad;
+            try
+            {
+                return await sharedLoad.Task.AttachExternalCancellation(m_Cancellation.Token);
             }
             finally
             {
-                LoadingTasks.Remove(textureURL);
+                // 仅当字典中登记的仍是本次任务时才移除：发起者被取消期间，其它消费者可能已重新登记新任务，
+                // 无条件 Remove 会把新任务摘掉，使后续消费者重复下载。
+                if (LoadingTasks.TryGetValue(textureURL, out var current) && current == sharedLoad)
+                    LoadingTasks.Remove(textureURL);
             }
         }
 

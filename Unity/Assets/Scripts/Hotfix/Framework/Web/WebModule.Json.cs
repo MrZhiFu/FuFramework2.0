@@ -37,7 +37,16 @@ namespace Hotfix.Framework.Web
         /// <returns>是否成功发起并登记在途；构建失败返回 false（已回写异常，调用方不会挂起）。</returns>
         private bool SendJsonReq(WebJsonDataBase webJsonData)
         {
-            FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
+            // Header/Form 明细各需一次 JSON 序列化 + 拼接，仅在调试记录开启时输出（与同文件请求体预览同一开关）；
+            // 关闭时退化为只输出 URL，避免每次请求为日志做两次无谓序列化
+            if (DebugRecordingEnabled)
+            {
+                FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
+            }
+            else
+            {
+                FuLogger.LogInfo($"Web Request: {webJsonData.URL}");
+            }
 
             // 前置构建 + 发送请求：非法 URL/Header 或发送异常在此抛，回写异常并返回，不登记在途、不注册回调
             UnityWebRequest unityWebRequest = null;
@@ -78,7 +87,8 @@ namespace Hotfix.Framework.Web
 
             try
             {
-                unityWebRequest.timeout = (int)ReqTimeout.TotalSeconds;
+                // 超时秒数向上取整并保底 1 秒：Timeout 为 float，直接截断会让 (0, 1) 秒得到 0，而 0 = 永不超时
+                unityWebRequest.timeout = Math.Max(1, (int)Math.Ceiling(ReqTimeout.TotalSeconds));
                 if (webJsonData.Form is { Count: > 0 })
                 {
                     unityWebRequest.SetRequestHeader("Content-Type", "application/json");
