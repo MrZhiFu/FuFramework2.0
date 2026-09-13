@@ -10,10 +10,5 @@ public enum ModeType
     /// <summary>
     /// Unity
     /// </summary>
-    Unity,
-
-    /// <summary>
-    /// TS.
-    /// </summary>
-    TypeScript
+    Unity
 }

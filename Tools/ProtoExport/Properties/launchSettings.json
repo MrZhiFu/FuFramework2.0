@@ -6,11 +6,7 @@
     },
     "ProtoUnityToolsApp": {
       "commandName": "Project",
-      "commandLineArgs": "--mode unity --inputPath ./../../../../../Protobuf/Proto --outputPath ./../../../../../Unity/Assets/Scripts/Hotfix/Proto --namespaceName Hotfix.Proto --isGenerateErrorCode true"
-    },
-    "ProtoTypeScriptToolsApp": {
-       "commandName": "Project",
-       "commandLineArgs":"--mode typescript --inputPath ./../../../../../Protobuf/Proto --outputPath ./../../../../../Laya/src/fuframework/protobuf --namespaceName '' --isGenerateErrorCode true"
-     }
+      "commandLineArgs": "--mode unity --inputPath ./../../../../../Protobuf/Proto --outputPath ./../../../../../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Proto --namespaceName Hotfix.Game.Proto --isGenerateErrorCode true"
+    }
   }
 }

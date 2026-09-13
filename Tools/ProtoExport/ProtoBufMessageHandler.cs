@@ -34,18 +34,9 @@ public static class ProtoBufMessageHandler
         {
             var operationCodeInfo = MessageHelper.Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file), launcherOptions.OutputPath, launcherOptions.IsGenerateErrorCode);
             messageInfoLists.Add(operationCodeInfo);
-            switch (modeType)
-            {
-                case ModeType.Server:
-                case ModeType.Unity:
-                    ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
-                    break;
-                case ModeType.TypeScript:
-                    ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, Path.GetFileNameWithoutExtension(file));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+
+            // 仅剩 Server / Unity 两种模式（TypeScript 已剥离），二者调用形态一致：均以 --namespaceName 作为生成代码命名空间。
+            ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
         }
 
         ProtoGenerateHelper?.Post(messageInfoLists, launcherOptions.OutputPath);
