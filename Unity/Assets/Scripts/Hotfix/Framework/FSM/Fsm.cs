@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using Hotfix.Framework.Variable;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.FSM
@@ -21,9 +20,17 @@ namespace Hotfix.Framework.FSM
         private readonly Dictionary<Type, FsmStateBase> m_StateDict = new();
 
         /// <summary>
-        /// 记录该有限状态机的所有数据变量的字典。key为变量名，value为变量实例。
+        /// 有限状态机共享数据表（通用存储：值为任意对象，不绑定具体变量类型）。
+        /// 约定：若存入的对象实现 <see cref="IReference"/>（引用池对象），由 Fsm 负责在替换/移除/销毁时回收；
+        /// 普通对象则仅丢弃引用，由 GC 回收。
         /// </summary>
-        private Dictionary<string, VariableBase> m_DataDict;
+        private Dictionary<string, object> m_DataDict;
+
+        /// <summary>
+        /// <see cref="Clear"/> 期间用于「同一池对象被挂在多个数据键下」去重的复用集合。
+        /// Fsm 自身即池对象，销毁路径不应产生托管分配，故复用实例字段而非每次 new HashSet。
+        /// </summary>
+        private readonly HashSet<IReference> m_RecycledData = new();
 
         /// <summary>
         /// 名称
@@ -84,20 +91,33 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Length < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
+            // 校验全部前置到 Acquire 之前：否则 Acquire 之后再抛异常会漏掉回收，使该 Fsm 永久占用引用池的「使用中」计数
+            ValidateStates(states, typeof(T), name);
+
             var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
 
-            foreach (var state in states)
+            try
             {
-                if (state == null) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
-                var stateType = state.GetType();
-                if (!fsm.m_StateDict.TryAdd(stateType, state))
-                    throw new InvalidOperationException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
+                for (var i = 0; i < states.Length; i++)
+                {
+                    var state     = states[i];
+                    var stateType = state.GetType();
+                    // 类型唯一性已前置校验，此处不会因重复而失败
+                    fsm.m_StateDict.Add(stateType, state);
 
-                // 初始化状态
-                state.OnInit(fsm);
+                    // 初始化状态(用户代码，可能抛异常)
+                    state.OnInit(fsm);
+                }
+            }
+            catch
+            {
+                // OnInit 抛异常时，已 Add 的状态仍留在 fsm.m_StateDict 中；Recycle → Clear 会统一 OnDestroy、清空字典并复位，
+                // 既避免半成品 Fsm 漏回收，也不会让已入表的状态残留。
+                ReferencePool.Recycle(fsm);
+                throw;
             }
 
             return fsm;
@@ -117,23 +137,61 @@ namespace Hotfix.Framework.FSM
             if (owner == null) throw new InvalidOperationException("[Fsm] 有限状态机持有者不能为空.");
             if (states == null || states.Count < 1) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
 
+            // 校验全部前置到 Acquire 之前：否则 Acquire 之后再抛异常会漏掉回收，使该 Fsm 永久占用引用池的「使用中」计数
+            ValidateStates(states, typeof(T), name);
+
             var fsm = ReferencePool.Acquire<Fsm>();
             fsm.Name        = name;
             fsm.Owner       = owner.GetType();
             fsm.IsDestroyed = false;
 
-            foreach (var state in states)
+            try
             {
-                if (state == null) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
-                var stateType = state.GetType();
-                if (!fsm.m_StateDict.TryAdd(stateType, state))
-                    throw new InvalidOperationException($"[Fsm] 有限状态机 '{new TypeNamePair(typeof(T), name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
+                for (var i = 0; i < states.Count; i++)
+                {
+                    var state     = states[i];
+                    var stateType = state.GetType();
+                    // 类型唯一性已前置校验，此处不会因重复而失败
+                    fsm.m_StateDict.Add(stateType, state);
 
-                // 初始化状态
-                state.OnInit(fsm);
+                    // 初始化状态(用户代码，可能抛异常)
+                    state.OnInit(fsm);
+                }
+            }
+            catch
+            {
+                // 同 params 重载：已 Add 的状态交由 Recycle → Clear 统一 OnDestroy、清空字典并复位
+                ReferencePool.Recycle(fsm);
+                throw;
             }
 
             return fsm;
+        }
+
+        /// <summary>
+        /// 校验待创建有限状态机的状态集合：元素非空且状态类型不重复。
+        /// 由两个 Create 重载在 Acquire 之前调用，保证校验失败时不会有已获取的 Fsm 漏回收。
+        /// </summary>
+        /// <param name="states">待校验的状态集合。</param>
+        /// <param name="ownerType">有限状态机持有者类型（仅用于异常消息）。</param>
+        /// <param name="name">有限状态机名称（仅用于异常消息）。</param>
+        private static void ValidateStates(IList<FsmStateBase> states, Type ownerType, string name)
+        {
+            for (var i = 0; i < states.Count; i++)
+            {
+                if (states[i] == null) throw new InvalidOperationException("[Fsm] 有限状态机状态不能为空.");
+            }
+
+            // 重复状态类型检测：状态数量通常为个位数，用 O(n²) 手写比较即可，无需为此一次性校验引入 LINQ 或分配 HashSet
+            for (var i = 0; i < states.Count; i++)
+            {
+                var stateType = states[i].GetType();
+                for (var j = 0; j < i; j++)
+                {
+                    if (states[j].GetType() != stateType) continue;
+                    throw new InvalidOperationException($"[Fsm] 有限状态机 '{new TypeNamePair(ownerType, name)}' 状态 '{stateType.FullName}' 已经存在，不能重复添加.");
+                }
+            }
         }
 
         /// <summary>
@@ -200,11 +258,17 @@ namespace Hotfix.Framework.FSM
 
             if (m_DataDict != null)
             {
+                // 同一池对象可能被挂在多个键下，先去重再回收：
+                // 否则二次 Recycle 会抛异常并沿 Shutdown→ReferencePool.Recycle(this) 传播，导致整个 Fsm 回不了池。
+                // 复用实例字段（Fsm 是池对象，销毁路径不应分配 HashSet）；用后即清，避免闲置在池中的 Fsm 长期持有已回收对象。
+                m_RecycledData.Clear();
                 foreach (var (_, data) in m_DataDict)
                 {
-                    if (data == null) continue;
-                    ReferencePool.Recycle(data);
+                    // 仅回收池化对象；普通对象丢弃引用即可
+                    if (data is IReference reference && m_RecycledData.Add(reference))
+                        ReferencePool.Recycle(reference);
                 }
+                m_RecycledData.Clear();
 
                 m_DataDict.Clear();
             }
@@ -312,9 +376,9 @@ namespace Hotfix.Framework.FSM
         /// <typeparam name="TData">要获取的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public TData GetData<TData>(string name) where TData : VariableBase
+        public TData GetData<TData>(string name)
         {
-            return GetData(name) as TData;
+            return GetData(name) is TData data ? data : default;
         }
 
         /// <summary>
@@ -322,7 +386,7 @@ namespace Hotfix.Framework.FSM
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <returns>要获取的有限状态机数据。</returns>
-        public VariableBase GetData(string name)
+        public object GetData(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 数据名称不能为空。");
             return m_DataDict?.GetValueOrDefault(name);
@@ -334,9 +398,9 @@ namespace Hotfix.Framework.FSM
         /// <typeparam name="TData">要设置的有限状态机数据的类型。</typeparam>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData<TData>(string name, TData data) where TData : VariableBase
+        public void SetData<TData>(string name, TData data)
         {
-            SetData(name, data as VariableBase);
+            SetData(name, (object)data);
         }
 
         /// <summary>
@@ -344,15 +408,16 @@ namespace Hotfix.Framework.FSM
         /// </summary>
         /// <param name="name">有限状态机数据名称。</param>
         /// <param name="data">要设置的有限状态机数据。</param>
-        public void SetData(string name, VariableBase data)
+        public void SetData(string name, object data)
         {
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要设置的数据名称不能为空。");
 
-            m_DataDict ??= new Dictionary<string, VariableBase>(StringComparer.Ordinal);
+            m_DataDict ??= new Dictionary<string, object>(StringComparer.Ordinal);
 
-            var oldData = GetData(name);
-            if (oldData != null)
-                ReferencePool.Recycle(oldData);
+            // 覆盖旧值时，仅回收池化对象；普通对象丢弃引用即可。
+            // 必须排除「新旧为同一实例」：否则会把仍被本键持有的对象归还池，造成跨系统污染（同一实例被两个持有者复用）。
+            if (m_DataDict.TryGetValue(name, out var oldData) && !ReferenceEquals(oldData, data) && oldData is IReference reference)
+                ReferencePool.Recycle(reference);
 
             m_DataDict[name] = data;
         }
@@ -367,9 +432,32 @@ namespace Hotfix.Framework.FSM
             if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要移除的数据名称不能为空。");
             if (m_DataDict == null) return false;
 
-            var oldData = GetData(name);
-            if (oldData != null) ReferencePool.Recycle(oldData);
+            // 仅回收池化对象；普通对象丢弃引用即可。
+            // 回收前必须先确认没有其它键仍引用同一实例：SetData("A",x); SetData("B",x); RemoveData("A") 时 x 仍被键 B 持有，
+            // 直接 Recycle 会造成 use-after-recycle —— 键 B 后续按 x 使用(数据已被 Clear 复位)，其回收时二次 Recycle 抛异常，
+            // 并沿 Shutdown→ReferencePool.Recycle(this) 传播致 Fsm 回不了池。
+            if (m_DataDict.TryGetValue(name, out var oldData) && oldData is IReference reference && !IsReferencedByOtherDataKeys(name, reference))
+                ReferencePool.Recycle(reference);
+
             return m_DataDict.Remove(name);
+        }
+
+        /// <summary>
+        /// 判断指定池对象是否仍被除 <paramref name="excludedName"/> 之外的其它数据键引用（手写循环，避免 LINQ 分配）。
+        /// </summary>
+        /// <param name="excludedName">被排除的数据键（即当前正在移除的键）。</param>
+        /// <param name="reference">待判定的池对象。</param>
+        /// <returns>是否仍有其它键引用该对象。</returns>
+        private bool IsReferencedByOtherDataKeys(string excludedName, IReference reference)
+        {
+            // 键比较走 StringComparison.Ordinal，与 m_DataDict 的 StringComparer.Ordinal 口径一致
+            foreach (var (key, data) in m_DataDict)
+            {
+                if (string.Equals(key, excludedName, StringComparison.Ordinal)) continue;
+                if (ReferenceEquals(data, reference)) return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -29,7 +29,7 @@
 
 ### 3.3 状态数据 (Data)
 
-状态机可以存储数据变量，用于在状态之间共享信息。数据通过 `Variable` 系统管理，支持类型安全的数据访问。
+状态机可以存储共享数据，用于在状态之间共享信息。数据以**通用对象**存储（值为任意 `object`），按类型取用；若存入的对象实现 `IReference`（引用池对象），由 Fsm 负责在替换/移除/销毁时回收。
 
 ---
 
@@ -116,12 +116,12 @@ FsmStateBase GetState(Type stateType)
 FsmStateBase[] GetAllStates()
 void GetAllStates(List<FsmStateBase> results)
 
-// 数据管理
+// 数据管理（通用存储：值为任意对象；若对象实现 IReference 则由 Fsm 负责回收）
 bool HasData(string name)
-TData GetData<TData>(string name) where TData : VariableBase
-VariableBase GetData(string name)
-void SetData<TData>(string name, TData data) where TData : VariableBase
-void SetData(string name, VariableBase data)
+TData GetData<TData>(string name)
+object GetData(string name)
+void SetData<TData>(string name, TData data)
+void SetData(string name, object data)
 bool RemoveData(string name)
 
 // 状态切换（内部方法，通常在状态中调用）
@@ -342,12 +342,11 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         // 获取当前血量
-        float health = m_PlayerFsm.GetData<VarFloat>("Health")?.Value ?? 100f;
+        float health = m_PlayerFsm.GetData<float>("Health");
         health -= damage;
 
         // 更新血量
-        VarFloat healthVar = health;
-        m_PlayerFsm.SetData("Health", healthVar);
+        m_PlayerFsm.SetData("Health", health);
 
         // 血量归零，切换到死亡状态
         if (health <= 0)
@@ -379,36 +378,31 @@ public class EnemyAIState : FsmStateBase
     {
         base.OnInit(fsm);
 
-        // 初始化数据
-        VarFloat detectionRange = 10f;
-        VarFloat attackRange = 2f;
-        VarObject patrolPoints = GlobalModule.ReferencePoolModule.Acquire<VarObject>();
-        patrolPoints.Value = new GameObject[4];
-
-        Fsm.SetData("DetectionRange", detectionRange);
-        Fsm.SetData("AttackRange", attackRange);
-        Fsm.SetData("PatrolPoints", patrolPoints);
+        // 初始化数据（通用存储：直接存任意对象）
+        Fsm.SetData("DetectionRange", 10f);
+        Fsm.SetData("AttackRange", 2f);
+        Fsm.SetData("PatrolPoints", new GameObject[4]);
     }
 
     protected internal override void OnEnter()
     {
         // 获取数据
-        float detectionRange = Fsm.GetData<VarFloat>("DetectionRange")?.Value ?? 10f;
+        float detectionRange = Fsm.GetData<float>("DetectionRange");
         FuLogger.LogInfo($"检测范围: {detectionRange}");
     }
 
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
         // 获取和更新数据
-        var detectionRange = Fsm.GetData<VarFloat>("DetectionRange");
-        var target = Fsm.GetData<VarGameObject>("Target")?.Value;
+        var detectionRange = Fsm.GetData<float>("DetectionRange");
+        var target = Fsm.GetData<GameObject>("Target");
 
         // AI 逻辑...
         if (target != null)
         {
-            float distance = Vector3.Distance(// 通过其他方式获取 Transform: position, target.transform.position);
+            float distance = Vector3.Distance(/* 通过其他方式获取 Transform: */ position, target.transform.position);
 
-            if (distance <= detectionRange?.Value)
+            if (distance <= detectionRange)
             {
                 ChangeState<EnemyChaseState>();
             }
@@ -434,12 +428,9 @@ public class EnemyController : MonoBehaviour
             new EnemyAttackState()
         );
 
-        // 设置初始数据
-        VarFloat health = 100f;
-        VarFloat speed = 5f;
-
-        m_EnemyFsm.SetData("Health", health);
-        m_EnemyFsm.SetData("Speed", speed);
+        // 设置初始数据（通用存储）
+        m_EnemyFsm.SetData("Health", 100f);
+        m_EnemyFsm.SetData("Speed", 5f);
 
         m_EnemyFsm.Start<EnemyIdleState>();
     }
@@ -481,8 +472,8 @@ public class GamePlayState : FsmStateBase
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
         // 检查游戏结束条件
-        bool isPlayerDead = Fsm.GetData<VarBoolean>("IsPlayerDead")?.Value ?? false;
-        bool isLevelComplete = Fsm.GetData<VarBoolean>("IsLevelComplete")?.Value ?? false;
+        bool isPlayerDead = Fsm.GetData<bool>("IsPlayerDead");
+        bool isLevelComplete = Fsm.GetData<bool>("IsLevelComplete");
 
         if (isPlayerDead)
         {
@@ -572,14 +563,12 @@ public class GameManager : MonoBehaviour
 
     public void SetPlayerDead()
     {
-        VarBoolean isDead = true;
-        m_GameFsm.SetData("IsPlayerDead", isDead);
+        m_GameFsm.SetData("IsPlayerDead", true);
     }
 
     public void SetLevelComplete()
     {
-        VarBoolean isComplete = true;
-        m_GameFsm.SetData("IsLevelComplete", isComplete);
+        m_GameFsm.SetData("IsLevelComplete", true);
     }
 }
 ```
@@ -675,7 +664,6 @@ FSM/
 - **Unity**: 2021.3 LTS 或更高版本
 - **Hotfix.Framework.Core**: 框架核心模块
 - **Hotfix.Framework.ReferencePool**: 引用池模块
-- **Hotfix.Framework.Variable**: 变量管理模块（用于状态机数据存储）
 
 ---
 
@@ -708,8 +696,8 @@ public class ChaseState : FsmStateBase
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
         // 获取必要数据
-        var target = Fsm.GetData<VarGameObject>("Target")?.Value;
-        var attackRange = Fsm.GetData<VarFloat>("AttackRange")?.Value ?? 2f;
+        var target = Fsm.GetData<GameObject>("Target");
+        var attackRange = Fsm.GetData<float>("AttackRange");
 
         // 目标丢失，返回空闲
         if (target == null)
@@ -749,12 +737,12 @@ public class AIStateBase : FsmStateBase
     protected const string KEY_HEALTH = "Health";
     protected const string KEY_SPEED = "Speed";
 
-    protected T GetData<T>(string key) where T : VariableBase
+    protected T GetData<T>(string key)
     {
         return Fsm.GetData<T>(key);
     }
 
-    protected void SetData<T>(string key, T value) where T : VariableBase
+    protected void SetData<T>(string key, T value)
     {
         Fsm.SetData(key, value);
     }
