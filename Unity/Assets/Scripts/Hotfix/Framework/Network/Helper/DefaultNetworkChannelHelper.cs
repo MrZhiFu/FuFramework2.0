@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Extension;
@@ -41,65 +42,176 @@ namespace Hotfix.Framework.Network
         private static EventModule m_Event;
 
         /// <summary>
+        /// 包处理器类型缓存。
+        /// 说明：原实现每次创建频道都会做一次全程序集扫描 + 逐个类型做接口判断，
+        /// 这里把「类型发现」降级为进程内一次性执行并缓存结果；处理器的实例仍按频道创建
+        /// （处理器内部各自持有解析状态，不能跨频道共享）。
+        /// 受限于「不引入代码生成器」的约束，类型发现本身仍基于反射，属于铁律 4 的降级处理：
+        /// 理想方案是由代码生成器产出静态映射表，彻底消除运行时反射。
+        /// </summary>
+        private static class PacketHandlerTypeCache
+        {
+            internal static List<Type> ReceiveHeaderTypes;
+            internal static List<Type> ReceiveBodyTypes;
+            internal static List<Type> SendHeaderTypes;
+            internal static List<Type> SendBodyTypes;
+            internal static List<Type> HeartBeatTypes;
+            internal static List<Type> CompressTypes;
+            internal static List<Type> DecompressTypes;
+        }
+
+        private static readonly object s_HandlerTypeCacheLock = new();
+        private static          bool   s_HandlerTypeCacheReady;
+
+        /// <summary>
+        /// 一次性扫描程序集并缓存各类包处理器类型。
+        /// </summary>
+        private static void EnsureHandlerTypeCache()
+        {
+            if (s_HandlerTypeCacheReady) return;
+            lock (s_HandlerTypeCacheLock)
+            {
+                if (s_HandlerTypeCacheReady) return;
+
+                var receiveHeaderTypes = new List<Type>();
+                var receiveBodyTypes   = new List<Type>();
+                var sendHeaderTypes    = new List<Type>();
+                var sendBodyTypes      = new List<Type>();
+                var heartBeatTypes     = new List<Type>();
+                var compressTypes      = new List<Type>();
+                var decompressTypes    = new List<Type>();
+
+                var packetReceiveHeaderHandlerBaseType = typeof(IPacketReceiveHeaderHandler);
+                var packetReceiveBodyHandlerBaseType   = typeof(IPacketReceiveBodyHandler);
+                var packetSendHeaderHandlerBaseType    = typeof(IPacketSendHeaderHandler);
+                var packetSendBodyHandlerBaseType      = typeof(IPacketSendBodyHandler);
+                var packetHeartBeatHandlerBaseType     = typeof(IPacketHeartBeatHandler);
+                var messageCompressHandlerBaseType     = typeof(IMessageCompressHandler);
+                var messageDecompressHandlerBaseType   = typeof(IMessageDecompressHandler);
+                var packetHandlerBaseType              = typeof(IPacketHandler);
+
+                var types = UtilityAOT.Assembly.GetTypes();
+                foreach (var type in types)
+                {
+                    if (!type.IsClass || type.IsAbstract) continue;
+                    if (!type.IsImplWithInterface(packetHandlerBaseType)) continue;
+
+                    if (type.IsImplWithInterface(packetReceiveHeaderHandlerBaseType))
+                    {
+                        receiveHeaderTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(packetReceiveBodyHandlerBaseType))
+                    {
+                        receiveBodyTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(packetSendHeaderHandlerBaseType))
+                    {
+                        sendHeaderTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(packetSendBodyHandlerBaseType))
+                    {
+                        sendBodyTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(packetHeartBeatHandlerBaseType))
+                    {
+                        heartBeatTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(messageCompressHandlerBaseType))
+                    {
+                        compressTypes.Add(type);
+                    }
+                    else if (type.IsImplWithInterface(messageDecompressHandlerBaseType))
+                    {
+                        decompressTypes.Add(type);
+                    }
+                }
+
+                PacketHandlerTypeCache.ReceiveHeaderTypes = receiveHeaderTypes;
+                PacketHandlerTypeCache.ReceiveBodyTypes   = receiveBodyTypes;
+                PacketHandlerTypeCache.SendHeaderTypes    = sendHeaderTypes;
+                PacketHandlerTypeCache.SendBodyTypes      = sendBodyTypes;
+                PacketHandlerTypeCache.HeartBeatTypes     = heartBeatTypes;
+                PacketHandlerTypeCache.CompressTypes      = compressTypes;
+                PacketHandlerTypeCache.DecompressTypes    = decompressTypes;
+
+                s_HandlerTypeCacheReady = true;
+            }
+        }
+
+        private void RegisterReceiveHeaderHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterHandler((IPacketReceiveHeaderHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterReceiveBodyHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterHandler((IPacketReceiveBodyHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterSendHeaderHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterHandler((IPacketSendHeaderHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterSendBodyHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterHandler((IPacketSendBodyHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterHeartBeatHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterHeartBeatHandler((IPacketHeartBeatHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterCompressHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterMessageCompressHandler((IMessageCompressHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        private void RegisterDecompressHandlers(List<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                m_NetworkChannel.RegisterMessageDecompressHandler((IMessageDecompressHandler)Activator.CreateInstance(types[i]));
+            }
+        }
+
+        /// <summary>
         /// 初始化网络频道帮助器。
         /// </summary>
         /// <param name="netChannel"></param>
         public void Initialize(INetworkChannel netChannel)
         {
             m_NetworkChannel = netChannel;
-            
-            // 反射注册包和包处理函数。
-            var packetReceiveHeaderHandlerBaseType = typeof(IPacketReceiveHeaderHandler);
-            var packetReceiveBodyHandlerBaseType = typeof(IPacketReceiveBodyHandler);
-            var packetSendHeaderHandlerBaseType = typeof(IPacketSendHeaderHandler);
-            var packetSendBodyHandlerBaseType = typeof(IPacketSendBodyHandler);
-            var packetHeartBeatHandlerBaseType = typeof(IPacketHeartBeatHandler);
-            var messageCompressHandlerBaseType = typeof(IMessageCompressHandler);
-            var messageDecompressHandlerBaseType = typeof(IMessageDecompressHandler);
-            var packetHandlerBaseType = typeof(IPacketHandler);
 
-            var types = UtilityAOT.Assembly.GetTypes();
-            foreach (var type in types)
-            {
-                if (!type.IsClass || type.IsAbstract) continue;
-                if (!type.IsImplWithInterface(packetHandlerBaseType)) continue;
+            // 注册包和包处理函数（类型发现只在首次执行，结果被缓存）。
+            EnsureHandlerTypeCache();
 
-                if (type.IsImplWithInterface(packetReceiveHeaderHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IPacketReceiveHeaderHandler;
-                    m_NetworkChannel.RegisterHandler(handler);
-                }
-                else if (type.IsImplWithInterface(packetReceiveBodyHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IPacketReceiveBodyHandler;
-                    m_NetworkChannel.RegisterHandler(handler);
-                }
-                else if (type.IsImplWithInterface(packetSendHeaderHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IPacketSendHeaderHandler;
-                    m_NetworkChannel.RegisterHandler(handler);
-                }
-                else if (type.IsImplWithInterface(packetSendBodyHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IPacketSendBodyHandler;
-                    m_NetworkChannel.RegisterHandler(handler);
-                }
-                else if (type.IsImplWithInterface(packetHeartBeatHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IPacketHeartBeatHandler;
-                    m_NetworkChannel.RegisterHeartBeatHandler(handler);
-                }
-                else if (type.IsImplWithInterface(messageCompressHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IMessageCompressHandler;
-                    m_NetworkChannel.RegisterMessageCompressHandler(handler);
-                }
-                else if (type.IsImplWithInterface(messageDecompressHandlerBaseType))
-                {
-                    var handler = Activator.CreateInstance(type) as IMessageDecompressHandler;
-                    m_NetworkChannel.RegisterMessageDecompressHandler(handler);
-                }
-            }
+            RegisterReceiveHeaderHandlers(PacketHandlerTypeCache.ReceiveHeaderTypes);
+            RegisterReceiveBodyHandlers(PacketHandlerTypeCache.ReceiveBodyTypes);
+            RegisterSendHeaderHandlers(PacketHandlerTypeCache.SendHeaderTypes);
+            RegisterSendBodyHandlers(PacketHandlerTypeCache.SendBodyTypes);
+            RegisterHeartBeatHandlers(PacketHandlerTypeCache.HeartBeatTypes);
+            RegisterCompressHandlers(PacketHandlerTypeCache.CompressTypes);
+            RegisterDecompressHandlers(PacketHandlerTypeCache.DecompressTypes);
 
             Event.Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
             Event.Subscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);

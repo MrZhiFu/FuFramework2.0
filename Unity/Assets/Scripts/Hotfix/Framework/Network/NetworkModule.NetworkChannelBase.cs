@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
@@ -74,6 +74,11 @@ namespace Hotfix.Framework.Network
             protected bool IsVerifyAddress = true;
 
             /// <summary>
+            /// 是否需要由本类解析主机名。默认需要；子类若自行处理主机名（如 WebSocket）可覆写为 false。
+            /// </summary>
+            protected virtual bool NeedResolveHost => true;
+
+            /// <summary>
             /// 链接目标地址
             /// </summary>
             protected IPEndPoint ConnectEndPoint;
@@ -116,7 +121,37 @@ namespace Hotfix.Framework.Network
             private IPacketReceiveBodyHandler   m_PacketReceiveBodyHandler;
             private IPacketHeartBeatHandler     m_PacketHeartBeatHandler;
 
+            /// <summary>
+            /// 心跳状态的专用锁对象。
+            /// 说明：原先直接 lock(PHeartBeatState) 作为锁使用，而 Close() 在 lock(this) 内再次获取该锁、
+            /// ProcessHeartBeat 又在持有该锁时调用 Close()，两条路径锁序相反会形成 ABBA 死锁面，
+            /// 因此统一改为专用锁对象，并保证不在持有该锁时再获取关闭锁。
+            /// </summary>
+            protected readonly object PHeartBeatLock = new();
+
+            /// <summary>
+            /// 待执行消息链表的专用锁对象。
+            /// 说明：接收回调运行在线程池线程（AddLast），而主线程会进行 First/RemoveFirst/Clear，
+            /// FuLinkedList 并非线程安全，必须加锁互斥。
+            /// </summary>
+            protected readonly object PExecutionMessageLock = new();
+
+            /// <summary>
+            /// 关闭流程的专用锁对象（替代原先的 lock(this)，避免与外部对频道实例的加锁产生交叉锁序）。
+            /// </summary>
+            private readonly object m_CloseLock = new();
+
             protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new();
+
+            /// <summary>
+            /// 消息派发时复用的处理器列表，避免每收一包都新建 List 造成 GC。
+            /// </summary>
+            private readonly List<MessageHandlerAttribute> m_HandlerBuffer = new(8);
+
+            /// <summary>
+            /// 复用列表是否正在使用中（用于处理派发重入，重入时回退为新建列表）。
+            /// </summary>
+            private bool m_HandlerBufferBusy;
 
             public Action<NetworkChannelBase, object>                                NetworkChannelConnected;
             public Action<NetworkChannelBase>                                        NetworkChannelClosed;
@@ -217,7 +252,7 @@ namespace Hotfix.Framework.Network
             {
                 get
                 {
-                    lock (PHeartBeatState)
+                    lock (PHeartBeatLock)
                         return PHeartBeatState.MissHeartBeatCount;
                 }
             }
@@ -238,7 +273,7 @@ namespace Hotfix.Framework.Network
             {
                 get
                 {
-                    lock (PHeartBeatState)
+                    lock (PHeartBeatLock)
                     {
                         return PHeartBeatState.HeartBeatElapseSeconds;
                     }
@@ -306,37 +341,80 @@ namespace Hotfix.Framework.Network
             /// </summary>
             private void ProcessReceivedMessage()
             {
-                while (m_ExecutionMessageLinkedList.First != null)
+                while (true)
                 {
-                    var messageObject = m_ExecutionMessageLinkedList.First.Value;
+                    MessageObject messageObject;
+                    // 接收回调运行在线程池线程（AddLast），此处与其互斥出队；
+                    // 同时在锁内校验 First 是否为空，避免链表被清空后 RemoveFirst 抛异常冲出 ModuleManager.Update。
+                    lock (PExecutionMessageLock)
+                    {
+                        var first = m_ExecutionMessageLinkedList.First;
+                        if (first == null) break;
+
+                        messageObject = first.Value;
+                        m_ExecutionMessageLinkedList.RemoveFirst();
+                    }
+
                     try
                     {
                         // 执行RPC匹配
-                        var replySuccess = PRpcState.TryReply(messageObject);
-                        if (replySuccess) continue;
+                        if (PRpcState.TryReply(messageObject)) continue;
 
-                        // 执行通知消息
-                        var handlers = ProtoMessageHandler.GetHandlers(messageObject.GetType());
-                        foreach (var handler in handlers)
-                        {
-                            handler.SetMessageObject(messageObject);
-                            try
-                            {
-                                handler.Invoke();
-                            }
-                            catch (Exception e)
-                            {
-                                FuLogger.LogFatal(e);
-                            }
-                        }
+                        // 执行通知消息（锁外派发，避免长时间持锁阻塞接收线程）
+                        DispatchMessage(messageObject);
                     }
                     catch (Exception e)
                     {
                         FuLogger.LogFatal(e);
                     }
-                    finally
+                }
+            }
+
+            /// <summary>
+            /// 将消息派发给已注册的消息处理器
+            /// </summary>
+            /// <param name="messageObject">消息对象</param>
+            private void DispatchMessage(MessageObject messageObject)
+            {
+                // 处理器列表会被复制到复用缓冲区后再派发：派发期间用户代码可能注册/注销处理器，
+                // 直接遍历内部列表会抛 InvalidOperationException；复用缓冲区避免每包分配 List。
+                var reuseBuffer = !m_HandlerBufferBusy;
+                List<MessageHandlerAttribute> handlers;
+                if (reuseBuffer)
+                {
+                    m_HandlerBufferBusy = true;
+                    handlers            = m_HandlerBuffer;
+                    ProtoMessageHandler.GetHandlers(messageObject.GetType(), handlers);
+                }
+                else
+                {
+                    // 重入时不能复用缓冲区，退化为新建列表。
+                    handlers = new List<MessageHandlerAttribute>(8);
+                    ProtoMessageHandler.GetHandlers(messageObject.GetType(), handlers);
+                }
+
+                try
+                {
+                    for (var i = 0; i < handlers.Count; i++)
                     {
-                        m_ExecutionMessageLinkedList.RemoveFirst();
+                        var handler = handlers[i];
+                        handler.SetMessageObject(messageObject);
+                        try
+                        {
+                            handler.Invoke();
+                        }
+                        catch (Exception e)
+                        {
+                            FuLogger.LogFatal(e);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (reuseBuffer)
+                    {
+                        handlers.Clear();
+                        m_HandlerBufferBusy = false;
                     }
                 }
             }
@@ -348,9 +426,10 @@ namespace Hotfix.Framework.Network
             private void ProcessHeartBeat(float unscaledDeltaTime)
             {
                 if (PHeartBeatInterval <= 0f) return;
+
                 var sendHeartBeat      = false;
                 var missHeartBeatCount = 0;
-                lock (PHeartBeatState)
+                lock (PHeartBeatLock)
                 {
                     if (PSocket == null || !PActive) return;
 
@@ -362,23 +441,31 @@ namespace Hotfix.Framework.Network
                         PHeartBeatState.HeartBeatElapseSeconds = 0f;
                         PHeartBeatState.MissHeartBeatCount++;
                     }
+                }
 
-                    if (sendHeartBeat && PNetworkChannelHelper.SendHeartBeat())
+                // 以下操作必须在心跳锁之外执行：SendHeartBeat 会获取发送包池锁，
+                // Close 会获取关闭锁，若仍在心跳锁内执行会与 Close 内的加锁形成 ABBA 死锁。
+                if (sendHeartBeat && PNetworkChannelHelper.SendHeartBeat())
+                {
+                    if (missHeartBeatCount > 0 && NetworkChannelMissHeartBeat != null)
                     {
-                        if (missHeartBeatCount > 0 && NetworkChannelMissHeartBeat != null)
-                        {
-                            NetworkChannelMissHeartBeat(this, missHeartBeatCount);
-                        }
-
-                        // PHeartBeatState.Reset(this.ResetHeartBeatElapseSecondsWhenReceivePacket);
-                        return;
+                        NetworkChannelMissHeartBeat(this, missHeartBeatCount);
                     }
 
-                    if (PHeartBeatState.MissHeartBeatCount > MissHeartBeatCountByClose)
-                    {
-                        // 心跳丢失达到上线。触发断开
-                        Close();
-                    }
+                    // PHeartBeatState.Reset(this.ResetHeartBeatElapseSecondsWhenReceivePacket);
+                    return;
+                }
+
+                bool shouldClose;
+                lock (PHeartBeatLock)
+                {
+                    shouldClose = PHeartBeatState.MissHeartBeatCount > MissHeartBeatCountByClose;
+                }
+
+                if (shouldClose)
+                {
+                    // 心跳丢失达到上限。触发断开
+                    Close();
                 }
             }
 
@@ -536,37 +623,68 @@ namespace Hotfix.Framework.Network
 
                 IsVerifyAddress = true;
                 ConnectEndPoint = null;
+
                 if (IPAddress.TryParse(address.Host, out var ipAddress))
                 {
                     ConnectEndPoint = new IPEndPoint(ipAddress, address.Port);
+                    CompleteConnectAddress(userData);
+                    return;
                 }
-                else
+
+                if (!NeedResolveHost)
                 {
-                    try
+                    // 子类自行处理主机名（例如 WebSocket 的 URL 由底层客户端解析）。
+                    CompleteConnectAddress(userData);
+                    return;
+                }
+
+                // 域名解析（Dns.GetHostEntry）是同步阻塞调用，放在主线程会卡帧，
+                // 因此丢到线程池执行，解析完成后再回到主线程继续连接流程。
+                ResolveHostAsync(address, userData).Forget();
+            }
+
+            /// <summary>
+            /// 在线程池解析域名，随后在主线程完成连接流程。
+            /// </summary>
+            /// <param name="address">远程主机地址</param>
+            /// <param name="userData">用户自定义数据</param>
+            private async UniTaskVoid ResolveHostAsync(Uri address, object userData)
+            {
+                var host = address.Host;
+                var port = address.Port;
+                try
+                {
+                    var ipHost = await UniTask.RunOnThreadPool(() => Utility.Net.GetHostIPv4(host));
+                    if (IPAddress.TryParse(ipHost, out var ipAddress))
                     {
-                        var ipHost = Utility.Net.GetHostIPv4(address.Host);
-                        if (IPAddress.TryParse(ipHost, out ipAddress))
-                        {
-                            ConnectEndPoint = new IPEndPoint(ipAddress, address.Port);
-                        }
-                        else
-                        {
-                            // 获取IP失败
-                            FuLogger.LogError($"IP address is invalid.{address.Host}");
-                            IsVerifyAddress = false;
-                            Close();
-                            PSocket = null;
-                        }
+                        ConnectEndPoint = new IPEndPoint(ipAddress, port);
                     }
-                    catch (Exception e)
+                    else
                     {
-                        FuLogger.LogError($"IP address is invalid.{address.Host} {e.Message}");
+                        // 获取IP失败
+                        FuLogger.LogError($"IP address is invalid.{host}");
                         IsVerifyAddress = false;
                         Close();
                         PSocket = null;
                     }
                 }
+                catch (Exception e)
+                {
+                    FuLogger.LogError($"IP address is invalid.{host} {e.Message}");
+                    IsVerifyAddress = false;
+                    Close();
+                    PSocket = null;
+                }
 
+                CompleteConnectAddress(userData);
+            }
+
+            /// <summary>
+            /// 地址解析完成后校验地址族并通知子类创建 Socket 发起连接。
+            /// </summary>
+            /// <param name="userData">用户自定义数据</param>
+            private void CompleteConnectAddress(object userData)
+            {
                 if (IsVerifyAddress && ConnectEndPoint != null)
                 {
                     switch (ConnectEndPoint.AddressFamily)
@@ -587,17 +705,24 @@ namespace Hotfix.Framework.Network
                     }
                 }
 
-
                 PSendState.Reset();
                 PReceiveState.PrepareForPacketHeader();
+
+                OnConnectEndPointReady(userData);
             }
+
+            /// <summary>
+            /// 连接目标地址已解析完成（或已确认解析失败）时由子类实现：创建 Socket 并发起连接。
+            /// </summary>
+            /// <param name="userData">用户自定义数据</param>
+            protected abstract void OnConnectEndPointReady(object userData);
 
             /// <summary>
             /// 关闭连接并释放所有相关资源。
             /// </summary>
             public virtual void Close()
             {
-                lock (this)
+                lock (m_CloseLock)
                 {
                     if (PSocket == null) return;
                     PActive = false;
@@ -619,13 +744,17 @@ namespace Hotfix.Framework.Network
 
                     PSentPacketCount     = 0;
                     PReceivedPacketCount = 0;
-
-                    lock (PSendPacketPool) PSendPacketPool.Clear();
-                    lock (PHeartBeatState) PHeartBeatState.Reset(true);
-
-                    PRpcState.Dispose();
-                    m_ExecutionMessageLinkedList.Clear();
                 }
+
+                // 以下清理放在 m_CloseLock 之外：ProcessSend 会先持有 PSendPacketPool，
+                // 其中的错误回调可能再次进入 Close，若这里持 m_CloseLock 再抢 PSendPacketPool，
+                // 两条路径锁序相反会形成 ABBA 死锁。
+                lock (PSendPacketPool) PSendPacketPool.Clear();
+                lock (PHeartBeatLock) PHeartBeatState.Reset(true);
+
+                // 断线/销毁时终结所有挂起的 RPC 请求，否则 await 会永久悬挂。
+                PRpcState.Dispose();
+                lock (PExecutionMessageLock) m_ExecutionMessageLinkedList.Clear();
             }
 
             /// <summary>
@@ -633,7 +762,7 @@ namespace Hotfix.Framework.Network
             /// </summary>
             /// <param name="messageObject"></param>
             /// <typeparam name="TResult"></typeparam>
-            public async Task<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
+            public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
             {
                 messageObject.NotNull(nameof(messageObject));
                 Send(messageObject);
@@ -776,6 +905,36 @@ namespace Hotfix.Framework.Network
             }
 
             protected void ProcessReceive() { }
+
+            /// <summary>
+            /// 单个数据包的包体长度上限。
+            /// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
+            /// </summary>
+            protected const int MaxPacketBodyLength = 1024 * 1024;
+
+            /// <summary>
+            /// 校验包头中的包长度并换算包体长度。
+            /// </summary>
+            /// <param name="header">已解析的包头</param>
+            /// <returns>包体长度</returns>
+            /// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
+            protected static int ValidateAndGetPacketBodyLength(IPacketReceiveHeaderHandler header)
+            {
+                var packetLength = header.PacketLength;
+                var headerLength = header.PacketHeaderLength;
+                if (packetLength < headerLength)
+                {
+                    throw new InvalidOperationException($"Packet length is invalid. packetLength:{packetLength}, headerLength:{headerLength}");
+                }
+
+                var bodyLength = (long)packetLength - headerLength;
+                if (bodyLength > MaxPacketBodyLength)
+                {
+                    throw new InvalidOperationException($"Packet body length exceeds limit. bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
+                }
+
+                return (int)bodyLength;
+            }
 
             protected void DebugSendLog(MessageObject messageObject)
             {

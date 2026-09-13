@@ -27,6 +27,11 @@ namespace Hotfix.Framework.Network
         private readonly Dictionary<string, NetworkChannelBase> m_NetworkChannelDict = new();
 
         /// <summary>
+        /// 遍历频道字典时使用的快照缓冲，避免遍历过程中字典被修改。
+        /// </summary>
+        private readonly List<NetworkChannelBase> m_NetworkChannelSnapshot = new();
+
+        /// <summary>
         /// 事件组件。
         /// </summary>
         private EventModule m_EventModule;
@@ -57,10 +62,21 @@ namespace Hotfix.Framework.Network
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
         {
+            // 先快照再遍历：Update 内部会触达用户消息处理器，
+            // 用户代码可能调用 DestroyNetworkChannel/CreateNetworkChannel 修改字典，
+            // 直接遍历字典会抛 InvalidOperationException 中断整帧。
+            m_NetworkChannelSnapshot.Clear();
             foreach (var networkChannel in m_NetworkChannelDict.Values)
             {
-                networkChannel.Update(deltaTime, unscaledDeltaTime);
+                m_NetworkChannelSnapshot.Add(networkChannel);
             }
+
+            for (var i = 0; i < m_NetworkChannelSnapshot.Count; i++)
+            {
+                m_NetworkChannelSnapshot[i].Update(deltaTime, unscaledDeltaTime);
+            }
+
+            m_NetworkChannelSnapshot.Clear();
         }
 
         /// <summary>
@@ -68,9 +84,17 @@ namespace Hotfix.Framework.Network
         /// </summary>
         protected internal override void OnDispose()
         {
-            foreach (var networkChannel in m_NetworkChannelDict)
+            // 同样先快照：Shutdown 会广播关闭事件并触达用户处理器，
+            // 用户代码可能在此期间销毁/创建频道。
+            m_NetworkChannelSnapshot.Clear();
+            foreach (var networkChannel in m_NetworkChannelDict.Values)
             {
-                var networkChannelBase = networkChannel.Value;
+                m_NetworkChannelSnapshot.Add(networkChannel);
+            }
+
+            for (var i = 0; i < m_NetworkChannelSnapshot.Count; i++)
+            {
+                var networkChannelBase = m_NetworkChannelSnapshot[i];
                 networkChannelBase.NetworkChannelConnected     -= OnNetworkChannelConnected;
                 networkChannelBase.NetworkChannelClosed        -= OnNetworkChannelClosed;
                 networkChannelBase.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
@@ -78,6 +102,7 @@ namespace Hotfix.Framework.Network
                 networkChannelBase.Shutdown();
             }
 
+            m_NetworkChannelSnapshot.Clear();
             m_NetworkChannelDict.Clear();
             Instance = null;
         }

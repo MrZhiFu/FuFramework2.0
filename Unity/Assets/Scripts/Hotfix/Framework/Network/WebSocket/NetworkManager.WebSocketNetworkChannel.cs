@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Net.Sockets;
+using AOT.Framework.Core.Log;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -14,7 +16,21 @@ namespace Hotfix.Framework.Network
         /// </summary>
         private sealed class WebSocketNetworkChannel : NetworkChannelBase
         {
-            private readonly CancellationTokenSource m_CancellationTokenSource = new();
+            /// <summary>
+            /// WebSocket 连接超时时间（毫秒）
+            /// </summary>
+            private const int ConnectTimeoutMilliseconds = 15000;
+
+            /// <summary>
+            /// 取消令牌源。每次连接都会重建（见 OnConnectEndPointReady），
+            /// 原实现为 readonly 且只 Cancel 不重建，导致 Cancel 之后频道永远无法重连。
+            /// </summary>
+            private CancellationTokenSource m_CancellationTokenSource = new();
+
+            /// <summary>
+            /// 最近一次连接的地址，用于在地址解析完成后创建 WebSocket 客户端。
+            /// </summary>
+            private Uri m_LastAddress;
 
             /// <summary>
             /// 初始化网络频道的新实例。
@@ -25,6 +41,11 @@ namespace Hotfix.Framework.Network
             public WebSocketNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout) { }
 
             /// <summary>
+            /// WebSocket 的 URL 由底层客户端自行解析，无需在这里做 DNS 解析。
+            /// </summary>
+            protected override bool NeedResolveHost => false;
+
+            /// <summary>
             /// 连接到远程主机。
             /// </summary>
             /// <param name="address">远程主机的地址。</param>
@@ -33,8 +54,21 @@ namespace Hotfix.Framework.Network
             {
                 if (PIsConnecting) return;
 
+                m_LastAddress = address;
                 base.Connect(address, userData);
-                PSocket = new WebSocketNetSocket(address.ToString(), ReceiveCallback, CloseCallback);
+            }
+
+            /// <summary>
+            /// 地址解析完成后创建 WebSocket 客户端并发起连接。
+            /// </summary>
+            /// <param name="userData">用户自定义数据</param>
+            protected override void OnConnectEndPointReady(object userData)
+            {
+                // 旧 CTS 可能已在 Close 中被 Cancel，这里必须重建，否则新连接会立刻被判定为已取消。
+                m_CancellationTokenSource?.Dispose();
+                m_CancellationTokenSource = new CancellationTokenSource();
+
+                PSocket = new WebSocketNetSocket(m_LastAddress.ToString(), ReceiveCallback, CloseCallback);
                 if (PSocket == null)
                 {
                     const string errorMessage = "Initialize network channel failure.";
@@ -44,7 +78,7 @@ namespace Hotfix.Framework.Network
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
-                ConnectAsync(userData);
+                ConnectAsync(userData).Forget();
             }
 
             private void CloseCallback(string errorMessage) => Close();
@@ -52,12 +86,12 @@ namespace Hotfix.Framework.Network
             public override void Close()
             {
                 base.Close();
-                m_CancellationTokenSource.Cancel();
+                m_CancellationTokenSource?.Cancel();
             }
 
             private bool IsClose()
             {
-                return !PSocket.IsConnected && m_CancellationTokenSource.IsCancellationRequested;
+                return PSocket != null && !PSocket.IsConnected && m_CancellationTokenSource != null && m_CancellationTokenSource.IsCancellationRequested;
             }
 
             protected override bool ProcessSend()
@@ -141,20 +175,38 @@ namespace Hotfix.Framework.Network
                 return true;
             }
 
-            private async void ConnectAsync(object userData)
+            private async UniTaskVoid ConnectAsync(object userData)
             {
+                var cancellationTokenSource = m_CancellationTokenSource;
                 try
                 {
                     PIsConnecting = true;
                     var socketClient = (WebSocketNetSocket)PSocket;
-                    await socketClient.ConnectAsync();
+
+                    // 连接超时/取消由 CTS 控制：原实现是 async void，既无超时也无取消，失败还可能抛出。
+                    cancellationTokenSource.CancelAfter(ConnectTimeoutMilliseconds);
+
+                    await socketClient.ConnectAsync(cancellationTokenSource.Token);
                     ConnectCallback(new ConnectState(PSocket, userData));
+                }
+                catch (OperationCanceledException)
+                {
+                    PIsConnecting = false;
+                    PActive       = false;
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.ConnectError, SocketError.TimedOut,
+                        $"WebSocket connect canceled or timeout after {ConnectTimeoutMilliseconds}ms.");
                 }
                 catch (Exception exception)
                 {
-                    // ReSharper disable once AsyncVoidMethod
-                    if (NetworkChannelError == null) throw;
+                    PIsConnecting = false;
                     var socketException = exception as SocketException;
+                    if (NetworkChannelError == null)
+                    {
+                        // UniTaskVoid 中禁止抛出，否则异常无人接管。
+                        FuLogger.LogError(exception.ToString());
+                        return;
+                    }
+
                     NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
                 }
             }
@@ -185,7 +237,7 @@ namespace Hotfix.Framework.Network
                 PReceivedPacketCount = 0;
 
                 lock (PSendPacketPool) PSendPacketPool.Clear();
-                lock (PHeartBeatState) PHeartBeatState.Reset(true);
+                lock (PHeartBeatLock) PHeartBeatState.Reset(true);
                 NetworkChannelConnected?.Invoke(this, connectState.UserData);
                 PActive = true;
             }
@@ -194,7 +246,7 @@ namespace Hotfix.Framework.Network
             {
                 try
                 {
-                    lock (PHeartBeatState)
+                    lock (PHeartBeatLock)
                     {
                         PHeartBeatState.Reset(PResetHeartBeatElapseSecondsWhenReceivePacket);
                     }
@@ -206,7 +258,7 @@ namespace Hotfix.Framework.Network
                     var processSuccess = PNetworkChannelHelper.DeserializePacketHeader(buffer);
                     if (processSuccess)
                     {
-                        var bodyLength = (int)(PacketReceiveHeaderHandler.PacketLength - PacketReceiveHeaderHandler.PacketHeaderLength);
+                        var bodyLength = ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler);
                         PReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
                         if (buffer.Length < bodyLength) return;
 
@@ -235,8 +287,12 @@ namespace Hotfix.Framework.Network
                             }
                         }
 
-                        // 将收到的消息加入到链表最后
-                        m_ExecutionMessageLinkedList.AddLast(messageObject);
+                        // 将收到的消息加入到链表最后（与主线程消费互斥）
+                        lock (PExecutionMessageLock)
+                        {
+                            m_ExecutionMessageLinkedList.AddLast(messageObject);
+                        }
+
                         PReceivedPacketCount++;
                     }
                     else

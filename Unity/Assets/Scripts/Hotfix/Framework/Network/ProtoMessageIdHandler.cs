@@ -15,7 +15,13 @@ namespace Hotfix.Framework.Network
     {
         private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary  = new();
         private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new();
-        private static readonly List<Type>                           HeartBeatList  = new();
+
+        /// <summary>
+        /// 心跳消息类型集合。
+        /// 说明：IsHeartbeat 在每发一个包时都会被调用（默认包头处理器），
+        /// 使用 HashSet 避免原 List 的线性查找开销。
+        /// </summary>
+        private static readonly HashSet<Type> HeartBeatList = new();
 
         private static bool IsInitialized = false;
 
@@ -95,21 +101,33 @@ namespace Hotfix.Framework.Network
         public static bool IsHeartbeat(Type type) => HeartBeatList.Contains(type);
 
         /// <summary>
-        /// 初始化所有协议对象
+        /// 初始化所有协议对象。
+        /// 注意（铁律 4 降级说明）：受「不引入代码生成器」的约束，这里的消息类型发现仍基于反射
+        /// （assembly.GetTypes + 特性读取），但仅在启动时执行一次，且先用 IsDefined 过滤，
+        /// 只有真正带 MessageTypeHandlerAttribute 的类型才会实例化特性对象。
+        /// 彻底方案应由代码生成器产出「消息ID ↔ 类型」静态映射表。
         /// </summary>
         public static void Init(Assembly assembly)
         {
             if (IsInitialized) return;
-            
-            IsInitialized = true;
-            
+
             ReqDictionary.Clear();
             RespDictionary.Clear();
-            
+            HeartBeatList.Clear();
+
+            if (assembly == null)
+            {
+                FuLogger.LogError("[ProtoMessageIdHandler] 初始化失败：assembly 为空。");
+                return;
+            }
+
             var types = assembly.GetTypes();
             // StringBuilder stringBuilder = new StringBuilder(1024);
             foreach (var type in types)
             {
+                // IsDefined 不创建特性实例，比 GetCustomAttribute 更省；绝大多数类型会被这里直接跳过。
+                if (!type.IsDefined(typeof(MessageTypeHandlerAttribute), false)) continue;
+
                 var attribute = type.GetCustomAttribute(typeof(MessageTypeHandlerAttribute));
 
                 // stringBuilder.AppendLine(type.FullName);
@@ -117,8 +135,7 @@ namespace Hotfix.Framework.Network
                 {
                     if (type.IsImplWithInterface(typeof(IHeartBeatMessage)))
                     {
-                        if (HeartBeatList.Contains(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
-                        HeartBeatList.Add(type);
+                        if (!HeartBeatList.Add(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
                     }
 
                     if (type.IsImplWithInterface(typeof(IRequestMessage)))
@@ -146,6 +163,9 @@ namespace Hotfix.Framework.Network
                     }
                 }
             }
+
+            // 扫描全部成功后才标记初始化完成，避免注册抛出重复ID异常后残留半成品状态。
+            IsInitialized = true;
 
             // GameFrameworkLog.Debug(" 注册消息ID类型: " + stringBuilder);
             // GameFrameworkLog.Info(" 注册消息ID类型: 结束");

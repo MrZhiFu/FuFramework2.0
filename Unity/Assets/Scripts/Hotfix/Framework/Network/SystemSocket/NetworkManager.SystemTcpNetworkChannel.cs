@@ -1,5 +1,6 @@
 using System;
 using System.Net.Sockets;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -36,6 +37,14 @@ namespace Hotfix.Framework.Network
                 if (PIsConnecting) return;
 
                 base.Connect(address, userData);
+            }
+
+            /// <summary>
+            /// 目标地址解析完成（或确认解析失败）后创建 Socket 并发起连接。
+            /// </summary>
+            /// <param name="userData">用户自定义数据</param>
+            protected override void OnConnectEndPointReady(object userData)
+            {
                 if (IsVerifyAddress)
                 {
                     m_SystemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -48,7 +57,6 @@ namespace Hotfix.Framework.Network
                     if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
                     NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
                     return;
-
                 }
 
                 PNetworkChannelHelper.PrepareForConnecting();
@@ -109,15 +117,42 @@ namespace Hotfix.Framework.Network
                     return;
                 }
 
-                lock (PHeartBeatState)
+                lock (PHeartBeatLock)
                 {
                     PHeartBeatState.Reset(PResetHeartBeatElapseSecondsWhenReceivePacket);
                 }
 
+                try
+                {
+                    ProcessReceivedBytes(bytesReceived);
+                }
+                catch (Exception exception)
+                {
+                    // 回包处理（畸形包头、未注册 messageId 等）抛出的异常绝不能在**线程池线程**上逃逸：
+                    // 原实现只包住了 EndReceive，解析阶段的异常会直接抛出，且抛出前没有续接 ReceiveAsync，
+                    // 连接会静默卡死。这里统一转为 NetworkChannelError 事件。
+                    var socketException = exception as SocketException;
+                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                }
+                finally
+                {
+                    // 无论成功、解析失败还是异常，都必须续接接收，避免连接静默卡死。
+                    if (PActive && PSocket != null)
+                    {
+                        ReceiveAsync();
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 处理本次收到的字节。
+            /// </summary>
+            /// <param name="bytesReceived">本次收到的字节数</param>
+            private void ProcessReceivedBytes(int bytesReceived)
+            {
                 PReceiveState.Stream.Position += bytesReceived;
                 if (PReceiveState.Stream.Position < PReceiveState.Stream.Length)
                 {
-                    ReceiveAsync();
                     return;
                 }
 
@@ -134,13 +169,15 @@ namespace Hotfix.Framework.Network
                     {
                         // 如果是空消息,直接返回
                         ProcessPackBody();
-                        ReceiveAsync();
                         return;
                     }
                 }
 
-                if (processSuccess) 
-                    ReceiveAsync();
+                if (!processSuccess)
+                {
+                    // 兼容原有语义：解析失败不抛异常，只记录日志（接收续接由调用方的 finally 保证）。
+                    FuLogger.LogWarning($"[{Name}] 数据包解析失败，已丢弃。");
+                }
             }
 
             /// <summary>
@@ -153,9 +190,16 @@ namespace Hotfix.Framework.Network
                 var buffer = new byte[headerLength];
                 _ = PReceiveState.Stream.Read(buffer, 0, headerLength);
                 var processSuccess = PNetworkChannelHelper.DeserializePacketHeader(buffer);
-                var bodyLength = (int)(PacketReceiveHeaderHandler.PacketLength - PacketReceiveHeaderHandler.PacketHeaderLength);
+                if (!processSuccess)
+                {
+                    // 包头解析失败：恢复为“等待包头”的状态，避免流状态与网络数据错位。
+                    PReceiveState.PrepareForPacketHeader();
+                    return false;
+                }
+
+                var bodyLength = ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler);
                 PReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
-                return processSuccess;
+                return true;
             }
 
             /// <summary>
@@ -164,7 +208,7 @@ namespace Hotfix.Framework.Network
             /// <returns></returns>
             private bool ProcessPackBody()
             {
-                var bodyLength = (int)(PReceiveState.PacketHeader.PacketLength - PReceiveState.PacketHeader.PacketHeaderLength);
+                var bodyLength = ValidateAndGetPacketBodyLength(PReceiveState.PacketHeader);
                 var buffer = new byte[bodyLength];
                 _ = PReceiveState.Stream.Read(buffer, 0, bodyLength);
 
@@ -182,9 +226,12 @@ namespace Hotfix.Framework.Network
                 }
 
                 DebugReceiveLog(messageObject);
-                
-                // 将收到的消息加入到链表最后
-                m_ExecutionMessageLinkedList.AddLast(messageObject);
+
+                // 将收到的消息加入到链表最后（接收回调在线程池线程，需与主线程消费互斥）
+                lock (PExecutionMessageLock)
+                {
+                    m_ExecutionMessageLinkedList.AddLast(messageObject);
+                }
 
                 PReceivedPacketCount++;
                 PReceiveState.PrepareForPacketHeader();
@@ -305,7 +352,7 @@ namespace Hotfix.Framework.Network
                 PReceivedPacketCount = 0;
 
                 lock (PSendPacketPool) PSendPacketPool.Clear();
-                lock (PHeartBeatState) PHeartBeatState.Reset(true);
+                lock (PHeartBeatLock) PHeartBeatState.Reset(true);
 
                 NetworkChannelConnected?.Invoke(this, m_ConnectState.UserData);
                 PActive = true;

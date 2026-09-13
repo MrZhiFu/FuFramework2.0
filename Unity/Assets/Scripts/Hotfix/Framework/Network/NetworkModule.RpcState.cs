@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Extension;
 using AOT.Framework.Core.Log;
@@ -33,7 +33,12 @@ namespace Hotfix.Framework.Network
 
             private readonly int m_rpcTimeout;
 
-            private bool m_disposed;
+            /// <summary>
+            /// 消息类型是否为响应类型的缓存。
+            /// 说明：原实现每收一包都调用 Type.IsImplWithInterface（内部会分配 GetInterfaces 数组），
+            /// 这里按类型缓存结果，热路径上不再重复做接口扫描。
+            /// </summary>
+            private static readonly ConcurrentDictionary<Type, bool> s_ResponseMessageTypeCache = new();
 
             public RpcState(int timeout)
             {
@@ -44,12 +49,20 @@ namespace Hotfix.Framework.Network
                 }
             }
 
+            /// <summary>
+            /// 终结所有挂起的 RPC 请求。
+            /// 注意：本方法可重复调用（断线后重连会再次触发）。
+            /// 断线/销毁时必须让所有挂起的请求以异常结束，否则 await 会永久悬挂（原实现只做了字典 Clear）。
+            /// </summary>
             public void Dispose()
             {
-                if (m_disposed) return;
+                foreach (var pair in m_waitingReplyHandlingObjects)
+                {
+                    pair.Value.Cancel();
+                }
+
                 m_waitingReplyHandlingObjects.Clear();
                 m_removeReplyHandlingObjectIds.Clear();
-                m_disposed = true;
             }
 
             /// <summary>
@@ -60,7 +73,7 @@ namespace Hotfix.Framework.Network
             /// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
             public bool TryReply(MessageObject message)
             {
-                if (!message.GetType().IsImplWithInterface(typeof(IResponseMessage))) return false;
+                if (!s_ResponseMessageTypeCache.GetOrAdd(message.GetType(), static type => type.IsImplWithInterface(typeof(IResponseMessage)))) return false;
                 if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
 
                 try
@@ -88,7 +101,7 @@ namespace Hotfix.Framework.Network
             /// </summary>
             /// <param name="messageObject">要发送的消息对象，必须实现IRequestMessage接口。</param>
             /// <returns>返回一个任务，该任务在收到响应时完成，并返回IResponseMessage。</returns>
-            public Task<IResponseMessage> Call(MessageObject messageObject)
+            public UniTask<IResponseMessage> Call(MessageObject messageObject)
             {
                 if (m_waitingReplyHandlingObjects.TryGetValue(messageObject.UniqueId, out var messageActorObject))
                 {

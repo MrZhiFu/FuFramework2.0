@@ -19,11 +19,6 @@ namespace Hotfix.Framework.Network
         private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new();
 
         /// <summary>
-        /// 空消息处理器列表, 避免每次都新建一个空列表
-        /// </summary>
-        private static readonly List<MessageHandlerAttribute> EmptyList = new();
-
-        /// <summary>
         /// 增加消息处理器
         /// </summary>
         /// <param name="messageHandler">消息接收对象</param>
@@ -45,17 +40,15 @@ namespace Hotfix.Framework.Network
                     continue;
                 }
 
-                MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
-                if (list == null)
+                var list = MessageHandlerDictionary.GetOrAdd(messageHandlerAttribute.MessageType, static _ => new List<MessageHandlerAttribute>(8));
+
+                if (ContainsHandler(list, messageHandler, messageHandlerAttribute.InvokeMethodName))
                 {
-                    list = new List<MessageHandlerAttribute>(8);
-                    MessageHandlerDictionary.TryAdd(messageHandlerAttribute.MessageType, list);
+                    FuLogger.LogError("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                    continue;
                 }
 
-                if (!list.Contains(messageHandlerAttribute))
-                    list.Add(messageHandlerAttribute);
-                else
-                    FuLogger.LogError("重复注册消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                list.Add(messageHandlerAttribute);
             }
         }
 
@@ -75,42 +68,72 @@ namespace Hotfix.Framework.Network
                 var messageHandlerAttribute = methodInfo.GetCustomAttribute<MessageHandlerAttribute>();
                 if (messageHandlerAttribute == null) continue;
 
-                var isRemoveSuccess = messageHandlerAttribute.Remove(messageHandler);
-                if (!isRemoveSuccess)
+                if (!MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list) || list == null)
                 {
-                    FuLogger.LogError("移除消息处理器：" + type.FullName + "->" + methodInfo.Name + " 失败");
+                    FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
                     continue;
                 }
 
-                var isFind = MessageHandlerDictionary.TryGetValue(messageHandlerAttribute.MessageType, out var list);
-                if (isFind)
+                // 以 (处理对象实例, 方法名) 显式比对：GetCustomAttribute 每次都返回新实例、
+                // MessageHandlerAttribute 未重写 Equals，用 List.Contains/Remove 会永远判不中，
+                // 原实现因此会退化为 TryRemove(messageType) 摘掉该类型的全部处理器。
+                var removed = false;
+                for (var i = list.Count - 1; i >= 0; i--)
                 {
-                    if (list?.Contains(messageHandlerAttribute) == true)
-                    {
-                        list.Remove(messageHandlerAttribute);
-                        if (list.Count > 0) continue;
-                    }
+                    var exist = list[i];
+                    if (!ReferenceEquals(exist.TargetHandler, messageHandler)) continue;
+                    if (exist.InvokeMethodName != messageHandlerAttribute.InvokeMethodName) continue;
 
+                    list.RemoveAt(i);
+                    removed = true;
+                }
+
+                if (!removed)
+                {
+                    FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
+                    continue;
+                }
+
+                if (list.Count <= 0)
+                {
                     MessageHandlerDictionary.TryRemove(messageHandlerAttribute.MessageType, out _);
-                    continue;
                 }
-
-                FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + methodInfo.Name);
             }
         }
 
+        /// <summary>
+        /// 判断列表中是否已注册了同一处理对象上的同一方法
+        /// </summary>
+        private static bool ContainsHandler(List<MessageHandlerAttribute> list, IMessageHandler messageHandler, string invokeMethodName)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                var exist = list[i];
+                if (!ReferenceEquals(exist.TargetHandler, messageHandler)) continue;
+                if (exist.InvokeMethodName != invokeMethodName) continue;
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
-        /// 获取消息处理器
+        /// 获取消息处理器，并复制到调用方提供的复用列表中。
         /// </summary>
         /// <param name="messageType">消息类型</param>
-        /// <returns>消息处理器</returns>
-        internal static List<MessageHandlerAttribute> GetHandlers(Type messageType)
+        /// <param name="destination">调用方提供的复用列表，会被先清空</param>
+        internal static void GetHandlers(Type messageType, List<MessageHandlerAttribute> destination)
         {
-            if (MessageHandlerDictionary.TryGetValue(messageType, out var list))
-                return list == null ? EmptyList : new List<MessageHandlerAttribute>(list);
+            destination.Clear();
+            if (MessageHandlerDictionary.TryGetValue(messageType, out var list) && list != null)
+            {
+                // 复制到调用方缓冲区：派发期间用户代码可能注册/注销处理器，
+                // 直接遍历内部列表会抛 InvalidOperationException。
+                destination.AddRange(list);
+                return;
+            }
+
             FuLogger.LogWarning("没有找到消息处理器消息类型：" + messageType.Name);
-            return EmptyList;
         }
     }
 }

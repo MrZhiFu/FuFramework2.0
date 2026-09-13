@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -205,6 +205,6 @@ namespace Hotfix.Framework.Network
         /// <param name="messageObject"></param>
         /// <typeparam name="T">发送的消息类型</typeparam>
         /// <typeparam name="TResult">返回的消息类型</typeparam>
-        Task<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage;
+        UniTask<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage;
     }
 }

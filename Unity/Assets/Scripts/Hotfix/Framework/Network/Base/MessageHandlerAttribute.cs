@@ -21,6 +21,11 @@ namespace Hotfix.Framework.Network
                                           BindingFlags.Static;
 
         /// <summary>
+        /// 单个方法允许积压的最大未处理消息数量，防止消息队列无界增长。
+        /// </summary>
+        private const int MaxQueuedMessageCount = 256;
+
+        /// <summary>
         /// 消息对象
         /// </summary>
         public Type MessageType { get; }
@@ -39,6 +44,12 @@ namespace Hotfix.Framework.Network
         /// 消息处理器
         /// </summary>
         private IMessageHandler m_MessageHandler;
+
+        /// <summary>
+        /// 已缓存的消息处理委托。
+        /// 注册阶段一次性创建，收包阶段直接调用，避免每包执行 MethodInfo.Invoke 反射。
+        /// </summary>
+        private Action<IMessageHandler, MessageObject> m_InvokeDelegate;
 
         /// <summary>
         /// 消息处理对象队列
@@ -65,32 +76,53 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
+        /// 注册时匹配到的方法
+        /// </summary>
+        internal MethodInfo InvokeMethod => m_InvokeMethod;
+
+        /// <summary>
+        /// 注册时匹配到的方法名（用于显式比对，避免依赖 Attribute 的引用相等性）
+        /// </summary>
+        internal string InvokeMethodName => m_InvokeMethodName;
+
+        /// <summary>
+        /// 注册的处理对象实例（用于显式比对）
+        /// </summary>
+        internal IMessageHandler TargetHandler => m_MessageHandler;
+
+        /// <summary>
         /// 设置消息对象
         /// </summary>
         /// <param name="messageObject">消息对象</param>
         public void SetMessageObject(MessageObject messageObject)
         {
             messageObject.NotNull(nameof(messageObject));
+            if (m_MessageObjects.Count >= MaxQueuedMessageCount)
+            {
+                // 队列无界会导致内存持续增长（例如处理函数持续失败时），
+                // 这里丢弃最旧的一条，保证积压有上限。
+                FuLogger.LogWarning($"消息处理队列已满({MaxQueuedMessageCount})，丢弃最旧消息。方法：{m_InvokeMethodName}");
+                m_MessageObjects.Dequeue();
+            }
+
             m_MessageObjects.Enqueue(messageObject);
         }
 
         internal void Invoke()
         {
-            if (m_InvokeMethod == null)
-                throw new ArgumentNullException(nameof(m_InvokeMethod), $"未找到方法：{m_InvokeMethodName}.请确认是否注册成功");
-
             if (m_MessageObjects.Count <= 0)
             {
                 FuLogger.LogWarning($"没有消息对象转发到方法：{m_InvokeMethodName}");
                 return;
             }
 
+            // 先出队再处理：处理过程中抛异常时消息不会残留在队列里造成无界堆积。
             var messageObject = m_MessageObjects.Dequeue();
 
-            if (m_InvokeMethod.IsStatic)
-                m_InvokeMethod?.Invoke(null, new object[] { messageObject });
-            else
-                m_InvokeMethod?.Invoke(m_MessageHandler, new object[] { messageObject });
+            if (m_InvokeDelegate == null)
+                throw new ArgumentNullException(nameof(m_InvokeDelegate), $"未找到方法：{m_InvokeMethodName}.请确认是否注册成功");
+
+            m_InvokeDelegate(m_MessageHandler, messageObject);
         }
 
         /// <summary>
@@ -119,7 +151,9 @@ namespace Hotfix.Framework.Network
                 if (method.GetParameters()[0].ParameterType.FullName != MessageType.FullName)
                     throw new ArgumentException("参数类型数必须为:" + MessageType.FullName);
 
-                m_InvokeMethod = method;
+                m_InvokeMethod   = method;
+                // 注册阶段一次性创建强类型委托并缓存，收包阶段不再有反射调用开销。
+                m_InvokeDelegate = CreateInvokeDelegate(method, messageHandler);
                 return true;
             }
 
@@ -137,6 +171,7 @@ namespace Hotfix.Framework.Network
             MessageType.NotNull(   nameof(MessageType));
             messageHandler.NotNull(nameof(messageHandler));
             m_MessageHandler = null;
+            m_InvokeDelegate = null;
             var target = messageHandler.GetType();
 
             var methodInfos = target.GetMethods(Flags);
@@ -157,6 +192,53 @@ namespace Hotfix.Framework.Network
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 泛型委托工厂的入口方法（仅注册阶段使用一次）。
+        /// </summary>
+        private static readonly MethodInfo s_CreateInvokeDelegateMethod =
+            typeof(MessageHandlerAttribute).GetMethod(nameof(CreateInvokeDelegateGeneric), BindingFlags.Static | BindingFlags.NonPublic);
+
+        /// <summary>
+        /// 创建强类型消息处理委托。
+        /// 说明：受「不引入代码生成器」约束，这里仍使用反射构造泛型方法，但只在注册阶段执行一次；
+        /// 收包阶段直接调用缓存委托，不再有每包 MethodInfo.Invoke 的反射开销。
+        /// 无法生成强类型委托的环境（如部分 AOT 配置）会退化为反射调用，仅保证功能可用。
+        /// </summary>
+        private Action<IMessageHandler, MessageObject> CreateInvokeDelegate(MethodInfo method, IMessageHandler messageHandler)
+        {
+            if (s_CreateInvokeDelegateMethod != null)
+            {
+                try
+                {
+                    return (Action<IMessageHandler, MessageObject>)s_CreateInvokeDelegateMethod
+                        .MakeGenericMethod(MessageType)
+                        .Invoke(null, new object[] { method, messageHandler });
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"创建消息处理委托失败，退化为反射调用：{method.Name} {e.Message}");
+                }
+            }
+
+            return (_, message) => method.Invoke(method.IsStatic ? null : messageHandler, new object[] { message });
+        }
+
+        /// <summary>
+        /// 构造强类型委托：TMessage 由 MessageType 在注册阶段确定。
+        /// </summary>
+        private static Action<IMessageHandler, MessageObject> CreateInvokeDelegateGeneric<TMessage>(MethodInfo method, IMessageHandler messageHandler)
+            where TMessage : MessageObject
+        {
+            if (method.IsStatic)
+            {
+                var staticDelegate = (Action<TMessage>)method.CreateDelegate(typeof(Action<TMessage>));
+                return (_, message) => staticDelegate((TMessage)message);
+            }
+
+            var instanceDelegate = (Action<TMessage>)method.CreateDelegate(typeof(Action<TMessage>), messageHandler);
+            return (_, message) => instanceDelegate((TMessage)message);
         }
     }
 }

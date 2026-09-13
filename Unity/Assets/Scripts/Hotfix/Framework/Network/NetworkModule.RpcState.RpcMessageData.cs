@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -51,7 +51,16 @@ namespace Hotfix.Framework.Network
                 public void Reply(IResponseMessage responseMessage)
                 {
                     ResponseMessage = responseMessage;
-                    m_Tcs.SetResult(responseMessage);
+                    m_Tcs.TrySetResult(responseMessage);
+                }
+
+                /// <summary>
+                /// 以取消异常终结本次等待（断线/销毁时由 RpcState.Dispose 调用），
+                /// 避免调用方 await 永久悬挂。
+                /// </summary>
+                public void Cancel()
+                {
+                    m_Tcs.TrySetException(new OperationCanceledException("Rpc call canceled! Message is :" + RequestMessage));
                 }
 
                 /// <summary>
@@ -85,12 +94,15 @@ namespace Hotfix.Framework.Network
                     RequestMessage = requestMessage;
                     Timeout        = timeout;
                     UniqueId       = ((MessageObject)requestMessage).UniqueId;
-                    m_Tcs          = new TaskCompletionSource<IResponseMessage>();
+                    m_Tcs          = new UniTaskCompletionSource<IResponseMessage>();
                 }
 
-                private readonly TaskCompletionSource<IResponseMessage> m_Tcs;
+                private readonly UniTaskCompletionSource<IResponseMessage> m_Tcs;
 
-                public Task<IResponseMessage> Task => m_Tcs.Task;
+                /// <summary>
+                /// 等待的返回结果。UniTaskCompletionSource.Task 支持被多个调用方重复 await。
+                /// </summary>
+                public UniTask<IResponseMessage> Task => m_Tcs.Task;
 
                 public void Dispose()
                 {
