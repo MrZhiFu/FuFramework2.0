@@ -13,11 +13,21 @@ namespace Hotfix.Framework.Core
     public static class ObjectEx
     {
         /// <summary>
-        /// 检查对象是否为null
+        /// 检查对象是否为null。
+        /// 对已销毁的 UnityEngine.Object（“假 null”）同样返回 true：
+        /// 以 object 静态类型比较时 == 走引用相等，识别不出 Unity 重载的 ==。
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
-        public static bool IsNull(this object self) => self == null;
+        public static bool IsNull(this object self)
+        {
+            if (ReferenceEquals(self, null)) return true;
+
+            // UnityEngine.Object 重载了 ==：对象被 Destroy 后引用非 null，但与 null 比较为 true
+            if (self is UnityEngine.Object unityObject) return unityObject == null;
+
+            return false;
+        }
 
         /// <summary>
         /// 检查对象是否不为null

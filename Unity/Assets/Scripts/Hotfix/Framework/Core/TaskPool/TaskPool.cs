@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -35,6 +36,18 @@ namespace Hotfix.Framework.Core
         private readonly FuLinkedList<ITaskAgent<T>> m_WorkingAgentList;
 
         /// <summary>
+        /// 批量移除时的复用任务快照缓冲。
+        /// 移除会 ReferencePool.Recycle → task.Clear()（实现方/用户代码），其可能重入 AddTask/RemoveTask
+        /// 修改本池容器；先快照并清空容器再逐个回收，避免「遍历中修改容器」。复用字段避免每次分配。
+        /// </summary>
+        private readonly List<T> m_TempTaskList = new();
+
+        /// <summary>
+        /// 批量移除时的复用代理快照缓冲（用途同 <see cref="m_TempTaskList"/>）。
+        /// </summary>
+        private readonly List<ITaskAgent<T>> m_TempAgentList = new();
+
+        /// <summary>
         /// 初始化任务池的新实例。
         /// </summary>
         public TaskPool()
@@ -44,6 +57,25 @@ namespace Hotfix.Framework.Core
             m_FreeAgentStack   = new Stack<ITaskAgent<T>>();
             m_WaitingTaskList  = new FuLinkedList<T>();
             m_WorkingAgentList = new FuLinkedList<ITaskAgent<T>>();
+        }
+
+        /// <summary>
+        /// 回收任务的统一出口：包 try/catch 保证回收语义单调——
+        /// ReferencePool.Recycle → task.Clear() 是用户代码，单个任务清理抛异常不应中断其余任务的回收。
+        /// </summary>
+        /// <param name="task">待回收的任务。</param>
+        private static void SafeRecycle(T task)
+        {
+            if (task == null) return;
+
+            try
+            {
+                ReferencePool.Recycle(task);
+            }
+            catch (Exception e)
+            {
+                FuLogger.LogError($"[TaskPool] 任务回收失败 (SerialId: {task.SerialId}): {e.Message}");
+            }
         }
 
         /// <summary>
@@ -246,11 +278,14 @@ namespace Hotfix.Framework.Core
         /// <returns>是否移除任务成功。</returns>
         public bool RemoveTask(int serialId)
         {
-            foreach (var task in m_WaitingTaskList)
+            // 手工结点遍历（不用 foreach 枚举器）：回收用户代码可能重入修改容器，枚举器会失效。
+            // 先「摘链」再「回收」：摘链后本方法不再触碰容器，重入的增删不会与本方法交叉。
+            for (var node = m_WaitingTaskList.First; node != null; node = node.Next)
             {
+                var task = node.Value;
                 if (task.SerialId != serialId) continue;
-                m_WaitingTaskList.Remove(task);
-                ReferencePool.Recycle(task);
+                m_WaitingTaskList.Remove(node);
+                SafeRecycle(task);
                 return true;
             }
 
@@ -266,7 +301,7 @@ namespace Hotfix.Framework.Core
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Recycle(task);
+                    SafeRecycle(task);
                     return true;
                 }
 
@@ -293,7 +328,7 @@ namespace Hotfix.Framework.Core
                 if (task.Tag == tag)
                 {
                     m_WaitingTaskList.Remove(currentWaitingTask);
-                    ReferencePool.Recycle(task);
+                    SafeRecycle(task);
                     count++;
                 }
 
@@ -311,7 +346,7 @@ namespace Hotfix.Framework.Core
                     workingAgent.Reset();
                     m_FreeAgentStack.Push(workingAgent);
                     m_WorkingAgentList.Remove(currentWorkingAgent);
-                    ReferencePool.Recycle(task);
+                    SafeRecycle(task);
                     count++;
                 }
 
@@ -328,23 +363,45 @@ namespace Hotfix.Framework.Core
         public int RemoveAllTasks()
         {
             var count = m_WaitingTaskList.Count + m_WorkingAgentList.Count;
+            if (count == 0) return 0;
 
-            foreach (var task in m_WaitingTaskList)
+            // 先快照并清空容器，再逐个回收：ReferencePool.Recycle → task.Clear() 是实现方(用户)代码，
+            // 可能经同步延续重入 AddTask/RemoveTask 修改容器；边遍历边回收会「遍历中修改容器」，
+            // 且首个任务抛异常会中断其余任务与代理的回收（回收语义不单调）。
+            m_TempTaskList.Clear();
+            for (var node = m_WaitingTaskList.First; node != null; node = node.Next)
             {
-                ReferencePool.Recycle(task);
+                m_TempTaskList.Add(node.Value);
             }
 
             m_WaitingTaskList.Clear();
 
-            foreach (var workingAgent in m_WorkingAgentList)
+            m_TempAgentList.Clear();
+            for (var node = m_WorkingAgentList.First; node != null; node = node.Next)
             {
-                var task = workingAgent.Task;
-                workingAgent.Reset();
-                m_FreeAgentStack.Push(workingAgent);
-                ReferencePool.Recycle(task);
+                m_TempAgentList.Add(node.Value);
             }
 
             m_WorkingAgentList.Clear();
+
+            for (var i = 0; i < m_TempTaskList.Count; i++)
+            {
+                SafeRecycle(m_TempTaskList[i]);
+            }
+
+            m_TempTaskList.Clear();
+
+            for (var i = 0; i < m_TempAgentList.Count; i++)
+            {
+                var workingAgent = m_TempAgentList[i];
+                // 先取任务再 Reset(Reset 会清空 agent.Task)，随后归还空闲栈
+                var task = workingAgent.Task;
+                workingAgent.Reset();
+                m_FreeAgentStack.Push(workingAgent);
+                SafeRecycle(task);
+            }
+
+            m_TempAgentList.Clear();
 
             return count;
         }
@@ -357,26 +414,39 @@ namespace Hotfix.Framework.Core
         private void _ProcessRunningTasks(float deltaTime, float unscaledDeltaTime)
         {
             var current = m_WorkingAgentList.First;
-            while (current != null)
+
+            // current.List != null 表示该结点仍挂在工作链表中：Update/Reset 等实现方(用户)代码可能同步经
+            // RemoveTask/RemoveTasks/RemoveAllTasks 摘除结点（_ReleaseNode 会把 Value 置空并回缓存复用），
+            // 此后 current.Value 为 null 或已指向其它代理，继续取 .Task 会 NRE 并逃逸到无保护的
+            // ModuleManager.Update（整帧中断）。判据与 _ProcessWaitingTasks 的「结点仍挂在链表中」口径一致。
+            while (current != null && current.List != null)
             {
-                var task = current.Value.Task;
+                var agent = current.Value;
+                var task  = agent?.Task;
 
                 // 先缓存 next 再调用用户代码：Update/Reset 内部可能经同步延续调用 RemoveTask/RemoveTasks
                 // 摘除本结点（结点会被回收复用），之后 current.Next 会读到失效/复用的结点，导致本帧后续代理被静默跳过。
                 // 与 _ProcessWaitingTasks 的「先缓存 next 再调用户代码」保持一致。
                 var next = current.Next;
 
-                if (!task.Done)
+                // 代理已被同步 Reset（Task 置空）而其结点尚未摘链：本帧跳过，避免 task.Done 的空引用。
+                if (task == null)
                 {
-                    current.Value.Update(deltaTime, unscaledDeltaTime);
                     current = next;
                     continue;
                 }
 
-                current.Value.Reset();
-                m_FreeAgentStack.Push(current.Value);
+                if (!task.Done)
+                {
+                    agent.Update(deltaTime, unscaledDeltaTime);
+                    current = next;
+                    continue;
+                }
+
+                agent.Reset();
+                m_FreeAgentStack.Push(agent);
                 m_WorkingAgentList.Remove(current);
-                ReferencePool.Recycle(task);
+                SafeRecycle(task);
                 current = next;
             }
         }
@@ -402,7 +472,9 @@ namespace Hotfix.Framework.Core
                 // 若仍按下面的逻辑处理，会对已回收的任务二次 Recycle(抛「该对象已经被释放」)，并对已摘链的结点重复 Remove(抛异常)，
                 // 且异常会逃逸到无保护的 ModuleManager.Update。
                 // 以「任务是否仍挂在等待链表中」为唯一所有权判据，保证谁摘链谁回收，且至多回收一次。
-                if (!m_WaitingTaskList.Contains(task))
+                // 判据用 O(1) 的结点状态而非 Contains(task)(O(n²))：结点仍在链表中 且 仍持有本任务——
+                // 后者排除「结点被摘链回收后又被 AddTask 复用给别的任务」这一误判（此时 List != null 但 Value 已换人）。
+                if (current.List == null || !ReferenceEquals(current.Value, task))
                 {
                     // 任务已被 Start 内部同步归还：归还本次临时占用的工作代理(若它尚未被一并归还)，避免代理泄漏。
                     if (agentNode.List != null)
@@ -419,15 +491,24 @@ namespace Hotfix.Framework.Core
                 if (status is EStartTaskStatus.Done or EStartTaskStatus.HasToWait or EStartTaskStatus.UnknownError)
                 {
                     agent.Reset();
-                    m_FreeAgentStack.Push(agent);
-                    m_WorkingAgentList.Remove(agentNode);
+                    // agent.Reset 也是用户代码，可能同步归还本次代理(摘链)；结点仍在链表中才归还，
+                    // 避免重复压入空闲栈或对已摘链结点 Remove(抛异常)。
+                    if (agentNode.List != null)
+                    {
+                        m_FreeAgentStack.Push(agent);
+                        m_WorkingAgentList.Remove(agentNode);
+                    }
                 }
 
-                if (status is EStartTaskStatus.Done or EStartTaskStatus.CanResume or EStartTaskStatus.UnknownError)
+                var shouldRemoveWaiting = status is EStartTaskStatus.Done or EStartTaskStatus.CanResume or EStartTaskStatus.UnknownError;
+
+                // 结点仍挂在等待链表中才摘链：上面的 Reset 路径是用户代码，可能已把它摘除，
+                // 对已摘链结点 Remove 会抛 InvalidOperationException 并逃逸到无保护的 ModuleManager.Update。
+                if (shouldRemoveWaiting && current.List != null)
                     m_WaitingTaskList.Remove(current);
 
                 if (status is EStartTaskStatus.Done or EStartTaskStatus.UnknownError)
-                    ReferencePool.Recycle(task);
+                    SafeRecycle(task);
 
                 current = next;
             }

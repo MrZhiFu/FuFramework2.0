@@ -116,11 +116,16 @@ namespace Hotfix.Framework.Core
                 {
                     if (gObjectList[i].name == nameList[i]) continue;
 
+                    // 空段守卫：path.Split('/') 会产生空字符串（首尾斜杠、连续斜杠、空路径），
+                    // 直接取 [0] 会越界，Parse('') 会抛 FormatException
+                    var name = nameList[i];
+                    if (name.Length <= 0 || name[0] != '$') return false;
+
                     // 如果名称以'$'开头，则尝试将其解析为索引，并检查当前对象在其父级中的索引是否匹配
-                    if (nameList[i][0] != '$') return false;
-                    var idxStr = nameList[i].Substring(1);
-                    var idx    = int.Parse(idxStr);
-                    if (gObjectList[i].parent.GetChildIndex(gObjectList[i]) == idx) continue;
+                    if (!int.TryParse(name.Substring(1), out var idx)) return false;
+
+                    var parent = gObjectList[i].parent;
+                    if (parent != null && parent.GetChildIndex(gObjectList[i]) == idx) continue;
                     return false;
                 }
 

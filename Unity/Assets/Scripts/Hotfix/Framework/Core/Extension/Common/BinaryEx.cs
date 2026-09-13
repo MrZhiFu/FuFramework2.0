@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
@@ -304,11 +305,15 @@ namespace Hotfix.Framework.Core
                 return;
             }
 
-            int length = Utility.BitConverter.String2Bytes(value, CachedBytes);
+            // 必须「先算再写」：CachedBytes 只有 256 字节，String2Bytes 写入超长字符串会先抛 ArgumentException，
+            // 原实现在写入之后才判断 length > byte.MaxValue，该守卫永远不会执行（死代码）
+            int length = Encoding.UTF8.GetByteCount(value);
             if (length > byte.MaxValue)
             {
-                throw new InvalidOperationException($"字符串 '{value}' 太长，无法加密.");
+                throw new ArgumentException($"字符串 '{value}' 太长，无法加密（UTF-8 字节数 {length}，上限 {byte.MaxValue}）。", nameof(value));
             }
+
+            Utility.BitConverter.String2Bytes(value, CachedBytes);
 
             Utility.Encryption.Xor.GetSelfXorBytes(CachedBytes, encryptBytes);
             binaryWriter.Write((byte)length);

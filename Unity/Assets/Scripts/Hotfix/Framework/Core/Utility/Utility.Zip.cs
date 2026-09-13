@@ -51,15 +51,24 @@ namespace Hotfix.Framework.Core
                 {
                     byte[] buffer = new byte[readStream.Length];
 
-                    _ = readStream.Read(buffer, 0, buffer.Length);
+                    // Read 不保证一次填满（尤其大文件/网络盘），必须按实际返回值循环读取，否则压缩结果静默截断
+                    var totalRead = 0;
+                    while (totalRead < buffer.Length)
+                    {
+                        var read = readStream.Read(buffer, totalRead, buffer.Length - totalRead);
+                        if (read <= 0) break;
+                        totalRead += read;
+                    }
+
                     using var writeStream = System.IO.File.Create(zippedPath);
                     var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
                     {
                         DateTime = DateTime.Now,
-                        Size     = readStream.Length
+                        Size     = totalRead
                     };
                     CRC.Reset();
-                    CRC.Update(buffer);
+                    // SharpZipLib 1.x 的 Crc32 已移除 (buffer, offset, count) 重载，改用 ArraySegment
+                    CRC.Update(new ArraySegment<byte>(buffer, 0, totalRead));
                     entry.Crc = CRC.Value;
 
                     using var zipStream = new ZipOutputStream(writeStream);
@@ -70,7 +79,7 @@ namespace Hotfix.Framework.Core
 
                     zipStream.PutNextEntry(entry);
                     zipStream.SetLevel(Deflater.BEST_COMPRESSION);
-                    zipStream.Write(buffer, 0, buffer.Length);
+                    zipStream.Write(buffer, 0, totalRead);
                 }
 
                 GC.Collect(1);
@@ -91,8 +100,9 @@ namespace Hotfix.Framework.Core
                     folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
                 }
 
-                var zippedFileStream = new FileStream(zippedPath, FileMode.Create, FileAccess.Write, FileShare.Write);
-                var zipStream        = CompressDirectoryToZipStream(folderToZip, zippedFileStream, password);
+                // using 保证失败路径（CompressDirectoryToZipStream 返回 null）也能释放 FileStream，原实现会泄漏句柄
+                using var zippedFileStream = new FileStream(zippedPath, FileMode.Create, FileAccess.Write, FileShare.Write);
+                var       zipStream        = CompressDirectoryToZipStream(folderToZip, zippedFileStream, password);
                 if (zipStream == null) return false;
 
                 zipStream.Close();
@@ -166,9 +176,17 @@ namespace Hotfix.Framework.Core
                             Directory.CreateDirectory(path);
                         }
 
-                        var bytes = new byte[zipEntry.Size];
-                        _ = zipStream.Read(bytes, 0, bytes.Length);
-                        System.IO.File.WriteAllBytes(fileName, bytes);
+                        // 按实际读到的字节数流式落盘：单次 Read 的返回值会被丢弃导致解压静默截断，
+                        // 且 zipEntry.Size 不可信（可能为 -1/超大），不应据此一次性分配
+                        using (var output = System.IO.File.Create(fileName))
+                        {
+                            var buffer = new byte[BufferSize];
+                            int read;
+                            while ((read = zipStream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                output.Write(buffer, 0, read);
+                            }
+                        }
                     }
                 }
 

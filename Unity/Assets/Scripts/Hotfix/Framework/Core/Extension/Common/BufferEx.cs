@@ -376,7 +376,7 @@ namespace Hotfix.Framework.Core
         /// <returns>从字节数组中读取的整数值。</returns>
         public static unsafe int ReadInt(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + IntSize)
+            if (offset < 0 || offset + IntSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
@@ -398,7 +398,7 @@ namespace Hotfix.Framework.Core
         /// <exception cref="Exception"></exception>
         public static uint ReadUInt(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + UIntSize)
+            if (offset < 0 || offset + UIntSize > buffer.Length)
             {
                 throw new Exception("buffer read out of index");
             }
@@ -419,7 +419,7 @@ namespace Hotfix.Framework.Core
         /// <returns>从字节数组中读取的短整数值。</returns>
         public static unsafe short ReadShort(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + ShortSize)
+            if (offset < 0 || offset + ShortSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
@@ -438,7 +438,7 @@ namespace Hotfix.Framework.Core
         /// <returns>返回读取的16位无符号整数。</returns>
         public static ushort ReadUShort(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + UShortSize)
+            if (offset < 0 || offset + UShortSize > buffer.Length)
             {
                 throw new Exception("buffer read out of index");
             }
@@ -459,7 +459,7 @@ namespace Hotfix.Framework.Core
         /// <returns>长整型数值。</returns>
         public static unsafe long ReadLong(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + LongSize)
+            if (offset < 0 || offset + LongSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
@@ -480,18 +480,21 @@ namespace Hotfix.Framework.Core
         /// <returns>单精度浮点数值。</returns>
         public static unsafe float ReadFloat(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + FloatSize)
+            if (offset < 0 || offset + FloatSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
 
+            // 大端序解码：先读入局部变量再翻转，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
+            int raw;
             fixed (byte* ptr = buffer)
             {
-                *(int*)(ptr + offset) = System.Net.IPAddress.NetworkToHostOrder(*(int*)(ptr + offset));
-                var value = *(float*)(ptr + offset);
-                offset += FloatSize;
-                return value;
+                raw = System.Net.IPAddress.NetworkToHostOrder(*(int*)(ptr + offset));
             }
+
+            var value = *(float*)&raw;
+            offset += FloatSize;
+            return value;
         }
 
         /// <summary>
@@ -502,18 +505,21 @@ namespace Hotfix.Framework.Core
         /// <returns>双精度浮点数值。</returns>
         public static unsafe double ReadDouble(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + DoubleSize)
+            if (offset < 0 || offset + DoubleSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
 
+            // 大端序解码：先读入局部变量再翻转，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
+            long raw;
             fixed (byte* ptr = buffer)
             {
-                *(long*)(ptr + offset) = System.Net.IPAddress.NetworkToHostOrder(*(long*)(ptr + offset));
-                var value = *(double*)(ptr + offset);
-                offset += DoubleSize;
-                return value;
+                raw = System.Net.IPAddress.NetworkToHostOrder(*(long*)(ptr + offset));
             }
+
+            var value = *(double*)&raw;
+            offset += DoubleSize;
+            return value;
         }
 
         /// <summary>
@@ -524,7 +530,7 @@ namespace Hotfix.Framework.Core
         /// <returns>字节值。</returns>
         public static unsafe byte ReadByte(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + ByteSize)
+            if (offset < 0 || offset + ByteSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
@@ -546,8 +552,8 @@ namespace Hotfix.Framework.Core
         /// <returns>读取的字节数组。</returns>
         public static byte[] ReadBytes(this byte[] buffer, int offset, int len)
         {
-            //数据不可信
-            if (len <= 0 || offset > buffer.Length + len * ByteSize)
+            //数据不可信：len 极大时 len * ByteSize 会整数溢出，改为「剩余可读长度」上界判断
+            if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
             {
                 return Array.Empty<byte>();
             }
@@ -566,8 +572,8 @@ namespace Hotfix.Framework.Core
         /// <returns>读取的字节数组。</returns>
         public static byte[] ReadBytes(this byte[] buffer, ref int offset, int len)
         {
-            //数据不可信
-            if (len <= 0 || offset > buffer.Length + len * ByteSize)
+            //数据不可信：len 极大时 len * ByteSize 会整数溢出，改为「剩余可读长度」上界判断
+            if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
             {
                 return Array.Empty<byte>();
             }
@@ -587,8 +593,8 @@ namespace Hotfix.Framework.Core
         public static byte[] ReadBytes(this byte[] buffer, ref int offset)
         {
             var len = ReadInt(buffer, ref offset);
-            //数据不可信
-            if (len <= 0 || offset > buffer.Length + len * ByteSize)
+            //数据不可信：len 极大时 len * ByteSize 会整数溢出，改为「剩余可读长度」上界判断
+            if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
             {
                 return Array.Empty<byte>();
             }
@@ -607,7 +613,7 @@ namespace Hotfix.Framework.Core
         /// <returns>读取的有符号字节。</returns>
         public static unsafe sbyte ReadSByte(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + ByteSize)
+            if (offset < 0 || offset + ByteSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }
@@ -632,8 +638,8 @@ namespace Hotfix.Framework.Core
             fixed (byte* ptr = buffer)
             {
                 var len = ReadShort(buffer, ref offset);
-                //数据不可信
-                if (len <= 0 || offset > buffer.Length + len * ByteSize)
+                //数据不可信：len 为 short 但长度上界判断同样不能用乘法（offset 可能已被前序解析推到非法值）
+                if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
                     return "";
 
                 var value = Encoding.UTF8.GetString(buffer, offset, len);
@@ -650,7 +656,7 @@ namespace Hotfix.Framework.Core
         /// <returns>读取的布尔值。</returns>
         public static unsafe bool ReadBool(this byte[] buffer, ref int offset)
         {
-            if (offset > buffer.Length + BoolSize)
+            if (offset < 0 || offset + BoolSize > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
             }

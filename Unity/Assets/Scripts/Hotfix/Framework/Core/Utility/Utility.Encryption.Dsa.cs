@@ -14,7 +14,7 @@ namespace Hotfix.Framework.Core
             /// DSA（数字签名算法）加密解密相关的实用函数-非对称加密
             /// 使用此类可以对数据进行签名和验证签名，也可以生成密钥对。
             /// </summary>
-            public sealed class Dsa
+            public sealed class Dsa : IDisposable
             {
                 /// <summary>
                 /// DSA 实例，用于加密解密操作。
@@ -48,7 +48,8 @@ namespace Hotfix.Framework.Core
                 public static Dictionary<string, string> Make()
                 {
                     var dic = new Dictionary<string, string>();
-                    var dsa = new DSACryptoServiceProvider();
+                    // DSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
+                    using var dsa = new DSACryptoServiceProvider();
                     dic["privatekey"] = dsa.ToXmlString(true);
                     dic["publickey"]  = dsa.ToXmlString(false);
                     return dic;
@@ -64,7 +65,7 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        var dsa = new DSACryptoServiceProvider();
+                        using var dsa = new DSACryptoServiceProvider();
                         dsa.FromXmlString(privateKey);
                         return dsa.SignData(dataToSign);
                     }
@@ -125,7 +126,7 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        var dsa = new DSACryptoServiceProvider();
+                        using var dsa = new DSACryptoServiceProvider();
                         dsa.FromXmlString(privateKey);
                         return dsa.VerifyData(dataToVerify, signedData);
                     }
@@ -181,6 +182,14 @@ namespace Hotfix.Framework.Core
                     {
                         return false;
                     }
+                }
+
+                /// <summary>
+                /// 释放内部持有的 DSACryptoServiceProvider（含构造时由外部传入的实例）。可重入、幂等。
+                /// </summary>
+                public void Dispose()
+                {
+                    _dsa?.Dispose();
                 }
             }
         }

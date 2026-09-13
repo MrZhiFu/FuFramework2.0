@@ -20,24 +20,39 @@ namespace Hotfix.Framework.Core
         /// <returns>相机快照纹理对象</returns>
         public static Texture2D GetCaptureScreenshot(this Camera camera, float scale = 0.5f)
         {
-            var rect          = new Rect(0, 0, Screen.width * scale, Screen.height * scale);
-            var name          = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-            var renderTexture = RenderTexture.GetTemporary((int)rect.width, (int)rect.height, 0);
-            renderTexture.name   = SceneManager.GetActiveScene().name + "_" + renderTexture.width + "_" + renderTexture.height + "_" + name;
-            camera.targetTexture = renderTexture;
-            camera.Render();
+            // RT 尺寸与 ReadPixels 的 rect 必须用同一组整数尺寸：
+            // 原实现 RT 用 (int) 截断、rect 用浮点，非整数倍缩放下二者不一致（ReadPixels 读取区域错位/越界）
+            var width  = Mathf.Max(1, Mathf.RoundToInt(Screen.width  * scale));
+            var height = Mathf.Max(1, Mathf.RoundToInt(Screen.height * scale));
+            var rect   = new Rect(0, 0, width, height);
+            var name   = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
-            RenderTexture.active = renderTexture;
-            var screenShot = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGB24, false)
+            var renderTexture = RenderTexture.GetTemporary(width, height, 0);
+            renderTexture.name = SceneManager.GetActiveScene().name + "_" + width + "_" + height + "_" + name;
+
+            // 保存并恢复相机/渲染目标：异常路径也必须还原，否则相机 targetTexture 与 RenderTexture.active 被污染
+            var previousActiveTexture = RenderTexture.active;
+            var previousTargetTexture = camera.targetTexture;
+            try
             {
-                name = renderTexture.name
-            };
-            screenShot.ReadPixels(rect, 0, 0);
-            screenShot.Apply();
-            camera.targetTexture = null;
-            RenderTexture.active = null;
-            RenderTexture.ReleaseTemporary(renderTexture);
-            return screenShot;
+                camera.targetTexture = renderTexture;
+                camera.Render();
+
+                RenderTexture.active = renderTexture;
+                var screenShot = new Texture2D(width, height, TextureFormat.RGB24, false)
+                {
+                    name = renderTexture.name
+                };
+                screenShot.ReadPixels(rect, 0, 0);
+                screenShot.Apply();
+                return screenShot;
+            }
+            finally
+            {
+                camera.targetTexture = previousTargetTexture;
+                RenderTexture.active = previousActiveTexture;
+                RenderTexture.ReleaseTemporary(renderTexture);
+            }
         }
 
         /// <summary>

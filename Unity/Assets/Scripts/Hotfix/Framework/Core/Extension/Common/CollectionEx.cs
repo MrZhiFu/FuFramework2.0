@@ -199,11 +199,14 @@ namespace Hotfix.Framework.Core
         /// </example>
         public static void RemoveIf<T>(this List<T> list, Predicate<T> condition)
         {
-            var idx = list.FindIndex(condition);
-            while (idx >= 0)
+            // 反向单趟遍历即可移除全部匹配项（剩余元素相对顺序不变），
+            // 原实现每删一个都从头 FindIndex，最坏 O(n²)
+            for (var i = list.Count - 1; i >= 0; i--)
             {
-                list.RemoveAt(idx);
-                idx = list.FindIndex(condition);
+                if (condition(list[i]))
+                {
+                    list.RemoveAt(i);
+                }
             }
         }
 

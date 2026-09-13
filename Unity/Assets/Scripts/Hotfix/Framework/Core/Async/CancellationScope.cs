@@ -42,7 +42,9 @@ namespace Hotfix.Framework.Core
         private int m_InFlightCount;
 
         /// <summary>
-        /// 「全部完成」信号。在途计数归零时完成，唤醒等待 CancelAsync 的调用方；惰性创建。
+        /// 「全部完成」信号。在途计数归零时完成并立即置空（复位），唤醒等待 CancelAsync 的调用方；惰性创建。
+        /// 必须复位：UniTaskCompletionSource 完成后 await 会立即返回，
+        /// 若不复位，二次 CancelAsync（此时又有了在途操作）会立刻返回、排水失效。
         /// </summary>
         private UniTaskCompletionSource m_AllDoneTcs;
 
@@ -63,6 +65,8 @@ namespace Hotfix.Framework.Core
         {
             m_Cts.Cancel();
             if (m_InFlightCount == 0) return;
+
+            // 归零时 m_AllDoneTcs 已被置空，此处按需新建；已完成/已取消的 TCS 不得重复等待
             m_AllDoneTcs ??= new UniTaskCompletionSource();
             await m_AllDoneTcs.Task;
         }
@@ -84,7 +88,7 @@ namespace Hotfix.Framework.Core
         /// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
         /// 共享同一 CancellationScope 引用，按值复制无堆分配。
         /// </summary>
-        public readonly struct BeginScope : IDisposable
+        public struct BeginScope : IDisposable
         {
             /// <summary>
             /// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
@@ -92,23 +96,35 @@ namespace Hotfix.Framework.Core
             private readonly CancellationScope m_Owner;
 
             /// <summary>
+            /// 是否已释放（幂等标记）：防止重复 Dispose 把在途计数减成负数，导致后续 CancelAsync 永久挂起。
+            /// </summary>
+            private bool m_Disposed;
+
+            /// <summary>
             /// 创建在途操作作用域。
             /// </summary>
             /// <param name="owner">所属的取消范围。</param>
             internal BeginScope(CancellationScope owner)
             {
-                m_Owner = owner;
+                m_Owner    = owner;
+                m_Disposed = false;
             }
 
             /// <summary>
             /// 结束在途操作：递减所属范围的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
-            /// 调用方应始终通过 using 释放本作用域，勿手动重复 Dispose。
+            /// 可重入、幂等（重复 Dispose 无效）；调用方应始终通过 using 释放本作用域。
             /// </summary>
             public void Dispose()
             {
+                if (m_Disposed || m_Owner == null) return;
+                m_Disposed = true;
+
                 if (--m_Owner.m_InFlightCount == 0)
                 {
-                    m_Owner.m_AllDoneTcs?.TrySetResult();
+                    // 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Begin 也能拿到干净状态
+                    var allDoneTcs = m_Owner.m_AllDoneTcs;
+                    m_Owner.m_AllDoneTcs = null;
+                    allDoneTcs?.TrySetResult();
                 }
             }
         }

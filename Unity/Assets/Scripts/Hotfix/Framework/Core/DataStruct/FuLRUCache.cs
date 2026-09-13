@@ -179,16 +179,25 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public void Clear()
         {
-            if (m_OnEvict != null)
+            if (m_OnEvict == null || m_LruList.Count == 0)
             {
-                foreach (var item in m_LruList)
-                {
-                    m_OnEvict.Invoke(item.Key, item.Value);
-                }
+                m_CacheDict.Clear();
+                m_LruList.Clear();
+                return;
             }
+
+            // 先快照、再清空、最后回调：OnEvict 可能重入（回调里再 Put/Clear），
+            // 原实现边遍历链表边回调，重入即抛 InvalidOperationException 且 m_CacheDict.Clear() 永不执行
+            var snapshot = new CacheItem[m_LruList.Count];
+            m_LruList.CopyTo(snapshot, 0);
 
             m_CacheDict.Clear();
             m_LruList.Clear();
+
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                m_OnEvict.Invoke(snapshot[i].Key, snapshot[i].Value);
+            }
         }
     }
 }

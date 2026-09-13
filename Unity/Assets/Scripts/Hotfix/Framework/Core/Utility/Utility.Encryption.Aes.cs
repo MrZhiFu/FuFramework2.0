@@ -37,6 +37,44 @@ namespace Hotfix.Framework.Core
                 /// </summary>
                 private static readonly byte[] BtIv = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
 
+                /// <summary>
+                /// 派生密钥缓存锁（Utility 可能被任意线程调用）。
+                /// </summary>
+                private static readonly object           DerivedKeyLock = new();
+
+                /// <summary>
+                /// 上次派生所用的密钥（单条缓存，与 <see cref="m_CachedDerivedKey"/> 成对使用）。
+                /// </summary>
+                private static          string           m_CachedKey;
+
+                /// <summary>
+                /// 上次派生的 32 字节 AES 密钥。
+                /// </summary>
+                private static          byte[]           m_CachedDerivedKey;
+
+                /// <summary>
+                /// 按密钥派生 32 字节 AES Key（单条缓存）。
+                /// Rfc2898DeriveBytes 需 10000 轮迭代，开销显著；加解密每次都重新派生纯属浪费。
+                /// </summary>
+                /// <param name="encryptKey">加密密钥。</param>
+                /// <returns>32 字节派生的密钥。</returns>
+                private static byte[] GetDerivedKey(string encryptKey)
+                {
+                    lock (DerivedKeyLock)
+                    {
+                        if (m_CachedDerivedKey != null && string.Equals(m_CachedKey, encryptKey, StringComparison.Ordinal))
+                        {
+                            return m_CachedDerivedKey;
+                        }
+
+                        using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
+                        var       key          = derivedBytes.GetBytes(32);
+                        m_CachedKey        = encryptKey;
+                        m_CachedDerivedKey = key;
+                        return key;
+                    }
+                }
+
                 #region 加密
 
                 /// <summary>
@@ -59,10 +97,9 @@ namespace Hotfix.Framework.Core
                     if (encryptByte == null || encryptByte.Length == 0) throw new ArgumentException("明文不得为空");
                     if (string.IsNullOrEmpty(encryptKey)) throw new ArgumentException("密钥不得为空");
 
-                    using var aes          = System.Security.Cryptography.Aes.Create();
-                    using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
+                    using var aes = System.Security.Cryptography.Aes.Create();
 
-                    aes.Key     = derivedBytes.GetBytes(32);
+                    aes.Key     = GetDerivedKey(encryptKey);
                     aes.IV      = BtIv;
                     aes.Mode    = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
@@ -95,10 +132,9 @@ namespace Hotfix.Framework.Core
                     if (decryptByte == null || decryptByte.Length == 0) throw new ArgumentException("密文不得为空");
                     if (string.IsNullOrEmpty(decryptKey)) throw new ArgumentException("密钥不得为空");
 
-                    using var aes          = System.Security.Cryptography.Aes.Create();
-                    using var derivedBytes = new Rfc2898DeriveBytes(decryptKey, Salt, 10000, HashAlgorithmName.SHA256);
+                    using var aes = System.Security.Cryptography.Aes.Create();
 
-                    aes.Key     = derivedBytes.GetBytes(32);
+                    aes.Key     = GetDerivedKey(decryptKey);
                     aes.IV      = BtIv;
                     aes.Mode    = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;

@@ -54,8 +54,11 @@ namespace Hotfix.Framework.Core
                 /// <returns></returns>
                 public static bool IsVerify(string input, string hash)
                 {
-                    var comparer = StringComparer.OrdinalIgnoreCase;
-                    return 0 == comparer.Compare(input, hash);
+                    if (input == null || string.IsNullOrEmpty(hash)) return false;
+
+                    // 必须先用同一算法计算 input 的 MD5，再与传入的 hash 比对（原实现直接比对明文与哈希，恒为 false）
+                    var actualHash = Hash(input);
+                    return StringComparer.OrdinalIgnoreCase.Equals(actualHash, hash);
                 }
 
                 /// <summary>

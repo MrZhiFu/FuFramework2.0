@@ -98,7 +98,8 @@ namespace Hotfix.Framework.Core
                         throw new ArgumentOutOfRangeException("传入的开始位置或长度不正确.");
 
                     var codeIndex = startIndex % codeLength;
-                    for (var i = startIndex; i < length; i++)
+                    // 第二个参数是「长度」而非结束下标：结束位置 = startIndex + length
+                    for (var i = startIndex; i < startIndex + length; i++)
                     {
                         bytes[i]  ^= code[codeIndex++];
                         codeIndex %= codeLength;

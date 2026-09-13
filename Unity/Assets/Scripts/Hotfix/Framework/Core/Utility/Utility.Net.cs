@@ -28,9 +28,17 @@ namespace Hotfix.Framework.Core
             /// <returns>返回第一个可用的端口号，如果没有可用端口则返回-1</returns>
             public static int GetFirstAvailablePort(int startPort = 667, int maxPort = 65535)
             {
+                if (startPort < 0) startPort = 0;
+                if (maxPort > 65535) maxPort = 65535;
+                if (startPort >= maxPort) return -1;
+
+                // 一次性取回系统已用端口集合后再扫描：
+                // 原实现每个端口都调用 PortIsAvailable → PortIsUsed → 全量枚举 IPGlobalProperties，
+                // 最坏情况（几千个端口占用）要做数万次系统级枚举
+                var usedPorts = new HashSet<int>(PortIsUsed());
                 for (var i = startPort; i < maxPort; i++)
                 {
-                    if (PortIsAvailable(i)) return i;
+                    if (!usedPorts.Contains(i)) return i;
                 }
 
                 return -1;

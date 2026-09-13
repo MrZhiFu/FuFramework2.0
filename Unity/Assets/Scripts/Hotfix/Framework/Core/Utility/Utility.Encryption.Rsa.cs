@@ -17,7 +17,7 @@ namespace Hotfix.Framework.Core
             /// RSA 加密解密类-非对称加密。
             /// 使用此类可以实现 RSA 加密解密、签名验证等功能。
             /// </summary>
-            public sealed class Rsa
+            public sealed class Rsa : IDisposable
             {
                 /// <summary>
                 /// RSA 实例，用于加密解密操作。
@@ -51,9 +51,10 @@ namespace Hotfix.Framework.Core
                 public static Dictionary<string, string> Make()
                 {
                     var dic = new Dictionary<string, string>();
-                    var dsa = new RSACryptoServiceProvider();
-                    dic["privateKey"] = dsa.ToXmlString(true);
-                    dic["publicKey"]  = dsa.ToXmlString(false);
+                    // RSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
+                    using var rsa = new RSACryptoServiceProvider();
+                    dic["privateKey"] = rsa.ToXmlString(true);
+                    dic["publicKey"]  = rsa.ToXmlString(false);
                     return dic;
                 }
 
@@ -88,7 +89,7 @@ namespace Hotfix.Framework.Core
                 /// <returns></returns>
                 public static byte[] RsaEncrypt(string publicKey, byte[] content)
                 {
-                    var rsa = new RSACryptoServiceProvider();
+                    using var rsa = new RSACryptoServiceProvider();
                     rsa.FromXmlString(publicKey);
                     var cipherBytes = rsa.Encrypt(content, false);
                     return cipherBytes;
@@ -125,7 +126,7 @@ namespace Hotfix.Framework.Core
                 /// <returns></returns>
                 public static byte[] RsaDecrypt(string privateKey, byte[] content)
                 {
-                    RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+                    using var rsa = new RSACryptoServiceProvider();
                     rsa.FromXmlString(privateKey);
                     byte[] cipherBytes = rsa.Decrypt(content, false);
                     return cipherBytes;
@@ -163,9 +164,10 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        var rsa = new RSACryptoServiceProvider();
+                        using var rsa  = new RSACryptoServiceProvider();
+                        using var sha1 = new SHA1CryptoServiceProvider();
                         rsa.FromXmlString(privateKey);
-                        return rsa.SignData(dataToSign, new SHA1CryptoServiceProvider());
+                        return rsa.SignData(dataToSign, sha1);
                     }
                     catch
                     {
@@ -194,7 +196,8 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        return _rsa.SignData(dataToSign, new SHA1CryptoServiceProvider());
+                        using var sha1 = new SHA1CryptoServiceProvider();
+                        return _rsa.SignData(dataToSign, sha1);
                     }
                     catch
                     {
@@ -224,9 +227,10 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        var rsa = new RSACryptoServiceProvider();
+                        using var rsa  = new RSACryptoServiceProvider();
+                        using var sha1 = new SHA1CryptoServiceProvider();
                         rsa.FromXmlString(publicKey);
-                        return rsa.VerifyData(dataToVerify, new SHA1CryptoServiceProvider(), signedData);
+                        return rsa.VerifyData(dataToVerify, sha1, signedData);
                     }
                     catch
                     {
@@ -256,7 +260,8 @@ namespace Hotfix.Framework.Core
                 {
                     try
                     {
-                        return _rsa.VerifyData(dataToVerify, new SHA1CryptoServiceProvider(), signedData);
+                        using var sha1 = new SHA1CryptoServiceProvider();
+                        return _rsa.VerifyData(dataToVerify, sha1, signedData);
                     }
                     catch
                     {
@@ -280,6 +285,14 @@ namespace Hotfix.Framework.Core
                     {
                         return false;
                     }
+                }
+
+                /// <summary>
+                /// 释放内部持有的 RSACryptoServiceProvider（含构造时由外部传入的实例）。可重入、幂等。
+                /// </summary>
+                public void Dispose()
+                {
+                    _rsa?.Dispose();
                 }
             }
         }

@@ -11,6 +11,13 @@ namespace Hotfix.Framework.Core
     public abstract class ModuleBase
     {
         /// <summary>
+        /// 模块是否处于已初始化（存活）状态。由 ModuleManager 在注册成功时置 true、释放后置 false。
+        /// 重启的排水窗口内模块实例仍保留在 ModuleList 中（供重新初始化复用单例）但已释放，
+        /// 此时为 false —— 帧驱动据此跳过，避免驱动已销毁的模块。
+        /// </summary>
+        public bool IsAlive { get; internal set; }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected internal virtual void OnInit() { }

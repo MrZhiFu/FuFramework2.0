@@ -287,10 +287,13 @@ namespace Hotfix.Framework.Core
             if (isFile)
                 path = Path.GetDirectoryName(path);
 
+            // 判空必须前置：相对路径（如 "abc"）经 GetDirectoryName 会得到 ""、根目录会得到 null，
+            // 原实现先递归后判空，空串/null 会无限递归直至栈溢出
+            if (string.IsNullOrEmpty(path)) return;
             if (Directory.Exists(path)) return;
-            CreateAsDirectory(path, true);
 
-            if (path == null) return;
+            // 先递归创建父目录，再创建自身
+            CreateAsDirectory(path, true);
             Directory.CreateDirectory(path);
         }
 

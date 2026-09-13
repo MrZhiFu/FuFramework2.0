@@ -25,7 +25,8 @@ namespace Hotfix.Framework.Core
     public static class GameObjectEx
     {
         /// <summary>
-        /// 缓存查找时的 Transform 列表。
+        /// 缓存查找时的 Transform 列表（静态共享的临时缓冲区）。
+        /// 注意：非重入安全，使用处必须以 try/finally 保证遍历后清空（异常路径亦不得残留脏数据）。
         /// </summary>
         private static readonly List<Transform> CachedTransforms = new();
 
@@ -120,13 +121,19 @@ namespace Hotfix.Framework.Core
 
             if (!children) return;
 
-            gameObject.GetComponentsInChildren(true, CachedTransforms);
-            foreach (var tf in CachedTransforms)
+            // try/finally：静态共享缓冲区必须无条件清空，否则中途异常会导致脏数据残留、后续调用读到过期 Transform
+            try
             {
-                tf.gameObject.layer = layer;
+                gameObject.GetComponentsInChildren(true, CachedTransforms);
+                foreach (var tf in CachedTransforms)
+                {
+                    tf.gameObject.layer = layer;
+                }
             }
-
-            CachedTransforms.Clear();
+            finally
+            {
+                CachedTransforms.Clear();
+            }
         }
 
         /// <summary>

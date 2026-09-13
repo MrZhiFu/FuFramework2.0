@@ -167,6 +167,12 @@ namespace Hotfix.Framework.Core
             /// <returns>返回是否相交</returns>
             public static bool CheckIntersectPoints(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2, int[] intersectPoints)
             {
+                if (intersectPoints == null) throw new ArgumentNullException(nameof(intersectPoints));
+
+                // 容量校验：循环按 i * h1 + n 写入，需要 w1 * h1 个元素；
+                // 用 long 做乘法避免 w1/h1 很大时 int 溢出绕过判断
+                if (w1 < 0 || h1 < 0 || (long)w1 * h1 > intersectPoints.Length) return false;
+
                 var dPt = new Vector2Int();
                 if (false == CheckIntersect(x1, y1, w1, h1, x2, y2, w2, h2, out var rectInt)) return false;
 

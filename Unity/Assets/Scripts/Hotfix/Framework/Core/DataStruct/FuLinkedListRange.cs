@@ -74,7 +74,8 @@ namespace Hotfix.Framework.Core
         {
             for (var current = First; current != null && current != End; current = current.Next)
             {
-                if (!current.Value.Equals(value)) continue;
+                // 用 EqualityComparer 而非 Value.Equals(value)：引用类型元素为 null 时不会抛 NRE
+                if (!EqualityComparer<T>.Default.Equals(current.Value, value)) continue;
                 return true;
             }
 

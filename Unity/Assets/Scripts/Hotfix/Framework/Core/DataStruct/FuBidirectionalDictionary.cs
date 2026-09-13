@@ -67,7 +67,15 @@ namespace Hotfix.Framework.Core
         public bool TryAdd(TKey key, TValue value)
         {
             if (!m_ForwardDict.TryAdd(key, value)) return false;
-            m_ReverseDict.Add(value, key);
+
+            // 反向字典可能已被其它 key 占用同一 value：用 TryAdd 而非 Add（不抛异常），
+            // 失败时回滚正向写入，保持 Try 语义（不产生半写入状态）
+            if (!m_ReverseDict.TryAdd(value, key))
+            {
+                m_ForwardDict.Remove(key);
+                return false;
+            }
+
             Count++;
             return true;
         }

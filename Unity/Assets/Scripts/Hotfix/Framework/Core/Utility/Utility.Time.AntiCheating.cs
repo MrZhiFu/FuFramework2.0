@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 #if UNITY_IOS
@@ -226,6 +226,9 @@ namespace Hotfix.Framework.Core
         /// </summary>
         public static void OnApplicationQuit()
         {
+            // 取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
+            m_NtpCancellation.Dispose();
+
             var now          = GetUtcNow();
             var nowTimestamp = Time2Timestamp(now);
             SaveTime(LastUtcTimeKey,  nowTimestamp);
@@ -268,7 +271,9 @@ namespace Hotfix.Framework.Core
             m_RecheckAttemptCount++;
 
             Log($"第{m_RecheckAttemptCount}次尝试重新获取网络时间");
-            MultipleNptGetTime();
+
+            // 异步链的生命周期由 m_NtpCancellation 持有：Token 透传给所有在途请求，OnApplicationQuit 取消释放
+            MultipleNptGetTimeAsync(m_NtpCancellation.Token).Forget();
         }
 
         /// <summary>
@@ -283,9 +288,17 @@ namespace Hotfix.Framework.Core
         #region 多npt服务器地址获取全球时间方法
 
         /// <summary>
-        /// 多地址获取网络时间方法
+        /// NTP 异步请求的生命周期取消源（静态类自持）。
+        /// 发起请求时透传其 Token；OnApplicationQuit 取消并释放，避免脱离生命周期的裸异步链。
         /// </summary>
-        private static async void MultipleNptGetTime()
+        private static readonly LifecycleCancellationSource m_NtpCancellation = new();
+
+        /// <summary>
+        /// 多地址获取网络时间方法（fire-and-forget）。
+        /// 生命周期由 m_NtpCancellation 持有：其 Token 被取消时，在途 DNS/UDP 请求立即中止。
+        /// </summary>
+        /// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 m_NtpCancellation 提供）。</param>
+        private static async UniTaskVoid MultipleNptGetTimeAsync(CancellationToken cancellationToken)
         {
             string[] ntpServers =
             {
@@ -301,8 +314,12 @@ namespace Hotfix.Framework.Core
             };
             try
             {
-                var time = await GetFirstAvailableTimestampAsync(ntpServers);
+                var time = await GetFirstAvailableTimestampAsync(ntpServers, cancellationToken);
                 SetOnlineTime(time);
+            }
+            catch (OperationCanceledException)
+            {
+                Log("未能获取网络时间: 请求已取消（生命周期结束）");
             }
             catch (Exception ex)
             {
@@ -314,18 +331,21 @@ namespace Hotfix.Framework.Core
         /// 获取第一个可用的 NTP 服务器的时间戳
         /// </summary>
         /// <param name="servers"></param>
+        /// <param name="cancellationToken">生命周期取消令牌（必传）。</param>
         /// <param name="sendTimeout"></param>
         /// <param name="receiveTimeout"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private static async Task<DateTimeOffset> GetFirstAvailableTimestampAsync(string[] servers, int sendTimeout = 3000, int receiveTimeout = 3000)
+        private static async UniTask<DateTimeOffset> GetFirstAvailableTimestampAsync(string[] servers, CancellationToken cancellationToken, int sendTimeout = 3000, int receiveTimeout = 3000)
         {
             foreach (var server in servers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     Log($"正在尝试从服务器 {server} 获取时间...");
-                    var result = await RequestTimestampFromNtpAsync(server, sendTimeout, receiveTimeout, CancellationToken.None);
+                    var result = await RequestTimestampFromNtpAsync(server, sendTimeout, receiveTimeout, cancellationToken);
 
                     if (result.error == null)
                     {
@@ -340,8 +360,8 @@ namespace Hotfix.Framework.Core
                     Log($"服务器 {server} 请求异常: {ex.Message}");
                 }
 
-                // 可选：在服务器之间添加短暂延迟
-                await Task.Delay(100);
+                // 可选：在服务器之间添加短暂延迟（UniTask，且随生命周期令牌取消）
+                await UniTask.Delay(100, cancellationToken: cancellationToken);
             }
 
             throw new Exception("无法从任何提供的 NTP 服务器获取时间");
@@ -356,7 +376,7 @@ namespace Hotfix.Framework.Core
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private static async Task<(DateTimeOffset timestamp, Exception error)> RequestTimestampFromNtpAsync(string server, int sendTimeout, int receiveTimeout, CancellationToken cancellationToken)
+        private static async UniTask<(DateTimeOffset timestamp, Exception error)> RequestTimestampFromNtpAsync(string server, int sendTimeout, int receiveTimeout, CancellationToken cancellationToken)
         {
             try
             {
