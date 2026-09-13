@@ -39,6 +39,13 @@ namespace Hotfix.Framework.ObjectPool
         private readonly List<T> m_CachedToDisposeObjectList;
 
         /// <summary>
+        /// 默认筛选函数做“小量 top-k 部分选择”时复用的最大堆（正常路径零分配，堆内存放候选集合的下标）。
+        /// 仅由 SelectSmallestByDisposeOrder 使用：该流程内只做 CompareDisposeOrder 比较与堆调整，
+        /// 不调用任何用户代码，故不存在嵌套重入覆写问题；但每次使用前后都会 Clear。
+        /// </summary>
+        private readonly List<int> m_CachedSelectHeapIndices;
+
+        /// <summary>
         /// 本池专属的“本轮待销毁对象”快照字段（正常路径零分配）。
         /// 与筛选函数返回值字段 m_CachedToDisposeObjectList 分离：后者会被筛选函数反复 Clear/重填，
         /// 若共用会在嵌套重入时破坏正在遍历的列表。该字段仅在非重入时复用；发生嵌套重入
@@ -87,6 +94,11 @@ namespace Hotfix.Framework.ObjectPool
             get => m_AutoDisposeCheckInterval;
             set
             {
+                // NaN/Infinity 必须显式拒绝：NaN 与任何数比较均为 false，能穿过 value < 0f 的守卫，
+                // 落库后会让 Update 里的“m_AutoDisposeTimer >= AutoDisposeCheckInterval”恒为 false，
+                // 自动销毁检查永不触发；正无穷虽等价于“永不检查”，但不是有明文语义的取值，一并拒绝。
+                if (float.IsNaN(value) || float.IsInfinity(value))
+                    throw new InvalidOperationException("[ObjectPoolModule] 自动销毁检查间隔秒数不能为 NaN 或 Infinity.");
                 if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动销毁检查间隔秒数不能小于0.");
                 if (Mathf.Approximately(m_AutoDisposeCheckInterval, value)) return;
 
@@ -143,6 +155,7 @@ namespace Hotfix.Framework.ObjectPool
             get => m_Capacity;
             set
             {
+                // Capacity 是 int，不存在 NaN/Infinity，value < 0 已覆盖全部非法取值
                 if (value      < 0) throw new InvalidOperationException("[ObjectPoolModule] 对象池容量不能小于0.");
                 if (m_Capacity == value) return;
 
@@ -160,6 +173,11 @@ namespace Hotfix.Framework.ObjectPool
             get => m_ExpireTimeAfterIdle;
             set
             {
+                // NaN/Infinity 必须显式拒绝：NaN 与任何数比较均为 false，能穿过 value < 0f 的守卫，
+                // 落库后会让过期判定“now - LastUseTime >= m_ExpireTimeAfterIdle”恒为 false，对象永不销毁；
+                // 正无穷虽等价于“永不过期”，但不是有明文语义的取值（哨兵是 float.MaxValue），一并拒绝。
+                if (float.IsNaN(value) || float.IsInfinity(value))
+                    throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能为 NaN 或 Infinity.");
                 if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能小于0.");
                 if (Mathf.Approximately(ExpireTimeAfterIdle, value)) return;
 
@@ -185,6 +203,7 @@ namespace Hotfix.Framework.ObjectPool
             m_CachedCanDisposeObjectList         = new List<T>();
             m_CachedToDisposeObjectList          = new List<T>();
             m_CachedTodoSnapshot                 = new List<T>();
+            m_CachedSelectHeapIndices            = new List<int>();
 
             AllowSpawnInUse     = allowSpawnInUse;
             AutoDisposeCheckInterval = autoDisposeCheckInterval;
@@ -295,6 +314,7 @@ namespace Hotfix.Framework.ObjectPool
             m_CachedCanDisposeObjectList.Clear();
             m_CachedToDisposeObjectList.Clear();
             m_CachedTodoSnapshot.Clear();
+            m_CachedSelectHeapIndices.Clear();
             m_TodoSnapshotInUse = false;
         }
     }

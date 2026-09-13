@@ -62,62 +62,70 @@ namespace Hotfix.Framework.ObjectPool
 
             if (!m_ObjectMultiDict.TryGetValue(name, out var objects)) return null;
 
-            T result = null;
-
-            // 遍历中不得修改多值字典的链表（会破坏枚举器），故先把无效对象收集起来，遍历结束后统一剔除
+            // 第一步：只读遍历，收集无效对象并选出可获取的候选对象。
+            // 这一段里不调用任何用户代码：FuLinkedListRange 的枚举器是沿 LinkedListNode.Next 直走的裸指针遍历
+            // （无版本校验，节点还会经 FuLinkedList 的缓存队列复用），一旦在枚举期间由用户回调（OnSpawn）
+            // 重入本池改动链表，剩余结点就可能指向已被回收/复用的节点（值为 default 或他处对象）。
+            // 因此把“收集死对象”“选中候选”与“调用用户代码”三件事彻底分开。
             List<T> deadObjects = null;
-
-            try
+            T         candidate   = null;
+            foreach (var obj in objects)
             {
-                foreach (var obj in objects)
+                // 目标真实对象已被 Unity 销毁的对象视为无效：跳过，继续找下一个可用对象
+                if (IsTargetDead(obj))
                 {
-                    // 目标真实对象已被 Unity 销毁的对象视为无效：跳过，继续找下一个可用对象
-                    if (IsTargetDead(obj))
-                    {
-                        deadObjects ??= new List<T>();
-                        deadObjects.Add(obj);
-                        continue;
-                    }
-
-                    // 如果允许获取正在使用的对象，或者对象没有正在使用，则直接获取。
-                    if (AllowSpawnInUse || !obj.IsInUse)
-                    {
-                        obj.Spawn();
-                        result = obj;
-                        break;
-                    }
+                    deadObjects ??= new List<T>();
+                    deadObjects.Add(obj);
+                    continue;
                 }
-            }
-            finally
-            {
-                // 剔除本次遍历中发现的无效对象（含提前命中 break 退出、以及 obj.Spawn() 触发 OnSpawn 用户事件
-                // 抛异常提前退出的情况）。放在 finally 中执行：异常时也必须剔除本批剩余死对象，
-                // 否则它们会一直残留在登记里。
-                // 逐项 try/catch 隔离（与 DisposeTodoObjects 一致）：RemoveDeadObject 内 OnDispose 抛异常时
-                // 不得逃逸出 Spawn 覆盖原始异常，且不能因此跳过本批剩余死对象的剔除。
-                // 此处在遍历之外执行，修改多值字典不会破坏已退出的枚举器。
-                if (deadObjects != null)
-                {
-                    for (var i = 0; i < deadObjects.Count; i++)
-                    {
-                        var deadObject = deadObjects[i];
-                        if (deadObject == null) continue;
 
-                        // 提前捕获名称：OnDispose 会清空对象状态（Name 置空），异常告警需要它
-                        var deadObjectName = deadObject.Name;
-                        try
-                        {
-                            RemoveDeadObject(deadObject);
-                        }
-                        catch (Exception e)
-                        {
-                            FuLogger.LogWarning($"[ObjectPoolModule] 剔除对象池“{new TypeNamePair(typeof(T), Name)}”中的无效对象 '{deadObjectName}' 时出现异常: {e.Message}");
-                        }
-                    }
+                // 如果允许获取正在使用的对象，或者对象没有正在使用，则直接获取。
+                if (AllowSpawnInUse || !obj.IsInUse)
+                {
+                    candidate = obj;
+                    break;
                 }
             }
 
-            return result;
+            // 第二步（在枚举之外）：剔除无效对象。剔除会触发用户代码（OnDispose）并可能重入本池，
+            // 此时已无任何枚举器存活，不会走进已回收节点。放在 candidate.Spawn() 之前，
+            // 使 Spawn 抛异常时本批死对象同样被剔除（与原先 finally 中的行为一致）。
+            RemoveDeadObjects(deadObjects);
+
+            // 第三步（在枚举之外）：真正生成。OnSpawn 用户代码同样可能重入本池改动链表，
+            // 故必须在遍历结束后才调用，且返回值不依赖任何枚举状态。
+            if (candidate == null) return null;
+
+            candidate.Spawn();
+            return candidate;
+        }
+
+        /// <summary>
+        /// 剔除一批目标真实对象已被 Unity 销毁的无效对象（必须在任何链表枚举之外调用）。
+        /// 逐项 try/catch 隔离（与 DisposeTodoObjects 一致）：RemoveDeadObject 内 OnDispose 抛异常时
+        /// 不得逃逸覆盖调用方的原始异常，也不能因此跳过本批剩余死对象的剔除。
+        /// </summary>
+        /// <param name="deadObjects">待剔除的无效对象集合，可为 null。</param>
+        private void RemoveDeadObjects(List<T> deadObjects)
+        {
+            if (deadObjects == null) return;
+
+            for (var i = 0; i < deadObjects.Count; i++)
+            {
+                var deadObject = deadObjects[i];
+                if (deadObject == null) continue;
+
+                // 提前捕获名称：OnDispose 会清空对象状态（Name 置空），异常告警需要它
+                var deadObjectName = deadObject.Name;
+                try
+                {
+                    RemoveDeadObject(deadObject);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[ObjectPoolModule] 剔除对象池“{new TypeNamePair(typeof(T), Name)}”中的无效对象 '{deadObjectName}' 时出现异常: {e.Message}");
+                }
+            }
         }
 
         /// <summary>

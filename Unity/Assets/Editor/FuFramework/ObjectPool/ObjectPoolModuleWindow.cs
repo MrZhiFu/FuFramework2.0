@@ -13,7 +13,7 @@ namespace FuFramework.ObjectPool.Editor
     /// 对象池调试面板
     /// 仅在 Play 模式下可用，通过反射访问 Hotfix 中的 ObjectPoolModule。
     /// 功能：
-    ///     1. 展示所有对象池及其对象信息（名称、锁定、使用中、可销毁标记、优先级、上次使用时间等）。
+    ///     1. 展示所有对象池及其对象信息（名称、锁定、使用中、可销毁标记、优先级、闲置时长等）。
     ///     2. 支持按池名/对象名过滤搜索、自动刷新、全部展开/折叠。
     ///     3. 支持模块级/池级一键释放（释放全部未使用、释放超容量对象）。
     /// </summary>
@@ -198,7 +198,7 @@ namespace FuFramework.ObjectPool.Editor
         private PropertyInfo m_InfoPriorityProperty;
 
         /// <summary>
-        /// 对象上次使用时间属性
+        /// 对象上次使用时间（单调时钟秒数）属性
         /// </summary>
         private PropertyInfo m_InfoLastUseTimeProperty;
 
@@ -512,7 +512,7 @@ namespace FuFramework.ObjectPool.Editor
             GUILayout.Label(allowInUse ? "计数" : "使用中", GUILayout.Width(60));
             GUILayout.Label("可销毁",                     GUILayout.Width(60));
             GUILayout.Label("优先级",                     GUILayout.Width(60));
-            GUILayout.Label("上次使用时间",                  GUILayout.Width(160));
+            GUILayout.Label("闲置时长",                    GUILayout.Width(160));
             EditorGUILayout.EndHorizontal();
         }
 
@@ -531,7 +531,7 @@ namespace FuFramework.ObjectPool.Editor
             var locked      = (bool)(m_InfoLockedProperty?.GetValue(info)               ?? false);
             var canDispose  = (bool)(m_InfoCustomCanDisposeFlagProperty?.GetValue(info) ?? false);
             var priority    = (int)(m_InfoPriorityProperty?.GetValue(info)              ?? 0);
-            var lastUseTime = (DateTime)(m_InfoLastUseTimeProperty?.GetValue(info)      ?? DateTime.MinValue);
+            var lastUseTime = (double)(m_InfoLastUseTimeProperty?.GetValue(info)        ?? 0d);
             var spawnCount  = (int)(m_InfoSpawnCountProperty?.GetValue(info)            ?? 0);
             var isInUse     = (bool)(m_InfoIsInUseProperty?.GetValue(info)              ?? false);
 
@@ -559,8 +559,10 @@ namespace FuFramework.ObjectPool.Editor
             GUILayout.Label(isDisposable ? "是" : "否", GUILayout.Width(60));
 
             GUI.color = baseColor;
-            GUILayout.Label(priority.ToString(),                                                                      GUILayout.Width(60));
-            GUILayout.Label(lastUseTime == default ? "-" : lastUseTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"), GUILayout.Width(160));
+            GUILayout.Label(priority.ToString(), GUILayout.Width(60));
+            // LastUseTime 是单调时钟秒数（Time.unscaledTimeAsDouble），不是墙钟时刻，无法还原成日期，
+            // 故展示“距上次使用已过多少秒”——这正是过期判定的输入，比原始数值可读。
+            GUILayout.Label(lastUseTime == default ? "-" : $"{Time.unscaledTimeAsDouble - lastUseTime:0.##}s", GUILayout.Width(160));
             GUI.color = oldColor;
             EditorGUILayout.EndHorizontal();
         }

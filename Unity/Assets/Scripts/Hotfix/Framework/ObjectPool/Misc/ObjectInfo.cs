@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 // ReSharper disable once CheckNamespace
@@ -39,9 +38,10 @@ namespace Hotfix.Framework.ObjectPool
         public int Priority { get; }
 
         /// <summary>
-        /// 获取对象上次使用时间。
+        /// 获取对象上次使用时间，单位秒。与 ObjectBase.LastUseTime 同源，取自单调时钟
+        /// （Time.unscaledTimeAsDouble），不是墙钟时刻，仅用于计算“已闲置时长”。
         /// </summary>
-        public DateTime LastUseTime { get; }
+        public double LastUseTime { get; }
 
         /// <summary>
         /// 获取对象的获取计数。
@@ -61,9 +61,9 @@ namespace Hotfix.Framework.ObjectPool
         /// <param name="locked">对象是否被加锁。</param>
         /// <param name="customCanDisposeFlag">对象自定义销毁检查标记。</param>
         /// <param name="priority">对象的优先级。</param>
-        /// <param name="lastUseTime">对象上次使用时间。</param>
+        /// <param name="lastUseTime">对象上次使用时间（单调时钟秒数）。</param>
         /// <param name="spawnCount">对象的获取计数。</param>
-        public ObjectInfo(string name, object target, bool locked, bool customCanDisposeFlag, int priority, DateTime lastUseTime, int spawnCount)
+        public ObjectInfo(string name, object target, bool locked, bool customCanDisposeFlag, int priority, double lastUseTime, int spawnCount)
         {
             Name                 = name;
             Target               = target;

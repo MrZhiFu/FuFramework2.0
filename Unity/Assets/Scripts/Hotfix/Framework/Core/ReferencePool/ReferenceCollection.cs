@@ -80,20 +80,26 @@ namespace Hotfix.Framework.Core
 
             lock (m_FreeStack)
             {
-                UsingReferenceCount++;
-                AcquireReferenceCount++;
-
                 if (m_FreeStack.Count > 0)
                 {
-                    var reference = m_FreeStack.Pop();
-                    m_InPoolSet.Remove(reference);
+                    // 先 Peek 校验类型、后 Pop/自增：类型不匹配时直接抛出，池内结构（栈、归属索引）与四个计数
+                    // 全部保持原样，异常路径不改变任何状态。
+                    // 旧写法先 Pop + m_InPoolSet.Remove + 计数自增、之后才校验并抛出，会让 UsingReferenceCount/
+                    // AcquireReferenceCount 虚高，且对象已出栈（既不在池中、也不被任何持有者引用）而丢失。
+                    var reference = m_FreeStack.Peek();
                     if (reference is not T result)
                         throw new InvalidOperationException($"[ReferencePool.ReferenceCollection] 引用获取失败，池中对象类型不匹配，期望 '{RefType.Name}'，实际 '{reference.GetType().Name}'.");
 
+                    m_FreeStack.Pop();
+                    m_InPoolSet.Remove(reference);
+                    UsingReferenceCount++;
+                    AcquireReferenceCount++;
                     return result;
                 }
 
                 AddReferenceCount++;
+                UsingReferenceCount++;
+                AcquireReferenceCount++;
             }
 
             // 对象创建在锁外，避免阻塞其他线程的获取/释放

@@ -68,6 +68,28 @@ namespace Hotfix.Framework.Event
         private bool m_IsUpdatingEvents;
 
         /// <summary>
+        /// ForEachHandler 的 (id, handler) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
+        /// 仅非重入遍历使用（重入识别见 m_IsForEachHandler）。
+        /// </summary>
+        private readonly List<(string id, EventHandler<T> handler)> m_CachedHandlerPairSnapshot = new();
+
+        /// <summary>
+        /// 是否正在遍历事件处理函数（用于识别重入的嵌套遍历，避免嵌套时清空外层正在遍历的快照列表）
+        /// </summary>
+        private bool m_IsForEachHandler;
+
+        /// <summary>
+        /// ForEachEvent 的 (sender, eventArgs) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
+        /// 仅非重入遍历使用（重入识别见 m_IsForEachEvent）。
+        /// </summary>
+        private readonly List<(object sender, T eventArgs)> m_CachedEventArgsSnapshot = new();
+
+        /// <summary>
+        /// 是否正在遍历事件（用于识别重入的嵌套遍历，避免嵌套时清空外层正在遍历的快照列表）
+        /// </summary>
+        private bool m_IsForEachEvent;
+
+        /// <summary>
         /// 初始化事件池的新实例。
         /// </summary>
         /// <param name="mode">事件池模式。</param>
@@ -318,24 +340,45 @@ namespace Hotfix.Framework.Event
             // 先在锁内快照 (id, handler) 再在锁外调用回调：
             // 直接持锁遍历链表时，回调内（同线程可重入取锁）新增订阅会以 AddBefore(range.End) 插在尾部被本次遍历再次访问，
             // 与 HandleEvent 同款问题；锁外调用同时避免持处理器锁执行用户代码。
-            var snapshot = new List<(string id, EventHandler<T> handler)>();
-            lock (m_EventHandlerLock)
+            // 重入识别（写法同 HandleEvent 的 m_IsHandlingEvent）：嵌套遍历若复用同一缓存列表，内层 Clear 会清掉
+            // 外层正在遍历的快照 → 外层剩余项既不派发也不回收。故非重入复用缓存字段、重入改用局部列表。
+            List<(string id, EventHandler<T> handler)> snapshot;
+            if (m_IsForEachHandler)
             {
-                foreach (var (id, handlers) in m_EventHandlerMultiDict)
-                {
-                    foreach (var handler in handlers)
-                    {
-                        snapshot.Add((id, handler));
-                    }
-                }
+                snapshot = new List<(string id, EventHandler<T> handler)>();
+            }
+            else
+            {
+                snapshot           = m_CachedHandlerPairSnapshot;
+                m_IsForEachHandler = true;
             }
 
-            for (var i = 0; i < snapshot.Count; i++)
+            try
             {
-                action(snapshot[i].id, snapshot[i].handler);
+                lock (m_EventHandlerLock)
+                {
+                    snapshot.Clear();
+                    foreach (var (id, handlers) in m_EventHandlerMultiDict)
+                    {
+                        foreach (var handler in handlers)
+                        {
+                            snapshot.Add((id, handler));
+                        }
+                    }
+                }
+
+                for (var i = 0; i < snapshot.Count; i++)
+                {
+                    action(snapshot[i].id, snapshot[i].handler);
+                }
+            }
+            finally
+            {
+                if (ReferenceEquals(snapshot, m_CachedHandlerPairSnapshot))
+                    m_IsForEachHandler = false;
             }
         }
-        
+
         /// <summary>
         /// 遍历所有事件。
         /// </summary>
@@ -344,18 +387,38 @@ namespace Hotfix.Framework.Event
             // 先在锁内快照 (Sender, EventArgs)，再在锁外调用回调：
             // 持 m_EventQueue 锁执行用户代码会与 Shutdown（处理器锁 → Clear 的队列锁）构成反向锁序而死锁；
             // 锁外调用同时避免长期占用队列锁阻塞其它线程的 Broadcast。
-            var snapshot = new List<(object sender, T eventArgs)>();
-            lock (m_EventQueue)
+            // 重入识别与 ForEachHandler 一致：非重入复用缓存字段、重入改用局部列表，且缓存复用下零分配。
+            List<(object sender, T eventArgs)> snapshot;
+            if (m_IsForEachEvent)
             {
-                foreach (var tempEvent in m_EventQueue)
-                {
-                    snapshot.Add((tempEvent.Sender, tempEvent.EventArgs));
-                }
+                snapshot = new List<(object sender, T eventArgs)>();
+            }
+            else
+            {
+                snapshot         = m_CachedEventArgsSnapshot;
+                m_IsForEachEvent = true;
             }
 
-            for (var i = 0; i < snapshot.Count; i++)
+            try
             {
-                action(snapshot[i].sender, snapshot[i].eventArgs);
+                lock (m_EventQueue)
+                {
+                    snapshot.Clear();
+                    foreach (var tempEvent in m_EventQueue)
+                    {
+                        snapshot.Add((tempEvent.Sender, tempEvent.EventArgs));
+                    }
+                }
+
+                for (var i = 0; i < snapshot.Count; i++)
+                {
+                    action(snapshot[i].sender, snapshot[i].eventArgs);
+                }
+            }
+            finally
+            {
+                if (ReferenceEquals(snapshot, m_CachedEventArgsSnapshot))
+                    m_IsForEachEvent = false;
             }
         }
 
@@ -443,7 +506,18 @@ namespace Hotfix.Framework.Event
             }
             finally
             {
-                ReferencePool.Recycle(eArgs);
+                // 回收自身若抛异常（引用池内部异常）不得逃逸：Update 的兜底按「batch[processed] 已交给 HandleEvent、
+                // 其 EventArgs 由本方法负责回收」处理，一旦此处异常冒出，Update 的节点回收 finally 会被连带打断，
+                // 导致该节点及其后未分发节点一并漏回收（ReferencePool 计数永久漂移）。
+                // 故吞掉回收异常，确保「回收失败也不漏节点回收」；分发阶段的异常仍会正常向上抛出。
+                try
+                {
+                    ReferencePool.Recycle(eArgs);
+                }
+                catch (Exception)
+                {
+                    // 有意吞掉：回收失败不应中断调用方（Update）的分发与节点回收流程。
+                }
             }
 
             if (noHandlerException)

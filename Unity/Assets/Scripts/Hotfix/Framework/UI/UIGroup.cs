@@ -257,27 +257,30 @@ namespace Hotfix.Framework.UI
             var isCover = false;   // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
             var isPause = m_Pause; // 是否暂停的标志，初始值由组暂停状态决定，后续根据界面暂停状态更新
 
-            while (current is { Value: not null })
+            while (current != null)
             {
-                // 先缓存下一个节点，因为回调可能修改链表结构（如关闭当前界面）
-                var next   = current.Next;
+                // 先缓存下一个节点：HandlePauseState/HandleCoverState 会触发 _OnPause/_OnResume/_OnBeCover/_OnReveal
+                // 等界面回调，回调内可能关闭当前界面或后续界面（UIModule.Close → UIGroup.Remove → FuLinkedList.Remove
+                // 会 detach 本节点并把节点回收进节点缓存队列供复用），使 current.Next 变为 null。
+                // 若在回调之后才读 current.Next，本帧该组后续界面会被全部跳过，节点被复用后还可能跳进「新」节点。
+                // 与 OnUpdate 的 m_CachedNode 预取写法保持一致。
+                var next = current.Next;
+
+                // 当前节点可能已被本帧更早的某个界面回调关闭：_ReleaseNode 会把 Value 置为 default=null，
+                // 此时节点引用仍非 null 但 Value 已为空，直接解引用 uiInfo.Win 会抛 NullReferenceException。
+                // 故先从 Value 取出一份再判空——Value 为空只跳过本节点，不能终止整轮刷新（否则本帧剩余界面漏刷）。
                 var uiInfo = current.Value;
 
-                // 节点可能已被销毁，跳过继续处理下一个节点
-                if (uiInfo?.Win == null)
-                {
-                    current = next;
-                    continue;
-                }
+                // 先推进到回调前缓存的节点，保证回调里关闭自身/关闭下一个节点都不会漏掉本帧后续界面
+                current = next;
+
+                if (uiInfo?.Win == null) continue;
 
                 // 处理被暂停的界面状态
                 HandlePauseState(uiInfo, ref isPause);
 
                 // 处理被覆盖的界面状态
                 HandleCoverState(uiInfo, ref isCover);
-
-                // 移动到下一个节点
-                current = next;
             }
         }
 

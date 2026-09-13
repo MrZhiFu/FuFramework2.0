@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
@@ -23,11 +24,11 @@ namespace Hotfix.Framework.ObjectPool
             // 未设置过期时间时无需处理
             if (m_ExpireTimeAfterIdle >= float.MaxValue) return;
 
-            // 用“已闲置时长”判定过期，而不是先算一个 DateTime 过期时间点：
-            // DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle) 在过期值“大而有限”时（上面的守卫只拦
-            // >= float.MaxValue，拦不住它）会越过 DateTime.MinValue 而抛 ArgumentOutOfRangeException，
-            // 等于策划写个近似永不过期的大数就运行时崩溃。直接比较时长对大过期值天然安全。
-            var now = DateTime.UtcNow;
+            // 用“已闲置时长”判定过期，而不是先算一个过期时间点。
+            // now 取自单调时钟（与 ObjectBase.LastUseTime 同源）：墙钟 DateTime.UtcNow 会被 NTP 校时、
+            // 用户改系统时间、睡眠唤醒改动，导致“永不销毁”（时钟回拨后差值为负）或“全池瞬灭”（时钟前跳）。
+            // 另：大而有限的过期值下做减法也不会像 DateTime.AddSeconds(-x) 那样越界抛异常。
+            var now = Time.unscaledTimeAsDouble;
 
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
 
@@ -46,7 +47,7 @@ namespace Hotfix.Framework.ObjectPool
 
                     // 已闲置时长达到过期秒数，视为过期，纳入销毁。
                     // 与筛选函数第一阶段（LastUseTime <= 过期时间点）数学等价，语义保持一致。
-                    if ((now - obj.LastUseTime).TotalSeconds >= m_ExpireTimeAfterIdle)
+                    if (now - obj.LastUseTime >= m_ExpireTimeAfterIdle)
                         toDisposeObjects.Add(obj);
                 }
 
@@ -59,20 +60,137 @@ namespace Hotfix.Framework.ObjectPool
         }
 
         /// <summary>
-        /// 计算“过期时间点”阈值（当前时间回溯 ExpireTimeAfterIdle 秒）。
-        /// 用 Ticks 的饱和减法实现，避免 DateTime.AddSeconds(-x)：当 x 大而有限时（调用方守卫只拦
-        /// >= float.MaxValue 的“永不过期”值）回溯会越过 DateTime.MinValue 而抛 ArgumentOutOfRangeException。
-        /// 回溯量超出可表示范围时饱和为 DateTime.MinValue——不存在早于该时刻的真实 LastUseTime，
-        /// 因此对筛选函数第一阶段而言等价于“永不过期”（所有候选都判为未过期），不会抛异常。
+        /// 销毁顺序比较（入参是候选集合中的<b>下标</b>，不是对象本身）。
+        /// 优先级升序，优先级相同时最后使用时间升序，两者都相同时下标升序——
+        /// 下标即“候选集合中的先后次序”，把它作为最终决胜键后该比较构成<b>全序</b>，
+        /// 于是“按此全序取前 count 个”与“按(优先级升序,最后使用时间升序)稳定排序后取前 count 个”完全一致，
+        /// 并列项的取舍也有了确定答案（靠前者胜出）。
         /// </summary>
-        /// <param name="now">当前UTC时间。</param>
-        /// <returns>过期时间点。</returns>
-        private DateTime ComputeExpireTimeThreshold(DateTime now)
+        /// <param name="candidates">候选对象集合。</param>
+        /// <param name="lhsIndex">左侧下标。</param>
+        /// <param name="rhsIndex">右侧下标。</param>
+        /// <returns>比较结果，负值表示左侧更先销毁。</returns>
+        private static int CompareDisposeOrder(List<T> candidates, int lhsIndex, int rhsIndex)
         {
-            var backTicks = (double)m_ExpireTimeAfterIdle * TimeSpan.TicksPerSecond;
-            if (backTicks >= now.Ticks - DateTime.MinValue.Ticks) return DateTime.MinValue;
+            var lhs = candidates[lhsIndex];
+            var rhs = candidates[rhsIndex];
 
-            return new DateTime(now.Ticks - (long)backTicks, DateTimeKind.Utc);
+            var priorityCmp = lhs.Priority.CompareTo(rhs.Priority);
+            if (priorityCmp != 0) return priorityCmp;
+
+            var lastUseTimeCmp = lhs.LastUseTime.CompareTo(rhs.LastUseTime);
+            return lastUseTimeCmp != 0 ? lastUseTimeCmp : lhsIndex.CompareTo(rhsIndex);
+        }
+
+        /// <summary>
+        /// 按销毁顺序选出候选集合中最靠前的 count 个对象，追加到 results 末尾（升序，与稳定排序取前 count 个一致）。
+        /// 采用大小为 count 的最大堆做单遍部分选择：时间 O(n·log count)、空间 O(count)，
+        /// 避免“只需丢弃少量对象”时对大池做一次 O(n·log n) 全量排序（典型场景：超容量 1 个）。
+        /// 堆内只存候选下标，比较用 CompareDisposeOrder（含下标决胜键的全序），
+        /// 故选中集合与顺序都与“稳定排序取前 count 个”逐位一致，并列项同样确定（不依赖排序实现的不稳定性）。
+        /// </summary>
+        /// <param name="candidates">候选对象集合（只读，不修改）。</param>
+        /// <param name="count">要选取的数量（须为正且小于候选数）。</param>
+        /// <param name="results">结果列表，选中的对象按升序追加到其末尾。</param>
+        private void SelectSmallestByDisposeOrder(List<T> candidates, int count, List<T> results)
+        {
+            var heap = m_CachedSelectHeapIndices;
+            heap.Clear();
+            try
+            {
+                for (var i = 0; i < candidates.Count; i++)
+                {
+                    // 防御自定义筛选器返回 null 元素（下标无法代表 null 位置）
+                    if (candidates[i] == null) continue;
+
+                    if (heap.Count < count)
+                    {
+                        heap.Add(i);
+                        SiftUpMaxHeap(candidates, heap, heap.Count - 1);
+                        continue;
+                    }
+
+                    // 堆已满：仅当候选严格靠前于堆顶（保留集合中的最靠后者）时才替换，等值按全序本就不会相等
+                    if (CompareDisposeOrder(candidates, i, heap[0]) >= 0) continue;
+
+                    heap[0] = i;
+                    SiftDownMaxHeap(candidates, heap, 0);
+                }
+
+                // 依次弹出堆顶得到降序，故先按降序追加、再就地反转，得到升序（与稳定排序的前 count 个顺序一致）
+                var baseIndex = results.Count;
+                while (heap.Count > 0)
+                {
+                    results.Add(candidates[heap[0]]);
+
+                    var last = heap.Count - 1;
+                    heap[0] = heap[last];
+                    heap.RemoveAt(last);
+                    if (heap.Count > 0) SiftDownMaxHeap(candidates, heap, 0);
+                }
+
+                var left  = baseIndex;
+                var right = results.Count - 1;
+                while (left < right)
+                {
+                    var tmp        = results[left];
+                    results[left]  = results[right];
+                    results[right] = tmp;
+                    left++;
+                    right--;
+                }
+            }
+            finally
+            {
+                heap.Clear();
+            }
+        }
+
+        /// <summary>
+        /// 最大堆上浮：堆顶为“按销毁顺序最靠后”的候选（优先级最高 / 最后使用时间最晚 / 并列时下标最大）。
+        /// </summary>
+        /// <param name="candidates">候选对象集合。</param>
+        /// <param name="heap">堆（存放候选下标）。</param>
+        /// <param name="index">待上浮的堆内下标。</param>
+        private static void SiftUpMaxHeap(List<T> candidates, List<int> heap, int index)
+        {
+            while (index > 0)
+            {
+                var parent = (index - 1) >> 1;
+                if (CompareDisposeOrder(candidates, heap[parent], heap[index]) >= 0) return;
+
+                var tmp      = heap[parent];
+                heap[parent] = heap[index];
+                heap[index]  = tmp;
+                index        = parent;
+            }
+        }
+
+        /// <summary>
+        /// 最大堆下沉：维持堆顶为“按销毁顺序最靠后”的候选。
+        /// </summary>
+        /// <param name="candidates">候选对象集合。</param>
+        /// <param name="heap">堆（存放候选下标）。</param>
+        /// <param name="index">待下沉的堆内下标。</param>
+        private static void SiftDownMaxHeap(List<T> candidates, List<int> heap, int index)
+        {
+            var count = heap.Count;
+            while (true)
+            {
+                var left = (index << 1) + 1;
+                if (left >= count) return;
+
+                var largest = left;
+                var right   = left + 1;
+                if (right < count && CompareDisposeOrder(candidates, heap[right], heap[left]) > 0) largest = right;
+
+                if (CompareDisposeOrder(candidates, heap[index], heap[largest]) >= 0) return;
+
+                var tmp       = heap[index];
+                heap[index]   = heap[largest];
+                heap[largest] = tmp;
+                index         = largest;
+            }
         }
 
         /// <summary>
@@ -106,15 +224,15 @@ namespace Hotfix.Framework.ObjectPool
 
             if (toDisposeCount <= 0) return;
 
-            // 找到对象过期时间点，最后使用时间早于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
-            DateTime? expireTimeThreshold = null;
+            // 找到对象过期时间点，最后使用时间不晚于这个时间点的对象就被认为是“过期”的。为空时表示不限制过期时间点
+            double? expireTimeThreshold = null;
             if (m_ExpireTimeAfterIdle < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
             {
-                // 过期时间点 = 当前UTC时间 - 过期时间秒数。例如，如果过期时间设置为10秒，那么过期时间点就是10秒前的时刻。任何超过10秒没被用过的对象都被视为过期。
-                // 该阈值还要交给（可能是自定义的）筛选函数的第一个参数使用，故仍需算出具体的 DateTime；
-                // 但必须用带饱和的减法而非 DateTime.AddSeconds：后者在“大而有限”的过期值下会越过
-                // DateTime.MinValue 抛 ArgumentOutOfRangeException（见 ComputeExpireTimeThreshold）。
-                expireTimeThreshold = ComputeExpireTimeThreshold(DateTime.UtcNow);
+                // 过期时间点 = 当前单调时钟秒数 - 过期时间秒数。例如过期时间设置为10秒，则阈值是10秒前的单调时刻，
+                // 任何超过10秒没被用过的对象都被视为过期。该阈值还要交给（可能是自定义的）筛选函数的第三个参数使用。
+                // 减法以大而有限的过期值（守卫只拦 >= float.MaxValue 的“永不过期”值）参与运算时只会得到很小的负数，
+                // 语义上等价于“永不过期”，不会像 DateTime.AddSeconds(-x) 那样越界抛异常。
+                expireTimeThreshold = Time.unscaledTimeAsDouble - m_ExpireTimeAfterIdle;
             }
 
             // 注意：这里不再重置 m_AutoDisposeTimer。持续回收会反复调用本方法，重置计时器会让
@@ -340,9 +458,9 @@ namespace Hotfix.Framework.ObjectPool
         /// <typeparam name="T">对象类型。</typeparam>
         /// <param name="candidateObjects">要筛选的对象集合。</param>
         /// <param name="toDisposeCount">需要销毁的对象数量。</param>
-        /// <param name="expireTimeThreshold">对象过期时间点(为空时表示不限制过期时间点)。</param>
+        /// <param name="expireTimeThreshold">对象过期时间点，单位秒，取值自单调时钟(为空时表示不限制过期时间点)。</param>
         /// <returns>经筛选需要销毁的对象集合。</returns>
-        private List<T> DefaultDisposeObjectFilterCallback(List<T> candidateObjects, int toDisposeCount, DateTime? expireTimeThreshold)
+        private List<T> DefaultDisposeObjectFilterCallback(List<T> candidateObjects, int toDisposeCount, double? expireTimeThreshold)
         {
             m_CachedToDisposeObjectList.Clear();
 
@@ -360,23 +478,22 @@ namespace Hotfix.Framework.ObjectPool
                 toDisposeCount -= m_CachedToDisposeObjectList.Count;
             }
 
-            // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toDisposeCount 个。
-            // 仅当需要销毁的数量少于候选总数时才排序：toDisposeCount >= 候选数意味着“全取”，
-            // 结果集与顺序无关，跳过可省掉大池的一次 O(n log n) 全量排序（并顺带不再打乱调用方列表）。
-            // 注意：toDisposeCount 很小而候选很多（如超容量 1 个）时仍会全量排序；
-            // 若该路径成为热点，可再改为单遍部分选择（top-k，O(n·k)）——本次为保证语义不变未改。
-            if (toDisposeCount < candidateObjects.Count)
+            if (toDisposeCount >= candidateObjects.Count)
             {
-                candidateObjects.Sort((a, b) =>
+                // 全取：结果集与顺序无关，跳过排序可省掉大池的一次 O(n log n) 全量排序（并顺带不打乱调用方列表）
+                for (var i = 0; i < candidateObjects.Count; i++)
                 {
-                    var priorityCmp = a.Priority.CompareTo(b.Priority);
-                    return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
-                });
+                    m_CachedToDisposeObjectList.Add(candidateObjects[i]);
+                }
+
+                return m_CachedToDisposeObjectList;
             }
 
-            for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
+            if (toDisposeCount > 0)
             {
-                m_CachedToDisposeObjectList.Add(candidateObjects[i]);
+                // 第二阶段：按（优先级升序，最后使用时间升序）排序取前 toDisposeCount 个。
+                // 用大小为 toDisposeCount 的最大堆做单遍部分选择，避免“只需丢少量”（如超容量 1 个）时对大池全量排序。
+                SelectSmallestByDisposeOrder(candidateObjects, toDisposeCount, m_CachedToDisposeObjectList);
             }
 
             return m_CachedToDisposeObjectList;

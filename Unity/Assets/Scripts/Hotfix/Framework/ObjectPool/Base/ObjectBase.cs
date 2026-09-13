@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -33,9 +34,12 @@ namespace Hotfix.Framework.ObjectPool
         public int Priority { get; set; }
 
         /// <summary>
-        /// 对象上次使用时间。
+        /// 对象上次使用时间，单位秒。取自<b>单调时钟</b> Time.unscaledTimeAsDouble：
+        /// 单调递增、不受系统时间调整（NTP 校时/用户改表）影响，也不受 Time.timeScale 影响。
+        /// 仅用于池内“闲置时长”比较（now - LastUseTime），不是墙钟时刻、跨会话无意义、不做存档。
+        /// 用 double 而非 float：长会话下 float 的秒级精度会退化到十几毫秒以上，闲置时长判定会失真。
         /// </summary>
-        public DateTime LastUseTime { get; private set; }
+        public double LastUseTime { get; private set; }
 
         /// <summary>
         /// 获取对象池中对象的获取计数（引用计数）。
@@ -91,7 +95,7 @@ namespace Hotfix.Framework.ObjectPool
             Target      = target ?? throw new InvalidOperationException($"[ObjectBase] 对象“{name}”为空.");
             Locked      = locked;
             Priority    = priority;
-            LastUseTime = DateTime.UtcNow;
+            LastUseTime = Time.unscaledTimeAsDouble;
             SpawnCount  = 0;
         }
 
@@ -104,7 +108,7 @@ namespace Hotfix.Framework.ObjectPool
             var lastUseTime = LastUseTime;
             try
             {
-                LastUseTime = DateTime.UtcNow;
+                LastUseTime = Time.unscaledTimeAsDouble;
                 OnSpawn();
             }
             catch
@@ -133,7 +137,7 @@ namespace Hotfix.Framework.ObjectPool
             finally
             {
                 SpawnCount--;
-                LastUseTime = DateTime.UtcNow;
+                LastUseTime = Time.unscaledTimeAsDouble;
             }
         }
 

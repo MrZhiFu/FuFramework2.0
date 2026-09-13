@@ -32,7 +32,7 @@ ObjectBase 实现:
 
 【销毁对象筛选函数】
 DisposeObjectFilterCallback<T>
-    └── 签名: List<T> Filter(List<T> candidateObjects, int toDisposeCount, DateTime? expireTimeThreshold)
+    └── 签名: List<T> Filter(List<T> candidateObjects, int toDisposeCount, double? expireTimeThreshold)
     └── 用途: 自定义对象销毁筛选策略
 
 【数据结构】
@@ -304,7 +304,7 @@ public abstract class ObjectBase : IReference
     public object Target { get; private set; }     // 目标真实对象（如 GameObject）
     public bool Locked { get; set; }               // 是否被加锁
     public int Priority { get; set; }              // 优先级
-    public DateTime LastUseTime { get; internal set; }  // 最后使用时间
+    public double LastUseTime { get; internal set; }  // 最后使用时间（单调时钟秒数 Time.unscaledTimeAsDouble）
     public virtual bool CustomCanDisposeFlag => true;   // 自定义销毁标记
     public int SpawnCount { get; private set; }       // 获取计数（引用计数）
     public bool IsInUse => SpawnCount > 0;            // 是否正在使用
@@ -340,7 +340,7 @@ public readonly struct ObjectInfo
     public bool Locked { get; }                    // 是否被加锁
     public bool CustomCanDisposeFlag { get; }      // 自定义销毁标记
     public int Priority { get; }                   // 优先级
-    public DateTime LastUseTime { get; }           // 最后使用时间
+    public double LastUseTime { get; }             // 最后使用时间（单调时钟秒数）
     public int SpawnCount { get; }                 // 生成计数
     public bool IsInUse => SpawnCount > 0;         // 是否正在使用
 }
@@ -354,7 +354,7 @@ public readonly struct ObjectInfo
 public delegate List<T> DisposeObjectFilterCallback<T>(
     List<T> candidateObjects,      // 候选对象列表
     int toDisposeCount,            // 需要销毁的数量
-    DateTime? expireTimeThreshold  // 过期时间阈值（为空表示不限制）
+    double? expireTimeThreshold    // 过期时间阈值（单调时钟秒数，为空表示不限制）
 ) where T : ObjectBase;
 ```
 

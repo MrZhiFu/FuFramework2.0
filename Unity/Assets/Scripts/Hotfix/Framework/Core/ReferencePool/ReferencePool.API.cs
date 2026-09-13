@@ -55,21 +55,46 @@ namespace Hotfix.Framework.Core
 
         /// <summary>
         /// 从指定类型的引用池中移除指定数量的闲置引用（使用中的引用不受影响，被移除的对象直接丢弃）。
+        /// 该类型从未被获取/追加过（集合不存在）时不创建空集合，直接返回。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         /// <param name="count">移除数量，超过闲置总数时移除全部闲置引用。</param>
         public static void RemoveUnused<T>(int count) where T : class, IReference
         {
-            GetReferenceCollection(typeof(T)).Remove(count);
+            // 查询类接口一律走“不创建”的查找：否则仅查询就会隐式新建并登记空集合，
+            // 使 ReferencePool.Count 与本次查询动作本身产生副作用。
+            if (TryGetReferenceCollection(typeof(T), out var referenceCollection))
+                referenceCollection.Remove(count);
         }
 
         /// <summary>
         /// 移除指定类型引用池中的所有闲置引用（使用中的引用不受影响，该类型条目保留在字典中）。
+        /// 该类型从未被获取/追加过（集合不存在）时不创建空集合，直接返回。
         /// </summary>
         /// <typeparam name="T">引用类型。</typeparam>
         public static void RemoveAllUnused<T>() where T : class, IReference
         {
-            GetReferenceCollection(typeof(T)).RemoveAll();
+            if (TryGetReferenceCollection(typeof(T), out var referenceCollection))
+                referenceCollection.RemoveAll();
+        }
+
+        /// <summary>
+        /// 尝试获取指定类型下的引用信息集合，<b>不存在时不会创建</b>。
+        /// 与 GetReferenceCollection 的区别仅在于“不存在时不登记新集合”：Acquire/Add/Recycle 这类
+        /// 需要落地的操作仍必须用 GetReferenceCollection（不存在则创建），只有查询类接口使用本方法。
+        /// </summary>
+        /// <param name="refType">引用类型。</param>
+        /// <param name="referenceCollection">引用信息集合，不存在时为 null。</param>
+        /// <returns>是否存在该类型的引用信息集合。</returns>
+        private static bool TryGetReferenceCollection(Type refType, out ReferenceCollection referenceCollection)
+        {
+            if (refType == null) throw new InvalidOperationException("[ReferencePool] 引用类型为空.");
+
+            // 与 ReferencePool.cs 中的 m_ReferenceCollectionDict 同属一个 partial 类，可直接访问其私有字段
+            lock (m_ReferenceCollectionDict)
+            {
+                return m_ReferenceCollectionDict.TryGetValue(refType, out referenceCollection);
+            }
         }
 
         /// <summary>

@@ -40,7 +40,10 @@ namespace Hotfix.Framework.ObjectPool
         private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
         /// <summary>
-        /// 缓存所有对象池的列表。对外 API（DisposeOverCapacity/DisposeAllUnused）与 OnDispose 使用。
+        /// OnDispose 专用的对象池快照列表（确保销毁循环期间池的 OnDispose 回调增删模块字典也不会破坏遍历）。
+        /// 注意：模块级对外 API 已各自拆出专属字段——DisposeOverCapacity 用 m_CachedDisposeOverCapacityPoolList、
+        /// DisposeAllUnused 用 m_CachedDisposeAllUnusedPoolList（见 ObjectPoolModule.API.cs），
+        /// 因为它们会在遍历期间被重入调用并 Clear/重填，共用同一列表会清空外层正在遍历的数据。
         /// </summary>
         private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
 

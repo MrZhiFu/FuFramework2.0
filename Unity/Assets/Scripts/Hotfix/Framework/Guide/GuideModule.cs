@@ -219,6 +219,10 @@ namespace Hotfix.Framework.Guide
             OnStepExecuting    = null;
             OnStepCompleted    = null;
 
+            // 释放引导动作持有者（其内部持有 LifecycleCancellationSource，需随模块销毁释放）
+            (GuideAction as IDisposable)?.Dispose();
+            GuideAction = null;
+
             Instance = null;
         }
 

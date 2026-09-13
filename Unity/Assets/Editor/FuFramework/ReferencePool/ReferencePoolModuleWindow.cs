@@ -15,7 +15,9 @@ namespace FuFramework.ReferencePool.Editor
     /// 功能：
     ///     1. 展示所有引用池及其统计信息（类型、闲置、使用中、累计获取/释放/新增/移除）。
     ///     2. 支持按类型名过滤搜索、自动刷新、全部展开/折叠。
-    ///     3. 支持模块级/单池级一键移除（移除所有引用池、移除指定类型闲置引用）。
+    ///     3. 支持模块级/单池级一键移除（移除所有闲置引用、移除指定类型闲置引用）。
+    /// 注意：ReferencePool.ClearAll 的语义是「只清闲置、保留类型条目与累计计数」，故一键移除后类型条目数不归零，
+    /// 面板按「闲置为 0 且无在用」过滤掉无可展示内容的空集合，与列表口径保持一致。
     /// </summary>
     public class ReferencePoolModuleWindow : EditorWindow
     {
@@ -191,7 +193,7 @@ namespace FuFramework.ReferencePool.Editor
             var infos = GetAllReferencePoolInfos();
             if (infos.Count == 0)
             {
-                EditorGUILayout.HelpBox("引用池为空", MessageType.Info);
+                EditorGUILayout.HelpBox("引用池为空（无闲置引用且无使用中的引用）", MessageType.Info);
                 return;
             }
 
@@ -251,10 +253,13 @@ namespace FuFramework.ReferencePool.Editor
         private void DrawModuleOverview()
         {
             var count = m_ModuleCountProperty?.GetValue(null) ?? 0;
-            EditorGUILayout.LabelField($"引用池总个数：{count}");
+
+            // 文案对齐 ReferencePool.ClearAll 的新语义：ClearAll 只清空闲置引用、保留类型条目与累计计数，
+            // 故此处显示的是「类型条目数」，一键移除后不会归零（旧文案「引用池总个数」易被误解为移除后清零）。
+            EditorGUILayout.LabelField($"引用池类型条目数：{count}（移除闲置后条目与计数保留，不会归零）");
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("移除所有引用池", GUILayout.Width(200)))
+            if (GUILayout.Button(new GUIContent("移除所有闲置引用", "仅清空各类型池中的闲置引用：类型条目与累计计数保留，使用中的引用不受影响。"), GUILayout.Width(200)))
             {
                 try
                 {
@@ -484,7 +489,15 @@ namespace FuFramework.ReferencePool.Editor
 
             foreach (var item in result)
             {
-                if (item != null) list.Add(item);
+                if (item == null) continue;
+
+                // 过滤「闲置为 0 且无在用」的空集合：ClearAll 只清闲置、保留类型条目与计数，
+                // 这类条目在面板上既无可展示的引用也无操作价值，保留展示会让列表与「一键移除后不归零」的新语义割裂。
+                var unusedCount = (int)(m_InfoUnusedReferenceCountProperty?.GetValue(item) ?? 0);
+                var usingCount  = (int)(m_InfoUsingReferenceCountProperty?.GetValue(item)  ?? 0);
+                if (unusedCount == 0 && usingCount == 0) continue;
+
+                list.Add(item);
             }
 
             // 按类型全名升序排列（引用池无优先级概念）
