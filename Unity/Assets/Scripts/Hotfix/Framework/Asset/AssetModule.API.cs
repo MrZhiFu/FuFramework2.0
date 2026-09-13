@@ -235,7 +235,12 @@ namespace Hotfix.Framework.Asset
                 // 模块销毁/生命周期变更/调用方取消后：句柄可能已被释放，不得再写回引用字典
                 if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
-                    if (assetHandle is { IsValid: true })
+                    // 仅当该句柄尚未被任何等待者登记进引用字典时才由本调用方释放：
+                    // 共享加载只产出这一个句柄（引用计数 1），一旦有等待者登记，释放权即归 m_InstantiateRefDict 的引用计数；
+                    // 此处无条件 Release 会把它从其他仍存活的调用方手中抽走，导致其 InstantiateAsync 因句柄失效而假失败
+                    var adopted = m_InstantiateRefDict.TryGetValue(path, out var adoptedEntry)
+                               && ReferenceEquals(adoptedEntry.Handle, assetHandle);
+                    if (!adopted && assetHandle is { IsValid: true })
                     {
                         assetHandle.Release();
 

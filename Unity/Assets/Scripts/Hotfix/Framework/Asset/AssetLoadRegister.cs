@@ -53,10 +53,12 @@ namespace Hotfix.Framework.Asset
         private bool m_Disposed;
 
         /// <summary>
-        /// 是否处于临时卸载状态（UnloadAll 置位）。防止"卸载后、复用前"的在途加载把句柄重新缓存（ref→0 内存不释放）。
-        /// 与 m_Disposed 的区别：UnloadAll 后装载器仍可复用（新加载请求会清除此标记）；Dispose 永久废弃不可复用。
+        /// 临时卸载代际：UnloadAll 每次递增。
+        /// 每个加载请求在入口捕获当时的代际，加载完成时比对——不等即说明期间发生过 UnloadAll，不得写回缓存。
+        /// 用请求级代际而非装载器级单一标志：后者会被任意无关的新请求清除，从而击穿保护，把本应丢弃的句柄重新缓存。
+        /// 与 m_Disposed 的区别：UnloadAll 后装载器仍可复用（新请求代际已更新，属新分组）；Dispose 永久废弃不可复用。
         /// </summary>
-        private bool m_Unloaded;
+        private int m_UnloadGeneration;
 
         /// <summary>
         /// 取消令牌：装载器永久废弃（Dispose）后触发，拒绝新的加载请求。
@@ -150,8 +152,9 @@ namespace Hotfix.Framework.Asset
             // 已废弃（Dispose）后直接拒绝新加载，避免发起真实加载后在核心检测到 m_Disposed 才释放（浪费性加载且语义混乱）
             if (m_Disposed) throw new ObjectDisposedException(nameof(AssetLoadRegister));
 
-            // 新的加载请求意味着装载器正在被再次使用（如复用），清除临时卸载标记
-            m_Unloaded = false;
+            // 捕获本次请求的卸载代际：加载完成时据此判断期间是否发生过 UnloadAll
+            // （请求级判定，不受其他并发请求影响——这正是旧实现用装载器级 m_Unloaded 标志的漏洞所在）
+            var unloadGeneration = m_UnloadGeneration;
 
             var key = new LoadKey(path, assetType);
 
@@ -172,7 +175,7 @@ namespace Hotfix.Framework.Asset
             {
                 var sharedHandle = await sharedSource.Task;
                 // 等待期间可能被 Dispose/UnloadAll：句柄可能已被释放，不得返回给调用方
-                if (m_Disposed || m_Unloaded)
+                if (m_Disposed || unloadGeneration != m_UnloadGeneration)
                 {
                     sharedHandle?.Release();
                     throw new ObjectDisposedException($"{nameof(AssetLoadRegister)}已废弃或已卸载");
@@ -186,7 +189,7 @@ namespace Hotfix.Framework.Asset
             m_LoadingTasks[key] = taskSource;
             try
             {
-                var handle = await LoadAssetHandleCoreAsync(path, assetType);
+                var handle = await LoadAssetHandleCoreAsync(path, assetType, unloadGeneration);
                 taskSource.TrySetResult(handle);
                 return handle;
             }
@@ -206,8 +209,9 @@ namespace Hotfix.Framework.Asset
         /// </summary>
         /// <param name="path">资源路径。</param>
         /// <param name="assetType">资源类型，null 表示不指定类型。</param>
+        /// <param name="unloadGeneration">发起本次加载时捕获的卸载代际，用于识别加载期间是否发生过 UnloadAll。</param>
         /// <returns>资源句柄。</returns>
-        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType)
+        private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType, int unloadGeneration)
         {
             m_Scope.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
 
@@ -224,9 +228,9 @@ namespace Hotfix.Framework.Asset
                         throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
                     }
 
-                    // 加载期间装载器已被废弃（Dispose）或处于临时卸载（UnloadAll 且无新加载接管）：
+                    // 加载期间装载器已被废弃（Dispose），或发生过 UnloadAll（代际已变）：
                     // 句柄已不归本实例，释放并阻止写回（否则句柄无人释放而泄漏 / ref→0 后资源被重新缓存）
-                    if (m_Disposed || m_Unloaded)
+                    if (m_Disposed || unloadGeneration != m_UnloadGeneration)
                     {
                         assetHandle.Release();
                         // 补 UnloadAsset：仅 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
@@ -244,7 +248,7 @@ namespace Hotfix.Framework.Asset
                 }
                 catch
                 {
-                    // 失败：释放句柄并重抛；m_Disposed/m_Unloaded 分支已自行释放并置空，此处不会二次释放
+                    // 失败：释放句柄并重抛；m_Disposed/代际失配分支已自行释放并置空，此处不会二次释放
                     assetHandle?.Release();
                     throw;
                 }
@@ -256,7 +260,7 @@ namespace Hotfix.Framework.Asset
         /// 1.释放资源句柄，即减少引用计数。
         /// 2.尝试卸载资源，即引用计数为零时，才会真正卸载资源。
         /// 注意：若该资源仍在加载中（尚未入缓存），本方法不生效，需在加载完成后调用；
-        /// 若要阻止在途加载完成时写回缓存，请用 UnloadAll（置 m_Unloaded）或 Dispose。
+        /// 若要阻止在途加载完成时写回缓存，请用 UnloadAll（递增卸载代际）或 Dispose。
         /// </summary>
         /// <param name="path">资源路径。</param>
         public void Unload(string path)
@@ -290,11 +294,12 @@ namespace Hotfix.Framework.Asset
 
         /// <summary>
         /// 卸载所有已经加载的资源（临时卸载：装载器保留可复用）。
-        /// 置 m_Unloaded 标记：卸载后在途的加载完成时不得写回缓存（防 ref→0 后资源句柄被重新缓存、内存不释放）。
+        /// 递增卸载代际：发起于本次之前的在途加载完成时识别为过期，不得写回缓存
+        /// （防 ref→0 后资源句柄被重新缓存、内存不释放）。
         /// </summary>
         public void UnloadAll()
         {
-            m_Unloaded = true;
+            m_UnloadGeneration++;
 
             // 先复制 key 列表，避免遍历时集合被修改；直接按 key 卸载（比逐个 Unload 再按 path 扫字典更省）
             var keys = new List<LoadKey>(m_HandleDict.Keys);

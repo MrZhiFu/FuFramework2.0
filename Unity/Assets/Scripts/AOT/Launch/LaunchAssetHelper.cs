@@ -189,10 +189,10 @@ namespace AOT.Launch
 
         /// <summary>
         /// 加载程序集字节文件(用于 AOT/Hotfix DLL)。
-        /// 本项目将 DLL/AOT 以 .bytes(TextAsset) 形式打包，故通过 LoadAssetAsync&lt;Object&gt; 加载后取 TextAsset.bytes，
-        /// <param name="location"> 资源路径。</param>
-        /// <returns>加载字节操作。</returns>
+        /// 本项目将 DLL/AOT 以 .bytes(TextAsset) 形式打包，故通过 LoadAssetAsync&lt;Object&gt; 加载后取 TextAsset.bytes。
         /// </summary>
+        /// <param name="location"> 资源路径。</param>
+        /// <returns>加载字节操作；失败时返回 null。</returns>
         public static UniTask<byte[]> LoadDllBytesAsync(string location)
         {
             var tcs    = new UniTaskCompletionSource<byte[]>();
@@ -203,6 +203,8 @@ namespace AOT.Launch
                 if (h.Status != EOperationStatus.Succeeded)
                 {
                     FuLogger.LogError($"[Launch] 加载原始文件失败: {location}, 错误信息: {h.Error}");
+                    h.Release();
+                    DefaultPackage.TryUnloadUnusedAsset(location); // AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载 bundle
                     tcs.TrySetResult(null);
                     return;
                 }
@@ -212,11 +214,18 @@ namespace AOT.Launch
                 if (textAsset == null)
                 {
                     FuLogger.LogError($"[Launch] 加载的资源不是 TextAsset 或为空: {location}");
+                    h.Release();
+                    DefaultPackage.TryUnloadUnusedAsset(location);
                     tcs.TrySetResult(null);
                     return;
                 }
 
-                tcs.TrySetResult(textAsset.bytes);
+                // 先取出字节（bytes 已复制到托管数组，此后不再需要该资源），再释放句柄并卸载 bundle：
+                // 不释放则 provider 引用计数永不归零，DLL bundle 常驻，且每次 RestartGame 重跑启动流程再叠加一份
+                var bytes = textAsset.bytes;
+                h.Release();
+                DefaultPackage.TryUnloadUnusedAsset(location);
+                tcs.TrySetResult(bytes);
             };
             return tcs.Task;
         }

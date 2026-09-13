@@ -144,6 +144,10 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private async UniTaskVoid LoadBlurShaderAsync()
         {
+            // 本次加载负责置位的完成源：捕获本地引用，避免中途 InitBlur 替换字段后误写新生命周期的任务状态
+            var loadTaskSource = m_ShaderLoadTask;
+            if (loadTaskSource == null) return;
+
             // 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
             AssetHandle handle = null;
             var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
@@ -165,6 +169,9 @@ namespace Hotfix.Framework.UI
                     // 跨生命周期中止：已成功加载的 shader 仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载 bundle，配对卸载防残留
                     assetModule.UnloadAsset(BlurShaderPath);
                     handle = null;
+
+                    // 必须置位完成源：OnWinOpeningAsync 可能已 await 它，不置位会永久挂起并卡死整条开窗链
+                    loadTaskSource.TrySetCanceled();
                     return;
                 }
 
@@ -172,7 +179,7 @@ namespace Hotfix.Framework.UI
                 handle             = null; // 所有权已转移给模块字段，catch 不再释放
                 m_BlurShader       = shader;
                 m_BlurMaterial     = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
-                m_ShaderLoadTask.TrySetResult(shader);
+                loadTaskSource.TrySetResult(shader);
                 FuLogger.LogInfo("[UIModule] UI背景模糊 Shader 加载完成。");
             }
             catch (Exception e)
@@ -182,9 +189,14 @@ namespace Hotfix.Framework.UI
                 // 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留
                 if (handle != null) handle.Release();
 
-                // 模块已销毁/生命周期变更时不污染新任务状态
-                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token) return;
-                m_ShaderLoadTask.TrySetException(e);
+                // 模块已销毁/生命周期变更时不污染新任务状态，但仍须置位完成源，避免等待方永久挂起
+                if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+                {
+                    loadTaskSource.TrySetCanceled();
+                    return;
+                }
+
+                loadTaskSource.TrySetException(e);
             }
         }
 
@@ -330,8 +342,12 @@ namespace Hotfix.Framework.UI
                 m_BlurCapture = null;
             }
 
-            m_BlurShader     = null;
+            m_BlurShader = null;
+
+            // 先置位在途 Shader 加载的完成源再丢弃引用：OnWinOpeningAsync 可能已 await 它，不置位会永久挂起
+            m_ShaderLoadTask?.TrySetCanceled();
             m_ShaderLoadTask = null;
+
             m_ActiveBlurLayers.Clear();
         }
 

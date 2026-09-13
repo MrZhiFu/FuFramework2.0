@@ -358,7 +358,10 @@ namespace Hotfix.Framework.Scene
                 // 模块已销毁/生命周期变更/调用方取消（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
                 if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
                 {
-                    sceneOperationHandle.Release();
+                    // 此刻场景已加载成功：SceneHandle.Release() 不会卸载 Unity 场景，必须显式卸载，
+                    // 否则场景既不进 m_LoadedSceneDict（IsLoaded 为 false，无法再走 UnloadScene）又真实驻留，成为不可回收的孤儿场景。
+                    // 卸载完成后释放句柄：成功卸载时 YooAsset 的 sceneUnloaded 钩子已自动释放，此处为幂等兜底（卸载失败时仍需释放）。
+                    sceneOperationHandle.UnloadSceneAsync().Completed += _ => sceneOperationHandle.Release();
                     throw new OperationCanceledException(capturedToken);
                 }
                 m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));

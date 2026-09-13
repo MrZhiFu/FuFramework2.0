@@ -175,7 +175,9 @@ namespace Hotfix.Framework.UI
                         return;
                     }
 
-                    var targetTexture = new NTexture(texture2D);
+                    // 该纹理归 YooAsset 所有，生命周期由句柄决定：此处仅引用，禁止在缓存淘汰时销毁
+                    // （destroyMethod 默认值为 Destroy，会对 provider 缓存的纹理执行 DestroyImmediate，导致其它仍显示该纹理的 GLoader 破图）
+                    var targetTexture = new NTexture(texture2D) { destroyMethod = DestroyMethod.None };
                     Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
                     assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
                     onExternalLoadSuccess(targetTexture);
