@@ -28,6 +28,7 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]初始化-OnInit().");
             m_UIModule.PkgManager?.AddPkgRef(PackageName);
+            m_PkgRefAdded = true; // 置位后 _OnDispose 才允许 SubPkgRef，保证加/减引用严格对称
             OnInit();
         }
 
@@ -158,11 +159,17 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
             m_Cancellation.Dispose(); // 真销毁，永久释放取消源
-            m_UIModule.PkgManager.SubPkgRef(PackageName);
 
-            ReleaseEventRegister();   // 释放事件注册器
-            ReleaseUIEventRegister(); // 释放UI事件注册器
-            ReleaseTimerRegister();   // 释放计时器注册器
+            // 半成品实例（Init 未走完，UI模块未绑定/未加过包引用）销毁时不得递减引用计数：
+            // 递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。判空 + 标记双重守卫。
+            if (m_PkgRefAdded)
+            {
+                m_UIModule?.PkgManager?.SubPkgRef(PackageName);
+                m_PkgRefAdded = false;
+            }
+
+            // 半成品实例的事件/UI事件/计时器注册器均为 null，Release 前必须判空（否则抛 NRE）
+            ReleaseAllRegisters();
 
             // 注销安全区变化监听
             SafeAreaHelper.OnSafeAreaChanged -= _OnSafeAreaChanged;

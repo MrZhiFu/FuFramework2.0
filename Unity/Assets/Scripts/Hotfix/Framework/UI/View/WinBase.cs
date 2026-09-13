@@ -23,6 +23,13 @@ namespace Hotfix.Framework.UI
         private bool m_IsInit;
 
         /// <summary>
+        /// UI包引用是否已添加（_OnInit 中 AddPkgRef 后置位）。
+        /// 半成品实例（未走到 _OnInit 或其中途失败）为 false，销毁时不得 SubPkgRef：
+        /// 它从未加过引用，递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。
+        /// </summary>
+        private bool m_PkgRefAdded;
+
+        /// <summary>
         /// UI管理模块
         /// </summary>
         private UIModule m_UIModule;
@@ -130,8 +137,13 @@ namespace Hotfix.Framework.UI
             SerialId = serialId;
             UserData = userData;
 
-            // 如果已经初始化过，则不再初始化
-            if (m_IsInit) return;
+            // 已经初始化过且界面对象可用：不再初始化，只保留本次 SerialId/UserData（对象池复用路径）。
+            // winUI 为空说明上次初始化未走完（半成品实例，WinUI 未赋值），此时不能早退：
+            // 早退会让后续 uiGroup.AddChild(win.WinUI) 拿 null 直接抛 NRE，故按新实例重新完整初始化。
+            if (m_IsInit && winUI != null) return;
+
+            // 半成品重新初始化：先释放上次可能已创建的注册器，避免重复创建导致引用池泄漏
+            if (m_IsInit) ReleaseAllRegisters();
 
             m_UIModule = ModuleManager.GetModule<UIModule>();
             m_IsInit   = true;
@@ -167,6 +179,16 @@ namespace Hotfix.Framework.UI
             {
                 FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
             }
+        }
+
+        /// <summary>
+        /// 释放事件/UI事件/计时器三个注册器（半成品实例下它们可能为 null，故统一判空后再释放）。
+        /// </summary>
+        private void ReleaseAllRegisters()
+        {
+            if (EventRegister != null) ReleaseEventRegister();
+            if (UIEventRegister != null) ReleaseUIEventRegister();
+            if (TimerRegister != null) ReleaseTimerRegister();
         }
 
         /// <summary>

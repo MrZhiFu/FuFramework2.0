@@ -47,7 +47,21 @@ namespace Hotfix.Framework.ObjectPool
             if (inUse) obj.Spawn();
 
             if (Count > m_Capacity)
-                DisposeOverCapacity();
+            {
+                // 注册后立即裁剪时，必须保证“本次刚注册的对象”不被当场销毁——否则调用方会把一个已被销毁、
+                // 已归还引用池的句柄当作有效对象使用（inUse=false 且容量极小时尤其容易命中）。
+                // 使用中的对象（IsInUse）本就不可销毁；未使用的对象临时加锁使其逃过本轮裁剪，裁剪完再恢复原锁状态。
+                var restoreLocked = !obj.IsInUse && !obj.Locked;
+                if (restoreLocked) obj.Locked = true;
+                try
+                {
+                    DisposeOverCapacity();
+                }
+                finally
+                {
+                    if (restoreLocked) obj.Locked = false;
+                }
+            }
         }
 
         /// <summary>

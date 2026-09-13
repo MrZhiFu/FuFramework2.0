@@ -221,22 +221,28 @@ namespace Hotfix.Framework.Entity
         /// <param name="userData">用户自定义数据。</param>
         public void OnAttachTo(Entity parentEntity, object userData)
         {
-            if (userData is not AttachEntityInfo attachEntityInfo)
-            {
-                FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
-                return;
-            }
-
+            // userData（AttachEntityInfo）由调用方 EntityModule.AttachEntity 交接而来，所有权归本方法：
+            // 必须在 finally 中回收——若类型校验失败提前 return 或逻辑回调抛异常，调用方已置 handedOver=true 不再兜底，
+            // 该池对象会永久泄漏（引用池计数不归零）。
             try
             {
+                if (userData is not AttachEntityInfo attachEntityInfo)
+                {
+                    FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
+                    return;
+                }
+
                 Logic.OnAttachTo(parentEntity.Logic, attachEntityInfo.ParentTransform, attachEntityInfo.UserData);
             }
             catch (Exception exception)
             {
                 FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
             }
-
-            ReferencePool.Recycle(attachEntityInfo);
+            finally
+            {
+                if (userData is AttachEntityInfo handedOverInfo)
+                    ReferencePool.Recycle(handedOverInfo);
+            }
         }
 
         /// <summary>

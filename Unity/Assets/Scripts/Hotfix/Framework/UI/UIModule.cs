@@ -217,13 +217,26 @@ namespace Hotfix.Framework.UI
                 group.GetAll(groupWins);
                 for (var i = 0; i < groupWins.Count; i++)
                 {
+                    var win = groupWins[i];
+                    if (win == null) continue;
+
                     try
                     {
-                        group.Remove(groupWins[i]);
+                        // 与正常关闭一致：先出组（回收 WinInfo），再走窗口关闭回调。
+                        group.Remove(win);
+                        win._OnClose();
                     }
                     catch (Exception e)
                     {
-                        FuLogger.LogWarning($"[UIModule] 释放时回收界面信息 '{groupWins[i]?.WinName}' 出现异常: {e.Message}");
+                        FuLogger.LogWarning($"[UIModule] 释放时关闭界面 '{win.WinName}' 出现异常: {e.Message}");
+                    }
+                    finally
+                    {
+                        // 无论上一步是否异常，都必须把窗口交回待回收队列，由下方队列排空统一走
+                        // Recycle（_OnRecycle + 归还对象池）。否则销毁时仍打开的窗口只回收了 WinInfo，
+                        // 其 WinObject 仍处于使用中，会残留在池里直至 ObjectPoolModule 强制回收并打出
+                        // 「仍有对象处于使用中」告警。
+                        m_WaitRecycleQueue.Enqueue(win);
                     }
                 }
 

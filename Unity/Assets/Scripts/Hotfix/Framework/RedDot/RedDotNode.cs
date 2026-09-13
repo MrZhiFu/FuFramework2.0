@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using AOT.Framework.Core.Log;
 using Hotfix.Game.Config;
 using Hotfix.Framework.Core;
@@ -95,6 +96,12 @@ namespace Hotfix.Framework.RedDot
         /// </summary>
         private readonly List<RedDotNode> m_Children = new();
 
+        /// <summary>
+        /// m_Children 的只读包装缓存（m_Children 变化时置空失效，下次 GetChildren 时重建），
+        /// 避免子树递归遍历时每次调用都新分配一个 ReadOnlyCollection 包装器。
+        /// </summary>
+        private ReadOnlyCollection<RedDotNode> m_ChildrenReadOnlyCache;
+
         #endregion
 
         /// <summary>
@@ -152,13 +159,18 @@ namespace Hotfix.Framework.RedDot
             }
 
             m_Children.Add(child);
+            m_ChildrenReadOnlyCache = null;
         }
 
         /// <summary>
         /// 移除子节点（动态节点归零回收时使用）
         /// </summary>
         /// <param name="child">子节点</param>
-        public void RemoveChild(RedDotNode child) => m_Children.Remove(child);
+        public void RemoveChild(RedDotNode child)
+        {
+            if (m_Children.Remove(child))
+                m_ChildrenReadOnlyCache = null;
+        }
 
         /// <summary>
         /// 强制重算 TotalCount 并向上传播（子节点增删后调用）
@@ -257,7 +269,11 @@ namespace Hotfix.Framework.RedDot
         /// 获取所有子节点（只读）
         /// </summary>
         /// <returns>子节点的只读列表</returns>
-        public IReadOnlyList<RedDotNode> GetChildren() => m_Children.AsReadOnly();
+        public IReadOnlyList<RedDotNode> GetChildren()
+        {
+            // AsReadOnly 每次调用都会新建包装器（子树递归下分配可观），故缓存并随 m_Children 变化失效重建
+            return m_ChildrenReadOnlyCache ??= m_Children.AsReadOnly();
+        }
 
         /// <summary>
         /// 回收到对象池时清理
@@ -279,6 +295,7 @@ namespace Hotfix.Framework.RedDot
             TriggerEvents       = null;
             OnTotalCountChanged = null;
             m_Children.Clear();
+            m_ChildrenReadOnlyCache = null;
         }
     }
 }

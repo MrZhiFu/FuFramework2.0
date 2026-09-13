@@ -20,6 +20,13 @@ namespace Hotfix.Framework.Download
         private readonly UnityWebRequestDownloadAgentHelper m_Owner;
 
         /// <summary>
+        /// 获取本处理器所属的下载代理辅助器。
+        /// 供 DownloadAgent 在事件回调中据 sender 判定「事件是否来自自己的辅助器」——
+        /// 四个下载辅助器事件的 Id 是共享的（AllowMultiHandler），每次 Broadcast 会分发给全部订阅的下载代理。
+        /// </summary>
+        internal UnityWebRequestDownloadAgentHelper Owner => m_Owner;
+
+        /// <summary>
         /// 事件管理模块
         /// </summary>
         private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
@@ -48,6 +55,16 @@ namespace Hotfix.Framework.Download
             // 注意：Unity 的 DownloadHandlerScript(byte[]) 使用预分配缓冲区，该缓冲区跨调用复用且每次从下标 0 开始写入；
             // 而事件经 Broadcast 要到下一帧才被 DownloadAgent 消费并写盘。若事件按引用持有该缓冲区，
             // 同一帧内到达的多块数据(大文件必然)会被最后一块覆盖，导致写盘内容错乱 —— 因此此处必须拷贝出独立副本再交给事件。
+            //
+            // 关于「改用 ArrayPool<byte>.Shared.Rent/Return 消除本次 ≤4096B/块的 Gen0 分配」的取舍（评估结论：暂不采用）：
+            // 归还点只能落在「消费完毕」处，而本事件的消费方 DownloadAgent 无法唯一确定自己就是该数据的产出者 ——
+            // 三个 DownloadAgent 在 Initialize 时都订阅了同一个事件 Id（AllowMultiHandler），一次 Broadcast 会分发给
+            // 全部订阅者；若在消费方归还，同一数组会被重复归还（ArrayPool 重复归还即把同一数组交给两个租借者，
+            // 直接造成数据错乱），而下载场景下这一分发给全部代理是常态而非边角。
+            // 唯一能精确配对的归还点是事件参数自身的生命周期终点（DownloadAgentHelperUpdateBytesEventArgs.Clear()），
+            // 但该参数类型不在本次改动范围内；故此处保留独立副本的写法，以「确定的正确性」优先于「消除 4KB/块的 Gen0 垃圾」。
+            // 若后续要改为池化，须先在事件参数内记录租借来源并在 Clear() 中归还（一次创建对应一次归还），
+            // 且事件参数必须保持「仅被批量分发一次」，否则仍会重复归还。
             var bytes = new byte[dataLength];
             Buffer.BlockCopy(datas, 0, bytes, 0, dataLength);
 

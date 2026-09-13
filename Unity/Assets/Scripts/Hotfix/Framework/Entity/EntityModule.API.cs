@@ -368,13 +368,34 @@ namespace Hotfix.Framework.Entity
                     // 生命周期变更（重启）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
                     if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
                     {
-                        handle.Release();
-                        // 加载成功即已占用 bundle：跨生命周期中止仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载，
-                        // 配对显式卸载防旧生命周期实体 prefab 的 bundle 常驻（失败句柄未获取 bundle 无需卸载）
-                        if (handle.Status == EOperationStatus.Succeeded)
-                            m_AssetModule.UnloadAsset(entityAssetName);
-                        ReferencePool.Recycle(showEntityInfoEx);
-                        tcs.TrySetException(new OperationCanceledException(capturedToken));
+                        try
+                        {
+                            handle.Release();
+                            // 加载成功即已占用 bundle：跨生命周期中止仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载，
+                            // 配对显式卸载防旧生命周期实体 prefab 的 bundle 常驻（失败句柄未获取 bundle 无需卸载）
+                            if (handle.Status == EOperationStatus.Succeeded)
+                                m_AssetModule.UnloadAsset(entityAssetName);
+                        }
+                        catch (Exception e)
+                        {
+                            FuLogger.LogWarning($"[EntityModule] 取消显示实体 '{entityAssetName}' 时释放资源句柄出现异常: {e.Message}");
+                        }
+                        finally
+                        {
+                            // 三态保证：无论上面的句柄释放/资源卸载是否抛异常，都必须回收临时额外信息并完成 tcs，
+                            // 否则 showEntityInfoEx 泄漏、ShowEntityAsync 的 await 永久挂起。
+                            try
+                            {
+                                ReferencePool.Recycle(showEntityInfoEx);
+                            }
+                            catch (Exception e)
+                            {
+                                FuLogger.LogWarning($"[EntityModule] 回收显示实体额外信息时出现异常: {e.Message}");
+                            }
+
+                            tcs.TrySetException(new OperationCanceledException(capturedToken));
+                        }
+
                         return;
                     }
 

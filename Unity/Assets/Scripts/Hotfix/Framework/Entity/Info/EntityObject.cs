@@ -38,9 +38,20 @@ namespace Hotfix.Framework.Entity
             if (entityHelper is null) throw new InvalidOperationException("[EntityObject] 创建实体实例对象失败，实体辅助器为空.");
 
             var entityObject = ReferencePool.Acquire<EntityObject>();
-            entityObject.Initialize(name, entityGo);
-            entityObject.m_EntityAssetHandle = entityAssetHandle;
-            entityObject.m_EntityHelper      = entityHelper;
+            try
+            {
+                entityObject.Initialize(name, entityGo);
+                entityObject.m_EntityAssetHandle = entityAssetHandle;
+                entityObject.m_EntityHelper      = entityHelper;
+            }
+            catch
+            {
+                // Initialize 会因 name/target 为空而抛异常：此时对象已从引用池获取，
+                // 若不归还则池对象永久丢失（引用池计数不归零），故回收后再抛出。
+                ReferencePool.Recycle(entityObject);
+                throw;
+            }
+
             return entityObject;
         }
 

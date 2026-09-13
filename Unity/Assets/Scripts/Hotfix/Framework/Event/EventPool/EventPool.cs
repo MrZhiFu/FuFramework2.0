@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -229,8 +230,25 @@ namespace Hotfix.Framework.Event
                 while (m_EventQueue.Count > 0)
                 {
                     var eventNode = m_EventQueue.Dequeue();
-                    ReferencePool.Recycle(eventNode.EventArgs);
-                    ReferencePool.Recycle(eventNode);
+                    // 逐项隔离回收：ReferencePool.Recycle 一旦抛异常，不得中断整轮排水，
+                    // 否则其后节点与事件参数全部不再归还（ReferencePool 计数永久漂移）；故各自 try/catch 吞掉并继续。
+                    try
+                    {
+                        ReferencePool.Recycle(eventNode.EventArgs);
+                    }
+                    catch (Exception exception)
+                    {
+                        FuLogger.LogError($"[EventPool]清理事件时回收事件参数异常:{exception}");
+                    }
+
+                    try
+                    {
+                        ReferencePool.Recycle(eventNode);
+                    }
+                    catch (Exception exception)
+                    {
+                        FuLogger.LogError($"[EventPool]清理事件时回收事件节点异常:{exception}");
+                    }
                 }
             }
         }
@@ -484,14 +502,33 @@ namespace Hotfix.Framework.Event
 
                     if (hasHandlers)
                     {
+                        // 逐个 handler 独立 try/catch（契约见 Event/README.md「事件处理函数异常会被捕获并记录，不影响其他处理函数」）：
+                        // 任一处理函数抛异常只记录并继续调用后续 handler；绝不让异常穿透本次分发，
+                        // 否则 Update 的 finally 会回收剩余未分发事件却不分发（静默丢事件），
+                        // 异常继续逃到无保护的 ModuleManager.Update 后更会导致当帧其后所有模块停更。
                         for (var i = 0; i < snapshot.Count; i++)
                         {
-                            snapshot[i].Invoke(sender, eArgs);
+                            try
+                            {
+                                snapshot[i].Invoke(sender, eArgs);
+                            }
+                            catch (Exception exception)
+                            {
+                                FuLogger.LogError($"[EventPool]处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
+                            }
                         }
                     }
                     else if (defaultHandler != null)
                     {
-                        defaultHandler.Invoke(sender, eArgs);
+                        // 默认处理器同样隔离：单个默认处理器异常不得中断本次分发，更不能向上逃逸。
+                        try
+                        {
+                            defaultHandler.Invoke(sender, eArgs);
+                        }
+                        catch (Exception exception)
+                        {
+                            FuLogger.LogError($"[EventPool]处理事件 '{eventId}' 的默认处理函数时发生异常:{exception}");
+                        }
                     }
                     else if ((m_PoolMode & EEventPoolMode.AllowNoHandler) == 0)
                     {
@@ -509,14 +546,18 @@ namespace Hotfix.Framework.Event
                 // 回收自身若抛异常（引用池内部异常）不得逃逸：Update 的兜底按「batch[processed] 已交给 HandleEvent、
                 // 其 EventArgs 由本方法负责回收」处理，一旦此处异常冒出，Update 的节点回收 finally 会被连带打断，
                 // 导致该节点及其后未分发节点一并漏回收（ReferencePool 计数永久漂移）。
-                // 故吞掉回收异常，确保「回收失败也不漏节点回收」；分发阶段的异常仍会正常向上抛出。
+                // 故吞掉回收异常，确保「回收失败也不漏节点回收」。
+                // 注：分发阶段的 handler 异常已在上方逐个捕获记录（不再向上抛出），此处仅剩「无处理器」异常仍会抛出。
                 try
                 {
                     ReferencePool.Recycle(eArgs);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
-                    // 有意吞掉：回收失败不应中断调用方（Update）的分发与节点回收流程。
+                    // 有意不重抛：回收失败不应中断调用方（Update）的分发与节点回收流程。
+                    // 但降级为可观测告警而非静默吞没——此处异常通常意味着「重复归还」这一硬保护被触发，
+                    // 静默会掩盖 ABA 误用信号；记录告警即可保留可追溯性，同时不影响上层流程。
+                    FuLogger.LogWarning($"[EventPool]回收事件参数异常（疑似重复归还误用）:{exception}");
                 }
             }
 

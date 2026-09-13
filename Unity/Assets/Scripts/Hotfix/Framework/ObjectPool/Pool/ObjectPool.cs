@@ -313,9 +313,13 @@ namespace Hotfix.Framework.ObjectPool
             m_TargetObjectDict.Clear();
             m_CachedCanDisposeObjectList.Clear();
             m_CachedToDisposeObjectList.Clear();
-            m_CachedTodoSnapshot.Clear();
             m_CachedSelectHeapIndices.Clear();
-            m_TodoSnapshotInUse = false;
+
+            // 刻意不清 m_CachedTodoSnapshot、不复位 m_TodoSnapshotInUse：
+            // 本方法可能在 DisposeTodoObjects 批量销毁“途中”被重入（某个 obj.OnDispose() 内部触发 DisposeObjectPool）。
+            // 若在此清空快照/复位占用标记，外层正在遍历的快照会被清空 → 本批剩余对象被静默跳过（句柄不释放、计数不归零）。
+            // 快照的清空与占用标记复位统一由外层 BeginTodoSnapshot/EndTodoSnapshot 的 finally 负责；
+            // 非重入场景下快照在每次 BeginTodoSnapshot 时也会先 Clear，故不清理不会残留脏数据。
         }
     }
 }

@@ -61,6 +61,11 @@ namespace Hotfix.Framework.Timer
 
             IsPaused        = false;
             IgnoreTimeScale = false;
+
+            // 复位更新时机为默认值：所有启动入口（TimerModule/TimerRegister）的默认值均为 Update，
+            // 不复位会让复用的计时器残留上一次的 update 时机。
+            // 全限定枚举名，避免属性名与类型名同名导致的解析歧义。
+            PlayerLoopTiming = Cysharp.Threading.Tasks.PlayerLoopTiming.Update;
         }
 
         /// <summary>

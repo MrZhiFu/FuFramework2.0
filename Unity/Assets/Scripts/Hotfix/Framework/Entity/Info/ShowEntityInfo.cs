@@ -1,4 +1,6 @@
+using System;
 using Hotfix.Framework.Core;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Entity
@@ -54,9 +56,19 @@ namespace Hotfix.Framework.Entity
         /// </summary>
         public void Clear()
         {
-            // 连带释放 UserData 承载的引用池对象（ShowEntityInfoEx），避免复用丢失
+            // 连带释放 UserData 承载的引用池对象（ShowEntityInfoEx），避免复用丢失。
+            // 子对象回收失败（如已被释放）不得让 ShowEntityInfo 自身无法回池、也不得让异常穿透调用方，故单独吞掉并告警。
             if (UserData is ShowEntityInfoEx showEntityInfoEx)
-                ReferencePool.Recycle(showEntityInfoEx);
+            {
+                try
+                {
+                    ReferencePool.Recycle(showEntityInfoEx);
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogWarning($"[EntityModule] 回收显示实体额外信息(ShowEntityInfoEx)时出现异常: {e.Message}");
+                }
+            }
 
             SerialId    = 0;
             EntityId    = 0;

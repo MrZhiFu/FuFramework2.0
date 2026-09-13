@@ -360,14 +360,19 @@ namespace Hotfix.Framework.Core
             while (current != null)
             {
                 var task = current.Value.Task;
+
+                // 先缓存 next 再调用用户代码：Update/Reset 内部可能经同步延续调用 RemoveTask/RemoveTasks
+                // 摘除本结点（结点会被回收复用），之后 current.Next 会读到失效/复用的结点，导致本帧后续代理被静默跳过。
+                // 与 _ProcessWaitingTasks 的「先缓存 next 再调用户代码」保持一致。
+                var next = current.Next;
+
                 if (!task.Done)
                 {
                     current.Value.Update(deltaTime, unscaledDeltaTime);
-                    current = current.Next;
+                    current = next;
                     continue;
                 }
 
-                var next = current.Next;
                 current.Value.Reset();
                 m_FreeAgentStack.Push(current.Value);
                 m_WorkingAgentList.Remove(current);

@@ -123,8 +123,17 @@ namespace Hotfix.Framework.Download
 
             // 调用下载代理辅助器错误事件
             var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, "Timeout");
-            _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-            ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+            try
+            {
+                _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+            }
+            finally
+            {
+                // _OnDownloadAgentHelperError 内部会 File.Delete 损坏的 .download 文件、并回调
+                // DownloadAgentFailure（失败事件订阅者也可能抛异常），任一抛出都会跳过回收；
+                // 以 finally 保证错误事件参数必回引用池，不让异常逃逸时泄漏池对象。
+                ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+            }
         }
 
         /// <summary>
@@ -184,8 +193,16 @@ namespace Hotfix.Framework.Download
             catch (Exception exception)
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
-                _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+                try
+                {
+                    _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+                }
+                finally
+                {
+                    // 同 Update：错误回调内的 File.Delete / 失败事件订阅者可能抛异常，finally 保证参数回收
+                    ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+                }
+
                 return EStartTaskStatus.UnknownError;
             }
         }
@@ -231,10 +248,25 @@ namespace Hotfix.Framework.Download
         }
 
         /// <summary>
+        /// 判断事件是否来自本代理自己的下载辅助器。
+        /// 四个下载辅助器事件的 Id 是共享的（AllowMultiHandler），多个下载代理订阅了同一 Id，
+        /// 一次 Broadcast 会分发给全部代理；若不过滤 sender，任一辅助器的数据/完成/错误事件
+        /// 会被所有代理处理 → 并发下载时串写文件、并在任一任务完成时误完成他人任务。
+        /// sender 为 <see cref="DownloadHandler"/> 时须属于本代理的 m_Helper；
+        /// sender 为 this（代理内部超时/异常路径的直接调用）则放行。
+        /// </summary>
+        private bool IsOwnEvent(object sender)
+        {
+            if (ReferenceEquals(sender, this)) return true;
+            return sender is DownloadHandler handler && ReferenceEquals(handler.Owner, m_Helper);
+        }
+
+        /// <summary>
         /// 下载代理辅助器更新数据流事件回调。
         /// </summary>
         private void _OnDownloadAgentHelperUpdateBytes(object sender, GameEventArgs eventArgs)
         {
+            if (!IsOwnEvent(sender)) return;
             if (eventArgs is not DownloadAgentHelperUpdateBytesEventArgs e) return;
 
             WaitTime = 0f;
@@ -257,8 +289,15 @@ namespace Hotfix.Framework.Download
             catch (Exception exception)
             {
                 var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
-                _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
-                ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+                try
+                {
+                    _OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+                }
+                finally
+                {
+                    // 同 Update：错误回调内的 File.Delete / 失败事件订阅者可能抛异常，finally 保证参数回收
+                    ReferencePool.Recycle(downloadAgentHelperErrorEventArgs);
+                }
             }
         }
 
@@ -267,6 +306,7 @@ namespace Hotfix.Framework.Download
         /// </summary>
         private void _OnDownloadAgentHelperUpdateLength(object sender, GameEventArgs gameEventArgs)
         {
+            if (!IsOwnEvent(sender)) return;
             if (gameEventArgs is not DownloadAgentHelperUpdateLengthEventArgs e) return;
 
             // 检查Task是否为null，避免空引用异常
@@ -282,6 +322,7 @@ namespace Hotfix.Framework.Download
         /// </summary>
         private void _OnDownloadAgentHelperComplete(object sender, GameEventArgs gameEventArgs)
         {
+            if (!IsOwnEvent(sender)) return;
             if (gameEventArgs is not DownloadAgentHelperCompleteEventArgs e) return;
 
             // 检查Task是否为null，避免空引用异常
@@ -314,6 +355,7 @@ namespace Hotfix.Framework.Download
         /// </summary>
         private void _OnDownloadAgentHelperError(object sender, GameEventArgs gameEventArgs)
         {
+            if (!IsOwnEvent(sender)) return;
             if (gameEventArgs is not DownloadAgentHelperErrorEventArgs e) return;
 
             m_Helper.Reset();

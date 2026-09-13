@@ -70,13 +70,17 @@ namespace Hotfix.Framework.Entity
         /// <returns>创建的显示实体失败事件。</returns>
         public static ShowEntityFailureEventArgs Create(int entityId, string entityAssetName, string entityGroupName, string errorMessage, object userData)
         {
+            // 判空/类型校验必须前置到 Acquire 之前：否则强制转换抛异常时，已获取的事件对象永不归还引用池（泄漏）。
+            if (userData is not ShowEntityInfoEx showEntityInfoEx)
+                throw new InvalidOperationException("[EntityModule] 创建显示实体失败事件失败, 用户自定义数据不是 ShowEntityInfoEx 类型.");
+
             var showEntityFailureEventArgs = ReferencePool.Acquire<ShowEntityFailureEventArgs>();
             showEntityFailureEventArgs.EntityId        = entityId;
             showEntityFailureEventArgs.EntityAssetName = entityAssetName;
             showEntityFailureEventArgs.EntityGroupName = entityGroupName;
             showEntityFailureEventArgs.ErrorMessage    = errorMessage;
-            showEntityFailureEventArgs.UserData        = ((ShowEntityInfoEx)userData).UserData;
-            showEntityFailureEventArgs.EntityLogicType = ((ShowEntityInfoEx)userData).EntityLogicType;
+            showEntityFailureEventArgs.UserData        = showEntityInfoEx.UserData;
+            showEntityFailureEventArgs.EntityLogicType = showEntityInfoEx.EntityLogicType;
             return showEntityFailureEventArgs;
         }
     }

@@ -238,8 +238,16 @@ namespace Hotfix.Framework.Download
         /// <returns>是否移除下载任务成功。</returns>
         public bool RemoveDownload(int serialId)
         {
-            m_DownloadingTaskDict.TryRemove(serialId, out _);
-            return m_TaskPool.RemoveTask(serialId);
+            var removed = m_TaskPool.RemoveTask(serialId);
+
+            if (m_DownloadingTaskDict.TryRemove(serialId, out var downloadData))
+            {
+                // 条目被丢弃即完成其 Tcs（false = 未成功，与模块既有失败语义一致），
+                // 否则 await AddDownloadAsync 的调用方将永久挂起。
+                downloadData.Tcs.TrySetResult(false);
+            }
+
+            return removed;
         }
 
         /// <summary>
@@ -249,16 +257,29 @@ namespace Hotfix.Framework.Download
         /// <returns>移除下载任务的数量。</returns>
         public int RemoveDownloads(string taskTag)
         {
-            var serialId = -1;
+            // 先从任务池移除全部同标签任务再处理字典条目：顺序反了的话，Tcs 完成所唤醒的续体若立刻重试
+            // AddDownload（同标签），新任务会被随后的 RemoveTasks 一并移除而其回调永不触发 → 新条目 Tcs 永久挂起。
+            var count = m_TaskPool.RemoveTasks(taskTag);
+
+            // 先枚举收集「全部」匹配项再逐个处理：原实现只摘除首个匹配项却调用 RemoveTasks 移除全部同标签任务，
+            // 其余 DownloadData 会永久滞留在字典中，且其 Tcs 永不完成（await 永久挂起）。
+            List<int> serialIds = null;
             foreach (var downloadData in m_DownloadingTaskDict.Values)
             {
                 if (downloadData.Tag != taskTag) continue;
-                serialId = downloadData.SerialId;
-                break;
+                (serialIds ??= new List<int>()).Add(downloadData.SerialId);
             }
 
-            m_DownloadingTaskDict.TryRemove(serialId, out _);
-            return m_TaskPool.RemoveTasks(taskTag);
+            if (serialIds != null)
+            {
+                foreach (var serialId in serialIds)
+                {
+                    if (!m_DownloadingTaskDict.TryRemove(serialId, out var downloadData)) continue;
+                    downloadData.Tcs.TrySetResult(false); // 与 RemoveDownload 一致：丢弃条目即完成 Tcs
+                }
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -267,8 +288,12 @@ namespace Hotfix.Framework.Download
         /// <returns>移除下载任务的数量。</returns>
         public int RemoveAllDownloads()
         {
-            m_DownloadingTaskDict.Clear();
-            return m_TaskPool.RemoveAllTasks();
+            // 先移除任务池中的全部任务，再完成并清空字典条目：
+            // 顺序反了的话，Tcs 完成所唤醒的续体若立刻重试 AddDownload，新任务会落在「池中任务已被移除、
+            // 成功/失败回调永不触发」的空档，其 Tcs 将永久挂起（CompleteAndClearAllDownloads 的前置条件即此顺序）。
+            var count = m_TaskPool.RemoveAllTasks();
+            CompleteAndClearAllDownloads();
+            return count;
         }
 
         #endregion

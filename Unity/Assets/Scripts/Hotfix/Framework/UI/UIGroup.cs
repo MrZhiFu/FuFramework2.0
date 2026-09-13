@@ -60,7 +60,19 @@ namespace Hotfix.Framework.UI
         {
             Layer   = layer;
             m_Pause = false;
-            m_UIInfoList.Clear();
+
+            // WinInfo 经引用池 Acquire，唯一回收点是 UIGroup.Remove：若对非空列表直接 Clear 会丢弃这些实例，
+            // 造成引用池泄漏。当前唯一调用方传入的是新建空组，这里仍按通用契约逐个回收后再清空。
+            if (m_UIInfoList.Count > 0)
+            {
+                foreach (var uiInfo in m_UIInfoList)
+                {
+                    if (uiInfo != null) ReferencePool.Recycle(uiInfo);
+                }
+
+                m_UIInfoList.Clear();
+            }
+
             sortingOrder = (int)layer;
         }
 

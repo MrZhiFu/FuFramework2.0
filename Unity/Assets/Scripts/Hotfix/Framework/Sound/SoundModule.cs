@@ -45,7 +45,38 @@ namespace Hotfix.Framework.Sound
         /// <summary>
         /// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
         /// </summary>
-        public UniTask CancelAsync() => m_Scope.CancelAsync();
+        public async UniTask CancelAsync()
+        {
+            await m_Scope.CancelAsync(); // 等待在途音频/混音器加载取消清理完毕（含 PlaySound 取消路径上的播放参数回收）
+
+            // 排水完成后才回收仍登记在案的所有权参数：此刻在途 PlaySound 已全部结束、不会再访问这两个集合，
+            // 回收 + 清空安全；否则未回池的播放参数会让 ReferencePool 使用计数每次重启单向累积。
+            RecycleAllOwnedSoundParams();
+        }
+
+        /// <summary>
+        /// 回收全部仍登记的所有权播放参数并清空登记。
+        /// <b>只允许在排水完成（在途计数归零）后调用</b>：在途 PlaySound 仍可能持有这些参数引用，
+        /// 提前回收会把池对象交给新的持有者，造成同一实例被两处使用。
+        /// </summary>
+        private void RecycleAllOwnedSoundParams()
+        {
+            // 逐项回收后再清空：RecycleSoundParams/3D 走的是「先 Remove 再 Recycle」，
+            // 此处回收掉的对象已不在集合内，在途路径的迟到回收会因 Remove 失败而安全跳过，不会二次回收。
+            foreach (var soundParams in m_OwnedSoundParams)
+            {
+                ReferencePool.Recycle(soundParams);
+            }
+
+            m_OwnedSoundParams.Clear();
+
+            foreach (var soundParams3D in m_OwnedSoundParams3D)
+            {
+                ReferencePool.Recycle(soundParams3D);
+            }
+
+            m_OwnedSoundParams3D.Clear();
+        }
 
         /// <summary>
         /// 声音组字典，Key为声音组名称，Value为声音组对象
@@ -122,6 +153,10 @@ namespace Hotfix.Framework.Sound
             Instance = this;
             m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
 
+            // 新生命周期必须从空的所有权登记起步：正常路径下 CancelAsync 排水后已回收并清空，
+            // 这里兜底处理「未经 CancelAllAsync 的销毁路径」遗留的条目，杜绝跨重启隐式累积（ReferencePool 使用计数单向增长）。
+            RecycleAllOwnedSoundParams();
+
             m_Serial = 0;
 
             m_AssetModule = ModuleManager.GetModule<AssetModule>();
@@ -184,9 +219,11 @@ namespace Hotfix.Framework.Sound
             m_SoundGroupDict.Clear();
             m_LoadingSoundList.Clear();
             m_LoadingToReleaseSet.Clear();
-            // 丢弃所有权登记（对应参数对象已在上述取消/回收路径归还，或随重启一并作废），避免跨重启残留引用
-            m_OwnedSoundParams.Clear();
-            m_OwnedSoundParams3D.Clear();
+            // 此处**不得**清空 m_OwnedSoundParams / m_OwnedSoundParams3D：
+            // 在途 PlaySound 被取消后，其 catch 依赖这两个集合判定「参数是否由模块创建」才会回收，
+            // 若在排水（CancelAllAsync → CancelAsync）之前置空，这些播放参数将永不回池，
+            // 而 ReferencePool.ClearAll 保留计数 → 每次重启单向累积。
+            // 生命周期内残留的所有权参数统一由 CancelAsync 排水完成后回收并清空（见 RecycleAllOwnedSoundParams）。
 
             SceneManager.sceneLoaded   -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
@@ -399,84 +436,90 @@ namespace Hotfix.Framework.Sound
         public async UniTask<int> PlaySound(string soundAssetName, string groupName, string extension = ".mp3", int serialId = -1, SoundParams soundParams = null,
                                             SoundParams3D soundParams3D = null, object userData = null, Action onPlayEnd = null)
         {
-            // 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
-            // GetSoundPath、SoundParams.Create（已登记进 m_OwnedSoundParams）、GetSoundGroup（groupName 为空会抛）
-            // 任一处抛出，若不回收已 Acquire 并登记的参数对象，这些参数将永远不会归还引用池。
-            AssetHandle assetOperationHandle = null;
-            PlaySoundInfo playSoundInfo      = null;
-            var newSerialId                  = -1;
-
-            try
+            // 登记在途（含取消清理）：CancelAllAsync → CancelAsync 会等待本次 PlaySound 完全结束（含 await 恢复后的
+            // catch 分支回收播放参数）才返回，否则 CancelAsync 因在途计数恒为 0 立即返回，下帧恢复的 catch
+            // 会撞上「所有权集合已被 OnDispose 清空」而对 RecycleSoundParams/3D 提前 return，参数永不回池。
+            using (m_Scope.Begin())
             {
-                var soundAssetPath = UtilityAOT.AssetPath.GetSoundPath(soundAssetName, extension);
+                // 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
+                // GetSoundPath、SoundParams.Create（已登记进 m_OwnedSoundParams）、GetSoundGroup（groupName 为空会抛）
+                // 任一处抛出，若不回收已 Acquire 并登记的参数对象，这些参数将永远不会归还引用池。
+                AssetHandle assetOperationHandle = null;
+                PlaySoundInfo playSoundInfo      = null;
+                var newSerialId                  = -1;
 
-                // 仅在模块内部创建时才登记所有权（调用方传入的参数归调用方，模块不回收）
-                if (soundParams is null)
+                try
                 {
-                    soundParams = SoundParams.Create();
-                    m_OwnedSoundParams.Add(soundParams);
-                }
+                    var soundAssetPath = UtilityAOT.AssetPath.GetSoundPath(soundAssetName, extension);
 
-                if (serialId >= 0)
-                    newSerialId = serialId;
-                else
-                    newSerialId = ++m_Serial;
+                    // 仅在模块内部创建时才登记所有权（调用方传入的参数归调用方，模块不回收）
+                    if (soundParams is null)
+                    {
+                        soundParams = SoundParams.Create();
+                        m_OwnedSoundParams.Add(soundParams);
+                    }
 
-                string               errorMessage = null;
-                EPlaySoundErrorCode? errorCode    = null;
+                    if (serialId >= 0)
+                        newSerialId = serialId;
+                    else
+                        newSerialId = ++m_Serial;
 
-                // 检查声音组是否存在
-                var soundGroup = GetSoundGroup(groupName);
-                if (!soundGroup)
-                {
-                    errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
-                    errorMessage = $"[SoundModule] 播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 不存在!";
-                }
-                else if (soundGroup.SoundAgentCount <= 0)
-                {
-                    errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
-                    errorMessage = $"[SoundModule]  播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 没有声音播放代理!";
-                }
+                    string               errorMessage = null;
+                    EPlaySoundErrorCode? errorCode    = null;
 
-                if (errorCode.HasValue)
-                {
-                    FuLogger.LogError(errorMessage);
-                    var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-                    m_EventModule.Broadcast(this, failureEventArgs);
-                    // 播放未发起，回收模块内部创建的参数对象（调用方传入的不回收），避免泄漏
-                    RecycleSoundParams(soundParams);
-                    RecycleSoundParams3D(soundParams3D);
+                    // 检查声音组是否存在
+                    var soundGroup = GetSoundGroup(groupName);
+                    if (!soundGroup)
+                    {
+                        errorCode    = EPlaySoundErrorCode.SoundGroupNotExist;
+                        errorMessage = $"[SoundModule] 播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 不存在!";
+                    }
+                    else if (soundGroup.SoundAgentCount <= 0)
+                    {
+                        errorCode    = EPlaySoundErrorCode.SoundGroupHasNoAgent;
+                        errorMessage = $"[SoundModule]  播放声音 '{soundAssetPath}' 失败, 声音组 '{groupName}' 没有声音播放代理!";
+                    }
+
+                    if (errorCode.HasValue)
+                    {
+                        FuLogger.LogError(errorMessage);
+                        var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
+                        m_EventModule.Broadcast(this, failureEventArgs);
+                        // 播放未发起，回收模块内部创建的参数对象（调用方传入的不回收），避免泄漏
+                        RecycleSoundParams(soundParams);
+                        RecycleSoundParams3D(soundParams3D);
+                        return newSerialId;
+                    }
+
+                    m_LoadingSoundList.Add(newSerialId);
+
+                    // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
+                    assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_Scope.Token);
+                    m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
+                    var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
+                    // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
+                    // 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
+                    playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, assetOperationHandle, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
+                    LoadAssetSuccessCallback(playSoundInfo);
                     return newSerialId;
                 }
-
-                m_LoadingSoundList.Add(newSerialId);
-
-                // 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
-                assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_Scope.Token);
-                m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
-                var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
-                // 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
-                // 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
-                playSoundInfo = PlaySoundInfo.Create(newSerialId, soundAssetPath, assetObject, assetOperationHandle, soundGroup, soundParams, soundParams3D, userData, onPlayEnd);
-                LoadAssetSuccessCallback(playSoundInfo);
-                return newSerialId;
-            }
-            catch
-            {
-                // 异常（路径/参数创建/声音组校验/包未就绪/自身销毁取消等）：清理 loading/待释放状态，允许重试
-                m_LoadingSoundList.Remove(newSerialId);
-                m_LoadingToReleaseSet.Remove(newSerialId);
-                // 仅当参数尚未交接给 LoadAssetSuccessCallback（playSoundInfo 为 null）时才在此回收参数并释放句柄；
-                // playSoundInfo 非空即表示已交接给回调，回调内部已保证（含 PlaySound 抛出的交接失败分支）
-                // 自行释放句柄并回收全部池对象，此处再回收会双重回收。
-                if (playSoundInfo == null)
+                catch
                 {
-                    assetOperationHandle?.Release();
-                    RecycleSoundParams(soundParams);
-                    RecycleSoundParams3D(soundParams3D);
-                }
+                    // 异常（路径/参数创建/声音组校验/包未就绪/自身销毁取消等）：清理 loading/待释放状态，允许重试
+                    m_LoadingSoundList.Remove(newSerialId);
+                    m_LoadingToReleaseSet.Remove(newSerialId);
+                    // 仅当参数尚未交接给 LoadAssetSuccessCallback（playSoundInfo 为 null）时才在此回收参数并释放句柄；
+                    // playSoundInfo 非空即表示已交接给回调，回调内部已保证（含 PlaySound 抛出的交接失败分支）
+                    // 自行释放句柄并回收全部池对象，此处再回收会双重回收。
+                    if (playSoundInfo == null)
+                    {
+                        assetOperationHandle?.Release();
+                        RecycleSoundParams(soundParams);
+                        RecycleSoundParams3D(soundParams3D);
+                    }
 
-                throw;
+                    throw;
+                }
             }
         }
 
@@ -746,25 +789,29 @@ namespace Hotfix.Framework.Sound
         /// </summary>
         private async UniTaskVoid LoadAudioMixerAsync()
         {
-            try
+            // 登记在途：CancelAllAsync → CancelAsync 等待混音器加载的取消清理（句柄释放）结束，避免句柄跨生命周期残留
+            using (m_Scope.Begin())
             {
-                var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath, m_Scope.Token);
-                if (m_Scope.Token.IsCancellationRequested)
+                try
                 {
-                    // SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏
-                    handle.Release();
-                    return;
-                }
-                if (handle.Status == EOperationStatus.Succeeded)
-                    m_AudioMixer = handle.GetAssetObject<AudioMixer>();
-                else
-                    FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath} - {handle.Error}");
+                    var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath, m_Scope.Token);
+                    if (m_Scope.Token.IsCancellationRequested)
+                    {
+                        // SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏
+                        handle.Release();
+                        return;
+                    }
+                    if (handle.Status == EOperationStatus.Succeeded)
+                        m_AudioMixer = handle.GetAssetObject<AudioMixer>();
+                    else
+                        FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath} - {handle.Error}");
 
-                handle.Release(); // 释放句柄，AudioMixer 对象已由 m_AudioMixer 持有
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AudioMixerAssetPath} - {e.Message}");
+                    handle.Release(); // 释放句柄，AudioMixer 对象已由 m_AudioMixer 持有
+                }
+                catch (Exception e)
+                {
+                    FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AudioMixerAssetPath} - {e.Message}");
+                }
             }
         }
     }

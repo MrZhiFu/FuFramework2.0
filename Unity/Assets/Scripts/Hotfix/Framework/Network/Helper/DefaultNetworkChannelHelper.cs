@@ -167,7 +167,9 @@ namespace Hotfix.Framework.Network
 
         public void Clear()
         {
-            m_NetworkChannel?.Close();
+            // 仅重置字段：本类型始终由 new 直接构造、从不经引用池获取，Clear 不会被引用池调用。
+            // 原实现在此调用 m_NetworkChannel?.Close()（带副作用的“清理”）与引用池 Clear 的纯重置约定不符，故移除；
+            // 频道的关闭由 NetworkChannelBase.Shutdown 等频道自身生命周期负责。
             m_NetworkChannel = null;
         }
 

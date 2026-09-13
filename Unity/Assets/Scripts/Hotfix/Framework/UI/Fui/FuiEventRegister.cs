@@ -56,6 +56,12 @@ namespace Hotfix.Framework.UI
         /// <param name="callback">回调函数</param>
         public void RemoveUIListener(EventListener listener, EventCallback1 callback)
         {
+            if (listener == null)
+            {
+                FuLogger.LogError("[FuiEventRegister] 移除FUI监听事件失败, 监听器为空");
+                return;
+            }
+
             if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
             {
                 FuLogger.LogError($"[FuiEventRegister] 移除FUI监听事件失败, 监听器 {listener} 不存在");
