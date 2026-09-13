@@ -1,6 +1,7 @@
 using System;
+using System.Threading;
 using UnityEngine;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Core;
@@ -78,6 +79,11 @@ namespace Hotfix.Framework.Sound
             /// 正常播放完成的回调
             /// </summary>
             private Action m_OnPlayEnd;
+
+            /// <summary>
+            /// 在途音量渐变的取消源。每次发起渐变时重建；被新的渐变/停止/暂停/重置/销毁打断时取消并释放。
+            /// </summary>
+            private CancellationTokenSource m_FadeCts;
 
 
             /// <summary>
@@ -336,7 +342,7 @@ namespace Hotfix.Framework.Sound
             /// <param name="onPlayEnd"></param>
             public void Play(string assetPath, float fadeInSeconds, Action onPlayEnd = null)
             {
-                StopAllCoroutines();
+                var fadeToken = BeginFade();
                 m_AudioSource.Play();
                 SoundAssetPath = assetPath;
                 m_OnPlayEnd    = onPlayEnd;
@@ -345,7 +351,7 @@ namespace Hotfix.Framework.Sound
                 if (fadeInSeconds <= 0f) return;
                 var volume = m_AudioSource.volume;
                 m_AudioSource.volume = 0f;
-                StartCoroutine(FadeToVolume(m_AudioSource, volume, fadeInSeconds));
+                FadeInAsync(volume, fadeInSeconds, fadeToken).Forget();
             }
 
             /// <summary>
@@ -354,9 +360,9 @@ namespace Hotfix.Framework.Sound
             /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
             public void Stop(float fadeOutSeconds)
             {
-                StopAllCoroutines();
+                var fadeToken = BeginFade();
                 if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
-                    StartCoroutine(StopCo(fadeOutSeconds));
+                    FadeOutThenStopAsync(fadeOutSeconds, fadeToken).Forget();
                 else
                 {
                     m_AudioSource.Stop();
@@ -370,10 +376,10 @@ namespace Hotfix.Framework.Sound
             /// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
             public void Pause(float fadeOutSeconds)
             {
-                StopAllCoroutines();
+                var fadeToken = BeginFade();
                 m_VolumeWhenPause = m_AudioSource.volume;
                 if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
-                    StartCoroutine(PauseCo(fadeOutSeconds));
+                    FadeOutThenPauseAsync(fadeOutSeconds, fadeToken).Forget();
                 else
                     m_AudioSource.Pause();
             }
@@ -384,10 +390,10 @@ namespace Hotfix.Framework.Sound
             /// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
             public void Resume(float fadeInSeconds)
             {
-                StopAllCoroutines();
+                var fadeToken = BeginFade();
                 m_AudioSource.UnPause();
                 if (fadeInSeconds > 0f)
-                    StartCoroutine(FadeToVolume(m_AudioSource, m_VolumeWhenPause, fadeInSeconds));
+                    FadeInAsync(m_VolumeWhenPause, fadeInSeconds, fadeToken).Forget();
                 else
                     m_AudioSource.volume = m_VolumeWhenPause;
             }
@@ -397,6 +403,10 @@ namespace Hotfix.Framework.Sound
             /// </summary>
             public void Reset()
             {
+                // 取消在途音量渐变：否则其续体会在 Reset 之后继续写 AudioSource.volume
+                // （原协程由 StopAllCoroutines 保证，改写为 UniTask 后需显式取消）
+                CancelFade();
+
                 // 先释放句柄再卸载资源（托管操作，即使组件已被 Unity teardown 销毁也执行）：
                 // 句柄不释放则 provider.RefCount 不为 0，UnloadAsset 的 TryUnloadUnusedAsset 永不生效
                 if (m_SoundAssetHandle != null)
@@ -447,13 +457,37 @@ namespace Hotfix.Framework.Sound
 
 
             /// <summary>
-            /// 声音渐入协程。
+            /// 取消在途音量渐变（若有）并释放其取消源。
             /// </summary>
-            /// <param name="audioSource"></param>
-            /// <param name="volume"></param>
-            /// <param name="duration"></param>
-            /// <returns></returns>
-            private IEnumerator FadeToVolume(AudioSource audioSource, float volume, float duration)
+            private void CancelFade()
+            {
+                if (m_FadeCts == null) return;
+
+                m_FadeCts.Cancel();
+                m_FadeCts.Dispose();
+                m_FadeCts = null;
+            }
+
+            /// <summary>
+            /// 开始一次新的音量渐变：先取消上一次在途渐变，再为其建立独立的取消源。
+            /// </summary>
+            /// <returns>本次渐变的取消令牌。</returns>
+            private CancellationToken BeginFade()
+            {
+                CancelFade();
+                m_FadeCts = new CancellationTokenSource();
+                return m_FadeCts.Token;
+            }
+
+            /// <summary>
+            /// 音量渐变本体：每帧补一档（与原 WaitForEndOfFrame 的节奏一致）。
+            /// 被取消时抛 OperationCanceledException，由调用方决定是否改变播放状态。
+            /// </summary>
+            /// <param name="audioSource">目标音源。</param>
+            /// <param name="volume">目标音量。</param>
+            /// <param name="duration">渐变时长（秒）。</param>
+            /// <param name="token">本次渐变的取消令牌。</param>
+            private async UniTask FadeToVolumeAsync(AudioSource audioSource, float volume, float duration, CancellationToken token)
             {
                 var time           = 0f;
                 var originalVolume = audioSource.volume;
@@ -461,34 +495,74 @@ namespace Hotfix.Framework.Sound
                 {
                     time               += UnityEngine.Time.deltaTime;
                     audioSource.volume =  Mathf.Lerp(originalVolume, volume, time / duration);
-                    yield return new WaitForEndOfFrame();
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, token);
                 }
 
                 audioSource.volume = volume;
             }
 
             /// <summary>
-            /// 停止声音的渐出协程。
+            /// 播放/恢复时的渐入：被取消则静默结束（由新的渐变/停止/重置接管音量）。
             /// </summary>
-            /// <param name="fadeOutSeconds"></param>
-            /// <returns></returns>
-            private IEnumerator StopCo(float fadeOutSeconds)
+            /// <param name="volume">目标音量。</param>
+            /// <param name="duration">渐变时长（秒）。</param>
+            /// <param name="token">本次渐变的取消令牌。</param>
+            private async UniTaskVoid FadeInAsync(float volume, float duration, CancellationToken token)
             {
-                yield return FadeToVolume(m_AudioSource, 0f, fadeOutSeconds);
+                try
+                {
+                    await FadeToVolumeAsync(m_AudioSource, volume, duration, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // 预期路径：被新的渐变/停止/暂停/重置/销毁打断，不做善后
+                }
+            }
+
+            /// <summary>
+            /// 停止时的渐出：淡出完成后停止播放并释放资源句柄；被取消则不改变播放状态。
+            /// </summary>
+            /// <param name="fadeOutSeconds">淡出时长（秒）。</param>
+            /// <param name="token">本次渐变的取消令牌。</param>
+            private async UniTaskVoid FadeOutThenStopAsync(float fadeOutSeconds, CancellationToken token)
+            {
+                try
+                {
+                    await FadeToVolumeAsync(m_AudioSource, 0f, fadeOutSeconds, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
                 m_AudioSource.Stop();
                 Reset(); // 淡出完成后释放资源句柄
             }
 
             /// <summary>
-            /// 暂停声音时的渐出协程。
+            /// 暂停时的渐出：淡出完成后暂停；被取消则不改变播放状态。
             /// </summary>
-            /// <param name="fadeOutSeconds"></param>
-            /// <returns></returns>
-            private IEnumerator PauseCo(float fadeOutSeconds)
+            /// <param name="fadeOutSeconds">淡出时长（秒）。</param>
+            /// <param name="token">本次渐变的取消令牌。</param>
+            private async UniTaskVoid FadeOutThenPauseAsync(float fadeOutSeconds, CancellationToken token)
             {
-                yield return FadeToVolume(m_AudioSource, 0f, fadeOutSeconds);
+                try
+                {
+                    await FadeToVolumeAsync(m_AudioSource, 0f, fadeOutSeconds, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
                 m_AudioSource.Pause();
             }
+
+            /// <summary>
+            /// 组件销毁时取消在途渐变：原协程随对象销毁自动中止，改写为 UniTask 后需显式取消，
+            /// 否则续体会在已销毁的 AudioSource 上继续访问。
+            /// </summary>
+            private void OnDestroy() => CancelFade();
 
             /// <summary>
             /// 应用暂停/恢复时(进入后台/回到前台)时，设置标志位，暂停/恢复播放声音。
