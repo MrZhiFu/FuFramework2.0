@@ -258,12 +258,12 @@ Asset/
   2. 移除 `GetAwaiter` / `WithCancellation` —— 前者被 YooAsset 的 `HandleBase.GetAwaiter()` 实例方法遮蔽，**永不会被编译器选中**；后者全工程零调用点，二者均为死代码；
   3. 移除 `HandleBaseConfiguredSource.cancelImmediately` 字段及其赋值 —— 上游该字段**写而不读**，属死代码。注：UniTask 原版（`UniTask.Delay.cs` 的各 promise 源）会在 `GetResult` 中读它，在「`cancelImmediately` 且令牌已取消」路径上**跳过「重置状态 + 注销取消注册 + 归还对象池」三步**（`TaskTracker.RemoveTracking` 两条路径都会做，**不是差异点**），实例交由 GC 回收；YooAsset 复制时把 `GetResult` 简化为无条件 `TryReturn()`，该读取随之丢失。本工程只删该死字段，其暴露的缺陷按第 4 条修复；
   4. **【缺陷修复】** `TryReturn` 内补两处，修复「取消之后，同一池实例被复用即失效」：
-     - **a. 归还池前 `RemoveCompleted()` 退订句柄完成回调**（必须在 `handle = default` 之前，否则引用已丢、退订不掉）—— 退订只发生在 `HandleCompleted()` 内，而**取消路径（令牌回调直接 `TrySetCanceled`）从不经过它**，于是上游会把「仍订阅着句柄」的实例归还池：旧句柄完成时回调打在池中实例上污染其 `core`，且实例复用时 `RemoveCompleted()` 会退订**错误的新句柄**；
+     - **a. 归还池前 `RemoveCompleted()` 退订句柄完成回调**（必须在 `handle = default` 之前，否则引用已丢、退订不掉）—— 退订只在 `HandleCompleted()` 内发生，而**令牌取消路径（回调直接 `TrySetCanceled`）与「虚假完成」路径都不经过它**，会留下活订阅。取消路径下调用方随即 `Release()` 使句柄失效（订阅随之无法触发，无害）；但「虚假完成」路径下调用方**正合法持有**该句柄，其后的真实完成会打进一个已归还池、可能已被复用的实例；
      - **b. 归还池前 `completed = true`** —— 入池后若陈旧 PlayerLoop 槽位（`MoveNext` 首句）或残留完成回调（`HandleCompleted` 首句）触发，会在各自的 `completed` 判定处直接返回，**不再触碰 `core`**。
 
      > **已实测确认（状态级，与帧时序无关）**：修复前，取消后复用同一池实例时 `Create` 取出的 `core` 已是 `Succeeded`（断言「新建后应为 Pending」触发）→ source「出生即完成」→ 调用方 `await` 不等待、`OperationCanceledException` 不再抛出（`AssetModule` 的取消清理被跳过）。修复后每次复用 `core` 恒为 `Pending`、取消正常抛出 OCE、断言零命中；在最紧的 1 帧窗口下旧句柄完成也不再触发任何回调（退订生效）。
      >
-     > **未证实（代码推演）**：陈旧回调若落在「实例正被新操作使用中」的时刻，是否会造成跨操作串扰（切断新句柄的完成订阅、虚假完成新操作）。`EditorSimulateMode` 下所有资源加载均**约 1 帧**完成（已实测：1KB 与 5.9MB 同为 1 帧，故与资源体积无关），没有足够时间分辨率观测，**未验证**；若将来切到 `OfflinePlayMode` / `HostPlayMode`（真实 AssetBundle、跨多帧），可回头补验。
+     > **关于「跨操作串扰」的订正（推翻早先记录）**：早先版本写的「陈旧回调落在实例正被使用时会造成串扰」是**基于错误前提的推演**。经复核 YooAsset 源码：`HandleBase.Release()` 会置 `Provider = null`（`HandleBase.cs:28-39`）、`ProviderBase.ReleaseHandle` 会把句柄从 `_handles` 摘除（`ProviderBase.cs:289-299`）、`ProviderBase.InvokeCompletion` 有 `if (handle.IsValid)` 守卫（`ProviderBase.cs:347-363`）——因此**已释放句柄永远收不到完成回调**，该路径在源码层面不可能发生。真正可达的是「虚假完成」路径（调用方仍持有有效句柄），已由第 a 条覆盖。`EditorSimulateMode` 下所有资源加载均**约 1 帧**完成（已实测：1KB 与 5.9MB 同为 1 帧，与体积无关），故帧时序类的推论在本模式下无法验证。
   5. 补中文 XML 注释。
 
   > **升级提醒**：本文件已偏离上游，不能整份覆盖，需逐项比对上游 `Samples~` 手工同步（标识符沿用上游命名，即为便于比对）。

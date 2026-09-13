@@ -9,9 +9,10 @@
 //      回收；YooAsset 复制时把 GetResult 简化为无条件 TryReturn，该读取随之丢失。本工程只删该死字段，
 //      其暴露的缺陷按第 4 条修复；
 //   4. 【缺陷修复】TryReturn 内补两处（上游 Samples 自带缺陷，已实测复现）：
-//      a. 归还池前调用 RemoveCompleted() 退订句柄完成回调（须在 handle = default 之前）—— 取消路径
-//         不经过 HandleCompleted，上游会把「仍订阅着句柄」的实例归还池；旧句柄完成时回调打在池中实例上
-//         污染其 core，且实例复用时退订错误的句柄；
+//      a. 归还池前调用 RemoveCompleted() 退订句柄完成回调（须在 handle = default 之前）—— 退订只在
+//         HandleCompleted 内发生，而令牌取消路径与「虚假完成」路径都不经过它，会留下活订阅：取消路径下
+//         调用方随即 Release() 使句柄失效（订阅随之失效，无害）；但「虚假完成」路径下调用方正合法持有
+//         该句柄，其后的真实完成会打进一个已归还池、可能已被复用的实例；
 //      b. 归还池前置 completed = true —— 入池后陈旧 PlayerLoop 槽位或残留完成回调触发时，会在各自首句的
 //         completed 判定直接返回，不再把池中实例的 core 置为已完成（否则下次复用「出生即完成」：
 //         await 不等待、取消被吞）。详见 Asset/README.md §8；
