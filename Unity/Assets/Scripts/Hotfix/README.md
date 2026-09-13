@@ -29,7 +29,8 @@ public static async UniTask Main()
 `ProtoMessageIdHandler.Init()` 现在**无需程序集参数**：消息 ID ↔ 类型的映射由生成物
 `Framework/Network/Generated/ProtoMessageRegistry.g.cs` 在**编译期**固化，不再扫描程序集、
 不再读取特性（故原先用于「标记协议程序集」的 `HotfixProtoHandler` 已删除）。
-proto 变更后请重新运行 `Tools/gen-proto-registry.py`（Windows 用 `.bat`）刷新生成物。
+proto 变更后请运行**一键脚本** `Protobuf/Proto2CsExport-All.bat`（Windows；先导出 C#、再生成注册表），macOS/Linux 用 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`。
+仅新增 `[MessageHandler]` 方法（未动 proto）时，跑 `Protobuf/gen-proto-registry.bat` 即可。
 
 ## 3. 使用说明
 

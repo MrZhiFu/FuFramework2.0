@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Network
     /// 说明（项目铁律 4：运行时杜绝反射）：
     ///     「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」原先通过
     ///     <c>Type.GetMethods</c> + <c>MethodInfo.GetCustomAttribute</c> 在注册时读取特性获得，
-    ///     现改由生成期扫描源码产出的静态表提供（生成脚本 Tools/gen-proto-registry.py）：
+    ///     现改由生成期扫描源码产出的静态表提供（生成脚本 Protobuf/gen-proto-registry.py）：
     ///     生成物直接产出**强类型委托**，注册时仅做绑定，运行期零反射
     ///     （无 GetMethods / IsDefined / GetCustomAttribute / CreateDelegate / MethodInfo.Invoke）。
     ///     新增 [MessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
@@ -88,7 +88,7 @@ namespace Hotfix.Framework.Network
             if (!HandlerMethodRegistry.TryGetValue(type, out var registeredMethods))
             {
                 FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-                                  "，请重新运行 Tools/gen-proto-registry.py 后再试");
+                                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
                 return;
             }
 
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Network
                 if (entry.Invoke == null)
                 {
                     FuLogger.LogError("生成注册表中的处理委托为空：" + type.FullName + "->" + entry.MethodName +
-                                      "，请重新运行 Tools/gen-proto-registry.py 后再试");
+                                      "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
                     continue;
                 }
 
@@ -130,7 +130,7 @@ namespace Hotfix.Framework.Network
             if (!HandlerMethodRegistry.TryGetValue(type, out var registeredMethods))
             {
                 FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-                                  "，请重新运行 Tools/gen-proto-registry.py 后再试");
+                                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
                 return;
             }
 

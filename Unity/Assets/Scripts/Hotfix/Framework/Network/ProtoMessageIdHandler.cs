@@ -10,7 +10,7 @@ namespace Hotfix.Framework.Network
     /// 说明（项目铁律 4：运行时杜绝反射）：
     ///     消息ID &lt;-&gt; 类型的映射原先由 <c>Assembly.GetTypes()</c> 全程序集扫描 + 读取
     ///     <c>MessageTypeHandlerAttribute</c> 特性构建，现改为消费生成期固化的静态注册表：
-    ///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c>，生成脚本 <c>Tools/gen-proto-registry.py</c>。
+    ///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c>，生成脚本 <c>Protobuf/gen-proto-registry.py</c>。
     ///     proto 变更（新增/删除消息、改ID、改接口）后必须重新运行生成脚本。
     ///
     ///     数据类型与查询语义由 <see cref="MessageIdRegistry"/> 持有，本类保持原有对外 API 不变。

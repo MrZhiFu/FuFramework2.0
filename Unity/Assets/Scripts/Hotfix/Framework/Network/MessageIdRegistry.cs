@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Network
     ///
     /// 说明（项目铁律 4）：注册数据不再通过运行时扫描程序集 + 读取特性获得，
     /// 而是由生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
-    /// 生成脚本：<c>Tools/gen-proto-registry.py</c>。
+    /// 生成脚本：<c>Protobuf/gen-proto-registry.py</c>。
     /// </summary>
     public static class MessageIdRegistry
     {

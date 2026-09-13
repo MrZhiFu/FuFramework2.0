@@ -8,7 +8,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
-- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[MessageHandler]` 仅作为声明，注册数据由 `Tools/gen-proto-registry.py` 扫描源码生成静态表（proto 或处理器变更后需重新运行）
+- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[MessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
 - **显式装配包处理器**：`DefaultNetworkChannelHelper` 直接装配框架自带的 7 个处理器，不再反射扫描程序集；自定义处理器须通过 `AddCustomHandlerRegistrar` 或重写 `RegisterCustomHandlers` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
@@ -147,8 +147,9 @@ new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChange
 > 报错信息会指出文件、行号与方法名）。方法参数类型必须与 `typeof(...)` 声明的消息类型一致。
 > 生成物位于同程序集 `Hotfix.Framework.Network`，故 `internal` 即可。
 
-> **重要**：新增 / 删除协议消息，修改消息ID，或新增 `[MessageHandler]` 方法后，
-> 必须重新运行 `Tools/gen-proto-registry.bat`（Windows）或 `Tools/gen-proto-registry.sh`（macOS/Linux），
+> **重要**：新增 / 删除协议消息、修改消息ID 后，运行**一键脚本**
+> `Protobuf/Proto2CsExport-All.bat`（Windows；先导出 C# 再生成注册表）或 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`（macOS/Linux）。
+> 若只新增 `[MessageHandler]` 方法（未动 proto），跑 `Protobuf/gen-proto-registry.bat` 即可。
 > 否则注册表与实际代码不一致（未登记的处理器类型会在运行时报错日志）。
 
 **包处理器装配（`DefaultNetworkChannelHelper`）**
