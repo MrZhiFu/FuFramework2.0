@@ -1,3 +1,4 @@
+using System;
 using UnityEngine.Networking;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
@@ -44,7 +45,13 @@ namespace Hotfix.Framework.Download
                 return base.ReceiveData(datas, dataLength);
 
             // 发送更新数据流事件
-            var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(datas, 0, dataLength);
+            // 注意：Unity 的 DownloadHandlerScript(byte[]) 使用预分配缓冲区，该缓冲区跨调用复用且每次从下标 0 开始写入；
+            // 而事件经 Broadcast 要到下一帧才被 DownloadAgent 消费并写盘。若事件按引用持有该缓冲区，
+            // 同一帧内到达的多块数据(大文件必然)会被最后一块覆盖，导致写盘内容错乱 —— 因此此处必须拷贝出独立副本再交给事件。
+            var bytes = new byte[dataLength];
+            Buffer.BlockCopy(datas, 0, bytes, 0, dataLength);
+
+            var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(bytes, 0, dataLength);
             m_EventModule.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
 
             // 发送更新数据大小事件

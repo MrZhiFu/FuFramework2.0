@@ -416,7 +416,11 @@ namespace Hotfix.Framework.FSM
 
             // 覆盖旧值时，仅回收池化对象；普通对象丢弃引用即可。
             // 必须排除「新旧为同一实例」：否则会把仍被本键持有的对象归还池，造成跨系统污染（同一实例被两个持有者复用）。
-            if (m_DataDict.TryGetValue(name, out var oldData) && !ReferenceEquals(oldData, data) && oldData is IReference reference)
+            // 还须排除「旧值仍被其它键引用」：SetData("A",x); SetData("B",x); SetData("A",y) 时 x 仍被键 B 持有，
+            // 直接 Recycle 会造成 use-after-recycle —— 键 B 后续按 x 使用(数据已被 Clear 复位)，其回收时二次 Recycle 抛异常，
+            // 并沿 Shutdown→ReferencePool.Recycle(this) 传播致 Fsm 回不了池。判定口径与 RemoveData 完全一致。
+            if (m_DataDict.TryGetValue(name, out var oldData) && !ReferenceEquals(oldData, data) &&
+                oldData is IReference reference && !IsReferencedByOtherDataKeys(name, reference))
                 ReferencePool.Recycle(reference);
 
             m_DataDict[name] = data;

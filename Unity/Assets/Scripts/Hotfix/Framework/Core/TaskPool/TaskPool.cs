@@ -382,13 +382,34 @@ namespace Hotfix.Framework.Core
         private void _ProcessWaitingTasks()
         {
             var current = m_WaitingTaskList.First;
-            while (current != null && FreeAgentCount > 0)
+
+            // current.List != null 表示该结点仍挂在等待链表中；若迭代途中结点被同步归还(见下方说明)而摘链，则直接结束本轮推进。
+            while (current != null && current.List != null && FreeAgentCount > 0)
             {
                 var agent     = m_FreeAgentStack.Pop();
                 var agentNode = m_WorkingAgentList.AddLast(agent);
                 var task      = current.Value;
                 var next      = current.Next;
                 var status    = agent.Start(task);
+
+                // agent.Start 是实现方(用户)代码，可能在返回前经同步延续调用 RemoveTask/RemoveTasks/RemoveAllTasks
+                // 把本任务摘链并 ReferencePool.Recycle。此时任务的所有权已归还，不再是本池本次推进的对象：
+                // 若仍按下面的逻辑处理，会对已回收的任务二次 Recycle(抛「该对象已经被释放」)，并对已摘链的结点重复 Remove(抛异常)，
+                // 且异常会逃逸到无保护的 ModuleManager.Update。
+                // 以「任务是否仍挂在等待链表中」为唯一所有权判据，保证谁摘链谁回收，且至多回收一次。
+                if (!m_WaitingTaskList.Contains(task))
+                {
+                    // 任务已被 Start 内部同步归还：归还本次临时占用的工作代理(若它尚未被一并归还)，避免代理泄漏。
+                    if (agentNode.List != null)
+                    {
+                        agent.Reset();
+                        m_FreeAgentStack.Push(agent);
+                        m_WorkingAgentList.Remove(agentNode);
+                    }
+
+                    current = next;
+                    continue;
+                }
 
                 if (status is EStartTaskStatus.Done or EStartTaskStatus.HasToWait or EStartTaskStatus.UnknownError)
                 {

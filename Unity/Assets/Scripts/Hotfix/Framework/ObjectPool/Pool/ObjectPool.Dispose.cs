@@ -23,7 +23,12 @@ namespace Hotfix.Framework.ObjectPool
             // 未设置过期时间时无需处理
             if (m_ExpireTimeAfterIdle >= float.MaxValue) return;
 
-            var expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
+            // 用“已闲置时长”判定过期，而不是先算一个 DateTime 过期时间点：
+            // DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle) 在过期值“大而有限”时（上面的守卫只拦
+            // >= float.MaxValue，拦不住它）会越过 DateTime.MinValue 而抛 ArgumentOutOfRangeException，
+            // 等于策划写个近似永不过期的大数就运行时崩溃。直接比较时长对大过期值天然安全。
+            var now = DateTime.UtcNow;
+
             GetCanDisposeObjects(m_CachedCanDisposeObjectList);
 
             // 用本池专属快照承载"本轮待销毁对象"：DisposeObjectInternal 内 OnDispose 可能重入本池的
@@ -39,8 +44,9 @@ namespace Hotfix.Framework.ObjectPool
                     // 防御性 null 检查（在解引用前）
                     if (obj == null) continue;
 
-                    // 对象闲置时间早于过期时间点，视为过期，纳入销毁
-                    if (obj.LastUseTime <= expireTimeThreshold)
+                    // 已闲置时长达到过期秒数，视为过期，纳入销毁。
+                    // 与筛选函数第一阶段（LastUseTime <= 过期时间点）数学等价，语义保持一致。
+                    if ((now - obj.LastUseTime).TotalSeconds >= m_ExpireTimeAfterIdle)
                         toDisposeObjects.Add(obj);
                 }
 
@@ -50,6 +56,23 @@ namespace Hotfix.Framework.ObjectPool
             {
                 EndTodoSnapshot(toDisposeObjects);
             }
+        }
+
+        /// <summary>
+        /// 计算“过期时间点”阈值（当前时间回溯 ExpireTimeAfterIdle 秒）。
+        /// 用 Ticks 的饱和减法实现，避免 DateTime.AddSeconds(-x)：当 x 大而有限时（调用方守卫只拦
+        /// >= float.MaxValue 的“永不过期”值）回溯会越过 DateTime.MinValue 而抛 ArgumentOutOfRangeException。
+        /// 回溯量超出可表示范围时饱和为 DateTime.MinValue——不存在早于该时刻的真实 LastUseTime，
+        /// 因此对筛选函数第一阶段而言等价于“永不过期”（所有候选都判为未过期），不会抛异常。
+        /// </summary>
+        /// <param name="now">当前UTC时间。</param>
+        /// <returns>过期时间点。</returns>
+        private DateTime ComputeExpireTimeThreshold(DateTime now)
+        {
+            var backTicks = (double)m_ExpireTimeAfterIdle * TimeSpan.TicksPerSecond;
+            if (backTicks >= now.Ticks - DateTime.MinValue.Ticks) return DateTime.MinValue;
+
+            return new DateTime(now.Ticks - (long)backTicks, DateTimeKind.Utc);
         }
 
         /// <summary>
@@ -88,7 +111,10 @@ namespace Hotfix.Framework.ObjectPool
             if (m_ExpireTimeAfterIdle < float.MaxValue) // < float.MaxValue 意味着设置了过期时间
             {
                 // 过期时间点 = 当前UTC时间 - 过期时间秒数。例如，如果过期时间设置为10秒，那么过期时间点就是10秒前的时刻。任何超过10秒没被用过的对象都被视为过期。
-                expireTimeThreshold = DateTime.UtcNow.AddSeconds(-m_ExpireTimeAfterIdle);
+                // 该阈值还要交给（可能是自定义的）筛选函数的第一个参数使用，故仍需算出具体的 DateTime；
+                // 但必须用带饱和的减法而非 DateTime.AddSeconds：后者在“大而有限”的过期值下会越过
+                // DateTime.MinValue 抛 ArgumentOutOfRangeException（见 ComputeExpireTimeThreshold）。
+                expireTimeThreshold = ComputeExpireTimeThreshold(DateTime.UtcNow);
             }
 
             // 注意：这里不再重置 m_AutoDisposeTimer。持续回收会反复调用本方法，重置计时器会让
@@ -238,6 +264,13 @@ namespace Hotfix.Framework.ObjectPool
         /// <returns>销毁对象是否成功。</returns>
         private bool DisposeObjectInternal(T obj)
         {
+            // 名称已为空说明对象已被销毁过（ObjectBase.Clear() 会把 Name 置空）：直接返回。
+            // 公开 API Dispose(int, DisposeObjectFilterCallback<T>) 允许自定义筛选函数返回重复项，
+            // 池销毁重入也可能让同一对象在同一批里出现两次，第二次在此处
+            // m_ObjectMultiDict.Remove(null, obj) 会抛 ArgumentNullException（被上层 catch 吞成误导告警）。
+            // 守卫口径与 RemoveDeadObject 一致。
+            if (string.IsNullOrEmpty(obj.Name)) return false;
+
             if (obj.IsInUse) return false;
             if (obj.Locked) return false;
             if (!obj.CustomCanDisposeFlag) return false;
@@ -327,12 +360,19 @@ namespace Hotfix.Framework.ObjectPool
                 toDisposeCount -= m_CachedToDisposeObjectList.Count;
             }
 
-            // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toDisposeCount 个
-            candidateObjects.Sort((a, b) =>
+            // 第二阶段：按（优先级升序，最后使用时间升序）排序，取前 toDisposeCount 个。
+            // 仅当需要销毁的数量少于候选总数时才排序：toDisposeCount >= 候选数意味着“全取”，
+            // 结果集与顺序无关，跳过可省掉大池的一次 O(n log n) 全量排序（并顺带不再打乱调用方列表）。
+            // 注意：toDisposeCount 很小而候选很多（如超容量 1 个）时仍会全量排序；
+            // 若该路径成为热点，可再改为单遍部分选择（top-k，O(n·k)）——本次为保证语义不变未改。
+            if (toDisposeCount < candidateObjects.Count)
             {
-                var priorityCmp = a.Priority.CompareTo(b.Priority);
-                return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
-            });
+                candidateObjects.Sort((a, b) =>
+                {
+                    var priorityCmp = a.Priority.CompareTo(b.Priority);
+                    return priorityCmp != 0 ? priorityCmp : a.LastUseTime.CompareTo(b.LastUseTime);
+                });
+            }
 
             for (var i = 0; i < toDisposeCount && i < candidateObjects.Count; i++)
             {

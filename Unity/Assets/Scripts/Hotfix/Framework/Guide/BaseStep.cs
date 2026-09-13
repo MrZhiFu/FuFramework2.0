@@ -169,9 +169,18 @@ namespace Hotfix.Framework.Guide
         public virtual bool CanComplete() => State == EStepState.Executing;
 
         /// <summary>
-        /// 清理
+        /// 清理。
+        /// 复位全部执行期字段（不只 StepInfo）：本类是引用池对象，Clear() 即回池清理点，
+        /// 若只置空 StepInfo，残留的 State=Completed/Cancelled、StartTime、ExecutionTime 会被下一次
+        /// Acquire 的实例继承（IsExecuting/IsCompleted 判定失真，完成耗时统计串味），故一并复位为初态。
         /// </summary>
-        public virtual void Clear() => StepInfo = null;
+        public virtual void Clear()
+        {
+            StepInfo      = null;
+            State         = EStepState.Idle;
+            StartTime     = 0f;
+            ExecutionTime = 0f;
+        }
 
         #endregion
     }

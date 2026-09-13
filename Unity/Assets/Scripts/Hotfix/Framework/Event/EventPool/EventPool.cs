@@ -158,10 +158,17 @@ namespace Hotfix.Framework.Event
                 }
                 finally
                 {
-                    // 异常发生在 Recycle(tempEvent) 之前，故 [processed, Count) 均未被回收（HandleEvent 内部只回收 eArgs）
+                    // 异常发生在 Recycle(tempEvent) 之前，故 [processed, Count) 的节点均未被回收。
+                    // 其中 batch[processed] 已交给 HandleEvent（其 finally 无条件回收了 EventArgs，见 HandleEvent），
+                    // 此处只补回收节点；batch[processed+1..Count) 是「出队但未分发」——EventArgs 仍由本池持有，
+                    // 必须与节点一并回收：Event.Clear() 只把 EventArgs 置 null 而不回收，漏掉会让
+                    // ReferencePool 的事件参数计数永久漂移（未分发即丢弃的路径不能指望 HandleEvent 兜底）。
                     for (var i = processed; i < batch.Count; i++)
                     {
-                        ReferencePool.Recycle(batch[i]);
+                        var unhandledEvent = batch[i];
+                        if (i > processed)
+                            ReferencePool.Recycle(unhandledEvent.EventArgs);
+                        ReferencePool.Recycle(unhandledEvent);
                     }
                 }
             }
@@ -193,10 +200,15 @@ namespace Hotfix.Framework.Event
         {
             lock (m_EventQueue)
             {
-                // 逐个出队并回收池节点：直接 Clear() 会把队列中的 Event 节点（池对象）丢弃，导致 ReferencePool 计数泄漏
+                // 逐个出队并回收池节点：直接 Clear() 会把队列中的 Event 节点（池对象）丢弃，导致 ReferencePool 计数泄漏。
+                // 队列中的节点全部是「已入队、未分发」，其 EventArgs 也由本池持有，必须一并回收：
+                // Event.Clear() 只置 null 不回收，只回收节点会让事件参数计数跨 Shutdown/重启持续累积（ClearAll 保留计数）。
+                // 此处不会与 HandleEvent 的回收重叠——能进入本队列的节点必然尚未被 Update 出队分发。
                 while (m_EventQueue.Count > 0)
                 {
-                    ReferencePool.Recycle(m_EventQueue.Dequeue());
+                    var eventNode = m_EventQueue.Dequeue();
+                    ReferencePool.Recycle(eventNode.EventArgs);
+                    ReferencePool.Recycle(eventNode);
                 }
             }
         }
@@ -354,12 +366,17 @@ namespace Hotfix.Framework.Event
         {
             // 必须在 finally 的 Recycle 之前取出 Id：Recycle 会调用 eArgs.Clear()（如 EmptyEventArgs 把 Id 复位为类型全名），
             // 之后再读会得到失真的 Id；且对象已回池，可能被其它线程复用，属于脏读。
-            var eventId = eArgs.Id;
+            // 取值本身也放进 try 内：本方法一旦被调用就无条件拥有 eArgs（finally 负责回收），
+            // 若取值在 try 之外抛异常，finally 不会执行 → eArgs 不回收，而 Update 的兜底只回收「未分发」节点的参数，
+            // 不会重复回收已交给本方法的参数，届时计数将永久泄漏。
+            string eventId = null;
 
             var noHandlerException = false;
 
             try
             {
+                eventId = eArgs.Id;
+
                 // 在处理事件前，先处理所有待取消的订阅，确保事件处理时使用的是最新的handler列表
                 ProcessWaitRemoveHandlers();
 

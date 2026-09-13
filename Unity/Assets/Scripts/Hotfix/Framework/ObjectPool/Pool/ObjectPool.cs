@@ -254,6 +254,19 @@ namespace Hotfix.Framework.ObjectPool
 
             foreach (var obj in objects)
             {
+                // 先在两个字典中解除登记，再调用用户回调 OnDispose()（与 DisposeObjectInternal 的做法一致）：
+                // OnDispose 是用户代码（EntityObject 会销毁 GameObject、WinObject 会触发回调），可能重入本池
+                // （Spawn/Recycle/DisposeObject）。若此时对象仍登记在册，Spawn 的无效对象分支会经
+                // RemoveDeadObject 对同一对象再次 OnDispose + Recycle，导致句柄双释放/二次回收。
+                // 移除登记必须在 OnDispose 之前完成，使重入者看不到该对象。
+                // 提前捕获名称：OnDispose 会清空对象状态（Name 置空），移除登记需要它。
+                var objName = obj.Name;
+                if (!string.IsNullOrEmpty(objName))
+                    m_ObjectMultiDict.Remove(objName, obj);
+
+                if (obj.Target != null)
+                    m_TargetObjectDict.Remove(obj.Target);
+
                 // 使用中的对象也会被强制回收（否则这些对象会残留在引用池外、无法清理）
                 try
                 {

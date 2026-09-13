@@ -62,7 +62,7 @@ namespace Hotfix.Framework.UI
                 return;
             }
 
-            for (var i = handlers.Count; i >= 0; i--)
+            for (var i = handlers.Count - 1; i >= 0; i--)
             {
                 if (handlers[i] != callback) continue;
                 handlers.RemoveAt(i);
