@@ -11,7 +11,7 @@ namespace FuFramework.ReferencePool.Editor
 {
     /// <summary>
     /// 引用池调试面板
-    /// 仅在 Play 模式下可用，通过反射访问 Hotfix 中的 ReferencePoolModule。
+    /// 仅在 Play 模式下可用，通过反射访问 Hotfix 中的静态基座 ReferencePool。
     /// 功能：
     ///     1. 展示所有引用池及其统计信息（类型、闲置、使用中、累计获取/释放/新增/移除）。
     ///     2. 支持按类型名过滤搜索、自动刷新、全部展开/折叠。
@@ -68,9 +68,9 @@ namespace FuFramework.ReferencePool.Editor
         #region 反射缓存
 
         /// <summary>
-        /// ReferencePoolModule 类型
+        /// ReferencePool 静态类型
         /// </summary>
-        private Type m_ReferencePoolModuleType;
+        private Type m_ReferencePoolType;
 
         /// <summary>
         /// ReferencePoolInfo 类型
@@ -78,32 +78,22 @@ namespace FuFramework.ReferencePool.Editor
         private Type m_ReferencePoolInfoType;
 
         /// <summary>
-        /// ReferencePoolModule 实例
-        /// </summary>
-        private object m_ModuleInstance;
-
-        /// <summary>
-        /// ModuleManager.GetModule(Type) 方法
-        /// </summary>
-        private MethodInfo m_GetModuleMethod;
-
-        /// <summary>
-        /// ReferencePoolModule.Count 属性
+        /// ReferencePool.Count 属性（静态）
         /// </summary>
         private PropertyInfo m_ModuleCountProperty;
 
         /// <summary>
-        /// ReferencePoolModule.GetAllReferencePoolInfos 方法
+        /// ReferencePool.GetAllReferencePoolInfos 方法（静态）
         /// </summary>
         private MethodInfo m_GetAllReferencePoolInfosMethod;
 
         /// <summary>
-        /// ReferencePoolModule.RemoveAllPools 方法
+        /// ReferencePool.ClearAll 方法（静态）
         /// </summary>
         private MethodInfo m_ModuleRemoveAllPoolsMethod;
 
         /// <summary>
-        /// ReferencePoolModule.RemoveAllUnused<T> 泛型方法定义
+        /// ReferencePool.RemoveAllUnused<T> 泛型方法定义（静态）
         /// </summary>
         private MethodInfo m_RemoveAllUnusedGenericMethod;
 
@@ -191,7 +181,7 @@ namespace FuFramework.ReferencePool.Editor
 
             if (!EnsureReflection())
             {
-                EditorGUILayout.HelpBox("未能通过反射访问 ReferencePoolModule，请确认 Hotfix 已加载", MessageType.Warning);
+                EditorGUILayout.HelpBox("未能通过反射访问 ReferencePool，请确认 Hotfix 已加载", MessageType.Warning);
                 return;
             }
 
@@ -260,7 +250,7 @@ namespace FuFramework.ReferencePool.Editor
         /// </summary>
         private void DrawModuleOverview()
         {
-            var count = m_ModuleCountProperty?.GetValue(m_ModuleInstance) ?? 0;
+            var count = m_ModuleCountProperty?.GetValue(null) ?? 0;
             EditorGUILayout.LabelField($"引用池总个数：{count}");
 
             EditorGUILayout.BeginHorizontal();
@@ -268,7 +258,7 @@ namespace FuFramework.ReferencePool.Editor
             {
                 try
                 {
-                    m_ModuleRemoveAllPoolsMethod?.Invoke(m_ModuleInstance, null);
+                    m_ModuleRemoveAllPoolsMethod?.Invoke(null, null);
                 }
                 catch (Exception e)
                 {
@@ -383,7 +373,7 @@ namespace FuFramework.ReferencePool.Editor
                 try
                 {
                     var removeAllUnusedMethod = m_RemoveAllUnusedGenericMethod?.MakeGenericMethod(poolType);
-                    removeAllUnusedMethod?.Invoke(m_ModuleInstance, null);
+                    removeAllUnusedMethod?.Invoke(null, null);
                 }
                 catch (Exception e)
                 {
@@ -434,29 +424,21 @@ namespace FuFramework.ReferencePool.Editor
         /// <returns>初始化成功返回 true</returns>
         private bool EnsureReflection()
         {
-            if (m_ModuleInstance != null) return true;
+            if (m_ReferencePoolType != null) return true;
 
-            m_ReferencePoolModuleType = Type.GetType("Hotfix.Framework.ReferencePool.ReferencePoolModule, Hotfix");
-            if (m_ReferencePoolModuleType == null) return false;
+            m_ReferencePoolType = Type.GetType("Hotfix.Framework.Core.ReferencePool, Hotfix");
+            if (m_ReferencePoolType == null) return false;
 
-            m_ReferencePoolInfoType = Type.GetType("Hotfix.Framework.ReferencePool.ReferencePoolInfo, Hotfix");
+            m_ReferencePoolInfoType = Type.GetType("Hotfix.Framework.Core.ReferencePoolInfo, Hotfix");
             if (m_ReferencePoolInfoType == null) return false;
 
-            // ReferencePoolModule 没有静态 Instance，通过 ModuleManager.GetModule(Type) 获取热更实例
-            var moduleManagerType = Type.GetType("Hotfix.Framework.Core.ModuleManager, Hotfix");
-            if (moduleManagerType == null) return false;
+            // ReferencePool 已剥离为静态基座，成员均为 static，无需再经 ModuleManager 取模块实例
 
-            m_GetModuleMethod = moduleManagerType.GetMethod("GetModule", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Type) }, null);
-            if (m_GetModuleMethod == null) return false;
-
-            m_ModuleInstance = m_GetModuleMethod.Invoke(null, new object[] { m_ReferencePoolModuleType });
-            if (m_ModuleInstance == null) return false;
-
-            // ReferencePoolModule 成员
-            m_ModuleCountProperty              = m_ReferencePoolModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
-            m_GetAllReferencePoolInfosMethod   = m_ReferencePoolModuleType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Instance);
-            m_ModuleRemoveAllPoolsMethod       = m_ReferencePoolModuleType.GetMethod("RemoveAllPools", BindingFlags.Public | BindingFlags.Instance);
-            m_RemoveAllUnusedGenericMethod     = m_ReferencePoolModuleType.GetMethod("RemoveAllUnused", BindingFlags.Public | BindingFlags.Instance);
+            // ReferencePool 成员（静态）
+            m_ModuleCountProperty              = m_ReferencePoolType.GetProperty("Count", BindingFlags.Public | BindingFlags.Static);
+            m_GetAllReferencePoolInfosMethod   = m_ReferencePoolType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Static);
+            m_ModuleRemoveAllPoolsMethod       = m_ReferencePoolType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Static);
+            m_RemoveAllUnusedGenericMethod     = m_ReferencePoolType.GetMethod("RemoveAllUnused", BindingFlags.Public | BindingFlags.Static);
 
             // ReferencePoolInfo 成员
             m_InfoTypeProperty                  = m_ReferencePoolInfoType.GetProperty("Type", BindingFlags.Public | BindingFlags.Instance);
@@ -475,10 +457,8 @@ namespace FuFramework.ReferencePool.Editor
         /// </summary>
         private void ResetReflection()
         {
-            m_ReferencePoolModuleType              = null;
+            m_ReferencePoolType                    = null;
             m_ReferencePoolInfoType                = null;
-            m_ModuleInstance                       = null;
-            m_GetModuleMethod                      = null;
             m_ModuleCountProperty                  = null;
             m_GetAllReferencePoolInfosMethod       = null;
             m_ModuleRemoveAllPoolsMethod           = null;
@@ -499,7 +479,7 @@ namespace FuFramework.ReferencePool.Editor
         private List<object> GetAllReferencePoolInfos()
         {
             var list = new List<object>();
-            var result = m_GetAllReferencePoolInfosMethod?.Invoke(m_ModuleInstance, null) as IEnumerable;
+            var result = m_GetAllReferencePoolInfosMethod?.Invoke(null, null) as IEnumerable;
             if (result == null) return list;
 
             foreach (var item in result)

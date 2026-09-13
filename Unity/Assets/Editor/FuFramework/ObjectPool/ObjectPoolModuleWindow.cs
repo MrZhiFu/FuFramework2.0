@@ -88,7 +88,7 @@ namespace FuFramework.ObjectPool.Editor
         private object m_ModuleInstance;
 
         /// <summary>
-        /// ModuleManager.GetModule(Type) 方法
+        /// ModuleManager.GetModule<T>() 泛型方法定义（经 MakeGenericMethod 取模块实例）
         /// </summary>
         private MethodInfo m_GetModuleMethod;
 
@@ -649,17 +649,17 @@ namespace FuFramework.ObjectPool.Editor
             m_ObjectPoolBaseType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectPoolBase, Hotfix");
             if (m_ObjectPoolBaseType == null) return false;
 
-            m_ObjectInfoType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectPoolInfo, Hotfix");
+            m_ObjectInfoType = Type.GetType("Hotfix.Framework.ObjectPool.ObjectInfo, Hotfix");
             if (m_ObjectInfoType == null) return false;
 
-            // ObjectPoolModule 没有静态 Instance，通过 ModuleManager.GetModule(Type) 获取热更实例
+            // ObjectPoolModule 没有静态 Instance，通过 ModuleManager.GetModule<T>() 泛型方法获取热更实例
             var moduleManagerType = Type.GetType("Hotfix.Framework.Core.ModuleManager, Hotfix");
             if (moduleManagerType == null) return false;
 
-            m_GetModuleMethod = moduleManagerType.GetMethod("GetModule", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Type) }, null);
+            m_GetModuleMethod = moduleManagerType.GetMethod("GetModule", BindingFlags.Public | BindingFlags.Static);
             if (m_GetModuleMethod == null) return false;
 
-            m_ModuleInstance = m_GetModuleMethod.Invoke(null, new object[] { m_ObjectPoolModuleType });
+            m_ModuleInstance = m_GetModuleMethod.MakeGenericMethod(m_ObjectPoolModuleType).Invoke(null, null);
             if (m_ModuleInstance == null) return false;
 
             // ObjectPoolModule 成员
