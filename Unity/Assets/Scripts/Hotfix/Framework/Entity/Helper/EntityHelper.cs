@@ -22,8 +22,7 @@ namespace Hotfix.Framework.Entity
         public GameObject InstantiateEntity(object entityAssetHandle)
         {
             // 句柄仅在本方法内使用（局部变量），不长期持有引用，避免保留已释放句柄的误导性死状态
-            var assetOperationHandle = entityAssetHandle as AssetHandle;
-            if (assetOperationHandle is null)
+            if (entityAssetHandle is not AssetHandle assetOperationHandle)
             {
                 FuLogger.LogError("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
                 return null;

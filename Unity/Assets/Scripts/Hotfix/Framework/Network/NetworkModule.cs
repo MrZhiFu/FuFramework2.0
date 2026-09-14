@@ -21,6 +21,7 @@ namespace Hotfix.Framework.Network
         /// 模块单例
         /// </summary>
         public static NetworkModule Instance { get; private set; }
+
         /// <summary>
         /// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。
         /// </summary>
@@ -46,12 +47,11 @@ namespace Hotfix.Framework.Network
         /// </summary>
         protected internal override void OnInit()
         {
-            Instance = this;
+            Instance      = this;
             m_EventModule = ModuleManager.GetModule<EventModule>();
             if (m_EventModule == null)
             {
                 FuLogger.LogFatal("[NetworkModule] 事件模块不存在!");
-                return;
             }
         }
 
@@ -71,9 +71,9 @@ namespace Hotfix.Framework.Network
                 m_NetworkChannelSnapshot.Add(networkChannel);
             }
 
-            for (var i = 0; i < m_NetworkChannelSnapshot.Count; i++)
+            foreach (var channel in m_NetworkChannelSnapshot)
             {
-                m_NetworkChannelSnapshot[i].Update(deltaTime, unscaledDeltaTime);
+                channel.Update(deltaTime, unscaledDeltaTime);
             }
 
             m_NetworkChannelSnapshot.Clear();
@@ -92,9 +92,8 @@ namespace Hotfix.Framework.Network
                 m_NetworkChannelSnapshot.Add(networkChannel);
             }
 
-            for (var i = 0; i < m_NetworkChannelSnapshot.Count; i++)
+            foreach (var networkChannelBase in m_NetworkChannelSnapshot)
             {
-                var networkChannelBase = m_NetworkChannelSnapshot[i];
                 networkChannelBase.NetworkChannelConnected     -= OnNetworkChannelConnected;
                 networkChannelBase.NetworkChannelClosed        -= OnNetworkChannelClosed;
                 networkChannelBase.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;

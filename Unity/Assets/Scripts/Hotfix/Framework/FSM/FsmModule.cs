@@ -72,9 +72,8 @@ namespace Hotfix.Framework.FSM
             // 先清字典再 Shutdown：期间重入的 DestroyFsm 因找不到条目直接返回 false，不会二次 Shutdown
             m_FsmDict.Clear();
 
-            for (var i = 0; i < m_TempFsmList.Count; i++)
+            foreach (var fsm in m_TempFsmList)
             {
-                var fsm = m_TempFsmList[i];
                 if (fsm == null) continue;
 
                 // 单个 Fsm 的用户清理代码抛异常不应中断其余 Fsm 的关闭
@@ -220,7 +219,7 @@ namespace Hotfix.Framework.FSM
         {
             return CreateFsm(string.Empty, owner, states);
         }
-        
+
         /// <summary>
         /// 创建有限状态机。
         /// </summary>
@@ -233,8 +232,8 @@ namespace Hotfix.Framework.FSM
         {
             var ownerType    = typeof(T);
             var typeNamePair = new TypeNamePair(ownerType, fsmName);
-            
-            if (HasFsm(ownerType)) 
+
+            if (HasFsm(ownerType))
                 throw new InvalidOperationException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
 
             var fsm = Fsm.Create(fsmName, owner, states);
