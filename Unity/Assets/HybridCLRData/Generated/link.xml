@@ -52,11 +52,6 @@
     <type fullname="FuFramework.Core.Runtime.Utility/Time" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Utility/Zip" preserve="all" />
   </assembly>
-  <assembly fullname="FuFramework.Event.Runtime">
-    <type fullname="FuFramework.Event.Runtime.EventModule" preserve="all" />
-    <type fullname="FuFramework.Event.Runtime.EventRegister" preserve="all" />
-    <type fullname="FuFramework.Event.Runtime.GameEventArgs" preserve="all" />
-  </assembly>
   <assembly fullname="Hotfix">
     <type fullname="FuFramework.Core.Runtime.BinaryEx" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.BufferEx" preserve="all" />
@@ -72,6 +67,9 @@
     <type fullname="FuFramework.Core.Runtime.ObjectEx" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.Singleton`1" preserve="all" />
     <type fullname="FuFramework.Core.Runtime.StringEx" preserve="all" />
+    <type fullname="Hotfix.Framework.Event.EventModule" preserve="all" />
+    <type fullname="Hotfix.Framework.Event.EventRegister" preserve="all" />
+    <type fullname="Hotfix.Framework.Event.GameEventArgs" preserve="all" />
     <type fullname="Hotfix.GlobalModule" preserve="all" />
   </assembly>
   <assembly fullname="FuFramework.ModuleSetting.Runtime">

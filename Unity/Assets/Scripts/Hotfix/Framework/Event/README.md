@@ -159,6 +159,7 @@ void Release()                          // 归还引用池
 - 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
 - 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 实现线程安全的取消订阅（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
 - 引用计数订阅  ：同一 `(id, handler)` 被多个订阅者（多个 `EventRegister`、多个模块）共享时按份计数，`Subscribe` 计 +1、`Unsubscribe` 计 -1，归零才真正移除条目；单个订阅者退订不影响其他订阅者
+- 退订契约  ：各订阅者只能退订自己登记的那一份；超额退订（次数超过自身订阅数）会继续消耗其他订阅者的计数，导致他人订阅被静默移除且无告警
 - 锁机制  ：使用 `m_EventHandlerLock` 保证线程安全
 
 工作流程：
@@ -538,7 +539,7 @@ public class CriticalSystem : MonoBehaviour
    Subscribe(id, handler) -> 添加到 m_EventHandlerMultiDict
 
 2. 取消订阅阶段
-   Unsubscribe(id, handler) -> 添加到 m_WaitRemoveHandlerList
+   Unsubscribe(id, handler) -> 引用计数递减，归零才登记到 m_WaitRemoveHandlerList
 
 3. 发布阶段
    Broadcast(sender, args) -> 创建 Event 节点 -> 加入 m_EventQueue
@@ -556,6 +557,13 @@ public class CriticalSystem : MonoBehaviour
 | -------------- | ---- | ---- | --------- |
 | `Broadcast`    | 是    | 下一帧  | 通用场景，推荐   |
 | `BroadcastNow` | 否    | 立即   | 需要同步处理的场景 |
+
+其余 API 的线程安全性：
+
+| 方法                                                                                                       | 线程安全 |
+| -------------------------------------------------------------------------------------------------------- | ---- |
+| `Subscribe` / `Unsubscribe` / `Check` / `Count` / `SetDefaultHandler` / `EventCount` / `EventHandlerCount` | 是    |
+| `ForEachHandler` / `ForEachEvent`                                                                          | 否，仅限主线程（重入识别标志非原子，跨线程并发调用会破坏快照缓存） |
 
 线程安全实现原理：
 
@@ -766,4 +774,6 @@ private void Update()
 5. 对象池  ：事件参数对象会自动通过引用池管理，无需手动释放，但需正确实现 `Clear` 方法
 6. 延迟取消订阅  ：取消订阅会在下一帧事件处理前生效，当前帧仍会收到事件
 7. 空事件ID  ：`EmptyEventArgs` 的事件ID为实例字段，同帧多个不同ID不会互相覆盖
+8. 生命周期边界  ：事件池关停（模块 `OnDispose`）后不得再调用 `Broadcast`——事件节点「取出 → 入队」之间存在极小竞态窗口，滞留事件将永不分发、永不回收
+9. 遍历接口  ：`ForEachHandler` / `ForEachEvent` 仅限主线程调用；`ForEachEvent` 回调内不得修改或回收未分发的事件参数
 

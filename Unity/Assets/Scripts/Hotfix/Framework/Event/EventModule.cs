@@ -88,6 +88,7 @@ namespace Hotfix.Framework.Event
         /// <summary>
         /// 取消订阅事件处理函数。
         /// 只递减本订阅者那一份计数，其余订阅者不受影响；未订阅过（条目不存在）时直接忽略。
+        /// 退订契约：各订阅者只能退订自己登记的那一份，超额退订会静默消耗其他订阅者的计数（详见 EventPool.Unsubscribe）。
         /// </summary>
         /// <param name="id">事件类型编号。</param>
         /// <param name="handler">要取消订阅的事件处理函数。</param>
@@ -131,11 +132,13 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 遍历所有事件处理函数。
+        /// 仅限主线程调用（重入识别标志非原子，主线程限制口径同 BroadcastNow）。
         /// </summary>
         public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_EventPool.ForEachHandler(action);
 
         /// <summary>
         /// 遍历所有事件。
+        /// 仅限主线程调用（主线程限制口径同 BroadcastNow）；回调内不得修改或回收未分发的事件参数。
         /// </summary>
         public void ForEachEvent(Action<object, GameEventArgs> action) => m_EventPool.ForEachEvent(action);
     }

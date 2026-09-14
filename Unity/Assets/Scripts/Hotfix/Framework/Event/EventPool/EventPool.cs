@@ -116,6 +116,8 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 获取事件处理函数的数量。
+        /// 注意：多值字典自身的 Count 是「有订阅的事件 ID 数」，而 AllowMultiHandler 模式下同一事件可挂多个处理函数，
+        /// 故此处遍历累加各事件的处理器条目数，保证与命名语义一致；仅供诊断/编辑器面板使用，勿在热路径调用。
         /// </summary>
         public int EventHandlerCount
         {
@@ -123,7 +125,13 @@ namespace Hotfix.Framework.Event
             {
                 lock (m_EventHandlerLock)
                 {
-                    return m_EventHandlerMultiDict.Count;
+                    var count = 0;
+                    foreach (var (_, handlers) in m_EventHandlerMultiDict)
+                    {
+                        count += handlers.Count;
+                    }
+
+                    return count;
                 }
             }
         }
@@ -187,7 +195,17 @@ namespace Hotfix.Framework.Event
                     {
                         var tempEvent = batch[processed];
                         HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
-                        ReferencePool.Recycle(tempEvent);
+                        // 节点回收单独隔离（写法同 Clear 的逐项排水）：引用池不变式一旦被破坏（如使用计数归零），
+                        // Recycle 会抛异常——不得逃逸到无保护的 ModuleManager.Update 中断当帧后续模块；
+                        // 且此刻事件已分发、参数已由 HandleEvent 的 finally 回收，吞掉异常继续处理下一节点即可。
+                        try
+                        {
+                            ReferencePool.Recycle(tempEvent);
+                        }
+                        catch (Exception exception)
+                        {
+                            FuLogger.LogError($"[EventPool]回收已分发事件节点异常:{exception}");
+                        }
                     }
                 }
                 finally
@@ -350,6 +368,8 @@ namespace Hotfix.Framework.Event
         /// <summary>
         /// 取消订阅事件处理函数。
         /// 引用计数 &gt; 1 时只递减自己那一份（其它订阅者的订阅保持有效）；归零才登记延迟移除。
+        /// 退订契约：各订阅者只能退订自己登记的那一份——超额退订（次数超过自身订阅数）会继续消耗
+        /// 其他订阅者的计数，导致他人订阅被静默移除且无告警；建议通过 EventRegister 按份管理订阅与退订。
         /// </summary>
         public void Unsubscribe(string id, EventHandler<T> handler)
         {
@@ -394,6 +414,9 @@ namespace Hotfix.Framework.Event
         /// 抛出事件（线程安全，延迟处理）。
         /// 注意：分发结束即回收事件参数并 Clear（见 HandleEvent），处理函数不得转发或缓存收到的 eArgs，
         /// 否则其它处理函数/后续帧会观测到已被清空的数据；需要转发时请新建事件参数对象。
+        /// 注意：本方法先从引用池取出事件节点、后取队列入队，与 Clear/Shutdown 的排空存在极小竞态窗口——
+        /// 节点已取出而排空先行完成时，该事件将滞留队列且永不分发、永不回收（引用池计数漂移）。
+        /// 因此事件池关停（模块 OnDispose）之后不得再调用本方法。
         /// </summary>
         public void Broadcast(object sender, T eArgs)
         {
@@ -418,6 +441,8 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 遍历所有事件处理函数。
+        /// 仅限主线程调用：重入识别标志非原子，与其他线程并发调用本方法会共用同一快照缓存，
+        /// 内层 Clear 会破坏外层正在遍历的数据（主线程限制口径同 BroadcastNow）。
         /// </summary>
         public void ForEachHandler(Action<string, EventHandler<T>> action)
         {
@@ -465,6 +490,9 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 遍历所有事件。
+        /// 仅限主线程调用：重入识别标志非原子，与其他线程并发调用本方法会共用同一快照缓存，
+        /// 内层 Clear 会破坏外层正在遍历的数据（主线程限制口径同 BroadcastNow）。
+        /// 回调内不得修改或回收未分发的事件参数（其所有权仍在事件池，分发结束后由池回收）。
         /// </summary>
         public void ForEachEvent(Action<object, T> action)
         {

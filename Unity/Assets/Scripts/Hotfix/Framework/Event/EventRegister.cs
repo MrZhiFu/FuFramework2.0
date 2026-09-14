@@ -23,13 +23,21 @@ namespace Hotfix.Framework.Event
         private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_EventHandlerDict = new();
 
         /// <summary>
-        /// 创建事件订阅器
+        /// 创建事件订阅器。
+        /// 创建即校验 EventModule 可用（已注册且存活），失败立即抛出：
+        /// 静默放行会把 null/已释放模块延迟到首次订阅才暴露（NRE 或订阅写进已关停的旧池而静默失效）。
         /// </summary>
-        /// <returns></returns>
+        /// <returns>事件订阅器。</returns>
         public static EventRegister Create()
         {
+            var eventModule = ModuleManager.GetModule<EventModule>();
+            if (eventModule == null)
+                throw new InvalidOperationException("[EventRegister] EventModule 尚未注册，无法创建事件订阅器.");
+            if (!eventModule.IsAlive)
+                throw new InvalidOperationException("[EventRegister] EventModule 未初始化或已释放（重启排水窗口），无法创建事件订阅器.");
+
             var register = ReferencePool.Acquire<EventRegister>();
-            register.m_EventModule = ModuleManager.GetModule<EventModule>();
+            register.m_EventModule = eventModule;
             return register;
         }
 
