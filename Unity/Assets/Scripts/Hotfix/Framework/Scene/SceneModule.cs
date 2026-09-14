@@ -3,14 +3,12 @@ using System.Threading;
 using YooAsset;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using Hotfix.Framework.Asset;
 using Hotfix.Framework.Event;
 using System.Collections.Generic;
+using AOT.Framework.Core.Utility;
 using UnityEngine.SceneManagement;
-using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable NotAccessedField.Local
@@ -315,6 +313,7 @@ namespace Hotfix.Framework.Scene
         /// 加载场景。
         /// </summary>
         /// <param name="sceneAssetName">场景资源路径。</param>
+        /// <param name="token">取消令牌。</param>
         /// <param name="sceneMode">加载模式。</param>
         /// <param name="userData">用户自定义数据。</param>
         public UniTask<SceneHandle> LoadSceneByName(string sceneAssetName, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
@@ -330,6 +329,7 @@ namespace Hotfix.Framework.Scene
         /// </summary>
         /// <param name="sceneAssetPath">场景资源路径。</param>
         /// <param name="userData">用户自定义数据。</param>
+        /// <param name="token">取消令牌。</param>
         /// <param name="sceneMode"></param>
         public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
         {
