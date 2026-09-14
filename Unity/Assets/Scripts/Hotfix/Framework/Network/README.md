@@ -313,49 +313,55 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 
 ```text
 Network/
-├── Runtime/
-│   ├── NetworkModule.cs                              # 网络管理模块
-│   ├── NetworkModule.ConnectState.cs                 # 连接状态
-│   ├── NetworkModule.HeartBeatState.cs               # 心跳状态
-│   ├── NetworkModule.NetworkChannelBase.cs           # 网络频道基类
-│   ├── NetworkModule.ReceiveState.cs                 # 接收状态
-│   ├── NetworkModule.SendState.cs                    # 发送状态
-│   ├── NetworkModule.RpcState.cs                     # RPC 状态
-│   ├── ProtoMessageHandler.cs                        # 消息处理器注册（消费生成静态表）
-│   ├── ProtoMessageIdHandler.cs                      # 消息 ID 映射（消费生成静态表）
-│   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
-│   ├── Generated/
-│   │   └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
-│   ├── Base/
-│   │   ├── EAddressFamily.cs                         # 地址类型枚举
-│   │   ├── EServiceType.cs                           # 服务类型枚举
-│   │   ├── IRequestMessage.cs                        # 请求消息接口
-│   │   ├── IResponseMessage.cs                       # 响应消息接口
-│   │   ├── INotifyMessage.cs                         # 推送消息接口
-│   │   ├── IHeartBeatMessage.cs                      # 心跳消息接口
-│   │   ├── MessageHandlerAttribute.cs                # 消息处理器特性（声明用；方法须 internal/public）
-│   │   ├── MessageTypeHandlerAttribute.cs            # 消息类型处理器特性
-│   │   ├── MessageObject.cs                          # 消息基类
-│   │   └── NetworkErrorCode.cs                       # 网络错误码
-│   ├── Interface/
-│   │   ├── INetworkChannel.cs                        # 网络频道接口
-│   │   ├── INetworkChannelHelper.cs                  # 频道辅助器接口
-│   │   ├── INetworkSocket.cs                         # 网络套接字接口
-│   │   ├── IPacketSendHeaderHandler.cs               # 发送包头处理器接口
-│   │   ├── IPacketReceiveHeaderHandler.cs            # 接收包头处理器接口
-│   │   ├── IPacketSendBodyHandler.cs                 # 发送包体处理器接口
-│   │   ├── IPacketReceiveBodyHandler.cs              # 接收包体处理器接口
-│   │   ├── IPacketHeartBeatHandler.cs                # 心跳包处理器接口
-│   │   ├── IMessageCompressHandler.cs                # 消息压缩接口
-│   │   └── IMessageDecompressHandler.cs              # 消息解压接口
-│   ├── Event/
-│   │   ├── NetworkConnectedEventArgs.cs
-│   │   ├── NetworkClosedEventArgs.cs
-│   │   ├── NetworkErrorEventArgs.cs
-│   │   └── NetworkMissHeartBeatEventArgs.cs
-│   ├── Helper/                                       # 默认实现
-│   ├── SystemSocket/                                 # TCP 套接字实现
-│   ├── WebSocket/                                    # WebSocket 实现
+├── NetworkModule.cs                                  # 网络管理模块（字段/生命周期/事件转发）
+├── NetworkModule.API.cs                              # 对外公共 API（频道创建/查询/销毁）
+├── Channel/                                          # 网络频道（internal）
+│   ├── NetworkChannelBase.cs                         # 网络频道基类
+│   ├── SystemTcpNetworkChannel.cs                    # TCP 频道实现
+│   └── WebSocketNetworkChannel.cs                    # WebSocket 频道实现
+├── Socket/                                           # 网络套接字（internal）
+│   ├── SystemNetSocket.cs                            # TCP 套接字实现
+│   └── WebSocketNetSocket.cs                         # WebSocket 套接字实现
+├── State/                                            # 频道内部状态（internal）
+│   ├── ConnectState.cs                               # 连接状态
+│   ├── HeartBeatState.cs                             # 心跳状态
+│   ├── SendState.cs                                  # 发送状态
+│   ├── ReceiveState.cs                               # 接收状态
+│   ├── RpcState.cs                                   # RPC 状态
+│   └── RpcMessageData.cs                             # RPC 等待数据
+├── ProtoMessageHandler.cs                            # 消息处理器注册（消费生成静态表）
+├── ProtoMessageIdHandler.cs                          # 消息 ID 映射（消费生成静态表）
+├── MessageIdRegistry.cs                              # 消息 ID / 心跳 / 类型 注册表
+├── Generated/
+│   └── ProtoMessageRegistry.g.cs                     # 自动生成：消息与方法注册表 + 委托分派（勿手改）
+├── Base/
+│   ├── EAddressFamily.cs                             # 地址类型枚举
+│   ├── EServiceType.cs                               # 服务类型枚举
+│   ├── IRequestMessage.cs                            # 请求消息接口
+│   ├── IResponseMessage.cs                           # 响应消息接口
+│   ├── INotifyMessage.cs                             # 推送消息接口
+│   ├── IHeartBeatMessage.cs                          # 心跳消息接口
+│   ├── MessageHandlerAttribute.cs                    # 消息处理器特性（声明用；方法须 internal/public）
+│   ├── MessageTypeHandlerAttribute.cs                # 消息类型处理器特性
+│   ├── MessageObject.cs                              # 消息基类
+│   └── NetworkErrorCode.cs                           # 网络错误码
+├── Interface/
+│   ├── INetworkChannel.cs                            # 网络频道接口
+│   ├── INetworkChannelHelper.cs                      # 频道辅助器接口
+│   ├── INetworkSocket.cs                             # 网络套接字接口
+│   ├── IPacketSendHeaderHandler.cs                   # 发送包头处理器接口
+│   ├── IPacketReceiveHeaderHandler.cs                # 接收包头处理器接口
+│   ├── IPacketSendBodyHandler.cs                     # 发送包体处理器接口
+│   ├── IPacketReceiveBodyHandler.cs                  # 接收包体处理器接口
+│   ├── IPacketHeartBeatHandler.cs                    # 心跳包处理器接口
+│   ├── IMessageCompressHandler.cs                    # 消息压缩接口
+│   └── IMessageDecompressHandler.cs                  # 消息解压接口
+├── Event/
+│   ├── NetworkConnectedEventArgs.cs
+│   ├── NetworkClosedEventArgs.cs
+│   ├── NetworkErrorEventArgs.cs
+│   └── NetworkMissHeartBeatEventArgs.cs
+├── Helper/                                           # 默认实现
 └── README.md                                         # 本文档
 ```
 
