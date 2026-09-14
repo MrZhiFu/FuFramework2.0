@@ -337,14 +337,18 @@ m_GuideModule.OnGuideInterrupted += (guideId, markAsCompleted) =>
 
 ```text
 Guide/
-├── GuideModule.cs           # 引导管理模块
-├── BaseStep.cs              # 引导步骤基类 + EStepState 枚举
-├── ClickUIStep.cs           # UI 点击引导步骤
-├── DefaultStep.cs           # 默认引导步骤（立即完成）
-├── DialogStep.cs            # 对话引导步骤
-├── WaitStep.cs              # 等待步骤（定时器）
-├── IGuideAction.cs          # 引导动作执行接口
-├── GuideActionImpl.cs       # 引导动作实现
+├── GuideModule.cs           # 引导管理模块（生命周期与内部实现）
+├── GuideModule.API.cs       # 引导管理模块的公共 API（partial 分部类）
+├── Base/
+│   └── BaseStep.cs          # 引导步骤基类 + EStepState 枚举
+├── Steps/
+│   ├── ClickUIStep.cs       # UI 点击引导步骤
+│   ├── DialogStep.cs        # 对话引导步骤
+│   ├── WaitStep.cs          # 等待步骤（定时器）
+│   └── DefaultStep.cs       # 默认引导步骤（立即完成）
+├── Misc/
+│   ├── IGuideAction.cs      # 引导动作执行接口
+│   └── GuideActionImpl.cs   # 引导动作实现
 └── README.md                # 本文档
 ```
 
