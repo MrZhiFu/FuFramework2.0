@@ -109,7 +109,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
             CollectKeysFromTable(table, keys, keySet);
         }
 
-        s_logger.Info("多语言key收集: 总共收集到 {Count} 个多语言Key", keys.Count);
+        s_logger.Info("收集导出到代码中的多语言key: 总共收集到 {Count} 个多语言Key", keys.Count);
 
         // 按 Key 按照字母进行 排序
         return keys.OrderBy(k => k.Key, StringComparer.Ordinal).ToList();
@@ -130,6 +130,13 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
         // 获取 ChineseSimplified(简体中文) 字段作为注释
         var commentField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name is "ChineseSimplified" or "chineseSimplified" or "chinese_simplified");
 
+        // 获取 is_code 字段（标记该 key 是否导出到代码），所有本地化表必须声明该列
+        var isCodeField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name == "is_code");
+        if (isCodeField == null)
+        {
+            throw new Exception($"本地化表:'{table.Name}' 缺少 'is_code' 列！所有本地化表必须声明 is_code(bool) 列，用于标记该 key 是否导出到 LanguageKey 类");
+        }
+
         // 获取表数据
         var tableDataInfo = GenerationContext.Current.GetTableDataInfo(table);
         if (tableDataInfo == null) return;
@@ -137,7 +144,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
         // 遍历表记录，收集 Key 信息
         foreach (var record in tableDataInfo.FinalRecords)
         {
-            ProcessRecord(record, keyField, commentField, resultKeys, keySet);
+            ProcessRecord(record, keyField, commentField, isCodeField, resultKeys, keySet);
         }
     }
 
@@ -147,11 +154,15 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     /// <param name="record">数据记录</param>
     /// <param name="keyField">key字段</param>
     /// <param name="commentField">注释字段(即简体中文字段)</param>
+    /// <param name="isCodeField">is_code字段(标记该key是否导出到代码)</param>
     /// <param name="resultKeys">多语言表key结果列表</param>
     /// <param name="keySet">用于去重的集合</param>
-    private void ProcessRecord(Record record, DefField keyField, DefField commentField, List<L10NKeyInfo> resultKeys, HashSet<string> keySet)
+    private void ProcessRecord(Record record, DefField keyField, DefField commentField, DefField isCodeField, List<L10NKeyInfo> resultKeys, HashSet<string> keySet)
     {
         if (record.Data is not DBean bean) return;
+
+        // 过滤未标记导出到代码的 key
+        if (bean.GetField(isCodeField.Name) is not DBool { Value: true }) return;
 
         var keyValue = bean.GetField(keyField.Name);
         if (keyValue is not DString keyStr || string.IsNullOrWhiteSpace(keyStr.Value)) return;

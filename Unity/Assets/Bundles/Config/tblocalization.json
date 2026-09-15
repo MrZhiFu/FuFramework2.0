@@ -1,6 +1,7 @@
 [
   {
     "key": "achievement_name_01",
+    "is_code": false,
     "ChineseSimplified": "独自享受的日常",
     "ChineseTraditional": "",
     "English": "",
@@ -18,6 +19,7 @@
   },
   {
     "key": "achievement_name_02",
+    "is_code": false,
     "ChineseSimplified": "神社的守护者",
     "ChineseTraditional": "",
     "English": "",
@@ -35,6 +37,7 @@
   },
   {
     "key": "achievement_content_1",
+    "is_code": false,
     "ChineseSimplified": "您已解锁“独自享受的日常”路线！恭喜您！这是只属于您一人的物语！",
     "ChineseTraditional": "",
     "English": "",
@@ -52,6 +55,7 @@
   },
   {
     "key": "achievement_content_2",
+    "is_code": false,
     "ChineseSimplified": "您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）",
     "ChineseTraditional": "",
     "English": "",
@@ -69,6 +73,7 @@
   },
   {
     "key": "achievement_cover",
+    "is_code": false,
     "ChineseSimplified": "成就未解锁",
     "ChineseTraditional": "",
     "English": "",
@@ -86,6 +91,7 @@
   },
   {
     "key": "setting_nav_document",
+    "is_code": false,
     "ChineseSimplified": "游戏存档管理",
     "ChineseTraditional": "遊戲存檔管理",
     "English": "Save Data Management",
@@ -103,6 +109,7 @@
   },
   {
     "key": "setting_nav_setting",
+    "is_code": false,
     "ChineseSimplified": "系统设置",
     "ChineseTraditional": "系統設置",
     "English": "System Settings",
@@ -120,6 +127,7 @@
   },
   {
     "key": "setting_nav_voice",
+    "is_code": false,
     "ChineseSimplified": "音效设置",
     "ChineseTraditional": "音效設置",
     "English": "Sound Settings",
@@ -137,6 +145,7 @@
   },
   {
     "key": "setting_nav_text",
+    "is_code": false,
     "ChineseSimplified": "文本设置",
     "ChineseTraditional": "文本設置",
     "English": "Text Settings",
@@ -154,6 +163,7 @@
   },
   {
     "key": "setting_nav_keyboard",
+    "is_code": false,
     "ChineseSimplified": "键盘设置",
     "ChineseTraditional": "鍵盤設置",
     "English": "Keyboard Settings",
@@ -171,6 +181,7 @@
   },
   {
     "key": "common_start_game",
+    "is_code": false,
     "ChineseSimplified": "开始游戏",
     "ChineseTraditional": "開始遊戲",
     "English": "Start Game",
@@ -188,6 +199,7 @@
   },
   {
     "key": "common_load_game",
+    "is_code": false,
     "ChineseSimplified": "读取游戏",
     "ChineseTraditional": "讀取遊戲",
     "English": "Load Game",
@@ -205,6 +217,7 @@
   },
   {
     "key": "common_system_setting",
+    "is_code": false,
     "ChineseSimplified": "系统设置",
     "ChineseTraditional": "系統設置",
     "English": "Settings",
@@ -222,6 +235,7 @@
   },
   {
     "key": "common_gallerty",
+    "is_code": false,
     "ChineseSimplified": "画廊设置",
     "ChineseTraditional": "畫廊設置",
     "English": "Gallery",
@@ -239,6 +253,7 @@
   },
   {
     "key": "common_about",
+    "is_code": false,
     "ChineseSimplified": "关于更多",
     "ChineseTraditional": "關於更多",
     "English": "About",
@@ -256,6 +271,7 @@
   },
   {
     "key": "common_exit_game",
+    "is_code": false,
     "ChineseSimplified": "退出游戏",
     "ChineseTraditional": "退出遊戲",
     "English": "Quit",
@@ -273,6 +289,7 @@
   },
   {
     "key": "common_pop_start_game",
+    "is_code": false,
     "ChineseSimplified": "开始游戏",
     "ChineseTraditional": "開始遊戲",
     "English": "New Game",
@@ -290,6 +307,7 @@
   },
   {
     "key": "common_continue_game",
+    "is_code": false,
     "ChineseSimplified": "继续上一次游戏",
     "ChineseTraditional": "繼續上一次遊戲",
     "English": "Continue",
@@ -307,6 +325,7 @@
   },
   {
     "key": "common_exit_submit",
+    "is_code": true,
     "ChineseSimplified": "确定",
     "ChineseTraditional": "確定",
     "English": "OK",
@@ -324,6 +343,7 @@
   },
   {
     "key": "common_exit_cancel",
+    "is_code": true,
     "ChineseSimplified": "取消",
     "ChineseTraditional": "取消",
     "English": "Cancel",
@@ -341,6 +361,7 @@
   },
   {
     "key": "common_exit_title",
+    "is_code": false,
     "ChineseSimplified": "是否退出游戏？",
     "ChineseTraditional": "是否退出遊戲？",
     "English": "Exit game?",
@@ -358,6 +379,7 @@
   },
   {
     "key": "common_exit_label",
+    "is_code": false,
     "ChineseSimplified": "始终需要确认",
     "ChineseTraditional": "始終需要確認",
     "English": "Always confirm",

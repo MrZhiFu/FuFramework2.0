@@ -14,114 +14,14 @@ namespace Hotfix.Game.Config
     public static class LanguageKey
     {
         /// <summary>
-        /// 您已解锁“独自享受的日常”路线！恭喜您！这是只属于您一人的物语！
-        /// </summary>
-        public const string achievement_content_1 = "achievement_content_1";
-
-        /// <summary>
-        /// 您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）
-        /// </summary>
-        public const string achievement_content_2 = "achievement_content_2";
-
-        /// <summary>
-        /// 成就未解锁
-        /// </summary>
-        public const string achievement_cover = "achievement_cover";
-
-        /// <summary>
-        /// 独自享受的日常
-        /// </summary>
-        public const string achievement_name_01 = "achievement_name_01";
-
-        /// <summary>
-        /// 神社的守护者
-        /// </summary>
-        public const string achievement_name_02 = "achievement_name_02";
-
-        /// <summary>
-        /// 关于更多
-        /// </summary>
-        public const string common_about = "common_about";
-
-        /// <summary>
-        /// 继续上一次游戏
-        /// </summary>
-        public const string common_continue_game = "common_continue_game";
-
-        /// <summary>
         /// 取消
         /// </summary>
         public const string common_exit_cancel = "common_exit_cancel";
 
         /// <summary>
-        /// 退出游戏
-        /// </summary>
-        public const string common_exit_game = "common_exit_game";
-
-        /// <summary>
-        /// 始终需要确认
-        /// </summary>
-        public const string common_exit_label = "common_exit_label";
-
-        /// <summary>
         /// 确定
         /// </summary>
         public const string common_exit_submit = "common_exit_submit";
-
-        /// <summary>
-        /// 是否退出游戏？
-        /// </summary>
-        public const string common_exit_title = "common_exit_title";
-
-        /// <summary>
-        /// 画廊设置
-        /// </summary>
-        public const string common_gallerty = "common_gallerty";
-
-        /// <summary>
-        /// 读取游戏
-        /// </summary>
-        public const string common_load_game = "common_load_game";
-
-        /// <summary>
-        /// 开始游戏
-        /// </summary>
-        public const string common_pop_start_game = "common_pop_start_game";
-
-        /// <summary>
-        /// 开始游戏
-        /// </summary>
-        public const string common_start_game = "common_start_game";
-
-        /// <summary>
-        /// 系统设置
-        /// </summary>
-        public const string common_system_setting = "common_system_setting";
-
-        /// <summary>
-        /// 游戏存档管理
-        /// </summary>
-        public const string setting_nav_document = "setting_nav_document";
-
-        /// <summary>
-        /// 键盘设置
-        /// </summary>
-        public const string setting_nav_keyboard = "setting_nav_keyboard";
-
-        /// <summary>
-        /// 系统设置
-        /// </summary>
-        public const string setting_nav_setting = "setting_nav_setting";
-
-        /// <summary>
-        /// 文本设置
-        /// </summary>
-        public const string setting_nav_text = "setting_nav_text";
-
-        /// <summary>
-        /// 音效设置
-        /// </summary>
-        public const string setting_nav_voice = "setting_nav_voice";
 
     }
 }
