@@ -93,8 +93,10 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 | `aot_res_download_fail` | `"下载失败，正在重试..."` | L174 |
 | `aot_res_load_fail` | `"资源加载失败，请检查网络后重启游戏!"` | L203 / L219（共用） |
 | `aot_update_dialog_ok_btn` | `"更新"` | LaunchView `ShowUpdateDialog` 按钮文本 |
+| `aot_res_loading_config` | `"正在加载配置..."` | HotfixLauncher `InitDependenciesAsync`（经 AOT 门面） |
+| `aot_res_loading_init_res` | `"正在加载初始化资源..."` | 同上 |
 
-> **表数据修正**：`aot_res_loading_config`（正在加载配置...）/ `aot_res_loading_init_res`（正在加载初始化资源...）两条现位于 AOT 表，但其对应文本在 `HotfixLauncher.InitDependenciesAsync`（热更程序集内，届时热更本地化链路已就绪）——应**从 AOT 表移除**，移入热更本地化表（`TbLocalization`，`is_code=true`），随热更侧 `LanguageKey` 接线，不在本设计 AOT 接线范围。
+> **归属定案（用户确认）**：`aot_res_loading_config`（正在加载配置...）/ `aot_res_loading_init_res`（正在加载初始化资源...）**保留在 AOT 表**。对应文本虽位于 `HotfixLauncher.InitDependenciesAsync`（热更程序集），但 Hotfix 程序集引用 AOT 程序集——这两处通过 AOT 门面 `LaunchLocalization.GetLanguage(...)` 接线（`LaunchLocalization` 已在启动流程开头初始化，热更后全程可用），一处数据热更前后通用。
 
 范围外：更新公告与下载地址来自远端 `RemoteUpdateConfig`，不本地化；`SetTip(string.Empty)` 清空调用不变。
 
