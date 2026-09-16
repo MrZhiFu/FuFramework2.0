@@ -43,6 +43,16 @@ namespace Hotfix
     public static class HotfixLauncher
     {
         /// <summary>
+        /// 表管理器实例（语言切换刷新用，每次启动/热重启由 LoadConfigAsync 覆盖，旧实例无委托绑定可正常回收）
+        /// </summary>
+        private static TableManager m_TableManager;
+
+        /// <summary>
+        /// 是否已订阅语言切换事件（进程内仅订阅一次，避免热重启重复订阅）
+        /// </summary>
+        private static bool m_LocalizationEventSubscribed;
+
+        /// <summary>
         /// 启动入口
         /// </summary>
         /// <param name="launchView">AOT 启动加载界面句柄，登录界面打开后关闭。</param>
@@ -150,6 +160,26 @@ namespace Hotfix
 
             // 设置本地化多语言提供者
             LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
+
+            // 订阅语言切换事件（进程内仅订阅一次；热重启仅覆盖 m_TableManager，订阅无需重做）
+            if (m_LocalizationEventSubscribed == false)
+            {
+                m_LocalizationEventSubscribed = true;
+                ModuleManager.GetModule<EventModule>().Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+            }
+
+            // 多语言提供者就绪后翻译配置表
+            tableManager.RefreshTranslateText();
+        }
+
+        /// <summary>
+        /// 语言切换事件处理：重新翻译配置表
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">事件参数</param>
+        private static void OnLanguageChanged(object sender, GameEventArgs e)
+        {
+            m_TableManager?.RefreshTranslateText();
         }
 
         /// <summary>
@@ -174,7 +204,8 @@ namespace Hotfix
         /// <summary>
         /// 加载配置表
         /// </summary>
-        private static async UniTask LoadConfigAsync()
+        /// <returns>加载完成的表管理器实例</returns>
+        private static async UniTask<TableManager> LoadConfigAsync()
         {
             var tableManager = new TableManager();
             tableManager.Init(ConfigModule.Instance);
@@ -186,6 +217,10 @@ namespace Hotfix
             // 使用JSON配置表
             await tableManager.LoadAsync(ConfigLoader);
 #endif
+
+            // 登记实例供语言切换刷新使用（热重启时被新实例覆盖）
+            m_TableManager = tableManager;
+            return tableManager;
         }
 
         /// <summary>
