@@ -51,7 +51,7 @@ namespace AOT.Launch
             // 联机/Web 模式：请求远端更新配置（含强更判断）
             if (playMode is not (EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode))
             {
-                updateConfig = await ReqRemoteUpdateConfigWithRetry();
+                updateConfig = await ReqRemoteUpdateConfig();
                 if (updateConfig.ForceUpdate)
                 {
                     // 强更中止后续流程
@@ -106,7 +106,7 @@ namespace AOT.Launch
         /// <summary>
         /// 请求远端更新配置（失败重试）。
         /// </summary>
-        private static async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfigWithRetry()
+        private static async UniTask<RemoteUpdateConfig> ReqRemoteUpdateConfig()
         {
             var configUrl = $"{GameSetting.Instance.ResCdnRootRootURL}{UtilityAOT.Application.PlatformName}/{RemoteUpdateConfigName}";
             while (true)
@@ -118,8 +118,9 @@ namespace AOT.Launch
                     await request.SendWebRequest();
                     if (request.result == UnityWebRequest.Result.Success)
                     {
-                        var cfg = UtilityAOT.Json.ToObject<RemoteUpdateConfig>(request.downloadHandler.text);
-                        if (cfg != null) return cfg;
+                        var remoteUpdateCfg = UtilityAOT.Json.ToObject<RemoteUpdateConfig>(request.downloadHandler.text);
+                        if (remoteUpdateCfg != null) 
+                            return remoteUpdateCfg;
                     }
                 }
                 catch (Exception e)
@@ -127,7 +128,7 @@ namespace AOT.Launch
                     FuLogger.LogError($"[Launch] 获取远端更新配置异常：{e.Message}");
                 }
 
-                m_LaunchView.SetTip("资源服务器错误，正在重试...");
+                m_LaunchView.SetTip("请求远端更新配置失败，正在重试...");
                 await UniTask.WaitForSeconds(3);
             }
         }
@@ -199,7 +200,7 @@ namespace AOT.Launch
                 if (bytes == null)
                 {
                     FuLogger.LogError($"[Launch] 加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
-                    m_LaunchView.SetTip("热更资源加载失败，请检查网络后重启游戏");
+                    m_LaunchView.SetTip("资源加载失败，请检查网络后重启游戏!");
                     return;
                 }
 
@@ -215,7 +216,7 @@ namespace AOT.Launch
             if (dllBytes == null)
             {
                 FuLogger.LogError($"[Launch] 加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
-                m_LaunchView.SetTip("热更资源加载失败，请检查网络后重启游戏");
+                m_LaunchView.SetTip("资源加载失败，请检查网络后重启游戏!");
                 return;
             }
 

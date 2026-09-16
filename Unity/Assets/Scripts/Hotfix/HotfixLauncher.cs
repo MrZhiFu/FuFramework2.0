@@ -76,7 +76,6 @@ namespace Hotfix
         /// </summary>
         private static void InitProto()
         {
-            // 协议注册表已由生成物编译期固化，无需再传入程序集（原先的 HotfixProtoHandler 标记随之移除）。
             ProtoMessageIdHandler.Init();
         }
 
@@ -98,10 +97,7 @@ namespace Hotfix
             GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
             GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
             GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
-            // 注意：引用池清理（ReferencePool.ClearAll）不在此处挂接。
-            // 其契约要求必须在「所有在途异步取消完毕」之后调用，故统一放到
-            // GameDriven.RestartGameAsync 的 ModuleManager.CancelAllAsync() 之后。
-            GameDriven.Instance.DisposeModules = ModuleManager.Dispose;
+            GameDriven.Instance.DisposeModules    = ModuleManager.Dispose;
         }
 
         /// <summary>
@@ -145,11 +141,11 @@ namespace Hotfix
         private static async UniTask InitDependenciesAsync(ILaunchView launchView)
         {
             // 加载配置表
-            launchView.SetTip("LoadConfig...");
-            await LoadConfigAsync();
+            launchView.SetTip("正在加载配置...");
+            var tableManager = await LoadConfigAsync();
 
             // 加载初始必要的公共UI资源包
-            launchView.SetTip("LoadInitUIAsset...");
+            launchView.SetTip("正在加载初始化资源...");
             await LoadCommonUIAsync();
 
             // 设置本地化多语言提供者

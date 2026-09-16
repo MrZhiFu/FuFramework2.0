@@ -8,8 +8,7 @@ namespace AOT
     /// <summary>
     /// AOT 入口类。
     /// 功能：
-    ///     1. 确保跨场景存活
-    ///     2. 启动 AOT 极简启动流程，完成后由 GameDriven 接管进入热更逻辑
+    ///     1. 启动 AOT 极简启动流程，完成后由 GameDriven 接管进入热更逻辑
     /// </summary>
     public class Launcher : MonoBehaviour
     {
