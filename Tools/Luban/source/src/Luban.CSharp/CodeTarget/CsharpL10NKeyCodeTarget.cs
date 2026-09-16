@@ -101,8 +101,8 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
         var keys   = new List<L10NKeyInfo>();
         var keySet = new HashSet<string>();
 
-        // 筛选出多语言表
-        var l10NTables = tables.Where(t => t.Name == "TbLocalization").ToList();
+        // 筛选出多语言表（含 AOT 前置本地化表）
+        var l10NTables = tables.Where(t => t.Name is "TbLocalization" or "TbLocalizationAOT").ToList();
 
         foreach (var table in l10NTables)
         {
