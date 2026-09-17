@@ -32,9 +32,9 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     }
 
     /// <summary>
-    /// 默认输出文件名
+    /// 默认类名与输出文件名（可用选项 cs-l10n-key.className 覆盖）
     /// </summary>
-    protected const string DefaultOutputFileName = "L10nKey";
+    protected const string DefaultClassName = "L10nKey";
 
     /// <summary>
     /// 日志记录器
@@ -56,20 +56,21 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     /// </summary>
     public override void Handle(GenerationContext ctx, OutputFileManifest manifest)
     {
-        var outputFileName = EnvManager.Current.GetOptionOrDefault(Name, "outputFile", true, DefaultOutputFileName);
+        var className = EnvManager.Current.GetOptionOrDefault(Name, "className", true, DefaultClassName);
 
-        // 生成L10nKey.cs
+        // 生成{className}.cs
         var writer = new CodeWriter();
-        GenerateL10NKeys(ctx, writer);
-        manifest.AddFile(CreateOutputFile($"{outputFileName}.{FileSuffixName}", writer.ToResult(FileHeader)));
+        GenerateL10NKeys(ctx, writer, className);
+        manifest.AddFile(CreateOutputFile($"{className}.{FileSuffixName}", writer.ToResult(FileHeader)));
     }
 
     /// <summary>
-    /// 生成多语言L10nKey.cs静态类
+    /// 生成多语言静态类（类名与文件名由 className 选项决定）
     /// </summary>
     /// <param name="ctx">生成时的上下文</param>
     /// <param name="writer">代码写入器</param>
-    private void GenerateL10NKeys(GenerationContext ctx, CodeWriter writer)
+    /// <param name="className">静态类名</param>
+    private void GenerateL10NKeys(GenerationContext ctx, CodeWriter writer, string className)
     {
         var template = GetTemplate("l10n-keys");
         var tplCtx   = CreateTemplateContext(template);
@@ -83,7 +84,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
             { "__name", ctx.Target.Manager },
             { "__namespace", ctx.Target.TopModule },
             { "__full_name", TypeUtil.MakeFullName(ctx.Target.TopModule, ctx.Target.Manager) },
-            { "__class_name", "L10nKey" },
+            { "__class_name", className },
             { "__keys", keys },
             { "__code_style", CodeStyle },
         };
