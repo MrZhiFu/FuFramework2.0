@@ -40,7 +40,8 @@
 dotnet ../Tools/Luban/bin/Luban.dll ^
     -t aot -d bin -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText ^
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/LanguageKey ^
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^
     -x l10n.provider=fuframework ^
@@ -59,7 +60,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 | 产物 | 位置 |
 |---|---|
 | 数据 | `Assets/Resources/LaunchLocalizationText/tblocalizationaot.bytes`（json 变体 `.json`） |
-| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/LanguageKey/LanguageKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
+| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/LanguageKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
 | 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录：`LaunchLocalization.cs`（含 `LocalizationAOTRow` 行数据类与 json/bin 自包含解析）、`README.md` |
 
 ### 3.4 Luban 源码微调（两处）
@@ -81,7 +82,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 
 `Assets/Scripts/AOT/Launch/Localization/LaunchLocalization.cs`，静态类，脱离 UIModule/EventModule 自包含（与 `LaunchView` 同一原则）：
 
-- `InitializeAsync()`：`Resources.Load<TextAsset>("Config/tblocalizationaot")` 同步加载；解析**自包含**（json 变体用 SimpleJSON 逐行取字段；bin 变体用 `Luban.ByteBuf` 按记录数 + Excel 列序读取，该列序为硬约定，调整表列须同步解析代码）；解析异常仅 LogError 并清空数据，不阻断启动
+- `InitializeAsync()`：`Resources.Load<TextAsset>("LaunchLocalizationText/tblocalizationaot")` 同步加载；解析**自包含**（json 变体用 SimpleJSON 逐行取字段；bin 变体用 `Luban.ByteBuf` 按记录数 + Excel 列序读取，该列序为硬约定，调整表列须同步解析代码）；解析异常仅 LogError 并清空数据，不阻断启动
 - `Language` 属性：PlayerPrefs（int，`(int)ELanguage`）中用户选择优先；无记录时 `ELanguage.FromSystemLanguage(Application.systemLanguage)` 兜底
 - `GetLanguage(key, args)`：查行数据字典 → 当前语言字段 → 空则回退 `English`（与 Hotfix 版同构）→ 有参数则 `string.Format`；查无 key 时 LogError 返回空串
 
@@ -111,7 +112,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 ## 6. 验证计划
 
 1. `Tools/Luban/build-luban.bat` 重建（3.4 源码微调后必须），构建 0 警告 0 错误
-2. 跑 `gen-client-bin.bat` / `gen-client-json.bat`：生成无报错（含 is_code 缺列校验路径）；检查 `Resources/Config/` 数据产物与 `AOT/Launch/Localization/` 生成代码 4 文件；确认 Hotfix 侧产物零 diff（client target 隔离验证）
+2. 跑 `gen-client-bin.bat` / `gen-client-json.bat`：生成无报错（含 is_code 缺列校验路径）；检查 `Resources/LaunchLocalizationText/` 数据产物与 `AOT/Launch/Localization/` 生成代码；确认 Hotfix 侧产物零 diff（client target 隔离验证）
 3. Unity 编译通过（ELanguage 下沉后 Hotfix / AOT 两程序集）
 4. Editor 冒烟：启动流程进度条文本按语言渲染、确认框按钮文本生效
 
