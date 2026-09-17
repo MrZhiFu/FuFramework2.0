@@ -38,33 +38,34 @@
 
 ```bat
 dotnet ../Tools/Luban/bin/Luban.dll ^
-    -t aot -d bin -c cs-bin -c cs-l10n-key ^
+    -t aot -d bin -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/Config ^
-    -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/Generate ^
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/LanguageKey ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^
-    -x tableImporter.strictGroup=true ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
     --conf ./Luban.conf
 ```
 
-> 修订说明（实施期裁定 R1/R2）：`tableImporter.target=aot` 使导入器分组判定生效；`tableImporter.strictGroup=true` 使**无分组段**的表（其余 11 张业务表）在 aot target 下跳过——否则空分组表按 Luban 语义属于所有分组会全量涌入。代码输出拆 `Generate/` 与 `LanguageKey/` 子目录：`LocalFileSaver` 每个 code target 保存前会清理输出目录中非本 target 文件，同目录会互删（与 Hotfix 侧分目录布局同构）。
+> 修订说明（实施期裁定 R1'/R2/R3）：
+> 1. `-x tableImporter.target=aot` 使导入器文件级分组判定生效（缺失时 `ExportTarget=null`，带分组段的表被静默跳过）。
+> 2. `FuFrameworkTableImporter` 已把文件名分组段传播至 `RawTable.Groups`——此前恒空会导致显式分组表被 Luban 表级过滤丢弃（`DefAssembly.NeedExport`：空 Groups 表只属于 default 组，`aot` 组 `default=false`）。无分组段表天然不进 aot target，无需额外开关。
+> 3. **AOT 段不再生成表代码**（曾计划 `-c cs-bin`/`-c cs-simple-json`）：生成的表类/管理器硬依赖热更侧框架基类（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。AOT 段只生成 `LanguageKey` 常量与数据产物，运行时解析由手写的 `LaunchLocalization` 自包含完成（见 4.2）。
 
 ### 3.3 产物布局
 
 | 产物 | 位置 |
 |---|---|
 | 数据 | `Assets/Resources/Config/tblocalizationaot.bytes`（json 变体 `.json`） |
-| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/Generate/`：`TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs`（bean）；`Assets/Scripts/AOT/Launch/Localization/LanguageKey/`：`LanguageKey.cs`——分目录规避 `LocalFileSaver` 清目录互删，与 Hotfix 侧布局同构。命名空间均为 `AOT.Launch.Localization` |
-| 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录（不受 code target 清目录影响）：`LaunchLocalization.cs`、`README.md` |
+| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/LanguageKey/LanguageKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
+| 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录：`LaunchLocalization.cs`（含 `LocalizationAOTRow` 行数据类与 json/bin 自包含解析）、`README.md` |
 
 ### 3.4 Luban 源码微调（两处）
 
 1. `CsharpL10NKeyCodeTarget.CollectKeys` 表名筛选：`t.Name is "TbLocalization" or "TbLocalizationAOT"`（显式列表）。
-2. `FuFrameworkTableImporter` 新增 `tableImporter.strictGroup` 选项（默认 `false`）：开启时文件名**无分组段**的表跳过不导出（使 aot target 只导出显式 `aot` 分组的表；client/server 不传该选项，行为零变化）。同时 aot 段 bat 须传 `-x tableImporter.target=aot` 使分组判定生效（否则 `ExportTarget=null`，带分组段的表被静默跳过）。
+2. `FuFrameworkTableImporter`：把文件名第 3 段解析出的分组名经 `ParseCommentAndExport`/`TableInfo` 传播至 `RawTable.Groups`——缺失时显式分组表因 Groups 恒空被表级过滤丢弃（`DefAssembly.NeedExport` 语义：空 Groups 表仅当 target 含 default 组才导出，`aot` 组 `default=false`）。
 
 改动后需 `Tools/Luban/build-luban.bat` 重建。
 
@@ -80,13 +81,13 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 
 `Assets/Scripts/AOT/Launch/Localization/LaunchLocalization.cs`，静态类，脱离 UIModule/EventModule 自包含（与 `LaunchView` 同一原则）：
 
-- `Initialize()`：`Resources.Load<TextAsset>("Config/tblocalizationaot")` 同步加载并解析进生成的 `TableManager`；失败仅 LogError，不阻断启动
+- `InitializeAsync()`：`Resources.Load<TextAsset>("Config/tblocalizationaot")` 同步加载；解析**自包含**（json 变体用 SimpleJSON 逐行取字段；bin 变体用 `Luban.ByteBuf` 按记录数 + Excel 列序读取，该列序为硬约定，调整表列须同步解析代码）；解析异常仅 LogError 并清空数据，不阻断启动
 - `Language` 属性：PlayerPrefs（int，`(int)ELanguage`）中用户选择优先；无记录时 `ELanguage.FromSystemLanguage(Application.systemLanguage)` 兜底
-- `GetLanguage(key, args)`：查 `TbLocalizationAOT` → 当前语言字段 → 空则回退 `English`（与 Hotfix 版同构）→ 有参数则 `string.Format`；查无 key 时 LogError 返回空串
+- `GetLanguage(key, args)`：查行数据字典 → 当前语言字段 → 空则回退 `English`（与 Hotfix 版同构）→ 有参数则 `string.Format`；查无 key 时 LogError 返回空串
 
 ## 5. LaunchProcess / LaunchView 接线
 
-初始化时机：启动流程开头调用 `LaunchLocalization.Initialize()`（同步、微秒级）。文本对照（key 以 AOT 表实际为准，全部 `is_code=true`）：
+初始化时机：启动流程开头调用 `LaunchLocalization.InitializeAsync()`（同步解析、微秒级）。文本对照（key 以 AOT 表实际为准，全部 `is_code=true`）：
 
 | key | 现硬编码 | 位置 |
 |---|---|---|
