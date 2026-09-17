@@ -6,6 +6,7 @@ using YooAsset;
 using HybridCLR;
 using AOT.Framework.Core.Log;
 using AOT.Framework.ModuleSetting.Runtime;
+using AOT.Launch.Localization;
 using AOT.Launch.UpdateConfig;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
@@ -44,6 +45,9 @@ namespace AOT.Launch
             // 显示加载界面
             m_LaunchView = await LaunchView.CreateAsync();
 
+            // 初始化 AOT 本地化（加载 AOT 多语言表并确定语言，供启动流程文本使用）
+            await LaunchLocalization.InitializeAsync();
+
             var playMode = GameSetting.Instance.PlayMode;
 
             RemoteUpdateConfig updateConfig = null;
@@ -61,7 +65,7 @@ namespace AOT.Launch
             }
 
             // 初始化资源包
-            m_LaunchView.SetTip("InitPackage...");
+            m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_init_res_package));
             if (updateConfig == null)
             {
                 await LaunchAssetHelper.InitPackageAsync();
@@ -75,19 +79,19 @@ namespace AOT.Launch
             }
 
             // 获取版本号（失败重试）
-            m_LaunchView.SetTip("GetVersion...");
+            m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_get_res_version));
             string packageVersion;
             while ((packageVersion = await LaunchAssetHelper.RequestVersionAsync()) == null)
             {
-                m_LaunchView.SetTip("获取版本号失败，正在重试...");
+                m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_get_res_version_fail));
                 await UniTask.WaitForSeconds(3);
             }
 
             // 更新资源清单（失败重试）
-            m_LaunchView.SetTip("UpdateManifest...");
+            m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_update_res_manifest));
             while (!await LaunchAssetHelper.UpdateManifestAsync(packageVersion))
             {
-                m_LaunchView.SetTip("更新清单失败，正在重试...");
+                m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_update_res_manifest_fail));
                 await UniTask.WaitForSeconds(3);
             }
 
@@ -128,7 +132,7 @@ namespace AOT.Launch
                     FuLogger.LogError($"[Launch] 获取远端更新配置异常：{e.Message}");
                 }
 
-                m_LaunchView.SetTip("请求远端更新配置失败，正在重试...");
+                m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_req_remote_update_config_fail));
                 await UniTask.WaitForSeconds(3);
             }
         }
@@ -161,7 +165,7 @@ namespace AOT.Launch
                     var progress = args.CurrentDownloadBytes / (args.TotalDownloadBytes * 1f);
                     var cur      = UtilityAOT.File.GetBytesSizeWithUnit(args.CurrentDownloadBytes);
                     var tot      = UtilityAOT.File.GetBytesSizeWithUnit(args.TotalDownloadBytes);
-                    m_LaunchView.SetProgress(progress, $"下载中：{cur}/{tot}");
+                    m_LaunchView.SetProgress(progress, LaunchLocalization.GetLanguage(LanguageKey.aot_res_downloading, cur, tot));
                 };
                 var failed = false;
                 downloader.DownloadError += _ => failed = true;
@@ -171,7 +175,7 @@ namespace AOT.Launch
                 await downloader;
 
                 if (!failed && downloader.Status == EOperationStatus.Succeeded) return; // 下载成功
-                m_LaunchView.SetTip("下载失败，正在重试...");
+                m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_res_download_fail));
                 await UniTask.WaitForSeconds(3); // 失败后重建下载器重试
             }
         }
@@ -200,7 +204,7 @@ namespace AOT.Launch
                 if (bytes == null)
                 {
                     FuLogger.LogError($"[Launch] 加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
-                    m_LaunchView.SetTip("资源加载失败，请检查网络后重启游戏!");
+                    m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_res_load_fail));
                     return;
                 }
 
@@ -216,7 +220,7 @@ namespace AOT.Launch
             if (dllBytes == null)
             {
                 FuLogger.LogError($"[Launch] 加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
-                m_LaunchView.SetTip("资源加载失败，请检查网络后重启游戏!");
+                m_LaunchView.SetTip(LaunchLocalization.GetLanguage(LanguageKey.aot_res_load_fail));
                 return;
             }
 

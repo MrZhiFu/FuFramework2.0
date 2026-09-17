@@ -1,6 +1,7 @@
 using System;
 using FairyGUI;
 using Cysharp.Threading.Tasks;
+using AOT.Launch.Localization;
 using AOT.Launch.UI;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
@@ -115,7 +116,7 @@ namespace AOT.Launch
         public void ShowUpdateDialog(string content, Action onConfirm)
         {
             SetNeedUpgrade(true);
-            m_WinLauncher.btnOk.title     = "更新";
+            m_WinLauncher.btnOk.title     = LaunchLocalization.GetLanguage(LanguageKey.aot_update_dialog_ok_btn);
             m_WinLauncher.txtContent.text = content;
             m_WinLauncher.txtContent.onClick.Set(ctx =>
             {
