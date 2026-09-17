@@ -12,7 +12,8 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Bundles/Config ^
     -x cs-simple-json.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate ^
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/LanguageKey ^
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension ^
+    -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
