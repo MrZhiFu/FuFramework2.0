@@ -134,7 +134,7 @@ namespace AOT.Launch.Localization
         /// <summary>
         /// 获取 AOT 本地化多语言文本。
         /// </summary>
-        /// <param name="key">多语言 key（使用 AOT 版 LanguageKey 静态类字段）</param>
+        /// <param name="key">多语言 key（使用 AOT 版 L10nKey 静态类字段）</param>
         /// <param name="args">格式化参数</param>
         /// <returns>本地化文本；key 未找到时记录错误并返回空串</returns>
         public static string GetLanguage(string key, params object[] args)

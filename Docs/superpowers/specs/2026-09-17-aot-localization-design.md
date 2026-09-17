@@ -14,7 +14,7 @@
 |---|---|---|
 | 表名 | 改文件名获得独立表 `TbLocalizationAOT` | 按现有导入规则 `L-Localization-AOT` 会合并进 `TbLocalization`；改导入器源码会让规则复杂化 |
 | Excel 文件名 | `L-LocalizationAOT-aot-热更前.xlsx` | 第 2 段=表名，第 3 段 `aot`=分组（导入器既有能力） |
-| key 列名 | 统一为 `key`（现表头为 `v`） | `l10n.textFile.keyFieldName=key` 校验与 LanguageKey 收集均认 `key`，不改会崩 |
+| key 列名 | 统一为 `key`（现表头为 `v`） | `l10n.textFile.keyFieldName=key` 校验与 L10nKey 收集均认 `key`，不改会崩 |
 | 隔离机制 | Luban 原生分组 + 独立 target（方案 A） | 零侵入生成管线；扩展源码按表路由输出（方案 B）侵入 manifest 语义，否决 |
 | 脚本组织 | 并入现有 `gen-client-bin/json.bat` 追加第二段命令 | 一条命令出全部产物，不会忘记同步 |
 | 语言来源 | 用户持久化选择优先，系统语言兜底 | 与 Hotfix 初始逻辑对齐，热更前后语言一致 |
@@ -53,14 +53,14 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 > 修订说明（实施期裁定 R1'/R2/R3）：
 > 1. `-x tableImporter.target=aot` 使导入器文件级分组判定生效（缺失时 `ExportTarget=null`，带分组段的表被静默跳过）。
 > 2. `FuFrameworkTableImporter` 已把文件名分组段传播至 `RawTable.Groups`——此前恒空会导致显式分组表被 Luban 表级过滤丢弃（`DefAssembly.NeedExport`：空 Groups 表只属于 default 组，`aot` 组 `default=false`）。无分组段表天然不进 aot target，无需额外开关。
-> 3. **AOT 段不再生成表代码**（曾计划 `-c cs-bin`/`-c cs-simple-json`）：生成的表类/管理器硬依赖热更侧框架基类（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。AOT 段只生成 `LanguageKey` 常量与数据产物，运行时解析由手写的 `LaunchLocalization` 自包含完成（见 4.2）。
+> 3. **AOT 段不再生成表代码**（曾计划 `-c cs-bin`/`-c cs-simple-json`）：生成的表类/管理器硬依赖热更侧框架基类（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。AOT 段只生成 `L10nKey` 常量与数据产物，运行时解析由手写的 `LaunchLocalization` 自包含完成（见 4.2）。
 
 ### 3.3 产物布局
 
 | 产物 | 位置 |
 |---|---|
 | 数据 | `Assets/Resources/LaunchLocalizationText/tblocalizationaot.bytes`（json 变体 `.json`） |
-| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/LanguageKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
+| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/L10nKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
 | 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录：`LaunchLocalization.cs`（含 `LocalizationAOTRow` 行数据类与 json/bin 自包含解析）、`README.md` |
 
 ### 3.4 Luban 源码微调（两处）

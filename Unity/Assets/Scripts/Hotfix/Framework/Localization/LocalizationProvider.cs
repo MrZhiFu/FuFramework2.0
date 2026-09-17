@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Localization
         /// <summary>
         /// 获取本地化多语言
         /// </summary>
-        /// <param name="key">多语言key(使用静态类LanguageKey的多语言字段即可)</param>
+        /// <param name="key">多语言key(使用静态类L10nKey的多语言字段即可)</param>
         /// <param name="args">参数</param>
         /// <returns></returns>
         public string GetLanguage(string key, params object[] args)

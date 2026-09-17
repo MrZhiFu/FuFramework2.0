@@ -10,7 +10,7 @@ namespace Luban.CSharp.CodeTarget;
 
 /// <summary>
 /// 自定义多语言 Key 代码生成目标
-/// 生成包含所有多语言 Key 的静态类 : LanguageKey.cs
+/// 生成包含所有多语言 Key 的静态类 : L10nKey.cs
 /// </summary>
 [CodeTarget("cs-l10n-key")]
 public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
@@ -34,7 +34,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     /// <summary>
     /// 默认输出文件名
     /// </summary>
-    protected const string DefaultOutputFileName = "LanguageKey";
+    protected const string DefaultOutputFileName = "L10nKey";
 
     /// <summary>
     /// 日志记录器
@@ -52,20 +52,20 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
 
     /// <summary>
     /// 处理代码生成
-    /// 重写以生成LanguageKey.cs静态类
+    /// 重写以生成L10nKey.cs静态类
     /// </summary>
     public override void Handle(GenerationContext ctx, OutputFileManifest manifest)
     {
         var outputFileName = EnvManager.Current.GetOptionOrDefault(Name, "outputFile", true, DefaultOutputFileName);
 
-        // 生成LanguageKey.cs
+        // 生成L10nKey.cs
         var writer = new CodeWriter();
         GenerateL10NKeys(ctx, writer);
         manifest.AddFile(CreateOutputFile($"{outputFileName}.{FileSuffixName}", writer.ToResult(FileHeader)));
     }
 
     /// <summary>
-    /// 生成多语言LanguageKey.cs静态类
+    /// 生成多语言L10nKey.cs静态类
     /// </summary>
     /// <param name="ctx">生成时的上下文</param>
     /// <param name="writer">代码写入器</param>
@@ -83,7 +83,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
             { "__name", ctx.Target.Manager },
             { "__namespace", ctx.Target.TopModule },
             { "__full_name", TypeUtil.MakeFullName(ctx.Target.TopModule, ctx.Target.Manager) },
-            { "__class_name", "LanguageKey" },
+            { "__class_name", "L10nKey" },
             { "__keys", keys },
             { "__code_style", CodeStyle },
         };
@@ -134,7 +134,7 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
         var isCodeField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name == "is_code");
         if (isCodeField == null)
         {
-            throw new Exception($"本地化表:'{table.Name}' 缺少 'is_code' 列！所有本地化表必须声明 is_code(bool) 列，用于标记该 key 是否导出到 LanguageKey 类");
+            throw new Exception($"本地化表:'{table.Name}' 缺少 'is_code' 列！所有本地化表必须声明 is_code(bool) 列，用于标记该 key 是否导出到 L10nKey 类");
         }
 
         // 获取表数据
