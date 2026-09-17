@@ -1,5 +1,6 @@
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
+using AOT.Framework.Localization;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Proto;

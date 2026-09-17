@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
+using AOT.Framework.Localization;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Storage;
 
@@ -69,65 +70,6 @@ namespace Hotfix.Framework.Localization
         }
 
         /// <summary>
-        /// 获取系统语言。
-        /// </summary>
-        public static ELanguage SystemLanguage
-        {
-            get
-            {
-                return Application.systemLanguage switch
-                {
-                    // @formatter:off
-                    UnityEngine.SystemLanguage.Afrikaans          => ELanguage.Afrikaans,
-                    UnityEngine.SystemLanguage.Arabic             => ELanguage.Arabic,
-                    UnityEngine.SystemLanguage.Basque             => ELanguage.Basque,
-                    UnityEngine.SystemLanguage.Belarusian         => ELanguage.Belarusian,
-                    UnityEngine.SystemLanguage.Bulgarian          => ELanguage.Bulgarian,
-                    UnityEngine.SystemLanguage.Catalan            => ELanguage.Catalan,
-                    UnityEngine.SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
-                    UnityEngine.SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
-                    UnityEngine.SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
-                    UnityEngine.SystemLanguage.Czech              => ELanguage.Czech,
-                    UnityEngine.SystemLanguage.Danish             => ELanguage.Danish,
-                    UnityEngine.SystemLanguage.Dutch              => ELanguage.Dutch,
-                    UnityEngine.SystemLanguage.English            => ELanguage.English,
-                    UnityEngine.SystemLanguage.Estonian           => ELanguage.Estonian,
-                    UnityEngine.SystemLanguage.Faroese            => ELanguage.Faroese,
-                    UnityEngine.SystemLanguage.Finnish            => ELanguage.Finnish,
-                    UnityEngine.SystemLanguage.French             => ELanguage.French,
-                    UnityEngine.SystemLanguage.German             => ELanguage.German,
-                    UnityEngine.SystemLanguage.Greek              => ELanguage.Greek,
-                    UnityEngine.SystemLanguage.Hebrew             => ELanguage.Hebrew,
-                    UnityEngine.SystemLanguage.Hungarian          => ELanguage.Hungarian,
-                    UnityEngine.SystemLanguage.Icelandic          => ELanguage.Icelandic,
-                    UnityEngine.SystemLanguage.Indonesian         => ELanguage.Indonesian,
-                    UnityEngine.SystemLanguage.Italian            => ELanguage.Italian,
-                    UnityEngine.SystemLanguage.Japanese           => ELanguage.Japanese,
-                    UnityEngine.SystemLanguage.Korean             => ELanguage.Korean,
-                    UnityEngine.SystemLanguage.Latvian            => ELanguage.Latvian,
-                    UnityEngine.SystemLanguage.Lithuanian         => ELanguage.Lithuanian,
-                    UnityEngine.SystemLanguage.Norwegian          => ELanguage.Norwegian,
-                    UnityEngine.SystemLanguage.Polish             => ELanguage.Polish,
-                    UnityEngine.SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
-                    UnityEngine.SystemLanguage.Romanian           => ELanguage.Romanian,
-                    UnityEngine.SystemLanguage.Russian            => ELanguage.Russian,
-                    UnityEngine.SystemLanguage.SerboCroatian      => ELanguage.SerboCroatian,
-                    UnityEngine.SystemLanguage.Slovak             => ELanguage.Slovak,
-                    UnityEngine.SystemLanguage.Slovenian          => ELanguage.Slovenian,
-                    UnityEngine.SystemLanguage.Spanish            => ELanguage.Spanish,
-                    UnityEngine.SystemLanguage.Swedish            => ELanguage.Swedish,
-                    UnityEngine.SystemLanguage.Thai               => ELanguage.Thai,
-                    UnityEngine.SystemLanguage.Turkish            => ELanguage.Turkish,
-                    UnityEngine.SystemLanguage.Ukrainian          => ELanguage.Ukrainian,
-                    UnityEngine.SystemLanguage.Unknown            => ELanguage.Unspecified,
-                    UnityEngine.SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
-                    _                                             => ELanguage.Unspecified
-                    // @formatter:on
-                };
-            }
-        }
-
-        /// <summary>
         /// 初始化
         /// </summary>
         protected internal override void OnInit()
@@ -141,7 +83,7 @@ namespace Hotfix.Framework.Localization
             if (_storageModule == null)
             {
                 FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
-                m_Language = SystemLanguage;
+                m_Language = ELanguageHelper.FromSystemLanguage(Application.systemLanguage);
                 return;
             }
 
@@ -149,7 +91,7 @@ namespace Hotfix.Framework.Localization
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else
-                m_Language = SystemLanguage;
+                m_Language = ELanguageHelper.FromSystemLanguage(Application.systemLanguage);
         }
 
         /// <summary>
