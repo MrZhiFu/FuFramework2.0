@@ -22,7 +22,6 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 dotnet ../Tools/Luban/bin/Luban.dll ^
     -t aot ^
     -d bin ^
-    -c cs-bin ^
     -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/Config ^
     -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/Generate ^
