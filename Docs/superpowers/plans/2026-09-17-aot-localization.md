@@ -158,6 +158,37 @@ git commit -m "[AI]feat: luban 新增 aot 分组与独立导出目标，Language
 - Consumes: Task 2 的 `-t aot` target。
 - Produces: 生成 `TableManager`（命名空间 `AOT.Launch.Localization`，属性 `TbLocalizationAOT`，方法 `LoadAsync`；bin 版签名 `LoadAsync(Func<string, UniTask<ByteBuf>>)`、json 版 `LoadAsync(Func<string, UniTask<JSONNode>>)`，与 `HotfixLauncher.ConfigBufferLoader/ConfigLoader` 同构）；生成 `LocalizationAOT` bean（语言属性 `ChineseSimplified`...`Vietnamese`，同 Hotfix 版）；生成 `LanguageKey`（12 个 `aot_*` 常量）。Task 5/6 依赖这些类型与成员名。
 
+- [ ] **Step 0: `FuFrameworkTableImporter` 新增 strictGroup 选项并重建（实施期裁定 R1）**
+
+`Tools/Luban/source/src/Luban.Schema.Builtin/FuFrameworkTableImporter.cs`：
+
+1. `ImportSetting` 类新增属性：
+
+```csharp
+        /// <summary>
+        /// 严格分组模式：开启时，文件名无分组段的表跳过不导出（用于仅导出显式分组表的 target，如 aot）。
+        /// </summary>
+        public bool StrictGroup { get; set; }
+```
+
+2. `FormatImportSetting` 的返回对象追加一行：
+
+```csharp
+            StrictGroup         = DataUtil.ParseBool(EnvManager.Current.GetOptionOrDefault("tableImporter", "strictGroup", false, "false")),
+```
+
+3. `TryProcessFile` 中，在解析出 `tableInfo` 后（`ParseTableInfo` 返回非 null 之后、`CreateRawTable` 之前）插入：
+
+```csharp
+        // 严格分组模式：文件名无分组段（第3段非已定义分组）的表跳过不导出
+        if (importSetting.StrictGroup && !importSetting.Groups.Any(g => g.Names.Contains(rawFullName.Split(new[] { '-', '_' }, StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(2)?.Trim(), StringComparer.OrdinalIgnoreCase)))
+            return false;
+```
+
+4. 重建：`& "D:\_WorkSpace\Unity\FuFramework2.0\Tools\Luban\build-luban.bat" ci`，预期 `已成功生成。 0 个警告 0 个错误`。
+
+> 裁定背景：bat 不传 `tableImporter.target` 时 `ExportTarget=null`，带分组段的表被静默跳过；且 `CreateRawTable.Groups` 恒为空（空=属于所有分组），无组段表会全量涌入 aot target。strictGroup 与 `tableImporter.target=aot` 配合解决两者。
+
 - [ ] **Step 1: `gen-client-bin.bat` 追加第二段（插在 `pause` 之前）**
 
 ```bat
@@ -167,9 +198,11 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -c cs-bin ^
     -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/Config ^
-    -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/Generate ^
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/LanguageKey ^
     -x tableImporter.name=fuframework ^
+    -x tableImporter.target=aot ^
+    -x tableImporter.strictGroup=true ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
@@ -186,7 +219,7 @@ Run: `cd "D:/_WorkSpace/Unity/FuFramework2.0/Config"; cmd /c "echo. | .\gen-clie
 
 验证输出日志（关键证据）：
 - client 段 `[overwrite]` 列表**不含** `TbLocalizationAOT.cs`（client 隔离）
-- aot 段 `[overwrite]` 仅含：`.../AOT/Launch/Localization/TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs`、`LanguageKey.cs`
+- aot 段 `[overwrite]` 仅含：`.../AOT/Launch/Localization/Generate/TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs` 与 `.../AOT/Launch/Localization/LanguageKey/LanguageKey.cs`
 - aot 段数据产物：`[new] ../Unity/Assets/Resources/Config/tblocalizationaot.bytes`
 - 日志含 `收集导出到代码中的多语言key: 总共收集到 12 个多语言Key`（数量与 Task 1 实际 key 数一致）
 - 无 `ERROR`、无 `缺少 'is_code' 列` 报错
@@ -200,7 +233,7 @@ Run: `cd "D:/_WorkSpace/Unity/FuFramework2.0/Config"; cmd /c "echo. | .\gen-clie
 - [ ] **Step 5: 抽查生成代码**
 
 检查 `Unity/Assets/Scripts/AOT/Launch/Localization/`：
-- 各文件命名空间为 `AOT.Launch.Localization`
+- `Generate/` 下 `TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs`；`LanguageKey/` 下 `LanguageKey.cs`；各文件命名空间为 `AOT.Launch.Localization`
 - `LanguageKey.cs` 含 12 个 `public const string aot_*`
 - `TableManager.cs` 含 `public TbLocalizationAOT TbLocalizationAOT { get; private set; }` 样式的表属性与 `LoadAsync` 方法
 
@@ -208,8 +241,8 @@ Run: `cd "D:/_WorkSpace/Unity/FuFramework2.0/Config"; cmd /c "echo. | .\gen-clie
 
 ```bash
 cd "D:/_WorkSpace/Unity/FuFramework2.0"
-git add Config/gen-client-bin.bat Config/gen-client-json.bat Unity/Assets/Resources/Config Unity/Assets/Scripts/AOT/Launch/Localization
-git commit -m "[AI]feat: 生成脚本接入 AOT 本地化导出（Resources 数据 + AOT 代码，双变体）"
+git add Config/gen-client-bin.bat Config/gen-client-json.bat Tools/Luban/source/src/Luban.Schema.Builtin/FuFrameworkTableImporter.cs Unity/Assets/Resources/Config Unity/Assets/Scripts/AOT/Launch/Localization
+git commit -m "[AI]feat: 生成脚本接入 AOT 本地化导出（strictGroup 严格分组 + Resources 数据 + AOT 代码双变体）"
 ```
 
 ---
@@ -560,10 +593,10 @@ namespace AOT.Launch.Localization
 
 | 文件 | 说明 |
 |---|---|
-| `TableManager.cs` | AOT 表管理器（仅含 TbLocalizationAOT） |
-| `TbLocalizationAOT.cs` | 表类 |
-| `LocalizationAOT.cs` | 行数据 bean |
-| `LanguageKey.cs` | AOT 多语言 key 常量（仅 is_code=true 的 key） |
+| `Generate/TableManager.cs` | AOT 表管理器（仅含 TbLocalizationAOT） |
+| `Generate/TbLocalizationAOT.cs` | 表类 |
+| `Generate/LocalizationAOT.cs` | 行数据 bean |
+| `LanguageKey/LanguageKey.cs` | AOT 多语言 key 常量（仅 is_code=true 的 key） |
 
 数据产物：`Assets/Resources/Config/tblocalizationaot.bytes`（bin 变体）/ `.json`（json 变体）。
 
@@ -672,7 +705,7 @@ rm "Unity/Assets/Editor/FuFramework/Localization.meta"
 - [ ] **Step 2: 确认生成态收尾**
 
 Run: `git -C "D:/_WorkSpace/Unity/FuFramework2.0" status --porcelain`
-Expected: 无意外文件；`Unity/Assets/Resources/Config/` 仅 `tblocalizationaot.json`（json 收尾态）及 `.meta`；AOT/Launch/Localization 下生成 4 文件 + `LaunchLocalization.cs` + `README.md`（及各自 `.meta`）。
+Expected: 无意外文件；`Unity/Assets/Resources/Config/` 仅 `tblocalizationaot.json`（json 收尾态）及 `.meta`；AOT/Launch/Localization 下 `Generate/` 3 文件 + `LanguageKey/` 1 文件 + 根目录 `LaunchLocalization.cs`、`README.md`（及各自 `.meta`）。
 
 - [ ] **Step 3: Editor 冒烟**
 

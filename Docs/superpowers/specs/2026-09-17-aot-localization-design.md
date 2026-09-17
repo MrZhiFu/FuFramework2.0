@@ -40,26 +40,33 @@
 dotnet ../Tools/Luban/bin/Luban.dll ^
     -t aot -d bin -c cs-bin -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/Config ^
-    -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/Generate ^
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/LanguageKey ^
     -x tableImporter.name=fuframework ^
+    -x tableImporter.target=aot ^
+    -x tableImporter.strictGroup=true ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
     --conf ./Luban.conf
 ```
 
+> 修订说明（实施期裁定 R1/R2）：`tableImporter.target=aot` 使导入器分组判定生效；`tableImporter.strictGroup=true` 使**无分组段**的表（其余 11 张业务表）在 aot target 下跳过——否则空分组表按 Luban 语义属于所有分组会全量涌入。代码输出拆 `Generate/` 与 `LanguageKey/` 子目录：`LocalFileSaver` 每个 code target 保存前会清理输出目录中非本 target 文件，同目录会互删（与 Hotfix 侧分目录布局同构）。
+
 ### 3.3 产物布局
 
 | 产物 | 位置 |
 |---|---|
 | 数据 | `Assets/Resources/Config/tblocalizationaot.bytes`（json 变体 `.json`） |
-| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/`：`TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs`（bean）、`LanguageKey.cs`，命名空间 `AOT.Launch.Localization` |
-| 手写代码 | 同目录（混居，符合项目 `Tables/Extension` 习惯）：`LaunchLocalization.cs`、`README.md` |
+| 生成代码 | `Assets/Scripts/AOT/Launch/Localization/Generate/`：`TableManager.cs`、`TbLocalizationAOT.cs`、`LocalizationAOT.cs`（bean）；`Assets/Scripts/AOT/Launch/Localization/LanguageKey/`：`LanguageKey.cs`——分目录规避 `LocalFileSaver` 清目录互删，与 Hotfix 侧布局同构。命名空间均为 `AOT.Launch.Localization` |
+| 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录（不受 code target 清目录影响）：`LaunchLocalization.cs`、`README.md` |
 
-### 3.4 Luban 源码微调（唯一一处）
+### 3.4 Luban 源码微调（两处）
 
-`CsharpL10NKeyCodeTarget.CollectKeys` 表名筛选：`t.Name is "TbLocalization" or "TbLocalizationAOT"`（显式列表）。改动后需 `Tools/Luban/build-luban.bat` 重建。
+1. `CsharpL10NKeyCodeTarget.CollectKeys` 表名筛选：`t.Name is "TbLocalization" or "TbLocalizationAOT"`（显式列表）。
+2. `FuFrameworkTableImporter` 新增 `tableImporter.strictGroup` 选项（默认 `false`）：开启时文件名**无分组段**的表跳过不导出（使 aot target 只导出显式 `aot` 分组的表；client/server 不传该选项，行为零变化）。同时 aot 段 bat 须传 `-x tableImporter.target=aot` 使分组判定生效（否则 `ExportTarget=null`，带分组段的表被静默跳过）。
+
+改动后需 `Tools/Luban/build-luban.bat` 重建。
 
 ## 4. AOT 运行时
 
