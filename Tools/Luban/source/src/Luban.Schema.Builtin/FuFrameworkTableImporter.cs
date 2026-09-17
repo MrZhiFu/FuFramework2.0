@@ -105,6 +105,11 @@ public class FuFrameworkTableImporter : ITableImporter
         /// 表注释，如：道具表
         /// </summary>
         public string Comment { get; set; } = "";
+
+        /// <summary>
+        /// 文件名第3段解析出的分组名，如：aot。空串表示无分组段
+        /// </summary>
+        public string Group { get; set; } = "";
     }
 
     /// <summary>
@@ -163,7 +168,7 @@ public class FuFrameworkTableImporter : ITableImporter
         }
 
         // 整理成导入设置信息
-        return new ImportSetting
+        var importSetting = new ImportSetting
         {
             DataDir              = GenerationContext.GlobalConf.InputDataDir,
             Groups               = GenerationContext.GlobalConf.Groups,
@@ -174,6 +179,7 @@ public class FuFrameworkTableImporter : ITableImporter
             TableNameFormat      = EnvManager.Current.GetOptionOrDefault("tableImporter", "tableNameFormat",      false, "Tb{0}"),
             ValueTypeNameFormat  = EnvManager.Current.GetOptionOrDefault("tableImporter", "valueTypeNameFormat",  false, "{0}")
         };
+        return importSetting;
     }
 
     /// <summary>
@@ -284,7 +290,7 @@ public class FuFrameworkTableImporter : ITableImporter
         }
 
         // 解析注释和导出状态
-        var (comment, isExport) = ParseCommentAndExport(parts, importSetting);
+        var (comment, isExport, group) = ParseCommentAndExport(parts, importSetting);
         if (!isExport)
             return null;
 
@@ -300,7 +306,8 @@ public class FuFrameworkTableImporter : ITableImporter
             Namespace    = TypeUtil.MakeFullName(namespaceFromPath, string.Format(importSetting.TableNamespaceFormat, rawNamespace)),
             Name         = string.Format(importSetting.TableNameFormat, TypeUtil.GetName(rawName)),
             ValueType    = TypeUtil.MakeFullName(namespaceFromPath, string.Format(importSetting.ValueTypeNameFormat, TypeUtil.GetName(rawName))),
-            Comment      = rawName.Equals("Localization") ? "本地化多语言表" : comment
+            Comment      = rawName.Equals("Localization") ? "本地化多语言表" : comment,
+            Group        = group
         };
     }
 
@@ -309,27 +316,27 @@ public class FuFrameworkTableImporter : ITableImporter
     /// </summary>
     /// <param name="rawTableName">表名，如：D-Item—道具表</param>
     /// <param name="importSetting">导入设置信息</param>
-    /// <returns>注释和导出状态</returns>
-    private (string comment, bool isExport) ParseCommentAndExport(string[] rawTableName, ImportSetting importSetting)
+    /// <returns>注释、导出状态与分组名（无分组段时为空串）</returns>
+    private (string comment, bool isExport, string group) ParseCommentAndExport(string[] rawTableName, ImportSetting importSetting)
     {
         // 检查表名是否符合
         if (rawTableName.Length <= 2)
-            return ("", true);
+            return ("", true, "");
 
         // 检查是否有分组，分组在第3部分
         var part3   = rawTableName[2].Trim();
         var isGroup = importSetting.Groups.Any(g => g.Names.Contains(part3, StringComparer.OrdinalIgnoreCase));
         if (!isGroup)
-            return (part3, true);
+            return (part3, true, "");
 
         // 是分组，检查导出分组是否是导出的目标分组
         var canExport = importSetting.ExportTarget?.Groups.Any(g => g.Equals(part3, StringComparison.OrdinalIgnoreCase)) ?? false;
         if (!canExport)
-            return ("", false);
+            return ("", false, "");
 
         // 有分组时，使用第4部分作为描述
         var comment = rawTableName.Length > 3 ? rawTableName[3].Trim() : "";
-        return (comment, true);
+        return (comment, true, part3);
     }
 
     /// <summary>
@@ -349,7 +356,7 @@ public class FuFrameworkTableImporter : ITableImporter
             ReadSchemaFromFile = true,
             Mode               = TableMode.MAP,
             Comment            = info.Comment,
-            Groups             = new List<string>(),
+            Groups             = string.IsNullOrEmpty(info.Group) ? new List<string>() : new List<string> { info.Group },
             InputFiles         = new List<string> { relativePath },
             OutputFile         = ""
         };
