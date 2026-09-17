@@ -113,11 +113,21 @@ namespace AOT.Launch.Localization
 
             s_Rows.Clear();
 
+            try
+            {
 #if ENABLE_BINARY_CONFIG
-            ParseBin(textAsset.bytes);
+                ParseBin(textAsset.bytes);
 #else
-            ParseJson(textAsset.text);
+                ParseJson(textAsset.text);
 #endif
+            }
+            catch (Exception e)
+            {
+                // 数据解析失败（变体错配/数据损坏）仅记录错误并清空半解析数据，不阻断启动流程
+                FuLogger.LogError($"[LaunchLocalization] AOT 本地化数据解析失败，AOT 本地化不可用：{e.Message}");
+                s_Rows.Clear();
+            }
+
             await UniTask.CompletedTask;
         }
 
@@ -167,6 +177,8 @@ namespace AOT.Launch.Localization
                 text = row.English;
             }
 
+            text ??= string.Empty;
+
             return args is { Length: > 0 } ? string.Format(text, args) : text;
         }
 
@@ -202,7 +214,7 @@ namespace AOT.Launch.Localization
 
                 if (string.IsNullOrEmpty(row.Key)) continue;
 
-                s_Rows.Add(row.Key, row);
+                s_Rows.TryAdd(row.Key, row);
             }
         }
 
@@ -238,7 +250,7 @@ namespace AOT.Launch.Localization
 
                 if (string.IsNullOrEmpty(row.Key)) continue;
 
-                s_Rows.Add(row.Key, row);
+                s_Rows.TryAdd(row.Key, row);
             }
         }
 
