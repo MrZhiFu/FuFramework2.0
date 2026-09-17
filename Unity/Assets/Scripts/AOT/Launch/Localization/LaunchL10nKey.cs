@@ -11,7 +11,7 @@ namespace AOT.Launch.Localization
     /// <summary>
     /// 本地化多语言Key列表
     /// </summary>
-    public static class L10nKey
+    public static class LaunchL10nKey
     {
         /// <summary>
         /// 获取资源版本号

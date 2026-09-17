@@ -26,6 +26,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText ^
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x cs-l10n-key.className=LaunchL10nKey ^
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^

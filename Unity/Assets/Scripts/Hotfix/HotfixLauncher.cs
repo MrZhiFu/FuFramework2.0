@@ -5,6 +5,7 @@ using AOT.Launch;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
 using AOT.Framework.Core.Utility;
+using AOT.Launch.Localization;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Guide;
 using Hotfix.Framework.RedDot;
@@ -28,7 +29,7 @@ using Hotfix.Framework.Download;
 using Hotfix.Framework.Entity;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using AotL10N = AOT.Launch.Localization;
+using AOT.Launch.Localization;
 
 #if ENABLE_BINARY_CONFIG
 using Luban;
@@ -148,11 +149,11 @@ namespace Hotfix
         private static async UniTask InitDependenciesAsync(ILaunchView launchView)
         {
             // 加载配置表
-            launchView.SetTip(AotL10N.LaunchLocalization.GetLanguage(AotL10N.L10nKey.aot_res_loading_config));
+            launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_loading_config));
             var tableManager = await LoadConfigAsync();
 
             // 加载初始必要的公共UI资源包
-            launchView.SetTip(AotL10N.LaunchLocalization.GetLanguage(AotL10N.L10nKey.aot_res_loading_init_res));
+            launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_loading_init_res));
             await LoadCommonUIAsync();
 
             // 设置本地化多语言提供者
