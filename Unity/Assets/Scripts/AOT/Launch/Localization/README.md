@@ -8,7 +8,7 @@
 |---|---|
 | `LanguageKey/LanguageKey.cs` | AOT 多语言 key 常量（仅 is_code=true 的 key） |
 
-数据产物：`Assets/Resources/Config/tblocalizationaot.bytes`（bin 变体）/ `.json`（json 变体）。
+数据产物：`Assets/Resources/LaunchLocalizationText/tblocalizationaot.bytes`（bin 变体）/ `.json`（json 变体）。
 AOT 段**只生成数据与 key 常量，不生成表/管理器代码**——生成代码依赖热更侧配置框架（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。
 
 ## 手写文件

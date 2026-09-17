@@ -83,7 +83,7 @@ namespace AOT.Launch.Localization
         /// <summary>
         /// Resources 下 AOT 本地化表数据的加载路径（不含扩展名）。
         /// </summary>
-        private const string DataPath = "Config/tblocalizationaot";
+        private const string DataPath = "LaunchLocalizationText/tblocalizationaot";
 
         /// <summary>
         /// 多语言行数据字典。key 为多语言 key，value 为行数据。

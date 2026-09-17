@@ -39,7 +39,7 @@
 ```bat
 dotnet ../Tools/Luban/bin/Luban.dll ^
     -t aot -d bin -c cs-l10n-key ^
-    -x outputDataDir=../Unity/Assets/Resources/Config ^
+    -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText ^
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/LanguageKey ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^
@@ -58,7 +58,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
 
 | 产物 | 位置 |
 |---|---|
-| 数据 | `Assets/Resources/Config/tblocalizationaot.bytes`（json 变体 `.json`） |
+| 数据 | `Assets/Resources/LaunchLocalizationText/tblocalizationaot.bytes`（json 变体 `.json`） |
 | 生成代码 | `Assets/Scripts/AOT/Launch/Localization/LanguageKey/LanguageKey.cs`（命名空间 `AOT.Launch.Localization`；AOT 段不生成表/管理器代码，理由见 3.2 修订说明 3） |
 | 手写代码 | `Assets/Scripts/AOT/Launch/Localization/` 根目录：`LaunchLocalization.cs`（含 `LocalizationAOTRow` 行数据类与 json/bin 自包含解析）、`README.md` |
 
