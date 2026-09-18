@@ -1,3 +1,17 @@
+# ============================================================
+#  客户端配置表生成脚本（json 变体：数据 .json，cs-simple-json 目标）
+#
+#  功能：
+#    1. 检测 Luban.dll 缺失时自动先构建（换机 / 新 clone 后无需手动构建）
+#    2. client 段：全部业务表与本地化表
+#       → 数据产物 Unity/Assets/Bundles/Config/
+#       → 代码产物 Hotfix 表代码 + Tables/Extension/L10nKey 常量类
+#    3. aot 段：AOT 前置本地化（热更前文案）
+#       → 数据产物 Unity/Assets/Resources/LaunchLocalizationText/
+#       → 代码产物 AOT/Launch/Localization 的 LaunchL10nKey / ELanguage
+#  用法：在 Config/ 目录下运行：bash gen-xxx.sh
+#  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.sh 重建
+# ============================================================
 if [ ! -f ../Tools/Luban/bin/Luban.dll ]; then
     echo "[Luban] bin/Luban.dll not found, building first ..."
     bash ../Tools/Luban/build-luban.sh
