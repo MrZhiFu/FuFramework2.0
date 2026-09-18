@@ -22,4 +22,3 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x outputCodeDir=../Server/FuFramework.Config/Config \
     -x tableImporter.name=fuframework \
     --conf ./Luban.conf
-pause

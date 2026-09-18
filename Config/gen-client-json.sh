@@ -24,10 +24,27 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -c cs-l10n-key \
     -x outputDataDir=../Unity/Assets/Bundles/Config \
     -x cs-simple-json.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate \
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/LanguageKey \
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension \
+    -x outputSaver.cs-l10n-key.cleanUpOutputDir=false \
     -x tableImporter.name=fuframework \
     -x l10n.provider=fuframework \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \
     --conf ./Luban.conf
-pause
+dotnet ../Tools/Luban/bin/Luban.dll \
+    -t aot \
+    -d json \
+    -c cs-l10n-key \
+    -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText \
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization \
+    -x cs-l10n-key.className=LaunchL10nKey \
+    -c cs-enums \
+    -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization \
+    -x outputSaver.cs-enums.cleanUpOutputDir=false \
+    -x outputSaver.cs-l10n-key.cleanUpOutputDir=false \
+    -x tableImporter.name=fuframework \
+    -x tableImporter.target=aot \
+    -x l10n.provider=fuframework \
+    -x l10n.textFile.keyFieldName=key \
+    -x l10n.textFile.path=./Excels/Local/ \
+    --conf ./Luban.conf
