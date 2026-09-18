@@ -19,7 +19,7 @@ namespace Hotfix.Game.Config
     public sealed partial class LanguageDef : BeanBase
     {
         /// <summary> 本 bean 的类型标识常量 </summary>
-        public const int __ID__ = 491995501;
+        public const int __ID__ = 322864004;
 
         /// <summary> 语言 </summary>
         public ELanguage Language { private set; get; }
