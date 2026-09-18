@@ -13,7 +13,7 @@
 #  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.sh 重建
 # ============================================================
 if [ ! -f ../Tools/Luban/bin/Luban.dll ]; then
-    echo "[Luban] bin/Luban.dll not found, building first ..."
+    echo "[Luban] bin/Luban.dll 未找到，先自动构建 ..."
     bash ../Tools/Luban/build-luban.sh
 fi
 

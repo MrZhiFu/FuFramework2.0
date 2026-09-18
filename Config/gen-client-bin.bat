@@ -16,7 +16,8 @@ rem  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.bat 
 rem ============================================================
 rem Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
 if not exist "..\Tools\Luban\bin\Luban.dll" (
-    echo [Luban] bin/Luban.dll not found, building first ...
+    chcp 65001 >nul
+    echo [Luban] bin/Luban.dll 未找到，先自动构建 ...
     call "..\Tools\Luban\build-luban.bat" ci
 )
 
