@@ -15,6 +15,8 @@ Framework/
 │   └── FuLogger.cs              # 日志输出封装（条件编译控制）
 ├── Extension/                   # 扩展方法
 │   └── TypeEx.cs                # Type 扩展方法
+├── Localization/                # 本地化辅助
+│   └── ELanguageHelper.cs       # 系统语言 → ELanguage 映射（枚举为配置生成，定义于 AOT/Launch/Localization）
 └── Utility/                     # 静态工具类
     ├── Utility.Application.cs   # 平台判断、打开 URL
     ├── Utility.Assembly.cs      # 反射获取类型和程序集

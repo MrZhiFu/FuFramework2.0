@@ -6,10 +6,11 @@
 
 | 文件 | 说明 |
 |---|---|
-| `L10nKey.cs` | AOT 多语言 key 常量（仅 is_code=true 的 key） |
+| `LaunchL10nKey.cs` | AOT 多语言 key 常量（仅 is_code=true 的 key，类名经 `cs-l10n-key.className` 选项配置） |
+| `ELanguage.cs` | 语言枚举（`__enums__.xlsx` 语言 sheet 配置生成，cs-enums 目标产出） |
 
 数据产物：`Assets/Resources/LaunchLocalizationText/tblocalizationaot.bytes`（bin 变体）/ `.json`（json 变体）。
-AOT 段**只生成数据与 key 常量，不生成表/管理器代码**——生成代码依赖热更侧配置框架（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。
+AOT 段**只生成数据、key 常量与枚举，不生成表/管理器代码**——生成代码依赖热更侧配置框架（`BaseDataTable`/`ConfigModule`），AOT 程序集反向引用不可行。
 
 ## 手写文件
 
@@ -20,3 +21,4 @@ AOT 段**只生成数据与 key 常量，不生成表/管理器代码**——生
   热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
 
 数据源：`Config/Excels/Local/L-LocalizationAOT-aot-热更前.xlsx`（分组 `aot`）。
+语言枚举定义：`Config/Excels/__enums__.xlsx` 语言 sheet（与 Hotfix 侧生成枚举同源，成员集一致）。

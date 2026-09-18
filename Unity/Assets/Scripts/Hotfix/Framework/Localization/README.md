@@ -2,11 +2,11 @@
 
 ## 1. 简介
 
-FuFramework Localization 模块是游戏框架的本地化/多语言管理系统，支持 40+ 种语言的文本本地化。该模块通过 Luban 配置表管理多语言文本，支持运行时语言切换并自动广播事件通知所有监听者刷新文本。
+FuFramework Localization 模块是游戏框架的本地化/多语言管理系统，支持 15 种语言的文本本地化。该模块通过 Luban 配置表管理多语言文本，支持运行时语言切换并自动广播事件通知所有监听者刷新文本。
 
 ## 2. 核心特性
 
-- **多语言支持**：覆盖 40+ 种语言（`ELanguage` 枚举）
+- **多语言支持**：覆盖 15 种语言（`ELanguage` 枚举，**由 `__enums__.xlsx` 语言 sheet 配置生成**）
 - **配置表驱动**：本地化文本存储在 Luban 配置表 `TbLocalization` 中，策划可独立维护
 - **运行时切换**：通过 `Language` 属性动态切换语言，自动广播 `LanguageChangeEventArgs` 事件
 - **持久化存储**：语言设置通过 `StorageModule` 持久化保存，下次启动自动恢复
@@ -38,12 +38,13 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
               └───────────────────────────┘
 ```
 
-### 3.2 语言类型（ELanguage 枚举）
+### 3.2 语言类型（ELanguage 枚举，配置生成）
 
-命名空间：`Hotfix.Framework.Localization`
+命名空间：`Hotfix.Game.Config`（**由 Luban 配置生成，禁止手写**）
 
-部分支持的语言：
-`ChineseSimplified`, `ChineseTraditional`, `English`, `Japanese`, `Korean`, `French`, `German`, `Spanish`, `PortugueseBrazil`, `PortuguesePortugal`, `Russian`, `Arabic`, `Thai`, `Vietnamese`, `Indonesian`, `Turkish`, `Italian`, `Polish`, `Dutch`, ...
+定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 16 成员：`Unspecified=0` + 15 个语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`French`、`German`、`Indonesian`、`Italian`、`Japanese`、`Korean`、`PortugueseBrazil`、`PortuguesePortugal`、`Russian`、`Spanish`、`Thai`、`Vietnamese`，value 连续编号 1..15）。
+
+**扩语言四步**：枚举 sheet 追加成员（value 顺延）→ `TbLocalization` 加语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-语言定义.xlsx`）加行 → `LocalizationProvider`/AOT 侧 `LaunchLocalization` 的 switch 补分支。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
 
 ## 4. 核心类说明
 
@@ -57,8 +58,9 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 |------|------|------|
 | `Instance` | `LocalizationModule` | 模块静态单例 |
 | `Language` | `ELanguage` | 获取或设置当前语言（设置时会持久化并广播事件） |
-| `SystemLanguage` | `ELanguage`（静态） | 获取当前系统语言（只读） |
 | `LocalizationProvider` | `ILocalizationProvider` | 获取或设置本地化多语言提供者 |
+
+系统语言映射为私有方法 `GetSystemLanguage()`（初始化时无持久化记录时使用），映射项与 AOT 侧 `ELanguageHelper.FromSystemLanguage` 保持一致。
 
 **核心方法：**
 
@@ -136,11 +138,11 @@ public class LocalizationExample
     {
         var localizationModule = LocalizationModule.Instance;
 
-        // 获取当前语言下的本地化文本（无参数）
-        return localizationModule.GetLanguageText("UI_StartGame_Btn");
+        // 获取当前语言下的本地化文本（无参数；key 建议使用 L10nKey 常量类字段，避免硬编码）
+        return localizationModule.GetLanguageText(L10nKey.common_continue_game);
 
         // 获取当前语言下的本地化文本（带参数格式化）
-        // return localizationModule.GetLanguageText("UI_Gold_Count", 1000);
+        // return localizationModule.GetLanguageText(L10nKey.xxx_gold_count, 1000);
         // 对应配置表中的文本如: "金币: {0}" → 输出 "金币: 1000"
     }
 }
@@ -205,7 +207,6 @@ LocalizationModule.Instance.LocalizationProvider = new MyCustomLocalizationProvi
 
 ```text
 Localization/
-├── ELanguage.cs                  # 语言类型枚举
 ├── ILocalizationProvider.cs      # 本地化提供器接口
 ├── LanguageChangeEventArgs.cs    # 语言变更事件
 ├── LocalizationModule.cs         # 本地化管理模块
@@ -213,10 +214,12 @@ Localization/
 └── README.md                     # 本文档
 ```
 
+> 语言枚举 `ELanguage` 为配置生成（`Generate/ELanguage.cs`），多语言 key 常量类 `L10nKey` 在 `Game/AutoGen/Tables/Extension/` 下（`is_code=true` 的 key）。
+
 ## 7. 依赖
 
 - **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`
-- **Hotfix.Framework.Config**：配置表系统（`ConfigModule`、Luban `TbLocalization`）
+- **Hotfix.Framework.Config**：配置表系统（`ConfigModule`、Luban `TbLocalization`、语言枚举 `ELanguage`/语言定义表 `TbLanguageDef` 为配置生成）
 - **Hotfix.Framework.Event**：事件系统（`EventModule`、`GameEventArgs`）
 - **Hotfix.Framework.Storage**：本地存储（`StorageModule`，持久化语言设置）
 - **AOT.Framework.Core.Log**：日志（`FuLogger`）

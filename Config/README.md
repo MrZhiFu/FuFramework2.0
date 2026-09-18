@@ -140,6 +140,21 @@
 --xargs l10n.provider=fuframework --xargs l10n.textFile.keyFieldName=key  --xargs l10n.textFile.path=./Excels/Local/
 ```
 
+### 本地化体系与语言定义
+
+本地化相关配置由三类表 + 一个配置枚举构成：
+
+| 表 / 枚举 | 位置 | 说明 |
+|---|---|---|
+| `TbLocalization` | `Excels/Local/L-Localization-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；所有本地化表必须带 `is_code` 列，缺失时生成报错终止 |
+| `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物进 `Resources/LaunchLocalizationText/`，代码仅生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
+| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-语言定义.xlsx` | 语言定义表：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符。供语言切换 UI 等使用 |
+| `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化：16 成员（`Unspecified=0` + 15 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
+
+**扩语言四步**：`__enums__.xlsx` 追加枚举成员（value 顺延）→ 各本地化表加语言列 → `L-LanguageDef` 加行 → 代码侧 `LocalizationProvider` / `LaunchLocalization` 的 switch 补分支。
+
+**aot 分组**：`luban.conf` 定义了 `aot` 分组与 `aot` target（详见 `gen-client-bin/json.bat` 的第二段命令）；文件名第 3 段为 `aot` 的表只进入 aot 导出，其余表不受影响。生成器新增的 `cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
+
 ### 增加自动导表的文件名称扩展识别
 
 #### 导出参数(必须配置)
