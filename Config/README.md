@@ -155,6 +155,18 @@
 
 **aot 分组**：`luban.conf` 定义了 `aot` 分组与 `aot` target（详见 `gen-client-bin/json.bat` 的第二段命令）；文件名第 3 段为 `aot` 的表只进入 aot 导出，其余表不受影响。生成器新增的 `cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
 
+#### 扩展：新增多语言资源类型（如多语言图片 / 音频）
+
+体系当前只有**文本**一种多语言类型。未来要按语言区分其他资源（图片、音频、字体等）时，参照文本表的架构新增一张资源表（以"多语言图片"为例）：
+
+1. **建数据表**：`Excels/Tables/L-LocalizationImage-多语言图片.xlsx`（表名 `TbLocalizationImage`）。结构参照 `TbLocalization`：`key`(string) + `is_code`(bool) + 各语言列（列值为该语言的**资源路径**）。
+   **注意：不能放 `Excels/Local/`**——该目录是 `l10n.textFile` 文本校验专用通道，要求表带 `key` 字段（结构不符会在生成期崩溃）；资源表与 `TbLanguageDef` 一样放 `Excels/Tables/`。
+2. **生成 key 常量**：把表名 `TbLocalizationImage` 加入 `Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` 的 `CollectKeys` 表名筛选列表，key 常量随 `L10nKey` 一起生成；重建 Luban（`build-luban.bat`）。
+3. **运行时提供器**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationProvider.cs` 新建取值实现（查表 → switch 当前语言选列 → 空值回退 English 列 → `string.Format` 参数），返回的资源路径交给 `AssetModule` 加载。
+4. **产出**：重跑 `gen-client-bin/json`，数据与代码走常规链路（`TableManager` 自动纳入新表加载）。
+
+**联动提醒**：每新增一种多语言类型表，未来"扩语言"时该表也须同步加语言列（与 `TbLocalization` / `L-LanguageDef` / 枚举 sheet 四处联动，见上文扩语言四步）。
+
 ### 增加自动导表的文件名称扩展识别
 
 #### 导出参数(必须配置)

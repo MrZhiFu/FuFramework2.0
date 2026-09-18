@@ -240,3 +240,11 @@ Localization/
 3. 若 `LocalizationProvider` 未设置，`GetLanguageText` 会返回 `[key]` 格式的占位符文本并输出警告日志
 4. 语言设置存储在本地，卸载游戏后不会丢失
 5. 设置语言为 `ELanguage.Unspecified` 会抛出 `InvalidOperationException`
+
+## 10. 扩展：新增多语言资源类型
+
+体系当前仅覆盖**文本**。未来要按语言区分其他资源（图片 / 音频 / 字体等）时，复用本模块的 Provider 模式：
+
+1. **数据侧**：在 `Config/Excels/Tables/` 新建资源表（如 `TbLocalizationImage`：`key` + `is_code` + 各语言列存资源路径）。**不能放 `Excels/Local/`**（该目录是文本校验专用通道）；表名加入 `CsharpL10NKeyCodeTarget.CollectKeys` 筛选后 key 常量随 `L10nKey` 生成。完整数据侧步骤见 `Config/README.md` 的「扩展：新增多语言资源类型」。
+2. **运行时侧**：新建提供器实现 `ILocalizationProvider`（或独立接口），取值模式与 `LocalizationProvider` 一致：查表 → switch 当前语言选列 → 空值回退 English 列 → 参数格式化；返回的资源路径交由 `AssetModule` 加载。
+3. **联动**：新增类型表后，未来"扩语言"时须同步加语言列（与 `TbLocalization` / `TbLanguageDef` / 枚举 sheet 联动）。
