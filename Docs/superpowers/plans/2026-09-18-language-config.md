@@ -146,6 +146,34 @@ PY
 
 Expected: `语言定义表写入完成: 15 行`。
 
+- [ ] **Step 3: 4 张本地化表插入 PortugueseBrazil 列（与枚举完全对齐）**
+
+在 `L-Localization-成就/设置/通用.xlsx` 与 `L-LocalizationAOT-aot-热更前.xlsx` 的 `PortuguesePortugal` 列之前插入 `PortugueseBrazil`（string）列，**该列各数据行的值复制同行的 PortuguesePortugal 值**（初稿一致，后续可独立翻译）。注意：**AOT 表插列后 `LaunchLocalization.ParseBin` 的列序硬约定必须在 Task 3 同步**（PortugueseBrazil 位于 PortuguesePortugal 之前）。
+
+```bash
+python - <<'PY'
+import openpyxl, sys, io, glob
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+for f in sorted(glob.glob(r'D:/_WorkSpace/Unity/FuFramework2.0/Config/Excels/Local/*.xlsx')):
+    wb = openpyxl.load_workbook(f)
+    ws = wb.active
+    # 定位 PortuguesePortugal 列（从表头行，即第 1 行）
+    pp_col = next(c for c in range(1, ws.max_column + 1) if ws.cell(1, c).value == 'PortuguesePortugal')
+    if ws.cell(1, pp_col - 1).value == 'PortugueseBrazil':
+        print('跳过（已存在）:', f.split('/')[-1]); wb.close(); continue
+    ws.insert_cols(pp_col)
+    ws.cell(1, pp_col, 'PortugueseBrazil'); ws.cell(2, pp_col, 'string')
+    ws.cell(3, pp_col, '葡萄牙语(巴西)')
+    for r in range(4, ws.max_row + 1):  # 数据行复制葡葡值
+        src = ws.cell(r, pp_col + 1).value
+        ws.cell(r, pp_col, src if src is not None else '')
+    wb.save(f); wb.close()
+    print('已插列:', f.split('/')[-1], '列位', pp_col)
+PY
+```
+
+Expected: 4 张表各输出一行「已插列」。随后重跑 Step 1 探测脚本核对 4 张表列头均含 `PortugueseBrazil` 且位于 `PortuguesePortugal` 之前。
+
 - [ ] **Step 2: 读回验证**
 
 重跑 Step 1 的探测脚本（把 `wb.worksheets[0]` 改为 `wb['语言']`），核对：
@@ -321,16 +349,25 @@ git rm "Unity/Assets/Scripts/AOT/Framework/Localization/ELanguage.cs"
 
 （生成版 `ELanguage.cs` 由 Task 2 产出且与手写版同名同空间，删除后编译引用无缝。）
 
-- [ ] **Step 3: `LaunchLocalization.cs` switch 缩减**
+- [ ] **Step 3: `LaunchLocalization.cs` 适配（row 类 + 解析 + switch）**
 
-`GetLanguage` 的 switch 删除以下 2 行（成员已不存在，编译必需）：
+1. `LocalizationAOTRow` 类新增属性（放在 `PortuguesePortugal` 之前）：
+
+```csharp
+        /// <summary> 葡萄牙语（巴西） </summary>
+        public string PortugueseBrazil { get; set; }
+```
+
+2. `ParseJson` 的对象初始化器在 `PortuguesePortugal` 之前加一行：`PortugueseBrazil = node["PortugueseBrazil"],`
+3. `ParseBin` 的读取链在 `PortuguesePortugal` 之前加一行：`PortugueseBrazil = buf.ReadString(),`（**列序硬约定同步**：Task 1 Step 3 已在 AOT 表 `PortuguesePortugal` 之前插列）
+4. `GetLanguage` 的 switch：删除以下 2 行（成员已不存在）：
 
 ```csharp
                 ELanguage.Belarusian         => row.Russian,
                 ELanguage.Ukrainian          => row.Russian,
 ```
 
-保留其余所有行（`PortugueseBrazil => row.PortuguesePortugal` 兜底保留）。最终 switch 仅含 16 成员：15 语言各一行（PortugueseBrazil 复用 PortuguesePortugal 字段），`_ => row.English` 保留。
+并将 `ELanguage.PortugueseBrazil => row.PortuguesePortugal,` 改为 `ELanguage.PortugueseBrazil => row.PortugueseBrazil,`（直取新列）。最终 switch 仅含 16 成员，`_ => row.English` 保留。
 
 - [ ] **Step 4: Unity 编译验证**
 
@@ -400,7 +437,7 @@ git commit -m "[AI]refactor: 删除手写 ELanguage 改用生成枚举并缩减 
 - [ ] **Step 2: `LocalizationProvider.cs`**
 
 1. `using AOT.Framework.Localization;` → 删除（`Hotfix.Game.Config` 已在 using 列表——若无需新增则不加；`ELanguage`/`TbLocalization` 均解析自 `Hotfix.Game.Config`）
-2. `GetLanguage` 的 switch 删除 `ELanguage.Belarusian => localization.Russian,` 与 `ELanguage.Ukrainian => localization.Russian,` 两行（保留 `PortugueseBrazil => localization.PortuguesePortugal`），最终仅含 16 成员映射
+2. `GetLanguage` 的 switch：删除 `ELanguage.Belarusian => localization.Russian,` 与 `ELanguage.Ukrainian => localization.Russian,` 两行，并将 `ELanguage.PortugueseBrazil => localization.PortuguesePortugal,` 改为 `ELanguage.PortugueseBrazil => localization.PortugueseBrazil,`（直取新列，bean 已含该属性）。最终仅含 16 成员映射
 
 - [ ] **Step 3: `LanguageChangeEventArgs.cs`**
 
