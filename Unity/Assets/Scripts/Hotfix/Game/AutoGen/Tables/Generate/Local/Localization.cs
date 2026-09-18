@@ -60,6 +60,9 @@ namespace Hotfix.Game.Config
         /// <summary> 意大利语 </summary>
         public string Italian { private set; get; }
 
+        /// <summary> 葡萄牙语(巴西) </summary>
+        public string PortugueseBrazil { private set; get; }
+
         /// <summary> 葡萄牙语 </summary>
         public string PortuguesePortugal { private set; get; }
 
@@ -88,10 +91,11 @@ namespace Hotfix.Game.Config
         /// <param name="german">德语</param>
         /// <param name="russian">俄语</param>
         /// <param name="italian">意大利语</param>
+        /// <param name="portugueseBrazil">葡萄牙语(巴西)</param>
         /// <param name="portuguesePortugal">葡萄牙语</param>
         /// <param name="spanish">西班牙语</param>
         /// <param name="vietnamese">越南语</param>
-        public Localization(string key, bool isCode, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portuguesePortugal, string spanish, string vietnamese) 
+        public Localization(string key, bool isCode, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portugueseBrazil, string portuguesePortugal, string spanish, string vietnamese) 
         {
             Key = key;
             IsCode = isCode;
@@ -106,6 +110,7 @@ namespace Hotfix.Game.Config
             German = german;
             Russian = russian;
             Italian = italian;
+            PortugueseBrazil = portugueseBrazil;
             PortuguesePortugal = portuguesePortugal;
             Spanish = spanish;
             Vietnamese = vietnamese;
@@ -131,6 +136,7 @@ namespace Hotfix.Game.Config
             { if(!node["German"].IsString) { throw new SerializationException(); }  German = node["German"]; }
             { if(!node["Russian"].IsString) { throw new SerializationException(); }  Russian = node["Russian"]; }
             { if(!node["Italian"].IsString) { throw new SerializationException(); }  Italian = node["Italian"]; }
+            { if(!node["PortugueseBrazil"].IsString) { throw new SerializationException(); }  PortugueseBrazil = node["PortugueseBrazil"]; }
             { if(!node["PortuguesePortugal"].IsString) { throw new SerializationException(); }  PortuguesePortugal = node["PortuguesePortugal"]; }
             { if(!node["Spanish"].IsString) { throw new SerializationException(); }  Spanish = node["Spanish"]; }
             { if(!node["Vietnamese"].IsString) { throw new SerializationException(); }  Vietnamese = node["Vietnamese"]; }
@@ -182,6 +188,7 @@ namespace Hotfix.Game.Config
                    + "German:"             + German             + ","
                    + "Russian:"            + Russian            + ","
                    + "Italian:"            + Italian            + ","
+                   + "PortugueseBrazil:"   + PortugueseBrazil   + ","
                    + "PortuguesePortugal:" + PortuguesePortugal + ","
                    + "Spanish:"            + Spanish            + ","
                    + "Vietnamese:"         + Vietnamese         + ","

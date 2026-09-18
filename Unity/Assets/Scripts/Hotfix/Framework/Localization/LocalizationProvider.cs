@@ -1,6 +1,5 @@
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using AOT.Framework.Localization;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
 using Hotfix.Game.Proto;
@@ -56,12 +55,10 @@ namespace Hotfix.Framework.Localization
                 ELanguage.German             => localization.German,
                 ELanguage.Italian            => localization.Italian,
                 ELanguage.PortuguesePortugal => localization.PortuguesePortugal,
+                ELanguage.PortugueseBrazil   => localization.PortugueseBrazil,
                 ELanguage.Spanish            => localization.Spanish,
                 ELanguage.Vietnamese         => localization.Vietnamese,
-                ELanguage.PortugueseBrazil   => localization.PortuguesePortugal,
                 ELanguage.Russian            => localization.Russian,
-                ELanguage.Belarusian         => localization.Russian,
-                ELanguage.Ukrainian          => localization.Russian,
                 _                            => localization.English, // 语言类型未支持时，统一使用英语
                 // @formatter:on
             };

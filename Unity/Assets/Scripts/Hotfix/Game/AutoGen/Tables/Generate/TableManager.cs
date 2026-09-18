@@ -17,6 +17,9 @@ namespace Hotfix.Game.Config
 {
     public partial class TableManager
     {
+        /// <summary> 语言定义 </summary>
+        private TbLanguageDef TbLanguageDef { set; get; }
+
         /// <summary> 本地化多语言表 </summary>
         private TbLocalization TbLocalization { set; get; }
 
@@ -82,6 +85,10 @@ namespace Hotfix.Game.Config
             m_ConfigModule.RemoveAllConfigs();
             var loadTasks = new List<UniTask>();
 
+            TbLanguageDef = new TbLanguageDef(() => loader("tblanguagedef"));
+            loadTasks.Add(TbLanguageDef.LoadAsync());
+            m_ConfigModule.AddConfig(nameof(TbLanguageDef), TbLanguageDef);
+
             TbLocalization = new TbLocalization(() => loader("tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
             m_ConfigModule.AddConfig(nameof(TbLocalization), TbLocalization);
@@ -139,6 +146,7 @@ namespace Hotfix.Game.Config
         /// </summary>
         private void ResolveRef()
         {
+            TbLanguageDef.ResolveRef(this);
             TbLocalization.ResolveRef(this);
             TbAchievement.ResolveRef(this);
             TbItem.ResolveRef(this);
@@ -161,6 +169,7 @@ namespace Hotfix.Game.Config
         {
             if (IsLoaded == false) throw new InvalidOperationException("为配置表设置本地化翻译器失败，配置表没有被加载!");
 
+            TbLanguageDef.TranslateText(translator);
             TbLocalization.TranslateText(translator);
             TbAchievement.TranslateText(translator);
             TbItem.TranslateText(translator);

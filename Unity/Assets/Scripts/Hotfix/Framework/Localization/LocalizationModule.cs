@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using AOT.Framework.Localization;
+using Hotfix.Game.Config;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Storage;
 
@@ -70,6 +70,36 @@ namespace Hotfix.Framework.Localization
         }
 
         /// <summary>
+        /// 获取系统语言对应的本地化语言类型（枚举为配置生成，映射项与 AOT 侧 ELanguageHelper 保持一致）。
+        /// </summary>
+        /// <returns>本地化语言类型（无法识别时返回 Unspecified）</returns>
+        private static ELanguage GetSystemLanguage()
+        {
+            return Application.systemLanguage switch
+            {
+                // @formatter:off
+                UnityEngine.SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
+                UnityEngine.SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
+                UnityEngine.SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
+                UnityEngine.SystemLanguage.English            => ELanguage.English,
+                UnityEngine.SystemLanguage.French             => ELanguage.French,
+                UnityEngine.SystemLanguage.German             => ELanguage.German,
+                UnityEngine.SystemLanguage.Indonesian         => ELanguage.Indonesian,
+                UnityEngine.SystemLanguage.Italian            => ELanguage.Italian,
+                UnityEngine.SystemLanguage.Japanese           => ELanguage.Japanese,
+                UnityEngine.SystemLanguage.Korean             => ELanguage.Korean,
+                UnityEngine.SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
+                UnityEngine.SystemLanguage.Russian            => ELanguage.Russian,
+                UnityEngine.SystemLanguage.Spanish            => ELanguage.Spanish,
+                UnityEngine.SystemLanguage.Thai               => ELanguage.Thai,
+                UnityEngine.SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
+                UnityEngine.SystemLanguage.Unknown            => ELanguage.Unspecified,
+                _                                             => ELanguage.Unspecified
+                // @formatter:on
+            };
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         protected internal override void OnInit()
@@ -83,7 +113,7 @@ namespace Hotfix.Framework.Localization
             if (_storageModule == null)
             {
                 FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
-                m_Language = ELanguageHelper.FromSystemLanguage(Application.systemLanguage);
+                m_Language = GetSystemLanguage();
                 return;
             }
 
@@ -91,7 +121,7 @@ namespace Hotfix.Framework.Localization
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else
-                m_Language = ELanguageHelper.FromSystemLanguage(Application.systemLanguage);
+                m_Language = GetSystemLanguage();
         }
 
         /// <summary>

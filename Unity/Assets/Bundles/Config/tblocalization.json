@@ -2,7 +2,7 @@
   {
     "key": "achievement_name_01",
     "is_code": false,
-    "ChineseSimplified": "独自享受的日常",
+    "ChineseSimplified": "\u00A0独自享受的日常",
     "ChineseTraditional": "",
     "English": "",
     "Japanese": "",
@@ -13,6 +13,7 @@
     "German": "",
     "Russian": "",
     "Italian": "",
+    "PortugueseBrazil": "",
     "PortuguesePortugal": "",
     "Spanish": "",
     "Vietnamese": ""
@@ -20,7 +21,7 @@
   {
     "key": "achievement_name_02",
     "is_code": false,
-    "ChineseSimplified": "神社的守护者",
+    "ChineseSimplified": "\u00A0神社的守护者",
     "ChineseTraditional": "",
     "English": "",
     "Japanese": "",
@@ -31,6 +32,7 @@
     "German": "",
     "Russian": "",
     "Italian": "",
+    "PortugueseBrazil": "",
     "PortuguesePortugal": "",
     "Spanish": "",
     "Vietnamese": ""
@@ -49,6 +51,7 @@
     "German": "",
     "Russian": "",
     "Italian": "",
+    "PortugueseBrazil": "",
     "PortuguesePortugal": "",
     "Spanish": "",
     "Vietnamese": ""
@@ -56,7 +59,7 @@
   {
     "key": "achievement_content_2",
     "is_code": false,
-    "ChineseSimplified": "您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）",
+    "ChineseSimplified": "\u00A0您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）",
     "ChineseTraditional": "",
     "English": "",
     "Japanese": "",
@@ -67,6 +70,7 @@
     "German": "",
     "Russian": "",
     "Italian": "",
+    "PortugueseBrazil": "",
     "PortuguesePortugal": "",
     "Spanish": "",
     "Vietnamese": ""
@@ -85,6 +89,7 @@
     "German": "",
     "Russian": "",
     "Italian": "",
+    "PortugueseBrazil": "",
     "PortuguesePortugal": "",
     "Spanish": "",
     "Vietnamese": ""
@@ -103,6 +108,7 @@
     "German": "Speicherverwaltung",
     "Russian": "Управление сохранениями",
     "Italian": "Gestione salvataggi",
+    "PortugueseBrazil": "Gerenciar saves",
     "PortuguesePortugal": "Gerenciar saves",
     "Spanish": "Gestión de guardados",
     "Vietnamese": "Quản lý lưu trữ"
@@ -121,6 +127,7 @@
     "German": "Systemeinstellungen",
     "Russian": "Системные настройки",
     "Italian": "Impostazioni di sistema",
+    "PortugueseBrazil": "Configurações do sistema",
     "PortuguesePortugal": "Configurações do sistema",
     "Spanish": "Configuración del sistema",
     "Vietnamese": "Cài đặt hệ thống"
@@ -139,6 +146,7 @@
     "German": "Toneinstellungen",
     "Russian": "Настройки звука",
     "Italian": "Impostazioni audio",
+    "PortugueseBrazil": "Configurações de som",
     "PortuguesePortugal": "Configurações de som",
     "Spanish": "Configuración de sonido",
     "Vietnamese": "Cài đặt âm thanh"
@@ -157,6 +165,7 @@
     "German": "Texteinstellungen",
     "Russian": "Настройки текста",
     "Italian": "Impostazioni testo",
+    "PortugueseBrazil": "Configurações de texto",
     "PortuguesePortugal": "Configurações de texto",
     "Spanish": "Configuración de texto",
     "Vietnamese": "Cài đặt văn bản"
@@ -175,6 +184,7 @@
     "German": "Tastatureinstellungen",
     "Russian": "Настройки клавиатуры",
     "Italian": "Impostazioni tastiera",
+    "PortugueseBrazil": "Configurações de teclado",
     "PortuguesePortugal": "Configurações de teclado",
     "Spanish": "Configuración de teclado",
     "Vietnamese": "Cài đặt bàn phím"
@@ -193,6 +203,7 @@
     "German": "Spiel starten",
     "Russian": "Начать игру",
     "Italian": "Inizia gioco",
+    "PortugueseBrazil": "Iniciar jogo",
     "PortuguesePortugal": "Iniciar jogo",
     "Spanish": "Iniciar juego",
     "Vietnamese": "Bắt đầu trò chơi"
@@ -211,6 +222,7 @@
     "German": "Spiel laden",
     "Russian": "Загрузить игру",
     "Italian": "Carica gioco",
+    "PortugueseBrazil": "Carregar jogo",
     "PortuguesePortugal": "Carregar jogo",
     "Spanish": "Cargar juego",
     "Vietnamese": "Tải trò chơi"
@@ -229,6 +241,7 @@
     "German": "Einstellungen",
     "Russian": "Настройки",
     "Italian": "Impostazioni",
+    "PortugueseBrazil": "Configurações",
     "PortuguesePortugal": "Configurações",
     "Spanish": "Configuración",
     "Vietnamese": "Cài đặt"
@@ -247,6 +260,7 @@
     "German": "Galerie",
     "Russian": "Галерея",
     "Italian": "Galleria",
+    "PortugueseBrazil": "Galeria",
     "PortuguesePortugal": "Galeria",
     "Spanish": "Galería",
     "Vietnamese": "Thư viện"
@@ -265,6 +279,7 @@
     "German": "Über",
     "Russian": "О игре",
     "Italian": "Info",
+    "PortugueseBrazil": "Sobre",
     "PortuguesePortugal": "Sobre",
     "Spanish": "Acerca de",
     "Vietnamese": "Thông tin"
@@ -283,6 +298,7 @@
     "German": "Beenden",
     "Russian": "Выход",
     "Italian": "Esci",
+    "PortugueseBrazil": "Sair",
     "PortuguesePortugal": "Sair",
     "Spanish": "Salir",
     "Vietnamese": "Thoát"
@@ -301,6 +317,7 @@
     "German": "Neues Spiel",
     "Russian": "Новая игра",
     "Italian": "Nuovo gioco",
+    "PortugueseBrazil": "Novo jogo",
     "PortuguesePortugal": "Novo jogo",
     "Spanish": "Nuevo juego",
     "Vietnamese": "Trò chơi mới"
@@ -319,6 +336,7 @@
     "German": "Fortsetzen",
     "Russian": "Продолжить",
     "Italian": "Continua",
+    "PortugueseBrazil": "Continuar",
     "PortuguesePortugal": "Continuar",
     "Spanish": "Continuar",
     "Vietnamese": "Tiếp tục"
@@ -337,6 +355,7 @@
     "German": "OK",
     "Russian": "ОК",
     "Italian": "OK",
+    "PortugueseBrazil": "OK",
     "PortuguesePortugal": "OK",
     "Spanish": "OK",
     "Vietnamese": "OK"
@@ -355,6 +374,7 @@
     "German": "Abbrechen",
     "Russian": "Отмена",
     "Italian": "Annulla",
+    "PortugueseBrazil": "Cancelar",
     "PortuguesePortugal": "Cancelar",
     "Spanish": "Cancelar",
     "Vietnamese": "Hủy"
@@ -373,6 +393,7 @@
     "German": "Spiel beenden?",
     "Russian": "Выйти из игры?",
     "Italian": "Uscire dal gioco?",
+    "PortugueseBrazil": "Sair do jogo?",
     "PortuguesePortugal": "Sair do jogo?",
     "Spanish": "¿Salir del juego?",
     "Vietnamese": "Thoát trò chơi?"
@@ -391,6 +412,7 @@
     "German": "Immer bestätigen",
     "Russian": "Всегда подтверждать",
     "Italian": "Conferma sempre",
+    "PortugueseBrazil": "Confirmar sempre",
     "PortuguesePortugal": "Confirmar sempre",
     "Spanish": "Confirmar siempre",
     "Vietnamese": "Luôn xác nhận"

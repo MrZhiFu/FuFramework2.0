@@ -56,6 +56,9 @@ namespace AOT.Launch.Localization
         /// <summary> 意大利语 </summary>
         public string Italian { get; set; }
 
+        /// <summary> 葡萄牙语（巴西） </summary>
+        public string PortugueseBrazil { get; set; }
+
         /// <summary> 葡萄牙语（葡萄牙） </summary>
         public string PortuguesePortugal { get; set; }
 
@@ -161,12 +164,10 @@ namespace AOT.Launch.Localization
                 ELanguage.German             => row.German,
                 ELanguage.Italian            => row.Italian,
                 ELanguage.PortuguesePortugal => row.PortuguesePortugal,
+                ELanguage.PortugueseBrazil   => row.PortugueseBrazil,
                 ELanguage.Spanish            => row.Spanish,
                 ELanguage.Vietnamese         => row.Vietnamese,
-                ELanguage.PortugueseBrazil   => row.PortuguesePortugal,
                 ELanguage.Russian            => row.Russian,
-                ELanguage.Belarusian         => row.Russian,
-                ELanguage.Ukrainian          => row.Russian,
                 _                            => row.English, // 语言类型未支持时，统一使用英语
                 // @formatter:on
             };
@@ -207,6 +208,7 @@ namespace AOT.Launch.Localization
                     German             = node["German"],
                     Russian            = node["Russian"],
                     Italian            = node["Italian"],
+                    PortugueseBrazil   = node["PortugueseBrazil"],
                     PortuguesePortugal = node["PortuguesePortugal"],
                     Spanish            = node["Spanish"],
                     Vietnamese         = node["Vietnamese"],
@@ -243,6 +245,7 @@ namespace AOT.Launch.Localization
                     German             = buf.ReadString(),
                     Russian            = buf.ReadString(),
                     Italian            = buf.ReadString(),
+                    PortugueseBrazil   = buf.ReadString(),
                     PortuguesePortugal = buf.ReadString(),
                     Spanish            = buf.ReadString(),
                     Vietnamese         = buf.ReadString(),

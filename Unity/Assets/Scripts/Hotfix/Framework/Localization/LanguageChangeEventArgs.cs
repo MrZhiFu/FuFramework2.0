@@ -1,6 +1,6 @@
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Core;
-using AOT.Framework.Localization;
+using Hotfix.Game.Config;
 
 namespace Hotfix.Framework.Localization
 {
