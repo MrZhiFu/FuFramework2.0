@@ -37,7 +37,7 @@
 生成物：
 
 - client target（语言表 bean 引用 → imported types）→ `Hotfix/Game/AutoGen/Tables/Generate/` 下 `ELanguage.cs`（命名空间 `Hotfix.Game.Config`）
-- aot target（`cs-enums`）→ `Assets/Scripts/AOT/Framework/Localization/ELanguage.cs`（命名空间 `AOT.Framework.Localization`）
+- aot target（`cs-enums`）→ `Assets/Scripts/AOT/Launch/Localization/ELanguage.cs`（命名空间 `AOT.Launch.Localization`，即 aot target 的 topModule——实施事实：枚举与 LaunchL10nKey/LaunchLocalization 同空间更内聚）
 
 ## 4. 语言定义表 `TbLanguageDef`
 
@@ -61,7 +61,7 @@
 
 - 注册：`Luban.CSharp` 新增 `[CodeTarget("cs-enums")]`（`CsharpEnumsCodeTarget`）：渲染现有 `enum.sbn` 模板，枚举集为**分组匹配的枚举**（实现时验证 Luban 的枚举导出过滤——优先用枚举 `group` 列（`ELanguage` 设 `aot` 组并同步 `luban.conf` 语义验证 client 侧不受影响）；若 Luban 无枚举分组过滤机制，则按「被任意 target 导出 bean 引用的枚举」全量生成并接受 AOT 侧少量无关枚举）
 - 未匹配到任何枚举时输出空且不报错
-- aot 段 bat（bin/json 两份）追加 `-c cs-enums -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Framework/Localization`，并加 `-x outputSaver.cs-enums.cleanUpOutputDir=false`（该目录有手写文件 `ELanguageHelper` 所在文件与 README——FileCleaner 会误删）
+- aot 段 bat（bin/json 两份）追加 `-c cs-enums -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization`，并加 `-x outputSaver.cs-enums.cleanUpOutputDir=false`（该目录有手写文件 LaunchLocalization.cs 与 README——FileCleaner 会误删；ELanguageHelper 在 AOT/Framework/Localization/ 下经 using AOT.Launch.Localization 引用生成枚举）
 
 ## 6. 删除手写 `ELanguage.cs` 与两侧适配
 
