@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT.Framework.Core.Extension;
+using AOT.Framework.Extension;
 
 // ReSharper disable once CheckNamespace
 namespace AOT.Framework.Core.Utility

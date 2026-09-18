@@ -1,7 +1,7 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
-namespace AOT.Framework.Core.Extension
+namespace AOT.Framework.Extension
 {
     /// <summary>
     /// Type 相关的扩展方法。

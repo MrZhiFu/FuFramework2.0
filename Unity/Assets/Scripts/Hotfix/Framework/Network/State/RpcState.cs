@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Extension;
 using AOT.Framework.Core.Log;
+using AOT.Framework.Extension;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network

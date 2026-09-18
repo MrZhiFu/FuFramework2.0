@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Extension;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
-using Utility = Hotfix.Framework.Core.Utility;
 
 
 // ReSharper disable once CheckNamespace
