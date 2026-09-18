@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 rem ============================================================
 rem  服务端配置表生成脚本（bin 二进制变体：数据 .bytes，cs-dotnet-bin 目标）
@@ -14,7 +15,6 @@ rem ============================================================
 
 rem Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
 if not exist "..\Tools\Luban\bin\Luban.dll" (
-    chcp 65001 >nul
     echo [Luban] bin/Luban.dll 未找到，先自动构建 ...
     call "..\Tools\Luban\build-luban.bat" ci
 )
