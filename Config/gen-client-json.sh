@@ -33,6 +33,7 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \
     --conf ./Luban.conf
+    
 dotnet ../Tools/Luban/bin/Luban.dll \
     -t aot \
     -d json \
