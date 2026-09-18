@@ -11,6 +11,7 @@ rem       → 代码产物 Server/FuFramework.Config/Config/（表与 bean，cs-
 rem  用法：在 Config/ 目录下运行；末尾 pause 等待按键确认
 rem  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.bat 重建
 rem ============================================================
+
 rem Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
 if not exist "..\Tools\Luban\bin\Luban.dll" (
     chcp 65001 >nul
