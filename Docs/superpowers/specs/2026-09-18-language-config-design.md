@@ -41,7 +41,7 @@
 
 ## 4. 语言定义表 `TbLanguageDef`
 
-- 文件：`Config/Excels/L-LanguageDef-语言定义.xlsx`（无分组段 = 所有 target 导出；client 生成数据+代码）
+- 文件：`Config/Excels/Tables/L-LanguageDef-语言定义.xlsx`（无分组段 = 所有 target 导出；client 生成数据+代码）
 - 表名：`TbLanguageDef`（`L-LanguageDef` → 第 2 段 `LanguageDef`）、值类型 `LanguageDef`
 - Mode：MAP，主键 `language`（enum 主键，Luban 支持枚举主键；若验证不支持则改 `int` 主键 `id` + 枚举字段，实施时确认）
 
