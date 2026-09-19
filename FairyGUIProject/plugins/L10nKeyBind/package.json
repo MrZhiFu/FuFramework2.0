@@ -1,7 +1,7 @@
 {
   "name": "L10nKeyBind",
   "displayName": "多语言绑定工具",
-  "description": "为UI组件绑定多语言key（GTextField, GRichTextField, GButton, GLabel）。填写方式：选中可绑定组件后在本面板输入多语言key——即 TbLocalization 表的 key 列值（如 common_continue_game），失焦即以 L10n:<key> 段写入组件customData（清空输入=解除绑定）。带控制器的组件（组件需先配 GearText 关联父组件控制器）按 '控制器名,页索引=key,页索引=key,...' 逐页填写，如 state,0=btn_vip_join,1=btn_vip_detail。由运行时 FairyGUI GObject.L10n 分部在包构造时自动解析并应用对应语言文本，语言切换时经 WinBase 遍历重应用",
+  "description": "为 UI 组件绑定多语言 key（GTextField, GRichTextField, GButton, GLabel），数据以 L10n: 段存储在组件 customData 中，由运行时在包构造时自动解析并应用对应语言文本，语言切换时经 WinBase 遍历重应用。\n填写方式：\n1. 普通组件：选中可绑定组件后在面板输入多语言 key——即 TbLocalization 表的 key 列值（如 common_continue_game），失焦生效，清空输入=解除绑定；\n2. 带控制器的组件：需先配 GearText 关联父组件控制器，按 '控制器名,页索引=key,...' 逐页填写，如 state,0=btn_vip_join,1=btn_vip_detail",
   "version": "1.0",
   "author": {
     "name": "Mrfu"
