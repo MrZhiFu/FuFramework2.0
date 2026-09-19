@@ -6,7 +6,7 @@ namespace FairyGUI
     /// <summary>
     /// GButton class.
     /// </summary>
-    public class GButton : GComponent, IColorGear
+    public partial class GButton : GComponent, IColorGear
     {
         /// <summary>
         /// Play sound when button is clicked.

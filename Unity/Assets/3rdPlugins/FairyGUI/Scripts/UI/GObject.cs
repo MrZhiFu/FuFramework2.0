@@ -4,7 +4,7 @@ using FairyGUI.Utils;
 
 namespace FairyGUI
 {
-    public class GObject : EventDispatcher
+    public partial class GObject : EventDispatcher
     {
         /// <summary>
         /// GObject的id，仅作为内部使用。与name不同，id值是不会相同的。
@@ -1687,6 +1687,7 @@ namespace FairyGUI
                 displayObject.Dispose();
             }
             data = null;
+            DisposeL10n(); // L10n：退订控制器页变更并重置状态
         }
 
         /// <summary>
@@ -1996,6 +1997,8 @@ namespace FairyGUI
 
                 buffer.position = nextPos;
             }
+
+            SetupL10nGear(); // L10n：解析 customData 中的 L10n: 段并首次应用
         }
 
         #region Drag support

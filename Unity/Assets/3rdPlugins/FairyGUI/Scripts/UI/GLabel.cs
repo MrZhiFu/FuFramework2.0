@@ -6,7 +6,7 @@ namespace FairyGUI
     /// <summary>
     /// GLabel class.
     /// </summary>
-    public class GLabel : GComponent, IColorGear
+    public partial class GLabel : GComponent, IColorGear
     {
         protected GObject _titleObject;
         protected GObject _iconObject;

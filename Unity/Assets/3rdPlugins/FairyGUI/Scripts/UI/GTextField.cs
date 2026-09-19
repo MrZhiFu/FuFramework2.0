@@ -8,7 +8,7 @@ namespace FairyGUI
     /// <summary>
     /// 
     /// </summary>
-    public class GTextField : GObject, ITextColorGear
+    public partial class GTextField : GObject, ITextColorGear
     {
         protected TextField _textField;
         protected string _text;
