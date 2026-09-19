@@ -5,6 +5,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 using Hotfix.Framework.Config;
+using Hotfix.Framework.Localization;
 using Hotfix.Game.Config;
 using UIConfigRow = Hotfix.Game.Config.UIConfig;
 
@@ -181,7 +182,7 @@ namespace Hotfix.Framework.UI
                 _OnSafeAreaChanged();
 
                 // 注册本地化语言改变事件
-                Subscribe("Event.Localization.LanguageChange", _OnLanguageChanged);
+                Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
 
                 // 初始化
                 _OnInit();
