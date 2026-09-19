@@ -107,6 +107,9 @@ namespace AOT.Launch.Localization
         {
             Language = LoadLanguagePreference();
 
+            // AOT 阶段注入 FGUI 声明式多语言解析委托（热更阶段会被 HotfixLauncher 覆盖为热更表版本）
+            FairyGUI.GObject.GetLanguageText = key => GetLanguage(key);
+
             var textAsset = Resources.Load<TextAsset>(DataPath);
             if (textAsset == null)
             {
