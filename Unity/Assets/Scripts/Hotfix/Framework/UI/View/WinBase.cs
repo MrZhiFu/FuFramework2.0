@@ -148,9 +148,9 @@ namespace Hotfix.Framework.UI
         /// <param name="userData">用户自定义数据。</param>
         public void Init(int serialId, GComponent winUI, bool isNewWin, object userData = null)
         {
-            SerialId      = serialId;
-            UserData      = userData;
-            m_InitFailed  = false; // 每次初始化重置失败标记；失败路径统一在下方 catch 置位
+            SerialId     = serialId;
+            UserData     = userData;
+            m_InitFailed = false; // 每次初始化重置失败标记；失败路径统一在下方 catch 置位
 
             // 已经初始化过且界面对象可用：不再初始化，只保留本次 SerialId/UserData（对象池复用路径）。
             // winUI 为空说明上次初始化未走完（半成品实例，WinUI 未赋值），此时不能早退：
@@ -204,9 +204,9 @@ namespace Hotfix.Framework.UI
         /// </summary>
         private void ReleaseAllRegisters()
         {
-            if (EventRegister != null) ReleaseEventRegister();
+            if (EventRegister   != null) ReleaseEventRegister();
             if (UIEventRegister != null) ReleaseUIEventRegister();
-            if (TimerRegister != null) ReleaseTimerRegister();
+            if (TimerRegister   != null) ReleaseTimerRegister();
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Hotfix.Framework.UI
             if (WinUI == null) return;
 
             // scaleFactor 可能尚未初始化（0），除零会得到 NaN 尺寸，防御兜底为 1
-            var scaleFactor = UIContentScaler.scaleFactor;
+            var scaleFactor                   = UIContentScaler.scaleFactor;
             if (scaleFactor <= 0) scaleFactor = 1;
 
             if (AdjustNotch)
@@ -254,7 +254,7 @@ namespace Hotfix.Framework.UI
             // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域。
             // WinUI 是 GRoot 子节点，坐标为设计坐标（渲染 × scaleFactor），
             // SafeAreaHelper.OffsetX 是屏幕像素（用于 GRoot 自身定位），此处须除以 scaleFactor 转成设计坐标。
-            WinUI.SetSize(Screen.width / scaleFactor, Screen.height / scaleFactor);
+            WinUI.SetSize(Screen.width          / scaleFactor, Screen.height           / scaleFactor);
             WinUI.SetXY(-SafeAreaHelper.OffsetX / scaleFactor, -SafeAreaHelper.OffsetY / scaleFactor);
         }
     }
