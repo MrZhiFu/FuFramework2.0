@@ -43,7 +43,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `GObject.L10n.cs` | ① `_L10nGear` 字段（`IsCtrl` + `SimpleKey` + 控制器 `pageId→key` 表）② 静态委托 `public static Func<string, string> GetLanguageText` ③ 静态 `ParseL10nGear(string customData)`：按 `\|` 分段取 `L10n:` 段，段内含 `,` 且 `=` → 控制器模式 ④ `ParseAndStoreL10nCustomData(ByteBuffer)`：锚点调用入口（从 buffer 读 customData 字符串 → 调 `ParseL10nGear` → 存 `_L10nGear`）⑤ `ApplyChildrenL10n()`：遍历 children 补调 Apply ⑥ `ApplyL10nGearData()`：简单模式直取；控制器模式从 `parent.GetController(ctrlName)` 按当前页取 key ⑦ `ResolveL10nText(key)`：委托空 → 原样返回 key ⑧ `ShouldHandleL10nGear()` / `OnApplyL10nText(key)` **virtual 声明**（基类 false/空）⑨ 静态 `RefreshAllL10n(GComponent root)`：递归遍历 children，命中组件重调 Apply（按当前控制器页）⑩ 控制器 `onStateChanged` 订阅/退订（`DisposeL10n()`） |
+| `GObject.L10n.cs` | ① `_L10nGear` 字段（`IsCtrl` + `SimpleKey` + 控制器 `pageId→key` 表）② 静态委托 `public static Func<string, string> GetLanguageText` ③ 静态 `ParseL10nGear(string customData)`：按 `\|` 分段取 `L10n:` 段，段内含 `,` 且 `=` → 控制器模式 ④ `SetupL10nGear()`：锚点调用入口（从 `this.data` 字段取 customData 字符串 → 调 `ParseL10nGear` → 存 `_L10nGear` → 首次应用 → 控制器模式订阅页变更）⑤ `ApplyChildrenL10n()`：遍历 children 补调 Apply ⑥ `ApplyL10nGearData()`：简单模式直取；控制器模式从 `parent.GetController(ctrlName)` 按当前页取 key ⑦ `ResolveL10nText(key)`：委托空 → 原样返回 key ⑧ `ShouldHandleL10nGear()` / `OnApplyL10nText(key)` **virtual 声明**（基类 false/空）⑨ 静态 `RefreshAllL10n(GComponent root)`：递归遍历 children，命中组件重调 Apply（按当前控制器页）⑩ 控制器 `onStateChanged` 订阅/退订（`DisposeL10n()`） |
 | `GTextField.L10n.cs` | `override ShouldHandleL10nGear()=>true`；`override OnApplyL10nText` → `this.text = ResolveL10nText(key)` |
 | `GButton.L10n.cs` | 同上 → `this.title` |
 | `GLabel.L10n.cs` | 同上 → `this.title` |
@@ -52,14 +52,15 @@
 
 | 原版文件 | 锚点 |
 |---|---|
-| `GComponent.cs` | `Setup_BeforeAdd` 的 `Skip(2)` 处 → `ParseAndStoreL10nCustomData(buffer);`（读 customData 字符串并解析存储）；`Setup_AfterAdd` 末尾 → `ApplyChildrenL10n();`（children 补调，控制器此时已就绪——FGUI 包格式 controller 段先于 children） |
-| `GTextField/GButton/GLabel.cs` | 各自 Setup 的 customData 读取锚点（1 行/处，位置见 4.3 验证点） |
-| `GObject.cs` | `OnDispose` → `DisposeL10n();`（控制器退订，防泄漏） |
+| `GObject.cs` | `Setup_AfterAdd` 末尾 → `SetupL10nGear();`（非组件类型如 GTextField 的应用点）；`Dispose` → `DisposeL10n();`（控制器退订，防泄漏） |
+| `GComponent.cs` | `Setup_AfterAdd` 末尾 → `SetupL10nGear();` + `ApplyChildrenL10n();`（children 补调，控制器此时已就绪——FGUI 包格式 controller 段先于 children） |
 
-### 4.3 包格式验证点（实施期确认）
+**实施事实（计划阶段源码核对，推翻原验证点）**：原版 `GObject.Setup_BeforeAdd` 末尾（`GObject.cs:1969-1971`）已把编辑器 customData（`ReadS()` 字符串索引）读入 **`public object data` 公开字段**，且对所有组件类型通用（GButton/GLabel 经 GComponent 的 base 调用、GTextField 经自身 base 调用）——**无需动任何包读取点，无需包格式逆向**；`GComponent.cs:1535` 的 `Skip(2)` 注释有误导（组件特有属性段数据，与编辑器 customData 无关），保持不动。
 
-- `GComponent.cs:1535` 的 `Skip(2)` 已确认为组件级 customData（short 长度 + string）✓
-- **GTextField/GButton/GLabel 的 customData 在包二进制中的存在形式待确认**（原版不读该段）——两条路径：① 对照参考项目的 FairyGUI 改造源码（优先，文档引用了精确行号）；② 从本地编辑器源码（`Tools/FairyGUI-Editor-master`）的包发布序列化逻辑逆向。序列化规则确认前不锁死具体读取偏移。
+### 4.3 包格式验证点（已在计划阶段解决）
+
+- 原版 `GObject.Setup_BeforeAdd` 末尾已通用读取编辑器 customData 到 `public object data` 字段（`ReadS()` 字符串索引），所有组件类型覆盖——**无需包格式逆向，也无需参考项目源码对照**（spec 第 9 节实施前提取消）
+- `GComponent.cs:1535` 的 `Skip(2)` 为组件特有属性段数据（注释"customData"误导），保持原样
 
 ## 5. 热更注入与刷新（两阶段委托注入）
 
@@ -112,5 +113,5 @@ private void _OnLanguageChanged(object sender, GameEventArgs e)
 
 ## 9. 实施前提
 
-- **参考项目的 FairyGUI 改造源码**（GObject/GTextField/GButton/GLabel/GComponent 的 Setup 改造对照）——用于 4.3 包格式验证点，优先路径；若无则从本地编辑器源码逆向
+- ~~参考项目的 FairyGUI 改造源码对照~~（已取消：计划阶段核对确认 customData 已在 `data` 字段，无包格式依赖）
 - 编辑器插件开发由用户主导（`CustomL10n/`），本设计的 3 节契约是运行时解析的输入约定，插件实现须与之对齐
