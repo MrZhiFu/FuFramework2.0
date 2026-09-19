@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="270,29" bgColorEnabled="true" bgColor="#383838">
+  <displayList>
+    <text id="n4_oma2" name="n1" xy="0,3" size="70,23" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="多语言key:"/>
+    <component id="n5_oma2" name="l10n_key" src="gcza1s" fileName="Input/TextInput.xml" pkg="nk9ejx23" xy="69,4" size="187,20" controller="noBorder,0,showClear,1"/>
+  </displayList>
+</component>

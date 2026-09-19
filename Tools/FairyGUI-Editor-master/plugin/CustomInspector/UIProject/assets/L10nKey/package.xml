@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<packageDescription id="4s26v8k8">
+  <resources>
+    <component id="f4ov2" name="SetL10nKey.xml" path="/" exported="true"/>
+  </resources>
+  <publish name="" path="..\..\..\..\..\FairyGUIProject\plugins\L10nKeyBind" packageCount="2"/>
+</packageDescription>
