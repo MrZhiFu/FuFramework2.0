@@ -3,7 +3,6 @@ using System.Threading;
 using FairyGUI;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using UnityEngine;
 using Hotfix.Framework.Config;
 using Hotfix.Framework.Localization;
 using Hotfix.Game.Config;
@@ -230,32 +229,6 @@ namespace Hotfix.Framework.UI
         {
             if (m_UIModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
             m_UIModule.Close(this);
-        }
-
-        /// <summary>
-        /// 安全区变化回调（方向切换等）。
-        /// 全屏 UI（AdjustNotch = false）需要重新计算负偏移覆盖刘海；普通 UI 跟随 GRoot 适配。
-        /// </summary>
-        private void _OnSafeAreaChanged()
-        {
-            if (WinUI == null) return;
-
-            // scaleFactor 可能尚未初始化（0），除零会得到 NaN 尺寸，防御兜底为 1
-            var scaleFactor                   = UIContentScaler.scaleFactor;
-            if (scaleFactor <= 0) scaleFactor = 1;
-
-            if (AdjustNotch)
-            {
-                // 普通 UI 跟随 GRoot
-                WinUI.SetSize(GRoot.inst.width, GRoot.inst.height);
-                return;
-            }
-
-            // 全屏 UI：整屏尺寸 + 负偏移，覆盖 GRoot 外的刘海区域。
-            // WinUI 是 GRoot 子节点，坐标为设计坐标（渲染 × scaleFactor），
-            // SafeAreaHelper.OffsetX 是屏幕像素（用于 GRoot 自身定位），此处须除以 scaleFactor 转成设计坐标。
-            WinUI.SetSize(Screen.width          / scaleFactor, Screen.height           / scaleFactor);
-            WinUI.SetXY(-SafeAreaHelper.OffsetX / scaleFactor, -SafeAreaHelper.OffsetY / scaleFactor);
         }
     }
 }

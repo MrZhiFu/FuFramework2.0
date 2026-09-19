@@ -248,3 +248,37 @@ Localization/
 1. **数据侧**：在 `Config/Excels/Tables/` 新建资源表（如 `TbLocalizationImage`：`key` + `is_code` + 各语言列存资源路径）。**不能放 `Excels/Local/`**（该目录是文本校验专用通道）；表名加入 `CsharpL10NKeyCodeTarget.CollectKeys` 筛选后 key 常量随 `L10nKey` 生成。完整数据侧步骤见 `Config/README.md` 的「扩展：新增多语言资源类型」。
 2. **运行时侧**：新建提供器实现 `ILocalizationProvider`（或独立接口），取值模式与 `LocalizationProvider` 一致：查表 → switch 当前语言选列 → 空值回退 English 列 → 参数格式化；返回的资源路径交由 `AssetModule` 加载。
 3. **联动**：新增类型表后，未来"扩语言"时须同步加语言列（与 `TbLocalization` / `TbLanguageDef` / 枚举 sheet 联动）。
+
+## 11. FGUI 声明式多语言（L10n 插件）
+
+除代码取文本（`GetLanguageText`）外，FGUI 界面还支持**声明式**多语言：编辑器插件把 key 写进组件 `customData`，运行时自动应用，业务代码零参与。
+
+### 11.1 链路
+
+```
+编辑器（L10nKeyBind 插件）选中组件输入 key → customData 的 "L10n:<key>" 段 → 随包发布
+  → FairyGUI 包构造时（Setup_AfterAdd 锚点）解析存组件字段 → 经 GetLanguageText 静态委托取文本写入 text/title
+  → 语言切换时 WinBase._OnLanguageChanged：OnOpen() + FairyGUI.GObject.RefreshAllL10n(WinUI) 遍历重应用
+```
+
+### 11.2 委托两阶段注入
+
+| 阶段 | 注入 | 文本源 |
+|---|---|---|
+| AOT（启动期） | `LaunchLocalization.InitializeAsync` | AOT 表（`LaunchLocalizationText/tblocalizationaot`） |
+| 热更后 | `HotfixLauncher.InitDependenciesAsync`（覆盖式） | 热更表 `TbLocalization` |
+
+### 11.3 约定与坑
+
+- **可绑组件**：GTextField（text）/ GButton（title）/ GLabel（title）；`INPUTTEXT` 等动态输入禁止绑定
+- **动态文本禁止绑 L10n**：代码每次 `SetText`/`Refresh` 的组件与 L10n 声明是两套来源，会互相覆盖——单一文本来源
+- **Refresh 不触发 L10n**：`OnOpen → Refresh` 只刷业务数据绑定；L10n 刷新必须走 `RefreshAllL10n`（已挂 WinBase）
+- **key 查不到**：显示 `[key]` 并 LogWarning（开发期可见）；编辑器填的 key 即 `L10nKey` 常量类中的字符串
+
+### 11.4 相关文件
+
+| 文件 | 说明 |
+|---|---|
+| `3rdPlugins/FairyGUI/Scripts/UI/CustomExt/*.L10n.cs` | FairyGUI 运行时钩子（解析/应用/遍历，partial 分部） |
+| `FairyGUIProject/plugins/L10nKeyBind/` | 编辑器插件（Lua），见其 README |
+| 设计文档 | `Docs/superpowers/specs/2026-09-19-fgui-l10n-design.md` |

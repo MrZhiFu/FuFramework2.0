@@ -153,6 +153,8 @@
 
 **扩语言四步**：`__enums__.xlsx` 追加枚举成员（value 顺延）→ 各本地化表加语言列 → `L-LanguageDef` 加行 → 代码侧 `LocalizationProvider` / `LaunchLocalization` 的 switch 补分支。
 
+**FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
+
 **aot 分组**：`luban.conf` 定义了 `aot` 分组与 `aot` target（详见 `gen-client-bin/json.bat` 的第二段命令）；文件名第 3 段为 `aot` 的表只进入 aot 导出，其余表不受影响。生成器新增的 `cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
 
 #### 扩展：新增多语言资源类型（如多语言图片 / 音频）

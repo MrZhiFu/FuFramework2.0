@@ -19,6 +19,7 @@ AOT 段**只生成数据、key 常量与枚举，不生成表/管理器代码**�
   - bin 变体用 `Luban.ByteBuf`（`ReadSize` 计数 + 按 Excel 列顺序 `ReadString`/`ReadBool`）。
   **注意**：bin 解析按 Excel 列顺序硬约定，调整 AOT 表列时须同步 `LocalizationAOTRow` 与 `ParseBin`。
   热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
+- **FGUI 声明式多语言的 AOT 阶段委托**：`InitializeAsync` 时注入 `FairyGUI.GObject.GetLanguageText = key => LaunchLocalization.GetLanguage(key)`——`WinLauncher` 等启动期界面绑定的 L10n key 由 AOT 表解析；热更后由 `HotfixLauncher` 覆盖为热更表版本（详见 `Hotfix/Framework/Localization/README.md` 第 11 节）。
 
 数据源：`Config/Excels/Local/L-LocalizationAOT-aot-热更前.xlsx`（分组 `aot`）。
 语言枚举定义：`Config/Excels/__enums__.xlsx` 语言 sheet（与 Hotfix 侧生成枚举同源，成员集一致）。
