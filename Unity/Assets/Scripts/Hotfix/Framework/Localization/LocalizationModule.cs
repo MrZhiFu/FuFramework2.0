@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Localization
         /// <summary>
         /// 数据保存模块
         /// </summary>
-        private StorageModule _storageModule;
+        private StorageModule m_StorageModule;
 
         /// <summary>
         /// 当前使用的语言
@@ -57,10 +57,10 @@ namespace Hotfix.Framework.Localization
                 m_Language = value;
 
                 // 保存设置（数据保存模块缺失时跳过保存，语言切换本身仍生效）
-                if (_storageModule != null)
+                if (m_StorageModule != null)
                 {
-                    _storageModule.SetString("Language", value.ToString());
-                    _storageModule.Save();
+                    m_StorageModule.SetString("Language", value.ToString());
+                    m_StorageModule.Save();
                 }
 
                 // 发送本地化语言改变事件
@@ -78,23 +78,23 @@ namespace Hotfix.Framework.Localization
             return Application.systemLanguage switch
             {
                 // @formatter:off
-                UnityEngine.SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
-                UnityEngine.SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
-                UnityEngine.SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
-                UnityEngine.SystemLanguage.English            => ELanguage.English,
-                UnityEngine.SystemLanguage.French             => ELanguage.French,
-                UnityEngine.SystemLanguage.German             => ELanguage.German,
-                UnityEngine.SystemLanguage.Indonesian         => ELanguage.Indonesian,
-                UnityEngine.SystemLanguage.Italian            => ELanguage.Italian,
-                UnityEngine.SystemLanguage.Japanese           => ELanguage.Japanese,
-                UnityEngine.SystemLanguage.Korean             => ELanguage.Korean,
-                UnityEngine.SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
-                UnityEngine.SystemLanguage.Russian            => ELanguage.Russian,
-                UnityEngine.SystemLanguage.Spanish            => ELanguage.Spanish,
-                UnityEngine.SystemLanguage.Thai               => ELanguage.Thai,
-                UnityEngine.SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
-                UnityEngine.SystemLanguage.Unknown            => ELanguage.Unspecified,
-                _                                             => ELanguage.Unspecified
+                SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
+                SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
+                SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
+                SystemLanguage.English            => ELanguage.English,
+                SystemLanguage.French             => ELanguage.French,
+                SystemLanguage.German             => ELanguage.German,
+                SystemLanguage.Indonesian         => ELanguage.Indonesian,
+                SystemLanguage.Italian            => ELanguage.Italian,
+                SystemLanguage.Japanese           => ELanguage.Japanese,
+                SystemLanguage.Korean             => ELanguage.Korean,
+                SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
+                SystemLanguage.Russian            => ELanguage.Russian,
+                SystemLanguage.Spanish            => ELanguage.Spanish,
+                SystemLanguage.Thai               => ELanguage.Thai,
+                SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
+                SystemLanguage.Unknown            => ELanguage.Unspecified,
+                _                                 => ELanguage.Unspecified
                 // @formatter:on
             };
         }
@@ -106,18 +106,18 @@ namespace Hotfix.Framework.Localization
         {
             Instance = this;
 
-            m_EventModule = ModuleManager.GetModule<EventModule>();
-            _storageModule = StorageModule.Instance;
+            m_EventModule  = ModuleManager.GetModule<EventModule>();
+            m_StorageModule = StorageModule.Instance;
 
             // 数据保存模块缺失（模块注册顺序调整/初始化失败）时退化为系统语言，不能直接解引用（否则 NRE 中断本模块初始化）
-            if (_storageModule == null)
+            if (m_StorageModule == null)
             {
                 FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
                 m_Language = GetSystemLanguage();
                 return;
             }
 
-            var value = _storageModule.GetString("Language");
+            var value = m_StorageModule.GetString("Language");
             if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
                 m_Language = result;
             else
