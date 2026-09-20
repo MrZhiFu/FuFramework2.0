@@ -1,24 +1,18 @@
 @echo off
-chcp 65001 >nul
 
 rem ============================================================
-rem  客户端配置表生成脚本（bin 二进制变体：数据 .bytes，cs-bin 目标）
+rem  Client config generation script (binary variant: .bytes data, cs-bin target)
 rem
-rem  功能：
-rem    1. 检测 Luban.dll 缺失时自动先构建（换机 / 新 clone 后无需手动构建）
-rem    2. client 段：全部业务表与本地化表
-rem       → 数据产物 Unity/Assets/Bundles/Config/
-rem       → 代码产物 Hotfix 表代码 + Tables/Extension/L10nKey 常量类
-rem    3. aot 段：AOT 前置本地化（热更前文案）
-rem       → 数据产物 Unity/Assets/Resources/LaunchLocalizationText/
-rem       → 代码产物 AOT/Launch/Localization 的 LaunchL10nKey / ELanguage
-rem  用法：在 Config/ 目录下运行；末尾 pause 等待按键确认
-rem  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.bat 重建
+rem  What it does:
+rem    1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)
+rem    2. Generates config data & code (see passes below)
+rem  Usage: run under the Config/ directory; ends with a pause
+rem  Note: rebuild Tools/Luban/build-luban.bat manually after changing Luban source
 rem ============================================================
 
-rem Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
+rem Luban.dll is built automatically if missing (fresh clone / other machine).
 if not exist "..\Tools\Luban\bin\Luban.dll" (
-    echo [Luban] bin/Luban.dll 未找到，先自动构建 ...
+    echo [Luban] bin/Luban.dll not found, building first ...
     call "..\Tools\Luban\build-luban.bat" ci
 )
 
@@ -42,11 +36,15 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -d bin ^
     -c cs-l10n-key ^
     -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText ^
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
     -x cs-l10n-key.className=LaunchL10nKey ^
     -c cs-enums ^
-    -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization ^
+    -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
     -x outputSaver.cs-enums.cleanUpOutputDir=false ^
+    -c cs-bean ^
+    -x cs-bean.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
+    -x outputSaver.cs-bean.cleanUpOutputDir=false ^
+    -x cs-bean.tables=TbLocalizationAOT ^
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^

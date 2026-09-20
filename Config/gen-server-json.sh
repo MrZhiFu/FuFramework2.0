@@ -1,18 +1,17 @@
-# ============================================================
-#  服务端配置表生成脚本（json 变体：数据 .json，cs-dotnet-json 目标）
-#
-#  功能：
-#    1. 检测 Luban.dll 缺失时自动先构建（换机 / 新 clone 后无需手动构建）
-#    2. server 段：全部业务表与本地化表（服务端视角）
-#       → 数据产物 Server/FuFramework.Config/Json/
-#       → 代码产物 Server/FuFramework.Config/Config/（表与 bean，cs-dotnet-* 目标）
-#  用法：在 Config/ 目录下运行：bash gen-xxx.sh
-#  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.sh 重建
-# ============================================================
 
-# Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
+#============================================================
+# Server config generation script (json variant: .json data, cs-dotnet-json target)
+#
+# What it does:
+#   1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)
+#   2. Generates config data & code (see passes below)
+# Usage: run under the Config/ directory; ends with a pause
+# Note: rebuild Tools/Luban/build-luban.bat manually after changing Luban source
+#============================================================
+
+#Luban.dll is built automatically if missing (fresh clone / other machine).
 if [ ! -f ../Tools/Luban/bin/Luban.dll ]; then
-    echo "[Luban] bin/Luban.dll 未找到，先自动构建 ..."
+    echo "[Luban] bin/Luban.dll not found, building first ..."
     bash ../Tools/Luban/build-luban.sh
 fi
 
@@ -21,6 +20,10 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -d json \
     -c cs-dotnet-json \
     -x outputDataDir=../Server/FuFramework.Config/Json \
-    -x outputCodeDir=../Server/FuFramework.Config/Config \
+    -x cs-dotnet-json.outputCodeDir=../Server/FuFramework.Config/Config \
     -x tableImporter.name=fuframework \
+    -x l10n.provider=fuframework \
+    -x l10n.textFile.keyFieldName=key \
+    -x l10n.textFile.path=./Excels/Local/ \
     --conf ./Luban.conf
+

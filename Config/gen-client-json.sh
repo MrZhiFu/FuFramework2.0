@@ -1,21 +1,17 @@
-# ============================================================
-#  客户端配置表生成脚本（json 变体：数据 .json，cs-simple-json 目标）
-#
-#  功能：
-#    1. 检测 Luban.dll 缺失时自动先构建（换机 / 新 clone 后无需手动构建）
-#    2. client 段：全部业务表与本地化表
-#       → 数据产物 Unity/Assets/Bundles/Config/
-#       → 代码产物 Hotfix 表代码 + Tables/Extension/L10nKey 常量类
-#    3. aot 段：AOT 前置本地化（热更前文案）
-#       → 数据产物 Unity/Assets/Resources/LaunchLocalizationText/
-#       → 代码产物 AOT/Launch/Localization 的 LaunchL10nKey / ELanguage
-#  用法：在 Config/ 目录下运行：bash gen-xxx.sh
-#  注意：改动 Luban 源码后需先手动跑 Tools/Luban/build-luban.sh 重建
-# ============================================================
 
-# Luban.dll 缺失时先自动构建（换机 / 新 clone 后无需手动构建）。
+#============================================================
+# Client config generation script (json variant: .json data, cs-simple-json target)
+#
+# What it does:
+#   1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)
+#   2. Generates config data & code (see passes below)
+# Usage: run under the Config/ directory; ends with a pause
+# Note: rebuild Tools/Luban/build-luban.bat manually after changing Luban source
+#============================================================
+
+#Luban.dll is built automatically if missing (fresh clone / other machine).
 if [ ! -f ../Tools/Luban/bin/Luban.dll ]; then
-    echo "[Luban] bin/Luban.dll 未找到，先自动构建 ..."
+    echo "[Luban] bin/Luban.dll not found, building first ..."
     bash ../Tools/Luban/build-luban.sh
 fi
 
@@ -33,17 +29,21 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \
     --conf ./Luban.conf
-    
+
 dotnet ../Tools/Luban/bin/Luban.dll \
     -t aot \
     -d json \
     -c cs-l10n-key \
     -x outputDataDir=../Unity/Assets/Resources/LaunchLocalizationText \
-    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization \
+    -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen \
     -x cs-l10n-key.className=LaunchL10nKey \
     -c cs-enums \
-    -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization \
+    -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen \
     -x outputSaver.cs-enums.cleanUpOutputDir=false \
+    -c cs-bean \
+    -x cs-bean.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen \
+    -x outputSaver.cs-bean.cleanUpOutputDir=false \
+    -x cs-bean.tables=TbLocalizationAOT \
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false \
     -x tableImporter.name=fuframework \
     -x tableImporter.target=aot \
@@ -51,3 +51,4 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \
     --conf ./Luban.conf
+
