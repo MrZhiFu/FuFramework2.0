@@ -6,6 +6,7 @@ using Hotfix.Game.Proto;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Localization;
 using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;

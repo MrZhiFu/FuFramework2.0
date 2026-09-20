@@ -79,7 +79,8 @@ namespace FairyGUI
             if (!ShouldHandleL10nGear()) return;
 
             // 解析 L10n 段数据
-            _l10nGearData = ParseL10nGear(data as string);
+            var customData = data as string;
+            _l10nGearData = ParseL10nGear(customData);
             if (_l10nGearData == null) return;
 
             // 首次应用：按解析结果应用文本（控制器模式按当前页取 key）
@@ -167,7 +168,8 @@ namespace FairyGUI
             }
 
             if (string.IsNullOrEmpty(key)) return;
-            OnApplyL10nText(ResolveL10nText(key));
+            // 只传原始 key，解析统一收敛在 OnApplyL10nText（text/title）内，避免二次解析把已译文当 key 再查
+            OnApplyL10nText(key);
         }
 
         /// <summary>

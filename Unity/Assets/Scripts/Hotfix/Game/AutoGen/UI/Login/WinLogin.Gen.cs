@@ -12,7 +12,6 @@ namespace Hotfix.Game.UI
         public override string WinName => "WinLogin";      // 界面名称
         public override string PackageName => "Login"; // 包名
 
-		private GTextField txtLogin;
 		private GTextField txtError;
 		private GButton btnLogin;
 		private GTextField txtUsername;
@@ -27,7 +26,6 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			txtLogin = (GTextField)GetChild("_txtLogin");
 			txtError = (GTextField)GetChild("_txtError");
 			btnLogin = (GButton)GetChild("_btnLogin");
 			txtUsername = (GTextField)GetChild("_txtUsername");

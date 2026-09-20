@@ -29,7 +29,6 @@ using Hotfix.Framework.Download;
 using Hotfix.Framework.Entity;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using AOT.Launch.Localization;
 
 #if ENABLE_BINARY_CONFIG
 using Luban;
@@ -160,7 +159,7 @@ namespace Hotfix
             LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
 
             // 注入 FGUI 声明式多语言的文本解析委托（覆盖 AOT 阶段的 AOT 表版本）
-            FairyGUI.GObject.GetLanguageText = key => LocalizationModule.Instance.GetLanguageText(key);
+            GObject.GetLanguageText = key => LocalizationModule.Instance.GetLanguageText(key);
 
             // 多语言提供者就绪后翻译配置表
             tableManager.RefreshTranslateText();
