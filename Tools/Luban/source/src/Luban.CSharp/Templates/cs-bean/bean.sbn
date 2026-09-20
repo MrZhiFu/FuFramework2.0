@@ -1,0 +1,21 @@
+using System;
+{{
+    parent_def_type = __bean.parent_def_type
+    export_fields = __bean.export_fields
+    hierarchy_export_fields = __bean.hierarchy_export_fields
+}}
+// ReSharper disable once CheckNamespace
+{{namespace_with_grace_begin __top_module}}
+    /// <summary>
+    /// {{__name}} 数据类（AOT 声明式多语言用，随导表生成，禁止手改）。
+    /// </summary>
+    public {{class_modifier __bean}} class {{__name}}
+    {
+        {{~ for field in export_fields ~}}
+        {{~if field.comment != '' ~}}
+        /// <summary> {{escape_comment field.comment}} </summary>
+        {{~end~}}
+        public {{declaring_type_name field.ctype}} {{format_property_name __code_style field.name}} { get; set; }
+        {{~end~}}
+    }
+{{namespace_with_grace_end __top_module}}
