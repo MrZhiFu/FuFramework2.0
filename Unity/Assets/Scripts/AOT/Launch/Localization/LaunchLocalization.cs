@@ -3,80 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using AOT.Framework.Core.Log;
-using AOT.Framework.Localization;
-using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace AOT.Launch.Localization
 {
     /// <summary>
-    /// AOT 本地化表行数据。
-    ///     对应 TbLocalizationAOT（Config/Excels/Local/L-LocalizationAOT-aot-热更前.xlsx）一行；
-    ///     <see cref="LaunchLocalization"/> 的 bin 解析按 Excel 列顺序硬约定读取，调整表列时须同步本类与解析逻辑。
-    /// </summary>
-    public sealed class LocalizationAOTRow
-    {
-        /// <summary> 多语言 key </summary>
-        public string Key { get; set; }
-
-        /// <summary> 是否导出到代码中 </summary>
-        public bool IsCode { get; set; }
-
-        /// <summary> 简体中文 </summary>
-        public string ChineseSimplified { get; set; }
-
-        /// <summary> 繁体中文 </summary>
-        public string ChineseTraditional { get; set; }
-
-        /// <summary> 英语 </summary>
-        public string English { get; set; }
-
-        /// <summary> 日语 </summary>
-        public string Japanese { get; set; }
-
-        /// <summary> 韩语 </summary>
-        public string Korean { get; set; }
-
-        /// <summary> 泰语 </summary>
-        public string Thai { get; set; }
-
-        /// <summary> 印尼语 </summary>
-        public string Indonesian { get; set; }
-
-        /// <summary> 法语 </summary>
-        public string French { get; set; }
-
-        /// <summary> 德语 </summary>
-        public string German { get; set; }
-
-        /// <summary> 俄语 </summary>
-        public string Russian { get; set; }
-
-        /// <summary> 意大利语 </summary>
-        public string Italian { get; set; }
-
-        /// <summary> 葡萄牙语（巴西） </summary>
-        public string PortugueseBrazil { get; set; }
-
-        /// <summary> 葡萄牙语（葡萄牙） </summary>
-        public string PortuguesePortugal { get; set; }
-
-        /// <summary> 西班牙语 </summary>
-        public string Spanish { get; set; }
-
-        /// <summary> 越南语 </summary>
-        public string Vietnamese { get; set; }
-    }
-
-    /// <summary>
     /// AOT 阶段本地化多语言门面。
     ///     从 Resources 加载 AOT 本地化表数据（YooAsset 未就绪阶段的既有加载通道），
     ///     脱离 UIModule/EventModule 自包含运行（与 LaunchView 同一设计原则）；
     ///     热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
-    ///     数据解析自包含（json 用 SimpleJSON / bin 用 Luban.ByteBuf），不依赖热更侧配置框架。
+    ///     数据解析自包含（json 用 SimpleJSON / bin 用 Luban.ByteBuf，见 LaunchLocalization.Parse 分部），
+    ///     不依赖热更侧配置框架。
     /// </summary>
-    public static class LaunchLocalization
+    public static partial class LaunchLocalization
     {
         /// <summary>
         /// 语言偏好在 PlayerPrefs 中的存储键（值为 (int)ELanguage）。
@@ -91,7 +30,7 @@ namespace AOT.Launch.Localization
         /// <summary>
         /// 多语言行数据字典。key 为多语言 key，value 为行数据。
         /// </summary>
-        private static readonly Dictionary<string, LocalizationAOTRow> s_Rows = new();
+        private static readonly Dictionary<string, LocalizationAOT> s_Rows = new();
 
         /// <summary>
         /// 当前使用的语言。
@@ -187,77 +126,33 @@ namespace AOT.Launch.Localization
         }
 
         /// <summary>
-        /// 解析 json 变体数据：顶层数组，每个元素为一条行数据的对象。
+        /// 从系统语言转换出本地化语言类型（枚举为配置生成，映射项与 Hotfix 侧 LocalizationModule 保持一致）。
         /// </summary>
-        /// <param name="json">表数据 json 文本</param>
-        private static void ParseJson(string json)
+        /// <returns>本地化语言类型（无法识别时返回 Unspecified）</returns>
+        private static ELanguage FromSystemLanguage()
         {
-            foreach (var node in JSON.Parse(json).Children)
+            return Application.systemLanguage switch
             {
-                if (!node.IsObject) continue;
-
-                var row = new LocalizationAOTRow
-                {
-                    Key                = node["key"],
-                    IsCode             = node["is_code"].AsBool,
-                    ChineseSimplified  = node["ChineseSimplified"],
-                    ChineseTraditional = node["ChineseTraditional"],
-                    English            = node["English"],
-                    Japanese           = node["Japanese"],
-                    Korean             = node["Korean"],
-                    Thai               = node["Thai"],
-                    Indonesian         = node["Indonesian"],
-                    French             = node["French"],
-                    German             = node["German"],
-                    Russian            = node["Russian"],
-                    Italian            = node["Italian"],
-                    PortugueseBrazil   = node["PortugueseBrazil"],
-                    PortuguesePortugal = node["PortuguesePortugal"],
-                    Spanish            = node["Spanish"],
-                    Vietnamese         = node["Vietnamese"],
-                };
-
-                if (string.IsNullOrEmpty(row.Key)) continue;
-
-                s_Rows.TryAdd(row.Key, row);
-            }
-        }
-
-        /// <summary>
-        /// 解析 bin 变体数据：记录数前置，之后按 Excel 列顺序逐条读取（字符串=ReadString，布尔=ReadBool）。
-        /// </summary>
-        /// <param name="bytes">表数据二进制</param>
-        private static void ParseBin(byte[] bytes)
-        {
-            var buf = new ByteBuf(bytes);
-
-            for (var n = buf.ReadSize(); n > 0; --n)
-            {
-                var row = new LocalizationAOTRow
-                {
-                    Key                = buf.ReadString(),
-                    IsCode             = buf.ReadBool(),
-                    ChineseSimplified  = buf.ReadString(),
-                    ChineseTraditional = buf.ReadString(),
-                    English            = buf.ReadString(),
-                    Japanese           = buf.ReadString(),
-                    Korean             = buf.ReadString(),
-                    Thai               = buf.ReadString(),
-                    Indonesian         = buf.ReadString(),
-                    French             = buf.ReadString(),
-                    German             = buf.ReadString(),
-                    Russian            = buf.ReadString(),
-                    Italian            = buf.ReadString(),
-                    PortugueseBrazil   = buf.ReadString(),
-                    PortuguesePortugal = buf.ReadString(),
-                    Spanish            = buf.ReadString(),
-                    Vietnamese         = buf.ReadString(),
-                };
-
-                if (string.IsNullOrEmpty(row.Key)) continue;
-
-                s_Rows.TryAdd(row.Key, row);
-            }
+                // @formatter:off
+                SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
+                SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
+                SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
+                SystemLanguage.English            => ELanguage.English,
+                SystemLanguage.French             => ELanguage.French,
+                SystemLanguage.German             => ELanguage.German,
+                SystemLanguage.Indonesian         => ELanguage.Indonesian,
+                SystemLanguage.Italian            => ELanguage.Italian,
+                SystemLanguage.Japanese           => ELanguage.Japanese,
+                SystemLanguage.Korean             => ELanguage.Korean,
+                SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
+                SystemLanguage.Russian            => ELanguage.Russian,
+                SystemLanguage.Spanish            => ELanguage.Spanish,
+                SystemLanguage.Thai               => ELanguage.Thai,
+                SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
+                SystemLanguage.Unknown            => ELanguage.Unspecified,
+                _                                 => ELanguage.Unspecified
+                // @formatter:on
+            };
         }
 
         /// <summary>
@@ -272,7 +167,7 @@ namespace AOT.Launch.Localization
                 return (ELanguage)value;
             }
 
-            return ELanguageHelper.FromSystemLanguage(Application.systemLanguage);
+            return FromSystemLanguage();
         }
     }
 }
