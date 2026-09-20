@@ -337,31 +337,40 @@ namespace Hotfix.Framework.Event
 
             lock (m_EventHandlerLock)
             {
+                // 该事件尚无任何订阅：直接建立首个条目
                 if (!m_EventHandlerMultiDict.Contains(id))
                 {
                     m_EventHandlerMultiDict.Add(id, handler);
-                    // 用索引器而非 Add：不变式保证此处无该键（计数键与字典条目同生共死），
-                    // 索引器写法在不变式万一被破坏时退化为「重置为 1」而非抛出异常逃逸到调用方。
                     m_HandlerRefCountDict[(id, handler)] = 1;
                     return;
                 }
 
+                // 已有订阅者在先，继续注册必须满足多处理函数模式
                 if ((m_PoolMode & EEventPoolMode.AllowMultiHandler) != EEventPoolMode.AllowMultiHandler)
                     throw new InvalidOperationException($"[EventPool]事件 '{id}' 不允许多次注册处理函数!");
 
-                if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) == EEventPoolMode.AllowDuplicateHandler)
+                // 同一 (id, handler) 再次订阅（多订阅者场景）：按引用计数累计，不重复入字典；
+                // AllowDuplicateHandler 模式下允许出现多条目，逐条新增。
+                if (m_EventHandlerMultiDict.Contains(id, handler))
                 {
-                    m_EventHandlerMultiDict.Add(id, handler);
+                    if ((m_PoolMode & EEventPoolMode.AllowDuplicateHandler) == EEventPoolMode.AllowDuplicateHandler)
+                    {
+                        m_EventHandlerMultiDict.Add(id, handler);
+                        return;
+                    }
+
+                    // 计数为 0 表示条目此前已登记待移除（尚未被 ProcessWaitRemoveHandlers 摘除），
+                    // 本次订阅即撤销该登记，令订阅立即生效——否则「退订 → 重订阅」在同一轮分发前交错时，新订阅会被延迟删除吞掉。
+                    var key = (id, handler);
+                    m_HandlerRefCountDict.TryGetValue(key, out var refCount);
+                    m_HandlerRefCountDict[key] = refCount + 1;
+                    m_WaitRemoveHandlerList.Remove(key);
                     return;
                 }
 
-                // 同一 (id, handler) 已存在：引用计数 +1，不重复入字典（分发时仍只调用一次）。
-                // 计数为 0 表示条目此前已登记待移除（尚未被 ProcessWaitRemoveHandlers 摘除），
-                // 本次订阅即撤销该登记，令订阅立即生效——否则「退订 → 重订阅」在同一轮分发前交错时，新订阅会被延迟删除吞掉。
-                var key = (id, handler);
-                m_HandlerRefCountDict.TryGetValue(key, out var refCount);
-                m_HandlerRefCountDict[key] = refCount + 1;
-                m_WaitRemoveHandlerList.Remove(key);
+                // 同一事件的不同处理函数（多归属）：追加到该事件的处理链表，各自独立计数
+                m_EventHandlerMultiDict.Add(id, handler);
+                m_HandlerRefCountDict[(id, handler)] = 1;
             }
         }
 
