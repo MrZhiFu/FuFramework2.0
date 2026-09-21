@@ -151,8 +151,10 @@ namespace FairyGUI
 
         /// <summary>
         /// 按解析结果应用文本：简单模式直取 key；控制器模式按当前页取 key。
+        /// 除首次应用外，叶子类（GTextField/GButton/GLabel）须在 Setup_AfterAdd 末尾（包数据全部读取完）再调一次：
+        /// 叶子类会在 base（此时 L10n 已首次应用）之后从包数据回填默认文本，覆盖 L10n 结果，此处重应用恢复。
         /// </summary>
-        private void ApplyL10nGearData()
+        internal void ApplyL10nGearData()
         {
             if (_l10nGearData == null) return;
 
@@ -173,14 +175,17 @@ namespace FairyGUI
         }
 
         /// <summary>
-        /// key → 文本：委托未注入时原样返回 key。
+        /// key → 文本：委托未注入时原样返回 key；译文为空（AOT 表缺 key 返回 Empty）时回退 key，
+        /// 避免空串覆盖包内默认文本导致界面空白。
         /// </summary>
         /// <param name="key">多语言 key</param>
         /// <returns>对应语言的文本</returns>
         internal string ResolveL10nText(string key)
         {
             var getter = GetLanguageText;
-            return getter == null ? key : getter(key) ?? key;
+            if (getter == null) return key;
+            var text = getter(key);
+            return string.IsNullOrEmpty(text) ? key : text;
         }
 
         /// <summary>
