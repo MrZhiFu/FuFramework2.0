@@ -2,9 +2,10 @@ using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Game.Config;
+using AOT.Launch.Localization;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Storage;
+using ELanguage = Hotfix.Game.Config.ELanguage;
 
 namespace Hotfix.Framework.Localization
 {
@@ -62,6 +63,11 @@ namespace Hotfix.Framework.Localization
                     m_StorageModule.SetString("Language", value.ToString());
                     m_StorageModule.Save();
                 }
+
+                // 同步语言偏好到 PlayerPrefs：下次启动 AOT 阶段（LaunchLocalization）从 PlayerPrefs 读取，
+                // 两阶段偏好不同源会导致 AOT 界面文本语言与本侧不一致
+                PlayerPrefs.SetInt(LaunchLocalization.LanguagePrefKey, (int)value);
+                PlayerPrefs.Save();
 
                 // 发送本地化语言改变事件
                 var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
@@ -122,6 +128,10 @@ namespace Hotfix.Framework.Localization
                 m_Language = result;
             else
                 m_Language = FromSystemLanguage();
+
+            // 启动收敛：把本侧最终语言回写 PlayerPrefs，修正 AOT 偏好缺失/漂移（如旧版本仅存档无偏好）的情况
+            PlayerPrefs.SetInt(LaunchLocalization.LanguagePrefKey, (int)m_Language);
+            PlayerPrefs.Save();
         }
 
         /// <summary>

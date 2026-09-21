@@ -19,8 +19,9 @@ namespace AOT.Launch.Localization
     {
         /// <summary>
         /// 语言偏好在 PlayerPrefs 中的存储键（值为 (int)ELanguage）。
+        /// 热更侧切换语言时（LocalizationModule）须以本键同步写入，保证下次启动 AOT 阶段读到相同偏好。
         /// </summary>
-        private const string LanguagePrefKey = "AOT_Localization_Language";
+        public const string LanguagePrefKey = "AOT_Localization_Language";
 
         /// <summary>
         /// Resources 下 AOT 本地化表数据的加载路径（不含扩展名）。

@@ -42,11 +42,12 @@ namespace AOT.Launch
         {
             FuLogger.LogInfo("<color=#43f656>------进入启动流程------</color>");
 
+            // 初始化 AOT 本地化（加载 AOT 多语言表并确定语言，供启动流程文本使用）
+            // 必须先于加载界面创建：界面上的声明式 L10n 绑定在构建（Setup）时即解析文本，委托此时必须已注入
+            await LaunchLocalization.InitializeAsync();
+
             // 显示加载界面
             m_LaunchView = await LaunchView.CreateAsync();
-
-            // 初始化 AOT 本地化（加载 AOT 多语言表并确定语言，供启动流程文本使用）
-            await LaunchLocalization.InitializeAsync();
 
             var playMode = GameSetting.Instance.PlayMode;
 

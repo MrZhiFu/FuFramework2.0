@@ -35,8 +35,5 @@
       <relation target="n15_7m3k" sidePair="width-width,height-height"/>
     </richtext>
     <group id="n18_7m3k" name="Group_UpdateTips" xy="198,92" size="1524,895"/>
-    <text id="n19_g89x" name="s_test" xy="411,308" size="1098,86" customData="L10n:aot_req_remote_update_config_fail" fontSize="66" align="center" vAlign="middle" autoSize="shrink" singleLine="true" text="测试多语言">
-      <relation target="" sidePair="center-center,middle-middle"/>
-    </text>
   </displayList>
 </component>
