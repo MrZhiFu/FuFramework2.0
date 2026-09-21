@@ -1,7 +1,7 @@
 {
   "name": "L10nKeyBind",
   "displayName": "多语言绑定工具",
-  "description": "为 UI 组件绑定多语言 key（GTextField, GRichTextField, GButton, GLabel），数据以 L10n: 段存储在组件 customData 中，由运行时在包构造时自动解析并应用对应语言文本，语言切换时经 WinBase 遍历重应用。\n填写方式：\n1. 普通组件：TbLocalization 表的 key 列值（如 common_continue_game）；\n2. 带控制器的组件：逐控制页填写，如（state,0=btn_vip_join,1=btn_vip_detail）",
+  "description": "为 UI 组件绑定多语言 key（GTextField, GRichTextField, GButton, GLabel），数据以 L10n: 段存储在组件 customData 中，由运行时在包构造时自动解析并应用对应语言文本，语言切换时经 WinBase 遍历重应用。\n填写方式：\n1. 普通组件：TbLocalization 表的 key 列值（如 common_continue_game）；\n2. 带控制器的组件：逐控制页填写，如（state,0=common_user_name,1=common_user_password）",
   "version": "1.0",
   "author": {
     "name": "Mrfu"
