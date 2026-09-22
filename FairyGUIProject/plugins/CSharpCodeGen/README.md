@@ -17,7 +17,7 @@ FairyGUI 编辑器插件，**发布（Publish）时自动启用**（`onPublish` 
 - 界面：`WinXXX`
 - 自定义组件：`CompXXX`
 - 控件：`_` + 控件类型缩写 + 功能名，如 `_btnXXX`、`_txtXXX`、`_imgXXX`、`_listXXX`
-- 静态多语言文本：`s_xxxTxt`，表示需要填入多语言 key
+- 静态多语言文本：`s_txtXXX`，表示需要填入多语言 key
 
 ## 发布执行链（onPublish）
 
