@@ -14,6 +14,7 @@
 | `UnityCli/` | 集成脚本 | **unity-cli**（让 Claude Code 通过 TCP 操控 Unity Editor）的安装脚本与说明。详见 `UnityCli/README.md`。<br>安装：Windows 双击 `install-unity-cli.bat`，macOS 运行 `bash install-unity-cli.sh`。 |
 | `HttpCDN/` | 辅助资源 | **本地 CDN 测试服务**：`miniserve.exe` + 各平台 CDN 根目录（`CDN/Android`、`CDN/IOS`、`CDN/Windows`）。<br>由编辑器菜单 `FuFramework/启动HttpCDN服务器(用于模拟资源更新)` 启动（见 `Assets/Editor/.../Misc/ExeRunner.cs`），服务于 `http://localhost:8080`。 |
 | `FairyGUI-Editor-master/` | 三方源码 | 从 GitHub 下载的 **FairyGUI 编辑器源码**（`plugin/` 插件示例：CustomInspector、CustomInspectorTs、HelloWorld、LuaAPI、TsAPI；`ui/` 编辑器 UI 源码）。<br>**仅供编写 FairyGUI 编辑器插件时参考，非本项目的构建依赖，亦无任何脚本引用。** |
+| `CleanL10nKeys/` | Python 脚本 + 调用脚本 | **多语言 key 清理工具**：扫描 代码（`Assets/Scripts`，排除生成的 `L10nKey.cs`/`LaunchL10nKey.cs`）、配置数据（`Bundles/Config`，排除本地化表自身导出产物）、FGUI 源（`FairyGUIProject/assets` 的 customData）三类引用源，列出本地化表中未被任何来源引用的 key。<br>`src/CleanL10nKeys.py` 为核心脚本（`--apply` 删除 Excel 中未引用行，不导表）；`clean-l10n-keys-preview.bat/.sh` 只出报告，`clean-l10n-keys-apply.bat/.sh` 执行删除。动态拼接的 key 无法静态检测，执行前须人工核对预览清单。<br>Unity 菜单：`FuFramework/配置表/清理多语言配置表—预览 / —执行`（见 `Assets/Editor/FuFramework/Config/L10nKeysCleaner.cs`）。 |
 
 ---
 
