@@ -1,6 +1,6 @@
 -- AtlasOrganizer: 图集整理工具
--- 功能：清理空文件夹、扫描重复图片、扫描未引用资源、扫描大图、图集优化分析
--- 版本：1.0
+-- 功能：清理空文件夹、扫描重复图片、一键合并同文件重复ID、扫描未引用资源、扫描大图、图集优化分析
+-- 版本：1.1
 -- 菜单路径：工具 → 图集整理
 --
 -- 文件结构：
@@ -8,6 +8,7 @@
 --   src/utils.lua      ← 公共工具函数
 --   src/clean_empty_folders.lua  ← 功能1: 清理空文件夹
 --   src/scan_duplicate.lua       ← 功能2: 扫描重复图片
+--   src/scan_merge.lua           ← 功能6: 一键合并同文件重复ID
 --   src/scan_unused.lua          ← 功能3: 扫描未引用资源
 --   src/scan_large.lua           ← 功能4: 扫描大图
 --   src/analyze_atlas.lua        ← 功能5: 图集优化分析
@@ -25,6 +26,7 @@ package.path = srcDir .. "?.lua;" .. package.path
 
 local cleanEmptyFolders = dofile(srcDir .. "clean_empty_folders.lua")
 local scanDuplicate     = dofile(srcDir .. "scan_duplicate.lua")
+local scanMerge         = dofile(srcDir .. "scan_merge.lua")
 local scanUnused        = dofile(srcDir .. "scan_unused.lua")
 local scanLarge         = dofile(srcDir .. "scan_large.lua")
 local analyzeAtlas      = dofile(srcDir .. "analyze_atlas.lua")
@@ -66,6 +68,11 @@ end)
 
 atlasMenu:AddItem("删除当前并替换引用", "atlas_delete_replace", -1, false, function()
     local ok, err = pcall(scanDuplicate.deleteCurrentAndReplace)
+    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
+end)
+
+atlasMenu:AddItem("一键合并同文件重复ID", "atlas_merge_same_file", -1, false, function()
+    local ok, err = pcall(scanMerge.merge)
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
