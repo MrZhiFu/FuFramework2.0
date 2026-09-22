@@ -1,6 +1,6 @@
 -- AtlasOrganizer: 图集整理工具
--- 功能：清理空文件夹、扫描重复图片、一键合并同文件重复ID、扫描未引用资源、扫描大图、图集优化分析
--- 版本：1.1
+-- 功能：清理空文件夹、扫描重复图片、一键合并同文件重复ID、一键清理重复图片、扫描清理未引用资源、扫描大图、图集优化分析
+-- 版本：1.6
 -- 菜单路径：工具 → 图集整理
 --
 -- 文件结构：
@@ -9,8 +9,9 @@
 --   src/clean_empty_folders.lua  ← 功能1: 清理空文件夹
 --   src/scan_duplicate.lua       ← 功能2: 扫描重复图片
 --   src/scan_merge.lua           ← 功能6: 一键合并同文件重复ID
---   src/scan_unused.lua          ← 功能3: 扫描未引用资源
---   src/scan_large.lua           ← 功能4: 扫描大图
+--   src/clean_duplicate.lua      ← 功能7: 一键清理重复图片
+--   src/scan_unused.lua          ← 功能3: 扫描/一键清理未引用资源
+--   src/scan_large.lua           ← 功能4: 扫描/一键整理大图
 --   src/analyze_atlas.lua        ← 功能5: 图集优化分析
 
 ---@type CS.FairyEditor.App
@@ -27,6 +28,7 @@ package.path = srcDir .. "?.lua;" .. package.path
 local cleanEmptyFolders = dofile(srcDir .. "clean_empty_folders.lua")
 local scanDuplicate     = dofile(srcDir .. "scan_duplicate.lua")
 local scanMerge         = dofile(srcDir .. "scan_merge.lua")
+local cleanDuplicate    = dofile(srcDir .. "clean_duplicate.lua")
 local scanUnused        = dofile(srcDir .. "scan_unused.lua")
 local scanLarge         = dofile(srcDir .. "scan_large.lua")
 local analyzeAtlas      = dofile(srcDir .. "analyze_atlas.lua")
@@ -56,23 +58,13 @@ atlasMenu:AddItem("扫描重复图片", "atlas_scan_duplicate", -1, false, funct
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
-atlasMenu:AddItem("定位下一个重复图片", "atlas_locate_next", -1, false, function()
-    local ok, err = pcall(scanDuplicate.locateNext)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("定位上一个重复图片", "atlas_locate_prev", -1, false, function()
-    local ok, err = pcall(scanDuplicate.locatePrev)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("删除当前并替换引用", "atlas_delete_replace", -1, false, function()
-    local ok, err = pcall(scanDuplicate.deleteCurrentAndReplace)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
 atlasMenu:AddItem("一键合并同文件重复ID", "atlas_merge_same_file", -1, false, function()
     local ok, err = pcall(scanMerge.merge)
+    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
+end)
+
+atlasMenu:AddItem("一键清理重复图片", "atlas_clean_duplicate", -1, false, function()
+    local ok, err = pcall(cleanDuplicate.clean)
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
@@ -84,18 +76,8 @@ atlasMenu:AddItem("扫描未引用资源", "atlas_scan_unused", -1, false, funct
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
-atlasMenu:AddItem("定位下一个未引用", "atlas_unused_next", -1, false, function()
-    local ok, err = pcall(scanUnused.locateNext)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("定位上一个未引用", "atlas_unused_prev", -1, false, function()
-    local ok, err = pcall(scanUnused.locatePrev)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("删除当前未引用", "atlas_unused_delete", -1, false, function()
-    local ok, err = pcall(scanUnused.deleteCurrent)
+atlasMenu:AddItem("一键清理未引用资源", "atlas_clean_unused", -1, false, function()
+    local ok, err = pcall(scanUnused.clean)
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
@@ -107,17 +89,7 @@ atlasMenu:AddItem("扫描大图 (>=512px)", "atlas_scan_large", -1, false, funct
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
 
-atlasMenu:AddItem("定位下一个大图", "atlas_large_next", -1, false, function()
-    local ok, err = pcall(scanLarge.locateNext)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("定位上一个大图", "atlas_large_prev", -1, false, function()
-    local ok, err = pcall(scanLarge.locatePrev)
-    if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
-end)
-
-atlasMenu:AddItem("整理大图 → Single", "atlas_organize_large", -1, false, function()
+atlasMenu:AddItem("一键整理大图", "atlas_organize_large", -1, false, function()
     local ok, err = pcall(scanLarge.organize)
     if not ok then fprint("[AtlasOrganizer] 错误: " .. tostring(err)) end
 end)
@@ -138,7 +110,4 @@ fprint("[AtlasOrganizer] 图集整理工具已加载")
 function onDestroy()
     pcall(function() toolMenu:RemoveItem("atlas_organizer") end)
     toolMenu = nil
-    scanDuplicate.reset()
-    scanUnused.reset()
-    scanLarge.reset()
 end

@@ -100,7 +100,7 @@ function M.analyze()
             local atlas = folderAtlasMap[path]
 
             -- 未分配检查：文件夹无 atlas 配置且不是 Single 文件夹
-            if not atlas and path ~= "/Images/Single/" then
+            if not atlas and path ~= "/Res/Single/" then
                 unassigned[#unassigned + 1] = { pkgName = pkg.name, path = path, count = #imgs }
             end
 

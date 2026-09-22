@@ -10,61 +10,6 @@ local utils = require("utils")
 
 local M = {}
 
---- 查询资源被引用次数
----@param item FPackageItem
----@return number
-local function getRefCount(item)
-    local query = CS.FairyEditor.DependencyQuery()
-    query:QueryReferences(App.project, item:GetURL())
-    local refs = query.references
-    if refs then return refs.Count end
-    return 0
-end
-
---- 候选条目是否优于当前保留项(保留规则: 引用多 > 已导出 > 序号早)
----@param candidate table {refCount=number, exported=boolean}
----@param currentKeep table 同结构
----@return boolean
-local function isBetterKeep(candidate, currentKeep)
-    if candidate.refCount ~= currentKeep.refCount then
-        return candidate.refCount > currentKeep.refCount
-    end
-    if candidate.exported ~= currentKeep.exported then
-        return candidate.exported
-    end
-    return false
-end
-
---- 删除条目但保留物理文件
---- DeleteItem 会把图片文件一并删掉, 而本组保留条目仍引用同一文件,
---- 故先快照文件字节, 删除后文件消失则写回。
----@param pi FPackageItem
----@param filePath string 该条目的物理文件路径
----@return boolean
-local function deleteItemKeepFile(pi, filePath)
-    local pkg = pi.owner
-    if not pkg then return false end
-
-    local bytes = nil
-    if CS.System.IO.File.Exists(filePath) then
-        local ok, data = pcall(function()
-            return CS.System.IO.File.ReadAllBytes(filePath)
-        end)
-        if ok then bytes = data end
-    end
-
-    local ok, err = pcall(function() pkg:DeleteItem(pi) end)
-    if not ok then
-        fprint("[AtlasOrganizer] 删除条目失败: " .. tostring(err))
-        return false
-    end
-
-    if bytes and not CS.System.IO.File.Exists(filePath) then
-        pcall(function() CS.System.IO.File.WriteAllBytes(filePath, bytes) end)
-    end
-    return true
-end
-
 --- 一键合并全部包中的同文件重复ID
 function M.merge()
     local pathMap = {}
@@ -103,13 +48,13 @@ function M.merge()
     for _, group in ipairs(groups) do
         local entries = group.entries
         for _, e in ipairs(entries) do
-            e.refCount = getRefCount(e.item)
+            e.refCount = utils.getRefCount(e.item)
             e.exported = e.item.exported
         end
 
         local keep = entries[1]
         for i = 2, #entries do
-            if isBetterKeep(entries[i], keep) then keep = entries[i] end
+            if utils.isBetterKeep(entries[i], keep) then keep = entries[i] end
         end
 
         local details = {}
@@ -124,7 +69,7 @@ function M.merge()
                         query:ReplaceReferences(keep.item)
                         rewrittenRefs = rewrittenRefs + refCount
                     end
-                    if deleteItemKeepFile(e.item, group.filePath) then
+                    if utils.deleteItemKeepFile(e.item, group.filePath) then
                         deletedItems = deletedItems + 1
                         touchedPkgs[e.pkg] = true
                     end
