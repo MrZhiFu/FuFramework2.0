@@ -2,6 +2,7 @@
 
 * 所有 commit 必须遵循 Conventional Commits 格式，描述使用中文。
 * 任何git操作前必须征得用户同意，不得擅自执行 `git add/commit/push`。
+* 任务完成后不自动提交，须经用户验证确认后再统一整理提交。
 
 ## 类型
 
