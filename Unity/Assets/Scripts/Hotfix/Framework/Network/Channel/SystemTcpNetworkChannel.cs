@@ -53,7 +53,10 @@ namespace Hotfix.Framework.Network
             {
                 const string errorMessage = "Initialize network channel failure.";
                 if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SocketError,
+                    socketError: SocketError.Success,
+                    errorMessage: errorMessage);
                 return;
             }
 
@@ -85,7 +88,10 @@ namespace Hotfix.Framework.Network
                 PActive = false;
                 if (NetworkChannelError == null) throw;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ReceiveError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
             }
         }
 
@@ -104,9 +110,11 @@ namespace Hotfix.Framework.Network
                 PActive = false;
                 if (NetworkChannelError == null) throw;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.ReceiveError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ReceiveError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
                 return;
-
             }
 
             if (bytesReceived <= 0)
@@ -128,9 +136,12 @@ namespace Hotfix.Framework.Network
             {
                 // 回包处理（畸形包头、未注册 messageId 等）抛出的异常绝不能在**线程池线程**上逃逸：
                 // 原实现只包住了 EndReceive，解析阶段的异常会直接抛出，且抛出前没有续接 ReceiveAsync，
-                // 连接会静默卡死。这里统一转为 NetworkChannelError 事件。
+                // 连接会静默卡死。这里统一转为 NetworkChannelError 事件（封送主线程触发）。
                 var socketException = exception as SocketException;
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.DeserializePacketError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
             }
             finally
             {
@@ -245,7 +256,10 @@ namespace Hotfix.Framework.Network
             if (PActive == false)
             {
                 PActive = false;
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.SocketError, SocketError.Disconnecting, "Network channel is closing.");
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SocketError,
+                    socketError: SocketError.Disconnecting,
+                    errorMessage: "Network channel is closing.");
                 return false;
             }
 
@@ -271,7 +285,10 @@ namespace Hotfix.Framework.Network
                 PActive = false;
                 if (NetworkChannelError == null) throw;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SendError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
             }
         }
 
@@ -290,7 +307,10 @@ namespace Hotfix.Framework.Network
                 PActive = false;
                 if (NetworkChannelError == null) return;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.SendError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SendError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
                 return;
             }
 
@@ -321,7 +341,10 @@ namespace Hotfix.Framework.Network
             {
                 if (NetworkChannelError == null) throw;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ConnectError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
             }
         }
 
@@ -341,7 +364,10 @@ namespace Hotfix.Framework.Network
             catch (Exception exception)
             {
                 var socketException = exception as SocketException;
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ConnectError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
                 Close();
                 return;
             }
@@ -352,7 +378,7 @@ namespace Hotfix.Framework.Network
             lock (PSendPacketPool) PSendPacketPool.Clear();
             lock (PHeartBeatLock) PHeartBeatState.Reset(true);
 
-            NetworkChannelConnected?.Invoke(this, m_ConnectState.UserData);
+            EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, m_ConnectState.UserData);
             PActive = true;
             ReceiveAsync();
         }

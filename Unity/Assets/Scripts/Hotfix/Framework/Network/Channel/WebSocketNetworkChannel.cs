@@ -71,7 +71,10 @@ namespace Hotfix.Framework.Network
             {
                 const string errorMessage = "Initialize network channel failure.";
                 if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                NetworkChannelError(this, ENetworkErrorCode.SocketError, SocketError.Success, errorMessage);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SocketError,
+                    socketError: SocketError.Success,
+                    errorMessage: errorMessage);
                 return;
             }
 
@@ -113,7 +116,10 @@ namespace Hotfix.Framework.Network
                         PActive = false;
                         if (NetworkChannelError == null) throw;
                         var socketException = exception as SocketException;
-                        NetworkChannelError(this, ENetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                        EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                            errorCode: ENetworkErrorCode.SerializeError,
+                            socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                            errorMessage: exception.ToString());
                         return false;
                     }
                     finally
@@ -125,7 +131,10 @@ namespace Hotfix.Framework.Network
                     {
                         const string errorMessage = "Serialized packet failure.";
                         if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                        NetworkChannelError(this, ENetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                        EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                            errorCode: ENetworkErrorCode.SerializeError,
+                            socketError: SocketError.Success,
+                            errorMessage: errorMessage);
                         return false;
                     }
 
@@ -147,9 +156,10 @@ namespace Hotfix.Framework.Network
             if (IsClose())
             {
                 PActive = false;
-                const string errorMessage = "Network channel is closing.";
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.SocketError, SocketError.Disconnecting, errorMessage);
-
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SocketError,
+                    socketError: SocketError.Disconnecting,
+                    errorMessage: "Network channel is closing.");
                 return false;
             }
 
@@ -191,8 +201,10 @@ namespace Hotfix.Framework.Network
             {
                 PIsConnecting = false;
                 PActive       = false;
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.ConnectError, SocketError.TimedOut,
-                    $"WebSocket connect canceled or timeout after {ConnectTimeoutMilliseconds}ms.");
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ConnectError,
+                    socketError: SocketError.TimedOut,
+                    errorMessage: $"WebSocket connect canceled or timeout after {ConnectTimeoutMilliseconds}ms.");
             }
             catch (Exception exception)
             {
@@ -205,7 +217,10 @@ namespace Hotfix.Framework.Network
                     return;
                 }
 
-                NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ConnectError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
             }
         }
 
@@ -227,7 +242,10 @@ namespace Hotfix.Framework.Network
                 PActive = false;
                 if (NetworkChannelError == null) throw;
                 var socketException = exception as SocketException;
-                NetworkChannelError(this, ENetworkErrorCode.ConnectError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.ConnectError,
+                    socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                    errorMessage: exception.ToString());
                 return;
             }
 
@@ -236,7 +254,7 @@ namespace Hotfix.Framework.Network
 
             lock (PSendPacketPool) PSendPacketPool.Clear();
             lock (PHeartBeatLock) PHeartBeatState.Reset(true);
-            NetworkChannelConnected?.Invoke(this, connectState.UserData);
+            EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, connectState.UserData);
             PActive = true;
         }
 
@@ -280,7 +298,9 @@ namespace Hotfix.Framework.Network
                     {
                         if (NetworkChannelError != null)
                         {
-                            NetworkChannelError(this, ENetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid.");
+                            EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                                errorCode: ENetworkErrorCode.DeserializePacketError,
+                                errorMessage: "Packet body is invalid.");
                             return;
                         }
                     }
@@ -295,12 +315,16 @@ namespace Hotfix.Framework.Network
                 }
                 else
                 {
-                    NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketHeaderError, SocketError.Success, "Packet header is invalid.");
+                    EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                        errorCode: ENetworkErrorCode.DeserializePacketHeaderError,
+                        errorMessage: "Packet header is invalid.");
                 }
             }
             catch (Exception e)
             {
-                NetworkChannelError?.Invoke(this, ENetworkErrorCode.DeserializePacketError, SocketError.Success, "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.DeserializePacketError,
+                    errorMessage: "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
             }
         }
     }

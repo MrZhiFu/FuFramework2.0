@@ -109,7 +109,6 @@ namespace Hotfix.Framework.Network
             {
                 if (m_PActive == value) return;
                 m_PActive = value;
-                NetworkChannelActiveChanged?.Invoke(this, m_PActive);
             }
         }
 
@@ -151,9 +150,97 @@ namespace Hotfix.Framework.Network
         /// </summary>
         private bool m_HandlerBufferBusy;
 
+        /// <summary>
+        /// 频道生命周期事件类型。
+        /// 仅含跨线程触发的三类；MissHeartBeat 由主线程 Update 的心跳检查触发，无需封送。
+        /// protected 而非 private：作为 protected 方法 EnqueueLifecycleEvent 的参数类型，
+        /// private 会报 CS0051，且子类触发点需要引用本类型。
+        /// </summary>
+        protected enum EChannelLifecycleEventType
+        {
+            Connected,
+            Closed,
+            Error
+        }
+
+        /// <summary>
+        /// 待主线程派发的生命周期事件记录。
+        /// 生命周期事件频率极低（每连接至多 Connected/Closed 各一次、Error 罕见），直接 new，不入池。
+        /// </summary>
+        private sealed class LifecycleEvent
+        {
+            public EChannelLifecycleEventType Type;
+            public object            UserData;
+            public ENetworkErrorCode ErrorCode;
+            public SocketError       SocketError;
+            public string            ErrorMessage;
+        }
+
+        /// <summary>
+        /// 生命周期事件队列：Socket 回调线程入队，主线程 Update 排水后触发。
+        /// 互斥复用 PExecutionMessageLock（与数据包接收队列同族：接收线程生产、主线程消费）。
+        /// 排水位置在 Update 活跃检查之前——保证 Close() 后入队的 Closed 事件必达。
+        /// 频道销毁后 Update 不再被调，未派发事件随本对象一并回收（丢弃，无泄漏）。
+        /// </summary>
+        private readonly Queue<LifecycleEvent> m_LifecycleEventQueue = new();
+
+        /// <summary>
+        /// 将生命周期事件入队，由主线程 Update 排水时触发（封送，替代跨线程直接 Invoke）。
+        /// 调用方保留「订阅者为 null 时抛异常」的既有行为，本方法不做判空。
+        /// </summary>
+        protected void EnqueueLifecycleEvent(EChannelLifecycleEventType type, object userData = null,
+                                             ENetworkErrorCode errorCode = ENetworkErrorCode.SocketError,
+                                             SocketError socketError = SocketError.Success,
+                                             string errorMessage = null)
+        {
+            var lifecycleEvent = new LifecycleEvent
+            {
+                Type         = type,
+                UserData     = userData,
+                ErrorCode    = errorCode,
+                SocketError  = socketError,
+                ErrorMessage = errorMessage,
+            };
+
+            lock (PExecutionMessageLock)
+            {
+                m_LifecycleEventQueue.Enqueue(lifecycleEvent);
+            }
+        }
+
+        /// <summary>
+        /// 排水生命周期事件队列：锁内逐条出队、锁外触发（写法同 ProcessReceivedMessage 的出队-派发分离，
+        /// handler 内同步 Close 频道只会继续入队，不会破坏本循环）。
+        /// 触发的是现有公共委托字段，NetworkModule 等订阅方零改动。
+        /// </summary>
+        private void DrainLifecycleEvents()
+        {
+            while (true)
+            {
+                LifecycleEvent lifecycleEvent;
+                lock (PExecutionMessageLock)
+                {
+                    if (m_LifecycleEventQueue.Count == 0) break;
+                    lifecycleEvent = m_LifecycleEventQueue.Dequeue();
+                }
+
+                switch (lifecycleEvent.Type)
+                {
+                    case EChannelLifecycleEventType.Connected:
+                        NetworkChannelConnected?.Invoke(this, lifecycleEvent.UserData);
+                        break;
+                    case EChannelLifecycleEventType.Closed:
+                        NetworkChannelClosed?.Invoke(this);
+                        break;
+                    case EChannelLifecycleEventType.Error:
+                        NetworkChannelError?.Invoke(this, lifecycleEvent.ErrorCode, lifecycleEvent.SocketError, lifecycleEvent.ErrorMessage);
+                        break;
+                }
+            }
+        }
+
         public Action<NetworkChannelBase, object>                                NetworkChannelConnected;
         public Action<NetworkChannelBase>                                        NetworkChannelClosed;
-        public Action<NetworkChannelBase, bool>                                  NetworkChannelActiveChanged;
         public Action<NetworkChannelBase, int>                                   NetworkChannelMissHeartBeat;
         public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> NetworkChannelError;
 
@@ -322,6 +409,10 @@ namespace Hotfix.Framework.Network
         /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
         public virtual void Update(float deltaTime, float unscaledDeltaTime)
         {
+            // 先排水生命周期事件，再做活跃检查：频道 Close 后 PActive=false，若排水在检查之后，
+            // 已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
+            DrainLifecycleEvents();
+
             if (PSocket == null || !PActive) return;
 
             ProcessSend();
@@ -698,7 +789,10 @@ namespace Hotfix.Framework.Network
                     default:
                         var errorMessage = $"Not supported address family '{ConnectEndPoint.AddressFamily}'.";
                         if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                        NetworkChannelError(this, ENetworkErrorCode.AddressFamilyError, SocketError.Success, errorMessage);
+                        EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                            errorCode: ENetworkErrorCode.AddressFamilyError,
+                            socketError: SocketError.Success,
+                            errorMessage: errorMessage);
                         return;
                 }
             }
@@ -737,7 +831,9 @@ namespace Hotfix.Framework.Network
                 {
                     PSocket.Close();
                     PSocket = null;
-                    NetworkChannelClosed?.Invoke(this);
+                    // 原为 NetworkChannelClosed?.Invoke(this)（可能运行在 Socket 回调线程）——改为入队封送。
+                    // PSocket==null 的早退保证重复 Close 不会重复入队；事件队列不被 Close 清空。
+                    EnqueueLifecycleEvent(EChannelLifecycleEventType.Closed);
                 }
 
                 PSentPacketCount     = 0;
@@ -780,7 +876,10 @@ namespace Hotfix.Framework.Network
             {
                 const string errorMessage = "You must connect first.";
                 if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SendError,
+                    socketError: SocketError.Success,
+                    errorMessage: errorMessage);
                 return;
             }
 
@@ -788,7 +887,10 @@ namespace Hotfix.Framework.Network
             {
                 const string errorMessage = "Socket is not active.";
                 if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SendError,
+                    socketError: SocketError.Success,
+                    errorMessage: errorMessage);
                 return;
             }
 
@@ -796,7 +898,10 @@ namespace Hotfix.Framework.Network
             {
                 const string errorMessage = "Packet is invalid.";
                 if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                NetworkChannelError(this, ENetworkErrorCode.SendError, SocketError.Success, errorMessage);
+                EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                    errorCode: ENetworkErrorCode.SendError,
+                    socketError: SocketError.Success,
+                    errorMessage: errorMessage);
                 return;
             }
 
@@ -880,7 +985,10 @@ namespace Hotfix.Framework.Network
                         PActive = false;
                         if (NetworkChannelError == null) throw;
                         var socketException = exception as SocketException;
-                        NetworkChannelError(this, ENetworkErrorCode.SerializeError, socketException?.SocketErrorCode ?? SocketError.Success, exception.ToString());
+                        EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                            errorCode: ENetworkErrorCode.SerializeError,
+                            socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+                            errorMessage: exception.ToString());
                         return false;
                     }
                     finally
@@ -891,7 +999,10 @@ namespace Hotfix.Framework.Network
                     if (serializeResult) continue;
                     const string errorMessage = "Serialized packet failure.";
                     if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
-                    NetworkChannelError(this, ENetworkErrorCode.SerializeError, SocketError.Success, errorMessage);
+                    EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+                        errorCode: ENetworkErrorCode.SerializeError,
+                        socketError: SocketError.Success,
+                        errorMessage: errorMessage);
                     return false;
 
                     // PSendState.Reset();
