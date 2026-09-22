@@ -2,53 +2,23 @@
 
 ## 1. 简介
 
-FuFramework Event
-
-&#x20;模块是一个高性能、线程安全的事件管理系统。它提供了灵活的事件订阅/发布机制，支持多种事件池模式，并集成了引用池技术以提高性能。
+FuFramework Event 模块是一个高性能的事件管理系统。它提供了灵活的事件订阅/发布机制，集成引用池技术以减少 GC 压力。模块仅允许主线程访问；跨线程产生的事件（如网络 Socket 回调）由网络频道封送到主线程后再 Broadcast。
 
 ***
 
 ## 2. 特性
 
-- 线程安全  ：`Broadcast` 方法支持跨线程调用，事件会在下一帧主线程中分发
-- 延迟处理  ：事件默认在下一帧统一处理，避免在处理事件时修改订阅列表导致的异常
-- 多播支持  ：支持一个事件对应多个处理函数
-- 对象池集成  ：事件参数和事件节点都通过引用池管理，减少GC压力
-- 灵活配置  ：支持多种事件池模式（无处理器、多处理器、重复处理器等）
-- 模块级管理  ：`EventRegister` 提供模块级的事件订阅管理，自动处理生命周期
+- 仅主线程   ：公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）有断言拦截跨线程误用
+- 延迟处理   ：事件默认在下一帧统一处理，避免在处理事件时修改订阅列表导致的异常
+- 多播支持   ：支持一个事件对应多个处理函数；同一处理函数被多个订阅者订阅时按引用计数每事件只调用一次
+- 对象池集成 ：事件参数和事件节点都通过引用池管理，减少GC压力
+- 模块级管理 ：`EventRegister` 提供模块级的事件订阅管理，自动处理生命周期
 
 ***
 
 ## 3. 核心概念
 
-### 3.1 事件池模式 (EEventPoolMode)
-
-```csharp
-[Flags]
-public enum EEventPoolMode : byte
-{
-    Default = 0,                    // 默认模式：必须存在有且只有一个事件处理函数
-    AllowNoHandler = 1,             // 允许不存在事件处理函数
-    AllowMultiHandler = 2,          // 允许存在多个事件处理函数
-    AllowDuplicateHandler = 4       // 允许存在重复的事件处理函数
-}
-```
-
-模式说明：
-
-- Default  ：严格模式，每个事件必须有且只有一个处理函数
-- AllowNoHandler  ：宽松模式，允许事件没有处理函数（不会抛出异常）
-- AllowMultiHandler  ：多播模式，允许一个事件有多个处理函数（观察者模式）
-- AllowDuplicateHandler  ：允许同一个处理函数多次订阅同一事件
-
-组合使用示例：
-
-```csharp
-// 允许无处理器 + 允许多处理器
-EEventPoolMode.AllowNoHandler | EEventPoolMode.AllowMultiHandler
-```
-
-### 3.2 事件参数基类
+### 3.1 事件参数基类
 
 BaseEventArgs
 
@@ -96,11 +66,11 @@ void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
 bool Check(string id, EventHandler<GameEventArgs> handler)
 int Count(string id)                    // 获取指定事件的处理函数数量
 
-// 抛出事件（线程安全，延迟到下一帧处理）
+// 抛出事件（延迟到下一帧主线程分发）
 void Broadcast(object sender, GameEventArgs e)
 void Broadcast(object sender, string eventId)   // 使用空事件包装事件ID
 
-// 立即抛出事件（非线程安全，立即处理）
+// 立即抛出事件（同步处理，仅限主线程调用）
 void BroadcastNow(object sender, GameEventArgs e)
 
 // 设置默认事件处理器
@@ -155,12 +125,12 @@ void Release()                          // 归还引用池
 
 核心机制：
 
-- 线程安全的事件队列  ：使用 `Queue<Event>` 存储待处理事件
+- 事件队列  ：使用 `Queue<Event>` 存储待处理事件，仅主线程访问
 - 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
-- 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 实现线程安全的取消订阅（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
+- 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 把退订延迟到下一帧生效（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
 - 引用计数订阅  ：同一 `(id, handler)` 被多个订阅者（多个 `EventRegister`、多个模块）共享时按份计数，`Subscribe` 计 +1、`Unsubscribe` 计 -1，归零才真正移除条目；单个订阅者退订不影响其他订阅者
 - 退订契约  ：各订阅者只能退订自己登记的那一份；超额退订（次数超过自身订阅数）会继续消耗其他订阅者的计数，导致他人订阅被静默移除且无告警
-- 锁机制  ：使用 `m_EventHandlerLock` 保证线程安全
+- 主线程契约  ：无锁设计，公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）断言拦截跨线程误用
 
 工作流程：
 
@@ -502,7 +472,7 @@ public class EventDebugger : MonoBehaviour
 }
 ```
 
-### 5.6 立即处理事件（非线程安全）
+### 5.6 立即处理事件（同步处理）
 
 ```csharp
 public class CriticalSystem : MonoBehaviour
@@ -519,7 +489,7 @@ public class CriticalSystem : MonoBehaviour
         var errorArgs = ErrorEventArgs.Create(errorMessage);
         
         // 使用 BroadcastNow 立即处理（同步执行）
-        // 注意：此方法非线程安全，只能在主线程调用
+        // 注意：此方法同步执行，仅限主线程调用
         m_EventModule.BroadcastNow(this, errorArgs);
         
         // 事件处理完成后才会执行到这里
@@ -551,24 +521,22 @@ public class CriticalSystem : MonoBehaviour
    -> ReferencePool.Recycle(args) 释放事件参数
 ```
 
-### 6.2 线程安全说明
+### 6.2 主线程契约说明
 
-| 方法             | 线程安全 | 处理时机 | 适用场景      |
-| -------------- | ---- | ---- | --------- |
-| `Broadcast`    | 是    | 下一帧  | 通用场景，推荐   |
-| `BroadcastNow` | 否    | 立即   | 需要同步处理的场景 |
+事件池仅允许主线程访问：公共 API 入口均有 `AssertMainThread` 断言（`[Conditional("UNITY_ASSERTIONS")]`，仅 Editor/Development 构建生效，发布版被剥离、零运行时开销），跨线程调用在开发期立即报错定位。
 
-其余 API 的线程安全性：
+| 方法                                                                                                       | 处理时机 | 说明 |
+| -------------------------------------------------------------------------------------------------------- | ---- | --------- |
+| `Broadcast`    | 下一帧  | 事件入队，`Update` 时统一分发，通用场景，推荐   |
+| `BroadcastNow` | 立即（同步）   | 仅限主线程，需要同步处理的场景 |
+| `Subscribe` / `Unsubscribe` / `Check` / `Count` / `SetDefaultHandler` / `EventCount` / `EventHandlerCount` | 立即    | 仅限主线程   |
+| `ForEachHandler` / `ForEachEvent`                                                                          | 立即    | 仅限主线程；回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
 
-| 方法                                                                                                       | 线程安全 |
-| -------------------------------------------------------------------------------------------------------- | ---- |
-| `Subscribe` / `Unsubscribe` / `Check` / `Count` / `SetDefaultHandler` / `EventCount` / `EventHandlerCount` | 是    |
-| `ForEachHandler` / `ForEachEvent`                                                                          | 否，仅限主线程（重入识别标志非原子，跨线程并发调用会破坏快照缓存） |
+跨线程产生的事件（如网络 Socket 回调）不得直接调用事件池，由网络频道封送到主线程后（channel.Update 排水）再 `Broadcast`。
 
-线程安全实现原理：
+实现机制：
 
-- 使用 `lock (m_EventQueue)` 保护事件队列
-- 使用 `lock (m_EventHandlerLock)` 保护事件处理器字典
+- 无锁设计  ：单线程契约下无需加锁，事件队列与处理器字典均仅主线程访问
 - 取消订阅使用延迟删除机制，避免在处理事件时修改集合
 
 ***
@@ -601,8 +569,7 @@ Event/
 ├── EventRegister.cs             # 事件注册器
 ├── EventPool/                   # 事件池
 │   ├── EventPool.cs             # 事件池核心实现
-│   ├── EventPool.Event.cs       # 事件节点定义
-│   └── EEventPoolMode.cs        # 事件池模式枚举
+│   └── EventPool.Event.cs       # 事件节点定义
 ├── Event/                       # 事件参数
 │   ├── BaseEventArgs.cs         # 事件参数基类
 │   ├── GameEventArgs.cs         # 游戏事件参数基类
@@ -768,7 +735,7 @@ private void Update()
 ## 11. 注意事项
 
 1. 取消订阅  ：在对象销毁时务必取消事件订阅，避免内存泄漏
-2. 线程安全  ：`Broadcast` 是线程安全的，但 `BroadcastNow` 只能在主线程调用
+2. 主线程限制  ：所有公共 API 仅允许主线程调用（开发期有断言拦截跨线程误用）；跨线程产生的事件由网络频道封送主线程后再 Broadcast
 3. 事件处理顺序  ：同一事件的多个处理函数按订阅顺序调用
 4. 异常处理  ：事件处理函数中的异常会被捕获并记录，不会影响其他处理函数
 5. 对象池  ：事件参数对象会自动通过引用池管理，无需手动释放，但需正确实现 `Clear` 方法

@@ -249,7 +249,7 @@ namespace Hotfix.Framework.Download
 
         /// <summary>
         /// 判断事件是否来自本代理自己的下载辅助器。
-        /// 四个下载辅助器事件的 Id 是共享的（AllowMultiHandler），多个下载代理订阅了同一 Id，
+        /// 四个下载辅助器事件的 Id 是共享的（多播语义），多个下载代理订阅了同一 Id，
         /// 一次 Broadcast 会分发给全部代理；若不过滤 sender，任一辅助器的数据/完成/错误事件
         /// 会被所有代理处理 → 并发下载时串写文件、并在任一任务完成时误完成他人任务。
         /// sender 为 <see cref="DownloadHandler"/> 时须属于本代理的 m_Helper；

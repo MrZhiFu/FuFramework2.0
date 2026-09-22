@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Event
         /// </summary>
         protected internal override void OnInit()
         {
-            m_EventPool = new EventPool<GameEventArgs>(EEventPoolMode.AllowNoHandler | EEventPoolMode.AllowMultiHandler);
+            m_EventPool = new EventPool<GameEventArgs>();
         }
 
         /// <summary>
@@ -105,7 +105,9 @@ namespace Hotfix.Framework.Event
         public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_EventPool.SetDefaultHandler(handler);
 
         /// <summary>
-        /// 抛出事件，这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// 抛出事件，事件会延迟到抛出后的下一帧由主线程分发。
+        /// 事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用）；
+        /// 跨线程产生的事件须先由网络频道等来源封送至主线程，再调用本方法。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>
@@ -113,7 +115,7 @@ namespace Hotfix.Framework.Event
 
         /// <summary>
         /// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
-        /// 这个操作是线程安全的，即使不在主线程中抛出，也可保证在主线程中回调事件处理函数，但事件会在抛出后的下一帧分发。
+        /// 主线程限制与分发时机同 Broadcast(object, GameEventArgs)：仅限主线程调用，事件会延迟到下一帧主线程分发。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="eventId">事件编号。</param>
@@ -124,7 +126,7 @@ namespace Hotfix.Framework.Event
         }
 
         /// <summary>
-        /// 立即抛出事件，这个操作不是线程安全的，事件会立刻分发。
+        /// 立即抛出事件，事件会立刻在主线程分发。事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用），故仅限主线程调用。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件参数。</param>

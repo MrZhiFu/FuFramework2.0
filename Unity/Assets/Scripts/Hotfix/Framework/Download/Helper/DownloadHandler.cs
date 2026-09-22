@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Download
         /// <summary>
         /// 获取本处理器所属的下载代理辅助器。
         /// 供 DownloadAgent 在事件回调中据 sender 判定「事件是否来自自己的辅助器」——
-        /// 四个下载辅助器事件的 Id 是共享的（AllowMultiHandler），每次 Broadcast 会分发给全部订阅的下载代理。
+        /// 四个下载辅助器事件的 Id 是共享的（多播语义），每次 Broadcast 会分发给全部订阅的下载代理。
         /// </summary>
         internal UnityWebRequestDownloadAgentHelper Owner => m_Owner;
 
@@ -58,7 +58,7 @@ namespace Hotfix.Framework.Download
             //
             // 关于「改用 ArrayPool<byte>.Shared.Rent/Return 消除本次 ≤4096B/块的 Gen0 分配」的取舍（评估结论：暂不采用）：
             // 归还点只能落在「消费完毕」处，而本事件的消费方 DownloadAgent 无法唯一确定自己就是该数据的产出者 ——
-            // 三个 DownloadAgent 在 Initialize 时都订阅了同一个事件 Id（AllowMultiHandler），一次 Broadcast 会分发给
+            // 三个 DownloadAgent 在 Initialize 时都订阅了同一个事件 Id（多播语义），一次 Broadcast 会分发给
             // 全部订阅者；若在消费方归还，同一数组会被重复归还（ArrayPool 重复归还即把同一数组交给两个租借者，
             // 直接造成数据错乱），而下载场景下这一分发给全部代理是常态而非边角。
             // 唯一能精确配对的归还点是事件参数自身的生命周期终点（DownloadAgentHelperUpdateBytesEventArgs.Clear()），
