@@ -44,7 +44,6 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                 '#FieldDefine#', -- Launcher 模板：字段声明（含 Controller、组件、动效）
                 '#EnumAndMethodDefine#', -- Launcher 模板：枚举定义与 SetController 方法
                 '#CompInit#', -- 界面包含的组件初始化赋值关键字
-                '#INITUIEVENT#', -- 界面可交互组件事件初始化
             }
 
             -- 定义关键字对应的填充内容字典
@@ -61,9 +60,6 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             GenCommon:GenCompInit(dataTable['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
             GenCommon:GenTransitionInit(dataTable['#CompInit#'], winCls)-- 动效的初始化赋值，如：xxxAnim = WinUI.GetTransition("xxxAnim");
 
-            GenCommon:GenCompEvent(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
-            GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
-
             -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前（所有包通用）
             GenCommon:SplitCompDefine(dataTable)
 
@@ -78,7 +74,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                     end
                 end
 
-                local apiKeys = { '#FieldDefine#', '#EnumAndMethodDefine#', '#CompInit#', '#INITUIEVENT#' }
+                local apiKeys = { '#FieldDefine#', '#EnumAndMethodDefine#', '#CompInit#' }
                 for _, k in ipairs(apiKeys) do
                     local content = table.concat(dataTable[k])
                     if content ~= "" then
@@ -129,6 +125,12 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                     if winCls.res.exported then
                         local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
                         local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
+
+                        -- 生成可交互组件的事件注册代码（InitUIEvent 方法体，归属手写层，之后增删由开发维护）
+                        local initUIEventLines = {}
+                        GenCommon:GenCompEvent(initUIEventLines, compArray, AllClsMap)
+                        GenCommon:GenCompListOnRender(initUIEventLines, compArray, AllClsMap)
+                        templateCode = templateCode:gsub('#INITUIEVENT#', table.concat(initUIEventLines):gsub("\n+$", ""))
 
                         -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
                         local handlerLines = {}

@@ -39,7 +39,6 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
                 '#FieldDefine#', -- 字段声明
                 '#EnumAndMethodDefine#', -- 枚举定义与 SetController 方法
                 '#CompInit#', -- 组件包含的组件初始化赋值关键字
-                '#INITUIEVENT#', -- 组件可交互组件事件初始化
             }
 
             ---@type table<string, string[]>  key-模板代码关键字, value-生成的代码数组
@@ -57,20 +56,8 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
             GenCommon:GenCompInit(dataDict['#CompInit#'], compArray, AllClsMap)-- 常用组件的初始化赋值，如：btnLogin = (GButton)GetChild("_btnLogin");
             GenCommon:GenTransitionInit(dataDict['#CompInit#'], compCls)-- 动效的初始化赋值，如：xxxAnim = WinUI.GetTransition("xxxAnim");
 
-            GenCommon:GenCompEvent(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成组件的交互事件监听代码:AddUIListener(btnEnter.onClick, OnBtnEnterClick);
-            GenCommon:GenCompListOnRender(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
-
             -- 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前
             GenCommon:SplitCompDefine(dataDict)
-
-            -- 无交互事件时删除 InitUIEvent 的调用与定义块，有则仅移除条件标记（Win 的 InitUIEvent 被手写层 OnInit 调用，不参与此判断）
-            if table.concat(dataDict['#INITUIEVENT#']) == "" then
-                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_CALL#START.-#IF_UIEVENT_CALL#END\n", "")
-                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_METHOD#START.-#IF_UIEVENT_METHOD#END\n", "")
-            else
-                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_CALL#START\n", ""):gsub("#IF_UIEVENT_CALL#END\n", "")
-                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_METHOD#START\n", ""):gsub("#IF_UIEVENT_METHOD#END\n", "")
-            end
 
 
             -- 使用生成的代码替换模板代码中各个关键字（去除末尾多余换行，避免与模板换行叠加）
@@ -104,6 +91,12 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
 
             local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
             local templateCode = Tool:ReadTxt(templateCodePath) -- 读取模板代码
+
+            -- 生成可交互组件的事件注册代码（InitUIEvent 方法体，归属手写层，之后增删由开发维护）
+            local initUIEventLines = {}
+            GenCommon:GenCompEvent(initUIEventLines, compArray, AllClsMap)
+            GenCommon:GenCompListOnRender(initUIEventLines, compArray, AllClsMap)
+            templateCode = templateCode:gsub('#INITUIEVENT#', table.concat(initUIEventLines):gsub("\n+$", ""))
 
             -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
             local handlerLines = {}

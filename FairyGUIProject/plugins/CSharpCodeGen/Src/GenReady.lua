@@ -18,6 +18,17 @@ function GenReady:Init(handler, pluginPath)
     GenCommon = require(pluginPath .. '/Src/GenCommon')
 end
 
+--- 包是否勾选了"为本包生成代码"
+--- 未勾选的包跳过代码生成（资源发布不受影响）
+---@return boolean 勾选返回 true；无发布设置时默认 true（不拦截）
+function GenReady:IsGenCodeEnabled()
+    local publishSettings = Tool:Handler().pkg.publishSettings
+    if publishSettings == nil or publishSettings.genCode == nil then
+        return true
+    end
+    return publishSettings.genCode == true
+end
+
 --- 导出路径是否有效
 ---@return boolean 导出路径在 Assets 目录下返回 true
 function GenReady:IsExportPathOK()

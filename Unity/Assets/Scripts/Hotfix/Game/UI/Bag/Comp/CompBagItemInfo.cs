@@ -24,6 +24,15 @@ namespace Hotfix.Game.UI
         }
 
         /// <summary>
+        /// UI组件事件初始化
+        /// </summary>
+        private void InitUIEvent()
+        {
+            AddUIListener(btnUse.onClick, OnBtnUseClick);
+            AddUIListener(btnGet.onClick, OnBtnGetClick);
+        }
+
+        /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
         private void InitEvent()

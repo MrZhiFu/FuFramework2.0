@@ -32,6 +32,18 @@ namespace Hotfix.Game.UI
         }
 
         /// <summary>
+        /// 界面可交互组件事件初始化
+        /// </summary>
+        private void InitUIEvent()
+        {
+            AddUIListener(btnLogin.onClick, OnBtnLoginClick);
+            AddUIListener(inputUserName.onChanged, OnInputUserNameChanged);
+            AddUIListener(inputUserName.onFocusOut, OnInputUserNameFocusOut);
+            AddUIListener(inputPassword.onChanged, OnInputPasswordChanged);
+            AddUIListener(inputPassword.onFocusOut, OnInputPasswordFocusOut);
+        }
+
+        /// <summary>
         /// 注册相关逻辑事件
         /// </summary>
         private void InitEvent()

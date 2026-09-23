@@ -49,6 +49,13 @@ namespace Hotfix.Game.UI
         }
 
         /// <summary>
+        /// UI组件事件初始化（由 Gen 层 ConstructFromXML 调用，事件注册代码首次生成，之后增删由开发维护）
+        /// </summary>
+        private void InitUIEvent()
+        {
+        }
+
+        /// <summary>
         /// 销毁：取消订阅红点变更事件
         /// </summary>
         private void OnDispose()

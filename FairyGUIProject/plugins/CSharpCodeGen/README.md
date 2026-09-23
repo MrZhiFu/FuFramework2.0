@@ -22,10 +22,33 @@ FairyGUI 编辑器插件，**发布（Publish）时自动启用**（`onPublish` 
 ## 发布执行链（onPublish）
 
 1. 初始化发布处理器与通用工具（`GenReady:Init`）
-2. 校验导出路径有效性，无效则终止
-3. 获取 Unity 工程路径（`xxx/Assets`）
-4. **依赖检查**：包依赖必须位于任意 Common 包或当前发布包中，存在非法依赖时终止发布
-5. 收集包内界面/组件清单 → 依次生成 Win →（非 Launcher）Comp → Binder
+2. **包级开关**：未勾选"为本包生成代码"（`publishSettings.genCode`）的包直接跳过，不生成任何代码（资源发布不受影响）
+3. 校验导出路径有效性，无效则终止
+4. 获取 Unity 工程路径（`xxx/Assets`）
+5. **依赖检查**：包依赖必须位于任意 Common 包或当前发布包中，存在非法依赖时终止发布
+6. 收集包内界面/组件清单 → 依次生成 Win →（非 Launcher）Comp → Binder
+
+## 事件接线（InitUIEvent）与事件白名单
+
+事件注册代码（`AddUIListener(...)`）归属于**手写层**的 `InitUIEvent` 方法：
+
+- 首次生成 `WinXxx.cs` / `CompXxx.cs` 时自动写入方法与注册代码，**之后增删由开发人员维护**（Gen 层每次发布重生成，不再包含该方法）
+- 控件字段、`InitUIComp` 赋值、枚举等仍留在 Gen 层自动重生成
+- Gen 层 `ConstructFromXML` 调用 `InitUIEvent`（与调用 `OnInit` 同模式）
+
+默认事件白名单（`Src/GenCommon.lua` 的 `COMP_EVENT_CONFIG`，按控件类型配置）：
+
+| 类型 | 默认事件 |
+| ---- | -------- |
+| GButton | onClick |
+| GList | onClickItem |
+| GSlider | onChanged |
+| GComboBox | onChanged |
+| GTextInput | onChanged、onFocusOut、onSubmit |
+| GGraph | onClick |
+| GRichTextField | onClick、onClickLink（`ctx.data` 为 href） |
+
+未收录的类型（GImage、GLoader 等纯展示居多）不生成事件；需要时在 `COMP_EVENT_CONFIG` 加一行即可，其余链路零改动。
 
 ## 文件结构
 

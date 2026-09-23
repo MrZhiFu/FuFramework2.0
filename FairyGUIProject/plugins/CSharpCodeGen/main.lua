@@ -20,6 +20,12 @@ function onPublish(handler)
     --- 2.加载GenCommon生成时的通用功能对象
     GenReady:Init(handler, PluginPath)
 
+    --- 包未勾选"为本包生成代码"时跳过代码生成（资源发布不受影响）
+    if not GenReady:IsGenCodeEnabled() then
+        Tool:Log("包 %s 未勾选\"为本包生成代码\"，跳过代码生成", handler.pkg.name)
+        return
+    end
+
     --- 导出路径是否有效
     if not GenReady:IsExportPathOK() then
         return

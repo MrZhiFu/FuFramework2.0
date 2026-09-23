@@ -3,6 +3,8 @@
 local GenCommon = {}
 
 --- 组件类型 → 交互事件配置映射（cbNamePattern 中的 %s 会被组件功能名替换）
+--- 事件能力参考 FairyGUI 运行时源码：所有 GObject 均有 onClick 等基类事件，此处白名单只收录
+--- "该类型实例大概率需要接线" 的默认事件，未收录的类型需要时手动订阅或在此加行
 local COMP_EVENT_CONFIG = {
     GSlider = {
         { eventName = "onChanged", cbNamePattern = "On%sChanged" },
@@ -13,9 +15,17 @@ local COMP_EVENT_CONFIG = {
     GTextInput = {
         { eventName = "onChanged", cbNamePattern = "On%sChanged" },
         { eventName = "onFocusOut", cbNamePattern = "On%sFocusOut" },
+        { eventName = "onSubmit", cbNamePattern = "On%sSubmit" },
     },
     GButton = {
         { eventName = "onClick", cbNamePattern = "On%sClick" },
+    },
+    GGraph = {
+        { eventName = "onClick", cbNamePattern = "On%sClick" },
+    },
+    GRichTextField = {
+        { eventName = "onClick", cbNamePattern = "On%sClick" },
+        { eventName = "onClickLink", cbNamePattern = "On%sClickLink", defaultContent = "\t\t\t// ctx.data 为超链接的 href 字符串\n" },
     },
 }
 
@@ -453,6 +463,7 @@ function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
             eventName = config.eventName,
             cbNamePattern = config.cbNamePattern,
             args = DEFAULT_EVENT_ARGS,
+            defaultContent = config.defaultContent,
         })
     end
     return uiEventsNameArray
