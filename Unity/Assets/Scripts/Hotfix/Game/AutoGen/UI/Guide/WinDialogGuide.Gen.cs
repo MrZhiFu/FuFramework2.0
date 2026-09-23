@@ -27,13 +27,5 @@ namespace Hotfix.Game.UI
 			loaderIcon = (GLoader)GetChild("_loaderIcon");
 			btnNext = (GButton)GetChild("_btnNext");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(btnNext.onClick, OnBtnNextClick);
-        }
     }
 }

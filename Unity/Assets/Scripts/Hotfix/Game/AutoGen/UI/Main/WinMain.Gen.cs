@@ -31,13 +31,5 @@ namespace Hotfix.Game.UI
 			txtPlayerName = (GTextField)GetChild("_txtPlayerName");
 			txtPlayerLevel = (GTextField)GetChild("_txtPlayerLevel");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(btnBag.onClick, OnBtnBagClick);
-        }
     }
 }

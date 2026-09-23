@@ -25,13 +25,5 @@ namespace Hotfix.Game.UI
 			txtTitle = (GTextField)GetChild("_txtTitle");
 			txtContent = (GRichTextField)GetChild("_txtContent");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
     }
 }

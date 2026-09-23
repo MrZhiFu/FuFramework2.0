@@ -51,15 +51,5 @@ namespace Hotfix.Game.UI
 			txtSelectedLevel = (GRichTextField)GetChild("_txtSelectedLevel");
 			btnLogin = (GButton)GetChild("_btnLogin");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(listPlayer.onClickItem, OnClickListPlayerItem);
-			AddUIListener(btnLogin.onClick, OnBtnLoginClick);
-			listPlayer.itemRenderer = OnRenderListPlayerItem;
-        }
     }
 }

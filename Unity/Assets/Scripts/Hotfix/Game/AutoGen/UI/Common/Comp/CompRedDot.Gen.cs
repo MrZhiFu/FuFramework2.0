@@ -51,14 +51,6 @@ namespace Hotfix.Game.UI
         }
 
         /// <summary>
-        /// UI组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
-
-        /// <summary>
         /// UI组件销毁
         /// </summary>
         public override void Dispose()

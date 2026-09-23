@@ -25,13 +25,5 @@ namespace Hotfix.Game.UI
 			compContent = (CompBagContent)GetChild("_compContent");
 			btnClose = (GComponent)GetChild("_btnClose");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
     }
 }

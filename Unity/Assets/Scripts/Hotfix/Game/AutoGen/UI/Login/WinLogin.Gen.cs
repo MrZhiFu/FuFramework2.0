@@ -33,17 +33,5 @@ namespace Hotfix.Game.UI
 			txtPassword = (GTextField)GetChild("_txtPassword");
 			inputPassword = (GTextInput)GetChild("_inputPassword");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(btnLogin.onClick, OnBtnLoginClick);
-			AddUIListener(inputUserName.onChanged, OnInputUserNameChanged);
-			AddUIListener(inputUserName.onFocusOut, OnInputUserNameFocusOut);
-			AddUIListener(inputPassword.onChanged, OnInputPasswordChanged);
-			AddUIListener(inputPassword.onFocusOut, OnInputPasswordFocusOut);
-        }
     }
 }

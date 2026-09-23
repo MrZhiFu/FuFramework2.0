@@ -55,14 +55,5 @@ namespace Hotfix.Game.UI
 			btnOk = (GButton)GetChild("_btnOk");
 			btnNo = (GButton)GetChild("_btnNo");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(btnOk.onClick, OnBtnOkClick);
-			AddUIListener(btnNo.onClick, OnBtnNoClick);
-        }
     }
 }

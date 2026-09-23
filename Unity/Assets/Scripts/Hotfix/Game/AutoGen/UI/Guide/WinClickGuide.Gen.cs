@@ -23,13 +23,5 @@ namespace Hotfix.Game.UI
         {
 			graphClickArea = (GGraph)GetChild("_graphClickArea");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
     }
 }

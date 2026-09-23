@@ -31,15 +31,5 @@ namespace Hotfix.Game.UI
 			btnCreate = (GButton)GetChild("_btnCreate");
 			txtError = (GTextField)GetChild("_txtError");
         }
-
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-			AddUIListener(inputUserName.onChanged, OnInputUserNameChanged);
-			AddUIListener(inputUserName.onFocusOut, OnInputUserNameFocusOut);
-			AddUIListener(btnCreate.onClick, OnBtnCreateClick);
-        }
     }
 }
