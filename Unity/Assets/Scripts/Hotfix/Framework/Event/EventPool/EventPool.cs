@@ -108,7 +108,7 @@ namespace Hotfix.Framework.Event
             m_EventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<T>>();
             m_WaitRemoveHandlerList = new List<(string, EventHandler<T>)>();
             m_HandlerRefCountDict   = new Dictionary<(string, EventHandler<T>), int>();
-            m_CreatorThreadId = Thread.CurrentThread.ManagedThreadId;
+            m_CreatorThreadId       = Thread.CurrentThread.ManagedThreadId;
         }
 
         /// <summary>
