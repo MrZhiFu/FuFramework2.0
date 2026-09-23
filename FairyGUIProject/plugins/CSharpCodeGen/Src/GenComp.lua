@@ -96,7 +96,13 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
             local initUIEventLines = {}
             GenCommon:GenCompEvent(initUIEventLines, compArray, AllClsMap)
             GenCommon:GenCompListOnRender(initUIEventLines, compArray, AllClsMap)
-            templateCode = templateCode:gsub('#INITUIEVENT#', table.concat(initUIEventLines):gsub("\n+$", ""))
+            local initUIEventContent = table.concat(initUIEventLines):gsub("\n+$", "")
+            templateCode = templateCode:gsub('#INITUIEVENT#', initUIEventContent)
+
+            -- 无交互事件时折叠为单行空方法
+            if initUIEventContent == "" then
+                templateCode = templateCode:gsub("private void InitUIEvent%(%)[\r\n]+%s*{[\r\n]+%s*}", "private void InitUIEvent() { }")
+            end
 
             -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
             local handlerLines = {}
