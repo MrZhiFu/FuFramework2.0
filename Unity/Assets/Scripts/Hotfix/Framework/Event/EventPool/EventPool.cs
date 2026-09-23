@@ -112,18 +112,6 @@ namespace Hotfix.Framework.Event
         }
 
         /// <summary>
-        /// 断言当前线程为构造线程（主线程）；违规立即报错定位，而非静默产生数据竞争。
-        /// [Conditional("UNITY_ASSERTIONS")]：该符号仅在 Editor/Development 构建定义，
-        /// 发布版所有调用点被编译器剥离，零运行时开销。
-        /// </summary>
-        [Conditional("UNITY_ASSERTIONS")]
-        private void AssertMainThread()
-        {
-            if (Thread.CurrentThread.ManagedThreadId != m_CreatorThreadId)
-                FuLogger.LogError($"[EventPool]事件池仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
-        }
-
-        /// <summary>
         /// 获取事件处理函数的数量。
         /// 注意：多值字典自身的 Count 是「有订阅的事件 ID 数」，而多播语义下同一事件可挂多个处理函数，
         /// 故此处遍历累加各事件的处理器条目数，保证与命名语义一致；仅供诊断/编辑器面板使用，勿在热路径调用。
@@ -625,6 +613,18 @@ namespace Hotfix.Framework.Event
             }
 
             m_WaitRemoveHandlerList.Clear();
+        }
+
+        /// <summary>
+        /// 断言当前线程为构造线程（主线程）；违规立即报错定位，而非静默产生数据竞争。
+        /// [Conditional("UNITY_ASSERTIONS")]：该符号仅在 Editor/Development 构建定义，
+        /// 发布版所有调用点被编译器剥离，零运行时开销。
+        /// </summary>
+        [Conditional("UNITY_ASSERTIONS")]
+        private void AssertMainThread()
+        {
+            if (Thread.CurrentThread.ManagedThreadId != m_CreatorThreadId)
+                FuLogger.LogError($"[EventPool]事件池仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
         }
     }
 }
