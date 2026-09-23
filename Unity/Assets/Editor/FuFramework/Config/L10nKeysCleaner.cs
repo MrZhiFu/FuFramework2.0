@@ -24,7 +24,7 @@ namespace FuFramework.Config.Editor
         [MenuItem("FuFramework/配置表/清理多语言配置表—预览", false, 1002)]
         public static void Preview()
         {
-            Run("clean-l10n-keys-preview.bat");
+            Run("clean-l10n-keys-preview.bat", true);
         }
 
         /// <summary>
@@ -42,14 +42,15 @@ namespace FuFramework.Config.Editor
                 return;
             }
 
-            Run("clean-l10n-keys-apply.bat");
+            Run("clean-l10n-keys-apply.bat", false);
         }
 
         /// <summary>
         /// 执行清理批处理脚本，并把脚本完整输出打印到 Unity 控制台。
         /// </summary>
         /// <param name="scriptName">Tools 目录下的脚本文件名</param>
-        private static void Run(string scriptName)
+        /// <param name="isPreview">是否为预览模式，预览模式下脚本会输出报告而不修改 Excel</param>
+        private static void Run(string scriptName, bool isPreview)
         {
             var toolsDir   = GetToolsPath();
             var scriptPath = Path.Combine(toolsDir, scriptName);
@@ -67,11 +68,9 @@ namespace FuFramework.Config.Editor
             Debug.Log($"[L10nKeysCleaner] {scriptName} 执行{(success ? "完成" : "失败")}，" +
                       $"耗时 {stopwatch.Elapsed.TotalSeconds:F2}s，输出：\n{output}");
 
-            EditorUtility.DisplayDialog(success ? "成功" : "失败",
-                                        success
-                                            ? $"多语言 key 清理完成，耗时 {stopwatch.Elapsed.TotalSeconds:F2}s，详见控制台日志。"
-                                            : "多语言 key 清理失败，详见控制台日志。",
-                                        "确定");
+            var operationStr = isPreview ? "预览冗余多语言 key" : "执行清理冗余多语言 key";
+            var msgContent   = success ? $"{operationStr}完成，耗时 {stopwatch.Elapsed.TotalSeconds:F2}s，详见控制台日志。" : $"{operationStr}失败，详见控制台日志。";
+            EditorUtility.DisplayDialog(success ? "成功" : "失败", msgContent, "确定");
         }
 
         /// <summary>
