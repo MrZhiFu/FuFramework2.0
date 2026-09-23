@@ -22,10 +22,7 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// 界面可交互组件事件初始化
         /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
+        private void InitUIEvent() { }
 
         /// <summary>
         /// 注册相关逻辑事件
@@ -35,7 +32,7 @@ namespace Hotfix.Game.UI
             // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
         }
 
-        
+
         /// <summary>
         /// 界面打开
         /// </summary>
@@ -43,7 +40,7 @@ namespace Hotfix.Game.UI
         {
             Refresh();
         }
-        
+
         /// <summary>
         /// 界面关闭
         /// </summary>
@@ -59,11 +56,11 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void Refresh()
         {
-        	// TODO：刷新逻辑
+            // TODO：刷新逻辑
         }
 
         #region 交互事件与ListItem渲染回调处理
-        
+
         #endregion
     }
 }

@@ -23,10 +23,7 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// UI组件事件初始化
         /// </summary>
-        private void InitUIEvent()
-        {
-
-        }
+        private void InitUIEvent() { }
 
         /// <summary>
         /// 注册相关逻辑事件
