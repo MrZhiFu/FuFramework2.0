@@ -16,8 +16,8 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
     local compSubDir = "/Comp"
 
     -- Gen 和 Cs 的基础路径不同：Gen → AutoGen/UI/{pkg}, Cs → Game/UI/{pkg}
-    local targetGenDir = (Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
-    local targetCsDir = (Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir):gsub("/+", "/")
+    local targetGenDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName) .. compSubDir
+    local targetCsDir = Tool:StrFormat(exportPath, unityDataPath, pkgName) .. compSubDir
 
     if compClsArray and #compClsArray > 0 then
         Tool:CreateDirectory(targetGenDir)  -- 确保 Gen 目录存在
@@ -61,31 +61,16 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
             GenCommon:GenCompListOnRender(dataDict['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
 
             -- 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前
-            local compDefineContent = table.concat(dataDict['#CompDefine#'])
-            local fieldLines = {}
-            local otherLines = {}
-            for line in compDefineContent:gmatch("[^\n]*\n?") do
-                if line:match("^\t*private %w+ [%w_]+;\n?$") then
-                    table.insert(fieldLines, line)
-                elseif line:match("^%s*$") then
-                    if #fieldLines > 0 and #otherLines == 0 then
-                        -- 字段后的空白暂时跳过
-                    else
-                        table.insert(otherLines, line)
-                    end
-                else
-                    table.insert(otherLines, line)
-                end
+            GenCommon:SplitCompDefine(dataDict)
+
+            -- 无交互事件时删除 InitUIEvent 的调用与定义块，有则仅移除条件标记（Win 的 InitUIEvent 被手写层 OnInit 调用，不参与此判断）
+            if table.concat(dataDict['#INITUIEVENT#']) == "" then
+                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_CALL#START.-#IF_UIEVENT_CALL#END\n", "")
+                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_METHOD#START.-#IF_UIEVENT_METHOD#END\n", "")
+            else
+                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_CALL#START\n", ""):gsub("#IF_UIEVENT_CALL#END\n", "")
+                templateCodeGen = templateCodeGen:gsub("#IF_UIEVENT_METHOD#START\n", ""):gsub("#IF_UIEVENT_METHOD#END\n", "")
             end
-            dataDict['#FieldDefine#'] = fieldLines
-            while #otherLines > 0 and otherLines[1]:match("^%s*$") do
-                table.remove(otherLines, 1)
-            end
-            while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
-                table.remove(otherLines)
-            end
-            dataDict['#EnumAndMethodDefine#'] = otherLines
-            dataDict['#CompDefine#'] = {}
 
 
             -- 使用生成的代码替换模板代码中各个关键字（去除末尾多余换行，避免与模板换行叠加）
@@ -120,23 +105,17 @@ function GenComp:Gen(pkgName, compClsArray, AllClsMap, unityDataPath)
             local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/CompTemplate.txt")
             local templateCode = Tool:ReadTxt(templateCodePath) -- 读取模板代码
 
-            -- 定义模板代码中需要填充的关键字
-            local dataKeys1 = {
-                '#HANDLER#', -- 交互事件处理函数关键子
-            }
-
-            local dataTable1 = {}
-            for _, key in ipairs(dataKeys1) do
-                dataTable1[key] = {}
-            end
-
             -- 生成组件的交互事件处理函数代码，如:private void OnBtnEnterClick(EventContext ctx){}
-            GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
+            local handlerLines = {}
+            GenCommon:GenCompEventHandler(handlerLines, compArray, AllClsMap)
 
-            -- 使用生成的代码替换模板代码中各个关键字
-            for k, v in pairs(dataTable1) do
-                templateCode = templateCode:gsub(k, table.concat(v))
+            -- 有事件处理函数时才生成 region 块，避免空 region
+            local handlerContent = table.concat(handlerLines)
+            local handlerRegion = ""
+            if handlerContent ~= "" then
+                handlerRegion = "\t\t#region 交互事件与ListItem渲染回调处理\n\n" .. handlerContent .. "\t\t#endregion\n"
             end
+            templateCode = templateCode:gsub('#HANDLER_REGION#', handlerRegion)
 
             -- 替换命名空间，包名，组件名
             templateCode = templateCode:gsub('#NAMESPACE#', namespace)
@@ -167,80 +146,11 @@ function GenComp:CleanupOrphanedComps(targetGenDir, targetCsDir, compClsArray)
     end
 
     -- 清理 Gen 目录中的孤儿 Comp 文件（.Gen.cs 和 .cs）
-    if CS.System.IO.Directory.Exists(targetGenDir) then
-        local files = CS.System.IO.Directory.GetFiles(targetGenDir)
-        if files and files.Length > 0 then
-            for i = 0, files.Length - 1 do
-                local filePath = files[i]
-                local fileName = filePath:match("([^/\\]+)$")
-                if not fileName then
-                    goto nextGenFile
-                end
-
-                -- 匹配 CompXxx.Gen.cs 或 CompXxx.cs
-                local compName = fileName:match("^(Comp.+)%.Gen%.cs$")
-                if not compName then
-                    compName = fileName:match("^(Comp.+)%.cs$")
-                end
-                if compName and not currentComps[compName] then
-                    Tool:Log("[清理] 删除已移除组件的代码: %s", compName)
-                    CS.System.IO.File.Delete(filePath)
-                    local metaPath = filePath .. ".meta"
-                    if Tool:IsFileExists(metaPath) then
-                        CS.System.IO.File.Delete(metaPath)
-                    end
-                end
-                :: nextGenFile ::
-            end
-        end
-        -- 清理后如果目录为空则删除
-        GenComp:DeleteDirIfEmpty(targetGenDir)
-    end
+    GenCommon:CleanupOrphanedFiles(targetGenDir, { "^(Comp.+)%.Gen%.cs$", "^(Comp.+)%.cs$" }, currentComps, "组件代码", true)
 
     -- 清理手写代码目录中的孤儿 .cs 文件（若与 Gen 目录不同）
-    if targetCsDir ~= targetGenDir and CS.System.IO.Directory.Exists(targetCsDir) then
-        local files = CS.System.IO.Directory.GetFiles(targetCsDir)
-        if files and files.Length > 0 then
-            for i = 0, files.Length - 1 do
-                local filePath = files[i]
-                local fileName = filePath:match("([^/\\]+)$")
-                if not fileName then
-                    goto nextCsFile
-                end
-
-                local compName = fileName:match("^(Comp.+)%.cs$")
-                if compName and not currentComps[compName] then
-                    Tool:Log("[清理] 删除已移除组件的手写代码: %s.cs", compName)
-                    CS.System.IO.File.Delete(filePath)
-                    local metaPath = filePath .. ".meta"
-                    if Tool:IsFileExists(metaPath) then
-                        CS.System.IO.File.Delete(metaPath)
-                    end
-                end
-                :: nextCsFile ::
-            end
-        end
-        -- 清理后如果目录为空则删除
-        GenComp:DeleteDirIfEmpty(targetCsDir)
-    end
-end
-
---- 如果目录为空（无任何文件/子目录），删除目录及其 .meta
----@param dirPath string 目录路径
-function GenComp:DeleteDirIfEmpty(dirPath)
-    if not CS.System.IO.Directory.Exists(dirPath) then
-        return
-    end
-
-    local remainingFiles = CS.System.IO.Directory.GetFiles(dirPath)
-    local remainingDirs = CS.System.IO.Directory.GetDirectories(dirPath)
-    if (not remainingFiles or remainingFiles.Length == 0) and (not remainingDirs or remainingDirs.Length == 0) then
-        CS.System.IO.Directory.Delete(dirPath)
-        Tool:Log("[清理] 目录为空，已删除: %s", dirPath)
-        local metaPath = dirPath .. ".meta"
-        if Tool:IsFileExists(metaPath) then
-            CS.System.IO.File.Delete(metaPath)
-        end
+    if targetCsDir ~= targetGenDir then
+        GenCommon:CleanupOrphanedFiles(targetCsDir, { "^(Comp.+)%.cs$" }, currentComps, "组件手写代码", true)
     end
 end
 

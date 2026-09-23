@@ -65,31 +65,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             GenCommon:GenCompListOnRender(dataTable['#INITUIEVENT#'], compArray, AllClsMap)-- 生成GList组件Item的渲染回调函数赋值：listPlayer.itemRenderer = OnShowListPlayerItem;
 
             -- A. 将 #CompDefine# 拆分为字段声明与枚举/方法，字段在前（所有包通用）
-            local compDefineContent = table.concat(dataTable['#CompDefine#'])
-            local fieldLines = {}
-            local otherLines = {}
-            for line in compDefineContent:gmatch("[^\n]*\n?") do
-                if line:match("^\t*private %w+ [%w_]+;\n?$") then
-                    table.insert(fieldLines, line)
-                elseif line:match("^%s*$") then
-                    if #fieldLines > 0 and #otherLines == 0 then
-                        -- 字段后的空白暂时跳过
-                    else
-                        table.insert(otherLines, line)
-                    end
-                else
-                    table.insert(otherLines, line)
-                end
-            end
-            dataTable['#FieldDefine#'] = fieldLines
-            while #otherLines > 0 and otherLines[1]:match("^%s*$") do
-                table.remove(otherLines, 1)
-            end
-            while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
-                table.remove(otherLines)
-            end
-            dataTable['#EnumAndMethodDefine#'] = otherLines
-            dataTable['#CompDefine#'] = {} -- 拆分后原占位符不再使用
+            GenCommon:SplitCompDefine(dataTable)
 
             -- B. Launcher 包特殊处理
             if isLauncher then
@@ -154,22 +130,17 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                         local templateCodePath = Tool:StrFormat("%s/%s", Tool:PluginPath(), "Template/WinTemplate.txt")
                         local templateCode = Tool:ReadTxt(templateCodePath)  -- 读取模板代码
 
-                        local dataKeys1 = {
-                            '#HANDLER#', -- 交互事件处理函数关键子
-                        }
-
-                        local dataTable1 = {}
-                        for _, key in ipairs(dataKeys1) do
-                            dataTable1[key] = {}
-                        end
-
                         -- 生成组件的交互事件处理函数代码，如:	private void OnBtnEnterClick(EventContext ctx){}
-                        GenCommon:GenCompEventHandler(dataTable1['#HANDLER#'], compArray, AllClsMap)
+                        local handlerLines = {}
+                        GenCommon:GenCompEventHandler(handlerLines, compArray, AllClsMap)
 
-                        -- 使用生成的代码替换模板代码中各个关键字
-                        for k, v in pairs(dataTable1) do
-                            templateCode = templateCode:gsub(k, table.concat(v))
+                        -- 有事件处理函数时才生成 region 块，避免空 region
+                        local handlerContent = table.concat(handlerLines)
+                        local handlerRegion = ""
+                        if handlerContent ~= "" then
+                            handlerRegion = "\t\t#region 交互事件与ListItem渲染回调处理\n\n" .. handlerContent .. "\t\t#endregion\n"
                         end
+                        templateCode = templateCode:gsub('#HANDLER_REGION#', handlerRegion)
 
                         -- 替换命名空间，包名，界面名
                         templateCode = templateCode:gsub('#NAMESPACE#', namespace)
@@ -193,10 +164,6 @@ end
 ---@param targetCsDir   string  手写 .cs 文件所在目录
 ---@param winClsArray   table   当前 FGUI 中存在的界面列表
 function GenWin:CleanupOrphanedWins(targetGenDir, targetCsDir, winClsArray)
-    if not CS.System.IO.Directory.Exists(targetGenDir) then
-        return
-    end
-
     -- 构建当前有效界面名集合
     local currentWins = {}
     if winClsArray then
@@ -205,44 +172,16 @@ function GenWin:CleanupOrphanedWins(targetGenDir, targetCsDir, winClsArray)
         end
     end
 
-    local files = CS.System.IO.Directory.GetFiles(targetGenDir)
-    if not files or files.Length == 0 then
-        return
-    end
+    -- 清理 Gen 目录中的孤儿界面文件
+    local orphanedWins = GenCommon:CleanupOrphanedFiles(targetGenDir, { "^(Win.+)%.Gen%.cs$" }, currentWins, "界面代码")
 
-    for i = 0, files.Length - 1 do
-        local filePath = files[i]
-        local fileName = filePath:match("([^/\\]+)$")
-        if not fileName then
-            goto nextWinFile
+    -- 连带删除对应的手写 .cs 文件（如含自定义逻辑请从 git 恢复）
+    for _, winName in ipairs(orphanedWins) do
+        local csPath = targetCsDir .. "/" .. winName .. ".cs"
+        if Tool:IsFileExists(csPath) then
+            Tool:Log("[清理] 删除已移除界面的手写代码: %s.cs", winName)
+            Tool:DeleteFileWithMeta(csPath)
         end
-
-        -- 匹配 WinXxx.Gen.cs
-        local winName = fileName:match("^(Win.+)%.Gen%.cs$")
-        if not winName then
-            goto nextWinFile
-        end
-
-        if not currentWins[winName] then
-            Tool:Log("[清理] 删除已移除界面的 Gen 代码: %s", winName)
-            CS.System.IO.File.Delete(filePath)
-            local metaPath = filePath .. ".meta"
-            if Tool:IsFileExists(metaPath) then
-                CS.System.IO.File.Delete(metaPath)
-            end
-
-            -- 同时删除手写 .cs 文件（如含自定义逻辑请从 git 恢复）
-            local csPath = targetCsDir .. "/" .. winName .. ".cs"
-            if Tool:IsFileExists(csPath) then
-                Tool:Log("[清理] 删除已移除界面的手写代码: %s.cs", winName)
-                CS.System.IO.File.Delete(csPath)
-                local csMetaPath = csPath .. ".meta"
-                if Tool:IsFileExists(csMetaPath) then
-                    CS.System.IO.File.Delete(csMetaPath)
-                end
-            end
-        end
-        :: nextWinFile ::
     end
 end
 

@@ -23,17 +23,10 @@ namespace #NAMESPACE#
         }
         
         /// <summary>
-        /// 注册界面相关红点
-        /// </summary>
-        
-        /// <summary>
         /// 销毁。
         /// 注意：UI事件，业务逻辑事件，计时器在 Dispose 中统一释放，无需在这里手动移除。
         /// </summary>
         private void OnDispose() { }
         
-        #region 交互事件以及ListItem渲染回调处理
-        
-#HANDLER#        #endregion
-    }
+#HANDLER_REGION#    }
 }

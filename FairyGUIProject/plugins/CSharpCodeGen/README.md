@@ -49,3 +49,13 @@ CSharpCodeGen/
 ├── package.json                   ← 插件描述
 └── README.md                      ← 本文件
 ```
+
+## Lua 调试
+
+发布时可用 Rider 的 EmmyLua 插件调试本插件 Lua 代码。临时在 `main.lua` 顶部加入（路径按本机 Rider 安装位置调整，用后移除）：
+
+```lua
+package.cpath = package.cpath .. ';C:/Users/<用户名>/AppData/Roaming/JetBrains/Rider<版本>/plugins/EmmyLua/debugger/emmy/windows/x64/?.dll'
+local dbg = require('emmy_core')
+dbg.tcpListen('localhost', 9966)
+```

@@ -11,12 +11,9 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
     local namespace = Tool:GetExportCodeNamespace(pkgName)
 
     -- CustomCompBind.cs 放在 UI 目录根下（不区分包子目录）
-    -- exportGenPath 为 "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
-    -- 格式化为空字符串去掉末尾 %s/，再清理多余斜杠
+    -- exportGenPath 为 "%s/Scripts/Hotfix/Game/AutoGen/UI/%s"
+    -- 格式化为空字符串去掉末尾 %s/，再清理尾斜杠
     local customCompBindDir = Tool:StrFormat(exportGenPath, unityDataPath, ""):gsub("/+$", "")
-
-    -- 删除旧的 xxxBinder.cs（迁移遗留，总是执行）
-    GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath)
 
     Tool:CreateDirectory(customCompBindDir)
     local targetPath = Tool:StrFormat("%s/CustomCompBind.cs", customCompBindDir)
@@ -38,9 +35,6 @@ function GenBinder:Gen(pkgName, compClsArray, unityDataPath)
     else
         GenBinder:CreateCustomCompBind(targetPath, pkgName, methodCode, namespace)
     end
-
-    -- 自动更新 HotfixLauncher 中的绑定调用
-    GenBinder:UpdateHotfixLauncher(pkgName, unityDataPath)
 end
 
 --- 生成单个包的 BindXxx 方法代码
@@ -191,26 +185,6 @@ function GenBinder:UpdateCustomCompBind(targetPath, pkgName, methodCode, namespa
     Tool:Log("更新 CustomCompBind.cs，当前包含包: %s", table.concat(parsed.order, ", "))
 end
 
---- 删除旧的 xxxBinder.cs 文件
----@param pkgName string 包名
----@param exportGenPath string 导出路径格式串
----@param unityDataPath string Unity路径
-function GenBinder:DeleteOldBinder(pkgName, exportGenPath, unityDataPath)
-    local oldBinderDir = Tool:StrFormat(exportGenPath, unityDataPath, pkgName)
-    local oldBinderPath = Tool:StrFormat("%s/%sBinder.cs", oldBinderDir, pkgName)
-
-    if Tool:IsFileExists(oldBinderPath) then
-        CS.System.IO.File.Delete(oldBinderPath)
-        Tool:Log("已删除旧 Binder 文件: %s", oldBinderPath)
-
-        -- 同时删除 .meta 文件
-        local metaPath = oldBinderPath .. ".meta"
-        if Tool:IsFileExists(metaPath) then
-            CS.System.IO.File.Delete(metaPath)
-        end
-    end
-end
-
 --- 从 CustomCompBind.cs 中移除指定包的 BindXxx 方法
 --- 当包中所有自定义组件被删除时调用
 ---@param targetPath string CustomCompBind.cs 文件路径
@@ -243,65 +217,6 @@ function GenBinder:RemovePackageMethod(targetPath, pkgName, namespace)
         local newContent = GenBinder:BuildCustomCompBind(namespace, parsed.methods, parsed.order)
         Tool:WriteTxt(targetPath, newContent)
         Tool:Log("[清理] 已从 CustomCompBind.cs 中移除 Bind%s 方法，当前包含包: %s", pkgName, table.concat(parsed.order, ", "))
-    end
-end
-
---- 自动更新 HotfixLauncher.cs 中的绑定调用
----@param pkgName string 包名
----@param unityDataPath string Unity路径 "xxx/Assets"
-function GenBinder:UpdateHotfixLauncher(pkgName, unityDataPath)
-    local launcherPath = Tool:StrFormat("%s/Scripts/Hotfix/HotfixLauncher.cs", unityDataPath)
-    local launcherName = "HotfixLauncher.cs"
-
-    if not Tool:IsFileExists(launcherPath) then
-        Tool:Warning("%s 不存在，跳过自动更新", launcherName)
-        return
-    end
-
-    local content = Tool:ReadTxt(launcherPath)
-
-    -- 确保 CustomCompBind.BindAll() 存在，清理旧调用
-    if content:find("CustomCompBind.BindAll()", 1, true) then
-        -- 已迁移，只需确保旧调用被清理
-        local cleaned, count = content:gsub("[ \t]*%w+Binder%.BindAll%(%)%s*\n", "")
-        if count > 0 then
-            Tool:WriteTxt(launcherPath, cleaned)
-            Tool:Log("已清理 %s 中的 %d 条旧 Binder 调用", launcherName, count)
-        else
-            Tool:Log("%s 中已存在 CustomCompBind.BindAll()，跳过", launcherName)
-        end
-        return
-    end
-
-    -- 清理旧的 XxxBinder.BindAll() 调用
-    local cleaned, oldCount = content:gsub("[ \t]*%w+Binder%.BindAll%(%)%s*\n", "")
-
-    -- 同时清理遗留的 BindCustomComps 空壳方法
-    cleaned = cleaned:gsub("\n[ \t]*//@formatter:off[^\n]*\n[ \t]*///[^\n]*\n[ \t]*///[^\n]*\n[ \t]*///[^\n]*\n[ \t]*///[^\n]*\n[ \t]*private static void BindCustomComps%(%)%s*\n[ \t]*{%s*\n[ \t]*CustomCompBind%.BindAll%(%)%s*;%s*\n[ \t]*}%s*\n[ \t]*//@formatter:on%s*\n", "")
-    cleaned = cleaned:gsub("[ \t]*BindCustomComps%(%)%s*;%s*\n", "")
-
-    -- 找到适合插入的位置（"绑定...自定义组件" 注释行之后）
-    local insertPos = nil
-    local marker = cleaned:find("绑定.*Fui.*自定义组件")
-    if marker then
-        local lineEnd = cleaned:find("\n", marker)
-        if lineEnd then
-            local nextLine = cleaned:sub(lineEnd + 1)
-            if not nextLine:match("^[ \t]*CustomCompBind.BindAll") then
-                insertPos = lineEnd
-            end
-        end
-    end
-
-    if insertPos then
-        local newContent = cleaned:sub(1, insertPos) .. "\n            CustomCompBind.BindAll();" .. cleaned:sub(insertPos + 1)
-        Tool:WriteTxt(launcherPath, newContent)
-        Tool:Log("已在 %s 中插入 CustomCompBind.BindAll()（清理 %d 条旧调用）", launcherName, oldCount)
-    elseif oldCount > 0 then
-        Tool:WriteTxt(launcherPath, cleaned)
-        Tool:Warning("已在 %s 中清理 %d 条旧 Binder 调用，但未找到合适的插入位置，请手动添加 CustomCompBind.BindAll()", launcherName, oldCount)
-    else
-        Tool:Warning("未能在 %s 中找到旧 Binder 调用或绑定注释，请手动添加 CustomCompBind.BindAll()", launcherName)
     end
 end
 

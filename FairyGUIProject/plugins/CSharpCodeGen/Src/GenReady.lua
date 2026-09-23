@@ -67,6 +67,8 @@ function GenReady:GetClsArray(handler)
     settings.ignoreNoname = false
 
     --- 获得当前包的所有待导出对象
+    --- CollectClasses(stripMember, stripClass, fguiNamespace)：前两个参数均传 ignoreNoname，
+    --- 即无名字的成员与类都按发布设置统一剥离
     ---@type CS.FairyEditor.PublishHandler.ClassInfo[]
     local classes = handler:CollectClasses(settings.ignoreNoname, settings.ignoreNoname, nil)
     for i = 1, classes.Count do
@@ -100,7 +102,9 @@ function GenReady:CheckDependencies(handler)
 
     -- 收集所有名称包含 "Common" 的包（不区分大小写）
     local commonPackages = {}
-    for _, pkg in pairs(project.allPackages) do
+    local allPackages = project.allPackages
+    for i = 0, allPackages.Count - 1 do
+        local pkg = allPackages[i]
         local pkgName = string.lower(pkg.name)
         local isCommon = Tool:StrFind(pkgName, "common") ~= nil
         if isCommon then
@@ -116,13 +120,15 @@ function GenReady:CheckDependencies(handler)
     local allDependenciesValid = true  -- 初始假设全部合法
 
     -- 遍历检查包内的所有组件
-    for _, classInfo in pairs(classes) do
+    for i = 0, classes.Count - 1 do
+        local classInfo = classes[i]
         local compName = classInfo.className
 
         -- 遍历检查直接属于当前组件的子组件的依赖项是否合法
         ---@type CS.FairyEditor.PublishHandler.MemberInfo[]
         local members = classInfo.members  -- 该组件的所有依赖成员
-        for _, memberInfo in pairs(members) do
+        for j = 0, members.Count - 1 do
+            local memberInfo = members[j]
             -- 跳过非资源类型成员
             if memberInfo.res == nil then
                 goto continue

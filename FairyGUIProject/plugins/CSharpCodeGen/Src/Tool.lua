@@ -5,6 +5,15 @@ local Tool = {}
 local File = CS.System.IO.File
 local Directory = CS.System.IO.Directory
 
+--- 组件类型与命名前缀映射表（GetCompFunName 用于剥离类型前缀）
+local COMP_PREFIX_MAP = {
+    GButton = { "_btn", "_Btn" },
+    GList = { "_list", "_List" },
+    GSlider = { "_slider", "_Slider", "_sld" },
+    GComboBox = { "_comboBox", "_combobox", "_Combobox", "_ComboBox", "_combo", "_Combo", "_com" },
+    GTextInput = { "_input", "_Input", "_txtInput", "_TxtInput", "_textInput", "_TextInput", "_text", "_Text", "_txt", "_Txt" }
+}
+
 --- 导出界面View的AOT命名空间（Launcher包专用，热更前阶段使用）
 Tool.ExportViewAOTNamespace = "AOT.Launch.UI"
 
@@ -12,7 +21,7 @@ Tool.ExportViewAOTNamespace = "AOT.Launch.UI"
 Tool.ExportViewAOTPath = "%s/Scripts/AOT/Launch"
 
 --- 导出界面ViewGen的C#代码AOT路径（Launcher包专用，热更前阶段使用）
-Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/Launch/"
+Tool.ExportViewGenAOTPath = "%s/Scripts/AOT/Launch"
 
 
 --- 导出界面View的命名空间
@@ -22,7 +31,7 @@ Tool.ExportViewNamespace = "Hotfix.Game.UI"
 Tool.ExportViewPath = "%s/Scripts/Hotfix/Game/UI/%s"
 
 --- 导出界面ViewGen的C#代码路径
-Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s/"
+Tool.ExportViewGenPath = "%s/Scripts/Hotfix/Game/AutoGen/UI/%s"
 
 
 --- 获取导出View的C#代码路径
@@ -171,6 +180,16 @@ function Tool:WriteTxt(path, content)
     File.WriteAllText(path, content)
 end
 
+--- 删除文件及其 Unity .meta 文件（meta 存在才删）
+---@param path string 文件路径
+function Tool:DeleteFileWithMeta(path)
+    File.Delete(path)
+    local metaPath = path .. ".meta"
+    if File.Exists(metaPath) then
+        File.Delete(metaPath)
+    end
+end
+
 --- 设置插件路径
 ---@param path string
 function Tool:SetPluginPath(path)
@@ -236,47 +255,34 @@ function Tool:GetListRefRes(winCls, member)
     -- 1. 获取窗口类的XML结构描述文件
     ---@type CS.FairyGUI.Utils.XML
     local desc = handler:GetItemDesc(winCls.res)
-    self:Log("[GetListRefRes] 加载资源描述XML，资源: %s", winCls.res)
 
     -- 2. 获取显示列表节点
     local displayList = desc:GetNode("displayList")
     if not displayList then
-        self:Log("[GetListRefRes] 未找到displayList节点")
         return nil
     end
-    self:Log("[GetListRefRes] displayList节点包含 %d 个子元素", displayList.elements.Count)
 
-    -- 3. 遍历列表所有显示元素
-    local cnt = displayList.elements.Count
-    for i = 1, cnt do
+    -- 3. 遍历显示元素，匹配目标列表组件
+    local elements = displayList.elements
+    for i = 1, elements.Count do
         -- C#集合索引从0开始，需要-1
         ---@type CS.FairyGUI.Utils.XML
-        local element = displayList.elements[i - 1]
-        local elementName = element:GetAttribute("name") or ""
-        self:Log("[GetListRefRes] 检查元素[%d/%d]: %s", i, cnt, elementName)
+        local element = elements[i - 1]
 
-        -- 3.1. 匹配目标组件
-        if elementName == member.name then
-            self:Log("[GetListRefRes] 找到匹配列表组件: %s", member.name)
-
-            -- 3.2. 获取列表默认项资源ID
+        if (element:GetAttribute("name") or "") == member.name then
+            -- 3.1. 获取列表默认项资源ID
             local defaultItemId = element:GetAttribute("defaultItem")
             if not defaultItemId then
-                self:Log("[GetListRefRes] 该列表组件未设置defaultItem属性")
+                self:Log("[GetListRefRes] 列表组件 %s 未设置 defaultItem", member.name)
                 return nil
             end
 
-            self:Log("[GetListRefRes] 默认项资源ID: %s", defaultItemId)
-
-            -- 3.3. 通过资源URL获取具体资源项
+            -- 3.2. 通过资源URL获取具体资源项
             ---@type CS.FairyEditor.FPackageItem
             local defaultItem = handler.project:GetItemByURL(defaultItemId)
-            if defaultItem then
-                self:Log("[GetListRefRes] 成功加载资源: %s (类型: %s, 尺寸: %dx%d)", defaultItem.name, defaultItem.type, defaultItem.width, defaultItem.height)
-            else
-                self:Log("[GetListRefRes] 资源加载失败: %s", defaultItemId)
+            if not defaultItem then
+                self:Log("[GetListRefRes] defaultItem 解析失败: %s", defaultItemId)
             end
-
             return defaultItem
         end
     end
@@ -297,28 +303,17 @@ function Tool:GetCompFunName(comp)
         return ""
     end
 
-    -- 组件类型与对应前缀映射表（更高效的查找方式）
-    local prefixMap = {
-        GButton = { "_btn", "_Btn" },
-        GList = { "_list", "_List" },
-        GSlider = { "_slider", "_Slider", "_sld" },
-        GComboBox = { "_comboBox", "_combobox", "_Combobox", "_ComboBox", "_combo", "_Combo", "_com" },
-        GTextInput = { "_input", "_Input", "_txtInput", "_TxtInput", "_textInput", "_TextInput", "_text", "_Text", "_txt", "_Txt" }
-    }
-
-    -- 1. 获取待移除前缀列表
-    local removeList = {}
-    if comp.type and prefixMap[comp.type] then
-        removeList = Tool:TableCopy(prefixMap[comp.type])
-    end
-    table.insert(removeList, "_") -- 默认移除单独的下划线
-
-    -- 2. 移除所有匹配前缀
+    -- 1. 移除类型前缀（COMP_PREFIX_MAP 为模块级常量表）
     local name = comp.name
-    for _, prefix in ipairs(removeList) do
-        -- 使用 ^ 确保只匹配前缀
-        name = string.gsub(name, "^" .. prefix, "")
+    if comp.type and COMP_PREFIX_MAP[comp.type] then
+        for _, prefix in ipairs(COMP_PREFIX_MAP[comp.type]) do
+            -- 使用 ^ 确保只匹配前缀
+            name = string.gsub(name, "^" .. prefix, "")
+        end
     end
+
+    -- 2. 默认移除开头单独的下划线
+    name = string.gsub(name, "^_", "")
 
     -- 3. 处理结果
     if name == "" then
@@ -328,17 +323,6 @@ function Tool:GetCompFunName(comp)
 
     -- 4. 首字母大写处理（保留后续数字和大小写）
     return Tool:FirstCharUpper(name)
-end
-
---- 辅助函数：浅拷贝表
---- @param t table 源表
---- @return table 新表
-function Tool:TableCopy(t)
-    local res = {}
-    for k, v in pairs(t) do
-        res[k] = v
-    end
-    return res
 end
 
 --- 首字母大写

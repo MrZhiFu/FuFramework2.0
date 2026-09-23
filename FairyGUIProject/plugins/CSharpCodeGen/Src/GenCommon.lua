@@ -2,6 +2,26 @@
 ---@class GenCommon
 local GenCommon = {}
 
+--- 组件类型 → 交互事件配置映射（cbNamePattern 中的 %s 会被组件功能名替换）
+local COMP_EVENT_CONFIG = {
+    GSlider = {
+        { eventName = "onChanged", cbNamePattern = "On%sChanged" },
+    },
+    GComboBox = {
+        { eventName = "onChanged", cbNamePattern = "On%sChanged" },
+    },
+    GTextInput = {
+        { eventName = "onChanged", cbNamePattern = "On%sChanged" },
+        { eventName = "onFocusOut", cbNamePattern = "On%sFocusOut" },
+    },
+    GButton = {
+        { eventName = "onClick", cbNamePattern = "On%sClick" },
+    },
+}
+
+--- 交互事件回调的默认参数列表（当前所有事件类型一致）
+local DEFAULT_EVENT_ARGS = { { argName = "ctx", argType = "EventContext" } }
+
 --- 生成组件的定义代码：private GButton btnEnter;
 ---@param dataList table 待填充的代码行数组
 ---@param compArray table 组件信息数组，元素格式 {comp, resName, resPkg, funName}
@@ -75,37 +95,11 @@ function GenCommon:GenControllerDefine(dataList, compCls)
     Tool:Log("生成控制器的定义代码和枚举定义C#代码")
 
     -- 尝试从原始 XML 文件读取 alias 和 page remark（GetItemDesc 可能不包含这些编辑器元数据）
+    -- FPackageItem 自带 owner.basePath / path / fileName，直接拼接即为原始组件 XML 路径
     local rawXml = nil
-    local pkgName = compCls.res.owner.name
-    local compName = compCls.resName
-    local pluginPath = Tool:PluginPath()
-    -- pluginPath 示例: .../FairyGUIProject/plugins/CSharpCodeGen/
-    -- 回退两级得到 FGUI 项目根目录
-    local projectPath = pluginPath:gsub("[/\\]plugins[/\\]CSharpCodeGen[/\\]?$", "")
-    if projectPath and projectPath ~= pluginPath then
-        local xmlPath = nil
-        -- 通过 package.xml 查找组件所在的子目录路径
-        local pkgXmlPath = projectPath .. "/assets/" .. pkgName .. "/package.xml"
-        if Tool:IsFileExists(pkgXmlPath) then
-            local pkgXml = Tool:ReadTxt(pkgXmlPath)
-            -- package.xml 格式: <component ... name="CompBagItemInfo.xml" path="/Comp/" .../>
-            local escName = compName:gsub("([%.%-])", "%%%1")
-            local pkgPath = pkgXml:match('name="' .. escName .. '%.xml"[^>]*path="([^"]*)"')
-            if pkgPath then
-                -- path 格式如 "/Comp/" → 去掉首尾斜杠 → "Comp"
-                pkgPath = pkgPath:gsub("^/", ""):gsub("/$", "")
-                if pkgPath ~= "" then
-                    xmlPath = projectPath .. "/assets/" .. pkgName .. "/" .. pkgPath .. "/" .. compName .. ".xml"
-                end
-            end
-        end
-        -- 回退：组件在包根目录
-        if not xmlPath then
-            xmlPath = projectPath .. "/assets/" .. pkgName .. "/" .. compName .. ".xml"
-        end
-        if Tool:IsFileExists(xmlPath) then
-            rawXml = Tool:ReadTxt(xmlPath)
-        end
+    local xmlPath = compCls.res.owner.basePath .. compCls.res.path .. compCls.res.fileName
+    if Tool:IsFileExists(xmlPath) then
+        rawXml = Tool:ReadTxt(xmlPath)
     end
 
     -- 第一遍：收集所有控制器的元数据
@@ -345,7 +339,7 @@ function GenCommon:GenCompEvent(dataList, compArray, AllClsMap)
     for _, comp in ipairs(compArray) do
         local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
         local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
-        for i, v in pairs(uiEventsNameArray) do
+        for _, v in ipairs(uiEventsNameArray) do
             table.insert(dataList, "\t\t\t")
             table.insert(dataList, "AddUIListener(")
             table.insert(dataList, Tool:FormatVarName(comp.comp.name))
@@ -374,7 +368,7 @@ function GenCommon:GenCompEventHandler(dataList, compArray, AllClsMap)
         local uiEventsNameArray = GenCommon:GetCompRegUIEventName(comp.comp, AllClsMap)
         local upName = Tool:FirstCharUpper(Tool:StrSub(comp.comp.name, 2, -1))
 
-        for i, v in pairs(uiEventsNameArray) do
+        for _, v in ipairs(uiEventsNameArray) do
             table.insert(dataList, "\t\tprivate void ")
             table.insert(dataList, string.format(v.cbNamePattern, upName))
             table.insert(dataList, "(")
@@ -426,95 +420,133 @@ end
 ---@param AllClsMap table 所有类名映射表（资源名→类信息）
 ---@return table 事件配置数组，元素格式 {eventName, cbNamePattern, args, [defaultContent]}
 function GenCommon:GetCompRegUIEventName(comp, AllClsMap)
-    local uiEventsNameArray = {}
     local type = Tool:GetCompType(comp, AllClsMap)
 
-    -- 滑动条
-    if type == "GSlider" then
-        table.insert(uiEventsNameArray, {
-            eventName = "onChanged",
-            cbNamePattern = "On%sChanged",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-        })
-
-        -- 复选框
-    elseif type == "GComboBox" then
-        table.insert(uiEventsNameArray, {
-            eventName = "onChanged",
-            cbNamePattern = "On%sChanged",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-        })
-
-        -- 输入框
-    elseif type == "GTextInput" then
-        table.insert(uiEventsNameArray, {
-            eventName = "onChanged",
-            cbNamePattern = "On%sChanged",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-        })
-        table.insert(uiEventsNameArray, {
-            eventName = "onFocusOut",
-            cbNamePattern = "On%sFocusOut",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-        })
-
-        -- 按钮
-    elseif type == "GButton" then
-        table.insert(uiEventsNameArray, {
-            eventName = "onClick",
-            cbNamePattern = "On%sClick",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-        })
-
-        -- 列表
-    elseif type == "GList" then
+    -- GList 的 onClickItem 回调需要按组件名生成默认函数体，单独处理
+    if type == "GList" then
         local dataList = {}
 
         local lowerName = Tool:FirstCharLower(Tool:StrSub(comp.name, 2, -1))
         table.insert(dataList, Tool:StrFormat("\t\t\tvar idx = %s.GetChildIndex((GObject)ctx.data);\n", lowerName))
         table.insert(dataList, Tool:StrFormat("\t\t\tif (%s.isVirtual) idx = %s.ChildIndexToItemIndex(idx);\n", lowerName, lowerName))
-        table.insert(dataList, "\t\t\t//var data = xxxModel:Get")
-        table.insert(dataList, "ListDataByIdx(idx);\n")
+        table.insert(dataList, "\t\t\t//var data = xxxModel:GetListDataByIdx(idx);\n")
 
-        table.insert(uiEventsNameArray, {
-            eventName = "onClickItem",
-            cbNamePattern = "OnClick%sItem",
-            args = {
-                {
-                    argName = "ctx",
-                    argType = "EventContext",
-                }
-            },
-            defaultContent = table.concat(dataList),
-        })
+        return {
+            {
+                eventName = "onClickItem",
+                cbNamePattern = "OnClick%sItem",
+                args = DEFAULT_EVENT_ARGS,
+                defaultContent = table.concat(dataList),
+            }
+        }
     end
 
+    -- 其余类型查静态配置表（COMP_EVENT_CONFIG）
+    local configs = COMP_EVENT_CONFIG[type]
+    if not configs then
+        return {}
+    end
+
+    local uiEventsNameArray = {}
+    for _, config in ipairs(configs) do
+        table.insert(uiEventsNameArray, {
+            eventName = config.eventName,
+            cbNamePattern = config.cbNamePattern,
+            args = DEFAULT_EVENT_ARGS,
+        })
+    end
     return uiEventsNameArray
+end
+
+--- 将 #CompDefine# 生成内容拆分为字段声明与枚举/方法两部分（字段在前，去除首尾多余空行）
+--- 拆分后填充 dataDict['#FieldDefine#'] 与 dataDict['#EnumAndMethodDefine#']，'#CompDefine#' 清空不再使用
+---@param dataDict table 模板占位符 → 代码行数组 的字典（须已包含 '#CompDefine#' 键）
+function GenCommon:SplitCompDefine(dataDict)
+    local compDefineContent = table.concat(dataDict['#CompDefine#'])
+    local fieldLines = {}
+    local otherLines = {}
+    for line in compDefineContent:gmatch("[^\n]*\n?") do
+        if line:match("^\t*private %w+ [%w_]+;\n?$") then
+            table.insert(fieldLines, line)
+        elseif line:match("^%s*$") then
+            if #fieldLines > 0 and #otherLines == 0 then
+                -- 字段后的空白暂时跳过
+            else
+                table.insert(otherLines, line)
+            end
+        else
+            table.insert(otherLines, line)
+        end
+    end
+    dataDict['#FieldDefine#'] = fieldLines
+    while #otherLines > 0 and otherLines[1]:match("^%s*$") do
+        table.remove(otherLines, 1)
+    end
+    while #otherLines > 0 and otherLines[#otherLines]:match("^%s*$") do
+        table.remove(otherLines)
+    end
+    dataDict['#EnumAndMethodDefine#'] = otherLines
+    dataDict['#CompDefine#'] = {} -- 拆分后原占位符不再使用
+end
+
+--- 清理目录中不再存在于有效名称集合内的孤儿代码文件（连同 .meta）
+---@param dir string 目标目录
+---@param patterns string[] 文件名匹配模式数组（每个模式需含一个捕获组返回类名，如 "^(Win.+)%.Gen%.cs$"）
+---@param currentSet table 当前有效类名集合 {类名=true}
+---@param logLabel string 日志标签（如 "界面代码" / "组件手写代码"）
+---@param deleteDirIfEmpty boolean|nil 清理后目录为空时是否删除目录及其 .meta
+---@return table 被删除的类名列表
+function GenCommon:CleanupOrphanedFiles(dir, patterns, currentSet, logLabel, deleteDirIfEmpty)
+    local deleted = {}
+    if not CS.System.IO.Directory.Exists(dir) then
+        return deleted
+    end
+
+    local files = CS.System.IO.Directory.GetFiles(dir)
+    if files and files.Length > 0 then
+        for i = 0, files.Length - 1 do
+            local filePath = files[i]
+            local fileName = filePath:match("([^/\\]+)$")
+            if fileName then
+                local clsName = nil
+                for _, pattern in ipairs(patterns) do
+                    clsName = fileName:match(pattern)
+                    if clsName then break end
+                end
+
+                if clsName and not currentSet[clsName] then
+                    Tool:Log("[清理] 删除已移除%s: %s", logLabel, clsName)
+                    Tool:DeleteFileWithMeta(filePath)
+                    table.insert(deleted, clsName)
+                end
+            end
+        end
+    end
+
+    if deleteDirIfEmpty then
+        GenCommon:DeleteDirIfEmpty(dir)
+    end
+
+    return deleted
+end
+
+--- 如果目录为空（无任何文件/子目录），删除目录及其 .meta
+---@param dirPath string 目录路径
+function GenCommon:DeleteDirIfEmpty(dirPath)
+    if not CS.System.IO.Directory.Exists(dirPath) then
+        return
+    end
+
+    local remainingFiles = CS.System.IO.Directory.GetFiles(dirPath)
+    local remainingDirs = CS.System.IO.Directory.GetDirectories(dirPath)
+    if (not remainingFiles or remainingFiles.Length == 0) and (not remainingDirs or remainingDirs.Length == 0) then
+        CS.System.IO.Directory.Delete(dirPath)
+        Tool:Log("[清理] 目录为空，已删除: %s", dirPath)
+        local metaPath = dirPath .. ".meta"
+        if Tool:IsFileExists(metaPath) then
+            CS.System.IO.File.Delete(metaPath)
+        end
+    end
 end
 
 return GenCommon

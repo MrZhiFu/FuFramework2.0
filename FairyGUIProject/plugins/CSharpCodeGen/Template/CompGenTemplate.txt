@@ -36,7 +36,9 @@ namespace #NAMESPACE#
 			m_UIEventRegister = FuiEventRegister.Create();
 			m_EventRegister = EventRegister.Create();
 			m_TimerRegister = TimerRegister.Create();
+#IF_UIEVENT_CALL#START
 			InitUIEvent();
+#IF_UIEVENT_CALL#END
 			OnInit();
 		}
 
@@ -48,6 +50,7 @@ namespace #NAMESPACE#
 #CompInit#
         }
 
+#IF_UIEVENT_METHOD#START
         /// <summary>
         /// UI组件事件初始化
         /// </summary>
@@ -55,6 +58,8 @@ namespace #NAMESPACE#
         {
 #INITUIEVENT#
         }
+
+#IF_UIEVENT_METHOD#END
 
         /// <summary>
         /// UI组件销毁

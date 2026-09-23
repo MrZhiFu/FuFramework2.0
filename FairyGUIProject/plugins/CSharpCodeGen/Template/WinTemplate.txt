@@ -52,8 +52,5 @@ namespace #NAMESPACE#
         	// TODO：刷新逻辑
         }
 
-        #region 交互事件与ListItem渲染回调处理
-        
-#HANDLER#        #endregion
-    }
+#HANDLER_REGION#    }
 }
