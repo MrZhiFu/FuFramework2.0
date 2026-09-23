@@ -1,0 +1,9 @@
+# 本项目统一编辑器行为约定（Rider / VS Code 等均遵循此文件）
+# 说明：
+# - 与项目现状保持一致：文件末尾不保留换行符（Rider/ReSharper 默认行为）。
+# - charset 不在此固化：仓库内 UTF-8 BOM 混用（约 1/3 文件带 BOM），固化会引发批量 diff。
+root = true
+
+[*]
+end_of_line = crlf
+insert_final_newline = false
