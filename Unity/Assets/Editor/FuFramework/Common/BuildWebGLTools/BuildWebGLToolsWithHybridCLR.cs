@@ -23,7 +23,7 @@ namespace FuFramework.Core.Editor
             return Application.dataPath.Replace("Assets", string.Empty);
         }
 
-        [MenuItem("FuFramework/输出 WEBGL 平台的 HybridCLR il2cpp目录设置命令行")]
+        [MenuItem("FuFramework/输出 WEBGL 平台的 HybridCLR il2cpp目录设置命令行", false, FuMenuPriority.BUILD_WEBGL_HYBRIDCLR_COMMAND)]
         private static void Print()
         {
 #if UNITY_EDITOR_OSX

@@ -15,18 +15,18 @@ namespace FuFramework.Core.Editor
         private const string EnableLogSymbol = "ENABLE_SRDEBUGGER";
 
         /// <summary>
-        /// 开启所有日志。
+        /// 开启 SRDebugger 工具。
         /// </summary>
-        [MenuItem("FuFramework/SRDebugger工具/开启", false, 601)]
+        [MenuItem("FuFramework/SRDebugger工具/开启", false, FuMenuPriority.SR_DEBUGGER_ENABLE)]
         public static void EnableSRDebugger()
         {
             ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableLogSymbol);
         }
 
         /// <summary>
-        /// 开启所有日志。
+        /// 关闭 SRDebugger 工具。
         /// </summary>
-        [MenuItem("FuFramework/SRDebugger工具/关闭", false, 602)]
+        [MenuItem("FuFramework/SRDebugger工具/关闭", false, FuMenuPriority.SR_DEBUGGER_DISABLE)]
         public static void EnableAllLogs()
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogSymbol);

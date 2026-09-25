@@ -31,7 +31,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启微信小游戏的适配
         /// </summary>
-        [MenuItem("FuFramework/MiniGame/WeChat/Open", false, 10)]
+        [MenuItem("FuFramework/MiniGame/WeChat/Open", false, FuMenuPriority.MINI_GAME_WECHAT_OPEN)]
         public static void OpenWeChatMiniGame()
         {
             if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, EnableWeChatMiniGameScriptingDefineSymbol))
@@ -46,7 +46,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 关闭微信小游戏的适配
         /// </summary>
-        [MenuItem("FuFramework/MiniGame/WeChat/Close", false, 11)]
+        [MenuItem("FuFramework/MiniGame/WeChat/Close", false, FuMenuPriority.MINI_GAME_WECHAT_CLOSE)]
         public static void CloseWeChatMiniGame()
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableWeChatMiniGameScriptingDefineSymbol);
@@ -55,7 +55,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 开启抖音小游戏的适配
         /// </summary>
-        [MenuItem("FuFramework/MiniGame/DouYin/Open", false, 20)]
+        [MenuItem("FuFramework/MiniGame/DouYin/Open", false, FuMenuPriority.MINI_GAME_DOUYIN_OPEN)]
         public static void OpenDouYinMiniGame()
         {
             if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, EnableDouYinMiniGameScriptingDefineSymbol))
@@ -69,7 +69,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 关闭抖音小游戏的适配
         /// </summary>
-        [MenuItem("FuFramework/MiniGame/DouYin/Close", false, 21)]
+        [MenuItem("FuFramework/MiniGame/DouYin/Close", false, FuMenuPriority.MINI_GAME_DOUYIN_CLOSE)]
         public static void CloseDouYinMiniGame()
         {
             ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableDouYinMiniGameScriptingDefineSymbol);

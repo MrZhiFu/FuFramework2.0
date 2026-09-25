@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.ObjectPool.Editor
@@ -22,7 +23,7 @@ namespace FuFramework.ObjectPool.Editor
         /// <summary>
         /// 打开调试面板
         /// </summary>
-        [MenuItem("FuFramework/调试/对象池调试面板")]
+        [MenuItem("FuFramework/调试/对象池调试面板", false, FuMenuPriority.DEBUG_PANEL_OBJECT_POOL)]
         public static void ShowWindow()
         {
             var window = GetWindow<ObjectPoolModuleWindow>("对象池调试");

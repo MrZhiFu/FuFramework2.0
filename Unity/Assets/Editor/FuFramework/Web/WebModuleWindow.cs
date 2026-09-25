@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Web.Editor
@@ -25,7 +26,7 @@ namespace FuFramework.Web.Editor
         /// <summary>
         /// 打开调试面板
         /// </summary>
-        [MenuItem("FuFramework/调试/Web模块调试面板")]
+        [MenuItem("FuFramework/调试/Web模块调试面板", false, FuMenuPriority.DEBUG_PANEL_WEB)]
         public static void ShowWindow()
         {
             var window = GetWindow<WebModuleWindow>("Web模块调试");

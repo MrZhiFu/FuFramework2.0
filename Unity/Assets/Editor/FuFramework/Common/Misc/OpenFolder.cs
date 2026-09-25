@@ -20,31 +20,31 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 打开 Data Path 文件夹。
         /// </summary>
-        [MenuItem("FuFramework/打开文件夹/打开Data Path文件夹", false, 500)]
+        [MenuItem("FuFramework/打开文件夹/打开Data Path文件夹", false, FuMenuPriority.OPEN_FOLDER_DATA)]
         public static void OpenFolderDataPath() => Open(Application.dataPath);
 
         /// <summary>
         /// 打开 Persistent Data Path 文件夹。
         /// </summary>
-        [MenuItem("FuFramework/打开文件夹/打开Persistent Data Path文件夹", false, 501)]
+        [MenuItem("FuFramework/打开文件夹/打开Persistent Data Path文件夹", false, FuMenuPriority.OPEN_FOLDER_PERSISTENT_DATA)]
         public static void OpenFolderPersistentDataPath() => Open(Application.persistentDataPath);
 
         /// <summary>
         /// 打开 Streaming Assets Path 文件夹。
         /// </summary>
-        [MenuItem("FuFramework/打开文件夹/打开Streaming Assets Path文件夹", false, 502)]
+        [MenuItem("FuFramework/打开文件夹/打开Streaming Assets Path文件夹", false, FuMenuPriority.OPEN_FOLDER_STREAMING_ASSETS)]
         public static void OpenFolderStreamingAssetsPath() => Open(Application.streamingAssetsPath);
 
         /// <summary>
         /// 打开 Temporary Cache Path 文件夹。
         /// </summary>
-        [MenuItem("FuFramework/打开文件夹/打开Temporary Cache Path文件夹", false, 503)]
+        [MenuItem("FuFramework/打开文件夹/打开Temporary Cache Path文件夹", false, FuMenuPriority.OPEN_FOLDER_TEMPORARY_CACHE)]
         public static void OpenFolderTemporaryCachePath() => Open(Application.temporaryCachePath);
 
         /// <summary>
         /// 打开 Console Log Path 文件夹。
         /// </summary>
-        [MenuItem("FuFramework/打开文件夹/打开Console Log Path文件夹", false, 504)]
+        [MenuItem("FuFramework/打开文件夹/打开Console Log Path文件夹", false, FuMenuPriority.OPEN_FOLDER_CONSOLE_LOG)]
         public static void OpenFolderConsoleLogPath() => Open(System.IO.Path.GetDirectoryName(Application.consoleLogPath));
 
         /// <summary>

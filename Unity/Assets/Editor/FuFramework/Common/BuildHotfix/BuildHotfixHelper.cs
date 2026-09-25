@@ -29,7 +29,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 复制热更新代码Dll到Assets/Bundles/Code目录
         /// </summary>
-        [MenuItem("FuFramework/Build/Copy Hotfix Code(复制热更新代码DLL到Assets>Bundles>Code)", false, 300)]
+        [MenuItem("FuFramework/Build/Copy Hotfix Code(复制热更新代码DLL到Assets>Bundles>Code)", false, FuMenuPriority.BUILD_HOTFIX_COPY_HOTFIX_CODE)]
         public static void CopyHotfixCode()
         {
             if (!Directory.Exists(CodeDir))
@@ -52,7 +52,7 @@ namespace FuFramework.Core.Editor
         /// 复制AOT代码DLL到Assets/Bundles/AOTCode目录。
         /// "AssembliesPostIl2CppStrip": IL2CPP裁剪后的AOT程序集目录
         /// </summary>
-        [MenuItem("FuFramework/Build/Copy AOT Code(复制AOT代码DLL到Assets>Bundles>AOTCode)", false, 301)]
+        [MenuItem("FuFramework/Build/Copy AOT Code(复制AOT代码DLL到Assets>Bundles>AOTCode)", false, FuMenuPriority.BUILD_HOTFIX_COPY_AOT_CODE)]
         public static void CopyAOTCode()
         {
             if (!Directory.Exists(AOTCodeDir))

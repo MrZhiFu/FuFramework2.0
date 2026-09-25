@@ -38,7 +38,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 导入 JSON 格式的配置表
         /// </summary>
-        [MenuItem("FuFramework/配置表/导出配置表—Json", false, 1000)]
+        [MenuItem("FuFramework/配置表/导出配置表—Json", false, FuMenuPriority.CONFIG_EXPORT_JSON)]
         public static void ExportConfigToJson()
         {
             ExportConfig(EDataTarget.Json);
@@ -47,7 +47,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 导出 二进制格式的配置表
         /// </summary>
-        [MenuItem("FuFramework/配置表/导出配置表—Bin", false, 1001)]
+        [MenuItem("FuFramework/配置表/导出配置表—Bin", false, FuMenuPriority.CONFIG_EXPORT_BIN)]
         public static void ExportConfigToBin()
         {
             ExportConfig(EDataTarget.Bin);

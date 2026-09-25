@@ -42,7 +42,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布WindowsX64平台
         /// </summary>
-        [MenuItem("FuFramework/Build/Windows X64", false, 200)]
+        [MenuItem("FuFramework/Build/Windows X64", false, FuMenuPriority.BUILD_PRODUCT_WINDOWS_X64)]
         public static void BuildToWindows64()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -109,7 +109,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布MacOS平台
         /// </summary>
-        [MenuItem("FuFramework/Build/MacOS", false, 201)]
+        [MenuItem("FuFramework/Build/MacOS", false, FuMenuPriority.BUILD_PRODUCT_MACOS)]
         public static void BuildToMacOS()
         {
             if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.StandaloneOSX)
@@ -172,7 +172,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 APK
         /// </summary>
-        [MenuItem("FuFramework/Build/Apk", false, 202)]
+        [MenuItem("FuFramework/Build/Apk", false, FuMenuPriority.BUILD_PRODUCT_APK)]
         private static void BuildPlayerToAndroid()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -225,7 +225,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 AAB
         /// </summary>
-        [MenuItem("FuFramework/Build/AAB", false, 203)]
+        [MenuItem("FuFramework/Build/AAB", false, FuMenuPriority.BUILD_PRODUCT_AAB)]
         private static void BuildAppBundleForAndroid()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -280,7 +280,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 WebGL
         /// </summary>
-        [MenuItem("FuFramework/Build/WebGL", false, 204)]
+        [MenuItem("FuFramework/Build/WebGL", false, FuMenuPriority.BUILD_PRODUCT_WEBGL)]
         private static void BuildPlayerToWebGL()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -321,7 +321,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 微信小游戏 WebGL
         /// </summary>
-        [MenuItem("FuFramework/Build/WeChat MiniGame WebGL", false, 205)]
+        [MenuItem("FuFramework/Build/WeChat MiniGame WebGL", false, FuMenuPriority.BUILD_PRODUCT_WECHAT_MINI_GAME_WEBGL)]
         private static void BuildPlayerToWeChatMiniGameWebGL()
         {
             PlayerSettings.SplashScreen.show = false;
@@ -358,7 +358,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 Xcode Debug 版本
         /// </summary>
-        [MenuItem("FuFramework/Build/Xcode Project Debug", false, 206)]
+        [MenuItem("FuFramework/Build/Xcode Project Debug", false, FuMenuPriority.BUILD_PRODUCT_XCODE_DEBUG)]
         private static void ExportToXcodeToDevelop()
         {
             try
@@ -393,7 +393,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 发布 Xcode Release 版本
         /// </summary>
-        [MenuItem("FuFramework/Build/Xcode Project Release", false, 207)]
+        [MenuItem("FuFramework/Build/Xcode Project Release", false, FuMenuPriority.BUILD_PRODUCT_XCODE_RELEASE)]
         private static void ExportToXcodeToRelease()
         {
             try

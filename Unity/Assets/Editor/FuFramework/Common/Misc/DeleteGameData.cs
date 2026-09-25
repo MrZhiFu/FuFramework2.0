@@ -15,7 +15,7 @@ namespace FuFramework.Core.Editor
         /// <summary>
         /// 删除本地游戏数据。
         /// </summary>
-        [MenuItem("FuFramework/删除本地游戏数据", false, 1200)]
+        [MenuItem("FuFramework/删除本地游戏数据", false, FuMenuPriority.TOOL_DELETE_GAME_DATA)]
         public static void OpenFolderTemporaryCachePath()
         {
             var dataPath = Path.Combine(Application.persistentDataPath, "GameData");

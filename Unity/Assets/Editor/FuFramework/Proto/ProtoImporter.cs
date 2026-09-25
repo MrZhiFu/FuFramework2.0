@@ -38,7 +38,7 @@ namespace FuFramework.Proto.Editor
         /// <summary>
         /// 导出 Proto — 客户端
         /// </summary>
-        [MenuItem("FuFramework/Proto/导出Proto—客户端", false, 1010)]
+        [MenuItem("FuFramework/Proto/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
         public static void ExportProtoClient()
         {
             ExportProto(EExportTarget.Client);
@@ -47,7 +47,7 @@ namespace FuFramework.Proto.Editor
         /// <summary>
         /// 导出 Proto — 服务端
         /// </summary>
-        [MenuItem("FuFramework/Proto/导出Proto—服务端", false, 1011)]
+        [MenuItem("FuFramework/Proto/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
         public static void ExportProtoServer()
         {
             ExportProto(EExportTarget.Server);
@@ -56,7 +56,7 @@ namespace FuFramework.Proto.Editor
         /// <summary>
         /// 导出 Proto — 全部（客户端 + 服务端）
         /// </summary>
-        [MenuItem("FuFramework/Proto/导出Proto—全部", false, 1012)]
+        [MenuItem("FuFramework/Proto/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
         public static void ExportProtoAll()
         {
             ExportProto(EExportTarget.All);

@@ -4,6 +4,7 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Localization.Editor
@@ -21,7 +22,7 @@ namespace FuFramework.Localization.Editor
         /// <summary>
         /// 预览未引用的多语言 key（只输出报告，不修改 Excel）
         /// </summary>
-        [MenuItem("FuFramework/多语言检查/生成现存问题报告", false, 1002)]
+        [MenuItem("FuFramework/多语言检查/生成现存问题报告", false, FuMenuPriority.L10N_GENERATE_ISSUE_REPORT)]
         public static void Preview()
         {
             Run("clean-l10n-keys-preview.bat", true);
@@ -30,7 +31,7 @@ namespace FuFramework.Localization.Editor
         /// <summary>
         /// 清理未引用的多语言 key（删除 Excel 行，不导表）
         /// </summary>
-        [MenuItem("FuFramework/多语言检查/清理多语言配置表", false, 1004)]
+        [MenuItem("FuFramework/多语言检查/清理多语言配置表", false, FuMenuPriority.L10N_CLEAN_TABLE)]
         public static void Apply()
         {
             if (!EditorUtility.DisplayDialog("清理多语言配置表",
@@ -48,7 +49,7 @@ namespace FuFramework.Localization.Editor
         /// <summary>
         /// 打开上次生成的健康检查报告文件（多语言配置报告.txt）
         /// </summary>
-        [MenuItem("FuFramework/多语言检查/打开现存问题报告", false, 1003)]
+        [MenuItem("FuFramework/多语言检查/打开现存问题报告", false, FuMenuPriority.L10N_OPEN_ISSUE_REPORT)]
         public static void OpenReport()
         {
             var reportPath = Path.Combine(GetToolsPath(), "多语言配置报告.txt");

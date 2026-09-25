@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Config.Editor
@@ -27,7 +28,7 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// 打开调试面板
 		/// </summary>
-		[MenuItem("FuFramework/调试/配置调试面板")]
+		[MenuItem("FuFramework/调试/配置调试面板", false, FuMenuPriority.DEBUG_PANEL_CONFIG)]
 		public static void ShowWindow()
 		{
 			var window = GetWindow<ConfigModuleWindow>("配置调试");

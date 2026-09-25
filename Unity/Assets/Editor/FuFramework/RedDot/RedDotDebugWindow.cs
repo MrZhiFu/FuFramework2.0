@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.RedDot.Editor
@@ -19,7 +20,7 @@ namespace FuFramework.RedDot.Editor
         /// <summary>
         /// 打开调试面板
         /// </summary>
-        [MenuItem("FuFramework/调试/红点调试面板")]
+        [MenuItem("FuFramework/调试/红点调试面板", false, FuMenuPriority.DEBUG_PANEL_RED_DOT)]
         public static void ShowWindow()
         {
             var window = GetWindow<RedDotDebugWindow>("红点调试");

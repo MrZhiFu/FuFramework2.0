@@ -35,7 +35,7 @@ namespace FuFramework.Core.Editor
         /// 执行路径：Unity工程同级目录/Tools/HttpCDN/miniserve.exe
         /// 服务目录：Unity工程同级目录/Tools/HttpCDN（miniserve 默认服务当前目录）
         /// </remarks>
-        [MenuItem("FuFramework/启动HttpCDN服务器(用于模拟资源更新)", false, 1300)]
+        [MenuItem("FuFramework/启动HttpCDN服务器(用于模拟资源更新)", false, FuMenuPriority.TOOL_START_HTTP_CDN_SERVER)]
         public static void StartHttpCdnServer()
         {
             var exePath = GetHttpCdnExePath();
