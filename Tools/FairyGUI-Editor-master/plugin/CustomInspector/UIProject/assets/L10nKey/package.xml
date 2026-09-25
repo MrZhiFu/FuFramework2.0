@@ -3,6 +3,8 @@
   <resources>
     <component id="f4ov2" name="SetL10nKey.xml" path="/" exported="true"/>
     <component id="pk0001" name="PageKeyItem.xml" path="/" exported="true"/>
+    <image id="hiq83" name="clear_text.svg" path="/Input/" qualityOption="source" duplicatePadding="true" width="16" height="16"/>
+    <image id="hiq84" name="clear_text@2x.png" path="/Input/" duplicatePadding="true"/>
   </resources>
   <publish name="" path="..\..\..\..\..\FairyGUIProject\plugins\L10nKeyBind" packageCount="2"/>
 </packageDescription>

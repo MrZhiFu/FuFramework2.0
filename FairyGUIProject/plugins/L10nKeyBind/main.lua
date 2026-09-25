@@ -177,7 +177,9 @@ end
 -- ---------------------------------------------------------------------------
 local function fillCtrlCombo(state, comp)
     local combo = state.ctrl_list
-    local names = {}
+    -- 首项固定为 None（不使用控制器模式），其后才是组件的实际控制器；
+    -- 下拉索引与控制器列表的对应关系：selectedIndex 0=None，i>=1 → controllers[i-1]
+    local names = { "None" }
     state.controllers = nil
 
     if comp ~= nil and comp.controllers ~= nil then
@@ -194,10 +196,15 @@ local function fillCtrlCombo(state, comp)
         hasCtrlGear:SetSelectedIndex(hasCtrl and 1 or 0)
     end
 
+    -- 默认选中 None，隐藏页 key 列表标题
+    if state.label_pages then
+        state.label_pages.visible = false
+    end
+
     local ok, err = pcall(function()
         combo.items = names
         combo:ApplyListChange()
-        combo.selectedIndex = -1
+        combo.selectedIndex = 0
     end)
     if not ok then
         fprint('[L10n] 控制器下拉填充失败: ' .. tostring(err))
@@ -216,6 +223,7 @@ local function createPanel()
         panel       = panel,
         l10n_key    = panel and panel:GetChild("l10n_key"),
         ctrl_list   = panel and panel:GetChild("ctrl_list"),
+        label_pages = panel and panel:GetChild("label_pages"),
         page_keys   = panel and panel:GetChild("page_keys"),
         currentCtrl = nil,
         controllers = nil,
@@ -243,15 +251,21 @@ local function createPanel()
                 return
             end
             common.writeL10nData(obj, key)
-            -- 两模式互斥：简单提交后清掉控制器区显示
+            -- 两模式互斥：简单提交后清掉控制器区显示，下拉回落 None
             state.currentCtrl = nil
             state.page_keys:RemoveChildren()
+            if state.label_pages then
+                state.label_pages.visible = false
+            end
+            if state.ctrl_list.selectedIndex ~= 0 then
+                state.ctrl_list.selectedIndex = 0
+            end
             fprint('[L10n] 已绑定多语言 key: ' .. key)
         end)
     end
 
     if state.ctrl_list then
-        -- 控制器下拉切换：按选中控制器重建逐页 key 行（回显已有绑定）
+        -- 控制器下拉切换：None 清空页列表并隐藏标题；选中控制器则重建逐页 key 行（回显已有绑定）
         state.ctrl_list.onChanged:Add(function()
             local doc = App.activeDoc
             if not doc then return end
@@ -259,13 +273,18 @@ local function createPanel()
             if not obj or not state.controllers then return end
 
             local idx = state.ctrl_list.selectedIndex
-            if idx < 0 or idx >= state.controllers.Count then
+
+            -- None（首项）或越界：不使用控制器模式
+            if idx <= 0 or idx > state.controllers.Count then
                 state.currentCtrl = nil
                 state.page_keys:RemoveChildren()
+                if state.label_pages then
+                    state.label_pages.visible = false
+                end
                 return
             end
 
-            state.currentCtrl = state.controllers[idx]
+            state.currentCtrl = state.controllers[idx - 1]
 
             -- 回显该控制器的已绑定页 key（若当前绑定正好指向此控制器）
             local boundPages = nil
@@ -274,6 +293,9 @@ local function createPanel()
                 boundPages = parsed.pages
             end
 
+            if state.label_pages then
+                state.label_pages.visible = true
+            end
             rebuildPageList(state, state.currentCtrl, boundPages)
             state.l10n_key.text = "" -- 两模式互斥：切到控制器模式清简单显示
         end)
@@ -301,7 +323,7 @@ local function updatePanel(panel, state, obj)
     -- 按已绑定模式回显
     local parsed = common.parseL10nValue(common.readL10nData(obj))
     if parsed.mode == "ctrl" then
-        -- 控制器模式：选中对应控制器并重建逐页行
+        -- 控制器模式：选中对应控制器并重建逐页行（下拉含 None 首项，索引 +1）
         state.l10n_key.text = ""
         local ctrlIndex = -1
         if state.controllers ~= nil then
@@ -313,19 +335,26 @@ local function updatePanel(panel, state, obj)
             end
         end
         if ctrlIndex >= 0 then
-            state.ctrl_list.selectedIndex = ctrlIndex -- 触发 onChanged 重建页行并回显
+            state.ctrl_list.selectedIndex = ctrlIndex + 1 -- 触发 onChanged 重建页行并回显
         else
-            -- 控制器已被删除/重命名：清空控制器区显示
+            -- 控制器已被删除/重命名：回落到 None 态
             state.currentCtrl = nil
             state.page_keys:RemoveChildren()
+            if state.label_pages then
+                state.label_pages.visible = false
+            end
+            state.ctrl_list.selectedIndex = 0
             fprint('[L10n] 绑定指向的控制器不存在: "' .. tostring(parsed.ctrl) .. '"')
         end
     else
-        -- 简单模式或无绑定：填简单输入框，清控制器区
+        -- 简单模式或无绑定：填简单输入框，下拉回落 None 并清控制器区
         state.l10n_key.text = parsed.mode == "simple" and (parsed.key or "") or ""
         state.currentCtrl   = nil
-        state.ctrl_list.selectedIndex = -1
         state.page_keys:RemoveChildren()
+        if state.label_pages then
+            state.label_pages.visible = false
+        end
+        state.ctrl_list.selectedIndex = 0 -- None；恰为同值时不触发 onChanged，上方清理已兜住显示
     end
 
     return true
