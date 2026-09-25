@@ -71,7 +71,10 @@ string GetLanguageText(string key, params object[] args)
 
 `Language` 属性的 setter 内部会：
 1. 通过 `StorageModule` 持久化语言设置
-2. 通过 `EventModule` 广播 `LanguageChangeEventArgs` 事件
+2. **同步语言偏好到 PlayerPrefs**（`LaunchLocalization.LanguagePrefKey`）——AOT 启动阶段从 PlayerPrefs 读偏好，两源不同步会导致下次启动 AOT 界面语言与本侧不一致（见第 12 节）
+3. 通过 `EventModule` 广播 `LanguageChangeEventArgs` 事件
+
+`OnInit` 读取存档确定语言后，会把最终语言**回写 PlayerPrefs**（启动收敛，修正旧版本仅存档无偏好的漂移）。
 
 ### 4.2 ILocalizationProvider
 
@@ -112,7 +115,7 @@ public interface ILocalizationProvider
 
 | 成员 | 类型 | 说明 |
 |------|------|------|
-| `EventId` | `string`（常量） | 事件编号：`"Event.Localization.LanguageChange"` |
+| `EventId` | `string`（静态只读） | 事件编号：`typeof(LanguageChangeEventArgs).FullName` |
 | `ELanguage` | `ELanguage` | 切换后的当前语言 |
 | `OldELanguage` | `ELanguage` | 切换前的旧语言 |
 
@@ -235,7 +238,7 @@ Localization/
 
 ## 9. 注意事项
 
-1. 语言切换后，所有已显示的 UI 需要手动刷新文本（监听 `LanguageChangeEventArgs.EventId` 事件）
+1. 语言切换后的文本刷新：FGUI 声明式绑定（第 11 节）与业务数据绑定（`WinBase._OnLanguageChanged` 的 `OnOpen`）自动执行；仅自管文本的界面需要自行监听 `LanguageChangeEventArgs.EventId` 手动刷新
 2. 本地化文本 Key 在配置表中必须唯一
 3. 若 `LocalizationProvider` 未设置，`GetLanguageText` 会返回 `[key]` 格式的占位符文本并输出警告日志
 4. 语言设置存储在本地，卸载游戏后不会丢失
@@ -256,29 +259,80 @@ Localization/
 ### 11.1 链路
 
 ```
-编辑器（L10nKeyBind 插件）选中组件输入 key → customData 的 "L10n:<key>" 段 → 随包发布
-  → FairyGUI 包构造时（Setup_AfterAdd 锚点）解析存组件字段 → 经 GetLanguageText 静态委托取文本写入 text/title
+编辑器（L10nKeyBind 插件）选中组件绑定 key → customData 的 "L10n:<key>"（或控制器模式 "L10n:<ctrl>,0=k1,1=k2"）段 → 随包发布
+  → FairyGUI 包构造时（Setup_AfterAdd 锚点）只做解析 + 控制器订阅（不应用文本）
+  → UIPackage.CreateObject 出口 GObject.FlushL10n(g)：整棵树构建完成后统一解析取文本写入 text/title
+    （叶子类与祖先组件的 Setup 会回填包默认文本，统一应用必须发生在其后）
   → 语言切换时 WinBase._OnLanguageChanged：OnOpen() + FairyGUI.GObject.RefreshAllL10n(WinUI) 遍历重应用
+  → 窗口池化复用/暂停恢复/遮挡恢复（_OnOpen/_OnResume/_OnReveal）：补一次 RefreshAllL10n（隐藏期间语言可能已切换）
 ```
 
 ### 11.2 委托两阶段注入
 
 | 阶段 | 注入 | 文本源 |
 |---|---|---|
-| AOT（启动期） | `LaunchLocalization.InitializeAsync` | AOT 表（`LaunchLocalizationText/tblocalizationaot`） |
+| AOT（启动期） | `LaunchLocalization.InitializeAsync`（**必须先于加载界面创建**，声明式绑定构建时即取文本） | AOT 表（`LaunchLocalizationText/tblocalizationaot`） |
 | 热更后 | `HotfixLauncher.InitDependenciesAsync`（覆盖式） | 热更表 `TbLocalization` |
 
 ### 11.3 约定与坑
 
 - **可绑组件**：GTextField（text）/ GButton（title）/ GLabel（title）；`INPUTTEXT` 等动态输入禁止绑定
-- **动态文本禁止绑 L10n**：代码每次 `SetText`/`Refresh` 的组件与 L10n 声明是两套来源，会互相覆盖——单一文本来源
-- **Refresh 不触发 L10n**：`OnOpen → Refresh` 只刷业务数据绑定；L10n 刷新必须走 `RefreshAllL10n`（已挂 WinBase）
-- **key 查不到**：显示 `[key]` 并 LogWarning（开发期可见）；编辑器填的 key 即 `L10nKey` 常量类中的字符串
+- **动态文本禁止绑 L10n**：代码每次 `SetText`/`Refresh` 的组件与 L10n 声明是两套来源，会互相覆盖——单一文本来源；业务 `OnOpen` 在 L10n 刷新**之后**执行，动态赋值可覆盖
+- **应用时机在 FlushL10n**：Setup 锚点只解析 + 订阅控制器；叶子类/祖先组件的 Setup 会回填包默认文本，统一应用在 `UIPackage.CreateObject` 出口——**新增"Setup 后写 text/title 的组件类型"无需再打补丁**
+- **隐藏窗口刷新**：`_OnLanguageChanged` 只刷可见窗口；池化复用/暂停/遮挡的窗口由 `_OnOpen/_OnResume/_OnReveal` 补 `RefreshAllL10n`
+- **控制器模式**：绑定格式 `L10n:<ctrl>,<pageId>=<key>,...`；控制器切页（onChanged）自动重应用；插件面板可视化绑定（下拉选控制器 + 逐页 key + None 首项）
+- **key 查不到**：热更侧显示 `[key]`；AOT 侧（表缺 key 返回空串）回退显示 key 原文（`ResolveL10nText` 空串回退，避免空白）
 
 ### 11.4 相关文件
 
 | 文件 | 说明 |
 |---|---|
-| `3rdPlugins/FairyGUI/Scripts/UI/CustomExt/*.L10n.cs` | FairyGUI 运行时钩子（解析/应用/遍历，partial 分部） |
+| `3rdPlugins/FairyGUI/Scripts/UI/CustomExt/*.L10n.cs` | FairyGUI 运行时钩子（解析/订阅/应用/遍历，partial 分部；`FlushL10n` 统一应用） |
+| `3rdPlugins/FairyGUI/Scripts/UI/UIPackage.cs` | `CreateObject` 出口调用 `FlushL10n`（L10n：统一应用锚点） |
 | `FairyGUIProject/plugins/L10nKeyBind/` | 编辑器插件（Lua），见其 README |
 | 设计文档 | `Docs/superpowers/specs/2026-09-19-fgui-l10n-design.md` |
+
+## 12. 语言偏好持久化（AOT/Hotfix 双源同步）
+
+语言偏好存在两处，语义为"同一次安装内保持一致"：
+
+| 阶段 | 存储 | 读取方 |
+|---|---|---|
+| AOT（启动期） | PlayerPrefs 键 `AOT_Localization_Language`（int，常量 `LaunchLocalization.LanguagePrefKey`，已 public） | `LaunchLocalization.LoadLanguagePreference`（无偏好时回落系统语言） |
+| 热更期 | StorageModule 文件（键 `Language`，枚举名字符串） | `LocalizationModule.OnInit`（读不到时回落系统语言） |
+
+**同步契约**（违反会导致下次启动 AOT 界面语言与本侧不一致）：
+1. 热更侧切换语言（`LocalizationModule.Language` setter）：写 StorageModule 后**必须同步写 PlayerPrefs**
+2. `OnInit` 启动收敛：把最终语言回写 PlayerPrefs，修正旧版本漂移
+3. Hotfix 引用 `LaunchLocalization` 用别名 `using LaunchLocalization = AOT.Launch.Localization.LaunchLocalization;`（两份生成的 `ELanguage` 会 CS0104）
+
+## 13. 多语言表健康检查工具（CleanL10nKeys）
+
+`Tools/CleanL10nKeys/`：五项检查一次运行，完整报告写 `Tools/CleanL10nKeys/多语言配置报告.txt`（gitignore），控制台/Unity 对话框只输出带色摘要。
+
+| # | 检查 | 说明 |
+|---|---|---|
+| 1 | 未引用 key（可清理） | 代码/配置数据/FGUI 三类引用源都不含的 key；`--apply` 删除 Excel 行（**不导表**，导表手动） |
+| 2 | 缺失 key | 已被引用（代码/FGUI）但表中不存在 → 运行时会显示 `[key]` |
+| 3 | 翻译覆盖率 | 逐表逐语言空列统计 |
+| 4 | FGUI 硬编码文本 | 未绑定 L10n 的静态中文（推动声明式化） |
+| 5 | key 命名规范 | `^[a-z][a-z0-9_]*$` |
+
+**Unity 菜单**（`FuFramework/多语言检查/`）：`生成现存问题报告`(1002) → `打开现存问题报告`(1003) → `清理多语言配置表`(1004，确认对话框后删行)。
+
+**自引用排除**（检查正确性的关键）：生成的 `L10nKey.cs`/`LaunchL10nKey.cs`（含全部 is_code key 字面量）与本地化表自身导出产物 `tblocalization.json` 不作为引用源——否则所有 key 永远"被引用"。
+
+**盲区**：动态拼接 key（`"common_" + x`）双向静态分析均不可检测，清理/缺失清单须人工核对。
+
+## 14. 改造历程索引（2026-09）
+
+| 提交 | 内容 |
+|---|---|
+| `f700f494` `1b16b4a9` `4c7a21a2` `da87d6de` `fec3d904` | 体系主体：gen 脚本英文化 / cs-bean / AOT 前置本地化 / FGUI 声明式 / EventPool 多 handler 修复 |
+| `743f6d7f` `e7b9a2ed` `8da575f2` | 二次解析修复 / AOT 启动时序 + 偏好双源 / 插件文档 |
+| `c6e0cb5a` `6f1a7060` | CleanL10nKeys 初版 / 删除一次性迁移脚本 |
+| `d5e0c1ec` | 健康检查五项升级（批1） |
+| `9ab48d06` | FlushL10n 统一应用 + 隐藏窗口刷新（批2，演进替代 `743f6d7f` 的逐叶子补丁） |
+| `361ac543` `2fc26efa` `d6761b7b` | 插件控制器模式交互 / 面板自适应 / None 首项（批4） |
+
+详细设计：`Docs/superpowers/specs/2026-09-17-aot-localization-design.md`、`Docs/superpowers/specs/2026-09-19-fgui-l10n-design.md`。
