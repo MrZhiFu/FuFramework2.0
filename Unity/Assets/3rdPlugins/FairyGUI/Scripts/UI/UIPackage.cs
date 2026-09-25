@@ -1128,6 +1128,9 @@ namespace FairyGUI
             g.ConstructFromResource();
             _constructing--;
 
+            // L10n：整棵树构建完成后统一应用声明式多语言文本（叶子 Setup 会回填包默认文本，须在其后应用）
+            GObject.FlushL10n(g);
+
             return g;
         }
 

@@ -43,7 +43,10 @@ namespace Hotfix.Framework.UI
             Visible     = true;
             WinUI.alpha = 0;
 
-            // 先刷新界面
+            // 对象池复用时组件树不重建，语言可能在窗口关闭期间被切换，先重应用声明式 L10n 文本
+            GObject.RefreshAllL10n(WinUI);
+
+            // 再刷新业务界面（业务 OnOpen 的动态文本赋值在 L10n 之后执行，可覆盖动态组件）
             OnOpen();
 
             // 再执行打开动画
@@ -92,6 +95,8 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]恢复-OnResume().");
             Visible = true;
+            // 暂停期间语言可能已切换（隐藏窗口不参与切换刷新），恢复时重应用声明式 L10n 文本
+            GObject.RefreshAllL10n(WinUI);
             OnResume();
         }
 
@@ -112,6 +117,8 @@ namespace Hotfix.Framework.UI
         {
             FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被遮挡恢复-OnReveal().");
             Visible = true;
+            // 遮挡期间语言可能已切换（隐藏窗口不参与切换刷新），恢复时重应用声明式 L10n 文本
+            GObject.RefreshAllL10n(WinUI);
             OnReveal();
         }
 

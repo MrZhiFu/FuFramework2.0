@@ -230,8 +230,6 @@ namespace FairyGUI
                 else
                     buffer.Skip(4);
             }
-
-            ApplyL10nGearData(); // L10n：包默认标题回填后重应用，恢复被覆盖的 L10n 结果
         }
     }
 }

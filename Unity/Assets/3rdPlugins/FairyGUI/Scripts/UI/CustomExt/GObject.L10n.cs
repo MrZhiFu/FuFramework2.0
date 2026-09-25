@@ -70,7 +70,9 @@ namespace FairyGUI
         protected virtual void OnApplyL10nText(string key) { }
 
         /// <summary>
-        /// Setup_AfterAdd 锚点入口：解析 data 中的 L10n 段并首次应用，控制器模式订阅页变更。
+        /// Setup_AfterAdd 锚点入口：解析 data 中的 L10n 段并订阅控制器页变更。
+        /// 文本应用不在此处（叶子类 Setup_AfterAdd 会在 base 之后回填包默认文本覆盖结果），
+        /// 统一由 UIPackage.CreateObject 完成后的 FlushL10n 应用。
         /// </summary>
         private void SetupL10nGear()
         {
@@ -82,9 +84,6 @@ namespace FairyGUI
             var customData = data as string;
             _l10nGearData = ParseL10nGear(customData);
             if (_l10nGearData == null) return;
-
-            // 首次应用：按解析结果应用文本（控制器模式按当前页取 key）
-            ApplyL10nGearData();
 
             if (_l10nGearData.IsCtrl && parent != null)
             {
@@ -186,6 +185,30 @@ namespace FairyGUI
             if (getter == null) return key;
             var text = getter(key);
             return string.IsNullOrEmpty(text) ? key : text;
+        }
+
+        /// <summary>
+        /// 对象树构建完成后统一应用 L10n 文本：
+        /// 叶子类的 Setup_AfterAdd 会回填包默认文本覆盖 L10n 结果，且部分覆盖发生在
+        /// 祖先组件的 Setup 阶段（ComboBox title / 组件自定义属性），故在整棵树
+        /// ConstructFromResource 完成后由 UIPackage.CreateObject 调用本方法一次性应用。
+        /// </summary>
+        /// <param name="root">新建的对象树根（可为任意 GObject）</param>
+        public static void FlushL10n(GObject root)
+        {
+            if (root == null) return;
+
+            if (root._l10nGearData != null)
+                root.ApplyL10nGearData();
+
+            if (root is GComponent comp)
+            {
+                var cnt = comp.numChildren;
+                for (var i = 0; i < cnt; i++)
+                {
+                    FlushL10n(comp.GetChildAt(i));
+                }
+            }
         }
 
         /// <summary>

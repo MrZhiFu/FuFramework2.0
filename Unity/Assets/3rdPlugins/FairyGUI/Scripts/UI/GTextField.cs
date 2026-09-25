@@ -433,8 +433,6 @@ namespace FairyGUI
             string str = buffer.ReadS();
             if (str != null)
                 this.text = str;
-
-            ApplyL10nGearData(); // L10n：包默认文本回填后重应用，恢复被覆盖的 L10n 结果
         }
     }
 }
