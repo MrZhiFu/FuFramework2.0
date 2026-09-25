@@ -426,6 +426,11 @@ namespace FuFramework.Core.Editor
         /// </summary>
         public const int DEBUG_PANEL_WEB = DEBUG_PANEL_BASE + 4;
 
+        /// <summary>
+        /// 事件模块调试面板。
+        /// </summary>
+        public const int DEBUG_PANEL_EVENT = DEBUG_PANEL_BASE + 5;
+
         #endregion
     }
 }
