@@ -1,11 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component size="270,250" bgColorEnabled="true" bgColor="#383838">
+<component size="270,28" bgColorEnabled="true" bgColor="#383838">
+  <controller name="HasCtrl" alias="目标组件是否有控制器" exported="true" pages="0,No,1,Yes" selected="0">
+    <remark page="0" value="没有控制器"/>
+    <remark page="1" value="有控制器"/>
+  </controller>
   <displayList>
     <text id="n4_oma2" name="n1" xy="0,3" size="70,23" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="多语言key:"/>
     <component id="n5_oma2" name="l10n_key" src="gcza1s" fileName="Input/TextInput.xml" pkg="nk9ejx23" xy="69,4" size="187,20" controller="noBorder,0,showClear,1"/>
-    <text id="n6" name="label_ctrl" xy="0,32" size="70,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="控制器:"/>
-    <component id="n7" name="ctrl_list" src="gcza18" fileName="ComboBox/ComboBox.xml" pkg="nk9ejx23" xy="69,30" size="187,20"/>
-    <text id="n8" name="label_pages" xy="0,56" size="120,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="页key列表:"/>
-    <list id="n9" name="page_keys" xy="0,78" size="270,160" overflow="scroll" scrollBarFlags="4" margin="0,0,0,0" defaultItem="ui://4s26v8k8pk0001"/>
+    <text id="n6" name="label_ctrl" xy="0,32" size="70,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="控制器:">
+      <gearDisplay controller="HasCtrl" pages="1"/>
+    </text>
+    <component id="n7" name="ctrl_list" src="gcza18" fileName="ComboBox/ComboBox.xml" pkg="nk9ejx23" xy="69,30" size="187,20">
+      <gearDisplay controller="HasCtrl" pages="1"/>
+      <ComboBox visibleItemCount="10"/>
+    </component>
+    <text id="n8" name="label_pages" xy="0,56" size="120,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="页key列表:">
+      <gearDisplay controller="HasCtrl" pages="1"/>
+    </text>
+    <list id="n9" name="page_keys" xy="0,78" size="270,160" overflow="scroll" scrollBarFlags="4" defaultItem="ui://4s26v8k8pk0001" autoClearItems="true">
+      <gearDisplay controller="HasCtrl" pages="1"/>
+      <item/>
+      <item/>
+      <item/>
+    </list>
+    <graph id="n10_hiq8" name="height_ref" xy="0,0" size="9,28" alpha="0" type="rect">
+      <gearSize controller="HasCtrl" pages="0" values="9,28,1,1" default="9,250,1,1"/>
+      <relation target="" sidePair="left-left,top-top"/>
+    </graph>
   </displayList>
+  <relation target="n10_hiq8" sidePair="bottomext-bottom"/>
 </component>

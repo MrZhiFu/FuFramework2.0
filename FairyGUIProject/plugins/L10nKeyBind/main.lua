@@ -187,6 +187,13 @@ local function fillCtrlCombo(state, comp)
         end
     end
 
+    -- 面板 HasCtrl 控制器切页：控制控制器区的显隐与面板高度（gearDisplay + height_ref gearSize）
+    local hasCtrl = state.controllers ~= nil and state.controllers.Count > 0
+    local hasCtrlGear = state.panel and state.panel:GetController("HasCtrl")
+    if hasCtrlGear ~= nil then
+        hasCtrlGear:SetSelectedIndex(hasCtrl and 1 or 0)
+    end
+
     local ok, err = pcall(function()
         combo.items = names
         combo:ApplyListChange()
@@ -206,6 +213,7 @@ local function createPanel()
     fprint('[L10n] create: panel=' .. tostring(panel ~= nil))
 
     local state = {
+        panel       = panel,
         l10n_key    = panel and panel:GetChild("l10n_key"),
         ctrl_list   = panel and panel:GetChild("ctrl_list"),
         page_keys   = panel and panel:GetChild("page_keys"),
