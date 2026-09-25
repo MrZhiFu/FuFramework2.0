@@ -6,7 +6,7 @@ using UnityEditor;
 using Debug = UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Config.Editor
+namespace FuFramework.Localization.Editor
 {
     /// <summary>
     /// 多语言配置表清理器。
@@ -21,7 +21,7 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 预览未引用的多语言 key（只输出报告，不修改 Excel）
         /// </summary>
-        [MenuItem("FuFramework/配置表/清理多语言配置表—预览", false, 1002)]
+        [MenuItem("FuFramework/多语言检查/生成现存问题报告", false, 1002)]
         public static void Preview()
         {
             Run("clean-l10n-keys-preview.bat", true);
@@ -30,12 +30,12 @@ namespace FuFramework.Config.Editor
         /// <summary>
         /// 清理未引用的多语言 key（删除 Excel 行，不导表）
         /// </summary>
-        [MenuItem("FuFramework/配置表/清理多语言配置表—执行", false, 1003)]
+        [MenuItem("FuFramework/多语言检查/清理多语言配置表", false, 1004)]
         public static void Apply()
         {
             if (!EditorUtility.DisplayDialog("清理多语言配置表",
                                              "将删除所有未被代码/配置数据/FGUI引用的多语言key。\n\n"                       +
-                                             "注意：动态拼接的 key（如 \"common_\" + x）无法静态检测，请先执行「预览」人工确认清单。\n" +
+                                             "注意：动态拼接的 key（如 \"common_\" + x）无法静态检测，请先执行「生成现存问题报告」人工确认清单。\n" +
                                              "清理完成后请重新导表。\n\n确定执行？",
                                              "执行清理", "取消"))
             {
@@ -43,6 +43,22 @@ namespace FuFramework.Config.Editor
             }
 
             Run("clean-l10n-keys-apply.bat", false);
+        }
+
+        /// <summary>
+        /// 打开上次生成的健康检查报告文件（多语言配置报告.txt）
+        /// </summary>
+        [MenuItem("FuFramework/多语言检查/打开现存问题报告", false, 1003)]
+        public static void OpenReport()
+        {
+            var reportPath = Path.Combine(GetToolsPath(), "多语言配置报告.txt");
+            if (!File.Exists(reportPath))
+            {
+                EditorUtility.DisplayDialog("提示", "尚未生成报告，请先执行「生成现存问题报告」或「清理多语言配置表」。", "确定");
+                return;
+            }
+
+            EditorUtility.RevealInFinder(reportPath);
         }
 
         /// <summary>
