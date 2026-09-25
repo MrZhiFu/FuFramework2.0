@@ -123,11 +123,12 @@ namespace Hotfix.Framework.UI
         public bool Visible
         {
             // WinUI 可能为空（半成品实例，Init 未走完）：与 setter 一致判空，避免读属性抛 NRE
-            get => WinUI != null && WinUI.visible;
+            get => WinUI is { visible: true };
             private set
             {
                 if (WinUI         == null) return;
                 if (WinUI.visible == value) return;
+
                 WinUI.visible = value;
 
                 // 触发UI显示状态变化事件。

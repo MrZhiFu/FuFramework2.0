@@ -46,7 +46,7 @@ namespace Hotfix.Framework.Download
         /// 类型全限定：本文件因 CancelAsync 需引用 Cysharp.Threading.Tasks，而其中也定义了 TaskPool&lt;T&gt;，
         /// 裸写 TaskPool&lt;DownloadTask&gt; 会与其产生歧义（CS0104）。
         /// </summary>
-        private readonly Hotfix.Framework.Core.TaskPool<DownloadTask> m_TaskPool = new();
+        private readonly Core.TaskPool<DownloadTask> m_TaskPool = new();
 
         /// <summary>
         /// 下载计数器，1秒更新一次，10秒记录一次，用于计算下载速度
