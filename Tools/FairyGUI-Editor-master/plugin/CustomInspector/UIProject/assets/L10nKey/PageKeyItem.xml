@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="260,24">
+  <displayList>
+    <text id="n1" name="page_name" xy="0,4" size="70,18" fontSize="12" color="#cccccc" vAlign="middle" autoSize="none" singleLine="true" text="page0"/>
+    <component id="n2" name="key_input" src="gcza1s" fileName="Input/TextInput.xml" pkg="nk9ejx23" xy="72,2" size="186,20" controller="noBorder,0,showClear,1"/>
+  </displayList>
+</component>

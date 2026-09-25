@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component size="270,29" bgColorEnabled="true" bgColor="#383838">
+<component size="270,250" bgColorEnabled="true" bgColor="#383838">
   <displayList>
     <text id="n4_oma2" name="n1" xy="0,3" size="70,23" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="多语言key:"/>
     <component id="n5_oma2" name="l10n_key" src="gcza1s" fileName="Input/TextInput.xml" pkg="nk9ejx23" xy="69,4" size="187,20" controller="noBorder,0,showClear,1"/>
+    <text id="n6" name="label_ctrl" xy="0,32" size="70,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="控制器:"/>
+    <component id="n7" name="ctrl_list" src="gcza18" fileName="ComboBox/ComboBox.xml" pkg="nk9ejx23" xy="69,30" size="187,20"/>
+    <text id="n8" name="label_pages" xy="0,56" size="120,20" fontSize="12" color="#66ff00" vAlign="middle" autoSize="none" singleLine="true" text="页key列表:"/>
+    <list id="n9" name="page_keys" xy="0,78" size="270,160" overflow="scroll" scrollBarFlags="4" margin="0,0,0,0" defaultItem="ui://4s26v8k8pk0001"/>
   </displayList>
 </component>

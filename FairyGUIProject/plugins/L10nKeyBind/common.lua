@@ -83,6 +83,33 @@ local function readL10nData(obj)
 end
 
 -- ---------------------------------------------------------------------------
+-- 解析 L10n 段值为结构化绑定（简单模式 / 控制器模式）
+-- @param value: string|nil - L10n 段原始值（如 "common_key" 或 "state,0=k1,1=k2"）
+-- @return table - {mode="simple", key=str} 或
+--                 {mode="ctrl", ctrl=str, pages={[pageIndex]=key,...}}
+-- ---------------------------------------------------------------------------
+local function parseL10nValue(value)
+    if value == nil or value == "" then
+        return { mode = "none" }
+    end
+
+    -- 控制器模式判定与运行时 ParseL10nGear 一致：段体同时含 "," 与 "="
+    if value:find(",") and value:find("=") then
+        local ctrlName = value:match("^([^,]+)")
+        local pages = {}
+        for pair in value:gmatch("[^,]+") do
+            local idx, key = pair:match("^(%d+)=(.+)$")
+            if idx ~= nil then
+                pages[tonumber(idx)] = key
+            end
+        end
+        return { mode = "ctrl", ctrl = ctrlName, pages = pages }
+    end
+
+    return { mode = "simple", key = value }
+end
+
+-- ---------------------------------------------------------------------------
 -- 将多语言 key 写入对象的 customData 中
 -- 注意：编辑器中必须通过 obj.docElement:SetProperty() 来修改属性，
 -- 这样才能被编辑器的撤销/重做机制追踪。
@@ -114,10 +141,11 @@ end
 -- 模块导出
 -- ============================================================================
 return {
-    L10N_PREFIX     = L10N_PREFIX,
-    setSegment      = setSegment,
-    getSegment      = getSegment,
-    readL10nData    = readL10nData,
-    writeL10nData   = writeL10nData,
-    removeL10nData  = removeL10nData
+    L10N_PREFIX      = L10N_PREFIX,
+    setSegment       = setSegment,
+    getSegment       = getSegment,
+    readL10nData     = readL10nData,
+    parseL10nValue   = parseL10nValue,
+    writeL10nData    = writeL10nData,
+    removeL10nData   = removeL10nData
 }

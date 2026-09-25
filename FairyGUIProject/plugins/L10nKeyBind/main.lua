@@ -6,21 +6,24 @@
 -- 【Inspector 架构】
 --   ConnectInspector 的 forObjectType 是**选中对象的 objectType 过滤**，
 --   不同基础类型需分别连接（GButton/GLabel 的 objectType="component"，
---   GTextField 的 objectType="text"），故注册两个 Inspector：
+--   GTextField 的 objectType="text"），故注册多个 Inspector：
 --
 --   1. L10nKey_set_com（objectType: component）
 --      覆盖 GButton/GLabel（经 extentionId 二级判别）与其他扩展组件（排除）
 --   2. L10nKey_set_text（objectType: text）
 --      覆盖 GTextField（GRichTextField 若 objectType 同为 text 亦覆盖）
 --
+-- 【面板与绑定模式】
+--   面板（L10nKey 包 SetL10nKey 组件）提供两种绑定模式，同一时刻只保留一种：
+--   1. 简单模式：l10n_key 输入框填写单 key → customData 写 "L10n:<key>"
+--   2. 控制器模式：ctrl_list 下拉选择所在组件的控制器，page_keys 逐页填写
+--      key → customData 写 "L10n:<ctrlName>,<pageId>=<key>,..."
+--      任一页输入失焦即组装提交；两区提交互相覆盖对方显示与存储。
+--
 -- 【customData 存储】
---   多语言 key 以 "L10n:<key>" 格式存储在对象的 customData 字段中，
+--   多语言绑定以 "L10n:..." 格式存储在对象的 customData 字段中，
 --   由 common.lua 提供读写支持（"|" 分段与其他插件段共存）。
 --   运行时由 FairyGUI GObject.L10n 分部解析并自动应用对应语言文本。
---
--- 【一期范围】
---   仅支持简单模式（单 key）。控制器模式（逐页 key）由运行时解析兼容
---   （手填 "L10n:ctrl,0=key1,1=key2" 生效），编辑器交互后续按需扩展。
 -- ============================================================================
 
 fprint('[L10nKeyBind] 正在加载插件...')
@@ -80,9 +83,119 @@ local function isBindableType(obj)
     return false, ot
 end
 
+-- ---------------------------------------------------------------------------
+-- 向上查找选中对象所在组件（含自身）：返回最近一个带 controllers 的组件
+-- @param obj: FObject - 编辑器选中对象
+-- @return FComponent|nil - 所在组件（无控制器宿主时返回 nil）
+-- ---------------------------------------------------------------------------
+local function getOwnerComponent(obj)
+    local cur     = obj
+    local found   = nil
+    while cur ~= nil do
+        if cur.controllers ~= nil then
+            found = cur
+        end
+        cur = cur.parent
+    end
+    return found
+end
+
 -- ============================================================================
 -- 面板创建与更新（两个 Inspector 共用实现，各自持有面板实例）
+-- 面板子件：l10n_key(简单模式输入) / ctrl_list(控制器下拉) / page_keys(逐页key列表)
 -- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 控制器模式提交：遍历 page_keys 各行组装 "ctrlName,0=k1,1=k2" 写入 customData。
+-- 绑定为提交函数闭包共享的 panel 状态（写入时从 doc 重新取 obj）。
+-- @param state: table - 面板共享状态 { currentCtrl=FController|nil }
+-- ---------------------------------------------------------------------------
+local function submitCtrlMode(state)
+    local doc = App.activeDoc
+    if not doc then return end
+    local obj = doc.inspectingTarget
+    if not obj or obj.isDisposed then return end
+    if not state.currentCtrl then return end
+
+    local parts = { tostring(state.currentCtrl.name) }
+    local list  = state.page_keys
+    local n     = list.numChildren
+    for i = 0, n - 1 do
+        local item = list:GetChildAt(i)
+        local key  = item:GetChild("key_input").text or ""
+        if key ~= "" then
+            parts[#parts + 1] = i .. "=" .. key
+        end
+    end
+
+    if #parts == 1 then
+        -- 所有页都为空：视为清除绑定
+        common.removeL10nData(obj)
+        state.l10n_key.text = ""
+        fprint('[L10n] 控制器绑定已清除（所有页为空）')
+        return
+    end
+
+    common.writeL10nData(obj, table.concat(parts, ","))
+    state.l10n_key.text = "" -- 两模式互斥：控制器提交后清掉简单模式显示
+    fprint('[L10n] 已绑定控制器多语言: ' .. table.concat(parts, ","))
+end
+
+-- ---------------------------------------------------------------------------
+-- 重建 page_keys 行：按控制器页数生成（page_name + key_input），回显已有绑定
+-- @param state:      table           - 面板共享状态
+-- @param ctrl:       FController     - 目标控制器
+-- @param boundPages: table|nil       - 已绑定页 key 映射 {[pageIndex]=key}
+-- ---------------------------------------------------------------------------
+local function rebuildPageList(state, ctrl, boundPages)
+    local list = state.page_keys
+    list:RemoveChildren() -- 直接销毁旧行，避免池化 item 上的旧事件闭包残留
+
+    local names = ctrl:GetPageNames()
+    local count = names.Count
+    for i = 0, count - 1 do
+        local item = list:AddItemFromPool()
+        if item == nil then
+            fprint('[L10n] AddItemFromPool 返回 nil：请确认 L10nKey 包已包含 PageKeyItem 组件并重新发布')
+            return
+        end
+        local nameLabel = item:GetChild("page_name")
+        nameLabel.text = tostring(names[i]) .. " [" .. i .. "]"
+
+        local input = item:GetChild("key_input")
+        input.text = (boundPages ~= nil and boundPages[i]) or ""
+        input.onFocusOut:Add(function()
+            submitCtrlMode(state)
+        end)
+    end
+end
+
+-- ---------------------------------------------------------------------------
+-- 控制器下拉填充：枚举所在组件的控制器名写入下拉
+-- @param state: table         - 面板共享状态
+-- @param comp:  FComponent|nil - 所在组件
+-- ---------------------------------------------------------------------------
+local function fillCtrlCombo(state, comp)
+    local combo = state.ctrl_list
+    local names = {}
+    state.controllers = nil
+
+    if comp ~= nil and comp.controllers ~= nil then
+        state.controllers = comp.controllers
+        for i = 0, comp.controllers.Count - 1 do
+            names[#names + 1] = tostring(comp.controllers[i].name)
+        end
+    end
+
+    local ok, err = pcall(function()
+        combo.items = names
+        combo:ApplyListChange()
+        combo.selectedIndex = -1
+    end)
+    if not ok then
+        fprint('[L10n] 控制器下拉填充失败: ' .. tostring(err))
+    end
+end
 
 -- ---------------------------------------------------------------------------
 -- 创建面板：从 L10nKey 包创建 SetL10nKey 组件，绑定输入框失焦写入
@@ -91,12 +204,21 @@ end
 local function createPanel()
     local panel = CS.FairyGUI.UIPackage.CreateObject("L10nKey", "SetL10nKey")
     fprint('[L10n] create: panel=' .. tostring(panel ~= nil))
-    local input = panel and panel:GetChild("l10n_key")
-    fprint('[L10n] create: l10n_key=' .. tostring(input ~= nil))
 
-    if input then
-        -- 失焦写入：类型守卫通过后把输入框内容写入 customData 的 L10n: 段
-        input.onFocusOut:Add(function()
+    local state = {
+        l10n_key    = panel and panel:GetChild("l10n_key"),
+        ctrl_list   = panel and panel:GetChild("ctrl_list"),
+        page_keys   = panel and panel:GetChild("page_keys"),
+        currentCtrl = nil,
+        controllers = nil,
+    }
+    fprint('[L10n] create: l10n_key=' .. tostring(state.l10n_key ~= nil)
+           .. ' ctrl_list=' .. tostring(state.ctrl_list ~= nil)
+           .. ' page_keys=' .. tostring(state.page_keys ~= nil))
+
+    if state.l10n_key then
+        -- 简单模式失焦写入：类型守卫通过后把输入框内容写入 customData 的 L10n: 段
+        state.l10n_key.onFocusOut:Add(function()
             local doc = App.activeDoc
             if not doc then return end
             local obj = doc.inspectingTarget
@@ -105,7 +227,7 @@ local function createPanel()
             local bindable = isBindableType(obj)
             if not bindable then return end
 
-            local key = input.text or ""
+            local key = state.l10n_key.text or ""
             -- 空值 → 清除绑定；非空 → 写入（key 为字符串，不做格式强校验）
             if key == "" then
                 common.removeL10nData(obj)
@@ -113,28 +235,89 @@ local function createPanel()
                 return
             end
             common.writeL10nData(obj, key)
+            -- 两模式互斥：简单提交后清掉控制器区显示
+            state.currentCtrl = nil
+            state.page_keys:RemoveChildren()
             fprint('[L10n] 已绑定多语言 key: ' .. key)
         end)
     end
 
-    return panel, input
+    if state.ctrl_list then
+        -- 控制器下拉切换：按选中控制器重建逐页 key 行（回显已有绑定）
+        state.ctrl_list.onChanged:Add(function()
+            local doc = App.activeDoc
+            if not doc then return end
+            local obj = doc.inspectingTarget
+            if not obj or not state.controllers then return end
+
+            local idx = state.ctrl_list.selectedIndex
+            if idx < 0 or idx >= state.controllers.Count then
+                state.currentCtrl = nil
+                state.page_keys:RemoveChildren()
+                return
+            end
+
+            state.currentCtrl = state.controllers[idx]
+
+            -- 回显该控制器的已绑定页 key（若当前绑定正好指向此控制器）
+            local boundPages = nil
+            local parsed = common.parseL10nValue(common.readL10nData(obj))
+            if parsed.mode == "ctrl" and parsed.ctrl == tostring(state.currentCtrl.name) then
+                boundPages = parsed.pages
+            end
+
+            rebuildPageList(state, state.currentCtrl, boundPages)
+            state.l10n_key.text = "" -- 两模式互斥：切到控制器模式清简单显示
+        end)
+    end
+
+    return panel, state
 end
 
 -- ---------------------------------------------------------------------------
--- 更新面板：回显选中对象的已绑定 key
--- @param panel:  GComponent     - 面板实例
--- @param input:  GTextInput    - 输入框实例
--- @param obj:    FObject|nil   - 选中对象
+-- 更新面板：回显选中对象的已绑定 key（简单/控制器两模式互斥回显）
+-- @param panel: GComponent   - 面板实例
+-- @param state: table        - 面板共享状态（各子件引用）
+-- @param obj:   FObject|nil  - 选中对象
 -- @return boolean - 是否显示此 Inspector
 -- ---------------------------------------------------------------------------
-local function updatePanel(panel, input, obj)
+local function updatePanel(panel, state, obj)
     if not obj or obj.isDisposed then return false end
 
     local bindable = isBindableType(obj)
     if not bindable then return false end
 
-    if input then
-        input.text = common.readL10nData(obj) or ""
+    -- 控制器下拉填充（所在组件的控制器列表）
+    fillCtrlCombo(state, getOwnerComponent(obj))
+
+    -- 按已绑定模式回显
+    local parsed = common.parseL10nValue(common.readL10nData(obj))
+    if parsed.mode == "ctrl" then
+        -- 控制器模式：选中对应控制器并重建逐页行
+        state.l10n_key.text = ""
+        local ctrlIndex = -1
+        if state.controllers ~= nil then
+            for i = 0, state.controllers.Count - 1 do
+                if tostring(state.controllers[i].name) == parsed.ctrl then
+                    ctrlIndex = i
+                    break
+                end
+            end
+        end
+        if ctrlIndex >= 0 then
+            state.ctrl_list.selectedIndex = ctrlIndex -- 触发 onChanged 重建页行并回显
+        else
+            -- 控制器已被删除/重命名：清空控制器区显示
+            state.currentCtrl = nil
+            state.page_keys:RemoveChildren()
+            fprint('[L10n] 绑定指向的控制器不存在: "' .. tostring(parsed.ctrl) .. '"')
+        end
+    else
+        -- 简单模式或无绑定：填简单输入框，清控制器区
+        state.l10n_key.text = parsed.mode == "simple" and (parsed.key or "") or ""
+        state.currentCtrl   = nil
+        state.ctrl_list.selectedIndex = -1
+        state.page_keys:RemoveChildren()
     end
 
     return true
@@ -155,7 +338,7 @@ App.pluginManager:LoadUIPackage(PluginPath .. '/L10nKey')
 local setComInspector = {}
 
 function setComInspector.create()
-    setComInspector.panel, setComInspector.l10n_key = createPanel()
+    setComInspector.panel, setComInspector.state = createPanel()
     return setComInspector.panel
 end
 
@@ -169,7 +352,7 @@ function setComInspector.updateUI()
     local ot = string.lower(tostring(obj.objectType or ''))
     if ot ~= 'component' then return false end
 
-    return updatePanel(setComInspector.panel, setComInspector.l10n_key, obj)
+    return updatePanel(setComInspector.panel, setComInspector.state, obj)
 end
 
 -- ============================================================================
@@ -179,7 +362,7 @@ end
 local setTextInspector = {}
 
 function setTextInspector.create()
-    setTextInspector.panel, setTextInspector.l10n_key = createPanel()
+    setTextInspector.panel, setTextInspector.state = createPanel()
     return setTextInspector.panel
 end
 
@@ -193,7 +376,7 @@ function setTextInspector.updateUI()
     local ot = string.lower(tostring(obj.objectType or ''))
     if ot ~= 'text' and ot ~= 'richtext' then return false end
 
-    return updatePanel(setTextInspector.panel, setTextInspector.l10n_key, obj)
+    return updatePanel(setTextInspector.panel, setTextInspector.state, obj)
 end
 
 -- ============================================================================

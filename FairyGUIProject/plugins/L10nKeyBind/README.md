@@ -15,7 +15,7 @@
 - **Inspector 按 objectType 路由**：`ConnectInspector` 的对象类型参数是选中对象的 `objectType` 过滤，故拆分 `L10nKey_set_com`（component）/ `L10nKey_set_text`（text）/ `L10nKey_set_richtext`（richtext）三个连接，共用面板实现。
 - **动态文本禁止绑**：代码每次打开会 `SetText` 的组件（数字/时间/进度）不要绑 L10n，两套文本来源会互相覆盖。
 - **customData 分段共存**：`L10n:` 段与其他插件段（如 `red_dot:`）以 `|` 分隔互不干扰。
-- **控制器模式**（逐页 key，如 `L10n:state,0=common_user_name,1=common_user_password`）运行时已兼容（手填生效），编辑器交互按需扩展。
+- **控制器模式**（逐页 key，如 `L10n:state,0=common_user_name,1=common_user_password`）：运行时解析兼容手填；编辑器面板已支持交互——下拉选择所在组件的控制器，逐页填写 key，任一页失焦即组装提交，两模式互斥（后提交者覆盖）。
 
 ## 运行时链路
 
