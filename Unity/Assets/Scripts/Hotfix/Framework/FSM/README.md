@@ -630,20 +630,7 @@ public class ComplexEnemyController : MonoBehaviour
 
 ## 6. 编辑器功能
 
-### 6.1 FsmModuleInspector
-
-`FsmModule` 的 Inspector 扩展，提供运行时状态机监控功能。
-
-**功能：**
-- **统计信息**：显示当前管理的状态机数量
-- **状态机列表**：列出所有状态机的完整名称
-- **运行状态**：显示每个状态机的当前状态和运行时间
-- **状态标识**：清晰标识状态机的运行、未运行或被销毁状态
-
-**使用方法：**
-1. 在编辑器中运行游戏
-2. 在 Hierarchy 中找到 `[FrameworkModule]` 下的 `FsmModule`
-3. 选中后在 Inspector 面板查看状态机统计信息
+暂未提供状态机调试面板。如需扩展，可基于 `Assets/Editor/FuFramework/Common/Debug/DebugWindowBase` 基类实现（参考 `EventModuleWindow` 调试面板）。
 
 ---
 

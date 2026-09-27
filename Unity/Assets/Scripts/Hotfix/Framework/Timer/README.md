@@ -439,7 +439,6 @@ Timer/
 │   │   ├── CountdownTimer.cs       # 倒计时计时器
 │   │   ├── IntervalTimer.cs        # 时间间隔计时器
 │   │   └── FrameTimer.cs           # 帧间隔计时器
-│   └── Inspector/
 └── README.md                       # 本文档
 ```
 

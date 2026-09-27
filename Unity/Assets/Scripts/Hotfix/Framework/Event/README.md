@@ -543,21 +543,21 @@ public class CriticalSystem : MonoBehaviour
 
 ## 7. 编辑器功能
 
-### 7.1 EventModuleInspector
+### 7.1 事件调试面板
 
-`EventModule` 的 Inspector 扩展，提供运行时事件监控功能。
+`EventModule` 的调试面板（`EventModuleWindow`，位于 `Assets/Editor/FuFramework/Event/`），仅在 Play 模式下可用。
 
 功能：
 
-- 统计信息  ：显示已注册的事件处理函数数量和当前待处理的事件数量
-- 处理器列表  ：列出所有已注册的事件ID和对应的处理函数
-- 事件队列  ：显示当前帧待处理的事件列表
+- 模块总览  ：显示待分发事件数、订阅事件 ID 数、handler 总数
+- 订阅明细  ：按事件 ID 分组，展示每个 handler 的方法名/所属类型/静态或实例标记，支持跳转源码
+- 事件队列  ：显示待分发队列中的每条事件，支持一键清空
+- 交互  ：搜索过滤（事件 ID / 方法名 / 所属类型）、自动刷新、全部展开/折叠
 
 使用方法：
 
-1. 在编辑器中运行游戏
-2. 在 Hierarchy 中找到 `[FrameworkModule]` 下的 `EventModule`
-3. 选中后在 Inspector 面板查看事件统计信息
+1. 在编辑器中运行游戏（Play 模式）
+2. 打开菜单 `FuFramework/调试/事件调试面板`
 
 ***
 

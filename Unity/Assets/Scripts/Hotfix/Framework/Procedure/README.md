@@ -454,18 +454,7 @@ if (m_ProcedureModule.HasProcedure<BattleProcedure>())
 
 ## 6. 编辑器功能
 
-### 6.1 ProcedureModuleInspector
-
-`ProcedureModule` 的 Inspector 扩展，提供运行时流程监控功能。
-
-**功能：**
-- **统计信息**：显示当前流程名称和持续时间
-- **流程列表**：列出所有已注册的流程及其优先级（`Priority` 仅 Editor 下可用）
-
-**使用方法：**
-1. 在编辑器中运行游戏
-2. 在 Hierarchy 中找到 `[FrameworkModule]` 下的 `ProcedureModule`
-3. 选中后在 Inspector 面板查看流程状态
+暂未提供流程调试面板。如需扩展，可基于 `Assets/Editor/FuFramework/Common/Debug/DebugWindowBase` 基类实现（参考 `EventModuleWindow` 调试面板）。
 
 ---
 
@@ -476,9 +465,6 @@ Procedure/
 ├── Runtime/
 │   ├── ProcedureModule.cs                           # 流程管理模块
 │   ├── ProcedureBase.cs                             # 流程基类
-├── Editor/
-│   ├── Inspector/
-│   │   └── ProcedureModuleInspector.cs              # ProcedureModule Inspector 扩展
 └── README.md                                        # 本文档
 ```
 
