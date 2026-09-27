@@ -20,14 +20,13 @@ Editor/
     │   ├── Misc/                   # 杂项：打开目录、删除本地数据、启动 HttpCDN、批处理执行、类型查询
     │   ├── Symbol/                 # 脚本宏定义：日志级别、网络日志、网络类型、SRDebugger
     │   ├── Toolbar/                # 编辑器顶部工具栏扩展（快速切场景、打开 C# 工程）
-    │   ├── Inspector/              # Inspector 基类（提供编译开始 / 完成事件）
+    │   ├── Debug/                  # 调试面板基础设施：DebugWindowBase 基类（工具栏/Play 守卫/自动刷新骨架）、HotfixReflection（Hotfix 类型全名集中登记）
     │   └── FuMenuPriority.cs       # 所有菜单项 priority 集中定义（新增菜单必须在此登记）
     ├── Config/                     # 配置表导出（Json / Bin）、配置调试面板
     ├── Proto/                      # Proto 导出（客户端 / 服务端）
     ├── Localization/               # 多语言 key 清理（生成报告 / 查看报告 / 清理表）
     ├── ModuleSetting/              # GameSetting 资源 Inspector
-    ├── Event/FSM/Timer/Inspector/  # 各模块 Inspector（预留）
-    └── ObjectPool|RedDot|ReferencePool|Web/  # 各模块调试面板
+    └── ObjectPool|RedDot|ReferencePool|Web|Event/  # 各模块调试面板
 ```
 
 ## 菜单入口
@@ -51,6 +50,6 @@ Editor/
 ## 注意事项
 
 - **新增 / 调整菜单**：priority 一律引用 `FuMenuPriority` 常量，禁止写字面量；整组调序只改分组基准值。
-- **跨命名空间引用常量**：使用别名 `using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;`——裸 `using FuFramework.Core.Editor;` 会与 `Common/Misc/Type.cs` 中的 `Type` 类产生 CS0104 二义性。
+- **跨命名空间引用常量 / 基类**：使用 using 别名（`using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;`、`using DebugWindowBase = FuFramework.Core.Editor.DebugWindowBase;` 等）——裸 `using FuFramework.Core.Editor;` 会与 `Common/Misc/Type.cs` 中的 `Type` 类产生 CS0104 二义性。
 - **ProjectSettingEditor**：每次编辑器启动强制覆盖包名、Splash、屏幕方向等关键设置，手动修改会被重置（有意为之的安全网）。
-- **调试面板**（配置 / 对象池 / 红点 / 引用池 / Web）仅在 Play 模式下可用，通过反射访问 Hotfix 程序集中的模块实例。
+- **调试面板**（配置 / 对象池 / 红点 / 引用池 / 事件 / Web）仅在 Play 模式下可用，通过反射访问 Hotfix 程序集中的模块实例。新增调试面板继承 `DebugWindowBase`；Hotfix 类型全名一律登记到 `Common/Debug/HotfixReflection.cs` 的 `TypeNames`，禁止在窗口内写字面量 `"XXX, Hotfix"`（改热更类型名 / 命名空间时只需同步 `HotfixReflection` 一处）。

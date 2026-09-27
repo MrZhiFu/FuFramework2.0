@@ -9,7 +9,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
+using FuMenuPriority   = FuFramework.Core.Editor.FuMenuPriority;
+using DebugWindowBase  = FuFramework.Core.Editor.DebugWindowBase;
+using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Config.Editor
@@ -23,7 +25,7 @@ namespace FuFramework.Config.Editor
 	///     3. 支持表名搜索过滤、表内字段值模糊搜索、自动刷新。
 	///     4. 支持实时编辑配置行简单值字段（Id/Key 锁定、字段级撤销、编辑高亮）。
 	/// </summary>
-	public class ConfigModuleWindow : EditorWindow
+	public sealed class ConfigModuleWindow : DebugWindowBase
 	{
 		/// <summary>
 		/// 打开调试面板
@@ -41,22 +43,16 @@ namespace FuFramework.Config.Editor
 			window.position = new Rect(x, y, width, height);
 		}
 
+		#region 基类配置
+
+		/// <summary>
+		/// 模块显示名（反射初始化失败提示用）
+		/// </summary>
+		protected override string ModuleDisplayName => "ConfigModule";
+
+		#endregion
+
 		#region 私有字段
-
-		/// <summary>
-		/// 滚动位置
-		/// </summary>
-		private Vector2 m_ScrollPos;
-
-		/// <summary>
-		/// 表名搜索过滤字符串
-		/// </summary>
-		private string m_SearchFilter = "";
-
-		/// <summary>
-		/// 是否自动刷新
-		/// </summary>
-		private bool m_AutoRefresh = true;
 
 		/// <summary>
 		/// 配置表折叠状态缓存（按表名）
@@ -77,11 +73,6 @@ namespace FuFramework.Config.Editor
 		/// 行折叠状态缓存（key 为 表名|行索引，行数据只读稳定，索引稳定）
 		/// </summary>
 		private readonly Dictionary<string, bool> m_RowFoldoutStates = new();
-
-		/// <summary>
-		/// 上次刷新时间
-		/// </summary>
-		private double m_LastRefreshTime;
 
 		/// <summary>
 		/// 字段编辑撤销缓存：行对象引用 → 属性名 → 原始值。
@@ -117,11 +108,6 @@ namespace FuFramework.Config.Editor
 		private object m_ModuleInstance;
 
 		/// <summary>
-		/// ConfigModule.Instance 静态属性
-		/// </summary>
-		private PropertyInfo m_InstanceProperty;
-
-		/// <summary>
 		/// ConfigModule.Count 属性
 		/// </summary>
 		private PropertyInfo m_ModuleCountProperty;
@@ -139,22 +125,6 @@ namespace FuFramework.Config.Editor
 		#endregion
 
 		#region 生命周期
-
-		/// <summary>
-		/// 启用：订阅 EditorApplication.update
-		/// </summary>
-		private void OnEnable()
-		{
-			EditorApplication.update += OnEditorUpdate;
-		}
-
-		/// <summary>
-		/// 禁用：取消订阅 EditorApplication.update
-		/// </summary>
-		private void OnDisable()
-		{
-			EditorApplication.update -= OnEditorUpdate;
-		}
 
 		/// <summary>
 		/// 窗口销毁：若存在变更记录，弹窗询问是否保存（确定→记录变更导出；取消→放弃）。
@@ -222,41 +192,35 @@ namespace FuFramework.Config.Editor
 			return $"变更：{affectedTables.Count} 个表、{rowCount} 行、{fieldCount} 个字段\n{string.Join("、", affectedTables)}";
 		}
 
-		/// <summary>
-		/// 编辑器帧更新：定时重绘
-		/// </summary>
-		private void OnEditorUpdate()
-		{
-			if (!m_AutoRefresh || !Application.isPlaying) return;
-			if (EditorApplication.timeSinceStartup - m_LastRefreshTime < 0.5f) return;
+		#endregion
 
-			m_LastRefreshTime = EditorApplication.timeSinceStartup;
-			Repaint();
+		#region 概览与主体绘制
+
+		/// <summary>
+		/// 工具栏自定义按钮：导出字段变更记录
+		/// </summary>
+		protected override void DrawToolbarExtraButtons()
+		{
+			if (GUILayout.Button("记录变更", EditorStyles.toolbarButton, GUILayout.Width(80)))
+			{
+				ExportChangeLog();
+			}
 		}
 
 		/// <summary>
-		/// 绘制 GUI
+		/// 绘制模块级概览
 		/// </summary>
-		private void OnGUI()
+		protected override void DrawOverview()
 		{
-			DrawToolbar();
+			var count = m_ModuleCountProperty?.GetValue(m_ModuleInstance) ?? 0;
+			EditorGUILayout.LabelField($"配置表总个数：{count}");
+		}
 
-			if (!Application.isPlaying)
-			{
-				ResetReflection();
-				EditorGUILayout.HelpBox("需要在 Play 模式下使用", MessageType.Info);
-				return;
-			}
-
-			if (!EnsureReflection())
-			{
-				EditorGUILayout.HelpBox("未能通过反射访问 ConfigModule，请确认 Hotfix 已加载", MessageType.Warning);
-				return;
-			}
-
-			DrawModuleOverview();
-			EditorGUILayout.Separator();
-
+		/// <summary>
+		/// 绘制配置表列表主体（基类滚动容器内调用）
+		/// </summary>
+		protected override void DrawContent()
+		{
 			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
 			if (cfgNames == null || cfgNames.Length == 0)
 			{
@@ -264,94 +228,30 @@ namespace FuFramework.Config.Editor
 				return;
 			}
 
-			m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
 			foreach (var cfgName in cfgNames)
 			{
 				DrawTable(cfgName);
 			}
-
-			EditorGUILayout.EndScrollView();
-		}
-
-		#endregion
-
-		#region 工具栏
-
-		/// <summary>
-		/// 绘制顶部工具栏
-		/// </summary>
-		private void DrawToolbar()
-		{
-			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-
-			GUILayout.Label("搜索:", GUILayout.Width(40));
-			m_SearchFilter = GUILayout.TextField(m_SearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(150));
-
-			GUILayout.Space(20);
-			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
-
-			GUILayout.FlexibleSpace();
-
-			if (GUILayout.Button("记录变更", EditorStyles.toolbarButton, GUILayout.Width(80)))
-			{
-				ExportChangeLog();
-			}
-
-			if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
-			{
-				Repaint();
-			}
-
-			if (GUILayout.Button("全部展开", EditorStyles.toolbarButton, GUILayout.Width(80)))
-			{
-				ExpandAllTables();
-			}
-
-			if (GUILayout.Button("全部折叠", EditorStyles.toolbarButton, GUILayout.Width(80)))
-			{
-				CollapseAllTables();
-			}
-
-			EditorGUILayout.EndHorizontal();
 		}
 
 		/// <summary>
 		/// 全部展开：展开所有配置表的折叠项。
 		/// </summary>
-		private void ExpandAllTables()
+		protected override void ExpandAll()
 		{
 			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
 			if (cfgNames == null) return;
-			foreach (var cfgName in cfgNames)
-			{
-				m_TableFoldoutStates[cfgName] = true;
-			}
+			SetAllFoldouts(cfgNames, m_TableFoldoutStates, true);
 		}
 
 		/// <summary>
 		/// 全部折叠：折叠所有配置表的折叠项。
 		/// </summary>
-		private void CollapseAllTables()
+		protected override void CollapseAll()
 		{
 			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
 			if (cfgNames == null) return;
-			foreach (var cfgName in cfgNames)
-			{
-				m_TableFoldoutStates[cfgName] = false;
-			}
-		}
-
-		#endregion
-
-		#region 模块概览
-
-		/// <summary>
-		/// 绘制模块级概览
-		/// </summary>
-		private void DrawModuleOverview()
-		{
-			var count = m_ModuleCountProperty?.GetValue(m_ModuleInstance) ?? 0;
-			EditorGUILayout.LabelField($"配置表总个数：{count}");
+			SetAllFoldouts(cfgNames, m_TableFoldoutStates, false);
 		}
 
 		#endregion
@@ -904,14 +804,6 @@ namespace FuFramework.Config.Editor
 		}
 
 		/// <summary>
-		/// 绘制列与列之间的分隔竖线
-		/// </summary>
-		private static void DrawColumnSeparator()
-		{
-			GUILayout.Label("|", GUILayout.Width(12));
-		}
-
-		/// <summary>
 		/// 记录变更：遍历所有已编辑配置，生成 Markdown 变更文档并保存，供手动填回源 Excel。
 		/// 数据来源为编辑功能撤销缓存（行引用 → 属性名 → 原值），新值实时读取行对象。
 		/// </summary>
@@ -1060,15 +952,14 @@ namespace FuFramework.Config.Editor
 		/// 确保反射缓存已初始化
 		/// </summary>
 		/// <returns>初始化成功返回 true</returns>
-		private bool EnsureReflection()
+		protected override bool EnsureReflection()
 		{
 			if (m_ModuleInstance != null) return true;
 
-			m_ConfigModuleType = Type.GetType("Hotfix.Framework.Config.ConfigModule, Hotfix");
+			m_ConfigModuleType = HotfixReflection.ConfigModule;
 			if (m_ConfigModuleType == null) return false;
 
-			m_InstanceProperty = m_ConfigModuleType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-			m_ModuleInstance = m_InstanceProperty?.GetValue(null);
+			m_ModuleInstance = HotfixReflection.GetStaticInstance(m_ConfigModuleType);
 			if (m_ModuleInstance == null) return false;
 
 			m_ModuleCountProperty = m_ConfigModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
@@ -1081,11 +972,10 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// 重置反射缓存与展示缓存（停止运行时调用，避免持有失效的热更实例）
 		/// </summary>
-		private void ResetReflection()
+		protected override void ResetReflection()
 		{
 			m_ConfigModuleType    = null;
 			m_ModuleInstance      = null;
-			m_InstanceProperty    = null;
 			m_ModuleCountProperty = null;
 			m_CfgNamesProperty    = null;
 			m_GetConfigMethod     = null;
