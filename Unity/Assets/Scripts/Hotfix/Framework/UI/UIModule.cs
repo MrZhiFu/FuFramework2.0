@@ -11,299 +11,299 @@ using Hotfix.Game.Config;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI
 {
-    /// <summary>
-    /// UI管理模块。
-    /// 目标：用于管理所有UI界面的加载，关闭，释放等操作。
-    /// </summary>
-    public sealed partial class UIModule : ModuleBase, ICancelAsync
-    {
-        /// <summary>
-        /// 事件组件
-        /// </summary>
-        private EventModule m_EventModule;
+	/// <summary>
+	/// UI管理模块。
+	/// 目标：用于管理所有UI界面的加载，关闭，释放等操作。
+	/// </summary>
+	public sealed partial class UIModule : ModuleBase, ICancelAsync
+	{
+		/// <summary>
+		/// 事件组件
+		/// </summary>
+		private EventModule m_EventModule;
 
-        /// <summary>
-        /// 对象池管理模块
-        /// </summary>
-        private ObjectPoolModule m_ObjectPoolModule;
+		/// <summary>
+		/// 对象池管理模块
+		/// </summary>
+		private ObjectPoolModule m_ObjectPoolModule;
 
-        /// <summary>
-        /// 界面实例对象池
-        /// </summary>
-        private ObjectPool<WinObject> m_WinObjPool;
+		/// <summary>
+		/// 界面实例对象池
+		/// </summary>
+		private ObjectPool<WinObject> m_WinObjPool;
 
-        /// <summary>
-        /// FGui的包管理器
-        /// </summary>
-        public FuiPkgManager PkgManager { get; private set; }
-
-
-        /// <summary>
-        /// 正在加载中的界面字典, key为界面Id, value为界面名称
-        /// </summary>
-        private Dictionary<int, string> m_LoadingDict;
-
-        /// <summary>
-        /// 已被 CloseAllLoading 取消的在途加载序列号集合。
-        /// _OpenAsync 在每个 await 之后的取消校验点比对本集合，命中即销毁半成品实例并中止，
-        /// 避免「CloseAllLoading 只清字典，在途加载照常完成并注册窗口」。
-        /// </summary>
-        private HashSet<int> m_CancelLoadingSet;
-
-        /// <summary>
-        /// 关闭后待回收的界面集合
-        /// </summary>
-        private Queue<WinBase> m_WaitRecycleQueue;
-
-        /// <summary>
-        /// OnUpdate 专用的界面组快照列表。
-        /// 不得与其它遍历共用：组内界面的 Update 回调是用户代码，可能触发模块级操作
-        /// （AddGroup / OnDispose 会增删 m_UIGroupDict），共用缓存会导致正在遍历的列表被清空、
-        /// 本帧其后的界面组不再更新。
-        /// </summary>
-        private readonly List<UIGroup> m_CachedUpdateGroupList = new();
+		/// <summary>
+		/// FGui的包管理器
+		/// </summary>
+		public FuiPkgManager PkgManager { get; private set; }
 
 
-        /// <summary>
-        /// 界面自增序列号，每打开一个界面就加1
-        /// </summary>
-        private int m_SerialId;
+		/// <summary>
+		/// 正在加载中的界面字典, key为界面Id, value为界面名称
+		/// </summary>
+		private Dictionary<int, string> m_LoadingDict;
+
+		/// <summary>
+		/// 已被 CloseAllLoading 取消的在途加载序列号集合。
+		/// _OpenAsync 在每个 await 之后的取消校验点比对本集合，命中即销毁半成品实例并中止，
+		/// 避免「CloseAllLoading 只清字典，在途加载照常完成并注册窗口」。
+		/// </summary>
+		private HashSet<int> m_CancelLoadingSet;
+
+		/// <summary>
+		/// 关闭后待回收的界面集合
+		/// </summary>
+		private Queue<WinBase> m_WaitRecycleQueue;
+
+		/// <summary>
+		/// OnUpdate 专用的界面组快照列表。
+		/// 不得与其它遍历共用：组内界面的 Update 回调是用户代码，可能触发模块级操作
+		/// （AddGroup / OnDispose 会增删 m_UIGroupDict），共用缓存会导致正在遍历的列表被清空、
+		/// 本帧其后的界面组不再更新。
+		/// </summary>
+		private readonly List<UIGroup> m_CachedUpdateGroupList = new();
 
 
-        /// <summary>
-        /// 界面实例对象池自动销毁检查的间隔秒数
-        /// </summary>
-        private const float DefaultAutoDisposeCheckInterval = 60f;
-
-        /// <summary>
-        /// 界面实例对象池的容量
-        /// </summary>
-        private const int DefaultPoolCapacity = 16;
-
-        /// <summary>
-        /// 界面实例对象池对象过期秒数
-        /// </summary>
-        private const float DefaultPoolExpireTimeAfterIdle = 60f;
+		/// <summary>
+		/// 界面自增序列号，每打开一个界面就加1
+		/// </summary>
+		private int m_SerialId;
 
 
-        /// <summary>
-        /// 获取或设置界面实例对象池自动销毁检查的间隔秒数。
-        /// </summary>
-        public float PoolAutoDisposeCheckInterval
-        {
-            get => m_WinObjPool.AutoDisposeCheckInterval;
-            set => m_WinObjPool.AutoDisposeCheckInterval = value;
-        }
+		/// <summary>
+		/// 界面实例对象池自动销毁检查的间隔秒数
+		/// </summary>
+		private const float DefaultAutoDisposeCheckInterval = 60f;
 
-        /// <summary>
-        /// 获取或设置界面实例对象池的容量。
-        /// </summary>
-        public int PoolCapacity
-        {
-            get => m_WinObjPool.Capacity;
-            set => m_WinObjPool.Capacity = value;
-        }
+		/// <summary>
+		/// 界面实例对象池的容量
+		/// </summary>
+		private const int DefaultPoolCapacity = 16;
 
-        /// <summary>
-        /// 获取或设置界面实例对象池对象过期秒数。
-        /// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
-        /// </summary>
-        public float PoolExpireTimeAfterIdle
-        {
-            get => m_WinObjPool.ExpireTimeAfterIdle;
-            set => m_WinObjPool.ExpireTimeAfterIdle = value;
-        }
+		/// <summary>
+		/// 界面实例对象池对象过期秒数
+		/// </summary>
+		private const float DefaultPoolExpireTimeAfterIdle = 60f;
 
-        /// <summary>
-        /// 初始化。
-        /// </summary>
-        protected internal override void OnInit()
-        {
-            m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
-            m_LoadingDict      = new Dictionary<int, string>();
-            m_CancelLoadingSet = new HashSet<int>();
-            m_WaitRecycleQueue = new Queue<WinBase>();
 
-            m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-            m_WinObjPool       = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
+		/// <summary>
+		/// 获取或设置界面实例对象池自动销毁检查的间隔秒数。
+		/// </summary>
+		public float PoolAutoDisposeCheckInterval
+		{
+			get => m_WinObjPool.AutoDisposeCheckInterval;
+			set => m_WinObjPool.AutoDisposeCheckInterval = value;
+		}
 
-            m_EventModule = ModuleManager.GetModule<EventModule>();
-            PkgManager    = new FuiPkgManager();
+		/// <summary>
+		/// 获取或设置界面实例对象池的容量。
+		/// </summary>
+		public int PoolCapacity
+		{
+			get => m_WinObjPool.Capacity;
+			set => m_WinObjPool.Capacity = value;
+		}
 
-            m_SerialId = 0;
+		/// <summary>
+		/// 获取或设置界面实例对象池对象过期秒数。
+		/// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
+		/// </summary>
+		public float PoolExpireTimeAfterIdle
+		{
+			get => m_WinObjPool.ExpireTimeAfterIdle;
+			set => m_WinObjPool.ExpireTimeAfterIdle = value;
+		}
 
-            PoolAutoDisposeCheckInterval = DefaultAutoDisposeCheckInterval;
-            PoolCapacity                 = DefaultPoolCapacity;
-            PoolExpireTimeAfterIdle      = DefaultPoolExpireTimeAfterIdle;
+		/// <summary>
+		/// 初始化。
+		/// </summary>
+		protected internal override void OnInit()
+		{
+			m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
+			m_LoadingDict      = new Dictionary<int, string>();
+			m_CancelLoadingSet = new HashSet<int>();
+			m_WaitRecycleQueue = new Queue<WinBase>();
 
-            // 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
-            SafeAreaHelper.Refresh();
-            ApplyGRootSafeArea();
+			m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+			m_WinObjPool       = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
 
-            // 监听安全区变化（方向切换等），重新应用 GRoot 配置
-            SafeAreaHelper.OnSafeAreaChanged += ApplyGRootSafeArea;
+			m_EventModule = ModuleManager.GetModule<EventModule>();
+			PkgManager    = new FuiPkgManager();
 
-            // 遍历所有UI层级，并添加UI组
-            foreach (EUILayer layer in Enum.GetValues(typeof(EUILayer)))
-            {
-                if (AddGroup(layer)) continue;
-                FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");
-            }
+			m_SerialId = 0;
 
-            // 初始化 UI 背景模糊功能（挂载截屏组件 + 预热 Shader）
-            InitBlur();
-        }
+			PoolAutoDisposeCheckInterval = DefaultAutoDisposeCheckInterval;
+			PoolCapacity                 = DefaultPoolCapacity;
+			PoolExpireTimeAfterIdle      = DefaultPoolExpireTimeAfterIdle;
 
-        /// <summary>
-        /// 帧更新。
-        /// </summary>
-        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-        {
-            // 检测安全区变化（方向切换等）
-            SafeAreaHelper.OnUpdate();
+			// 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
+			SafeAreaHelper.Refresh();
+			ApplyGRootSafeArea();
 
-            // 回收等待回收的界面
-            while (m_WaitRecycleQueue.Count > 0)
-            {
-                var ui = m_WaitRecycleQueue.Dequeue();
+			// 监听安全区变化（方向切换等），重新应用 GRoot 配置
+			SafeAreaHelper.OnSafeAreaChanged += ApplyGRootSafeArea;
 
-                // WinObject 对象池 Recycle 在池中找不到目标时会抛异常；若让其逃逸会中断 ModuleManager 本帧其后
-                // 所有模块的 Update，且该 win 会因跳过回收而泄漏，故逐项 try/catch 兜底（与 EntityModule 一致）。
-                try
-                {
-                    Recycle(ui);
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[UIModule] 回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
-                }
-            }
+			// 遍历所有UI层级，并添加UI组
+			foreach (EUILayer layer in Enum.GetValues(typeof(EUILayer)))
+			{
+				if (AddGroup(layer)) continue;
+				FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");
+			}
 
-            // 驱动界面组帧更新。
-            // 先快照到复用列表再遍历（与 ObjectPoolModule.OnUpdate 一致）：界面 Update 回调是用户代码，
-            // 期间可能增删界面组（AddGroup / OnDispose 会改 m_UIGroupDict），直接枚举字典时枚举器一旦失效
-            // 会从 ModuleManager.Update（无保护）逃逸并中断本帧其后所有模块。快照循环本身在回调之外的
-            // 单线程路径上执行，不会被并发修改，无需额外保护。
-            m_CachedUpdateGroupList.Clear();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                m_CachedUpdateGroupList.Add(group);
-            }
+			// 初始化 UI 背景模糊功能（挂载截屏组件 + 预热 Shader）
+			InitBlur();
+		}
 
-            foreach (var group in m_CachedUpdateGroupList)
-            {
-                if (group == null || group.Pause) continue;
+		/// <summary>
+		/// 帧更新。
+		/// </summary>
+		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+		{
+			// 检测安全区变化（方向切换等）
+			SafeAreaHelper.OnUpdate();
 
-                // WinBase.OnUpdate 是用户代码，任一窗口抛异常都会从 ModuleManager.Update（无保护）逃逸，
-                // 导致本帧其后所有模块停止更新，故逐组 try/catch 兜底（与上方回收循环 / EntityModule.OnUpdate 一致）。
-                try
-                {
-                    group.OnUpdate(Time.deltaTime, Time.unscaledDeltaTime);
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[UIModule] 更新界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
-                }
-            }
-        }
+			// 回收等待回收的界面
+			while (m_WaitRecycleQueue.Count > 0)
+			{
+				var ui = m_WaitRecycleQueue.Dequeue();
 
-        /// <summary>
-        /// 释放。
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            SafeAreaHelper.OnSafeAreaChanged -= ApplyGRootSafeArea;
+				// WinObject 对象池 Recycle 在池中找不到目标时会抛异常；若让其逃逸会中断 ModuleManager 本帧其后
+				// 所有模块的 Update，且该 win 会因跳过回收而泄漏，故逐项 try/catch 兜底（与 EntityModule 一致）。
+				try
+				{
+					Recycle(ui);
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogWarning($"[UIModule] 回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
+				}
+			}
 
-            // 逐个回收各组内界面的 WinInfo：WinInfo 经引用池 Acquire，唯一回收点是 UIGroup.Remove。
-            // 原先直接 m_UIGroupDict.Clear() 会丢弃这些 WinInfo，只要销毁时还有打开的界面就会造成引用池泄漏。
-            // 复用同一列表避免按组多次分配；Remove 会同步出队，随后再整体清空字典。
-            var groupWins = new List<WinBase>();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                if (group == null) continue;
+			// 驱动界面组帧更新。
+			// 先快照到复用列表再遍历（与 ObjectPoolModule.OnUpdate 一致）：界面 Update 回调是用户代码，
+			// 期间可能增删界面组（AddGroup / OnDispose 会改 m_UIGroupDict），直接枚举字典时枚举器一旦失效
+			// 会从 ModuleManager.Update（无保护）逃逸并中断本帧其后所有模块。快照循环本身在回调之外的
+			// 单线程路径上执行，不会被并发修改，无需额外保护。
+			m_CachedUpdateGroupList.Clear();
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				m_CachedUpdateGroupList.Add(group);
+			}
 
-                group.GetAll(groupWins);
-                for (var i = 0; i < groupWins.Count; i++)
-                {
-                    var win = groupWins[i];
-                    if (win == null) continue;
+			foreach (var group in m_CachedUpdateGroupList)
+			{
+				if (group == null || group.Pause) continue;
 
-                    try
-                    {
-                        // 只做出组（回收 WinInfo）；不调用 win._OnClose()——
-                        // teardown 阶段窗口的 WinUI 可能已被销毁（FairyGUI 显示对象失效），
-                        // 走关闭动画/可见性设置会 NRE；窗口自身的清理由下方队列排空的
-                        // Recycle（_OnRecycle）与对象池销毁时的 _OnDispose 负责。
-                        group.Remove(win);
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogWarning($"[UIModule] 释放时回收界面信息 '{win.WinName}' 出现异常: {e}");
-                    }
-                    finally
-                    {
-                        // 无论上一步是否异常，都必须把窗口交回待回收队列，由下方队列排空统一走
-                        // Recycle（_OnRecycle + 归还对象池）。否则销毁时仍打开的窗口只回收了 WinInfo，
-                        // 其 WinObject 仍处于使用中，会残留在池里直至 ObjectPoolModule 强制回收并打出
-                        // 「仍有对象处于使用中」告警。
-                        m_WaitRecycleQueue.Enqueue(win);
-                    }
-                }
+				// WinBase.OnUpdate 是用户代码，任一窗口抛异常都会从 ModuleManager.Update（无保护）逃逸，
+				// 导致本帧其后所有模块停止更新，故逐组 try/catch 兜底（与上方回收循环 / EntityModule.OnUpdate 一致）。
+				try
+				{
+					group.OnUpdate(Time.deltaTime, Time.unscaledDeltaTime);
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogWarning($"[UIModule] 更新界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
+				}
+			}
+		}
 
-                groupWins.Clear();
-            }
+		/// <summary>
+		/// 释放。
+		/// </summary>
+		protected internal override void OnDispose()
+		{
+			SafeAreaHelper.OnSafeAreaChanged -= ApplyGRootSafeArea;
 
-            // 先排空回收队列（窗口完成 _OnRecycle 并归还对象池），再销毁界面组：
-            // 顺序不可颠倒——组的 Dispose 会递归销毁其下的显示对象（含仍挂在组内的窗口 WinUI），
-            // 若先销毁组，回收队列中的窗口 WinUI 已被销毁，_OnRecycle 将操作已销毁对象。
-            while (m_WaitRecycleQueue.Count > 0)
-            {
-                var ui = m_WaitRecycleQueue.Dequeue();
-                try
-                {
-                    Recycle(ui);
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[UIModule] 释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
-                }
-            }
+			// 逐个回收各组内界面的 WinInfo：WinInfo 经引用池 Acquire，唯一回收点是 UIGroup.Remove。
+			// 原先直接 m_UIGroupDict.Clear() 会丢弃这些 WinInfo，只要销毁时还有打开的界面就会造成引用池泄漏。
+			// 复用同一列表避免按组多次分配；Remove 会同步出队，随后再整体清空字典。
+			var groupWins = new List<WinBase>();
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				if (group == null) continue;
 
-            // 逐个销毁界面组：UIGroup 是挂在 GRoot.inst 下的 GComponent，只 Clear 字典会把它永久留在
-            // GRoot 下（每次模块重启泄漏一组 GComponent 及其关系/子对象）。GObject.Dispose 内部会
-            // RemoveFromParent 并释放关系与子对象，故无需再单独 RemoveChild。
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                if (group == null) continue;
+				group.GetAll(groupWins);
+				for (var i = 0; i < groupWins.Count; i++)
+				{
+					var win = groupWins[i];
+					if (win == null) continue;
 
-                try
-                {
-                    group.Dispose();
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[UIModule] 释放界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
-                }
-            }
+					try
+					{
+						// 只做出组（回收 WinInfo）；不调用 win._OnClose()——
+						// teardown 阶段窗口的 WinUI 可能已被销毁（FairyGUI 显示对象失效），
+						// 走关闭动画/可见性设置会 NRE；窗口自身的清理由下方队列排空的
+						// Recycle（_OnRecycle）与对象池销毁时的 _OnDispose 负责。
+						group.Remove(win);
+					}
+					catch (Exception e)
+					{
+						FuLogger.LogWarning($"[UIModule] 释放时回收界面信息 '{win.WinName}' 出现异常: {e}");
+					}
+					finally
+					{
+						// 无论上一步是否异常，都必须把窗口交回待回收队列，由下方队列排空统一走
+						// Recycle（_OnRecycle + 归还对象池）。否则销毁时仍打开的窗口只回收了 WinInfo，
+						// 其 WinObject 仍处于使用中，会残留在池里直至 ObjectPoolModule 强制回收并打出
+						// 「仍有对象处于使用中」告警。
+						m_WaitRecycleQueue.Enqueue(win);
+					}
+				}
 
-            m_UIGroupDict.Clear();
-            m_LoadingDict.Clear();
-            m_CancelLoadingSet.Clear();
+				groupWins.Clear();
+			}
 
-            // 清空快照列表：避免持有已销毁的界面组引用（与 ObjectPoolModule.OnDispose 清理缓存列表一致）
-            m_CachedUpdateGroupList.Clear();
+			// 先排空回收队列（窗口完成 _OnRecycle 并归还对象池），再销毁界面组：
+			// 顺序不可颠倒——组的 Dispose 会递归销毁其下的显示对象（含仍挂在组内的窗口 WinUI），
+			// 若先销毁组，回收队列中的窗口 WinUI 已被销毁，_OnRecycle 将操作已销毁对象。
+			while (m_WaitRecycleQueue.Count > 0)
+			{
+				var ui = m_WaitRecycleQueue.Dequeue();
+				try
+				{
+					Recycle(ui);
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogWarning($"[UIModule] 释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
+				}
+			}
 
-            PkgManager.RemoveAllPkg();
-            ReleaseBlur();
-        }
+			// 逐个销毁界面组：UIGroup 是挂在 GRoot.inst 下的 GComponent，只 Clear 字典会把它永久留在
+			// GRoot 下（每次模块重启泄漏一组 GComponent 及其关系/子对象）。GObject.Dispose 内部会
+			// RemoveFromParent 并释放关系与子对象，故无需再单独 RemoveChild。
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				if (group == null) continue;
 
-        /// <summary>
-        /// 将 GRoot 缩放并移动到安全区内。
-        /// </summary>
-        private static void ApplyGRootSafeArea()
-        {
-            GRoot.inst.SetSize(SafeAreaHelper.SafeWidth, SafeAreaHelper.SafeHeight);
-            GRoot.inst.SetXY(SafeAreaHelper.OffsetX, SafeAreaHelper.OffsetY);
-        }
-    }
+				try
+				{
+					group.Dispose();
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogWarning($"[UIModule] 释放界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
+				}
+			}
+
+			m_UIGroupDict.Clear();
+			m_LoadingDict.Clear();
+			m_CancelLoadingSet.Clear();
+
+			// 清空快照列表：避免持有已销毁的界面组引用（与 ObjectPoolModule.OnDispose 清理缓存列表一致）
+			m_CachedUpdateGroupList.Clear();
+
+			PkgManager.RemoveAllPkg();
+			ReleaseBlur();
+		}
+
+		/// <summary>
+		/// 将 GRoot 缩放并移动到安全区内。
+		/// </summary>
+		private static void ApplyGRootSafeArea()
+		{
+			GRoot.inst.SetSize(SafeAreaHelper.SafeWidth, SafeAreaHelper.SafeHeight);
+			GRoot.inst.SetXY(SafeAreaHelper.OffsetX, SafeAreaHelper.OffsetY);
+		}
+	}
 }

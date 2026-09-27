@@ -1,29 +1,29 @@
 ﻿// ReSharper disable once CheckNamespace
 namespace AOT.Framework.Core.Log
 {
-    /// <summary>
-    /// 游戏框架日志等级。
-    /// </summary>
-    public enum ELogLevel : byte
-    {
-        /// <summary>
-        /// 信息。
-        /// </summary>
-        Info,
+	/// <summary>
+	/// 游戏框架日志等级。
+	/// </summary>
+	public enum ELogLevel : byte
+	{
+		/// <summary>
+		/// 信息。
+		/// </summary>
+		Info,
 
-        /// <summary>
-        /// 警告。
-        /// </summary>
-        Warning,
+		/// <summary>
+		/// 警告。
+		/// </summary>
+		Warning,
 
-        /// <summary>
-        /// 错误。
-        /// </summary>
-        Error,
+		/// <summary>
+		/// 错误。
+		/// </summary>
+		Error,
 
-        /// <summary>
-        /// 严重错误。
-        /// </summary>
-        Fatal
-    }
+		/// <summary>
+		/// 严重错误。
+		/// </summary>
+		Fatal
+	}
 }

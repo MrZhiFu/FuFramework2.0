@@ -5,124 +5,124 @@ using Hotfix.Framework.UI;
 using Hotfix.Game.Config;
 namespace Hotfix.Framework.Guide
 {
-    /// <summary>
-    /// UI点击引导步骤。
-    /// 功能：
-    ///     1. 查找点击目标UI组件。
-    ///     2. 添加目标UI点击回调。
-    ///     3. 执行点击UI引导。
-    ///     4. 点击UI引导完成后，移除点击回调。
-    /// </summary>
-    public class ClickUIStep : BaseStep
-    {
-        /// <summary>
-        /// 点击目标UI组件
-        /// </summary>
-        private GComponent m_TargetUI;
+	/// <summary>
+	/// UI点击引导步骤。
+	/// 功能：
+	///     1. 查找点击目标UI组件。
+	///     2. 添加目标UI点击回调。
+	///     3. 执行点击UI引导。
+	///     4. 点击UI引导完成后，移除点击回调。
+	/// </summary>
+	public class ClickUIStep : BaseStep
+	{
+		/// <summary>
+		/// 点击目标UI组件
+		/// </summary>
+		private GComponent m_TargetUI;
 
-        /// <summary>
-        /// 执行步骤。
-        /// 失败路径统一走 ForceNextStep()（而不是静默 return）：本步状态已由基类 Execute() 置为 Executing，
-        /// 静默返回会让步骤永久停在 Executing——既不再有人推进（引导静默死锁），也不会被回收。
-        /// 且 GuideAction 判空必须排在 onClick.Add(Complete) 之前：否则「无执行器」时会先给目标 UI 挂上
-        /// 点击回调再返回，回调无人解绑（Clear/OnCancel 都会 Remove，但步骤已死锁在 Executing）。
-        /// </summary>
-        protected override void OnExecute()
-        {
-            base.OnExecute();
+		/// <summary>
+		/// 执行步骤。
+		/// 失败路径统一走 ForceNextStep()（而不是静默 return）：本步状态已由基类 Execute() 置为 Executing，
+		/// 静默返回会让步骤永久停在 Executing——既不再有人推进（引导静默死锁），也不会被回收。
+		/// 且 GuideAction 判空必须排在 onClick.Add(Complete) 之前：否则「无执行器」时会先给目标 UI 挂上
+		/// 点击回调再返回，回调无人解绑（Clear/OnCancel 都会 Remove，但步骤已死锁在 Executing）。
+		/// </summary>
+		protected override void OnExecute()
+		{
+			base.OnExecute();
 
-            // 判空引导动作执行器（置于 Add 监听之前）
-            if (GuideAction == null)
-            {
-                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：引导动作执行器为null，跳过该步骤");
-                GuideModule.Instance?.ForceNextStep();
-                return;
-            }
+			// 判空引导动作执行器（置于 Add 监听之前）
+			if (GuideAction == null)
+			{
+				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：引导动作执行器为null，跳过该步骤");
+				GuideModule.Instance?.ForceNextStep();
+				return;
+			}
 
-            var uiModule = ModuleManager.GetModule<UIModule>();
-            if (uiModule == null)
-            {
-                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：UIModule 不存在，跳过该步骤");
-                GuideModule.Instance?.ForceNextStep();
-                return;
-            }
+			var uiModule = ModuleManager.GetModule<UIModule>();
+			if (uiModule == null)
+			{
+				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：UIModule 不存在，跳过该步骤");
+				GuideModule.Instance?.ForceNextStep();
+				return;
+			}
 
-            // 查找目标界面
-            var targetWin = uiModule.Get(StepInfo.TargetWindow);
-            if (targetWin == null)
-            {
-                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标界面: {StepInfo.TargetWindow}，跳过该步骤");
-                GuideModule.Instance?.ForceNextStep();
-                return;
-            }
+			// 查找目标界面
+			var targetWin = uiModule.Get(StepInfo.TargetWindow);
+			if (targetWin == null)
+			{
+				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标界面: {StepInfo.TargetWindow}，跳过该步骤");
+				GuideModule.Instance?.ForceNextStep();
+				return;
+			}
 
-            // 查找目标点击UI
-            if (targetWin.WinUI.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
-            {
-                FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标点击UI: {StepInfo.TargetUI}，跳过该步骤");
-                GuideModule.Instance?.ForceNextStep();
-                return;
-            }
+			// 查找目标点击UI
+			if (targetWin.WinUI.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
+			{
+				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标点击UI: {StepInfo.TargetUI}，跳过该步骤");
+				GuideModule.Instance?.ForceNextStep();
+				return;
+			}
 
-            m_TargetUI = targetClickUI;
+			m_TargetUI = targetClickUI;
 
-            // 添加目标UI点击回调
-            m_TargetUI.onClick.Add(Complete);
+			// 添加目标UI点击回调
+			m_TargetUI.onClick.Add(Complete);
 
-            // 执行点击UI引导
-            GuideAction.DoClickUIGuide(m_TargetUI);
-        }
+			// 执行点击UI引导
+			GuideAction.DoClickUIGuide(m_TargetUI);
+		}
 
-        protected override void OnComplete()
-        {
-            // 移除监听器，结束点击UI引导
-            m_TargetUI?.onClick.Remove(Complete);
-            GuideAction?.EndClickUIGuide();
-            m_TargetUI = null;
-            base.OnComplete();
-        }
+		protected override void OnComplete()
+		{
+			// 移除监听器，结束点击UI引导
+			m_TargetUI?.onClick.Remove(Complete);
+			GuideAction?.EndClickUIGuide();
+			m_TargetUI = null;
+			base.OnComplete();
+		}
 
-        /// <summary>
-        /// 步骤取消。
-        /// 覆写原因：基类 Cancel() 只调 OnCancel()、不经过 Clear()；而本步骤被 SkipCurrentStep / JumpToStep /
-        /// ForceNextStep / GoToPreviousStep 取消后仍留在 m_AllStepDict 中，若不解绑，m_TargetUI 未清、
-        /// onClick 仍挂着 Complete —— 玩家点该 UI 会驱动「已取消的步骤」跳步。
-        /// 因此这里做与 Clear() 完全相同的解绑（同一 Complete 方法组引用），并结束点击UI引导
-        /// （取消在途打开 + 关闭已打开引导窗，见 GuideActionImpl.EndClickUIGuide）。
-        /// Clear() 保留为回池兜底。
-        /// </summary>
-        protected override void OnCancel()
-        {
-            m_TargetUI?.onClick.Remove(Complete);
-            m_TargetUI = null;
-            GuideAction?.EndClickUIGuide();
-            base.OnCancel();
-        }
+		/// <summary>
+		/// 步骤取消。
+		/// 覆写原因：基类 Cancel() 只调 OnCancel()、不经过 Clear()；而本步骤被 SkipCurrentStep / JumpToStep /
+		/// ForceNextStep / GoToPreviousStep 取消后仍留在 m_AllStepDict 中，若不解绑，m_TargetUI 未清、
+		/// onClick 仍挂着 Complete —— 玩家点该 UI 会驱动「已取消的步骤」跳步。
+		/// 因此这里做与 Clear() 完全相同的解绑（同一 Complete 方法组引用），并结束点击UI引导
+		/// （取消在途打开 + 关闭已打开引导窗，见 GuideActionImpl.EndClickUIGuide）。
+		/// Clear() 保留为回池兜底。
+		/// </summary>
+		protected override void OnCancel()
+		{
+			m_TargetUI?.onClick.Remove(Complete);
+			m_TargetUI = null;
+			GuideAction?.EndClickUIGuide();
+			base.OnCancel();
+		}
 
-        /// <summary>
-        /// 清理步骤。
-        /// 覆写原因：基类 Clear() 只置空 StepInfo，不会移除 onClick 监听、也不会清空 m_TargetUI。
-        /// 步骤被 Cancel 后回池（或直接 Clear 回收）时，池对象会长期持有旧界面的 GComponent（界面 onClick 仍挂着本步骤实例，
-        /// 双向悬挂）；复用后 OnExecute 再次 Add 同一回调，同一次点击会触发两次 Complete。
-        /// 此处用与 OnExecute 中 Add 完全相同的回调引用（Complete）做 Remove。
-        /// </summary>
-        public override void Clear()
-        {
-            m_TargetUI?.onClick.Remove(Complete);
-            m_TargetUI = null;
-            base.Clear();
-        }
+		/// <summary>
+		/// 清理步骤。
+		/// 覆写原因：基类 Clear() 只置空 StepInfo，不会移除 onClick 监听、也不会清空 m_TargetUI。
+		/// 步骤被 Cancel 后回池（或直接 Clear 回收）时，池对象会长期持有旧界面的 GComponent（界面 onClick 仍挂着本步骤实例，
+		/// 双向悬挂）；复用后 OnExecute 再次 Add 同一回调，同一次点击会触发两次 Complete。
+		/// 此处用与 OnExecute 中 Add 完全相同的回调引用（Complete）做 Remove。
+		/// </summary>
+		public override void Clear()
+		{
+			m_TargetUI?.onClick.Remove(Complete);
+			m_TargetUI = null;
+			base.Clear();
+		}
 
-        /// <summary>
-        /// 创建默认步骤实例
-        /// </summary>
-        /// <param name="stepInfo">步骤数据信息</param>
-        /// <returns></returns>
-        public static ClickUIStep Create(GuideStep stepInfo)
-        {
-            var step = ReferencePool.Acquire<ClickUIStep>();
-            step.StepInfo = stepInfo;
-            return step;
-        }
-    }
+		/// <summary>
+		/// 创建默认步骤实例
+		/// </summary>
+		/// <param name="stepInfo">步骤数据信息</param>
+		/// <returns></returns>
+		public static ClickUIStep Create(GuideStep stepInfo)
+		{
+			var step = ReferencePool.Acquire<ClickUIStep>();
+			step.StepInfo = stepInfo;
+			return step;
+		}
+	}
 }

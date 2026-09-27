@@ -5,128 +5,128 @@ using Cysharp.Threading.Tasks;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
 {
-    /// <summary>
-    /// 可取消异步对象：实现者的所有异步操作随对象销毁而取消，且可被 await 等待清理完成。
-    /// </summary>
-    public interface ICancelAsync
-    {
-        /// <summary>
-        /// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
-        /// </summary>
-        CancellationToken Token { get; }
+	/// <summary>
+	/// 可取消异步对象：实现者的所有异步操作随对象销毁而取消，且可被 await 等待清理完成。
+	/// </summary>
+	public interface ICancelAsync
+	{
+		/// <summary>
+		/// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
+		/// </summary>
+		CancellationToken Token { get; }
 
-        /// <summary>
-        /// 触发取消并等待所有在途操作完成清理（释放句柄 + 卸载资源）后才返回。可重入、幂等。
-        /// </summary>
-        UniTask CancelAsync();
-    }
+		/// <summary>
+		/// 触发取消并等待所有在途操作完成清理（释放句柄 + 卸载资源）后才返回。可重入、幂等。
+		/// </summary>
+		UniTask CancelAsync();
+	}
 
-    
-    
-    /// <summary>
-    /// 取消范围登记：实现 ICancelAsync（可取消 + 可 await 排水等待），内部持有 CTS + 在途计数 + 「全部完成」TCS，
-    /// 供模块/装载器组合复用。
-    /// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
-    /// 主线程模型（PlayerLoop 驱动）下普通 ++/-- 即可，无需原子操作。
-    /// </summary>
-    public sealed class CancellationScope : ICancelAsync
-    {
-        /// <summary>
-        /// 取消令牌源。Cancel/CancelAsync 触发取消，Token 供在途操作观察。
-        /// </summary>
-        private readonly CancellationTokenSource m_Cts = new();
+	
+	
+	/// <summary>
+	/// 取消范围登记：实现 ICancelAsync（可取消 + 可 await 排水等待），内部持有 CTS + 在途计数 + 「全部完成」TCS，
+	/// 供模块/装载器组合复用。
+	/// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
+	/// 主线程模型（PlayerLoop 驱动）下普通 ++/-- 即可，无需原子操作。
+	/// </summary>
+	public sealed class CancellationScope : ICancelAsync
+	{
+		/// <summary>
+		/// 取消令牌源。Cancel/CancelAsync 触发取消，Token 供在途操作观察。
+		/// </summary>
+		private readonly CancellationTokenSource m_Cts = new();
 
-        /// <summary>
-        /// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
-        /// </summary>
-        private int m_InFlightCount;
+		/// <summary>
+		/// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
+		/// </summary>
+		private int m_InFlightCount;
 
-        /// <summary>
-        /// 「全部完成」信号。在途计数归零时完成并立即置空（复位），唤醒等待 CancelAsync 的调用方；惰性创建。
-        /// 必须复位：UniTaskCompletionSource 完成后 await 会立即返回，
-        /// 若不复位，二次 CancelAsync（此时又有了在途操作）会立刻返回、排水失效。
-        /// </summary>
-        private UniTaskCompletionSource m_AllDoneTcs;
+		/// <summary>
+		/// 「全部完成」信号。在途计数归零时完成并立即置空（复位），唤醒等待 CancelAsync 的调用方；惰性创建。
+		/// 必须复位：UniTaskCompletionSource 完成后 await 会立即返回，
+		/// 若不复位，二次 CancelAsync（此时又有了在途操作）会立刻返回、排水失效。
+		/// </summary>
+		private UniTaskCompletionSource m_AllDoneTcs;
 
-        /// <summary>
-        /// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
-        /// </summary>
-        public CancellationToken Token => m_Cts.Token;
+		/// <summary>
+		/// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
+		/// </summary>
+		public CancellationToken Token => m_Cts.Token;
 
-        /// <summary>
-        /// 同步触发取消（供 OnDispose/Dispose 等同步销毁钩子调用）；取消清理等待由 CancelAsync 负责。
-        /// </summary>
-        public void Cancel() => m_Cts.Cancel();
+		/// <summary>
+		/// 同步触发取消（供 OnDispose/Dispose 等同步销毁钩子调用）；取消清理等待由 CancelAsync 负责。
+		/// </summary>
+		public void Cancel() => m_Cts.Cancel();
 
-        /// <summary>
-        /// 触发取消并等待所有在途操作完成清理后才返回。可重入、幂等。
-        /// </summary>
-        public async UniTask CancelAsync()
-        {
-            m_Cts.Cancel();
-            if (m_InFlightCount == 0) return;
+		/// <summary>
+		/// 触发取消并等待所有在途操作完成清理后才返回。可重入、幂等。
+		/// </summary>
+		public async UniTask CancelAsync()
+		{
+			m_Cts.Cancel();
+			if (m_InFlightCount == 0) return;
 
-            // 归零时 m_AllDoneTcs 已被置空，此处按需新建；已完成/已取消的 TCS 不得重复等待
-            m_AllDoneTcs ??= new UniTaskCompletionSource();
-            await m_AllDoneTcs.Task;
-        }
+			// 归零时 m_AllDoneTcs 已被置空，此处按需新建；已完成/已取消的 TCS 不得重复等待
+			m_AllDoneTcs ??= new UniTaskCompletionSource();
+			await m_AllDoneTcs.Task;
+		}
 
-        /// <summary>
-        /// 在途操作入口调用；返回的 BeginScope 必须 Dispose（用 using）以归零计数。
-        /// 返回 struct 而非 IDisposable 接口：using 直接调用 Dispose，零装箱零分配（勿通过 IDisposable 接口使用，否则装箱）。
-        /// </summary>
-        /// <returns>在途操作作用域，操作清理完成后必须 Dispose（用 using）。</returns>
-        public BeginScope Begin()
-        {
-            m_InFlightCount++;
-            return new BeginScope(this);
-        }
-        
-        
-        
-        /// <summary>
-        /// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
-        /// 共享同一 CancellationScope 引用，按值复制无堆分配。
-        /// </summary>
-        public struct BeginScope : IDisposable
-        {
-            /// <summary>
-            /// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
-            /// </summary>
-            private readonly CancellationScope m_Owner;
+		/// <summary>
+		/// 在途操作入口调用；返回的 BeginScope 必须 Dispose（用 using）以归零计数。
+		/// 返回 struct 而非 IDisposable 接口：using 直接调用 Dispose，零装箱零分配（勿通过 IDisposable 接口使用，否则装箱）。
+		/// </summary>
+		/// <returns>在途操作作用域，操作清理完成后必须 Dispose（用 using）。</returns>
+		public BeginScope Begin()
+		{
+			m_InFlightCount++;
+			return new BeginScope(this);
+		}
+		
+		
+		
+		/// <summary>
+		/// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
+		/// 共享同一 CancellationScope 引用，按值复制无堆分配。
+		/// </summary>
+		public struct BeginScope : IDisposable
+		{
+			/// <summary>
+			/// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
+			/// </summary>
+			private readonly CancellationScope m_Owner;
 
-            /// <summary>
-            /// 是否已释放（幂等标记）：防止重复 Dispose 把在途计数减成负数，导致后续 CancelAsync 永久挂起。
-            /// </summary>
-            private bool m_Disposed;
+			/// <summary>
+			/// 是否已释放（幂等标记）：防止重复 Dispose 把在途计数减成负数，导致后续 CancelAsync 永久挂起。
+			/// </summary>
+			private bool m_Disposed;
 
-            /// <summary>
-            /// 创建在途操作作用域。
-            /// </summary>
-            /// <param name="owner">所属的取消范围。</param>
-            internal BeginScope(CancellationScope owner)
-            {
-                m_Owner    = owner;
-                m_Disposed = false;
-            }
+			/// <summary>
+			/// 创建在途操作作用域。
+			/// </summary>
+			/// <param name="owner">所属的取消范围。</param>
+			internal BeginScope(CancellationScope owner)
+			{
+				m_Owner    = owner;
+				m_Disposed = false;
+			}
 
-            /// <summary>
-            /// 结束在途操作：递减所属范围的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
-            /// 可重入、幂等（重复 Dispose 无效）；调用方应始终通过 using 释放本作用域。
-            /// </summary>
-            public void Dispose()
-            {
-                if (m_Disposed || m_Owner == null) return;
-                m_Disposed = true;
+			/// <summary>
+			/// 结束在途操作：递减所属范围的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
+			/// 可重入、幂等（重复 Dispose 无效）；调用方应始终通过 using 释放本作用域。
+			/// </summary>
+			public void Dispose()
+			{
+				if (m_Disposed || m_Owner == null) return;
+				m_Disposed = true;
 
-                if (--m_Owner.m_InFlightCount == 0)
-                {
-                    // 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Begin 也能拿到干净状态
-                    var allDoneTcs = m_Owner.m_AllDoneTcs;
-                    m_Owner.m_AllDoneTcs = null;
-                    allDoneTcs?.TrySetResult();
-                }
-            }
-        }
-    }
+				if (--m_Owner.m_InFlightCount == 0)
+				{
+					// 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Begin 也能拿到干净状态
+					var allDoneTcs = m_Owner.m_AllDoneTcs;
+					m_Owner.m_AllDoneTcs = null;
+					allDoneTcs?.TrySetResult();
+				}
+			}
+		}
+	}
 }

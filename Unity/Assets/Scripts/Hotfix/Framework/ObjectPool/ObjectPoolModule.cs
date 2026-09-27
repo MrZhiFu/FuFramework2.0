@@ -7,214 +7,214 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.ObjectPool
 {
-    /// <summary>
-    /// 对象池管理模块。
-    /// 功能：
-    ///     1. 提供对象池的创建、获取、销毁接口。
-    /// </summary>
-    public sealed partial class ObjectPoolModule : ModuleBase
-    {
-        /// <summary>
-        /// 对象池默认容量。
-        /// </summary>
-        private const int DefaultCapacity = int.MaxValue;
+	/// <summary>
+	/// 对象池管理模块。
+	/// 功能：
+	///     1. 提供对象池的创建、获取、销毁接口。
+	/// </summary>
+	public sealed partial class ObjectPoolModule : ModuleBase
+	{
+		/// <summary>
+		/// 对象池默认容量。
+		/// </summary>
+		private const int DefaultCapacity = int.MaxValue;
 
-        /// <summary>
-        /// 对象池默认自动销毁检查间隔秒数(默认不检查自动销毁)。
-        /// </summary>
-        private const float DefaultAutoDisposeCheckInterval = float.MaxValue;
+		/// <summary>
+		/// 对象池默认自动销毁检查间隔秒数(默认不检查自动销毁)。
+		/// </summary>
+		private const float DefaultAutoDisposeCheckInterval = float.MaxValue;
 
-        /// <summary>
-        /// 对象池默认过期时间(默认不会过期)。
-        /// </summary>
-        private const float DefaultExpireTime = float.MaxValue;
+		/// <summary>
+		/// 对象池默认过期时间(默认不会过期)。
+		/// </summary>
+		private const float DefaultExpireTime = float.MaxValue;
 
-        /// <summary>
-        /// 对象池默认优先级。
-        /// </summary>
-        private const int DefaultPriority = 0;
+		/// <summary>
+		/// 对象池默认优先级。
+		/// </summary>
+		private const int DefaultPriority = 0;
 
-        /// <summary>
-        /// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。
-        /// </summary>
-        private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
+		/// <summary>
+		/// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。
+		/// </summary>
+		private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
 
-        /// <summary>
-        /// OnDispose 专用的对象池快照列表（确保销毁循环期间池的 OnDispose 回调增删模块字典也不会破坏遍历）。
-        /// 注意：模块级对外 API 已各自拆出专属字段——DisposeOverCapacity 用 m_CachedDisposeOverCapacityPoolList、
-        /// DisposeAllUnused 用 m_CachedDisposeAllUnusedPoolList（见 ObjectPoolModule.API.cs），
-        /// 因为它们会在遍历期间被重入调用并 Clear/重填，共用同一列表会清空外层正在遍历的数据。
-        /// </summary>
-        private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
+		/// <summary>
+		/// OnDispose 专用的对象池快照列表（确保销毁循环期间池的 OnDispose 回调增删模块字典也不会破坏遍历）。
+		/// 注意：模块级对外 API 已各自拆出专属字段——DisposeOverCapacity 用 m_CachedDisposeOverCapacityPoolList、
+		/// DisposeAllUnused 用 m_CachedDisposeAllUnusedPoolList（见 ObjectPoolModule.API.cs），
+		/// 因为它们会在遍历期间被重入调用并 Clear/重填，共用同一列表会清空外层正在遍历的数据。
+		/// </summary>
+		private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
 
-        /// <summary>
-        /// OnUpdate 专用的对象池快照列表。
-        /// 不得与 m_CachedObjPoolList 共用：池的 Update 回调里可能触发模块级操作
-        /// （DisposeOverCapacity/DisposeAllUnused 会清空并重填 m_CachedObjPoolList），
-        /// 共用会导致正在遍历的列表被清空、异常被吞、本帧其后的池不再更新。
-        /// </summary>
-        private readonly List<ObjectPoolBase> m_CachedUpdatePoolList = new();
+		/// <summary>
+		/// OnUpdate 专用的对象池快照列表。
+		/// 不得与 m_CachedObjPoolList 共用：池的 Update 回调里可能触发模块级操作
+		/// （DisposeOverCapacity/DisposeAllUnused 会清空并重填 m_CachedObjPoolList），
+		/// 共用会导致正在遍历的列表被清空、异常被吞、本帧其后的池不再更新。
+		/// </summary>
+		private readonly List<ObjectPoolBase> m_CachedUpdatePoolList = new();
 
-        /// <summary>
-        /// 初始化。
-        /// </summary>
-        protected internal override void OnInit()
-        {
-            Application.lowMemory += OnLowMemory;
-        }
+		/// <summary>
+		/// 初始化。
+		/// </summary>
+		protected internal override void OnInit()
+		{
+			Application.lowMemory += OnLowMemory;
+		}
 
-        /// <summary>
-        /// 帧更新。
-        /// </summary>
-        /// <param name="deltaTime">帧间隔时间。</param>
-        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-        {
-            // 整段更新循环必须被 try/catch 包住：字典枚举器在池更新过程中被增删对象池时会抛异常，
-            // 一旦逃逸到 ModuleManager.Update（无保护）会导致本帧后续所有模块停止更新。
-            // 同时先快照到缓存列表再遍历，避免更新过程中增删对象池使字典枚举器失效。
-            try
-            {
-                // 使用 OnUpdate 专属字段，避免池的 Update 回调里触发模块级操作（清空共享缓存）破坏遍历
-                m_CachedUpdatePoolList.Clear();
-                foreach (var (_, objPool) in m_ObjPoolDict)
-                {
-                    m_CachedUpdatePoolList.Add(objPool);
-                }
+		/// <summary>
+		/// 帧更新。
+		/// </summary>
+		/// <param name="deltaTime">帧间隔时间。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+		{
+			// 整段更新循环必须被 try/catch 包住：字典枚举器在池更新过程中被增删对象池时会抛异常，
+			// 一旦逃逸到 ModuleManager.Update（无保护）会导致本帧后续所有模块停止更新。
+			// 同时先快照到缓存列表再遍历，避免更新过程中增删对象池使字典枚举器失效。
+			try
+			{
+				// 使用 OnUpdate 专属字段，避免池的 Update 回调里触发模块级操作（清空共享缓存）破坏遍历
+				m_CachedUpdatePoolList.Clear();
+				foreach (var (_, objPool) in m_ObjPoolDict)
+				{
+					m_CachedUpdatePoolList.Add(objPool);
+				}
 
-                // 单个对象池异常不影响其他池更新
-                foreach (var objPool in m_CachedUpdatePoolList)
-                {
-                    try
-                    {
-                        objPool.Update(unscaledDeltaTime);
-                    }
-                    catch (Exception e)
-                    {
-                        FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {objPool.FullName} 时出现异常: {e.Message}");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogWarning($"[ObjectPoolModule] 遍历对象池列表时出现异常: {e.Message}");
-            }
-        }
+				// 单个对象池异常不影响其他池更新
+				foreach (var objPool in m_CachedUpdatePoolList)
+				{
+					try
+					{
+						objPool.Update(unscaledDeltaTime);
+					}
+					catch (Exception e)
+					{
+						FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {objPool.FullName} 时出现异常: {e.Message}");
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				FuLogger.LogWarning($"[ObjectPoolModule] 遍历对象池列表时出现异常: {e.Message}");
+			}
+		}
 
-        /// <summary>
-        /// 销毁。
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            // 先退订低内存回调，避免销毁循环期间低内存事件触发 DisposeAllUnused 修改正在遍历的缓存列表
-            Application.lowMemory -= OnLowMemory;
+		/// <summary>
+		/// 销毁。
+		/// </summary>
+		protected internal override void OnDispose()
+		{
+			// 先退订低内存回调，避免销毁循环期间低内存事件触发 DisposeAllUnused 修改正在遍历的缓存列表
+			Application.lowMemory -= OnLowMemory;
 
-            // 复制到缓存列表，避免对象池 OnDispose 中修改模块字典导致遍历异常
-            m_CachedObjPoolList.Clear();
-            foreach (var (_, objPool) in m_ObjPoolDict)
-            {
-                m_CachedObjPoolList.Add(objPool);
-            }
+			// 复制到缓存列表，避免对象池 OnDispose 中修改模块字典导致遍历异常
+			m_CachedObjPoolList.Clear();
+			foreach (var (_, objPool) in m_ObjPoolDict)
+			{
+				m_CachedObjPoolList.Add(objPool);
+			}
 
-            foreach (var objPool in m_CachedObjPoolList)
-            {
-                try
-                {
-                    objPool.OnDispose();
-                }
-                catch (Exception e)
-                {
-                    FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {objPool.FullName} 时出现异常: {e.Message}");
-                }
-            }
+			foreach (var objPool in m_CachedObjPoolList)
+			{
+				try
+				{
+					objPool.OnDispose();
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {objPool.FullName} 时出现异常: {e.Message}");
+				}
+			}
 
-            m_ObjPoolDict.Clear();
-            m_CachedObjPoolList.Clear();
-            m_CachedUpdatePoolList.Clear();
-        }
+			m_ObjPoolDict.Clear();
+			m_CachedObjPoolList.Clear();
+			m_CachedUpdatePoolList.Clear();
+		}
 
-        /// <summary>
-        /// 低内存回调。
-        /// </summary>
-        private void OnLowMemory()
-        {
-            FuLogger.LogInfo("[ObjectPoolModule] 低内存警告, 销毁对象池中所有未使用的资源...");
-            DisposeAllUnused();
-        }
+		/// <summary>
+		/// 低内存回调。
+		/// </summary>
+		private void OnLowMemory()
+		{
+			FuLogger.LogInfo("[ObjectPoolModule] 低内存警告, 销毁对象池中所有未使用的资源...");
+			DisposeAllUnused();
+		}
 
-        /// <summary>
-        /// 检查是否存在对象池。
-        /// </summary>
-        /// <param name="typeNamePair">类型与名称的组合。</param>
-        /// <returns>是否存在对象池。</returns>
-        private bool HasObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.ContainsKey(typeNamePair);
+		/// <summary>
+		/// 检查是否存在对象池。
+		/// </summary>
+		/// <param name="typeNamePair">类型与名称的组合。</param>
+		/// <returns>是否存在对象池。</returns>
+		private bool HasObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.ContainsKey(typeNamePair);
 
-        /// <summary>
-        /// 获取对象池。
-        /// </summary>
-        /// <param name="typeNamePair">类型与名称的组合。</param>
-        /// <returns>要获取的对象池。</returns>
-        private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.GetValueOrDefault(typeNamePair);
+		/// <summary>
+		/// 获取对象池。
+		/// </summary>
+		/// <param name="typeNamePair">类型与名称的组合。</param>
+		/// <returns>要获取的对象池。</returns>
+		private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.GetValueOrDefault(typeNamePair);
 
-        /// <summary>
-        /// 创建对象池。
-        /// </summary>
-        /// <typeparam name="T">对象类型。</typeparam>
-        /// <param name="poolName">对象池名称。</param>
-        /// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
-        /// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
-        /// <param name="capacity">对象池的容量。</param>
-        /// <param name="expireTimeAfterIdle">对象闲置超过该秒数即视为过期。</param>
-        /// <param name="priority">对象池的优先级。</param>
-        /// <returns>创建的对象池。</returns>
-        private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTimeAfterIdle, int priority)
-            where T : ObjectBase
-        {
-            if (string.IsNullOrEmpty(poolName))
-                throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空，对象池必须命名.");
+		/// <summary>
+		/// 创建对象池。
+		/// </summary>
+		/// <typeparam name="T">对象类型。</typeparam>
+		/// <param name="poolName">对象池名称。</param>
+		/// <param name="allowSpawnInUse">是否允许对象在使用时获取。</param>
+		/// <param name="autoDisposeCheckInterval">对象池自动销毁检查的间隔秒数。</param>
+		/// <param name="capacity">对象池的容量。</param>
+		/// <param name="expireTimeAfterIdle">对象闲置超过该秒数即视为过期。</param>
+		/// <param name="priority">对象池的优先级。</param>
+		/// <returns>创建的对象池。</returns>
+		private ObjectPool<T> CreateObjectPoolInternal<T>(string poolName, bool allowSpawnInUse, float autoDisposeCheckInterval, int capacity, float expireTimeAfterIdle, int priority)
+			where T : ObjectBase
+		{
+			if (string.IsNullOrEmpty(poolName))
+				throw new InvalidOperationException("[ObjectPoolModule] 对象池名称不能为空，对象池必须命名.");
 
-            var typeNamePair = new TypeNamePair(typeof(T), poolName);
-            if (HasObjectPoolInternal(typeNamePair))
-                throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");
+			var typeNamePair = new TypeNamePair(typeof(T), poolName);
+			if (HasObjectPoolInternal(typeNamePair))
+				throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");
 
-            var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTimeAfterIdle, priority);
-            m_ObjPoolDict.Add(typeNamePair, objectPool);
-            return objectPool;
-        }
+			var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTimeAfterIdle, priority);
+			m_ObjPoolDict.Add(typeNamePair, objectPool);
+			return objectPool;
+		}
 
-        /// <summary>
-        /// 销毁对象池。
-        /// </summary>
-        /// <param name="typeNamePair">类型与名称的组合。</param>
-        /// <returns>是否销毁对象池成功。</returns>
-        private bool DisposeObjectPoolInternal(TypeNamePair typeNamePair)
-        {
-            if (!m_ObjPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
+		/// <summary>
+		/// 销毁对象池。
+		/// </summary>
+		/// <param name="typeNamePair">类型与名称的组合。</param>
+		/// <returns>是否销毁对象池成功。</returns>
+		private bool DisposeObjectPoolInternal(TypeNamePair typeNamePair)
+		{
+			if (!m_ObjPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
 
-            // 先摘除登记再 OnDispose：OnDispose 会强制回收池内对象（用户代码，可能重入本模块的
-            // Spawn/Recycle/DisposeObjectPool）。若先 OnDispose 再移除，重入期间本池仍可见，
-            // 可能被重复销毁或对同批对象二次回收；且 OnDispose 抛异常时池会永久残留在字典里。
-            m_ObjPoolDict.Remove(typeNamePair);
+			// 先摘除登记再 OnDispose：OnDispose 会强制回收池内对象（用户代码，可能重入本模块的
+			// Spawn/Recycle/DisposeObjectPool）。若先 OnDispose 再移除，重入期间本池仍可见，
+			// 可能被重复销毁或对同批对象二次回收；且 OnDispose 抛异常时池会永久残留在字典里。
+			m_ObjPoolDict.Remove(typeNamePair);
 
-            try
-            {
-                objectPool.OnDispose();
-            }
-            catch (Exception e)
-            {
-                // 池已完成销毁收尾且已摘除登记：异常不应逃逸中断调用方（如模块 teardown 循环）。
-                FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
-            }
+			try
+			{
+				objectPool.OnDispose();
+			}
+			catch (Exception e)
+			{
+				// 池已完成销毁收尾且已摘除登记：异常不应逃逸中断调用方（如模块 teardown 循环）。
+				FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
+			}
 
-            return true;
-        }
+			return true;
+		}
 
-        /// <summary>
-        /// 对象池比较器。
-        /// </summary>
-        /// <param name="a">对象池a。</param>
-        /// <param name="b">对象池b。</param>
-        /// <returns>优先级比较结果。</returns>
-        private static int ObjectPoolComparer(ObjectPoolBase a, ObjectPoolBase b) => a.Priority.CompareTo(b.Priority);
-    }
+		/// <summary>
+		/// 对象池比较器。
+		/// </summary>
+		/// <param name="a">对象池a。</param>
+		/// <param name="b">对象池b。</param>
+		/// <returns>优先级比较结果。</returns>
+		private static int ObjectPoolComparer(ObjectPoolBase a, ObjectPoolBase b) => a.Priority.CompareTo(b.Priority);
+	}
 }

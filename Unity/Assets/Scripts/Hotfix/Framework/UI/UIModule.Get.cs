@@ -5,195 +5,195 @@ using Hotfix.Game.Config;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.UI
 {
-    /// <summary>
-    /// UI管理模块分部类之一。
-    /// 目标：用于获取已加载的UI界面。
-    /// 功能：
-    ///     1. 判断是否存在界面。
-    ///     2. 获取界面。
-    ///     3. 获取顶部界面。
-    /// </summary>
-    public sealed partial class UIModule
-    {
-        /// <summary>
-        /// 是否存在界面。
-        /// </summary>
-        /// <param name="serialId">界面序列编号。</param>
-        /// <returns>是否存在界面。</returns>
-        public bool Has(int serialId)
-        {
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                if (!group.Has(serialId)) continue;
-                return true;
-            }
+	/// <summary>
+	/// UI管理模块分部类之一。
+	/// 目标：用于获取已加载的UI界面。
+	/// 功能：
+	///     1. 判断是否存在界面。
+	///     2. 获取界面。
+	///     3. 获取顶部界面。
+	/// </summary>
+	public sealed partial class UIModule
+	{
+		/// <summary>
+		/// 是否存在界面。
+		/// </summary>
+		/// <param name="serialId">界面序列编号。</param>
+		/// <returns>是否存在界面。</returns>
+		public bool Has(int serialId)
+		{
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				if (!group.Has(serialId)) continue;
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        /// <summary>
-        /// 是否存在界面。
-        /// </summary>
-        /// <param name="winName">界面资源名称。</param>
-        /// <returns>是否存在界面。</returns>
-        public bool Has(string winName)
-        {
-            winName.NotNullOrEmpty(nameof(winName));
+		/// <summary>
+		/// 是否存在界面。
+		/// </summary>
+		/// <param name="winName">界面资源名称。</param>
+		/// <returns>是否存在界面。</returns>
+		public bool Has(string winName)
+		{
+			winName.NotNullOrEmpty(nameof(winName));
 
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                if (!group.Has(winName)) continue;
-                return true;
-            }
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				if (!group.Has(winName)) continue;
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        /// <summary>
-        /// 获取界面。
-        /// </summary>
-        /// <param name="serialId">界面序列编号。</param>
-        /// <returns>要获取的界面。</returns>
-        public WinBase Get(int serialId)
-        {
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                var ui = group.Get(serialId);
-                if (ui == null) continue;
-                return ui;
-            }
+		/// <summary>
+		/// 获取界面。
+		/// </summary>
+		/// <param name="serialId">界面序列编号。</param>
+		/// <returns>要获取的界面。</returns>
+		public WinBase Get(int serialId)
+		{
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				var ui = group.Get(serialId);
+				if (ui == null) continue;
+				return ui;
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        /// <summary>
-        /// 获取界面。
-        /// </summary>
-        /// <returns>要获取的界面。</returns>
-        public T Get<T>() where T : WinBase => (T)Get(typeof(T).Name);
+		/// <summary>
+		/// 获取界面。
+		/// </summary>
+		/// <returns>要获取的界面。</returns>
+		public T Get<T>() where T : WinBase => (T)Get(typeof(T).Name);
 
-        /// <summary>
-        /// 获取界面。
-        /// </summary>
-        /// <param name="winName">界面资源名称。</param>
-        /// <returns>要获取的界面。</returns>
-        public WinBase Get(string winName)
-        {
-            winName.NotNullOrEmpty(nameof(winName));
+		/// <summary>
+		/// 获取界面。
+		/// </summary>
+		/// <param name="winName">界面资源名称。</param>
+		/// <returns>要获取的界面。</returns>
+		public WinBase Get(string winName)
+		{
+			winName.NotNullOrEmpty(nameof(winName));
 
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                var ui = group.Get(winName);
-                if (ui == null) continue;
-                return ui;
-            }
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				var ui = group.Get(winName);
+				if (ui == null) continue;
+				return ui;
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        /// <summary>
-        /// 获取顶部界面。
-        /// </summary>
-        /// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
-        /// <returns>最顶部的界面。</returns>
-        public WinBase GetTop(EUILayer? uiLayer = null)
-        {
-            // 获取指定层级的顶部界面
-            if (uiLayer.HasValue)
-            {
-                return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentWinBase : null;
-            }
+		/// <summary>
+		/// 获取顶部界面。
+		/// </summary>
+		/// <param name="uiLayer">界面层级，若不指定则返回所有层级中最顶部的界面。</param>
+		/// <returns>最顶部的界面。</returns>
+		public WinBase GetTop(EUILayer? uiLayer = null)
+		{
+			// 获取指定层级的顶部界面
+			if (uiLayer.HasValue)
+			{
+				return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentWinBase : null;
+			}
 
-            // 获取所有层级中最顶部的界面（层级值最大的）
-            WinBase topWin   = null;
-            var     maxLayer = int.MinValue;
+			// 获取所有层级中最顶部的界面（层级值最大的）
+			WinBase topWin   = null;
+			var     maxLayer = int.MinValue;
 
-            foreach (var (layer, group) in m_UIGroupDict)
-            {
-                var layerValue = (int)layer;
-                if (layerValue > maxLayer && group.CurrentWinBase != null)
-                {
-                    maxLayer = layerValue;
-                    topWin   = group.CurrentWinBase;
-                }
-            }
+			foreach (var (layer, group) in m_UIGroupDict)
+			{
+				var layerValue = (int)layer;
+				if (layerValue > maxLayer && group.CurrentWinBase != null)
+				{
+					maxLayer = layerValue;
+					topWin   = group.CurrentWinBase;
+				}
+			}
 
-            return topWin;
-        }
+			return topWin;
+		}
 
-        /// <summary>
-        /// 获取所有已加载的界面。
-        /// </summary>
-        /// <returns>所有已加载的界面。</returns>
-        public WinBase[] GetAllLoaded()
-        {
-            var results = new List<WinBase>();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                results.AddRange(group.GetAll());
-            }
+		/// <summary>
+		/// 获取所有已加载的界面。
+		/// </summary>
+		/// <returns>所有已加载的界面。</returns>
+		public WinBase[] GetAllLoaded()
+		{
+			var results = new List<WinBase>();
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				results.AddRange(group.GetAll());
+			}
 
-            return results.ToArray();
-        }
+			return results.ToArray();
+		}
 
-        /// <summary>
-        /// 获取所有已加载的界面。
-        /// </summary>
-        /// <param name="results">所有已加载的界面。</param>
-        public void GetAllLoaded(List<WinBase> results)
-        {
-            results.NotNull(nameof(results));
+		/// <summary>
+		/// 获取所有已加载的界面。
+		/// </summary>
+		/// <param name="results">所有已加载的界面。</param>
+		public void GetAllLoaded(List<WinBase> results)
+		{
+			results.NotNull(nameof(results));
 
-            results.Clear();
-            foreach (var (_, group) in m_UIGroupDict)
-            {
-                results.AddRange(group.GetAll());
-            }
-        }
+			results.Clear();
+			foreach (var (_, group) in m_UIGroupDict)
+			{
+				results.AddRange(group.GetAll());
+			}
+		}
 
-        /// <summary>
-        /// 获取所有正在加载界面的序列编号。
-        /// </summary>
-        /// <returns>所有正在加载界面的序列编号。</returns>
-        public int[] GetAllLoadingSerialIds()
-        {
-            var index   = 0;
-            var results = new int[m_LoadingDict.Count];
-            foreach (var (id, _) in m_LoadingDict)
-            {
-                results[index++] = id;
-            }
+		/// <summary>
+		/// 获取所有正在加载界面的序列编号。
+		/// </summary>
+		/// <returns>所有正在加载界面的序列编号。</returns>
+		public int[] GetAllLoadingSerialIds()
+		{
+			var index   = 0;
+			var results = new int[m_LoadingDict.Count];
+			foreach (var (id, _) in m_LoadingDict)
+			{
+				results[index++] = id;
+			}
 
-            return results;
-        }
+			return results;
+		}
 
-        /// <summary>
-        /// 获取所有正在加载界面的序列编号。
-        /// </summary>
-        /// <param name="results">所有正在加载界面的序列编号。</param>
-        public void GetAllLoadingSerialIds(List<int> results)
-        {
-            results.NotNull(nameof(results));
+		/// <summary>
+		/// 获取所有正在加载界面的序列编号。
+		/// </summary>
+		/// <param name="results">所有正在加载界面的序列编号。</param>
+		public void GetAllLoadingSerialIds(List<int> results)
+		{
+			results.NotNull(nameof(results));
 
-            results.Clear();
-            foreach (var (id, _) in m_LoadingDict)
-            {
-                results.Add(id);
-            }
-        }
+			results.Clear();
+			foreach (var (id, _) in m_LoadingDict)
+			{
+				results.Add(id);
+			}
+		}
 
-        /// <summary>
-        /// 是否正在加载界面。
-        /// </summary>
-        /// <param name="serialId">界面序列编号。</param>
-        /// <returns>是否正在加载界面。</returns>
-        public bool IsLoading(int serialId) => m_LoadingDict.ContainsKey(serialId);
+		/// <summary>
+		/// 是否正在加载界面。
+		/// </summary>
+		/// <param name="serialId">界面序列编号。</param>
+		/// <returns>是否正在加载界面。</returns>
+		public bool IsLoading(int serialId) => m_LoadingDict.ContainsKey(serialId);
 
-        /// <summary>
-        /// 是否正在加载界面。
-        /// </summary>
-        /// <param name="winName">界面资源名称。</param>
-        /// <returns>是否正在加载界面。</returns>
-        public bool IsLoading(string winName) => m_LoadingDict.ContainsValue(winName);
-    }
+		/// <summary>
+		/// 是否正在加载界面。
+		/// </summary>
+		/// <param name="winName">界面资源名称。</param>
+		/// <returns>是否正在加载界面。</returns>
+		public bool IsLoading(string winName) => m_LoadingDict.ContainsValue(winName);
+	}
 }

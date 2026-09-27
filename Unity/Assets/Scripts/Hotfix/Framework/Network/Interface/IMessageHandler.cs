@@ -2,11 +2,11 @@
 
 namespace Hotfix.Framework.Network
 {
-    /// <summary>
-    /// 消息处理器约束
-    /// </summary>
-    public interface IMessageHandler
-    {
-        void Register();
-    }
+	/// <summary>
+	/// 消息处理器约束
+	/// </summary>
+	public interface IMessageHandler
+	{
+		void Register();
+	}
 }

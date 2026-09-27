@@ -4,144 +4,144 @@ using Hotfix.Framework.Core;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
 {
-    /// <summary>
-    /// 事件管理模块。
-    /// 功能：
-    ///     1. 用于管理事件，提供一些便捷的方法。
-    ///     2. 支持事件的抛出和订阅。
-    ///     3. 包装一个事件池，实际交由事件池管理事件。
-    /// </summary>
-    public sealed class EventModule : ModuleBase
-    {
-        /// <summary>
-        /// 事件池。
-        /// </summary>
-        private EventPool<GameEventArgs> m_EventPool;
+	/// <summary>
+	/// 事件管理模块。
+	/// 功能：
+	///     1. 用于管理事件，提供一些便捷的方法。
+	///     2. 支持事件的抛出和订阅。
+	///     3. 包装一个事件池，实际交由事件池管理事件。
+	/// </summary>
+	public sealed class EventModule : ModuleBase
+	{
+		/// <summary>
+		/// 事件池。
+		/// </summary>
+		private EventPool<GameEventArgs> m_EventPool;
 
-        /// <summary>
-        /// 获取事件处理函数的数量。
-        /// </summary>
-        public int EventHandlerCount => m_EventPool.EventHandlerCount;
+		/// <summary>
+		/// 获取事件处理函数的数量。
+		/// </summary>
+		public int EventHandlerCount => m_EventPool.EventHandlerCount;
 
-        /// <summary>
-        /// 获取事件数量。
-        /// </summary>
-        public int EventCount => m_EventPool.EventCount;
+		/// <summary>
+		/// 获取事件数量。
+		/// </summary>
+		public int EventCount => m_EventPool.EventCount;
 
-        /// <summary>
-        /// 初始化。
-        /// </summary>
-        protected internal override void OnInit()
-        {
-            m_EventPool = new EventPool<GameEventArgs>();
-        }
+		/// <summary>
+		/// 初始化。
+		/// </summary>
+		protected internal override void OnInit()
+		{
+			m_EventPool = new EventPool<GameEventArgs>();
+		}
 
-        /// <summary>
-        /// 帧更新。
-        /// </summary>
-        /// <param name="deltaTime">帧间隔时间。</param>
-        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-        {
-            m_EventPool.Update(deltaTime, unscaledDeltaTime);
-        }
+		/// <summary>
+		/// 帧更新。
+		/// </summary>
+		/// <param name="deltaTime">帧间隔时间。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+		{
+			m_EventPool.Update(deltaTime, unscaledDeltaTime);
+		}
 
-        /// <summary>
-        /// 释放。
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            m_EventPool.Shutdown();
-        }
+		/// <summary>
+		/// 释放。
+		/// </summary>
+		protected internal override void OnDispose()
+		{
+			m_EventPool.Shutdown();
+		}
 
-        /// <summary>
-        /// 获取事件处理函数的数量。
-        /// </summary>
-        /// <param name="id">事件类型编号。</param>
-        /// <returns>事件处理函数的数量。</returns>
-        public int Count(string id) => m_EventPool.Count(id);
+		/// <summary>
+		/// 获取事件处理函数的数量。
+		/// </summary>
+		/// <param name="id">事件类型编号。</param>
+		/// <returns>事件处理函数的数量。</returns>
+		public int Count(string id) => m_EventPool.Count(id);
 
-        /// <summary>
-        /// 检查是否已存在指定事件对应的处理函数。
-        /// </summary>
-        /// <param name="id">事件类型编号。</param>
-        /// <param name="handler">要检查的事件处理函数。</param>
-        /// <returns>是否存在事件处理函数。</returns>
-        public bool Check(string id, EventHandler<GameEventArgs> handler)
-        {
-            return m_EventPool.Check(id, handler);
-        }
+		/// <summary>
+		/// 检查是否已存在指定事件对应的处理函数。
+		/// </summary>
+		/// <param name="id">事件类型编号。</param>
+		/// <param name="handler">要检查的事件处理函数。</param>
+		/// <returns>是否存在事件处理函数。</returns>
+		public bool Check(string id, EventHandler<GameEventArgs> handler)
+		{
+			return m_EventPool.Check(id, handler);
+		}
 
-        /// <summary>
-        /// 订阅事件处理函数。
-        /// 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 EventRegister、多个模块）同时订阅，
-        /// 由事件池按 (id, handler) 条目引用计数，退订时各自递减自己那一份。
-        /// 此处若因已存在而早退，后者的订阅不会被计数，前者的退订会把它一并移除（静默丢订阅）。
-        /// </summary>
-        /// <param name="id">事件类型编号。</param>
-        /// <param name="handler">要订阅的事件处理函数。</param>
-        public void Subscribe(string id, EventHandler<GameEventArgs> handler)
-        {
-            m_EventPool.Subscribe(id, handler);
-        }
+		/// <summary>
+		/// 订阅事件处理函数。
+		/// 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 EventRegister、多个模块）同时订阅，
+		/// 由事件池按 (id, handler) 条目引用计数，退订时各自递减自己那一份。
+		/// 此处若因已存在而早退，后者的订阅不会被计数，前者的退订会把它一并移除（静默丢订阅）。
+		/// </summary>
+		/// <param name="id">事件类型编号。</param>
+		/// <param name="handler">要订阅的事件处理函数。</param>
+		public void Subscribe(string id, EventHandler<GameEventArgs> handler)
+		{
+			m_EventPool.Subscribe(id, handler);
+		}
 
-        /// <summary>
-        /// 取消订阅事件处理函数。
-        /// 只递减本订阅者那一份计数，其余订阅者不受影响；未订阅过（条目不存在）时直接忽略。
-        /// 退订契约：各订阅者只能退订自己登记的那一份，超额退订会静默消耗其他订阅者的计数（详见 EventPool.Unsubscribe）。
-        /// </summary>
-        /// <param name="id">事件类型编号。</param>
-        /// <param name="handler">要取消订阅的事件处理函数。</param>
-        public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
-        {
-            if (!Check(id, handler)) return;
-            m_EventPool.Unsubscribe(id, handler);
-        }
+		/// <summary>
+		/// 取消订阅事件处理函数。
+		/// 只递减本订阅者那一份计数，其余订阅者不受影响；未订阅过（条目不存在）时直接忽略。
+		/// 退订契约：各订阅者只能退订自己登记的那一份，超额退订会静默消耗其他订阅者的计数（详见 EventPool.Unsubscribe）。
+		/// </summary>
+		/// <param name="id">事件类型编号。</param>
+		/// <param name="handler">要取消订阅的事件处理函数。</param>
+		public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
+		{
+			if (!Check(id, handler)) return;
+			m_EventPool.Unsubscribe(id, handler);
+		}
 
-        /// <summary>
-        /// 设置默认事件处理函数。
-        /// </summary>
-        /// <param name="handler">要设置的默认事件处理函数。</param>
-        public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_EventPool.SetDefaultHandler(handler);
+		/// <summary>
+		/// 设置默认事件处理函数。
+		/// </summary>
+		/// <param name="handler">要设置的默认事件处理函数。</param>
+		public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_EventPool.SetDefaultHandler(handler);
 
-        /// <summary>
-        /// 抛出事件，事件会延迟到抛出后的下一帧由主线程分发。
-        /// 事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用）；
-        /// 跨线程产生的事件须先由网络频道等来源封送至主线程，再调用本方法。
-        /// </summary>
-        /// <param name="sender">事件源。</param>
-        /// <param name="e">事件参数。</param>
-        public void Broadcast(object sender, GameEventArgs e) => m_EventPool.Broadcast(sender, e);
+		/// <summary>
+		/// 抛出事件，事件会延迟到抛出后的下一帧由主线程分发。
+		/// 事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用）；
+		/// 跨线程产生的事件须先由网络频道等来源封送至主线程，再调用本方法。
+		/// </summary>
+		/// <param name="sender">事件源。</param>
+		/// <param name="e">事件参数。</param>
+		public void Broadcast(object sender, GameEventArgs e) => m_EventPool.Broadcast(sender, e);
 
-        /// <summary>
-        /// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
-        /// 主线程限制与分发时机同 Broadcast(object, GameEventArgs)：仅限主线程调用，事件会延迟到下一帧主线程分发。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="eventId">事件编号。</param>
-        public void Broadcast(object sender, string eventId)
-        {
-            eventId.NotNullOrEmpty(nameof(eventId));
-            m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
-        }
+		/// <summary>
+		/// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
+		/// 主线程限制与分发时机同 Broadcast(object, GameEventArgs)：仅限主线程调用，事件会延迟到下一帧主线程分发。
+		/// </summary>
+		/// <param name="sender">事件发送者。</param>
+		/// <param name="eventId">事件编号。</param>
+		public void Broadcast(object sender, string eventId)
+		{
+			eventId.NotNullOrEmpty(nameof(eventId));
+			m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
+		}
 
-        /// <summary>
-        /// 立即抛出事件，事件会立刻在主线程分发。事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用），故仅限主线程调用。
-        /// </summary>
-        /// <param name="sender">事件源。</param>
-        /// <param name="e">事件参数。</param>
-        public void BroadcastNow(object sender, GameEventArgs e) => m_EventPool.BroadcastNow(sender, e);
+		/// <summary>
+		/// 立即抛出事件，事件会立刻在主线程分发。事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用），故仅限主线程调用。
+		/// </summary>
+		/// <param name="sender">事件源。</param>
+		/// <param name="e">事件参数。</param>
+		public void BroadcastNow(object sender, GameEventArgs e) => m_EventPool.BroadcastNow(sender, e);
 
-        /// <summary>
-        /// 遍历所有事件处理函数。
-        /// 仅限主线程调用（重入识别标志非原子，主线程限制口径同 BroadcastNow）。
-        /// </summary>
-        public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_EventPool.ForEachHandler(action);
+		/// <summary>
+		/// 遍历所有事件处理函数。
+		/// 仅限主线程调用（重入识别标志非原子，主线程限制口径同 BroadcastNow）。
+		/// </summary>
+		public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_EventPool.ForEachHandler(action);
 
-        /// <summary>
-        /// 遍历所有事件。
-        /// 仅限主线程调用（主线程限制口径同 BroadcastNow）；回调内不得修改或回收未分发的事件参数。
-        /// </summary>
-        public void ForEachEvent(Action<object, GameEventArgs> action) => m_EventPool.ForEachEvent(action);
-    }
+		/// <summary>
+		/// 遍历所有事件。
+		/// 仅限主线程调用（主线程限制口径同 BroadcastNow）；回调内不得修改或回收未分发的事件参数。
+		/// </summary>
+		public void ForEachEvent(Action<object, GameEventArgs> action) => m_EventPool.ForEachEvent(action);
+	}
 }

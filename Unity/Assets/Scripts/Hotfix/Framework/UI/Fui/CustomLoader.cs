@@ -17,359 +17,359 @@ using Utility = Hotfix.Framework.Core.Utility;
 // ReSharper disable once InconsistentNaming 禁用命名风格检查
 namespace Hotfix.Framework.UI
 {
-    /// <summary>
-    /// 自定义FUI的Loader加载器。
-    /// 目标：提供一个自定义的Loader加载器，用于加载Loader的纹理资源。
-    /// 功能:
-    ///     1. 实现了网络纹理资源和YooAsset包内纹理资源的加载。
-    ///     2. 实现了LRU缓存机制，避免重复加载资源。
-    /// </summary>
-    public sealed class CustomLoader : GLoader
-    {
-        /// <summary>
-        /// Loader纹理LRU缓存
-        /// </summary>
-        private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
+	/// <summary>
+	/// 自定义FUI的Loader加载器。
+	/// 目标：提供一个自定义的Loader加载器，用于加载Loader的纹理资源。
+	/// 功能:
+	///     1. 实现了网络纹理资源和YooAsset包内纹理资源的加载。
+	///     2. 实现了LRU缓存机制，避免重复加载资源。
+	/// </summary>
+	public sealed class CustomLoader : GLoader
+	{
+		/// <summary>
+		/// Loader纹理LRU缓存
+		/// </summary>
+		private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
 
-        /// <summary>
-        /// 正在加载中的任务字典，用于避免同一URL并发重复下载。
-        /// 值为 SharedLoad 包装而非裸 UniTask：便于按引用判断字典中登记的仍是本次任务——
-        /// 发起者被取消后其它消费者会重新登记新任务，无条件 Remove 会把新任务摘掉。
-        /// </summary>
-        private static readonly Dictionary<string, SharedLoad> LoadingTasks = new();
+		/// <summary>
+		/// 正在加载中的任务字典，用于避免同一URL并发重复下载。
+		/// 值为 SharedLoad 包装而非裸 UniTask：便于按引用判断字典中登记的仍是本次任务——
+		/// 发起者被取消后其它消费者会重新登记新任务，无条件 Remove 会把新任务摘掉。
+		/// </summary>
+		private static readonly Dictionary<string, SharedLoad> LoadingTasks = new();
 
-        /// <summary>
-        /// 共享下载任务包装。
-        /// </summary>
-        private sealed class SharedLoad
-        {
-            /// <summary>
-            /// 共享的网络纹理加载任务。
-            /// </summary>
-            public UniTask<Texture2D> Task;
-        }
+		/// <summary>
+		/// 共享下载任务包装。
+		/// </summary>
+		private sealed class SharedLoad
+		{
+			/// <summary>
+			/// 共享的网络纹理加载任务。
+			/// </summary>
+			public UniTask<Texture2D> Task;
+		}
 
-        /// <summary>
-        /// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
-        /// </summary>
-        private readonly LifecycleCancellationSource m_Cancellation = new();
+		/// <summary>
+		/// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
+		/// </summary>
+		private readonly LifecycleCancellationSource m_Cancellation = new();
 
-        /// <summary>
-        /// 本加载器是否已被释放。
-        /// LifecycleCancellationSource.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
-        /// 故不能用 Token 判断"本 loader 已销毁"，需显式标记。
-        /// </summary>
-        private bool m_IsDisposed;
+		/// <summary>
+		/// 本加载器是否已被释放。
+		/// LifecycleCancellationSource.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
+		/// 故不能用 Token 判断"本 loader 已销毁"，需显式标记。
+		/// </summary>
+		private bool m_IsDisposed;
 
-        /// <summary>
-        /// 释放：取消本加载器在途的纹理加载，并释放底层。
-        /// </summary>
-        public override void Dispose()
-        {
-            m_IsDisposed = true;
-            m_Cancellation.Dispose();
-            base.Dispose();
-        }
+		/// <summary>
+		/// 释放：取消本加载器在途的纹理加载，并释放底层。
+		/// </summary>
+		public override void Dispose()
+		{
+			m_IsDisposed = true;
+			m_Cancellation.Dispose();
+			base.Dispose();
+		}
 
-        /// <summary>
-        /// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
-        /// </summary>
-        private sealed class TextureCacheEntry
-        {
-            /// <summary>
-            /// FairyGUI 纹理
-            /// </summary>
-            public NTexture Texture;
+		/// <summary>
+		/// 纹理缓存条目，同时持有 NTexture 和 YooAsset 资源句柄
+		/// </summary>
+		private sealed class TextureCacheEntry
+		{
+			/// <summary>
+			/// FairyGUI 纹理
+			/// </summary>
+			public NTexture Texture;
 
-            /// <summary>
-            /// YooAsset 资源句柄（非 YooAsset 资源时为 null）
-            /// </summary>
-            public AssetHandle AssetHandle;
-        }
+			/// <summary>
+			/// YooAsset 资源句柄（非 YooAsset 资源时为 null）
+			/// </summary>
+			public AssetHandle AssetHandle;
+		}
 
-        /// <summary>
-        /// LRU 缓存驱逐回调：释放 NTexture 原生纹理和 YooAsset 资源句柄
-        /// </summary>
-        /// <param name="key">被淘汰的缓存键</param>
-        /// <param name="entry">被淘汰的缓存条目</param>
-        private static void OnCacheEvict(string key, TextureCacheEntry entry)
-        {
-            if (entry == null) return;
+		/// <summary>
+		/// LRU 缓存驱逐回调：释放 NTexture 原生纹理和 YooAsset 资源句柄
+		/// </summary>
+		/// <param name="key">被淘汰的缓存键</param>
+		/// <param name="entry">被淘汰的缓存条目</param>
+		private static void OnCacheEvict(string key, TextureCacheEntry entry)
+		{
+			if (entry == null) return;
 
-            // NTexture.Dispose() 内部已调用 DestroyImmediate 销毁 native 纹理
-            entry.Texture?.Dispose();
-            if (entry.AssetHandle != null)
-            {
-                var assetPath = entry.AssetHandle.GetAssetInfo().AssetPath; // 释放前取路径
-                entry.AssetHandle.Release();
-                ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 淘汰后显式卸载，避免 bundle 残留
-            }
-        }
+			// NTexture.Dispose() 内部已调用 DestroyImmediate 销毁 native 纹理
+			entry.Texture?.Dispose();
+			if (entry.AssetHandle != null)
+			{
+				var assetPath = entry.AssetHandle.GetAssetInfo().AssetPath; // 释放前取路径
+				entry.AssetHandle.Release();
+				ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 淘汰后显式卸载，避免 bundle 残留
+			}
+		}
 
-        /// <summary>
-        /// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
-        /// </summary>
-        private static readonly string CachePath = UtilityAOT.Path.AppHotfixResPath + "/FUICache/images/";
+		/// <summary>
+		/// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
+		/// </summary>
+		private static readonly string CachePath = UtilityAOT.Path.AppHotfixResPath + "/FUICache/images/";
 
-        /// <summary>
-        /// 资源管理模块
-        /// </summary>
-        private readonly AssetModule m_AssetModule;
+		/// <summary>
+		/// 资源管理模块
+		/// </summary>
+		private readonly AssetModule m_AssetModule;
 
-        public CustomLoader()
-        {
-            m_AssetModule = ModuleManager.GetModule<AssetModule>();
-            if (m_AssetModule == null)
-            {
-                throw new InvalidOperationException("[CustomLoader] 资源管理模块不存在!");
-            }
-        }
+		public CustomLoader()
+		{
+			m_AssetModule = ModuleManager.GetModule<AssetModule>();
+			if (m_AssetModule == null)
+			{
+				throw new InvalidOperationException("[CustomLoader] 资源管理模块不存在!");
+			}
+		}
 
-        /// <summary>
-        /// Loader使用外部加载的纹理资源
-        /// </summary>
-        protected override async void LoadExternal()
-        {
-            AssetHandle assetHandle = null;
-            try
-            {
-                if (url.IsNullOrWhiteSpace())
-                {
-                    onExternalLoadFailed();
-                    return;
-                }
+		/// <summary>
+		/// Loader使用外部加载的纹理资源
+		/// </summary>
+		protected override async void LoadExternal()
+		{
+			AssetHandle assetHandle = null;
+			try
+			{
+				if (url.IsNullOrWhiteSpace())
+				{
+					onExternalLoadFailed();
+					return;
+				}
 
-                // 1.优先从FairyGUI资源包中加载
-                if (url.StartsWithFast("ui://"))
-                {
-                    LoadContent();
-                    return;
-                }
+				// 1.优先从FairyGUI资源包中加载
+				if (url.StartsWithFast("ui://"))
+				{
+					LoadContent();
+					return;
+				}
 
-                // 2.看缓存中是否有，如果有则直接使用缓存的纹理
-                if (Cache.TryGet(url, out var cachedEntry))
-                {
-                    onExternalLoadSuccess(cachedEntry.Texture);
-                    return;
-                }
+				// 2.看缓存中是否有，如果有则直接使用缓存的纹理
+				if (Cache.TryGet(url, out var cachedEntry))
+				{
+					onExternalLoadSuccess(cachedEntry.Texture);
+					return;
+				}
 
-                // 根据URL类型加载纹理
-                Texture2D texture2D = null;
-                if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
-                {
-                    // 3.从网络加载（同一URL并发请求复用同一个下载任务）
-                    texture2D = await LoadOrGetLoadingTask(url);
-                }
-                else
-                {
-                    // 4.从资源管理模块加载
-                    assetHandle = await LoadTextureFromAsset(url);
-                    if (assetHandle.IsNotNull() && assetHandle.IsDone)
-                    {
-                        texture2D = assetHandle.GetAssetObject<Texture2D>();
-                        if (texture2D.IsNull())
-                        {
-                            // 资源存在但不是Texture2D类型：bundle 已加载，释放句柄并显式卸载避免残留
-                            var assetPath = assetHandle.GetAssetInfo().AssetPath;
-                            assetHandle.Release();
-                            m_AssetModule.UnloadAsset(assetPath);
-                            assetHandle = null;
-                        }
-                    }
-                    else if (assetHandle.IsNotNull())
-                    {
-                        // 句柄未完成，释放并标记失败
-                        assetHandle.Release();
-                        assetHandle = null;
-                    }
-                }
+				// 根据URL类型加载纹理
+				Texture2D texture2D = null;
+				if (url.StartsWithFast("http://") || url.StartsWithFast("https://"))
+				{
+					// 3.从网络加载（同一URL并发请求复用同一个下载任务）
+					texture2D = await LoadOrGetLoadingTask(url);
+				}
+				else
+				{
+					// 4.从资源管理模块加载
+					assetHandle = await LoadTextureFromAsset(url);
+					if (assetHandle.IsNotNull() && assetHandle.IsDone)
+					{
+						texture2D = assetHandle.GetAssetObject<Texture2D>();
+						if (texture2D.IsNull())
+						{
+							// 资源存在但不是Texture2D类型：bundle 已加载，释放句柄并显式卸载避免残留
+							var assetPath = assetHandle.GetAssetInfo().AssetPath;
+							assetHandle.Release();
+							m_AssetModule.UnloadAsset(assetPath);
+							assetHandle = null;
+						}
+					}
+					else if (assetHandle.IsNotNull())
+					{
+						// 句柄未完成，释放并标记失败
+						assetHandle.Release();
+						assetHandle = null;
+					}
+				}
 
-                // 创建纹理并缓存
-                if (texture2D.IsNotNull())
-                {
-                    // asset 路径并发加载去重：期间他人已缓存同 URL 则直接复用，释放本次加载的句柄，
-                    // 避免二次 Cache.Put 驱逐首个仍显示的纹理（显示问题）；网络路径已由 LoadingTasks 去重
-                    if (assetHandle != null && Cache.TryGet(url, out var existingEntry))
-                    {
-                        assetHandle.Release();
-                        onExternalLoadSuccess(existingEntry.Texture);
-                        return;
-                    }
+				// 创建纹理并缓存
+				if (texture2D.IsNotNull())
+				{
+					// asset 路径并发加载去重：期间他人已缓存同 URL 则直接复用，释放本次加载的句柄，
+					// 避免二次 Cache.Put 驱逐首个仍显示的纹理（显示问题）；网络路径已由 LoadingTasks 去重
+					if (assetHandle != null && Cache.TryGet(url, out var existingEntry))
+					{
+						assetHandle.Release();
+						onExternalLoadSuccess(existingEntry.Texture);
+						return;
+					}
 
-                    // 按来源区分纹理归属：
-                    //  - asset 路径（assetHandle != null）的纹理归 YooAsset provider 所有，生命周期由句柄决定：
-                    //    此处仅引用，禁止在缓存淘汰时销毁（destroyMethod 默认 Destroy 会对 provider 缓存的纹理执行
-                    //    DestroyImmediate，导致其它仍显示该纹理的 GLoader 破图）。
-                    //  - 网络/本地文件路径（assetHandle == null）的纹理由 LoadTextureFromNetwork/LoadTextureFromFile
-                    //    new Texture2D + LoadImage 创建，无他人持有，必须在 LRU 淘汰时销毁，
-                    //    否则原生 Texture2D 永久泄漏（DestroyMethod.None 只解引用、不销毁 native 纹理）。
-                    var destroyMethod = assetHandle != null ? DestroyMethod.None : DestroyMethod.Destroy;
-                    var targetTexture = new NTexture(texture2D) { destroyMethod = destroyMethod };
-                    Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
-                    assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
-                    onExternalLoadSuccess(targetTexture);
-                }
-                else
-                {
-                    onExternalLoadFailed();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // 加载器被移除/销毁（Dispose）时取消在途下载：预期关停，静默释放句柄即可，不回调不刷错误日志
-                assetHandle?.Release();
-            }
-            catch (Exception e)
-            {
-                // 异常时确保释放资源句柄
-                if (assetHandle != null)
-                {
-                    assetHandle.Release();
-                    assetHandle = null;
-                }
+					// 按来源区分纹理归属：
+					//  - asset 路径（assetHandle != null）的纹理归 YooAsset provider 所有，生命周期由句柄决定：
+					//    此处仅引用，禁止在缓存淘汰时销毁（destroyMethod 默认 Destroy 会对 provider 缓存的纹理执行
+					//    DestroyImmediate，导致其它仍显示该纹理的 GLoader 破图）。
+					//  - 网络/本地文件路径（assetHandle == null）的纹理由 LoadTextureFromNetwork/LoadTextureFromFile
+					//    new Texture2D + LoadImage 创建，无他人持有，必须在 LRU 淘汰时销毁，
+					//    否则原生 Texture2D 永久泄漏（DestroyMethod.None 只解引用、不销毁 native 纹理）。
+					var destroyMethod = assetHandle != null ? DestroyMethod.None : DestroyMethod.Destroy;
+					var targetTexture = new NTexture(texture2D) { destroyMethod = destroyMethod };
+					Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
+					assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
+					onExternalLoadSuccess(targetTexture);
+				}
+				else
+				{
+					onExternalLoadFailed();
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// 加载器被移除/销毁（Dispose）时取消在途下载：预期关停，静默释放句柄即可，不回调不刷错误日志
+				assetHandle?.Release();
+			}
+			catch (Exception e)
+			{
+				// 异常时确保释放资源句柄
+				if (assetHandle != null)
+				{
+					assetHandle.Release();
+					assetHandle = null;
+				}
 
-                onExternalLoadFailed();
-                FuLogger.LogError(e);
-            }
-        }
+				onExternalLoadFailed();
+				FuLogger.LogError(e);
+			}
+		}
 
-        /// <summary>
-        /// 获取或创建网络纹理加载任务，避免同一URL并发重复下载
-        /// </summary>
-        /// <param name="textureURL">纹理URL地址。</param>
-        /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<Texture2D> LoadOrGetLoadingTask(string textureURL)
-        {
-            if (!LoadingTasks.TryGetValue(textureURL, out var existing))
-                return await StartSharedLoad(textureURL);
+		/// <summary>
+		/// 获取或创建网络纹理加载任务，避免同一URL并发重复下载
+		/// </summary>
+		/// <param name="textureURL">纹理URL地址。</param>
+		/// <returns>加载完成的Texture2D。</returns>
+		private async UniTask<Texture2D> LoadOrGetLoadingTask(string textureURL)
+		{
+			if (!LoadingTasks.TryGetValue(textureURL, out var existing))
+				return await StartSharedLoad(textureURL);
 
-            try
-            {
-                // 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
-                // 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
-                return await existing.Task.AttachExternalCancellation(m_Cancellation.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                // 本 loader 自身被移除（Dispose）：预期关停，静默上抛由 LoadExternal 的 catch 处理。
-                // 注意不能用 m_Cancellation.Token 判断——Dispose 后它已退化为 default(None)。
-                if (m_IsDisposed) throw;
+			try
+			{
+				// 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
+				// 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
+				return await existing.Task.AttachExternalCancellation(m_Cancellation.Token);
+			}
+			catch (OperationCanceledException)
+			{
+				// 本 loader 自身被移除（Dispose）：预期关停，静默上抛由 LoadExternal 的 catch 处理。
+				// 注意不能用 m_Cancellation.Token 判断——Dispose 后它已退化为 default(None)。
+				if (m_IsDisposed) throw;
 
-                // 否则是共享下载任务随其发起者（第一个 loader）Dispose 被取消：不能静默返回，
-                // 否则本次消费者会无声失去加载结果。为本次等待重新发起一次独立（仍共享）下载。
-                return await StartSharedLoad(textureURL);
-            }
-        }
+				// 否则是共享下载任务随其发起者（第一个 loader）Dispose 被取消：不能静默返回，
+				// 否则本次消费者会无声失去加载结果。为本次等待重新发起一次独立（仍共享）下载。
+				return await StartSharedLoad(textureURL);
+			}
+		}
 
-        /// <summary>
-        /// 发起（或复用）共享的网络纹理加载任务：同一 URL 的并发请求共用同一个下载任务。
-        /// 任务绑定首个发起者的令牌——其 Dispose 会取消任务，但等待中的其它消费者会在
-        /// LoadOrGetLoadingTask 的取消分支重新发起，不会静默失去结果。
-        /// </summary>
-        /// <param name="textureURL">纹理URL地址。</param>
-        /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<Texture2D> StartSharedLoad(string textureURL)
-        {
-            var sharedLoad = new SharedLoad { Task = LoadTextureFromNetwork(textureURL) };
-            LoadingTasks[textureURL] = sharedLoad;
-            try
-            {
-                return await sharedLoad.Task.AttachExternalCancellation(m_Cancellation.Token);
-            }
-            finally
-            {
-                // 仅当字典中登记的仍是本次任务时才移除：发起者被取消期间，其它消费者可能已重新登记新任务，
-                // 无条件 Remove 会把新任务摘掉，使后续消费者重复下载。
-                if (LoadingTasks.TryGetValue(textureURL, out var current) && current == sharedLoad)
-                    LoadingTasks.Remove(textureURL);
-            }
-        }
+		/// <summary>
+		/// 发起（或复用）共享的网络纹理加载任务：同一 URL 的并发请求共用同一个下载任务。
+		/// 任务绑定首个发起者的令牌——其 Dispose 会取消任务，但等待中的其它消费者会在
+		/// LoadOrGetLoadingTask 的取消分支重新发起，不会静默失去结果。
+		/// </summary>
+		/// <param name="textureURL">纹理URL地址。</param>
+		/// <returns>加载完成的Texture2D。</returns>
+		private async UniTask<Texture2D> StartSharedLoad(string textureURL)
+		{
+			var sharedLoad = new SharedLoad { Task = LoadTextureFromNetwork(textureURL) };
+			LoadingTasks[textureURL] = sharedLoad;
+			try
+			{
+				return await sharedLoad.Task.AttachExternalCancellation(m_Cancellation.Token);
+			}
+			finally
+			{
+				// 仅当字典中登记的仍是本次任务时才移除：发起者被取消期间，其它消费者可能已重新登记新任务，
+				// 无条件 Remove 会把新任务摘掉，使后续消费者重复下载。
+				if (LoadingTasks.TryGetValue(textureURL, out var current) && current == sharedLoad)
+					LoadingTasks.Remove(textureURL);
+			}
+		}
 
-        /// <summary>
-        /// 从网络加载纹理
-        /// </summary>
-        /// <param name="textureURL">纹理URL地址。</param>
-        /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<Texture2D> LoadTextureFromNetwork(string textureURL)
-        {
-            var textureHashName = Utility.Hash.MD5.Hash(textureURL);
-            var texturePath     = $"{CachePath}{textureHashName}.png";
+		/// <summary>
+		/// 从网络加载纹理
+		/// </summary>
+		/// <param name="textureURL">纹理URL地址。</param>
+		/// <returns>加载完成的Texture2D。</returns>
+		private async UniTask<Texture2D> LoadTextureFromNetwork(string textureURL)
+		{
+			var textureHashName = Utility.Hash.MD5.Hash(textureURL);
+			var texturePath     = $"{CachePath}{textureHashName}.png";
 
-            // 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
-            if (UtilityAOT.File.IsExists(texturePath))
-            {
-                return LoadTextureFromFile(texturePath);
-            }
+			// 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
+			if (UtilityAOT.File.IsExists(texturePath))
+			{
+				return LoadTextureFromFile(texturePath);
+			}
 
-            // 从网络下载并保存到本地缓存(persistentDataPath)
-            if (!Directory.Exists(CachePath))
-                Directory.CreateDirectory(CachePath);
+			// 从网络下载并保存到本地缓存(persistentDataPath)
+			if (!Directory.Exists(CachePath))
+				Directory.CreateDirectory(CachePath);
 
-            var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_Cancellation.Token);
-            if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
-            {
-                FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
-                return null;
-            }
+			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_Cancellation.Token);
+			if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
+			{
+				FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
+				return null;
+			}
 
-            // 创建临时2x2纹理(占位)，LoadImage 内部重新分配为实际图片尺寸
-            var tempTexture = new Texture2D(2, 2);
-            if (!tempTexture.LoadImage(webBufferResult.Result))
-            {
-                FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {textureURL}");
-                Object.Destroy(tempTexture);
-                return null;
-            }
+			// 创建临时2x2纹理(占位)，LoadImage 内部重新分配为实际图片尺寸
+			var tempTexture = new Texture2D(2, 2);
+			if (!tempTexture.LoadImage(webBufferResult.Result))
+			{
+				FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {textureURL}");
+				Object.Destroy(tempTexture);
+				return null;
+			}
 
-            // 图片解析成功后才写入本地缓存，避免缓存损坏文件
-            UtilityAOT.File.WriteAllBytes(texturePath, webBufferResult.Result);
-            return tempTexture;
-        }
+			// 图片解析成功后才写入本地缓存，避免缓存损坏文件
+			UtilityAOT.File.WriteAllBytes(texturePath, webBufferResult.Result);
+			return tempTexture;
+		}
 
-        /// <summary>
-        /// 从资源管理模块加载纹理
-        /// </summary>
-        /// <param name="textureURL">资源路径。</param>
-        /// <returns>加载完成的Texture2D。</returns>
-        private async UniTask<AssetHandle> LoadTextureFromAsset(string textureURL)
-        {
-            var assetInfo = m_AssetModule.GetAssetInfo(textureURL);
-            if (assetInfo == null) return null;
-            return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL, m_Cancellation.Token);
-        }
+		/// <summary>
+		/// 从资源管理模块加载纹理
+		/// </summary>
+		/// <param name="textureURL">资源路径。</param>
+		/// <returns>加载完成的Texture2D。</returns>
+		private async UniTask<AssetHandle> LoadTextureFromAsset(string textureURL)
+		{
+			var assetInfo = m_AssetModule.GetAssetInfo(textureURL);
+			if (assetInfo == null) return null;
+			return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL, m_Cancellation.Token);
+		}
 
-        /// <summary>
-        /// 从本地文件加载纹理
-        /// </summary>
-        /// <param name="path">文件路径。</param>
-        /// <returns>加载完成的Texture2D，失败返回null。</returns>
-        private Texture2D LoadTextureFromFile(string path)
-        {
-            try
-            {
-                var buffer = UtilityAOT.File.ReadAllBytes(path);
-                if (buffer.IsNull() || buffer.Length == 0)
-                {
-                    FuLogger.LogError($"[CustomLoader] 读取文件失败或文件为空: {path}");
-                    return null;
-                }
+		/// <summary>
+		/// 从本地文件加载纹理
+		/// </summary>
+		/// <param name="path">文件路径。</param>
+		/// <returns>加载完成的Texture2D，失败返回null。</returns>
+		private Texture2D LoadTextureFromFile(string path)
+		{
+			try
+			{
+				var buffer = UtilityAOT.File.ReadAllBytes(path);
+				if (buffer.IsNull() || buffer.Length == 0)
+				{
+					FuLogger.LogError($"[CustomLoader] 读取文件失败或文件为空: {path}");
+					return null;
+				}
 
-                // 创建临时2x2纹理(占位)，LoadImage方法内部会重新分配为实际图片尺寸
-                var tempTexture = new Texture2D(2, 2);
-                if (!tempTexture.LoadImage(buffer))
-                {
-                    FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {path}");
-                    Object.Destroy(tempTexture);
-                    return null;
-                }
+				// 创建临时2x2纹理(占位)，LoadImage方法内部会重新分配为实际图片尺寸
+				var tempTexture = new Texture2D(2, 2);
+				if (!tempTexture.LoadImage(buffer))
+				{
+					FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {path}");
+					Object.Destroy(tempTexture);
+					return null;
+				}
 
-                return tempTexture;
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[CustomLoader] 从文件加载纹理异常: {path}, {e.Message}");
-                return null;
-            }
-        }
-    }
+				return tempTexture;
+			}
+			catch (Exception e)
+			{
+				FuLogger.LogError($"[CustomLoader] 从文件加载纹理异常: {path}, {e.Message}");
+				return null;
+			}
+		}
+	}
 }

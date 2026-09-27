@@ -7,74 +7,74 @@ using UnityEngine.Networking;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
 {
-    /// <summary>
-    /// 字节数组结果 JSON 请求数据（GetToBytes / PostToBytes）。
-    /// </summary>
-    public sealed class WebJsonBytesData : WebJsonDataBase
-    {
-        /// <summary>
-        /// 字节数组结果的任务完成源。
-        /// </summary>
-        public readonly UniTaskCompletionSource<WebBufferResult> UniTaskCompletionBytesSource;
+	/// <summary>
+	/// 字节数组结果 JSON 请求数据（GetToBytes / PostToBytes）。
+	/// </summary>
+	public sealed class WebJsonBytesData : WebJsonDataBase
+	{
+		/// <summary>
+		/// 字节数组结果的任务完成源。
+		/// </summary>
+		public readonly UniTaskCompletionSource<WebBufferResult> UniTaskCompletionBytesSource;
 
-        /// <summary>
-        /// 初始化字节数组结果的 GET 请求。
-        /// </summary>
-        /// <param name="url">请求 URL。</param>
-        /// <param name="header">请求头信息。</param>
-        /// <param name="isGet">是否为 GET 请求。</param>
-        /// <param name="source">字节数组结果的任务完成源。</param>
-        /// <param name="token">调用方取消令牌。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public WebJsonBytesData(string url, Dictionary<string, string> header, bool isGet, UniTaskCompletionSource<WebBufferResult> source, CancellationToken token, object userData = null)
-            : base(isGet, url, header, token, userData)
-        {
-            UniTaskCompletionBytesSource = source;
-        }
+		/// <summary>
+		/// 初始化字节数组结果的 GET 请求。
+		/// </summary>
+		/// <param name="url">请求 URL。</param>
+		/// <param name="header">请求头信息。</param>
+		/// <param name="isGet">是否为 GET 请求。</param>
+		/// <param name="source">字节数组结果的任务完成源。</param>
+		/// <param name="token">调用方取消令牌。</param>
+		/// <param name="userData">用户自定义数据。</param>
+		public WebJsonBytesData(string url, Dictionary<string, string> header, bool isGet, UniTaskCompletionSource<WebBufferResult> source, CancellationToken token, object userData = null)
+			: base(isGet, url, header, token, userData)
+		{
+			UniTaskCompletionBytesSource = source;
+		}
 
-        /// <summary>
-        /// 初始化字节数组结果的 POST 请求。
-        /// </summary>
-        /// <param name="url">请求 URL。</param>
-        /// <param name="header">请求头信息。</param>
-        /// <param name="form">表单数据。</param>
-        /// <param name="source">字节数组结果的任务完成源。</param>
-        /// <param name="token">调用方取消令牌。</param>
-        /// <param name="userData">用户自定义数据。</param>
-        public WebJsonBytesData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebBufferResult> source, CancellationToken token,
-                                object userData = null)
-            : base(false, url, header, form, token, userData)
-        {
-            UniTaskCompletionBytesSource = source;
-        }
+		/// <summary>
+		/// 初始化字节数组结果的 POST 请求。
+		/// </summary>
+		/// <param name="url">请求 URL。</param>
+		/// <param name="header">请求头信息。</param>
+		/// <param name="form">表单数据。</param>
+		/// <param name="source">字节数组结果的任务完成源。</param>
+		/// <param name="token">调用方取消令牌。</param>
+		/// <param name="userData">用户自定义数据。</param>
+		public WebJsonBytesData(string url, Dictionary<string, string> header, Dictionary<string, object> form, UniTaskCompletionSource<WebBufferResult> source, CancellationToken token,
+								object userData = null)
+			: base(false, url, header, form, token, userData)
+		{
+			UniTaskCompletionBytesSource = source;
+		}
 
-        /// <summary>
-        /// 请求成功：提取字节数组结果并写回任务完成源。
-        /// </summary>
-        /// <param name="request">已完成的请求。</param>
-        public override void Complete(UnityWebRequest request)
-        {
-            UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
-        }
+		/// <summary>
+		/// 请求成功：提取字节数组结果并写回任务完成源。
+		/// </summary>
+		/// <param name="request">已完成的请求。</param>
+		public override void Complete(UnityWebRequest request)
+		{
+			UniTaskCompletionBytesSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
+		}
 
-        /// <summary>
-        /// 请求取消：取消未完成的任务。
-        /// </summary>
-        public override void CompleteCanceled() => UniTaskCompletionBytesSource.TrySetCanceled();
+		/// <summary>
+		/// 请求取消：取消未完成的任务。
+		/// </summary>
+		public override void CompleteCanceled() => UniTaskCompletionBytesSource.TrySetCanceled();
 
-        /// <summary>
-        /// 请求失败：向任务完成源写入异常。
-        /// </summary>
-        /// <param name="exception">异常。</param>
-        public override void CompleteError(Exception exception) => UniTaskCompletionBytesSource.TrySetException(exception);
+		/// <summary>
+		/// 请求失败：向任务完成源写入异常。
+		/// </summary>
+		/// <param name="exception">异常。</param>
+		public override void CompleteError(Exception exception) => UniTaskCompletionBytesSource.TrySetException(exception);
 
-        /// <summary>
-        /// 释放资源，取消未完成的任务。
-        /// </summary>
-        public override void Dispose()
-        {
-            UniTaskCompletionBytesSource?.TrySetCanceled();
-            base.Dispose();
-        }
-    }
+		/// <summary>
+		/// 释放资源，取消未完成的任务。
+		/// </summary>
+		public override void Dispose()
+		{
+			UniTaskCompletionBytesSource?.TrySetCanceled();
+			base.Dispose();
+		}
+	}
 }

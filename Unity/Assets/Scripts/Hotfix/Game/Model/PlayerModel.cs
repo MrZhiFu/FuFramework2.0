@@ -2,10 +2,10 @@ using Hotfix.Framework.Model;
 
 namespace Hotfix.Game.Model
 {
-    public class PlayerModel : BaseSerializerModel
-    {
-        public int Level { get; set; }
-        public int Exp { get; set; }
-        public int Gold { get; set; }
-    }
+	public class PlayerModel : BaseSerializerModel
+	{
+		public int Level { get; set; }
+		public int Exp { get; set; }
+		public int Gold { get; set; }
+	}
 }

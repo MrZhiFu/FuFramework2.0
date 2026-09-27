@@ -4,83 +4,83 @@ using Hotfix.Framework.Core;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.FSM
 {
-    /// <summary>
-    /// 状态基类。
-    /// 功能：
-    ///     1. 定义一个有限状态机状态的基本接口。包括初始化、进入、轮询、离开、销毁生命周期，以及状态切换。
-    /// </summary>
-    public abstract class FsmStateBase
-    {
-        /// <summary>
-        /// 所属有限状态机。
-        /// </summary>
-        protected Fsm Fsm { get; private set; }
-        
-        #region 生命周期
+	/// <summary>
+	/// 状态基类。
+	/// 功能：
+	///     1. 定义一个有限状态机状态的基本接口。包括初始化、进入、轮询、离开、销毁生命周期，以及状态切换。
+	/// </summary>
+	public abstract class FsmStateBase
+	{
+		/// <summary>
+		/// 所属有限状态机。
+		/// </summary>
+		protected Fsm Fsm { get; private set; }
+		
+		#region 生命周期
 
-        /// <summary>
-        /// 状态初始化
-        /// </summary>
-        /// <param name="fsm">有限状态机引用。</param>
-        protected internal virtual void OnInit(Fsm fsm)
-        {
-            Fsm = fsm;
-        }
+		/// <summary>
+		/// 状态初始化
+		/// </summary>
+		/// <param name="fsm">有限状态机引用。</param>
+		protected internal virtual void OnInit(Fsm fsm)
+		{
+			Fsm = fsm;
+		}
 
-        /// <summary>
-        /// 状态进入
-        /// </summary>
-        protected internal virtual void OnEnter() { }
+		/// <summary>
+		/// 状态进入
+		/// </summary>
+		protected internal virtual void OnEnter() { }
 
-        /// <summary>
-        /// 状态轮询
-        /// </summary>
-        /// <param name="deltaTime">帧间隔时间。</param>
-        /// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-        protected internal virtual void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
+		/// <summary>
+		/// 状态轮询
+		/// </summary>
+		/// <param name="deltaTime">帧间隔时间。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+		protected internal virtual void OnUpdate(float deltaTime, float unscaledDeltaTime) { }
 
-        /// <summary>
-        /// 状态离开
-        /// </summary>
-        /// <param name="isShutdown">是否是关闭有限状态机时触发。</param>
-        protected internal virtual void OnLeave(bool isShutdown) { }
+		/// <summary>
+		/// 状态离开
+		/// </summary>
+		/// <param name="isShutdown">是否是关闭有限状态机时触发。</param>
+		protected internal virtual void OnLeave(bool isShutdown) { }
 
-        /// <summary>
-        /// 状态销毁
-        /// </summary>
-        protected internal virtual void OnDestroy() { }
+		/// <summary>
+		/// 状态销毁
+		/// </summary>
+		protected internal virtual void OnDestroy() { }
 
-        #endregion
+		#endregion
 
-        #region 切换状态
+		#region 切换状态
 
-        /// <summary>
-        /// 切换状态。
-        /// </summary>
-        /// <typeparam name="TState">要切换到的状态类型。</typeparam>
-        protected void ChangeState<TState>() where TState : FsmStateBase
-        {
-            if (Fsm is null) throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
-            Fsm.ChangeState<TState>();
-        }
+		/// <summary>
+		/// 切换状态。
+		/// </summary>
+		/// <typeparam name="TState">要切换到的状态类型。</typeparam>
+		protected void ChangeState<TState>() where TState : FsmStateBase
+		{
+			if (Fsm is null) throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
+			Fsm.ChangeState<TState>();
+		}
 
-        /// <summary>
-        /// 切换状态。
-        /// </summary>
-        /// <param name="state">要切换到的状态类型。</param>
-        protected void ChangeState(Type state)
-        {
-            if (state == null) throw new InvalidOperationException("[FsmStateBase] 状态类型不能为空。");
+		/// <summary>
+		/// 切换状态。
+		/// </summary>
+		/// <param name="state">要切换到的状态类型。</param>
+		protected void ChangeState(Type state)
+		{
+			if (state == null) throw new InvalidOperationException("[FsmStateBase] 状态类型不能为空。");
 
-            if (!typeof(FsmStateBase).IsAssignableFrom(state))
-                throw new InvalidOperationException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
+			if (!typeof(FsmStateBase).IsAssignableFrom(state))
+				throw new InvalidOperationException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
 
-            if (Fsm is null) 
-                throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
-            
-            Fsm.ChangeState(state);
-        }
+			if (Fsm is null) 
+				throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
+			
+			Fsm.ChangeState(state);
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

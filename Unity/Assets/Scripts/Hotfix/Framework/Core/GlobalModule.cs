@@ -11,75 +11,75 @@ using Hotfix.Framework.Procedure;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
 {
-    /// <summary>
-    /// 全局模块类。
-    /// 功能：
-    ///     1. 提供各个框架模块的访问入口，用于在热更代码中通过此类来访问各个模块的接口。
-    /// </summary>
-    public static class GlobalModule
-    {
-        private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
-        private static EventModule         m_EventModule;         // 事件管理模块
-        private static AssetModule         m_AssetModule;         // 资源管理模块
+	/// <summary>
+	/// 全局模块类。
+	/// 功能：
+	///     1. 提供各个框架模块的访问入口，用于在热更代码中通过此类来访问各个模块的接口。
+	/// </summary>
+	public static class GlobalModule
+	{
+		private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
+		private static EventModule         m_EventModule;         // 事件管理模块
+		private static AssetModule         m_AssetModule;         // 资源管理模块
 
-        private static TimerModule         m_TimerModule;         // 计时器管理模块
-        private static FsmModule           m_FsmModule;           // 有限状态机管理模块
-        private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
-        private static UIModule            m_UIModule;            // UI管理模块
-        private static MonoModule          m_MonoModule;          // Mono管理模块
-        // private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
-        // private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
+		private static TimerModule         m_TimerModule;         // 计时器管理模块
+		private static FsmModule           m_FsmModule;           // 有限状态机管理模块
+		private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
+		private static UIModule            m_UIModule;            // UI管理模块
+		private static MonoModule          m_MonoModule;          // Mono管理模块
+		// private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
+		// private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
 
-        /// <summary>
-        /// 获取对象池模块。
-        /// </summary>
-        public static ObjectPoolModule ObjectPoolModule => m_ObjectPoolModule ??= ModuleManager.GetModule<ObjectPoolModule>();
+		/// <summary>
+		/// 获取对象池模块。
+		/// </summary>
+		public static ObjectPoolModule ObjectPoolModule => m_ObjectPoolModule ??= ModuleManager.GetModule<ObjectPoolModule>();
 
-        /// <summary>
-        /// 获取事件管理模块。
-        /// </summary>
-        public static EventModule EventModule => m_EventModule ??= ModuleManager.GetModule<EventModule>();
+		/// <summary>
+		/// 获取事件管理模块。
+		/// </summary>
+		public static EventModule EventModule => m_EventModule ??= ModuleManager.GetModule<EventModule>();
 
-        /// <summary>
-        /// 获取资源管理模块。
-        /// </summary>
-        public static AssetModule AssetModule => m_AssetModule ??= ModuleManager.GetModule<AssetModule>();
+		/// <summary>
+		/// 获取资源管理模块。
+		/// </summary>
+		public static AssetModule AssetModule => m_AssetModule ??= ModuleManager.GetModule<AssetModule>();
 
 
 
-        /// <summary>
-        /// 获取计时器管理模块。
-        /// </summary>
-        public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
+		/// <summary>
+		/// 获取计时器管理模块。
+		/// </summary>
+		public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
 
-        /// <summary>
-        /// 获取有限状态机管理模块。
-        /// </summary>
-        public static FsmModule FsmModule => m_FsmModule ??= ModuleManager.GetModule<FsmModule>();
+		/// <summary>
+		/// 获取有限状态机管理模块。
+		/// </summary>
+		public static FsmModule FsmModule => m_FsmModule ??= ModuleManager.GetModule<FsmModule>();
 
-        /// <summary>
-        /// 获取流程管理模块。
-        /// </summary>
-        public static ProcedureModule ProcedureModule => m_ProcedureModule ??= ModuleManager.GetModule<ProcedureModule>();
+		/// <summary>
+		/// 获取流程管理模块。
+		/// </summary>
+		public static ProcedureModule ProcedureModule => m_ProcedureModule ??= ModuleManager.GetModule<ProcedureModule>();
 
-        /// <summary>
-        /// 获取UI管理模块。
-        /// </summary>
-        public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
+		/// <summary>
+		/// 获取UI管理模块。
+		/// </summary>
+		public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
 
-        /// <summary>
-        /// 获取Mono管理模块。
-        /// </summary>
-        public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
+		/// <summary>
+		/// 获取Mono管理模块。
+		/// </summary>
+		public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
 
-        ///// <summary>
-        ///// 获取广告管理模块。// TODO
-        ///// </summary>
-        // private static AdvertisementModule AdvertisementModule => m_AdvertisementModule ??= ModuleManager.GetModule<AdvertisementModule>();
+		///// <summary>
+		///// 获取广告管理模块。// TODO
+		///// </summary>
+		// private static AdvertisementModule AdvertisementModule => m_AdvertisementModule ??= ModuleManager.GetModule<AdvertisementModule>();
 
-        ///// <summary>
-        ///// 获取游戏分析管理模块。// TODO
-        ///// </summary>
-        // private static GameAnalyticsModule GameAnalyticsModule => m_GameAnalyticsModule ?? ModuleManager.GetModule<GameAnalyticsModule>();
-    }
+		///// <summary>
+		///// 获取游戏分析管理模块。// TODO
+		///// </summary>
+		// private static GameAnalyticsModule GameAnalyticsModule => m_GameAnalyticsModule ?? ModuleManager.GetModule<GameAnalyticsModule>();
+	}
 }

@@ -7,222 +7,222 @@ using Hotfix.Framework.Core;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.RedDot
 {
-    /// <summary>
-    /// RedDotModule 公开 API
-    /// </summary>
-    public partial class RedDotModule
-    {
-        /// <summary>
-        /// SyncDynamicNode 的复用缓存：本次同步收集到的"新增 id"集合。
-        /// 列表类红点高频刷新时复用同一实例，避免每次调用分配 HashSet 造成高频 GC。
-        /// 仅由 SyncDynamicNode 单线程使用，调用前先 Clear。
-        /// </summary>
-        private readonly HashSet<long> m_SyncNewIdSet = new();
+	/// <summary>
+	/// RedDotModule 公开 API
+	/// </summary>
+	public partial class RedDotModule
+	{
+		/// <summary>
+		/// SyncDynamicNode 的复用缓存：本次同步收集到的"新增 id"集合。
+		/// 列表类红点高频刷新时复用同一实例，避免每次调用分配 HashSet 造成高频 GC。
+		/// 仅由 SyncDynamicNode 单线程使用，调用前先 Clear。
+		/// </summary>
+		private readonly HashSet<long> m_SyncNewIdSet = new();
 
-        /// <summary>
-        /// SyncDynamicNode 的复用缓存：本次同步待移除的 id 列表（复用避免每次分配 List）。
-        /// </summary>
-        private readonly List<long> m_SyncRemovedIdList = new();
+		/// <summary>
+		/// SyncDynamicNode 的复用缓存：本次同步待移除的 id 列表（复用避免每次分配 List）。
+		/// </summary>
+		private readonly List<long> m_SyncRemovedIdList = new();
 
-        #region 注册
+		#region 注册
 
-        /// <summary>
-        /// 注册红点
-        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        /// <param name="calculator">返回红点数量的计算函数</param>
-        /// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
-        public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
-        {
-            if (!NodeDict.TryGetValue(key, out var node))
-            {
-                FuLogger.LogError($"[RedDotModule] Register 未找到节点: {key}");
-                return;
-            }
+		/// <summary>
+		/// 注册红点
+		/// </summary>
+		/// <param name="key">红点节点 Key</param>
+		/// <param name="calculator">返回红点数量的计算函数</param>
+		/// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
+		public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
+		{
+			if (!NodeDict.TryGetValue(key, out var node))
+			{
+				FuLogger.LogError($"[RedDotModule] Register 未找到节点: {key}");
+				return;
+			}
 
-            if (node.GetChildren().Count > 0)
-            {
-                FuLogger.LogError($"[RedDotModule] Register 只能给叶子节点注册 Calculator: {key}");
-                return;
-            }
+			if (node.GetChildren().Count > 0)
+			{
+				FuLogger.LogError($"[RedDotModule] Register 只能给叶子节点注册 Calculator: {key}");
+				return;
+			}
 
-            RegisterInternal(node, calculator, triggerEvents);
-        }
+			RegisterInternal(node, calculator, triggerEvents);
+		}
 
-        /// <summary>
-        /// 注销红点
-        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        public void Unregister(RedDotKey key)
-        {
-            if (!NodeDict.TryGetValue(key, out var node)) return;
-            UnregisterInternal(node);
-        }
+		/// <summary>
+		/// 注销红点
+		/// </summary>
+		/// <param name="key">红点节点 Key</param>
+		public void Unregister(RedDotKey key)
+		{
+			if (!NodeDict.TryGetValue(key, out var node)) return;
+			UnregisterInternal(node);
+		}
 
-        #endregion
+		#endregion
 
-        #region 状态查询
+		#region 状态查询
 
-        /// <summary>
-        /// 查询节点状态        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        /// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
-        public RedDotState GetState(RedDotKey key)
-        {
-            if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
+		/// <summary>
+		/// 查询节点状态        /// </summary>
+		/// <param name="key">红点节点 Key</param>
+		/// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
+		public RedDotState GetState(RedDotKey key)
+		{
+			if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
 
-            return new RedDotState
-            {
-                Count       = node.GetFinalCount(),
-                IsActive    = node.IsActive,
-                DisplayMode = node.DisplayMode
-            };
-        }
+			return new RedDotState
+			{
+				Count       = node.GetFinalCount(),
+				IsActive    = node.IsActive,
+				DisplayMode = node.DisplayMode
+			};
+		}
 
-        /// <summary>
-        /// 是否存在节点        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        /// <returns>存在返回 true，否则返回 false</returns>
-        public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
+		/// <summary>
+		/// 是否存在节点        /// </summary>
+		/// <param name="key">红点节点 Key</param>
+		/// <returns>存在返回 true，否则返回 false</returns>
+		public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
 
-        /// <summary>
-        /// 获取所有节点（调试用）
-        /// </summary>
-        /// <returns>所有红点节点的只读集合</returns>
-        public IReadOnlyCollection<RedDotNode> GetAllNodes() => NodeDict.Values;
+		/// <summary>
+		/// 获取所有节点（调试用）
+		/// </summary>
+		/// <returns>所有红点节点的只读集合</returns>
+		public IReadOnlyCollection<RedDotNode> GetAllNodes() => NodeDict.Values;
 
-        #endregion
+		#endregion
 
-        #region 动态节点
+		#region 动态节点
 
-        /// <summary>
-        /// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
-        /// </summary>
-        /// <param name="parentKey">父节点 Key</param>
-        /// <param name="ids">当前活跃的 id 列表</param>
-        /// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
-        public void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
-        {
-            if (!NodeDict.TryGetValue(parentKey, out var parentNode))
-            {
-                FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
-                return;
-            }
+		/// <summary>
+		/// 同步动态红点集合：比对增删，新增时自动创建节点 + 注册计算红点的函数
+		/// </summary>
+		/// <param name="parentKey">父节点 Key</param>
+		/// <param name="ids">当前活跃的 id 列表</param>
+		/// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
+		public void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
+		{
+			if (!NodeDict.TryGetValue(parentKey, out var parentNode))
+			{
+				FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
+				return;
+			}
 
-            if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
-            {
-                existing                   = new HashSet<long>();
-                m_DynamicIdDict[parentKey] = existing;
-            }
+			if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
+			{
+				existing                   = new HashSet<long>();
+				m_DynamicIdDict[parentKey] = existing;
+			}
 
-            // 收集新增 id（复用模块级缓存，避免每次调用分配 2×HashSet + 1×List 引起高频 GC）
-            var newIds = m_SyncNewIdSet;
-            newIds.Clear();
-            foreach (var id in ids)
-            {
-                newIds.Add(id);
-            }
+			// 收集新增 id（复用模块级缓存，避免每次调用分配 2×HashSet + 1×List 引起高频 GC）
+			var newIds = m_SyncNewIdSet;
+			newIds.Clear();
+			foreach (var id in ids)
+			{
+				newIds.Add(id);
+			}
 
-            // 找出待移除的 id
-            var removedIds = m_SyncRemovedIdList;
-            removedIds.Clear();
-            foreach (var id in existing)
-            {
-                if (newIds.Contains(id)) continue;
-                removedIds.Add(id);
-            }
+			// 找出待移除的 id
+			var removedIds = m_SyncRemovedIdList;
+			removedIds.Clear();
+			foreach (var id in existing)
+			{
+				if (newIds.Contains(id)) continue;
+				removedIds.Add(id);
+			}
 
-            // 阶段1: 移除(跳过单次 parent 重算，最后统一重算)
-            foreach (var id in removedIds)
-            {
-                var childKey = FormatDynamicKey(parentKey, id);
-                if (NodeDict.TryGetValue(childKey, out var node))
-                {
-                    UnregisterInternal(node);
-                    parentNode.RemoveChild(node);
-                    NodeDict.Remove(childKey);
-                    ReferencePool.Recycle(node);
-                }
+			// 阶段1: 移除(跳过单次 parent 重算，最后统一重算)
+			foreach (var id in removedIds)
+			{
+				var childKey = FormatDynamicKey(parentKey, id);
+				if (NodeDict.TryGetValue(childKey, out var node))
+				{
+					UnregisterInternal(node);
+					parentNode.RemoveChild(node);
+					NodeDict.Remove(childKey);
+					ReferencePool.Recycle(node);
+				}
 
-                existing.Remove(id);
-            }
+				existing.Remove(id);
+			}
 
-            // 阶段2: 新增(用 SetCountSilent 跳过单次 parent 重算)
-            foreach (var id in ids)
-            {
-                if (existing.Contains(id)) continue;
+			// 阶段2: 新增(用 SetCountSilent 跳过单次 parent 重算)
+			foreach (var id in ids)
+			{
+				if (existing.Contains(id)) continue;
 
-                var dynamicKey = FormatDynamicKey(parentKey, id);
-                var idCapture  = id; // 避免闭包捕获循环变量
+				var dynamicKey = FormatDynamicKey(parentKey, id);
+				var idCapture  = id; // 避免闭包捕获循环变量
 
-                var node = AddDynamicChild(parentKey, dynamicKey);
-                if (node == null) continue;
+				var node = AddDynamicChild(parentKey, dynamicKey);
+				if (node == null) continue;
 
-                RegisterInternal(node, () => calculateFun(idCapture), null);
-                var count              = calculateFun(idCapture);
-                if (node.IsRead) count = 0;
-                node.SetCountSilent(count);
-                existing.Add(id);
-            }
+				RegisterInternal(node, () => calculateFun(idCapture), null);
+				var count              = calculateFun(idCapture);
+				if (node.IsRead) count = 0;
+				node.SetCountSilent(count);
+				existing.Add(id);
+			}
 
-            // 阶段3: 一次性重算父节点并向上传播
-            parentNode.ForceRecalculate();
-        }
+			// 阶段3: 一次性重算父节点并向上传播
+			parentNode.ForceRecalculate();
+		}
 
-        #endregion
+		#endregion
 
-        #region 已读持久化
+		#region 已读持久化
 
-        /// <summary>
-        /// 标记红点已读(计数归零 + 持久化，仅静态键持久化)
-        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        public void MarkRead(RedDotKey key)
-        {
-            if (!NodeDict.TryGetValue(key, out var node)) return;
+		/// <summary>
+		/// 标记红点已读(计数归零 + 持久化，仅静态键持久化)
+		/// </summary>
+		/// <param name="key">红点节点 Key</param>
+		public void MarkRead(RedDotKey key)
+		{
+			if (!NodeDict.TryGetValue(key, out var node)) return;
 
-            node.IsRead = true;
-            node.SetCount(0);
+			node.IsRead = true;
+			node.SetCount(0);
 
-            // 仅静态枚举键进行持久化(通过 RedDotNode.IsStatic 标记判断)
-            if (node.IsStatic && key.TryGetEnumValue(out var enumValue))
-            {
-                m_ReadSet.Add(enumValue);
-                SaveReadState();
-                BroadcastChangedKeys();
-            }
-        }
+			// 仅静态枚举键进行持久化(通过 RedDotNode.IsStatic 标记判断)
+			if (node.IsStatic && key.TryGetEnumValue(out var enumValue))
+			{
+				m_ReadSet.Add(enumValue);
+				SaveReadState();
+				BroadcastChangedKeys();
+			}
+		}
 
-        /// <summary>
-        /// 检查是否已读
-        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        /// <returns>已读返回 true，否则返回 false</returns>
-        public bool IsRead(RedDotKey key)
-        {
-            // 静态键检查持久化集合
-            if (NodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
-                return m_ReadSet.Contains(enumValue);
+		/// <summary>
+		/// 检查是否已读
+		/// </summary>
+		/// <param name="key">红点节点 Key</param>
+		/// <returns>已读返回 true，否则返回 false</returns>
+		public bool IsRead(RedDotKey key)
+		{
+			// 静态键检查持久化集合
+			if (NodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
+				return m_ReadSet.Contains(enumValue);
 
-            // 动态键检查节点自身标记
-            return NodeDict.TryGetValue(key, out node) && node.IsRead;
-        }
+			// 动态键检查节点自身标记
+			return NodeDict.TryGetValue(key, out node) && node.IsRead;
+		}
 
-        #endregion
+		#endregion
 
-        #region 清理策略
+		#region 清理策略
 
-        /// <summary>
-        /// 尝试自动清除红点(仅对 ViewAutoClean 策略的节点生效)
-        /// </summary>
-        /// <param name="key">红点节点 Key</param>
-        public void TryAutoClean(RedDotKey key)
-        {
-            if (!NodeDict.TryGetValue(key, out var node)) return;
-            if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
-            CleanNodeRecursive(node);
-        }
+		/// <summary>
+		/// 尝试自动清除红点(仅对 ViewAutoClean 策略的节点生效)
+		/// </summary>
+		/// <param name="key">红点节点 Key</param>
+		public void TryAutoClean(RedDotKey key)
+		{
+			if (!NodeDict.TryGetValue(key, out var node)) return;
+			if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
+			CleanNodeRecursive(node);
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

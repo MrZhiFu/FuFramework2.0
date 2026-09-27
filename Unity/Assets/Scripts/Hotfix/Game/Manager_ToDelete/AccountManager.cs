@@ -6,8 +6,8 @@ using Hotfix.Game.Proto;
 
 namespace Hotfix.Game.Manager_ToDelete
 {
-    public sealed class AccountManager : Singleton<AccountManager>
-    {
-        public List<PlayerInfo> PlayerList { get; set; }
-    }
+	public sealed class AccountManager : Singleton<AccountManager>
+	{
+		public List<PlayerInfo> PlayerList { get; set; }
+	}
 }

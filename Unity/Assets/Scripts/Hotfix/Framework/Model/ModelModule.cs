@@ -5,99 +5,99 @@ using AOT.Framework.Core.Log;
 
 namespace Hotfix.Framework.Model
 {
-    /// <summary>
-    /// 数据模型管理模块。
-    /// 功能：
-    ///     1.将所有的Model存到字典里统一管理。
-    ///     2.提供获取、删除指定Model的方法。
-    /// </summary>
-    public class ModelModule : ModuleBase
-    {
-        /// <summary>
-        /// 模块单例
-        /// </summary>
-        public static ModelModule Instance { get; private set; }
+	/// <summary>
+	/// 数据模型管理模块。
+	/// 功能：
+	///     1.将所有的Model存到字典里统一管理。
+	///     2.提供获取、删除指定Model的方法。
+	/// </summary>
+	public class ModelModule : ModuleBase
+	{
+		/// <summary>
+		/// 模块单例
+		/// </summary>
+		public static ModelModule Instance { get; private set; }
 
-        /// <summary>
-        /// 存储所有的Model字典。Key：Model类型， value：Model实例
-        /// </summary>
-        private readonly Dictionary<Type, BaseModel> m_ModelDict = new();
+		/// <summary>
+		/// 存储所有的Model字典。Key：Model类型， value：Model实例
+		/// </summary>
+		private readonly Dictionary<Type, BaseModel> m_ModelDict = new();
 
-        /// <summary>
-        /// 初始化。
-        /// </summary>
-        protected internal override void OnInit()
-        {
-            Instance = this;
-        }
+		/// <summary>
+		/// 初始化。
+		/// </summary>
+		protected internal override void OnInit()
+		{
+			Instance = this;
+		}
 
-        /// <summary>
-        /// 释放。
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            Clear();
-            Instance = null;
-        }
+		/// <summary>
+		/// 释放。
+		/// </summary>
+		protected internal override void OnDispose()
+		{
+			Clear();
+			Instance = null;
+		}
 
-        /// <summary>
-        /// 获取指定类型的Model
-        /// </summary>
-        /// <typeparam name="T">指定类型</typeparam>
-        /// <returns></returns>
-        public T GetModel<T>() where T : BaseModel, new()
-        {
-            var key = typeof(T);
-            if (m_ModelDict.TryGetValue(key, out var model)) return model as T;
-            return CreateModel<T>();
-        }
+		/// <summary>
+		/// 获取指定类型的Model
+		/// </summary>
+		/// <typeparam name="T">指定类型</typeparam>
+		/// <returns></returns>
+		public T GetModel<T>() where T : BaseModel, new()
+		{
+			var key = typeof(T);
+			if (m_ModelDict.TryGetValue(key, out var model)) return model as T;
+			return CreateModel<T>();
+		}
 
-        /// <summary>
-        /// 移除指定的Model
-        /// </summary>
-        /// <typeparam name="T">指定类型</typeparam>
-        public void RemoveModel<T>()
-        {
-            var key = typeof(T);
+		/// <summary>
+		/// 移除指定的Model
+		/// </summary>
+		/// <typeparam name="T">指定类型</typeparam>
+		public void RemoveModel<T>()
+		{
+			var key = typeof(T);
 
-            // 先摘除字典项并按结果判定：不存在时不可再索引取值（否则键不存在必抛 KeyNotFoundException）
-            if (!m_ModelDict.Remove(key, out var model))
-            {
-                FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
-                return;
-            }
+			// 先摘除字典项并按结果判定：不存在时不可再索引取值（否则键不存在必抛 KeyNotFoundException）
+			if (!m_ModelDict.Remove(key, out var model))
+			{
+				FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
+				return;
+			}
 
-            model.Dispose();
-        }
+			model.Dispose();
+		}
 
-        /// <summary>
-        /// 清理所有的Model(一般在游戏登出时才调用)
-        /// </summary>
-        private void Clear()
-        {
-            foreach (var (_, model) in m_ModelDict)
-            {
-                model.Dispose();
-            }
+		/// <summary>
+		/// 清理所有的Model(一般在游戏登出时才调用)
+		/// </summary>
+		private void Clear()
+		{
+			foreach (var (_, model) in m_ModelDict)
+			{
+				model.Dispose();
+			}
 
-            m_ModelDict.Clear();
-        }
+			m_ModelDict.Clear();
+		}
 
-        /// <summary>
-        /// 创建指定类型的Model
-        /// </summary>
-        /// <typeparam name="T">指定类型</typeparam>
-        /// <returns></returns>
-        private T CreateModel<T>() where T : BaseModel, new()
-        {
-            var key = typeof(T);
-            if (m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
+		/// <summary>
+		/// 创建指定类型的Model
+		/// </summary>
+		/// <typeparam name="T">指定类型</typeparam>
+		/// <returns></returns>
+		private T CreateModel<T>() where T : BaseModel, new()
+		{
+			var key = typeof(T);
+			if (m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
 
-            var model = new T();
-            model.Init();
+			var model = new T();
+			model.Init();
 
-            m_ModelDict.Add(key, model);
-            return model;
-        }
-    }
+			m_ModelDict.Add(key, model);
+			return model;
+		}
+	}
 }

@@ -10,133 +10,133 @@ using AOT.Framework.Core.Log;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Asset
 {
-    /// <summary>
-    /// 资源管理模块。
-    /// 功能：
-    ///     1. 封装了 YooAsset 的资源管理接口，提供更高级的 UniTask 异步资源加载相关接口。
-    ///     2. 提供默认资源包的资源加载、卸载与查询能力。
-    /// </summary>
-    public partial class AssetModule : ModuleBase, ICancelAsync
-    {
-        /// <summary>
-        /// 默认资源包名称
-        /// </summary>
-        private string DefaultPackageName { get; set; }
+	/// <summary>
+	/// 资源管理模块。
+	/// 功能：
+	///     1. 封装了 YooAsset 的资源管理接口，提供更高级的 UniTask 异步资源加载相关接口。
+	///     2. 提供默认资源包的资源加载、卸载与查询能力。
+	/// </summary>
+	public partial class AssetModule : ModuleBase, ICancelAsync
+	{
+		/// <summary>
+		/// 默认资源包名称
+		/// </summary>
+		private string DefaultPackageName { get; set; }
 
-        /// <summary>
-        /// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
-        /// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
-        /// </summary>
-        private CancellationScope m_Scope = new();
+		/// <summary>
+		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
+		/// </summary>
+		private CancellationScope m_Scope = new();
 
-        /// <summary>
-        /// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
-        /// 实例化对象共享资源引用，调用方在实例销毁时通过 ReleaseInstantiate 释放。
-        /// </summary>
-        private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
+		/// <summary>
+		/// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
+		/// 实例化对象共享资源引用，调用方在实例销毁时通过 ReleaseInstantiate 释放。
+		/// </summary>
+		private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
 
-        /// <summary>
-        /// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
-        /// </summary>
-        public CancellationToken Token => m_Scope.Token;
+		/// <summary>
+		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
+		/// </summary>
+		public CancellationToken Token => m_Scope.Token;
 
-        /// <summary>
-        /// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启取消清理。
-        /// </summary>
-        public UniTask CancelAsync() => m_Scope.CancelAsync();
+		/// <summary>
+		/// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启取消清理。
+		/// </summary>
+		public UniTask CancelAsync() => m_Scope.CancelAsync();
 
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected internal override void OnInit()
-        {
-            // 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
-            m_Scope = new CancellationScope();
+		/// <summary>
+		/// 初始化
+		/// </summary>
+		protected internal override void OnInit()
+		{
+			// 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
+			m_Scope = new CancellationScope();
 
-            // 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
-            DefaultPackageName = GameSetting.Instance.DefaultPackageName;
+			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
+			DefaultPackageName = GameSetting.Instance.DefaultPackageName;
 
-            FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{GameSetting.Instance.PlayMode}");
-            FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
-        }
+			FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{GameSetting.Instance.PlayMode}");
+			FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
+		}
 
-        /// <summary>
-        /// 释放
-        /// </summary>
-        protected internal override void OnDispose()
-        {
-            m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
+		/// <summary>
+		/// 释放
+		/// </summary>
+		protected internal override void OnDispose()
+		{
+			m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
 
-            // 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
-            // （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。
-            foreach (var kvp in m_InstantiateRefDict)
-            {
-                kvp.Value.Handle.Release();
-                UnloadAsset(kvp.Key);
-            }
+			// 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
+			// （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。
+			foreach (var kvp in m_InstantiateRefDict)
+			{
+				kvp.Value.Handle.Release();
+				UnloadAsset(kvp.Key);
+			}
 
-            m_InstantiateRefDict.Clear();
+			m_InstantiateRefDict.Clear();
 
-            // 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
-            // 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
-        }
+			// 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
+			// 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
+		}
 
-        /// <summary>
-        /// 获取默认资源包；YooAssets 未初始化或默认包不存在时抛异常。
-        /// 在 async 方法中调用时异常会被捕获为 faulted UniTask，保持"不同步抛"契约。
-        /// </summary>
-        private ResourcePackage GetReadyDefaultPackage()
-        {
-            if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)
-                                         || package.InitializeStatus != EOperationStatus.Succeeded)
-                throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
-            return package;
-        }
+		/// <summary>
+		/// 获取默认资源包；YooAssets 未初始化或默认包不存在时抛异常。
+		/// 在 async 方法中调用时异常会被捕获为 faulted UniTask，保持"不同步抛"契约。
+		/// </summary>
+		private ResourcePackage GetReadyDefaultPackage()
+		{
+			if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)
+										 || package.InitializeStatus != EOperationStatus.Succeeded)
+				throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
+			return package;
+		}
 
-        /// <summary>
-        /// 获取已成功初始化的默认包；未初始化/不存在返回 false（避免同步查询方法抛异常）。
-        /// </summary>
-        private bool TryGetReadyPackage(out ResourcePackage package)
-        {
-            package = null;
-            if (!YooAssets.IsInitialized) return false; // YooAssets 未初始化（全局销毁后），防御不抛
-            if (!YooAssets.TryGetPackage(DefaultPackageName, out package)) return false;
-            return package.InitializeStatus == EOperationStatus.Succeeded;
-        }
+		/// <summary>
+		/// 获取已成功初始化的默认包；未初始化/不存在返回 false（避免同步查询方法抛异常）。
+		/// </summary>
+		private bool TryGetReadyPackage(out ResourcePackage package)
+		{
+			package = null;
+			if (!YooAssets.IsInitialized) return false; // YooAssets 未初始化（全局销毁后），防御不抛
+			if (!YooAssets.TryGetPackage(DefaultPackageName, out package)) return false;
+			return package.InitializeStatus == EOperationStatus.Succeeded;
+		}
 
-        /// <summary>
-        /// 上报场景加载进度；回调异常记录日志但不抛出（防止回调异常导致句柄无法返回而泄漏）。
-        /// </summary>
-        private static void TryReportProgress(Action<float> onProgress, float progress)
-        {
-            try
-            {
-                onProgress(progress);
-            }
-            catch (Exception e)
-            {
-                FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
-            }
-        }
+		/// <summary>
+		/// 上报场景加载进度；回调异常记录日志但不抛出（防止回调异常导致句柄无法返回而泄漏）。
+		/// </summary>
+		private static void TryReportProgress(Action<float> onProgress, float progress)
+		{
+			try
+			{
+				onProgress(progress);
+			}
+			catch (Exception e)
+			{
+				FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
+			}
+		}
 
-        /// <summary>
-        /// 按路径释放实例化引用（引用计数归零时释放句柄并移除，让资源可被卸载）。
-        /// 供本模块内部（ReleaseInstantiate / 实例化失败回滚）使用，不校验生命周期代际。
-        /// </summary>
-        /// <param name="path">资源路径。</param>
-        private void ReleaseInstantiateInternal(string path)
-        {
-            if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
-            if (entry.RefCount   <= 0) return;
-            if (--entry.RefCount > 0) return;
+		/// <summary>
+		/// 按路径释放实例化引用（引用计数归零时释放句柄并移除，让资源可被卸载）。
+		/// 供本模块内部（ReleaseInstantiate / 实例化失败回滚）使用，不校验生命周期代际。
+		/// </summary>
+		/// <param name="path">资源路径。</param>
+		private void ReleaseInstantiateInternal(string path)
+		{
+			if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
+			if (entry.RefCount   <= 0) return;
+			if (--entry.RefCount > 0) return;
 
-            entry.Handle.Release();
-            m_InstantiateRefDict.Remove(path);
+			entry.Handle.Release();
+			m_InstantiateRefDict.Remove(path);
 
-            // 引用归零后显式卸载：句柄 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
-            // 需 UnloadAsset 才能真正释放，否则该 prefab 的 bundle 永久残留（内存只增不减）。
-            // 若其他系统仍持有同一资源句柄，TryUnloadUnusedAsset 会因引用计数 >0 而跳过，共享安全。
-            UnloadAsset(path);
-        }
-    }
+			// 引用归零后显式卸载：句柄 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
+			// 需 UnloadAsset 才能真正释放，否则该 prefab 的 bundle 永久残留（内存只增不减）。
+			// 若其他系统仍持有同一资源句柄，TryUnloadUnusedAsset 会因引用计数 >0 而跳过，共享安全。
+			UnloadAsset(path);
+		}
+	}
 }

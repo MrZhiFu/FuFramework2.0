@@ -5,45 +5,45 @@ using Hotfix.Game.Proto;
 
 namespace Hotfix.Game.UI
 {
-    public partial class CompBagItem
-    {
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        private void OnInit()
-        {
-            InitEvent();
-        }
+	public partial class CompBagItem
+	{
+		/// <summary>
+		/// 初始化
+		/// </summary>
+		private void OnInit()
+		{
+			InitEvent();
+		}
 
-        /// <summary>
-        /// UI组件事件初始化
-        /// </summary>
-        private void InitUIEvent() { }
+		/// <summary>
+		/// UI组件事件初始化
+		/// </summary>
+		private void InitUIEvent() { }
 
-        /// <summary>
-        /// 注册相关逻辑事件
-        /// </summary>
-        private void InitEvent()
-        {
-            // Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
-        }
+		/// <summary>
+		/// 注册相关逻辑事件
+		/// </summary>
+		private void InitEvent()
+		{
+			// Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
+		}
 
-        
-        /// <summary>
-        /// 销毁。
-        /// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
-        /// </summary>
-        private void OnDispose() { }
+		
+		/// <summary>
+		/// 销毁。
+		/// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
+		/// </summary>
+		private void OnDispose() { }
 
-        /// <summary>
-        /// 设置数据
-        /// </summary>
-        /// <param name="itemId"></param>
-        /// <param name="count"></param>
-        public void SetData(int itemId, long count)
-        {
-            compGoodItem.SetIcon(itemId);
-            compGoodItem.SetCount(count);
-        }
-    }
+		/// <summary>
+		/// 设置数据
+		/// </summary>
+		/// <param name="itemId"></param>
+		/// <param name="count"></param>
+		public void SetData(int itemId, long count)
+		{
+			compGoodItem.SetIcon(itemId);
+			compGoodItem.SetCount(count);
+		}
+	}
 }

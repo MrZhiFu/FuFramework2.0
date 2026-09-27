@@ -5,13 +5,13 @@ using Hotfix.Game.Proto;
 
 namespace Hotfix.Game.Manager_ToDelete
 {
-    public sealed class PlayerManager : Singleton<PlayerManager>
-    {
-        public PlayerManager()
-        {
-            PlayerInfo = new PlayerInfo();
-        }
+	public sealed class PlayerManager : Singleton<PlayerManager>
+	{
+		public PlayerManager()
+		{
+			PlayerInfo = new PlayerInfo();
+		}
 
-        public PlayerInfo PlayerInfo { get; set; }
-    }
+		public PlayerInfo PlayerInfo { get; set; }
+	}
 }

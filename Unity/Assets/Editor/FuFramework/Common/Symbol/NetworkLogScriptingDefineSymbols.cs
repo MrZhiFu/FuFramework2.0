@@ -4,67 +4,67 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Network.Editor
 {
-    /// <summary>
-    /// 网络日志脚本宏定义。
-    /// </summary>
-    public static class NetworkLogScriptingDefineSymbols
-    {
-        private const string EnableNetworkRspLogSymbol  = "ENABLE_NETWORK_RSP_LOG";  // 开启网络响应日志(预定义符号)
-        private const string EnableNetworkReqLogSymbol  = "ENABLE_NETWORK_REQ_LOG";  // 开启网络请求日志(预定义符号)
-        private const string ForceEnableWebSocketSymbol = "FORCE_ENABLE_WEB_SOCKET"; // 强制使用WebSocket网络(预定义符号)
+	/// <summary>
+	/// 网络日志脚本宏定义。
+	/// </summary>
+	public static class NetworkLogScriptingDefineSymbols
+	{
+		private const string EnableNetworkRspLogSymbol  = "ENABLE_NETWORK_RSP_LOG";  // 开启网络响应日志(预定义符号)
+		private const string EnableNetworkReqLogSymbol  = "ENABLE_NETWORK_REQ_LOG";  // 开启网络请求日志(预定义符号)
+		private const string ForceEnableWebSocketSymbol = "FORCE_ENABLE_WEB_SOCKET"; // 强制使用WebSocket网络(预定义符号)
 
-        /// <summary>
-        /// 开启网络响应日志打印。
-        /// </summary>
-        [MenuItem("FuFramework/日志设置/开启网络响应日志打印", false, FuMenuPriority.NETWORK_LOG_ENABLE_RESPONSE)]
-        public static void EnableNetworkRspLog()
-        {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkRspLogSymbol);
-        }
+		/// <summary>
+		/// 开启网络响应日志打印。
+		/// </summary>
+		[MenuItem("FuFramework/日志设置/开启网络响应日志打印", false, FuMenuPriority.NETWORK_LOG_ENABLE_RESPONSE)]
+		public static void EnableNetworkRspLog()
+		{
+			ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkRspLogSymbol);
+		}
 
-        /// <summary>
-        /// 关闭网络响应日志打印。
-        /// </summary>
-        [MenuItem("FuFramework/日志设置/关闭网络响应日志打印", false, FuMenuPriority.NETWORK_LOG_DISABLE_RESPONSE)]
-        public static void DisableNetworkRspLog()
-        {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkRspLogSymbol);
-        }
+		/// <summary>
+		/// 关闭网络响应日志打印。
+		/// </summary>
+		[MenuItem("FuFramework/日志设置/关闭网络响应日志打印", false, FuMenuPriority.NETWORK_LOG_DISABLE_RESPONSE)]
+		public static void DisableNetworkRspLog()
+		{
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkRspLogSymbol);
+		}
 
-        /// <summary>
-        /// 开启网络请求日志打印。
-        /// </summary>
-        [MenuItem("FuFramework/日志设置/开启网络请求日志打印", false, FuMenuPriority.NETWORK_LOG_ENABLE_REQUEST)]
-        public static void EnableNetworkReqLog()
-        {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkReqLogSymbol);
-        }
+		/// <summary>
+		/// 开启网络请求日志打印。
+		/// </summary>
+		[MenuItem("FuFramework/日志设置/开启网络请求日志打印", false, FuMenuPriority.NETWORK_LOG_ENABLE_REQUEST)]
+		public static void EnableNetworkReqLog()
+		{
+			ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableNetworkReqLogSymbol);
+		}
 
-        /// <summary>
-        /// 关闭网络请求日志打印。
-        /// </summary>
-        [MenuItem("FuFramework/日志设置/关闭网络请求日志打印", false, FuMenuPriority.NETWORK_LOG_DISABLE_REQUEST)]
-        public static void DisableNetworkReqLog()
-        {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkReqLogSymbol);
-        }
+		/// <summary>
+		/// 关闭网络请求日志打印。
+		/// </summary>
+		[MenuItem("FuFramework/日志设置/关闭网络请求日志打印", false, FuMenuPriority.NETWORK_LOG_DISABLE_REQUEST)]
+		public static void DisableNetworkReqLog()
+		{
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableNetworkReqLogSymbol);
+		}
 
-        /// <summary>
-        /// 不强制使用WebSocket网络。
-        /// </summary>
-        [MenuItem("FuFramework/网络类型设置/不强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_NO_FORCE_WEBSOCKET)]
-        public static void DisableForceWebSocketNetwork()
-        {
-            ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ForceEnableWebSocketSymbol);
-        }
+		/// <summary>
+		/// 不强制使用WebSocket网络。
+		/// </summary>
+		[MenuItem("FuFramework/网络类型设置/不强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_NO_FORCE_WEBSOCKET)]
+		public static void DisableForceWebSocketNetwork()
+		{
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ForceEnableWebSocketSymbol);
+		}
 
-        /// <summary>
-        /// 强制使用WebSocket网络。
-        /// </summary>
-        [MenuItem("FuFramework/网络类型设置/强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_FORCE_WEBSOCKET)]
-        public static void EnableForceWebSocketNetwork()
-        {
-            ScriptingDefineSymbols.AddScriptingDefineSymbol(ForceEnableWebSocketSymbol);
-        }
-    }
+		/// <summary>
+		/// 强制使用WebSocket网络。
+		/// </summary>
+		[MenuItem("FuFramework/网络类型设置/强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_FORCE_WEBSOCKET)]
+		public static void EnableForceWebSocketNetwork()
+		{
+			ScriptingDefineSymbols.AddScriptingDefineSymbol(ForceEnableWebSocketSymbol);
+		}
+	}
 }

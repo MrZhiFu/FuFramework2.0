@@ -8,87 +8,87 @@ using Hotfix.Framework.UI;
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Game.UI
 {
-    public partial class WinDialogGuide : WinBase
-    {
-        /// <summary>
-        /// 提交按钮点击回调
-        /// </summary>
-        private Action m_OnConfirm;
+	public partial class WinDialogGuide : WinBase
+	{
+		/// <summary>
+		/// 提交按钮点击回调
+		/// </summary>
+		private Action m_OnConfirm;
 
-        /// <summary>
-        /// 初始化
-        /// </summary>  
-        protected override void OnInit()
-        {
-            InitUIComp();
-            InitUIEvent();
-            InitEvent();
-        }
+		/// <summary>
+		/// 初始化
+		/// </summary>  
+		protected override void OnInit()
+		{
+			InitUIComp();
+			InitUIEvent();
+			InitEvent();
+		}
 
-        /// <summary>
-        /// 界面可交互组件事件初始化
-        /// </summary>
-        private void InitUIEvent()
-        {
-            AddUIListener(btnNext.onClick, OnBtnNextClick);
-        }
+		/// <summary>
+		/// 界面可交互组件事件初始化
+		/// </summary>
+		private void InitUIEvent()
+		{
+			AddUIListener(btnNext.onClick, OnBtnNextClick);
+		}
 
-        /// <summary>
-        /// 注册相关逻辑事件
-        /// </summary>
-        private void InitEvent()
-        {
-            // Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
-        }
+		/// <summary>
+		/// 注册相关逻辑事件
+		/// </summary>
+		private void InitEvent()
+		{
+			// Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
+		}
 
 
-        /// <summary>
-        /// 界面打开
-        /// </summary>
-        protected override void OnOpen()
-        {
-            Refresh();
-        }
+		/// <summary>
+		/// 界面打开
+		/// </summary>
+		protected override void OnOpen()
+		{
+			Refresh();
+		}
 
-        /// <summary>
-        /// 界面关闭
-        /// </summary>
-        protected override void OnClose() { }
+		/// <summary>
+		/// 界面关闭
+		/// </summary>
+		protected override void OnClose() { }
 
-        /// <summary>
-        /// 界面销毁
-        /// </summary>
-        protected override void OnDispose()
-        {
-            m_OnConfirm = null;
-        }
+		/// <summary>
+		/// 界面销毁
+		/// </summary>
+		protected override void OnDispose()
+		{
+			m_OnConfirm = null;
+		}
 
-        /// <summary>
-        /// 显示对话
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="onConfirm"></param>
-        public void ShowDialog(string content, Action onConfirm)
-        {
-            txtContent.text = content;
-            m_OnConfirm = onConfirm;
-        }
+		/// <summary>
+		/// 显示对话
+		/// </summary>
+		/// <param name="content"></param>
+		/// <param name="onConfirm"></param>
+		public void ShowDialog(string content, Action onConfirm)
+		{
+			txtContent.text = content;
+			m_OnConfirm = onConfirm;
+		}
 
-        /// <summary>
-        /// 刷新界面
-        /// </summary>
-        private void Refresh()
-        {
-            // TODO：刷新逻辑
-        }
+		/// <summary>
+		/// 刷新界面
+		/// </summary>
+		private void Refresh()
+		{
+			// TODO：刷新逻辑
+		}
 
-        #region 交互事件与ListItem渲染回调处理
+		#region 交互事件与ListItem渲染回调处理
 
-        private void OnBtnNextClick(EventContext ctx)
-        {
-            m_OnConfirm?.Invoke();
-        }
+		private void OnBtnNextClick(EventContext ctx)
+		{
+			m_OnConfirm?.Invoke();
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

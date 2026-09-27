@@ -11,128 +11,128 @@ using Hotfix.Game.Events;
 
 namespace Hotfix.Game.Manager_ToDelete
 {
-    /// <summary>
-    /// 背包 管理器
-    /// </summary>
-    public sealed class BagManager : Singleton<BagManager>, IMessageHandler
-    {
-        private readonly Dictionary<int, BagItem> m_ItemDic = new Dictionary<int, BagItem>();
+	/// <summary>
+	/// 背包 管理器
+	/// </summary>
+	public sealed class BagManager : Singleton<BagManager>, IMessageHandler
+	{
+		private readonly Dictionary<int, BagItem> m_ItemDic = new Dictionary<int, BagItem>();
 
-        public List<BagItem> GetItems()
-        {
-            return new List<BagItem>(m_ItemDic.Values);
-        }
+		public List<BagItem> GetItems()
+		{
+			return new List<BagItem>(m_ItemDic.Values);
+		}
 
-        /// <summary>
-        /// 监听道具变化通知
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <remarks>
-        /// 可见性契约：生成物 Generated/ProtoMessageRegistry.g.cs 会为 [MessageHandler] 方法生成
-        /// 直接委托（<c>((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)</c>），
-        /// 因此本方法必须是 internal 或 public（不能是 private / protected），否则生成脚本会报错。
-        /// 详见 Framework/Network/README.md「消息注册」章节。
-        /// </remarks>
-        [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
-        internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg)
-        {
-            foreach (var keyValuePair in msg.ItemDic)
-            {
-                if (m_ItemDic.TryGetValue(keyValuePair.Key, out var item))
-                {
-                    item.Count = keyValuePair.Value.Count;
-                    if (m_ItemDic[keyValuePair.Key].Count <= 0)
-                    {
-                        m_ItemDic.Remove(keyValuePair.Key);
-                    }
-                }
-                else
-                {
-                    m_ItemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
-                }
-            }
+		/// <summary>
+		/// 监听道具变化通知
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <remarks>
+		/// 可见性契约：生成物 Generated/ProtoMessageRegistry.g.cs 会为 [MessageHandler] 方法生成
+		/// 直接委托（<c>((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)</c>），
+		/// 因此本方法必须是 internal 或 public（不能是 private / protected），否则生成脚本会报错。
+		/// 详见 Framework/Network/README.md「消息注册」章节。
+		/// </remarks>
+		[MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
+		internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg)
+		{
+			foreach (var keyValuePair in msg.ItemDic)
+			{
+				if (m_ItemDic.TryGetValue(keyValuePair.Key, out var item))
+				{
+					item.Count = keyValuePair.Value.Count;
+					if (m_ItemDic[keyValuePair.Key].Count <= 0)
+					{
+						m_ItemDic.Remove(keyValuePair.Key);
+					}
+				}
+				else
+				{
+					m_ItemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
+				}
+			}
 
-            GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
-        }
+			GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
+		}
 
-        /// <summary>
-        /// 请求背包信息
-        /// </summary>
-        public async UniTask RequestGetBagInfoAsync()
-        {
-            var respBagInfo = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
-            if (respBagInfo.ErrorCode != default)
-            {
-                return;
-            }
+		/// <summary>
+		/// 请求背包信息
+		/// </summary>
+		public async UniTask RequestGetBagInfoAsync()
+		{
+			var respBagInfo = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespBagInfo>(new ReqBagInfo());
+			if (respBagInfo.ErrorCode != default)
+			{
+				return;
+			}
 
-            foreach (var item in respBagInfo.ItemDic)
-            {
-                m_ItemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
-            }
-        }
+			foreach (var item in respBagInfo.ItemDic)
+			{
+				m_ItemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
+			}
+		}
 
-        /// <summary>
-        /// 请求使用道具
-        /// </summary>
-        /// <param name="itemId">道具ID</param>
-        /// <param name="count">道具数量</param>
-        public async UniTask RequestUseItemAsync(int itemId, long count = 1)
-        {
-            var respUseItem = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
-            if (respUseItem.ErrorCode != default)
-            {
-                return;
-            }
+		/// <summary>
+		/// 请求使用道具
+		/// </summary>
+		/// <param name="itemId">道具ID</param>
+		/// <param name="count">道具数量</param>
+		public async UniTask RequestUseItemAsync(int itemId, long count = 1)
+		{
+			var respUseItem = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespUseItem>(new ReqUseItem() { ItemId = itemId, Count = count });
+			if (respUseItem.ErrorCode != default)
+			{
+				return;
+			}
 
-            if (m_ItemDic.TryGetValue(respUseItem.ItemId, out var value))
-            {
-                value.Count -= respUseItem.Count;
-                if (value.Count <= 0)
-                {
-                    m_ItemDic.Remove(respUseItem.ItemId);
-                }
-            }
+			if (m_ItemDic.TryGetValue(respUseItem.ItemId, out var value))
+			{
+				value.Count -= respUseItem.Count;
+				if (value.Count <= 0)
+				{
+					m_ItemDic.Remove(respUseItem.ItemId);
+				}
+			}
 
-            GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
-        }
+			GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
+		}
 
-        /// <summary>
-        /// 获取指定类型的道具
-        /// </summary>
-        /// <param name="bagType">背包类型</param>
-        /// <returns></returns>
-        public List<BagItem> GetBagItemsByType(EItemType bagType)
-        {
-            var result = new List<BagItem>(m_ItemDic.Count);
-            var tbItemConfig = ConfigModule.Instance.GetConfig<TbItem>();
-            var itemType = bagType;
-            foreach (var bagItem in m_ItemDic)
-            {
-                var itemConfig = tbItemConfig.Get(bagItem.Key);
-                if (itemConfig.IsNotNull() && itemConfig.Type == itemType)
-                {
-                    result.Add(bagItem.Value);
-                }
-            }
+		/// <summary>
+		/// 获取指定类型的道具
+		/// </summary>
+		/// <param name="bagType">背包类型</param>
+		/// <returns></returns>
+		public List<BagItem> GetBagItemsByType(EItemType bagType)
+		{
+			var result = new List<BagItem>(m_ItemDic.Count);
+			var tbItemConfig = ConfigModule.Instance.GetConfig<TbItem>();
+			var itemType = bagType;
+			foreach (var bagItem in m_ItemDic)
+			{
+				var itemConfig = tbItemConfig.Get(bagItem.Key);
+				if (itemConfig.IsNotNull() && itemConfig.Type == itemType)
+				{
+					result.Add(bagItem.Value);
+				}
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        /// <summary>
-        /// 由于是单例对象。所以在初始化的时候自动调用一次注册消息
-        /// </summary>
-        public BagManager()
-        {
-            Register();
-        }
+		/// <summary>
+		/// 由于是单例对象。所以在初始化的时候自动调用一次注册消息
+		/// </summary>
+		public BagManager()
+		{
+			Register();
+		}
 
-        /// <summary>
-        /// 注册消息。请勿多次调用
-        /// </summary>
-        public void Register()
-        {
-            ProtoMessageHandler.Add(this);
-        }
-    }
+		/// <summary>
+		/// 注册消息。请勿多次调用
+		/// </summary>
+		public void Register()
+		{
+			ProtoMessageHandler.Add(this);
+		}
+	}
 }

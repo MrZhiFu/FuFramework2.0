@@ -15,6 +15,10 @@ end_of_line = crlf
 insert_final_newline = false
 
 [*.cs]
+# 缩进字符：Tab，宽度 4（与 Docs/代码风格规范.md 3.1 一致）
+indent_style = tab
+tab_width = 4
+
 # 列对齐（ReSharper「Align similar code in columns」全开）
 resharper_int_align_assignments = true
 resharper_int_align_variables = true
@@ -171,3 +175,15 @@ dotnet_naming_rule.static_fields.severity = none
 dotnet_naming_rule.instance_fields_private.severity = none
 dotnet_naming_rule.instance_fields.severity = none
 dotnet_naming_rule.locals.severity = none
+
+# ── 第三方库：不纳入项目缩进规范（上游为 4 空格，避免 IDE 格式化整文件重排与上游合并冲突）──
+[Unity/Assets/3rdPlugins/**.cs]
+indent_style = space
+indent_size = 4
+
+# ── 生成代码：跟随生成器输出格式（空格），不做 Tab 约束 ──
+# FGUI 生成（*.Gen.cs 与 CustomCompBind.cs）、proto registry（*.g.cs）、
+# Luban 表生成（AutoGen/Tables/Generate|Extension）、AOT 本地化生成（Localization/AutoGen）、proto 生成（Network/Generated）
+[**/*.Gen.cs,**/*.g.cs,Unity/Assets/Scripts/Hotfix/Game/AutoGen/UI/CustomCompBind.cs,**/AutoGen/Tables/Generate/**.cs,**/AutoGen/Tables/Extension/**.cs,**/Localization/AutoGen/**.cs,**/Network/Generated/**.cs]
+indent_style = space
+indent_size = 4

@@ -6,295 +6,295 @@ using System.Text;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
 {
-    public static partial class Utility
-    {
-        /// <summary>
-        /// 加密解密相关的实用函数。
-        /// </summary>
-        public static partial class Encryption
-        {
-            /// <summary>
-            /// RSA 加密解密类-非对称加密。
-            /// 使用此类可以实现 RSA 加密解密、签名验证等功能。
-            /// </summary>
-            public sealed class Rsa : IDisposable
-            {
-                /// <summary>
-                /// RSA 实例，用于加密解密操作。
-                /// </summary>
-                private readonly RSACryptoServiceProvider _rsa;
+	public static partial class Utility
+	{
+		/// <summary>
+		/// 加密解密相关的实用函数。
+		/// </summary>
+		public static partial class Encryption
+		{
+			/// <summary>
+			/// RSA 加密解密类-非对称加密。
+			/// 使用此类可以实现 RSA 加密解密、签名验证等功能。
+			/// </summary>
+			public sealed class Rsa : IDisposable
+			{
+				/// <summary>
+				/// RSA 实例，用于加密解密操作。
+				/// </summary>
+				private readonly RSACryptoServiceProvider _rsa;
 
-                /// <summary>
-                /// 使用提供的 RSACryptoServiceProvider 实例初始化 Rsa 类。
-                /// </summary>
-                /// <param name="rsa">RSACryptoServiceProvider 实例</param>
-                public Rsa(RSACryptoServiceProvider rsa)
-                {
-                    _rsa = rsa;
-                }
+				/// <summary>
+				/// 使用提供的 RSACryptoServiceProvider 实例初始化 Rsa 类。
+				/// </summary>
+				/// <param name="rsa">RSACryptoServiceProvider 实例</param>
+				public Rsa(RSACryptoServiceProvider rsa)
+				{
+					_rsa = rsa;
+				}
 
-                /// <summary>
-                /// 使用提供的密钥字符串初始化 Rsa 类。
-                /// </summary>
-                /// <param name="key">密钥字符串</param>
-                public Rsa(string key)
-                {
-                    var rsa = new RSACryptoServiceProvider();
-                    rsa.FromXmlString(key);
-                    _rsa = rsa;
-                }
+				/// <summary>
+				/// 使用提供的密钥字符串初始化 Rsa 类。
+				/// </summary>
+				/// <param name="key">密钥字符串</param>
+				public Rsa(string key)
+				{
+					var rsa = new RSACryptoServiceProvider();
+					rsa.FromXmlString(key);
+					_rsa = rsa;
+				}
 
-                /// <summary>
-                /// 创建 RSA 密钥对。
-                /// </summary>
-                /// <returns>包含私钥和公钥的字典</returns>
-                public static Dictionary<string, string> Make()
-                {
-                    var dic = new Dictionary<string, string>();
-                    // RSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
-                    using var rsa = new RSACryptoServiceProvider();
-                    dic["privateKey"] = rsa.ToXmlString(true);
-                    dic["publicKey"]  = rsa.ToXmlString(false);
-                    return dic;
-                }
+				/// <summary>
+				/// 创建 RSA 密钥对。
+				/// </summary>
+				/// <returns>包含私钥和公钥的字典</returns>
+				public static Dictionary<string, string> Make()
+				{
+					var dic = new Dictionary<string, string>();
+					// RSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
+					using var rsa = new RSACryptoServiceProvider();
+					dic["privateKey"] = rsa.ToXmlString(true);
+					dic["publicKey"]  = rsa.ToXmlString(false);
+					return dic;
+				}
 
-                /// <summary>
-                /// 使用公钥加密内容。
-                /// </summary>
-                /// <param name="publicKey">公钥</param>
-                /// <param name="content">所加密的内容</param>
-                /// <returns>加密后的内容</returns>
-                public static string RsaEncrypt(string publicKey, string content)
-                {
-                    var res = RsaEncrypt(publicKey, Encoding.UTF8.GetBytes(content));
-                    return Convert.ToBase64String(res);
-                }
+				/// <summary>
+				/// 使用公钥加密内容。
+				/// </summary>
+				/// <param name="publicKey">公钥</param>
+				/// <param name="content">所加密的内容</param>
+				/// <returns>加密后的内容</returns>
+				public static string RsaEncrypt(string publicKey, string content)
+				{
+					var res = RsaEncrypt(publicKey, Encoding.UTF8.GetBytes(content));
+					return Convert.ToBase64String(res);
+				}
 
-                /// <summary>
-                /// 不使用公钥加密内容。
-                /// </summary>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public string Encrypt(string content)
-                {
-                    var res = Encrypt(Encoding.UTF8.GetBytes(content));
-                    return Convert.ToBase64String(res);
-                }
+				/// <summary>
+				/// 不使用公钥加密内容。
+				/// </summary>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public string Encrypt(string content)
+				{
+					var res = Encrypt(Encoding.UTF8.GetBytes(content));
+					return Convert.ToBase64String(res);
+				}
 
-                /// <summary>
-                /// 使用公钥加密内容。
-                /// </summary>
-                /// <param name="publicKey"></param>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public static byte[] RsaEncrypt(string publicKey, byte[] content)
-                {
-                    using var rsa = new RSACryptoServiceProvider();
-                    rsa.FromXmlString(publicKey);
-                    var cipherBytes = rsa.Encrypt(content, false);
-                    return cipherBytes;
-                }
+				/// <summary>
+				/// 使用公钥加密内容。
+				/// </summary>
+				/// <param name="publicKey"></param>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public static byte[] RsaEncrypt(string publicKey, byte[] content)
+				{
+					using var rsa = new RSACryptoServiceProvider();
+					rsa.FromXmlString(publicKey);
+					var cipherBytes = rsa.Encrypt(content, false);
+					return cipherBytes;
+				}
 
-                /// <summary>
-                /// 不使用公钥加密内容。
-                /// </summary>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public byte[] Encrypt(byte[] content)
-                {
-                    var cipherBytes = _rsa.Encrypt(content, false);
-                    return cipherBytes;
-                }
+				/// <summary>
+				/// 不使用公钥加密内容。
+				/// </summary>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public byte[] Encrypt(byte[] content)
+				{
+					var cipherBytes = _rsa.Encrypt(content, false);
+					return cipherBytes;
+				}
 
-                /// <summary>
-                /// 使用私钥解密字符串。
-                /// </summary>
-                /// <param name="privateKey">私钥</param>
-                /// <param name="content">加密后的内容</param>
-                /// <returns>解密后的内容</returns>
-                public static string RsaDecrypt(string privateKey, string content)
-                {
-                    var res = RsaDecrypt(privateKey, Convert.FromBase64String(content));
-                    return Encoding.UTF8.GetString(res);
-                }
+				/// <summary>
+				/// 使用私钥解密字符串。
+				/// </summary>
+				/// <param name="privateKey">私钥</param>
+				/// <param name="content">加密后的内容</param>
+				/// <returns>解密后的内容</returns>
+				public static string RsaDecrypt(string privateKey, string content)
+				{
+					var res = RsaDecrypt(privateKey, Convert.FromBase64String(content));
+					return Encoding.UTF8.GetString(res);
+				}
 
-                /// <summary>
-                /// 使用私钥解密字节数组。
-                /// </summary>
-                /// <param name="privateKey"></param>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public static byte[] RsaDecrypt(string privateKey, byte[] content)
-                {
-                    using var rsa = new RSACryptoServiceProvider();
-                    rsa.FromXmlString(privateKey);
-                    byte[] cipherBytes = rsa.Decrypt(content, false);
-                    return cipherBytes;
-                }
+				/// <summary>
+				/// 使用私钥解密字节数组。
+				/// </summary>
+				/// <param name="privateKey"></param>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public static byte[] RsaDecrypt(string privateKey, byte[] content)
+				{
+					using var rsa = new RSACryptoServiceProvider();
+					rsa.FromXmlString(privateKey);
+					byte[] cipherBytes = rsa.Decrypt(content, false);
+					return cipherBytes;
+				}
 
-                /// <summary>
-                /// 不使用私钥解密字符串。
-                /// </summary>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public string Decrypt(string content)
-                {
-                    var res = Decrypt(Convert.FromBase64String(content));
-                    return Encoding.UTF8.GetString(res);
-                }
+				/// <summary>
+				/// 不使用私钥解密字符串。
+				/// </summary>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public string Decrypt(string content)
+				{
+					var res = Decrypt(Convert.FromBase64String(content));
+					return Encoding.UTF8.GetString(res);
+				}
 
-                /// <summary>
-                /// 不使用私钥解密字节数组。
-                /// </summary>
-                /// <param name="content"></param>
-                /// <returns></returns>
-                public byte[] Decrypt(byte[] content)
-                {
-                    var bytes = _rsa.Decrypt(content, false);
-                    return bytes;
-                }
+				/// <summary>
+				/// 不使用私钥解密字节数组。
+				/// </summary>
+				/// <param name="content"></param>
+				/// <returns></returns>
+				public byte[] Decrypt(byte[] content)
+				{
+					var bytes = _rsa.Decrypt(content, false);
+					return bytes;
+				}
 
-                /// <summary>
-                /// 使用私钥对字节数据进行签名。
-                /// </summary>
-                /// <param name="dataToSign">要签名的数据</param>
-                /// <param name="privateKey">私钥字符串</param>
-                /// <returns>签名后的字节数组</returns>
-                public static byte[] RsaSignData(byte[] dataToSign, string privateKey)
-                {
-                    try
-                    {
-                        using var rsa  = new RSACryptoServiceProvider();
-                        using var sha1 = new SHA1CryptoServiceProvider();
-                        rsa.FromXmlString(privateKey);
-                        return rsa.SignData(dataToSign, sha1);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
+				/// <summary>
+				/// 使用私钥对字节数据进行签名。
+				/// </summary>
+				/// <param name="dataToSign">要签名的数据</param>
+				/// <param name="privateKey">私钥字符串</param>
+				/// <returns>签名后的字节数组</returns>
+				public static byte[] RsaSignData(byte[] dataToSign, string privateKey)
+				{
+					try
+					{
+						using var rsa  = new RSACryptoServiceProvider();
+						using var sha1 = new SHA1CryptoServiceProvider();
+						rsa.FromXmlString(privateKey);
+						return rsa.SignData(dataToSign, sha1);
+					}
+					catch
+					{
+						return null;
+					}
+				}
 
-                /// <summary>
-                /// 使用私钥对字符串进行签名。
-                /// </summary>
-                /// <param name="dataToSign"></param>
-                /// <param name="privateKey"></param>
-                /// <returns></returns>
-                public static string RsaSignData(string dataToSign, string privateKey)
-                {
-                    byte[] res = RsaSignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
-                    return Convert.ToBase64String(res);
-                }
+				/// <summary>
+				/// 使用私钥对字符串进行签名。
+				/// </summary>
+				/// <param name="dataToSign"></param>
+				/// <param name="privateKey"></param>
+				/// <returns></returns>
+				public static string RsaSignData(string dataToSign, string privateKey)
+				{
+					byte[] res = RsaSignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
+					return Convert.ToBase64String(res);
+				}
 
-                /// <summary>
-                /// 不使用公钥验证签名字节数组。
-                /// </summary>
-                /// <param name="dataToSign"></param>
-                /// <returns></returns>
-                public byte[] SignData(byte[] dataToSign)
-                {
-                    try
-                    {
-                        using var sha1 = new SHA1CryptoServiceProvider();
-                        return _rsa.SignData(dataToSign, sha1);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
+				/// <summary>
+				/// 不使用公钥验证签名字节数组。
+				/// </summary>
+				/// <param name="dataToSign"></param>
+				/// <returns></returns>
+				public byte[] SignData(byte[] dataToSign)
+				{
+					try
+					{
+						using var sha1 = new SHA1CryptoServiceProvider();
+						return _rsa.SignData(dataToSign, sha1);
+					}
+					catch
+					{
+						return null;
+					}
+				}
 
-                /// <summary>
-                /// 不使用公钥验证签名字符串。
-                /// </summary>
-                /// <param name="dataToSign"></param>
-                /// <returns></returns>
-                public string SignData(string dataToSign)
-                {
-                    var res = SignData(Encoding.UTF8.GetBytes(dataToSign));
-                    return Convert.ToBase64String(res);
-                }
+				/// <summary>
+				/// 不使用公钥验证签名字符串。
+				/// </summary>
+				/// <param name="dataToSign"></param>
+				/// <returns></returns>
+				public string SignData(string dataToSign)
+				{
+					var res = SignData(Encoding.UTF8.GetBytes(dataToSign));
+					return Convert.ToBase64String(res);
+				}
 
-                /// <summary>
-                /// 使用公钥验证字节数组的签名。
-                /// </summary>
-                /// <param name="dataToVerify">要验证的数据</param>
-                /// <param name="signedData">签名数据</param>
-                /// <param name="publicKey">公钥字符串</param>
-                /// <returns>验证结果</returns>
-                public static bool RsaVerifyData(byte[] dataToVerify, byte[] signedData, string publicKey)
-                {
-                    try
-                    {
-                        using var rsa  = new RSACryptoServiceProvider();
-                        using var sha1 = new SHA1CryptoServiceProvider();
-                        rsa.FromXmlString(publicKey);
-                        return rsa.VerifyData(dataToVerify, sha1, signedData);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                }
+				/// <summary>
+				/// 使用公钥验证字节数组的签名。
+				/// </summary>
+				/// <param name="dataToVerify">要验证的数据</param>
+				/// <param name="signedData">签名数据</param>
+				/// <param name="publicKey">公钥字符串</param>
+				/// <returns>验证结果</returns>
+				public static bool RsaVerifyData(byte[] dataToVerify, byte[] signedData, string publicKey)
+				{
+					try
+					{
+						using var rsa  = new RSACryptoServiceProvider();
+						using var sha1 = new SHA1CryptoServiceProvider();
+						rsa.FromXmlString(publicKey);
+						return rsa.VerifyData(dataToVerify, sha1, signedData);
+					}
+					catch
+					{
+						return false;
+					}
+				}
 
-                /// <summary>
-                /// 使用公钥验证字符串的签名。
-                /// </summary>
-                /// <param name="dataToVerify"></param>
-                /// <param name="signedData"></param>
-                /// <param name="publicKey"></param>
-                /// <returns></returns>
-                public static bool RsaVerifyData(string dataToVerify, string signedData, string publicKey)
-                {
-                    return RsaVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), publicKey);
-                }
+				/// <summary>
+				/// 使用公钥验证字符串的签名。
+				/// </summary>
+				/// <param name="dataToVerify"></param>
+				/// <param name="signedData"></param>
+				/// <param name="publicKey"></param>
+				/// <returns></returns>
+				public static bool RsaVerifyData(string dataToVerify, string signedData, string publicKey)
+				{
+					return RsaVerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData), publicKey);
+				}
 
-                /// <summary>
-                /// 不使用公钥验证字节数组的签名。
-                /// </summary>
-                /// <param name="dataToVerify"></param>
-                /// <param name="signedData"></param>
-                /// <returns></returns>
-                public bool VerifyData(byte[] dataToVerify, byte[] signedData)
-                {
-                    try
-                    {
-                        using var sha1 = new SHA1CryptoServiceProvider();
-                        return _rsa.VerifyData(dataToVerify, sha1, signedData);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                }
+				/// <summary>
+				/// 不使用公钥验证字节数组的签名。
+				/// </summary>
+				/// <param name="dataToVerify"></param>
+				/// <param name="signedData"></param>
+				/// <returns></returns>
+				public bool VerifyData(byte[] dataToVerify, byte[] signedData)
+				{
+					try
+					{
+						using var sha1 = new SHA1CryptoServiceProvider();
+						return _rsa.VerifyData(dataToVerify, sha1, signedData);
+					}
+					catch
+					{
+						return false;
+					}
+				}
 
-                /// <summary>
-                /// 不使用公钥验证字符串的签名。
-                /// </summary>
-                /// <param name="dataToVerify"></param>
-                /// <param name="signedData"></param>
-                /// <returns></returns>
-                public bool VerifyData(string dataToVerify, string signedData)
-                {
-                    try
-                    {
-                        return VerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData));
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                }
+				/// <summary>
+				/// 不使用公钥验证字符串的签名。
+				/// </summary>
+				/// <param name="dataToVerify"></param>
+				/// <param name="signedData"></param>
+				/// <returns></returns>
+				public bool VerifyData(string dataToVerify, string signedData)
+				{
+					try
+					{
+						return VerifyData(Encoding.UTF8.GetBytes(dataToVerify), Convert.FromBase64String(signedData));
+					}
+					catch
+					{
+						return false;
+					}
+				}
 
-                /// <summary>
-                /// 释放内部持有的 RSACryptoServiceProvider（含构造时由外部传入的实例）。可重入、幂等。
-                /// </summary>
-                public void Dispose()
-                {
-                    _rsa?.Dispose();
-                }
-            }
-        }
-    }
+				/// <summary>
+				/// 释放内部持有的 RSACryptoServiceProvider（含构造时由外部传入的实例）。可重入、幂等。
+				/// </summary>
+				public void Dispose()
+				{
+					_rsa?.Dispose();
+				}
+			}
+		}
+	}
 }
