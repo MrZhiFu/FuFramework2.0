@@ -33,7 +33,7 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
             local targetPath = Tool:StrFormat('%s/%s.Gen.cs', targetGenDir, winName) --- 界面代码生成目标路径
             local compArray = Tool:GetCompArray(winCls)
 
-            -- Launcher 包使用独立模板（不继承 WinBase，手动管理 m_View）
+            -- Launcher 包使用独立模板（不继承 WinBase，手动管理 m_view）
             local templateName = isLauncher and "Template/WinGenLauncherTemplate.txt" or "Template/WinGenTemplate.txt"
             local templateCodeGenPath = Tool:StrFormat("%s/%s", Tool:PluginPath(), templateName)
             local templateCodeGen = Tool:ReadTxt(templateCodeGenPath)  -- 读取模板代码
@@ -78,12 +78,12 @@ function GenWin:Gen(pkgName, winClsArray, AllClsMap, unityDataPath)
                 for _, k in ipairs(apiKeys) do
                     local content = table.concat(dataTable[k])
                     if content ~= "" then
-                        -- 1. WinUI.GetController → m_View.GetController
-                        content = content:gsub("WinUI%.GetController", "m_View.GetController")
-                        -- 2. WinUI.GetTransition → m_View.GetTransition
-                        content = content:gsub("WinUI%.GetTransition", "m_View.GetTransition")
-                        -- 3. GetChild → m_View.GetChild
-                        content = content:gsub("([^%.])GetChild%(", "%1m_View.GetChild(")
+                        -- 1. WinUI.GetController → m_view.GetController
+                        content = content:gsub("WinUI%.GetController", "m_view.GetController")
+                        -- 2. WinUI.GetTransition → m_view.GetTransition
+                        content = content:gsub("WinUI%.GetTransition", "m_view.GetTransition")
+                        -- 3. GetChild → m_view.GetChild
+                        content = content:gsub("([^%.])GetChild%(", "%1m_view.GetChild(")
                         -- 4. AddUIListener(var.event, handler) → var.event.Set(handler)
                         content = content:gsub("AddUIListener%(([%w_]+)%.(%w+), ([^)]+)%)", function(varName, event, handler)
                             return varName .. "." .. event .. ".Set(" .. handler .. ")"

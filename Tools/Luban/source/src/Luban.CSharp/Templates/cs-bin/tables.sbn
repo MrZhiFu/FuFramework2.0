@@ -22,7 +22,7 @@ using Cysharp.Threading.Tasks;
         public bool IsLoaded { private set; get; }
 
         /// <summary> 框架配置模块 </summary>
-        private ConfigModule m_ConfigModule;
+        private ConfigModule m_configModule;
 
 
         /// <summary>
@@ -31,8 +31,8 @@ using Cysharp.Threading.Tasks;
         /// <param name="configModule">配置管理模块</param>
         public void Init(ConfigModule configModule)
         {
-            m_ConfigModule = configModule;
-            m_ConfigModule.RemoveAllConfigs();
+            m_configModule = configModule;
+            m_configModule.RemoveAllConfigs();
         }
 
         /// <summary>
@@ -46,13 +46,13 @@ using Cysharp.Threading.Tasks;
             if (IsLoaded) return;
 
             IsLoaded = false;
-            m_ConfigModule.RemoveAllConfigs();
+            m_configModule.RemoveAllConfigs();
             var loadTasks = new List<UniTask>();
 
             {{~for table in __tables ~}}
             {{format_property_name __code_style table.name}} = new {{table.name}}(() => loader("{{table.output_data_file}}"));
             loadTasks.Add({{format_property_name __code_style table.name}}.LoadAsync());
-            m_ConfigModule.AddConfig(nameof({{table.name}}), {{format_property_name __code_style table.name}});
+            m_configModule.AddConfig(nameof({{table.name}}), {{format_property_name __code_style table.name}});
 
             {{~end~}}
             await UniTask.WhenAll(loadTasks);

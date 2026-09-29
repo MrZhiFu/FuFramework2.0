@@ -49,13 +49,13 @@ using Cysharp.Threading.Tasks;
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+        private readonly Func<UniTask<JSONNode>> m_loadFunc;
 
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_LoadFunc = loadFunc;
+        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_loadFunc = loadFunc;
 
         /// <summary>
         /// 异步加载本表数据
@@ -63,7 +63,7 @@ using Cysharp.Threading.Tasks;
         /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var jsonNode = await m_LoadFunc();
+            var jsonNode = await m_loadFunc();
 
             DataList.Clear();
             LongKeyDataDict.Clear();
@@ -125,7 +125,7 @@ using Cysharp.Threading.Tasks;
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+        private readonly Func<UniTask<JSONNode>> m_loadFunc;
 
         /// <summary>
         /// 创建表实例
@@ -133,7 +133,7 @@ using Cysharp.Threading.Tasks;
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
         public {{__name}}(Func<UniTask<JSONNode>> loadFunc)
         {
-            m_LoadFunc = loadFunc;
+            m_loadFunc = loadFunc;
             _dataList = new List<{{value_simple_name}}>();
             {{~if __table.is_union_index~}}
             _dataMapUnion = new {{table_union_map_type_name}}();
@@ -150,7 +150,7 @@ using Cysharp.Threading.Tasks;
         /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var jsonNode = await m_LoadFunc();
+            var jsonNode = await m_loadFunc();
 
             _dataList.Clear();
             foreach(var node in jsonNode.Children)
@@ -219,13 +219,13 @@ using Cysharp.Threading.Tasks;
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+        private readonly Func<UniTask<JSONNode>> m_loadFunc;
 
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_LoadFunc = loadFunc;
+        public {{__name}}(Func<UniTask<JSONNode>> loadFunc) => m_loadFunc = loadFunc;
 
         /// <summary>
         /// 异步加载本表数据
@@ -233,7 +233,7 @@ using Cysharp.Threading.Tasks;
         /// <remarks>从 loader 取 JSON、逐条反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var jsonNode = await m_LoadFunc();
+            var jsonNode = await m_loadFunc();
 
             _data = {{value_simple_name}}.Deserialize{{value_simple_name}}(jsonNode[0]);
             OnInit();

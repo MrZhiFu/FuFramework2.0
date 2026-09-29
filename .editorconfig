@@ -182,8 +182,10 @@ indent_style = space
 indent_size = 4
 
 # ── 生成代码：跟随生成器输出格式（空格），不做 Tab 约束 ──
-# FGUI 生成（*.Gen.cs 与 CustomCompBind.cs）、proto registry（*.g.cs）、
-# Luban 表生成（AutoGen/Tables/Generate|Extension）、AOT 本地化生成（Localization/AutoGen）、proto 生成（Network/Generated）
-[**/*.Gen.cs,**/*.g.cs,Unity/Assets/Scripts/Hotfix/Game/AutoGen/UI/CustomCompBind.cs,**/AutoGen/Tables/Generate/**.cs,**/AutoGen/Tables/Extension/**.cs,**/Localization/AutoGen/**.cs,**/Network/Generated/**.cs]
+# FGUI 生成（*.Gen.cs 与 CustomCompBind.cs）、proto 消息（AutoGen/Proto，文件名形如 Bag_100.cs）、
+# proto registry（*.g.cs）、Luban 表生成（AutoGen/Tables/Generate|Extension）、
+# AOT 本地化生成（Localization/AutoGen）、proto 生成（Network/Generated）
+# 注意：AutoGen/UI/ 下与 *.Gen.cs 同目录的手写 partial（WinBag.cs 等）为手写逻辑层，不在豁免内，遵守 Tab
+[**/*.Gen.cs,**/*.g.cs,Unity/Assets/Scripts/Hotfix/Game/AutoGen/UI/CustomCompBind.cs,**/AutoGen/Tables/Generate/**.cs,**/AutoGen/Tables/Extension/**.cs,**/AutoGen/Proto/**.cs,**/Localization/AutoGen/**.cs,**/Network/Generated/**.cs]
 indent_style = space
 indent_size = 4

@@ -9,7 +9,7 @@ namespace #NAMESPACE#
 {
     public class #WINNAME#
     {
-        public GComponent m_View;
+        public GComponent m_view;
 
 #FieldDefine#
 
